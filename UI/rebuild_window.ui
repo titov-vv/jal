@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ReBuildDialog</class>
+ <widget class="QDialog" name="ReBuildDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>260</width>
+    <height>119</height>
+   </rect>
+  </property>
+  <property name="font">
+   <font>
+    <family>DejaVu Sans</family>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>Re-Build Ledger</string>
+  </property>
+  <widget class="QDialogButtonBox" name="DialogButtonBox">
+   <property name="geometry">
+    <rect>
+     <x>88</x>
+     <y>90</y>
+     <width>171</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <property name="standardButtons">
+    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+   </property>
+  </widget>
+  <widget class="QGroupBox" name="TypeGroup">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>259</width>
+     <height>91</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Date Range</string>
+   </property>
+   <widget class="QRadioButton" name="AllRadioButton">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>22</y>
+      <width>100</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>&amp;All</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="LastRadioButton">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>44</y>
+      <width>131</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Since &amp;Last actual:</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="DateRadionButton">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>66</y>
+      <width>131</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Since &amp;Date:</string>
+    </property>
+   </widget>
+   <widget class="QDateEdit" name="CustomDateEdit">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>64</y>
+      <width>110</width>
+      <height>24</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="FrontierDateLabel">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>46</y>
+      <width>111</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>FrontierDate</string>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>DialogButtonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>ReBuildDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>DialogButtonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>ReBuildDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

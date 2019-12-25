@@ -1,0 +1,3 @@
+#!/usr/bin/bash
+uic -g python -o /home/vtitov/PycharmProjects/Ledger/ui_main_window.py /home/vtitov/PycharmProjects/Ledger/UI/main_window.ui
+uic -g python -o /home/vtitov/PycharmProjects/Ledger/ui_rebuild_window.py /home/vtitov/PycharmProjects/Ledger/UI/rebuild_window.ui
