@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Wed Dec 25 09:34:22 2019
+-- File generated with SQLiteStudio v3.2.1 on Thu Dec 26 13:38:35 2019
 --
 -- Text encoding used: UTF-8
 --
@@ -188,8 +188,8 @@ CREATE TABLE dividends (
     account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
                                                     ON UPDATE CASCADE
                            NOT NULL,
-    active_id  INTEGER     REFERENCES actives (id) ON DELETE RESTRICT
-                                                   ON UPDATE CASCADE
+    active_id  INTEGER     REFERENCES actives (a_id) ON DELETE RESTRICT
+                                                     ON UPDATE CASCADE
                            NOT NULL,
     sum        REAL        NOT NULL,
     sum_tax    REAL,
@@ -211,8 +211,8 @@ CREATE TABLE ledger (
                          REFERENCES books (id) ON DELETE NO ACTION
                                                ON UPDATE NO ACTION,
     active_id    INTEGER NOT NULL
-                         REFERENCES actives (id) ON DELETE NO ACTION
-                                                 ON UPDATE NO ACTION,
+                         REFERENCES actives (a_id) ON DELETE NO ACTION
+                                                   ON UPDATE NO ACTION,
     account_id   INTEGER NOT NULL
                          REFERENCES accounts (id) ON DELETE NO ACTION
                                                   ON UPDATE NO ACTION,
@@ -237,8 +237,8 @@ CREATE TABLE ledger_sums (
                          REFERENCES books (id) ON DELETE NO ACTION
                                                ON UPDATE NO ACTION,
     active_id    INTEGER NOT NULL
-                         REFERENCES actives (id) ON DELETE NO ACTION
-                                                 ON UPDATE NO ACTION,
+                         REFERENCES actives (a_id) ON DELETE NO ACTION
+                                                   ON UPDATE NO ACTION,
     account_id   INTEGER NOT NULL
                          REFERENCES accounts (id) ON DELETE NO ACTION
                                                   ON UPDATE NO ACTION,
@@ -335,6 +335,101 @@ DROP INDEX IF EXISTS by_sid;
 CREATE INDEX by_sid ON ledger_sums (
     sid
 );
+
+
+-- View: all_operations
+DROP VIEW IF EXISTS all_operations;
+CREATE VIEW all_operations AS
+    SELECT m.type,
+           m.id,
+           m.timestamp,
+           m.account_id,
+           a.name AS account,
+           m.amount,
+           m.num_peer,
+           m.active_id,
+           s.name AS active,
+           s.full_name AS active_name,
+           m.qty_trid,
+           m.price,
+           m.fee_tax,
+           l.sum_amount AS t_amount,
+           m.t_qty,
+           CASE WHEN m.timestamp <= a.reconciled_on THEN 1 ELSE 0 END AS reconciled
+      FROM (
+               SELECT 1 AS type,
+                      o.id,
+                      timestamp,
+                      p.name AS num_peer,
+                      account_id,
+                      sum(d.type * d.sum) AS amount,
+                      o.alt_currency_id AS active_id,
+                      coalesce( -t1.id, t2.id, 0) AS qty_trid,
+                      sum(d.type * d.alt_sum) AS price,
+                      NULL AS fee_tax,
+                      NULL AS t_qty
+                 FROM actions AS o
+                      LEFT JOIN
+                      agents AS p ON o.peer_id = p.id
+                      LEFT JOIN
+                      transfers AS t1 ON t1.from_id = o.id
+                      LEFT JOIN
+                      transfers AS t2 ON t2.to_id = o.id
+                      LEFT JOIN
+                      action_details AS d ON o.id = d.pid
+                GROUP BY o.id
+               UNION ALL
+               SELECT 2 AS type,
+                      d.id,
+                      d.timestamp,
+                      d.number AS num_peer,
+                      d.account_id,
+                      d.sum AS amount,
+                      d.active_id,
+                      SUM(coalesce(l.amount, 0) ) AS qty_trid,
+                      NULL AS price,
+                      d.sum_tax AS fee_tax,
+                      NULL AS t_qty
+                 FROM dividends AS d
+                      LEFT JOIN
+                      ledger AS l ON d.active_id = l.active_id AND 
+                                     d.account_id = l.account_id AND 
+                                     l.book_account = 4 AND 
+                                     l.timestamp <= d.timestamp
+                GROUP BY d.id
+               UNION ALL
+               SELECT 3 AS type,
+                      t.id,
+                      t.timestamp,
+                      t.number AS num_peer,
+                      t.account_id,
+                      t.sum AS amount,
+                      t.active_id,
+                      t.qty AS qty_trid,
+                      t.price AS price,
+                      t.fee_broker + t.fee_exchange AS fee_tax,
+                      l.sum_amount AS t_qty
+                 FROM trades AS t
+                      LEFT JOIN
+                      sequence AS q ON q.type = 3 AND 
+                                       t.id = q.operation_id
+                      LEFT JOIN
+                      ledger_sums AS l ON l.sid = q.id AND 
+                                          l.book_account = 4
+                ORDER BY timestamp
+           )
+           AS m
+           LEFT JOIN
+           accounts AS a ON m.account_id = a.id
+           LEFT JOIN
+           actives AS s ON m.active_id = s.id
+           LEFT JOIN
+           sequence AS q ON m.type = q.type AND 
+                            m.id = q.operation_id
+           LEFT JOIN
+           ledger_sums AS l ON l.sid = q.id AND 
+                               (l.book_account = 3 OR 
+                                l.book_account = 5);
 
 
 -- View: frontier

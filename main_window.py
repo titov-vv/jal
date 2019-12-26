@@ -1,7 +1,7 @@
 from constants import *
-from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView
-from PySide2.QtSql import QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel, QSqlRelationalTableModel
-from PySide2.QtCore import Qt, Slot
+from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView
+from PySide2.QtSql import QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
+from PySide2.QtCore import Qt, Slot, QByteArray
 from PySide2 import QtCore
 from ui_main_window import Ui_LedgerMainWindow
 from ledger_db import Ledger
@@ -9,7 +9,8 @@ from import_1c import import_1c
 from build_ledger import Ledger_Bookkeeper
 from rebuild_window import RebuildDialog
 from balance_delegate import BalanceDelegate
-from operation_delegate import OperationsDelegate
+from operation_delegate import OperationsTimestampDelegate
+from dividend_delegate import DividendSqlDelegate
 
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def __init__(self):
@@ -61,48 +62,67 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.BalancesTableView.verticalHeader().setVisible(False)
         self.BalancesTableView.show()
 
-        self.OperationsQuery = QSqlQuery(self.db)
-        self.OperationsQuery.exec_("SELECT m.type, m.id, m.timestamp, "
-                                   "  m.account_id, a.name AS account, m.amount, "
-                                   "  m.num_peer, m.active_id, s.name AS active, s.full_name AS active_name, "
-                                   "m.qty_trid, m.price, m.fee_tax, "
-                                   "  l.sum_amount AS t_amount, m.t_qty, "
-                                   "  CASE WHEN m.timestamp<=a.reconciled_on THEN 1 ELSE 0 END AS reconciled "
-                                   "FROM "
-                                   "(SELECT 1 AS type, o.id, timestamp, p.name AS num_peer, account_id, sum(d.type*d.sum) AS amount, "
-                                   "  o.alt_currency_id AS active_id, coalesce(-t1.id, t2.id, 0) AS qty_trid, sum(d.type*d.alt_sum) AS price, NULL AS fee_tax, NULL AS t_qty "
-                                   "FROM actions AS o "
-                                   "LEFT JOIN agents AS p ON o.peer_id = p.id "
-                                   "LEFT JOIN transfers AS t1 ON t1.from_id = o.id "
-                                   "LEFT JOIN transfers AS t2 ON t2.to_id = o.id "
-                                   "LEFT JOIN action_details AS d ON o.id = d.pid "
-                                   "GROUP BY o.id "
-                                   "UNION ALL "
-                                   "SELECT 2 AS type, d.id, d.timestamp, d.number AS num_peer, d.account_id, d.sum AS amount, "
-                                   "   d.active_id, SUM(coalesce(l.amount,0)) AS qty_trid, NULL AS price, d.sum_tax AS fee_tax, NULL AS t_qty "
-                                   "FROM dividends AS d "
-                                   "LEFT JOIN ledger AS l ON d.active_id = l.active_id AND d.account_id = l.account_id AND l.book_account = 4 AND l.timestamp<=d.timestamp "
-                                   "GROUP BY d.id "
-                                   "UNION ALL "
-                                   "SELECT 3 AS type, t.id, t.timestamp, t.number AS num_peer, t.account_id, t.sum AS amount, "
-                                   "  t.active_id, t.qty AS qty_trid, t.price AS price, t.fee_broker+t.fee_exchange AS fee_tax, l.sum_amount AS t_qty "
-                                   "FROM trades AS t "
-                                   "LEFT JOIN sequence AS q ON q.type = 3 AND t.id = q.operation_id "
-                                   "LEFT JOIN ledger_sums AS l ON l.sid = q.id AND l.book_account = 4 "
-                                   "ORDER BY timestamp) AS m "
-                                   "LEFT JOIN accounts AS a ON m.account_id = a.id "
-                                   "LEFT JOIN actives AS s ON m.active_id = s.id "
-                                   "LEFT JOIN sequence AS q ON m.type = q.type AND m.id = q.operation_id "
-                                   "LEFT JOIN ledger_sums AS l ON l.sid = q.id AND (l.book_account = 3 or l.book_account=5)")
-        self.OperationsModel = QSqlQueryModel()
-        self.OperationsModel.setQuery(self.OperationsQuery)
+        self.OperationsModel = QSqlTableModel(db=self.db)
+        self.OperationsModel.setTable("all_operations")
+        self.OperationsModel.select()
         self.OperationsTableView.setModel(self.OperationsModel)
-#        self.OperationsTableView.setItemDelegate(OperationsDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(2, OperationsTimestampDelegate(self.OperationsTableView))
         self.OperationsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  # To select only 1 row
         self.OperationsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.OperationsTableView.setColumnHidden(1, True)
+        self.OperationsTableView.setColumnHidden(3, True)
+        self.OperationsTableView.setColumnHidden(7, True)
         self.OperationsTableView.verticalHeader().setDefaultSectionSize(21)
         self.OperationsTableView.verticalHeader().setVisible(False)
+        #self.OperationsTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.OperationsTableView.show()
+
+        # self.TradesModel = QSqlRelationalTableModel(db=self.db)
+        # self.TradesModel.setTable("trades")
+        # self.TradesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        # account_idx = self.TradesModel.fieldIndex("account_id")
+        # self.TradesModel.setRelation(account_idx, QSqlRelation("accounts", "id", "name"))
+        # self.TradesModel.select()
+        # self.TradeAccountCombo.setModel(self.TradesModel.relationModel(account_idx))
+        # self.TradeAccountCombo.setModelColumn(self.TradesModel.relationModel(account_idx).fieldIndex("name"))
+        #
+        # self.trades_mapper = QDataWidgetMapper(self)
+        # self.trades_mapper.setModel(self.TradesModel)
+        # self.trades_mapper.addMapping(self.TradeAccountCombo, account_idx)
+        # self.trades_mapper.addMapping(self.TradeNumberEdit, self.TradesModel.fieldIndex("number"))
+
+        self.DividendTimestampEdit.setCalendarPopup(True)
+        self.DividendsModel = QSqlRelationalTableModel(db=self.db)
+        self.DividendsModel.setTable("dividends")
+        self.DividendsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        account_idx = self.DividendsModel.fieldIndex("account_id")
+        active_idx = self.DividendsModel.fieldIndex("active_id")
+        self.DividendsModel.setRelation(account_idx, QSqlRelation("accounts", "id", "name"))
+        self.DividendsModel.setRelation(active_idx, QSqlRelation("actives", "id", "name"))
+        self.DividendsModel.select()
+        self.DividendAccountCombo.setModel(self.DividendsModel.relationModel(account_idx))
+        self.DividendAccountCombo.setModelColumn(self.DividendsModel.relationModel(account_idx).fieldIndex("name"))
+        self.DividendActiveCombo.setModel(self.DividendsModel.relationModel(active_idx))
+        self.DividendActiveCombo.setModelColumn(1) #self.DividendsModel.relationModel(active_idx).fieldIndex("full_name"))
+
+        self.DividendsModel.relationModel(active_idx).fetchMore()
+
+        self.dividend_mapper = QDataWidgetMapper(self)
+        self.dividend_mapper.setModel(self.DividendsModel)
+        self.dividend_mapper.setSubmitPolicy(QDataWidgetMapper.ManualSubmit)
+        self.dividend_mapper.setItemDelegate(DividendSqlDelegate(self.dividend_mapper))
+        self.dividend_mapper.addMapping(self.DividendAccountCombo, account_idx)
+        self.dividend_mapper.addMapping(self.DividendActiveCombo, active_idx)
+        label_property_name = QByteArray()
+        label_property_name.resize(4)
+        label_property_name.setRawData("text", 4)
+        self.dividend_mapper.addMapping(self.DividendActiveLbl, 4, label_property_name)  # self.DividendsModel.relationModel(active_idx).fieldIndex("name") -> 1 instead of 4?  And self.DividendsModel.fieldIndex("active_id") doesn't work at all
+        self.dividend_mapper.addMapping(self.DividendTimestampEdit, self.DividendsModel.fieldIndex("timestamp"))
+        self.dividend_mapper.addMapping(self.DividendNumberEdit, self.DividendsModel.fieldIndex("number"))
+        self.dividend_mapper.addMapping(self.DividendSumEdit, self.DividendsModel.fieldIndex("sum"))
+        self.dividend_mapper.addMapping(self.DividendSumDescription, self.DividendsModel.fieldIndex("note"))
+        self.dividend_mapper.addMapping(self.DividendTaxEdit, self.DividendsModel.fieldIndex("sum_tax"))
+        self.dividend_mapper.addMapping(self.DividendTaxDescription, self.DividendsModel.fieldIndex("note_tax"))
 
         # MENU ACTIONS
         self.actionExit.triggered.connect(qApp.quit)
@@ -113,6 +133,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.BalanceDate.dateChanged.connect(self.onBalanceDateChange)
         self.CurrencyCombo.currentIndexChanged.connect(self.OnBalanceCurrencyChange)
         self.ShowInactiveCheckBox.stateChanged.connect(self.OnBalanceInactiveChange)
+        self.DateRangeCombo.currentIndexChanged.connect(self.OnOperationsRangeChange)
+        self.CommitBtn.clicked.connect(self.OnDividendCommit)
         # TABLE ACTIONS
         self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
 
@@ -143,9 +165,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def OnMainTabChange(self, tab_index):
         if tab_index == 0:
-            pass
+            self.StatusBar.showMessage("Balances and Transactions")
         elif tab_index == 1:
-            self.UpdateTransactionsTab()
+            self.StatusBar.showMessage("Other staff will be here")
 
     @Slot()
     def onBalanceDateChange(self, new_date):
@@ -170,11 +192,44 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ledger.BuildBalancesTable(self.balance_date, self.balance_currency, self.balance_active_only)
         self.BalancesModel.select()
 
-    def UpdateTransactionsTab(self):
-        self.StatusBar.showMessage("Transactions to be here")
-
     @Slot()
     def OnOperationChange(self, selected, deselected):
         idx = selected.indexes()
         selected_row = idx[0].row()
-        self.OperationsTabs.setCurrentIndex(self.OperationsModel.record(selected_row).value(0) - 1)
+        operation_type = self.OperationsModel.record(selected_row).value(0)
+        operation_id = self.OperationsModel.record(selected_row).value(1)
+        if (operation_type == 1):     # Income / Spending
+            self.OperationsTabs.setCurrentIndex(0)
+        elif (operation_type == 2):   # Dividend
+            self.OperationsTabs.setCurrentIndex(2)
+            self.DividendsModel.setFilter("dividends.id = {}".format(operation_id))
+            self.dividend_mapper.setCurrentModelIndex(self.dividend_mapper.model().index(0, 0))
+        elif (operation_type == 3):   # Trade
+            self.OperationsTabs.setCurrentIndex(1)
+            self.TradesModel.setFilter("trades.id = {}".format(operation_id))
+            self.trades_mapper.setCurrentModelIndex(self.trades_mapper.model().index(0,0))
+        else:
+            print("Unknown operation type", operation_type)
+
+    @Slot()
+    def OnOperationsRangeChange(self, range_index):
+        if (range_index == 0): # last week
+            since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 604800
+        elif (range_index == 1): # last month
+            since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 2678400
+        elif (range_index == 2): # last half-year
+            since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 15811200
+        elif (range_index == 3): # last year
+            since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 31536000
+        else:
+            since_timestamp = 0
+        if (since_timestamp > 0):
+            self.OperationsModel.setFilter("all_operations.timestamp >= {}".format(since_timestamp))
+        else:
+            self.OperationsModel.setFilter("")
+
+    @Slot()
+    def OnDividendCommit(self):
+        self.dividend_mapper.submit()
+        self.DividendsModel.submitAll()
+        self.OperationsModel.select()
