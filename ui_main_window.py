@@ -16,7 +16,7 @@ from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QFont,
 from PySide2.QtWidgets import *
 
 from CustomUI.account_select import AccountSelector
-from CustomUI.active_select import  ActiveSelector
+from CustomUI.active_select import ActiveSelector
 
 class Ui_LedgerMainWindow(object):
     def setupUi(self, LedgerMainWindow):
@@ -217,67 +217,45 @@ class Ui_LedgerMainWindow(object):
         self.DividendSumEdit = QLineEdit(self.DividendDetailsTab)
         self.DividendSumEdit.setObjectName(u"DividendSumEdit")
 
-        self.gridLayout_2.addWidget(self.DividendSumEdit, 6, 1, 1, 1)
-
-        self.DivDateLbl = QLabel(self.DividendDetailsTab)
-        self.DivDateLbl.setObjectName(u"DivDateLbl")
-
-        self.gridLayout_2.addWidget(self.DivDateLbl, 2, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.DividendSumEdit, 7, 1, 1, 1)
 
         self.SumLbl = QLabel(self.DividendDetailsTab)
         self.SumLbl.setObjectName(u"SumLbl")
 
-        self.gridLayout_2.addWidget(self.SumLbl, 6, 0, 1, 1)
-
-        self.DividendSumDescription = QLineEdit(self.DividendDetailsTab)
-        self.DividendSumDescription.setObjectName(u"DividendSumDescription")
-
-        self.gridLayout_2.addWidget(self.DividendSumDescription, 6, 2, 1, 1)
-
-        self.DividendNumberEdit = QLineEdit(self.DividendDetailsTab)
-        self.DividendNumberEdit.setObjectName(u"DividendNumberEdit")
-
-        self.gridLayout_2.addWidget(self.DividendNumberEdit, 2, 2, 1, 1)
+        self.gridLayout_2.addWidget(self.SumLbl, 7, 0, 1, 1)
 
         self.TaxLbl = QLabel(self.DividendDetailsTab)
         self.TaxLbl.setObjectName(u"TaxLbl")
 
-        self.gridLayout_2.addWidget(self.TaxLbl, 7, 0, 1, 1)
-
-        self.DividendTaxDescription = QLineEdit(self.DividendDetailsTab)
-        self.DividendTaxDescription.setObjectName(u"DividendTaxDescription")
-
-        self.gridLayout_2.addWidget(self.DividendTaxDescription, 7, 2, 1, 1)
-
-        self.DividendActiveLbl = QLineEdit(self.DividendDetailsTab)
-        self.DividendActiveLbl.setObjectName(u"DividendActiveLbl")
-        self.DividendActiveLbl.setEnabled(True)
-
-        self.gridLayout_2.addWidget(self.DividendActiveLbl, 5, 2, 1, 1)
-
-        self.DividendTaxEdit = QLineEdit(self.DividendDetailsTab)
-        self.DividendTaxEdit.setObjectName(u"DividendTaxEdit")
-
-        self.gridLayout_2.addWidget(self.DividendTaxEdit, 7, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.TaxLbl, 8, 0, 1, 1)
 
         self.DivAccountLbl = QLabel(self.DividendDetailsTab)
         self.DivAccountLbl.setObjectName(u"DivAccountLbl")
 
-        self.gridLayout_2.addWidget(self.DivAccountLbl, 0, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.DivAccountLbl, 1, 0, 1, 1)
 
         self.label = QLabel(self.DividendDetailsTab)
         self.label.setObjectName(u"label")
 
-        self.gridLayout_2.addWidget(self.label, 5, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.label, 6, 0, 1, 1)
 
-        self.DividendTimestampEdit = QDateTimeEdit(self.DividendDetailsTab)
-        self.DividendTimestampEdit.setObjectName(u"DividendTimestampEdit")
-        self.DividendTimestampEdit.setCalendarPopup(True)
+        self.DividendTaxDescription = QLineEdit(self.DividendDetailsTab)
+        self.DividendTaxDescription.setObjectName(u"DividendTaxDescription")
 
-        self.gridLayout_2.addWidget(self.DividendTimestampEdit, 2, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.DividendTaxDescription, 8, 2, 1, 1)
+
+        self.DividendTaxEdit = QLineEdit(self.DividendDetailsTab)
+        self.DividendTaxEdit.setObjectName(u"DividendTaxEdit")
+
+        self.gridLayout_2.addWidget(self.DividendTaxEdit, 8, 1, 1, 1)
 
         self.frame = QFrame(self.DividendDetailsTab)
         self.frame.setObjectName(u"frame")
+        sizePolicy3 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
+        self.frame.setSizePolicy(sizePolicy3)
         self.frame.setFrameShape(QFrame.Panel)
         self.frame.setFrameShadow(QFrame.Plain)
         self.frame.setLineWidth(0)
@@ -306,17 +284,42 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_5.addWidget(self.DividendCommitBtn)
 
 
-        self.gridLayout_2.addWidget(self.frame, 0, 2, 1, 1)
+        self.gridLayout_2.addWidget(self.frame, 1, 2, 1, 1)
+
+        self.DividendSumDescription = QLineEdit(self.DividendDetailsTab)
+        self.DividendSumDescription.setObjectName(u"DividendSumDescription")
+
+        self.gridLayout_2.addWidget(self.DividendSumDescription, 7, 2, 1, 1)
+
+        self.DividendNumberEdit = QLineEdit(self.DividendDetailsTab)
+        self.DividendNumberEdit.setObjectName(u"DividendNumberEdit")
+
+        self.gridLayout_2.addWidget(self.DividendNumberEdit, 3, 2, 1, 1)
+
+        self.DividendTimestampEdit = QDateTimeEdit(self.DividendDetailsTab)
+        self.DividendTimestampEdit.setObjectName(u"DividendTimestampEdit")
+        self.DividendTimestampEdit.setCalendarPopup(True)
+
+        self.gridLayout_2.addWidget(self.DividendTimestampEdit, 3, 1, 1, 1)
 
         self.DividendAccountWidget = AccountSelector(self.DividendDetailsTab)
         self.DividendAccountWidget.setObjectName(u"DividendAccountWidget")
 
-        self.gridLayout_2.addWidget(self.DividendAccountWidget, 0, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.DividendAccountWidget, 1, 1, 1, 1)
+
+        self.DivDateLbl = QLabel(self.DividendDetailsTab)
+        self.DivDateLbl.setObjectName(u"DivDateLbl")
+
+        self.gridLayout_2.addWidget(self.DivDateLbl, 3, 0, 1, 1)
+
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_2.addItem(self.verticalSpacer, 0, 0, 1, 1)
 
         self.DividendActiveWidget = ActiveSelector(self.DividendDetailsTab)
         self.DividendActiveWidget.setObjectName(u"DividendActiveWidget")
 
-        self.gridLayout_2.addWidget(self.DividendActiveWidget, 5, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.DividendActiveWidget, 6, 1, 1, 2)
 
         self.OperationsTabs.addTab(self.DividendDetailsTab, "")
 
@@ -392,16 +395,16 @@ class Ui_LedgerMainWindow(object):
         self.ChooseAccountBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"All", None))
         self.OperationsTabs.setTabText(self.OperationsTabs.indexOf(self.ActionDetailsTab), QCoreApplication.translate("LedgerMainWindow", u"Income / Spending", None))
         self.OperationsTabs.setTabText(self.OperationsTabs.indexOf(self.TradeDetailsTab), QCoreApplication.translate("LedgerMainWindow", u"Buy / Sell", None))
-        self.DivDateLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Timestamp", None))
         self.SumLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Sum", None))
         self.TaxLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Tax", None))
         self.DivAccountLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Account:", None))
         self.label.setText(QCoreApplication.translate("LedgerMainWindow", u"Security", None))
-        self.DividendTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.DividendAppendBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Add", None))
         self.DividendRemoveBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Del", None))
         self.DividendCopyBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Copy", None))
         self.DividendCommitBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Commit", None))
+        self.DividendTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
+        self.DivDateLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Timestamp", None))
         self.OperationsTabs.setTabText(self.OperationsTabs.indexOf(self.DividendDetailsTab), QCoreApplication.translate("LedgerMainWindow", u"Dividend", None))
         self.MainTabs.setTabText(self.MainTabs.indexOf(self.TabMain), QCoreApplication.translate("LedgerMainWindow", u"Balance", None))
         self.MainTabs.setTabText(self.MainTabs.indexOf(self.TabTransactions), QCoreApplication.translate("LedgerMainWindow", u"Transactions", None))

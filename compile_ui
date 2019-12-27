@@ -3,3 +3,7 @@ uic -g python -o ./ui_main_window.py ./UI/main_window.ui
 uic -g python -o ./ui_rebuild_window.py ./UI/rebuild_window.ui
 uic -g python -o ./ui_account_choice_dlg.py ./UI/account_choice_dlg.ui
 uic -g python -o ./ui_active_choice_dlg.py ./UI/active_choice_dlg.ui
+
+sed -i 's/QString()/""/g' ./ui_main_window.py
+sed -i 's/import AccountSelector/from CustomUI.account_select import AccountSelector/g' ./ui_main_window.py
+sed -i 's/import ActiveSelector/from CustomUI.active_select import ActiveSelector/g' ./ui_main_window.py
