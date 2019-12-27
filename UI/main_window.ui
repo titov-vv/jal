@@ -481,9 +481,6 @@
                       </property>
                      </widget>
                     </item>
-                    <item row="0" column="1">
-                     <widget class="QComboBox" name="DividendAccountCombo"/>
-                    </item>
                     <item row="7" column="1">
                      <widget class="QLineEdit" name="DividendTaxEdit"/>
                     </item>
@@ -510,9 +507,6 @@
                        <bool>true</bool>
                       </property>
                      </widget>
-                    </item>
-                    <item row="5" column="1">
-                     <widget class="QComboBox" name="DividendActiveCombo"/>
                     </item>
                     <item row="0" column="2">
                      <widget class="QFrame" name="frame">
@@ -572,8 +566,11 @@
                       </layout>
                      </widget>
                     </item>
-                    <item row="1" column="1">
+                    <item row="0" column="1">
                      <widget class="AccountSelector" name="DividendAccountWidget" native="true"/>
+                    </item>
+                    <item row="5" column="1">
+                     <widget class="ActiveSelector" name="DividendActiveWidget" native="true"/>
                     </item>
                    </layout>
                   </widget>
@@ -659,6 +656,12 @@
    <class>AccountSelector</class>
    <extends>QWidget</extends>
    <header>CustomUI/account_select.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ActiveSelector</class>
+   <extends>QWidget</extends>
+   <header>CustomUI/active_selector.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

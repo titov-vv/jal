@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>AccountChoiceDlg</class>
- <widget class="QDialog" name="AccountChoiceDlg">
+ <class>ActiveChoiceDlg</class>
+ <widget class="QDialog" name="ActiveChoiceDlg">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Choose Account</string>
+   <string>Choose Active</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
@@ -57,27 +57,20 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QLabel" name="AccountTypeLbl">
+       <widget class="QLabel" name="ActiveTypeLbl">
         <property name="text">
-         <string>Account Type:</string>
+         <string>Active Type:</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QComboBox" name="AccountTypeCombo"/>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="ShowInactive">
-        <property name="text">
-         <string>Show inactive</string>
-        </property>
-       </widget>
+       <widget class="QComboBox" name="ActiveTypeCombo"/>
       </item>
      </layout>
     </widget>
    </item>
    <item>
-    <widget class="QTableView" name="AccountsList"/>
+    <widget class="QTableView" name="ActivesList"/>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
@@ -96,7 +89,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>AccountChoiceDlg</receiver>
+   <receiver>ActiveChoiceDlg</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -112,7 +105,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>AccountChoiceDlg</receiver>
+   <receiver>ActiveChoiceDlg</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

@@ -22,9 +22,14 @@ class Ui_AccountChoiceDlg(object):
         AccountChoiceDlg.resize(400, 300)
         self.verticalLayout = QVBoxLayout(AccountChoiceDlg)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout.setContentsMargins(2, 2, 2, 2)
         self.frame = QFrame(AccountChoiceDlg)
         self.frame.setObjectName(u"frame")
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
+        self.frame.setSizePolicy(sizePolicy)
         self.frame.setFrameShape(QFrame.Panel)
         self.frame.setFrameShadow(QFrame.Plain)
         self.frame.setLineWidth(0)
@@ -40,6 +45,11 @@ class Ui_AccountChoiceDlg(object):
         self.AccountTypeCombo.setObjectName(u"AccountTypeCombo")
 
         self.horizontalLayout.addWidget(self.AccountTypeCombo)
+
+        self.ShowInactive = QCheckBox(self.frame)
+        self.ShowInactive.setObjectName(u"ShowInactive")
+
+        self.horizontalLayout.addWidget(self.ShowInactive)
 
 
         self.verticalLayout.addWidget(self.frame)
@@ -67,5 +77,6 @@ class Ui_AccountChoiceDlg(object):
     def retranslateUi(self, AccountChoiceDlg):
         AccountChoiceDlg.setWindowTitle(QCoreApplication.translate("AccountChoiceDlg", u"Choose Account", None))
         self.AccountTypeLbl.setText(QCoreApplication.translate("AccountChoiceDlg", u"Account Type:", None))
+        self.ShowInactive.setText(QCoreApplication.translate("AccountChoiceDlg", u"Show inactive", None))
     # retranslateUi
 

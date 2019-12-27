@@ -3,6 +3,7 @@ from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtCore import Signal, Property, Slot
 from ui_account_choice_dlg import Ui_AccountChoiceDlg
 
+#TODO clean-up columns
 class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
     def __init__(self):
         QDialog.__init__(self)
@@ -26,10 +27,11 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
         selected_row = idx[0].row()
         self.account_id = self.AccountsList.model().record(selected_row).value(0)
 
+#TODO: Add autocomplete feature
 class AccountSelector(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
-        self.acc_id = 0
+        self.p_account_id = 0
 
         self.layout = QHBoxLayout()
         self.layout.setMargin(0)
@@ -46,10 +48,10 @@ class AccountSelector(QWidget):
         self.dialog = AccountChoiceDlg()
 
     def getId(self):
-        return self.acc_id
+        return self.p_account_id
 
     def setId(self, id):
-        self.acc_id = id
+        self.p_account_id = id
         self.Model.setFilter(f"accounts.id={id}")
         row_idx = self.Model.index(0, 0).row()
         account_name = self.Model.record(row_idx).value(2)
@@ -87,4 +89,4 @@ class AccountSelector(QWidget):
         self.dialog.setGeometry(ref_point.x(), ref_point.y(), self.dialog.width(), self.dialog.height())
         res = self.dialog.exec_()
         if res:
-            self.setId(self.dialog.account_id)
+            self.account_id = self.dialog.account_id

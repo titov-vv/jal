@@ -16,6 +16,7 @@ from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QFont,
 from PySide2.QtWidgets import *
 
 from CustomUI.account_select import AccountSelector
+from CustomUI.active_select import  ActiveSelector
 
 class Ui_LedgerMainWindow(object):
     def setupUi(self, LedgerMainWindow):
@@ -254,11 +255,6 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_2.addWidget(self.DividendActiveLbl, 5, 2, 1, 1)
 
-        self.DividendAccountCombo = QComboBox(self.DividendDetailsTab)
-        self.DividendAccountCombo.setObjectName(u"DividendAccountCombo")
-
-        self.gridLayout_2.addWidget(self.DividendAccountCombo, 0, 1, 1, 1)
-
         self.DividendTaxEdit = QLineEdit(self.DividendDetailsTab)
         self.DividendTaxEdit.setObjectName(u"DividendTaxEdit")
 
@@ -279,11 +275,6 @@ class Ui_LedgerMainWindow(object):
         self.DividendTimestampEdit.setCalendarPopup(True)
 
         self.gridLayout_2.addWidget(self.DividendTimestampEdit, 2, 1, 1, 1)
-
-        self.DividendActiveCombo = QComboBox(self.DividendDetailsTab)
-        self.DividendActiveCombo.setObjectName(u"DividendActiveCombo")
-
-        self.gridLayout_2.addWidget(self.DividendActiveCombo, 5, 1, 1, 1)
 
         self.frame = QFrame(self.DividendDetailsTab)
         self.frame.setObjectName(u"frame")
@@ -320,7 +311,12 @@ class Ui_LedgerMainWindow(object):
         self.DividendAccountWidget = AccountSelector(self.DividendDetailsTab)
         self.DividendAccountWidget.setObjectName(u"DividendAccountWidget")
 
-        self.gridLayout_2.addWidget(self.DividendAccountWidget, 1, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.DividendAccountWidget, 0, 1, 1, 1)
+
+        self.DividendActiveWidget = ActiveSelector(self.DividendDetailsTab)
+        self.DividendActiveWidget.setObjectName(u"DividendActiveWidget")
+
+        self.gridLayout_2.addWidget(self.DividendActiveWidget, 5, 1, 1, 1)
 
         self.OperationsTabs.addTab(self.DividendDetailsTab, "")
 

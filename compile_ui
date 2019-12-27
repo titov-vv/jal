@@ -2,3 +2,4 @@
 uic -g python -o ./ui_main_window.py ./UI/main_window.ui
 uic -g python -o ./ui_rebuild_window.py ./UI/rebuild_window.ui
 uic -g python -o ./ui_account_choice_dlg.py ./UI/account_choice_dlg.ui
+uic -g python -o ./ui_active_choice_dlg.py ./UI/active_choice_dlg.ui
