@@ -12,7 +12,6 @@ class OperationsTimestampDelegate(QStyledItemDelegate):
         return datetime.fromtimestamp(value).strftime('%d/%m/%Y %H:%M:%S')
 
     def sizeHint(self, option, index):
-        print("AAA")
         fontMetrics = option.fontMetrics
         value = index.model().data(index)
         text = datetime.fromtimestamp(value).strftime('%d/%m/%Y %H:%M:%S')

@@ -154,7 +154,14 @@
                 <number>2</number>
                </property>
                <item>
-                <widget class="QDateEdit" name="BalanceDate"/>
+                <widget class="QDateEdit" name="BalanceDate">
+                 <property name="displayFormat">
+                  <string>dd/MM/yyyy</string>
+                 </property>
+                 <property name="calendarPopup">
+                  <bool>true</bool>
+                 </property>
+                </widget>
                </item>
                <item>
                 <widget class="QLabel" name="CurrencyLbl">
@@ -351,13 +358,13 @@
                <property name="minimumSize">
                 <size>
                  <width>0</width>
-                 <height>200</height>
+                 <height>100</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
                  <width>16777215</width>
-                 <height>300</height>
+                 <height>250</height>
                 </size>
                </property>
                <property name="frameShape">
@@ -387,7 +394,7 @@
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
-                    <height>100</height>
+                    <height>0</height>
                    </size>
                   </property>
                   <property name="tabPosition">
@@ -434,10 +441,13 @@
                     <string>Dividend</string>
                    </attribute>
                    <layout class="QGridLayout" name="gridLayout_2">
-                    <item row="7" column="0">
-                     <widget class="QLabel" name="TaxLbl">
+                    <item row="5" column="3">
+                     <widget class="QLineEdit" name="DividendSumEdit"/>
+                    </item>
+                    <item row="1" column="0">
+                     <widget class="QLabel" name="DivDateLbl">
                       <property name="text">
-                       <string>Tax</string>
+                       <string>Timestamp</string>
                       </property>
                      </widget>
                     </item>
@@ -448,28 +458,27 @@
                       </property>
                      </widget>
                     </item>
-                    <item row="5" column="3">
-                     <widget class="QLineEdit" name="DividendSumEdit"/>
+                    <item row="5" column="4">
+                     <widget class="QLineEdit" name="DividendSumDescription"/>
                     </item>
-                    <item row="4" column="3">
-                     <widget class="QComboBox" name="DividendActiveCombo"/>
+                    <item row="1" column="4">
+                     <widget class="QLineEdit" name="DividendNumberEdit"/>
                     </item>
-                    <item row="0" column="4">
-                     <widget class="QPushButton" name="CommitBtn">
+                    <item row="7" column="0">
+                     <widget class="QLabel" name="TaxLbl">
                       <property name="text">
-                       <string>Commit</string>
+                       <string>Tax</string>
                       </property>
                      </widget>
+                    </item>
+                    <item row="7" column="4">
+                     <widget class="QLineEdit" name="DividendTaxDescription"/>
                     </item>
                     <item row="0" column="3">
                      <widget class="QComboBox" name="DividendAccountCombo"/>
                     </item>
-                    <item row="2" column="0">
-                     <widget class="QLabel" name="DivNumberLbl">
-                      <property name="text">
-                       <string>Number</string>
-                      </property>
-                     </widget>
+                    <item row="7" column="3">
+                     <widget class="QLineEdit" name="DividendTaxEdit"/>
                     </item>
                     <item row="0" column="0">
                      <widget class="QLabel" name="DivAccountLbl">
@@ -477,12 +486,6 @@
                        <string>Account:</string>
                       </property>
                      </widget>
-                    </item>
-                    <item row="5" column="4">
-                     <widget class="QLineEdit" name="DividendSumDescription"/>
-                    </item>
-                    <item row="7" column="4">
-                     <widget class="QLineEdit" name="DividendTaxDescription"/>
                     </item>
                     <item row="4" column="4">
                      <widget class="QLabel" name="DividendActiveLbl">
@@ -498,24 +501,75 @@
                       </property>
                      </widget>
                     </item>
-                    <item row="2" column="3">
-                     <widget class="QLineEdit" name="DividendNumberEdit"/>
-                    </item>
-                    <item row="7" column="3">
-                     <widget class="QLineEdit" name="DividendTaxEdit"/>
-                    </item>
                     <item row="1" column="3">
                      <widget class="QDateTimeEdit" name="DividendTimestampEdit">
                       <property name="displayFormat">
                        <string>dd/MM/yyyy hh:mm:ss</string>
                       </property>
+                      <property name="calendarPopup">
+                       <bool>true</bool>
+                      </property>
                      </widget>
                     </item>
-                    <item row="1" column="0">
-                     <widget class="QLabel" name="DivDateLbl">
-                      <property name="text">
-                       <string>Timestamp</string>
+                    <item row="4" column="3">
+                     <widget class="QComboBox" name="DividendActiveCombo"/>
+                    </item>
+                    <item row="0" column="4">
+                     <widget class="QFrame" name="frame">
+                      <property name="frameShape">
+                       <enum>QFrame::Panel</enum>
                       </property>
+                      <property name="frameShadow">
+                       <enum>QFrame::Plain</enum>
+                      </property>
+                      <property name="lineWidth">
+                       <number>0</number>
+                      </property>
+                      <layout class="QHBoxLayout" name="horizontalLayout_5">
+                       <property name="spacing">
+                        <number>2</number>
+                       </property>
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <item>
+                        <widget class="QPushButton" name="DividendAppendBtn">
+                         <property name="text">
+                          <string>Add</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="DividendRemoveBtn">
+                         <property name="text">
+                          <string>Del</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="DividendCopyBtn">
+                         <property name="text">
+                          <string>Copy</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QPushButton" name="DividendCommitBtn">
+                         <property name="text">
+                          <string>Commit</string>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
                      </widget>
                     </item>
                    </layout>

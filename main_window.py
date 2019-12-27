@@ -33,8 +33,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.db.close()
 
     def ConfigureUI(self):
-        self.BalanceDate.setCalendarPopup(True)
-        self.BalanceDate.setDisplayFormat("dd/MM/yyyy")
         self.BalanceDate.setDateTime(QtCore.QDateTime.currentDateTime())
 
         self.CurrencyNameQuery = QSqlQuery(self.db)
@@ -91,7 +89,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         # self.trades_mapper.addMapping(self.TradeAccountCombo, account_idx)
         # self.trades_mapper.addMapping(self.TradeNumberEdit, self.TradesModel.fieldIndex("number"))
 
-        self.DividendTimestampEdit.setCalendarPopup(True)
         self.DividendsModel = QSqlRelationalTableModel(db=self.db)
         self.DividendsModel.setTable("dividends")
         self.DividendsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
@@ -134,7 +131,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.CurrencyCombo.currentIndexChanged.connect(self.OnBalanceCurrencyChange)
         self.ShowInactiveCheckBox.stateChanged.connect(self.OnBalanceInactiveChange)
         self.DateRangeCombo.currentIndexChanged.connect(self.OnOperationsRangeChange)
-        self.CommitBtn.clicked.connect(self.OnDividendCommit)
+        self.DividendCommitBtn.clicked.connect(self.OnDividendCommit)
+        self.DividendAppendBtn.clicked.connect(self.OnDividendAppend)
+        self.DividendRemoveBtn.clicked.connect(self.OnDividendRemove)
         # TABLE ACTIONS
         self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
 
@@ -230,6 +229,22 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def OnDividendCommit(self):
+        self.dividend_mapper.submit()
+        self.DividendsModel.submitAll()
+        self.OperationsModel.select()
+
+    @Slot()
+    def OnDividendAppend(self):
+        row = self.dividend_mapper.currentIndex()
+        self.dividend_mapper.submit()
+        self.DividendsModel.insertRow(row)
+        self.dividend_mapper.setCurrentIndex(row)
+
+    @Slot()
+    def OnDividendRemove(self):
+        row = self.dividend_mapper.currentIndex()
+        self.dividend_mapper.submit()
+        self.DividendsModel.removeRow(row)
         self.dividend_mapper.submit()
         self.DividendsModel.submitAll()
         self.OperationsModel.select()
