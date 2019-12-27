@@ -14,6 +14,7 @@ from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QFont,
     QFontDatabase, QIcon, QLinearGradient, QPalette, QPainter, QPixmap,
     QRadialGradient)
 from PySide2.QtWidgets import *
+
 from CustomUI.account_select import AccountSelector
 
 class Ui_LedgerMainWindow(object):
@@ -215,27 +216,27 @@ class Ui_LedgerMainWindow(object):
         self.DividendSumEdit = QLineEdit(self.DividendDetailsTab)
         self.DividendSumEdit.setObjectName(u"DividendSumEdit")
 
-        self.gridLayout_2.addWidget(self.DividendSumEdit, 5, 2, 1, 1)
+        self.gridLayout_2.addWidget(self.DividendSumEdit, 6, 1, 1, 1)
 
         self.DivDateLbl = QLabel(self.DividendDetailsTab)
         self.DivDateLbl.setObjectName(u"DivDateLbl")
 
-        self.gridLayout_2.addWidget(self.DivDateLbl, 1, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.DivDateLbl, 2, 0, 1, 1)
 
         self.SumLbl = QLabel(self.DividendDetailsTab)
         self.SumLbl.setObjectName(u"SumLbl")
 
-        self.gridLayout_2.addWidget(self.SumLbl, 5, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.SumLbl, 6, 0, 1, 1)
 
         self.DividendSumDescription = QLineEdit(self.DividendDetailsTab)
         self.DividendSumDescription.setObjectName(u"DividendSumDescription")
 
-        self.gridLayout_2.addWidget(self.DividendSumDescription, 5, 3, 1, 1)
+        self.gridLayout_2.addWidget(self.DividendSumDescription, 6, 2, 1, 1)
 
         self.DividendNumberEdit = QLineEdit(self.DividendDetailsTab)
         self.DividendNumberEdit.setObjectName(u"DividendNumberEdit")
 
-        self.gridLayout_2.addWidget(self.DividendNumberEdit, 1, 3, 1, 1)
+        self.gridLayout_2.addWidget(self.DividendNumberEdit, 2, 2, 1, 1)
 
         self.TaxLbl = QLabel(self.DividendDetailsTab)
         self.TaxLbl.setObjectName(u"TaxLbl")
@@ -245,23 +246,23 @@ class Ui_LedgerMainWindow(object):
         self.DividendTaxDescription = QLineEdit(self.DividendDetailsTab)
         self.DividendTaxDescription.setObjectName(u"DividendTaxDescription")
 
-        self.gridLayout_2.addWidget(self.DividendTaxDescription, 7, 3, 1, 1)
+        self.gridLayout_2.addWidget(self.DividendTaxDescription, 7, 2, 1, 1)
 
         self.DividendActiveLbl = QLineEdit(self.DividendDetailsTab)
         self.DividendActiveLbl.setObjectName(u"DividendActiveLbl")
         self.DividendActiveLbl.setEnabled(True)
 
-        self.gridLayout_2.addWidget(self.DividendActiveLbl, 4, 3, 1, 1)
+        self.gridLayout_2.addWidget(self.DividendActiveLbl, 5, 2, 1, 1)
 
         self.DividendAccountCombo = QComboBox(self.DividendDetailsTab)
         self.DividendAccountCombo.setObjectName(u"DividendAccountCombo")
 
-        self.gridLayout_2.addWidget(self.DividendAccountCombo, 0, 2, 1, 1)
+        self.gridLayout_2.addWidget(self.DividendAccountCombo, 0, 1, 1, 1)
 
         self.DividendTaxEdit = QLineEdit(self.DividendDetailsTab)
         self.DividendTaxEdit.setObjectName(u"DividendTaxEdit")
 
-        self.gridLayout_2.addWidget(self.DividendTaxEdit, 7, 2, 1, 1)
+        self.gridLayout_2.addWidget(self.DividendTaxEdit, 7, 1, 1, 1)
 
         self.DivAccountLbl = QLabel(self.DividendDetailsTab)
         self.DivAccountLbl.setObjectName(u"DivAccountLbl")
@@ -271,18 +272,18 @@ class Ui_LedgerMainWindow(object):
         self.label = QLabel(self.DividendDetailsTab)
         self.label.setObjectName(u"label")
 
-        self.gridLayout_2.addWidget(self.label, 4, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.label, 5, 0, 1, 1)
 
         self.DividendTimestampEdit = QDateTimeEdit(self.DividendDetailsTab)
         self.DividendTimestampEdit.setObjectName(u"DividendTimestampEdit")
         self.DividendTimestampEdit.setCalendarPopup(True)
 
-        self.gridLayout_2.addWidget(self.DividendTimestampEdit, 1, 2, 1, 1)
+        self.gridLayout_2.addWidget(self.DividendTimestampEdit, 2, 1, 1, 1)
 
         self.DividendActiveCombo = QComboBox(self.DividendDetailsTab)
         self.DividendActiveCombo.setObjectName(u"DividendActiveCombo")
 
-        self.gridLayout_2.addWidget(self.DividendActiveCombo, 4, 2, 1, 1)
+        self.gridLayout_2.addWidget(self.DividendActiveCombo, 5, 1, 1, 1)
 
         self.frame = QFrame(self.DividendDetailsTab)
         self.frame.setObjectName(u"frame")
@@ -314,12 +315,12 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_5.addWidget(self.DividendCommitBtn)
 
 
-        self.gridLayout_2.addWidget(self.frame, 0, 3, 1, 1)
+        self.gridLayout_2.addWidget(self.frame, 0, 2, 1, 1)
 
-        self.test = AccountSelector(self.DividendDetailsTab)
-        self.test.setObjectName(u"test")
+        self.DividendAccountWidget = AccountSelector(self.DividendDetailsTab)
+        self.DividendAccountWidget.setObjectName(u"DividendAccountWidget")
 
-        self.gridLayout_2.addWidget(self.test, 8, 2, 1, 1)
+        self.gridLayout_2.addWidget(self.DividendAccountWidget, 1, 1, 1, 1)
 
         self.OperationsTabs.addTab(self.DividendDetailsTab, "")
 

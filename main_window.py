@@ -105,16 +105,18 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         ###############################################################################################
         # CONFIGURE DIVIDENDS TAB                                                                     #
         ###############################################################################################
+        self.DividendAccountWidget.init_DB(self.db)
+
         self.DividendsModel = QSqlRelationalTableModel(db=self.db)
         self.DividendsModel.setTable("dividends")
         self.DividendsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         account_idx = self.DividendsModel.fieldIndex("account_id")
         active_idx = self.DividendsModel.fieldIndex("active_id")
-        self.DividendsModel.setRelation(account_idx, QSqlRelation("accounts", "id", "name"))
+        #self.DividendsModel.setRelation(account_idx, QSqlRelation("accounts", "id", "name"))
         self.DividendsModel.setRelation(active_idx, QSqlRelation("actives", "id", "name"))
         self.DividendsModel.select()
-        self.DividendAccountCombo.setModel(self.DividendsModel.relationModel(account_idx))
-        self.DividendAccountCombo.setModelColumn(self.DividendsModel.relationModel(account_idx).fieldIndex("name"))
+        #self.DividendAccountCombo.setModel(self.DividendsModel.relationModel(account_idx))
+        #self.DividendAccountCombo.setModelColumn(self.DividendsModel.relationModel(account_idx).fieldIndex("name"))
         self.DividendActiveCombo.setModel(self.DividendsModel.relationModel(active_idx))
         self.DividendActiveCombo.setModelColumn(self.DividendsModel.relationModel(active_idx).fieldIndex("name"))
 
@@ -125,7 +127,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.dividend_mapper.setSubmitPolicy(QDataWidgetMapper.ManualSubmit)
         self.dividend_mapper.setItemDelegate(DividendSqlDelegate(self.dividend_mapper))
         self.dividend_mapper.addMapping(self.DividendAccountCombo, account_idx)
-        self.dividend_mapper.addMapping(self.DividendActiveCombo, active_idx)
+        id_property_name = QByteArray()
+        id_property_name.resize(10)
+        id_property_name.setRawData("account_id", 10)
+        self.dividend_mapper.addMapping(self.DividendAccountWidget, account_idx, id_property_name) #"account_id")
+        #self.dividend_mapper.addMapping(self.DividendActiveCombo, active_idx)
         self.dividend_mapper.addMapping(self.DividendTimestampEdit, self.DividendsModel.fieldIndex("timestamp"))
         self.dividend_mapper.addMapping(self.DividendNumberEdit, self.DividendsModel.fieldIndex("number"))
         self.dividend_mapper.addMapping(self.DividendSumEdit, self.DividendsModel.fieldIndex("sum"))
