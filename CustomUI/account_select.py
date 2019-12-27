@@ -1,19 +1,30 @@
-from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton
+from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QAbstractItemView
 from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation
-from PySide2.QtCore import Signal, Property
+from PySide2.QtCore import Signal, Property, Slot
 from ui_account_choice_dlg import Ui_AccountChoiceDlg
 
 class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
     def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)
+        self.account_id = 0
 
+    def Activate(self):
         self.AccountTypeCombo.currentIndexChanged.connect(self.OnApplyFilter)
+        self.AccountsList.selectionModel().selectionChanged.connect(self.OnAccountChosen)
 
+#TODO: Make filter for inactive accounts
+    @Slot()
     def OnApplyFilter(self, list_id):
         model = self.AccountTypeCombo.model()
         id = model.data(model.index(list_id, 0))  # 0 is a field number for "id"
         self.AccountsList.model().setFilter(f"accounts.type_id={id}")
+
+    @Slot()
+    def OnAccountChosen(self, selected, deselected):
+        idx = selected.indexes()
+        selected_row = idx[0].row()
+        self.account_id = self.AccountsList.model().record(selected_row).value(0)
 
 class AccountSelector(QWidget):
     def __init__(self, parent=None):
@@ -22,12 +33,9 @@ class AccountSelector(QWidget):
 
         self.layout = QHBoxLayout()
         self.layout.setMargin(0)
-        self.symbol = QLineEdit()
-        self.symbol.setText("Ticker")
-        self.layout.addWidget(self.symbol)
-        self.full_name = QLabel()
-        self.full_name.setText("Full security name")
-        self.layout.addWidget(self.full_name)
+        self.name = QLineEdit()
+        self.name.setText("Account name")
+        self.layout.addWidget(self.name)
         self.button = QPushButton("...")
         self.button.setFixedWidth(self.button.fontMetrics().width(" ... "))
         self.layout.addWidget(self.button)
@@ -42,7 +50,11 @@ class AccountSelector(QWidget):
 
     def setId(self, id):
         self.acc_id = id
-        self.symbol.setText("ID: {}".format(id))
+        self.Model.setFilter(f"accounts.id={id}")
+        row_idx = self.Model.index(0, 0).row()
+        account_name = self.Model.record(row_idx).value(2)
+        self.name.setText(account_name)
+        self.Model.setFilter("")
 
     @Signal
     def account_id_changed(self):
@@ -54,6 +66,7 @@ class AccountSelector(QWidget):
         self.db = db
         self.Model = QSqlRelationalTableModel(db=self.db)
         self.Model.setTable("accounts")
+        self.Model.setJoinMode(QSqlRelationalTableModel.LeftJoin)   # to work correctly with NULL values in OrgId
         type_idx = self.Model.fieldIndex("type_id")
         self.Model.setRelation(type_idx, QSqlRelation("account_types", "id", "name"))
         currency_id = self.Model.fieldIndex("currency_id")
@@ -63,11 +76,15 @@ class AccountSelector(QWidget):
 
         self.dialog.AccountsList.setModel(self.Model)
         self.dialog.AccountsList.setColumnHidden(self.Model.fieldIndex("id"), True)
+        self.dialog.AccountsList.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.dialog.AccountTypeCombo.setModel(self.Model.relationModel(type_idx))
         self.dialog.AccountTypeCombo.setModelColumn(self.Model.relationModel(type_idx).fieldIndex("name"))
         self.Model.select()
+        self.dialog.Activate()
 
     def OnButtonClicked(self):
-        ref_point = self.mapToGlobal(self.symbol.geometry().bottomLeft())
+        ref_point = self.mapToGlobal(self.name.geometry().bottomLeft())
         self.dialog.setGeometry(ref_point.x(), ref_point.y(), self.dialog.width(), self.dialog.height())
-        self.dialog.exec_()
+        res = self.dialog.exec_()
+        if res:
+            self.setId(self.dialog.account_id)
