@@ -89,6 +89,22 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         # self.trades_mapper.addMapping(self.TradeAccountCombo, account_idx)
         # self.trades_mapper.addMapping(self.TradeNumberEdit, self.TradesModel.fieldIndex("number"))
 
+        # self.ActivesModel = QSqlTableModel(db=self.db)
+        # self.ActivesModel.setTable("actives")
+        # self.ActivesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        # self.ActivesModel.select()
+        # self.ActivesModel.fetchMore()
+        # self.ActivesMapper = QDataWidgetMapper(self)
+        # self.ActivesMapper.setModel(self.ActivesModel)
+        # self.ActivesMapper.setSubmitPolicy(QDataWidgetMapper.ManualSubmit)
+        # #label_property_name = QByteArray()
+        # #label_property_name.resize(4)
+        # #label_property_name.setRawData("text", 4)
+        # self.ActivesMapper.addMapping(self.DividendActiveLbl, self.ActivesModel.fieldIndex("full_name"))#, label_property_name)
+
+        ###############################################################################################
+        # CONFIGURE DIVIDENDS TAB                                                                     #
+        ###############################################################################################
         self.DividendsModel = QSqlRelationalTableModel(db=self.db)
         self.DividendsModel.setTable("dividends")
         self.DividendsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
@@ -100,7 +116,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DividendAccountCombo.setModel(self.DividendsModel.relationModel(account_idx))
         self.DividendAccountCombo.setModelColumn(self.DividendsModel.relationModel(account_idx).fieldIndex("name"))
         self.DividendActiveCombo.setModel(self.DividendsModel.relationModel(active_idx))
-        self.DividendActiveCombo.setModelColumn(1) #self.DividendsModel.relationModel(active_idx).fieldIndex("full_name"))
+        self.DividendActiveCombo.setModelColumn(self.DividendsModel.relationModel(active_idx).fieldIndex("name"))
 
         self.DividendsModel.relationModel(active_idx).fetchMore()
 
@@ -110,10 +126,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.dividend_mapper.setItemDelegate(DividendSqlDelegate(self.dividend_mapper))
         self.dividend_mapper.addMapping(self.DividendAccountCombo, account_idx)
         self.dividend_mapper.addMapping(self.DividendActiveCombo, active_idx)
-        label_property_name = QByteArray()
-        label_property_name.resize(4)
-        label_property_name.setRawData("text", 4)
-        self.dividend_mapper.addMapping(self.DividendActiveLbl, 4, label_property_name)  # self.DividendsModel.relationModel(active_idx).fieldIndex("name") -> 1 instead of 4?  And self.DividendsModel.fieldIndex("active_id") doesn't work at all
         self.dividend_mapper.addMapping(self.DividendTimestampEdit, self.DividendsModel.fieldIndex("timestamp"))
         self.dividend_mapper.addMapping(self.DividendNumberEdit, self.DividendsModel.fieldIndex("number"))
         self.dividend_mapper.addMapping(self.DividendSumEdit, self.DividendsModel.fieldIndex("sum"))
@@ -121,6 +133,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.dividend_mapper.addMapping(self.DividendTaxEdit, self.DividendsModel.fieldIndex("sum_tax"))
         self.dividend_mapper.addMapping(self.DividendTaxDescription, self.DividendsModel.fieldIndex("note_tax"))
 
+        ###############################################################################################
+        # CONFIGURE ACTIONS                                                                           #
+        ###############################################################################################
         # MENU ACTIONS
         self.actionExit.triggered.connect(qApp.quit)
         self.action_Import.triggered.connect(self.ImportFrom1C)
@@ -131,11 +146,12 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.CurrencyCombo.currentIndexChanged.connect(self.OnBalanceCurrencyChange)
         self.ShowInactiveCheckBox.stateChanged.connect(self.OnBalanceInactiveChange)
         self.DateRangeCombo.currentIndexChanged.connect(self.OnOperationsRangeChange)
+        # OPERATIONS TABLE ACTIONS
+        self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
+        # DIVIDEND TAB ACTIONS
         self.DividendCommitBtn.clicked.connect(self.OnDividendCommit)
         self.DividendAppendBtn.clicked.connect(self.OnDividendAppend)
         self.DividendRemoveBtn.clicked.connect(self.OnDividendRemove)
-        # TABLE ACTIONS
-        self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
 
     def ImportFrom1C(self):
         import_directory = QFileDialog.getExistingDirectory(self, "Select directory with data to import")
