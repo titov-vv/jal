@@ -11,6 +11,7 @@ from rebuild_window import RebuildDialog
 from balance_delegate import BalanceDelegate
 from operation_delegate import OperationsTimestampDelegate
 from dividend_delegate import DividendSqlDelegate
+from trade_delegate import TradeSqlDelegate
 
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def __init__(self):
@@ -75,32 +76,32 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         #self.OperationsTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.OperationsTableView.show()
 
-        # self.TradesModel = QSqlRelationalTableModel(db=self.db)
-        # self.TradesModel.setTable("trades")
-        # self.TradesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        # account_idx = self.TradesModel.fieldIndex("account_id")
-        # self.TradesModel.setRelation(account_idx, QSqlRelation("accounts", "id", "name"))
-        # self.TradesModel.select()
-        # self.TradeAccountCombo.setModel(self.TradesModel.relationModel(account_idx))
-        # self.TradeAccountCombo.setModelColumn(self.TradesModel.relationModel(account_idx).fieldIndex("name"))
-        #
-        # self.trades_mapper = QDataWidgetMapper(self)
-        # self.trades_mapper.setModel(self.TradesModel)
-        # self.trades_mapper.addMapping(self.TradeAccountCombo, account_idx)
-        # self.trades_mapper.addMapping(self.TradeNumberEdit, self.TradesModel.fieldIndex("number"))
+        ###############################################################################################
+        # CONFIGURE TRADES TAB                                                                        #
+        ###############################################################################################
+        self.TradeAccountWidget.init_DB(self.db)
+        self.TradeActiveWidget.init_DB(self.db)
 
-        # self.ActivesModel = QSqlTableModel(db=self.db)
-        # self.ActivesModel.setTable("actives")
-        # self.ActivesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        # self.ActivesModel.select()
-        # self.ActivesModel.fetchMore()
-        # self.ActivesMapper = QDataWidgetMapper(self)
-        # self.ActivesMapper.setModel(self.ActivesModel)
-        # self.ActivesMapper.setSubmitPolicy(QDataWidgetMapper.ManualSubmit)
-        # #label_property_name = QByteArray()
-        # #label_property_name.resize(4)
-        # #label_property_name.setRawData("text", 4)
-        # self.ActivesMapper.addMapping(self.DividendActiveLbl, self.ActivesModel.fieldIndex("full_name"))#, label_property_name)
+        self.TradesModel = QSqlRelationalTableModel(db=self.db)
+        self.TradesModel.setTable("trades")
+        self.TradesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        account_idx = self.TradesModel.fieldIndex("account_id")
+        active_idx = self.TradesModel.fieldIndex("active_id")
+        self.TradesModel.select()
+        self.TradesDataMapper = QDataWidgetMapper(self)
+        self.TradesDataMapper.setModel(self.TradesModel)
+        self.TradesDataMapper.setSubmitPolicy(QDataWidgetMapper.ManualSubmit)
+        self.TradesDataMapper.setItemDelegate(TradeSqlDelegate(self.TradesDataMapper))
+        self.TradesDataMapper.addMapping(self.TradeAccountWidget, account_idx, QByteArray().setRawData("account_id", 10))
+        self.TradesDataMapper.addMapping(self.TradeActiveWidget, active_idx, QByteArray().setRawData("active_id", 10))
+        self.TradesDataMapper.addMapping(self.TradeTimestampEdit, self.TradesModel.fieldIndex("timestamp"))
+        self.TradesDataMapper.addMapping(self.TradeSettlementEdit, self.TradesModel.fieldIndex("settlement"))
+        self.TradesDataMapper.addMapping(self.TradeNumberEdit, self.TradesModel.fieldIndex("number"))
+        self.TradesDataMapper.addMapping(self.TradePriceEdit, self.TradesModel.fieldIndex("price"))
+        self.TradesDataMapper.addMapping(self.TradeQtyEdit, self.TradesModel.fieldIndex("qty"))
+        self.TradesDataMapper.addMapping(self.TradeCouponEdit, self.TradesModel.fieldIndex("coupon"))
+        self.TradesDataMapper.addMapping(self.TradeBrokerFeeEdit, self.TradesModel.fieldIndex("fee_broker"))
+        self.TradesDataMapper.addMapping(self.TradeExchangeFeeEdit, self.TradesModel.fieldIndex("fee_exchange"))
 
         ###############################################################################################
         # CONFIGURE DIVIDENDS TAB                                                                     #
@@ -114,18 +115,18 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         account_idx = self.DividendsModel.fieldIndex("account_id")
         active_idx = self.DividendsModel.fieldIndex("active_id")
         self.DividendsModel.select()
-        self.dividend_mapper = QDataWidgetMapper(self)
-        self.dividend_mapper.setModel(self.DividendsModel)
-        self.dividend_mapper.setSubmitPolicy(QDataWidgetMapper.ManualSubmit)
-        self.dividend_mapper.setItemDelegate(DividendSqlDelegate(self.dividend_mapper))
-        self.dividend_mapper.addMapping(self.DividendAccountWidget, account_idx, QByteArray().setRawData("account_id", 10))
-        self.dividend_mapper.addMapping(self.DividendActiveWidget, active_idx, QByteArray().setRawData("active_id", 10))
-        self.dividend_mapper.addMapping(self.DividendTimestampEdit, self.DividendsModel.fieldIndex("timestamp"))
-        self.dividend_mapper.addMapping(self.DividendNumberEdit, self.DividendsModel.fieldIndex("number"))
-        self.dividend_mapper.addMapping(self.DividendSumEdit, self.DividendsModel.fieldIndex("sum"))
-        self.dividend_mapper.addMapping(self.DividendSumDescription, self.DividendsModel.fieldIndex("note"))
-        self.dividend_mapper.addMapping(self.DividendTaxEdit, self.DividendsModel.fieldIndex("sum_tax"))
-        self.dividend_mapper.addMapping(self.DividendTaxDescription, self.DividendsModel.fieldIndex("note_tax"))
+        self.DividendsDataMapper = QDataWidgetMapper(self)
+        self.DividendsDataMapper.setModel(self.DividendsModel)
+        self.DividendsDataMapper.setSubmitPolicy(QDataWidgetMapper.ManualSubmit)
+        self.DividendsDataMapper.setItemDelegate(DividendSqlDelegate(self.DividendsDataMapper))
+        self.DividendsDataMapper.addMapping(self.DividendAccountWidget, account_idx, QByteArray().setRawData("account_id", 10))
+        self.DividendsDataMapper.addMapping(self.DividendActiveWidget, active_idx, QByteArray().setRawData("active_id", 10))
+        self.DividendsDataMapper.addMapping(self.DividendTimestampEdit, self.DividendsModel.fieldIndex("timestamp"))
+        self.DividendsDataMapper.addMapping(self.DividendNumberEdit, self.DividendsModel.fieldIndex("number"))
+        self.DividendsDataMapper.addMapping(self.DividendSumEdit, self.DividendsModel.fieldIndex("sum"))
+        self.DividendsDataMapper.addMapping(self.DividendSumDescription, self.DividendsModel.fieldIndex("note"))
+        self.DividendsDataMapper.addMapping(self.DividendTaxEdit, self.DividendsModel.fieldIndex("sum_tax"))
+        self.DividendsDataMapper.addMapping(self.DividendTaxDescription, self.DividendsModel.fieldIndex("note_tax"))
 
         ###############################################################################################
         # CONFIGURE ACTIONS                                                                           #
@@ -205,18 +206,22 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def OnOperationChange(self, selected, deselected):
         idx = selected.indexes()
         selected_row = idx[0].row()
-        operation_type = self.OperationsModel.record(selected_row).value(0)
-        operation_id = self.OperationsModel.record(selected_row).value(1)
-        if (operation_type == 1):     # Income / Spending
-            self.OperationsTabs.setCurrentIndex(0)
+        operation_type = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("type"))
+        operation_id = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("id"))
+        transfer_id = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("qty_trid"))
+        if (operation_type == 1):
+            if (transfer_id == 0):    # Income / Spending
+                self.OperationsTabs.setCurrentIndex(0)
+            else:                     # Transfer
+                self.OperationsTabs.setCurrentIndex(3)
         elif (operation_type == 2):   # Dividend
             self.OperationsTabs.setCurrentIndex(2)
             self.DividendsModel.setFilter("dividends.id = {}".format(operation_id))
-            self.dividend_mapper.setCurrentModelIndex(self.dividend_mapper.model().index(0, 0))
+            self.DividendsDataMapper.setCurrentModelIndex(self.DividendsDataMapper.model().index(0, 0))
         elif (operation_type == 3):   # Trade
             self.OperationsTabs.setCurrentIndex(1)
             self.TradesModel.setFilter("trades.id = {}".format(operation_id))
-            self.trades_mapper.setCurrentModelIndex(self.trades_mapper.model().index(0,0))
+            self.TradesDataMapper.setCurrentModelIndex(self.TradesDataMapper.model().index(0,0))
         else:
             print("Unknown operation type", operation_type)
 
@@ -239,22 +244,22 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def OnDividendCommit(self):
-        self.dividend_mapper.submit()
+        self.DividendsDataMapper.submit()
         self.DividendsModel.submitAll()
         self.OperationsModel.select()
 
     @Slot()
     def OnDividendAppend(self):
-        row = self.dividend_mapper.currentIndex()
-        self.dividend_mapper.submit()
+        row = self.DividendsDataMapper.currentIndex()
+        self.DividendsDataMapper.submit()
         self.DividendsModel.insertRow(row)
-        self.dividend_mapper.setCurrentIndex(row)
+        self.DividendsDataMapper.setCurrentIndex(row)
 
     @Slot()
     def OnDividendRemove(self):
-        row = self.dividend_mapper.currentIndex()
-        self.dividend_mapper.submit()
+        row = self.DividendsDataMapper.currentIndex()
+        self.DividendsDataMapper.submit()
         self.DividendsModel.removeRow(row)
-        self.dividend_mapper.submit()
+        self.DividendsDataMapper.submit()
         self.DividendsModel.submitAll()
         self.OperationsModel.select()
