@@ -12,6 +12,7 @@ from balance_delegate import BalanceDelegate
 from operation_delegate import OperationsTimestampDelegate
 from dividend_delegate import DividendSqlDelegate
 from trade_delegate import TradeSqlDelegate
+from action_delegate import ActionSqlDelegate
 
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def __init__(self):
@@ -75,6 +76,36 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.verticalHeader().setVisible(False)
         #self.OperationsTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.OperationsTableView.show()
+
+        ###############################################################################################
+        # CONFIGURE ACTIONS TAB                                                                       #
+        ###############################################################################################
+        self.ActionAccountWidget.init_DB(self.db)
+
+        self.ActionsModel = QSqlRelationalTableModel(db=self.db)
+        self.ActionsModel.setTable("actions")
+        self.ActionsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        account_idx = self.ActionsModel.fieldIndex("account_id")
+        #peer_id = self.ActionsModel.fieldIndex("peer_id")
+        #self.ActionsModel.setRelation(peer_id, QSqlRelation("agents", "id", "name"))
+        # Add Peer Selector
+        self.ActionsModel.select()
+        self.ActionsDataMapper = QDataWidgetMapper(self)
+        self.ActionsDataMapper.setModel(self.ActionsModel)
+        self.ActionsDataMapper.setSubmitPolicy(QDataWidgetMapper.ManualSubmit)
+        self.ActionsDataMapper.setItemDelegate(ActionSqlDelegate(self.ActionsDataMapper))
+        self.ActionsDataMapper.addMapping(self.ActionAccountWidget, account_idx, QByteArray().setRawData("account_id", 10))
+        self.ActionsDataMapper.addMapping(self.ActionTimestampEdit, self.ActionsModel.fieldIndex("timestamp"))
+        self.ActionsDataMapper.addMapping(self.ActionPeerEdit, self.ActionsModel.fieldIndex("peer_id"))
+
+        self.ActionDetailsModel = QSqlRelationalTableModel(db=self.db)
+        self.ActionDetailsModel.setTable("action_details")
+        self.ActionsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.ActionDetailsModel.select()
+        self.ActionDetailsTableView.setModel(self.ActionDetailsModel)
+        self.ActionDetailsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  # To select only 1 row
+        self.ActionDetailsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.ActionDetailsTableView.show()
 
         ###############################################################################################
         # CONFIGURE TRADES TAB                                                                        #
@@ -210,10 +241,14 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         operation_id = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("id"))
         transfer_id = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("qty_trid"))
         if (operation_type == 1):
+            self.ActionsModel.setFilter(f"actions.id = {operation_id}")
+            self.ActionsDataMapper.setCurrentModelIndex(self.ActionsDataMapper.model().index(0, 0))
             if (transfer_id == 0):    # Income / Spending
                 self.OperationsTabs.setCurrentIndex(0)
+                self.ActionDetailsModel.setFilter(f"action_details.pid = {operation_id}")
             else:                     # Transfer
                 self.OperationsTabs.setCurrentIndex(3)
+
         elif (operation_type == 2):   # Dividend
             self.OperationsTabs.setCurrentIndex(2)
             self.DividendsModel.setFilter("dividends.id = {}".format(operation_id))

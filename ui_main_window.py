@@ -187,7 +187,7 @@ class Ui_LedgerMainWindow(object):
         self.OperationDetails = QFrame(self.OperationsDetailsSplitter)
         self.OperationDetails.setObjectName(u"OperationDetails")
         self.OperationDetails.setMinimumSize(QSize(0, 100))
-        self.OperationDetails.setMaximumSize(QSize(16777215, 250))
+        self.OperationDetails.setMaximumSize(QSize(16777215, 200))
         self.OperationDetails.setFrameShape(QFrame.Panel)
         self.OperationDetails.setFrameShadow(QFrame.Plain)
         self.OperationDetails.setLineWidth(0)
@@ -201,6 +201,39 @@ class Ui_LedgerMainWindow(object):
         self.OperationsTabs.setTabShape(QTabWidget.Triangular)
         self.ActionDetailsTab = QWidget()
         self.ActionDetailsTab.setObjectName(u"ActionDetailsTab")
+        self.gridLayout_4 = QGridLayout(self.ActionDetailsTab)
+        self.gridLayout_4.setObjectName(u"gridLayout_4")
+        self.gridLayout_4.setContentsMargins(2, 2, 2, 2)
+        self.verticalSpacer_3 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_4.addItem(self.verticalSpacer_3, 0, 0, 1, 1)
+
+        self.ActionAccountWidget = AccountSelector(self.ActionDetailsTab)
+        self.ActionAccountWidget.setObjectName(u"ActionAccountWidget")
+
+        self.gridLayout_4.addWidget(self.ActionAccountWidget, 1, 1, 1, 1)
+
+        self.ActionDetailsTableView = QTableView(self.ActionDetailsTab)
+        self.ActionDetailsTableView.setObjectName(u"ActionDetailsTableView")
+
+        self.gridLayout_4.addWidget(self.ActionDetailsTableView, 4, 0, 1, 3)
+
+        self.ActionPeerEdit = QLineEdit(self.ActionDetailsTab)
+        self.ActionPeerEdit.setObjectName(u"ActionPeerEdit")
+
+        self.gridLayout_4.addWidget(self.ActionPeerEdit, 2, 2, 1, 1)
+
+        self.ActionTimestampEdit = QDateTimeEdit(self.ActionDetailsTab)
+        self.ActionTimestampEdit.setObjectName(u"ActionTimestampEdit")
+        self.ActionTimestampEdit.setCalendarPopup(True)
+
+        self.gridLayout_4.addWidget(self.ActionTimestampEdit, 2, 1, 1, 1)
+
+        self.ActionDbButtonsWidget = DbControlButtons(self.ActionDetailsTab)
+        self.ActionDbButtonsWidget.setObjectName(u"ActionDbButtonsWidget")
+
+        self.gridLayout_4.addWidget(self.ActionDbButtonsWidget, 1, 2, 1, 1)
+
         self.OperationsTabs.addTab(self.ActionDetailsTab, "")
         self.TradeDetailsTab = QWidget()
         self.TradeDetailsTab.setObjectName(u"TradeDetailsTab")
@@ -256,10 +289,10 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_3.addWidget(self.TradePriceEdit, 6, 2, 1, 1)
 
-        self.widget = DbControlButtons(self.TradeDetailsTab)
-        self.widget.setObjectName(u"widget")
+        self.TradeDbButtonsWidget = DbControlButtons(self.TradeDetailsTab)
+        self.TradeDbButtonsWidget.setObjectName(u"TradeDbButtonsWidget")
 
-        self.gridLayout_3.addWidget(self.widget, 1, 3, 1, 1)
+        self.gridLayout_3.addWidget(self.TradeDbButtonsWidget, 1, 3, 1, 1)
 
         self.TradeNumberEdit = QLineEdit(self.TradeDetailsTab)
         self.TradeNumberEdit.setObjectName(u"TradeNumberEdit")
@@ -454,7 +487,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(1)
+        self.OperationsTabs.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)
@@ -481,6 +514,7 @@ class Ui_LedgerMainWindow(object):
 
         self.AccountLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Account:", None))
         self.ChooseAccountBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"All", None))
+        self.ActionTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.OperationsTabs.setTabText(self.OperationsTabs.indexOf(self.ActionDetailsTab), QCoreApplication.translate("LedgerMainWindow", u"Income / Spending", None))
         self.TradePriceLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Price / Qty", None))
         self.TradeActiveLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Security", None))
