@@ -62,7 +62,7 @@ class AccountSelector(QWidget):
     def account_id_changed(self):
         pass
 
-    account_id = Property(int, getId, setId)
+    account_id = Property(int, getId, setId, notify=account_id_changed, user=True)
 
     def init_DB(self, db):
         self.db = db

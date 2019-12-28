@@ -187,7 +187,7 @@ class Ui_LedgerMainWindow(object):
         self.OperationDetails = QFrame(self.OperationsDetailsSplitter)
         self.OperationDetails.setObjectName(u"OperationDetails")
         self.OperationDetails.setMinimumSize(QSize(0, 100))
-        self.OperationDetails.setMaximumSize(QSize(16777215, 200))
+        self.OperationDetails.setMaximumSize(QSize(16777215, 300))
         self.OperationDetails.setFrameShape(QFrame.Panel)
         self.OperationDetails.setFrameShadow(QFrame.Plain)
         self.OperationDetails.setLineWidth(0)

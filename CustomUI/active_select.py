@@ -67,7 +67,7 @@ class ActiveSelector(QWidget):
     def active_id_changed(self):
         pass
 
-    active_id = Property(int, getId, setId)
+    active_id = Property(int, getId, setId, notify=active_id_changed, user=True)
 
     def init_DB(self, db):
         self.db = db
