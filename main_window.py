@@ -9,7 +9,7 @@ from import_1c import import_1c
 from build_ledger import Ledger_Bookkeeper
 from rebuild_window import RebuildDialog
 from balance_delegate import BalanceDelegate
-from operation_delegate import OperationsTimestampDelegate
+from operation_delegate import OperationsTypeDelegate, OperationsTimestampDelegate
 from dividend_delegate import DividendSqlDelegate
 from trade_delegate import TradeSqlDelegate
 from action_delegate import ActionSqlDelegate
@@ -59,22 +59,28 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.BalancesTableView.setColumnHidden(1, True)
         self.BalancesTableView.setColumnHidden(6, True)
         self.BalancesTableView.setColumnHidden(7, True)
+        self.BalancesTableView.verticalHeader().setDefaultSectionSize(20)
         self.BalancesTableView.verticalHeader().setVisible(False)
+        self.BalancesTableView.setAlternatingRowColors(True)
         self.BalancesTableView.show()
 
         self.OperationsModel = QSqlTableModel(db=self.db)
         self.OperationsModel.setTable("all_operations")
+        self.OperationsModel.setHeaderData(0, Qt.Horizontal, " ")
         self.OperationsModel.select()
         self.OperationsTableView.setModel(self.OperationsModel)
+        self.OperationsTableView.setItemDelegateForColumn(0, OperationsTypeDelegate(self.OperationsTableView))
         self.OperationsTableView.setItemDelegateForColumn(2, OperationsTimestampDelegate(self.OperationsTableView))
         self.OperationsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  # To select only 1 row
         self.OperationsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
         self.OperationsTableView.setColumnHidden(1, True)
         self.OperationsTableView.setColumnHidden(3, True)
         self.OperationsTableView.setColumnHidden(7, True)
-        self.OperationsTableView.verticalHeader().setDefaultSectionSize(21)
+        self.OperationsTableView.verticalHeader().setDefaultSectionSize(20)
         self.OperationsTableView.verticalHeader().setVisible(False)
-        #self.OperationsTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.OperationsTableView.setAlternatingRowColors(True)
+        self.OperationsTableView.setColumnWidth(0, 10);
+        #self.OperationsTableView.resizeColumnsToContents();
         self.OperationsTableView.show()
 
         ###############################################################################################
@@ -105,6 +111,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionDetailsTableView.setModel(self.ActionDetailsModel)
         self.ActionDetailsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  # To select only 1 row
         self.ActionDetailsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.ActionDetailsTableView.verticalHeader().setDefaultSectionSize(20)
+        self.ActionDetailsTableView.verticalHeader().setVisible(False)
+        self.ActionDetailsTableView.setAlternatingRowColors(True)
         self.ActionDetailsTableView.show()
 
         ###############################################################################################

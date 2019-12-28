@@ -1,8 +1,59 @@
+from constants import *
 from PySide2.QtWidgets import QStyledItemDelegate
 from datetime import datetime
-from PySide2.QtCore import QSize, Qt, QPoint
-from PySide2.QtSql import QSqlRelationalDelegate
-from PySide2.QtGui import QTextDocument
+from PySide2.QtCore import QSize, Qt
+from PySide2.QtGui import QTextDocument, QFont, QColor
+
+class OperationsTypeDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        QStyledItemDelegate.__init__(self, parent)
+
+    def paint(self, painter, option, index):
+        painter.save()
+        font = painter.font()
+        font.setBold(True)
+        pen = painter.pen()
+
+        model = index.model()
+        type = model.data(index, Qt.DisplayRole)
+        amount = model.data(model.index(index.row(), 5), Qt.DisplayRole)
+        qty_trid = model.data(model.index(index.row(), 10), Qt.DisplayRole)
+        if (type == 1):
+            if (qty_trid > 0):
+                text = ">"
+                pen.setColor(DARK_BLUE_COLOR)
+            elif (qty_trid < 0):
+                text = "<"
+                pen.setColor(DARK_BLUE_COLOR)
+            else:
+                if (amount >= 0):
+                    text = "+"
+                    pen.setColor(DARK_GREEN_COLOR)
+                else:
+                    text = "—"
+                    pen.setColor(DARK_RED_COLOR)
+        elif (type == 2):
+            text = "Δ"
+            pen.setColor(DARK_GREEN_COLOR)
+        elif (type == 3):
+            if (qty_trid >= 0):
+                text = "B"
+                pen.setColor(DARK_GREEN_COLOR)
+            else:
+                text = "S"
+                pen.setColor(DARK_RED_COLOR)
+
+        painter.setFont(font)
+        painter.setPen(pen)
+        painter.drawText(option.rect, Qt.AlignCenter, text)
+        painter.restore()
+
+    def sizeHint(self, option, index):
+        fontMetrics = option.fontMetrics
+        document = QTextDocument("W")
+        option.font.setWeight(QFont.Bold)
+        document.setDefaultFont(option.font)
+        return QSize(document.idealWidth(), fontMetrics.height())
 
 class OperationsTimestampDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
@@ -41,3 +92,4 @@ class OperationsTimestampDelegate(QStyledItemDelegate):
     #     painter.drawLine(option.rect.bottomLeft(), option.rect.bottomRight())
     #     painter.drawLine(option.rect.topRight(), option.rect.bottomRight())
     #     painter.setPen(pen)
+
