@@ -207,12 +207,24 @@
               <property name="frameShape">
                <enum>QFrame::Panel</enum>
               </property>
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
               <property name="gridStyle">
                <enum>Qt::DotLine</enum>
               </property>
               <property name="wordWrap">
                <bool>false</bool>
               </property>
+              <attribute name="verticalHeaderVisible">
+               <bool>false</bool>
+              </attribute>
+              <attribute name="verticalHeaderMinimumSectionSize">
+               <number>20</number>
+              </attribute>
+              <attribute name="verticalHeaderDefaultSectionSize">
+               <number>20</number>
+              </attribute>
              </widget>
             </item>
            </layout>
@@ -353,7 +365,23 @@
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>
-              <widget class="QTableView" name="OperationsTableView"/>
+              <widget class="QTableView" name="OperationsTableView">
+               <property name="alternatingRowColors">
+                <bool>true</bool>
+               </property>
+               <property name="wordWrap">
+                <bool>false</bool>
+               </property>
+               <attribute name="verticalHeaderVisible">
+                <bool>false</bool>
+               </attribute>
+               <attribute name="verticalHeaderMinimumSectionSize">
+                <number>20</number>
+               </attribute>
+               <attribute name="verticalHeaderDefaultSectionSize">
+                <number>20</number>
+               </attribute>
+              </widget>
               <widget class="QFrame" name="OperationDetails">
                <property name="minimumSize">
                 <size>
@@ -440,7 +468,20 @@
                      <widget class="AccountSelector" name="ActionAccountWidget" native="true"/>
                     </item>
                     <item row="4" column="0" colspan="3">
-                     <widget class="QTableView" name="ActionDetailsTableView"/>
+                     <widget class="QTableView" name="ActionDetailsTableView">
+                      <property name="alternatingRowColors">
+                       <bool>true</bool>
+                      </property>
+                      <attribute name="verticalHeaderVisible">
+                       <bool>false</bool>
+                      </attribute>
+                      <attribute name="verticalHeaderMinimumSectionSize">
+                       <number>20</number>
+                      </attribute>
+                      <attribute name="verticalHeaderDefaultSectionSize">
+                       <number>20</number>
+                      </attribute>
+                     </widget>
                     </item>
                     <item row="2" column="2">
                      <widget class="QLineEdit" name="ActionPeerEdit"/>

@@ -118,8 +118,12 @@ class Ui_LedgerMainWindow(object):
         self.BalancesTableView = QTableView(self.BalanceBox)
         self.BalancesTableView.setObjectName(u"BalancesTableView")
         self.BalancesTableView.setFrameShape(QFrame.Panel)
+        self.BalancesTableView.setAlternatingRowColors(True)
         self.BalancesTableView.setGridStyle(Qt.DotLine)
         self.BalancesTableView.setWordWrap(False)
+        self.BalancesTableView.verticalHeader().setVisible(False)
+        self.BalancesTableView.verticalHeader().setMinimumSectionSize(20)
+        self.BalancesTableView.verticalHeader().setDefaultSectionSize(20)
 
         self.verticalLayout.addWidget(self.BalancesTableView)
 
@@ -183,7 +187,12 @@ class Ui_LedgerMainWindow(object):
         self.OperationsDetailsSplitter.setOrientation(Qt.Vertical)
         self.OperationsTableView = QTableView(self.OperationsDetailsSplitter)
         self.OperationsTableView.setObjectName(u"OperationsTableView")
+        self.OperationsTableView.setAlternatingRowColors(True)
+        self.OperationsTableView.setWordWrap(False)
         self.OperationsDetailsSplitter.addWidget(self.OperationsTableView)
+        self.OperationsTableView.verticalHeader().setVisible(False)
+        self.OperationsTableView.verticalHeader().setMinimumSectionSize(20)
+        self.OperationsTableView.verticalHeader().setDefaultSectionSize(20)
         self.OperationDetails = QFrame(self.OperationsDetailsSplitter)
         self.OperationDetails.setObjectName(u"OperationDetails")
         self.OperationDetails.setMinimumSize(QSize(0, 100))
@@ -215,6 +224,10 @@ class Ui_LedgerMainWindow(object):
 
         self.ActionDetailsTableView = QTableView(self.ActionDetailsTab)
         self.ActionDetailsTableView.setObjectName(u"ActionDetailsTableView")
+        self.ActionDetailsTableView.setAlternatingRowColors(True)
+        self.ActionDetailsTableView.verticalHeader().setVisible(False)
+        self.ActionDetailsTableView.verticalHeader().setMinimumSectionSize(20)
+        self.ActionDetailsTableView.verticalHeader().setDefaultSectionSize(20)
 
         self.gridLayout_4.addWidget(self.ActionDetailsTableView, 4, 0, 1, 3)
 

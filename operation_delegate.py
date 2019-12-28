@@ -49,11 +49,17 @@ class OperationsTypeDelegate(QStyledItemDelegate):
         painter.restore()
 
     def sizeHint(self, option, index):
+        model = index.model()
+        type = model.data(index, Qt.DisplayRole)
         fontMetrics = option.fontMetrics
         document = QTextDocument("W")
         option.font.setWeight(QFont.Bold)
         document.setDefaultFont(option.font)
-        return QSize(document.idealWidth(), fontMetrics.height())
+        w = document.idealWidth()
+        h = fontMetrics.height()*2
+        if (type == 3):
+            h = h * 2
+        return QSize(w, h)
 
 class OperationsTimestampDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
@@ -62,34 +68,15 @@ class OperationsTimestampDelegate(QStyledItemDelegate):
     def displayText(self, value, locale):
         return datetime.fromtimestamp(value).strftime('%d/%m/%Y %H:%M:%S')
 
-    def sizeHint(self, option, index):
-        fontMetrics = option.fontMetrics
-        value = index.model().data(index)
-        text = datetime.fromtimestamp(value).strftime('%d/%m/%Y %H:%M:%S')
-        document = QTextDocument(text)
-        #option.font.setWeight(QtGui.QFont.Bold)  # new line
-        document.setDefaultFont(option.font)
-        return QSize(document.idealWidth(), fontMetrics.height())
-
-        # def paint(self, painter, option, index):
-    #     if index.column() != 0:
-    #         opt = option
-    #         # Since we draw the grid ourselves:
-    #         opt.rect.adjust(0, 0, -1, -1)
-    #         QSqlRelationalDelegate.paint(self, painter, opt, index)
-    #     else:
-    #         model = index.model()
-    #         type = model.data(index, Qt.DisplayRole)
-    #         if type == 1:
-    #             painter.drawText(QPoint(option.rect.x(), option.rect.y()), "+1")
-    #         else:
-    #             painter.drawText(QPoint(option.rect.x(), option.rect.y()), "-1")
-    #            # Since we draw the grid ourselves:
-    #         self.drawFocus(painter, option, option.rect.adjusted(0, 0, -1, -1))
-    #
-    #     pen = painter.pen()
-    #     painter.setPen(option.palette.color(QPalette.Mid))
-    #     painter.drawLine(option.rect.bottomLeft(), option.rect.bottomRight())
-    #     painter.drawLine(option.rect.topRight(), option.rect.bottomRight())
-    #     painter.setPen(pen)
+    def paint(self, painter, option, index):
+        painter.save()
+        model = index.model()
+        timestamp = model.data(index, Qt.DisplayRole)
+        text = datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')
+        type = model.data(model.index(index.row(), 0), Qt.DisplayRole)
+        number = model.data(model.index(index.row(), 6), Qt.DisplayRole)
+        if (type == 3):
+            text = text + f"\n # {number}"
+        painter.drawText(option.rect, Qt.AlignLeft, text)
+        painter.restore()
 

@@ -59,14 +59,16 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.BalancesTableView.setColumnHidden(1, True)
         self.BalancesTableView.setColumnHidden(6, True)
         self.BalancesTableView.setColumnHidden(7, True)
-        self.BalancesTableView.verticalHeader().setDefaultSectionSize(20)
-        self.BalancesTableView.verticalHeader().setVisible(False)
-        self.BalancesTableView.setAlternatingRowColors(True)
+        font = self.BalancesTableView.horizontalHeader().font()
+        font.setBold(True)
+        self.BalancesTableView.horizontalHeader().setFont(font)
         self.BalancesTableView.show()
 
         self.OperationsModel = QSqlTableModel(db=self.db)
         self.OperationsModel.setTable("all_operations")
         self.OperationsModel.setHeaderData(0, Qt.Horizontal, " ")
+        self.OperationsModel.setHeaderData(2, Qt.Horizontal, "Timestamp")
+        self.OperationsModel.setHeaderData(4, Qt.Horizontal, "Account")
         self.OperationsModel.select()
         self.OperationsTableView.setModel(self.OperationsModel)
         self.OperationsTableView.setItemDelegateForColumn(0, OperationsTypeDelegate(self.OperationsTableView))
@@ -76,11 +78,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.setColumnHidden(1, True)
         self.OperationsTableView.setColumnHidden(3, True)
         self.OperationsTableView.setColumnHidden(7, True)
-        self.OperationsTableView.verticalHeader().setDefaultSectionSize(20)
-        self.OperationsTableView.verticalHeader().setVisible(False)
-        self.OperationsTableView.setAlternatingRowColors(True)
-        self.OperationsTableView.setColumnWidth(0, 10);
-        #self.OperationsTableView.resizeColumnsToContents();
+        self.OperationsTableView.setColumnWidth(0, 10)
+        self.OperationsTableView.setColumnWidth(2, 150)
+        self.OperationsTableView.setColumnWidth(4, 200)
+        self.OperationsTableView.resizeRowsToContents()
+        self.OperationsTableView.horizontalHeader().setFont(font)
         self.OperationsTableView.show()
 
         ###############################################################################################
@@ -111,9 +113,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionDetailsTableView.setModel(self.ActionDetailsModel)
         self.ActionDetailsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  # To select only 1 row
         self.ActionDetailsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.ActionDetailsTableView.verticalHeader().setDefaultSectionSize(20)
-        self.ActionDetailsTableView.verticalHeader().setVisible(False)
-        self.ActionDetailsTableView.setAlternatingRowColors(True)
         self.ActionDetailsTableView.show()
 
         ###############################################################################################
