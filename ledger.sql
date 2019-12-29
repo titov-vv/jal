@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Sun Dec 29 15:10:30 2019
+-- File generated with SQLiteStudio v3.2.1 on Sun Dec 29 18:19:54 2019
 --
 -- Text encoding used: UTF-8
 --
@@ -130,8 +130,8 @@ CREATE TABLE balances (
     level1            INTEGER,
     level2            INTEGER,
     account_name      TEXT    NOT NULL,
-    currency_name     TEXT,
     balance           REAL,
+    currency_name     TEXT,
     balance_adj       REAL,
     days_unreconciled INTEGER,
     active            INTEGER
