@@ -376,10 +376,10 @@
                 <bool>false</bool>
                </attribute>
                <attribute name="verticalHeaderMinimumSectionSize">
-                <number>20</number>
+                <number>34</number>
                </attribute>
                <attribute name="verticalHeaderDefaultSectionSize">
-                <number>20</number>
+                <number>34</number>
                </attribute>
               </widget>
               <widget class="QFrame" name="OperationDetails">

@@ -56,7 +56,7 @@ class OperationsTypeDelegate(QStyledItemDelegate):
         option.font.setWeight(QFont.Bold)
         document.setDefaultFont(option.font)
         w = document.idealWidth()
-        h = fontMetrics.height()*2
+        h = fontMetrics.height()
         if (type == 3):
             h = h * 2
         return QSize(w, h)
@@ -75,8 +75,43 @@ class OperationsTimestampDelegate(QStyledItemDelegate):
         text = datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')
         type = model.data(model.index(index.row(), 0), Qt.DisplayRole)
         number = model.data(model.index(index.row(), 6), Qt.DisplayRole)
-        if (type == 3):
-            text = text + f"\n # {number}"
+        if (type != 1):
+            text = text + f"\n# {number}"
         painter.drawText(option.rect, Qt.AlignLeft, text)
         painter.restore()
 
+class OperationsAccountDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        QStyledItemDelegate.__init__(self, parent)
+
+    def paint(self, painter, option, index):
+        painter.save()
+        model = index.model()
+        account = model.data(index, Qt.DisplayRole)
+        type = model.data(model.index(index.row(), 0), Qt.DisplayRole)
+        peer = model.data(model.index(index.row(), 6), Qt.DisplayRole)
+        active_name = model.data(model.index(index.row(), 9), Qt.DisplayRole)
+        if (type == 1):
+            text = account + "\n" + peer
+        elif (type == 2):
+            text = account + "\n" + active_name
+        else:
+            text = account + f"\nAAAA"
+        painter.drawText(option.rect, Qt.AlignLeft, text)
+        painter.restore()
+
+class OperationsTotalsDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        QStyledItemDelegate.__init__(self, parent)
+
+    def paint(self, painter, option, index):
+        painter.save()
+        model = index.model()
+        total_money = model.data(index, Qt.DisplayRole)
+        total_shares = model.data(model.index(index.row(), 14), Qt.DisplayRole)
+        if (total_shares != ''):
+            text = f"{total_money:.2f}\n{total_shares:.2f}"
+        else:
+            text = f"{total_money:.2f}\n"
+        painter.drawText(option.rect, Qt.AlignRight, text)
+        painter.restore()

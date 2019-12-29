@@ -9,7 +9,7 @@ from import_1c import import_1c
 from build_ledger import Ledger_Bookkeeper
 from rebuild_window import RebuildDialog
 from balance_delegate import BalanceDelegate
-from operation_delegate import OperationsTypeDelegate, OperationsTimestampDelegate
+from operation_delegate import OperationsTypeDelegate, OperationsTimestampDelegate, OperationsAccountDelegate, OperationsTotalsDelegate
 from dividend_delegate import DividendSqlDelegate
 from trade_delegate import TradeSqlDelegate
 from action_delegate import ActionSqlDelegate
@@ -69,19 +69,24 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsModel.setHeaderData(0, Qt.Horizontal, " ")
         self.OperationsModel.setHeaderData(2, Qt.Horizontal, "Timestamp")
         self.OperationsModel.setHeaderData(4, Qt.Horizontal, "Account")
+        self.OperationsModel.setHeaderData(4, Qt.Horizontal, "Balance")
         self.OperationsModel.select()
         self.OperationsTableView.setModel(self.OperationsModel)
         self.OperationsTableView.setItemDelegateForColumn(0, OperationsTypeDelegate(self.OperationsTableView))
         self.OperationsTableView.setItemDelegateForColumn(2, OperationsTimestampDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(4, OperationsAccountDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(13, OperationsTotalsDelegate(self.OperationsTableView))
         self.OperationsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  # To select only 1 row
         self.OperationsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
         self.OperationsTableView.setColumnHidden(1, True)
-        self.OperationsTableView.setColumnHidden(3, True)
+        self.OperationsTableView.setColumnHidden(3, True) # account id
         self.OperationsTableView.setColumnHidden(7, True)
+        self.OperationsTableView.setColumnHidden(14, True) # total_qty
         self.OperationsTableView.setColumnWidth(0, 10)
         self.OperationsTableView.setColumnWidth(2, 150)
-        self.OperationsTableView.setColumnWidth(4, 200)
-        self.OperationsTableView.resizeRowsToContents()
+        self.OperationsTableView.setColumnWidth(4, 300)
+        self.OperationsTableView.setWordWrap(False)
+        #self.OperationsTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.OperationsTableView.horizontalHeader().setFont(font)
         self.OperationsTableView.show()
 
