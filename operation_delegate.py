@@ -132,12 +132,32 @@ class OperationsTotalsDelegate(QStyledItemDelegate):
 
     def paint(self, painter, option, index):
         painter.save()
+        pen = painter.pen()
+
         model = index.model()
         total_money = model.data(index, Qt.DisplayRole)
         total_shares = model.data(model.index(index.row(), 14), Qt.DisplayRole)
+        reconciled = model.data(model.index(index.row(), 16), Qt.DisplayRole)
         if (total_shares != ''):
             text = f"{total_money:.2f}\n{total_shares:.2f}"
         else:
             text = f"{total_money:.2f}\n"
+
+        if (reconciled == 1):
+            pen.setColor(BLUE_COLOR)
+            painter.setPen(pen)
         painter.drawText(option.rect, Qt.AlignRight, text)
+        painter.restore()
+
+class OperationsCurrencyDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        QStyledItemDelegate.__init__(self, parent)
+
+    def paint(self, painter, option, index):
+        painter.save()
+        model = index.model()
+        currency = model.data(index, Qt.DisplayRole)
+        active_name = model.data(model.index(index.row(), 7), Qt.DisplayRole)
+        text = " " + currency + "\n " + active_name
+        painter.drawText(option.rect, Qt.AlignLeft, text)
         painter.restore()

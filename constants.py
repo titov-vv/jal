@@ -30,3 +30,4 @@ from PySide2.QtGui import QColor
 DARK_GREEN_COLOR = QColor(0, 100, 0)
 DARK_RED_COLOR = QColor(139, 0, 0)
 DARK_BLUE_COLOR = QColor(0, 0, 139)
+BLUE_COLOR = QColor(0, 0, 255)
