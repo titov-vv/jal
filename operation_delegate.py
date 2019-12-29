@@ -16,8 +16,8 @@ class OperationsTypeDelegate(QStyledItemDelegate):
 
         model = index.model()
         type = model.data(index, Qt.DisplayRole)
-        amount = model.data(model.index(index.row(), 9), Qt.DisplayRole)
-        qty_trid = model.data(model.index(index.row(), 10), Qt.DisplayRole)
+        amount = model.data(model.index(index.row(), 11), Qt.DisplayRole)
+        qty_trid = model.data(model.index(index.row(), 12), Qt.DisplayRole)
         if (type == 1):
             if (qty_trid > 0):
                 text = ">"
@@ -97,15 +97,28 @@ class OperationsAccountDelegate(QStyledItemDelegate):
             text = account + "\n" + active_name
         elif (type == 3):
             active_name = model.data(model.index(index.row(), 8), Qt.DisplayRole)
-            qty = model.data(model.index(index.row(), 10), Qt.DisplayRole)
-            price = model.data(model.index(index.row(), 11), Qt.DisplayRole)
-            fee = model.data(model.index(index.row(), 12), Qt.DisplayRole)
+            qty = model.data(model.index(index.row(), 12), Qt.DisplayRole)
+            price = model.data(model.index(index.row(), 13), Qt.DisplayRole)
+            fee = model.data(model.index(index.row(), 14), Qt.DisplayRole)
             if (qty < 0):
                 text = account + f"\n{qty:.2f} @ {price:.2f} [f: {fee:.2f}] " + active_name
             else:
                 text = account + f"\n+{qty:.2f} @ {price:.2f} [f: {fee:.2f}] " + active_name
         else:
             text = "OperationsAccountDelegate: unknown operation"
+        painter.drawText(option.rect, Qt.AlignLeft, text)
+        painter.restore()
+
+class OperationsNotesDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        QStyledItemDelegate.__init__(self, parent)
+
+    def paint(self, painter, option, index):
+        painter.save()
+        model = index.model()
+        note = model.data(index, Qt.DisplayRole)
+        note2 = model.data(model.index(index.row(), 10), Qt.DisplayRole)
+        text = note + "\n" + note2
         painter.drawText(option.rect, Qt.AlignLeft, text)
         painter.restore()
 
@@ -118,7 +131,7 @@ class OperationsAmountDelegate(QStyledItemDelegate):
         model = index.model()
         amount = model.data(index, Qt.DisplayRole)
         type = model.data(model.index(index.row(), 0), Qt.DisplayRole)
-        qty = model.data(model.index(index.row(), 10), Qt.DisplayRole)
+        qty = model.data(model.index(index.row(), 12), Qt.DisplayRole)
         if (type != 1) and (qty != 0):
             text = f"{amount:.2f}\n{qty:.2f}"
         else:
@@ -136,8 +149,8 @@ class OperationsTotalsDelegate(QStyledItemDelegate):
 
         model = index.model()
         total_money = model.data(index, Qt.DisplayRole)
-        total_shares = model.data(model.index(index.row(), 14), Qt.DisplayRole)
-        reconciled = model.data(model.index(index.row(), 16), Qt.DisplayRole)
+        total_shares = model.data(model.index(index.row(), 16), Qt.DisplayRole)
+        reconciled = model.data(model.index(index.row(), 18), Qt.DisplayRole)
         if (total_shares != ''):
             text = f"{total_money:.2f}\n{total_shares:.2f}"
         else:

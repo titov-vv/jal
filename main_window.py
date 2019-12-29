@@ -69,17 +69,19 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsModel.setHeaderData(0, Qt.Horizontal, " ")
         self.OperationsModel.setHeaderData(2, Qt.Horizontal, "Timestamp")
         self.OperationsModel.setHeaderData(4, Qt.Horizontal, "Account")
-        self.OperationsModel.setHeaderData(9, Qt.Horizontal, "Amount")
-        self.OperationsModel.setHeaderData(13, Qt.Horizontal, "Balance")
-        self.OperationsModel.setHeaderData(15, Qt.Horizontal, "Currency")
+        self.OperationsModel.setHeaderData(9, Qt.Horizontal, "Notes")
+        self.OperationsModel.setHeaderData(11, Qt.Horizontal, "Amount")
+        self.OperationsModel.setHeaderData(15, Qt.Horizontal, "Balance")
+        self.OperationsModel.setHeaderData(17, Qt.Horizontal, "Currency")
         self.OperationsModel.select()
         self.OperationsTableView.setModel(self.OperationsModel)
         self.OperationsTableView.setItemDelegateForColumn(0, OperationsTypeDelegate(self.OperationsTableView))
         self.OperationsTableView.setItemDelegateForColumn(2, OperationsTimestampDelegate(self.OperationsTableView))
         self.OperationsTableView.setItemDelegateForColumn(4, OperationsAccountDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(9, OperationsAmountDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(13, OperationsTotalsDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(15, OperationsCurrencyDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(9, OperationsNotesDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(11, OperationsAmountDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(15, OperationsTotalsDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(17, OperationsCurrencyDelegate(self.OperationsTableView))
         self.OperationsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  # To select only 1 row
         self.OperationsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
         self.OperationsTableView.setColumnHidden(1, True)
@@ -88,14 +90,16 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.setColumnHidden(6, True) # active id
         self.OperationsTableView.setColumnHidden(7, True) # active name
         self.OperationsTableView.setColumnHidden(8, True) # active full name
-        self.OperationsTableView.setColumnHidden(10, True) # qty
-        self.OperationsTableView.setColumnHidden(11, True) # price
-        self.OperationsTableView.setColumnHidden(12, True) # fee
-        self.OperationsTableView.setColumnHidden(14, True) # total_qty
-        self.OperationsTableView.setColumnHidden(16, True)  # reconciled
+        self.OperationsTableView.setColumnHidden(10, True) # note 2
+        self.OperationsTableView.setColumnHidden(12, True) # qty
+        self.OperationsTableView.setColumnHidden(13, True) # price
+        self.OperationsTableView.setColumnHidden(14, True) # fee
+        self.OperationsTableView.setColumnHidden(16, True) # total_qty
+        self.OperationsTableView.setColumnHidden(18, True)  # reconciled
         self.OperationsTableView.setColumnWidth(0, 10)
         self.OperationsTableView.setColumnWidth(2, 150)
-        self.OperationsTableView.setColumnWidth(4, 300)
+        self.OperationsTableView.setColumnWidth(4, 400)
+        self.OperationsTableView.setColumnWidth(9, 400)
         self.OperationsTableView.setWordWrap(False)
         #self.OperationsTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.OperationsTableView.horizontalHeader().setFont(font)
