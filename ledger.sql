@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Thu Dec 26 13:38:35 2019
+-- File generated with SQLiteStudio v3.2.1 on Sun Dec 29 15:10:30 2019
 --
 -- Text encoding used: UTF-8
 --
@@ -134,6 +134,20 @@ CREATE TABLE balances (
     balance           REAL,
     balance_adj       REAL,
     days_unreconciled INTEGER,
+    active            INTEGER
+);
+
+
+-- Table: balances_aux
+DROP TABLE IF EXISTS balances_aux;
+
+CREATE TABLE balances_aux (
+    account_type      INTEGER NOT NULL,
+    account           INTEGER NOT NULL,
+    currency          INTEGER NOT NULL,
+    balance           REAL,
+    balance_adj       REAL,
+    unreconciled_days INTEGER,
     active            INTEGER
 );
 
@@ -275,6 +289,25 @@ CREATE TABLE sequence (
 );
 
 
+-- Table: t_last_dates
+DROP TABLE IF EXISTS t_last_dates;
+
+CREATE TABLE t_last_dates (
+    account_id INTEGER NOT NULL,
+    timestamp  INTEGER NOT NULL
+);
+
+
+-- Table: t_last_quotes
+DROP TABLE IF EXISTS t_last_quotes;
+
+CREATE TABLE t_last_quotes (
+    timestamp INTEGER NOT NULL,
+    active_id INTEGER NOT NULL,
+    quote     REAL
+);
+
+
 -- Table: tags
 DROP TABLE IF EXISTS tags;
 
@@ -345,16 +378,19 @@ CREATE VIEW all_operations AS
            m.timestamp,
            m.account_id,
            a.name AS account,
-           m.amount,
            m.num_peer,
            m.active_id,
            s.name AS active,
            s.full_name AS active_name,
+           m.note,
+           m.note2,
+           m.amount,
            m.qty_trid,
            m.price,
            m.fee_tax,
            l.sum_amount AS t_amount,
            m.t_qty,
+           c.name AS currency,
            CASE WHEN m.timestamp <= a.reconciled_on THEN 1 ELSE 0 END AS reconciled
       FROM (
                SELECT 1 AS type,
@@ -367,7 +403,9 @@ CREATE VIEW all_operations AS
                       coalesce( -t1.id, t2.id, 0) AS qty_trid,
                       sum(d.type * d.alt_sum) AS price,
                       NULL AS fee_tax,
-                      NULL AS t_qty
+                      NULL AS t_qty,
+                      NULL AS note,
+                      NULL AS note2
                  FROM actions AS o
                       LEFT JOIN
                       agents AS p ON o.peer_id = p.id
@@ -389,7 +427,9 @@ CREATE VIEW all_operations AS
                       SUM(coalesce(l.amount, 0) ) AS qty_trid,
                       NULL AS price,
                       d.sum_tax AS fee_tax,
-                      NULL AS t_qty
+                      NULL AS t_qty,
+                      d.note AS note,
+                      d.note_tax AS note2
                  FROM dividends AS d
                       LEFT JOIN
                       ledger AS l ON d.active_id = l.active_id AND 
@@ -405,10 +445,12 @@ CREATE VIEW all_operations AS
                       t.account_id,
                       t.sum AS amount,
                       t.active_id,
-                      t.qty AS qty_trid,
+                      (t.type * t.qty) AS qty_trid,
                       t.price AS price,
                       t.fee_broker + t.fee_exchange AS fee_tax,
-                      l.sum_amount AS t_qty
+                      l.sum_amount AS t_qty,
+                      NULL AS note,
+                      NULL AS note2
                  FROM trades AS t
                       LEFT JOIN
                       sequence AS q ON q.type = 3 AND 
@@ -423,6 +465,8 @@ CREATE VIEW all_operations AS
            accounts AS a ON m.account_id = a.id
            LEFT JOIN
            actives AS s ON m.active_id = s.id
+           LEFT JOIN
+           actives AS c ON a.currency_id = c.id
            LEFT JOIN
            sequence AS q ON m.type = q.type AND 
                             m.id = q.operation_id

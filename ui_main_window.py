@@ -23,7 +23,7 @@ class Ui_LedgerMainWindow(object):
     def setupUi(self, LedgerMainWindow):
         if LedgerMainWindow.objectName():
             LedgerMainWindow.setObjectName(u"LedgerMainWindow")
-        LedgerMainWindow.resize(1200, 900)
+        LedgerMainWindow.resize(1700, 900)
         LedgerMainWindow.setMinimumSize(QSize(0, 0))
         font = QFont()
         font.setFamily(u"DejaVu Sans")
@@ -477,7 +477,7 @@ class Ui_LedgerMainWindow(object):
         LedgerMainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(LedgerMainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1200, 20))
+        self.menubar.setGeometry(QRect(0, 0, 1700, 20))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName(u"menuFile")
         self.menu_DAta = QMenu(self.menubar)

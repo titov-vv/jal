@@ -19,10 +19,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         QMainWindow.__init__(self, None)
         self.setupUi(self)
 
-        self.ledger = Ledger()
         self.db = QSqlDatabase.addDatabase("QSQLITE")
         self.db.setDatabaseName(DB_PATH)
         self.db.open()
+        self.ledger = Ledger(self.db)
 
         self.balance_currency = CURRENCY_RUBLE
         self.balance_date = QtCore.QDateTime.currentSecsSinceEpoch()
@@ -99,7 +99,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.setColumnWidth(0, 10)
         self.OperationsTableView.setColumnWidth(2, 150)
         self.OperationsTableView.setColumnWidth(4, 400)
-        self.OperationsTableView.setColumnWidth(9, 400)
+        self.OperationsTableView.setColumnWidth(9, 300)
         self.OperationsTableView.setWordWrap(False)
         #self.OperationsTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.OperationsTableView.horizontalHeader().setFont(font)

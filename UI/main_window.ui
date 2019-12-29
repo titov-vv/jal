@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1200</width>
+    <width>1700</width>
     <height>900</height>
    </rect>
   </property>
@@ -464,9 +464,6 @@
                       </property>
                      </spacer>
                     </item>
-                    <item row="1" column="1">
-                     <widget class="AccountSelector" name="ActionAccountWidget" native="true"/>
-                    </item>
                     <item row="4" column="0" colspan="3">
                      <widget class="QTableView" name="ActionDetailsTableView">
                       <property name="alternatingRowColors">
@@ -486,7 +483,10 @@
                     <item row="2" column="2">
                      <widget class="QLineEdit" name="ActionPeerEdit"/>
                     </item>
-                    <item row="2" column="1">
+                    <item row="1" column="2">
+                     <widget class="DbControlButtons" name="ActionDbButtonsWidget" native="true"/>
+                    </item>
+                    <item row="2" column="0" colspan="2">
                      <widget class="QDateTimeEdit" name="ActionTimestampEdit">
                       <property name="displayFormat">
                        <string>dd/MM/yyyy hh:mm:ss</string>
@@ -496,8 +496,8 @@
                       </property>
                      </widget>
                     </item>
-                    <item row="1" column="2">
-                     <widget class="DbControlButtons" name="ActionDbButtonsWidget" native="true"/>
+                    <item row="1" column="0" colspan="2">
+                     <widget class="AccountSelector" name="ActionAccountWidget" native="true"/>
                     </item>
                    </layout>
                   </widget>
@@ -808,7 +808,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1200</width>
+     <width>1700</width>
      <height>20</height>
     </rect>
    </property>
