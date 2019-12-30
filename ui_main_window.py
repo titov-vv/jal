@@ -217,11 +217,6 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_4.addItem(self.verticalSpacer_3, 0, 0, 1, 1)
 
-        self.ActionAccountWidget = AccountSelector(self.ActionDetailsTab)
-        self.ActionAccountWidget.setObjectName(u"ActionAccountWidget")
-
-        self.gridLayout_4.addWidget(self.ActionAccountWidget, 1, 1, 1, 1)
-
         self.ActionDetailsTableView = QTableView(self.ActionDetailsTab)
         self.ActionDetailsTableView.setObjectName(u"ActionDetailsTableView")
         self.ActionDetailsTableView.setAlternatingRowColors(True)
@@ -236,16 +231,21 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_4.addWidget(self.ActionPeerEdit, 2, 2, 1, 1)
 
-        self.ActionTimestampEdit = QDateTimeEdit(self.ActionDetailsTab)
-        self.ActionTimestampEdit.setObjectName(u"ActionTimestampEdit")
-        self.ActionTimestampEdit.setCalendarPopup(True)
-
-        self.gridLayout_4.addWidget(self.ActionTimestampEdit, 2, 1, 1, 1)
-
         self.ActionDbButtonsWidget = DbControlButtons(self.ActionDetailsTab)
         self.ActionDbButtonsWidget.setObjectName(u"ActionDbButtonsWidget")
 
         self.gridLayout_4.addWidget(self.ActionDbButtonsWidget, 1, 2, 1, 1)
+
+        self.ActionTimestampEdit = QDateTimeEdit(self.ActionDetailsTab)
+        self.ActionTimestampEdit.setObjectName(u"ActionTimestampEdit")
+        self.ActionTimestampEdit.setCalendarPopup(True)
+
+        self.gridLayout_4.addWidget(self.ActionTimestampEdit, 2, 0, 1, 2)
+
+        self.ActionAccountWidget = AccountSelector(self.ActionDetailsTab)
+        self.ActionAccountWidget.setObjectName(u"ActionAccountWidget")
+
+        self.gridLayout_4.addWidget(self.ActionAccountWidget, 1, 0, 1, 2)
 
         self.OperationsTabs.addTab(self.ActionDetailsTab, "")
         self.TradeDetailsTab = QWidget()

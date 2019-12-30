@@ -132,11 +132,25 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.ActionDetailsModel = QSqlRelationalTableModel(db=self.db)
         self.ActionDetailsModel.setTable("action_details")
-        self.ActionsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.ActionDetailsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.ActionDetailsModel.setHeaderData(2, Qt.Horizontal, "Category")
+        self.ActionDetailsModel.setHeaderData(3, Qt.Horizontal, "Tags")
+        self.ActionDetailsModel.setHeaderData(4, Qt.Horizontal, "Amount")
+        self.ActionDetailsModel.setHeaderData(5, Qt.Horizontal, "Amount *")
+        self.ActionDetailsModel.setHeaderData(6, Qt.Horizontal, "Note")
         self.ActionDetailsModel.select()
         self.ActionDetailsTableView.setModel(self.ActionDetailsModel)
         self.ActionDetailsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  # To select only 1 row
         self.ActionDetailsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.ActionDetailsTableView.setColumnHidden(0, True)  # pid
+        self.ActionDetailsTableView.setColumnHidden(1, True)  # type
+        self.ActionDetailsTableView.setColumnWidth(2, 200)  # category
+        self.ActionDetailsTableView.setColumnWidth(3, 200)  # tags
+        self.ActionDetailsTableView.setColumnWidth(4, 100)  # amount
+        self.ActionDetailsTableView.setColumnWidth(5, 100)  # amount *
+        self.ActionDetailsTableView.setColumnWidth(6, 400)  # note
+        self.ActionDetailsTableView.horizontalHeader().moveSection(6, 2)
+        self.ActionDetailsTableView.setColumnWidth(6, 400)
         self.ActionDetailsTableView.show()
 
         ###############################################################################################
@@ -211,13 +225,17 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DividendAppendBtn.clicked.connect(self.OnDividendAppend)
         self.DividendRemoveBtn.clicked.connect(self.OnDividendRemove)
 
+        self.OperationsTableView.selectRow(0)
+
     def ImportFrom1C(self):
         import_directory = QFileDialog.getExistingDirectory(self, "Select directory with data to import")
         if import_directory:
             import_directory = import_directory + "/"
             print("Import 1C data from: ", import_directory)
             print("Import 1C data to:   ", DB_PATH)
+            self.db.close()
             import_1c(DB_PATH, import_directory)
+            self.db.open()
 
     def ShowRebuildDialog(self):
         query = QSqlQuery(self.db)
