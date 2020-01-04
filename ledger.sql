@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Sun Dec 29 18:19:54 2019
+-- File generated with SQLiteStudio v3.2.1 on Sat Jan 4 16:11:21 2020
 --
 -- Text encoding used: UTF-8
 --
@@ -400,7 +400,7 @@ CREATE VIEW all_operations AS
                       account_id,
                       sum(d.type * d.sum) AS amount,
                       o.alt_currency_id AS active_id,
-                      coalesce( -t1.id, t2.id, 0) AS qty_trid,
+                      coalesce(t1.id, t2.id, 0) AS qty_trid,
                       sum(d.type * d.alt_sum) AS price,
                       NULL AS fee_tax,
                       NULL AS t_qty,

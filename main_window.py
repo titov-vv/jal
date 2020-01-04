@@ -1,7 +1,7 @@
 from constants import *
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView
-from PySide2.QtSql import QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
-from PySide2.QtCore import Qt, Slot, QByteArray
+from PySide2.QtSql import QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel, QSqlRelationalTableModel
+from PySide2.QtCore import Qt, Slot
 from PySide2 import QtCore
 from ui_main_window import Ui_LedgerMainWindow
 from ledger_db import Ledger
@@ -184,6 +184,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TradesDataMapper.addMapping(self.TradeBrokerFeeEdit, self.TradesModel.fieldIndex("fee_broker"))
         self.TradesDataMapper.addMapping(self.TradeExchangeFeeEdit, self.TradesModel.fieldIndex("fee_exchange"))
 
+        self.TradeDbButtonsWidget.InitDB(self.db, self.OperationsTableView, self.TradesDataMapper)
+
         ###############################################################################################
         # CONFIGURE DIVIDENDS TAB                                                                     #
         ###############################################################################################
@@ -209,6 +211,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DividendsDataMapper.addMapping(self.DividendTaxEdit, self.DividendsModel.fieldIndex("sum_tax"))
         self.DividendsDataMapper.addMapping(self.DividendTaxDescription, self.DividendsModel.fieldIndex("note_tax"))
 
+        self.DividendDbButtonsWidget.InitDB(self.db, self.OperationsTableView, self.DividendsDataMapper)
+
         ###############################################################################################
         # CONFIGURE ACTIONS                                                                           #
         ###############################################################################################
@@ -225,10 +229,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         # OPERATIONS TABLE ACTIONS
         self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
         self.ChooseAccountBtn.clicked.connect(self.OnAccountChange)
-        # DIVIDEND TAB ACTIONS
-        self.DividendCommitBtn.clicked.connect(self.OnDividendCommit)
-        self.DividendAppendBtn.clicked.connect(self.OnDividendAppend)
-        self.DividendRemoveBtn.clicked.connect(self.OnDividendRemove)
 
         self.OperationsTableView.selectRow(0)
 
@@ -344,25 +344,3 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def OnAccountChange(self):
         self.SetOperationsFilter()
-
-    @Slot()
-    def OnDividendCommit(self):
-        self.DividendsDataMapper.submit()
-        self.DividendsModel.submitAll()
-        self.OperationsModel.select()
-
-    @Slot()
-    def OnDividendAppend(self):
-        row = self.DividendsDataMapper.currentIndex()
-        self.DividendsDataMapper.submit()
-        self.DividendsModel.insertRow(row)
-        self.DividendsDataMapper.setCurrentIndex(row)
-
-    @Slot()
-    def OnDividendRemove(self):
-        row = self.DividendsDataMapper.currentIndex()
-        self.DividendsDataMapper.submit()
-        self.DividendsModel.removeRow(row)
-        self.DividendsDataMapper.submit()
-        self.DividendsModel.submitAll()
-        self.OperationsModel.select()

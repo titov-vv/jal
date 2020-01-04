@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QAbstractItemView
+from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QAbstractItemView
 from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtCore import Signal, Property, Slot
 from ui_account_choice_dlg import Ui_AccountChoiceDlg
