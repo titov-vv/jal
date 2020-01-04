@@ -338,7 +338,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="ChooseAccountBtn">
+                <widget class="AccountButton" name="ChooseAccountBtn">
                  <property name="text">
                   <string>All</string>
                  </property>
@@ -432,7 +432,7 @@
                    <enum>QTabWidget::Triangular</enum>
                   </property>
                   <property name="currentIndex">
-                   <number>0</number>
+                   <number>2</number>
                   </property>
                   <widget class="QWidget" name="ActionDetailsTab">
                    <attribute name="title">
@@ -877,6 +877,11 @@
    <extends>QWidget</extends>
    <header>CustomUI/db_control_buttons.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AccountButton</class>
+   <extends>QPushButton</extends>
+   <header>CustomUI\account_select.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

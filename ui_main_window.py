@@ -18,6 +18,7 @@ from PySide2.QtWidgets import *
 from CustomUI.account_select import AccountSelector
 from CustomUI.active_select import ActiveSelector
 from CustomUI.db_control_buttons import DbControlButtons
+from CustomUI.account_select import AccountButton
 
 class Ui_LedgerMainWindow(object):
     def setupUi(self, LedgerMainWindow):
@@ -170,7 +171,7 @@ class Ui_LedgerMainWindow(object):
 
         self.horizontalLayout_3.addWidget(self.AccountLbl)
 
-        self.ChooseAccountBtn = QPushButton(self.OperationConfigFrame)
+        self.ChooseAccountBtn = AccountButton(self.OperationConfigFrame)
         self.ChooseAccountBtn.setObjectName(u"ChooseAccountBtn")
 
         self.horizontalLayout_3.addWidget(self.ChooseAccountBtn)
@@ -500,7 +501,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(0)
+        self.OperationsTabs.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)

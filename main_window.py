@@ -28,6 +28,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.balance_date = QtCore.QDateTime.currentSecsSinceEpoch()
         self.balance_active_only = 1
 
+        self.operations_since_timestamp = 0
+
         self.ConfigureUI()
         self.UpdateBalances()
 
@@ -67,6 +69,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         font.setBold(True)
         self.BalancesTableView.horizontalHeader().setFont(font)
         self.BalancesTableView.show()
+
+        self.ChooseAccountBtn.init_DB(self.db)
 
         self.OperationsModel = QSqlTableModel(db=self.db)
         self.OperationsModel.setTable("all_operations")
@@ -220,6 +224,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DateRangeCombo.currentIndexChanged.connect(self.OnOperationsRangeChange)
         # OPERATIONS TABLE ACTIONS
         self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
+        self.ChooseAccountBtn.clicked.connect(self.OnAccountChange)
         # DIVIDEND TAB ACTIONS
         self.DividendCommitBtn.clicked.connect(self.OnDividendCommit)
         self.DividendAppendBtn.clicked.connect(self.OnDividendAppend)
@@ -310,22 +315,35 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         else:
             print("Unknown operation type", operation_type)
 
+    def SetOperationsFilter(self):
+        operations_filter = ""
+        if (self.operations_since_timestamp > 0):
+            operations_filter = "all_operations.timestamp >= {}".format(self.operations_since_timestamp)
+
+        if self.ChooseAccountBtn.account_id != 0:
+            if operations_filter == "":
+                operations_filter = "all_operations.account_id = {}".format(self.ChooseAccountBtn.account_id)
+            else:
+                operations_filter = operations_filter + " AND all_operations.account_id = {}".format(self.ChooseAccountBtn.account_id)
+        self.OperationsModel.setFilter(operations_filter)
+
     @Slot()
     def OnOperationsRangeChange(self, range_index):
         if (range_index == 0): # last week
-            since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 604800
+            self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 604800
         elif (range_index == 1): # last month
-            since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 2678400
+            self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 2678400
         elif (range_index == 2): # last half-year
-            since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 15811200
+            self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 15811200
         elif (range_index == 3): # last year
-            since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 31536000
+            self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 31536000
         else:
-            since_timestamp = 0
-        if (since_timestamp > 0):
-            self.OperationsModel.setFilter("all_operations.timestamp >= {}".format(since_timestamp))
-        else:
-            self.OperationsModel.setFilter("")
+            self.operations_since_timestamp = 0
+        self.SetOperationsFilter()
+
+    @Slot()
+    def OnAccountChange(self):
+        self.SetOperationsFilter()
 
     @Slot()
     def OnDividendCommit(self):
