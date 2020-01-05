@@ -372,7 +372,12 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def DeleteOperation(self):
-        print("Implement delete")
+        index = self.OperationsTableView.currentIndex()
+        type = self.OperationsModel.data(self.OperationsModel.index(index.row(), 0))
+        id = self.OperationsModel.data(self.OperationsModel.index(index.row(), 1))
+        transfer_id = self.OperationsModel.data(self.OperationsModel.index(index.row(), 12))
+        self.ledger.DeleteOperation(type, id, transfer_id)
+        self.OperationsModel.select()
 
     @Slot()
     def CopyOperation(self):
