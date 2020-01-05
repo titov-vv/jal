@@ -1,6 +1,6 @@
 from constants import *
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu
-from PySide2.QtSql import QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel, QSqlRelationalTableModel
+from PySide2.QtSql import QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel
 from PySide2.QtCore import Qt, Slot
 from PySide2 import QtCore
 from ui_main_window import Ui_LedgerMainWindow
@@ -12,6 +12,7 @@ from balance_delegate import BalanceDelegate
 from operation_delegate import *
 from dividend_delegate import DividendSqlDelegate
 from trade_delegate import TradeSqlDelegate
+from transfer_delegate import TransferSqlDelegate
 from action_delegate import ActionSqlDelegate
 
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):
@@ -94,7 +95,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
         self.OperationsTableView.setColumnHidden(1, True)
         self.OperationsTableView.setColumnHidden(3, True) # account id
-        self.OperationsTableView.setColumnHidden(5, True) # peer number
+        self.OperationsTableView.setColumnHidden(5, True) # peer number`
         self.OperationsTableView.setColumnHidden(6, True) # active id
         self.OperationsTableView.setColumnHidden(7, True) # active name
         self.OperationsTableView.setColumnHidden(8, True) # active full name
@@ -119,7 +120,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         ###############################################################################################
         self.ActionAccountWidget.init_DB(self.db)
 
-        self.ActionsModel = QSqlRelationalTableModel(db=self.db)
+        self.ActionsModel = QSqlTableModel(db=self.db)
         self.ActionsModel.setTable("actions")
         self.ActionsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         account_idx = self.ActionsModel.fieldIndex("account_id")
@@ -135,7 +136,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionsDataMapper.addMapping(self.ActionTimestampEdit, self.ActionsModel.fieldIndex("timestamp"))
         self.ActionsDataMapper.addMapping(self.ActionPeerEdit, self.ActionsModel.fieldIndex("peer_id"))
 
-        self.ActionDetailsModel = QSqlRelationalTableModel(db=self.db)
+        self.ActionDetailsModel = QSqlTableModel(db=self.db)
         self.ActionDetailsModel.setTable("action_details")
         self.ActionDetailsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.ActionDetailsModel.setHeaderData(2, Qt.Horizontal, "Category")
@@ -166,7 +167,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TradeAccountWidget.init_DB(self.db)
         self.TradeActiveWidget.init_DB(self.db)
 
-        self.TradesModel = QSqlRelationalTableModel(db=self.db)
+        self.TradesModel = QSqlTableModel(db=self.db)
         self.TradesModel.setTable("trades")
         self.TradesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         account_idx = self.TradesModel.fieldIndex("account_id")
@@ -195,7 +196,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DividendAccountWidget.init_DB(self.db)
         self.DividendActiveWidget.init_DB(self.db)
 
-        self.DividendsModel = QSqlRelationalTableModel(db=self.db)
+        self.DividendsModel = QSqlTableModel(db=self.db)
         self.DividendsModel.setTable("dividends")
         self.DividendsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         account_idx = self.DividendsModel.fieldIndex("account_id")
@@ -215,6 +216,35 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DividendsDataMapper.addMapping(self.DividendTaxDescription, self.DividendsModel.fieldIndex("note_tax"))
 
         self.DividendDbButtonsWidget.InitDB(self.db, self.OperationsTableView, self.DividendsDataMapper)
+
+        ###############################################################################################
+        # CONFIGURE TRANSFERS TAB                                                                     #
+        ###############################################################################################
+        self.TransferFromAccountWidget.init_DB(self.db)
+        self.TransferToAccountWidget.init_DB(self.db)
+        self.TransferFeeAccountWidget.init_DB(self.db)
+
+        self.TransfersModel = QSqlTableModel(db=self.db)
+        self.TransfersModel.setTable("transfer_details")
+        self.TransfersModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        from_idx = self.TransfersModel.fieldIndex("from_acc_id")
+        to_idx = self.TransfersModel.fieldIndex("to_acc_id")
+        fee_idx = self.TransfersModel.fieldIndex("fee_acc_id")
+        self.TransfersModel.select()
+        self.TransfersDataMapper = QDataWidgetMapper(self)
+        self.TransfersDataMapper.setModel(self.TransfersModel)
+        self.TransfersDataMapper.setSubmitPolicy(QDataWidgetMapper.ManualSubmit)
+        self.TransfersDataMapper.setItemDelegate(TransferSqlDelegate(self.TransfersDataMapper))
+        self.TransfersDataMapper.addMapping(self.TransferFromAccountWidget, from_idx)
+        self.TransfersDataMapper.addMapping(self.TransferToAccountWidget, to_idx)
+        self.TransfersDataMapper.addMapping(self.TransferFeeAccountWidget, fee_idx)
+        self.TransfersDataMapper.addMapping(self.TransferFromTimestamp, self.TransfersModel.fieldIndex("from_timestamp"))
+        self.TransfersDataMapper.addMapping(self.TransferToTimestamp, self.TransfersModel.fieldIndex("to_timestamp"))
+        self.TransfersDataMapper.addMapping(self.TransferFeeTimestamp, self.TransfersModel.fieldIndex("fee_timestamp"))
+        self.TransfersDataMapper.addMapping(self.TransferFromAmount, self.TransfersModel.fieldIndex("from_amount"))
+        self.TransfersDataMapper.addMapping(self.TransferToAmount, self.TransfersModel.fieldIndex("to_amount"))
+        self.TransfersDataMapper.addMapping(self.TransferFeeAmount, self.TransfersModel.fieldIndex("fee_amount"))
+        self.TransfersDataMapper.addMapping(self.TransferNote, self.TransfersModel.fieldIndex("note"))
 
         ###############################################################################################
         # CONFIGURE ACTIONS                                                                           #
@@ -316,6 +346,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 self.ActionDetailsModel.setFilter(f"action_details.pid = {operation_id}")
             else:                     # Transfer
                 self.OperationsTabs.setCurrentIndex(3)
+                self.TransfersModel.setFilter(f"transfer_details.id = {transfer_id}")
+                self.TransfersDataMapper.setCurrentModelIndex(self.TransfersDataMapper.model().index(0, 0))
 
         elif (operation_type == 2):   # Dividend
             self.OperationsTabs.setCurrentIndex(2)

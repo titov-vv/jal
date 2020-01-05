@@ -419,6 +419,65 @@ class Ui_LedgerMainWindow(object):
         self.OperationsTabs.addTab(self.DividendDetailsTab, "")
         self.TransferDetailsTab = QWidget()
         self.TransferDetailsTab.setObjectName(u"TransferDetailsTab")
+        self.gridLayout_5 = QGridLayout(self.TransferDetailsTab)
+        self.gridLayout_5.setObjectName(u"gridLayout_5")
+        self.TransferFeeAccountWidget = AccountSelector(self.TransferDetailsTab)
+        self.TransferFeeAccountWidget.setObjectName(u"TransferFeeAccountWidget")
+
+        self.gridLayout_5.addWidget(self.TransferFeeAccountWidget, 3, 1, 1, 1)
+
+        self.TransferFromAccountWidget = AccountSelector(self.TransferDetailsTab)
+        self.TransferFromAccountWidget.setObjectName(u"TransferFromAccountWidget")
+
+        self.gridLayout_5.addWidget(self.TransferFromAccountWidget, 1, 1, 1, 1)
+
+        self.TransferFeeTimestamp = QDateTimeEdit(self.TransferDetailsTab)
+        self.TransferFeeTimestamp.setObjectName(u"TransferFeeTimestamp")
+        self.TransferFeeTimestamp.setCalendarPopup(True)
+
+        self.gridLayout_5.addWidget(self.TransferFeeTimestamp, 3, 0, 1, 1)
+
+        self.TransferToAccountWidget = AccountSelector(self.TransferDetailsTab)
+        self.TransferToAccountWidget.setObjectName(u"TransferToAccountWidget")
+
+        self.gridLayout_5.addWidget(self.TransferToAccountWidget, 2, 1, 1, 1)
+
+        self.TransferFeeAmount = QLineEdit(self.TransferDetailsTab)
+        self.TransferFeeAmount.setObjectName(u"TransferFeeAmount")
+
+        self.gridLayout_5.addWidget(self.TransferFeeAmount, 3, 2, 1, 1)
+
+        self.TransferToTimestamp = QDateTimeEdit(self.TransferDetailsTab)
+        self.TransferToTimestamp.setObjectName(u"TransferToTimestamp")
+        self.TransferToTimestamp.setCalendarPopup(True)
+
+        self.gridLayout_5.addWidget(self.TransferToTimestamp, 2, 0, 1, 1)
+
+        self.TransferFromTimestamp = QDateTimeEdit(self.TransferDetailsTab)
+        self.TransferFromTimestamp.setObjectName(u"TransferFromTimestamp")
+        self.TransferFromTimestamp.setCalendarPopup(True)
+
+        self.gridLayout_5.addWidget(self.TransferFromTimestamp, 1, 0, 1, 1)
+
+        self.TransferFromAmount = QLineEdit(self.TransferDetailsTab)
+        self.TransferFromAmount.setObjectName(u"TransferFromAmount")
+
+        self.gridLayout_5.addWidget(self.TransferFromAmount, 1, 2, 1, 1)
+
+        self.TransferToAmount = QLineEdit(self.TransferDetailsTab)
+        self.TransferToAmount.setObjectName(u"TransferToAmount")
+
+        self.gridLayout_5.addWidget(self.TransferToAmount, 2, 2, 1, 1)
+
+        self.verticalSpacer_5 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_5.addItem(self.verticalSpacer_5, 0, 0, 1, 1)
+
+        self.TransferNote = QLineEdit(self.TransferDetailsTab)
+        self.TransferNote.setObjectName(u"TransferNote")
+
+        self.gridLayout_5.addWidget(self.TransferNote, 4, 0, 1, 3)
+
         self.OperationsTabs.addTab(self.TransferDetailsTab, "")
 
         self.horizontalLayout_4.addWidget(self.OperationsTabs)
@@ -498,7 +557,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(0)
+        self.OperationsTabs.setCurrentIndex(3)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)
@@ -542,6 +601,9 @@ class Ui_LedgerMainWindow(object):
         self.DividendTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.DivDateLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Timestamp", None))
         self.OperationsTabs.setTabText(self.OperationsTabs.indexOf(self.DividendDetailsTab), QCoreApplication.translate("LedgerMainWindow", u"Dividend", None))
+        self.TransferFeeTimestamp.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
+        self.TransferToTimestamp.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
+        self.TransferFromTimestamp.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.OperationsTabs.setTabText(self.OperationsTabs.indexOf(self.TransferDetailsTab), QCoreApplication.translate("LedgerMainWindow", u"Transfer", None))
         self.NewOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"New", None))
         self.DeleteOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Del", None))

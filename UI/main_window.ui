@@ -425,7 +425,7 @@
                    <enum>QTabWidget::Triangular</enum>
                   </property>
                   <property name="currentIndex">
-                   <number>0</number>
+                   <number>3</number>
                   </property>
                   <widget class="QWidget" name="ActionDetailsTab">
                    <attribute name="title">
@@ -713,6 +713,72 @@
                    <attribute name="title">
                     <string>Transfer</string>
                    </attribute>
+                   <layout class="QGridLayout" name="gridLayout_5">
+                    <item row="3" column="1">
+                     <widget class="AccountSelector" name="TransferFeeAccountWidget" native="true"/>
+                    </item>
+                    <item row="1" column="1">
+                     <widget class="AccountSelector" name="TransferFromAccountWidget" native="true"/>
+                    </item>
+                    <item row="3" column="0">
+                     <widget class="QDateTimeEdit" name="TransferFeeTimestamp">
+                      <property name="displayFormat">
+                       <string>dd/MM/yyyy hh:mm:ss</string>
+                      </property>
+                      <property name="calendarPopup">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="1">
+                     <widget class="AccountSelector" name="TransferToAccountWidget" native="true"/>
+                    </item>
+                    <item row="3" column="2">
+                     <widget class="QLineEdit" name="TransferFeeAmount"/>
+                    </item>
+                    <item row="2" column="0">
+                     <widget class="QDateTimeEdit" name="TransferToTimestamp">
+                      <property name="displayFormat">
+                       <string>dd/MM/yyyy hh:mm:ss</string>
+                      </property>
+                      <property name="calendarPopup">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="0">
+                     <widget class="QDateTimeEdit" name="TransferFromTimestamp">
+                      <property name="displayFormat">
+                       <string>dd/MM/yyyy hh:mm:ss</string>
+                      </property>
+                      <property name="calendarPopup">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="2">
+                     <widget class="QLineEdit" name="TransferFromAmount"/>
+                    </item>
+                    <item row="2" column="2">
+                     <widget class="QLineEdit" name="TransferToAmount"/>
+                    </item>
+                    <item row="0" column="0">
+                     <spacer name="verticalSpacer_5">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="4" column="0" colspan="3">
+                     <widget class="QLineEdit" name="TransferNote"/>
+                    </item>
+                   </layout>
                   </widget>
                  </widget>
                 </item>
