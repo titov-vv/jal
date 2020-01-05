@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Sat Jan 4 16:11:21 2020
+-- File generated with SQLiteStudio v3.2.1 on Sat Jan 4 23:02:22 2020
 --
 -- Text encoding used: UTF-8
 --
@@ -351,13 +351,11 @@ CREATE TABLE transfers (
     id      INTEGER PRIMARY KEY
                     UNIQUE
                     NOT NULL,
-    from_id INTEGER REFERENCES actions (id) ON DELETE RESTRICT
-                                            ON UPDATE CASCADE
-                    NOT NULL,
-    to_id   INTEGER REFERENCES actions (id) ON DELETE RESTRICT
-                                            ON UPDATE CASCADE
-                    NOT NULL,
-    fee_id  INTEGER REFERENCES actions (id) ON DELETE RESTRICT
+    from_id INTEGER REFERENCES actions (id) ON DELETE SET NULL
+                                            ON UPDATE CASCADE,
+    to_id   INTEGER REFERENCES actions (id) ON DELETE SET NULL
+                                            ON UPDATE CASCADE,
+    fee_id  INTEGER REFERENCES actions (id) ON DELETE SET NULL
                                             ON UPDATE CASCADE
 );
 

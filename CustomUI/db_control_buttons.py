@@ -53,7 +53,9 @@ class DbControlButtons(QWidget):
                 query.prepare("DELETE FROM transfers WHERE transfers.id = :transfer_id")
                 query.bindValue(":transfer_id", id)
             else:
-                # delete only from "actions" table -> it will be cascaded to "action_details" by foreign key
+                query.prepare("DELETE FROM action_details AS a WHERE a.pid = :action_id")
+                query.bindValue(":action_id", id)
+                query.exec_()
                 query.prepare("DELETE FROM actions WHERE actions.id = :action_id")
                 query.bindValue(":action_id", id)
         elif (type == 2):

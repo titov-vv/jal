@@ -26,9 +26,6 @@ class Ui_LedgerMainWindow(object):
             LedgerMainWindow.setObjectName(u"LedgerMainWindow")
         LedgerMainWindow.resize(1700, 900)
         LedgerMainWindow.setMinimumSize(QSize(0, 0))
-        font = QFont()
-        font.setFamily(u"DejaVu Sans")
-        LedgerMainWindow.setFont(font)
         self.actionExit = QAction(LedgerMainWindow)
         self.actionExit.setObjectName(u"actionExit")
         self.action_Re_build_Ledger = QAction(LedgerMainWindow)
@@ -42,9 +39,6 @@ class Ui_LedgerMainWindow(object):
         self.centralwidget = QWidget(LedgerMainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setMaximumSize(QSize(16777215, 16777215))
-        font1 = QFont()
-        font1.setPointSize(10)
-        self.centralwidget.setFont(font1)
         self.gridLayout = QGridLayout(self.centralwidget)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
@@ -192,8 +186,8 @@ class Ui_LedgerMainWindow(object):
         self.OperationsTableView.setWordWrap(False)
         self.OperationsDetailsSplitter.addWidget(self.OperationsTableView)
         self.OperationsTableView.verticalHeader().setVisible(False)
-        self.OperationsTableView.verticalHeader().setMinimumSectionSize(34)
-        self.OperationsTableView.verticalHeader().setDefaultSectionSize(34)
+        self.OperationsTableView.verticalHeader().setMinimumSectionSize(17)
+        self.OperationsTableView.verticalHeader().setDefaultSectionSize(17)
         self.OperationDetails = QFrame(self.OperationsDetailsSplitter)
         self.OperationDetails.setObjectName(u"OperationDetails")
         self.OperationDetails.setMinimumSize(QSize(0, 100))
@@ -206,6 +200,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.OperationsTabs = QTabWidget(self.OperationDetails)
         self.OperationsTabs.setObjectName(u"OperationsTabs")
+        self.OperationsTabs.setEnabled(True)
         self.OperationsTabs.setMinimumSize(QSize(0, 0))
         self.OperationsTabs.setTabPosition(QTabWidget.South)
         self.OperationsTabs.setTabShape(QTabWidget.Triangular)
@@ -428,6 +423,40 @@ class Ui_LedgerMainWindow(object):
 
         self.horizontalLayout_4.addWidget(self.OperationsTabs)
 
+        self.OperationsButtons = QFrame(self.OperationDetails)
+        self.OperationsButtons.setObjectName(u"OperationsButtons")
+        self.OperationsButtons.setMinimumSize(QSize(100, 0))
+        self.OperationsButtons.setFrameShape(QFrame.Panel)
+        self.OperationsButtons.setFrameShadow(QFrame.Sunken)
+        self.verticalLayout_3 = QVBoxLayout(self.OperationsButtons)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.NewOperationBtn = QPushButton(self.OperationsButtons)
+        self.NewOperationBtn.setObjectName(u"NewOperationBtn")
+
+        self.verticalLayout_3.addWidget(self.NewOperationBtn)
+
+        self.DeleteOperationBtn = QPushButton(self.OperationsButtons)
+        self.DeleteOperationBtn.setObjectName(u"DeleteOperationBtn")
+
+        self.verticalLayout_3.addWidget(self.DeleteOperationBtn)
+
+        self.CopyOperationBtn = QPushButton(self.OperationsButtons)
+        self.CopyOperationBtn.setObjectName(u"CopyOperationBtn")
+
+        self.verticalLayout_3.addWidget(self.CopyOperationBtn)
+
+        self.SaveOperationBtn = QPushButton(self.OperationsButtons)
+        self.SaveOperationBtn.setObjectName(u"SaveOperationBtn")
+
+        self.verticalLayout_3.addWidget(self.SaveOperationBtn)
+
+        self.verticalSpacer_4 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.verticalLayout_3.addItem(self.verticalSpacer_4)
+
+
+        self.horizontalLayout_4.addWidget(self.OperationsButtons)
+
         self.OperationsDetailsSplitter.addWidget(self.OperationDetails)
 
         self.verticalLayout_2.addWidget(self.OperationsDetailsSplitter)
@@ -446,7 +475,7 @@ class Ui_LedgerMainWindow(object):
         LedgerMainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(LedgerMainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1700, 20))
+        self.menubar.setGeometry(QRect(0, 0, 1700, 30))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName(u"menuFile")
         self.menu_DAta = QMenu(self.menubar)
@@ -469,7 +498,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(2)
+        self.OperationsTabs.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)
@@ -514,6 +543,10 @@ class Ui_LedgerMainWindow(object):
         self.DivDateLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Timestamp", None))
         self.OperationsTabs.setTabText(self.OperationsTabs.indexOf(self.DividendDetailsTab), QCoreApplication.translate("LedgerMainWindow", u"Dividend", None))
         self.OperationsTabs.setTabText(self.OperationsTabs.indexOf(self.TransferDetailsTab), QCoreApplication.translate("LedgerMainWindow", u"Transfer", None))
+        self.NewOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"New", None))
+        self.DeleteOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Del", None))
+        self.CopyOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Copy", None))
+        self.SaveOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Save", None))
         self.MainTabs.setTabText(self.MainTabs.indexOf(self.TabMain), QCoreApplication.translate("LedgerMainWindow", u"Balance", None))
         self.MainTabs.setTabText(self.MainTabs.indexOf(self.TabTransactions), QCoreApplication.translate("LedgerMainWindow", u"Transactions", None))
         self.menuFile.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&File", None))

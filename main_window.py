@@ -1,5 +1,5 @@
 from constants import *
-from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView
+from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu
 from PySide2.QtSql import QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel, QSqlRelationalTableModel
 from PySide2.QtCore import Qt, Slot
 from PySide2 import QtCore
@@ -109,7 +109,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.setColumnWidth(4, 400)
         self.OperationsTableView.setColumnWidth(9, 300)
         self.OperationsTableView.setWordWrap(False)
-        #self.OperationsTableView.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        # next line forces usage of sizeHing() from delegate
+        self.OperationsTableView.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.OperationsTableView.horizontalHeader().setFont(font)
         self.OperationsTableView.show()
 
@@ -156,6 +157,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionDetailsTableView.horizontalHeader().moveSection(6, 2)
         self.ActionDetailsTableView.setColumnWidth(6, 400)
         self.ActionDetailsTableView.show()
+
+        self.ActionDbButtonsWidget.InitDB(self.db, self.OperationsTableView, self.ActionsDataMapper)
 
         ###############################################################################################
         # CONFIGURE TRADES TAB                                                                        #
@@ -220,7 +223,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.actionExit.triggered.connect(qApp.quit)
         self.action_Import.triggered.connect(self.ImportFrom1C)
         self.action_Re_build_Ledger.triggered.connect(self.ShowRebuildDialog)
-        #INTERFACE ACTIONS
+        # INTERFACE ACTIONS
         self.MainTabs.currentChanged.connect(self.OnMainTabChange)
         self.BalanceDate.dateChanged.connect(self.onBalanceDateChange)
         self.CurrencyCombo.currentIndexChanged.connect(self.OnBalanceCurrencyChange)
@@ -229,6 +232,16 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         # OPERATIONS TABLE ACTIONS
         self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
         self.ChooseAccountBtn.clicked.connect(self.OnAccountChange)
+        # OPERATIONS ACTIONS
+        self.NewOperationMenu = QMenu()
+        self.NewOperationMenu.addAction('Income / Spending', self.CreateNewAction)
+        self.NewOperationMenu.addAction('Transfer', self.CreateNewTransfer)
+        self.NewOperationMenu.addAction('Buy / Sell', self.CreateNewTrade)
+        self.NewOperationMenu.addAction('Dividend', self.CreateNewDividend)
+        self.NewOperationBtn.setMenu(self.NewOperationMenu)
+        self.DeleteOperationBtn.clicked.connect(self.DeleteOperation)
+        self.CopyOperationBtn.clicked.connect(self.CopyOperation)
+        self.SaveOperationBtn.clicked.connect(self.SaveOperation)
 
         self.OperationsTableView.selectRow(0)
 
@@ -344,3 +357,27 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def OnAccountChange(self):
         self.SetOperationsFilter()
+
+    def CreateNewAction(self):
+        print("Implement new action")
+
+    def CreateNewTransfer(self):
+        print("Implement new transfer")
+
+    def CreateNewTrade(self):
+        print("Implement new trade")
+
+    def CreateNewDividend(self):
+        print("Implement new dividend")
+
+    @Slot()
+    def DeleteOperation(self):
+        print("Implement delete")
+
+    @Slot()
+    def CopyOperation(self):
+        print("Implement copy")
+
+    @Slot()
+    def SaveOperation(self):
+        print("Implement save")

@@ -49,8 +49,7 @@ class OperationsTypeDelegate(QStyledItemDelegate):
         painter.restore()
 
     def sizeHint(self, option, index):
-        model = index.model()
-        type = model.data(index, Qt.DisplayRole)
+        type = index.data(Qt.DisplayRole)
         fontMetrics = option.fontMetrics
         document = QTextDocument("W")
         option.font.setWeight(QFont.Bold)
@@ -58,7 +57,7 @@ class OperationsTypeDelegate(QStyledItemDelegate):
         w = document.idealWidth()
         h = fontMetrics.height()
         if (type == 3):
-            h = h * 2
+            h = h * 3
         return QSize(w, h)
 
 class OperationsTimestampDelegate(QStyledItemDelegate):

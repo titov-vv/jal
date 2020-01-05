@@ -16,11 +16,6 @@
     <height>0</height>
    </size>
   </property>
-  <property name="font">
-   <font>
-    <family>DejaVu Sans</family>
-   </font>
-  </property>
   <property name="windowTitle">
    <string>Ledger</string>
   </property>
@@ -30,11 +25,6 @@
      <width>16777215</width>
      <height>16777215</height>
     </size>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>10</pointsize>
-    </font>
    </property>
    <layout class="QGridLayout" name="gridLayout">
     <property name="leftMargin">
@@ -376,10 +366,10 @@
                 <bool>false</bool>
                </attribute>
                <attribute name="verticalHeaderMinimumSectionSize">
-                <number>34</number>
+                <number>17</number>
                </attribute>
                <attribute name="verticalHeaderDefaultSectionSize">
-                <number>34</number>
+                <number>17</number>
                </attribute>
               </widget>
               <widget class="QFrame" name="OperationDetails">
@@ -419,6 +409,9 @@
                 </property>
                 <item>
                  <widget class="QTabWidget" name="OperationsTabs">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
@@ -432,7 +425,7 @@
                    <enum>QTabWidget::Triangular</enum>
                   </property>
                   <property name="currentIndex">
-                   <number>2</number>
+                   <number>0</number>
                   </property>
                   <widget class="QWidget" name="ActionDetailsTab">
                    <attribute name="title">
@@ -723,6 +716,65 @@
                   </widget>
                  </widget>
                 </item>
+                <item>
+                 <widget class="QFrame" name="OperationsButtons">
+                  <property name="minimumSize">
+                   <size>
+                    <width>100</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="frameShape">
+                   <enum>QFrame::Panel</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Sunken</enum>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_3">
+                   <item>
+                    <widget class="QPushButton" name="NewOperationBtn">
+                     <property name="text">
+                      <string>New</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="DeleteOperationBtn">
+                     <property name="text">
+                      <string>Del</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="CopyOperationBtn">
+                     <property name="text">
+                      <string>Copy</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="SaveOperationBtn">
+                     <property name="text">
+                      <string>Save</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="verticalSpacer_4">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
                </layout>
               </widget>
              </widget>
@@ -748,7 +800,7 @@
      <x>0</x>
      <y>0</y>
      <width>1700</width>
-     <height>20</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
