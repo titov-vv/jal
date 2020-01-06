@@ -9,7 +9,7 @@
 ################################################################################
 
 from PySide2.QtCore import (QCoreApplication, QMetaObject, QObject, QPoint,
-    QRect, QSize, QUrl, Qt)
+    QRect, QSize, QUrl, Qt, QDate)
 from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QFont,
     QFontDatabase, QIcon, QLinearGradient, QPalette, QPainter, QPixmap,
     QRadialGradient)
@@ -17,7 +17,6 @@ from PySide2.QtWidgets import *
 
 from CustomUI.account_select import AccountSelector
 from CustomUI.active_select import ActiveSelector
-from CustomUI.db_control_buttons import DbControlButtons
 from CustomUI.account_select import AccountButton
 
 class Ui_LedgerMainWindow(object):
@@ -186,8 +185,8 @@ class Ui_LedgerMainWindow(object):
         self.OperationsTableView.setWordWrap(False)
         self.OperationsDetailsSplitter.addWidget(self.OperationsTableView)
         self.OperationsTableView.verticalHeader().setVisible(False)
-        self.OperationsTableView.verticalHeader().setMinimumSectionSize(17)
-        self.OperationsTableView.verticalHeader().setDefaultSectionSize(17)
+        self.OperationsTableView.verticalHeader().setMinimumSectionSize(1)
+        self.OperationsTableView.verticalHeader().setDefaultSectionSize(1)
         self.OperationDetails = QFrame(self.OperationsDetailsSplitter)
         self.OperationDetails.setObjectName(u"OperationDetails")
         self.OperationDetails.setMinimumSize(QSize(0, 100))
@@ -226,11 +225,6 @@ class Ui_LedgerMainWindow(object):
         self.ActionPeerEdit.setObjectName(u"ActionPeerEdit")
 
         self.gridLayout_4.addWidget(self.ActionPeerEdit, 2, 2, 1, 1)
-
-        self.ActionDbButtonsWidget = DbControlButtons(self.ActionDetailsTab)
-        self.ActionDbButtonsWidget.setObjectName(u"ActionDbButtonsWidget")
-
-        self.gridLayout_4.addWidget(self.ActionDbButtonsWidget, 1, 2, 1, 1)
 
         self.ActionTimestampEdit = QDateTimeEdit(self.ActionDetailsTab)
         self.ActionTimestampEdit.setObjectName(u"ActionTimestampEdit")
@@ -298,11 +292,6 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_3.addWidget(self.TradePriceEdit, 6, 2, 1, 1)
 
-        self.TradeDbButtonsWidget = DbControlButtons(self.TradeDetailsTab)
-        self.TradeDbButtonsWidget.setObjectName(u"TradeDbButtonsWidget")
-
-        self.gridLayout_3.addWidget(self.TradeDbButtonsWidget, 1, 3, 1, 1)
-
         self.TradeNumberEdit = QLineEdit(self.TradeDetailsTab)
         self.TradeNumberEdit.setObjectName(u"TradeNumberEdit")
 
@@ -316,6 +305,7 @@ class Ui_LedgerMainWindow(object):
 
         self.TradeSettlementEdit = QDateEdit(self.TradeDetailsTab)
         self.TradeSettlementEdit.setObjectName(u"TradeSettlementEdit")
+        self.TradeSettlementEdit.setMinimumDate(QDate(2000, 1, 1))
         self.TradeSettlementEdit.setCalendarPopup(True)
 
         self.gridLayout_3.addWidget(self.TradeSettlementEdit, 2, 2, 1, 1)
@@ -411,11 +401,6 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_2.addWidget(self.DividendActiveWidget, 6, 1, 1, 2)
 
-        self.DividendDbButtonsWidget = DbControlButtons(self.DividendDetailsTab)
-        self.DividendDbButtonsWidget.setObjectName(u"DividendDbButtonsWidget")
-
-        self.gridLayout_2.addWidget(self.DividendDbButtonsWidget, 1, 2, 1, 1)
-
         self.OperationsTabs.addTab(self.DividendDetailsTab, "")
         self.TransferDetailsTab = QWidget()
         self.TransferDetailsTab.setObjectName(u"TransferDetailsTab")
@@ -433,6 +418,7 @@ class Ui_LedgerMainWindow(object):
 
         self.TransferFeeTimestamp = QDateTimeEdit(self.TransferDetailsTab)
         self.TransferFeeTimestamp.setObjectName(u"TransferFeeTimestamp")
+        self.TransferFeeTimestamp.setMinimumDate(QDate(2000, 1, 1))
         self.TransferFeeTimestamp.setCalendarPopup(True)
 
         self.gridLayout_5.addWidget(self.TransferFeeTimestamp, 3, 0, 1, 1)
@@ -534,7 +520,7 @@ class Ui_LedgerMainWindow(object):
         LedgerMainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(LedgerMainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1700, 30))
+        self.menubar.setGeometry(QRect(0, 0, 1700, 22))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName(u"menuFile")
         self.menu_DAta = QMenu(self.menubar)
@@ -557,7 +543,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(3)
+        self.OperationsTabs.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)
@@ -592,6 +578,7 @@ class Ui_LedgerMainWindow(object):
         self.TradeTimestampLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Timestamp", None))
         self.TradeAccountLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Account", None))
         self.TradeTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
+        self.TradeSettlementEdit.setSpecialValueText(QCoreApplication.translate("LedgerMainWindow", u"N/A", None))
         self.TradeSettlementEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy", None))
         self.OperationsTabs.setTabText(self.OperationsTabs.indexOf(self.TradeDetailsTab), QCoreApplication.translate("LedgerMainWindow", u"Buy / Sell", None))
         self.SumLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Sum", None))
@@ -601,6 +588,7 @@ class Ui_LedgerMainWindow(object):
         self.DividendTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.DivDateLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Timestamp", None))
         self.OperationsTabs.setTabText(self.OperationsTabs.indexOf(self.DividendDetailsTab), QCoreApplication.translate("LedgerMainWindow", u"Dividend", None))
+        self.TransferFeeTimestamp.setSpecialValueText(QCoreApplication.translate("LedgerMainWindow", u"N/A", None))
         self.TransferFeeTimestamp.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.TransferToTimestamp.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.TransferFromTimestamp.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))

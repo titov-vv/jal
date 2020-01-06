@@ -56,8 +56,8 @@ class OperationsTypeDelegate(QStyledItemDelegate):
         document.setDefaultFont(option.font)
         w = document.idealWidth()
         h = fontMetrics.height()
-        if (type == 3):
-            h = h * 3
+        if (type == 2) or (type == 3):
+            h = h * 2
         return QSize(w, h)
 
 class OperationsTimestampDelegate(QStyledItemDelegate):
@@ -89,8 +89,8 @@ class OperationsAccountDelegate(QStyledItemDelegate):
         account = model.data(index, Qt.DisplayRole)
         type = model.data(model.index(index.row(), 0), Qt.DisplayRole)
         if (type == 1):
-            peer = model.data(model.index(index.row(), 5), Qt.DisplayRole)
-            text = account + "\n" + peer
+            #peer = model.data(model.index(index.row(), 5), Qt.DisplayRole)
+            text = account #+ "\n" + peer
         elif (type == 2):
             active_name = model.data(model.index(index.row(), 8), Qt.DisplayRole)
             text = account + "\n" + active_name
@@ -115,9 +115,14 @@ class OperationsNotesDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         painter.save()
         model = index.model()
-        note = model.data(index, Qt.DisplayRole)
-        note2 = model.data(model.index(index.row(), 10), Qt.DisplayRole)
-        text = note + "\n" + note2
+        type = model.data(model.index(index.row(), 0), Qt.DisplayRole)
+        if (type == 1):
+            peer = model.data(model.index(index.row(), 5), Qt.DisplayRole)
+            text = peer
+        else:
+            note = model.data(index, Qt.DisplayRole)
+            note2 = model.data(model.index(index.row(), 10), Qt.DisplayRole)
+            text = note + "\n" + note2
         painter.drawText(option.rect, Qt.AlignLeft, text)
         painter.restore()
 

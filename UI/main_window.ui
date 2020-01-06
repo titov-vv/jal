@@ -366,10 +366,10 @@
                 <bool>false</bool>
                </attribute>
                <attribute name="verticalHeaderMinimumSectionSize">
-                <number>17</number>
+                <number>1</number>
                </attribute>
                <attribute name="verticalHeaderDefaultSectionSize">
-                <number>17</number>
+                <number>1</number>
                </attribute>
               </widget>
               <widget class="QFrame" name="OperationDetails">
@@ -425,7 +425,7 @@
                    <enum>QTabWidget::Triangular</enum>
                   </property>
                   <property name="currentIndex">
-                   <number>3</number>
+                   <number>0</number>
                   </property>
                   <widget class="QWidget" name="ActionDetailsTab">
                    <attribute name="title">
@@ -475,9 +475,6 @@
                     </item>
                     <item row="2" column="2">
                      <widget class="QLineEdit" name="ActionPeerEdit"/>
-                    </item>
-                    <item row="1" column="2">
-                     <widget class="DbControlButtons" name="ActionDbButtonsWidget" native="true"/>
                     </item>
                     <item row="2" column="0" colspan="2">
                      <widget class="QDateTimeEdit" name="ActionTimestampEdit">
@@ -571,9 +568,6 @@
                     <item row="6" column="2">
                      <widget class="QLineEdit" name="TradePriceEdit"/>
                     </item>
-                    <item row="1" column="3">
-                     <widget class="DbControlButtons" name="TradeDbButtonsWidget" native="true"/>
-                    </item>
                     <item row="2" column="3">
                      <widget class="QLineEdit" name="TradeNumberEdit"/>
                     </item>
@@ -589,6 +583,16 @@
                     </item>
                     <item row="2" column="2">
                      <widget class="QDateEdit" name="TradeSettlementEdit">
+                      <property name="specialValueText">
+                       <string>N/A</string>
+                      </property>
+                      <property name="minimumDate">
+                       <date>
+                        <year>2000</year>
+                        <month>1</month>
+                        <day>1</day>
+                       </date>
+                      </property>
                       <property name="displayFormat">
                        <string>dd/MM/yyyy</string>
                       </property>
@@ -704,9 +708,6 @@
                     <item row="6" column="1" colspan="2">
                      <widget class="ActiveSelector" name="DividendActiveWidget" native="true"/>
                     </item>
-                    <item row="1" column="2">
-                     <widget class="DbControlButtons" name="DividendDbButtonsWidget" native="true"/>
-                    </item>
                    </layout>
                   </widget>
                   <widget class="QWidget" name="TransferDetailsTab">
@@ -722,6 +723,16 @@
                     </item>
                     <item row="3" column="0">
                      <widget class="QDateTimeEdit" name="TransferFeeTimestamp">
+                      <property name="specialValueText">
+                       <string>N/A</string>
+                      </property>
+                      <property name="minimumDate">
+                       <date>
+                        <year>2000</year>
+                        <month>1</month>
+                        <day>1</day>
+                       </date>
+                      </property>
                       <property name="displayFormat">
                        <string>dd/MM/yyyy hh:mm:ss</string>
                       </property>
@@ -866,7 +877,7 @@
      <x>0</x>
      <y>0</y>
      <width>1700</width>
-     <height>30</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -927,12 +938,6 @@
    <class>ActiveSelector</class>
    <extends>QWidget</extends>
    <header>CustomUI\active_selector.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>DbControlButtons</class>
-   <extends>QWidget</extends>
-   <header>CustomUI/db_control_buttons.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

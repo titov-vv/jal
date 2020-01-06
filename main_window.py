@@ -111,6 +111,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.setColumnWidth(9, 300)
         self.OperationsTableView.setWordWrap(False)
         # next line forces usage of sizeHing() from delegate
+        self.OperationsTableView.verticalHeader().setMinimumSectionSize(8)
         self.OperationsTableView.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.OperationsTableView.horizontalHeader().setFont(font)
         self.OperationsTableView.show()
@@ -159,8 +160,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionDetailsTableView.setColumnWidth(6, 400)
         self.ActionDetailsTableView.show()
 
-        self.ActionDbButtonsWidget.InitDB(self.db, self.OperationsTableView, self.ActionsDataMapper)
-
         ###############################################################################################
         # CONFIGURE TRADES TAB                                                                        #
         ###############################################################################################
@@ -188,8 +187,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TradesDataMapper.addMapping(self.TradeBrokerFeeEdit, self.TradesModel.fieldIndex("fee_broker"))
         self.TradesDataMapper.addMapping(self.TradeExchangeFeeEdit, self.TradesModel.fieldIndex("fee_exchange"))
 
-        self.TradeDbButtonsWidget.InitDB(self.db, self.OperationsTableView, self.TradesDataMapper)
-
         ###############################################################################################
         # CONFIGURE DIVIDENDS TAB                                                                     #
         ###############################################################################################
@@ -214,8 +211,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DividendsDataMapper.addMapping(self.DividendSumDescription, self.DividendsModel.fieldIndex("note"))
         self.DividendsDataMapper.addMapping(self.DividendTaxEdit, self.DividendsModel.fieldIndex("sum_tax"))
         self.DividendsDataMapper.addMapping(self.DividendTaxDescription, self.DividendsModel.fieldIndex("note_tax"))
-
-        self.DividendDbButtonsWidget.InitDB(self.db, self.OperationsTableView, self.DividendsDataMapper)
 
         ###############################################################################################
         # CONFIGURE TRANSFERS TAB                                                                     #
@@ -342,19 +337,19 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             self.ActionsModel.setFilter(f"actions.id = {operation_id}")
             self.ActionsDataMapper.setCurrentModelIndex(self.ActionsDataMapper.model().index(0, 0))
             if (transfer_id == 0):    # Income / Spending
-                self.OperationsTabs.setCurrentIndex(0)
+                self.OperationsTabs.setCurrentIndex(TAB_ACTION)
                 self.ActionDetailsModel.setFilter(f"action_details.pid = {operation_id}")
             else:                     # Transfer
-                self.OperationsTabs.setCurrentIndex(3)
+                self.OperationsTabs.setCurrentIndex(TAB_TRANSFER)
                 self.TransfersModel.setFilter(f"transfer_details.id = {transfer_id}")
                 self.TransfersDataMapper.setCurrentModelIndex(self.TransfersDataMapper.model().index(0, 0))
 
         elif (operation_type == 2):   # Dividend
-            self.OperationsTabs.setCurrentIndex(2)
+            self.OperationsTabs.setCurrentIndex(TAB_DIVIDEND)
             self.DividendsModel.setFilter("dividends.id = {}".format(operation_id))
             self.DividendsDataMapper.setCurrentModelIndex(self.DividendsDataMapper.model().index(0, 0))
         elif (operation_type == 3):   # Trade
-            self.OperationsTabs.setCurrentIndex(1)
+            self.OperationsTabs.setCurrentIndex(TAB_TRADE)
             self.TradesModel.setFilter("trades.id = {}".format(operation_id))
             self.TradesDataMapper.setCurrentModelIndex(self.TradesDataMapper.model().index(0,0))
         else:
@@ -391,19 +386,51 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.SetOperationsFilter()
 
     def CreateNewAction(self):
-        print("Implement new action")
+        self.OperationsTabs.setCurrentIndex(TAB_ACTION)
+        self.ActionsDataMapper.submit()
+        new_record = self.ActionsModel.record()
+        new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
+        if (self.ChooseAccountBtn.account_id != 0):
+            new_record.setValue("account_id", self.ChooseAccountBtn.account_id)
+        self.ActionsModel.insertRecord(-1, new_record)
+        self.ActionsDataMapper.toLast()
 
     def CreateNewTransfer(self):
-        print("Implement new transfer")
+        self.OperationsTabs.setCurrentIndex(TAB_TRANSFER)
+        self.TransfersDataMapper.submit()
+        new_record = self.TransfersModel.record()
+        new_record.setValue("from_timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
+        if (self.ChooseAccountBtn.account_id != 0):
+            new_record.setValue("from_acc_id", self.ChooseAccountBtn.account_id)
+        new_record.setValue("to_timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
+        new_record.setValue("fee_timestamp", 0)
+        self.TransfersModel.insertRecord(-1, new_record)
+        self.TransfersDataMapper.toLast()
 
     def CreateNewTrade(self):
-        print("Implement new trade")
+        self.OperationsTabs.setCurrentIndex(TAB_TRADE)
+        self.TradesDataMapper.submit()
+        new_record = self.TradesModel.record()
+        new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
+        if (self.ChooseAccountBtn.account_id != 0):
+            new_record.setValue("account_id", self.ChooseAccountBtn.account_id)
+        self.TradesModel.insertRecord(-1, new_record)
+        self.TradesDataMapper.toLast()
 
     def CreateNewDividend(self):
-        print("Implement new dividend")
+        self.OperationsTabs.setCurrentIndex(TAB_DIVIDEND)
+        self.DividendsDataMapper.submit()
+        new_record = self.DividendsModel.record()
+        new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
+        if (self.ChooseAccountBtn.account_id != 0):
+            new_record.setValue("account_id", self.ChooseAccountBtn.account_id)
+        self.DividendsModel.insertRecord(-1, new_record)
+        self.DividendsDataMapper.toLast()
+        # TODO Implement "Not saved" flag
 
     @Slot()
     def DeleteOperation(self):
+        # TODO: show confirmation window before deletion
         index = self.OperationsTableView.currentIndex()
         type = self.OperationsModel.data(self.OperationsModel.index(index.row(), 0))
         id = self.OperationsModel.data(self.OperationsModel.index(index.row(), 1))
@@ -413,8 +440,40 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def CopyOperation(self):
-        print("Implement copy")
+        active_tab = self.OperationsTabs.currentIndex()
+        if (active_tab == TAB_ACTION):
+            mapper = self.ActionsDataMapper
+        elif (active_tab == TAB_TRANSFER):
+            mapper = self.TransfersDataMapper
+        elif (active_tab == TAB_DIVIDEND):
+            mapper = self.DividendsDataMapper
+        elif (active_tab == TAB_TRADE):
+            mapper = self.TradesDataMapper
+        else:
+            print("Faulty tab selected")
+        row = mapper.currentIndex()
+        new_record = mapper.model().record(row)
+        mapper.submit()
+        new_record.setNull("id")
+        new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
+        mapper.model().insertRecord(-1, new_record)
+        mapper.toLast()
+        # TODO Implement "Not saved" flag
 
     @Slot()
     def SaveOperation(self):
-        print("Implement save")
+        active_tab = self.OperationsTabs.currentIndex()
+        if (active_tab == TAB_ACTION):
+            mapper = self.ActionsDataMapper
+        elif (active_tab == TAB_TRANSFER):
+            mapper = self.TransfersDataMapper
+        elif (active_tab == TAB_DIVIDEND):
+            mapper = self.DividendsDataMapper
+        elif (active_tab == TAB_TRADE):
+            mapper = self.TradesDataMapper
+        else:
+            print("Faulty tab selected")
+        mapper.submit()
+        mapper.model().submitAll()
+        self.OperationsModel.select()
+        # TODO Implement "Not saved" flag reset
