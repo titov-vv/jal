@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QAbstractItemView
+from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QAbstractItemView, QMenu
 from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtCore import Signal, Property, Slot
 from ui_account_choice_dlg import Ui_AccountChoiceDlg
@@ -67,8 +67,14 @@ class AccountButton(QPushButton):
     def __init__(self, parent):
         QPushButton.__init__(self, parent)
         self.p_account_id = 0
+        self.setText("ALL")
 
-        self.clicked.connect(self.OnButtonClicked)
+        self.Menu = QMenu()
+        self.Menu.addAction('Choose account', self.ChooseAccount)
+        self.Menu.addAction('Any account', self.ClearAccount)
+        self.setMenu(self.Menu)
+
+        #self.clicked.connect(self.OnButtonClicked)
         self.dialog = AccountChoiceDlg()
 
     def getId(self):
@@ -91,13 +97,19 @@ class AccountButton(QPushButton):
         self.dialog.init_DB(db)
         self.setText(self.dialog.AccountName)
 
-    def OnButtonClicked(self):
+    def ChooseAccount(self):
         ref_point = self.mapToGlobal(self.geometry().bottomLeft())
         self.dialog.setGeometry(ref_point.x(), ref_point.y(), self.dialog.width(), self.dialog.height())
         res = self.dialog.exec_()
         if res:
             self.account_id = self.dialog.account_id
             self.setText(self.dialog.AccountName)
+            self.clicked.emit()
+
+    def ClearAccount(self):
+        self.account_id = 0
+        self.setText("ALL")
+        self.clicked.emit()
 
 #TODO: Add autocomplete feature
 class AccountSelector(QWidget):
