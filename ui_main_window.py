@@ -325,6 +325,26 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_3.addWidget(self.TradeActiveWidget, 5, 1, 1, 2)
 
+        self.TypeGroupFrame = QFrame(self.TradeDetailsTab)
+        self.TypeGroupFrame.setObjectName(u"TypeGroupFrame")
+        self.TypeGroupFrame.setFrameShape(QFrame.StyledPanel)
+        self.TypeGroupFrame.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_5 = QHBoxLayout(self.TypeGroupFrame)
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.horizontalLayout_5.setContentsMargins(9, 0, 9, 0)
+        self.BuyRadioBtn = QRadioButton(self.TypeGroupFrame)
+        self.BuyRadioBtn.setObjectName(u"BuyRadioBtn")
+
+        self.horizontalLayout_5.addWidget(self.BuyRadioBtn)
+
+        self.SellRadioBtn = QRadioButton(self.TypeGroupFrame)
+        self.SellRadioBtn.setObjectName(u"SellRadioBtn")
+
+        self.horizontalLayout_5.addWidget(self.SellRadioBtn)
+
+
+        self.gridLayout_3.addWidget(self.TypeGroupFrame, 1, 3, 1, 1)
+
         self.OperationsTabs.addTab(self.TradeDetailsTab, "")
         self.DividendDetailsTab = QWidget()
         self.DividendDetailsTab.setObjectName(u"DividendDetailsTab")
@@ -543,7 +563,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(0)
+        self.OperationsTabs.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)
@@ -580,6 +600,8 @@ class Ui_LedgerMainWindow(object):
         self.TradeTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.TradeSettlementEdit.setSpecialValueText(QCoreApplication.translate("LedgerMainWindow", u"N/A", None))
         self.TradeSettlementEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy", None))
+        self.BuyRadioBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Buy", None))
+        self.SellRadioBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Sell", None))
         self.OperationsTabs.setTabText(self.OperationsTabs.indexOf(self.TradeDetailsTab), QCoreApplication.translate("LedgerMainWindow", u"Buy / Sell", None))
         self.SumLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Sum", None))
         self.TaxLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Tax", None))

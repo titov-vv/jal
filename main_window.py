@@ -11,7 +11,7 @@ from rebuild_window import RebuildDialog
 from balance_delegate import BalanceDelegate
 from operation_delegate import *
 from dividend_delegate import DividendSqlDelegate
-from trade_delegate import TradeSqlDelegate
+from trade_delegate import TradeSqlDelegate, OptionGroup
 from transfer_delegate import TransferSqlDelegate
 from action_delegate import ActionSqlDelegate
 
@@ -165,9 +165,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         ###############################################################################################
         self.TradeAccountWidget.init_DB(self.db)
         self.TradeActiveWidget.init_DB(self.db)
+        self.BS_group = OptionGroup()
+        self.BS_group.addButton(self.BuyRadioBtn, 1)
+        self.BS_group.addButton(self.SellRadioBtn, -1)
 
         self.TradesModel = QSqlTableModel(db=self.db)
         self.TradesModel.setTable("trades")
+        self.TradesModel.beforeInsert.connect(self.BeforeTradeInsert)
         self.TradesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         account_idx = self.TradesModel.fieldIndex("account_id")
         active_idx = self.TradesModel.fieldIndex("active_id")
@@ -179,6 +183,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TradesDataMapper.addMapping(self.TradeAccountWidget, account_idx)
         self.TradesDataMapper.addMapping(self.TradeActiveWidget, active_idx)
         self.TradesDataMapper.addMapping(self.TradeTimestampEdit, self.TradesModel.fieldIndex("timestamp"))
+        self.TradesDataMapper.addMapping(self.BS_group, self.TradesModel.fieldIndex("type"))
         self.TradesDataMapper.addMapping(self.TradeSettlementEdit, self.TradesModel.fieldIndex("settlement"))
         self.TradesDataMapper.addMapping(self.TradeNumberEdit, self.TradesModel.fieldIndex("number"))
         self.TradesDataMapper.addMapping(self.TradePriceEdit, self.TradesModel.fieldIndex("price"))
@@ -221,6 +226,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.TransfersModel = QSqlTableModel(db=self.db)
         self.TransfersModel.setTable("transfer_details")
+        self.TransfersModel.beforeInsert.connect(self.BeforeTransferInsert)
         self.TransfersModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         from_idx = self.TransfersModel.fieldIndex("from_acc_id")
         to_idx = self.TransfersModel.fieldIndex("to_acc_id")
@@ -473,7 +479,21 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             mapper = self.TradesDataMapper
         else:
             print("Faulty tab selected")
-        mapper.submit()
-        mapper.model().submitAll()
+        if not mapper.submit():
+            print("Mapper submit failed")
+            qDebug(mapper.model().lastError())
+        if not mapper.model().submitAll():
+            print("Model submit failed")
+            print(mapper.model().lastError().text())
         self.OperationsModel.select()
         # TODO Implement "Not saved" flag reset
+
+    @Slot()
+    def BeforeTradeInsert(self, record):
+        #TODO Put correct "type" value
+        print(record)
+
+    @Slot()
+    def BeforeTransferInsert(self, record):
+        #TODO put correct SQL for transfer insert here and then cancel the operation, probably overriding submitAll()
+        print(record)

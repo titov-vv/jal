@@ -136,7 +136,7 @@ class OperationsAmountDelegate(QStyledItemDelegate):
         amount = model.data(index, Qt.DisplayRole)
         type = model.data(model.index(index.row(), 0), Qt.DisplayRole)
         qty = model.data(model.index(index.row(), 12), Qt.DisplayRole)
-        if (type != 1) and (qty != 0):
+        if (type != 1) and (qty != 0):  # TODO need to put TAX amount for Dividend here
             text = f"{amount:.2f}\n{qty:.2f}"
         else:
             text = f"{amount:.2f}\n"
@@ -157,8 +157,10 @@ class OperationsTotalsDelegate(QStyledItemDelegate):
         reconciled = model.data(model.index(index.row(), 18), Qt.DisplayRole)
         if (total_shares != ''):
             text = f"{total_money:.2f}\n{total_shares:.2f}"
-        else:
+        elif (total_money != ''):
             text = f"{total_money:.2f}\n"
+        else:
+            text = "<void>"
 
         if (reconciled == 1):
             pen.setColor(BLUE_COLOR)
