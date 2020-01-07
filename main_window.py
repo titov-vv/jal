@@ -481,7 +481,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             print("Faulty tab selected")
         if not mapper.submit():
             print("Mapper submit failed")
-            qDebug(mapper.model().lastError())
+            print(mapper.model().lastError().text())
         if not mapper.model().submitAll():
             print("Model submit failed")
             print(mapper.model().lastError().text())
@@ -490,8 +490,14 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def BeforeTradeInsert(self, record):
-        #TODO Put correct "type" value
-        print(record)
+        type = float(record.value("type"))
+        price = float(record.value("price"))
+        qty = float(record.value("qty"))
+        coupon = float(record.value("coupon"))
+        fee_broker = float(record.value("fee_broker"))
+        fee_exchange = float(record.value("fee_exchange"))
+        sum = round(price*qty, 2) + type*(fee_broker + fee_exchange) + coupon
+        record.setValue("sum", sum)
 
     @Slot()
     def BeforeTransferInsert(self, record):
