@@ -1,6 +1,6 @@
 from constants import *
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu
-from PySide2.QtSql import QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel
+from PySide2.QtSql import QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtCore import Qt, Slot
 from PySide2 import QtCore
 from ui_main_window import Ui_LedgerMainWindow
@@ -120,14 +120,14 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         # CONFIGURE ACTIONS TAB                                                                       #
         ###############################################################################################
         self.ActionAccountWidget.init_DB(self.db)
+        self.ActionPeerWidget.init_DB(self.db)
 
-        self.ActionsModel = QSqlTableModel(db=self.db)
+        self.ActionsModel = QSqlRelationalTableModel(db=self.db)
         self.ActionsModel.setTable("actions")
         self.ActionsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         account_idx = self.ActionsModel.fieldIndex("account_id")
-        #peer_id = self.ActionsModel.fieldIndex("peer_id")
-        #self.ActionsModel.setRelation(peer_id, QSqlRelation("agents", "id", "name"))
-        # Add Peer Selector
+        peer_idx = self.ActionsModel.fieldIndex("peer_id")
+
         self.ActionsModel.select()
         self.ActionsDataMapper = QDataWidgetMapper(self)
         self.ActionsDataMapper.setModel(self.ActionsModel)
@@ -135,11 +135,16 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionsDataMapper.setItemDelegate(ActionSqlDelegate(self.ActionsDataMapper))
         self.ActionsDataMapper.addMapping(self.ActionAccountWidget, account_idx) #, QByteArray().setRawData("account_id", 10))
         self.ActionsDataMapper.addMapping(self.ActionTimestampEdit, self.ActionsModel.fieldIndex("timestamp"))
-        self.ActionsDataMapper.addMapping(self.ActionPeerEdit, self.ActionsModel.fieldIndex("peer_id"))
+        self.ActionsDataMapper.addMapping(self.ActionPeerWidget, peer_idx)
 
-        self.ActionDetailsModel = QSqlTableModel(db=self.db)
+        self.ActionDetailsModel = QSqlRelationalTableModel(db=self.db)
         self.ActionDetailsModel.setTable("action_details")
+        self.ActionDetailsModel.setJoinMode(QSqlRelationalTableModel.LeftJoin)  # in order not to fail on NULL tags
         self.ActionDetailsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        category_idx = self.ActionDetailsModel.fieldIndex("category_id")
+        self.ActionDetailsModel.setRelation(category_idx, QSqlRelation("categories", "id", "name"))
+        tag_idx = self.ActionDetailsModel.fieldIndex("tag_id")
+        self.ActionDetailsModel.setRelation(tag_idx, QSqlRelation("tags", "id", "tag"))
         self.ActionDetailsModel.setHeaderData(2, Qt.Horizontal, "Category")
         self.ActionDetailsModel.setHeaderData(3, Qt.Horizontal, "Tags")
         self.ActionDetailsModel.setHeaderData(4, Qt.Horizontal, "Amount")
