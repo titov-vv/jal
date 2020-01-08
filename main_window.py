@@ -264,6 +264,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
         self.ChooseAccountBtn.clicked.connect(self.OnAccountChange)
         # OPERATIONS ACTIONS
+        self.AddActionDetail.clicked.connect(self.AddDetail)
+        self.RemoveActionDetail.clicked.connect(self.RemoveDetail)
         self.NewOperationMenu = QMenu()
         self.NewOperationMenu.addAction('Income / Spending', self.CreateNewAction)
         self.NewOperationMenu.addAction('Transfer', self.CreateNewTransfer)
@@ -400,6 +402,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             new_record.setValue("account_id", self.ChooseAccountBtn.account_id)
         self.ActionsModel.insertRecord(-1, new_record)
         self.ActionsDataMapper.toLast()
+        self.ActionDetailsModel.setFilter("action_details.pid = 0")
 
     def CreateNewTransfer(self):
         self.OperationsTabs.setCurrentIndex(TAB_TRANSFER)
@@ -503,3 +506,15 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def BeforeTransferInsert(self, record):
         #TODO put correct SQL for transfer insert here and then cancel the operation, probably overriding submitAll()
         print(record)
+
+    @Slot()
+    def AddDetail(self):
+        new_record = self.ActionDetailsModel.record()
+        self.ActionDetailsModel.insertRecord(-1, new_record)
+
+    @Slot()
+    def RemoveDetail(self):
+        idx = self.ActionDetailsTableView.selectionModel().selection().indexes()
+        selected_row = idx[0].row()
+        self.ActionDetailsModel.removeRow(selected_row)
+        self.ActionDetailsModel.submitAll()

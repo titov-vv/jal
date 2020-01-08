@@ -219,23 +219,44 @@ class Ui_LedgerMainWindow(object):
         self.ActionDetailsTableView.verticalHeader().setMinimumSectionSize(20)
         self.ActionDetailsTableView.verticalHeader().setDefaultSectionSize(20)
 
-        self.gridLayout_4.addWidget(self.ActionDetailsTableView, 4, 0, 1, 3)
+        self.gridLayout_4.addWidget(self.ActionDetailsTableView, 3, 0, 1, 3)
 
         self.ActionPeerEdit = QLineEdit(self.ActionDetailsTab)
         self.ActionPeerEdit.setObjectName(u"ActionPeerEdit")
 
         self.gridLayout_4.addWidget(self.ActionPeerEdit, 2, 2, 1, 1)
 
+        self.ActionAccountWidget = AccountSelector(self.ActionDetailsTab)
+        self.ActionAccountWidget.setObjectName(u"ActionAccountWidget")
+
+        self.gridLayout_4.addWidget(self.ActionAccountWidget, 1, 2, 1, 1)
+
         self.ActionTimestampEdit = QDateTimeEdit(self.ActionDetailsTab)
         self.ActionTimestampEdit.setObjectName(u"ActionTimestampEdit")
         self.ActionTimestampEdit.setCalendarPopup(True)
 
-        self.gridLayout_4.addWidget(self.ActionTimestampEdit, 2, 0, 1, 2)
+        self.gridLayout_4.addWidget(self.ActionTimestampEdit, 1, 0, 1, 1)
 
-        self.ActionAccountWidget = AccountSelector(self.ActionDetailsTab)
-        self.ActionAccountWidget.setObjectName(u"ActionAccountWidget")
+        self.frame = QFrame(self.ActionDetailsTab)
+        self.frame.setObjectName(u"frame")
+        self.frame.setFrameShape(QFrame.NoFrame)
+        self.frame.setFrameShadow(QFrame.Plain)
+        self.horizontalLayout_6 = QHBoxLayout(self.frame)
+        self.horizontalLayout_6.setSpacing(8)
+        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.horizontalLayout_6.setContentsMargins(0, 0, 0, 0)
+        self.AddActionDetail = QPushButton(self.frame)
+        self.AddActionDetail.setObjectName(u"AddActionDetail")
 
-        self.gridLayout_4.addWidget(self.ActionAccountWidget, 1, 0, 1, 2)
+        self.horizontalLayout_6.addWidget(self.AddActionDetail)
+
+        self.RemoveActionDetail = QPushButton(self.frame)
+        self.RemoveActionDetail.setObjectName(u"RemoveActionDetail")
+
+        self.horizontalLayout_6.addWidget(self.RemoveActionDetail)
+
+
+        self.gridLayout_4.addWidget(self.frame, 2, 0, 1, 1)
 
         self.OperationsTabs.addTab(self.ActionDetailsTab, "")
         self.TradeDetailsTab = QWidget()
@@ -563,7 +584,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(1)
+        self.OperationsTabs.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)
@@ -591,6 +612,8 @@ class Ui_LedgerMainWindow(object):
         self.AccountLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Account:", None))
         self.ChooseAccountBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"All", None))
         self.ActionTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
+        self.AddActionDetail.setText(QCoreApplication.translate("LedgerMainWindow", u" + ", None))
+        self.RemoveActionDetail.setText(QCoreApplication.translate("LedgerMainWindow", u" \u2014 ", None))
         self.OperationsTabs.setTabText(self.OperationsTabs.indexOf(self.ActionDetailsTab), QCoreApplication.translate("LedgerMainWindow", u"Income / Spending", None))
         self.TradePriceLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Price / Qty", None))
         self.TradeActiveLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Security", None))
