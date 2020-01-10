@@ -13,7 +13,7 @@ from operation_delegate import *
 from dividend_delegate import DividendSqlDelegate
 from trade_delegate import TradeSqlDelegate, OptionGroup
 from transfer_delegate import TransferSqlDelegate
-from action_delegate import ActionSqlDelegate
+from action_delegate import ActionDelegate, ActionDetailDelegate
 
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def __init__(self):
@@ -132,13 +132,14 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionsDataMapper = QDataWidgetMapper(self)
         self.ActionsDataMapper.setModel(self.ActionsModel)
         self.ActionsDataMapper.setSubmitPolicy(QDataWidgetMapper.ManualSubmit)
-        self.ActionsDataMapper.setItemDelegate(ActionSqlDelegate(self.ActionsDataMapper))
+        self.ActionsDataMapper.setItemDelegate(ActionDelegate(self.ActionsDataMapper))
         self.ActionsDataMapper.addMapping(self.ActionAccountWidget, account_idx) #, QByteArray().setRawData("account_id", 10))
         self.ActionsDataMapper.addMapping(self.ActionTimestampEdit, self.ActionsModel.fieldIndex("timestamp"))
         self.ActionsDataMapper.addMapping(self.ActionPeerWidget, peer_idx)
 
         self.ActionDetailsModel = QSqlRelationalTableModel(db=self.db)
         self.ActionDetailsModel.setTable("action_details")
+        self.ActionDetailsModel.beforeInsert.connect(self.BeforeActionDetailInsert)
         self.ActionDetailsModel.setJoinMode(QSqlRelationalTableModel.LeftJoin)  # in order not to fail on NULL tags
         self.ActionDetailsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         category_idx = self.ActionDetailsModel.fieldIndex("category_id")
@@ -152,6 +153,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionDetailsModel.setHeaderData(6, Qt.Horizontal, "Note")
         self.ActionDetailsModel.select()
         self.ActionDetailsTableView.setModel(self.ActionDetailsModel)
+        self.ActionDetailsTableView.setItemDelegate(ActionDetailDelegate(self.ActionDetailsTableView))  # To display editors and drop down lists for lookup fields
         self.ActionDetailsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  # To select only 1 row
         self.ActionDetailsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
         self.ActionDetailsTableView.setColumnHidden(0, True)  # pid
@@ -478,23 +480,37 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def SaveOperation(self):
         active_tab = self.OperationsTabs.currentIndex()
         if (active_tab == TAB_ACTION):
-            mapper = self.ActionsDataMapper
+            self.SubmitMapperAndModel(self.ActionsDataMapper)
+            if not self.ActionDetailsModel.submitAll():
+                print("Details model submit failed")
+                print(self.ActionDetailsModel.lastError().text())
         elif (active_tab == TAB_TRANSFER):
             mapper = self.TransfersDataMapper
         elif (active_tab == TAB_DIVIDEND):
-            mapper = self.DividendsDataMapper
+            self.SubmitMapperAndModel(self.DividendsDataMapper)
         elif (active_tab == TAB_TRADE):
-            mapper = self.TradesDataMapper
+            self.SubmitMapperAndModel(self.TradesDataMapper)
         else:
             print("Faulty tab selected")
+        self.OperationsModel.select()
+        # TODO Implement "Not saved" flag reset
+
+    def SubmitMapperAndModel(self, mapper):
         if not mapper.submit():
             print("Mapper submit failed")
             print(mapper.model().lastError().text())
         if not mapper.model().submitAll():
             print("Model submit failed")
             print(mapper.model().lastError().text())
-        self.OperationsModel.select()
-        # TODO Implement "Not saved" flag reset
+
+    @Slot()
+    def BeforeActionDetailInsert(self, record):
+        pid = int(record.value("pid"))
+        if pid == 0:
+            record.setValue("pid", self.ActionsModel.query().lastInsertId())
+        record.setValue("type", 1)
+        record.setValue("alt_sum", 0)
+
 
     @Slot()
     def BeforeTradeInsert(self, record):

@@ -17,6 +17,8 @@ class OperationsTypeDelegate(QStyledItemDelegate):
         model = index.model()
         type = model.data(index, Qt.DisplayRole)
         amount = model.data(model.index(index.row(), 11), Qt.DisplayRole)
+        if amount == '':
+            amount = 0
         qty_trid = model.data(model.index(index.row(), 12), Qt.DisplayRole)
         if (type == 1):
             if (qty_trid > 0):
@@ -134,6 +136,8 @@ class OperationsAmountDelegate(QStyledItemDelegate):
         painter.save()
         model = index.model()
         amount = model.data(index, Qt.DisplayRole)
+        if amount == '':
+            amount = 0
         type = model.data(model.index(index.row(), 0), Qt.DisplayRole)
         qty = model.data(model.index(index.row(), 12), Qt.DisplayRole)
         if (type != 1) and (qty != 0):  # TODO need to put TAX amount for Dividend here
