@@ -81,6 +81,7 @@ class PeerSelector(QWidget):
         name = self.Model.record(row_idx).value(2)
         self.name.setText(name)
         self.Model.setFilter("")
+        self.peer_id_changed.emit()
 
     @Signal
     def peer_id_changed(self):

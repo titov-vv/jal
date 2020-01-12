@@ -141,6 +141,7 @@ class AccountSelector(QWidget):
         account_name = self.dialog.Model.record(row_idx).value(2)
         self.name.setText(account_name)
         self.dialog.Model.setFilter("")
+        self.account_id_changed.emit()
 
     @Signal
     def account_id_changed(self):
@@ -156,5 +157,4 @@ class AccountSelector(QWidget):
         self.dialog.setGeometry(ref_point.x(), ref_point.y(), self.dialog.width(), self.dialog.height())
         res = self.dialog.exec_()
         if res:
-            self.p_account_id = self.dialog.account_id
-            self.name.setText(self.dialog.AccountName)
+            self.account_id = self.dialog.account_id

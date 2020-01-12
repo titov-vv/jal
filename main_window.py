@@ -1,5 +1,5 @@
 from constants import *
-from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu
+from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu, QMessageBox
 from PySide2.QtSql import QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtCore import Qt, Slot
 from PySide2 import QtCore
@@ -131,11 +131,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionsModel.select()
         self.ActionsDataMapper = QDataWidgetMapper(self)
         self.ActionsDataMapper.setModel(self.ActionsModel)
-        self.ActionsDataMapper.setSubmitPolicy(QDataWidgetMapper.ManualSubmit)
+        self.ActionsDataMapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
         self.ActionsDataMapper.setItemDelegate(ActionDelegate(self.ActionsDataMapper))
         self.ActionsDataMapper.addMapping(self.ActionAccountWidget, account_idx) #, QByteArray().setRawData("account_id", 10))
+        self.ActionAccountWidget.account_id_changed.connect(self.ActionsDataMapper.submit)
         self.ActionsDataMapper.addMapping(self.ActionTimestampEdit, self.ActionsModel.fieldIndex("timestamp"))
         self.ActionsDataMapper.addMapping(self.ActionPeerWidget, peer_idx)
+        self.ActionPeerWidget.peer_id_changed.connect(self.ActionsDataMapper.submit)
 
         self.ActionDetailsModel = QSqlRelationalTableModel(db=self.db)
         self.ActionDetailsModel.setTable("action_details")
@@ -343,12 +345,25 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def OnOperationChange(self, selected, deselected):
+        old_idx = deselected.indexes()
+        old_row = old_idx[0].row()
+        old_operation_type = self.OperationsModel.record(old_row).value(self.OperationsModel.fieldIndex("type"))
+        if (old_operation_type == TRANSACTION_ACTION):
+            if self.ActionsModel.isDirty() or self.ActionDetailsModel.isDirty():
+                #msg_box = QMessageBox()
+                reply = QMessageBox().warning(self, "Changes are not saved", "Action contain uncommitted changes, \ndo you want to save it?", QMessageBox.Yes, QMessageBox.No)
+                if reply == QMessageBox.Yes:
+                    print ("YES")
+                if reply == QMessageBox.No:
+                    print("NO")
+#TODO Implement warning for every transaction type and for YES: commit, for NO: revert
+
         idx = selected.indexes()
         selected_row = idx[0].row()
         operation_type = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("type"))
         operation_id = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("id"))
         transfer_id = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("qty_trid"))
-        if (operation_type == 1):
+        if (operation_type == TRANSACTION_ACTION):
             self.ActionsModel.setFilter(f"actions.id = {operation_id}")
             self.ActionsDataMapper.setCurrentModelIndex(self.ActionsDataMapper.model().index(0, 0))
             if (transfer_id == 0):    # Income / Spending
@@ -359,11 +374,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 self.TransfersModel.setFilter(f"transfer_details.id = {transfer_id}")
                 self.TransfersDataMapper.setCurrentModelIndex(self.TransfersDataMapper.model().index(0, 0))
 
-        elif (operation_type == 2):   # Dividend
+        elif (operation_type == TRANSACTION_DIVIDEND):
             self.OperationsTabs.setCurrentIndex(TAB_DIVIDEND)
             self.DividendsModel.setFilter("dividends.id = {}".format(operation_id))
             self.DividendsDataMapper.setCurrentModelIndex(self.DividendsDataMapper.model().index(0, 0))
-        elif (operation_type == 3):   # Trade
+        elif (operation_type == TRANSACTION_TRADE):
             self.OperationsTabs.setCurrentIndex(TAB_TRADE)
             self.TradesModel.setFilter("trades.id = {}".format(operation_id))
             self.TradesDataMapper.setCurrentModelIndex(self.TradesDataMapper.model().index(0,0))
