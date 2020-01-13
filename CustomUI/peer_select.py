@@ -81,13 +81,13 @@ class PeerSelector(QWidget):
         name = self.Model.record(row_idx).value(2)
         self.name.setText(name)
         self.Model.setFilter("")
-        self.peer_id_changed.emit()
+        self.changed.emit()
 
     @Signal
-    def peer_id_changed(self):
+    def changed(self):
         pass
 
-    peer_id = Property(int, getId, setId, notify=peer_id_changed, user=True)
+    peer_id = Property(int, getId, setId, notify=changed, user=True)
 
     def init_DB(self, db):
         self.db = db

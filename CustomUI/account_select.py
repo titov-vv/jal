@@ -141,13 +141,13 @@ class AccountSelector(QWidget):
         account_name = self.dialog.Model.record(row_idx).value(2)
         self.name.setText(account_name)
         self.dialog.Model.setFilter("")
-        self.account_id_changed.emit()
+        self.changed.emit()
 
     @Signal
-    def account_id_changed(self):
+    def changed(self):
         pass
 
-    account_id = Property(int, getId, setId, notify=account_id_changed, user=True)
+    account_id = Property(int, getId, setId, notify=changed, user=True)
 
     def init_DB(self, db):
         self.dialog.init_DB(db)

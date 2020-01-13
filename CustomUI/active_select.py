@@ -62,12 +62,13 @@ class ActiveSelector(QWidget):
         self.symbol.setText(symbol)
         self.full_name.setText(full_name)
         self.Model.setFilter("")
+        self.changed.emit()
 
     @Signal
-    def active_id_changed(self):
+    def changed(self):
         pass
 
-    active_id = Property(int, getId, setId, notify=active_id_changed, user=True)
+    active_id = Property(int, getId, setId, notify=changed, user=True)
 
     def init_DB(self, db):
         self.db = db

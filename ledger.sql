@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Sat Jan 4 23:02:22 2020
+-- File generated with SQLiteStudio v3.2.1 on Mon Jan 13 10:48:20 2020
 --
 -- Text encoding used: UTF-8
 --
@@ -44,6 +44,9 @@ CREATE TABLE accounts (
 DROP TABLE IF EXISTS action_details;
 
 CREATE TABLE action_details (
+    id          INTEGER    PRIMARY KEY
+                           NOT NULL
+                           UNIQUE,
     pid         INTEGER    REFERENCES actions (id) ON DELETE CASCADE
                                                    ON UPDATE CASCADE,
     type        INTEGER    NOT NULL,
@@ -479,6 +482,38 @@ DROP VIEW IF EXISTS frontier;
 CREATE VIEW frontier AS
     SELECT MAX(timestamp) AS ledger_frontier
       FROM sequence;
+
+
+-- View: transfer_details
+DROP VIEW IF EXISTS transfer_details;
+CREATE VIEW transfer_details AS
+    SELECT tr.id,
+           f.id AS from_id,
+           f.timestamp AS from_timestamp,
+           f.account_id AS from_acc_id,
+           t.id AS to_id,
+           t.timestamp AS to_timestamp,
+           t.account_id AS to_acc_id,
+           fee.id AS fee_id,
+           fee.timestamp AS fee_timestamp,
+           fee.account_id AS fee_acc_id,
+           fd.sum AS from_amount,
+           td.sum AS to_amount,
+           feed.sum AS fee_amount,
+           fd.note
+      FROM transfers AS tr
+           INNER JOIN
+           actions AS f ON f.id = tr.from_id
+           INNER JOIN
+           actions AS t ON t.id = tr.to_id
+           LEFT JOIN
+           actions AS fee ON fee.id = tr.fee_id
+           INNER JOIN
+           action_details AS fd ON fd.pid = f.id
+           INNER JOIN
+           action_details AS td ON td.pid = t.id
+           LEFT JOIN
+           action_details AS feed ON feed.pid = fee.id;
 
 
 COMMIT TRANSACTION;

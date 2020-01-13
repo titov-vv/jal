@@ -133,11 +133,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionsDataMapper.setModel(self.ActionsModel)
         self.ActionsDataMapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
         self.ActionsDataMapper.setItemDelegate(ActionDelegate(self.ActionsDataMapper))
-        self.ActionsDataMapper.addMapping(self.ActionAccountWidget, account_idx) #, QByteArray().setRawData("account_id", 10))
-        self.ActionAccountWidget.account_id_changed.connect(self.ActionsDataMapper.submit)
+        self.ActionsDataMapper.addMapping(self.ActionAccountWidget, account_idx) # if no USER property QByteArray().setRawData("account_id", 10))
+        self.ActionAccountWidget.changed.connect(self.ActionsDataMapper.submit)
         self.ActionsDataMapper.addMapping(self.ActionTimestampEdit, self.ActionsModel.fieldIndex("timestamp"))
         self.ActionsDataMapper.addMapping(self.ActionPeerWidget, peer_idx)
-        self.ActionPeerWidget.peer_id_changed.connect(self.ActionsDataMapper.submit)
+        self.ActionPeerWidget.changed.connect(self.ActionsDataMapper.submit)
 
         self.ActionDetailsModel = QSqlRelationalTableModel(db=self.db)
         self.ActionDetailsModel.setTable("action_details")
@@ -187,10 +187,12 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TradesModel.select()
         self.TradesDataMapper = QDataWidgetMapper(self)
         self.TradesDataMapper.setModel(self.TradesModel)
-        self.TradesDataMapper.setSubmitPolicy(QDataWidgetMapper.ManualSubmit)
+        self.TradesDataMapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
         self.TradesDataMapper.setItemDelegate(TradeSqlDelegate(self.TradesDataMapper))
         self.TradesDataMapper.addMapping(self.TradeAccountWidget, account_idx)
+        self.TradeAccountWidget.changed.connect(self.TradesDataMapper.submit)
         self.TradesDataMapper.addMapping(self.TradeActiveWidget, active_idx)
+        self.TradeActiveWidget.changed.connect(self.TradesDataMapper.submit)
         self.TradesDataMapper.addMapping(self.TradeTimestampEdit, self.TradesModel.fieldIndex("timestamp"))
         self.TradesDataMapper.addMapping(self.BS_group, self.TradesModel.fieldIndex("type"))
         self.TradesDataMapper.addMapping(self.TradeSettlementEdit, self.TradesModel.fieldIndex("settlement"))
@@ -215,10 +217,12 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DividendsModel.select()
         self.DividendsDataMapper = QDataWidgetMapper(self)
         self.DividendsDataMapper.setModel(self.DividendsModel)
-        self.DividendsDataMapper.setSubmitPolicy(QDataWidgetMapper.ManualSubmit)
+        self.DividendsDataMapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
         self.DividendsDataMapper.setItemDelegate(DividendSqlDelegate(self.DividendsDataMapper))
         self.DividendsDataMapper.addMapping(self.DividendAccountWidget, account_idx)
+        self.DividendAccountWidget.changed.connect(self.DividendsDataMapper.submit)
         self.DividendsDataMapper.addMapping(self.DividendActiveWidget, active_idx)
+        self.DividendActiveWidget.changed.connect(self.DividendsDataMapper.submit)
         self.DividendsDataMapper.addMapping(self.DividendTimestampEdit, self.DividendsModel.fieldIndex("timestamp"))
         self.DividendsDataMapper.addMapping(self.DividendNumberEdit, self.DividendsModel.fieldIndex("number"))
         self.DividendsDataMapper.addMapping(self.DividendSumEdit, self.DividendsModel.fieldIndex("sum"))
@@ -243,11 +247,14 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TransfersModel.select()
         self.TransfersDataMapper = QDataWidgetMapper(self)
         self.TransfersDataMapper.setModel(self.TransfersModel)
-        self.TransfersDataMapper.setSubmitPolicy(QDataWidgetMapper.ManualSubmit)
+        self.TransfersDataMapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
         self.TransfersDataMapper.setItemDelegate(TransferSqlDelegate(self.TransfersDataMapper))
         self.TransfersDataMapper.addMapping(self.TransferFromAccountWidget, from_idx)
+        self.TransferFromAccountWidget.changed.connect(self.TransfersDataMapper.submit)
         self.TransfersDataMapper.addMapping(self.TransferToAccountWidget, to_idx)
+        self.TransferToAccountWidget.changed.connect(self.TransfersDataMapper.submit)
         self.TransfersDataMapper.addMapping(self.TransferFeeAccountWidget, fee_idx)
+        self.TransferFeeAccountWidget.changed.connect(self.TransfersDataMapper.submit)
         self.TransfersDataMapper.addMapping(self.TransferFromTimestamp, self.TransfersModel.fieldIndex("from_timestamp"))
         self.TransfersDataMapper.addMapping(self.TransferToTimestamp, self.TransfersModel.fieldIndex("to_timestamp"))
         self.TransfersDataMapper.addMapping(self.TransferFeeTimestamp, self.TransfersModel.fieldIndex("fee_timestamp"))
@@ -345,45 +352,70 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def OnOperationChange(self, selected, deselected):
+        ##################################################################
+        # CHECK THAT CHANGES TO TRANSACION WERE SAVED IF ANY             #
+        ##################################################################
         old_idx = deselected.indexes()
-        old_row = old_idx[0].row()
-        old_operation_type = self.OperationsModel.record(old_row).value(self.OperationsModel.fieldIndex("type"))
-        if (old_operation_type == TRANSACTION_ACTION):
-            if self.ActionsModel.isDirty() or self.ActionDetailsModel.isDirty():
-                #msg_box = QMessageBox()
-                reply = QMessageBox().warning(self, "Changes are not saved", "Action contain uncommitted changes, \ndo you want to save it?", QMessageBox.Yes, QMessageBox.No)
-                if reply == QMessageBox.Yes:
-                    print ("YES")
-                if reply == QMessageBox.No:
-                    print("NO")
-#TODO Implement warning for every transaction type and for YES: commit, for NO: revert
-
+        if old_idx:
+            old_row = old_idx[0].row()
+            old_operation_type = self.OperationsModel.record(old_row).value(self.OperationsModel.fieldIndex("type"))
+            if (old_operation_type == TRANSACTION_ACTION):
+                #TODO Make Transfer verification
+                if self.ActionsModel.isDirty() or self.ActionDetailsModel.isDirty():
+                    reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
+                                                  self.tr("Transaction has uncommitted changes,\ndo you want to save it?"),
+                                                  QMessageBox.Yes, QMessageBox.No)
+                    if reply == QMessageBox.Yes:
+                        self.SubmitChangesForTab(TAB_ACTION)
+                    else:
+                        self.RevertChangesForTab(TAB_ACTION)
+            elif (old_operation_type == TRANSACTION_DIVIDEND):
+                if self.DividendsModel.isDirty():
+                    reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
+                                                  self.tr("Dividend has uncommitted changes,\ndo you want to save it?"),
+                                                  QMessageBox.Yes, QMessageBox.No)
+                    if reply == QMessageBox.Yes:
+                        self.SubmitChangesForTab(TAB_DIVIDEND)
+                    else:
+                        self.RevertChangesForTab(TAB_DIVIDEND)
+            elif (old_operation_type == TRANSACTION_TRADE):
+                if self.TradesModel.isDirty():
+                    reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
+                                                  self.tr("Trade has uncommitted changes,\ndo you want to save it?"),
+                                                  QMessageBox.Yes, QMessageBox.No)
+                    if reply == QMessageBox.Yes:
+                        self.SubmitChangesForTab(TAB_TRADE)
+                    else:
+                        self.RevertChangesForTab(TAB_TRADE)
+        ##################################################################
+        # UPDATE VIEW FOR NEW SELECTED TRANSACTION                       #
+        ##################################################################
         idx = selected.indexes()
-        selected_row = idx[0].row()
-        operation_type = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("type"))
-        operation_id = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("id"))
-        transfer_id = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("qty_trid"))
-        if (operation_type == TRANSACTION_ACTION):
-            self.ActionsModel.setFilter(f"actions.id = {operation_id}")
-            self.ActionsDataMapper.setCurrentModelIndex(self.ActionsDataMapper.model().index(0, 0))
-            if (transfer_id == 0):    # Income / Spending
-                self.OperationsTabs.setCurrentIndex(TAB_ACTION)
-                self.ActionDetailsModel.setFilter(f"action_details.pid = {operation_id}")
-            else:                     # Transfer
-                self.OperationsTabs.setCurrentIndex(TAB_TRANSFER)
-                self.TransfersModel.setFilter(f"transfer_details.id = {transfer_id}")
-                self.TransfersDataMapper.setCurrentModelIndex(self.TransfersDataMapper.model().index(0, 0))
-
-        elif (operation_type == TRANSACTION_DIVIDEND):
-            self.OperationsTabs.setCurrentIndex(TAB_DIVIDEND)
-            self.DividendsModel.setFilter("dividends.id = {}".format(operation_id))
-            self.DividendsDataMapper.setCurrentModelIndex(self.DividendsDataMapper.model().index(0, 0))
-        elif (operation_type == TRANSACTION_TRADE):
-            self.OperationsTabs.setCurrentIndex(TAB_TRADE)
-            self.TradesModel.setFilter("trades.id = {}".format(operation_id))
-            self.TradesDataMapper.setCurrentModelIndex(self.TradesDataMapper.model().index(0,0))
-        else:
-            print("Unknown operation type", operation_type)
+        if idx:
+            selected_row = idx[0].row()
+            operation_type = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("type"))
+            operation_id = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("id"))
+            transfer_id = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("qty_trid"))
+            if (operation_type == TRANSACTION_ACTION):
+                self.ActionsModel.setFilter(f"actions.id = {operation_id}")
+                self.ActionsDataMapper.setCurrentModelIndex(self.ActionsDataMapper.model().index(0, 0))
+                if (transfer_id == 0):    # Income / Spending
+                    self.OperationsTabs.setCurrentIndex(TAB_ACTION)
+                    self.ActionDetailsModel.setFilter(f"action_details.pid = {operation_id}")
+                else:                     # Transfer
+                    self.OperationsTabs.setCurrentIndex(TAB_TRANSFER)
+                    self.TransfersModel.setFilter(f"transfer_details.id = {transfer_id}")
+                    self.TransfersDataMapper.setCurrentModelIndex(self.TransfersDataMapper.model().index(0, 0))
+            elif (operation_type == TRANSACTION_DIVIDEND):
+                self.OperationsTabs.setCurrentIndex(TAB_DIVIDEND)
+                self.DividendsModel.setFilter("dividends.id = {}".format(operation_id))
+                self.DividendsDataMapper.setCurrentModelIndex(self.DividendsDataMapper.model().index(0, 0))
+            elif (operation_type == TRANSACTION_TRADE):
+                self.OperationsTabs.setCurrentIndex(TAB_TRADE)
+                self.TradesModel.setFilter("trades.id = {}".format(operation_id))
+                self.TradesDataMapper.setCurrentModelIndex(self.TradesDataMapper.model().index(0,0))
+            else:
+                print("Unknown operation type", operation_type)
 
     def SetOperationsFilter(self):
         operations_filter = ""
@@ -494,29 +526,39 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def SaveOperation(self):
         active_tab = self.OperationsTabs.currentIndex()
-        if (active_tab == TAB_ACTION):
-            self.SubmitMapperAndModel(self.ActionsDataMapper)
+        self.SubmitChangesForTab(active_tab)
+
+    def SubmitChangesForTab(self, tab2save):
+        if (tab2save == TAB_ACTION):
+            if not self.ActionsModel.submitAll():
+                print(self.tr("Action submit failed: "), self.ActionDetailsModel.lastError().text())
             if not self.ActionDetailsModel.submitAll():
-                print("Details model submit failed")
-                print(self.ActionDetailsModel.lastError().text())
-        elif (active_tab == TAB_TRANSFER):
-            mapper = self.TransfersDataMapper
-        elif (active_tab == TAB_DIVIDEND):
-            self.SubmitMapperAndModel(self.DividendsDataMapper)
-        elif (active_tab == TAB_TRADE):
-            self.SubmitMapperAndModel(self.TradesDataMapper)
+                print(self.tr("Action details submit failed: "), self.ActionDetailsModel.lastError().text())
+        elif (tab2save == TAB_TRANSFER):
+            pass # TODO Submit Transfer
+        elif (tab2save == TAB_DIVIDEND):
+            if not self.DividendsModel.submitAll():
+                print(self.tr("Dividend submit failed: "), self.DividendsModel.lastError().text())
+        elif (tab2save == TAB_TRADE):
+            if not self.TradesModel.submitAll():
+                print(self.tr("Trade submit failed: "), self.TradesModel.lastError().text())
         else:
-            print("Faulty tab selected")
+            print("Faulty tab selected to submit")
         self.OperationsModel.select()
         # TODO Implement "Not saved" flag reset
 
-    def SubmitMapperAndModel(self, mapper):
-        if not mapper.submit():
-            print("Mapper submit failed")
-            print(mapper.model().lastError().text())
-        if not mapper.model().submitAll():
-            print("Model submit failed")
-            print(mapper.model().lastError().text())
+    def RevertChangesForTab(self, tab2revert):
+        if (tab2revert == TAB_ACTION):
+            self.ActionsModel.revertAll()
+            self.ActionDetailsModel.revertAll()
+        elif (tab2revert == TAB_TRANSFER):
+            pass  # TODO Revert transfer
+        elif (tab2revert == TAB_DIVIDEND):
+            self.DividendsModel.revertAll()
+        elif (tab2revert == TAB_TRADE):
+            self.TradesModel.revertAll()
+        else:
+            print("Faulty tab selected to revert")
 
     @Slot()
     def BeforeActionDetailInsert(self, record):
@@ -525,7 +567,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             record.setValue("pid", self.ActionsModel.query().lastInsertId())
         record.setValue("type", 1)
         record.setValue("alt_sum", 0)
-
 
     @Slot()
     def BeforeTradeInsert(self, record):
