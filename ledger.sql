@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Mon Jan 13 10:48:20 2020
+-- File generated with SQLiteStudio v3.2.1 on Tue Jan 14 21:38:23 2020
 --
 -- Text encoding used: UTF-8
 --
@@ -347,10 +347,41 @@ CREATE TABLE trades (
 );
 
 
+-- Table: transfer_notes
+DROP TABLE IF EXISTS transfer_notes;
+
+CREATE TABLE transfer_notes (
+    id   INTEGER     PRIMARY KEY
+                     UNIQUE
+                     NOT NULL,
+    tid  INTEGER     NOT NULL
+                     UNIQUE,
+    note TEXT (1024) NOT NULL
+);
+
+
 -- Table: transfers
 DROP TABLE IF EXISTS transfers;
 
 CREATE TABLE transfers (
+    id         INTEGER PRIMARY KEY
+                       UNIQUE
+                       NOT NULL,
+    tid        INTEGER NOT NULL,
+    timestamp  INTEGER NOT NULL,
+    type       INTEGER NOT NULL,
+    account_id INTEGER NOT NULL
+                       REFERENCES accounts (id) ON DELETE CASCADE
+                                                ON UPDATE CASCADE,
+    amount     REAL,
+    rate       REAL
+);
+
+
+-- Table: transfers_
+DROP TABLE IF EXISTS transfers_;
+
+CREATE TABLE transfers_ (
     id      INTEGER PRIMARY KEY
                     UNIQUE
                     NOT NULL,
@@ -369,6 +400,283 @@ DROP INDEX IF EXISTS by_sid;
 CREATE INDEX by_sid ON ledger_sums (
     sid
 );
+
+
+-- Trigger: delete_transfers
+DROP TRIGGER IF EXISTS delete_transfers;
+CREATE TRIGGER delete_transfers
+    INSTEAD OF DELETE
+            ON transfers_combined
+BEGIN
+    DELETE FROM transfers
+          WHERE transfers.tid = OLD.id;
+END;
+
+
+-- Trigger: insert_transfers
+DROP TRIGGER IF EXISTS insert_transfers;
+CREATE TRIGGER insert_transfers
+    INSTEAD OF INSERT
+            ON transfers_combined
+          WHEN NEW.fee_timestamp IS NULL
+BEGIN
+    INSERT INTO transfers (
+                              tid,
+                              type,
+                              timestamp,
+                              account_id,
+                              amount,
+                              rate
+                          )
+                          VALUES (
+                              (
+                                  SELECT MAX(tid) + 1
+                                    FROM transfers
+                              ),
+                              1,
+                              NEW.from_timestamp,
+                              NEW.from_acc_id,
+                              NEW.from_amount,
+                              NEW.to_amount / NEW.from_amount
+                          );
+    INSERT INTO transfers (
+                              tid,
+                              type,
+                              timestamp,
+                              account_id,
+                              amount,
+                              rate
+                          )
+                          VALUES (
+                              (
+                                  SELECT MAX(tid) 
+                                    FROM transfers
+                              ),
+                              2,
+                              NEW.to_timestamp,
+                              NEW.to_acc_id,
+                              NEW.to_amount,
+                              NEW.from_amount / NEW.to_amount
+                          );
+    INSERT INTO transfer_notes (
+                                   tid,
+                                   note
+                               )
+                               VALUES (
+                                   (
+                                       SELECT MAX(tid) 
+                                         FROM transfers
+                                   ),
+                                   NEW.note
+                               );
+END;
+
+
+-- Trigger: insert_transfers_with_fee
+DROP TRIGGER IF EXISTS insert_transfers_with_fee;
+CREATE TRIGGER insert_transfers_with_fee
+    INSTEAD OF INSERT
+            ON transfers_combined
+          WHEN NEW.fee_timestamp IS NOT NULL
+BEGIN
+    INSERT INTO transfers (
+                              tid,
+                              type,
+                              timestamp,
+                              account_id,
+                              amount,
+                              rate
+                          )
+                          VALUES (
+                              (
+                                  SELECT MAX(tid) + 1
+                                    FROM transfers
+                              ),
+                              1,
+                              NEW.from_timestamp,
+                              NEW.from_acc_id,
+                              NEW.from_amount,
+                              NEW.to_amount / NEW.from_amount
+                          );
+    INSERT INTO transfers (
+                              tid,
+                              type,
+                              timestamp,
+                              account_id,
+                              amount,
+                              rate
+                          )
+                          VALUES (
+                              (
+                                  SELECT MAX(tid) 
+                                    FROM transfers
+                              ),
+                              2,
+                              NEW.to_timestamp,
+                              NEW.to_acc_id,
+                              NEW.to_amount,
+                              NEW.from_amount / NEW.to_amount
+                          );
+    INSERT INTO transfers (
+                              tid,
+                              type,
+                              timestamp,
+                              account_id,
+                              amount,
+                              rate
+                          )
+                          VALUES (
+                              (
+                                  SELECT MAX(tid) 
+                                    FROM transfers
+                              ),
+                              3,
+                              NEW.fee_timestamp,
+                              NEW.fee_acc_id,
+                              NEW.fee_amount,
+                              0
+                          );
+    INSERT INTO transfer_notes (
+                                   tid,
+                                   note
+                               )
+                               VALUES (
+                                   (
+                                       SELECT MAX(tid) 
+                                         FROM transfers
+                                   ),
+                                   NEW.note
+                               );
+END;
+
+
+-- Trigger: update_f_account
+DROP TRIGGER IF EXISTS update_f_account;
+CREATE TRIGGER update_f_account
+    INSTEAD OF UPDATE OF from_acc_id
+            ON transfers_combined
+BEGIN
+    UPDATE transfers
+       SET account_id = NEW.from_acc_id
+     WHERE tid = OLD.id AND 
+           type = 1;
+END;
+
+
+-- Trigger: update_f_amount
+DROP TRIGGER IF EXISTS update_f_amount;
+CREATE TRIGGER update_f_amount
+    INSTEAD OF UPDATE OF from_amount
+            ON transfers_combined
+BEGIN
+    UPDATE transfers
+       SET amount = NEW.from_amount
+     WHERE tid = OLD.id AND 
+           type = 1;
+END;
+
+
+-- Trigger: update_f_timestamp
+DROP TRIGGER IF EXISTS update_f_timestamp;
+CREATE TRIGGER update_f_timestamp
+    INSTEAD OF UPDATE OF from_timestamp
+            ON transfers_combined
+BEGIN
+    UPDATE transfers
+       SET timestamp = NEW.from_timestamp
+     WHERE tid = OLD.id AND 
+           type = 1;
+END;
+
+
+-- Trigger: update_fee_account
+DROP TRIGGER IF EXISTS update_fee_account;
+CREATE TRIGGER update_fee_account
+    INSTEAD OF UPDATE OF fee_acc_id
+            ON transfers_combined
+BEGIN
+    UPDATE transfers
+       SET account_id = NEW.fee_acc_id
+     WHERE tid = OLD.id AND 
+           type = 3;
+END;
+
+
+-- Trigger: update_fee_amount
+DROP TRIGGER IF EXISTS update_fee_amount;
+CREATE TRIGGER update_fee_amount
+    INSTEAD OF UPDATE OF fee_amount
+            ON transfers_combined
+BEGIN
+    UPDATE transfers
+       SET amount = NEW.fee_amount
+     WHERE tid = OLD.id AND 
+           type = 3;
+END;
+
+
+-- Trigger: update_fee_timestamp
+DROP TRIGGER IF EXISTS update_fee_timestamp;
+CREATE TRIGGER update_fee_timestamp
+    INSTEAD OF UPDATE OF fee_timestamp
+            ON transfers_combined
+BEGIN
+    UPDATE transfers
+       SET timestamp = NEW.fee_timestamp
+     WHERE tid = OLD.id AND 
+           type = 3;
+END;
+
+
+-- Trigger: update_note
+DROP TRIGGER IF EXISTS update_note;
+CREATE TRIGGER update_note
+    INSTEAD OF UPDATE OF note
+            ON transfers_combined
+BEGIN
+    UPDATE transfer_notes
+       SET note = NEW.note
+     WHERE tid = OLD.id;
+END;
+
+
+-- Trigger: update_t_account
+DROP TRIGGER IF EXISTS update_t_account;
+CREATE TRIGGER update_t_account
+    INSTEAD OF UPDATE OF to_acc_id
+            ON transfers_combined
+BEGIN
+    UPDATE transfers
+       SET account_id = NEW.to_acc_id
+     WHERE tid = OLD.id AND 
+           type = 2;
+END;
+
+
+-- Trigger: update_t_amount
+DROP TRIGGER IF EXISTS update_t_amount;
+CREATE TRIGGER update_t_amount
+    INSTEAD OF UPDATE OF to_amount
+            ON transfers_combined
+BEGIN
+    UPDATE transfers
+       SET amount = NEW.to_amount
+     WHERE tid = OLD.id AND 
+           type = 2;
+END;
+
+
+-- Trigger: update_t_timestamp
+DROP TRIGGER IF EXISTS update_t_timestamp;
+CREATE TRIGGER update_t_timestamp
+    INSTEAD OF UPDATE OF to_timestamp
+            ON transfers_combined
+BEGIN
+    UPDATE transfers
+       SET timestamp = NEW.to_timestamp
+     WHERE tid = OLD.id AND 
+           type = 2;
+END;
 
 
 -- View: all_operations
@@ -401,7 +709,7 @@ CREATE VIEW all_operations AS
                       account_id,
                       sum(d.type * d.sum) AS amount,
                       o.alt_currency_id AS active_id,
-                      coalesce(t1.id, t2.id, 0) AS qty_trid,
+                      NULL AS qty_trid,
                       sum(d.type * d.alt_sum) AS price,
                       NULL AS fee_tax,
                       NULL AS t_qty,
@@ -410,10 +718,6 @@ CREATE VIEW all_operations AS
                  FROM actions AS o
                       LEFT JOIN
                       agents AS p ON o.peer_id = p.id
-                      LEFT JOIN
-                      transfers AS t1 ON t1.from_id = o.id
-                      LEFT JOIN
-                      transfers AS t2 ON t2.to_id = o.id
                       LEFT JOIN
                       action_details AS d ON o.id = d.pid
                 GROUP BY o.id
@@ -459,6 +763,23 @@ CREATE VIEW all_operations AS
                       LEFT JOIN
                       ledger_sums AS l ON l.sid = q.id AND 
                                           l.book_account = 4
+               UNION ALL
+               SELECT 4 AS type,
+                      r.id,
+                      r.timestamp,
+                      NULL AS num_peer,
+                      r.account_id,
+                      r.amount,
+                      NULL AS active_id,
+                      r.tid AS qty_trid,
+                      r.rate AS price,
+                      NULL AS fee_tax,
+                      NULL AS t_qty,
+                      n.note,
+                      NULL AS note2
+                 FROM transfers AS r
+                      LEFT JOIN
+                      transfer_notes AS n ON r.tid = n.tid
                 ORDER BY timestamp
            )
            AS m
@@ -484,10 +805,10 @@ CREATE VIEW frontier AS
       FROM sequence;
 
 
--- View: transfer_details
-DROP VIEW IF EXISTS transfer_details;
-CREATE VIEW transfer_details AS
-    SELECT tr.id,
+-- View: transfers_combined
+DROP VIEW IF EXISTS transfers_combined;
+CREATE VIEW transfers_combined AS
+    SELECT f.tid AS id,
            f.id AS from_id,
            f.timestamp AS from_timestamp,
            f.account_id AS from_acc_id,
@@ -497,23 +818,20 @@ CREATE VIEW transfer_details AS
            fee.id AS fee_id,
            fee.timestamp AS fee_timestamp,
            fee.account_id AS fee_acc_id,
-           fd.sum AS from_amount,
-           td.sum AS to_amount,
-           feed.sum AS fee_amount,
-           fd.note
-      FROM transfers AS tr
+           f.amount AS from_amount,
+           t.amount AS to_amount,
+           fee.amount AS fee_amount,
+           n.note
+      FROM transfers AS f
            INNER JOIN
-           actions AS f ON f.id = tr.from_id
-           INNER JOIN
-           actions AS t ON t.id = tr.to_id
+           transfers AS t ON f.tid = t.tid AND 
+                             t.type = 2
            LEFT JOIN
-           actions AS fee ON fee.id = tr.fee_id
-           INNER JOIN
-           action_details AS fd ON fd.pid = f.id
-           INNER JOIN
-           action_details AS td ON td.pid = t.id
+           transfers AS fee ON f.tid = fee.tid AND 
+                               fee.type = 3
            LEFT JOIN
-           action_details AS feed ON feed.pid = fee.id;
+           transfer_notes AS n ON f.tid = n.tid
+     WHERE f.type = 1;
 
 
 COMMIT TRANSACTION;

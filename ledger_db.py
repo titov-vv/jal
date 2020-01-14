@@ -80,31 +80,25 @@ class Ledger:
             print("SQL: Table 'balances' creation failed")
         self.db.commit()
 
-    def DeleteOperation(self, type, id, transfer_id):
+    #TODO Probably simplify all besides TRANSACTION_ACTION. And maybe move to main_window.py to Model actions
+    def DeleteOperation(self, type, id):
         query = QSqlQuery(self.db)
-        if (type == 1):  # Action
-            if (transfer_id != 0):  # have transfer
-                query.prepare("DELETE FROM actions AS a "
-                              "WHERE a.id = (SELECT from_id FROM transfers AS t WHERE t.id = :transfer_id) "
-                              "OR a.id = (SELECT to_id FROM transfers AS t WHERE t.id = :transfer_id)) "
-                              "OR a.id = (SELECT fee_id FROM transfers AS t WHERE t.id = :transfer_id))")
-                query.bindValue(":transfer_id", id)
-                query.exec_()
-                query.prepare("DELETE FROM transfers WHERE transfers.id = :transfer_id")
-                query.bindValue(":transfer_id", id)
-            else: # ordinari action
-                query.prepare("DELETE FROM action_details AS a WHERE a.pid = :action_id")
-                query.bindValue(":action_id", id)
-                query.exec_()
-                query.prepare("DELETE FROM actions WHERE actions.id = :action_id")
-                query.bindValue(":action_id", id)
-        elif (type == 2):  # Dividend
+        if (type == TRANSACTION_ACTION):
+            query.prepare("DELETE FROM action_details AS a WHERE a.pid = :action_id")
+            query.bindValue(":action_id", id)
+            query.exec_()
+            query.prepare("DELETE FROM actions WHERE actions.id = :action_id")
+            query.bindValue(":action_id", id)
+        elif (type == TRANSACTION_DIVIDEND):
             query.prepare("DELETE FROM dividends WHERE dividends.id = :dividend_id")
             query.bindValue(":dividend_id", id)
-        elif (type == 3):  # Trade
+        elif (type == TRANSACTION_TRADE):
             query.prepare("DELETE FROM trades WHERE trades.id = :trade_id")
             query.bindValue(":trade_id", id)
+        elif (type == TRANSACTION_TRANSFER):
+            query.prepare("DELETE FROM transfers_combined WHERE transfers_combined.id = :trade_id")
+            query.bindValue(":trade_id", id)
         else:
-            print("SQL: Unknown typeof operation for deletion")
+            assert False
         if not query.exec_():
             print(f"SQL: Operation type {type} and id #{id} delete failed")

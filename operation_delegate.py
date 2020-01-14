@@ -14,36 +14,39 @@ class OperationsTypeDelegate(QStyledItemDelegate):
         font.setBold(True)
         pen = painter.pen()
 
+        text = "X"
         model = index.model()
         type = model.data(index, Qt.DisplayRole)
         amount = model.data(model.index(index.row(), 11), Qt.DisplayRole)
         if amount == '':
             amount = 0
         qty_trid = model.data(model.index(index.row(), 12), Qt.DisplayRole)
-        if (type == 1):
-            if (qty_trid > 0):
-                text = ">"
-                pen.setColor(DARK_BLUE_COLOR)
-            elif (qty_trid < 0):
-                text = "<"
-                pen.setColor(DARK_BLUE_COLOR)
+        if (type == TRANSACTION_ACTION):
+            if (amount >= 0):
+                text = "+"
+                pen.setColor(DARK_GREEN_COLOR)
             else:
-                if (amount >= 0):
-                    text = "+"
-                    pen.setColor(DARK_GREEN_COLOR)
-                else:
-                    text = "—"
-                    pen.setColor(DARK_RED_COLOR)
-        elif (type == 2):
+                text = "—"
+                pen.setColor(DARK_RED_COLOR)
+        elif (type == TRANSACTION_DIVIDEND):
             text = "Δ"
             pen.setColor(DARK_GREEN_COLOR)
-        elif (type == 3):
+        elif (type == TRANSACTION_TRADE):
             if (qty_trid >= 0):
                 text = "B"
                 pen.setColor(DARK_GREEN_COLOR)
             else:
                 text = "S"
                 pen.setColor(DARK_RED_COLOR)
+        elif (type == TRANSACTION_TRANSFER):
+            if (amount >= 0):
+                text = ">"
+                pen.setColor(DARK_BLUE_COLOR)
+            else:
+                text = "<"
+                pen.setColor(DARK_BLUE_COLOR)
+        else:
+            assert False
 
         painter.setFont(font)
         painter.setPen(pen)
@@ -76,7 +79,7 @@ class OperationsTimestampDelegate(QStyledItemDelegate):
         text = datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')
         type = model.data(model.index(index.row(), 0), Qt.DisplayRole)
         number = model.data(model.index(index.row(), 5), Qt.DisplayRole)
-        if (type != 1):
+        if (type == TRANSACTION_TRADE) or (type == TRANSACTION_DIVIDEND):
             text = text + f"\n# {number}"
         painter.drawText(option.rect, Qt.AlignLeft, text)
         painter.restore()
@@ -90,13 +93,13 @@ class OperationsAccountDelegate(QStyledItemDelegate):
         model = index.model()
         account = model.data(index, Qt.DisplayRole)
         type = model.data(model.index(index.row(), 0), Qt.DisplayRole)
-        if (type == 1):
+        if (type == TRANSACTION_ACTION):
             #peer = model.data(model.index(index.row(), 5), Qt.DisplayRole)
             text = account #+ "\n" + peer
-        elif (type == 2):
+        elif (type == TRANSACTION_DIVIDEND):
             active_name = model.data(model.index(index.row(), 8), Qt.DisplayRole)
             text = account + "\n" + active_name
-        elif (type == 3):
+        elif (type == TRANSACTION_TRADE):
             active_name = model.data(model.index(index.row(), 8), Qt.DisplayRole)
             qty = model.data(model.index(index.row(), 12), Qt.DisplayRole)
             price = model.data(model.index(index.row(), 13), Qt.DisplayRole)
@@ -105,8 +108,10 @@ class OperationsAccountDelegate(QStyledItemDelegate):
                 text = account + f"\n{qty:.2f} @ {price:.2f} [f: {fee:.2f}] " + active_name
             else:
                 text = account + f"\n+{qty:.2f} @ {price:.2f} [f: {fee:.2f}] " + active_name
+        elif (type == TRANSACTION_TRANSFER):
+            text = account
         else:
-            text = "OperationsAccountDelegate: unknown operation"
+            assert False
         painter.drawText(option.rect, Qt.AlignLeft, text)
         painter.restore()
 
@@ -118,7 +123,7 @@ class OperationsNotesDelegate(QStyledItemDelegate):
         painter.save()
         model = index.model()
         type = model.data(model.index(index.row(), 0), Qt.DisplayRole)
-        if (type == 1):
+        if (type == TRANSACTION_ACTION) or (type == TRANSACTION_TRANSFER):
             peer = model.data(model.index(index.row(), 5), Qt.DisplayRole)
             text = peer
         else:
@@ -140,7 +145,7 @@ class OperationsAmountDelegate(QStyledItemDelegate):
             amount = 0
         type = model.data(model.index(index.row(), 0), Qt.DisplayRole)
         qty = model.data(model.index(index.row(), 12), Qt.DisplayRole)
-        if (type != 1) and (qty != 0):  # TODO need to put TAX amount for Dividend here
+        if (type == TRANSACTION_TRADE) or (type == TRANSACTION_DIVIDEND):  # TODO need to put TAX amount for Dividend here
             text = f"{amount:.2f}\n{qty:.2f}"
         else:
             text = f"{amount:.2f}\n"

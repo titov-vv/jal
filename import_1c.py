@@ -44,6 +44,7 @@ def import_1c(db_file, data_path):
     db = sqlite3.connect(db_file)
     cursor = db.cursor()
     cursor.executescript("DELETE FROM quotes;"
+                         "DELETE FROM transfer_notes;"
                          "DELETE FROM transfers;"
                          "DELETE FROM action_details;"
                          "DELETE FROM actions;"
@@ -134,17 +135,16 @@ def import_1c(db_file, data_path):
                            (new_id, row['type_y'], row['category_id_y'], row['tag_id_y'],
                             row['sum_y'], row['sum_a_y'], row['note_y']))
     print("Actions loaded")
-    lookup = data[['id', 'new_id']]
-    links = pd.read_csv(data_path + "actions_transfers.csv", sep='|', encoding='cp1251', thousands='\xa0',
-                       dtype = {'from_id':int, 'to_id':int},
-                       converters = {'fee_id': convert_with_null})
-    links = links.merge(lookup, how='left', left_on='from_id', right_on="id")
-    links = links.merge(lookup, how='left', left_on='to_id', right_on="id")
-    links = links.merge(lookup, how='left', left_on='fee_id', right_on="id")
-
-    for index, row in links.iterrows():
-        cursor.execute("INSERT INTO transfers(from_id, to_id, fee_id) VALUES(?, ?, ?)",
-                       (row['new_id_x'], row['new_id_y'], row['new_id']))
+    data = pd.read_csv(data_path + "actions_transfers.csv", sep='|', encoding='cp1251', thousands='\xa0',
+                       dtype = {'id':int, 'type':int, 'account_id':int, 'note':str},
+                       converters = {'timestamp': convert_datetime, 'amount': convert_sum, 'rate': convert_sum})
+    data['note'] = data['note'].fillna("")
+    data.rename(columns={'id': 'tid'}, inplace=True)
+    notes = data[data['note'] != ""]
+    data = data.drop(columns=['note'])
+    data.to_sql(name="transfers", con=db, if_exists='append', index=False, chunksize=100)
+    notes = notes.drop(columns=['timestamp', 'type', 'account_id', 'amount', 'rate'])
+    notes.to_sql(name="transfer_notes", con=db, if_exists='append', index=False, chunksize=100)
     print("Transfers loaded")
     data = pd.read_csv(data_path + "reg_quotes.csv", sep='|', encoding='cp1251', thousands='\xa0',
                        dtype = {'active_id':int},

@@ -238,8 +238,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TransferFeeAccountWidget.init_DB(self.db)
 
         self.TransfersModel = QSqlTableModel(db=self.db)
-        self.TransfersModel.setTable("transfer_details")
-        self.TransfersModel.beforeInsert.connect(self.BeforeTransferInsert)
+        self.TransfersModel.setTable("transfer_combined")
         self.TransfersModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         from_idx = self.TransfersModel.fieldIndex("from_acc_id")
         to_idx = self.TransfersModel.fieldIndex("to_acc_id")
@@ -387,6 +386,17 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                         self.SubmitChangesForTab(TAB_TRADE)
                     else:
                         self.RevertChangesForTab(TAB_TRADE)
+            elif (old_operation_type == TRANSACTION_TRANSFER):
+                if self.TransfersModel.isDirty():
+                    reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
+                                                  self.tr("Transfer has uncommitted changes,\ndo you want to save it?"),
+                                                  QMessageBox.Yes, QMessageBox.No)
+                    if reply == QMessageBox.Yes:
+                        self.SubmitChangesForTab(TAB_TRANSFER)
+                    else:
+                        self.RevertChangesForTab(TAB_TRANSFER)
+            else:
+                assert False
         ##################################################################
         # UPDATE VIEW FOR NEW SELECTED TRANSACTION                       #
         ##################################################################
@@ -395,17 +405,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             selected_row = idx[0].row()
             operation_type = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("type"))
             operation_id = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("id"))
-            transfer_id = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("qty_trid"))
             if (operation_type == TRANSACTION_ACTION):
                 self.ActionsModel.setFilter(f"actions.id = {operation_id}")
                 self.ActionsDataMapper.setCurrentModelIndex(self.ActionsDataMapper.model().index(0, 0))
-                if (transfer_id == 0):    # Income / Spending
-                    self.OperationsTabs.setCurrentIndex(TAB_ACTION)
-                    self.ActionDetailsModel.setFilter(f"action_details.pid = {operation_id}")
-                else:                     # Transfer
-                    self.OperationsTabs.setCurrentIndex(TAB_TRANSFER)
-                    self.TransfersModel.setFilter(f"transfer_details.id = {transfer_id}")
-                    self.TransfersDataMapper.setCurrentModelIndex(self.TransfersDataMapper.model().index(0, 0))
+                self.OperationsTabs.setCurrentIndex(TAB_ACTION)
+                self.ActionDetailsModel.setFilter(f"action_details.pid = {operation_id}")
             elif (operation_type == TRANSACTION_DIVIDEND):
                 self.OperationsTabs.setCurrentIndex(TAB_DIVIDEND)
                 self.DividendsModel.setFilter("dividends.id = {}".format(operation_id))
@@ -414,8 +418,12 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 self.OperationsTabs.setCurrentIndex(TAB_TRADE)
                 self.TradesModel.setFilter("trades.id = {}".format(operation_id))
                 self.TradesDataMapper.setCurrentModelIndex(self.TradesDataMapper.model().index(0,0))
+            elif (operation_type == TRANSACTION_TRANSFER):
+                self.OperationsTabs.setCurrentIndex(TAB_TRANSFER)
+                self.TransfersModel.setFilter(f"transfer_details.id = {operation_id}")
+                self.TransfersDataMapper.setCurrentModelIndex(self.TransfersDataMapper.model().index(0, 0))
             else:
-                print("Unknown operation type", operation_type)
+                assert False
 
     def SetOperationsFilter(self):
         operations_filter = ""
@@ -497,8 +505,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         index = self.OperationsTableView.currentIndex()
         type = self.OperationsModel.data(self.OperationsModel.index(index.row(), 0))
         id = self.OperationsModel.data(self.OperationsModel.index(index.row(), 1))
-        transfer_id = self.OperationsModel.data(self.OperationsModel.index(index.row(), 12))
-        self.ledger.DeleteOperation(type, id, transfer_id)
+        self.ledger.DeleteOperation(type, id)
         self.OperationsModel.select()
 
     @Slot()
@@ -535,7 +542,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             if not self.ActionDetailsModel.submitAll():
                 print(self.tr("Action details submit failed: "), self.ActionDetailsModel.lastError().text())
         elif (tab2save == TAB_TRANSFER):
-            pass # TODO Submit Transfer
+            if not self.TransfersModel.submitAll():
+                print(self.tr("Transfer submit failed: "), self.TransfersModel.lastError().text())
         elif (tab2save == TAB_DIVIDEND):
             if not self.DividendsModel.submitAll():
                 print(self.tr("Dividend submit failed: "), self.DividendsModel.lastError().text())
@@ -543,7 +551,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             if not self.TradesModel.submitAll():
                 print(self.tr("Trade submit failed: "), self.TradesModel.lastError().text())
         else:
-            print("Faulty tab selected to submit")
+            assert False
         self.OperationsModel.select()
         # TODO Implement "Not saved" flag reset
 
@@ -552,13 +560,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             self.ActionsModel.revertAll()
             self.ActionDetailsModel.revertAll()
         elif (tab2revert == TAB_TRANSFER):
-            pass  # TODO Revert transfer
+            self.TransfersModel.revertAll()
         elif (tab2revert == TAB_DIVIDEND):
             self.DividendsModel.revertAll()
         elif (tab2revert == TAB_TRADE):
             self.TradesModel.revertAll()
         else:
-            print("Faulty tab selected to revert")
+            assert False
 
     @Slot()
     def BeforeActionDetailInsert(self, record):
@@ -578,11 +586,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         fee_exchange = float(record.value("fee_exchange"))
         sum = round(price*qty, 2) + type*(fee_broker + fee_exchange) + coupon
         record.setValue("sum", sum)
-
-    @Slot()
-    def BeforeTransferInsert(self, record):
-        #TODO put correct SQL for transfer insert here and then cancel the operation, probably overriding submitAll()
-        print(record)
 
     @Slot()
     def AddDetail(self):

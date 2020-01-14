@@ -333,6 +333,45 @@ class Ledger_Bookkeeper:
         else:
             self.Sell(seq_id, timestamp, account_id, currency_id, active_id, qty, price, coupon, fee_broker, fee_exchange, trade_sum)
 
+    def TransferOut(self, seq_id, timestamp, account_id, currency_id, amount):
+        credit_sum = self.Bookkeep_TakeCredit(seq_id, timestamp, account_id, currency_id, amount)
+        #TODO check for 0 values
+        self.AppendTransaction(timestamp, seq_id, BOOK_ACCOUNT_MONEY, currency_id, account_id, -(amount - credit_sum))
+        self.AppendTransaction(timestamp, seq_id, BOOK_ACCOUNT_TRANSFERS, currency_id, account_id, amount)
+
+    def TransferIn(self, seq_id, timestamp, account_id, currency_id, amount):
+        returned_sum = self.Bookkeep_ReturnCredit(seq_id, timestamp, account_id, currency_id, amount)
+        # TODO probably here not so strict check
+        if (returned_sum < amount):
+            self.AppendTransaction(timestamp, seq_id, BOOK_ACCOUNT_MONEY, currency_id, account_id, (amount - returned_sum))
+        self.AppendTransaction(timestamp, seq_id, BOOK_ACCOUNT_TRANSFERS, currency_id, account_id, -amount)
+
+    def Fee(self, seq_id, timestamp, account_id, currency_id, fee):
+        credit_sum = self.Bookkeep_TakeCredit(seq_id, timestamp, account_id, currency_id, fee)
+        # TODO check for 0 values
+        self.AppendTransaction(timestamp, seq_id, BOOK_ACCOUNT_MONEY, currency_id, account_id, -(fee - credit_sum))
+        self.AppendTransaction(timestamp, seq_id, BOOK_ACCOUNT_COSTS, currency_id, account_id, fee, None, PEER_FINANCIAL, CATEGORY_FEES, None)
+
+    def Bookkeep_Transfer(self, seq_id, id):
+        cursor = self.db.cursor()
+        cursor.execute(
+            "SELECT t.type, t.timestamp, t.account_id, a.currency_id, t.amount "
+            "FROM transfers AS t "
+            "LEFT JOIN accounts AS a ON t.account_id = a.id "
+            "WHERE t.id = ?", (id,))
+        transfer_row = cursor.fetchone()
+        type = transfer_row[0]
+        timestamp = transfer_row[1]
+        account_id = transfer_row[2]
+        currency_id = transfer_row[3]
+        amount = transfer_row[4]
+        if (type == 1):
+            self.TransferOut(seq_id, timestamp, account_id, currency_id, -amount)
+        elif (type == 2):
+            self.TransferIn(seq_id, timestamp, account_id, currency_id, amount)
+        elif (type == 3):
+            self.Fee(seq_id, timestamp, account_id, currency_id, -amount)
+
     # Rebuild transaction sequence and recalculate all amounts
     # timestamp:
     # -1 - re-build from last valid operation (from ledger frontier)
@@ -356,13 +395,15 @@ class Ledger_Bookkeeper:
         self.db.commit()
 
         cursor.execute("SELECT 1 AS type, a.id, a.timestamp, "
-                       "CASE WHEN SUM(d.type*d.sum)<0 THEN 4 ELSE 1 END AS seq FROM actions AS a "
+                       "CASE WHEN SUM(d.type*d.sum)<0 THEN 5 ELSE 1 END AS seq FROM actions AS a "
                        "LEFT JOIN action_details AS d ON a.id=d.pid WHERE timestamp >= ? GROUP BY a.id "
                        "UNION ALL "
                        "SELECT 2 AS type, id, timestamp, 2 AS seq FROM dividends WHERE timestamp >= ? "
                        "UNION ALL "
-                       "SELECT 3 AS type, id, timestamp, 3 AS seq FROM trades WHERE timestamp >= ? "
-                       "ORDER BY timestamp, seq", (frontier, frontier, frontier))
+                       "SELECT 4 AS type, id, timestamp, 3 AS seq FROM transfers WHERE timestamp >= ? "
+                       "UNION ALL "
+                       "SELECT 3 AS type, id, timestamp, 4 AS seq FROM trades WHERE timestamp >= ? "
+                       "ORDER BY timestamp, seq", (frontier, frontier, frontier, frontier))
         transaction_rows = cursor.fetchall()
 
         # Unsafe operations to speed-up execution
@@ -382,6 +423,8 @@ class Ledger_Bookkeeper:
                 self.Bookkeep_Dividend(seq_id, transaction_id)
             if (transaction_type == TRANSACTION_TRADE):
                 self.Bookkeep_Trade(seq_id, transaction_id)
+            if (transaction_type == TRANSACTION_TRANSFER):
+                self.Bookkeep_Transfer(seq_id, transaction_id)
             i = i + 1
             if (i % 2500) == 0:
                 print("Processed", i, "records at", datetime.datetime.now())
