@@ -9,7 +9,11 @@ class TransferSqlDelegate(QSqlRelationalDelegate):
 
     def setEditorData(self, editor, index):
         if (index.column() == 2) or (index.column() == 5) or (index.column() == 8):  # timestamps of from,to and fee docs
-            editor.setDateTime(datetime.fromtimestamp(index.model().data(index, Qt.EditRole)))
+            timestamp = index.model().data(index, Qt.EditRole)
+            if (timestamp == ''):
+                QSqlRelationalDelegate.setEditorData(self, editor, index)
+            else:
+                editor.setDateTime(datetime.fromtimestamp(timestamp))
         else:
             QSqlRelationalDelegate.setEditorData(self, editor, index)
 
