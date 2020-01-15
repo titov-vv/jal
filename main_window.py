@@ -238,7 +238,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TransferFeeAccountWidget.init_DB(self.db)
 
         self.TransfersModel = QSqlTableModel(db=self.db)
-        self.TransfersModel.setTable("transfer_combined")
+        self.TransfersModel.setTable("transfers_combined")
         self.TransfersModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         from_idx = self.TransfersModel.fieldIndex("from_acc_id")
         to_idx = self.TransfersModel.fieldIndex("to_acc_id")
@@ -420,7 +420,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 self.TradesDataMapper.setCurrentModelIndex(self.TradesDataMapper.model().index(0,0))
             elif (operation_type == TRANSACTION_TRANSFER):
                 self.OperationsTabs.setCurrentIndex(TAB_TRANSFER)
-                self.TransfersModel.setFilter(f"transfer_details.id = {operation_id}")
+                self.TransfersModel.setFilter(f"transfers_combined.id = {operation_id}")
                 self.TransfersDataMapper.setCurrentModelIndex(self.TransfersDataMapper.model().index(0, 0))
             else:
                 assert False

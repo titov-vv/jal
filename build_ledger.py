@@ -5,6 +5,7 @@ from constants import *
 #TODO Check are there negative lines for Costs
 #TODO Simplify Buy/Sell queries
 ###################################################################################################
+
 class Ledger_Bookkeeper:
     def __init__(self, db_path):
         self.db = sqlite3.connect(db_path)
@@ -365,11 +366,11 @@ class Ledger_Bookkeeper:
         account_id = transfer_row[2]
         currency_id = transfer_row[3]
         amount = transfer_row[4]
-        if (type == 1):
+        if (type == TRANSFER_OUT):
             self.TransferOut(seq_id, timestamp, account_id, currency_id, -amount)
-        elif (type == 2):
+        elif (type == TRANSFER_IN):
             self.TransferIn(seq_id, timestamp, account_id, currency_id, amount)
-        elif (type == 3):
+        elif (type == TRANSFER_FEE):
             self.Fee(seq_id, timestamp, account_id, currency_id, -amount)
 
     # Rebuild transaction sequence and recalculate all amounts

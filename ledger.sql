@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Tue Jan 14 21:38:23 2020
+-- File generated with SQLiteStudio v3.2.1 on Wed Jan 15 19:46:35 2020
 --
 -- Text encoding used: UTF-8
 --
@@ -408,8 +408,10 @@ CREATE TRIGGER delete_transfers
     INSTEAD OF DELETE
             ON transfers_combined
 BEGIN
+    DELETE FROM transfer_notes
+          WHERE tid = OLD.id;
     DELETE FROM transfers
-          WHERE transfers.tid = OLD.id;
+          WHERE tid = OLD.id;
 END;
 
 
@@ -433,7 +435,7 @@ BEGIN
                                   SELECT MAX(tid) + 1
                                     FROM transfers
                               ),
-                              1,
+-                             1,
                               NEW.from_timestamp,
                               NEW.from_acc_id,
                               NEW.from_amount,
@@ -452,7 +454,7 @@ BEGIN
                                   SELECT MAX(tid) 
                                     FROM transfers
                               ),
-                              2,
+                              1,
                               NEW.to_timestamp,
                               NEW.to_acc_id,
                               NEW.to_amount,
@@ -492,7 +494,7 @@ BEGIN
                                   SELECT MAX(tid) + 1
                                     FROM transfers
                               ),
-                              1,
+-                             1,
                               NEW.from_timestamp,
                               NEW.from_acc_id,
                               NEW.from_amount,
@@ -511,7 +513,7 @@ BEGIN
                                   SELECT MAX(tid) 
                                     FROM transfers
                               ),
-                              2,
+                              1,
                               NEW.to_timestamp,
                               NEW.to_acc_id,
                               NEW.to_amount,
@@ -530,7 +532,7 @@ BEGIN
                                   SELECT MAX(tid) 
                                     FROM transfers
                               ),
-                              3,
+                              0,
                               NEW.fee_timestamp,
                               NEW.fee_acc_id,
                               NEW.fee_amount,
@@ -559,7 +561,7 @@ BEGIN
     UPDATE transfers
        SET account_id = NEW.from_acc_id
      WHERE tid = OLD.id AND 
-           type = 1;
+           type = -1;
 END;
 
 
@@ -572,7 +574,7 @@ BEGIN
     UPDATE transfers
        SET amount = NEW.from_amount
      WHERE tid = OLD.id AND 
-           type = 1;
+           type = -1;
 END;
 
 
@@ -585,7 +587,7 @@ BEGIN
     UPDATE transfers
        SET timestamp = NEW.from_timestamp
      WHERE tid = OLD.id AND 
-           type = 1;
+           type = -1;
 END;
 
 
@@ -598,7 +600,7 @@ BEGIN
     UPDATE transfers
        SET account_id = NEW.fee_acc_id
      WHERE tid = OLD.id AND 
-           type = 3;
+           type = 0;
 END;
 
 
@@ -611,7 +613,7 @@ BEGIN
     UPDATE transfers
        SET amount = NEW.fee_amount
      WHERE tid = OLD.id AND 
-           type = 3;
+           type = 0;
 END;
 
 
@@ -624,7 +626,7 @@ BEGIN
     UPDATE transfers
        SET timestamp = NEW.fee_timestamp
      WHERE tid = OLD.id AND 
-           type = 3;
+           type = 0;
 END;
 
 
@@ -649,7 +651,7 @@ BEGIN
     UPDATE transfers
        SET account_id = NEW.to_acc_id
      WHERE tid = OLD.id AND 
-           type = 2;
+           type = 1;
 END;
 
 
@@ -662,7 +664,7 @@ BEGIN
     UPDATE transfers
        SET amount = NEW.to_amount
      WHERE tid = OLD.id AND 
-           type = 2;
+           type = 1;
 END;
 
 
@@ -675,7 +677,7 @@ BEGIN
     UPDATE transfers
        SET timestamp = NEW.to_timestamp
      WHERE tid = OLD.id AND 
-           type = 2;
+           type = 1;
 END;
 
 
@@ -748,7 +750,7 @@ CREATE VIEW all_operations AS
                       t.timestamp,
                       t.number AS num_peer,
                       t.account_id,
-                      t.sum AS amount,
+                      ( -t.type * t.sum) AS amount,
                       t.active_id,
                       (t.type * t.qty) AS qty_trid,
                       t.price AS price,
@@ -765,21 +767,26 @@ CREATE VIEW all_operations AS
                                           l.book_account = 4
                UNION ALL
                SELECT 4 AS type,
-                      r.id,
+                      r.tid,
                       r.timestamp,
                       NULL AS num_peer,
                       r.account_id,
                       r.amount,
                       NULL AS active_id,
-                      r.tid AS qty_trid,
+                      r.type AS qty_trid,
                       r.rate AS price,
                       NULL AS fee_tax,
                       NULL AS t_qty,
                       n.note,
-                      NULL AS note2
+                      a.name AS note2
                  FROM transfers AS r
                       LEFT JOIN
                       transfer_notes AS n ON r.tid = n.tid
+                      LEFT JOIN
+                      transfers AS p ON r.tid = p.tid AND 
+                                        p.type = -r.type
+                      LEFT JOIN
+                      accounts AS a ON a.id = p.account_id
                 ORDER BY timestamp
            )
            AS m
@@ -825,13 +832,13 @@ CREATE VIEW transfers_combined AS
       FROM transfers AS f
            INNER JOIN
            transfers AS t ON f.tid = t.tid AND 
-                             t.type = 2
+                             t.type = 1
            LEFT JOIN
            transfers AS fee ON f.tid = fee.tid AND 
-                               fee.type = 3
+                               fee.type = 0
            LEFT JOIN
            transfer_notes AS n ON f.tid = n.tid
-     WHERE f.type = 1;
+     WHERE f.type = -1;
 
 
 COMMIT TRANSACTION;
