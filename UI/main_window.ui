@@ -420,29 +420,11 @@
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="QTabWidget" name="OperationsTabs">
-                  <property name="enabled">
-                   <bool>true</bool>
-                  </property>
-                  <property name="minimumSize">
-                   <size>
-                    <width>0</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="tabPosition">
-                   <enum>QTabWidget::South</enum>
-                  </property>
-                  <property name="tabShape">
-                   <enum>QTabWidget::Triangular</enum>
-                  </property>
+                 <widget class="QStackedWidget" name="OperationsTabs">
                   <property name="currentIndex">
                    <number>0</number>
                   </property>
                   <widget class="QWidget" name="ActionDetailsTab">
-                   <attribute name="title">
-                    <string>Income / Spending</string>
-                   </attribute>
                    <layout class="QGridLayout" name="gridLayout_4">
                     <property name="leftMargin">
                      <number>2</number>
@@ -529,12 +511,25 @@
                     <item row="2" column="1" colspan="2">
                      <widget class="PeerSelector" name="ActionPeerWidget" native="true"/>
                     </item>
+                    <item row="0" column="0">
+                     <widget class="QLabel" name="ActionTabLbl">
+                      <property name="font">
+                       <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>Income / Spending</string>
+                      </property>
+                     </widget>
+                    </item>
                    </layout>
                   </widget>
                   <widget class="QWidget" name="TradeDetailsTab">
-                   <attribute name="title">
-                    <string>Buy / Sell</string>
-                   </attribute>
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
                    <layout class="QGridLayout" name="gridLayout_3">
                     <property name="leftMargin">
                      <number>2</number>
@@ -674,12 +669,22 @@
                       </layout>
                      </widget>
                     </item>
+                    <item row="0" column="0">
+                     <widget class="QLabel" name="TradeTabLbl">
+                      <property name="font">
+                       <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>Buy / Sell</string>
+                      </property>
+                     </widget>
+                    </item>
                    </layout>
                   </widget>
                   <widget class="QWidget" name="DividendDetailsTab">
-                   <attribute name="title">
-                    <string>Dividend</string>
-                   </attribute>
                    <layout class="QGridLayout" name="gridLayout_2">
                     <property name="leftMargin">
                      <number>2</number>
@@ -736,7 +741,7 @@
                      <widget class="QLineEdit" name="DividendSumDescription"/>
                     </item>
                     <item row="6" column="1">
-                     <widget class="QLabel" name="label">
+                     <widget class="QLabel" name="DividendSecLbl">
                       <property name="text">
                        <string>Security</string>
                       </property>
@@ -758,12 +763,22 @@
                     <item row="2" column="3">
                      <widget class="QLineEdit" name="DividendNumberEdit"/>
                     </item>
+                    <item row="0" column="1">
+                     <widget class="QLabel" name="DividendTabLbl">
+                      <property name="font">
+                       <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>Dividend</string>
+                      </property>
+                     </widget>
+                    </item>
                    </layout>
                   </widget>
                   <widget class="QWidget" name="TransferDetailsTab">
-                   <attribute name="title">
-                    <string>Transfer</string>
-                   </attribute>
                    <layout class="QGridLayout" name="gridLayout_5">
                     <property name="leftMargin">
                      <number>2</number>
@@ -850,6 +865,19 @@
                        </size>
                       </property>
                      </spacer>
+                    </item>
+                    <item row="0" column="0">
+                     <widget class="QLabel" name="TransferTabLbl">
+                      <property name="font">
+                       <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>Transfer</string>
+                      </property>
+                     </widget>
                     </item>
                    </layout>
                   </widget>

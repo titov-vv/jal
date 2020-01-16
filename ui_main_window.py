@@ -208,12 +208,8 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_4 = QHBoxLayout(self.OperationDetails)
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
-        self.OperationsTabs = QTabWidget(self.OperationDetails)
+        self.OperationsTabs = QStackedWidget(self.OperationDetails)
         self.OperationsTabs.setObjectName(u"OperationsTabs")
-        self.OperationsTabs.setEnabled(True)
-        self.OperationsTabs.setMinimumSize(QSize(0, 0))
-        self.OperationsTabs.setTabPosition(QTabWidget.South)
-        self.OperationsTabs.setTabShape(QTabWidget.Triangular)
         self.ActionDetailsTab = QWidget()
         self.ActionDetailsTab.setObjectName(u"ActionDetailsTab")
         self.gridLayout_4 = QGridLayout(self.ActionDetailsTab)
@@ -265,9 +261,19 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_4.addWidget(self.ActionPeerWidget, 2, 1, 1, 2)
 
-        self.OperationsTabs.addTab(self.ActionDetailsTab, "")
+        self.ActionTabLbl = QLabel(self.ActionDetailsTab)
+        self.ActionTabLbl.setObjectName(u"ActionTabLbl")
+        font = QFont()
+        font.setBold(True)
+        font.setWeight(75);
+        self.ActionTabLbl.setFont(font)
+
+        self.gridLayout_4.addWidget(self.ActionTabLbl, 0, 0, 1, 1)
+
+        self.OperationsTabs.addWidget(self.ActionDetailsTab)
         self.TradeDetailsTab = QWidget()
         self.TradeDetailsTab.setObjectName(u"TradeDetailsTab")
+        self.TradeDetailsTab.setEnabled(True)
         self.gridLayout_3 = QGridLayout(self.TradeDetailsTab)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
         self.gridLayout_3.setContentsMargins(2, 2, 2, 2)
@@ -363,7 +369,13 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_3.addWidget(self.TypeGroupFrame, 4, 0, 1, 1)
 
-        self.OperationsTabs.addTab(self.TradeDetailsTab, "")
+        self.TradeTabLbl = QLabel(self.TradeDetailsTab)
+        self.TradeTabLbl.setObjectName(u"TradeTabLbl")
+        self.TradeTabLbl.setFont(font)
+
+        self.gridLayout_3.addWidget(self.TradeTabLbl, 0, 0, 1, 1)
+
+        self.OperationsTabs.addWidget(self.TradeDetailsTab)
         self.DividendDetailsTab = QWidget()
         self.DividendDetailsTab.setObjectName(u"DividendDetailsTab")
         self.gridLayout_2 = QGridLayout(self.DividendDetailsTab)
@@ -415,10 +427,10 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_2.addWidget(self.DividendSumDescription, 7, 3, 1, 1)
 
-        self.label = QLabel(self.DividendDetailsTab)
-        self.label.setObjectName(u"label")
+        self.DividendSecLbl = QLabel(self.DividendDetailsTab)
+        self.DividendSecLbl.setObjectName(u"DividendSecLbl")
 
-        self.gridLayout_2.addWidget(self.label, 6, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.DividendSecLbl, 6, 1, 1, 1)
 
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
@@ -429,7 +441,13 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_2.addWidget(self.DividendNumberEdit, 2, 3, 1, 1)
 
-        self.OperationsTabs.addTab(self.DividendDetailsTab, "")
+        self.DividendTabLbl = QLabel(self.DividendDetailsTab)
+        self.DividendTabLbl.setObjectName(u"DividendTabLbl")
+        self.DividendTabLbl.setFont(font)
+
+        self.gridLayout_2.addWidget(self.DividendTabLbl, 0, 1, 1, 1)
+
+        self.OperationsTabs.addWidget(self.DividendDetailsTab)
         self.TransferDetailsTab = QWidget()
         self.TransferDetailsTab.setObjectName(u"TransferDetailsTab")
         self.gridLayout_5 = QGridLayout(self.TransferDetailsTab)
@@ -493,7 +511,13 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_5.addItem(self.verticalSpacer_5, 6, 1, 1, 1)
 
-        self.OperationsTabs.addTab(self.TransferDetailsTab, "")
+        self.TransferTabLbl = QLabel(self.TransferDetailsTab)
+        self.TransferTabLbl.setObjectName(u"TransferTabLbl")
+        self.TransferTabLbl.setFont(font)
+
+        self.gridLayout_5.addWidget(self.TransferTabLbl, 0, 0, 1, 1)
+
+        self.OperationsTabs.addWidget(self.TransferDetailsTab)
 
         self.horizontalLayout_4.addWidget(self.OperationsTabs)
 
@@ -602,7 +626,7 @@ class Ui_LedgerMainWindow(object):
         self.AddActionDetail.setText(QCoreApplication.translate("LedgerMainWindow", u" + ", None))
         self.RemoveActionDetail.setText(QCoreApplication.translate("LedgerMainWindow", u" \u2014 ", None))
         self.ActionTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
-        self.OperationsTabs.setTabText(self.OperationsTabs.indexOf(self.ActionDetailsTab), QCoreApplication.translate("LedgerMainWindow", u"Income / Spending", None))
+        self.ActionTabLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Income / Spending", None))
         self.TradePriceLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Price / Qty", None))
         self.FeeLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Coupon / Fee", None))
         self.TradeTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
@@ -611,17 +635,17 @@ class Ui_LedgerMainWindow(object):
         self.TradeActiveLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Security", None))
         self.BuyRadioBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Buy", None))
         self.SellRadioBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Sell", None))
-        self.OperationsTabs.setTabText(self.OperationsTabs.indexOf(self.TradeDetailsTab), QCoreApplication.translate("LedgerMainWindow", u"Buy / Sell", None))
+        self.TradeTabLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Buy / Sell", None))
         self.DividendTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.TaxLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Tax", None))
         self.SumLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Sum", None))
-        self.label.setText(QCoreApplication.translate("LedgerMainWindow", u"Security", None))
-        self.OperationsTabs.setTabText(self.OperationsTabs.indexOf(self.DividendDetailsTab), QCoreApplication.translate("LedgerMainWindow", u"Dividend", None))
+        self.DividendSecLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Security", None))
+        self.DividendTabLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Dividend", None))
         self.TransferToTimestamp.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.TransferFromTimestamp.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.TransferFeeTimestamp.setSpecialValueText(QCoreApplication.translate("LedgerMainWindow", u"N/A", None))
         self.TransferFeeTimestamp.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
-        self.OperationsTabs.setTabText(self.OperationsTabs.indexOf(self.TransferDetailsTab), QCoreApplication.translate("LedgerMainWindow", u"Transfer", None))
+        self.TransferTabLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Transfer", None))
         self.NewOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"New", None))
         self.DeleteOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Del", None))
         self.CopyOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Copy", None))
