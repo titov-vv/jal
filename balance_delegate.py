@@ -24,7 +24,7 @@ class BalanceDelegate(QStyledItemDelegate):
             font = painter.font()
             font.setBold(True)
             painter.setFont(font)
-            if (column == 3) or (column ==4):
+            if (column == 3) or (column == 4):
                 text = ""
 
         painter.drawText(option.rect, alignment, text)

@@ -127,7 +127,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         account_idx = self.ActionsModel.fieldIndex("account_id")
         peer_idx = self.ActionsModel.fieldIndex("peer_id")
-
+        self.ActionsModel.dataChanged.connect(self.OnOperationDataChanged)
         self.ActionsModel.select()
         self.ActionsDataMapper = QDataWidgetMapper(self)
         self.ActionsDataMapper.setModel(self.ActionsModel)
@@ -153,6 +153,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionDetailsModel.setHeaderData(4, Qt.Horizontal, "Amount")
         self.ActionDetailsModel.setHeaderData(5, Qt.Horizontal, "Amount *")
         self.ActionDetailsModel.setHeaderData(6, Qt.Horizontal, "Note")
+        self.ActionDetailsModel.dataChanged.connect(self.OnOperationDataChanged)
         self.ActionDetailsModel.select()
         self.ActionDetailsTableView.setModel(self.ActionDetailsModel)
         self.ActionDetailsTableView.setItemDelegate(ActionDetailDelegate(self.ActionDetailsTableView))  # To display editors and drop down lists for lookup fields
@@ -184,6 +185,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TradesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         account_idx = self.TradesModel.fieldIndex("account_id")
         active_idx = self.TradesModel.fieldIndex("active_id")
+        self.TradesModel.dataChanged.connect(self.OnOperationDataChanged)
         self.TradesModel.select()
         self.TradesDataMapper = QDataWidgetMapper(self)
         self.TradesDataMapper.setModel(self.TradesModel)
@@ -214,6 +216,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DividendsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         account_idx = self.DividendsModel.fieldIndex("account_id")
         active_idx = self.DividendsModel.fieldIndex("active_id")
+        self.DividendsModel.dataChanged.connect(self.OnOperationDataChanged)
         self.DividendsModel.select()
         self.DividendsDataMapper = QDataWidgetMapper(self)
         self.DividendsDataMapper.setModel(self.DividendsModel)
@@ -243,6 +246,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         from_idx = self.TransfersModel.fieldIndex("from_acc_id")
         to_idx = self.TransfersModel.fieldIndex("to_acc_id")
         fee_idx = self.TransfersModel.fieldIndex("fee_acc_id")
+        self.TransfersModel.dataChanged.connect(self.OnOperationDataChanged)
         self.TransfersModel.select()
         self.TransfersDataMapper = QDataWidgetMapper(self)
         self.TransfersDataMapper.setModel(self.TransfersModel)
@@ -290,6 +294,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DeleteOperationBtn.clicked.connect(self.DeleteOperation)
         self.CopyOperationBtn.clicked.connect(self.CopyOperation)
         self.SaveOperationBtn.clicked.connect(self.SaveOperation)
+        self.RevertOperationBtn.clicked.connect(self.RevertOperation)
 
         self.OperationsTableView.selectRow(0)
 
@@ -535,6 +540,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         active_tab = self.OperationsTabs.currentIndex()
         self.SubmitChangesForTab(active_tab)
 
+    @Slot()
+    def RevertOperation(self):
+        active_tab = self.OperationsTabs.currentIndex()
+        self.RevertChangesForTab(active_tab)
+
     def SubmitChangesForTab(self, tab2save):
         if (tab2save == TAB_ACTION):
             if not self.ActionsModel.submitAll():
@@ -553,7 +563,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         else:
             assert False
         self.OperationsModel.select()
-        # TODO Implement "Not saved" flag reset
+        self.SaveOperationBtn.setEnabled(False)
+        self.RevertOperationBtn.setEnabled(False)
 
     def RevertChangesForTab(self, tab2revert):
         if (tab2revert == TAB_ACTION):
@@ -567,6 +578,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             self.TradesModel.revertAll()
         else:
             assert False
+        self.SaveOperationBtn.setEnabled(False)
+        self.RevertOperationBtn.setEnabled(False)
 
     @Slot()
     def BeforeActionDetailInsert(self, record):
@@ -598,3 +611,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         selected_row = idx[0].row()
         self.ActionDetailsModel.removeRow(selected_row)
         self.ActionDetailsModel.submitAll()
+
+    @Slot()
+    def OnOperationDataChanged(self):
+        self.SaveOperationBtn.setEnabled(True)
+        self.RevertOperationBtn.setEnabled(True)

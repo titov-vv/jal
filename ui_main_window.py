@@ -533,20 +533,34 @@ class Ui_LedgerMainWindow(object):
 
         self.verticalLayout_3.addWidget(self.NewOperationBtn)
 
-        self.DeleteOperationBtn = QPushButton(self.OperationsButtons)
-        self.DeleteOperationBtn.setObjectName(u"DeleteOperationBtn")
-
-        self.verticalLayout_3.addWidget(self.DeleteOperationBtn)
-
         self.CopyOperationBtn = QPushButton(self.OperationsButtons)
         self.CopyOperationBtn.setObjectName(u"CopyOperationBtn")
 
         self.verticalLayout_3.addWidget(self.CopyOperationBtn)
 
+        self.DeleteOperationBtn = QPushButton(self.OperationsButtons)
+        self.DeleteOperationBtn.setObjectName(u"DeleteOperationBtn")
+
+        self.verticalLayout_3.addWidget(self.DeleteOperationBtn)
+
+        self.line = QFrame(self.OperationsButtons)
+        self.line.setObjectName(u"line")
+        self.line.setFrameShape(QFrame.HLine)
+        self.line.setFrameShadow(QFrame.Sunken)
+
+        self.verticalLayout_3.addWidget(self.line)
+
         self.SaveOperationBtn = QPushButton(self.OperationsButtons)
         self.SaveOperationBtn.setObjectName(u"SaveOperationBtn")
+        self.SaveOperationBtn.setEnabled(False)
 
         self.verticalLayout_3.addWidget(self.SaveOperationBtn)
+
+        self.RevertOperationBtn = QPushButton(self.OperationsButtons)
+        self.RevertOperationBtn.setObjectName(u"RevertOperationBtn")
+        self.RevertOperationBtn.setEnabled(False)
+
+        self.verticalLayout_3.addWidget(self.RevertOperationBtn)
 
         self.verticalSpacer_4 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
@@ -647,9 +661,10 @@ class Ui_LedgerMainWindow(object):
         self.TransferFeeTimestamp.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.TransferTabLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Transfer", None))
         self.NewOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"New", None))
-        self.DeleteOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Del", None))
         self.CopyOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Copy", None))
+        self.DeleteOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Del", None))
         self.SaveOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Save", None))
+        self.RevertOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Revert", None))
         self.MainTabs.setTabText(self.MainTabs.indexOf(self.TabMain), QCoreApplication.translate("LedgerMainWindow", u"Balance", None))
         self.MainTabs.setTabText(self.MainTabs.indexOf(self.TabTransactions), QCoreApplication.translate("LedgerMainWindow", u"Transactions", None))
         self.menuFile.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&File", None))
