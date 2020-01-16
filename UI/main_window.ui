@@ -1006,6 +1006,8 @@
     <addaction name="separator"/>
     <addaction name="action_Import"/>
     <addaction name="action_Re_build_Ledger"/>
+    <addaction name="separator"/>
+    <addaction name="actionInitDB"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_DAta"/>
@@ -1034,6 +1036,11 @@
   <action name="actionLoad_Statement">
    <property name="text">
     <string>Load &amp;Statement...</string>
+   </property>
+  </action>
+  <action name="actionInitDB">
+   <property name="text">
+    <string>Init &amp;DB</string>
    </property>
   </action>
  </widget>

@@ -59,6 +59,7 @@ def import_1c(db_file, data_path):
                          "DELETE FROM active_types;"
                          "DELETE FROM account_types;"
                          "VACUUM;")
+    cursor.execute("UPDATE settings SET value = 0 WHERE name = 'TriggersEnabled'")
     print("DB cleanup completed")
     data = pd.read_csv(data_path + "data_account_types.csv", sep='|', encoding='cp1251', dtype = {'id':int, 'name':str})
     data.to_sql(name="account_types", con = db, if_exists='append', index=False, chunksize=100)
@@ -151,6 +152,8 @@ def import_1c(db_file, data_path):
                        converters = {'timestamp': convert_datetime, 'quote': convert_sum})
     data.to_sql(name="quotes", con = db, if_exists='append', index=False, chunksize=100)
     print("Quotes loaded")
+
+    cursor.execute("UPDATE settings SET value = 1 WHERE name = 'TriggersEnabled'")
     db.commit()
     db.close()
     print("Import completed")

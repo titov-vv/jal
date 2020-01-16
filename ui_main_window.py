@@ -36,6 +36,8 @@ class Ui_LedgerMainWindow(object):
         self.action_Load_quotes.setObjectName(u"action_Load_quotes")
         self.actionLoad_Statement = QAction(LedgerMainWindow)
         self.actionLoad_Statement.setObjectName(u"actionLoad_Statement")
+        self.actionInitDB = QAction(LedgerMainWindow)
+        self.actionInitDB.setObjectName(u"actionInitDB")
         self.centralwidget = QWidget(LedgerMainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setMaximumSize(QSize(16777215, 16777215))
@@ -606,6 +608,8 @@ class Ui_LedgerMainWindow(object):
         self.menu_DAta.addSeparator()
         self.menu_DAta.addAction(self.action_Import)
         self.menu_DAta.addAction(self.action_Re_build_Ledger)
+        self.menu_DAta.addSeparator()
+        self.menu_DAta.addAction(self.actionInitDB)
 
         self.retranslateUi(LedgerMainWindow)
 
@@ -623,6 +627,7 @@ class Ui_LedgerMainWindow(object):
         self.action_Import.setText(QCoreApplication.translate("LedgerMainWindow", u"&Import...", None))
         self.action_Load_quotes.setText(QCoreApplication.translate("LedgerMainWindow", u"Load &quotes", None))
         self.actionLoad_Statement.setText(QCoreApplication.translate("LedgerMainWindow", u"Load &Statement...", None))
+        self.actionInitDB.setText(QCoreApplication.translate("LedgerMainWindow", u"Init &DB", None))
         self.BalanceBox.setTitle(QCoreApplication.translate("LedgerMainWindow", u"Balances", None))
         self.BalanceDate.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy", None))
         self.CurrencyLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Sum Currency:", None))

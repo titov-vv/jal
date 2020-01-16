@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Thu Jan 16 14:08:56 2020
+-- File generated with SQLiteStudio v3.2.1 on Thu Jan 16 16:48:40 2020
 --
 -- Text encoding used: UTF-8
 --
@@ -228,8 +228,8 @@ CREATE TABLE ledger (
                          REFERENCES books (id) ON DELETE NO ACTION
                                                ON UPDATE NO ACTION,
     active_id    INTEGER NOT NULL
-                         REFERENCES actives (a_id) ON DELETE NO ACTION
-                                                   ON UPDATE NO ACTION,
+                         REFERENCES actives (id) ON DELETE NO ACTION
+                                                 ON UPDATE NO ACTION,
     account_id   INTEGER NOT NULL
                          REFERENCES accounts (id) ON DELETE NO ACTION
                                                   ON UPDATE NO ACTION,
@@ -254,8 +254,8 @@ CREATE TABLE ledger_sums (
                          REFERENCES books (id) ON DELETE NO ACTION
                                                ON UPDATE NO ACTION,
     active_id    INTEGER NOT NULL
-                         REFERENCES actives (a_id) ON DELETE NO ACTION
-                                                   ON UPDATE NO ACTION,
+                         REFERENCES actives (id) ON DELETE NO ACTION
+                                                 ON UPDATE NO ACTION,
     account_id   INTEGER NOT NULL
                          REFERENCES accounts (id) ON DELETE NO ACTION
                                                   ON UPDATE NO ACTION,
@@ -289,6 +289,19 @@ CREATE TABLE sequence (
     timestamp    INTEGER NOT NULL,
     type         INTEGER NOT NULL,
     operation_id INTEGER NOT NULL
+);
+
+
+-- Table: settings
+DROP TABLE IF EXISTS settings;
+
+CREATE TABLE settings (
+    id    INTEGER   PRIMARY KEY
+                    NOT NULL
+                    UNIQUE,
+    name  TEXT (32) NOT NULL
+                    UNIQUE,
+    value INTEGER
 );
 
 
@@ -386,6 +399,74 @@ CREATE INDEX by_sid ON ledger_sums (
 );
 
 
+-- Trigger: actions_after_delete
+DROP TRIGGER IF EXISTS actions_after_delete;
+CREATE TRIGGER actions_after_delete
+         AFTER DELETE
+            ON actions
+      FOR EACH ROW
+          WHEN (
+    SELECT value
+      FROM settings
+     WHERE id = 1
+)
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= OLD.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= OLD.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= OLD.timestamp;
+END;
+
+
+-- Trigger: actions_after_insert
+DROP TRIGGER IF EXISTS actions_after_insert;
+CREATE TRIGGER actions_after_insert
+         AFTER INSERT
+            ON actions
+      FOR EACH ROW
+          WHEN (
+    SELECT value
+      FROM settings
+     WHERE id = 1
+)
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= NEW.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= NEW.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= NEW.timestamp;
+END;
+
+
+-- Trigger: actions_after_update
+DROP TRIGGER IF EXISTS actions_after_update;
+CREATE TRIGGER actions_after_update
+         AFTER UPDATE OF timestamp,
+                         account_id,
+                         peer_id
+            ON actions
+      FOR EACH ROW
+          WHEN (
+    SELECT value
+      FROM settings
+     WHERE id = 1
+)
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= OLD.timestamp OR 
+                timestamp >= NEW.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= OLD.timestamp OR 
+                timestamp >= NEW.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= OLD.timestamp OR 
+                timestamp >= NEW.timestamp;
+END;
+
+
 -- Trigger: delete_transfers
 DROP TRIGGER IF EXISTS delete_transfers;
 CREATE TRIGGER delete_transfers
@@ -396,6 +477,76 @@ BEGIN
           WHERE tid = OLD.id;
     DELETE FROM transfers
           WHERE tid = OLD.id;
+END;
+
+
+-- Trigger: dividends_after_delete
+DROP TRIGGER IF EXISTS dividends_after_delete;
+CREATE TRIGGER dividends_after_delete
+         AFTER DELETE
+            ON dividends
+      FOR EACH ROW
+          WHEN (
+    SELECT value
+      FROM settings
+     WHERE id = 1
+)
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= OLD.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= OLD.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= OLD.timestamp;
+END;
+
+
+-- Trigger: dividends_after_insert
+DROP TRIGGER IF EXISTS dividends_after_insert;
+CREATE TRIGGER dividends_after_insert
+         AFTER INSERT
+            ON dividends
+      FOR EACH ROW
+          WHEN (
+    SELECT value
+      FROM settings
+     WHERE id = 1
+)
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= NEW.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= NEW.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= NEW.timestamp;
+END;
+
+
+-- Trigger: dividends_after_update
+DROP TRIGGER IF EXISTS dividends_after_update;
+CREATE TRIGGER dividends_after_update
+         AFTER UPDATE OF timestamp,
+                         account_id,
+                         active_id,
+                         sum,
+                         sum_tax
+            ON dividends
+      FOR EACH ROW
+          WHEN (
+    SELECT value
+      FROM settings
+     WHERE id = 1
+)
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= OLD.timestamp OR 
+                timestamp >= NEW.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= OLD.timestamp OR 
+                timestamp >= NEW.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= OLD.timestamp OR 
+                timestamp >= NEW.timestamp;
 END;
 
 
@@ -533,6 +684,149 @@ BEGIN
                                    ),
                                    NEW.note
                                );
+END;
+
+
+-- Trigger: trades_after_delete
+DROP TRIGGER IF EXISTS trades_after_delete;
+CREATE TRIGGER trades_after_delete
+         AFTER DELETE
+            ON trades
+      FOR EACH ROW
+          WHEN (
+    SELECT value
+      FROM settings
+     WHERE id = 1
+)
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= OLD.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= OLD.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= OLD.timestamp;
+END;
+
+
+-- Trigger: trades_after_insert
+DROP TRIGGER IF EXISTS trades_after_insert;
+CREATE TRIGGER trades_after_insert
+         AFTER INSERT
+            ON trades
+      FOR EACH ROW
+          WHEN (
+    SELECT value
+      FROM settings
+     WHERE id = 1
+)
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= NEW.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= NEW.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= NEW.timestamp;
+END;
+
+
+-- Trigger: trades_after_update
+DROP TRIGGER IF EXISTS trades_after_update;
+CREATE TRIGGER trades_after_update
+         AFTER UPDATE OF timestamp,
+                         type,
+                         account_id,
+                         active_id,
+                         qty,
+                         price,
+                         coupon,
+                         fee_broker,
+                         fee_exchange
+            ON trades
+      FOR EACH ROW
+          WHEN (
+    SELECT value
+      FROM settings
+     WHERE id = 1
+)
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= OLD.timestamp OR 
+                timestamp >= NEW.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= OLD.timestamp OR 
+                timestamp >= NEW.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= OLD.timestamp OR 
+                timestamp >= NEW.timestamp;
+END;
+
+
+-- Trigger: transfers_after_delete
+DROP TRIGGER IF EXISTS transfers_after_delete;
+CREATE TRIGGER transfers_after_delete
+         AFTER DELETE
+            ON transfers
+      FOR EACH ROW
+          WHEN (
+    SELECT value
+      FROM settings
+     WHERE id = 1
+)
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= OLD.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= OLD.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= OLD.timestamp;
+END;
+
+
+-- Trigger: transfers_after_insert
+DROP TRIGGER IF EXISTS transfers_after_insert;
+CREATE TRIGGER transfers_after_insert
+         AFTER INSERT
+            ON transfers
+      FOR EACH ROW
+          WHEN (
+    SELECT value
+      FROM settings
+     WHERE id = 1
+)
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= NEW.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= NEW.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= NEW.timestamp;
+END;
+
+
+-- Trigger: transfers_after_update
+DROP TRIGGER IF EXISTS transfers_after_update;
+CREATE TRIGGER transfers_after_update
+         AFTER UPDATE OF timestamp,
+                         type,
+                         account_id,
+                         amount
+            ON transfers
+      FOR EACH ROW
+          WHEN (
+    SELECT value
+      FROM settings
+     WHERE id = 1
+)
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= OLD.timestamp OR 
+                timestamp >= NEW.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= OLD.timestamp OR 
+                timestamp >= NEW.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= OLD.timestamp OR 
+                timestamp >= NEW.timestamp;
 END;
 
 

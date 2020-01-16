@@ -50,7 +50,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.BalancesModel = QSqlTableModel(db=self.db)
         self.BalancesModel.setTable("balances")
-        self.BalancesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.BalancesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)   # TODO Replace direct field IDs
         self.BalancesModel.setHeaderData(2, Qt.Horizontal, "Account")
         self.BalancesModel.setHeaderData(3, Qt.Horizontal, "Balance")
         self.BalancesModel.setHeaderData(4, Qt.Horizontal, "")
@@ -148,26 +148,27 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionDetailsModel.setRelation(category_idx, QSqlRelation("categories", "id", "name"))
         tag_idx = self.ActionDetailsModel.fieldIndex("tag_id")
         self.ActionDetailsModel.setRelation(tag_idx, QSqlRelation("tags", "id", "tag"))
-        self.ActionDetailsModel.setHeaderData(2, Qt.Horizontal, "Category")
-        self.ActionDetailsModel.setHeaderData(3, Qt.Horizontal, "Tags")
-        self.ActionDetailsModel.setHeaderData(4, Qt.Horizontal, "Amount")
-        self.ActionDetailsModel.setHeaderData(5, Qt.Horizontal, "Amount *")
-        self.ActionDetailsModel.setHeaderData(6, Qt.Horizontal, "Note")
+        self.ActionDetailsModel.setHeaderData(category_idx, Qt.Horizontal, "Category")
+        self.ActionDetailsModel.setHeaderData(tag_idx, Qt.Horizontal, "Tags")
+        self.ActionDetailsModel.setHeaderData(self.ActionDetailsModel.fieldIndex("sum"), Qt.Horizontal, "Amount")
+        self.ActionDetailsModel.setHeaderData(self.ActionDetailsModel.fieldIndex("alt_sum"), Qt.Horizontal, "Amount *")
+        self.ActionDetailsModel.setHeaderData(self.ActionDetailsModel.fieldIndex("note"), Qt.Horizontal, "Note")
         self.ActionDetailsModel.dataChanged.connect(self.OnOperationDataChanged)
         self.ActionDetailsModel.select()
         self.ActionDetailsTableView.setModel(self.ActionDetailsModel)
         self.ActionDetailsTableView.setItemDelegate(ActionDetailDelegate(self.ActionDetailsTableView))  # To display editors and drop down lists for lookup fields
         self.ActionDetailsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  # To select only 1 row
         self.ActionDetailsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.ActionDetailsTableView.setColumnHidden(0, True)  # pid
-        self.ActionDetailsTableView.setColumnHidden(1, True)  # type
-        self.ActionDetailsTableView.setColumnWidth(2, 200)  # category
-        self.ActionDetailsTableView.setColumnWidth(3, 200)  # tags
-        self.ActionDetailsTableView.setColumnWidth(4, 100)  # amount
-        self.ActionDetailsTableView.setColumnWidth(5, 100)  # amount *
-        self.ActionDetailsTableView.setColumnWidth(6, 400)  # note
-        self.ActionDetailsTableView.horizontalHeader().moveSection(6, 2)
-        self.ActionDetailsTableView.setColumnWidth(6, 400)
+        self.ActionDetailsTableView.setColumnHidden(0, True)  # id
+        self.ActionDetailsTableView.setColumnHidden(1, True)  # pid
+        self.ActionDetailsTableView.setColumnHidden(2, True)  # type
+        self.ActionDetailsTableView.setColumnWidth(3, 200)  # category
+        self.ActionDetailsTableView.setColumnWidth(4, 200)  # tags
+        self.ActionDetailsTableView.setColumnWidth(5, 100)  # amount
+        self.ActionDetailsTableView.setColumnWidth(6, 100)  # amount *
+        self.ActionDetailsTableView.setColumnWidth(7, 400)  # note
+        self.ActionDetailsTableView.horizontalHeader().moveSection(7, 3)
+        self.ActionDetailsTableView.setColumnWidth(7, 400)
         self.ActionDetailsTableView.show()
 
         ###############################################################################################
@@ -273,6 +274,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.actionExit.triggered.connect(qApp.quit)
         self.action_Import.triggered.connect(self.ImportFrom1C)
         self.action_Re_build_Ledger.triggered.connect(self.ShowRebuildDialog)
+        self.actionInitDB.triggered.connect(self.InitDB)
         # INTERFACE ACTIONS
         self.MainTabs.currentChanged.connect(self.OnMainTabChange)
         self.BalanceDate.dateChanged.connect(self.onBalanceDateChange)
@@ -307,6 +309,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             self.db.close()
             import_1c(DB_PATH, import_directory)
             self.db.open()
+
+    def InitDB(self):
+        query = QSqlQuery(self.db)
+        query.exec_("DELETE FROM settings")
+        query.exec_("INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1)")  # Triggers enabled by default
 
     def ShowRebuildDialog(self):
         query = QSqlQuery(self.db)
@@ -507,6 +514,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         type = self.OperationsModel.data(self.OperationsModel.index(index.row(), 0))
         id = self.OperationsModel.data(self.OperationsModel.index(index.row(), 1))
         self.ledger.DeleteOperation(type, id)
+        self.UpdateLedger()
         self.OperationsModel.select()
 
     @Slot()
@@ -545,19 +553,25 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         if (tab2save == TAB_ACTION):
             if not self.ActionsModel.submitAll():
                 print(self.tr("Action submit failed: "), self.ActionDetailsModel.lastError().text())
+                return
             if not self.ActionDetailsModel.submitAll():
                 print(self.tr("Action details submit failed: "), self.ActionDetailsModel.lastError().text())
+                return
         elif (tab2save == TAB_TRANSFER):
             if not self.TransfersModel.submitAll():
                 print(self.tr("Transfer submit failed: "), self.TransfersModel.lastError().text())
+                return
         elif (tab2save == TAB_DIVIDEND):
             if not self.DividendsModel.submitAll():
                 print(self.tr("Dividend submit failed: "), self.DividendsModel.lastError().text())
+                return
         elif (tab2save == TAB_TRADE):
             if not self.TradesModel.submitAll():
                 print(self.tr("Trade submit failed: "), self.TradesModel.lastError().text())
+                return
         else:
             assert False
+        self.UpdateLedger()
         self.OperationsModel.select()
         self.SaveOperationBtn.setEnabled(False)
         self.RevertOperationBtn.setEnabled(False)
@@ -612,3 +626,18 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def OnOperationDataChanged(self):
         self.SaveOperationBtn.setEnabled(True)
         self.RevertOperationBtn.setEnabled(True)
+
+    def UpdateLedger(self):
+        query = QSqlQuery(self.db)
+        query.exec_("SELECT ledger_frontier FROM frontier")
+        query.next()
+        current_frontier = query.value(0)
+        if (QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - current_frontier) > 1296000: # if we have less then 15 days unreconciled
+            if QMessageBox().warning(self, self.tr("Confirmation"),
+                                     self.tr("More than 2 weeks require rebuild. Do you want to do it right now?"),
+                                     QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
+                return
+        self.db.close()
+        Ledger = Ledger_Bookkeeper(DB_PATH)
+        Ledger.RebuildLedger(current_frontier)
+        self.db.open()
