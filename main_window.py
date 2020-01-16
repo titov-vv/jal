@@ -356,52 +356,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def OnOperationChange(self, selected, deselected):
-        ##################################################################
-        # CHECK THAT CHANGES TO TRANSACION WERE SAVED IF ANY             #
-        ##################################################################
-        old_idx = deselected.indexes()
-        if old_idx:
-            old_row = old_idx[0].row()
-            old_operation_type = self.OperationsModel.record(old_row).value(self.OperationsModel.fieldIndex("type"))
-            if (old_operation_type == TRANSACTION_ACTION):
-                #TODO Make Transfer verification
-                if self.ActionsModel.isDirty() or self.ActionDetailsModel.isDirty():
-                    reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
-                                                  self.tr("Transaction has uncommitted changes,\ndo you want to save it?"),
-                                                  QMessageBox.Yes, QMessageBox.No)
-                    if reply == QMessageBox.Yes:
-                        self.SubmitChangesForTab(TAB_ACTION)
-                    else:
-                        self.RevertChangesForTab(TAB_ACTION)
-            elif (old_operation_type == TRANSACTION_DIVIDEND):
-                if self.DividendsModel.isDirty():
-                    reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
-                                                  self.tr("Dividend has uncommitted changes,\ndo you want to save it?"),
-                                                  QMessageBox.Yes, QMessageBox.No)
-                    if reply == QMessageBox.Yes:
-                        self.SubmitChangesForTab(TAB_DIVIDEND)
-                    else:
-                        self.RevertChangesForTab(TAB_DIVIDEND)
-            elif (old_operation_type == TRANSACTION_TRADE):
-                if self.TradesModel.isDirty():
-                    reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
-                                                  self.tr("Trade has uncommitted changes,\ndo you want to save it?"),
-                                                  QMessageBox.Yes, QMessageBox.No)
-                    if reply == QMessageBox.Yes:
-                        self.SubmitChangesForTab(TAB_TRADE)
-                    else:
-                        self.RevertChangesForTab(TAB_TRADE)
-            elif (old_operation_type == TRANSACTION_TRANSFER):
-                if self.TransfersModel.isDirty():
-                    reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
-                                                  self.tr("Transfer has uncommitted changes,\ndo you want to save it?"),
-                                                  QMessageBox.Yes, QMessageBox.No)
-                    if reply == QMessageBox.Yes:
-                        self.SubmitChangesForTab(TAB_TRANSFER)
-                    else:
-                        self.RevertChangesForTab(TAB_TRANSFER)
-            else:
-                assert False
+        self.CheckForNotSavedData()
+
         ##################################################################
         # UPDATE VIEW FOR NEW SELECTED TRANSACTION                       #
         ##################################################################
@@ -429,6 +385,40 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 self.TransfersDataMapper.setCurrentModelIndex(self.TransfersDataMapper.model().index(0, 0))
             else:
                 assert False
+
+    def CheckForNotSavedData(self):
+        if self.ActionsModel.isDirty() or self.ActionDetailsModel.isDirty():
+            reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
+                                          self.tr("Transaction has uncommitted changes,\ndo you want to save it?"),
+                                          QMessageBox.Yes, QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                self.SubmitChangesForTab(TAB_ACTION)
+            else:
+                self.RevertChangesForTab(TAB_ACTION)
+        if self.DividendsModel.isDirty():
+            reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
+                                          self.tr("Dividend has uncommitted changes,\ndo you want to save it?"),
+                                          QMessageBox.Yes, QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                self.SubmitChangesForTab(TAB_DIVIDEND)
+            else:
+                self.RevertChangesForTab(TAB_DIVIDEND)
+        if self.TradesModel.isDirty():
+            reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
+                                          self.tr("Trade has uncommitted changes,\ndo you want to save it?"),
+                                          QMessageBox.Yes, QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                self.SubmitChangesForTab(TAB_TRADE)
+            else:
+                self.RevertChangesForTab(TAB_TRADE)
+        if self.TransfersModel.isDirty():
+            reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
+                                          self.tr("Transfer has uncommitted changes,\ndo you want to save it?"),
+                                          QMessageBox.Yes, QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                self.SubmitChangesForTab(TAB_TRANSFER)
+            else:
+                self.RevertChangesForTab(TAB_TRANSFER)
 
     def SetOperationsFilter(self):
         operations_filter = ""
@@ -461,6 +451,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.SetOperationsFilter()
 
     def CreateNewAction(self):
+        self.CheckForNotSavedData()
         self.OperationsTabs.setCurrentIndex(TAB_ACTION)
         self.ActionsDataMapper.submit()
         new_record = self.ActionsModel.record()
@@ -472,6 +463,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionDetailsModel.setFilter("action_details.pid = 0")
 
     def CreateNewTransfer(self):
+        self.CheckForNotSavedData()
         self.OperationsTabs.setCurrentIndex(TAB_TRANSFER)
         self.TransfersDataMapper.submit()
         new_record = self.TransfersModel.record()
@@ -484,6 +476,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TransfersDataMapper.toLast()
 
     def CreateNewTrade(self):
+        self.CheckForNotSavedData()
         self.OperationsTabs.setCurrentIndex(TAB_TRADE)
         self.TradesDataMapper.submit()
         new_record = self.TradesModel.record()
@@ -494,6 +487,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TradesDataMapper.toLast()
 
     def CreateNewDividend(self):
+        self.CheckForNotSavedData()
         self.OperationsTabs.setCurrentIndex(TAB_DIVIDEND)
         self.DividendsDataMapper.submit()
         new_record = self.DividendsModel.record()
@@ -502,7 +496,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             new_record.setValue("account_id", self.ChooseAccountBtn.account_id)
         self.DividendsModel.insertRecord(-1, new_record)
         self.DividendsDataMapper.toLast()
-        # TODO Implement "Not saved" flag
 
     @Slot()
     def DeleteOperation(self):
