@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Thu Jan 16 16:48:40 2020
+-- File generated with SQLiteStudio v3.2.1 on Thu Jan 16 17:21:10 2020
 --
 -- Text encoding used: UTF-8
 --
@@ -411,6 +411,8 @@ CREATE TRIGGER actions_after_delete
      WHERE id = 1
 )
 BEGIN
+    DELETE FROM action_details
+          WHERE pid = OLD.id;
     DELETE FROM ledger
           WHERE timestamp >= OLD.timestamp;
     DELETE FROM sequence
