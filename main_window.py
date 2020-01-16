@@ -511,9 +511,21 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                                       QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
             return
         index = self.OperationsTableView.currentIndex()
-        type = self.OperationsModel.data(self.OperationsModel.index(index.row(), 0))
-        id = self.OperationsModel.data(self.OperationsModel.index(index.row(), 1))
-        self.ledger.DeleteOperation(type, id)
+        operation_type = self.OperationsModel.data(self.OperationsModel.index(index.row(), 0))
+        if (operation_type == TRANSACTION_ACTION):
+            self.ActionsModel.removeRow(0)
+            self.ActionsModel.submitAll()
+        elif (operation_type == TRANSACTION_DIVIDEND):
+            self.DividendsModel.removeRow(0)
+            self.DividendsModel.submitAll()
+        elif (operation_type == TRANSACTION_TRADE):
+            self.TradesModel.removeRow(0)
+            self.TradesModel.submitAll()
+        elif (operation_type == TRANSACTION_TRANSFER):
+            self.TransfersModel.removeRow(0)
+            self.TransfersModel.submitAll()
+        else:
+            assert False
         self.UpdateLedger()
         self.OperationsModel.select()
 

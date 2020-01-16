@@ -79,23 +79,3 @@ class Ledger:
         if not query.exec_():
             print("SQL: Table 'balances' creation failed")
         self.db.commit()
-
-    #TODO Probably simplify and move to main_window.py to Model actions
-    def DeleteOperation(self, type, id):
-        query = QSqlQuery(self.db)
-        if (type == TRANSACTION_ACTION):
-            query.prepare("DELETE FROM actions WHERE actions.id = :action_id")
-            query.bindValue(":action_id", id)
-        elif (type == TRANSACTION_DIVIDEND):
-            query.prepare("DELETE FROM dividends WHERE dividends.id = :dividend_id")
-            query.bindValue(":dividend_id", id)
-        elif (type == TRANSACTION_TRADE):
-            query.prepare("DELETE FROM trades WHERE trades.id = :trade_id")
-            query.bindValue(":trade_id", id)
-        elif (type == TRANSACTION_TRANSFER):
-            query.prepare("DELETE FROM transfers_combined WHERE transfers_combined.id = :trade_id")
-            query.bindValue(":trade_id", id)
-        else:
-            assert False
-        if not query.exec_():
-            print(f"SQL: Operation type {type} and id #{id} delete failed")
