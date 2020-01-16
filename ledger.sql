@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Wed Jan 15 19:46:35 2020
+-- File generated with SQLiteStudio v3.2.1 on Thu Jan 16 14:08:56 2020
 --
 -- Text encoding used: UTF-8
 --
@@ -375,22 +375,6 @@ CREATE TABLE transfers (
                                                 ON UPDATE CASCADE,
     amount     REAL,
     rate       REAL
-);
-
-
--- Table: transfers_
-DROP TABLE IF EXISTS transfers_;
-
-CREATE TABLE transfers_ (
-    id      INTEGER PRIMARY KEY
-                    UNIQUE
-                    NOT NULL,
-    from_id INTEGER REFERENCES actions (id) ON DELETE SET NULL
-                                            ON UPDATE CASCADE,
-    to_id   INTEGER REFERENCES actions (id) ON DELETE SET NULL
-                                            ON UPDATE CASCADE,
-    fee_id  INTEGER REFERENCES actions (id) ON DELETE SET NULL
-                                            ON UPDATE CASCADE
 );
 
 
@@ -808,7 +792,7 @@ CREATE VIEW all_operations AS
 -- View: frontier
 DROP VIEW IF EXISTS frontier;
 CREATE VIEW frontier AS
-    SELECT MAX(timestamp) AS ledger_frontier
+    SELECT MAX(sequence.timestamp) AS ledger_frontier
       FROM sequence;
 
 
