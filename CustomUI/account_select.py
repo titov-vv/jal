@@ -135,6 +135,8 @@ class AccountSelector(QWidget):
         return self.p_account_id
 
     def setId(self, id):
+        if (self.p_account_id == id):
+            return
         self.p_account_id = id
         self.dialog.Model.setFilter(f"accounts.id={id}")
         row_idx = self.dialog.Model.index(0, 0).row()

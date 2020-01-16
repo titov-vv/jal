@@ -54,6 +54,8 @@ class ActiveSelector(QWidget):
         return self.p_active_id
 
     def setId(self, id):
+        if (self.p_active_id == id):
+            return
         self.p_active_id = id
         self.Model.setFilter(f"actives.id={id}")
         row_idx = self.Model.index(0, 0).row()

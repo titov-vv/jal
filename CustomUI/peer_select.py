@@ -75,6 +75,8 @@ class PeerSelector(QWidget):
         return self.p_peer_id
 
     def setId(self, id):
+        if (self.p_peer_id == id):
+            return
         self.p_peer_id = id
         self.Model.setFilter(f"agents.id={id}")
         row_idx = self.Model.index(0, 0).row()

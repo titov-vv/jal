@@ -499,7 +499,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def DeleteOperation(self):
-        # TODO: show confirmation window before deletion
+        if QMessageBox().warning(self, self.tr("Confirmation"),
+                                      self.tr("Are you sure to delete this transaction?"),
+                                      QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
+            return
         index = self.OperationsTableView.currentIndex()
         type = self.OperationsModel.data(self.OperationsModel.index(index.row(), 0))
         id = self.OperationsModel.data(self.OperationsModel.index(index.row(), 1))
@@ -508,6 +511,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def CopyOperation(self):
+        self.CheckForNotSavedData()
         active_tab = self.OperationsTabs.currentIndex()
         if (active_tab == TAB_ACTION):
             mapper = self.ActionsDataMapper
@@ -518,7 +522,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         elif (active_tab == TAB_TRADE):
             mapper = self.TradesDataMapper
         else:
-            print("Faulty tab selected")
+            assert False
         row = mapper.currentIndex()
         new_record = mapper.model().record(row)
         mapper.submit()
@@ -526,7 +530,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
         mapper.model().insertRecord(-1, new_record)
         mapper.toLast()
-        # TODO Implement "Not saved" flag
 
     @Slot()
     def SaveOperation(self):
