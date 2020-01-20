@@ -1,7 +1,7 @@
 from constants import *
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu, QMessageBox
-from PySide2.QtSql import QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
-from PySide2.QtCore import Qt, Slot
+from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
+from PySide2.QtCore import Qt, Slot, QMetaObject
 from PySide2 import QtCore
 from ui_main_window import Ui_LedgerMainWindow
 from ledger_db import Ledger
@@ -23,6 +23,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.db = QSqlDatabase.addDatabase("QSQLITE")
         self.db.setDatabaseName(DB_PATH)
         self.db.open()
+        tables = self.db.tables(QSql.Tables)
+        if tables == []:
+            print("Database is empty. Application terminated.")
+            QMetaObject.invokeMethod(self, "close", Qt.QueuedConnection)
+            return
         self.ledger = Ledger(self.db)
 
         self.balance_currency = CURRENCY_RUBLE
