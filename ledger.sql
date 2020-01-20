@@ -399,6 +399,166 @@ CREATE INDEX by_sid ON ledger_sums (
 );
 
 
+-- View: all_operations
+DROP VIEW IF EXISTS all_operations;
+CREATE VIEW all_operations AS
+    SELECT m.type,
+           m.id,
+           m.timestamp,
+           m.account_id,
+           a.name AS account,
+           m.num_peer,
+           m.active_id,
+           s.name AS active,
+           s.full_name AS active_name,
+           m.note,
+           m.note2,
+           m.amount,
+           m.qty_trid,
+           m.price,
+           m.fee_tax,
+           l.sum_amount AS t_amount,
+           m.t_qty,
+           c.name AS currency,
+           CASE WHEN m.timestamp <= a.reconciled_on THEN 1 ELSE 0 END AS reconciled
+      FROM (
+               SELECT 1 AS type,
+                      o.id,
+                      timestamp,
+                      p.name AS num_peer,
+                      account_id,
+                      sum(d.type * d.sum) AS amount,
+                      o.alt_currency_id AS active_id,
+                      NULL AS qty_trid,
+                      sum(d.type * d.alt_sum) AS price,
+                      NULL AS fee_tax,
+                      NULL AS t_qty,
+                      NULL AS note,
+                      NULL AS note2
+                 FROM actions AS o
+                      LEFT JOIN
+                      agents AS p ON o.peer_id = p.id
+                      LEFT JOIN
+                      action_details AS d ON o.id = d.pid
+                GROUP BY o.id
+               UNION ALL
+               SELECT 2 AS type,
+                      d.id,
+                      d.timestamp,
+                      d.number AS num_peer,
+                      d.account_id,
+                      d.sum AS amount,
+                      d.active_id,
+                      SUM(coalesce(l.amount, 0) ) AS qty_trid,
+                      NULL AS price,
+                      d.sum_tax AS fee_tax,
+                      NULL AS t_qty,
+                      d.note AS note,
+                      d.note_tax AS note2
+                 FROM dividends AS d
+                      LEFT JOIN
+                      ledger AS l ON d.active_id = l.active_id AND 
+                                     d.account_id = l.account_id AND 
+                                     l.book_account = 4 AND 
+                                     l.timestamp <= d.timestamp
+                GROUP BY d.id
+               UNION ALL
+               SELECT 3 AS type,
+                      t.id,
+                      t.timestamp,
+                      t.number AS num_peer,
+                      t.account_id,
+                      ( -t.type * t.sum) AS amount,
+                      t.active_id,
+                      (t.type * t.qty) AS qty_trid,
+                      t.price AS price,
+                      t.fee_broker + t.fee_exchange AS fee_tax,
+                      l.sum_amount AS t_qty,
+                      NULL AS note,
+                      NULL AS note2
+                 FROM trades AS t
+                      LEFT JOIN
+                      sequence AS q ON q.type = 3 AND 
+                                       t.id = q.operation_id
+                      LEFT JOIN
+                      ledger_sums AS l ON l.sid = q.id AND 
+                                          l.book_account = 4
+               UNION ALL
+               SELECT 4 AS type,
+                      r.tid,
+                      r.timestamp,
+                      NULL AS num_peer,
+                      r.account_id,
+                      r.amount,
+                      NULL AS active_id,
+                      r.type AS qty_trid,
+                      r.rate AS price,
+                      NULL AS fee_tax,
+                      NULL AS t_qty,
+                      n.note,
+                      a.name AS note2
+                 FROM transfers AS r
+                      LEFT JOIN
+                      transfer_notes AS n ON r.tid = n.tid
+                      LEFT JOIN
+                      transfers AS p ON r.tid = p.tid AND 
+                                        p.type = -r.type
+                      LEFT JOIN
+                      accounts AS a ON a.id = p.account_id
+                ORDER BY timestamp
+           )
+           AS m
+           LEFT JOIN
+           accounts AS a ON m.account_id = a.id
+           LEFT JOIN
+           actives AS s ON m.active_id = s.id
+           LEFT JOIN
+           actives AS c ON a.currency_id = c.id
+           LEFT JOIN
+           sequence AS q ON m.type = q.type AND 
+                            m.id = q.operation_id
+           LEFT JOIN
+           ledger_sums AS l ON l.sid = q.id AND 
+                               (l.book_account = 3 OR 
+                                l.book_account = 5);
+
+
+-- View: frontier
+DROP VIEW IF EXISTS frontier;
+CREATE VIEW frontier AS
+    SELECT MAX(sequence.timestamp) AS ledger_frontier
+      FROM sequence;
+
+
+-- View: transfers_combined
+DROP VIEW IF EXISTS transfers_combined;
+CREATE VIEW transfers_combined AS
+    SELECT f.tid AS id,
+           f.id AS from_id,
+           f.timestamp AS from_timestamp,
+           f.account_id AS from_acc_id,
+           t.id AS to_id,
+           t.timestamp AS to_timestamp,
+           t.account_id AS to_acc_id,
+           fee.id AS fee_id,
+           fee.timestamp AS fee_timestamp,
+           fee.account_id AS fee_acc_id,
+           f.amount AS from_amount,
+           t.amount AS to_amount,
+           fee.amount AS fee_amount,
+           n.note
+      FROM transfers AS f
+           INNER JOIN
+           transfers AS t ON f.tid = t.tid AND 
+                             t.type = 1
+           LEFT JOIN
+           transfers AS fee ON f.tid = fee.tid AND 
+                               fee.type = 0
+           LEFT JOIN
+           transfer_notes AS n ON f.tid = n.tid
+     WHERE f.type = -1;
+     
+
 -- Trigger: actions_after_delete
 DROP TRIGGER IF EXISTS actions_after_delete;
 CREATE TRIGGER actions_after_delete
@@ -959,166 +1119,6 @@ BEGIN
      WHERE tid = OLD.id AND 
            type = 1;
 END;
-
-
--- View: all_operations
-DROP VIEW IF EXISTS all_operations;
-CREATE VIEW all_operations AS
-    SELECT m.type,
-           m.id,
-           m.timestamp,
-           m.account_id,
-           a.name AS account,
-           m.num_peer,
-           m.active_id,
-           s.name AS active,
-           s.full_name AS active_name,
-           m.note,
-           m.note2,
-           m.amount,
-           m.qty_trid,
-           m.price,
-           m.fee_tax,
-           l.sum_amount AS t_amount,
-           m.t_qty,
-           c.name AS currency,
-           CASE WHEN m.timestamp <= a.reconciled_on THEN 1 ELSE 0 END AS reconciled
-      FROM (
-               SELECT 1 AS type,
-                      o.id,
-                      timestamp,
-                      p.name AS num_peer,
-                      account_id,
-                      sum(d.type * d.sum) AS amount,
-                      o.alt_currency_id AS active_id,
-                      NULL AS qty_trid,
-                      sum(d.type * d.alt_sum) AS price,
-                      NULL AS fee_tax,
-                      NULL AS t_qty,
-                      NULL AS note,
-                      NULL AS note2
-                 FROM actions AS o
-                      LEFT JOIN
-                      agents AS p ON o.peer_id = p.id
-                      LEFT JOIN
-                      action_details AS d ON o.id = d.pid
-                GROUP BY o.id
-               UNION ALL
-               SELECT 2 AS type,
-                      d.id,
-                      d.timestamp,
-                      d.number AS num_peer,
-                      d.account_id,
-                      d.sum AS amount,
-                      d.active_id,
-                      SUM(coalesce(l.amount, 0) ) AS qty_trid,
-                      NULL AS price,
-                      d.sum_tax AS fee_tax,
-                      NULL AS t_qty,
-                      d.note AS note,
-                      d.note_tax AS note2
-                 FROM dividends AS d
-                      LEFT JOIN
-                      ledger AS l ON d.active_id = l.active_id AND 
-                                     d.account_id = l.account_id AND 
-                                     l.book_account = 4 AND 
-                                     l.timestamp <= d.timestamp
-                GROUP BY d.id
-               UNION ALL
-               SELECT 3 AS type,
-                      t.id,
-                      t.timestamp,
-                      t.number AS num_peer,
-                      t.account_id,
-                      ( -t.type * t.sum) AS amount,
-                      t.active_id,
-                      (t.type * t.qty) AS qty_trid,
-                      t.price AS price,
-                      t.fee_broker + t.fee_exchange AS fee_tax,
-                      l.sum_amount AS t_qty,
-                      NULL AS note,
-                      NULL AS note2
-                 FROM trades AS t
-                      LEFT JOIN
-                      sequence AS q ON q.type = 3 AND 
-                                       t.id = q.operation_id
-                      LEFT JOIN
-                      ledger_sums AS l ON l.sid = q.id AND 
-                                          l.book_account = 4
-               UNION ALL
-               SELECT 4 AS type,
-                      r.tid,
-                      r.timestamp,
-                      NULL AS num_peer,
-                      r.account_id,
-                      r.amount,
-                      NULL AS active_id,
-                      r.type AS qty_trid,
-                      r.rate AS price,
-                      NULL AS fee_tax,
-                      NULL AS t_qty,
-                      n.note,
-                      a.name AS note2
-                 FROM transfers AS r
-                      LEFT JOIN
-                      transfer_notes AS n ON r.tid = n.tid
-                      LEFT JOIN
-                      transfers AS p ON r.tid = p.tid AND 
-                                        p.type = -r.type
-                      LEFT JOIN
-                      accounts AS a ON a.id = p.account_id
-                ORDER BY timestamp
-           )
-           AS m
-           LEFT JOIN
-           accounts AS a ON m.account_id = a.id
-           LEFT JOIN
-           actives AS s ON m.active_id = s.id
-           LEFT JOIN
-           actives AS c ON a.currency_id = c.id
-           LEFT JOIN
-           sequence AS q ON m.type = q.type AND 
-                            m.id = q.operation_id
-           LEFT JOIN
-           ledger_sums AS l ON l.sid = q.id AND 
-                               (l.book_account = 3 OR 
-                                l.book_account = 5);
-
-
--- View: frontier
-DROP VIEW IF EXISTS frontier;
-CREATE VIEW frontier AS
-    SELECT MAX(sequence.timestamp) AS ledger_frontier
-      FROM sequence;
-
-
--- View: transfers_combined
-DROP VIEW IF EXISTS transfers_combined;
-CREATE VIEW transfers_combined AS
-    SELECT f.tid AS id,
-           f.id AS from_id,
-           f.timestamp AS from_timestamp,
-           f.account_id AS from_acc_id,
-           t.id AS to_id,
-           t.timestamp AS to_timestamp,
-           t.account_id AS to_acc_id,
-           fee.id AS fee_id,
-           fee.timestamp AS fee_timestamp,
-           fee.account_id AS fee_acc_id,
-           f.amount AS from_amount,
-           t.amount AS to_amount,
-           fee.amount AS fee_amount,
-           n.note
-      FROM transfers AS f
-           INNER JOIN
-           transfers AS t ON f.tid = t.tid AND 
-                             t.type = 1
-           LEFT JOIN
-           transfers AS fee ON f.tid = fee.tid AND 
-                               fee.type = 0
-           LEFT JOIN
-           transfer_notes AS n ON f.tid = n.tid
-     WHERE f.type = -1;
 
 
 COMMIT TRANSACTION;
