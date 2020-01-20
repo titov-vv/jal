@@ -4,7 +4,7 @@ from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTab
 from PySide2.QtCore import Qt, Slot, QMetaObject
 from PySide2 import QtCore
 from ui_main_window import Ui_LedgerMainWindow
-from ledger_db import Ledger
+from ledger import Ledger
 from import_1c import import_1c
 from build_ledger import Ledger_Bookkeeper
 from rebuild_window import RebuildDialog
@@ -318,6 +318,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def InitDB(self):
         query = QSqlQuery(self.db)
         query.exec_("DELETE FROM settings")
+        query.exec_("INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 1)")  # Version of DB schema
         query.exec_("INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1)")  # Triggers enabled by default
 
     def ShowRebuildDialog(self):
@@ -325,16 +326,19 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         query.exec_("SELECT ledger_frontier FROM frontier")
         query.next()
         current_frontier = query.value(0)
+        if (current_frontier == ''):
+            current_frontier = 0
 
         rebuild_dialog = RebuildDialog(current_frontier)
         rebuild_dialog.setGeometry(self.x()+64, self.y()+64, rebuild_dialog.width(), rebuild_dialog.height())
         res = rebuild_dialog.exec_()
         if res:
-            self.db.close()
+            #self.db.close()
             rebuild_date = rebuild_dialog.getTimestamp()
-            Ledger = Ledger_Bookkeeper(DB_PATH)
-            Ledger.RebuildLedger(rebuild_date)
-            self.db.open()
+            self.ledger.MakeFromTimestamp(rebuild_date)
+            #Ledger = Ledger_Bookkeeper(DB_PATH)
+            #Ledger.RebuildLedger(rebuild_date)
+            #self.db.open()
 
     @Slot()
     def OnMainTabChange(self, tab_index):
@@ -649,12 +653,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         query.exec_("SELECT ledger_frontier FROM frontier")
         query.next()
         current_frontier = query.value(0)
+        if current_frontier == '':
+            current_frontier = 0
         if (QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - current_frontier) > 1296000: # if we have less then 15 days unreconciled
             if QMessageBox().warning(self, self.tr("Confirmation"),
                                      self.tr("More than 2 weeks require rebuild. Do you want to do it right now?"),
                                      QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
                 return
-        self.db.close()
-        Ledger = Ledger_Bookkeeper(DB_PATH)
-        Ledger.RebuildLedger(current_frontier)
-        self.db.open()
+        self.ledger.MakeUpToDate()
