@@ -2,7 +2,11 @@ import datetime
 from constants import *
 from PySide2.QtSql import QSqlQuery
 
-#TODO Make ASSERT for every bool-returning fuction
+###################################################################################################
+#TODO Check are there positive lines for Incomes
+#TODO Check are there negative lines for Costs
+#TODO Simplify Buy/Sell queries
+###################################################################################################
 class Ledger:
     def __init__(self, db):
         self.db = db
@@ -16,7 +20,7 @@ class Ledger:
         query.bindValue(":active_id", active_id)
         query.bindValue(":account_id", account_id)
         query.bindValue(":seq_id", seq_id)
-        query.exec_()
+        assert query.exec_()
         if query.next():
             old_sid = query.value(0)
             old_amount = query.value(1)
@@ -46,7 +50,7 @@ class Ledger:
         query.bindValue(":peer_id", peer_id)
         query.bindValue(":category_id", category_id)
         query.bindValue(":tag_id", tag_id)
-        query.exec_()
+        assert query.exec_()
         if seq_id == old_sid:
             query.prepare("UPDATE ledger_sums SET sum_amount = :new_amount, sum_value = :new_value"
                           " WHERE sid = :sid AND book_account = :book AND active_id = :active_id AND account_id = :account_id")
@@ -56,7 +60,7 @@ class Ledger:
             query.bindValue(":book", book)
             query.bindValue(":active_id", active_id)
             query.bindValue(":account_id", account_id)
-            query.exec_()
+            assert query.exec_()
         else:
             query.prepare("INSERT INTO ledger_sums(sid, timestamp, book_account, active_id, account_id, sum_amount, sum_value) "
                        "VALUES(:sid, :timestamp, :book, :active_id, :account_id, :new_amount, :new_value)")
@@ -67,7 +71,7 @@ class Ledger:
             query.bindValue(":account_id", account_id)
             query.bindValue(":new_amount", new_amount)
             query.bindValue(":new_value", new_value)
-            query.exec_()
+            assert query.exec_()
         self.db.commit()
 
     # TODO check that condition <= is really correct for timestamp in this function
@@ -83,7 +87,7 @@ class Ledger:
         query.bindValue(":timestamp", timestamp)
         query.bindValue(":book", book)
         query.bindValue(":account_id", account_id)
-        query.exec_()
+        assert query.exec_()
         if query.next():
             return float(query.value(0))
         else:
@@ -115,7 +119,7 @@ class Ledger:
         query.bindValue(":account_id", account_id)
         query.bindValue(":timestampe", timestamp)
         query.exec_()
-        query.exec_("SELECT o.timestamp AS sell_timestamp, i.timestamp AS buy_timestamp, "
+        assert query.exec_("SELECT o.timestamp AS sell_timestamp, i.timestamp AS buy_timestamp, "
                        "CASE WHEN i.qty_after <= o.qty_after THEN 1 ELSE 0 END AS buy_full_match, "
                        "CASE WHEN i.qty_after >= o.qty_after THEN 1 ELSE 0 END AS sell_full_match, "
                        "i.qty_after - o.qty_after AS remainder "
@@ -155,7 +159,7 @@ class Ledger:
                        "LEFT JOIN accounts AS c ON a.account_id = c.id "
                        "WHERE pid = :pid")
         query.bindValue(":pid", op_id)
-        query.exec_()
+        assert query.exec_()
         while query.next():
             amount = query.value(4)
             if (amount < 0):
@@ -175,7 +179,7 @@ class Ledger:
                        "GROUP BY a.timestamp, a.account_id, c.currency_id "
                        "ORDER BY a.timestamp, d.type desc")
         query.bindValue(":id", op_id)
-        query.exec_()
+        assert query.exec_()
         query.next()
         timestamp = query.value(0)
         account_id = query.value(1)
@@ -197,7 +201,7 @@ class Ledger:
                        "LEFT JOIN accounts AS c ON d.account_id = c.id "
                        "WHERE d.id = :id")
         query.bindValue(":id", op_id)
-        query.exec_()
+        assert query.exec_()
         query.next()
         timestamp = query.value(0)
         account_id = query.value(1)
@@ -239,7 +243,7 @@ class Ledger:
             query.bindValue(":active_id", active_id)
             query.bindValue(":account_id", account_id)
             query.bindValue(":timestamp", timestamp)
-            query.exec_()
+            assert query.exec_()
             while query.next():
                 if (reminder < 0):
                     next_deal_qty = -reminder
@@ -290,7 +294,7 @@ class Ledger:
             query.bindValue(":active_id", active_id)
             query.bindValue(":account_id", account_id)
             query.bindValue(":timestamp", timestamp)
-            query.exec_()
+            assert query.exec_()
             while query.next():
                 if (reminder > 0):
                     next_deal_qty = reminder
@@ -324,7 +328,7 @@ class Ledger:
                        "LEFT JOIN accounts AS c ON t.account_id = c.id "
                        "WHERE t.id = :id")
         query.bindValue(":id", id)
-        query.exec_()
+        assert query.exec_()
         query.next()
         type = query.value(0)
         if (type == 1):
@@ -357,7 +361,7 @@ class Ledger:
                       "LEFT JOIN accounts AS a ON t.account_id = a.id "
                       "WHERE t.id = :id")
         query.bindValue(":id", id)
-        query.exec_()
+        assert query.exec_()
         query.next()
         type = query.value(0)
         if (type == TRANSFER_OUT):
@@ -374,7 +378,7 @@ class Ledger:
     # any - re-build all operations after given timestamp
     def MakeUpToDate(self):
         query = QSqlQuery(self.db)
-        query.exec_("SELECT ledger_frontier FROM frontier")
+        assert query.exec_("SELECT ledger_frontier FROM frontier")
         query.next()
         frontier = query.value(0)
         if (frontier == ''):
@@ -382,13 +386,13 @@ class Ledger:
 
         query.prepare("DELETE FROM ledger WHERE timestamp >= :frontier")
         query.bindValue(":frontier", frontier)
-        query.exec_()
+        assert query.exec_()
         query.prepare("DELETE FROM sequence WHERE timestamp >= :frontier")
         query.bindValue(":frontier", frontier)
-        query.exec_()
+        assert query.exec_()
         query.prepare("DELETE FROM ledger_sums WHERE timestamp >= :frontier")
         query.bindValue(":frontier", frontier)
-        query.exec_()
+        assert query.exec_()
         self.db.commit()
 
         query.prepare("SELECT 1 AS type, a.id, a.timestamp, "
@@ -403,7 +407,7 @@ class Ledger:
                        "ORDER BY timestamp, seq")
         query.bindValue(":frontier", frontier)
         query.setForwardOnly(True)
-        query.exec_()
+        assert query.exec_()
         seq_query = QSqlQuery(self.db)
         seq_query.prepare("INSERT INTO sequence(timestamp, type, operation_id) VALUES(:timestamp, :type, :operation_id)")
         while query.next():
@@ -413,7 +417,7 @@ class Ledger:
             seq_query.bindValue(":timestamp", new_frontier)
             seq_query.bindValue(":type", transaction_type)
             seq_query.bindValue(":operation_id", transaction_id)
-            seq_query.exec_()
+            assert seq_query.exec_()
             seq_id = seq_query.lastInsertId()
             if (transaction_type == TRANSACTION_ACTION):
                 self.processAction(seq_id, transaction_id)
@@ -432,7 +436,7 @@ class Ledger:
     def MakeFromTimestamp(self, timestamp):
         query = QSqlQuery(self.db)
         if (timestamp < 0):  # get current frontier
-            query.exec_("SELECT ledger_frontier FROM frontier")
+            assert query.exec_("SELECT ledger_frontier FROM frontier")
             query.next()
             frontier = query.value(0)
             if (frontier == ''):
@@ -444,16 +448,16 @@ class Ledger:
         print(">> Started @", start_time)
         query.prepare("DELETE FROM ledger WHERE timestamp >= :frontier")
         query.bindValue(":frontier", frontier)
-        query.exec_()
+        assert query.exec_()
         query.prepare("DELETE FROM sequence WHERE timestamp >= :frontier")
         query.bindValue(":frontier", frontier)
-        query.exec_()
+        assert query.exec_()
         query.prepare("DELETE FROM ledger_sums WHERE timestamp >= :frontier")
         query.bindValue(":frontier", frontier)
-        query.exec_()
+        assert query.exec_()
         self.db.commit()
 
-        query.exec_("PRAGMA synchronous = OFF")
+        assert query.exec_("PRAGMA synchronous = OFF")
         query.prepare("SELECT 1 AS type, a.id, a.timestamp, "
                       "CASE WHEN SUM(d.type*d.sum)<0 THEN 5 ELSE 1 END AS seq FROM actions AS a "
                       "LEFT JOIN action_details AS d ON a.id=d.pid WHERE timestamp >= :frontier GROUP BY a.id "
@@ -466,7 +470,7 @@ class Ledger:
                       "ORDER BY timestamp, seq")
         query.bindValue(":frontier", frontier)
         query.setForwardOnly(True)
-        query.exec_()
+        assert query.exec_()
         seq_query = QSqlQuery(self.db)
         seq_query.prepare(
             "INSERT INTO sequence(timestamp, type, operation_id) VALUES(:timestamp, :type, :operation_id)")
@@ -478,7 +482,7 @@ class Ledger:
             seq_query.bindValue(":timestamp", new_frontier)
             seq_query.bindValue(":type", transaction_type)
             seq_query.bindValue(":operation_id", transaction_id)
-            seq_query.exec_()
+            assert seq_query.exec_()
             seq_id = seq_query.lastInsertId()
             if (transaction_type == TRANSACTION_ACTION):
                 self.processAction(seq_id, transaction_id)
@@ -491,7 +495,7 @@ class Ledger:
             i = i + 1
             if (i % 2500) == 0:
                 print(">> Processed", i, "records at", datetime.datetime.now())
-        query.exec_("PRAGMA synchronous = ON")
+        assert query.exec_("PRAGMA synchronous = ON")
 
         end_time = datetime.datetime.now()
         print(">> Ended @", end_time)
@@ -503,10 +507,10 @@ class Ledger:
     # 'base_currency' to use for total values
     def BuildBalancesTable(self, timestamp, base_currency, active_only):
         query = QSqlQuery(self.db)
-        query.exec_("DELETE FROM t_last_quotes")
-        query.exec_("DELETE FROM t_last_dates")
-        query.exec_("DELETE FROM balances_aux")
-        query.exec_("DELETE FROM balances;")
+        assert query.exec_("DELETE FROM t_last_quotes")
+        assert query.exec_("DELETE FROM t_last_dates")
+        assert query.exec_("DELETE FROM balances_aux")
+        assert query.exec_("DELETE FROM balances;")
 
         query.prepare("INSERT INTO t_last_quotes(timestamp, active_id, quote) "
                       "SELECT MAX(timestamp) AS timestamp, active_id, quote "
@@ -514,8 +518,7 @@ class Ledger:
                       "WHERE timestamp <= :balances_timestamp "
                       "GROUP BY active_id")
         query.bindValue(":balances_timestamp", timestamp)
-        if not query.exec_():
-            print("SQL: Temp table 'last_quotes' creation failed")
+        assert query.exec_()
 
         query.prepare("INSERT INTO t_last_dates(account_id, timestamp) "
                       "SELECT account_id, MAX(timestamp) AS timestamp "
@@ -523,8 +526,7 @@ class Ledger:
                       "WHERE timestamp <= :balances_timestamp "
                       "GROUP BY account_id")
         query.bindValue(":balances_timestamp", timestamp)
-        if not query.exec_():
-            print("SQL: Temp table 'last_dates' creation failed")
+        assert query.exec_()
 
         query.prepare("INSERT INTO balances_aux(account_type, account, currency, balance, balance_adj, unreconciled_days, active) "
                       "SELECT a.type_id AS account_type, l.account_id AS account, a.currency_id AS currency, "
@@ -546,8 +548,7 @@ class Ledger:
         query.bindValue(":actives_book", BOOK_ACCOUNT_ACTIVES)
         query.bindValue(":liabilities_book", BOOK_ACCOUNT_LIABILITIES)
         query.bindValue(":balances_timestamp", timestamp)
-        if not query.exec_():
-            print("SQL: Temp table 'balances_aux' creation failed")
+        assert query.exec_()
 
         query.prepare("INSERT INTO balances(level1, level2, account_name, currency_name, balance, balance_adj, days_unreconciled, active) "
                     "SELECT  level1, level2, account, currency, balance, balance_adj, unreconciled_days, active "
@@ -568,6 +569,40 @@ class Ledger:
                     )
         query.bindValue(":base_currency", base_currency)
         query.bindValue(":active_only", active_only)
-        if not query.exec_():
-            print("SQL: Table 'balances' creation failed")
+        assert query.exec_()
         self.db.commit()
+
+# Code for verification of old ledger, probably not needed anymore
+    # def PrintBalances(self, timestamp, currency_adjustment):
+    #     cursor = self.db.cursor()
+    #     cursor.executescript("DROP TABLE IF EXISTS temp.last_quotes;"
+    #                          "DROP TABLE IF EXISTS temp.last_dates;")
+    #     cursor.execute("CREATE TEMPORARY TABLE last_quotes AS "
+    #                    "SELECT MAX(timestamp) AS timestamp, active_id, quote "
+    #                    "FROM quotes "
+    #                    "WHERE timestamp <= ? "
+    #                    "GROUP BY active_id", (timestamp, ))
+    #     cursor.execute("CREATE TEMPORARY TABLE last_dates AS "
+    #                    "SELECT account_id, MAX(timestamp) AS timestamp "
+    #                    "FROM ledger "
+    #                    "WHERE timestamp <= ? "
+    #                    "GROUP BY account_id;", (timestamp, ))
+    #     cursor.execute("SELECT a.name AS account_name, c.name AS currency_name, "
+    #                    "SUM(CASE WHEN l.book_account = 4 THEN l.amount*act_q.quote ELSE l.amount END) AS sum, "
+    #                    "SUM(CASE WHEN l.book_account = 4 THEN l.amount*act_q.quote*cur_q.quote/cur_adj_q.quote ELSE l.amount*cur_q.quote/cur_adj_q.quote END) AS sum_adjusted, "
+    #                    "(d.timestamp - a.reconciled_on)/86400 AS unreconciled_days, "
+    #                    "a.active "
+    #                    "FROM ledger AS l "
+    #                    "LEFT JOIN accounts AS a ON l.account_id = a.id "
+    #                    "LEFT JOIN actives AS c ON a.currency_id = c.id "
+    #                    "LEFT JOIN temp.last_quotes AS act_q ON l.active_id = act_q.active_id "
+    #                    "LEFT JOIN temp.last_quotes AS cur_q ON a.currency_id = cur_q.active_id "
+    #                    "LEFT JOIN temp.last_quotes AS cur_adj_q ON cur_adj_q.active_id = ? "
+    #                    "LEFT JOIN temp.last_dates AS d ON l.account_id = d.account_id "
+    #                    "WHERE (book_account = ? OR book_account = ? OR book_account = ?) AND l.timestamp <= ? "
+    #                    "GROUP BY a.name "
+    #                    "HAVING ABS(sum)>0.0001",
+    #                    (currency_adjustment, BOOK_ACCOUNT_MONEY, BOOK_ACCOUNT_ACTIVES, BOOK_ACCOUNT_LIABILITIES, timestamp))
+    #     balances = cursor.fetchall()
+    #     for row in balances:
+    #         print(row)

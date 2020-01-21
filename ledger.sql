@@ -1121,5 +1121,10 @@ BEGIN
 END;
 
 
+-- Initialize default values for settings
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 1);
+INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
+
+
 COMMIT TRANSACTION;
 PRAGMA foreign_keys = on;

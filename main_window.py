@@ -6,7 +6,6 @@ from PySide2 import QtCore
 from ui_main_window import Ui_LedgerMainWindow
 from ledger import Ledger
 from import_1c import import_1c
-from build_ledger import Ledger_Bookkeeper
 from rebuild_window import RebuildDialog
 from balance_delegate import BalanceDelegate
 from operation_delegate import *
@@ -316,10 +315,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             self.db.open()
 
     def InitDB(self):
-        query = QSqlQuery(self.db)
-        query.exec_("DELETE FROM settings")
-        query.exec_("INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 1)")  # Version of DB schema
-        query.exec_("INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1)")  # Triggers enabled by default
+        pass
+        # query = QSqlQuery(self.db)
+        # query.exec_("DELETE FROM settings")
+        # query.exec_("INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 1)")  # Version of DB schema
+        # query.exec_("INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1)")  # Triggers enabled by default
 
     def ShowRebuildDialog(self):
         query = QSqlQuery(self.db)
@@ -331,14 +331,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         rebuild_dialog = RebuildDialog(current_frontier)
         rebuild_dialog.setGeometry(self.x()+64, self.y()+64, rebuild_dialog.width(), rebuild_dialog.height())
-        res = rebuild_dialog.exec_()
-        if res:
-            #self.db.close()
+        if rebuild_dialog.exec_():
             rebuild_date = rebuild_dialog.getTimestamp()
             self.ledger.MakeFromTimestamp(rebuild_date)
-            #Ledger = Ledger_Bookkeeper(DB_PATH)
-            #Ledger.RebuildLedger(rebuild_date)
-            #self.db.open()
 
     @Slot()
     def OnMainTabChange(self, tab_index):
