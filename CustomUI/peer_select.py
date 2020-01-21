@@ -1,6 +1,6 @@
-from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QAbstractItemView
+from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QAbstractItemView, QCompleter
 from PySide2.QtSql import QSqlTableModel, QSqlQuery
-from PySide2.QtCore import Signal, Property, Slot
+from PySide2.QtCore import Qt, Signal, Property, Slot
 from ui_peer_choice_dlg import Ui_PeerChoiceDlg
 
 #TODO clean-up columns
@@ -51,7 +51,6 @@ class PeerChoiceDlg(QDialog, Ui_PeerChoiceDlg):
                 pid = 0
         self.PeersList.model().setFilter(f"agents.pid={pid}")
 
-#TODO: Add autocomplete feature
 class PeerSelector(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
@@ -102,6 +101,11 @@ class PeerSelector(QWidget):
         self.dialog.PeersList.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.Model.select()
         self.dialog.Activate()
+
+        self.completer = QCompleter(self.Model)
+        self.completer.setCompletionColumn(self.Model.fieldIndex("name"))
+        self.completer.setCaseSensitivity(Qt.CaseInsensitive)
+        self.name.setCompleter(self.completer)
 
     def OnButtonClicked(self):
         ref_point = self.mapToGlobal(self.name.geometry().bottomLeft())

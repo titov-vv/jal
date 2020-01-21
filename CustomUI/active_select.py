@@ -1,6 +1,6 @@
-from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QAbstractItemView
+from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QAbstractItemView, QCompleter
 from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation
-from PySide2.QtCore import Signal, Property, Slot
+from PySide2.QtCore import Qt, Signal, Property, Slot
 from ui_active_choice_dlg import Ui_ActiveChoiceDlg
 
 #TODO clean-up columns
@@ -27,7 +27,6 @@ class ActiveChoiceDlg(QDialog, Ui_ActiveChoiceDlg):
         selected_row = idx[0].row()
         self.active_id = self.ActivesList.model().record(selected_row).value(0)
 
-#TODO: Add autocomplete feature
 class ActiveSelector(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
@@ -89,6 +88,11 @@ class ActiveSelector(QWidget):
         self.dialog.ActiveTypeCombo.setModelColumn(self.Model.relationModel(type_idx).fieldIndex("name"))
         self.Model.select()
         self.dialog.Activate()
+
+        self.completer = QCompleter(self.Model)
+        self.completer.setCompletionColumn(self.Model.fieldIndex("name"))
+        self.completer.setCaseSensitivity(Qt.CaseInsensitive)
+        self.symbol.setCompleter(self.completer)
 
     def OnButtonClicked(self):
         ref_point = self.mapToGlobal(self.symbol.geometry().bottomLeft())

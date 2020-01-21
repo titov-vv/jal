@@ -1,6 +1,6 @@
-from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QAbstractItemView, QMenu
+from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QAbstractItemView, QMenu, QCompleter
 from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation
-from PySide2.QtCore import Signal, Property, Slot
+from PySide2.QtCore import Qt, Signal, Property, Slot
 from ui_account_choice_dlg import Ui_AccountChoiceDlg
 
 #TODO clean-up columns
@@ -111,7 +111,6 @@ class AccountButton(QPushButton):
         self.setText("ALL")
         self.clicked.emit()
 
-#TODO: Add autocomplete feature
 class AccountSelector(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
@@ -153,6 +152,10 @@ class AccountSelector(QWidget):
 
     def init_DB(self, db):
         self.dialog.init_DB(db)
+        self.completer = QCompleter(self.dialog.Model)
+        self.completer.setCompletionColumn(self.dialog.Model.fieldIndex("name"))
+        self.completer.setCaseSensitivity(Qt.CaseInsensitive)
+        self.name.setCompleter(self.completer)
 
     def OnButtonClicked(self):
         ref_point = self.mapToGlobal(self.name.geometry().bottomLeft())
