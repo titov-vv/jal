@@ -41,6 +41,8 @@ def convert_datetime(val):
     return time.mktime(datetime.datetime.strptime(val, "%d.%m.%Y %H:%M:%S").timetuple())
 #------------------------------------------------------------------------------
 def import_1c(db_file, data_path):
+    print("Import 1C data from: ", data_path)
+    print("Import 1C data to:   ", db_file)
     db = sqlite3.connect(db_file)
     cursor = db.cursor()
     cursor.executescript("DELETE FROM quotes;"
@@ -157,6 +159,19 @@ def import_1c(db_file, data_path):
     db.commit()
     db.close()
     print("Import completed")
+#------------------------------------------------------------------------------
+def loadDbFromSQL(db_file, sql_file):
+    print("Load SQL-script: ", sql_file)
+    print("Into database:   ", db_file)
+
+    with open(sql_file, 'r') as sql_file:
+        sql_text = sql_file.read()
+    db = sqlite3.connect(db_file)
+    cursor = db.cursor()
+    cursor.executescript(sql_text)
+    db.commit()
+    db.close()
+    print("DB script loaded")
 #------------------------------------------------------------------------------
 if __name__ == "__main__":
     db_file = ''

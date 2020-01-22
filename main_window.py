@@ -1,11 +1,11 @@
 from constants import *
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu, QMessageBox
 from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
-from PySide2.QtCore import Qt, Slot, QMetaObject
+from PySide2.QtCore import Slot, QMetaObject
 from PySide2 import QtCore
 from ui_main_window import Ui_LedgerMainWindow
 from ledger import Ledger
-from import_1c import import_1c
+from import_1c import import_1c, loadDbFromSQL
 from rebuild_window import RebuildDialog
 from balance_delegate import BalanceDelegate
 from operation_delegate import *
@@ -24,7 +24,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.db.open()
         tables = self.db.tables(QSql.Tables)
         if tables == []:
-            print("Database is empty. Application terminated.")
+            if QMessageBox().warning(self, self.tr("Database is empty"),
+                                     self.tr("Would you like to build it from SQL-script?"),
+                                     QMessageBox.Yes, QMessageBox.No) == QMessageBox.Yes:
+                self.InitDB()
+            self.db.close()
             QMetaObject.invokeMethod(self, "close", Qt.QueuedConnection)
             return
         self.ledger = Ledger(self.db)
@@ -308,18 +312,20 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         import_directory = QFileDialog.getExistingDirectory(self, "Select directory with data to import")
         if import_directory:
             import_directory = import_directory + "/"
-            print("Import 1C data from: ", import_directory)
-            print("Import 1C data to:   ", DB_PATH)
             self.db.close()
             import_1c(DB_PATH, import_directory)
             self.db.open()
 
     def InitDB(self):
-        pass
-        # query = QSqlQuery(self.db)
-        # query.exec_("DELETE FROM settings")
-        # query.exec_("INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 1)")  # Version of DB schema
-        # query.exec_("INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1)")  # Triggers enabled by default
+        init_script, _filter = QFileDialog.getOpenFileName(self, self.tr("Select init-script"), ".",  self.tr("SQL scripts (*.sql)"))
+        if init_script:
+            self.db.close()
+            loadDbFromSQL(DB_PATH, init_script)
+            QMessageBox().information(self, self.tr("Database initialized"),
+                                  self.tr("Database have been initialized.\n"
+                                          "You need to restart the application.\n"
+                                          "Application terminates now."),
+                                  QMessageBox.Ok)
 
     def ShowRebuildDialog(self):
         query = QSqlQuery(self.db)
