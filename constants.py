@@ -2,7 +2,6 @@ DB_PATH = "/home/vtitov/projects/ledger/ledger.sqlite"
 CALC_TOLERANCE = 10e-9
 
 # PREDEFINED BOOK ACCOUNTS
-#TODO Load from "books" table
 BOOK_ACCOUNT_COSTS          = 1
 BOOK_ACCOUNT_INCOMES        = 2
 BOOK_ACCOUNT_MONEY          = 3

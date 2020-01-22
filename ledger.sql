@@ -1125,6 +1125,14 @@ END;
 INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 1);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 
+-- Initialize default values for books
+INSERT INTO books (id, name) VALUES (1, 'Costs');
+INSERT INTO books (id, name) VALUES (2, 'Incomes');
+INSERT INTO books (id, name) VALUES (3, 'Money');
+INSERT INTO books (id, name) VALUES (4, 'Actives');
+INSERT INTO books (id, name) VALUES (5, 'Liabilities');
+INSERT INTO books (id, name) VALUES (6, 'Transfers');
+
 
 COMMIT TRANSACTION;
 PRAGMA foreign_keys = on;
