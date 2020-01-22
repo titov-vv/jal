@@ -1,6 +1,6 @@
 from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QAbstractItemView, QMenu, QCompleter
 from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation
-from PySide2.QtCore import Qt, Signal, Property, Slot
+from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from ui_account_choice_dlg import Ui_AccountChoiceDlg
 
 #TODO clean-up columns
@@ -156,6 +156,7 @@ class AccountSelector(QWidget):
         self.completer.setCompletionColumn(self.dialog.Model.fieldIndex("name"))
         self.completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.name.setCompleter(self.completer)
+        self.completer.activated[QModelIndex].connect(self.OnCompletion)
 
     def OnButtonClicked(self):
         ref_point = self.mapToGlobal(self.name.geometry().bottomLeft())
@@ -163,3 +164,8 @@ class AccountSelector(QWidget):
         res = self.dialog.exec_()
         if res:
             self.account_id = self.dialog.account_id
+
+    @Slot(QModelIndex)
+    def OnCompletion(self, index):
+        model = index.model()
+        self.account_id = model.data(model.index(index.row(), 0), Qt.DisplayRole)

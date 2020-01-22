@@ -1,6 +1,6 @@
 from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QAbstractItemView, QCompleter
 from PySide2.QtSql import QSqlTableModel, QSqlQuery
-from PySide2.QtCore import Qt, Signal, Property, Slot
+from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from ui_peer_choice_dlg import Ui_PeerChoiceDlg
 
 #TODO clean-up columns
@@ -106,6 +106,7 @@ class PeerSelector(QWidget):
         self.completer.setCompletionColumn(self.Model.fieldIndex("name"))
         self.completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.name.setCompleter(self.completer)
+        self.completer.activated[QModelIndex].connect(self.OnCompletion)
 
     def OnButtonClicked(self):
         ref_point = self.mapToGlobal(self.name.geometry().bottomLeft())
@@ -113,3 +114,8 @@ class PeerSelector(QWidget):
         res = self.dialog.exec_()
         if res:
             self.peer_id = self.dialog.peer_id
+
+    @Slot(QModelIndex)
+    def OnCompletion(self, index):
+        model = index.model()
+        self.peer_id = model.data(model.index(index.row(), 0), Qt.DisplayRole)

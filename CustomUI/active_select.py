@@ -1,6 +1,6 @@
 from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QAbstractItemView, QCompleter
 from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation
-from PySide2.QtCore import Qt, Signal, Property, Slot
+from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from ui_active_choice_dlg import Ui_ActiveChoiceDlg
 
 #TODO clean-up columns
@@ -93,6 +93,7 @@ class ActiveSelector(QWidget):
         self.completer.setCompletionColumn(self.Model.fieldIndex("name"))
         self.completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.symbol.setCompleter(self.completer)
+        self.completer.activated[QModelIndex].connect(self.OnCompletion)
 
     def OnButtonClicked(self):
         ref_point = self.mapToGlobal(self.symbol.geometry().bottomLeft())
@@ -100,3 +101,8 @@ class ActiveSelector(QWidget):
         res = self.dialog.exec_()
         if res:
             self.active_id = self.dialog.active_id
+
+    @Slot(QModelIndex)
+    def OnCompletion(self, index):
+        model = index.model()
+        self.active_id = model.data(model.index(index.row(), 0), Qt.DisplayRole)
