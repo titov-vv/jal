@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import sqlite3, time, datetime
 import pandas as pd
 import numpy as np
@@ -40,7 +42,7 @@ def convert_datetime(val):
         return 0
     return time.mktime(datetime.datetime.strptime(val, "%d.%m.%Y %H:%M:%S").timetuple())
 #------------------------------------------------------------------------------
-def import_1c(db_file, data_path):
+def importFrom1C(db_file, data_path):
     print("Import 1C data from: ", data_path)
     print("Import 1C data to:   ", db_file)
     db = sqlite3.connect(db_file)
@@ -176,24 +178,34 @@ def loadDbFromSQL(db_file, sql_file):
 if __name__ == "__main__":
     db_file = ''
     import_path = ''
+    operation = ''
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hd:s:", ["dbfile=","source="])
+        opts, args = getopt.getopt(sys.argv[1:], "hi1d:s:", ["dbfile=","source="])
     except getopt.GetoptError:
-        print("Import data from 1C to SQLITE database")
-        print("Usage: import_1c.py -d <db_file> -s <source_directory>")
+        print("DB operations")
+        print("Initialize database: bulk_db.py -d <db_file> -s <sql-script>")
+        print("Import data from 1C: bulk_db.py -d <db_file> -s <source_directory>")
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
             print("Import data from 1C to SQLITE database")
-            print("Usage: import_1c.py -d <db_file> -i <source_directory>")
+            print("Usage: bulk_db.py -d <db_file> -i <source_directory>")
             sys.exit()
+        elif opt == '-i':
+            operation = "init"
+        elif opt == '-1':
+            operation = "import1c"
         elif opt in ("-d", "--dbfile"):
             db_file = arg
         elif opt in ("-s", "--source"):
             import_path = arg
     if (db_file == '' or import_path == ''):
-        print("Import data from 1C to SQLITE database")
-        print("Usage: import_1c.py -d <db_file> -i <source_directory>")
+        print("DB operations")
+        print("Initialize database: bulk_db.py -d <db_file> -s <sql-script>")
+        print("Import data from 1C: bulk_db.py -d <db_file> -s <source_directory>")
         sys.exit(2)
-    print("Importing from:", import_path, " into DB: ", db_file)
-    import_1c(db_file, import_path)
+
+    if (operation == "init"):
+        loadDbFromSQL(db_file, import_path)
+    if (operation == "import1c"):
+        importFrom1C(db_file, import_path)

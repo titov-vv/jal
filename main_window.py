@@ -5,7 +5,7 @@ from PySide2.QtCore import Slot, QMetaObject
 from PySide2 import QtCore
 from ui_main_window import Ui_LedgerMainWindow
 from ledger import Ledger
-from import_1c import import_1c, loadDbFromSQL
+from bulk_db import importFrom1C, loadDbFromSQL
 from rebuild_window import RebuildDialog
 from balance_delegate import BalanceDelegate
 from operation_delegate import *
@@ -313,7 +313,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         if import_directory:
             import_directory = import_directory + "/"
             self.db.close()
-            import_1c(DB_PATH, import_directory)
+            importFrom1C(DB_PATH, import_directory)
             self.db.open()
 
     def InitDB(self):
