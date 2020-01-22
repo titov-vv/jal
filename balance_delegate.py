@@ -14,6 +14,8 @@ class BalanceDelegate(QStyledItemDelegate):
         balance = record.value(3)
 
         if (column == 3) or (column == 5):
+            if value == "":
+                value = 0
             text = f"{value:,.2f}"
             alignment = Qt.AlignRight
         else:
