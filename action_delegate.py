@@ -22,3 +22,16 @@ class ActionDelegate(QSqlRelationalDelegate):
 class ActionDetailDelegate(QSqlRelationalDelegate):
     def __init__(self, parent=None):
         QSqlRelationalDelegate.__init__(self, parent)
+
+    def paint(self, painter, option, index):
+        if (index.column() == 5) or (index.column() == 6):
+            painter.save()
+            amount = index.model().data(index, Qt.DisplayRole)
+            if amount == 0:
+                text = ""
+            else:
+                text = f"{amount:.2f}"
+            painter.drawText(option.rect, Qt.AlignRight, text)
+            painter.restore()
+        else:
+            QSqlRelationalDelegate.paint(self, painter, option, index)

@@ -11,6 +11,12 @@ class DividendSqlDelegate(QSqlRelationalDelegate):
             editor.setDateTime(datetime.fromtimestamp(index.model().data(index, Qt.EditRole)))
         else:
             QSqlRelationalDelegate.setEditorData(self, editor, index)
+        if (index.column() == 5) or (index.column() == 6):  # sum and tax amounts
+            amount = index.model().data(index, Qt.EditRole)
+            if (amount == ''):
+                QSqlRelationalDelegate.setEditorData(self, editor, index)
+            else:
+                editor.setText(f"{amount:.2f}")
 
     def setModelData(self, editor, model, index):
         if (index.column() == 1):  # timestamp column

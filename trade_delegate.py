@@ -1,7 +1,15 @@
+from constants import *
 from datetime import datetime
 from PySide2.QtCore import Qt, Signal, Property, Slot
 from PySide2.QtSql import QSqlRelationalDelegate
 from PySide2.QtWidgets import QWidget
+
+def formatFloatLong(value):
+    if (abs(value - round(value, 2)) >= CALC_TOLERANCE):
+        text = str(value)
+    else:
+        text = f"{value:.2f}"
+    return text
 
 class OptionGroup(QWidget):
     def __init__(self, parent=None):
@@ -37,7 +45,7 @@ class OptionGroup(QWidget):
                 if button[0] == src:
                     self.selected_btn = button[1]
 
-#TODO Check, probably need to combine with dividend_delegate.py
+
 class TradeSqlDelegate(QSqlRelationalDelegate):
     def __init__(self, parent=None):
         QSqlRelationalDelegate.__init__(self, parent)
@@ -45,6 +53,8 @@ class TradeSqlDelegate(QSqlRelationalDelegate):
     def setEditorData(self, editor, index):
         if (index.column() == 1) or (index.column() == 2):  # timestamp & settlement columns
             editor.setDateTime(datetime.fromtimestamp(index.model().data(index, Qt.EditRole)))
+        elif (index.column() >= 7) and (index.column() <= 11): # price, qty, coupon, fees
+            editor.setText(formatFloatLong(index.model().data(index, Qt.EditRole)))
         else:
             QSqlRelationalDelegate.setEditorData(self, editor, index)
 
