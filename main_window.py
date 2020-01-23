@@ -2,6 +2,7 @@ from constants import *
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu, QMessageBox
 from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtCore import Slot, QMetaObject
+from PySide2.QtGui import QDoubleValidator
 from PySide2 import QtCore
 from ui_main_window import Ui_LedgerMainWindow
 from ledger import Ledger
@@ -46,6 +47,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.db.close()
 
     def ConfigureUI(self):
+        self.doubleValidate2 = QDoubleValidator(decimals=2)
+        self.doubleValidate6 = QDoubleValidator(decimals=6)
+
         self.BalanceDate.setDateTime(QtCore.QDateTime.currentDateTime())
 
         self.CurrencyNameQuery = QSqlQuery(self.db)
@@ -213,6 +217,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TradesDataMapper.addMapping(self.TradeCouponEdit, self.TradesModel.fieldIndex("coupon"))
         self.TradesDataMapper.addMapping(self.TradeBrokerFeeEdit, self.TradesModel.fieldIndex("fee_broker"))
         self.TradesDataMapper.addMapping(self.TradeExchangeFeeEdit, self.TradesModel.fieldIndex("fee_exchange"))
+        self.TradePriceEdit.setValidator(self.doubleValidate6)
+        self.TradeQtyEdit.setValidator(self.doubleValidate6)
+        self.TradeCouponEdit.setValidator(self.doubleValidate6)
+        self.TradeBrokerFeeEdit.setValidator(self.doubleValidate6)
+        self.TradeExchangeFeeEdit.setValidator(self.doubleValidate6)
 
         ###############################################################################################
         # CONFIGURE DIVIDENDS TAB                                                                     #
@@ -241,6 +250,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DividendsDataMapper.addMapping(self.DividendSumDescription, self.DividendsModel.fieldIndex("note"))
         self.DividendsDataMapper.addMapping(self.DividendTaxEdit, self.DividendsModel.fieldIndex("sum_tax"))
         self.DividendsDataMapper.addMapping(self.DividendTaxDescription, self.DividendsModel.fieldIndex("note_tax"))
+        self.DividendSumEdit.setValidator(self.doubleValidate2)
+        self.DividendTaxEdit.setValidator(self.doubleValidate2)
 
         ###############################################################################################
         # CONFIGURE TRANSFERS TAB                                                                     #
@@ -274,6 +285,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TransfersDataMapper.addMapping(self.TransferToAmount, self.TransfersModel.fieldIndex("to_amount"))
         self.TransfersDataMapper.addMapping(self.TransferFeeAmount, self.TransfersModel.fieldIndex("fee_amount"))
         self.TransfersDataMapper.addMapping(self.TransferNote, self.TransfersModel.fieldIndex("note"))
+        self.TransferFromAmount.setValidator(self.doubleValidate2)
+        self.TransferToAmount.setValidator(self.doubleValidate2)
+        self.TransferFeeAmount.setValidator(self.doubleValidate2)
 
         ###############################################################################################
         # CONFIGURE ACTIONS                                                                           #
