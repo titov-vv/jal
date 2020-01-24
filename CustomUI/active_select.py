@@ -36,6 +36,7 @@ class ActiveSelector(QWidget):
         self.layout.setMargin(0)
         self.symbol = QLineEdit()
         self.symbol.setText("Ticker")
+        self.symbol.setFixedWidth(self.symbol.fontMetrics().width("XXXXXXXXXXXX") * 1.5)
         self.layout.addWidget(self.symbol)
         self.full_name = QLabel()
         self.full_name.setText("Full security name")

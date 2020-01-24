@@ -49,6 +49,33 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def ConfigureUI(self):
         self.doubleValidate2 = QDoubleValidator(decimals=2)
         self.doubleValidate6 = QDoubleValidator(decimals=6)
+        widthForAmountEdit = self.fontMetrics().width("888888888.88") * 1.5
+        widthForTimestampEdit = self.fontMetrics().width("00/00/0000 00:00:00") * 1.5
+
+        self.ActionTimestampEdit.setFixedWidth(widthForTimestampEdit)
+        self.AddActionDetail.setFixedWidth(widthForTimestampEdit * 0.25)
+        self.CopyActionDetail.setFixedWidth(widthForTimestampEdit * 0.25)
+        self.RemoveActionDetail.setFixedWidth(widthForTimestampEdit * 0.25)
+
+        self.DividendTimestampEdit.setFixedWidth(widthForTimestampEdit)
+        self.DividendNumberEdit.setFixedWidth(widthForTimestampEdit)
+        self.DividendSumEdit.setFixedWidth(widthForAmountEdit)
+        self.DividendTaxEdit.setFixedWidth(widthForAmountEdit)
+
+        self.TradeTimestampEdit.setFixedWidth(widthForTimestampEdit)
+        self.TradeNumberEdit.setFixedWidth(widthForTimestampEdit)
+        self.TradePriceEdit.setFixedWidth(widthForAmountEdit)
+        self.TradeQtyEdit.setFixedWidth(widthForAmountEdit)
+        self.TradeCouponEdit.setFixedWidth(widthForAmountEdit)
+        self.TradeBrokerFeeEdit.setFixedWidth(widthForAmountEdit)
+        self.TradeExchangeFeeEdit.setFixedWidth(widthForAmountEdit)
+
+        self.TransferFromAmount.setFixedWidth(widthForAmountEdit)
+        self.TransferToAmount.setFixedWidth(widthForAmountEdit)
+        self.TransferFeeAmount.setFixedWidth(widthForAmountEdit)
+        self.TransferFromTimestamp.setFixedWidth(widthForTimestampEdit)
+        self.TransferToTimestamp.setFixedWidth(widthForTimestampEdit)
+        self.TransferFeeTimestamp.setFixedWidth(widthForTimestampEdit)
 
         self.BalanceDate.setDateTime(QtCore.QDateTime.currentDateTime())
 
@@ -179,7 +206,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionDetailsTableView.setColumnWidth(5, 100)  # amount
         self.ActionDetailsTableView.setColumnWidth(6, 100)  # amount *
         self.ActionDetailsTableView.setColumnWidth(7, 400)  # note
-        self.ActionDetailsTableView.horizontalHeader().moveSection(7, 3)
+        self.ActionDetailsTableView.horizontalHeader().setSectionResizeMode(7, QHeaderView.Stretch)  # make notes to fill all remaining space
+        self.ActionDetailsTableView.horizontalHeader().moveSection(7, 3)  # swap note and category columns
         self.ActionDetailsTableView.setColumnWidth(7, 400)
         self.ActionDetailsTableView.show()
 
