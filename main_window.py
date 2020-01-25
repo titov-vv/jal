@@ -101,10 +101,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.BalancesTableView.setColumnHidden(1, True)
         self.BalancesTableView.setColumnHidden(6, True)
         self.BalancesTableView.setColumnHidden(7, True)
-        self.BalancesTableView.setColumnWidth(2, 150)
+        self.BalancesTableView.setColumnWidth(2, 100)
         self.BalancesTableView.setColumnWidth(3, 100)
         self.BalancesTableView.setColumnWidth(4, 40)
-        self.BalancesTableView.setColumnWidth(5, 110)
+        self.BalancesTableView.setColumnWidth(5, 100)
+        self.BalancesTableView.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
         font = self.BalancesTableView.horizontalHeader().font()
         font.setBold(True)
         self.BalancesTableView.horizontalHeader().setFont(font)
@@ -146,10 +147,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.setColumnHidden(18, True)  # reconciled
         self.OperationsTableView.setColumnWidth(0, 10)
         self.OperationsTableView.setColumnWidth(2, 150)
-        self.OperationsTableView.setColumnWidth(4, 400)
+        self.OperationsTableView.setColumnWidth(4, 300)
         self.OperationsTableView.setColumnWidth(9, 300)
+        self.OperationsTableView.horizontalHeader().setSectionResizeMode(9, QHeaderView.Stretch)
         self.OperationsTableView.setWordWrap(False)
-        # next line forces usage of sizeHing() from delegate
+        # next line forces usage of sizeHint() from delegate
         self.OperationsTableView.verticalHeader().setMinimumSectionSize(8)
         self.OperationsTableView.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.OperationsTableView.horizontalHeader().setFont(font)
