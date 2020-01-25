@@ -115,40 +115,40 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.OperationsModel = QSqlTableModel(db=self.db)
         self.OperationsModel.setTable("all_operations")
-        self.OperationsModel.setHeaderData(0, Qt.Horizontal, " ")
-        self.OperationsModel.setHeaderData(2, Qt.Horizontal, "Timestamp")
-        self.OperationsModel.setHeaderData(4, Qt.Horizontal, "Account")
-        self.OperationsModel.setHeaderData(9, Qt.Horizontal, "Notes")
-        self.OperationsModel.setHeaderData(11, Qt.Horizontal, "Amount")
-        self.OperationsModel.setHeaderData(15, Qt.Horizontal, "Balance")
-        self.OperationsModel.setHeaderData(17, Qt.Horizontal, "Currency")
+        self.OperationsModel.setHeaderData(self.OperationsModel.fieldIndex("type"), Qt.Horizontal, " ")
+        self.OperationsModel.setHeaderData(self.OperationsModel.fieldIndex("timestamp"), Qt.Horizontal, "Timestamp")
+        self.OperationsModel.setHeaderData(self.OperationsModel.fieldIndex("account"), Qt.Horizontal, "Account")
+        self.OperationsModel.setHeaderData(self.OperationsModel.fieldIndex("note"), Qt.Horizontal, "Notes")
+        self.OperationsModel.setHeaderData(self.OperationsModel.fieldIndex("amount"), Qt.Horizontal, "Amount")
+        self.OperationsModel.setHeaderData(self.OperationsModel.fieldIndex("t_amount"), Qt.Horizontal, "Balance")
+        self.OperationsModel.setHeaderData(self.OperationsModel.fieldIndex("currency"), Qt.Horizontal, "Currency")
         self.OperationsModel.select()
         self.OperationsTableView.setModel(self.OperationsModel)
-        self.OperationsTableView.setItemDelegateForColumn(0, OperationsTypeDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(2, OperationsTimestampDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(4, OperationsAccountDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(9, OperationsNotesDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(11, OperationsAmountDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(15, OperationsTotalsDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(17, OperationsCurrencyDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("type"), OperationsTypeDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("timestamp"), OperationsTimestampDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("account"), OperationsAccountDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("note"), OperationsNotesDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("amount"), OperationsAmountDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("t_amount"), OperationsTotalsDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("currency"), OperationsCurrencyDelegate(self.OperationsTableView))
         self.OperationsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  # To select only 1 row
         self.OperationsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.OperationsTableView.setColumnHidden(1, True)
-        self.OperationsTableView.setColumnHidden(3, True) # account id
-        self.OperationsTableView.setColumnHidden(5, True) # peer number`
-        self.OperationsTableView.setColumnHidden(6, True) # active id
-        self.OperationsTableView.setColumnHidden(7, True) # active name
-        self.OperationsTableView.setColumnHidden(8, True) # active full name
-        self.OperationsTableView.setColumnHidden(10, True) # note 2
-        self.OperationsTableView.setColumnHidden(12, True) # qty
-        self.OperationsTableView.setColumnHidden(13, True) # price
-        self.OperationsTableView.setColumnHidden(14, True) # fee
-        self.OperationsTableView.setColumnHidden(16, True) # total_qty
-        self.OperationsTableView.setColumnHidden(18, True)  # reconciled
-        self.OperationsTableView.setColumnWidth(0, 10)
-        self.OperationsTableView.setColumnWidth(2, 150)
-        self.OperationsTableView.setColumnWidth(4, 300)
-        self.OperationsTableView.setColumnWidth(9, 300)
+        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("id"), True)
+        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("account_id"), True)
+        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("num_peer"), True)
+        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("active_id"), True)
+        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("active"), True)
+        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("active_name"), True)
+        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("note2"), True)
+        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("qty_trid"), True)
+        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("price"), True)
+        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("fee_tax"), True)
+        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("t_qty"), True)
+        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("reconciled"), True)
+        self.OperationsTableView.setColumnWidth(self.OperationsModel.fieldIndex("type"), 10)
+        self.OperationsTableView.setColumnWidth(self.OperationsModel.fieldIndex("timestamp"), widthForTimestampEdit * 0.7)
+        self.OperationsTableView.setColumnWidth(self.OperationsModel.fieldIndex("account"), 300)
+        self.OperationsTableView.setColumnWidth(self.OperationsModel.fieldIndex("note"), 300)
         self.OperationsTableView.horizontalHeader().setSectionResizeMode(9, QHeaderView.Stretch)
         self.OperationsTableView.setWordWrap(False)
         # next line forces usage of sizeHint() from delegate
