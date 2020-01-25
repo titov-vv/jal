@@ -19,7 +19,7 @@ class Ui_AccountChoiceDlg(object):
     def setupUi(self, AccountChoiceDlg):
         if AccountChoiceDlg.objectName():
             AccountChoiceDlg.setObjectName(u"AccountChoiceDlg")
-        AccountChoiceDlg.resize(400, 300)
+        AccountChoiceDlg.resize(869, 300)
         self.verticalLayout = QVBoxLayout(AccountChoiceDlg)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(2, 2, 2, 2)
@@ -51,11 +51,31 @@ class Ui_AccountChoiceDlg(object):
 
         self.horizontalLayout.addWidget(self.ShowInactive)
 
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout.addItem(self.horizontalSpacer)
+
+        self.AddAccountBtn = QPushButton(self.frame)
+        self.AddAccountBtn.setObjectName(u"AddAccountBtn")
+
+        self.horizontalLayout.addWidget(self.AddAccountBtn)
+
+        self.RemoveAccountBtn = QPushButton(self.frame)
+        self.RemoveAccountBtn.setObjectName(u"RemoveAccountBtn")
+
+        self.horizontalLayout.addWidget(self.RemoveAccountBtn)
+
 
         self.verticalLayout.addWidget(self.frame)
 
         self.AccountsList = QTableView(AccountChoiceDlg)
         self.AccountsList.setObjectName(u"AccountsList")
+        self.AccountsList.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.EditKeyPressed|QAbstractItemView.SelectedClicked)
+        self.AccountsList.setAlternatingRowColors(True)
+        self.AccountsList.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.AccountsList.verticalHeader().setVisible(False)
+        self.AccountsList.verticalHeader().setMinimumSectionSize(20)
+        self.AccountsList.verticalHeader().setDefaultSectionSize(20)
 
         self.verticalLayout.addWidget(self.AccountsList)
 
@@ -78,5 +98,7 @@ class Ui_AccountChoiceDlg(object):
         AccountChoiceDlg.setWindowTitle(QCoreApplication.translate("AccountChoiceDlg", u"Choose Account", None))
         self.AccountTypeLbl.setText(QCoreApplication.translate("AccountChoiceDlg", u"Account Type:", None))
         self.ShowInactive.setText(QCoreApplication.translate("AccountChoiceDlg", u"Show inactive", None))
+        self.AddAccountBtn.setText(QCoreApplication.translate("AccountChoiceDlg", u"Add", None))
+        self.RemoveAccountBtn.setText(QCoreApplication.translate("AccountChoiceDlg", u"Del", None))
     # retranslateUi
 

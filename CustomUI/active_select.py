@@ -1,5 +1,5 @@
-from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QAbstractItemView, QCompleter
-from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation
+from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QAbstractItemView, QCompleter, QHeaderView
+from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate, QSqlTableModel
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from ui_active_choice_dlg import Ui_ActiveChoiceDlg
 
@@ -13,19 +13,36 @@ class ActiveChoiceDlg(QDialog, Ui_ActiveChoiceDlg):
     def Activate(self):
         self.ActiveTypeCombo.currentIndexChanged.connect(self.OnApplyFilter)
         self.ActivesList.selectionModel().selectionChanged.connect(self.OnActiveChosen)
+        self.ActivesList.doubleClicked.connect(self.OnDoubleClick)
+        self.AddActiveBtn.clicked.connect(self.OnAdd)
+        self.RemoveActiveBtn.clicked.connect(self.OnRemove)
 
 #TODO: Make filter for inactive accounts
     @Slot()
     def OnApplyFilter(self, list_id):
         model = self.ActiveTypeCombo.model()
-        id = model.data(model.index(list_id, 0))  # 0 is a field number for "id"
-        self.ActivesList.model().setFilter(f"actives.type_id={id}")
+        tid = model.data(model.index(list_id, model.fieldIndex("id")))
+        self.ActivesList.model().setFilter(f"actives.type_id={tid}")
 
     @Slot()
     def OnActiveChosen(self, selected, deselected):
         idx = selected.indexes()
         selected_row = idx[0].row()
         self.active_id = self.ActivesList.model().record(selected_row).value(0)
+
+    @Slot()
+    def OnDoubleClick(self, index):
+        self.accept()
+
+    @Slot()
+    def OnAdd(self):
+        assert self.ActivesList.model().insertRows(0, 1)
+
+    @Slot()
+    def OnRemove(self):
+        idx = self.ActivesList.selectionModel().selection().indexes()
+        selected_row = idx[0].row()
+        assert self.ActivesList.model().removeRow(selected_row)
 
 class ActiveSelector(QWidget):
     def __init__(self, parent=None):
@@ -76,15 +93,26 @@ class ActiveSelector(QWidget):
         self.db = db
         self.Model = QSqlRelationalTableModel(db=self.db)
         self.Model.setTable("actives")
+        self.Model.setEditStrategy(QSqlTableModel.OnRowChange)
         self.Model.setJoinMode(QSqlRelationalTableModel.LeftJoin)   # to work correctly with NULL values in SrcId
         type_idx = self.Model.fieldIndex("type_id")
         self.Model.setRelation(type_idx, QSqlRelation("active_types", "id", "name"))
         data_src_id = self.Model.fieldIndex("src_id")
         self.Model.setRelation(data_src_id, QSqlRelation("data_sources", "id", "name"))
+        self.Model.setHeaderData(self.Model.fieldIndex("name"), Qt.Horizontal, "Symbol")
+        self.Model.setHeaderData(self.Model.fieldIndex("type_id"), Qt.Horizontal, "Type")
+        self.Model.setHeaderData(self.Model.fieldIndex("full_name"), Qt.Horizontal, "Name")
+        self.Model.setHeaderData(self.Model.fieldIndex("isin"), Qt.Horizontal, "ISIN")
+        self.Model.setHeaderData(self.Model.fieldIndex("web_id"), Qt.Horizontal, "WebID")
+        self.Model.setHeaderData(self.Model.fieldIndex("src_id"), Qt.Horizontal, "Data source")
 
         self.dialog.ActivesList.setModel(self.Model)
+        self.dialog.ActivesList.setItemDelegate(ActiveDelegate(self.dialog.ActivesList))
         self.dialog.ActivesList.setColumnHidden(self.Model.fieldIndex("id"), True)
-        self.dialog.ActivesList.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.dialog.ActivesList.horizontalHeader().setSectionResizeMode(self.Model.fieldIndex("full_name"), QHeaderView.Stretch)
+        font = self.dialog.ActivesList.horizontalHeader().font()
+        font.setBold(True)
+        self.dialog.ActivesList.horizontalHeader().setFont(font)
         self.dialog.ActiveTypeCombo.setModel(self.Model.relationModel(type_idx))
         self.dialog.ActiveTypeCombo.setModelColumn(self.Model.relationModel(type_idx).fieldIndex("name"))
         self.Model.select()
@@ -107,3 +135,7 @@ class ActiveSelector(QWidget):
     def OnCompletion(self, index):
         model = index.model()
         self.active_id = model.data(model.index(index.row(), 0), Qt.DisplayRole)
+
+class ActiveDelegate(QSqlRelationalDelegate):
+    def __init__(self, parent=None):
+        QSqlRelationalDelegate.__init__(self, parent)

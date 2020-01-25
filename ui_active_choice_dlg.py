@@ -19,7 +19,7 @@ class Ui_ActiveChoiceDlg(object):
     def setupUi(self, ActiveChoiceDlg):
         if ActiveChoiceDlg.objectName():
             ActiveChoiceDlg.setObjectName(u"ActiveChoiceDlg")
-        ActiveChoiceDlg.resize(400, 300)
+        ActiveChoiceDlg.resize(870, 300)
         self.verticalLayout = QVBoxLayout(ActiveChoiceDlg)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(2, 2, 2, 2)
@@ -46,11 +46,31 @@ class Ui_ActiveChoiceDlg(object):
 
         self.horizontalLayout.addWidget(self.ActiveTypeCombo)
 
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout.addItem(self.horizontalSpacer)
+
+        self.AddActiveBtn = QPushButton(self.frame)
+        self.AddActiveBtn.setObjectName(u"AddActiveBtn")
+
+        self.horizontalLayout.addWidget(self.AddActiveBtn)
+
+        self.RemoveActiveBtn = QPushButton(self.frame)
+        self.RemoveActiveBtn.setObjectName(u"RemoveActiveBtn")
+
+        self.horizontalLayout.addWidget(self.RemoveActiveBtn)
+
 
         self.verticalLayout.addWidget(self.frame)
 
         self.ActivesList = QTableView(ActiveChoiceDlg)
         self.ActivesList.setObjectName(u"ActivesList")
+        self.ActivesList.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.EditKeyPressed|QAbstractItemView.SelectedClicked)
+        self.ActivesList.setAlternatingRowColors(True)
+        self.ActivesList.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.ActivesList.verticalHeader().setVisible(False)
+        self.ActivesList.verticalHeader().setMinimumSectionSize(20)
+        self.ActivesList.verticalHeader().setDefaultSectionSize(22)
 
         self.verticalLayout.addWidget(self.ActivesList)
 
@@ -72,5 +92,7 @@ class Ui_ActiveChoiceDlg(object):
     def retranslateUi(self, ActiveChoiceDlg):
         ActiveChoiceDlg.setWindowTitle(QCoreApplication.translate("ActiveChoiceDlg", u"Choose Active", None))
         self.ActiveTypeLbl.setText(QCoreApplication.translate("ActiveChoiceDlg", u"Active Type:", None))
+        self.AddActiveBtn.setText(QCoreApplication.translate("ActiveChoiceDlg", u"Add", None))
+        self.RemoveActiveBtn.setText(QCoreApplication.translate("ActiveChoiceDlg", u"Del", None))
     # retranslateUi
 

@@ -149,7 +149,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.setColumnWidth(self.OperationsModel.fieldIndex("timestamp"), widthForTimestampEdit * 0.7)
         self.OperationsTableView.setColumnWidth(self.OperationsModel.fieldIndex("account"), 300)
         self.OperationsTableView.setColumnWidth(self.OperationsModel.fieldIndex("note"), 300)
-        self.OperationsTableView.horizontalHeader().setSectionResizeMode(9, QHeaderView.Stretch)
+        self.OperationsTableView.horizontalHeader().setSectionResizeMode(self.OperationsModel.fieldIndex("note"), QHeaderView.Stretch)
         self.OperationsTableView.setWordWrap(False)
         # next line forces usage of sizeHint() from delegate
         self.OperationsTableView.verticalHeader().setMinimumSectionSize(8)
@@ -197,7 +197,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionDetailsModel.dataChanged.connect(self.OnOperationDataChanged)
         self.ActionDetailsModel.select()
         self.ActionDetailsTableView.setModel(self.ActionDetailsModel)
-        self.ActionDetailsTableView.setItemDelegate(ActionDetailDelegate(self.ActionDetailsTableView))  # To display editors and drop down lists for lookup fields
+        self.ActionDetailsTableView.setItemDelegate(ActionDetailDelegate(self.ActionDetailsTableView))
         self.ActionDetailsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  # To select only 1 row
         self.ActionDetailsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
         self.ActionDetailsTableView.setColumnHidden(0, True)  # id
@@ -350,6 +350,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.RevertOperationBtn.clicked.connect(self.RevertOperation)
 
         self.OperationsTableView.selectRow(0)
+        self.OnOperationsRangeChange(0)
 
     def ImportFrom1C(self):
         import_directory = QFileDialog.getExistingDirectory(self, "Select directory with data to import")

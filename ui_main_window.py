@@ -217,24 +217,16 @@ class Ui_LedgerMainWindow(object):
         self.gridLayout_4 = QGridLayout(self.ActionDetailsTab)
         self.gridLayout_4.setObjectName(u"gridLayout_4")
         self.gridLayout_4.setContentsMargins(2, 2, 2, 2)
-        self.ActionDetailsTableView = QTableView(self.ActionDetailsTab)
-        self.ActionDetailsTableView.setObjectName(u"ActionDetailsTableView")
-        self.ActionDetailsTableView.setAlternatingRowColors(True)
-        self.ActionDetailsTableView.verticalHeader().setVisible(False)
-        self.ActionDetailsTableView.verticalHeader().setMinimumSectionSize(20)
-        self.ActionDetailsTableView.verticalHeader().setDefaultSectionSize(20)
-
-        self.gridLayout_4.addWidget(self.ActionDetailsTableView, 3, 0, 1, 5)
-
         self.ActionAccountWidget = AccountSelector(self.ActionDetailsTab)
         self.ActionAccountWidget.setObjectName(u"ActionAccountWidget")
 
         self.gridLayout_4.addWidget(self.ActionAccountWidget, 1, 1, 1, 1)
 
-        self.ActionPeerWidget = PeerSelector(self.ActionDetailsTab)
-        self.ActionPeerWidget.setObjectName(u"ActionPeerWidget")
+        self.ActionTimestampEdit = QDateTimeEdit(self.ActionDetailsTab)
+        self.ActionTimestampEdit.setObjectName(u"ActionTimestampEdit")
+        self.ActionTimestampEdit.setCalendarPopup(True)
 
-        self.gridLayout_4.addWidget(self.ActionPeerWidget, 2, 1, 1, 1)
+        self.gridLayout_4.addWidget(self.ActionTimestampEdit, 1, 0, 1, 1)
 
         self.ActionDetailBtnFrame = QFrame(self.ActionDetailsTab)
         self.ActionDetailBtnFrame.setObjectName(u"ActionDetailBtnFrame")
@@ -262,11 +254,18 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_4.addWidget(self.ActionDetailBtnFrame, 2, 0, 1, 1)
 
-        self.ActionTimestampEdit = QDateTimeEdit(self.ActionDetailsTab)
-        self.ActionTimestampEdit.setObjectName(u"ActionTimestampEdit")
-        self.ActionTimestampEdit.setCalendarPopup(True)
+        self.ActionDetailsTableView = QTableView(self.ActionDetailsTab)
+        self.ActionDetailsTableView.setObjectName(u"ActionDetailsTableView")
+        self.ActionDetailsTableView.setAlternatingRowColors(True)
+        self.ActionDetailsTableView.verticalHeader().setVisible(False)
+        self.ActionDetailsTableView.verticalHeader().setMinimumSectionSize(20)
+        self.ActionDetailsTableView.verticalHeader().setDefaultSectionSize(20)
 
-        self.gridLayout_4.addWidget(self.ActionTimestampEdit, 1, 0, 1, 1)
+        self.gridLayout_4.addWidget(self.ActionDetailsTableView, 3, 0, 1, 5)
+
+        self.ActionDetailsSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.gridLayout_4.addItem(self.ActionDetailsSpacer, 1, 2, 1, 1)
 
         self.ActionTabLbl = QLabel(self.ActionDetailsTab)
         self.ActionTabLbl.setObjectName(u"ActionTabLbl")
@@ -277,9 +276,10 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_4.addWidget(self.ActionTabLbl, 0, 0, 1, 1)
 
-        self.ActionDetailsSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.ActionPeerWidget = PeerSelector(self.ActionDetailsTab)
+        self.ActionPeerWidget.setObjectName(u"ActionPeerWidget")
 
-        self.gridLayout_4.addItem(self.ActionDetailsSpacer, 1, 2, 1, 1)
+        self.gridLayout_4.addWidget(self.ActionPeerWidget, 2, 1, 1, 1)
 
         self.OperationsTabs.addWidget(self.ActionDetailsTab)
         self.TradeDetailsTab = QWidget()
@@ -641,7 +641,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(3)
+        self.OperationsTabs.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)
@@ -669,10 +669,10 @@ class Ui_LedgerMainWindow(object):
 
         self.AccountLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Account:", None))
         self.ChooseAccountBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"All", None))
+        self.ActionTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.AddActionDetail.setText(QCoreApplication.translate("LedgerMainWindow", u" + ", None))
         self.CopyActionDetail.setText(QCoreApplication.translate("LedgerMainWindow", u">>", None))
         self.RemoveActionDetail.setText(QCoreApplication.translate("LedgerMainWindow", u" \u2014 ", None))
-        self.ActionTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.ActionTabLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Income / Spending", None))
         self.label.setText(QCoreApplication.translate("LedgerMainWindow", u"Quantity", None))
 #if QT_CONFIG(tooltip)

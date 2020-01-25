@@ -19,6 +19,7 @@ class ActionDelegate(QSqlRelationalDelegate):
         else:
             QSqlRelationalDelegate.setModelData(self, editor, model, index)
 
+# This also helps to display Drop-down list for lookup fields
 class ActionDetailDelegate(QSqlRelationalDelegate):
     def __init__(self, parent=None):
         QSqlRelationalDelegate.__init__(self, parent)
