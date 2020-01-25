@@ -658,7 +658,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def BeforeActionDetailInsert(self, record):
         pid = int(record.value("pid"))
         if pid == 0:
-            record.setValue("pid", self.ActionsModel.query().lastInsertId())
+            record.setValue("pid", self.ActionsModel.data(self.ActionsModel.index(0, 0)))
         record.setValue("alt_sum", 0)
 
     @Slot()
@@ -682,7 +682,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         idx = self.ActionDetailsTableView.selectionModel().selection().indexes()
         selected_row = idx[0].row()
         self.ActionDetailsModel.removeRow(selected_row)
-        self.ActionDetailsModel.submitAll()
+        self.ActionDetailsTableView.setRowHidden(selected_row, True)
+        self.SaveOperationBtn.setEnabled(True)
+        self.RevertOperationBtn.setEnabled(True)
 
     @Slot()
     def OnOperationDataChanged(self):
