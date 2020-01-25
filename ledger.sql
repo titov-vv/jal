@@ -629,6 +629,90 @@ BEGIN
 END;
 
 
+-- Trigger: action_details_after_insert
+DROP TRIGGER IF EXISTS action_details_after_insert;
+CREATE TRIGGER action_details_after_insert
+         AFTER INSERT
+            ON action_details
+      FOR EACH ROW
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= (
+                                 SELECT timestamp
+                                   FROM actions
+                                  WHERE id = NEW.pid
+                             );
+    DELETE FROM sequence
+          WHERE timestamp >= (
+                                 SELECT timestamp
+                                   FROM actions
+                                  WHERE id = NEW.pid
+                             );
+    DELETE FROM ledger_sums
+          WHERE timestamp >= (
+                                 SELECT timestamp
+                                   FROM actions
+                                  WHERE id = NEW.pid
+                             );
+END;
+
+
+-- Trigger: action_details_after_delete
+DROP TRIGGER IF EXISTS action_details_after_delete;
+CREATE TRIGGER action_details_after_delete
+         AFTER DELETE
+            ON action_details
+      FOR EACH ROW
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= (
+                                 SELECT timestamp
+                                   FROM actions
+                                  WHERE id = OLD.pid
+                             );
+    DELETE FROM sequence
+          WHERE timestamp >= (
+                                 SELECT timestamp
+                                   FROM actions
+                                  WHERE id = OLD.pid
+                             );
+    DELETE FROM ledger_sums
+          WHERE timestamp >= (
+                                 SELECT timestamp
+                                   FROM actions
+                                  WHERE id = OLD.pid
+                             );
+END;
+
+
+-- Trigger: action_details_after_update
+DROP TRIGGER IF EXISTS action_details_after_update;
+CREATE TRIGGER action_details_after_update
+         AFTER UPDATE
+            ON action_details
+      FOR EACH ROW
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= (
+                                 SELECT timestamp
+                                   FROM actions
+                                  WHERE id = OLD.pid
+                             );
+    DELETE FROM sequence
+          WHERE timestamp >= (
+                                 SELECT timestamp
+                                   FROM actions
+                                  WHERE id = OLD.pid
+                             );
+    DELETE FROM ledger_sums
+          WHERE timestamp >= (
+                                 SELECT timestamp
+                                   FROM actions
+                                  WHERE id = OLD.pid
+                             );
+END;
+
+
 -- Trigger: delete_transfers
 DROP TRIGGER IF EXISTS delete_transfers;
 CREATE TRIGGER delete_transfers
