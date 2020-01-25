@@ -125,6 +125,14 @@ CREATE TABLE agents (
 );
 
 
+-- Index: agents_by_name_idx
+DROP INDEX IF EXISTS agents_by_name_idx;
+
+CREATE INDEX agents_by_name_idx ON agents (
+    name
+);
+
+
 -- Table: balances
 DROP TABLE IF EXISTS balances;
 

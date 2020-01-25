@@ -146,6 +146,7 @@ class PeerSelector(QWidget):
         self.db = db
         self.Model = QSqlTableModel(db=self.db)
         self.Model.setTable("agents")
+        self.Model.setSort(self.Model.fieldIndex("name"), Qt.AscendingOrder)
         self.Model.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.Model.setHeaderData(self.Model.fieldIndex("name"), Qt.Horizontal, "Name")
         self.Model.setHeaderData(self.Model.fieldIndex("location"), Qt.Horizontal, "Location")
