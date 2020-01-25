@@ -13,9 +13,10 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
 
         self.AccountTypeCombo.currentIndexChanged.connect(self.OnTypeChange)
         self.ShowInactive.stateChanged.connect(self.OnInactiveChange)
-        self.AccountsList.doubleClicked.connect(self.OnDoubleClick)
         self.AddAccountBtn.clicked.connect(self.OnAdd)
         self.RemoveAccountBtn.clicked.connect(self.OnRemove)
+        self.CommitBtn.clicked.connect(self.OnCommit)
+        self.RevertBtn.clicked.connect(self.OnRevert)
 
     def getAccountName(self):
         if self.account_id == 0:
@@ -36,7 +37,7 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
         self.db = db
         self.Model = QSqlRelationalTableModel(db=self.db)
         self.Model.setTable("accounts")
-        self.Model.setEditStrategy(QSqlTableModel.OnRowChange)
+        self.Model.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.Model.setJoinMode(QSqlRelationalTableModel.LeftJoin)   # to work correctly with NULL values in OrgId
         type_idx = self.Model.fieldIndex("type_id")
         self.Model.setRelation(type_idx, QSqlRelation("account_types", "id", "name"))
@@ -65,6 +66,8 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
         self.AccountTypeCombo.setModelColumn(self.Model.relationModel(type_idx).fieldIndex("name"))
 
         self.AccountsList.selectionModel().selectionChanged.connect(self.OnAccountChosen)
+        self.Model.beforeInsert.connect(self.OnBeforeAccountInsert)
+        self.Model.dataChanged.connect(self.OnDataChanged)
         self.Model.select()
 
     @Slot()
@@ -99,18 +102,41 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
         self.p_account_name = self.AccountsList.model().record(selected_row).value(2)
 
     @Slot()
-    def OnDoubleClick(self, index):
-        self.accept()
+    def OnBeforeAccountInsert(self, record):
+        record.setValue("type_id", self.type_id)
+
+    @Slot()
+    def OnDataChanged(self):
+        self.CommitBtn.setEnabled(True)
+        self.RevertBtn.setEnabled(True)
 
     @Slot()
     def OnAdd(self):
         assert self.AccountsList.model().insertRows(0, 1)
+        self.CommitBtn.setEnabled(True)
+        self.RevertBtn.setEnabled(True)
 
     @Slot()
     def OnRemove(self):
         idx = self.AccountsList.selectionModel().selection().indexes()
         selected_row = idx[0].row()
         assert self.AccountsList.model().removeRow(selected_row)
+        self.CommitBtn.setEnabled(True)
+        self.RevertBtn.setEnabled(True)
+
+    @Slot()
+    def OnCommit(self):
+        if not self.Model.submitAll():
+            print(self.tr("Action submit failed: "), self.Model.lastError().text())
+            return
+        self.CommitBtn.setEnabled(False)
+        self.RevertBtn.setEnabled(False)
+
+    @Slot()
+    def OnRevert(self):
+        self.Model.revertAll()
+        self.CommitBtn.setEnabled(False)
+        self.RevertBtn.setEnabled(False)
 
 class AccountButton(QPushButton):
     def __init__(self, parent):

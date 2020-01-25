@@ -93,6 +93,26 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QPushButton" name="CommitBtn">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Commit</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="RevertBtn">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Revert</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -108,7 +128,7 @@
       <enum>QAbstractItemView::SelectRows</enum>
      </property>
      <attribute name="verticalHeaderVisible">
-      <bool>false</bool>
+      <bool>true</bool>
      </attribute>
      <attribute name="verticalHeaderMinimumSectionSize">
       <number>20</number>

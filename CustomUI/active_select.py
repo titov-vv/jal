@@ -11,7 +11,6 @@ class ActiveChoiceDlg(QDialog, Ui_ActiveChoiceDlg):
         self.type_id = 0
 
         self.ActiveTypeCombo.currentIndexChanged.connect(self.OnTypeChange)
-        self.ActivesList.doubleClicked.connect(self.OnDoubleClick)
         self.AddActiveBtn.clicked.connect(self.OnAdd)
         self.RemoveActiveBtn.clicked.connect(self.OnRemove)
 
@@ -34,8 +33,13 @@ class ActiveChoiceDlg(QDialog, Ui_ActiveChoiceDlg):
         self.active_id = self.ActivesList.model().record(selected_row).value(0)
 
     @Slot()
-    def OnDoubleClick(self, index):
-        self.accept()
+    def OnBeforeActiveInsert(self, record):
+        record.setValue("type_id", self.type_id)
+
+    @Slot()
+    def OnDataChanged(self):
+        self.CommitBtn.setEnabled(True)
+        self.RevertBtn.setEnabled(True)
 
     @Slot()
     def OnAdd(self):
@@ -96,7 +100,7 @@ class ActiveSelector(QWidget):
         self.db = db
         self.Model = QSqlRelationalTableModel(db=self.db)
         self.Model.setTable("actives")
-        self.Model.setEditStrategy(QSqlTableModel.OnRowChange)
+        self.Model.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.Model.setJoinMode(QSqlRelationalTableModel.LeftJoin)   # to work correctly with NULL values in SrcId
         type_idx = self.Model.fieldIndex("type_id")
         self.Model.setRelation(type_idx, QSqlRelation("active_types", "id", "name"))
@@ -122,6 +126,8 @@ class ActiveSelector(QWidget):
         self.dialog.ActiveTypeCombo.setModelColumn(self.Model.relationModel(type_idx).fieldIndex("name"))
 
         self.dialog.ActivesList.selectionModel().selectionChanged.connect(self.dialog.OnActiveChosen)
+        self.Model.beforeInsert.connect(self.dialog.OnBeforeActiveInsert)
+        self.Model.dataChanged.connect(self.dialog.OnDataChanged)
         self.Model.select()
 
         self.completer = QCompleter(self.Model)

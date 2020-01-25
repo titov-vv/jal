@@ -60,6 +60,18 @@ class Ui_ActiveChoiceDlg(object):
 
         self.horizontalLayout.addWidget(self.RemoveActiveBtn)
 
+        self.CommitBtn = QPushButton(self.frame)
+        self.CommitBtn.setObjectName(u"CommitBtn")
+        self.CommitBtn.setEnabled(False)
+
+        self.horizontalLayout.addWidget(self.CommitBtn)
+
+        self.RevertBtn = QPushButton(self.frame)
+        self.RevertBtn.setObjectName(u"RevertBtn")
+        self.RevertBtn.setEnabled(False)
+
+        self.horizontalLayout.addWidget(self.RevertBtn)
+
 
         self.verticalLayout.addWidget(self.frame)
 
@@ -68,7 +80,7 @@ class Ui_ActiveChoiceDlg(object):
         self.ActivesList.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.DoubleClicked|QAbstractItemView.EditKeyPressed)
         self.ActivesList.setAlternatingRowColors(True)
         self.ActivesList.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.ActivesList.verticalHeader().setVisible(False)
+        self.ActivesList.verticalHeader().setVisible(True)
         self.ActivesList.verticalHeader().setMinimumSectionSize(20)
         self.ActivesList.verticalHeader().setDefaultSectionSize(20)
 
@@ -94,5 +106,7 @@ class Ui_ActiveChoiceDlg(object):
         self.ActiveTypeLbl.setText(QCoreApplication.translate("ActiveChoiceDlg", u"Active Type:", None))
         self.AddActiveBtn.setText(QCoreApplication.translate("ActiveChoiceDlg", u"Add", None))
         self.RemoveActiveBtn.setText(QCoreApplication.translate("ActiveChoiceDlg", u"Del", None))
+        self.CommitBtn.setText(QCoreApplication.translate("ActiveChoiceDlg", u"Commit", None))
+        self.RevertBtn.setText(QCoreApplication.translate("ActiveChoiceDlg", u"Revert", None))
     # retranslateUi
 

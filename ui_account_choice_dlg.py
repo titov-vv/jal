@@ -66,6 +66,18 @@ class Ui_AccountChoiceDlg(object):
 
         self.horizontalLayout.addWidget(self.RemoveAccountBtn)
 
+        self.CommitBtn = QPushButton(self.frame)
+        self.CommitBtn.setObjectName(u"CommitBtn")
+        self.CommitBtn.setEnabled(False)
+
+        self.horizontalLayout.addWidget(self.CommitBtn)
+
+        self.RevertBtn = QPushButton(self.frame)
+        self.RevertBtn.setObjectName(u"RevertBtn")
+        self.RevertBtn.setEnabled(False)
+
+        self.horizontalLayout.addWidget(self.RevertBtn)
+
 
         self.verticalLayout.addWidget(self.frame)
 
@@ -74,7 +86,7 @@ class Ui_AccountChoiceDlg(object):
         self.AccountsList.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.DoubleClicked|QAbstractItemView.EditKeyPressed)
         self.AccountsList.setAlternatingRowColors(True)
         self.AccountsList.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.AccountsList.verticalHeader().setVisible(False)
+        self.AccountsList.verticalHeader().setVisible(True)
         self.AccountsList.verticalHeader().setMinimumSectionSize(20)
         self.AccountsList.verticalHeader().setDefaultSectionSize(20)
 
@@ -101,5 +113,7 @@ class Ui_AccountChoiceDlg(object):
         self.ShowInactive.setText(QCoreApplication.translate("AccountChoiceDlg", u"Show inactive", None))
         self.AddAccountBtn.setText(QCoreApplication.translate("AccountChoiceDlg", u"Add", None))
         self.RemoveAccountBtn.setText(QCoreApplication.translate("AccountChoiceDlg", u"Del", None))
+        self.CommitBtn.setText(QCoreApplication.translate("AccountChoiceDlg", u"Commit", None))
+        self.RevertBtn.setText(QCoreApplication.translate("AccountChoiceDlg", u"Revert", None))
     # retranslateUi
 
