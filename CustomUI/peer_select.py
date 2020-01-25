@@ -1,25 +1,25 @@
-from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QAbstractItemView, QCompleter
+from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QAbstractItemView, QCompleter, QHeaderView
 from PySide2.QtSql import QSqlTableModel, QSqlQuery
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from ui_peer_choice_dlg import Ui_PeerChoiceDlg
 
-#TODO clean-up columns
 class PeerChoiceDlg(QDialog, Ui_PeerChoiceDlg):
     def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)
         self.peer_id = 0
         self.last_parent = 0
+        self.old_parent = 0
+        self.parent = 0
+        self.search_text = ""
 
         self.PeersList.doubleClicked.connect(self.OnDoubleClick)
+        self.SearchString.textChanged.connect(self.OnSearchChange)
         self.BackBtn.clicked.connect(self.OnBackClick)
-
-    def Activate(self):
-        self.PeersList.selectionModel().selectionChanged.connect(self.OnPeerChosen)
-
-    def showEvent(self, arg__1):
-        self.PeersList.model().setFilter("agents.pid=0")
-        self.old_parent = 0
+        self.AddPeerBtn.clicked.connect(self.OnAdd)
+        self.RemovePeerBtn.clicked.connect(self.OnRemove)
+        self.CommitBtn.clicked.connect(self.OnCommit)
+        self.RevertBtn.clicked.connect(self.OnRevert)
 
     @Slot()
     def OnPeerChosen(self, selected, deselected):
@@ -28,15 +28,30 @@ class PeerChoiceDlg(QDialog, Ui_PeerChoiceDlg):
         self.peer_id = self.PeersList.model().record(selected_row).value(0)
 
     @Slot()
+    def OnSearchChange(self):
+        self.search_text = self.SearchString.text()
+        self.setFilter()
+
+    @Slot()
     def OnDoubleClick(self, index):
         selected_row = index.row()
-        id = self.PeersList.model().record(selected_row).value(0)
-        pid = self.PeersList.model().record(selected_row).value(1)
-        self.last_parent = pid
-        self.PeersList.model().setFilter(f"agents.pid={id}")
+        self.parent = self.PeersList.model().record(selected_row).value(0)
+        self.last_parent = self.PeersList.model().record(selected_row).value(1)
+        if self.search_text:
+            self.SearchString.setText("")   # it will also call self.setFilter()
+        else:
+            self.setFilter()
+
+    def setFilter(self):
+        if self.search_text:
+            self.PeersList.model().setFilter(f"name LIKE '%{self.search_text}%'")
+        else:
+            self.PeersList.model().setFilter(f"agents.pid={self.parent}")
 
     @Slot()
     def OnBackClick(self):
+        if self.search_text:  # list filtered by search string
+            return
         query = QSqlQuery(self.PeersList.model().database())
         query.prepare("SELECT a2.pid FROM agents AS a1 LEFT JOIN agents AS a2 ON a1.pid=a2.id WHERE a1.id = :current_id")
         id = self.PeersList.model().record(0).value(0)
@@ -49,7 +64,44 @@ class PeerChoiceDlg(QDialog, Ui_PeerChoiceDlg):
             pid = query.value(0)
             if pid == '':
                 pid = 0
-        self.PeersList.model().setFilter(f"agents.pid={pid}")
+        self.parent = pid
+        self.setFilter()
+
+    @Slot()
+    def OnDataChanged(self):
+        self.CommitBtn.setEnabled(True)
+        self.RevertBtn.setEnabled(True)
+
+    @Slot()
+    def OnAdd(self):
+        new_record = self.PeersList.model().record()
+        new_record.setValue(1, self.parent)  # set current parent
+        assert self.PeersList.model().insertRows(0, 1)
+        self.PeersList.model().setRecord(0, new_record)
+        self.CommitBtn.setEnabled(True)
+        self.RevertBtn.setEnabled(True)
+
+    @Slot()
+    def OnRemove(self):
+        idx = self.PeersList.selectionModel().selection().indexes()
+        selected_row = idx[0].row()
+        assert self.PeersList.model().removeRow(selected_row)
+        self.CommitBtn.setEnabled(True)
+        self.RevertBtn.setEnabled(True)
+
+    @Slot()
+    def OnCommit(self):
+        if not self.PeersList.model().submitAll():
+            print(self.tr("Action submit failed: "), self.PeersList.model().lastError().text())
+            return
+        self.CommitBtn.setEnabled(False)
+        self.RevertBtn.setEnabled(False)
+
+    @Slot()
+    def OnRevert(self):
+        self.PeersList.model().revertAll()
+        self.CommitBtn.setEnabled(False)
+        self.RevertBtn.setEnabled(False)
 
 class PeerSelector(QWidget):
     def __init__(self, parent=None):
@@ -94,13 +146,21 @@ class PeerSelector(QWidget):
         self.db = db
         self.Model = QSqlTableModel(db=self.db)
         self.Model.setTable("agents")
+        self.Model.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.Model.setHeaderData(self.Model.fieldIndex("name"), Qt.Horizontal, "Name")
+        self.Model.setHeaderData(self.Model.fieldIndex("location"), Qt.Horizontal, "Location")
 
         self.dialog.PeersList.setModel(self.Model)
         self.dialog.PeersList.setColumnHidden(self.Model.fieldIndex("id"), True)
         self.dialog.PeersList.setColumnHidden(self.Model.fieldIndex("pid"), True)
-        self.dialog.PeersList.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.dialog.PeersList.horizontalHeader().setSectionResizeMode(self.Model.fieldIndex("name"), QHeaderView.Stretch)
+        font = self.dialog.PeersList.horizontalHeader().font()
+        font.setBold(True)
+        self.dialog.PeersList.horizontalHeader().setFont(font)
+
+        self.dialog.PeersList.selectionModel().selectionChanged.connect(self.dialog.OnPeerChosen)
+        self.Model.dataChanged.connect(self.dialog.OnDataChanged)
         self.Model.select()
-        self.dialog.Activate()
 
         self.completer = QCompleter(self.Model)
         self.completer.setCompletionColumn(self.Model.fieldIndex("name"))
@@ -111,6 +171,7 @@ class PeerSelector(QWidget):
     def OnButtonClicked(self):
         ref_point = self.mapToGlobal(self.name.geometry().bottomLeft())
         self.dialog.setGeometry(ref_point.x(), ref_point.y(), self.dialog.width(), self.dialog.height())
+        self.dialog.setFilter()
         res = self.dialog.exec_()
         if res:
             self.peer_id = self.dialog.peer_id

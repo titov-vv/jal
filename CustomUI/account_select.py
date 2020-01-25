@@ -69,7 +69,6 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
         self.AccountTypeCombo.setModelColumn(self.Model.relationModel(type_idx).fieldIndex("name"))
 
         self.AccountsList.selectionModel().selectionChanged.connect(self.OnAccountChosen)
-        self.Model.beforeInsert.connect(self.OnBeforeAccountInsert)
         self.Model.dataChanged.connect(self.OnDataChanged)
         self.Model.select()
 
@@ -105,17 +104,17 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
         self.p_account_name = self.AccountsList.model().record(selected_row).value(2)
 
     @Slot()
-    def OnBeforeAccountInsert(self, record):
-        record.setValue("type_id", self.type_id)
-
-    @Slot()
     def OnDataChanged(self):
         self.CommitBtn.setEnabled(True)
         self.RevertBtn.setEnabled(True)
 
     @Slot()
     def OnAdd(self):
+        new_record = self.AccountsList.model().record()
+        new_record.setValue(1, self.type_id)    # set current type
+        new_record.setValue(4, 1)               # set active
         assert self.AccountsList.model().insertRows(0, 1)
+        self.AccountsList.model().setRecord(0, new_record)
         self.CommitBtn.setEnabled(True)
         self.RevertBtn.setEnabled(True)
 

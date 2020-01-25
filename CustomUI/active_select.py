@@ -13,6 +13,8 @@ class ActiveChoiceDlg(QDialog, Ui_ActiveChoiceDlg):
         self.ActiveTypeCombo.currentIndexChanged.connect(self.OnTypeChange)
         self.AddActiveBtn.clicked.connect(self.OnAdd)
         self.RemoveActiveBtn.clicked.connect(self.OnRemove)
+        self.CommitBtn.clicked.connect(self.OnCommit)
+        self.RevertBtn.clicked.connect(self.OnRevert)
 
     @Slot()
     def OnTypeChange(self, list_id):
@@ -33,23 +35,40 @@ class ActiveChoiceDlg(QDialog, Ui_ActiveChoiceDlg):
         self.active_id = self.ActivesList.model().record(selected_row).value(0)
 
     @Slot()
-    def OnBeforeActiveInsert(self, record):
-        record.setValue("type_id", self.type_id)
-
-    @Slot()
     def OnDataChanged(self):
         self.CommitBtn.setEnabled(True)
         self.RevertBtn.setEnabled(True)
 
     @Slot()
     def OnAdd(self):
+        new_record = self.ActivesList.model().record()
+        new_record.setValue(2, self.type_id)  # set current type
         assert self.ActivesList.model().insertRows(0, 1)
+        self.ActivesList.model().setRecord(0, new_record)
+        self.CommitBtn.setEnabled(True)
+        self.RevertBtn.setEnabled(True)
 
     @Slot()
     def OnRemove(self):
         idx = self.ActivesList.selectionModel().selection().indexes()
         selected_row = idx[0].row()
         assert self.ActivesList.model().removeRow(selected_row)
+        self.CommitBtn.setEnabled(True)
+        self.RevertBtn.setEnabled(True)
+
+    @Slot()
+    def OnCommit(self):
+        if not self.ActivesList.model().submitAll():
+            print(self.tr("Action submit failed: "), self.ActivesList.model().lastError().text())
+            return
+        self.CommitBtn.setEnabled(False)
+        self.RevertBtn.setEnabled(False)
+
+    @Slot()
+    def OnRevert(self):
+        self.ActivesList.model().revertAll()
+        self.CommitBtn.setEnabled(False)
+        self.RevertBtn.setEnabled(False)
 
 class ActiveSelector(QWidget):
     def __init__(self, parent=None):
@@ -126,7 +145,6 @@ class ActiveSelector(QWidget):
         self.dialog.ActiveTypeCombo.setModelColumn(self.Model.relationModel(type_idx).fieldIndex("name"))
 
         self.dialog.ActivesList.selectionModel().selectionChanged.connect(self.dialog.OnActiveChosen)
-        self.Model.beforeInsert.connect(self.dialog.OnBeforeActiveInsert)
         self.Model.dataChanged.connect(self.dialog.OnDataChanged)
         self.Model.select()
 
