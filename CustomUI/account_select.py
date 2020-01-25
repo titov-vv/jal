@@ -1,3 +1,4 @@
+from datetime import datetime
 from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QAbstractItemView, QMenu, QCompleter, QHeaderView
 from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate, QSqlTableModel
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
@@ -57,6 +58,8 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
         self.AccountsList.setItemDelegate(AccountDelegate(self.AccountsList))
         self.AccountsList.setColumnHidden(self.Model.fieldIndex("id"), True)
         self.AccountsList.setColumnHidden(self.Model.fieldIndex("type_id"), True)
+        self.AccountsList.setColumnWidth(self.Model.fieldIndex("active"), 32)
+        self.AccountsList.setColumnWidth(self.Model.fieldIndex("reconciled_on"), self.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
         self.AccountsList.horizontalHeader().setSectionResizeMode(self.Model.fieldIndex("name"), QHeaderView.Stretch)
         font = self.AccountsList.horizontalHeader().font()
         font.setBold(True)
@@ -249,3 +252,24 @@ class AccountSelector(QWidget):
 class AccountDelegate(QSqlRelationalDelegate):
     def __init__(self, parent=None):
         QSqlRelationalDelegate.__init__(self, parent)
+
+    def paint(self, painter, option, index):
+        if (index.column() == 4):  # active columnt
+            painter.save()
+            model = index.model()
+            active = model.data(index, Qt.DisplayRole)
+            if active:
+                text = " * "
+            else:
+                text = ""
+            painter.drawText(option.rect, Qt.AlignHCenter, text)
+            painter.restore()
+        elif (index.column() == 6):  # timestamp column
+            painter.save()
+            model = index.model()
+            timestamp = model.data(index, Qt.DisplayRole)
+            text = datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')
+            painter.drawText(option.rect, Qt.AlignLeft, text)
+            painter.restore()
+        else:
+            QSqlRelationalDelegate.paint(self, painter, option, index)
