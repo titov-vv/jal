@@ -3,26 +3,29 @@ from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation, QSqlRelational
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from ui_active_choice_dlg import Ui_ActiveChoiceDlg
 
-#TODO clean-up columns
 class ActiveChoiceDlg(QDialog, Ui_ActiveChoiceDlg):
     def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)
         self.active_id = 0
+        self.type_id = 0
 
-    def Activate(self):
-        self.ActiveTypeCombo.currentIndexChanged.connect(self.OnApplyFilter)
-        self.ActivesList.selectionModel().selectionChanged.connect(self.OnActiveChosen)
+        self.ActiveTypeCombo.currentIndexChanged.connect(self.OnTypeChange)
         self.ActivesList.doubleClicked.connect(self.OnDoubleClick)
         self.AddActiveBtn.clicked.connect(self.OnAdd)
         self.RemoveActiveBtn.clicked.connect(self.OnRemove)
 
-#TODO: Make filter for inactive accounts
     @Slot()
-    def OnApplyFilter(self, list_id):
+    def OnTypeChange(self, list_id):
         model = self.ActiveTypeCombo.model()
-        tid = model.data(model.index(list_id, model.fieldIndex("id")))
-        self.ActivesList.model().setFilter(f"actives.type_id={tid}")
+        self.type_id = model.data(model.index(list_id, model.fieldIndex("id")))
+        self.setActiveFilter()
+
+    def setActiveFilter(self):
+        active_filter = ""
+        if self.type_id:
+            active_filter = f"actives.type_id={self.type_id}"
+        self.ActivesList.model().setFilter(active_filter)
 
     @Slot()
     def OnActiveChosen(self, selected, deselected):
@@ -109,14 +112,17 @@ class ActiveSelector(QWidget):
         self.dialog.ActivesList.setModel(self.Model)
         self.dialog.ActivesList.setItemDelegate(ActiveDelegate(self.dialog.ActivesList))
         self.dialog.ActivesList.setColumnHidden(self.Model.fieldIndex("id"), True)
+        self.dialog.ActivesList.setColumnHidden(self.Model.fieldIndex("type_id"), True)
         self.dialog.ActivesList.horizontalHeader().setSectionResizeMode(self.Model.fieldIndex("full_name"), QHeaderView.Stretch)
         font = self.dialog.ActivesList.horizontalHeader().font()
         font.setBold(True)
         self.dialog.ActivesList.horizontalHeader().setFont(font)
+
         self.dialog.ActiveTypeCombo.setModel(self.Model.relationModel(type_idx))
         self.dialog.ActiveTypeCombo.setModelColumn(self.Model.relationModel(type_idx).fieldIndex("name"))
+
+        self.dialog.ActivesList.selectionModel().selectionChanged.connect(self.dialog.OnActiveChosen)
         self.Model.select()
-        self.dialog.Activate()
 
         self.completer = QCompleter(self.Model)
         self.completer.setCompletionColumn(self.Model.fieldIndex("name"))
@@ -127,6 +133,7 @@ class ActiveSelector(QWidget):
     def OnButtonClicked(self):
         ref_point = self.mapToGlobal(self.symbol.geometry().bottomLeft())
         self.dialog.setGeometry(ref_point.x(), ref_point.y(), self.dialog.width(), self.dialog.height())
+        self.dialog.setActiveFilter()
         res = self.dialog.exec_()
         if res:
             self.active_id = self.dialog.active_id

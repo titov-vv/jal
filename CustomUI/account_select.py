@@ -3,12 +3,19 @@ from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation, QSqlRelational
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from ui_account_choice_dlg import Ui_AccountChoiceDlg
 
-#TODO clean-up columns
 class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
     def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)
         self.account_id = 0
+        self.type_id = 0
+        self.active_only = 1
+
+        self.AccountTypeCombo.currentIndexChanged.connect(self.OnTypeChange)
+        self.ShowInactive.stateChanged.connect(self.OnInactiveChange)
+        self.AccountsList.doubleClicked.connect(self.OnDoubleClick)
+        self.AddAccountBtn.clicked.connect(self.OnAdd)
+        self.RemoveAccountBtn.clicked.connect(self.OnRemove)
 
     def getAccountName(self):
         if self.account_id == 0:
@@ -24,13 +31,6 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
         pass
 
     AccountName = Property(str, getAccountName, setAccountName, notify=account_name_changed)
-
-    def Activate(self):
-        self.AccountTypeCombo.currentIndexChanged.connect(self.OnApplyFilter)
-        self.AccountsList.selectionModel().selectionChanged.connect(self.OnAccountChosen)
-        self.AccountsList.doubleClicked.connect(self.OnDoubleClick)
-        self.AddAccountBtn.clicked.connect(self.OnAdd)
-        self.RemoveAccountBtn.clicked.connect(self.OnRemove)
 
     def init_DB(self, db):
         self.db = db
@@ -55,6 +55,7 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
         self.AccountsList.setModel(self.Model)
         self.AccountsList.setItemDelegate(AccountDelegate(self.AccountsList))
         self.AccountsList.setColumnHidden(self.Model.fieldIndex("id"), True)
+        self.AccountsList.setColumnHidden(self.Model.fieldIndex("type_id"), True)
         self.AccountsList.horizontalHeader().setSectionResizeMode(self.Model.fieldIndex("name"), QHeaderView.Stretch)
         font = self.AccountsList.horizontalHeader().font()
         font.setBold(True)
@@ -63,15 +64,32 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
         self.AccountTypeCombo.setModel(self.Model.relationModel(type_idx))
         self.AccountTypeCombo.setModelColumn(self.Model.relationModel(type_idx).fieldIndex("name"))
 
+        self.AccountsList.selectionModel().selectionChanged.connect(self.OnAccountChosen)
         self.Model.select()
-        self.Activate()
 
-#TODO: Make filter for inactive accounts
     @Slot()
-    def OnApplyFilter(self, list_id):
+    def OnInactiveChange(self, state):
+        if (state == 0):
+            self.active_only = 1
+        else:
+            self.active_only = 0
+        self.setAccountFilter()
+
+    @Slot()
+    def OnTypeChange(self, list_id):
         model = self.AccountTypeCombo.model()
-        tid = model.data(model.index(list_id, model.fieldIndex("id")))
-        self.AccountsList.model().setFilter(f"accounts.type_id={tid}")
+        self.type_id = model.data(model.index(list_id, model.fieldIndex("id")))
+        self.setAccountFilter()
+
+    def setAccountFilter(self):
+        account_filter = ""
+        if self.type_id:
+            account_filter = f"accounts.type_id={self.type_id}"
+            if self.active_only:
+                account_filter = account_filter + " AND  "
+        if self.active_only:
+            account_filter = account_filter + "accounts.active=1"
+        self.AccountsList.model().setFilter(account_filter)
 
     @Slot()
     def OnAccountChosen(self, selected, deselected):
@@ -130,6 +148,7 @@ class AccountButton(QPushButton):
     def ChooseAccount(self):
         ref_point = self.mapToGlobal(self.geometry().bottomLeft())
         self.dialog.setGeometry(ref_point.x(), ref_point.y(), self.dialog.width(), self.dialog.height())
+        self.dialog.setAccountFilter()
         res = self.dialog.exec_()
         if res:
             self.account_id = self.dialog.account_id
@@ -191,6 +210,7 @@ class AccountSelector(QWidget):
     def OnButtonClicked(self):
         ref_point = self.mapToGlobal(self.name.geometry().bottomLeft())
         self.dialog.setGeometry(ref_point.x(), ref_point.y(), self.dialog.width(), self.dialog.height())
+        self.dialog.setAccountFilter()
         res = self.dialog.exec_()
         if res:
             self.account_id = self.dialog.account_id

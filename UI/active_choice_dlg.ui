@@ -99,7 +99,7 @@
    <item>
     <widget class="QTableView" name="ActivesList">
      <property name="editTriggers">
-      <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::EditKeyPressed|QAbstractItemView::SelectedClicked</set>
+      <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
      </property>
      <property name="alternatingRowColors">
       <bool>true</bool>
@@ -114,7 +114,7 @@
       <number>20</number>
      </attribute>
      <attribute name="verticalHeaderDefaultSectionSize">
-      <number>22</number>
+      <number>20</number>
      </attribute>
     </widget>
    </item>

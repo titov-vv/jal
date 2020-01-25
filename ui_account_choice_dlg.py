@@ -48,6 +48,7 @@ class Ui_AccountChoiceDlg(object):
 
         self.ShowInactive = QCheckBox(self.frame)
         self.ShowInactive.setObjectName(u"ShowInactive")
+        self.ShowInactive.setChecked(False)
 
         self.horizontalLayout.addWidget(self.ShowInactive)
 
@@ -70,7 +71,7 @@ class Ui_AccountChoiceDlg(object):
 
         self.AccountsList = QTableView(AccountChoiceDlg)
         self.AccountsList.setObjectName(u"AccountsList")
-        self.AccountsList.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.EditKeyPressed|QAbstractItemView.SelectedClicked)
+        self.AccountsList.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.DoubleClicked|QAbstractItemView.EditKeyPressed)
         self.AccountsList.setAlternatingRowColors(True)
         self.AccountsList.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.AccountsList.verticalHeader().setVisible(False)

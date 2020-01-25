@@ -61,7 +61,11 @@ class Ui_PeerChoiceDlg(object):
 
         self.PeersList = QTableView(PeerChoiceDlg)
         self.PeersList.setObjectName(u"PeersList")
-        self.PeersList.verticalHeader().setVisible(False)
+        self.PeersList.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.DoubleClicked|QAbstractItemView.EditKeyPressed)
+        self.PeersList.setAlternatingRowColors(True)
+        self.PeersList.verticalHeader().setVisible(True)
+        self.PeersList.verticalHeader().setMinimumSectionSize(20)
+        self.PeersList.verticalHeader().setDefaultSectionSize(20)
 
         self.verticalLayout.addWidget(self.PeersList)
 

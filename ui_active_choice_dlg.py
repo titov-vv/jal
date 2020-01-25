@@ -65,12 +65,12 @@ class Ui_ActiveChoiceDlg(object):
 
         self.ActivesList = QTableView(ActiveChoiceDlg)
         self.ActivesList.setObjectName(u"ActivesList")
-        self.ActivesList.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.EditKeyPressed|QAbstractItemView.SelectedClicked)
+        self.ActivesList.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.DoubleClicked|QAbstractItemView.EditKeyPressed)
         self.ActivesList.setAlternatingRowColors(True)
         self.ActivesList.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.ActivesList.verticalHeader().setVisible(False)
         self.ActivesList.verticalHeader().setMinimumSectionSize(20)
-        self.ActivesList.verticalHeader().setDefaultSectionSize(22)
+        self.ActivesList.verticalHeader().setDefaultSectionSize(20)
 
         self.verticalLayout.addWidget(self.ActivesList)
 
