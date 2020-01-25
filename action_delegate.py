@@ -24,7 +24,7 @@ class ActionDetailDelegate(QSqlRelationalDelegate):
         QSqlRelationalDelegate.__init__(self, parent)
 
     def paint(self, painter, option, index):
-        if (index.column() == 5) or (index.column() == 6):
+        if (index.column() == 4) or (index.column() == 5):
             painter.save()
             amount = index.model().data(index, Qt.DisplayRole)
             if amount == 0:

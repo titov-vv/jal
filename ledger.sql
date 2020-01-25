@@ -49,7 +49,6 @@ CREATE TABLE action_details (
                            UNIQUE,
     pid         INTEGER    REFERENCES actions (id) ON DELETE CASCADE
                                                    ON UPDATE CASCADE,
-    type        INTEGER    NOT NULL,
     category_id INTEGER    REFERENCES categories (id) ON DELETE RESTRICT
                                                       ON UPDATE CASCADE
                            NOT NULL,
@@ -427,10 +426,10 @@ CREATE VIEW all_operations AS
                       timestamp,
                       p.name AS num_peer,
                       account_id,
-                      sum(d.type * d.sum) AS amount,
+                      sum(d.sum) AS amount,
                       o.alt_currency_id AS active_id,
                       NULL AS qty_trid,
-                      sum(d.type * d.alt_sum) AS price,
+                      sum(d.alt_sum) AS price,
                       NULL AS fee_tax,
                       NULL AS t_qty,
                       NULL AS note,

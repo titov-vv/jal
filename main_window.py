@@ -200,15 +200,14 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionDetailsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
         self.ActionDetailsTableView.setColumnHidden(0, True)  # id
         self.ActionDetailsTableView.setColumnHidden(1, True)  # pid
-        self.ActionDetailsTableView.setColumnHidden(2, True)  # type
-        self.ActionDetailsTableView.setColumnWidth(3, 200)  # category
-        self.ActionDetailsTableView.setColumnWidth(4, 200)  # tags
-        self.ActionDetailsTableView.setColumnWidth(5, 100)  # amount
-        self.ActionDetailsTableView.setColumnWidth(6, 100)  # amount *
-        self.ActionDetailsTableView.setColumnWidth(7, 400)  # note
-        self.ActionDetailsTableView.horizontalHeader().setSectionResizeMode(7, QHeaderView.Stretch)  # make notes to fill all remaining space
-        self.ActionDetailsTableView.horizontalHeader().moveSection(7, 3)  # swap note and category columns
-        self.ActionDetailsTableView.setColumnWidth(7, 400)
+        self.ActionDetailsTableView.setColumnWidth(2, 200)  # category
+        self.ActionDetailsTableView.setColumnWidth(3, 200)  # tags
+        self.ActionDetailsTableView.setColumnWidth(4, 100)  # amount
+        self.ActionDetailsTableView.setColumnWidth(5, 100)  # amount *
+        self.ActionDetailsTableView.setColumnWidth(6, 400)  # note
+        self.ActionDetailsTableView.horizontalHeader().setSectionResizeMode(6, QHeaderView.Stretch)  # make notes to fill all remaining space
+        self.ActionDetailsTableView.horizontalHeader().moveSection(6, 2)  # swap note and category columns
+        self.ActionDetailsTableView.setColumnWidth(6, 400)
         self.ActionDetailsTableView.show()
 
         ###############################################################################################
@@ -660,7 +659,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         pid = int(record.value("pid"))
         if pid == 0:
             record.setValue("pid", self.ActionsModel.query().lastInsertId())
-        record.setValue("type", 1)
         record.setValue("alt_sum", 0)
 
     @Slot()

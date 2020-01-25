@@ -130,15 +130,15 @@ def importFrom1C(db_file, data_path):
             data.loc[index, 'new_id'] = int(new_id)
             last_id = row['id']
         if math.isnan(row['sum_y']):    #insert details from main part if no split
-            cursor.execute("INSERT INTO action_details(pid, type, category_id, tag_id, sum, alt_sum, note) "
-                           "VALUES(?, ?, ?, ?, ?, ?, ?)",
-                           (new_id, row['type_x'], row['category_id_x'], row['tag_id_x'],
-                            row['sum_x'], row['sum_a_x'], row['note_x']))
+            cursor.execute("INSERT INTO action_details(pid, category_id, tag_id, sum, alt_sum, note) "
+                           "VALUES(?, ?, ?, ?, ?, ?)",
+                           (new_id, row['category_id_x'], row['tag_id_x'],
+                            row['type_x'] * row['sum_x'], row['type_x'] * row['sum_a_x'], row['note_x']))
         else:
-            cursor.execute("INSERT INTO action_details(pid, type, category_id, tag_id, sum, alt_sum, note) "
-                           "VALUES(?, ?, ?, ?, ?, ?, ?)",
-                           (new_id, row['type_y'], row['category_id_y'], row['tag_id_y'],
-                            row['sum_y'], row['sum_a_y'], row['note_y']))
+            cursor.execute("INSERT INTO action_details(pid, category_id, tag_id, sum, alt_sum, note) "
+                           "VALUES(?, ?, ?, ?, ?, ?)",
+                           (new_id, row['category_id_y'], row['tag_id_y'],
+                            row['type_y']* row['sum_y'], row['type_y'] * row['sum_a_y'], row['note_y']))
     print("Actions loaded")
     data = pd.read_csv(data_path + "actions_transfers.csv", sep='|', encoding='cp1251', thousands='\xa0',
                        dtype = {'id':int, 'type':int, 'account_id':int, 'note':str},

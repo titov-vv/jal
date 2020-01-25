@@ -153,7 +153,7 @@ class Ledger:
 
     def processActionDetails(self, seq_id, op_id):
         query = QSqlQuery(self.db)
-        query.prepare("SELECT a.timestamp, a.account_id, a.peer_id, c.currency_id, (d.type*d.sum) as amount, d.category_id, d.tag_id "
+        query.prepare("SELECT a.timestamp, a.account_id, a.peer_id, c.currency_id, d.sum as amount, d.category_id, d.tag_id "
                        "FROM actions as a "
                        "LEFT JOIN action_details AS d ON a.id=d.pid "
                        "LEFT JOIN accounts AS c ON a.account_id = c.id "
@@ -171,13 +171,13 @@ class Ledger:
 
     def processAction(self, seq_id, op_id):
         query = QSqlQuery(self.db)
-        query.prepare("SELECT a.timestamp, a.account_id, c.currency_id, sum(d.type*d.sum) "
+        query.prepare("SELECT a.timestamp, a.account_id, c.currency_id, sum(d.sum) "
                        "FROM actions AS a "
                        "LEFT JOIN action_details AS d ON a.id = d.pid "
                        "LEFT JOIN accounts AS c ON a.account_id = c.id "
                        "WHERE a.id = :id "
                        "GROUP BY a.timestamp, a.account_id, c.currency_id "
-                       "ORDER BY a.timestamp, d.type desc")
+                       "ORDER BY a.timestamp, d.sum desc")
         query.bindValue(":id", op_id)
         assert query.exec_()
         query.next()
@@ -396,7 +396,7 @@ class Ledger:
         self.db.commit()
 
         query.prepare("SELECT 1 AS type, a.id, a.timestamp, "
-                       "CASE WHEN SUM(d.type*d.sum)<0 THEN 5 ELSE 1 END AS seq FROM actions AS a "
+                       "CASE WHEN SUM(d.sum)<0 THEN 5 ELSE 1 END AS seq FROM actions AS a "
                        "LEFT JOIN action_details AS d ON a.id=d.pid WHERE timestamp >= :frontier GROUP BY a.id "
                        "UNION ALL "
                        "SELECT 2 AS type, id, timestamp, 2 AS seq FROM dividends WHERE timestamp >= :frontier "
@@ -459,7 +459,7 @@ class Ledger:
 
         assert query.exec_("PRAGMA synchronous = OFF")
         query.prepare("SELECT 1 AS type, a.id, a.timestamp, "
-                      "CASE WHEN SUM(d.type*d.sum)<0 THEN 5 ELSE 1 END AS seq FROM actions AS a "
+                      "CASE WHEN SUM(d.sum)<0 THEN 5 ELSE 1 END AS seq FROM actions AS a "
                       "LEFT JOIN action_details AS d ON a.id=d.pid WHERE timestamp >= :frontier GROUP BY a.id "
                       "UNION ALL "
                       "SELECT 2 AS type, id, timestamp, 2 AS seq FROM dividends WHERE timestamp >= :frontier "
