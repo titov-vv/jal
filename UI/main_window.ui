@@ -1120,6 +1120,12 @@
     <property name="title">
      <string>&amp;Data</string>
     </property>
+    <widget class="QMenu" name="menuPredefined_data">
+     <property name="title">
+      <string>Predefined data</string>
+     </property>
+     <addaction name="actionAccount_Types"/>
+    </widget>
     <addaction name="separator"/>
     <addaction name="action_Load_quotes"/>
     <addaction name="actionLoad_Statement"/>
@@ -1128,6 +1134,7 @@
     <addaction name="action_Re_build_Ledger"/>
     <addaction name="separator"/>
     <addaction name="actionInitDB"/>
+    <addaction name="menuPredefined_data"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_DAta"/>
@@ -1136,6 +1143,9 @@
   <action name="actionExit">
    <property name="text">
     <string>&amp;Exit</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::QuitRole</enum>
    </property>
   </action>
   <action name="action_Re_build_Ledger">
@@ -1150,7 +1160,7 @@
   </action>
   <action name="action_Load_quotes">
    <property name="text">
-    <string>Load &amp;quotes</string>
+    <string>Load &amp;Quotes</string>
    </property>
   </action>
   <action name="actionLoad_Statement">
@@ -1161,6 +1171,11 @@
   <action name="actionInitDB">
    <property name="text">
     <string>Init &amp;DB</string>
+   </property>
+  </action>
+  <action name="actionAccount_Types">
+   <property name="text">
+    <string>Account &amp;Types</string>
    </property>
   </action>
  </widget>

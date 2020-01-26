@@ -28,6 +28,7 @@ class Ui_LedgerMainWindow(object):
         LedgerMainWindow.setMinimumSize(QSize(0, 0))
         self.actionExit = QAction(LedgerMainWindow)
         self.actionExit.setObjectName(u"actionExit")
+        self.actionExit.setMenuRole(QAction.QuitRole)
         self.action_Re_build_Ledger = QAction(LedgerMainWindow)
         self.action_Re_build_Ledger.setObjectName(u"action_Re_build_Ledger")
         self.action_Import = QAction(LedgerMainWindow)
@@ -38,6 +39,8 @@ class Ui_LedgerMainWindow(object):
         self.actionLoad_Statement.setObjectName(u"actionLoad_Statement")
         self.actionInitDB = QAction(LedgerMainWindow)
         self.actionInitDB.setObjectName(u"actionInitDB")
+        self.actionAccount_Types = QAction(LedgerMainWindow)
+        self.actionAccount_Types.setObjectName(u"actionAccount_Types")
         self.centralwidget = QWidget(LedgerMainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setMaximumSize(QSize(16777215, 16777215))
@@ -621,6 +624,8 @@ class Ui_LedgerMainWindow(object):
         self.menuFile.setObjectName(u"menuFile")
         self.menu_DAta = QMenu(self.menubar)
         self.menu_DAta.setObjectName(u"menu_DAta")
+        self.menuPredefined_data = QMenu(self.menu_DAta)
+        self.menuPredefined_data.setObjectName(u"menuPredefined_data")
         LedgerMainWindow.setMenuBar(self.menubar)
         self.StatusBar = QStatusBar(LedgerMainWindow)
         self.StatusBar.setObjectName(u"StatusBar")
@@ -637,6 +642,8 @@ class Ui_LedgerMainWindow(object):
         self.menu_DAta.addAction(self.action_Re_build_Ledger)
         self.menu_DAta.addSeparator()
         self.menu_DAta.addAction(self.actionInitDB)
+        self.menu_DAta.addAction(self.menuPredefined_data.menuAction())
+        self.menuPredefined_data.addAction(self.actionAccount_Types)
 
         self.retranslateUi(LedgerMainWindow)
 
@@ -652,9 +659,10 @@ class Ui_LedgerMainWindow(object):
         self.actionExit.setText(QCoreApplication.translate("LedgerMainWindow", u"&Exit", None))
         self.action_Re_build_Ledger.setText(QCoreApplication.translate("LedgerMainWindow", u"&Re-build Ledger", None))
         self.action_Import.setText(QCoreApplication.translate("LedgerMainWindow", u"&Import...", None))
-        self.action_Load_quotes.setText(QCoreApplication.translate("LedgerMainWindow", u"Load &quotes", None))
+        self.action_Load_quotes.setText(QCoreApplication.translate("LedgerMainWindow", u"Load &Quotes", None))
         self.actionLoad_Statement.setText(QCoreApplication.translate("LedgerMainWindow", u"Load &Statement...", None))
         self.actionInitDB.setText(QCoreApplication.translate("LedgerMainWindow", u"Init &DB", None))
+        self.actionAccount_Types.setText(QCoreApplication.translate("LedgerMainWindow", u"Account &Types", None))
         self.BalanceBox.setTitle(QCoreApplication.translate("LedgerMainWindow", u"Balances", None))
         self.BalanceDate.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy", None))
         self.CurrencyLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Sum Currency:", None))
@@ -722,5 +730,6 @@ class Ui_LedgerMainWindow(object):
         self.MainTabs.setTabText(self.MainTabs.indexOf(self.TabTransactions), QCoreApplication.translate("LedgerMainWindow", u"Transactions", None))
         self.menuFile.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&File", None))
         self.menu_DAta.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&Data", None))
+        self.menuPredefined_data.setTitle(QCoreApplication.translate("LedgerMainWindow", u"Predefined data", None))
     # retranslateUi
 

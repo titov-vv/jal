@@ -3,6 +3,7 @@ from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushBut
 from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate, QSqlTableModel
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from ui_account_choice_dlg import Ui_AccountChoiceDlg
+from ui_account_type_dlg import Ui_AccountTypesDlg
 
 class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
     def __init__(self):
@@ -272,3 +273,60 @@ class AccountDelegate(QSqlRelationalDelegate):
             painter.restore()
         else:
             QSqlRelationalDelegate.paint(self, painter, option, index)
+
+########################################################################################################################
+#  BELOW PART FOR EDITOR OF ACCOUNT TYPES
+########################################################################################################################
+class AcountTypeEditDlg(QDialog, Ui_AccountTypesDlg):
+    def __init__(self):
+        QDialog.__init__(self)
+        self.setupUi(self)
+
+        self.AddAccTypeBtn.clicked.connect(self.OnAdd)
+        self.RemoveAccTypeBtn.clicked.connect(self.OnRemove)
+        self.CommitBtn.clicked.connect(self.OnCommit)
+        self.RevertBtn.clicked.connect(self.OnRevert)
+
+    @Slot()
+    def OnAdd(self):
+        assert self.Model.insertRows(0, 1)
+        self.CommitBtn.setEnabled(True)
+        self.RevertBtn.setEnabled(True)
+
+    @Slot()
+    def OnRemove(self):
+        idx = self.AccountTypeList.selectionModel().selection().indexes()
+        selected_row = idx[0].row()
+        assert self.Model.removeRow(selected_row)
+        self.CommitBtn.setEnabled(True)
+        self.RevertBtn.setEnabled(True)
+
+    @Slot()
+    def OnCommit(self):
+        if not self.Model.submitAll():
+            print(self.tr("Action submit failed: "), self.Model.lastError().text())
+            return
+        self.CommitBtn.setEnabled(False)
+        self.RevertBtn.setEnabled(False)
+
+    @Slot()
+    def OnRevert(self):
+        self.Model.revertAll()
+        self.CommitBtn.setEnabled(False)
+        self.RevertBtn.setEnabled(False)
+
+    def init_DB(self, db):
+        self.db = db
+        self.Model = QSqlTableModel(db=self.db)
+        self.Model.setTable("account_types")
+        self.Model.setSort(self.Model.fieldIndex("name"), Qt.AscendingOrder)
+        self.Model.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.Model.setHeaderData(self.Model.fieldIndex("name"), Qt.Horizontal, "Account Type")
+
+        self.AccountTypeList.setModel(self.Model)
+        self.AccountTypeList.setColumnHidden(self.Model.fieldIndex("id"), True)
+        self.AccountTypeList.horizontalHeader().setSectionResizeMode(self.Model.fieldIndex("name"), QHeaderView.Stretch)
+        font = self.AccountTypeList.horizontalHeader().font()
+        font.setBold(True)
+        self.AccountTypeList.horizontalHeader().setFont(font)
+        self.Model.select()
