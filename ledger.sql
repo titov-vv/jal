@@ -1224,6 +1224,23 @@ INSERT INTO books (id, name) VALUES (4, 'Actives');
 INSERT INTO books (id, name) VALUES (5, 'Liabilities');
 INSERT INTO books (id, name) VALUES (6, 'Transfers');
 
+-- Initialize active types values
+INSERT INTO active_types (id, name) VALUES (1, 'Money');
+INSERT INTO active_types (id, name) VALUES (2, 'Shares');
+INSERT INTO active_types (id, name) VALUES (3, 'Bonds');
+INSERT INTO active_types (id, name) VALUES (4, 'Funds');
+INSERT INTO active_types (id, name) VALUES (5, 'Commodities');
+INSERT INTO active_types (id, name) VALUES (6, 'Derivatives');
+
+-- Initialize some account types
+INSERT INTO account_types (id, name) VALUES (1, 'Cash');
+INSERT INTO account_types (id, name) VALUES (2, 'Bank accounts');
+INSERT INTO account_types (id, name) VALUES (3, 'Cards');
+INSERT INTO account_types (id, name) VALUES (4, 'Investment');
+INSERT INTO account_types (id, name) VALUES (5, 'Deposits');
+INSERT INTO account_types (id, name) VALUES (6, 'Debts');
+INSERT INTO account_types (id, name) VALUES (7, 'e-Wallets');
+
 
 COMMIT TRANSACTION;
 PRAGMA foreign_keys = on;

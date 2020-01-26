@@ -1,9 +1,10 @@
 from datetime import datetime
-from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QAbstractItemView, QMenu, QCompleter, QHeaderView
+from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QMenu, QCompleter, QHeaderView
 from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate, QSqlTableModel
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex, QEvent
 from ui_account_choice_dlg import Ui_AccountChoiceDlg
 from ui_account_type_dlg import Ui_AccountTypesDlg
+from CustomUI.active_select import CurrencySelector
 
 ########################################################################################################################
 #  Predefined Account Types Editor
@@ -331,7 +332,10 @@ class AccountDelegate(QSqlRelationalDelegate):
             painter.save()
             model = index.model()
             timestamp = model.data(index, Qt.DisplayRole)
-            text = datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')
+            if timestamp:
+                text = datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')
+            else:
+                text = ""
             painter.drawText(option.rect, Qt.AlignLeft, text)
             painter.restore()
         else:
@@ -346,3 +350,16 @@ class AccountDelegate(QSqlRelationalDelegate):
                 model.setData(index, 0)
             else:
                 model.setData(index, 1)
+
+    def createEditor(self, aParent, option, index):
+        if index.column() != 3:
+            return QSqlRelationalDelegate.createEditor(self, aParent, option, index)
+
+        currency_selector = CurrencySelector(aParent)
+        currency_selector.init_DB(index.model().database())
+        return currency_selector
+
+    def setModelData(self, editor, model, index):
+        if index.column() != 3:
+            return QSqlRelationalDelegate.setModelData(self, editor, model, index)
+        model.setData(index, editor.active_id)
