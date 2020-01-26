@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PeerChoiceDlg</class>
- <widget class="QDialog" name="PeerChoiceDlg">
+ <class>CategoryChoiceDlg</class>
+ <widget class="QDialog" name="CategoryChoiceDlg">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>598</width>
+    <width>831</width>
     <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Choose Peer</string>
+   <string>Dialog</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
@@ -29,12 +29,12 @@
    <item>
     <widget class="QFrame" name="SearchFrame">
      <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
+      <enum>QFrame::StyledPanel</enum>
      </property>
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <layout class="QHBoxLayout" name="horizontalLayout">
       <property name="leftMargin">
        <number>0</number>
       </property>
@@ -50,41 +50,25 @@
       <item>
        <widget class="QLabel" name="SearchLbl">
         <property name="text">
-         <string>Search:</string>
+         <string>Search</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QLineEdit" name="SearchString"/>
       </item>
-      <item>
-       <widget class="QPushButton" name="BackBtn">
-        <property name="text">
-         <string>Back</string>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>
    <item>
     <widget class="QFrame" name="EditFrame">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
      <property name="frameShape">
-      <enum>QFrame::Panel</enum>
+      <enum>QFrame::StyledPanel</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Plain</enum>
+      <enum>QFrame::Raised</enum>
      </property>
-     <property name="lineWidth">
-      <number>0</number>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
       <property name="leftMargin">
        <number>0</number>
       </property>
@@ -111,14 +95,14 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="AddPeerBtn">
+       <widget class="QPushButton" name="AddCategoryBtn">
         <property name="text">
          <string>Add</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="RemovePeerBtn">
+       <widget class="QPushButton" name="RemoveCategoryBtn">
         <property name="text">
          <string>Del</string>
         </property>
@@ -126,9 +110,6 @@
       </item>
       <item>
        <widget class="QPushButton" name="CommitBtn">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
         <property name="text">
          <string>Commit</string>
         </property>
@@ -136,9 +117,6 @@
       </item>
       <item>
        <widget class="QPushButton" name="RevertBtn">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
         <property name="text">
          <string>Revert</string>
         </property>
@@ -148,23 +126,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QTableView" name="PeersList">
-     <property name="editTriggers">
-      <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
-     </property>
-     <property name="alternatingRowColors">
-      <bool>true</bool>
-     </property>
-     <attribute name="verticalHeaderVisible">
-      <bool>true</bool>
-     </attribute>
-     <attribute name="verticalHeaderMinimumSectionSize">
-      <number>20</number>
-     </attribute>
-     <attribute name="verticalHeaderDefaultSectionSize">
-      <number>20</number>
-     </attribute>
-    </widget>
+    <widget class="QTableView" name="CategoriesList"/>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
@@ -183,7 +145,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>PeerChoiceDlg</receiver>
+   <receiver>CategoryChoiceDlg</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -199,7 +161,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>PeerChoiceDlg</receiver>
+   <receiver>CategoryChoiceDlg</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

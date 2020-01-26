@@ -23,67 +23,72 @@ class Ui_PeerChoiceDlg(object):
         self.verticalLayout = QVBoxLayout(PeerChoiceDlg)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(2, 2, 2, 2)
-        self.frame_2 = QFrame(PeerChoiceDlg)
-        self.frame_2.setObjectName(u"frame_2")
-        self.frame_2.setFrameShape(QFrame.NoFrame)
-        self.frame_2.setFrameShadow(QFrame.Raised)
-        self.horizontalLayout_2 = QHBoxLayout(self.frame_2)
+        self.SearchFrame = QFrame(PeerChoiceDlg)
+        self.SearchFrame.setObjectName(u"SearchFrame")
+        self.SearchFrame.setFrameShape(QFrame.NoFrame)
+        self.SearchFrame.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_2 = QHBoxLayout(self.SearchFrame)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.SearchString = QLineEdit(self.frame_2)
+        self.SearchLbl = QLabel(self.SearchFrame)
+        self.SearchLbl.setObjectName(u"SearchLbl")
+
+        self.horizontalLayout_2.addWidget(self.SearchLbl)
+
+        self.SearchString = QLineEdit(self.SearchFrame)
         self.SearchString.setObjectName(u"SearchString")
 
         self.horizontalLayout_2.addWidget(self.SearchString)
 
-        self.BackBtn = QPushButton(self.frame_2)
+        self.BackBtn = QPushButton(self.SearchFrame)
         self.BackBtn.setObjectName(u"BackBtn")
 
         self.horizontalLayout_2.addWidget(self.BackBtn)
 
 
-        self.verticalLayout.addWidget(self.frame_2)
+        self.verticalLayout.addWidget(self.SearchFrame)
 
-        self.frame = QFrame(PeerChoiceDlg)
-        self.frame.setObjectName(u"frame")
+        self.EditFrame = QFrame(PeerChoiceDlg)
+        self.EditFrame.setObjectName(u"EditFrame")
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
-        self.frame.setSizePolicy(sizePolicy)
-        self.frame.setFrameShape(QFrame.Panel)
-        self.frame.setFrameShadow(QFrame.Plain)
-        self.frame.setLineWidth(0)
-        self.horizontalLayout = QHBoxLayout(self.frame)
+        sizePolicy.setHeightForWidth(self.EditFrame.sizePolicy().hasHeightForWidth())
+        self.EditFrame.setSizePolicy(sizePolicy)
+        self.EditFrame.setFrameShape(QFrame.Panel)
+        self.EditFrame.setFrameShadow(QFrame.Plain)
+        self.EditFrame.setLineWidth(0)
+        self.horizontalLayout = QHBoxLayout(self.EditFrame)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
 
-        self.AddPeerBtn = QPushButton(self.frame)
+        self.AddPeerBtn = QPushButton(self.EditFrame)
         self.AddPeerBtn.setObjectName(u"AddPeerBtn")
 
         self.horizontalLayout.addWidget(self.AddPeerBtn)
 
-        self.RemovePeerBtn = QPushButton(self.frame)
+        self.RemovePeerBtn = QPushButton(self.EditFrame)
         self.RemovePeerBtn.setObjectName(u"RemovePeerBtn")
 
         self.horizontalLayout.addWidget(self.RemovePeerBtn)
 
-        self.CommitBtn = QPushButton(self.frame)
+        self.CommitBtn = QPushButton(self.EditFrame)
         self.CommitBtn.setObjectName(u"CommitBtn")
         self.CommitBtn.setEnabled(False)
 
         self.horizontalLayout.addWidget(self.CommitBtn)
 
-        self.RevertBtn = QPushButton(self.frame)
+        self.RevertBtn = QPushButton(self.EditFrame)
         self.RevertBtn.setObjectName(u"RevertBtn")
         self.RevertBtn.setEnabled(False)
 
         self.horizontalLayout.addWidget(self.RevertBtn)
 
 
-        self.verticalLayout.addWidget(self.frame)
+        self.verticalLayout.addWidget(self.EditFrame)
 
         self.PeersList = QTableView(PeerChoiceDlg)
         self.PeersList.setObjectName(u"PeersList")
@@ -112,6 +117,7 @@ class Ui_PeerChoiceDlg(object):
 
     def retranslateUi(self, PeerChoiceDlg):
         PeerChoiceDlg.setWindowTitle(QCoreApplication.translate("PeerChoiceDlg", u"Choose Peer", None))
+        self.SearchLbl.setText(QCoreApplication.translate("PeerChoiceDlg", u"Search:", None))
         self.BackBtn.setText(QCoreApplication.translate("PeerChoiceDlg", u"Back", None))
         self.AddPeerBtn.setText(QCoreApplication.translate("PeerChoiceDlg", u"Add", None))
         self.RemovePeerBtn.setText(QCoreApplication.translate("PeerChoiceDlg", u"Del", None))

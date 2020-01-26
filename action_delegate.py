@@ -1,6 +1,7 @@
 from datetime import datetime
 from PySide2.QtCore import Qt
 from PySide2.QtSql import QSqlRelationalDelegate
+from CustomUI.category_select import CategorySelector
 
 class ActionDelegate(QSqlRelationalDelegate):
     def __init__(self, parent=None):
@@ -25,7 +26,7 @@ class ActionDetailDelegate(QSqlRelationalDelegate):
         QSqlRelationalDelegate.__init__(self, parent)
 
     def paint(self, painter, option, index):
-        if (index.column() == 4) or (index.column() == 5):
+        if (index.column() == 4) or (index.column() == 5):  # format float precision for sum and alternative sum
             painter.save()
             amount = index.model().data(index, Qt.DisplayRole)
             if amount == 0:
@@ -36,3 +37,17 @@ class ActionDetailDelegate(QSqlRelationalDelegate):
             painter.restore()
         else:
             QSqlRelationalDelegate.paint(self, painter, option, index)
+
+    def createEditor(self, aParent, option, index):
+        if index.column() != 2:
+            return QSqlRelationalDelegate.createEditor(self, aParent, option, index)
+        # show category selector
+        category_selector = CategorySelector(aParent)
+        category_selector.init_DB(index.model().database())
+        return category_selector
+
+    def setModelData(self, editor, model, index):
+        if index.column() != 2:
+            return QSqlRelationalDelegate.setModelData(self, editor, model, index)
+        # Assign category
+        model.setData(index, editor.category_id)

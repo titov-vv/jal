@@ -17,6 +17,7 @@ from action_delegate import ActionDelegate, ActionDetailDelegate
 from CustomUI.account_select import AcountTypeEditDlg, AccountChoiceDlg
 from CustomUI.active_select import ActiveChoiceDlg
 from CustomUI.peer_select import PeerChoiceDlg
+from CustomUI.category_select import CategoryChoiceDlg
 
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def __init__(self):
@@ -92,7 +93,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.BalancesModel = QSqlTableModel(db=self.db)
         self.BalancesModel.setTable("balances")
-        self.BalancesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)   # TODO Replace direct field IDs
+        self.BalancesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.BalancesModel.setHeaderData(self.BalancesModel.fieldIndex("account_name"), Qt.Horizontal, "Account")
         self.BalancesModel.setHeaderData(self.BalancesModel.fieldIndex("balance"), Qt.Horizontal, "Balance")
         self.BalancesModel.setHeaderData(self.BalancesModel.fieldIndex("currency_name"), Qt.Horizontal, "")
@@ -742,7 +743,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def EditCategories(self):
-        pass
-        # dlg = AccountChoiceDlg()
-        # dlg.init_DB(self.db)
-        # dlg.exec_()
+        dlg = CategoryChoiceDlg()
+        dlg.init_DB(self.db)
+        dlg.exec_()

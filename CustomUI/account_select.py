@@ -317,6 +317,9 @@ class AccountSelector(QWidget):
         model = index.model()
         self.account_id = model.data(model.index(index.row(), 0), Qt.DisplayRole)
 
+####################################################################################################################3
+# Delegate to display custom editors
+####################################################################################################################3
 class AccountDelegate(QSqlRelationalDelegate):
     def __init__(self, parent=None):
         QSqlRelationalDelegate.__init__(self, parent)
@@ -356,6 +359,7 @@ class AccountDelegate(QSqlRelationalDelegate):
                 model.setData(index, 0)
             else:
                 model.setData(index, 1)
+        return True
 
     def createEditor(self, aParent, option, index):
         if index.column() != 3:
