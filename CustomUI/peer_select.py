@@ -1,5 +1,5 @@
 from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QCompleter, QHeaderView
-from PySide2.QtSql import QSqlTableModel, QSqlQuery
+from PySide2.QtSql import QSqlTableModel, QSqlRelationalDelegate, QSqlQuery
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from UI.ui_peer_choice_dlg import Ui_PeerChoiceDlg
 
@@ -9,13 +9,12 @@ class PeerChoiceDlg(QDialog, Ui_PeerChoiceDlg):
         self.setupUi(self)
         self.peer_id = 0
         self.last_parent = 0
-        self.old_parent = 0
         self.parent = 0
         self.search_text = ""
 
-        self.PeersList.doubleClicked.connect(self.OnDoubleClick)
+        self.PeersList.clicked.connect(self.OnClicked)
         self.SearchString.textChanged.connect(self.OnSearchChange)
-        self.BackBtn.clicked.connect(self.OnBackClick)
+        self.UpBtn.clicked.connect(self.OnUpClick)
         self.AddPeerBtn.clicked.connect(self.OnAdd)
         self.RemovePeerBtn.clicked.connect(self.OnRemove)
         self.CommitBtn.clicked.connect(self.OnCommit)
@@ -31,7 +30,8 @@ class PeerChoiceDlg(QDialog, Ui_PeerChoiceDlg):
         self.Model.setHeaderData(self.Model.fieldIndex("location"), Qt.Horizontal, "Location")
 
         self.PeersList.setModel(self.Model)
-        self.PeersList.setColumnHidden(self.Model.fieldIndex("id"), True)
+        self.PeersList.setItemDelegate(PeerDelegate(self.PeersList))
+        self.PeersList.setColumnWidth(self.Model.fieldIndex("id"), 16)
         self.PeersList.setColumnHidden(self.Model.fieldIndex("pid"), True)
         self.PeersList.horizontalHeader().setSectionResizeMode(self.Model.fieldIndex("name"), QHeaderView.Stretch)
         font = self.PeersList.horizontalHeader().font()
@@ -45,8 +45,9 @@ class PeerChoiceDlg(QDialog, Ui_PeerChoiceDlg):
     @Slot()
     def OnPeerChosen(self, selected, deselected):
         idx = selected.indexes()
-        selected_row = idx[0].row()
-        self.peer_id = self.PeersList.model().record(selected_row).value(0)
+        if idx:
+            selected_row = idx[0].row()
+            self.peer_id = self.PeersList.model().record(selected_row).value(0)
 
     @Slot()
     def OnSearchChange(self):
@@ -54,23 +55,24 @@ class PeerChoiceDlg(QDialog, Ui_PeerChoiceDlg):
         self.setFilter()
 
     @Slot()
-    def OnDoubleClick(self, index):
-        selected_row = index.row()
-        self.parent = self.PeersList.model().record(selected_row).value(0)
-        self.last_parent = self.PeersList.model().record(selected_row).value(1)
-        if self.search_text:
-            self.SearchString.setText("")   # it will also call self.setFilter()
-        else:
-            self.setFilter()
+    def OnClicked(self, index):
+        if index.column() == 0:
+            selected_row = index.row()
+            self.parent = self.PeersList.model().record(selected_row).value(0)
+            self.last_parent = self.PeersList.model().record(selected_row).value(1)
+            if self.search_text:
+                self.SearchString.setText("")   # it will also call self.setFilter()
+            else:
+                self.setFilter()
 
     def setFilter(self):
         if self.search_text:
             self.PeersList.model().setFilter(f"name LIKE '%{self.search_text}%'")
         else:
-            self.PeersList.model().setFilter(f"agents.pid={self.parent}")
+            self.PeersList.model().setFilter(f"pid={self.parent}")
 
     @Slot()
-    def OnBackClick(self):
+    def OnUpClick(self):
         if self.search_text:  # list filtered by search string
             return
         query = QSqlQuery(self.PeersList.model().database())
@@ -149,7 +151,7 @@ class PeerSelector(QWidget):
         if (self.p_peer_id == id):
             return
         self.p_peer_id = id
-        self.dialog.Model.setFilter(f"agents.id={id}")
+        self.dialog.Model.setFilter(f"id={id}")
         row_idx = self.dialog.Model.index(0, 0).row()
         name = self.dialog.Model.record(row_idx).value(2)
         self.name.setText(name)
@@ -182,3 +184,25 @@ class PeerSelector(QWidget):
     def OnCompletion(self, index):
         model = index.model()
         self.peer_id = model.data(model.index(index.row(), 0), Qt.DisplayRole)
+
+####################################################################################################################3
+# Delegate to display custom fields
+####################################################################################################################3
+class PeerDelegate(QSqlRelationalDelegate):
+    def __init__(self, parent=None):
+        QSqlRelationalDelegate.__init__(self, parent)
+
+    def paint(self, painter, option, index):
+        if (index.column() == 0):
+            painter.save()
+            # model = index.model()
+            # children_count = model.data(model.index(index.row(), 5), Qt.DisplayRole)
+            # text = ""
+            # if children_count:
+            #     text = "+"
+            # painter.drawText(option.rect, Qt.AlignHCenter, text)
+            painter.drawText(option.rect, Qt.AlignHCenter, "+")
+            painter.restore()
+        # Paint '*' for special and often categories or nothing for other
+        else:
+            QSqlRelationalDelegate.paint(self, painter, option, index)

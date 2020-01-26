@@ -9,7 +9,6 @@ class CategoryChoiceDlg(QDialog, Ui_CategoryChoiceDlg):
         self.setupUi(self)
         self.category_id = 0
         self.last_parent = 0
-        # self.old_parent = 0
         self.parent = 0
         self.search_text = ""
 
@@ -155,7 +154,7 @@ class CategorySelector(QWidget):
         if (self.p_category_id == id):
             return
         self.p_category_id = id
-        self.dialog.Model.setFilter(f"categories.id={id}")
+        self.dialog.Model.setFilter(f"id={id}")
         row_idx = self.dialog.Model.index(0, 0).row()
         name = self.dialog.Model.record(row_idx).value(2)
         self.name.setText(name)

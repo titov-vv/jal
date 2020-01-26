@@ -40,11 +40,6 @@ class Ui_PeerChoiceDlg(object):
 
         self.horizontalLayout_2.addWidget(self.SearchString)
 
-        self.BackBtn = QPushButton(self.SearchFrame)
-        self.BackBtn.setObjectName(u"BackBtn")
-
-        self.horizontalLayout_2.addWidget(self.BackBtn)
-
 
         self.verticalLayout.addWidget(self.SearchFrame)
 
@@ -61,6 +56,11 @@ class Ui_PeerChoiceDlg(object):
         self.horizontalLayout = QHBoxLayout(self.EditFrame)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.UpBtn = QPushButton(self.EditFrame)
+        self.UpBtn.setObjectName(u"UpBtn")
+
+        self.horizontalLayout.addWidget(self.UpBtn)
+
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
@@ -94,6 +94,7 @@ class Ui_PeerChoiceDlg(object):
         self.PeersList.setObjectName(u"PeersList")
         self.PeersList.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.DoubleClicked|QAbstractItemView.EditKeyPressed)
         self.PeersList.setAlternatingRowColors(True)
+        self.PeersList.horizontalHeader().setMinimumSectionSize(8)
         self.PeersList.verticalHeader().setVisible(True)
         self.PeersList.verticalHeader().setMinimumSectionSize(20)
         self.PeersList.verticalHeader().setDefaultSectionSize(20)
@@ -118,7 +119,7 @@ class Ui_PeerChoiceDlg(object):
     def retranslateUi(self, PeerChoiceDlg):
         PeerChoiceDlg.setWindowTitle(QCoreApplication.translate("PeerChoiceDlg", u"Choose Peer", None))
         self.SearchLbl.setText(QCoreApplication.translate("PeerChoiceDlg", u"Search:", None))
-        self.BackBtn.setText(QCoreApplication.translate("PeerChoiceDlg", u"Back", None))
+        self.UpBtn.setText(QCoreApplication.translate("PeerChoiceDlg", u"Up", None))
         self.AddPeerBtn.setText(QCoreApplication.translate("PeerChoiceDlg", u"Add", None))
         self.RemovePeerBtn.setText(QCoreApplication.translate("PeerChoiceDlg", u"Del", None))
         self.CommitBtn.setText(QCoreApplication.translate("PeerChoiceDlg", u"Commit", None))
