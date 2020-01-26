@@ -1,9 +1,70 @@
 from datetime import datetime
 from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QAbstractItemView, QMenu, QCompleter, QHeaderView
 from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate, QSqlTableModel
-from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
+from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex, QEvent
 from ui_account_choice_dlg import Ui_AccountChoiceDlg
 from ui_account_type_dlg import Ui_AccountTypesDlg
+
+########################################################################################################################
+#  Predefined Account Types Editor
+########################################################################################################################
+class AcountTypeEditDlg(QDialog, Ui_AccountTypesDlg):
+    def __init__(self):
+        QDialog.__init__(self)
+        self.setupUi(self)
+
+        self.AddAccTypeBtn.clicked.connect(self.OnAdd)
+        self.RemoveAccTypeBtn.clicked.connect(self.OnRemove)
+        self.CommitBtn.clicked.connect(self.OnCommit)
+        self.RevertBtn.clicked.connect(self.OnRevert)
+
+    @Slot()
+    def OnAdd(self):
+        assert self.Model.insertRows(0, 1)
+        self.CommitBtn.setEnabled(True)
+        self.RevertBtn.setEnabled(True)
+
+    @Slot()
+    def OnRemove(self):
+        idx = self.AccountTypeList.selectionModel().selection().indexes()
+        selected_row = idx[0].row()
+        assert self.Model.removeRow(selected_row)
+        self.CommitBtn.setEnabled(True)
+        self.RevertBtn.setEnabled(True)
+
+    @Slot()
+    def OnCommit(self):
+        if not self.Model.submitAll():
+            print(self.tr("Action submit failed: "), self.Model.lastError().text())
+            return
+        self.CommitBtn.setEnabled(False)
+        self.RevertBtn.setEnabled(False)
+
+    @Slot()
+    def OnRevert(self):
+        self.Model.revertAll()
+        self.CommitBtn.setEnabled(False)
+        self.RevertBtn.setEnabled(False)
+
+    def init_DB(self, db):
+        self.db = db
+        self.Model = QSqlTableModel(db=self.db)
+        self.Model.setTable("account_types")
+        self.Model.setSort(self.Model.fieldIndex("name"), Qt.AscendingOrder)
+        self.Model.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.Model.setHeaderData(self.Model.fieldIndex("name"), Qt.Horizontal, "Account Type")
+
+        self.AccountTypeList.setModel(self.Model)
+        self.AccountTypeList.setColumnHidden(self.Model.fieldIndex("id"), True)
+        self.AccountTypeList.horizontalHeader().setSectionResizeMode(self.Model.fieldIndex("name"), QHeaderView.Stretch)
+        font = self.AccountTypeList.horizontalHeader().font()
+        font.setBold(True)
+        self.AccountTypeList.horizontalHeader().setFont(font)
+        self.Model.select()
+
+########################################################################################################################
+#  Account Choice and Edit
+########################################################################################################################
 
 class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
     def __init__(self):
@@ -254,7 +315,8 @@ class AccountDelegate(QSqlRelationalDelegate):
         QSqlRelationalDelegate.__init__(self, parent)
 
     def paint(self, painter, option, index):
-        if (index.column() == 4):  # active columnt
+        # Paint '*' for active account and nothing for inactive
+        if (index.column() == 4):  # 'active' column
             painter.save()
             model = index.model()
             active = model.data(index, Qt.DisplayRole)
@@ -264,7 +326,8 @@ class AccountDelegate(QSqlRelationalDelegate):
                 text = ""
             painter.drawText(option.rect, Qt.AlignHCenter, text)
             painter.restore()
-        elif (index.column() == 6):  # timestamp column
+        # Format unixtimestamp into readable form
+        elif (index.column() == 6):  # 'timestamp' column
             painter.save()
             model = index.model()
             timestamp = model.data(index, Qt.DisplayRole)
@@ -274,59 +337,12 @@ class AccountDelegate(QSqlRelationalDelegate):
         else:
             QSqlRelationalDelegate.paint(self, painter, option, index)
 
-########################################################################################################################
-#  BELOW PART FOR EDITOR OF ACCOUNT TYPES
-########################################################################################################################
-class AcountTypeEditDlg(QDialog, Ui_AccountTypesDlg):
-    def __init__(self):
-        QDialog.__init__(self)
-        self.setupUi(self)
-
-        self.AddAccTypeBtn.clicked.connect(self.OnAdd)
-        self.RemoveAccTypeBtn.clicked.connect(self.OnRemove)
-        self.CommitBtn.clicked.connect(self.OnCommit)
-        self.RevertBtn.clicked.connect(self.OnRevert)
-
-    @Slot()
-    def OnAdd(self):
-        assert self.Model.insertRows(0, 1)
-        self.CommitBtn.setEnabled(True)
-        self.RevertBtn.setEnabled(True)
-
-    @Slot()
-    def OnRemove(self):
-        idx = self.AccountTypeList.selectionModel().selection().indexes()
-        selected_row = idx[0].row()
-        assert self.Model.removeRow(selected_row)
-        self.CommitBtn.setEnabled(True)
-        self.RevertBtn.setEnabled(True)
-
-    @Slot()
-    def OnCommit(self):
-        if not self.Model.submitAll():
-            print(self.tr("Action submit failed: "), self.Model.lastError().text())
-            return
-        self.CommitBtn.setEnabled(False)
-        self.RevertBtn.setEnabled(False)
-
-    @Slot()
-    def OnRevert(self):
-        self.Model.revertAll()
-        self.CommitBtn.setEnabled(False)
-        self.RevertBtn.setEnabled(False)
-
-    def init_DB(self, db):
-        self.db = db
-        self.Model = QSqlTableModel(db=self.db)
-        self.Model.setTable("account_types")
-        self.Model.setSort(self.Model.fieldIndex("name"), Qt.AscendingOrder)
-        self.Model.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        self.Model.setHeaderData(self.Model.fieldIndex("name"), Qt.Horizontal, "Account Type")
-
-        self.AccountTypeList.setModel(self.Model)
-        self.AccountTypeList.setColumnHidden(self.Model.fieldIndex("id"), True)
-        self.AccountTypeList.horizontalHeader().setSectionResizeMode(self.Model.fieldIndex("name"), QHeaderView.Stretch)
-        font = self.AccountTypeList.horizontalHeader().font()
-        font.setBold(True)
-        self.AccountTypeList.horizontalHeader().setFont(font)
-        self.Model.select()
+    def editorEvent(self, event, model, option, index):
+        if index.column() != 4:
+            return False
+        # Only for 'active' column
+        if event.type() == QEvent.MouseButtonPress:
+            if model.data(index, Qt.DisplayRole):   # Toggle 'active' value - from 1 to 0 and from 0 to 1
+                model.setData(index, 0)
+            else:
+                model.setData(index, 1)
