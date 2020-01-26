@@ -578,6 +578,7 @@ CREATE VIEW categories_ext AS
      
      
 -- View: agents_ext     
+DROP VIEW IF EXISTS agents_ext;
 CREATE VIEW agents_ext AS
     SELECT a1.*,
            count(a2.id) AS children_count,
