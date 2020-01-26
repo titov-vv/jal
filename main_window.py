@@ -14,7 +14,7 @@ from dividend_delegate import DividendSqlDelegate
 from trade_delegate import TradeSqlDelegate, OptionGroup
 from transfer_delegate import TransferSqlDelegate
 from action_delegate import ActionDelegate, ActionDetailDelegate
-from CustomUI.account_select import AcountTypeEditDlg
+from CustomUI.account_select import AcountTypeEditDlg, AccountChoiceDlg
 
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def __init__(self):
@@ -328,6 +328,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.action_Re_build_Ledger.triggered.connect(self.ShowRebuildDialog)
         self.actionInitDB.triggered.connect(self.InitDB)
         self.actionAccount_Types.triggered.connect(self.EditAccountTypes)
+        self.action_Accounts.triggered.connect(self.EditAccounts)
         # INTERFACE ACTIONS
         self.MainTabs.currentChanged.connect(self.OnMainTabChange)
         self.BalanceDate.dateChanged.connect(self.onBalanceDateChange)
@@ -713,5 +714,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def EditAccountTypes(self):
         dlg = AcountTypeEditDlg()
+        dlg.init_DB(self.db)
+        dlg.exec_()
+
+    @Slot()
+    def EditAccounts(self):
+        dlg = AccountChoiceDlg()
         dlg.init_DB(self.db)
         dlg.exec_()

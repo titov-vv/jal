@@ -1125,6 +1125,8 @@
       <string>Predefined data</string>
      </property>
      <addaction name="actionAccount_Types"/>
+     <addaction name="separator"/>
+     <addaction name="actionInitDB"/>
     </widget>
     <addaction name="separator"/>
     <addaction name="action_Load_quotes"/>
@@ -1133,8 +1135,11 @@
     <addaction name="action_Import"/>
     <addaction name="action_Re_build_Ledger"/>
     <addaction name="separator"/>
-    <addaction name="actionInitDB"/>
     <addaction name="menuPredefined_data"/>
+    <addaction name="action_Accounts"/>
+    <addaction name="actionA_ctives"/>
+    <addaction name="action_Peers"/>
+    <addaction name="action_Categories"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_DAta"/>
@@ -1176,6 +1181,26 @@
   <action name="actionAccount_Types">
    <property name="text">
     <string>Account &amp;Types</string>
+   </property>
+  </action>
+  <action name="action_Accounts">
+   <property name="text">
+    <string>&amp;Accounts</string>
+   </property>
+  </action>
+  <action name="actionA_ctives">
+   <property name="text">
+    <string>Ac&amp;tives</string>
+   </property>
+  </action>
+  <action name="action_Peers">
+   <property name="text">
+    <string>&amp;Peers</string>
+   </property>
+  </action>
+  <action name="action_Categories">
+   <property name="text">
+    <string>&amp;Categories</string>
    </property>
   </action>
  </widget>
