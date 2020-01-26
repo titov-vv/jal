@@ -13,7 +13,7 @@ class CategoryChoiceDlg(QDialog, Ui_CategoryChoiceDlg):
         self.parent = 0
         self.search_text = ""
 
-        self.CategoriesList.doubleClicked.connect(self.OnDoubleClick)
+        self.CategoriesList.clicked.connect(self.OnDoubleClick)
         self.SearchString.textChanged.connect(self.OnSearchChange)
         self.UpBtn.clicked.connect(self.OnUpClick)
         self.AddCategoryBtn.clicked.connect(self.OnAdd)
