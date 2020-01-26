@@ -21,6 +21,27 @@ class PeerChoiceDlg(QDialog, Ui_PeerChoiceDlg):
         self.CommitBtn.clicked.connect(self.OnCommit)
         self.RevertBtn.clicked.connect(self.OnRevert)
 
+    def init_DB(self, db):
+        self.db = db
+        self.Model = QSqlTableModel(db=self.db)
+        self.Model.setTable("agents")
+        self.Model.setSort(self.Model.fieldIndex("name"), Qt.AscendingOrder)
+        self.Model.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.Model.setHeaderData(self.Model.fieldIndex("name"), Qt.Horizontal, "Name")
+        self.Model.setHeaderData(self.Model.fieldIndex("location"), Qt.Horizontal, "Location")
+
+        self.PeersList.setModel(self.Model)
+        self.PeersList.setColumnHidden(self.Model.fieldIndex("id"), True)
+        self.PeersList.setColumnHidden(self.Model.fieldIndex("pid"), True)
+        self.PeersList.horizontalHeader().setSectionResizeMode(self.Model.fieldIndex("name"), QHeaderView.Stretch)
+        font = self.PeersList.horizontalHeader().font()
+        font.setBold(True)
+        self.PeersList.horizontalHeader().setFont(font)
+
+        self.PeersList.selectionModel().selectionChanged.connect(self.OnPeerChosen)
+        self.Model.dataChanged.connect(self.OnDataChanged)
+        self.Model.select()
+
     @Slot()
     def OnPeerChosen(self, selected, deselected):
         idx = selected.indexes()
@@ -111,7 +132,7 @@ class PeerSelector(QWidget):
         self.layout = QHBoxLayout()
         self.layout.setMargin(0)
         self.name = QLineEdit()
-        self.name.setText("Peer name")
+        self.name.setText("")
         self.layout.addWidget(self.name)
         self.button = QPushButton("...")
         self.button.setFixedWidth(self.button.fontMetrics().width(" ... "))
@@ -129,11 +150,11 @@ class PeerSelector(QWidget):
         if (self.p_peer_id == id):
             return
         self.p_peer_id = id
-        self.Model.setFilter(f"agents.id={id}")
-        row_idx = self.Model.index(0, 0).row()
-        name = self.Model.record(row_idx).value(2)
+        self.dialog.Model.setFilter(f"agents.id={id}")
+        row_idx = self.dialog.Model.index(0, 0).row()
+        name = self.dialog.Model.record(row_idx).value(2)
         self.name.setText(name)
-        self.Model.setFilter("")
+        self.dialog.Model.setFilter("")
         self.changed.emit()
 
     @Signal
@@ -143,28 +164,9 @@ class PeerSelector(QWidget):
     peer_id = Property(int, getId, setId, notify=changed, user=True)
 
     def init_DB(self, db):
-        self.db = db
-        self.Model = QSqlTableModel(db=self.db)
-        self.Model.setTable("agents")
-        self.Model.setSort(self.Model.fieldIndex("name"), Qt.AscendingOrder)
-        self.Model.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        self.Model.setHeaderData(self.Model.fieldIndex("name"), Qt.Horizontal, "Name")
-        self.Model.setHeaderData(self.Model.fieldIndex("location"), Qt.Horizontal, "Location")
-
-        self.dialog.PeersList.setModel(self.Model)
-        self.dialog.PeersList.setColumnHidden(self.Model.fieldIndex("id"), True)
-        self.dialog.PeersList.setColumnHidden(self.Model.fieldIndex("pid"), True)
-        self.dialog.PeersList.horizontalHeader().setSectionResizeMode(self.Model.fieldIndex("name"), QHeaderView.Stretch)
-        font = self.dialog.PeersList.horizontalHeader().font()
-        font.setBold(True)
-        self.dialog.PeersList.horizontalHeader().setFont(font)
-
-        self.dialog.PeersList.selectionModel().selectionChanged.connect(self.dialog.OnPeerChosen)
-        self.Model.dataChanged.connect(self.dialog.OnDataChanged)
-        self.Model.select()
-
-        self.completer = QCompleter(self.Model)
-        self.completer.setCompletionColumn(self.Model.fieldIndex("name"))
+        self.dialog.init_DB(db)
+        self.completer = QCompleter(self.dialog.Model)
+        self.completer.setCompletionColumn(self.dialog.Model.fieldIndex("name"))
         self.completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.name.setCompleter(self.completer)
         self.completer.activated[QModelIndex].connect(self.OnCompletion)

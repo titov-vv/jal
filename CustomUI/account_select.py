@@ -203,6 +203,9 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)
 
+########################################################################################################################
+#  UI Button to choose accounts
+########################################################################################################################
 class AccountButton(QPushButton):
     def __init__(self, parent):
         QPushButton.__init__(self, parent)
@@ -251,6 +254,9 @@ class AccountButton(QPushButton):
         self.setText("ALL")
         self.clicked.emit()
 
+########################################################################################################################
+#  Custom UI account Editor
+########################################################################################################################
 class AccountSelector(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
@@ -259,7 +265,7 @@ class AccountSelector(QWidget):
         self.layout = QHBoxLayout()
         self.layout.setMargin(0)
         self.name = QLineEdit()
-        self.name.setText("Account name")
+        self.name.setText("")
         self.layout.addWidget(self.name)
         self.button = QPushButton("...")
         self.button.setFixedWidth(self.button.fontMetrics().width(" ... "))

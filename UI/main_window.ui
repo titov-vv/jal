@@ -438,19 +438,6 @@
                     <property name="bottomMargin">
                      <number>2</number>
                     </property>
-                    <item row="1" column="1">
-                     <widget class="AccountSelector" name="ActionAccountWidget" native="true"/>
-                    </item>
-                    <item row="1" column="0">
-                     <widget class="QDateTimeEdit" name="ActionTimestampEdit">
-                      <property name="displayFormat">
-                       <string>dd/MM/yyyy hh:mm:ss</string>
-                      </property>
-                      <property name="calendarPopup">
-                       <bool>true</bool>
-                      </property>
-                     </widget>
-                    </item>
                     <item row="2" column="0">
                      <widget class="QFrame" name="ActionDetailBtnFrame">
                       <property name="frameShape">
@@ -499,7 +486,20 @@
                       </layout>
                      </widget>
                     </item>
-                    <item row="3" column="0" colspan="5">
+                    <item row="1" column="0">
+                     <widget class="QDateTimeEdit" name="ActionTimestampEdit">
+                      <property name="displayFormat">
+                       <string>dd/MM/yyyy hh:mm:ss</string>
+                      </property>
+                      <property name="calendarPopup">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="2">
+                     <widget class="AccountSelector" name="ActionAccountWidget" native="true"/>
+                    </item>
+                    <item row="3" column="0" colspan="6">
                      <widget class="QTableView" name="ActionDetailsTableView">
                       <property name="alternatingRowColors">
                        <bool>true</bool>
@@ -515,18 +515,8 @@
                       </attribute>
                      </widget>
                     </item>
-                    <item row="1" column="2">
-                     <spacer name="ActionDetailsSpacer">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>40</width>
-                        <height>20</height>
-                       </size>
-                      </property>
-                     </spacer>
+                    <item row="2" column="2">
+                     <widget class="PeerSelector" name="ActionPeerWidget" native="true"/>
                     </item>
                     <item row="0" column="0">
                      <widget class="QLabel" name="ActionTabLbl">
@@ -541,8 +531,32 @@
                       </property>
                      </widget>
                     </item>
+                    <item row="1" column="3">
+                     <spacer name="ActionDetailsSpacer">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
                     <item row="2" column="1">
-                     <widget class="PeerSelector" name="ActionPeerWidget" native="true"/>
+                     <widget class="QLabel" name="PeerLbl">
+                      <property name="text">
+                       <string>Peer:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="1">
+                     <widget class="QLabel" name="AccountLbl_2">
+                      <property name="text">
+                       <string>Account:</string>
+                      </property>
+                     </widget>
                     </item>
                    </layout>
                   </widget>
@@ -563,27 +577,17 @@
                     <property name="bottomMargin">
                      <number>2</number>
                     </property>
-                    <item row="4" column="3">
-                     <widget class="QLabel" name="label">
-                      <property name="text">
-                       <string>Quantity</string>
+                    <item row="6" column="4">
+                     <widget class="QLineEdit" name="TradeExchangeFeeEdit">
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                       </property>
                      </widget>
                     </item>
-                    <item row="1" column="1" colspan="4">
-                     <widget class="AccountSelector" name="TradeAccountWidget" native="true"/>
-                    </item>
-                    <item row="2" column="0">
-                     <widget class="QLineEdit" name="TradeNumberEdit">
-                      <property name="toolTip">
-                       <string>Trade operation number</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="6" column="3">
-                     <widget class="QLabel" name="TradeFeeExchangeLbl">
+                    <item row="6" column="1">
+                     <widget class="QLabel" name="TradeCouponLbl">
                       <property name="text">
-                       <string>Fee exchange</string>
+                       <string>Coupon:</string>
                       </property>
                      </widget>
                     </item>
@@ -598,60 +602,6 @@
                      <widget class="QLabel" name="TradeFeeBrokerLbl">
                       <property name="text">
                        <string>Fee broker:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="4" column="4">
-                     <widget class="QLineEdit" name="TradeQtyEdit">
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="6" column="4">
-                     <widget class="QLineEdit" name="TradeExchangeFeeEdit">
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="5">
-                     <spacer name="horizontalSpacer_5">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>40</width>
-                        <height>20</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                    <item row="6" column="2">
-                     <widget class="QLineEdit" name="TradeCouponEdit">
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="0">
-                     <widget class="QLabel" name="TradeTabLbl">
-                      <property name="font">
-                       <font>
-                        <weight>75</weight>
-                        <bold>true</bold>
-                       </font>
-                      </property>
-                      <property name="text">
-                       <string>Buy / Sell</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="5" column="4">
-                     <widget class="QLineEdit" name="TradeBrokerFeeEdit">
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                       </property>
                      </widget>
                     </item>
@@ -688,6 +638,40 @@
                       </property>
                       <property name="calendarPopup">
                        <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="6" column="2">
+                     <widget class="QLineEdit" name="TradeCouponEdit">
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="4" column="3">
+                     <widget class="QLabel" name="label">
+                      <property name="text">
+                       <string>Quantity</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="5">
+                     <spacer name="horizontalSpacer_5">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="2" column="0">
+                     <widget class="QLineEdit" name="TradeNumberEdit">
+                      <property name="toolTip">
+                       <string>Trade operation number</string>
                       </property>
                      </widget>
                     </item>
@@ -729,10 +713,30 @@
                       </layout>
                      </widget>
                     </item>
-                    <item row="6" column="1">
-                     <widget class="QLabel" name="TradeCouponLbl">
+                    <item row="6" column="3">
+                     <widget class="QLabel" name="TradeFeeExchangeLbl">
                       <property name="text">
-                       <string>Coupon:</string>
+                       <string>Fee exchange</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="0">
+                     <widget class="QLabel" name="TradeTabLbl">
+                      <property name="font">
+                       <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>Buy / Sell</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="5" column="4">
+                     <widget class="QLineEdit" name="TradeBrokerFeeEdit">
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                       </property>
                      </widget>
                     </item>
@@ -753,8 +757,32 @@
                       </property>
                      </widget>
                     </item>
-                    <item row="2" column="1" colspan="4">
+                    <item row="4" column="4">
+                     <widget class="QLineEdit" name="TradeQtyEdit">
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="2" colspan="3">
+                     <widget class="AccountSelector" name="TradeAccountWidget" native="true"/>
+                    </item>
+                    <item row="2" column="2" colspan="3">
                      <widget class="ActiveSelector" name="TradeActiveWidget" native="true"/>
+                    </item>
+                    <item row="1" column="1">
+                     <widget class="QLabel" name="TradeAccountLbl">
+                      <property name="text">
+                       <string>Account:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="1">
+                     <widget class="QLabel" name="TradeSymbolLbl">
+                      <property name="text">
+                       <string>Symbol:</string>
+                      </property>
+                     </widget>
                     </item>
                    </layout>
                   </widget>
@@ -772,6 +800,36 @@
                     <property name="bottomMargin">
                      <number>2</number>
                     </property>
+                    <item row="6" column="2">
+                     <widget class="QLabel" name="DividendSymbolLbl">
+                      <property name="text">
+                       <string>Symbol:</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="8" column="2">
+                     <widget class="QLineEdit" name="DividendTaxEdit">
+                      <property name="toolTip">
+                       <string>Tax amount</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="3">
+                     <widget class="AccountSelector" name="DividendAccountWidget" native="true">
+                      <property name="minimumSize">
+                       <size>
+                        <width>32</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                     </widget>
+                    </item>
                     <item row="2" column="1">
                      <widget class="QDateTimeEdit" name="DividendTimestampEdit">
                       <property name="displayFormat">
@@ -782,56 +840,30 @@
                       </property>
                      </widget>
                     </item>
-                    <item row="6" column="1">
-                     <widget class="QLineEdit" name="DividendNumberEdit">
-                      <property name="toolTip">
-                       <string>Dividend operation number</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="8" column="3">
-                     <widget class="QLineEdit" name="DividendTaxEdit">
-                      <property name="toolTip">
-                       <string>Tax amount</string>
+                    <item row="8" column="1">
+                     <widget class="QLabel" name="DividendTaxLbl">
+                      <property name="text">
+                       <string>Tax amount:</string>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                       </property>
                      </widget>
                     </item>
-                    <item row="7" column="1" colspan="2">
-                     <widget class="QLineEdit" name="DividendSumDescription">
+                    <item row="7" column="2">
+                     <widget class="QLineEdit" name="DividendSumEdit">
                       <property name="toolTip">
-                       <string>Dividend description</string>
+                       <string>Dividend amount</string>
                       </property>
                       <property name="alignment">
-                       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                       </property>
                      </widget>
                     </item>
-                    <item row="2" column="2" colspan="2">
-                     <widget class="AccountSelector" name="DividendAccountWidget" native="true"/>
-                    </item>
-                    <item row="6" column="2" colspan="2">
-                     <widget class="ActiveSelector" name="DividendActiveWidget" native="true"/>
-                    </item>
-                    <item row="0" column="1">
-                     <widget class="QLabel" name="DividendTabLbl">
-                      <property name="font">
-                       <font>
-                        <weight>75</weight>
-                        <bold>true</bold>
-                       </font>
-                      </property>
-                      <property name="text">
-                       <string>Dividend</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="8" column="1" colspan="2">
-                     <widget class="QLineEdit" name="DividendTaxDescription">
+                    <item row="6" column="1">
+                     <widget class="QLineEdit" name="DividendNumberEdit">
                       <property name="toolTip">
-                       <string>Tax description</string>
+                       <string>Dividend operation number</string>
                       </property>
                      </widget>
                     </item>
@@ -848,18 +880,61 @@
                       </property>
                      </spacer>
                     </item>
-                    <item row="7" column="3">
-                     <widget class="QLineEdit" name="DividendSumEdit">
-                      <property name="toolTip">
-                       <string>Dividend amount</string>
+                    <item row="0" column="1">
+                     <widget class="QLabel" name="DividendTabLbl">
+                      <property name="font">
+                       <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>Dividend</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="2">
+                     <widget class="QLabel" name="DividendAccountLbl">
+                      <property name="text">
+                       <string>Account:</string>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                       </property>
                      </widget>
                     </item>
-                    <item row="7" column="4">
-                     <spacer name="horizontalSpacer_3">
+                    <item row="7" column="1">
+                     <widget class="QLabel" name="DividendSumLbl">
+                      <property name="text">
+                       <string>Dividend amount:</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="6" column="3">
+                     <widget class="ActiveSelector" name="DividendActiveWidget" native="true">
+                      <property name="minimumSize">
+                       <size>
+                        <width>32</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="7" column="3" colspan="2">
+                     <widget class="QLineEdit" name="DividendSumDescription">
+                      <property name="toolTip">
+                       <string>Dividend description</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="4">
+                     <spacer name="horizontalSpacer_6">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
                       </property>
@@ -870,6 +945,13 @@
                        </size>
                       </property>
                      </spacer>
+                    </item>
+                    <item row="8" column="3" colspan="2">
+                     <widget class="QLineEdit" name="DividendTaxDescription">
+                      <property name="toolTip">
+                       <string>Tax description</string>
+                      </property>
+                     </widget>
                     </item>
                    </layout>
                   </widget>
@@ -887,6 +969,92 @@
                     <property name="bottomMargin">
                      <number>2</number>
                     </property>
+                    <item row="5" column="1" colspan="4">
+                     <widget class="QLineEdit" name="TransferNote"/>
+                    </item>
+                    <item row="2" column="3">
+                     <widget class="QLineEdit" name="TransferFromAmount">
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="4">
+                     <spacer name="horizontalSpacer_4">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="4" column="3">
+                     <widget class="QLineEdit" name="TransferFeeAmount">
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="6" column="2">
+                     <spacer name="verticalSpacer_5">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="5" column="0">
+                     <widget class="QLabel" name="TransferTextLbl">
+                      <property name="text">
+                       <string>Text:</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="2">
+                     <widget class="AccountSelector" name="TransferFromAccountWidget" native="true"/>
+                    </item>
+                    <item row="2" column="0">
+                     <widget class="QDateTimeEdit" name="TransferFromTimestamp">
+                      <property name="displayFormat">
+                       <string>dd/MM/yyyy hh:mm:ss</string>
+                      </property>
+                      <property name="calendarPopup">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="4" column="2">
+                     <widget class="AccountSelector" name="TransferFeeAccountWidget" native="true"/>
+                    </item>
+                    <item row="2" column="1">
+                     <widget class="QLabel" name="TransferFromLbl">
+                      <property name="text">
+                       <string>From:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="2">
+                     <widget class="AccountSelector" name="TransferToAccountWidget" native="true"/>
+                    </item>
+                    <item row="3" column="3">
+                     <widget class="QLineEdit" name="TransferToAmount">
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
                     <item row="0" column="0">
                      <widget class="QLabel" name="TransferTabLbl">
                       <property name="font">
@@ -901,7 +1069,11 @@
                      </widget>
                     </item>
                     <item row="4" column="1">
-                     <widget class="AccountSelector" name="TransferFeeAccountWidget" native="true"/>
+                     <widget class="QLabel" name="TransferFeeLbl">
+                      <property name="text">
+                       <string>Fee:</string>
+                      </property>
+                     </widget>
                     </item>
                     <item row="4" column="0">
                      <widget class="QDateTimeEdit" name="TransferFeeTimestamp">
@@ -923,6 +1095,13 @@
                       </property>
                      </widget>
                     </item>
+                    <item row="3" column="1">
+                     <widget class="QLabel" name="TransferToLbl">
+                      <property name="text">
+                       <string>To:</string>
+                      </property>
+                     </widget>
+                    </item>
                     <item row="3" column="0">
                      <widget class="QDateTimeEdit" name="TransferToTimestamp">
                       <property name="displayFormat">
@@ -930,72 +1109,6 @@
                       </property>
                       <property name="calendarPopup">
                        <bool>true</bool>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="5" column="0" colspan="4">
-                     <widget class="QLineEdit" name="TransferNote"/>
-                    </item>
-                    <item row="6" column="1">
-                     <spacer name="verticalSpacer_5">
-                      <property name="orientation">
-                       <enum>Qt::Vertical</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>20</width>
-                        <height>40</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                    <item row="2" column="1">
-                     <widget class="AccountSelector" name="TransferFromAccountWidget" native="true"/>
-                    </item>
-                    <item row="3" column="1">
-                     <widget class="AccountSelector" name="TransferToAccountWidget" native="true"/>
-                    </item>
-                    <item row="2" column="0">
-                     <widget class="QDateTimeEdit" name="TransferFromTimestamp">
-                      <property name="displayFormat">
-                       <string>dd/MM/yyyy hh:mm:ss</string>
-                      </property>
-                      <property name="calendarPopup">
-                       <bool>true</bool>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="2">
-                     <widget class="QLineEdit" name="TransferToAmount">
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="4" column="2">
-                     <widget class="QLineEdit" name="TransferFeeAmount">
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="3">
-                     <spacer name="horizontalSpacer_4">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>40</width>
-                        <height>20</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                    <item row="2" column="2">
-                     <widget class="QLineEdit" name="TransferFromAmount">
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                       </property>
                      </widget>
                     </item>
@@ -1124,7 +1237,7 @@
      <property name="title">
       <string>Predefined data</string>
      </property>
-     <addaction name="actionAccount_Types"/>
+     <addaction name="actionAccountTypes"/>
      <addaction name="separator"/>
      <addaction name="actionInitDB"/>
     </widget>
@@ -1136,10 +1249,10 @@
     <addaction name="action_Re_build_Ledger"/>
     <addaction name="separator"/>
     <addaction name="menuPredefined_data"/>
-    <addaction name="action_Accounts"/>
-    <addaction name="actionA_ctives"/>
-    <addaction name="action_Peers"/>
-    <addaction name="action_Categories"/>
+    <addaction name="actionAccounts"/>
+    <addaction name="actionActives"/>
+    <addaction name="actionPeers"/>
+    <addaction name="actionCategories"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_DAta"/>
@@ -1178,27 +1291,27 @@
     <string>Init &amp;DB</string>
    </property>
   </action>
-  <action name="actionAccount_Types">
+  <action name="actionAccountTypes">
    <property name="text">
     <string>Account &amp;Types</string>
    </property>
   </action>
-  <action name="action_Accounts">
+  <action name="actionAccounts">
    <property name="text">
     <string>&amp;Accounts</string>
    </property>
   </action>
-  <action name="actionA_ctives">
+  <action name="actionActives">
    <property name="text">
     <string>Ac&amp;tives</string>
    </property>
   </action>
-  <action name="action_Peers">
+  <action name="actionPeers">
    <property name="text">
     <string>&amp;Peers</string>
    </property>
   </action>
-  <action name="action_Categories">
+  <action name="actionCategories">
    <property name="text">
     <string>&amp;Categories</string>
    </property>

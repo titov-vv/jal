@@ -15,6 +15,8 @@ from trade_delegate import TradeSqlDelegate, OptionGroup
 from transfer_delegate import TransferSqlDelegate
 from action_delegate import ActionDelegate, ActionDetailDelegate
 from CustomUI.account_select import AcountTypeEditDlg, AccountChoiceDlg
+from CustomUI.active_select import ActiveChoiceDlg
+from CustomUI.peer_select import PeerChoiceDlg
 
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def __init__(self):
@@ -327,8 +329,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.action_Import.triggered.connect(self.ImportFrom1C)
         self.action_Re_build_Ledger.triggered.connect(self.ShowRebuildDialog)
         self.actionInitDB.triggered.connect(self.InitDB)
-        self.actionAccount_Types.triggered.connect(self.EditAccountTypes)
-        self.action_Accounts.triggered.connect(self.EditAccounts)
+        self.actionAccountTypes.triggered.connect(self.EditAccountTypes)
+        self.actionAccounts.triggered.connect(self.EditAccounts)
+        self.actionActives.triggered.connect(self.EditActives)
+        self.actionPeers.triggered.connect(self.EditPeers)
+        self.actionCategories.triggered.connect(self.EditCategories)
         # INTERFACE ACTIONS
         self.MainTabs.currentChanged.connect(self.OnMainTabChange)
         self.BalanceDate.dateChanged.connect(self.onBalanceDateChange)
@@ -722,3 +727,22 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         dlg = AccountChoiceDlg()
         dlg.init_DB(self.db)
         dlg.exec_()
+
+    @Slot()
+    def EditActives(self):
+        dlg = ActiveChoiceDlg()
+        dlg.init_DB(self.db)
+        dlg.exec_()
+
+    @Slot()
+    def EditPeers(self):
+        dlg = PeerChoiceDlg()
+        dlg.init_DB(self.db)
+        dlg.exec_()
+
+    @Slot()
+    def EditCategories(self):
+        pass
+        # dlg = AccountChoiceDlg()
+        # dlg.init_DB(self.db)
+        # dlg.exec_()
