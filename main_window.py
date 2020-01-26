@@ -738,10 +738,12 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def EditPeers(self):
         dlg = PeerChoiceDlg()
         dlg.init_DB(self.db)
+        dlg.setFilter()
         dlg.exec_()
 
     @Slot()
     def EditCategories(self):
         dlg = CategoryChoiceDlg()
         dlg.init_DB(self.db)
+        dlg.setFilter()
         dlg.exec_()

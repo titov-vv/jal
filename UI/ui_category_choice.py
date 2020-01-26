@@ -25,7 +25,7 @@ class Ui_CategoryChoiceDlg(object):
         self.verticalLayout.setContentsMargins(2, 2, 2, 2)
         self.SearchFrame = QFrame(CategoryChoiceDlg)
         self.SearchFrame.setObjectName(u"SearchFrame")
-        self.SearchFrame.setFrameShape(QFrame.StyledPanel)
+        self.SearchFrame.setFrameShape(QFrame.NoFrame)
         self.SearchFrame.setFrameShadow(QFrame.Raised)
         self.horizontalLayout = QHBoxLayout(self.SearchFrame)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
@@ -45,11 +45,16 @@ class Ui_CategoryChoiceDlg(object):
 
         self.EditFrame = QFrame(CategoryChoiceDlg)
         self.EditFrame.setObjectName(u"EditFrame")
-        self.EditFrame.setFrameShape(QFrame.StyledPanel)
+        self.EditFrame.setFrameShape(QFrame.NoFrame)
         self.EditFrame.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_2 = QHBoxLayout(self.EditFrame)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.UpBtn = QPushButton(self.EditFrame)
+        self.UpBtn.setObjectName(u"UpBtn")
+
+        self.horizontalLayout_2.addWidget(self.UpBtn)
+
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_2.addItem(self.horizontalSpacer)
@@ -66,11 +71,13 @@ class Ui_CategoryChoiceDlg(object):
 
         self.CommitBtn = QPushButton(self.EditFrame)
         self.CommitBtn.setObjectName(u"CommitBtn")
+        self.CommitBtn.setEnabled(False)
 
         self.horizontalLayout_2.addWidget(self.CommitBtn)
 
         self.RevertBtn = QPushButton(self.EditFrame)
         self.RevertBtn.setObjectName(u"RevertBtn")
+        self.RevertBtn.setEnabled(False)
 
         self.horizontalLayout_2.addWidget(self.RevertBtn)
 
@@ -79,6 +86,9 @@ class Ui_CategoryChoiceDlg(object):
 
         self.CategoriesList = QTableView(CategoryChoiceDlg)
         self.CategoriesList.setObjectName(u"CategoriesList")
+        self.CategoriesList.horizontalHeader().setMinimumSectionSize(8)
+        self.CategoriesList.verticalHeader().setMinimumSectionSize(20)
+        self.CategoriesList.verticalHeader().setDefaultSectionSize(20)
 
         self.verticalLayout.addWidget(self.CategoriesList)
 
@@ -100,6 +110,7 @@ class Ui_CategoryChoiceDlg(object):
     def retranslateUi(self, CategoryChoiceDlg):
         CategoryChoiceDlg.setWindowTitle(QCoreApplication.translate("CategoryChoiceDlg", u"Dialog", None))
         self.SearchLbl.setText(QCoreApplication.translate("CategoryChoiceDlg", u"Search", None))
+        self.UpBtn.setText(QCoreApplication.translate("CategoryChoiceDlg", u"Up", None))
         self.AddCategoryBtn.setText(QCoreApplication.translate("CategoryChoiceDlg", u"Add", None))
         self.RemoveCategoryBtn.setText(QCoreApplication.translate("CategoryChoiceDlg", u"Del", None))
         self.CommitBtn.setText(QCoreApplication.translate("CategoryChoiceDlg", u"Commit", None))

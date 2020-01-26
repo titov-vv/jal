@@ -1,5 +1,5 @@
 from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QCompleter, QHeaderView
-from PySide2.QtSql import QSqlTableModel, QSqlRelationalDelegate
+from PySide2.QtSql import QSqlTableModel, QSqlRelationalDelegate, QSqlQuery
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex, QEvent
 from UI.ui_category_choice import Ui_CategoryChoiceDlg
 
@@ -8,12 +8,14 @@ class CategoryChoiceDlg(QDialog, Ui_CategoryChoiceDlg):
         QDialog.__init__(self)
         self.setupUi(self)
         self.category_id = 0
-        # self.last_parent = 0
+        self.last_parent = 0
         # self.old_parent = 0
         self.parent = 0
         self.search_text = ""
 
+        self.CategoriesList.doubleClicked.connect(self.OnDoubleClick)
         self.SearchString.textChanged.connect(self.OnSearchChange)
+        self.UpBtn.clicked.connect(self.OnUpClick)
         self.AddCategoryBtn.clicked.connect(self.OnAdd)
         self.RemoveCategoryBtn.clicked.connect(self.OnRemove)
         self.CommitBtn.clicked.connect(self.OnCommit)
@@ -22,17 +24,19 @@ class CategoryChoiceDlg(QDialog, Ui_CategoryChoiceDlg):
     def init_DB(self, db):
         self.db = db
         self.Model = QSqlTableModel(db=self.db)
-        self.Model.setTable("categories")
+        self.Model.setTable("category_ext")
         self.Model.setSort(self.Model.fieldIndex("name"), Qt.AscendingOrder)
         self.Model.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.Model.setHeaderData(self.Model.fieldIndex("id"), Qt.Horizontal, "")
         self.Model.setHeaderData(self.Model.fieldIndex("name"), Qt.Horizontal, "Name")
         self.Model.setHeaderData(self.Model.fieldIndex("often"), Qt.Horizontal, "Often")
         self.Model.setHeaderData(self.Model.fieldIndex("special"), Qt.Horizontal, "Special")
 
         self.CategoriesList.setModel(self.Model)
         self.CategoriesList.setItemDelegate(CategoryDelegate(self.CategoriesList))
-        self.CategoriesList.setColumnHidden(self.Model.fieldIndex("id"), True)
+        self.CategoriesList.setColumnWidth(self.Model.fieldIndex("id"), 16)
         self.CategoriesList.setColumnHidden(self.Model.fieldIndex("pid"), True)
+        self.CategoriesList.setColumnHidden(self.Model.fieldIndex("children_count"), True)
         self.CategoriesList.horizontalHeader().setSectionResizeMode(self.Model.fieldIndex("name"), QHeaderView.Stretch)
         font = self.CategoriesList.horizontalHeader().font()
         font.setBold(True)
@@ -53,40 +57,41 @@ class CategoryChoiceDlg(QDialog, Ui_CategoryChoiceDlg):
         self.search_text = self.SearchString.text()
         self.setFilter()
 
-    # @Slot()
-    # def OnDoubleClick(self, index):
-    #     selected_row = index.row()
-    #     self.parent = self.PeersList.model().record(selected_row).value(0)
-    #     self.last_parent = self.PeersList.model().record(selected_row).value(1)
-    #     if self.search_text:
-    #         self.SearchString.setText("")   # it will also call self.setFilter()
-    #     else:
-    #         self.setFilter()
+    @Slot()
+    def OnDoubleClick(self, index):
+        if index.column() == 0:
+            selected_row = index.row()
+            self.parent = self.CategoriesList.model().record(selected_row).value(0)
+            self.last_parent = self.CategoriesList.model().record(selected_row).value(1)
+            if self.search_text:
+                self.SearchString.setText("")   # it will also call self.setFilter()
+            else:
+                self.setFilter()
 
     def setFilter(self):
         if self.search_text:
             self.CategoriesList.model().setFilter(f"name LIKE '%{self.search_text}%'")
         else:
-            self.CategoriesList.model().setFilter(f"agents.pid={self.parent}")
+            self.CategoriesList.model().setFilter(f"pid={self.parent}")
 
-    # @Slot()
-    # def OnBackClick(self):
-    #     if self.search_text:  # list filtered by search string
-    #         return
-    #     query = QSqlQuery(self.PeersList.model().database())
-    #     query.prepare("SELECT a2.pid FROM agents AS a1 LEFT JOIN agents AS a2 ON a1.pid=a2.id WHERE a1.id = :current_id")
-    #     id = self.PeersList.model().record(0).value(0)
-    #     if id == None:
-    #         pid = self.last_parent
-    #     else:
-    #         query.bindValue(":current_id", id)
-    #         query.exec_()
-    #         query.next()
-    #         pid = query.value(0)
-    #         if pid == '':
-    #             pid = 0
-    #     self.parent = pid
-    #     self.setFilter()
+    @Slot()
+    def OnUpClick(self):
+        if self.search_text:  # list filtered by search string
+            return
+        query = QSqlQuery(self.CategoriesList.model().database())
+        query.prepare("SELECT c2.pid FROM categories AS c1 LEFT JOIN categories AS c2 ON c1.pid=c2.id WHERE c1.id = :current_id")
+        id = self.CategoriesList.model().record(0).value(0)
+        if id == None:
+            pid = self.last_parent
+        else:
+            query.bindValue(":current_id", id)
+            query.exec_()
+            query.next()
+            pid = query.value(0)
+            if pid == '':
+                pid = 0
+        self.parent = pid
+        self.setFilter()
 
     @Slot()
     def OnDataChanged(self):
@@ -192,8 +197,17 @@ class CategoryDelegate(QSqlRelationalDelegate):
         QSqlRelationalDelegate.__init__(self, parent)
 
     def paint(self, painter, option, index):
+        if (index.column() == 0):
+            painter.save()
+            model = index.model()
+            children_count = model.data(model.index(index.row(), 5), Qt.DisplayRole)
+            text = ""
+            if children_count:
+                text = "+"
+            painter.drawText(option.rect, Qt.AlignHCenter, text)
+            painter.restore()
         # Paint '*' for special and often categories or nothing for other
-        if (index.column() == 3) or (index.column() == 4):  # 'often' and 'special' columns
+        elif (index.column() == 3) or (index.column() == 4):  # 'often' and 'special' columns
             painter.save()
             model = index.model()
             status = model.data(index, Qt.DisplayRole)

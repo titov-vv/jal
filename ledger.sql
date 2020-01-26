@@ -565,6 +565,17 @@ CREATE VIEW transfers_combined AS
            transfer_notes AS n ON f.tid = n.tid
      WHERE f.type = -1;
      
+     
+-- View: category_ext
+DROP VIEW IF EXISTS category_ext;
+CREATE VIEW category_ext AS
+    SELECT c1.*,
+           count(c2.id) AS children_count
+      FROM categories AS c1
+           LEFT JOIN
+           categories c2 ON c1.id = c2.pid
+     GROUP BY c1.id;
+     
 
 -- Trigger: actions_after_delete
 DROP TRIGGER IF EXISTS actions_after_delete;
