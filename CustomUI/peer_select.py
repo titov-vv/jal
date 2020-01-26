@@ -1,7 +1,7 @@
 from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QCompleter, QHeaderView
 from PySide2.QtSql import QSqlTableModel, QSqlQuery
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
-from ui_peer_choice_dlg import Ui_PeerChoiceDlg
+from UI.ui_peer_choice_dlg import Ui_PeerChoiceDlg
 
 class PeerChoiceDlg(QDialog, Ui_PeerChoiceDlg):
     def __init__(self):

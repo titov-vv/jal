@@ -1,10 +1,9 @@
-from constants import *
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu, QMessageBox
 from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtCore import Slot, QMetaObject
 from PySide2.QtGui import QDoubleValidator
 from PySide2 import QtCore
-from ui_main_window import Ui_LedgerMainWindow
+from UI.ui_main_window import Ui_LedgerMainWindow
 from ledger import Ledger
 from bulk_db import importFrom1C, loadDbFromSQL
 from rebuild_window import RebuildDialog

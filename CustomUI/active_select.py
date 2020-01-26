@@ -2,7 +2,7 @@ from constants import *
 from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QCompleter, QHeaderView
 from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate, QSqlTableModel
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
-from ui_active_choice_dlg import Ui_ActiveChoiceDlg
+from UI.ui_active_choice_dlg import Ui_ActiveChoiceDlg
 
 class ActiveChoiceDlg(QDialog, Ui_ActiveChoiceDlg):
     def __init__(self):

@@ -1,7 +1,7 @@
 from datetime import datetime
 from PySide2.QtWidgets import (QDialog)
 from PySide2 import QtCore
-from ui_rebuild_window import Ui_ReBuildDialog
+from UI.ui_rebuild_window import Ui_ReBuildDialog
 
 class RebuildDialog(QDialog, Ui_ReBuildDialog):
     def __init__(self, frontier):

@@ -1,7 +1,7 @@
 from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QCompleter, QHeaderView
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalDelegate
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex, QEvent
-from ui_category_choice import Ui_CategoryChoiceDlg
+from UI.ui_category_choice import Ui_CategoryChoiceDlg
 
 class CategoryChoiceDlg(QDialog, Ui_CategoryChoiceDlg):
     def __init__(self):
