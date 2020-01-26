@@ -23,16 +23,18 @@ class PeerChoiceDlg(QDialog, Ui_PeerChoiceDlg):
     def init_DB(self, db):
         self.db = db
         self.Model = QSqlTableModel(db=self.db)
-        self.Model.setTable("agents")
+        self.Model.setTable("agents_ext")
         self.Model.setSort(self.Model.fieldIndex("name"), Qt.AscendingOrder)
         self.Model.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.Model.setHeaderData(self.Model.fieldIndex("name"), Qt.Horizontal, "Name")
         self.Model.setHeaderData(self.Model.fieldIndex("location"), Qt.Horizontal, "Location")
+        self.Model.setHeaderData(self.Model.fieldIndex("actions_count"), Qt.Horizontal, "Docs count")
 
         self.PeersList.setModel(self.Model)
         self.PeersList.setItemDelegate(PeerDelegate(self.PeersList))
         self.PeersList.setColumnWidth(self.Model.fieldIndex("id"), 16)
         self.PeersList.setColumnHidden(self.Model.fieldIndex("pid"), True)
+        self.PeersList.setColumnHidden(self.Model.fieldIndex("children_count"), True)
         self.PeersList.horizontalHeader().setSectionResizeMode(self.Model.fieldIndex("name"), QHeaderView.Stretch)
         font = self.PeersList.horizontalHeader().font()
         font.setBold(True)
@@ -195,14 +197,19 @@ class PeerDelegate(QSqlRelationalDelegate):
     def paint(self, painter, option, index):
         if (index.column() == 0):
             painter.save()
-            # model = index.model()
-            # children_count = model.data(model.index(index.row(), 5), Qt.DisplayRole)
-            # text = ""
-            # if children_count:
-            #     text = "+"
-            # painter.drawText(option.rect, Qt.AlignHCenter, text)
-            painter.drawText(option.rect, Qt.AlignHCenter, "+")
+            model = index.model()
+            children_count = model.data(model.index(index.row(), 4), Qt.DisplayRole)
+            text = ""
+            if children_count:
+                text = "+"
+            painter.drawText(option.rect, Qt.AlignHCenter, text)
             painter.restore()
-        # Paint '*' for special and often categories or nothing for other
+        # to align number to the right
+        elif (index.column() == 5):
+            painter.save()
+            model = index.model()
+            docs_count = model.data(index, Qt.DisplayRole)
+            painter.drawText(option.rect, Qt.AlignRight, f"{docs_count} ")
+            painter.restore()
         else:
             QSqlRelationalDelegate.paint(self, painter, option, index)

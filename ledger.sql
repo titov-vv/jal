@@ -566,15 +566,28 @@ CREATE VIEW transfers_combined AS
      WHERE f.type = -1;
      
      
--- View: category_ext
-DROP VIEW IF EXISTS category_ext;
-CREATE VIEW category_ext AS
+-- View: categories_ext
+DROP VIEW IF EXISTS categories_ext;
+CREATE VIEW categories_ext AS
     SELECT c1.*,
            count(c2.id) AS children_count
       FROM categories AS c1
            LEFT JOIN
            categories c2 ON c1.id = c2.pid
      GROUP BY c1.id;
+     
+     
+-- View: agents_ext     
+CREATE VIEW agents_ext AS
+    SELECT a1.*,
+           count(a2.id) AS children_count,
+           count(a3.id) AS actions_count
+      FROM agents AS a1
+           LEFT JOIN
+           agents AS a2 ON a1.id = a2.pid
+           LEFT JOIN
+           actions AS a3 ON a1.id = a3.peer_id
+     GROUP BY a1.id;
      
 
 -- Trigger: actions_after_delete
@@ -731,11 +744,61 @@ BEGIN
 END;
 
 
+-- Trigger: insert_agent
+DROP TRIGGER IF EXISTS insert_agent;
+CREATE TRIGGER insert_agent
+    INSTEAD OF INSERT
+            ON agents_ext
+      FOR EACH ROW
+BEGIN
+    INSERT INTO agents (
+                           id,
+                           pid,
+                           name,
+                           location
+                       )
+                       VALUES (
+                           NEW.id,
+                           NEW.pid,
+                           NEW.name,
+                           NEW.location
+                       );
+END;
+
+
+-- Trigger: update_agent
+DROP TRIGGER IF EXISTS update_agent;
+CREATE TRIGGER update_agent
+    INSTEAD OF UPDATE
+            ON agents_ext
+      FOR EACH ROW
+BEGIN
+    UPDATE agents
+       SET id = NEW.id,
+           pid = NEW.pid,
+           name = NEW.name,
+           location = NEW.location
+     WHERE id = OLD.id;
+END;
+
+
+-- Trigger: delete_agent
+DROP TRIGGER IF EXISTS delete_agent;
+CREATE TRIGGER delete_agent
+    INSTEAD OF DELETE
+            ON agents_ext
+      FOR EACH ROW
+BEGIN
+    DELETE FROM agents
+          WHERE id = OLD.id;
+END;
+
+
 -- Trigger: insert_category
 DROP TRIGGER IF EXISTS insert_category;
 CREATE TRIGGER insert_category
     INSTEAD OF INSERT
-            ON category_ext
+            ON categories_ext
       FOR EACH ROW
 BEGIN
     INSERT INTO categories (
@@ -759,7 +822,7 @@ END;
 DROP TRIGGER IF EXISTS update_category;
 CREATE TRIGGER update_category
     INSTEAD OF UPDATE
-            ON category_ext
+            ON categories_ext
       FOR EACH ROW
 BEGIN
     UPDATE categories
@@ -776,7 +839,7 @@ END;
 DROP TRIGGER IF EXISTS delete_category;
 CREATE TRIGGER delete_category
     INSTEAD OF DELETE
-            ON category_ext
+            ON categories_ext
       FOR EACH ROW
 BEGIN
     DELETE FROM categories

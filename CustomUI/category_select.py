@@ -23,7 +23,7 @@ class CategoryChoiceDlg(QDialog, Ui_CategoryChoiceDlg):
     def init_DB(self, db):
         self.db = db
         self.Model = QSqlTableModel(db=self.db)
-        self.Model.setTable("category_ext")
+        self.Model.setTable("categories_ext")
         self.Model.setSort(self.Model.fieldIndex("name"), Qt.AscendingOrder)
         self.Model.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.Model.setHeaderData(self.Model.fieldIndex("id"), Qt.Horizontal, "")
