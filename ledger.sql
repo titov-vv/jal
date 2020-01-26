@@ -731,6 +731,59 @@ BEGIN
 END;
 
 
+-- Trigger: insert_category
+DROP TRIGGER IF EXISTS insert_category;
+CREATE TRIGGER insert_category
+    INSTEAD OF INSERT
+            ON category_ext
+      FOR EACH ROW
+BEGIN
+    INSERT INTO categories (
+                               id,
+                               pid,
+                               name,
+                               often,
+                               special
+                           )
+                           VALUES (
+                               NEW.id,
+                               NEW.pid,
+                               NEW.name,
+                               NEW.often,
+                               NEW.special
+                           );
+END;
+
+
+-- Trigger: update_category
+DROP TRIGGER IF EXISTS update_category;
+CREATE TRIGGER update_category
+    INSTEAD OF UPDATE
+            ON category_ext
+      FOR EACH ROW
+BEGIN
+    UPDATE categories
+       SET id = NEW.id,
+           pid = NEW.pid,
+           name = NEW.name,
+           often = NEW.often,
+           special = NEW.special
+     WHERE id = OLD.id;
+END;
+
+
+-- Trigger: delete_category
+DROP TRIGGER IF EXISTS delete_category;
+CREATE TRIGGER delete_category
+    INSTEAD OF DELETE
+            ON category_ext
+      FOR EACH ROW
+BEGIN
+    DELETE FROM categories
+          WHERE id = OLD.id;
+END;
+
+
 -- Trigger: delete_transfers
 DROP TRIGGER IF EXISTS delete_transfers;
 CREATE TRIGGER delete_transfers

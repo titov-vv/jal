@@ -13,7 +13,7 @@ class CategoryChoiceDlg(QDialog, Ui_CategoryChoiceDlg):
         self.parent = 0
         self.search_text = ""
 
-        self.CategoriesList.clicked.connect(self.OnDoubleClick)
+        self.CategoriesList.clicked.connect(self.OnClicked)
         self.SearchString.textChanged.connect(self.OnSearchChange)
         self.UpBtn.clicked.connect(self.OnUpClick)
         self.AddCategoryBtn.clicked.connect(self.OnAdd)
@@ -49,8 +49,9 @@ class CategoryChoiceDlg(QDialog, Ui_CategoryChoiceDlg):
     @Slot()
     def OnCategoryChosen(self, selected, deselected):
         idx = selected.indexes()
-        selected_row = idx[0].row()
-        self.category_id = self.CategoriesList.model().record(selected_row).value(0)
+        if idx:
+            selected_row = idx[0].row()
+            self.category_id = self.CategoriesList.model().record(selected_row).value(0)
 
     @Slot()
     def OnSearchChange(self):
@@ -58,7 +59,7 @@ class CategoryChoiceDlg(QDialog, Ui_CategoryChoiceDlg):
         self.setFilter()
 
     @Slot()
-    def OnDoubleClick(self, index):
+    def OnClicked(self, index):
         if index.column() == 0:
             selected_row = index.row()
             self.parent = self.CategoriesList.model().record(selected_row).value(0)
