@@ -189,7 +189,7 @@ class OperationsAmountDelegate(QStyledItemDelegate):
         qty = model.data(model.index(index.row(), FIELD_QTY_TRID), Qt.DisplayRole)
         tax = model.data(model.index(index.row(), FIELD_FEE_TAX), Qt.DisplayRole)
         if (type == TRANSACTION_TRADE):
-            text = f"{amount:+.2f}"
+            text = f"{amount:+,.2f}"
             rect.setHeight(H / 2)
             if (amount >= 0):
                 pen.setColor(DARK_GREEN_COLOR)
@@ -197,7 +197,7 @@ class OperationsAmountDelegate(QStyledItemDelegate):
                 pen.setColor(DARK_RED_COLOR)
             painter.setPen(pen)
             painter.drawText(option.rect, Qt.AlignRight, text)
-            text = f"{qty:+.2f}"
+            text = f"{qty:+,.2f}"
             rect.moveTop(Y + H / 2)
             if (qty >= 0):
                 pen.setColor(DARK_GREEN_COLOR)
@@ -206,12 +206,12 @@ class OperationsAmountDelegate(QStyledItemDelegate):
             painter.setPen(pen)
             painter.drawText(option.rect, Qt.AlignRight, text)
         elif (type == TRANSACTION_DIVIDEND):
-            text = f"{amount:+.2f}"
+            text = f"{amount:+,.2f}"
             rect.setHeight(H/2)
             pen.setColor(DARK_GREEN_COLOR)
             painter.setPen(pen)
             painter.drawText(rect, Qt.AlignRight, text)
-            text = f"-{tax:.2f}"
+            text = f"-{tax:,.2f}"
             rect.moveTop(Y+H/2)
             pen.setColor(DARK_RED_COLOR)
             painter.setPen(pen)
@@ -221,7 +221,7 @@ class OperationsAmountDelegate(QStyledItemDelegate):
                 pen.setColor(DARK_GREEN_COLOR)
             else:
                 pen.setColor(DARK_RED_COLOR)
-            text = f"{amount:+.2f}\n"
+            text = f"{amount:+,.2f}\n"
             painter.setPen(pen)
             painter.drawText(option.rect, Qt.AlignRight, text)
         painter.restore()
@@ -239,9 +239,9 @@ class OperationsTotalsDelegate(QStyledItemDelegate):
         total_shares = model.data(model.index(index.row(), FIELD_TOTAL_QTY), Qt.DisplayRole)
         reconciled = model.data(model.index(index.row(), FIELD_RECONCILED), Qt.DisplayRole)
         if (total_shares != ''):
-            text = f"{total_money:.2f}\n{total_shares:.2f}"
+            text = f"{total_money:,.2f}\n{total_shares:,.2f}"
         elif (total_money != ''):
-            text = f"{total_money:.2f}\n"
+            text = f"{total_money:,.2f}\n"
         else:
             text = "<void>"
 
