@@ -50,9 +50,9 @@
       <property name="currentIndex">
        <number>0</number>
       </property>
-      <widget class="QWidget" name="TabMain">
+      <widget class="QWidget" name="BalanceTransactionTab">
        <attribute name="title">
-        <string>Balance</string>
+        <string>Balance &amp;&amp; Operations</string>
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <property name="leftMargin">
@@ -1205,9 +1205,9 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="TabTransactions">
+      <widget class="QWidget" name="OtherTab">
        <attribute name="title">
-        <string>Transactions</string>
+        <string>Other</string>
        </attribute>
       </widget>
      </widget>
