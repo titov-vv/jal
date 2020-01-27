@@ -162,6 +162,8 @@ class ActiveSelector(QWidget):
 
     def init_DB(self, db):
         self.dialog.init_DB(db)
+        self.dialog.type_id = 0
+        self.dialog.setActiveFilter()
         self.completer = QCompleter(self.dialog.Model)
         self.completer.setCompletionColumn(self.dialog.Model.fieldIndex("name"))
         self.completer.setCaseSensitivity(Qt.CaseInsensitive)
@@ -225,6 +227,7 @@ class CurrencySelector(QWidget):
     def init_DB(self, db):
         self.dialog.init_DB(db)
         self.dialog.type_id = ACTIVE_TYPE_MONEY
+        self.dialog.setActiveFilter()
         self.dialog.ActiveTypeCombo.setEnabled(False)
         self.completer = QCompleter(self.dialog.Model)
         self.completer.setCompletionColumn(self.dialog.Model.fieldIndex("name"))
