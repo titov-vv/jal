@@ -493,7 +493,7 @@ CREATE VIEW all_operations AS
                                           l.book_account = 4
                UNION ALL
                SELECT 4 AS type,
-                      r.tid,
+                      r.id,
                       r.timestamp,
                       NULL AS num_peer,
                       r.account_id,

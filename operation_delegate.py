@@ -129,8 +129,12 @@ class OperationsAccountDelegate(QStyledItemDelegate):
             transfer_subtype = model.data(model.index(index.row(), FIELD_QTY_TRID), Qt.DisplayRole)
             if (transfer_subtype == TRANSFER_FEE):
                 text = account
-            else:
+            elif (transfer_subtype == TRANSFER_OUT):
                 text = account + " -> " + account2
+            elif (transfer_subtype == TRANSFER_IN):
+                text = account + " <- " + account2
+            else:
+                assert False
 
         else:
             assert False
