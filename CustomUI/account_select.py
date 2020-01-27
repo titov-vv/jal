@@ -162,9 +162,10 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
     @Slot()
     def OnAccountChosen(self, selected, deselected):
         idx = selected.indexes()
-        selected_row = idx[0].row()
-        self.account_id = self.AccountsList.model().record(selected_row).value(0)
-        self.p_account_name = self.AccountsList.model().record(selected_row).value(2)
+        if idx:
+            selected_row = idx[0].row()
+            self.account_id = self.AccountsList.model().record(selected_row).value(0)
+            self.p_account_name = self.AccountsList.model().record(selected_row).value(2)
 
     @Slot()
     def OnDataChanged(self):

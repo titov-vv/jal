@@ -65,8 +65,9 @@ class ActiveChoiceDlg(QDialog, Ui_ActiveChoiceDlg):
     @Slot()
     def OnActiveChosen(self, selected, deselected):
         idx = selected.indexes()
-        selected_row = idx[0].row()
-        self.active_id = self.ActivesList.model().record(selected_row).value(0)
+        if idx:
+            selected_row = idx[0].row()
+            self.active_id = self.ActivesList.model().record(selected_row).value(0)
 
     @Slot()
     def OnDataChanged(self):

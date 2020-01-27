@@ -26,6 +26,7 @@ class PeerChoiceDlg(QDialog, Ui_PeerChoiceDlg):
         self.Model.setTable("agents_ext")
         self.Model.setSort(self.Model.fieldIndex("name"), Qt.AscendingOrder)
         self.Model.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.Model.setHeaderData(self.Model.fieldIndex("id"), Qt.Horizontal, "")
         self.Model.setHeaderData(self.Model.fieldIndex("name"), Qt.Horizontal, "Name")
         self.Model.setHeaderData(self.Model.fieldIndex("location"), Qt.Horizontal, "Location")
         self.Model.setHeaderData(self.Model.fieldIndex("actions_count"), Qt.Horizontal, "Docs count")
