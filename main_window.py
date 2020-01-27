@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu, QMessageBox
+from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu, QMessageBox, QAction
 from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtCore import Slot, QMetaObject
 from PySide2.QtGui import QDoubleValidator
@@ -153,6 +153,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.setColumnWidth(self.OperationsModel.fieldIndex("account"), 300)
         self.OperationsTableView.setColumnWidth(self.OperationsModel.fieldIndex("note"), 300)
         self.OperationsTableView.horizontalHeader().setSectionResizeMode(self.OperationsModel.fieldIndex("note"), QHeaderView.Stretch)
+        self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.OperationsTableView.setWordWrap(False)
         # next line forces usage of sizeHint() from delegate
         self.OperationsTableView.verticalHeader().setMinimumSectionSize(8)
@@ -341,6 +342,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DateRangeCombo.currentIndexChanged.connect(self.OnOperationsRangeChange)
         # OPERATIONS TABLE ACTIONS
         self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
+        self.OperationsTableView.customContextMenuRequested.connect(self.OnOperationsContextMenu)
         self.ChooseAccountBtn.clicked.connect(self.OnAccountChange)
         # OPERATIONS ACTIONS
         self.AddActionDetail.clicked.connect(self.AddDetail)
@@ -453,6 +455,34 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 self.TransfersDataMapper.setCurrentModelIndex(self.TransfersDataMapper.model().index(0, 0))
             else:
                 assert False
+
+    @Slot()
+    def OnOperationsContextMenu(self, pos):
+        self.current_index = self.OperationsTableView.indexAt(pos)
+        contextMenu = QMenu(self)
+        actionReconcile = QAction(text="Reconcile", parent=self)
+        actionReconcile.triggered.connect(self.OnReconcile)
+        actionCopy = QAction(text="Copy", parent=self)
+        actionCopy.triggered.connect(self.CopyOperation)
+        actionDelete = QAction(text="Delete", parent=self)
+        actionDelete.triggered.connect(self.DeleteOperation)
+        contextMenu.addAction(actionReconcile)
+        contextMenu.addSeparator()
+        contextMenu.addAction(actionCopy)
+        contextMenu.addAction(actionDelete)
+        contextMenu.popup(self.OperationsTableView.viewport().mapToGlobal(pos))
+
+    @Slot()
+    def OnReconcile(self):
+        model = self.current_index.model()
+        timestamp = model.data(model.index(self.current_index.row(), 2), Qt.DisplayRole)
+        account_id = model.data(model.index(self.current_index.row(), 3), Qt.DisplayRole)
+        query = QSqlQuery(self.db)
+        query.prepare("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id")
+        query.bindValue(":timestamp", timestamp)
+        query.bindValue(":account_id", account_id)
+        assert query.exec_()
+        model.select()
 
     def CheckForNotSavedData(self):
         if self.ActionsModel.isDirty() or self.ActionDetailsModel.isDirty():
