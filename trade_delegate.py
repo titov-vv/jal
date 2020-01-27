@@ -52,9 +52,13 @@ class TradeSqlDelegate(QSqlRelationalDelegate):
 
     def setEditorData(self, editor, index):
         if (index.column() == 1) or (index.column() == 2):  # timestamp & settlement columns
-            editor.setDateTime(datetime.fromtimestamp(index.model().data(index, Qt.EditRole)))
+            timestamp = index.model().data(index, Qt.EditRole)
+            if timestamp:
+                editor.setDateTime(datetime.fromtimestamp(timestamp))
         elif (index.column() >= 7) and (index.column() <= 11): # price, qty, coupon, fees
-            editor.setText(formatFloatLong(index.model().data(index, Qt.EditRole)))
+            amount = index.model().data(index, Qt.EditRole)
+            if amount:
+                editor.setText(formatFloatLong(float(amount)))
         else:
             QSqlRelationalDelegate.setEditorData(self, editor, index)
 

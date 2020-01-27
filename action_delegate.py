@@ -29,9 +29,8 @@ class ActionDetailDelegate(QSqlRelationalDelegate):
         if (index.column() == 4) or (index.column() == 5):  # format float precision for sum and alternative sum
             painter.save()
             amount = index.model().data(index, Qt.DisplayRole)
-            if amount == 0:
-                text = ""
-            else:
+            text = ""
+            if amount:
                 text = f"{amount:.2f}"
             painter.drawText(option.rect, Qt.AlignRight, text)
             painter.restore()

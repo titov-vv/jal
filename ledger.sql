@@ -48,14 +48,15 @@ CREATE TABLE action_details (
                            NOT NULL
                            UNIQUE,
     pid         INTEGER    REFERENCES actions (id) ON DELETE CASCADE
-                                                   ON UPDATE CASCADE,
+                                                   ON UPDATE CASCADE
+                           NOT NULL,
     category_id INTEGER    REFERENCES categories (id) ON DELETE RESTRICT
                                                       ON UPDATE CASCADE
                            NOT NULL,
     tag_id      INTEGER    REFERENCES tags (id) ON DELETE SET NULL
                                                 ON UPDATE CASCADE,
     sum         REAL       NOT NULL,
-    alt_sum     REAL,
+    alt_sum     REAL       DEFAULT (0),
     note        TEXT (256) 
 );
 

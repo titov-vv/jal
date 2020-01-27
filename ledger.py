@@ -185,7 +185,7 @@ class Ledger:
         account_id = query.value(1)
         currency_id = query.value(2)
         action_sum = query.value(3)
-        if (action_sum < 0):
+        if action_sum < 0:
             credit_sum = self.takeCredit(seq_id, timestamp, account_id, currency_id, -action_sum)
             self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_MONEY, currency_id, account_id, -(-action_sum - credit_sum))
         else:

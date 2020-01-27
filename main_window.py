@@ -185,7 +185,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.ActionDetailsModel = QSqlRelationalTableModel(db=self.db)
         self.ActionDetailsModel.setTable("action_details")
-        self.ActionDetailsModel.beforeInsert.connect(self.BeforeActionDetailInsert)
         self.ActionDetailsModel.setJoinMode(QSqlRelationalTableModel.LeftJoin)  # in order not to fail on NULL tags
         self.ActionDetailsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         category_idx = self.ActionDetailsModel.fieldIndex("category_id")
@@ -523,47 +522,55 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.CheckForNotSavedData()
         self.OperationsTabs.setCurrentIndex(TAB_ACTION)
         self.ActionsDataMapper.submit()
+        self.ActionsModel.setFilter("actions.id = 0")
         new_record = self.ActionsModel.record()
         new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
         if (self.ChooseAccountBtn.account_id != 0):
             new_record.setValue("account_id", self.ChooseAccountBtn.account_id)
-        self.ActionsModel.insertRecord(-1, new_record)
-        self.ActionsDataMapper.toLast()
+        assert self.ActionsModel.insertRows(0, 1)
+        self.ActionsModel.setRecord(0, new_record)
         self.ActionDetailsModel.setFilter("action_details.pid = 0")
+        self.ActionsDataMapper.toLast()
 
     def CreateNewTransfer(self):
         self.CheckForNotSavedData()
         self.OperationsTabs.setCurrentIndex(TAB_TRANSFER)
         self.TransfersDataMapper.submit()
+        self.TransfersModel.setFilter(f"transfers_combined.id = 0")
         new_record = self.TransfersModel.record()
         new_record.setValue("from_timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
         if (self.ChooseAccountBtn.account_id != 0):
             new_record.setValue("from_acc_id", self.ChooseAccountBtn.account_id)
         new_record.setValue("to_timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
         new_record.setValue("fee_timestamp", 0)
-        self.TransfersModel.insertRecord(-1, new_record)
+        assert self.TransfersModel.insertRows(0, 1)
+        self.TransfersModel.setRecord(0, new_record)
         self.TransfersDataMapper.toLast()
 
     def CreateNewTrade(self):
         self.CheckForNotSavedData()
         self.OperationsTabs.setCurrentIndex(TAB_TRADE)
         self.TradesDataMapper.submit()
+        self.TradesModel.setFilter("trades.id = 0")
         new_record = self.TradesModel.record()
         new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
         if (self.ChooseAccountBtn.account_id != 0):
             new_record.setValue("account_id", self.ChooseAccountBtn.account_id)
-        self.TradesModel.insertRecord(-1, new_record)
+        assert self.TradesModel.insertRows(0, 1)
+        self.TradesModel.setRecord(0, new_record)
         self.TradesDataMapper.toLast()
 
     def CreateNewDividend(self):
         self.CheckForNotSavedData()
         self.OperationsTabs.setCurrentIndex(TAB_DIVIDEND)
         self.DividendsDataMapper.submit()
+        self.DividendsModel.setFilter("dividends.id = 0")
         new_record = self.DividendsModel.record()
         new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
         if (self.ChooseAccountBtn.account_id != 0):
             new_record.setValue("account_id", self.ChooseAccountBtn.account_id)
-        self.DividendsModel.insertRecord(-1, new_record)
+        assert self.DividendsModel.insertRows(0, 1)
+        self.DividendsModel.setRecord(0, new_record)
         self.DividendsDataMapper.toLast()
 
     @Slot()
@@ -625,9 +632,14 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     def SubmitChangesForTab(self, tab2save):
         if (tab2save == TAB_ACTION):
+            pid = self.ActionsModel.data(self.ActionsModel.index(0, 0))
             if not self.ActionsModel.submitAll():
                 print(self.tr("Action submit failed: "), self.ActionDetailsModel.lastError().text())
                 return
+            if pid == 0:        # we have saved new action record
+                pid = self.ActionsModel.query().lastInsertId()
+            for row in range(self.ActionDetailsModel.rowCount()):
+                self.ActionDetailsModel.setData(self.ActionDetailsModel.index(row, 1), pid)
             if not self.ActionDetailsModel.submitAll():
                 print(self.tr("Action details submit failed: "), self.ActionDetailsModel.lastError().text())
                 return
@@ -664,13 +676,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             assert False
         self.SaveOperationBtn.setEnabled(False)
         self.RevertOperationBtn.setEnabled(False)
-
-    @Slot()
-    def BeforeActionDetailInsert(self, record):
-        pid = int(record.value("pid"))
-        if pid == 0:
-            record.setValue("pid", self.ActionsModel.data(self.ActionsModel.index(0, 0)))
-        record.setValue("alt_sum", 0)
 
     @Slot()
     def BeforeTradeInsert(self, record):
