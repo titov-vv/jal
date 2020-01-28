@@ -685,9 +685,52 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout.addWidget(self.BalanceOperationsSplitter)
 
         self.MainTabs.addTab(self.BalanceTransactionTab, "")
-        self.OtherTab = QWidget()
-        self.OtherTab.setObjectName(u"OtherTab")
-        self.MainTabs.addTab(self.OtherTab, "")
+        self.ActivesTab = QWidget()
+        self.ActivesTab.setObjectName(u"ActivesTab")
+        self.verticalLayout_4 = QVBoxLayout(self.ActivesTab)
+        self.verticalLayout_4.setSpacing(0)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.frame = QFrame(self.ActivesTab)
+        self.frame.setObjectName(u"frame")
+        self.frame.setFrameShape(QFrame.NoFrame)
+        self.frame.setFrameShadow(QFrame.Plain)
+        self.horizontalLayout_7 = QHBoxLayout(self.frame)
+        self.horizontalLayout_7.setSpacing(6)
+        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.horizontalLayout_7.setContentsMargins(2, 2, 2, 2)
+        self.label_2 = QLabel(self.frame)
+        self.label_2.setObjectName(u"label_2")
+
+        self.horizontalLayout_7.addWidget(self.label_2)
+
+        self.dateEdit = QDateEdit(self.frame)
+        self.dateEdit.setObjectName(u"dateEdit")
+        self.dateEdit.setCalendarPopup(True)
+
+        self.horizontalLayout_7.addWidget(self.dateEdit)
+
+        self.ActivesRefreshBtn = QPushButton(self.frame)
+        self.ActivesRefreshBtn.setObjectName(u"ActivesRefreshBtn")
+
+        self.horizontalLayout_7.addWidget(self.ActivesRefreshBtn)
+
+        self.horizontalSpacer_3 = QSpacerItem(1411, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_7.addItem(self.horizontalSpacer_3)
+
+
+        self.verticalLayout_4.addWidget(self.frame)
+
+        self.ActivesTableView = QTableView(self.ActivesTab)
+        self.ActivesTableView.setObjectName(u"ActivesTableView")
+        self.ActivesTableView.verticalHeader().setVisible(False)
+        self.ActivesTableView.verticalHeader().setMinimumSectionSize(20)
+        self.ActivesTableView.verticalHeader().setDefaultSectionSize(20)
+
+        self.verticalLayout_4.addWidget(self.ActivesTableView)
+
+        self.MainTabs.addTab(self.ActivesTab, "")
 
         self.gridLayout.addWidget(self.MainTabs, 0, 0, 1, 1)
 
@@ -823,7 +866,10 @@ class Ui_LedgerMainWindow(object):
         self.SaveOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Save", None))
         self.RevertOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Revert", None))
         self.MainTabs.setTabText(self.MainTabs.indexOf(self.BalanceTransactionTab), QCoreApplication.translate("LedgerMainWindow", u"Balance && Operations", None))
-        self.MainTabs.setTabText(self.MainTabs.indexOf(self.OtherTab), QCoreApplication.translate("LedgerMainWindow", u"Other", None))
+        self.label_2.setText(QCoreApplication.translate("LedgerMainWindow", u"TextLabel", None))
+        self.dateEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy", None))
+        self.ActivesRefreshBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Refresh", None))
+        self.MainTabs.setTabText(self.MainTabs.indexOf(self.ActivesTab), QCoreApplication.translate("LedgerMainWindow", u"Actives", None))
         self.menuFile.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&File", None))
         self.menu_DAta.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&Data", None))
         self.menuPredefined_data.setTitle(QCoreApplication.translate("LedgerMainWindow", u"Predefined data", None))

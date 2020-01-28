@@ -510,7 +510,7 @@ class Ledger:
         assert query.exec_("DELETE FROM t_last_quotes")
         assert query.exec_("DELETE FROM t_last_dates")
         assert query.exec_("DELETE FROM balances_aux")
-        assert query.exec_("DELETE FROM balances;")
+        assert query.exec_("DELETE FROM balances")
 
         query.prepare("INSERT INTO t_last_quotes(timestamp, active_id, quote) "
                       "SELECT MAX(timestamp) AS timestamp, active_id, quote "
@@ -571,6 +571,67 @@ class Ledger:
         query.bindValue(":active_only", active_only)
         assert query.exec_()
         self.db.commit()
+
+    def BuildActivesTable(self, timestamp, currency):
+        query = QSqlQuery(self.db)
+        assert query.exec_("DELETE FROM t_last_quotes")
+        assert query.exec_("DELETE FROM t_last_assets")
+        assert query.exec_("DELETE FROM holdings_aux")
+
+        assert query.prepare("INSERT INTO t_last_quotes(timestamp, active_id, quote) "
+                      "SELECT MAX(timestamp) AS timestamp, active_id, quote "
+                      "FROM quotes "
+                      "WHERE timestamp <= :balances_timestamp "
+                      "GROUP BY active_id")
+        query.bindValue(":balances_timestamp", timestamp)
+        assert query.exec_()
+
+        assert query.prepare("INSERT INTO t_last_assets (id, name, total_value) "
+                      "SELECT a.id, a.name, "
+                      "SUM(CASE WHEN a.currency_id = l.active_id THEN l.amount ELSE (l.amount*q.quote) END) AS total_value "
+                      "FROM ledger AS l "
+                      "LEFT JOIN accounts AS a ON l.account_id = a.id "
+                      "LEFT JOIN t_last_quotes AS q ON l.active_id = q.active_id "
+                      "WHERE (l.book_account = 3 OR l.book_account = 4 OR l.book_account = 5) "
+                      "AND a.type_id = 4 AND l.timestamp <= :actives_timestamp "
+                      "GROUP BY a.id "
+                      "HAVING ABS(total_value) > :tolerance")
+        query.bindValue(":actives_timestamp", timestamp)
+        query.bindValue(":tolerance", CALC_TOLERANCE)
+        assert query.exec_()
+
+        assert query.prepare("INSERT INTO holdings_aux (currency, account, asset, qty, value, quote, quote_adj, total, total_adj) "
+                             "SELECT a.currency_id, l.account_id, l.active_id, sum(l.amount) AS qty, sum(l.value), "
+                             "q.quote, q.quote*cur_q.quote/cur_adj_q.quote, t.total_value, t.total_value*cur_q.quote/cur_adj_q.quote "
+                             "FROM ledger AS l "
+                             "LEFT JOIN accounts AS a ON l.account_id = a.id "
+                             "LEFT JOIN t_last_quotes AS q ON l.active_id = q.active_id "
+                             "LEFT JOIN t_last_quotes AS cur_q ON a.currency_id = cur_q.active_id "
+                             "LEFT JOIN t_last_quotes AS cur_adj_q ON cur_adj_q.active_id = :recalc_currency "
+                             "LEFT JOIN t_last_assets AS t ON l.account_id = t.id "
+                             "WHERE l.book_account = 4 AND l.timestamp <= :actives_timestamp "
+                             "GROUP BY l.account_id, l.active_id "
+                             "HAVING ABS(qty) > :tolerance")
+        query.bindValue(":recalc_currency", currency)
+        query.bindValue(":actives_timestamp", timestamp)
+        query.bindValue(":tolerance", CALC_TOLERANCE)
+        assert query.exec_()
+
+        query.prepare("INSERT INTO holdings_aux (currency, account, asset, qty, quote, quote_adj, total, total_adj) "
+                             "SELECT a.currency_id, l.account_id, l.active_id, sum(l.amount) AS qty, sum(l.value), "
+                             "cur_q.quote/cur_adj_q.quote, t.total_value, t.total_value*cur_q.quote/cur_adj_q.quote "
+                             "FROM ledger AS l "
+                             "LEFT JOIN accounts AS a ON l.account_id = a.id "
+                             "LEFT JOIN t_last_quotes AS cur_q ON a.currency_id = cur_q.active_id "
+                             "LEFT JOIN t_last_quotes AS cur_adj_q ON cur_adj_q.active_id = :recalc_currency "
+                             "LEFT JOIN t_last_assets AS t ON l.account_id = t.id "
+                             "WHERE (l.book_account = 3 OR l.book_account = 5) AND a.type_id = 4 AND l.timestamp <= :actives_timestamp "
+                             "GROUP BY l.account_id, l.active_id "
+                             "HAVING ABS(qty) > :tolerance")
+        query.bindValue(":recalc_currency", currency)
+        query.bindValue(":actives_timestamp", timestamp)
+        query.bindValue(":tolerance", CALC_TOLERANCE)
+        assert query.exec_()
 
 # Code for verification of old ledger, probably not needed anymore
     # def PrintBalances(self, timestamp, currency_adjustment):

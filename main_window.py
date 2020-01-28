@@ -114,6 +114,15 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.BalancesTableView.horizontalHeader().setFont(font)
         self.BalancesTableView.show()
 
+        self.ActivesModel = QSqlTableModel(db=self.db)
+        self.ActivesModel.setTable("holdings")
+        self.ActivesModel.select()
+        self.ActivesTableView.setModel(self.ActivesModel)
+        font = self.ActivesTableView.horizontalHeader().font()
+        font.setBold(True)
+        self.ActivesTableView.horizontalHeader().setFont(font)
+        self.ActivesTableView.show()
+
         self.ChooseAccountBtn.init_DB(self.db)
 
         self.OperationsModel = QSqlTableModel(db=self.db)
@@ -357,6 +366,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.CopyOperationBtn.clicked.connect(self.CopyOperation)
         self.SaveOperationBtn.clicked.connect(self.SaveOperation)
         self.RevertOperationBtn.clicked.connect(self.RevertOperation)
+        # ACTIVES ACTIONS
+        self.ActivesRefreshBtn.clicked.connect(self.UpdateActives)
 
         self.OperationsTableView.selectRow(0)
         self.OnOperationsRangeChange(0)
@@ -399,7 +410,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         if tab_index == 0:
             self.StatusBar.showMessage("Balances and Transactions")
         elif tab_index == 1:
-            self.StatusBar.showMessage("Other staff will be here")
+            self.StatusBar.showMessage("Actives report")
+            self.UpdateActives()
 
     @Slot()
     def onBalanceDateChange(self, new_date):
@@ -782,3 +794,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         dlg.init_DB(self.db)
         dlg.setFilter()
         dlg.exec_()
+
+    @Slot()
+    def UpdateActives(self):
+        self.ledger.BuildActivesTable(1580233494, CURRENCY_RUBLE)
+        self.ActivesModel.select()
