@@ -1291,6 +1291,9 @@
         </item>
         <item>
          <widget class="QTableView" name="HoldingsTableView">
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
           <attribute name="verticalHeaderVisible">
            <bool>false</bool>
           </attribute>

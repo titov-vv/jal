@@ -646,24 +646,20 @@ class Ledger:
                       "LEFT JOIN actives AS s ON h.asset = s.id "
                       "UNION "
                       "SELECT 0 AS level1, 1 AS level2, c.name AS currency, a.name AS account, '' AS asset, '' AS asset_name, "
-                      "NULL AS qty, NULL AS open, NULL as quote, 100*h.quote*h.qty/h.total AS share, "
-                      "100*(h.quote*h.qty/h.value-1) AS profit_rel, SUM(h.quote*h.qty-h.value) AS profit, SUM(h.qty*h.quote) AS value, SUM(h.qty*h.quote_adj) AS value_adj "
+                      "NULL AS qty, NULL AS open, NULL as quote, NULL AS share, "
+                      "100*SUM(h.quote*h.qty-h.value)/(SUM(h.qty*h.quote)-SUM(h.quote*h.qty-h.value)) AS profit_rel, SUM(h.quote*h.qty-h.value) AS profit, SUM(h.qty*h.quote) AS value, SUM(h.qty*h.quote_adj) AS value_adj "
                       "FROM holdings_aux AS h "
                       "LEFT JOIN actives AS c ON h.currency = c.id "
                       "LEFT JOIN accounts AS a ON h.account = a.id "
-                      "LEFT JOIN actives AS s ON h.asset = s.id "
                       "GROUP BY currency, account "
                       "UNION "
-                      "SELECT 1 AS level1, 1 AS level2, c.name AS currency, '' AS account, '' AS asset, '' AS asset_name, "
-                      "NULL AS qty, NULL AS open, NULL as quote, 100*h.quote*h.qty/h.total AS share, "
-                      "100*(h.quote*h.qty/h.value-1) AS profit_rel, SUM(h.quote*h.qty-h.value) AS profit, SUM(h.qty*h.quote) AS value, SUM(h.qty*h.quote_adj) AS value_adj "
+                      "SELECT 1 AS level1, 1 AS level2, c.name AS currency, c.name AS account, '' AS asset, c.full_name AS asset_name, "
+                      "NULL AS qty, NULL AS open, NULL as quote, NULL AS share, "
+                      "100*SUM(h.quote*h.qty-h.value)/(SUM(h.qty*h.quote)-SUM(h.quote*h.qty-h.value)) AS profit_rel, SUM(h.quote*h.qty-h.value) AS profit, SUM(h.qty*h.quote) AS value, SUM(h.qty*h.quote_adj) AS value_adj "
                       "FROM holdings_aux AS h "
                       "LEFT JOIN actives AS c ON h.currency = c.id "
-                      "LEFT JOIN accounts AS a ON h.account = a.id "
-                      "LEFT JOIN actives AS s ON h.asset = s.id "
                       "GROUP BY currency "
                       ") ORDER BY currency, level1 DESC, account, level2 DESC")
-        print("ERR:", query.lastError().text())
         assert query.exec_()
 
 # Code for verification of old ledger, probably not needed anymore

@@ -7,7 +7,7 @@ from UI.ui_main_window import Ui_LedgerMainWindow
 from ledger import Ledger
 from bulk_db import importFrom1C, loadDbFromSQL
 from rebuild_window import RebuildDialog
-from balance_delegate import BalanceDelegate
+from balance_delegate import BalanceDelegate, HoldingsDelegate
 from operation_delegate import *
 from dividend_delegate import DividendSqlDelegate
 from trade_delegate import TradeSqlDelegate, OptionGroup
@@ -116,8 +116,25 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.HoldingsModel = QSqlTableModel(db=self.db)
         self.HoldingsModel.setTable("holdings")
+        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("account"), Qt.Horizontal, "C/A")
+        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("asset"), Qt.Horizontal, "")
+        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("asset_name"), Qt.Horizontal, "Asset")
+        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("qty"), Qt.Horizontal, "Qty")
+        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("open"), Qt.Horizontal, "Open")
+        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("quote"), Qt.Horizontal, "Last")
+        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("share"), Qt.Horizontal, "Share, %")
+        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("profit_rel"), Qt.Horizontal, "P/L, %")
+        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("profit"), Qt.Horizontal, "P/L")
+        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("value"), Qt.Horizontal, "Value")
+        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("value_adj"), Qt.Horizontal, "Value (*)")
         self.HoldingsModel.select()
         self.HoldingsTableView.setModel(self.HoldingsModel)
+        self.HoldingsTableView.setItemDelegate(HoldingsDelegate(self.HoldingsTableView))
+        self.HoldingsTableView.setColumnHidden(self.HoldingsModel.fieldIndex("level1"), True)
+        self.HoldingsTableView.setColumnHidden(self.HoldingsModel.fieldIndex("level2"), True)
+        self.HoldingsTableView.setColumnHidden(self.HoldingsModel.fieldIndex("currency"), True)
+        self.HoldingsTableView.setColumnWidth(self.HoldingsModel.fieldIndex("account"), 32)
+        self.HoldingsTableView.horizontalHeader().setSectionResizeMode(self.HoldingsModel.fieldIndex("asset_name"), QHeaderView.Stretch)
         font = self.HoldingsTableView.horizontalHeader().font()
         font.setBold(True)
         self.HoldingsTableView.horizontalHeader().setFont(font)
@@ -410,7 +427,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         if tab_index == 0:
             self.StatusBar.showMessage("Balances and Transactions")
         elif tab_index == 1:
-            self.StatusBar.showMessage("Actives report")
+            self.StatusBar.showMessage("Asset holdings report")
             self.UpdateActives()
 
     @Slot()
@@ -799,3 +816,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def UpdateActives(self):
         self.ledger.BuildActivesTable(1580233494, CURRENCY_RUBLE)
         self.HoldingsModel.select()
+        for row in range(self.HoldingsModel.rowCount()):
+            if self.HoldingsModel.data(self.HoldingsModel.index(row, 1)):
+                self.HoldingsTableView.setSpan(row, 3, 1, 3)
+        self.HoldingsTableView.show()

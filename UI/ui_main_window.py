@@ -724,6 +724,7 @@ class Ui_LedgerMainWindow(object):
 
         self.HoldingsTableView = QTableView(self.HoldingsTab)
         self.HoldingsTableView.setObjectName(u"HoldingsTableView")
+        self.HoldingsTableView.setAlternatingRowColors(True)
         self.HoldingsTableView.verticalHeader().setVisible(False)
         self.HoldingsTableView.verticalHeader().setMinimumSectionSize(20)
         self.HoldingsTableView.verticalHeader().setDefaultSectionSize(20)
