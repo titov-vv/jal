@@ -577,6 +577,7 @@ class Ledger:
         assert query.exec_("DELETE FROM t_last_quotes")
         assert query.exec_("DELETE FROM t_last_assets")
         assert query.exec_("DELETE FROM holdings_aux")
+        assert query.exec_("DELETE FROM holdings")
 
         assert query.prepare("INSERT INTO t_last_quotes(timestamp, active_id, quote) "
                       "SELECT MAX(timestamp) AS timestamp, active_id, quote "
@@ -617,8 +618,8 @@ class Ledger:
         query.bindValue(":tolerance", CALC_TOLERANCE)
         assert query.exec_()
 
-        query.prepare("INSERT INTO holdings_aux (currency, account, asset, qty, quote, quote_adj, total, total_adj) "
-                             "SELECT a.currency_id, l.account_id, l.active_id, sum(l.amount) AS qty, sum(l.value), "
+        query.prepare("INSERT INTO holdings_aux (currency, account, asset, qty, value, quote, quote_adj, total, total_adj) "
+                             "SELECT a.currency_id, l.account_id, l.active_id, sum(l.amount) AS qty, sum(l.value), 1, "
                              "cur_q.quote/cur_adj_q.quote, t.total_value, t.total_value*cur_q.quote/cur_adj_q.quote "
                              "FROM ledger AS l "
                              "LEFT JOIN accounts AS a ON l.account_id = a.id "
@@ -631,6 +632,38 @@ class Ledger:
         query.bindValue(":recalc_currency", currency)
         query.bindValue(":actives_timestamp", timestamp)
         query.bindValue(":tolerance", CALC_TOLERANCE)
+        assert query.exec_()
+
+        query.prepare("INSERT INTO holdings (level1, level2, currency, account, asset, asset_name, "
+                      "qty, open, quote, share, profit_rel, profit, value, value_adj) "
+                      "SELECT * FROM ( """
+                      "SELECT 0 AS level1, 0 AS level2, c.name AS currency, a.name AS account, s.name AS asset, s.full_name AS asset_name, "
+                      "h.qty, h.value/h.qty AS open, h.quote, 100*h.quote*h.qty/h.total AS share, "
+                      "100*(h.quote*h.qty/h.value-1) AS profit_rel, h.quote*h.qty-h.value AS profit, h.qty*h.quote AS value, h.qty*h.quote_adj AS value_adj "
+                      "FROM holdings_aux AS h "
+                      "LEFT JOIN actives AS c ON h.currency = c.id "
+                      "LEFT JOIN accounts AS a ON h.account = a.id "
+                      "LEFT JOIN actives AS s ON h.asset = s.id "
+                      "UNION "
+                      "SELECT 0 AS level1, 1 AS level2, c.name AS currency, a.name AS account, '' AS asset, '' AS asset_name, "
+                      "NULL AS qty, NULL AS open, NULL as quote, 100*h.quote*h.qty/h.total AS share, "
+                      "100*(h.quote*h.qty/h.value-1) AS profit_rel, SUM(h.quote*h.qty-h.value) AS profit, SUM(h.qty*h.quote) AS value, SUM(h.qty*h.quote_adj) AS value_adj "
+                      "FROM holdings_aux AS h "
+                      "LEFT JOIN actives AS c ON h.currency = c.id "
+                      "LEFT JOIN accounts AS a ON h.account = a.id "
+                      "LEFT JOIN actives AS s ON h.asset = s.id "
+                      "GROUP BY currency, account "
+                      "UNION "
+                      "SELECT 1 AS level1, 1 AS level2, c.name AS currency, '' AS account, '' AS asset, '' AS asset_name, "
+                      "NULL AS qty, NULL AS open, NULL as quote, 100*h.quote*h.qty/h.total AS share, "
+                      "100*(h.quote*h.qty/h.value-1) AS profit_rel, SUM(h.quote*h.qty-h.value) AS profit, SUM(h.qty*h.quote) AS value, SUM(h.qty*h.quote_adj) AS value_adj "
+                      "FROM holdings_aux AS h "
+                      "LEFT JOIN actives AS c ON h.currency = c.id "
+                      "LEFT JOIN accounts AS a ON h.account = a.id "
+                      "LEFT JOIN actives AS s ON h.asset = s.id "
+                      "GROUP BY currency "
+                      ") ORDER BY currency, level1 DESC, account, level2 DESC")
+        print("ERR:", query.lastError().text())
         assert query.exec_()
 
 # Code for verification of old ledger, probably not needed anymore

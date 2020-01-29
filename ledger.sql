@@ -215,6 +215,27 @@ CREATE TABLE dividends (
 );
 
 
+-- Table: holdings
+DROP TABLE IF EXISTS holdings;
+
+CREATE TABLE holdings (
+    level1     INTEGER,
+    level2     INTEGER,
+    currency   TEXT,
+    account    TEXT,
+    asset      TEXT,
+    asset_name TEXT,
+    qty        REAL,
+    open       REAL,
+    quote      REAL,
+    share      REAL,
+    profit_rel REAL,
+    profit     REAL,
+    value      REAL,
+    value_adj  REAL
+);
+
+
 -- Table: holdings_aux
 DROP TABLE IF EXISTS holdings_aux;
 

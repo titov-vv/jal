@@ -114,14 +114,14 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.BalancesTableView.horizontalHeader().setFont(font)
         self.BalancesTableView.show()
 
-        self.ActivesModel = QSqlTableModel(db=self.db)
-        self.ActivesModel.setTable("holdings")
-        self.ActivesModel.select()
-        self.ActivesTableView.setModel(self.ActivesModel)
-        font = self.ActivesTableView.horizontalHeader().font()
+        self.HoldingsModel = QSqlTableModel(db=self.db)
+        self.HoldingsModel.setTable("holdings")
+        self.HoldingsModel.select()
+        self.HoldingsTableView.setModel(self.HoldingsModel)
+        font = self.HoldingsTableView.horizontalHeader().font()
         font.setBold(True)
-        self.ActivesTableView.horizontalHeader().setFont(font)
-        self.ActivesTableView.show()
+        self.HoldingsTableView.horizontalHeader().setFont(font)
+        self.HoldingsTableView.show()
 
         self.ChooseAccountBtn.init_DB(self.db)
 
@@ -798,4 +798,4 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def UpdateActives(self):
         self.ledger.BuildActivesTable(1580233494, CURRENCY_RUBLE)
-        self.ActivesModel.select()
+        self.HoldingsModel.select()
