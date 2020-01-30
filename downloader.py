@@ -137,9 +137,17 @@ class QuoteDownloader:
         return close
 
     def US_DataReader(self, asset_code, start_timestamp, end_timestamp):
-        data = web.DataReader(asset_code, 'yahoo', start=datetime.fromtimestamp(start_timestamp),
-                       end=datetime.fromtimestamp(end_timestamp), session=self.session)
-        close = data.drop(columns=['High', 'Low', 'Open', 'Volume', 'Adj Close'])
+        # data = web.DataReader(asset_code, 'yahoo', start=datetime.fromtimestamp(start_timestamp),
+        #                end=datetime.fromtimestamp(end_timestamp), session=self.session)
+        # close = data.drop(columns=['High', 'Low', 'Open', 'Volume', 'Adj Close'])
+        date1 = datetime.fromtimestamp(start_timestamp).strftime('%Y%m%d')
+        date2 = datetime.fromtimestamp(end_timestamp).strftime('%Y%m%d')
+        web_data = requests.get(f"https://stooq.com/q/d/l/?s={asset_code}.US&i=d&d1={date1}&d2={date2}").text
+        file = StringIO(web_data)
+        data = pd.read_csv(file)
+        data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
+        data = data.drop(columns=['Open', 'High', 'Low', 'Volume'])
+        close = data.set_index("Date")
         return close
 
     def Euronext_DataReader(self, asset_code, isin, start_timestamp, end_timestamp):
