@@ -7,6 +7,7 @@ from UI.ui_main_window import Ui_LedgerMainWindow
 from ledger import Ledger
 from bulk_db import importFrom1C, loadDbFromSQL
 from rebuild_window import RebuildDialog
+from downloader import QuoteDownloader
 from balance_delegate import BalanceDelegate, HoldingsDelegate
 from operation_delegate import *
 from dividend_delegate import DividendSqlDelegate
@@ -36,6 +37,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             QMetaObject.invokeMethod(self, "close", Qt.QueuedConnection)
             return
         self.ledger = Ledger(self.db)
+        self.downloader = QuoteDownloader(self.db)
 
         self.balance_currency = CURRENCY_RUBLE
         self.balance_date = QtCore.QDateTime.currentSecsSinceEpoch()
@@ -352,6 +354,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         ###############################################################################################
         # MENU ACTIONS
         self.actionExit.triggered.connect(qApp.quit)
+        self.action_Load_quotes.triggered.connect(self.UpdateQuotes)
         self.action_Import.triggered.connect(self.ImportFrom1C)
         self.action_Re_build_Ledger.triggered.connect(self.ShowRebuildDialog)
         self.actionInitDB.triggered.connect(self.InitDB)
@@ -820,3 +823,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             if self.HoldingsModel.data(self.HoldingsModel.index(row, 1)):
                 self.HoldingsTableView.setSpan(row, 3, 1, 3)
         self.HoldingsTableView.show()
+
+    @Slot()
+    def UpdateQuotes(self):
+        self.downloader.UpdateQuotes(1577836800, 1580342400)

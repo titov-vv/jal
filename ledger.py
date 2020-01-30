@@ -587,6 +587,7 @@ class Ledger:
         query.bindValue(":balances_timestamp", timestamp)
         assert query.exec_()
 
+        # TODO Is account name really required in this temporary table?
         assert query.prepare("INSERT INTO t_last_assets (id, name, total_value) "
                       "SELECT a.id, a.name, "
                       "SUM(CASE WHEN a.currency_id = l.active_id THEN l.amount ELSE (l.amount*q.quote) END) AS total_value "

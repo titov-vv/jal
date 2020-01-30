@@ -35,6 +35,13 @@ ACTIVE_TYPE_MONEY = 1
 # PREDEFINED PEERS
 PEER_FINANCIAL          = 1
 
+# PREDEFINED DATA FEEDS
+FEED_NONE       = -1
+FEED_CBR        = 0
+FEED_RU         = 1
+FEED_US         = 3
+FEED_EU         = 4
+
 from PySide2.QtGui import QColor
 DARK_GREEN_COLOR = QColor(0, 100, 0)
 DARK_RED_COLOR = QColor(139, 0, 0)
