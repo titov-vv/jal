@@ -2,21 +2,49 @@ from constants import *
 import requests
 from datetime import datetime
 from PySide2.QtSql import QSqlQuery
+from PySide2.QtWidgets import QDialog
+from PySide2 import QtCore
 import pandas as pd
 import pandas_datareader.data as web
 import xml.etree.ElementTree as xml_tree
 from io import StringIO
+from UI.ui_update_quotes_window import Ui_UpdateQuotesDlg
+#################################################################################################################
+# UI dialog class
+#################################################################################################################
+class QuotesUpdateDialog(QDialog, Ui_UpdateQuotesDlg):
+    def __init__(self):
+        QDialog.__init__(self)
+        self.setupUi(self)
+        self.StartDateEdit.setDate(QtCore.QDate.currentDate().addMonths(-1))
+        self.EndDateEdit.setDate(QtCore.QDate.currentDate())
 
+    def getStartDate(self):
+        return self.StartDateEdit.dateTime().toSecsSinceEpoch()
+
+    def getEndDate(self):
+        return self.EndDateEdit.dateTime().toSecsSinceEpoch()
+
+    def getUseProxy(self):
+        return self.UseProxyCheck.isChecked()
+
+#################################################################################################################
+# Worker class
+#################################################################################################################
 class QuoteDownloader:
     def __init__(self, db):
         self.db = db
-
-        # proxies = {"http": "http://135.245.192.7:8000",
-        #            "https": "http://135.245.192.7:8000"}
         self.session = requests.Session()
-        # self.session.proxies = proxies
 
-    def UpdateQuotes(self, start_timestamp, end_timestamp):
+    def UpdateQuotes(self, start_timestamp, end_timestamp, use_proxy):
+        if use_proxy:
+            proxies = {"http": "http://135.245.192.7:8000",
+                       "https": "http://135.245.192.7:8000"}
+        else:
+            proxies = {"http": None,
+                        "https": None}
+        self.session.proxies = proxies
+
         self.PrepareRussianCBReader()
 
         query = QSqlQuery(self.db)
@@ -43,8 +71,11 @@ class QuoteDownloader:
         assert query.exec_()
 
         # Get a list of symbols ordered by data source ID
-        assert query.prepare("SELECT h.asset, a.name, a.src_id, a.isin FROM holdings_aux AS h "
+        assert query.prepare("SELECT h.asset, a.name, a.src_id, a.isin, MAX(q.timestamp) AS last_timestamp "
+                             "FROM holdings_aux AS h "
                              "LEFT JOIN actives AS a ON a.id=h.asset "
+                             "LEFT JOIN quotes AS q ON q.active_id=h.asset "
+                             "GROUP BY h.asset "
                              "ORDER BY a.src_id")
         query.setForwardOnly(True)
         assert query.exec_()
@@ -53,17 +84,22 @@ class QuoteDownloader:
             asset = query.value(1)
             feed_id = query.value(2)
             isin = query.value(3)
+            last_timestamp = query.value(4)
+            if last_timestamp > start_timestamp:
+                from_timestamp = last_timestamp
+            else:
+                from_timestamp = start_timestamp
             print("LOAD: ", asset)
             if (feed_id == FEED_NONE):
                 continue
             elif (feed_id == FEED_CBR):
-                data = self.CBR_DataReader(asset, start_timestamp, end_timestamp)
+                data = self.CBR_DataReader(asset, from_timestamp, end_timestamp)
             elif (feed_id == FEED_RU):
-                data = self.MOEX_DataReader(asset, start_timestamp, end_timestamp)
+                data = self.MOEX_DataReader(asset, from_timestamp, end_timestamp)
             elif (feed_id == FEED_EU):
-                data = self.Euronext_DataReader(asset, isin, start_timestamp, end_timestamp)
+                data = self.Euronext_DataReader(asset, isin, from_timestamp, end_timestamp)
             elif (feed_id == FEED_US):
-                data = self.US_DataReader(asset, start_timestamp, end_timestamp)
+                data = self.US_DataReader(asset, from_timestamp, end_timestamp)
             else:
                 print(f"Data feed {feed_id} is not implemented")
                 continue
@@ -81,7 +117,7 @@ class QuoteDownloader:
 
     def CBR_DataReader(self, currency_code, start_timestamp, end_timestamp):
         date1 = datetime.fromtimestamp(start_timestamp).strftime('%d/%m/%Y')
-        date2 = datetime.fromtimestamp(end_timestamp).strftime('%d/%m/%Y')
+        date2 = datetime.fromtimestamp(end_timestamp + 86400).strftime('%d/%m/%Y')  # Add 1 day as CBR sets rate a day ahead
         code = str(self.CBR_codes.loc[self.CBR_codes["ISO_name"] == currency_code, "CBR_code"].values[0]).strip()
         xml_root = xml_tree.fromstring(requests.get(
             f"http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1={date1}&date_req2={date2}&VAL_NM_RQ={code}").text)
@@ -164,7 +200,6 @@ class QuoteDownloader:
         close = data.set_index("Date")
         return close
 
-    # TODO check that values are rounded as it should be
     def SubmitQuote(self, asset_id, timestamp, quote):
         old_id = 0
         query = QSqlQuery(self.db)
@@ -184,5 +219,5 @@ class QuoteDownloader:
         query.bindValue(":quote", quote)
         assert query.exec_()
         self.db.commit()
-        print("LOADED: ", asset_id, timestamp, quote)
+        print("LOADED: ", asset_id, datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S'), quote)
 

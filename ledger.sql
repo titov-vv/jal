@@ -240,9 +240,9 @@ CREATE TABLE holdings (
 DROP TABLE IF EXISTS holdings_aux;
 
 CREATE TABLE holdings_aux (
-    currency  INTEGER NOT NULL,
-    account   INTEGER NOT NULL,
-    asset     INTEGER NOT NULL,
+    currency  INTEGER,
+    account   INTEGER,
+    asset     INTEGER,
     qty       REAL,
     value     REAL,
     quote     REAL,

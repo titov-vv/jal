@@ -94,6 +94,12 @@
       <height>24</height>
      </rect>
     </property>
+    <property name="displayFormat">
+     <string>dd/MM/yyyy</string>
+    </property>
+    <property name="calendarPopup">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QLabel" name="FrontierDateLabel">
     <property name="geometry">

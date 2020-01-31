@@ -43,6 +43,7 @@ class Ui_ReBuildDialog(object):
         self.CustomDateEdit = QDateEdit(self.TypeGroup)
         self.CustomDateEdit.setObjectName(u"CustomDateEdit")
         self.CustomDateEdit.setGeometry(QRect(140, 64, 110, 24))
+        self.CustomDateEdit.setCalendarPopup(True)
         self.FrontierDateLabel = QLabel(self.TypeGroup)
         self.FrontierDateLabel.setObjectName(u"FrontierDateLabel")
         self.FrontierDateLabel.setGeometry(QRect(140, 46, 111, 16))
@@ -60,6 +61,7 @@ class Ui_ReBuildDialog(object):
         self.AllRadioButton.setText(QCoreApplication.translate("ReBuildDialog", u"&All", None))
         self.LastRadioButton.setText(QCoreApplication.translate("ReBuildDialog", u"Since &Last actual:", None))
         self.DateRadionButton.setText(QCoreApplication.translate("ReBuildDialog", u"Since &Date:", None))
+        self.CustomDateEdit.setDisplayFormat(QCoreApplication.translate("ReBuildDialog", u"dd/MM/yyyy", None))
         self.FrontierDateLabel.setText(QCoreApplication.translate("ReBuildDialog", u"FrontierDate", None))
     # retranslateUi
 

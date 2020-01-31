@@ -7,7 +7,7 @@ from UI.ui_main_window import Ui_LedgerMainWindow
 from ledger import Ledger
 from bulk_db import importFrom1C, loadDbFromSQL
 from rebuild_window import RebuildDialog
-from downloader import QuoteDownloader
+from downloader import QuoteDownloader, QuotesUpdateDialog
 from balance_delegate import BalanceDelegate, HoldingsDelegate
 from operation_delegate import *
 from dividend_delegate import DividendSqlDelegate
@@ -826,4 +826,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def UpdateQuotes(self):
-        self.downloader.UpdateQuotes(1577836800, 1580342400)
+        update_dialog = QuotesUpdateDialog()
+        update_dialog.setGeometry(self.x() + 64, self.y() + 64, update_dialog.width(), update_dialog.height())
+        if update_dialog.exec_():
+            self.downloader.UpdateQuotes(update_dialog.getStartDate(), update_dialog.getEndDate(), update_dialog.getUseProxy())

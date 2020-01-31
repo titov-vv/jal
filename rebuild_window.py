@@ -1,5 +1,5 @@
 from datetime import datetime
-from PySide2.QtWidgets import (QDialog)
+from PySide2.QtWidgets import QDialog
 from PySide2 import QtCore
 from UI.ui_rebuild_window import Ui_ReBuildDialog
 
@@ -12,9 +12,7 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
         self.frontier = frontier
         frontier_text = datetime.fromtimestamp(frontier).strftime('%d/%m/%Y')
         self.FrontierDateLabel.setText(frontier_text)
-        self.CustomDateEdit.setDateTime(QtCore.QDateTime.currentDateTime())
-        self.CustomDateEdit.setCalendarPopup(True)
-        self.CustomDateEdit.setDisplayFormat("dd/MM/yyyy")
+        self.CustomDateEdit.setDate(QtCore.QDate.currentDateTime())
 
     def getTimestamp(self):
         if self.LastRadioButton.isChecked():

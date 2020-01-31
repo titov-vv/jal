@@ -1,6 +1,7 @@
 #!/usr/bin/bash
 uic -g python -o ./UI/ui_main_window.py ./UI/main_window.ui
 uic -g python -o ./UI/ui_rebuild_window.py ./UI/rebuild_window.ui
+uic -g python -o ./UI/ui_update_quotes_window.py ./UI/quotes_update.ui
 uic -g python -o ./UI/ui_account_choice_dlg.py ./UI/account_choice_dlg.ui
 uic -g python -o ./UI/ui_active_choice_dlg.py ./UI/active_choice_dlg.ui
 uic -g python -o ./UI/ui_peer_choice_dlg.py ./UI/peer_choice_dlg.ui
