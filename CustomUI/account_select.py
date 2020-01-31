@@ -106,7 +106,7 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
         type_idx = self.Model.fieldIndex("type_id")
         self.Model.setRelation(type_idx, QSqlRelation("account_types", "id", "name"))
         currency_id = self.Model.fieldIndex("currency_id")
-        self.Model.setRelation(currency_id, QSqlRelation("actives", "id", "name"))
+        self.Model.setRelation(currency_id, QSqlRelation("assets", "id", "name"))
         org_id = self.Model.fieldIndex("organization_id")
         self.Model.setRelation(org_id, QSqlRelation("agents", "id", "name"))
         self.Model.setHeaderData(self.Model.fieldIndex("type_id"), Qt.Horizontal, "Type")

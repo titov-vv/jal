@@ -29,7 +29,7 @@ CREATE TABLE accounts (
                               NOT NULL,
     name            TEXT (64) NOT NULL
                               UNIQUE,
-    currency_id     INTEGER   REFERENCES actives (id) ON DELETE RESTRICT
+    currency_id     INTEGER   REFERENCES assets (id) ON DELETE RESTRICT
                                                       ON UPDATE CASCADE
                               NOT NULL,
     active          INTEGER,
@@ -75,7 +75,7 @@ CREATE TABLE actions (
     peer_id         INTEGER REFERENCES agents (id) ON DELETE RESTRICT
                                                    ON UPDATE CASCADE
                             NOT NULL,
-    alt_currency_id INTEGER REFERENCES actives (id) ON DELETE RESTRICT
+    alt_currency_id INTEGER REFERENCES assets (id) ON DELETE RESTRICT
                                                     ON UPDATE CASCADE
 );
 
@@ -91,10 +91,10 @@ CREATE TABLE asset_types (
 );
 
 
--- Table: actives
-DROP TABLE IF EXISTS actives;
+-- Table: assets
+DROP TABLE IF EXISTS assets;
 
-CREATE TABLE actives (
+CREATE TABLE assets (
     id        INTEGER    PRIMARY KEY
                          UNIQUE
                          NOT NULL,
@@ -205,7 +205,7 @@ CREATE TABLE dividends (
     account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
                                                     ON UPDATE CASCADE
                            NOT NULL,
-    active_id  INTEGER     REFERENCES actives (a_id) ON DELETE RESTRICT
+    active_id  INTEGER     REFERENCES assets (a_id) ON DELETE RESTRICT
                                                      ON UPDATE CASCADE
                            NOT NULL,
     sum        REAL        NOT NULL,
@@ -265,7 +265,7 @@ CREATE TABLE ledger (
                          REFERENCES books (id) ON DELETE NO ACTION
                                                ON UPDATE NO ACTION,
     active_id    INTEGER NOT NULL
-                         REFERENCES actives (id) ON DELETE NO ACTION
+                         REFERENCES assets (id) ON DELETE NO ACTION
                                                  ON UPDATE NO ACTION,
     account_id   INTEGER NOT NULL
                          REFERENCES accounts (id) ON DELETE NO ACTION
@@ -291,7 +291,7 @@ CREATE TABLE ledger_sums (
                          REFERENCES books (id) ON DELETE NO ACTION
                                                ON UPDATE NO ACTION,
     active_id    INTEGER NOT NULL
-                         REFERENCES actives (id) ON DELETE NO ACTION
+                         REFERENCES assets (id) ON DELETE NO ACTION
                                                  ON UPDATE NO ACTION,
     account_id   INTEGER NOT NULL
                          REFERENCES accounts (id) ON DELETE NO ACTION
@@ -309,7 +309,7 @@ CREATE TABLE quotes (
                       UNIQUE
                       NOT NULL,
     timestamp INTEGER NOT NULL,
-    active_id INTEGER REFERENCES actives (id) ON DELETE CASCADE
+    active_id INTEGER REFERENCES assets (id) ON DELETE CASCADE
                                               ON UPDATE CASCADE
                       NOT NULL,
     quote     REAL
@@ -399,7 +399,7 @@ CREATE TABLE trades (
     account_id   INTEGER   REFERENCES accounts (id) ON DELETE CASCADE
                                                     ON UPDATE CASCADE
                            NOT NULL,
-    active_id    INTEGER   REFERENCES actives (id) ON DELETE RESTRICT
+    active_id    INTEGER   REFERENCES assets (id) ON DELETE RESTRICT
                                                    ON UPDATE CASCADE,
     qty          REAL      NOT NULL,
     price        REAL      NOT NULL,
@@ -583,9 +583,9 @@ CREATE VIEW all_operations AS
            LEFT JOIN
            accounts AS a ON m.account_id = a.id
            LEFT JOIN
-           actives AS s ON m.active_id = s.id
+           assets AS s ON m.active_id = s.id
            LEFT JOIN
-           actives AS c ON a.currency_id = c.id
+           assets AS c ON a.currency_id = c.id
            LEFT JOIN
            sequence AS q ON m.type = q.type AND 
                             m.id = q.operation_id
@@ -1399,7 +1399,7 @@ INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO books (id, name) VALUES (1, 'Costs');
 INSERT INTO books (id, name) VALUES (2, 'Incomes');
 INSERT INTO books (id, name) VALUES (3, 'Money');
-INSERT INTO books (id, name) VALUES (4, 'Actives');
+INSERT INTO books (id, name) VALUES (4, 'Assets');
 INSERT INTO books (id, name) VALUES (5, 'Liabilities');
 INSERT INTO books (id, name) VALUES (6, 'Transfers');
 

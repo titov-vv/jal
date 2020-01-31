@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ActiveChoiceDlg</class>
- <widget class="QDialog" name="ActiveChoiceDlg">
+ <class>AssetChoiceDlg</class>
+ <widget class="QDialog" name="AssetChoiceDlg">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Choose Active</string>
+   <string>Choose Asset</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
@@ -57,14 +57,14 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QLabel" name="ActiveTypeLbl">
+       <widget class="QLabel" name="AssetTypeLbl">
         <property name="text">
-         <string>Active Type:</string>
+         <string>Asset Type:</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QComboBox" name="ActiveTypeCombo"/>
+       <widget class="QComboBox" name="AssetTypeCombo"/>
       </item>
       <item>
        <spacer name="horizontalSpacer">
@@ -80,14 +80,14 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="AddActiveBtn">
+       <widget class="QPushButton" name="AddAssetBtn">
         <property name="text">
          <string>Add</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="RemoveActiveBtn">
+       <widget class="QPushButton" name="RemoveAssetBtn">
         <property name="text">
          <string>Del</string>
         </property>
@@ -117,7 +117,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QTableView" name="ActivesList">
+    <widget class="QTableView" name="AssetsList">
      <property name="editTriggers">
       <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
      </property>
@@ -155,7 +155,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>ActiveChoiceDlg</receiver>
+   <receiver>AssetChoiceDlg</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -171,7 +171,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>ActiveChoiceDlg</receiver>
+   <receiver>AssetChoiceDlg</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

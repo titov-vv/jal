@@ -768,7 +768,7 @@
                      <widget class="AccountSelector" name="TradeAccountWidget" native="true"/>
                     </item>
                     <item row="2" column="2" colspan="3">
-                     <widget class="ActiveSelector" name="TradeActiveWidget" native="true"/>
+                     <widget class="AssetSelector" name="TradeActiveWidget" native="true"/>
                     </item>
                     <item row="1" column="1">
                      <widget class="QLabel" name="TradeAccountLbl">
@@ -914,7 +914,7 @@
                      </widget>
                     </item>
                     <item row="6" column="3">
-                     <widget class="ActiveSelector" name="DividendActiveWidget" native="true">
+                     <widget class="AssetSelector" name="DividendActiveWidget" native="true">
                       <property name="minimumSize">
                        <size>
                         <width>32</width>
@@ -1418,7 +1418,7 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>ActiveSelector</class>
+   <class>AssetSelector</class>
    <extends>QWidget</extends>
    <header>CustomUI\active_selector.h</header>
    <container>1</container>

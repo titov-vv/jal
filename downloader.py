@@ -73,7 +73,7 @@ class QuoteDownloader:
         # Get a list of symbols ordered by data source ID
         assert query.prepare("SELECT h.asset, a.name, a.src_id, a.isin, MAX(q.timestamp) AS last_timestamp "
                              "FROM holdings_aux AS h "
-                             "LEFT JOIN actives AS a ON a.id=h.asset "
+                             "LEFT JOIN assets AS a ON a.id=h.asset "
                              "LEFT JOIN quotes AS q ON q.active_id=h.asset "
                              "GROUP BY h.asset "
                              "ORDER BY a.src_id")

@@ -55,7 +55,7 @@ def importFrom1C(db_file, data_path):
                          "DELETE FROM trades;"
                          "DELETE FROM dividends;"
                          "DELETE FROM accounts;"
-                         "DELETE FROM actives;"
+                         "DELETE FROM assets;"
                          "DELETE FROM agents;"
                          "DELETE FROM categories;"
                          "DELETE FROM tags;"
@@ -68,7 +68,7 @@ def importFrom1C(db_file, data_path):
     data = pd.read_csv(data_path + "data_account_types.csv", sep='|', encoding='cp1251', dtype = {'id':int, 'name':str})
     data.to_sql(name="account_types", con = db, if_exists='append', index=False, chunksize=100)
 
-    data = pd.read_csv(data_path + "data_actives_types.csv", sep='|', encoding='cp1251', dtype = {'id':int, 'name':str})
+    data = pd.read_csv(data_path + "data_assets_types.csv", sep='|', encoding='cp1251', dtype = {'id':int, 'name':str})
     data.to_sql(name="asset_types", con = db, if_exists='append', index=False, chunksize=100)
 
     data = pd.read_csv(data_path + "data_sources.csv", sep='|', encoding='cp1251', dtype = {'id':int, 'name':str})
@@ -86,10 +86,10 @@ def importFrom1C(db_file, data_path):
                        dtype = {'id':int, 'pid':int, 'name':str, 'location':str})
     data.to_sql(name="agents", con = db, if_exists='append', index=False, chunksize=100)
 
-    data = pd.read_csv(data_path + "data_actives.csv", sep='|', encoding='cp1251',
+    data = pd.read_csv(data_path + "data_assets.csv", sep='|', encoding='cp1251',
                        dtype = {'id':int, 'name':str, 'type_id':int, 'full_name':str, 'isin':str},
                        converters = {'src_id': convert_data_source, 'web_id': convert_webid})
-    data.to_sql(name="actives", con = db, if_exists='append', index=False, chunksize=100)
+    data.to_sql(name="assets", con = db, if_exists='append', index=False, chunksize=100)
 
     data = pd.read_csv(data_path + "data_accounts.csv", sep='|', encoding='cp1251',
                        dtype = {'id':int, 'name':str, 'type_id':int, 'number':str, 'currency_id':int, 'active':int},

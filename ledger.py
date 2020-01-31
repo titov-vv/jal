@@ -221,7 +221,7 @@ class Ledger:
         sell_qty = 0
         sell_sum = 0
         query = QSqlQuery(self.db)
-        if (self.getAmount(timestamp, BOOK_ACCOUNT_ACTIVES, account_id, active_id) < 0):
+        if (self.getAmount(timestamp, BOOK_ACCOUNT_ASSETS, account_id, active_id) < 0):
             last_deal = self.lastDeal(timestamp, active_id, account_id)
             if (last_deal == None):   # There were no deals -> Select all sells
                 reminder = 0
@@ -260,11 +260,11 @@ class Ledger:
         if (trade_sum != credit_sum):
             self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_MONEY, currency_id, account_id, -(trade_sum - credit_sum))
         if (sell_qty > 0):  # Result of closed deals
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ACTIVES, active_id, account_id, sell_qty, sell_sum)
+            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, active_id, account_id, sell_qty, sell_sum)
             if (((price * sell_qty) - sell_sum) != 0):  # Profit if we have it
                 self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_INCOMES, currency_id, account_id, ((price * sell_qty) - sell_sum), None, None, CATEGORY_PROFIT)
         if (sell_qty < qty):   # Add new long position
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ACTIVES, active_id, account_id, (qty - sell_qty), (qty - sell_qty) * price)
+            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, active_id, account_id, (qty - sell_qty), (qty - sell_qty) * price)
         if ((fee + coupon) != 0):  # Comission
             self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_COSTS, currency_id, account_id, (fee + coupon), None, None, CATEGORY_FEES)
 
@@ -272,7 +272,7 @@ class Ledger:
         buy_qty = 0
         buy_sum = 0
         query = QSqlQuery(self.db)
-        if (self.getAmount(timestamp, BOOK_ACCOUNT_ACTIVES, account_id, active_id) > 0):
+        if (self.getAmount(timestamp, BOOK_ACCOUNT_ASSETS, account_id, active_id) > 0):
             last_deal = self.lastDeal(timestamp, active_id, account_id)
             if (last_deal == None):   # There were no deals -> Select all purchases
                 reminder = 0
@@ -311,11 +311,11 @@ class Ledger:
         if (returned_sum < trade_sum):
             self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_MONEY, currency_id, account_id, (trade_sum - returned_sum))
         if (buy_qty > 0):  # Result of closed deals
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ACTIVES, active_id, account_id, -buy_qty, -buy_sum)
+            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, active_id, account_id, -buy_qty, -buy_sum)
             if ((buy_sum - (price * buy_qty)) != 0):  # Profit if we have it
                 self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_INCOMES, currency_id, account_id, (buy_sum - (price * buy_qty)), None, None, CATEGORY_PROFIT)
         if (buy_qty < qty):   # Add new short position
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ACTIVES, active_id, account_id, (buy_qty - qty), (buy_qty < qty) * price)
+            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, active_id, account_id, (buy_qty - qty), (buy_qty < qty) * price)
         if (coupon > 0):
             self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_INCOMES, currency_id, account_id, -coupon, None, None, CATEGORY_PROFIT)
         if ((fee + coupon) != 0):   # Comission
@@ -540,12 +540,12 @@ class Ledger:
                       "LEFT JOIN t_last_quotes AS cur_q ON a.currency_id = cur_q.active_id "
                       "LEFT JOIN t_last_quotes AS cur_adj_q ON cur_adj_q.active_id = :base_currency "
                       "LEFT JOIN t_last_dates AS d ON l.account_id = d.account_id "
-                      "WHERE (book_account = :money_book OR book_account = :actives_book OR book_account = :liabilities_book) AND l.timestamp <= :balances_timestamp "
+                      "WHERE (book_account = :money_book OR book_account = :assets_book OR book_account = :liabilities_book) AND l.timestamp <= :balances_timestamp "
                       "GROUP BY l.account_id "
                       "HAVING ABS(balance)>0.0001")
         query.bindValue(":base_currency", base_currency)
         query.bindValue(":money_book", BOOK_ACCOUNT_MONEY)
-        query.bindValue(":actives_book", BOOK_ACCOUNT_ACTIVES)
+        query.bindValue(":assets_book", BOOK_ACCOUNT_ASSETS)
         query.bindValue(":liabilities_book", BOOK_ACCOUNT_LIABILITIES)
         query.bindValue(":balances_timestamp", timestamp)
         assert query.exec_()
@@ -554,16 +554,16 @@ class Ledger:
                     "SELECT  level1, level2, account, currency, balance, balance_adj, unreconciled_days, active "
                     "FROM ( "
                     "SELECT 0 AS level1, 0 AS level2, account_type, a.name AS account, c.name AS currency, balance, balance_adj, unreconciled_days, b.active "
-                    "FROM balances_aux AS b LEFT JOIN accounts AS a ON b.account = a.id LEFT JOIN actives AS c ON b.currency = c.id "
+                    "FROM balances_aux AS b LEFT JOIN accounts AS a ON b.account = a.id LEFT JOIN assets AS c ON b.currency = c.id "
                     "WHERE b.active >= :active_only "
                     "UNION "
                     "SELECT 0 AS level1, 1 AS level2, account_type, t.name AS account, c.name AS currency, 0 AS balance, SUM(balance_adj) AS balance_adj, 0 AS unreconciled_days, 1 AS active "
-                    "FROM balances_aux AS b LEFT JOIN account_types AS t ON b.account_type = t.id LEFT JOIN actives AS c ON c.id = :base_currency "
+                    "FROM balances_aux AS b LEFT JOIN account_types AS t ON b.account_type = t.id LEFT JOIN assets AS c ON c.id = :base_currency "
                     "WHERE active >= :active_only "
                     "GROUP BY account_type "
                     "UNION "
                     "SELECT 1 AS level1, 0 AS level2, -1 AS account_type, 'Total' AS account, c.name AS currency, 0 AS balance, SUM(balance_adj) AS balance_adj, 0 AS unreconciled_days, 1 AS active "
-                    "FROM balances_aux LEFT JOIN actives AS c ON c.id = :base_currency "
+                    "FROM balances_aux LEFT JOIN assets AS c ON c.id = :base_currency "
                     "WHERE active >= :active_only "
                     ") ORDER BY level1, account_type, level2"
                     )
@@ -595,10 +595,10 @@ class Ledger:
                       "LEFT JOIN accounts AS a ON l.account_id = a.id "
                       "LEFT JOIN t_last_quotes AS q ON l.active_id = q.active_id "
                       "WHERE (l.book_account = 3 OR l.book_account = 4 OR l.book_account = 5) "
-                      "AND a.type_id = 4 AND l.timestamp <= :actives_timestamp "
+                      "AND a.type_id = 4 AND l.timestamp <= :holdings_timestamp "
                       "GROUP BY a.id "
                       "HAVING ABS(total_value) > :tolerance")
-        query.bindValue(":actives_timestamp", timestamp)
+        query.bindValue(":holdings_timestamp", timestamp)
         query.bindValue(":tolerance", CALC_TOLERANCE)
         assert query.exec_()
 
@@ -611,11 +611,11 @@ class Ledger:
                              "LEFT JOIN t_last_quotes AS cur_q ON a.currency_id = cur_q.active_id "
                              "LEFT JOIN t_last_quotes AS cur_adj_q ON cur_adj_q.active_id = :recalc_currency "
                              "LEFT JOIN t_last_assets AS t ON l.account_id = t.id "
-                             "WHERE l.book_account = 4 AND l.timestamp <= :actives_timestamp "
+                             "WHERE l.book_account = 4 AND l.timestamp <= :holdings_timestamp "
                              "GROUP BY l.account_id, l.active_id "
                              "HAVING ABS(qty) > :tolerance")
         query.bindValue(":recalc_currency", currency)
-        query.bindValue(":actives_timestamp", timestamp)
+        query.bindValue(":holdings_timestamp", timestamp)
         query.bindValue(":tolerance", CALC_TOLERANCE)
         assert query.exec_()
 
@@ -627,11 +627,11 @@ class Ledger:
                              "LEFT JOIN t_last_quotes AS cur_q ON a.currency_id = cur_q.active_id "
                              "LEFT JOIN t_last_quotes AS cur_adj_q ON cur_adj_q.active_id = :recalc_currency "
                              "LEFT JOIN t_last_assets AS t ON l.account_id = t.id "
-                             "WHERE (l.book_account = 3 OR l.book_account = 5) AND a.type_id = 4 AND l.timestamp <= :actives_timestamp "
+                             "WHERE (l.book_account = 3 OR l.book_account = 5) AND a.type_id = 4 AND l.timestamp <= :holdings_timestamp "
                              "GROUP BY l.account_id, l.active_id "
                              "HAVING ABS(qty) > :tolerance")
         query.bindValue(":recalc_currency", currency)
-        query.bindValue(":actives_timestamp", timestamp)
+        query.bindValue(":holdings_timestamp", timestamp)
         query.bindValue(":tolerance", CALC_TOLERANCE)
         assert query.exec_()
 
@@ -642,15 +642,15 @@ class Ledger:
                       "h.qty, h.value/h.qty AS open, h.quote, 100*h.quote*h.qty/h.total AS share, "
                       "100*(h.quote*h.qty/h.value-1) AS profit_rel, h.quote*h.qty-h.value AS profit, h.qty*h.quote AS value, h.qty*h.quote_adj AS value_adj "
                       "FROM holdings_aux AS h "
-                      "LEFT JOIN actives AS c ON h.currency = c.id "
+                      "LEFT JOIN assets AS c ON h.currency = c.id "
                       "LEFT JOIN accounts AS a ON h.account = a.id "
-                      "LEFT JOIN actives AS s ON h.asset = s.id "
+                      "LEFT JOIN assets AS s ON h.asset = s.id "
                       "UNION "
                       "SELECT 0 AS level1, 1 AS level2, c.name AS currency, a.name AS account, '' AS asset, '' AS asset_name, "
                       "NULL AS qty, NULL AS open, NULL as quote, NULL AS share, "
                       "100*SUM(h.quote*h.qty-h.value)/(SUM(h.qty*h.quote)-SUM(h.quote*h.qty-h.value)) AS profit_rel, SUM(h.quote*h.qty-h.value) AS profit, SUM(h.qty*h.quote) AS value, SUM(h.qty*h.quote_adj) AS value_adj "
                       "FROM holdings_aux AS h "
-                      "LEFT JOIN actives AS c ON h.currency = c.id "
+                      "LEFT JOIN assets AS c ON h.currency = c.id "
                       "LEFT JOIN accounts AS a ON h.account = a.id "
                       "GROUP BY currency, account "
                       "UNION "
@@ -658,7 +658,7 @@ class Ledger:
                       "NULL AS qty, NULL AS open, NULL as quote, NULL AS share, "
                       "100*SUM(h.quote*h.qty-h.value)/(SUM(h.qty*h.quote)-SUM(h.quote*h.qty-h.value)) AS profit_rel, SUM(h.quote*h.qty-h.value) AS profit, SUM(h.qty*h.quote) AS value, SUM(h.qty*h.quote_adj) AS value_adj "
                       "FROM holdings_aux AS h "
-                      "LEFT JOIN actives AS c ON h.currency = c.id "
+                      "LEFT JOIN assets AS c ON h.currency = c.id "
                       "GROUP BY currency "
                       ") ORDER BY currency, level1 DESC, account, level2 DESC")
         assert query.exec_()
@@ -685,7 +685,7 @@ class Ledger:
     #                    "a.active "
     #                    "FROM ledger AS l "
     #                    "LEFT JOIN accounts AS a ON l.account_id = a.id "
-    #                    "LEFT JOIN actives AS c ON a.currency_id = c.id "
+    #                    "LEFT JOIN assets AS c ON a.currency_id = c.id "
     #                    "LEFT JOIN temp.last_quotes AS act_q ON l.active_id = act_q.active_id "
     #                    "LEFT JOIN temp.last_quotes AS cur_q ON a.currency_id = cur_q.active_id "
     #                    "LEFT JOIN temp.last_quotes AS cur_adj_q ON cur_adj_q.active_id = ? "
@@ -693,7 +693,7 @@ class Ledger:
     #                    "WHERE (book_account = ? OR book_account = ? OR book_account = ?) AND l.timestamp <= ? "
     #                    "GROUP BY a.name "
     #                    "HAVING ABS(sum)>0.0001",
-    #                    (currency_adjustment, BOOK_ACCOUNT_MONEY, BOOK_ACCOUNT_ACTIVES, BOOK_ACCOUNT_LIABILITIES, timestamp))
+    #                    (currency_adjustment, BOOK_ACCOUNT_MONEY, BOOK_ACCOUNT_ASSETS, BOOK_ACCOUNT_LIABILITIES, timestamp))
     #     balances = cursor.fetchall()
     #     for row in balances:
     #         print(row)

@@ -16,7 +16,7 @@ from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QFont,
 from PySide2.QtWidgets import *
 
 from CustomUI.account_select import AccountSelector
-from CustomUI.active_select import ActiveSelector
+from CustomUI.active_select import AssetSelector
 from CustomUI.account_select import AccountButton
 from CustomUI.peer_select import PeerSelector
 
@@ -421,7 +421,7 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_3.addWidget(self.TradeAccountWidget, 1, 2, 1, 3)
 
-        self.TradeActiveWidget = ActiveSelector(self.TradeDetailsTab)
+        self.TradeActiveWidget = AssetSelector(self.TradeDetailsTab)
         self.TradeActiveWidget.setObjectName(u"TradeActiveWidget")
 
         self.gridLayout_3.addWidget(self.TradeActiveWidget, 2, 2, 1, 3)
@@ -505,7 +505,7 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_2.addWidget(self.DividendSumLbl, 7, 1, 1, 1)
 
-        self.DividendActiveWidget = ActiveSelector(self.DividendDetailsTab)
+        self.DividendActiveWidget = AssetSelector(self.DividendDetailsTab)
         self.DividendActiveWidget.setObjectName(u"DividendActiveWidget")
         self.DividendActiveWidget.setMinimumSize(QSize(32, 0))
 

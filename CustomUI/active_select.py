@@ -2,25 +2,25 @@ from constants import *
 from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QCompleter, QHeaderView
 from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate, QSqlTableModel
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
-from UI.ui_active_choice_dlg import Ui_ActiveChoiceDlg
+from UI.ui_asset_choice_dlg import Ui_AssetChoiceDlg
 
-class ActiveChoiceDlg(QDialog, Ui_ActiveChoiceDlg):
+class AssetChoiceDlg(QDialog, Ui_AssetChoiceDlg):
     def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)
         self.active_id = 0
         self.type_id = 0
 
-        self.ActiveTypeCombo.currentIndexChanged.connect(self.OnTypeChange)
-        self.AddActiveBtn.clicked.connect(self.OnAdd)
-        self.RemoveActiveBtn.clicked.connect(self.OnRemove)
+        self.AssetTypeCombo.currentIndexChanged.connect(self.OnTypeChange)
+        self.AddAssetBtn.clicked.connect(self.OnAdd)
+        self.RemoveAssetBtn.clicked.connect(self.OnRemove)
         self.CommitBtn.clicked.connect(self.OnCommit)
         self.RevertBtn.clicked.connect(self.OnRevert)
 
     def init_DB(self, db):
         self.db = db
         self.Model = QSqlRelationalTableModel(db=self.db)
-        self.Model.setTable("actives")
+        self.Model.setTable("assets")
         self.Model.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.Model.setJoinMode(QSqlRelationalTableModel.LeftJoin)  # to work correctly with NULL values in SrcId
         type_idx = self.Model.fieldIndex("type_id")
@@ -34,40 +34,40 @@ class ActiveChoiceDlg(QDialog, Ui_ActiveChoiceDlg):
         self.Model.setHeaderData(self.Model.fieldIndex("web_id"), Qt.Horizontal, "WebID")
         self.Model.setHeaderData(self.Model.fieldIndex("src_id"), Qt.Horizontal, "Data source")
 
-        self.ActivesList.setModel(self.Model)
-        self.ActivesList.setItemDelegate(ActiveDelegate(self.ActivesList))
-        self.ActivesList.setColumnHidden(self.Model.fieldIndex("id"), True)
-        self.ActivesList.setColumnHidden(self.Model.fieldIndex("type_id"), True)
-        self.ActivesList.horizontalHeader().setSectionResizeMode(self.Model.fieldIndex("full_name"), QHeaderView.Stretch)
-        font = self.ActivesList.horizontalHeader().font()
+        self.AssetsList.setModel(self.Model)
+        self.AssetsList.setItemDelegate(ActiveDelegate(self.AssetsList))
+        self.AssetsList.setColumnHidden(self.Model.fieldIndex("id"), True)
+        self.AssetsList.setColumnHidden(self.Model.fieldIndex("type_id"), True)
+        self.AssetsList.horizontalHeader().setSectionResizeMode(self.Model.fieldIndex("full_name"), QHeaderView.Stretch)
+        font = self.AssetsList.horizontalHeader().font()
         font.setBold(True)
-        self.ActivesList.horizontalHeader().setFont(font)
+        self.AssetsList.horizontalHeader().setFont(font)
 
-        self.ActiveTypeCombo.setModel(self.Model.relationModel(type_idx))
-        self.ActiveTypeCombo.setModelColumn(self.Model.relationModel(type_idx).fieldIndex("name"))
+        self.AssetTypeCombo.setModel(self.Model.relationModel(type_idx))
+        self.AssetTypeCombo.setModelColumn(self.Model.relationModel(type_idx).fieldIndex("name"))
 
-        self.ActivesList.selectionModel().selectionChanged.connect(self.OnActiveChosen)
+        self.AssetsList.selectionModel().selectionChanged.connect(self.OnActiveChosen)
         self.Model.dataChanged.connect(self.OnDataChanged)
         self.Model.select()
 
     @Slot()
     def OnTypeChange(self, list_id):
-        model = self.ActiveTypeCombo.model()
+        model = self.AssetTypeCombo.model()
         self.type_id = model.data(model.index(list_id, model.fieldIndex("id")))
         self.setActiveFilter()
 
     def setActiveFilter(self):
         active_filter = ""
         if self.type_id:
-            active_filter = f"actives.type_id={self.type_id}"
-        self.ActivesList.model().setFilter(active_filter)
+            active_filter = f"assets.type_id={self.type_id}"
+        self.AssetsList.model().setFilter(active_filter)
 
     @Slot()
     def OnActiveChosen(self, selected, deselected):
         idx = selected.indexes()
         if idx:
             selected_row = idx[0].row()
-            self.active_id = self.ActivesList.model().record(selected_row).value(0)
+            self.active_id = self.AssetsList.model().record(selected_row).value(0)
 
     @Slot()
     def OnDataChanged(self):
@@ -76,32 +76,32 @@ class ActiveChoiceDlg(QDialog, Ui_ActiveChoiceDlg):
 
     @Slot()
     def OnAdd(self):
-        new_record = self.ActivesList.model().record()
+        new_record = self.AssetsList.model().record()
         new_record.setValue(2, self.type_id)  # set current type
-        assert self.ActivesList.model().insertRows(0, 1)
-        self.ActivesList.model().setRecord(0, new_record)
+        assert self.AssetsList.model().insertRows(0, 1)
+        self.AssetsList.model().setRecord(0, new_record)
         self.CommitBtn.setEnabled(True)
         self.RevertBtn.setEnabled(True)
 
     @Slot()
     def OnRemove(self):
-        idx = self.ActivesList.selectionModel().selection().indexes()
+        idx = self.AssetsList.selectionModel().selection().indexes()
         selected_row = idx[0].row()
-        assert self.ActivesList.model().removeRow(selected_row)
+        assert self.AssetsList.model().removeRow(selected_row)
         self.CommitBtn.setEnabled(True)
         self.RevertBtn.setEnabled(True)
 
     @Slot()
     def OnCommit(self):
-        if not self.ActivesList.model().submitAll():
-            print(self.tr("Action submit failed: "), self.ActivesList.model().lastError().text())
+        if not self.AssetsList.model().submitAll():
+            print(self.tr("Action submit failed: "), self.AssetsList.model().lastError().text())
             return
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)
 
     @Slot()
     def OnRevert(self):
-        self.ActivesList.model().revertAll()
+        self.AssetsList.model().revertAll()
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)
 
@@ -113,9 +113,9 @@ class ActiveDelegate(QSqlRelationalDelegate):
         QSqlRelationalDelegate.__init__(self, parent)
 
 ######################################################################################################################
-# Full fledged selector for actives
+# Full fledged selector for assets
 ######################################################################################################################
-class ActiveSelector(QWidget):
+class AssetSelector(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self.p_active_id = 0
@@ -136,7 +136,7 @@ class ActiveSelector(QWidget):
 
         self.button.clicked.connect(self.OnButtonClicked)
 
-        self.dialog = ActiveChoiceDlg()
+        self.dialog = AssetChoiceDlg()
 
     def getId(self):
         return self.p_active_id
@@ -145,7 +145,7 @@ class ActiveSelector(QWidget):
         if (self.p_active_id == id):
             return
         self.p_active_id = id
-        self.dialog.Model.setFilter(f"actives.id={id}")
+        self.dialog.Model.setFilter(f"assets.id={id}")
         row_idx = self.dialog.Model.index(0, 0).row()
         symbol = self.dialog.Model.record(row_idx).value(1)
         full_name = self.dialog.Model.record(row_idx).value(3)
@@ -202,7 +202,7 @@ class CurrencySelector(QWidget):
         self.setLayout(self.layout)
 
         self.button.clicked.connect(self.OnButtonClicked)
-        self.dialog = ActiveChoiceDlg()
+        self.dialog = AssetChoiceDlg()
 
     def getId(self):
         return self.p_active_id
@@ -211,7 +211,7 @@ class CurrencySelector(QWidget):
         if (self.p_active_id == id):
             return
         self.p_active_id = id
-        self.dialog.Model.setFilter(f"actives.id={id}")
+        self.dialog.Model.setFilter(f"assets.id={id}")
         row_idx = self.dialog.Model.index(0, 0).row()
         symbol = self.dialog.Model.record(row_idx).value(1)
         self.symbol.setText(symbol)
@@ -228,7 +228,7 @@ class CurrencySelector(QWidget):
         self.dialog.init_DB(db)
         self.dialog.type_id = ACTIVE_TYPE_MONEY
         self.dialog.setActiveFilter()
-        self.dialog.ActiveTypeCombo.setEnabled(False)
+        self.dialog.AssetTypeCombo.setEnabled(False)
         self.completer = QCompleter(self.dialog.Model)
         self.completer.setCompletionColumn(self.dialog.Model.fieldIndex("name"))
         self.completer.setCaseSensitivity(Qt.CaseInsensitive)

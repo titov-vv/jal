@@ -15,7 +15,7 @@ from trade_delegate import TradeSqlDelegate, OptionGroup
 from transfer_delegate import TransferSqlDelegate
 from action_delegate import ActionDelegate, ActionDetailDelegate
 from CustomUI.account_select import AcountTypeEditDlg, AccountChoiceDlg
-from CustomUI.active_select import ActiveChoiceDlg
+from CustomUI.active_select import AssetChoiceDlg
 from CustomUI.peer_select import PeerChoiceDlg
 from CustomUI.category_select import CategoryChoiceDlg
 
@@ -89,7 +89,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.HoldingsDate.setDateTime(QtCore.QDateTime.currentDateTime())
 
         self.CurrencyNameQuery = QSqlQuery(self.db)
-        self.CurrencyNameQuery.exec_("SELECT id, name FROM actives WHERE type_id=1")
+        self.CurrencyNameQuery.exec_("SELECT id, name FROM assets WHERE type_id=1")
         self.CurrencyNameModel = QSqlQueryModel()
         self.CurrencyNameModel.setQuery(self.CurrencyNameQuery)
         self.BalancesCurrencyCombo.setModel(self.CurrencyNameModel)
@@ -438,7 +438,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             self.StatusBar.showMessage("Balances and Transactions")
         elif tab_index == 1:
             self.StatusBar.showMessage("Asset holdings report")
-            self.UpdateActives()
+            self.UpdateHoldings()
 
     @Slot()
     def onBalanceDateChange(self, new_date):
@@ -448,7 +448,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def onHoldingsDateChange(self, new_date):
         self.holdings_date = self.HoldingsDate.dateTime().toSecsSinceEpoch()
-        self.UpdateActives()
+        self.UpdateHoldings()
 
     @Slot()
     def OnBalanceCurrencyChange(self, currency_index):
@@ -462,7 +462,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.holdings_currency = self.CurrencyNameModel.record(currency_index).value("id")
         self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("value_adj"), Qt.Horizontal,
                                          "Value, " + self.CurrencyNameModel.record(currency_index).value("name"))
-        self.UpdateActives()
+        self.UpdateHoldings()
 
     @Slot()
     def OnBalanceInactiveChange(self, state):
@@ -817,7 +817,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def EditActives(self):
-        dlg = ActiveChoiceDlg()
+        dlg = AssetChoiceDlg()
         dlg.init_DB(self.db)
         dlg.exec_()
 
@@ -836,7 +836,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         dlg.exec_()
 
     @Slot()
-    def UpdateActives(self):
+    def UpdateHoldings(self):
         self.ledger.BuildActivesTable(self.holdings_date, self.holdings_currency)
         self.HoldingsModel.select()
         for row in range(self.HoldingsModel.rowCount()):
