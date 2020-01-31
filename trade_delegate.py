@@ -1,3 +1,4 @@
+from constants import *
 from datetime import datetime
 from PySide2.QtCore import Qt, Signal, Property, Slot
 from PySide2.QtSql import QSqlRelationalDelegate
