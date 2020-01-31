@@ -167,7 +167,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QComboBox" name="CurrencyCombo"/>
+                <widget class="QComboBox" name="BalancesCurrencyCombo"/>
                </item>
                <item>
                 <widget class="QCheckBox" name="ShowInactiveCheckBox">
@@ -1250,14 +1250,7 @@
             <number>2</number>
            </property>
            <item>
-            <widget class="QLabel" name="label_2">
-             <property name="text">
-              <string>TextLabel</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDateEdit" name="dateEdit">
+            <widget class="QDateEdit" name="HoldingsDate">
              <property name="displayFormat">
               <string>dd/MM/yyyy</string>
              </property>
@@ -1267,11 +1260,14 @@
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="ActivesRefreshBtn">
+            <widget class="QLabel" name="HoldingsCurrencyLbl">
              <property name="text">
-              <string>Refresh</string>
+              <string>Common currency:</string>
              </property>
             </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="HoldingsCurrencyCombo"/>
            </item>
            <item>
             <spacer name="horizontalSpacer_3">

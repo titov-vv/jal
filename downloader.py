@@ -5,7 +5,7 @@ from PySide2.QtSql import QSqlQuery
 from PySide2.QtWidgets import QDialog
 from PySide2 import QtCore
 import pandas as pd
-import pandas_datareader.data as web
+#import pandas_datareader.data as web
 import xml.etree.ElementTree as xml_tree
 from io import StringIO
 from UI.ui_update_quotes_window import Ui_UpdateQuotesDlg

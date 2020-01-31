@@ -43,6 +43,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.balance_date = QtCore.QDateTime.currentSecsSinceEpoch()
         self.balance_active_only = 1
 
+        self.holdings_currency = CURRENCY_RUBLE
+        self.holdings_date = QtCore.QDateTime.currentSecsSinceEpoch()
+
         self.operations_since_timestamp = 0
 
         self.ConfigureUI()
@@ -83,14 +86,18 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TransferFeeTimestamp.setFixedWidth(widthForTimestampEdit)
 
         self.BalanceDate.setDateTime(QtCore.QDateTime.currentDateTime())
+        self.HoldingsDate.setDateTime(QtCore.QDateTime.currentDateTime())
 
         self.CurrencyNameQuery = QSqlQuery(self.db)
         self.CurrencyNameQuery.exec_("SELECT id, name FROM actives WHERE type_id=1")
         self.CurrencyNameModel = QSqlQueryModel()
         self.CurrencyNameModel.setQuery(self.CurrencyNameQuery)
-        self.CurrencyCombo.setModel(self.CurrencyNameModel)
-        self.CurrencyCombo.setModelColumn(1)
-        self.CurrencyCombo.setCurrentIndex(self.CurrencyCombo.findText("RUB"))
+        self.BalancesCurrencyCombo.setModel(self.CurrencyNameModel)
+        self.BalancesCurrencyCombo.setModelColumn(1)
+        self.BalancesCurrencyCombo.setCurrentIndex(self.BalancesCurrencyCombo.findText("RUB"))
+        self.HoldingsCurrencyCombo.setModel(self.CurrencyNameModel)
+        self.HoldingsCurrencyCombo.setModelColumn(1)
+        self.HoldingsCurrencyCombo.setCurrentIndex(self.HoldingsCurrencyCombo.findText("RUB"))
 
         self.BalancesModel = QSqlTableModel(db=self.db)
         self.BalancesModel.setTable("balances")
@@ -128,7 +135,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("profit_rel"), Qt.Horizontal, "P/L, %")
         self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("profit"), Qt.Horizontal, "P/L")
         self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("value"), Qt.Horizontal, "Value")
-        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("value_adj"), Qt.Horizontal, "Value (*)")
+        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("value_adj"), Qt.Horizontal, "Value, RUB")
         self.HoldingsModel.select()
         self.HoldingsTableView.setModel(self.HoldingsModel)
         self.HoldingsTableView.setItemDelegate(HoldingsDelegate(self.HoldingsTableView))
@@ -366,7 +373,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         # INTERFACE ACTIONS
         self.MainTabs.currentChanged.connect(self.OnMainTabChange)
         self.BalanceDate.dateChanged.connect(self.onBalanceDateChange)
-        self.CurrencyCombo.currentIndexChanged.connect(self.OnBalanceCurrencyChange)
+        self.HoldingsDate.dateChanged.connect(self.onHoldingsDateChange)
+        self.BalancesCurrencyCombo.currentIndexChanged.connect(self.OnBalanceCurrencyChange)
+        self.HoldingsCurrencyCombo.currentIndexChanged.connect(self.OnHoldingsCurrencyChange)
         self.ShowInactiveCheckBox.stateChanged.connect(self.OnBalanceInactiveChange)
         self.DateRangeCombo.currentIndexChanged.connect(self.OnOperationsRangeChange)
         # OPERATIONS TABLE ACTIONS
@@ -386,8 +395,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.CopyOperationBtn.clicked.connect(self.CopyOperation)
         self.SaveOperationBtn.clicked.connect(self.SaveOperation)
         self.RevertOperationBtn.clicked.connect(self.RevertOperation)
-        # ACTIVES ACTIONS
-        self.ActivesRefreshBtn.clicked.connect(self.UpdateActives)
 
         self.OperationsTableView.selectRow(0)
         self.OnOperationsRangeChange(0)
@@ -439,10 +446,23 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.UpdateBalances()
 
     @Slot()
+    def onHoldingsDateChange(self, new_date):
+        self.holdings_date = self.HoldingsDate.dateTime().toSecsSinceEpoch()
+        self.UpdateActives()
+
+    @Slot()
     def OnBalanceCurrencyChange(self, currency_index):
         self.balance_currency = self.CurrencyNameModel.record(currency_index).value("id")
-        self.BalancesModel.setHeaderData(5, Qt.Horizontal, "Balance, " + self.CurrencyNameModel.record(currency_index).value("name"))
+        self.BalancesModel.setHeaderData(self.BalancesModel.fieldIndex("balance_adj"), Qt.Horizontal,
+                                         "Balance, " + self.CurrencyNameModel.record(currency_index).value("name"))
         self.UpdateBalances()
+
+    @Slot()
+    def OnHoldingsCurrencyChange(self, currency_index):
+        self.holdings_currency = self.CurrencyNameModel.record(currency_index).value("id")
+        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("value_adj"), Qt.Horizontal,
+                                         "Value, " + self.CurrencyNameModel.record(currency_index).value("name"))
+        self.UpdateActives()
 
     @Slot()
     def OnBalanceInactiveChange(self, state):
@@ -817,7 +837,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def UpdateActives(self):
-        self.ledger.BuildActivesTable(1580233494, CURRENCY_RUBLE)
+        self.ledger.BuildActivesTable(self.holdings_date, self.holdings_currency)
         self.HoldingsModel.select()
         for row in range(self.HoldingsModel.rowCount()):
             if self.HoldingsModel.data(self.HoldingsModel.index(row, 1)):

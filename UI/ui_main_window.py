@@ -106,10 +106,10 @@ class Ui_LedgerMainWindow(object):
 
         self.horizontalLayout_2.addWidget(self.CurrencyLbl)
 
-        self.CurrencyCombo = QComboBox(self.BalanceConfigFrame)
-        self.CurrencyCombo.setObjectName(u"CurrencyCombo")
+        self.BalancesCurrencyCombo = QComboBox(self.BalanceConfigFrame)
+        self.BalancesCurrencyCombo.setObjectName(u"BalancesCurrencyCombo")
 
-        self.horizontalLayout_2.addWidget(self.CurrencyCombo)
+        self.horizontalLayout_2.addWidget(self.BalancesCurrencyCombo)
 
         self.ShowInactiveCheckBox = QCheckBox(self.BalanceConfigFrame)
         self.ShowInactiveCheckBox.setObjectName(u"ShowInactiveCheckBox")
@@ -699,21 +699,21 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_7.setSpacing(6)
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
         self.horizontalLayout_7.setContentsMargins(2, 2, 2, 2)
-        self.label_2 = QLabel(self.frame)
-        self.label_2.setObjectName(u"label_2")
+        self.HoldingsDate = QDateEdit(self.frame)
+        self.HoldingsDate.setObjectName(u"HoldingsDate")
+        self.HoldingsDate.setCalendarPopup(True)
 
-        self.horizontalLayout_7.addWidget(self.label_2)
+        self.horizontalLayout_7.addWidget(self.HoldingsDate)
 
-        self.dateEdit = QDateEdit(self.frame)
-        self.dateEdit.setObjectName(u"dateEdit")
-        self.dateEdit.setCalendarPopup(True)
+        self.HoldingsCurrencyLbl = QLabel(self.frame)
+        self.HoldingsCurrencyLbl.setObjectName(u"HoldingsCurrencyLbl")
 
-        self.horizontalLayout_7.addWidget(self.dateEdit)
+        self.horizontalLayout_7.addWidget(self.HoldingsCurrencyLbl)
 
-        self.ActivesRefreshBtn = QPushButton(self.frame)
-        self.ActivesRefreshBtn.setObjectName(u"ActivesRefreshBtn")
+        self.HoldingsCurrencyCombo = QComboBox(self.frame)
+        self.HoldingsCurrencyCombo.setObjectName(u"HoldingsCurrencyCombo")
 
-        self.horizontalLayout_7.addWidget(self.ActivesRefreshBtn)
+        self.horizontalLayout_7.addWidget(self.HoldingsCurrencyCombo)
 
         self.horizontalSpacer_3 = QSpacerItem(1411, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
@@ -867,9 +867,8 @@ class Ui_LedgerMainWindow(object):
         self.SaveOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Save", None))
         self.RevertOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Revert", None))
         self.MainTabs.setTabText(self.MainTabs.indexOf(self.BalanceTransactionTab), QCoreApplication.translate("LedgerMainWindow", u"Balance && Operations", None))
-        self.label_2.setText(QCoreApplication.translate("LedgerMainWindow", u"TextLabel", None))
-        self.dateEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy", None))
-        self.ActivesRefreshBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Refresh", None))
+        self.HoldingsDate.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy", None))
+        self.HoldingsCurrencyLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Common currency:", None))
         self.MainTabs.setTabText(self.MainTabs.indexOf(self.HoldingsTab), QCoreApplication.translate("LedgerMainWindow", u"Holdings", None))
         self.menuFile.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&File", None))
         self.menu_DAta.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&Data", None))
