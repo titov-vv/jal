@@ -1420,7 +1420,7 @@
   <customwidget>
    <class>AssetSelector</class>
    <extends>QWidget</extends>
-   <header>CustomUI\active_selector.h</header>
+   <header>CustomUI\asset_selector.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

@@ -12,5 +12,5 @@ sed -i 's/QString()/""/g' ./UI/ui_main_window.py
 sed -i 's/QUrl, Qt)/QUrl, Qt, QDate)/' ./UI/ui_main_window.py
 sed -i 's/import AccountSelector/from CustomUI.account_select import AccountSelector/' ./UI/ui_main_window.py
 sed -i 's/import AccountButton/from CustomUI.account_select import AccountButton/' ./UI/ui_main_window.py
-sed -i 's/import AssetSelector/from CustomUI.active_select import AssetSelector/' ./UI/ui_main_window.py
+sed -i 's/import AssetSelector/from CustomUI.asset_select import AssetSelector/' ./UI/ui_main_window.py
 sed -i 's/import PeerSelector/from CustomUI.peer_select import PeerSelector/' ./UI/ui_main_window.py

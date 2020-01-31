@@ -12,9 +12,9 @@ FIELD_TIMESTAMP     = 2
 FIELD_ACCOUNT_ID    = 3
 FIELD_ACCOUNT       = 4
 FIELD_PEER_NUMBER   = 5
-FIELD_ACTIVE_ID     = 6
-FIELD_ACTIVE        = 7
-FIELD_ACTIVE_NAME   = 8
+FIELD_ASSET_ID     = 6
+FIELD_ASSET        = 7
+FIELD_ASSET_NAME   = 8
 FIELD_NOTE          = 9
 FIELD_NOTE2         = 10
 FIELD_AMOUNT        = 11
@@ -122,8 +122,8 @@ class OperationsAccountDelegate(QStyledItemDelegate):
         if (type == TRANSACTION_ACTION):
             text = account
         elif (type == TRANSACTION_TRADE) or (type == TRANSACTION_DIVIDEND):
-            active_name = model.data(model.index(index.row(), FIELD_ACTIVE_NAME), Qt.DisplayRole)
-            text = account + "\n" + active_name
+            asset_name = model.data(model.index(index.row(), FIELD_ASSET_NAME), Qt.DisplayRole)
+            text = account + "\n" + asset_name
         elif (type == TRANSACTION_TRANSFER):
             account2 = model.data(model.index(index.row(), FIELD_NOTE2), Qt.DisplayRole)
             transfer_subtype = model.data(model.index(index.row(), FIELD_QTY_TRID), Qt.DisplayRole)
@@ -260,9 +260,9 @@ class OperationsCurrencyDelegate(QStyledItemDelegate):
         painter.save()
         model = index.model()
         currency = model.data(index, Qt.DisplayRole)
-        active_name = model.data(model.index(index.row(), FIELD_ACTIVE), Qt.DisplayRole)
+        asset_name = model.data(model.index(index.row(), FIELD_ASSET), Qt.DisplayRole)
         text = " " + currency
-        if (active_name != ""):
-            text = text + "\n " + active_name
+        if (asset_name != ""):
+            text = text + "\n " + asset_name
         painter.drawText(option.rect, Qt.AlignLeft, text)
         painter.restore()

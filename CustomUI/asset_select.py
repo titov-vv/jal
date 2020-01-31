@@ -57,10 +57,10 @@ class AssetChoiceDlg(QDialog, Ui_AssetChoiceDlg):
         self.setActiveFilter()
 
     def setActiveFilter(self):
-        active_filter = ""
+        asset_filter = ""
         if self.type_id:
-            active_filter = f"assets.type_id={self.type_id}"
-        self.AssetsList.model().setFilter(active_filter)
+            asset_filter = f"assets.type_id={self.type_id}"
+        self.AssetsList.model().setFilter(asset_filter)
 
     @Slot()
     def OnActiveChosen(self, selected, deselected):
