@@ -53,12 +53,12 @@ class QuoteDownloader:
         # Collect list of assets that are held on end date
         assert query.prepare(
             "INSERT INTO holdings_aux(asset) "
-            "SELECT l.active_id AS asset FROM ledger AS l "
+            "SELECT l.asset_id AS asset FROM ledger AS l "
             "WHERE l.book_account = 4 AND l.timestamp <= :end_timestamp "
-            "GROUP BY l.active_id "
+            "GROUP BY l.asset_id "
             "HAVING sum(l.amount) > :tolerance "
             "UNION "
-            "SELECT DISTINCT l.active_id AS asset FROM ledger AS l "
+            "SELECT DISTINCT l.asset_id AS asset FROM ledger AS l "
             "WHERE l.book_account = 4 AND l.timestamp >= :start_timestamp AND l.timestamp <= :end_timestamp "
             "UNION "
             "SELECT DISTINCT a.currency_id AS asset FROM ledger AS l "
@@ -74,7 +74,7 @@ class QuoteDownloader:
         assert query.prepare("SELECT h.asset, a.name, a.src_id, a.isin, MAX(q.timestamp) AS last_timestamp "
                              "FROM holdings_aux AS h "
                              "LEFT JOIN assets AS a ON a.id=h.asset "
-                             "LEFT JOIN quotes AS q ON q.active_id=h.asset "
+                             "LEFT JOIN quotes AS q ON q.asset_id=h.asset "
                              "GROUP BY h.asset "
                              "ORDER BY a.src_id")
         query.setForwardOnly(True)
@@ -203,7 +203,7 @@ class QuoteDownloader:
     def SubmitQuote(self, asset_id, timestamp, quote):
         old_id = 0
         query = QSqlQuery(self.db)
-        assert query.prepare("SELECT id FROM quotes WHERE active_id = :asset_id AND timestamp = :timestamp")
+        assert query.prepare("SELECT id FROM quotes WHERE asset_id = :asset_id AND timestamp = :timestamp")
         query.bindValue(":asset_id", asset_id)
         query.bindValue(":timestamp", timestamp)
         assert query.exec_()
@@ -213,7 +213,7 @@ class QuoteDownloader:
             assert query.prepare("UPDATE quotes SET quote=:quote WHERE id=:old_id")
             query.bindValue(":old_id", old_id)
         else:
-            assert query.prepare("INSERT INTO quotes(timestamp, active_id, quote) VALUES (:timestamp, :asset_id, :quote)")
+            assert query.prepare("INSERT INTO quotes(timestamp, asset_id, quote) VALUES (:timestamp, :asset_id, :quote)")
             query.bindValue(":timestamp", timestamp)
             query.bindValue(":asset_id", asset_id)
         query.bindValue(":quote", quote)

@@ -11,13 +11,13 @@ class Ledger:
     def __init__(self, db):
         self.db = db
 
-    def appendTransaction(self, timestamp, seq_id, book, active_id, account_id, amount, value=None, peer_id=None, category_id=None, tag_id=None):
+    def appendTransaction(self, timestamp, seq_id, book, asset_id, account_id, amount, value=None, peer_id=None, category_id=None, tag_id=None):
         query = QSqlQuery(self.db)
         query.prepare("SELECT sid, sum_amount, sum_value FROM ledger_sums "
-                       "WHERE book_account = :book AND active_id = :active_id AND account_id = :account_id AND sid <= :seq_id "
+                       "WHERE book_account = :book AND asset_id = :asset_id AND account_id = :account_id AND sid <= :seq_id "
                        "ORDER BY sid DESC LIMIT 1")
         query.bindValue(":book", book)
-        query.bindValue(":active_id", active_id)
+        query.bindValue(":asset_id", asset_id)
         query.bindValue(":account_id", account_id)
         query.bindValue(":seq_id", seq_id)
         assert query.exec_()
@@ -38,12 +38,12 @@ class Ledger:
             return
 
         query.prepare(
-            "INSERT INTO ledger (timestamp, sid, book_account, active_id, account_id, amount, value, peer_id, category_id, tag_id) "
-            "VALUES(:timestamp, :sid, :book, :active_id, :account_id, :amount, :value, :peer_id, :category_id, :tag_id)")
+            "INSERT INTO ledger (timestamp, sid, book_account, asset_id, account_id, amount, value, peer_id, category_id, tag_id) "
+            "VALUES(:timestamp, :sid, :book, :asset_id, :account_id, :amount, :value, :peer_id, :category_id, :tag_id)")
         query.bindValue(":timestamp", timestamp)
         query.bindValue(":sid", seq_id)
         query.bindValue(":book", book)
-        query.bindValue(":active_id", active_id)
+        query.bindValue(":asset_id", asset_id)
         query.bindValue(":account_id", account_id)
         query.bindValue(":amount", amount)
         query.bindValue(":value", value)
@@ -53,21 +53,21 @@ class Ledger:
         assert query.exec_()
         if seq_id == old_sid:
             query.prepare("UPDATE ledger_sums SET sum_amount = :new_amount, sum_value = :new_value"
-                          " WHERE sid = :sid AND book_account = :book AND active_id = :active_id AND account_id = :account_id")
+                          " WHERE sid = :sid AND book_account = :book AND asset_id = :asset_id AND account_id = :account_id")
             query.bindValue(":new_amount", new_amount)
             query.bindValue(":new_value", new_value)
             query.bindValue(":sid", seq_id)
             query.bindValue(":book", book)
-            query.bindValue(":active_id", active_id)
+            query.bindValue(":asset_id", asset_id)
             query.bindValue(":account_id", account_id)
             assert query.exec_()
         else:
-            query.prepare("INSERT INTO ledger_sums(sid, timestamp, book_account, active_id, account_id, sum_amount, sum_value) "
-                       "VALUES(:sid, :timestamp, :book, :active_id, :account_id, :new_amount, :new_value)")
+            query.prepare("INSERT INTO ledger_sums(sid, timestamp, book_account, asset_id, account_id, sum_amount, sum_value) "
+                       "VALUES(:sid, :timestamp, :book, :asset_id, :account_id, :new_amount, :new_value)")
             query.bindValue(":sid", seq_id)
             query.bindValue(":timestamp", timestamp)
             query.bindValue(":book", book)
-            query.bindValue(":active_id", active_id)
+            query.bindValue(":asset_id", asset_id)
             query.bindValue(":account_id", account_id)
             query.bindValue(":new_amount", new_amount)
             query.bindValue(":new_value", new_value)
@@ -75,15 +75,15 @@ class Ledger:
         self.db.commit()
 
     # TODO check that condition <= is really correct for timestamp in this function
-    def getAmount(self, timestamp, book, account_id, active_id = None):
+    def getAmount(self, timestamp, book, account_id, asset_id = None):
         query = QSqlQuery(self.db)
-        if active_id == None:
+        if asset_id == None:
             query.prepare("SELECT sum_amount FROM ledger_sums WHERE book_account = :book AND account_id = :account_id "
                           "AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1")
         else:
             query.prepare("SELECT sum_amount FROM ledger_sums WHERE book_account = :book AND account_id = :account_id "
-                          "AND active_id = :active_id AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1")
-            query.bindValue(":active_id", active_id)
+                          "AND asset_id = :asset_id AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1")
+            query.bindValue(":asset_id", asset_id)
         query.bindValue(":timestamp", timestamp)
         query.bindValue(":book", book)
         query.bindValue(":account_id", account_id)
@@ -93,7 +93,7 @@ class Ledger:
         else:
             return 0.0
 
-    def lastDeal(self, timestamp, active_id, account_id):
+    def lastDeal(self, timestamp, asset_id, account_id):
         query = QSqlQuery(self.db)
         query.exec_("DROP TABLE IF EXISTS temp.influx")
         query.exec_("DROP TABLE IF EXISTS temp.outflux")
@@ -101,10 +101,10 @@ class Ledger:
                        "SELECT buy.timestamp, sum(buy_before.qty) - buy.qty AS qty_before, sum(buy_before.qty) AS qty_after "
                        "FROM trades AS buy "
                        "INNER JOIN trades AS buy_before "
-                       "ON buy.timestamp >= buy_before.timestamp and buy.active_id = buy_before.active_id and buy.account_id = buy_before.account_id "
-                       "WHERE buy.type = 1 and buy_before.type = 1 and buy.active_id = :active_id and buy.account_id = :account_id and buy.timestamp < :timestamp "
+                       "ON buy.timestamp >= buy_before.timestamp and buy.asset_id = buy_before.asset_id and buy.account_id = buy_before.account_id "
+                       "WHERE buy.type = 1 and buy_before.type = 1 and buy.asset_id = :asset_id and buy.account_id = :account_id and buy.timestamp < :timestamp "
                        "GROUP BY buy.timestamp, buy.qty")
-        query.bindValue(":active_id", active_id)
+        query.bindValue(":asset_id", asset_id)
         query.bindValue(":account_id", account_id)
         query.bindValue(":timestampe", timestamp)
         query.exec_()
@@ -112,10 +112,10 @@ class Ledger:
                        "SELECT sell.timestamp, sum(sell_before.qty) - sell.qty AS qty_before, sum(sell_before.qty) AS qty_after "
                        "FROM trades AS sell "
                        "INNER JOIN trades AS sell_before "
-                       "ON sell.timestamp >= sell_before.timestamp and sell.active_id = sell_before.active_id and sell.account_id = sell_before.account_id "
-                       "WHERE sell.type = -1 and sell_before.type = -1 and sell.active_id = :active_id and sell.account_id = :account_id and sell.timestamp < :timestamp "
+                       "ON sell.timestamp >= sell_before.timestamp and sell.asset_id = sell_before.asset_id and sell.account_id = sell_before.account_id "
+                       "WHERE sell.type = -1 and sell_before.type = -1 and sell.asset_id = :asset_id and sell.account_id = :account_id and sell.timestamp < :timestamp "
                        "GROUP BY sell.timestamp, sell.qty")
-        query.bindValue(":active_id", active_id)
+        query.bindValue(":asset_id", asset_id)
         query.bindValue(":account_id", account_id)
         query.bindValue(":timestampe", timestamp)
         query.exec_()
@@ -217,30 +217,30 @@ class Ledger:
             self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_MONEY, currency_id, account_id, -tax_sum)
             self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_COSTS, currency_id, account_id, tax_sum, None, peer_id, CATEGORY_TAXES)
 
-    def processBuy(self, seq_id, timestamp, account_id, currency_id, active_id, qty, price, coupon, fee, trade_sum):
+    def processBuy(self, seq_id, timestamp, account_id, currency_id, asset_id, qty, price, coupon, fee, trade_sum):
         sell_qty = 0
         sell_sum = 0
         query = QSqlQuery(self.db)
-        if (self.getAmount(timestamp, BOOK_ACCOUNT_ASSETS, account_id, active_id) < 0):
-            last_deal = self.lastDeal(timestamp, active_id, account_id)
+        if (self.getAmount(timestamp, BOOK_ACCOUNT_ASSETS, account_id, asset_id) < 0):
+            last_deal = self.lastDeal(timestamp, asset_id, account_id)
             if (last_deal == None):   # There were no deals -> Select all sells
                 reminder = 0
                 query.prepare("SELECT t.id, t.qty, t.price FROM trades AS t WHERE t.type = -1 "
-                              "AND t.active_id = :active_id AND t.account_id = :account_id AND t.timestamp < :timestamp")
+                              "AND t.asset_id = :asset_id AND t.account_id = :account_id AND t.timestamp < :timestamp")
             else:
                 if (last_deal[3] == 1):  # SellFullMatch is true -> Select all sells after the closed deal (i.e. last sell timestamp)
                     reminder = 0
                     query.prepare("SELECT t.id, t.qty, t.price FROM trades AS t "
-                                   "WHERE t.type = -1 AND t.active_id = :active_id AND t.account_id = :account_id "
+                                   "WHERE t.type = -1 AND t.asset_id = :asset_id AND t.account_id = :account_id "
                                    "AND t.timestamp < :timestamp AND t.timestamp > :last_deal")
                     query.bindValue(":last_deal", last_deal[0])
                 else:
                     reminder = last_deal[4]
                     query.prepare("SELECT t.id, t.qty, t.price FROM trades AS t "
-                                   "WHERE t.type = -1 AND t.active_id = :active_id AND t.account_id = :account_id "
+                                   "WHERE t.type = -1 AND t.asset_id = :asset_id AND t.account_id = :account_id "
                                    "AND t.timestamp < :timestamp AND t.timestamp >= :last_deal")
                     query.bindValue(":last_deal", last_deal[0])
-            query.bindValue(":active_id", active_id)
+            query.bindValue(":asset_id", asset_id)
             query.bindValue(":account_id", account_id)
             query.bindValue(":timestamp", timestamp)
             assert query.exec_()
@@ -260,38 +260,38 @@ class Ledger:
         if (trade_sum != credit_sum):
             self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_MONEY, currency_id, account_id, -(trade_sum - credit_sum))
         if (sell_qty > 0):  # Result of closed deals
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, active_id, account_id, sell_qty, sell_sum)
+            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, asset_id, account_id, sell_qty, sell_sum)
             if (((price * sell_qty) - sell_sum) != 0):  # Profit if we have it
                 self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_INCOMES, currency_id, account_id, ((price * sell_qty) - sell_sum), None, None, CATEGORY_PROFIT)
         if (sell_qty < qty):   # Add new long position
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, active_id, account_id, (qty - sell_qty), (qty - sell_qty) * price)
+            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, asset_id, account_id, (qty - sell_qty), (qty - sell_qty) * price)
         if ((fee + coupon) != 0):  # Comission
             self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_COSTS, currency_id, account_id, (fee + coupon), None, None, CATEGORY_FEES)
 
-    def processSell(self, seq_id, timestamp, account_id, currency_id, active_id, qty, price, coupon, fee, trade_sum):
+    def processSell(self, seq_id, timestamp, account_id, currency_id, asset_id, qty, price, coupon, fee, trade_sum):
         buy_qty = 0
         buy_sum = 0
         query = QSqlQuery(self.db)
-        if (self.getAmount(timestamp, BOOK_ACCOUNT_ASSETS, account_id, active_id) > 0):
-            last_deal = self.lastDeal(timestamp, active_id, account_id)
+        if (self.getAmount(timestamp, BOOK_ACCOUNT_ASSETS, account_id, asset_id) > 0):
+            last_deal = self.lastDeal(timestamp, asset_id, account_id)
             if (last_deal == None):   # There were no deals -> Select all purchases
                 reminder = 0
                 query.prepare("SELECT t.id, t.qty, t.price FROM trades AS t WHERE t.type = 1 "
-                              "AND t.active_id = :active_id AND t.account_id = :account_id AND t.timestamp < :timestamp")
+                              "AND t.asset_id = :asset_id AND t.account_id = :account_id AND t.timestamp < :timestamp")
             else:
                 if (last_deal[2] == 1):  # BuyFullMatch is true -> Select all purchases after the closed deal (i.e. last buy timestamp)
                     reminder = 0
                     query.prepare("SELECT t.id, t.qty, t.price FROM trades AS t "
-                                   "WHERE t.type = 1 AND t.active_id = :active_id AND t.account_id = :account_id "
+                                   "WHERE t.type = 1 AND t.asset_id = :asset_id AND t.account_id = :account_id "
                                    "AND t.timestamp < :timestamp AND t.timestamp > :last_deal")
                     query.bindValue(":last_deal", last_deal[1])
                 else:
                     reminder = last_deal[4]
                     query.prepre("SELECT t.id, t.qty, t.price FROM trades AS t "
-                                   "WHERE t.type = 1 AND t.active_id = :active_id AND t.account_id = :account_id "
+                                   "WHERE t.type = 1 AND t.asset_id = :asset_id AND t.account_id = :account_id "
                                    "AND t.timestamp < :timestamp AND t.timestamp >= :last_deal")
                     query.bindValue(":last_deal", last_deal[1])
-            query.bindValue(":active_id", active_id)
+            query.bindValue(":asset_id", asset_id)
             query.bindValue(":account_id", account_id)
             query.bindValue(":timestamp", timestamp)
             assert query.exec_()
@@ -311,11 +311,11 @@ class Ledger:
         if (returned_sum < trade_sum):
             self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_MONEY, currency_id, account_id, (trade_sum - returned_sum))
         if (buy_qty > 0):  # Result of closed deals
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, active_id, account_id, -buy_qty, -buy_sum)
+            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, asset_id, account_id, -buy_qty, -buy_sum)
             if ((buy_sum - (price * buy_qty)) != 0):  # Profit if we have it
                 self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_INCOMES, currency_id, account_id, (buy_sum - (price * buy_qty)), None, None, CATEGORY_PROFIT)
         if (buy_qty < qty):   # Add new short position
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, active_id, account_id, (buy_qty - qty), (buy_qty < qty) * price)
+            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, asset_id, account_id, (buy_qty - qty), (buy_qty < qty) * price)
         if (coupon > 0):
             self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_INCOMES, currency_id, account_id, -coupon, None, None, CATEGORY_PROFIT)
         if ((fee + coupon) != 0):   # Comission
@@ -323,7 +323,7 @@ class Ledger:
 
     def processTrade(self, seq_id, id):
         query = QSqlQuery(self.db)
-        query.prepare("SELECT t.type, t.timestamp, t.account_id, c.currency_id, t.active_id, t.qty, t.price, t.coupon, t.fee_broker+t.fee_exchange, t.sum "
+        query.prepare("SELECT t.type, t.timestamp, t.account_id, c.currency_id, t.asset_id, t.qty, t.price, t.coupon, t.fee_broker+t.fee_exchange, t.sum "
                        "FROM trades AS t "
                        "LEFT JOIN accounts AS c ON t.account_id = c.id "
                        "WHERE t.id = :id")
@@ -512,11 +512,11 @@ class Ledger:
         assert query.exec_("DELETE FROM balances_aux")
         assert query.exec_("DELETE FROM balances")
 
-        query.prepare("INSERT INTO t_last_quotes(timestamp, active_id, quote) "
-                      "SELECT MAX(timestamp) AS timestamp, active_id, quote "
+        query.prepare("INSERT INTO t_last_quotes(timestamp, asset_id, quote) "
+                      "SELECT MAX(timestamp) AS timestamp, asset_id, quote "
                       "FROM quotes "
                       "WHERE timestamp <= :balances_timestamp "
-                      "GROUP BY active_id")
+                      "GROUP BY asset_id")
         query.bindValue(":balances_timestamp", timestamp)
         assert query.exec_()
 
@@ -536,9 +536,9 @@ class Ledger:
                       "a.active AS active "
                       "FROM ledger AS l "
                       "LEFT JOIN accounts AS a ON l.account_id = a.id "
-                      "LEFT JOIN t_last_quotes AS act_q ON l.active_id = act_q.active_id "
-                      "LEFT JOIN t_last_quotes AS cur_q ON a.currency_id = cur_q.active_id "
-                      "LEFT JOIN t_last_quotes AS cur_adj_q ON cur_adj_q.active_id = :base_currency "
+                      "LEFT JOIN t_last_quotes AS act_q ON l.asset_id = act_q.asset_id "
+                      "LEFT JOIN t_last_quotes AS cur_q ON a.currency_id = cur_q.asset_id "
+                      "LEFT JOIN t_last_quotes AS cur_adj_q ON cur_adj_q.asset_id = :base_currency "
                       "LEFT JOIN t_last_dates AS d ON l.account_id = d.account_id "
                       "WHERE (book_account = :money_book OR book_account = :assets_book OR book_account = :liabilities_book) AND l.timestamp <= :balances_timestamp "
                       "GROUP BY l.account_id "
@@ -579,21 +579,21 @@ class Ledger:
         assert query.exec_("DELETE FROM holdings_aux")
         assert query.exec_("DELETE FROM holdings")
 
-        assert query.prepare("INSERT INTO t_last_quotes(timestamp, active_id, quote) "
-                      "SELECT MAX(timestamp) AS timestamp, active_id, quote "
+        assert query.prepare("INSERT INTO t_last_quotes(timestamp, asset_id, quote) "
+                      "SELECT MAX(timestamp) AS timestamp, asset_id, quote "
                       "FROM quotes "
                       "WHERE timestamp <= :balances_timestamp "
-                      "GROUP BY active_id")
+                      "GROUP BY asset_id")
         query.bindValue(":balances_timestamp", timestamp)
         assert query.exec_()
 
         # TODO Is account name really required in this temporary table?
         assert query.prepare("INSERT INTO t_last_assets (id, name, total_value) "
                       "SELECT a.id, a.name, "
-                      "SUM(CASE WHEN a.currency_id = l.active_id THEN l.amount ELSE (l.amount*q.quote) END) AS total_value "
+                      "SUM(CASE WHEN a.currency_id = l.asset_id THEN l.amount ELSE (l.amount*q.quote) END) AS total_value "
                       "FROM ledger AS l "
                       "LEFT JOIN accounts AS a ON l.account_id = a.id "
-                      "LEFT JOIN t_last_quotes AS q ON l.active_id = q.active_id "
+                      "LEFT JOIN t_last_quotes AS q ON l.asset_id = q.asset_id "
                       "WHERE (l.book_account = 3 OR l.book_account = 4 OR l.book_account = 5) "
                       "AND a.type_id = 4 AND l.timestamp <= :holdings_timestamp "
                       "GROUP BY a.id "
@@ -603,16 +603,16 @@ class Ledger:
         assert query.exec_()
 
         assert query.prepare("INSERT INTO holdings_aux (currency, account, asset, qty, value, quote, quote_adj, total, total_adj) "
-                             "SELECT a.currency_id, l.account_id, l.active_id, sum(l.amount) AS qty, sum(l.value), "
+                             "SELECT a.currency_id, l.account_id, l.asset_id, sum(l.amount) AS qty, sum(l.value), "
                              "q.quote, q.quote*cur_q.quote/cur_adj_q.quote, t.total_value, t.total_value*cur_q.quote/cur_adj_q.quote "
                              "FROM ledger AS l "
                              "LEFT JOIN accounts AS a ON l.account_id = a.id "
-                             "LEFT JOIN t_last_quotes AS q ON l.active_id = q.active_id "
-                             "LEFT JOIN t_last_quotes AS cur_q ON a.currency_id = cur_q.active_id "
-                             "LEFT JOIN t_last_quotes AS cur_adj_q ON cur_adj_q.active_id = :recalc_currency "
+                             "LEFT JOIN t_last_quotes AS q ON l.asset_id = q.asset_id "
+                             "LEFT JOIN t_last_quotes AS cur_q ON a.currency_id = cur_q.asset_id "
+                             "LEFT JOIN t_last_quotes AS cur_adj_q ON cur_adj_q.asset_id = :recalc_currency "
                              "LEFT JOIN t_last_assets AS t ON l.account_id = t.id "
                              "WHERE l.book_account = 4 AND l.timestamp <= :holdings_timestamp "
-                             "GROUP BY l.account_id, l.active_id "
+                             "GROUP BY l.account_id, l.asset_id "
                              "HAVING ABS(qty) > :tolerance")
         query.bindValue(":recalc_currency", currency)
         query.bindValue(":holdings_timestamp", timestamp)
@@ -620,15 +620,15 @@ class Ledger:
         assert query.exec_()
 
         query.prepare("INSERT INTO holdings_aux (currency, account, asset, qty, value, quote, quote_adj, total, total_adj) "
-                             "SELECT a.currency_id, l.account_id, l.active_id, sum(l.amount) AS qty, sum(l.value), 1, "
+                             "SELECT a.currency_id, l.account_id, l.asset_id, sum(l.amount) AS qty, sum(l.value), 1, "
                              "cur_q.quote/cur_adj_q.quote, t.total_value, t.total_value*cur_q.quote/cur_adj_q.quote "
                              "FROM ledger AS l "
                              "LEFT JOIN accounts AS a ON l.account_id = a.id "
-                             "LEFT JOIN t_last_quotes AS cur_q ON a.currency_id = cur_q.active_id "
-                             "LEFT JOIN t_last_quotes AS cur_adj_q ON cur_adj_q.active_id = :recalc_currency "
+                             "LEFT JOIN t_last_quotes AS cur_q ON a.currency_id = cur_q.asset_id "
+                             "LEFT JOIN t_last_quotes AS cur_adj_q ON cur_adj_q.asset_id = :recalc_currency "
                              "LEFT JOIN t_last_assets AS t ON l.account_id = t.id "
                              "WHERE (l.book_account = 3 OR l.book_account = 5) AND a.type_id = 4 AND l.timestamp <= :holdings_timestamp "
-                             "GROUP BY l.account_id, l.active_id "
+                             "GROUP BY l.account_id, l.asset_id "
                              "HAVING ABS(qty) > :tolerance")
         query.bindValue(":recalc_currency", currency)
         query.bindValue(":holdings_timestamp", timestamp)
@@ -669,10 +669,10 @@ class Ledger:
     #     cursor.executescript("DROP TABLE IF EXISTS temp.last_quotes;"
     #                          "DROP TABLE IF EXISTS temp.last_dates;")
     #     cursor.execute("CREATE TEMPORARY TABLE last_quotes AS "
-    #                    "SELECT MAX(timestamp) AS timestamp, active_id, quote "
+    #                    "SELECT MAX(timestamp) AS timestamp, asset_id, quote "
     #                    "FROM quotes "
     #                    "WHERE timestamp <= ? "
-    #                    "GROUP BY active_id", (timestamp, ))
+    #                    "GROUP BY asset_id", (timestamp, ))
     #     cursor.execute("CREATE TEMPORARY TABLE last_dates AS "
     #                    "SELECT account_id, MAX(timestamp) AS timestamp "
     #                    "FROM ledger "
@@ -686,9 +686,9 @@ class Ledger:
     #                    "FROM ledger AS l "
     #                    "LEFT JOIN accounts AS a ON l.account_id = a.id "
     #                    "LEFT JOIN assets AS c ON a.currency_id = c.id "
-    #                    "LEFT JOIN temp.last_quotes AS act_q ON l.active_id = act_q.active_id "
-    #                    "LEFT JOIN temp.last_quotes AS cur_q ON a.currency_id = cur_q.active_id "
-    #                    "LEFT JOIN temp.last_quotes AS cur_adj_q ON cur_adj_q.active_id = ? "
+    #                    "LEFT JOIN temp.last_quotes AS act_q ON l.asset_id = act_q.asset_id "
+    #                    "LEFT JOIN temp.last_quotes AS cur_q ON a.currency_id = cur_q.asset_id "
+    #                    "LEFT JOIN temp.last_quotes AS cur_adj_q ON cur_adj_q.asset_id = ? "
     #                    "LEFT JOIN temp.last_dates AS d ON l.account_id = d.account_id "
     #                    "WHERE (book_account = ? OR book_account = ? OR book_account = ?) AND l.timestamp <= ? "
     #                    "GROUP BY a.name "

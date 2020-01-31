@@ -99,7 +99,7 @@ def importFrom1C(db_file, data_path):
     data = pd.read_csv(data_path + "actions_dividends.csv", sep='|', encoding='cp1251',
                        dtype = {'name':str, 'account_id':int, 'sec_id':int, 'note':str, 'note_tax':str, 'number': str},
                        converters = {'timestamp': convert_datetime, 'sum': convert_sum, 'sum_tax': convert_sum})
-    data.rename(columns={'sec_id': 'active_id'}, inplace=True)
+    data.rename(columns={'sec_id': 'asset_id'}, inplace=True)
     data.to_sql(name="dividends", con = db, if_exists='append', index=False, chunksize=100)
     print("Dividends loaded")
     data = pd.read_csv(data_path + "actions_trades.csv", sep='|', encoding='cp1251',
@@ -107,7 +107,7 @@ def importFrom1C(db_file, data_path):
                        converters = {'timestamp': convert_datetime, 'settlement': convert_datetime,
                                      'quantity': convert_sum, 'price': convert_sum, 'coupon': convert_sum,
                                      'fee_broker': convert_sum, 'fee_exchange': convert_sum, 'sum': convert_sum})
-    data.rename(columns={'sec_id': 'active_id'}, inplace=True)
+    data.rename(columns={'sec_id': 'asset_id'}, inplace=True)
     data.rename(columns={'quantity': 'qty'}, inplace=True)
     data.to_sql(name="trades", con = db, if_exists='append', index=False, chunksize=100)
     print("Trades loaded")
@@ -152,7 +152,7 @@ def importFrom1C(db_file, data_path):
     notes.to_sql(name="transfer_notes", con=db, if_exists='append', index=False, chunksize=100)
     print("Transfers loaded")
     data = pd.read_csv(data_path + "reg_quotes.csv", sep='|', encoding='cp1251', thousands='\xa0',
-                       dtype = {'active_id':int},
+                       dtype = {'asset_id':int},
                        converters = {'timestamp': convert_datetime, 'quote': convert_sum})
     data.to_sql(name="quotes", con = db, if_exists='append', index=False, chunksize=100)
     print("Quotes loaded")

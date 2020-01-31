@@ -242,4 +242,4 @@ class CategoryDelegate(QSqlRelationalDelegate):
     # def setModelData(self, editor, model, index):
     #     if index.column() != 3:
     #         return QSqlRelationalDelegate.setModelData(self, editor, model, index)
-    #     model.setData(index, editor.active_id)
+    #     model.setData(index, editor.asset_id)

@@ -8,7 +8,7 @@ class AssetChoiceDlg(QDialog, Ui_AssetChoiceDlg):
     def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)
-        self.active_id = 0
+        self.asset_id = 0
         self.type_id = 0
 
         self.AssetTypeCombo.currentIndexChanged.connect(self.OnTypeChange)
@@ -67,7 +67,7 @@ class AssetChoiceDlg(QDialog, Ui_AssetChoiceDlg):
         idx = selected.indexes()
         if idx:
             selected_row = idx[0].row()
-            self.active_id = self.AssetsList.model().record(selected_row).value(0)
+            self.asset_id = self.AssetsList.model().record(selected_row).value(0)
 
     @Slot()
     def OnDataChanged(self):
@@ -118,7 +118,7 @@ class ActiveDelegate(QSqlRelationalDelegate):
 class AssetSelector(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
-        self.p_active_id = 0
+        self.p_asset_id = 0
 
         self.layout = QHBoxLayout()
         self.layout.setMargin(0)
@@ -139,12 +139,12 @@ class AssetSelector(QWidget):
         self.dialog = AssetChoiceDlg()
 
     def getId(self):
-        return self.p_active_id
+        return self.p_asset_id
 
     def setId(self, id):
-        if (self.p_active_id == id):
+        if (self.p_asset_id == id):
             return
-        self.p_active_id = id
+        self.p_asset_id = id
         self.dialog.Model.setFilter(f"assets.id={id}")
         row_idx = self.dialog.Model.index(0, 0).row()
         symbol = self.dialog.Model.record(row_idx).value(1)
@@ -158,7 +158,7 @@ class AssetSelector(QWidget):
     def changed(self):
         pass
 
-    active_id = Property(int, getId, setId, notify=changed, user=True)
+    asset_id = Property(int, getId, setId, notify=changed, user=True)
 
     def init_DB(self, db):
         self.dialog.init_DB(db)
@@ -176,12 +176,12 @@ class AssetSelector(QWidget):
         self.dialog.setActiveFilter()
         res = self.dialog.exec_()
         if res:
-            self.active_id = self.dialog.active_id
+            self.asset_id = self.dialog.asset_id
 
     @Slot(QModelIndex)
     def OnCompletion(self, index):
         model = index.model()
-        self.active_id = model.data(model.index(index.row(), 0), Qt.DisplayRole)
+        self.asset_id = model.data(model.index(index.row(), 0), Qt.DisplayRole)
 
 ######################################################################################################################
 # More compact selector to choose currency only
@@ -189,7 +189,7 @@ class AssetSelector(QWidget):
 class CurrencySelector(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
-        self.p_active_id = 0
+        self.p_asset_id = 0
 
         self.layout = QHBoxLayout()
         self.layout.setMargin(0)
@@ -205,12 +205,12 @@ class CurrencySelector(QWidget):
         self.dialog = AssetChoiceDlg()
 
     def getId(self):
-        return self.p_active_id
+        return self.p_asset_id
 
     def setId(self, id):
-        if (self.p_active_id == id):
+        if (self.p_asset_id == id):
             return
-        self.p_active_id = id
+        self.p_asset_id = id
         self.dialog.Model.setFilter(f"assets.id={id}")
         row_idx = self.dialog.Model.index(0, 0).row()
         symbol = self.dialog.Model.record(row_idx).value(1)
@@ -222,7 +222,7 @@ class CurrencySelector(QWidget):
     def changed(self):
         pass
 
-    active_id = Property(int, getId, setId, notify=changed, user=True)
+    asset_id = Property(int, getId, setId, notify=changed, user=True)
 
     def init_DB(self, db):
         self.dialog.init_DB(db)
@@ -240,9 +240,9 @@ class CurrencySelector(QWidget):
         self.dialog.setGeometry(ref_point.x(), ref_point.y(), self.dialog.width(), self.dialog.height())
         res = self.dialog.exec_()
         if res:
-            self.active_id = self.dialog.active_id
+            self.asset_id = self.dialog.asset_id
 
     @Slot(QModelIndex)
     def OnCompletion(self, index):
         model = index.model()
-        self.active_id = model.data(model.index(index.row(), 0), Qt.DisplayRole)
+        self.asset_id = model.data(model.index(index.row(), 0), Qt.DisplayRole)

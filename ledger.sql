@@ -205,7 +205,7 @@ CREATE TABLE dividends (
     account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
                                                     ON UPDATE CASCADE
                            NOT NULL,
-    active_id  INTEGER     REFERENCES assets (a_id) ON DELETE RESTRICT
+    asset_id  INTEGER     REFERENCES assets (a_id) ON DELETE RESTRICT
                                                      ON UPDATE CASCADE
                            NOT NULL,
     sum        REAL        NOT NULL,
@@ -264,7 +264,7 @@ CREATE TABLE ledger (
     book_account INTEGER NOT NULL
                          REFERENCES books (id) ON DELETE NO ACTION
                                                ON UPDATE NO ACTION,
-    active_id    INTEGER NOT NULL
+    asset_id    INTEGER NOT NULL
                          REFERENCES assets (id) ON DELETE NO ACTION
                                                  ON UPDATE NO ACTION,
     account_id   INTEGER NOT NULL
@@ -290,7 +290,7 @@ CREATE TABLE ledger_sums (
     book_account INTEGER NOT NULL
                          REFERENCES books (id) ON DELETE NO ACTION
                                                ON UPDATE NO ACTION,
-    active_id    INTEGER NOT NULL
+    asset_id    INTEGER NOT NULL
                          REFERENCES assets (id) ON DELETE NO ACTION
                                                  ON UPDATE NO ACTION,
     account_id   INTEGER NOT NULL
@@ -309,7 +309,7 @@ CREATE TABLE quotes (
                       UNIQUE
                       NOT NULL,
     timestamp INTEGER NOT NULL,
-    active_id INTEGER REFERENCES assets (id) ON DELETE CASCADE
+    asset_id INTEGER REFERENCES assets (id) ON DELETE CASCADE
                                               ON UPDATE CASCADE
                       NOT NULL,
     quote     REAL
@@ -369,7 +369,7 @@ DROP TABLE IF EXISTS t_last_quotes;
 
 CREATE TABLE t_last_quotes (
     timestamp INTEGER NOT NULL,
-    active_id INTEGER NOT NULL,
+    asset_id INTEGER NOT NULL,
     quote     REAL
 );
 
@@ -399,7 +399,7 @@ CREATE TABLE trades (
     account_id   INTEGER   REFERENCES accounts (id) ON DELETE CASCADE
                                                     ON UPDATE CASCADE
                            NOT NULL,
-    active_id    INTEGER   REFERENCES assets (id) ON DELETE RESTRICT
+    asset_id    INTEGER   REFERENCES assets (id) ON DELETE RESTRICT
                                                    ON UPDATE CASCADE,
     qty          REAL      NOT NULL,
     price        REAL      NOT NULL,
@@ -480,7 +480,7 @@ CREATE VIEW all_operations AS
            m.account_id,
            a.name AS account,
            m.num_peer,
-           m.active_id,
+           m.asset_id,
            s.name AS active,
            s.full_name AS active_name,
            m.note,
@@ -500,7 +500,7 @@ CREATE VIEW all_operations AS
                       p.name AS num_peer,
                       account_id,
                       sum(d.sum) AS amount,
-                      o.alt_currency_id AS active_id,
+                      o.alt_currency_id AS asset_id,
                       NULL AS qty_trid,
                       sum(d.alt_sum) AS price,
                       NULL AS fee_tax,
@@ -520,7 +520,7 @@ CREATE VIEW all_operations AS
                       d.number AS num_peer,
                       d.account_id,
                       d.sum AS amount,
-                      d.active_id,
+                      d.asset_id,
                       SUM(coalesce(l.amount, 0) ) AS qty_trid,
                       NULL AS price,
                       d.sum_tax AS fee_tax,
@@ -529,7 +529,7 @@ CREATE VIEW all_operations AS
                       d.note_tax AS note2
                  FROM dividends AS d
                       LEFT JOIN
-                      ledger AS l ON d.active_id = l.active_id AND 
+                      ledger AS l ON d.asset_id = l.asset_id AND
                                      d.account_id = l.account_id AND 
                                      l.book_account = 4 AND 
                                      l.timestamp <= d.timestamp
@@ -541,7 +541,7 @@ CREATE VIEW all_operations AS
                       t.number AS num_peer,
                       t.account_id,
                       ( -t.type * t.sum) AS amount,
-                      t.active_id,
+                      t.asset_id,
                       (t.type * t.qty) AS qty_trid,
                       t.price AS price,
                       t.fee_broker + t.fee_exchange AS fee_tax,
@@ -562,7 +562,7 @@ CREATE VIEW all_operations AS
                       NULL AS num_peer,
                       r.account_id,
                       r.amount,
-                      NULL AS active_id,
+                      NULL AS asset_id,
                       r.type AS qty_trid,
                       r.rate AS price,
                       NULL AS fee_tax,
@@ -583,7 +583,7 @@ CREATE VIEW all_operations AS
            LEFT JOIN
            accounts AS a ON m.account_id = a.id
            LEFT JOIN
-           assets AS s ON m.active_id = s.id
+           assets AS s ON m.asset_id = s.id
            LEFT JOIN
            assets AS c ON a.currency_id = c.id
            LEFT JOIN
@@ -880,7 +880,7 @@ DROP TRIGGER IF EXISTS dividends_after_update;
 CREATE TRIGGER dividends_after_update
          AFTER UPDATE OF timestamp,
                          account_id,
-                         active_id,
+                         asset_id,
                          sum,
                          sum_tax
             ON dividends
@@ -1134,7 +1134,7 @@ CREATE TRIGGER trades_after_update
          AFTER UPDATE OF timestamp,
                          type,
                          account_id,
-                         active_id,
+                         asset_id,
                          qty,
                          price,
                          coupon,
