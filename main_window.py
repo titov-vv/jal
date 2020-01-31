@@ -685,22 +685,50 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.CheckForNotSavedData()
         active_tab = self.OperationsTabs.currentIndex()
         if (active_tab == TAB_ACTION):
-            mapper = self.ActionsDataMapper
+            row = self.ActionsDataMapper.currentIndex()
+            self.ActionsDataMapper.submit()
+            new_record = self.ActionsModel.record(row)
+            new_record.setNull("id")
+            new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
+            self.ActionsModel.setFilter("actions.id = 0")
+            assert self.ActionsModel.insertRows(0, 1)
+            self.ActionsModel.setRecord(0, new_record)
+            self.ActionsDataMapper.toLast()
+            self.ActionDetailsModel.setFilter("action_details.pid = 0")
         elif (active_tab == TAB_TRANSFER):
-            mapper = self.TransfersDataMapper
+            row = self.TransfersDataMapper.currentIndex()
+            self.TransfersDataMapper.submit()
+            new_record = self.TransfersModel.record(row)
+            new_record.setNull("id")
+            new_record.setValue("from_timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
+            new_record.setValue("to_timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
+            new_record.setValue("fee_timestamp", 0)
+            self.TransfersModel.setFilter(f"transfers_combined.id = 0")
+            assert self.TransfersModel.insertRows(0, 1)
+            self.TransfersModel.setRecord(0, new_record)
+            self.TransfersDataMapper.toLast()
         elif (active_tab == TAB_DIVIDEND):
-            mapper = self.DividendsDataMapper
+            row = self.DividendsDataMapper.currentIndex()
+            self.DividendsDataMapper.submit()
+            new_record = self.DividendsModel.record()
+            new_record.setNull("id")
+            new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
+            self.DividendsModel.setFilter("dividends.id = 0")
+            assert self.DividendsModel.insertRows(0, 1)
+            self.DividendsModel.setRecord(0, new_record)
+            self.DividendsDataMapper.toLast()
         elif (active_tab == TAB_TRADE):
-            mapper = self.TradesDataMapper
+            row = self.TradesDataMapper.currentIndex()
+            self.TradesDataMapper.submit()
+            new_record = self.TradesModel.record(row)
+            new_record.setNull("id")
+            new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
+            self.TradesModel.setFilter("trades.id = 0")
+            assert self.TradesModel.insertRows(0, 1)
+            self.TradesModel.setRecord(0, new_record)
+            self.TradesDataMapper.toLast()
         else:
             assert False
-        row = mapper.currentIndex()
-        new_record = mapper.model().record(row)
-        mapper.submit()
-        new_record.setNull("id")
-        new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
-        mapper.model().insertRecord(-1, new_record)
-        mapper.toLast()
 
     @Slot()
     def SaveOperation(self):

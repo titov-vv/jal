@@ -68,7 +68,7 @@ def importFrom1C(db_file, data_path):
     data = pd.read_csv(data_path + "data_account_types.csv", sep='|', encoding='cp1251', dtype = {'id':int, 'name':str})
     data.to_sql(name="account_types", con = db, if_exists='append', index=False, chunksize=100)
 
-    data = pd.read_csv(data_path + "data_assets_types.csv", sep='|', encoding='cp1251', dtype = {'id':int, 'name':str})
+    data = pd.read_csv(data_path + "data_asset_types.csv", sep='|', encoding='cp1251', dtype = {'id':int, 'name':str})
     data.to_sql(name="asset_types", con = db, if_exists='append', index=False, chunksize=100)
 
     data = pd.read_csv(data_path + "data_sources.csv", sep='|', encoding='cp1251', dtype = {'id':int, 'name':str})
@@ -152,8 +152,9 @@ def importFrom1C(db_file, data_path):
     notes.to_sql(name="transfer_notes", con=db, if_exists='append', index=False, chunksize=100)
     print("Transfers loaded")
     data = pd.read_csv(data_path + "reg_quotes.csv", sep='|', encoding='cp1251', thousands='\xa0',
-                       dtype = {'asset_id':int},
+                       dtype = {'active_id':int},
                        converters = {'timestamp': convert_datetime, 'quote': convert_sum})
+    data.rename(columns={'active_id': 'asset_id'}, inplace=True)
     data.to_sql(name="quotes", con = db, if_exists='append', index=False, chunksize=100)
     print("Quotes loaded")
 

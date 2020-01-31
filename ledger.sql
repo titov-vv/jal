@@ -1420,6 +1420,13 @@ INSERT INTO account_types (id, name) VALUES (5, 'Deposits');
 INSERT INTO account_types (id, name) VALUES (6, 'Debts');
 INSERT INTO account_types (id, name) VALUES (7, 'e-Wallets');
 
+-- Initialize sources of quotation data
+INSERT INTO data_sources (id, name) VALUES (-1, 'None');
+INSERT INTO data_sources (id, name) VALUES (0, 'Bank of Russia');
+INSERT INTO data_sources (id, name) VALUES (1, 'MOEX');
+INSERT INTO data_sources (id, name) VALUES (2, 'NYSE/Nasdaq');
+INSERT INTO data_sources (id, name) VALUES (3, 'Euronext');
+
 
 COMMIT TRANSACTION;
 PRAGMA foreign_keys = on;

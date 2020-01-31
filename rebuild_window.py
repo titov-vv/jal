@@ -12,7 +12,7 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
         self.frontier = frontier
         frontier_text = datetime.fromtimestamp(frontier).strftime('%d/%m/%Y')
         self.FrontierDateLabel.setText(frontier_text)
-        self.CustomDateEdit.setDate(QtCore.QDate.currentDateTime())
+        self.CustomDateEdit.setDate(QtCore.QDate.currentDate())
 
     def getTimestamp(self):
         if self.LastRadioButton.isChecked():
