@@ -24,7 +24,7 @@ class ActiveChoiceDlg(QDialog, Ui_ActiveChoiceDlg):
         self.Model.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.Model.setJoinMode(QSqlRelationalTableModel.LeftJoin)  # to work correctly with NULL values in SrcId
         type_idx = self.Model.fieldIndex("type_id")
-        self.Model.setRelation(type_idx, QSqlRelation("active_types", "id", "name"))
+        self.Model.setRelation(type_idx, QSqlRelation("asset_types", "id", "name"))
         data_src_id = self.Model.fieldIndex("src_id")
         self.Model.setRelation(data_src_id, QSqlRelation("data_sources", "id", "name"))
         self.Model.setHeaderData(self.Model.fieldIndex("name"), Qt.Horizontal, "Symbol")

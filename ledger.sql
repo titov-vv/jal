@@ -80,10 +80,10 @@ CREATE TABLE actions (
 );
 
 
--- Table: active_types
-DROP TABLE IF EXISTS active_types;
+-- Table: asset_types
+DROP TABLE IF EXISTS asset_types;
 
-CREATE TABLE active_types (
+CREATE TABLE asset_types (
     id   INTEGER   PRIMARY KEY
                    UNIQUE
                    NOT NULL,
@@ -100,7 +100,7 @@ CREATE TABLE actives (
                          NOT NULL,
     name      TEXT (32)  UNIQUE
                          NOT NULL,
-    type_id   INTEGER    REFERENCES active_types (id) ON DELETE RESTRICT
+    type_id   INTEGER    REFERENCES asset_types (id) ON DELETE RESTRICT
                                                       ON UPDATE CASCADE
                          NOT NULL,
     full_name TEXT (128) NOT NULL,
@@ -1404,12 +1404,12 @@ INSERT INTO books (id, name) VALUES (5, 'Liabilities');
 INSERT INTO books (id, name) VALUES (6, 'Transfers');
 
 -- Initialize active types values
-INSERT INTO active_types (id, name) VALUES (1, 'Money');
-INSERT INTO active_types (id, name) VALUES (2, 'Shares');
-INSERT INTO active_types (id, name) VALUES (3, 'Bonds');
-INSERT INTO active_types (id, name) VALUES (4, 'Funds');
-INSERT INTO active_types (id, name) VALUES (5, 'Commodities');
-INSERT INTO active_types (id, name) VALUES (6, 'Derivatives');
+INSERT INTO asset_types (id, name) VALUES (1, 'Money');
+INSERT INTO asset_types (id, name) VALUES (2, 'Shares');
+INSERT INTO asset_types (id, name) VALUES (3, 'Bonds');
+INSERT INTO asset_types (id, name) VALUES (4, 'Funds');
+INSERT INTO asset_types (id, name) VALUES (5, 'Commodities');
+INSERT INTO asset_types (id, name) VALUES (6, 'Derivatives');
 
 -- Initialize some account types
 INSERT INTO account_types (id, name) VALUES (1, 'Cash');

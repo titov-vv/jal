@@ -60,7 +60,7 @@ def importFrom1C(db_file, data_path):
                          "DELETE FROM categories;"
                          "DELETE FROM tags;"
                          "DELETE FROM data_sources;"
-                         "DELETE FROM active_types;"
+                         "DELETE FROM asset_types;"
                          "DELETE FROM account_types;"
                          "VACUUM;")
     cursor.execute("UPDATE settings SET value = 0 WHERE name = 'TriggersEnabled'")
@@ -69,7 +69,7 @@ def importFrom1C(db_file, data_path):
     data.to_sql(name="account_types", con = db, if_exists='append', index=False, chunksize=100)
 
     data = pd.read_csv(data_path + "data_actives_types.csv", sep='|', encoding='cp1251', dtype = {'id':int, 'name':str})
-    data.to_sql(name="active_types", con = db, if_exists='append', index=False, chunksize=100)
+    data.to_sql(name="asset_types", con = db, if_exists='append', index=False, chunksize=100)
 
     data = pd.read_csv(data_path + "data_sources.csv", sep='|', encoding='cp1251', dtype = {'id':int, 'name':str})
     data = data.append({'id': -1, 'name': 'None'}, ignore_index=True)
