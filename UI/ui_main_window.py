@@ -43,8 +43,8 @@ class Ui_LedgerMainWindow(object):
         self.actionAccountTypes.setObjectName(u"actionAccountTypes")
         self.actionAccounts = QAction(LedgerMainWindow)
         self.actionAccounts.setObjectName(u"actionAccounts")
-        self.actionActives = QAction(LedgerMainWindow)
-        self.actionActives.setObjectName(u"actionActives")
+        self.actionAssets = QAction(LedgerMainWindow)
+        self.actionAssets.setObjectName(u"actionAssets")
         self.actionPeers = QAction(LedgerMainWindow)
         self.actionPeers.setObjectName(u"actionPeers")
         self.actionCategories = QAction(LedgerMainWindow)
@@ -421,10 +421,10 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_3.addWidget(self.TradeAccountWidget, 1, 2, 1, 3)
 
-        self.TradeActiveWidget = AssetSelector(self.TradeDetailsTab)
-        self.TradeActiveWidget.setObjectName(u"TradeActiveWidget")
+        self.TradeAssetWidget = AssetSelector(self.TradeDetailsTab)
+        self.TradeAssetWidget.setObjectName(u"TradeAssetWidget")
 
-        self.gridLayout_3.addWidget(self.TradeActiveWidget, 2, 2, 1, 3)
+        self.gridLayout_3.addWidget(self.TradeAssetWidget, 2, 2, 1, 3)
 
         self.TradeAccountLbl = QLabel(self.TradeDetailsTab)
         self.TradeAccountLbl.setObjectName(u"TradeAccountLbl")
@@ -505,11 +505,11 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_2.addWidget(self.DividendSumLbl, 7, 1, 1, 1)
 
-        self.DividendActiveWidget = AssetSelector(self.DividendDetailsTab)
-        self.DividendActiveWidget.setObjectName(u"DividendActiveWidget")
-        self.DividendActiveWidget.setMinimumSize(QSize(32, 0))
+        self.DividendAssetWidget = AssetSelector(self.DividendDetailsTab)
+        self.DividendAssetWidget.setObjectName(u"DividendAssetWidget")
+        self.DividendAssetWidget.setMinimumSize(QSize(32, 0))
 
-        self.gridLayout_2.addWidget(self.DividendActiveWidget, 6, 3, 1, 1)
+        self.gridLayout_2.addWidget(self.DividendAssetWidget, 6, 3, 1, 1)
 
         self.DividendSumDescription = QLineEdit(self.DividendDetailsTab)
         self.DividendSumDescription.setObjectName(u"DividendSumDescription")
@@ -738,7 +738,7 @@ class Ui_LedgerMainWindow(object):
         LedgerMainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(LedgerMainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1700, 22))
+        self.menubar.setGeometry(QRect(0, 0, 1700, 23))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName(u"menuFile")
         self.menu_DAta = QMenu(self.menubar)
@@ -762,7 +762,7 @@ class Ui_LedgerMainWindow(object):
         self.menu_DAta.addSeparator()
         self.menu_DAta.addAction(self.menuPredefined_data.menuAction())
         self.menu_DAta.addAction(self.actionAccounts)
-        self.menu_DAta.addAction(self.actionActives)
+        self.menu_DAta.addAction(self.actionAssets)
         self.menu_DAta.addAction(self.actionPeers)
         self.menu_DAta.addAction(self.actionCategories)
         self.menuPredefined_data.addAction(self.actionAccountTypes)
@@ -788,7 +788,7 @@ class Ui_LedgerMainWindow(object):
         self.actionInitDB.setText(QCoreApplication.translate("LedgerMainWindow", u"Init &DB", None))
         self.actionAccountTypes.setText(QCoreApplication.translate("LedgerMainWindow", u"Account &Types", None))
         self.actionAccounts.setText(QCoreApplication.translate("LedgerMainWindow", u"&Accounts", None))
-        self.actionActives.setText(QCoreApplication.translate("LedgerMainWindow", u"Ac&tives", None))
+        self.actionAssets.setText(QCoreApplication.translate("LedgerMainWindow", u"A&ssets", None))
         self.actionPeers.setText(QCoreApplication.translate("LedgerMainWindow", u"&Peers", None))
         self.actionCategories.setText(QCoreApplication.translate("LedgerMainWindow", u"&Categories", None))
         self.BalanceBox.setTitle(QCoreApplication.translate("LedgerMainWindow", u"Balances", None))

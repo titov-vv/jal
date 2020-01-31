@@ -572,7 +572,7 @@ class Ledger:
         assert query.exec_()
         self.db.commit()
 
-    def BuildActivesTable(self, timestamp, currency):
+    def BuildHoldingsTable(self, timestamp, currency):
         query = QSqlQuery(self.db)
         assert query.exec_("DELETE FROM t_last_quotes")
         assert query.exec_("DELETE FROM t_last_assets")

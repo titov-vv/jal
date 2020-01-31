@@ -15,7 +15,7 @@ from trade_delegate import TradeSqlDelegate, OptionGroup
 from transfer_delegate import TransferSqlDelegate
 from action_delegate import ActionDelegate, ActionDetailDelegate
 from CustomUI.account_select import AcountTypeEditDlg, AccountChoiceDlg
-from CustomUI.active_select import AssetChoiceDlg
+from CustomUI.asset_select import AssetChoiceDlg
 from CustomUI.peer_select import PeerChoiceDlg
 from CustomUI.category_select import CategoryChoiceDlg
 
@@ -175,8 +175,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("account_id"), True)
         self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("num_peer"), True)
         self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("asset_id"), True)
-        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("active"), True)
-        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("active_name"), True)
+        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("asset"), True)
+        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("asset_name"), True)
         self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("note2"), True)
         self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("qty_trid"), True)
         self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("price"), True)
@@ -254,7 +254,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         # CONFIGURE TRADES TAB                                                                        #
         ###############################################################################################
         self.TradeAccountWidget.init_DB(self.db)
-        self.TradeActiveWidget.init_DB(self.db)
+        self.TradeAssetWidget.init_DB(self.db)
         self.BS_group = OptionGroup()
         self.BS_group.addButton(self.BuyRadioBtn, 1)
         self.BS_group.addButton(self.SellRadioBtn, -1)
@@ -273,8 +273,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TradesDataMapper.setItemDelegate(TradeSqlDelegate(self.TradesDataMapper))
         self.TradesDataMapper.addMapping(self.TradeAccountWidget, account_idx)
         self.TradeAccountWidget.changed.connect(self.TradesDataMapper.submit)
-        self.TradesDataMapper.addMapping(self.TradeActiveWidget, asset_idx)
-        self.TradeActiveWidget.changed.connect(self.TradesDataMapper.submit)
+        self.TradesDataMapper.addMapping(self.TradeAssetWidget, asset_idx)
+        self.TradeAssetWidget.changed.connect(self.TradesDataMapper.submit)
         self.TradesDataMapper.addMapping(self.TradeTimestampEdit, self.TradesModel.fieldIndex("timestamp"))
         self.TradesDataMapper.addMapping(self.BS_group, self.TradesModel.fieldIndex("type"))
         self.TradesDataMapper.addMapping(self.TradeSettlementEdit, self.TradesModel.fieldIndex("settlement"))
@@ -294,7 +294,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         # CONFIGURE DIVIDENDS TAB                                                                     #
         ###############################################################################################
         self.DividendAccountWidget.init_DB(self.db)
-        self.DividendActiveWidget.init_DB(self.db)
+        self.DividendAssetWidget.init_DB(self.db)
 
         self.DividendsModel = QSqlTableModel(db=self.db)
         self.DividendsModel.setTable("dividends")
@@ -309,8 +309,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DividendsDataMapper.setItemDelegate(DividendSqlDelegate(self.DividendsDataMapper))
         self.DividendsDataMapper.addMapping(self.DividendAccountWidget, account_idx)
         self.DividendAccountWidget.changed.connect(self.DividendsDataMapper.submit)
-        self.DividendsDataMapper.addMapping(self.DividendActiveWidget, asset_idx)
-        self.DividendActiveWidget.changed.connect(self.DividendsDataMapper.submit)
+        self.DividendsDataMapper.addMapping(self.DividendAssetWidget, asset_idx)
+        self.DividendAssetWidget.changed.connect(self.DividendsDataMapper.submit)
         self.DividendsDataMapper.addMapping(self.DividendTimestampEdit, self.DividendsModel.fieldIndex("timestamp"))
         self.DividendsDataMapper.addMapping(self.DividendNumberEdit, self.DividendsModel.fieldIndex("number"))
         self.DividendsDataMapper.addMapping(self.DividendSumEdit, self.DividendsModel.fieldIndex("sum"))
@@ -367,7 +367,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.actionInitDB.triggered.connect(self.InitDB)
         self.actionAccountTypes.triggered.connect(self.EditAccountTypes)
         self.actionAccounts.triggered.connect(self.EditAccounts)
-        self.actionActives.triggered.connect(self.EditActives)
+        self.actionAssets.triggered.connect(self.EditAssets)
         self.actionPeers.triggered.connect(self.EditPeers)
         self.actionCategories.triggered.connect(self.EditCategories)
         # INTERFACE ACTIONS
@@ -816,7 +816,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         dlg.exec_()
 
     @Slot()
-    def EditActives(self):
+    def EditAssets(self):
         dlg = AssetChoiceDlg()
         dlg.init_DB(self.db)
         dlg.exec_()
@@ -837,7 +837,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def UpdateHoldings(self):
-        self.ledger.BuildActivesTable(self.holdings_date, self.holdings_currency)
+        self.ledger.BuildHoldingsTable(self.holdings_date, self.holdings_currency)
         self.HoldingsModel.select()
         for row in range(self.HoldingsModel.rowCount()):
             if self.HoldingsModel.data(self.HoldingsModel.index(row, 1)):

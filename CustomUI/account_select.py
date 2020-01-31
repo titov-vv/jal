@@ -4,7 +4,7 @@ from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation, QSqlRelational
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex, QEvent
 from UI.ui_account_choice_dlg import Ui_AccountChoiceDlg
 from UI.ui_account_type_dlg import Ui_AccountTypesDlg
-from CustomUI.active_select import CurrencySelector
+from CustomUI.asset_select import CurrencySelector
 
 ########################################################################################################################
 #  Predefined Account Types Editor

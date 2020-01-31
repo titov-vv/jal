@@ -481,8 +481,8 @@ CREATE VIEW all_operations AS
            a.name AS account,
            m.num_peer,
            m.asset_id,
-           s.name AS active,
-           s.full_name AS active_name,
+           s.name AS asset,
+           s.full_name AS asset_name,
            m.note,
            m.note2,
            m.amount,
@@ -1403,7 +1403,7 @@ INSERT INTO books (id, name) VALUES (4, 'Assets');
 INSERT INTO books (id, name) VALUES (5, 'Liabilities');
 INSERT INTO books (id, name) VALUES (6, 'Transfers');
 
--- Initialize active types values
+-- Initialize asset types values
 INSERT INTO asset_types (id, name) VALUES (1, 'Money');
 INSERT INTO asset_types (id, name) VALUES (2, 'Shares');
 INSERT INTO asset_types (id, name) VALUES (3, 'Bonds');
