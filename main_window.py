@@ -18,7 +18,25 @@ from CustomUI.account_select import AcountTypeEditDlg, AccountChoiceDlg
 from CustomUI.asset_select import AssetChoiceDlg
 from CustomUI.peer_select import PeerChoiceDlg
 from CustomUI.category_select import CategoryChoiceDlg
+#-----------------------------------------------------------------------------------------------------------------------
+# model - QSqlTableModel where titles should be set for given columns
+# column_title_list - list of column_name/header_title pairs
+def ModelSetColumnHeaders(model, column_title_list):
+    for column_title in column_title_list:
+        model.setHeaderData(model.fieldIndex(column_title[0]), Qt.Horizontal, column_title[1])
 
+# view - QTableView where columns will be hidden
+# columns_list - list of column names
+def HideViewColumns(view, columns_list):
+    for column in columns_list:
+        view.setColumnHidden(view.model().fieldIndex(column), True)
+
+# view - QTableView where column width should be set
+# column_width_list - list of column_name/width pairs
+def ViewSetColumnWidths(view, column_width_list):
+    for column_width in column_width_list:
+        view.setColumnWidth(view.model().fieldIndex(column_width[0]), column_width[1])
+#-----------------------------------------------------------------------------------------------------------------------
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def __init__(self):
         QMainWindow.__init__(self, None)
@@ -102,21 +120,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.BalancesModel = QSqlTableModel(db=self.db)
         self.BalancesModel.setTable("balances")
         self.BalancesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        self.BalancesModel.setHeaderData(self.BalancesModel.fieldIndex("account_name"), Qt.Horizontal, "Account")
-        self.BalancesModel.setHeaderData(self.BalancesModel.fieldIndex("balance"), Qt.Horizontal, "Balance")
-        self.BalancesModel.setHeaderData(self.BalancesModel.fieldIndex("currency_name"), Qt.Horizontal, "")
-        self.BalancesModel.setHeaderData(self.BalancesModel.fieldIndex("balance_adj"), Qt.Horizontal, "Balance, RUB")
+        ModelSetColumnHeaders(self.BalancesModel, [("account_name", "Account"), ("balance", "Balance"),
+                                                   ("currency_name", ""), ("balance_adj", "Balance, RUB")])
         self.BalancesModel.select()
         self.BalancesTableView.setModel(self.BalancesModel)
         self.BalancesTableView.setItemDelegate(BalanceDelegate(self.BalancesTableView))
-        self.BalancesTableView.setColumnHidden(self.BalancesModel.fieldIndex("level1"), True)
-        self.BalancesTableView.setColumnHidden(self.BalancesModel.fieldIndex("level2"), True)
-        self.BalancesTableView.setColumnHidden(self.BalancesModel.fieldIndex("days_unreconciled"), True)
-        self.BalancesTableView.setColumnHidden(self.BalancesModel.fieldIndex("active"), True)
-        self.BalancesTableView.setColumnWidth(self.BalancesModel.fieldIndex("account_name"), 100)
-        self.BalancesTableView.setColumnWidth(self.BalancesModel.fieldIndex("balance"), 100)
-        self.BalancesTableView.setColumnWidth(self.BalancesModel.fieldIndex("currency_name"), 40)
-        self.BalancesTableView.setColumnWidth(self.BalancesModel.fieldIndex("balance_adj"), 100)
+        HideViewColumns(self.BalancesTableView, ["level1", "level2", "days_unreconciled", "active"])
+        ViewSetColumnWidths(self.BalancesTableView, [("account_name", 100), ("balance", 100), ("currency_name", 40), ("balance_adj", 100)])
         self.BalancesTableView.horizontalHeader().setSectionResizeMode(self.BalancesModel.fieldIndex("account_name"), QHeaderView.Stretch)
         font = self.BalancesTableView.horizontalHeader().font()
         font.setBold(True)
@@ -125,24 +135,15 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.HoldingsModel = QSqlTableModel(db=self.db)
         self.HoldingsModel.setTable("holdings")
-        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("account"), Qt.Horizontal, "C/A")
-        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("asset"), Qt.Horizontal, "")
-        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("asset_name"), Qt.Horizontal, "Asset")
-        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("qty"), Qt.Horizontal, "Qty")
-        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("open"), Qt.Horizontal, "Open")
-        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("quote"), Qt.Horizontal, "Last")
-        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("share"), Qt.Horizontal, "Share, %")
-        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("profit_rel"), Qt.Horizontal, "P/L, %")
-        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("profit"), Qt.Horizontal, "P/L")
-        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("value"), Qt.Horizontal, "Value")
-        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("value_adj"), Qt.Horizontal, "Value, RUB")
+        ModelSetColumnHeaders(self.HoldingsModel, [("account", "C/A"), ("asset", ""), ("asset_name", "Asset"),
+                                                   ("qty", "Qty"), ("open", "Open"), ("quote", "Last"),
+                                                   ("share", "Share, %"), ("profit_rel", "P/L, %"), ("profit", "P/L"),
+                                                   ("value", "Value"), ("value_adj", "Value, RUB")])
         self.HoldingsModel.select()
         self.HoldingsTableView.setModel(self.HoldingsModel)
         self.HoldingsTableView.setItemDelegate(HoldingsDelegate(self.HoldingsTableView))
-        self.HoldingsTableView.setColumnHidden(self.HoldingsModel.fieldIndex("level1"), True)
-        self.HoldingsTableView.setColumnHidden(self.HoldingsModel.fieldIndex("level2"), True)
-        self.HoldingsTableView.setColumnHidden(self.HoldingsModel.fieldIndex("currency"), True)
-        self.HoldingsTableView.setColumnWidth(self.HoldingsModel.fieldIndex("account"), 32)
+        HideViewColumns(self.HoldingsTableView, ["level1", "level2", "currency"])
+        ViewSetColumnWidths(self.HoldingsTableView, [("account", 32)])
         self.HoldingsTableView.horizontalHeader().setSectionResizeMode(self.HoldingsModel.fieldIndex("asset_name"), QHeaderView.Stretch)
         font = self.HoldingsTableView.horizontalHeader().font()
         font.setBold(True)
@@ -153,13 +154,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.OperationsModel = QSqlTableModel(db=self.db)
         self.OperationsModel.setTable("all_operations")
-        self.OperationsModel.setHeaderData(self.OperationsModel.fieldIndex("type"), Qt.Horizontal, " ")
-        self.OperationsModel.setHeaderData(self.OperationsModel.fieldIndex("timestamp"), Qt.Horizontal, "Timestamp")
-        self.OperationsModel.setHeaderData(self.OperationsModel.fieldIndex("account"), Qt.Horizontal, "Account")
-        self.OperationsModel.setHeaderData(self.OperationsModel.fieldIndex("note"), Qt.Horizontal, "Notes")
-        self.OperationsModel.setHeaderData(self.OperationsModel.fieldIndex("amount"), Qt.Horizontal, "Amount")
-        self.OperationsModel.setHeaderData(self.OperationsModel.fieldIndex("t_amount"), Qt.Horizontal, "Balance")
-        self.OperationsModel.setHeaderData(self.OperationsModel.fieldIndex("currency"), Qt.Horizontal, "Currency")
+        ModelSetColumnHeaders(self.OperationsModel, [("type", " "), ("timestamp", "Timestamp"), ("account", "Account"),
+                                                     ("note", "Notes"), ("amount", "Amount"), ("t_amount", "Balance"),
+                                                     ("currency", "Currency")])
         self.OperationsModel.select()
         self.OperationsTableView.setModel(self.OperationsModel)
         self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("type"), OperationsTypeDelegate(self.OperationsTableView))
@@ -171,22 +168,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("currency"), OperationsCurrencyDelegate(self.OperationsTableView))
         self.OperationsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  # To select only 1 row
         self.OperationsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("id"), True)
-        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("account_id"), True)
-        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("num_peer"), True)
-        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("asset_id"), True)
-        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("asset"), True)
-        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("asset_name"), True)
-        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("note2"), True)
-        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("qty_trid"), True)
-        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("price"), True)
-        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("fee_tax"), True)
-        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("t_qty"), True)
-        self.OperationsTableView.setColumnHidden(self.OperationsModel.fieldIndex("reconciled"), True)
-        self.OperationsTableView.setColumnWidth(self.OperationsModel.fieldIndex("type"), 10)
-        self.OperationsTableView.setColumnWidth(self.OperationsModel.fieldIndex("timestamp"), widthForTimestampEdit * 0.7)
-        self.OperationsTableView.setColumnWidth(self.OperationsModel.fieldIndex("account"), 300)
-        self.OperationsTableView.setColumnWidth(self.OperationsModel.fieldIndex("note"), 300)
+        HideViewColumns(self.OperationsTableView, ["id", "account_id", "num_peer", "asset_id", "asset", "asset_name",
+                                                   "note2", "qty_trid", "price", "fee_tax", "t_qty", "reconciled"])
+        ViewSetColumnWidths(self.OperationsTableView, [("type", 10), ("timestamp", widthForTimestampEdit * 0.7),
+                                                       ("account", 300), ("note", 300)])
         self.OperationsTableView.horizontalHeader().setSectionResizeMode(self.OperationsModel.fieldIndex("note"), QHeaderView.Stretch)
         self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.OperationsTableView.setWordWrap(False)
@@ -227,27 +212,22 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionDetailsModel.setRelation(category_idx, QSqlRelation("categories", "id", "name"))
         tag_idx = self.ActionDetailsModel.fieldIndex("tag_id")
         self.ActionDetailsModel.setRelation(tag_idx, QSqlRelation("tags", "id", "tag"))
-        self.ActionDetailsModel.setHeaderData(category_idx, Qt.Horizontal, "Category")
-        self.ActionDetailsModel.setHeaderData(tag_idx, Qt.Horizontal, "Tags")
-        self.ActionDetailsModel.setHeaderData(self.ActionDetailsModel.fieldIndex("sum"), Qt.Horizontal, "Amount")
-        self.ActionDetailsModel.setHeaderData(self.ActionDetailsModel.fieldIndex("alt_sum"), Qt.Horizontal, "Amount *")
-        self.ActionDetailsModel.setHeaderData(self.ActionDetailsModel.fieldIndex("note"), Qt.Horizontal, "Note")
+        ModelSetColumnHeaders(self.ActionDetailsModel, [("category_id", "Category"), ("tag_id", "Tags"),
+                                                        ("sum", "Amount"), ("alt_sum", "Amount *"), ("note", "Note")])
         self.ActionDetailsModel.dataChanged.connect(self.OnOperationDataChanged)
         self.ActionDetailsModel.select()
         self.ActionDetailsTableView.setModel(self.ActionDetailsModel)
         self.ActionDetailsTableView.setItemDelegate(ActionDetailDelegate(self.ActionDetailsTableView))
         self.ActionDetailsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  # To select only 1 row
         self.ActionDetailsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.ActionDetailsTableView.setColumnHidden(0, True)  # id
-        self.ActionDetailsTableView.setColumnHidden(1, True)  # pid
-        self.ActionDetailsTableView.setColumnWidth(2, 200)  # category
-        self.ActionDetailsTableView.setColumnWidth(3, 200)  # tags
-        self.ActionDetailsTableView.setColumnWidth(4, 100)  # amount
-        self.ActionDetailsTableView.setColumnWidth(5, 100)  # amount *
-        self.ActionDetailsTableView.setColumnWidth(6, 400)  # note
-        self.ActionDetailsTableView.horizontalHeader().setSectionResizeMode(6, QHeaderView.Stretch)  # make notes to fill all remaining space
-        self.ActionDetailsTableView.horizontalHeader().moveSection(6, 2)  # swap note and category columns
-        self.ActionDetailsTableView.setColumnWidth(6, 400)
+        HideViewColumns(self.ActionDetailsTableView, ["id", "pid"])
+        # "name" and "tag" are columnt names from Relations
+        ViewSetColumnWidths(self.ActionDetailsTableView, [("name", 200), ("tag", 200), ("sum", 100),
+                                                          ("alt_sum", 100), ("note", 400)])
+        self.ActionDetailsTableView.horizontalHeader().setSectionResizeMode(
+            self.ActionDetailsModel.fieldIndex("note"), QHeaderView.Stretch)  # make notes to fill all remaining space
+        self.ActionDetailsTableView.horizontalHeader().moveSection(self.ActionDetailsModel.fieldIndex("note"),
+                                                                   self.ActionDetailsModel.fieldIndex("name"))
         self.ActionDetailsTableView.show()
 
         ###############################################################################################
