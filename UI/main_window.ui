@@ -1335,21 +1335,27 @@
      <addaction name="actionInitDB"/>
     </widget>
     <addaction name="separator"/>
-    <addaction name="action_Load_quotes"/>
-    <addaction name="actionLoad_Statement"/>
-    <addaction name="separator"/>
-    <addaction name="action_Import"/>
-    <addaction name="action_Re_build_Ledger"/>
-    <addaction name="separator"/>
-    <addaction name="menuPredefined_data"/>
     <addaction name="actionAccounts"/>
     <addaction name="actionAssets"/>
     <addaction name="actionPeers"/>
     <addaction name="actionCategories"/>
+    <addaction name="menuPredefined_data"/>
+    <addaction name="separator"/>
     <addaction name="actionBackup"/>
+    <addaction name="actionRestore"/>
+    <addaction name="action_Re_build_Ledger"/>
+    <addaction name="action_Import"/>
+   </widget>
+   <widget class="QMenu" name="menuLoad">
+    <property name="title">
+     <string>&amp;Load</string>
+    </property>
+    <addaction name="action_Load_quotes"/>
+    <addaction name="actionLoad_Statement"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_DAta"/>
+   <addaction name="menuLoad"/>
   </widget>
   <widget class="QStatusBar" name="StatusBar"/>
   <action name="actionExit">
@@ -1362,12 +1368,15 @@
   </action>
   <action name="action_Re_build_Ledger">
    <property name="text">
-    <string>&amp;Re-build Ledger</string>
+    <string>Re-build &amp;Ledger</string>
    </property>
   </action>
   <action name="action_Import">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
-    <string>&amp;Import...</string>
+    <string>&amp;Import old...</string>
    </property>
   </action>
   <action name="action_Load_quotes">
@@ -1413,6 +1422,11 @@
   <action name="actionBackup">
    <property name="text">
     <string>&amp;Backup...</string>
+   </property>
+  </action>
+  <action name="actionRestore">
+   <property name="text">
+    <string>&amp;Restore...</string>
    </property>
   </action>
  </widget>

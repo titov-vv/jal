@@ -5,7 +5,7 @@ from PySide2.QtGui import QDoubleValidator
 from PySide2 import QtCore
 from UI.ui_main_window import Ui_LedgerMainWindow
 from ledger import Ledger
-from bulk_db import importFrom1C, loadDbFromSQL
+from bulk_db import importFrom1C, loadDbFromSQL, MakeBackup, RestoreBackup
 from rebuild_window import RebuildDialog
 from downloader import QuoteDownloader, QuotesUpdateDialog
 from balance_delegate import BalanceDelegate, HoldingsDelegate
@@ -363,6 +363,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.actionExit.triggered.connect(qApp.quit)
         self.action_Load_quotes.triggered.connect(self.UpdateQuotes)
         self.action_Import.triggered.connect(self.ImportFrom1C)
+        self.actionBackup.triggered.connect(self.Backup)
+        self.actionRestore.triggered.connect(self.Restore)
         self.action_Re_build_Ledger.triggered.connect(self.ShowRebuildDialog)
         self.actionInitDB.triggered.connect(self.InitDB)
         self.actionAccountTypes.triggered.connect(self.EditAccountTypes)
@@ -407,6 +409,23 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             importFrom1C(DB_PATH, import_directory)
             self.db.open()
 
+    def Backup(self):
+        backup_directory = QFileDialog.getExistingDirectory(self, "Select directory to save backup")
+        if backup_directory:
+            MakeBackup(DB_PATH, backup_directory)
+
+    def Restore(self):
+        restore_directory = QFileDialog.getExistingDirectory(self, "Select directory to restore from")
+        if restore_directory:
+            self.db.close()
+            RestoreBackup(DB_PATH, restore_directory)
+            QMessageBox().information(self, self.tr("Data restored"),
+                                      self.tr("Database was loaded from the backup.\n"
+                                              "You need to restart the application.\n"
+                                              "Application terminates now."),
+                                      QMessageBox.Ok)
+            qApp().close()
+
     def InitDB(self):
         init_script, _filter = QFileDialog.getOpenFileName(self, self.tr("Select init-script"), ".",  self.tr("SQL scripts (*.sql)"))
         if init_script:
@@ -417,6 +436,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                                           "You need to restart the application.\n"
                                           "Application terminates now."),
                                   QMessageBox.Ok)
+            qApp().close()
 
     def ShowRebuildDialog(self):
         query = QSqlQuery(self.db)
