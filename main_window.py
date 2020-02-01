@@ -686,6 +686,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         active_tab = self.OperationsTabs.currentIndex()
         if (active_tab == TAB_ACTION):
             row = self.ActionsDataMapper.currentIndex()
+            operation_id = self.ActionsModel.record(row).value(self.ActionsModel.fieldIndex("id"))
             self.ActionsDataMapper.submit()
             new_record = self.ActionsModel.record(row)
             new_record.setNull("id")
@@ -694,7 +695,19 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             assert self.ActionsModel.insertRows(0, 1)
             self.ActionsModel.setRecord(0, new_record)
             self.ActionsDataMapper.toLast()
+            # Get SQL records of details and insert it into details table
             self.ActionDetailsModel.setFilter("action_details.pid = 0")
+            query = QSqlQuery(self.db)
+            query.prepare("SELECT * FROM action_details WHERE pid = :pid ORDER BY id DESC")
+            query.bindValue(":pid", operation_id)
+            query.setForwardOnly(True)
+            assert query.exec_()
+            while query.next():
+                new_record = query.record()
+                new_record.setNull("id")
+                new_record.setNull("pid")
+                assert self.ActionDetailsModel.insertRows(0, 1)
+                self.ActionDetailsModel.setRecord(0, new_record)
         elif (active_tab == TAB_TRANSFER):
             row = self.TransfersDataMapper.currentIndex()
             self.TransfersDataMapper.submit()
