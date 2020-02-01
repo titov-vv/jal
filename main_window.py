@@ -404,7 +404,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                                               "You need to restart the application.\n"
                                               "Application terminates now."),
                                       QMessageBox.Ok)
-            qApp().close()
+            qApp.quit()
 
     def InitDB(self):
         init_script, _filter = QFileDialog.getOpenFileName(self, self.tr("Select init-script"), ".",  self.tr("SQL scripts (*.sql)"))
@@ -416,7 +416,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                                           "You need to restart the application.\n"
                                           "Application terminates now."),
                                   QMessageBox.Ok)
-            qApp().close()
+            qApp.quit()
 
     def ShowRebuildDialog(self):
         query = QSqlQuery(self.db)
@@ -755,7 +755,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     def SubmitChangesForTab(self, tab2save):
         if (tab2save == TAB_ACTION):
-            pid = self.ActionsModel.data(self.ActionsModel.index(0, 0))
+            pid = self.ActionsModel.data(self.ActionsModel.index(0, self.ActionsModel.fieldIndex("id")))
             if not self.ActionsModel.submitAll():
                 print(self.tr("Action submit failed: "), self.ActionDetailsModel.lastError().text())
                 return
@@ -767,6 +767,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 print(self.tr("Action details submit failed: "), self.ActionDetailsModel.lastError().text())
                 return
         elif (tab2save == TAB_TRANSFER):
+            record = self.TransfersModel.record(0)
+            note = record.value(self.TransfersModel.fieldIndex("note"))
+            if not note:                           # If we don't have note - set it to NULL value to fire DB trigger
+                self.TransfersModel.setData(self.TransfersModel.index(0, self.TransfersModel.fieldIndex("note")), None)
+            fee_amount = record.value(self.TransfersModel.fieldIndex("fee_amount"))
+            if float(fee_amount) < CALC_TOLERANCE:   # If we don't have fee - set Fee Account to NULL to fire DB trigger
+                self.TransfersModel.setData(self.TransfersModel.index(0, self.TransfersModel.fieldIndex("fee_acc_id")), 0)
             if not self.TransfersModel.submitAll():
                 print(self.tr("Transfer submit failed: "), self.TransfersModel.lastError().text())
                 return
