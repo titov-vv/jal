@@ -3,14 +3,14 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.14.0
+## Created by: Qt User Interface Compiler version 5.14.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
 from PySide2.QtCore import (QCoreApplication, QMetaObject, QObject, QPoint,
     QRect, QSize, QUrl, Qt, QDate)
-from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QFont,
+from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
     QFontDatabase, QIcon, QLinearGradient, QPalette, QPainter, QPixmap,
     QRadialGradient)
 from PySide2.QtWidgets import *
@@ -19,6 +19,7 @@ from CustomUI.account_select import AccountSelector
 from CustomUI.asset_select import AssetSelector
 from CustomUI.account_select import AccountButton
 from CustomUI.peer_select import PeerSelector
+
 
 class Ui_LedgerMainWindow(object):
     def setupUi(self, LedgerMainWindow):
@@ -49,6 +50,8 @@ class Ui_LedgerMainWindow(object):
         self.actionPeers.setObjectName(u"actionPeers")
         self.actionCategories = QAction(LedgerMainWindow)
         self.actionCategories.setObjectName(u"actionCategories")
+        self.actionBackup = QAction(LedgerMainWindow)
+        self.actionBackup.setObjectName(u"actionBackup")
         self.centralwidget = QWidget(LedgerMainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setMaximumSize(QSize(16777215, 16777215))
@@ -283,7 +286,7 @@ class Ui_LedgerMainWindow(object):
         self.ActionTabLbl.setObjectName(u"ActionTabLbl")
         font = QFont()
         font.setBold(True)
-        font.setWeight(75);
+        font.setWeight(75)
         self.ActionTabLbl.setFont(font)
 
         self.gridLayout_4.addWidget(self.ActionTabLbl, 0, 0, 1, 1)
@@ -765,6 +768,7 @@ class Ui_LedgerMainWindow(object):
         self.menu_DAta.addAction(self.actionAssets)
         self.menu_DAta.addAction(self.actionPeers)
         self.menu_DAta.addAction(self.actionCategories)
+        self.menu_DAta.addAction(self.actionBackup)
         self.menuPredefined_data.addAction(self.actionAccountTypes)
         self.menuPredefined_data.addSeparator()
         self.menuPredefined_data.addAction(self.actionInitDB)
@@ -791,6 +795,7 @@ class Ui_LedgerMainWindow(object):
         self.actionAssets.setText(QCoreApplication.translate("LedgerMainWindow", u"A&ssets", None))
         self.actionPeers.setText(QCoreApplication.translate("LedgerMainWindow", u"&Peers", None))
         self.actionCategories.setText(QCoreApplication.translate("LedgerMainWindow", u"&Categories", None))
+        self.actionBackup.setText(QCoreApplication.translate("LedgerMainWindow", u"&Backup...", None))
         self.BalanceBox.setTitle(QCoreApplication.translate("LedgerMainWindow", u"Balances", None))
         self.BalanceDate.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy", None))
         self.CurrencyLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Sum Currency:", None))

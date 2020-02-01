@@ -1346,6 +1346,7 @@
     <addaction name="actionAssets"/>
     <addaction name="actionPeers"/>
     <addaction name="actionCategories"/>
+    <addaction name="actionBackup"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_DAta"/>
@@ -1409,29 +1410,34 @@
     <string>&amp;Categories</string>
    </property>
   </action>
+  <action name="actionBackup">
+   <property name="text">
+    <string>&amp;Backup...</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
    <class>AccountSelector</class>
    <extends>QWidget</extends>
-   <header>CustomUI\account_select.h</header>
+   <header>CustomUI/account_select.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>AssetSelector</class>
    <extends>QWidget</extends>
-   <header>CustomUI\asset_selector.h</header>
+   <header>CustomUI/asset_select.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>AccountButton</class>
    <extends>QPushButton</extends>
-   <header>CustomUI\account_select.h</header>
+   <header>CustomUI/account_select.h</header>
   </customwidget>
   <customwidget>
    <class>PeerSelector</class>
    <extends>QWidget</extends>
-   <header>CustomUI\peer_selector.h</header>
+   <header>CustomUI/peer_select.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
