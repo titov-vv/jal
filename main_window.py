@@ -6,6 +6,7 @@ from PySide2 import QtCore
 from UI.ui_main_window import Ui_LedgerMainWindow
 from ledger import Ledger
 from bulk_db import importFrom1C, loadDbFromSQL, MakeBackup, RestoreBackup
+from statements import StatementLoader
 from rebuild_window import RebuildDialog
 from downloader import QuoteDownloader, QuotesUpdateDialog
 from balance_delegate import BalanceDelegate, HoldingsDelegate
@@ -342,6 +343,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         # MENU ACTIONS
         self.actionExit.triggered.connect(qApp.quit)
         self.action_Load_quotes.triggered.connect(self.UpdateQuotes)
+        self.actionLoad_Statement.triggered.connect(self.loadReportIBKR)
         self.action_Import.triggered.connect(self.ImportFrom1C)
         self.actionBackup.triggered.connect(self.Backup)
         self.actionRestore.triggered.connect(self.Restore)
@@ -898,3 +900,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         update_dialog.setGeometry(self.x() + 64, self.y() + 64, update_dialog.width(), update_dialog.height())
         if update_dialog.exec_():
             self.downloader.UpdateQuotes(update_dialog.getStartDate(), update_dialog.getEndDate(), update_dialog.getUseProxy())
+
+    @Slot()
+    def loadReportIBKR(self):
+        report_file, _filter = QFileDialog.getOpenFileName(self, self.tr("Select Interactive Brokers Flex-query to import"), ".",
+                                                           self.tr("IBRK flex-query (*.xml)"))
+        if report_file:
+            report_loader = StatementLoader(self.db)
+            report_loader.loadIBFlex(report_file)
