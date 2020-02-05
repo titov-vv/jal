@@ -6,6 +6,29 @@ class StatementLoader:
     def __init__(self, db):
         self.db = db
 
+    def findAccountID(self, accountNumber, accountCurrency):
+        query = QSqlQuery(self.db)
+        query.prepare("SELECT a.id FROM accounts AS a "
+                      "LEFT JOIN assets AS c ON c.id=a.currency_id "
+                      "WHERE a.number=:account_number AND c.name=:currency_name")
+        query.bindValue(":account_number", accountNumber)
+        query.bindValue(":currency_name", accountCurrency)
+        assert query.exec_()
+        if query.next():
+            return query.value(0)
+        else:
+            return 0
+
+    def findAssetID(self, symbol):
+        query = QSqlQuery(self.db)
+        query.prepare("SELECT id FROM assets WHERE name=:symbol")
+        query.bindValue(":symbol", symbol)
+        assert query.exec_()
+        if query.next():
+            return query.value(0)
+        else:
+            return 0
+
     def loadIBFlex(self, filename):
         report = parser.parse(filename)
         for statement in report.FlexStatements:
@@ -19,15 +42,15 @@ class StatementLoader:
     def loadIBTrade(self, IBtrade):
         if IBtrade.assetCategory == AssetClass.STOCK:
             self.loadIBStockTrade(IBtrade)
-        # elif IBtrade.assetCategory == AssetClass.CASH:
-        #     self.laodIBCurrencyTrade(IBtrade)
+        elif IBtrade.assetCategory == AssetClass.CASH:
+            self.loadIBCurrencyTrade(IBtrade)
         else:
             print(f"Load of {IBtrade.assetCategory} is not implemented. Skipping trade #{IBtrade.tradeID}")
 
     def loadIBStockTrade(self, IBtrade):
         account_id = self.findAccountID(IBtrade.accountId, IBtrade.currency)
         if not account_id:
-            print(f"Account {IBtrade.accountId} not found. Skipping trade #{IBtrade.tradeID}")
+            print(f"Account {IBtrade.accountId} ({IBtrade.currency}) not found. Skipping trade #{IBtrade.tradeID}")
             return
         asset_id = self.findAssetID(IBtrade.symbol)
         if not asset_id:
@@ -55,29 +78,6 @@ class StatementLoader:
             self.deleteTrade(account_id, asset_id, -1, timestamp, number)
         else:
             print(f"Trade type f{IBtrade.buySell} is not implemented")
-
-    def findAccountID(self, accountNumber, accountCurrency):
-        query = QSqlQuery(self.db)
-        query.prepare("SELECT a.id FROM accounts AS a "
-                      "LEFT JOIN assets AS c ON c.id=a.currency_id "
-                      "WHERE a.number=:account_number AND c.name=:currency_name")
-        query.bindValue(":account_number", accountNumber)
-        query.bindValue(":currency_name", accountCurrency)
-        assert query.exec_()
-        if query.next():
-            return query.value(0)
-        else:
-            return 0
-
-    def findAssetID(self, symbol):
-        query = QSqlQuery(self.db)
-        query.prepare("SELECT id FROM assets WHERE name=:symbol")
-        query.bindValue(":symbol", symbol)
-        assert query.exec_()
-        if query.next():
-            return query.value(0)
-        else:
-            return 0
 
     def createTrade(self, account_id, asset_id, type, timestamp, settlement, number, qty, price, fee):
         query = QSqlQuery(self.db)
@@ -124,4 +124,65 @@ class StatementLoader:
         self.db.commit()
         print(f"Trade #{number} cancelled for account {account_id} asset {asset_id} @{timestamp}")
 
+    def loadIBCurrencyTrade(self, IBtrade):
+        if IBtrade.buySell == BuySell.BUY:
+            from_idx = 1
+            to_idx = 0
+        elif IBtrade.buySell == BuySell.SELL:
+            from_idx = 0
+            to_idx = 1
+        else:
+            print(f"Currency transaction of type {IBtrade.buySell} is not implemented")
+            return
+        currency = IBtrade.symbol.split('.')
+        to_currency_id = self.findAssetID(currency[to_idx])
+        from_currency_id = self.findAssetID(currency[from_idx])
+        if not to_currency_id or not from_currency_id:
+            print(f"Assets for {IBtrade.symbol} not found. Skipping currency exchange transaction #{IBtrade.tradeID}")
+            return
+        to_account_id = self.findAccountID(IBtrade.accountId, currency[to_idx])
+        if not to_account_id:
+            print(f"Account {IBtrade.accountId} ({currency[to_idx]}) not found. Skipping currency exchange transaction #{IBtrade.tradeID}")
+            return
+        from_account_id = self.findAccountID(IBtrade.accountId, currency[from_idx])
+        if not from_account_id:
+            print(f"Account {IBtrade.accountId} ({currency[from_idx]}) not found. Skipping currency exchange transaction #{IBtrade.tradeID}")
+            return
+        fee_account_id = self.findAccountID(IBtrade.accountId, IBtrade.ibCommissionCurrency)
+        if not fee_account_id:
+            print(f"Account {IBtrade.accountId} ({IBtrade.ibCommissionCurrency}) not found. Skipping currency exchange transaction #{IBtrade.tradeID}")
+            return
+        timestamp = int(IBtrade.dateTime.timestamp())
+        to_amount = float(IBtrade.quantity)    # positive value
+        from_amount = float(IBtrade.proceeds)  # already negative value
+        fee = float(IBtrade.ibCommission)   # already negative value
+        note = IBtrade.exchange
+        self.createTransfer(timestamp, from_account_id, from_amount, to_account_id, to_amount, fee_account_id, fee, note)
+
+    def createTransfer(self, timestamp, f_acc_id, f_amount, t_acc_id, t_amount, fee_acc_id, fee, note):
+        query = QSqlQuery(self.db)
+        query.prepare("SELECT from_id FROM transfers_combined "
+                      "WHERE from_timestamp=:timestamp AND from_acc_id=:from_acc_id AND to_acc_id=:to_acc_id")
+        query.bindValue(":timestamp", timestamp)
+        query.bindValue(":from_acc_id", f_acc_id)
+        query.bindValue(":to_acc_id", t_acc_id)
+        assert query.exec_()
+        if query.next():
+            print(f"Currency exchange {f_amount}->{t_amount} already exists")
+            return
+        query.prepare("INSERT INTO transfers_combined (from_timestamp, from_acc_id, from_amount, "
+                      "to_timestamp, to_acc_id, to_amount, fee_timestamp, fee_acc_id, fee_amount, note) "
+                      "VALUES (:timestamp, :f_acc_id, :f_amount, :timestamp, :t_acc_id, :t_amount, "
+                      ":timestamp, :fee_acc_id, :fee_amount, :note)")
+        query.bindValue(":timestamp", timestamp)
+        query.bindValue(":f_acc_id", f_acc_id)
+        query.bindValue(":t_acc_id", t_acc_id)
+        query.bindValue(":fee_acc_id", fee_acc_id)
+        query.bindValue(":f_amount", f_amount)
+        query.bindValue(":t_amount", t_amount)
+        query.bindValue(":fee_amount", fee)
+        query.bindValue(":note", note)
+        assert query.exec_()
+        self.db.commit()
+        print(f"Currency exchange {f_amount}->{t_amount} added @{timestamp}")
 
