@@ -38,7 +38,10 @@ class StatementLoader:
             settlement = int(datetime.combine(IBtrade.settleDateTarget, datetime.min.time()).timestamp())
         else:
             settlement = timestamp
-        number = IBtrade.tradeID
+        if IBtrade.tradeID:
+            number = IBtrade.tradeID
+        else:
+            number = ""
         qty = IBtrade.quantity
         price = IBtrade.tradePrice
         fee = IBtrade.ibCommission
@@ -47,9 +50,9 @@ class StatementLoader:
         elif IBtrade.buySell == BuySell.SELL:
             self.createTrade(account_id, asset_id, -1, timestamp, settlement, number, -qty, price, fee)
         elif IBtrade.buySell == BuySell.CANCELBUY:
-            self.deleteTrade(account_id, asset_id, timestamp, settlement, number)
+            self.deleteTrade(account_id, asset_id, 1, timestamp, number)
         elif IBtrade.buySell == BuySell.CANCELSELL:
-            self.deleteTrade(account_id, asset_id, timestamp, settlement, number)
+            self.deleteTrade(account_id, asset_id, -1, timestamp, number)
         else:
             print(f"Trade type f{IBtrade.buySell} is not implemented")
 
@@ -99,21 +102,21 @@ class StatementLoader:
         query.bindValue(":number", number)
         query.bindValue(":account", account_id)
         query.bindValue(":asset", asset_id)
-        query.bindValue(":qty", float(qty))   # TODO put default 0 values in SQL DB
+        query.bindValue(":qty", float(qty))
         query.bindValue(":price", float(price))
         query.bindValue(":fee_broker", float(fee))
         query.bindValue(":sum", float(qty*price-fee))
         assert query.exec_()
         self.db.commit()
-        print(f"Trade #{number} added for account {account_id} asset {asset_id} @{timestamp}")
+        print(f"Trade #{number} added for account {account_id} asset {asset_id} @{timestamp}: {qty}x{price}")
 
-    #TODO Fix delete Trade as it's not operational due to NULL number
-    def deleteTrade(self, account_id, asset_id, timestamp, _settlement, number):
+    def deleteTrade(self, account_id, asset_id, type, timestamp, number):
         query = QSqlQuery(self.db)
         query.prepare("DELETE FROM trades "
-                      "WHERE timestamp=:timestamp AND asset_id = :asset "
-                      "AND account_id = :account AND number = :number")
+                      "WHERE timestamp=:timestamp AND type=:type AND asset_id=:asset "
+                      "AND account_id=:account AND number=:number")
         query.bindValue(":timestamp", timestamp)
+        query.bindValue(":type", type)
         query.bindValue(":asset", asset_id)
         query.bindValue(":account", account_id)
         query.bindValue(":number", number)

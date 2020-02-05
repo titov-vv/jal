@@ -393,20 +393,24 @@ CREATE TABLE trades (
                            UNIQUE
                            NOT NULL,
     timestamp    INTEGER   NOT NULL,
-    settlement   INTEGER,
+    settlement   INTEGER   DEFAULT (0),
     type         INTEGER   NOT NULL,
-    number       TEXT (32),
+    number       TEXT (32) DEFAULT (''),
     account_id   INTEGER   REFERENCES accounts (id) ON DELETE CASCADE
                                                     ON UPDATE CASCADE
                            NOT NULL,
-    asset_id    INTEGER   REFERENCES assets (id) ON DELETE RESTRICT
-                                                   ON UPDATE CASCADE,
-    qty          REAL      NOT NULL,
-    price        REAL      NOT NULL,
-    coupon       REAL,
-    fee_broker   REAL,
-    fee_exchange REAL,
+    asset_id     INTEGER   REFERENCES assets (id) ON DELETE RESTRICT
+                                                  ON UPDATE CASCADE
+                           NOT NULL,
+    qty          REAL      NOT NULL
+                           DEFAULT (0),
+    price        REAL      NOT NULL
+                           DEFAULT (0),
+    coupon       REAL      DEFAULT (0),
+    fee_broker   REAL      DEFAULT (0),
+    fee_exchange REAL      DEFAULT (0),
     sum          REAL      NOT NULL
+                           DEFAULT (0)
 );
 
 
