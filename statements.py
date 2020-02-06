@@ -1,3 +1,4 @@
+from constants import *
 from ibflex import parser, AssetClass, BuySell
 from PySide2.QtSql import QSqlQuery
 from datetime import datetime
@@ -38,6 +39,8 @@ class StatementLoader:
         print(f"Load IB Flex-statement for account {IBstatement.accountId} from {IBstatement.fromDate} to {IBstatement.toDate}")
         for trade in IBstatement.Trades:
             self.loadIBTrade(trade)
+        for tax in IBstatement.TransactionTaxes:
+            self.loadIBTransactionTax(tax)
 
     def loadIBTrade(self, IBtrade):
         if IBtrade.assetCategory == AssetClass.STOCK:
@@ -110,6 +113,7 @@ class StatementLoader:
         self.db.commit()
         print(f"Trade #{number} added for account {account_id} asset {asset_id} @{timestamp}: {qty}x{price}")
 
+    #TODO add transaction details for matching trade
     def deleteTrade(self, account_id, asset_id, type, timestamp, number):
         query = QSqlQuery(self.db)
         query.prepare("DELETE FROM trades "
@@ -161,7 +165,7 @@ class StatementLoader:
 
     def createTransfer(self, timestamp, f_acc_id, f_amount, t_acc_id, t_amount, fee_acc_id, fee, note):
         query = QSqlQuery(self.db)
-        query.prepare("SELECT from_id FROM transfers_combined "
+        query.prepare("SELECT id FROM transfers_combined "
                       "WHERE from_timestamp=:timestamp AND from_acc_id=:from_acc_id AND to_acc_id=:to_acc_id")
         query.bindValue(":timestamp", timestamp)
         query.bindValue(":from_acc_id", f_acc_id)
@@ -186,3 +190,38 @@ class StatementLoader:
         self.db.commit()
         print(f"Currency exchange {f_amount}->{t_amount} added @{timestamp}")
 
+    def loadIBTransactionTax(self, IBtax):
+        account_id = self.findAccountID(IBtax.accountId, IBtax.currency)
+        if not account_id:
+            print(f"Account {IBtax.accountId} ({IBtax.currency}) not found. Skipping transaction tax #{IBtax.tradeID}")
+            return
+        timestamp = int(datetime.combine(IBtax.date, datetime.min.time()).timestamp())
+        amount = float(IBtax.taxAmount) # value is negative already
+        note = f"{IBtax.symbol} ({IBtax.description}) - {IBtax.taxDescription} (#{IBtax.tradeId})"
+
+        query = QSqlQuery(self.db)
+        query.prepare("SELECT id FROM all_operations "
+                      "WHERE type = :type AND timestamp=:timestamp AND account_id=:account_id AND amount=:amount")
+        query.bindValue(":timestamp", timestamp)
+        query.bindValue(":type", TRANSACTION_ACTION)
+        query.bindValue(":account_id", account_id)
+        query.bindValue(":amount", amount)
+        assert query.exec_()
+        if query.next():
+            print(f"Tax transaction #{IBtax.tradeId} already exists")
+            return
+        query.prepare("INSERT INTO actions (timestamp, account_id, peer_id) "
+                      "VALUES (:timestamp, :account_id, (SELECT organization_id FROM accounts WHERE id=:account_id))")
+        query.bindValue(":timestamp", timestamp)
+        query.bindValue(":account_id", account_id)
+        assert query.exec_()
+        pid = query.lastInsertId()
+        query.prepare("INSERT INTO action_details (pid, category_id, sum, note) "
+                      "VALUES (:pid, :category_id, :sum, :note)")
+        query.bindValue(":pid", pid)
+        query.bindValue(":category_id", CATEGORY_TAXES)
+        query.bindValue(":sum", amount)
+        query.bindValue(":note", note)
+        assert query.exec_()
+        self.db.commit()
+        print(f"Transaction tax added: {note}, {amount}")
