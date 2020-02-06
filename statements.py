@@ -41,6 +41,8 @@ class StatementLoader:
             self.loadIBTrade(trade)
         for tax in IBstatement.TransactionTaxes:
             self.loadIBTransactionTax(tax)
+        for corp_action in IBstatement.CorporateActions:
+            self.loadIBCorpAction(corp_action)
 
     def loadIBTrade(self, IBtrade):
         if IBtrade.assetCategory == AssetClass.STOCK:
@@ -225,3 +227,8 @@ class StatementLoader:
         assert query.exec_()
         self.db.commit()
         print(f"Transaction tax added: {note}, {amount}")
+
+    def loadIBCorpAction(self, IBCorpAction):
+        print("*** MANUAL ENTRY REQUIRED ***")
+        print(f"Corporate action for account {IBCorpAction.accountId} ({IBCorpAction.currency}) on {IBCorpAction.dateTime}:")
+        print(f"{IBCorpAction.actionDescription}")
