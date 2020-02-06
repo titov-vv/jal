@@ -201,15 +201,16 @@ CREATE TABLE dividends (
                            UNIQUE
                            NOT NULL,
     timestamp  INTEGER     NOT NULL,
-    number     TEXT (32),
+    number     TEXT (32)   DEFAULT (''),
     account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
                                                     ON UPDATE CASCADE
                            NOT NULL,
-    asset_id  INTEGER     REFERENCES assets (a_id) ON DELETE RESTRICT
-                                                     ON UPDATE CASCADE
+    asset_id   INTEGER     REFERENCES assets (a_id) ON DELETE RESTRICT
+                                                    ON UPDATE CASCADE
                            NOT NULL,
-    sum        REAL        NOT NULL,
-    sum_tax    REAL,
+    sum        REAL        NOT NULL
+                           DEFAULT (0),
+    sum_tax    REAL        DEFAULT (0),
     note       TEXT (1014),
     note_tax   TEXT (64) 
 );

@@ -1,5 +1,5 @@
 from constants import *
-from ibflex import parser, AssetClass, BuySell
+from ibflex import parser, AssetClass, BuySell, CashAction
 from PySide2.QtSql import QSqlQuery
 from datetime import datetime
 
@@ -43,6 +43,17 @@ class StatementLoader:
             self.loadIBTransactionTax(tax)
         for corp_action in IBstatement.CorporateActions:
             self.loadIBCorpAction(corp_action)
+        # 1st loop to load all dividends separately - to allow tax match in 2nd loop
+        for cash_transaction in IBstatement.CashTransactions:
+            if cash_transaction.type == CashAction.DIVIDEND:
+                self.loadIBDividend(cash_transaction)
+        for cash_transaction in IBstatement.CashTransactions:
+            if cash_transaction.type == CashAction.WHTAX:
+                self.loadIBWithholdingTax(cash_transaction)
+            elif cash_transaction.type == CashAction.FEES:
+                self.loadIBFee(cash_transaction)
+            elif cash_transaction.type == CashAction.DEPOSITWITHDRAW:
+                self.loadIBDepositWithdraw(cash_transaction)
 
     def loadIBTrade(self, IBtrade):
         if IBtrade.assetCategory == AssetClass.STOCK:
@@ -232,3 +243,110 @@ class StatementLoader:
         print("*** MANUAL ENTRY REQUIRED ***")
         print(f"Corporate action for account {IBCorpAction.accountId} ({IBCorpAction.currency}) on {IBCorpAction.dateTime}:")
         print(f"{IBCorpAction.actionDescription}")
+
+    def loadIBDividend(self, IBdividend):
+        if IBdividend.assetCategory != AssetClass.STOCK:
+            print(f"Dividend for {IBdividend.assetCategory} not implemented")
+            return
+        account_id = self.findAccountID(IBdividend.accountId, IBdividend.currency)
+        if not account_id:
+            print(f"Account {IBdividend.accountId} ({IBdividend.currency}) not found. Skipping dividend #{IBdividend.transactionID}")
+            return
+        asset_id = self.findAssetID(IBdividend.symbol)
+        if not asset_id:
+            print(f"Asset {IBdividend.symbol} not found. Skipping dividend #{IBdividend.transactionID}")
+            return
+        timestamp = int(IBdividend.dateTime.timestamp())
+        amount = float(IBdividend.amount)
+        note = IBdividend.description
+        self.createDividend(timestamp, account_id, asset_id, amount, note)
+
+    def loadIBWithholdingTax(self, IBtax):
+        if IBtax.assetCategory != AssetClass.STOCK:
+            print(f"Withholding tax for {IBtax.assetCategory} not implemented")
+            return
+        account_id = self.findAccountID(IBtax.accountId, IBtax.currency)
+        if not account_id:
+            print(
+                f"Account {IBtax.accountId} ({IBtax.currency}) not found. Skipping withholding tax #{IBtax.transactionID}")
+            return
+        asset_id = self.findAssetID(IBtax.symbol)
+        if not asset_id:
+            print(f"Asset {IBtax.symbol} not found. Skipping withholding tax #{IBtax.transactionID}")
+            return
+        timestamp = int(IBtax.dateTime.timestamp())
+        amount = float(IBtax.amount)
+        note = IBtax.description
+        self.addWithholdingTax(timestamp, account_id, asset_id, amount, note)
+
+    def loadIBFee(self, IBfee):
+        account_id = self.findAccountID(IBfee.accountId, IBfee.currency)
+        if not account_id:
+            print(f"Account {IBfee.accountId} ({IBfee.currency}) not found. Skipping transaction tax #{IBfee.transactionID}")
+            return
+        timestamp = int(IBfee.dateTime.timestamp())
+        amount = float(IBfee.amount)  # value may be both positive and negative
+        note = IBfee.description
+        query=QSqlQuery(self.db)
+        query.prepare("INSERT INTO actions (timestamp, account_id, peer_id) "
+                      "VALUES (:timestamp, :account_id, (SELECT organization_id FROM accounts WHERE id=:account_id))")
+        query.bindValue(":timestamp", timestamp)
+        query.bindValue(":account_id", account_id)
+        assert query.exec_()
+        pid = query.lastInsertId()
+        query.prepare("INSERT INTO action_details (pid, category_id, sum, note) "
+                      "VALUES (:pid, :category_id, :sum, :note)")
+        query.bindValue(":pid", pid)
+        query.bindValue(":category_id", CATEGORY_FEES)
+        query.bindValue(":sum", amount)
+        query.bindValue(":note", note)
+        assert query.exec_()
+        self.db.commit()
+        print(f"Fees added: {note}, {amount}")
+
+    def loadIBDepositWithdraw(self, IBcash):
+        print("*** MANUAL ENTRY REQUIRED ***")
+        print(f"{IBcash.dateTime} {IBcash.description}: {IBcash.accountId} {IBcash.amount} {IBcash.currency}")
+
+    def createDividend(self, timestamp, account_id, asset_id, amount, note):
+        query = QSqlQuery(self.db)
+        query.prepare("SELECT id FROM dividends "
+                      "WHERE timestamp=:timestamp AND account_id=:account_id AND asset_id=:asset_id")
+        query.bindValue(":timestamp", timestamp)
+        query.bindValue(":account_id", account_id)
+        query.bindValue(":asset_id", asset_id)
+        assert query.exec_()
+        if query.next():
+            print(f"Dividend already exists: {note}")
+            return
+        query.prepare("INSERT INTO dividends (timestamp, account_id, asset_id, sum, note) "
+                      "VALUES (:timestamp, :account_id, :asset_id, :sum, :note)")
+        query.bindValue(":timestamp", timestamp)
+        query.bindValue(":account_id", account_id)
+        query.bindValue(":asset_id", asset_id)
+        query.bindValue(":sum", amount)
+        query.bindValue(":note", note)
+        assert query.exec_()
+        self.db.commit()
+        print(f"Dividend added: {note}")
+
+    def addWithholdingTax(self, timestamp, account_id, asset_id, amount, note):
+        query = QSqlQuery(self.db)
+        query.prepare("SELECT id, sum_tax FROM dividends "
+                      "WHERE timestamp=:timestamp AND account_id=:account_id AND asset_id=:asset_id")
+        query.bindValue(":timestamp", timestamp)
+        query.bindValue(":account_id", account_id)
+        query.bindValue(":asset_id", asset_id)
+        assert query.exec_()
+        if not query.next():
+            print(f"Dividend not found for withholding tax: {note}")
+            return
+        dividend_id = query.value(0)
+        old_tax = query.value(1)
+        query.prepare("UPDATE dividends SET sum_tax=:tax, note_tax=:note WHERE id=:dividend_id")
+        query.bindValue(":dividend_id", dividend_id)
+        query.bindValue(":tax", old_tax+amount)
+        query.bindValue(":note", note)
+        assert query.exec_()
+        self.db.commit()
+        print(f"Withholding tax added: {note}")
