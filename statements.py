@@ -312,7 +312,7 @@ class StatementLoader:
         query.bindValue(":note", note)
         assert query.exec_()
         self.db.commit()
-        print(f"Fees  added: {note}, {amount}")
+        print(f"Fees added: {note}, {amount}")
 
     def loadIBDepositWithdraw(self, IBcash):
         print("*** MANUAL ENTRY REQUIRED ***")

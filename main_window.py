@@ -12,7 +12,7 @@ from downloader import QuoteDownloader, QuotesUpdateDialog
 from balance_delegate import BalanceDelegate, HoldingsDelegate
 from operation_delegate import *
 from dividend_delegate import DividendSqlDelegate
-from trade_delegate import TradeSqlDelegate, OptionGroup, ConversionSqlDelegate
+from trade_delegate import TradeSqlDelegate, OptionGroup
 from transfer_delegate import TransferSqlDelegate
 from action_delegate import ActionDelegate, ActionDetailDelegate
 from CustomUI.account_select import AcountTypeEditDlg, AccountChoiceDlg
@@ -315,34 +315,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TransferFeeAccountWidget.changed.connect(self.TransfersDataMapper.submit)
 
         ###############################################################################################
-        # CONFIGURE CONVERSION TAB                                                                        #
-        ###############################################################################################
-        self.ConversionAccountWidget.init_DB(self.db)
-        self.ConversionFromAssetWidget.init_DB(self.db)
-        self.ConversionToAssetWidget.init_DB(self.db)
-
-        self.ConversionModel = QSqlTableModel(db=self.db)
-        self.ConversionModel.setTable("asset_conversion")
-        self.ConversionModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        self.ConversionModel.dataChanged.connect(self.OnOperationDataChanged)
-        self.ConversionModel.select()
-        self.ConversionDataMapper = QDataWidgetMapper(self)
-        self.ConversionDataMapper.setModel(self.ConversionModel)
-        self.ConversionDataMapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
-        self.ConversionDataMapper.setItemDelegate(ConversionSqlDelegate(self.ConversionDataMapper))
-        AddAndConfigureMappings(self.ConversionModel, self.ConversionDataMapper,
-                    [("timestamp",      self.ConversionTimestampEdit,   widthForTimestampEdit,  None),
-                     ("account_id",     self.ConversionAccountWidget,   0,                      None),
-                     ("from_asset_id",  self.ConversionFromAssetWidget, 0,                      None),
-                     ("to_asset_id",    self.ConversionToAssetWidget,   0,                      None),
-                     ("from_qty",       self.ConversionFromQtyEdit,     widthForAmountEdit,     self.doubleValidate6),
-                     ("to_qty",         self.ConversionToQtyEdit,       widthForAmountEdit,     self.doubleValidate6),
-                     ("note",           self.ConversionNoteEdit,        0,                      None)])
-        self.ConversionAccountWidget.changed.connect(self.ConversionDataMapper.submit)
-        self.ConversionFromAssetWidget.changed.connect(self.ConversionDataMapper.submit)
-        self.ConversionToAssetWidget.changed.connect(self.ConversionDataMapper.submit)
-
-        ###############################################################################################
         # CONFIGURE ACTIONS                                                                           #
         ###############################################################################################
         # MENU ACTIONS
@@ -379,7 +351,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.NewOperationMenu.addAction('Transfer', self.CreateNewTransfer)
         self.NewOperationMenu.addAction('Buy / Sell', self.CreateNewTrade)
         self.NewOperationMenu.addAction('Dividend', self.CreateNewDividend)
-        self.NewOperationMenu.addAction('Corp. action', self.CreateNewConversion)
         self.NewOperationBtn.setMenu(self.NewOperationMenu)
         self.DeleteOperationBtn.clicked.connect(self.DeleteOperation)
         self.CopyOperationBtn.clicked.connect(self.CopyOperation)
@@ -513,10 +484,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 self.OperationsTabs.setCurrentIndex(TAB_TRANSFER)
                 self.TransfersModel.setFilter(f"transfers_combined.id = {operation_id}")
                 self.TransfersDataMapper.setCurrentModelIndex(self.TransfersDataMapper.model().index(0, 0))
-            elif (operation_type == TRANSACTION_CONVERSION):
-                self.OperationsTabs.setCurrentIndex(TAB_CONVERSION)
-                self.ConversionModel.setFilter("asset_conversion.id = {}".format(operation_id))
-                self.ConversionDataMapper.setCurrentModelIndex(self.ConversionDataMapper.model().index(0, 0))
             else:
                 assert False
 
@@ -581,14 +548,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 self.SubmitChangesForTab(TAB_TRANSFER)
             else:
                 self.RevertChangesForTab(TAB_TRANSFER)
-        if self.ConversionModel.isDirty():
-            reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
-                                          self.tr("Corporate action has uncommitted changes,\ndo you want to save it?"),
-                                          QMessageBox.Yes, QMessageBox.No)
-            if reply == QMessageBox.Yes:
-                self.SubmitChangesForTab(TAB_CONVERSION)
-            else:
-                self.RevertChangesForTab(TAB_CONVERSION)
 
     def SetOperationsFilter(self):
         operations_filter = ""
@@ -675,19 +634,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DividendsModel.setRecord(0, new_record)
         self.DividendsDataMapper.toLast()
 
-    def CreateNewConversion(self):
-        self.CheckForNotSavedData()
-        self.OperationsTabs.setCurrentIndex(TAB_CONVERSION)
-        self.ConversionDataMapper.submit()
-        self.ConversionModel.setFilter("asset_conversion.id = 0")
-        new_record = self.ConversionModel.record()
-        new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
-        if (self.ChooseAccountBtn.account_id != 0):
-            new_record.setValue("account_id", self.ChooseAccountBtn.account_id)
-        assert self.ConversionModel.insertRows(0, 1)
-        self.ConversionModel.setRecord(0, new_record)
-        self.ConversionDataMapper.toLast()
-
     @Slot()
     def DeleteOperation(self):
         if QMessageBox().warning(self, self.tr("Confirmation"),
@@ -708,9 +654,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         elif (operation_type == TRANSACTION_TRANSFER):
             self.TransfersModel.removeRow(0)
             self.TransfersModel.submitAll()
-        elif (operation_type == TRANSACTION_CONVERSION):
-            self.ConversionModel.removeRow(0)
-            self.ConversionModel.submitAll()
         else:
             assert False
         self.UpdateLedger()
@@ -776,16 +719,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             assert self.TradesModel.insertRows(0, 1)
             self.TradesModel.setRecord(0, new_record)
             self.TradesDataMapper.toLast()
-        elif (active_tab == TAB_CONVERSION):
-            row = self.ConversionDataMapper.currentIndex()
-            self.ConversionDataMapper.submit()
-            new_record = self.ConversionModel.record()
-            new_record.setNull("id")
-            new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
-            self.ConversionModel.setFilter("asset_conversion.id = 0")
-            assert self.ConversionModel.insertRows(0, 1)
-            self.ConversionModel.setRecord(0, new_record)
-            self.ConversionDataMapper.toLast()
         else:
             assert False
 
@@ -831,10 +764,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             if not self.TradesModel.submitAll():
                 print(self.tr("Trade submit failed: "), self.TradesModel.lastError().text())
                 return
-        elif (tab2save == TAB_CONVERSION):
-            if not self.ConversionModel.submitAll():
-                print(self.tr("Corp.action submit failed: "), self.ConversionModel.lastError().text())
-                return
         else:
             assert False
         self.UpdateLedger()
@@ -852,8 +781,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             self.DividendsModel.revertAll()
         elif (tab2revert == TAB_TRADE):
             self.TradesModel.revertAll()
-        elif (tab2revert == TAB_CONVERSION):
-            self.ConversionModel.revertAll()
         else:
             assert False
         self.SaveOperationBtn.setEnabled(False)

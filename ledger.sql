@@ -111,32 +111,6 @@ CREATE TABLE assets (
 );
 
 
--- Table: asset_conversion
-DROP TABLE IF EXISTS asset_conversion;
-
-CREATE TABLE asset_conversion (
-    id            INTEGER PRIMARY KEY
-                          UNIQUE
-                          NOT NULL,
-    timestamp     INTEGER NOT NULL,
-    account_id    INTEGER NOT NULL
-                          REFERENCES accounts (id) ON DELETE CASCADE
-                                                   ON UPDATE CASCADE,
-    from_asset_id INTEGER NOT NULL
-                          REFERENCES assets (id) ON DELETE RESTRICT
-                                                 ON UPDATE CASCADE,
-    to_asset_id   INTEGER REFERENCES assets (id) ON DELETE RESTRICT
-                                                 ON UPDATE CASCADE
-                          NOT NULL,
-    from_qty      REAL    NOT NULL
-                          DEFAULT (0),
-    to_qty        REAL    NOT NULL
-                          DEFAULT (0),
-    note          VARCHAR NOT NULL
-                          DEFAULT ('')
-);
-
-
 -- Table: agents
 DROP TABLE IF EXISTS agents;
 
@@ -608,21 +582,6 @@ CREATE VIEW all_operations AS
                       LEFT JOIN
                       accounts AS a ON a.id = p.account_id
                UNION ALL
-               SELECT 5 AS type,
-                      ca.id,
-                      ca.timestamp,
-                      a2.name AS num_peer,
-                      ca.account_id,
-                      from_qty AS amount,
-                      ca.to_asset_id AS asset_id,
-                      to_qty AS qty_trid,
-                      NULL AS price,
-                      NULL AS fee_tax,
-                      NULL AS t_qty,
-                      a2.full_name AS note,
-                      note AS note2
-                 FROM asset_conversion AS ca
-                      LEFT JOIN assets AS a2 ON ca.from_asset_id=a2.id
                 ORDER BY timestamp
            )
            AS m
