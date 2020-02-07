@@ -7,7 +7,7 @@ import numpy as np
 import math, sys, getopt
 #------------------------------------------------------------------------------
 backup_list = ["settings", "tags", "categories", "agents", "assets", "accounts", "dividends", "trades",
-               "actions", "action_details", "transfers", "transfer_notes", "quotes"]
+               "actions", "action_details", "transfers", "transfer_notes", "asset_conversion", "quotes"]
 #------------------------------------------------------------------------------
 def convert_data_source(val):
     try:
