@@ -231,7 +231,7 @@ CREATE TABLE dividends (
     account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
                                                     ON UPDATE CASCADE
                            NOT NULL,
-    asset_id   INTEGER     REFERENCES assets (a_id) ON DELETE RESTRICT
+    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT
                                                     ON UPDATE CASCADE
                            NOT NULL,
     sum        REAL        NOT NULL
