@@ -71,6 +71,9 @@ class OperationsTypeDelegate(QStyledItemDelegate):
                 pen.setColor(DARK_RED_COLOR)
             else:
                 assert False
+        elif (type == TRANSACTION_CONVERSION):
+            text = "*"
+            pen.setColor(DARK_BLUE_COLOR)
         else:
             assert False
 
@@ -87,7 +90,7 @@ class OperationsTypeDelegate(QStyledItemDelegate):
         document.setDefaultFont(option.font)
         w = document.idealWidth()
         h = fontMetrics.height()
-        if (type == TRANSACTION_DIVIDEND) or (type == TRANSACTION_TRADE):
+        if (type == TRANSACTION_DIVIDEND) or (type == TRANSACTION_TRADE) or (type == TRANSACTION_CONVERSION):
             h = h * 2
         return QSize(w, h)
 
@@ -135,7 +138,9 @@ class OperationsAccountDelegate(QStyledItemDelegate):
                 text = account + " <- " + account2
             else:
                 assert False
-
+        elif (type == TRANSACTION_CONVERSION):
+            note = model.data(model.index(index.row(), FIELD_NOTE2), Qt.DisplayRole)
+            text = account + "\n" + note
         else:
             assert False
         painter.drawText(option.rect, Qt.AlignLeft, text)
@@ -165,6 +170,10 @@ class OperationsNotesDelegate(QStyledItemDelegate):
                 text = f"{qty:+.2f} @ {price:.2f}\n({fee:.2f})"
             else:
                 text = f"{qty:+.2f} @ {price:.2f}"
+        elif (type == TRANSACTION_CONVERSION):
+            asset_name_1 = model.data(index, Qt.DisplayRole)
+            asset_name_2 = model.data(model.index(index.row(), FIELD_ASSET_NAME), Qt.DisplayRole)
+            text = asset_name_1 + "\n" + asset_name_2
         else:
             assert False
         painter.drawText(option.rect, Qt.AlignLeft, text)
@@ -216,6 +225,17 @@ class OperationsAmountDelegate(QStyledItemDelegate):
             pen.setColor(DARK_RED_COLOR)
             painter.setPen(pen)
             painter.drawText(rect, Qt.AlignRight, text)
+        elif (type == TRANSACTION_CONVERSION):
+            text = f"{amount:+,.2f}"
+            rect.setHeight(H / 2)
+            pen.setColor(DARK_RED_COLOR)
+            painter.setPen(pen)
+            painter.drawText(rect, Qt.AlignRight, text)
+            text = f"-{qty:,.2f}"
+            rect.moveTop(Y + H / 2)
+            pen.setColor(DARK_GREEN_COLOR)
+            painter.setPen(pen)
+            painter.drawText(rect, Qt.AlignRight, text)
         else:
             if (amount >= 0):
                 pen.setColor(DARK_GREEN_COLOR)
@@ -259,10 +279,16 @@ class OperationsCurrencyDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         painter.save()
         model = index.model()
-        currency = model.data(index, Qt.DisplayRole)
-        asset_name = model.data(model.index(index.row(), FIELD_ASSET), Qt.DisplayRole)
-        text = " " + currency
-        if (asset_name != ""):
-            text = text + "\n " + asset_name
+        type = model.data(model.index(index.row(), FIELD_TYPE), Qt.DisplayRole)
+        if (type == TRANSACTION_CONVERSION):
+            asset_1 = model.data(model.index(index.row(), FIELD_PEER_NUMBER), Qt.DisplayRole)
+            asset_2 = model.data(model.index(index.row(), FIELD_ASSET), Qt.DisplayRole)
+            text = " " + asset_1 +"\n " + asset_2
+        else:
+            currency = model.data(index, Qt.DisplayRole)
+            asset_name = model.data(model.index(index.row(), FIELD_ASSET), Qt.DisplayRole)
+            text = " " + currency
+            if (asset_name != ""):
+                text = text + "\n " + asset_name
         painter.drawText(option.rect, Qt.AlignLeft, text)
         painter.restore()

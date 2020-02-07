@@ -1,5 +1,5 @@
 from constants import *
-from ibflex import parser, AssetClass, BuySell, CashAction
+from ibflex import parser, AssetClass, BuySell, CashAction, Reorg
 from PySide2.QtSql import QSqlQuery
 from datetime import datetime
 
@@ -120,7 +120,7 @@ class StatementLoader:
         query.bindValue(":asset", asset_id)
         query.bindValue(":qty", float(qty))
         query.bindValue(":price", float(price))
-        query.bindValue(":fee_broker", float(fee))
+        query.bindValue(":fee_broker", float(fee))   #TODO check that here might be forced NULL value for corporate actions
         query.bindValue(":sum", float(qty*price-fee))
         assert query.exec_()
         self.db.commit()
@@ -241,7 +241,7 @@ class StatementLoader:
 
     def loadIBCorpAction(self, IBCorpAction):
         print("*** MANUAL ENTRY REQUIRED ***")
-        print(f"Corporate action for account {IBCorpAction.accountId} ({IBCorpAction.currency}) on {IBCorpAction.dateTime}:")
+        print(f"Corporate action {IBCorpAction.type} for account {IBCorpAction.accountId} ({IBCorpAction.currency}) on {IBCorpAction.dateTime}:")
         print(f"{IBCorpAction.actionDescription}")
 
     def loadIBDividend(self, IBdividend):
@@ -302,7 +302,7 @@ class StatementLoader:
         query.bindValue(":note", note)
         assert query.exec_()
         self.db.commit()
-        print(f"Fees added: {note}, {amount}")
+        print(f"Fees  added: {note}, {amount}")
 
     def loadIBDepositWithdraw(self, IBcash):
         print("*** MANUAL ENTRY REQUIRED ***")

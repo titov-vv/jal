@@ -12,7 +12,7 @@ from downloader import QuoteDownloader, QuotesUpdateDialog
 from balance_delegate import BalanceDelegate, HoldingsDelegate
 from operation_delegate import *
 from dividend_delegate import DividendSqlDelegate
-from trade_delegate import TradeSqlDelegate, OptionGroup
+from trade_delegate import TradeSqlDelegate, OptionGroup, ConversionSqlDelegate
 from transfer_delegate import TransferSqlDelegate
 from action_delegate import ActionDelegate, ActionDetailDelegate
 from CustomUI.account_select import AcountTypeEditDlg, AccountChoiceDlg
@@ -37,6 +37,19 @@ def HideViewColumns(view, columns_list):
 def ViewSetColumnWidths(view, column_width_list):
     for column_width in column_width_list:
         view.setColumnWidth(view.model().fieldIndex(column_width[0]), column_width[1])
+
+# This function gets a list of column_name/widget/width/validator pairs and:
+# 1) adds mapping between model and widget, 2) sets correct widget width, 3) set validator for widget
+# model - QSqlTableModel from where data to be mapped to widgets
+# mapper - QDataWidgetMapper to map data
+# column_widget_list - list of column_name/widget/width pairs that should be mapped
+def AddAndConfigureMappings(model, mapper, column_widget_list):
+    for column_widget in column_widget_list:
+        mapper.addMapping(column_widget[1], model.fieldIndex(column_widget[0]))  # if no USER property QByteArray().setRawData("account_id", 10))
+        if column_widget[2]:
+            column_widget[1].setFixedWidth(column_widget[2])
+        if column_widget[3]:
+            column_widget[1].setValidator(column_widget[3])
 #-----------------------------------------------------------------------------------------------------------------------
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def __init__(self):
@@ -79,30 +92,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         widthForAmountEdit = self.fontMetrics().width("888888888.88") * 1.5
         widthForTimestampEdit = self.fontMetrics().width("00/00/0000 00:00:00") * 1.5
 
-        self.ActionTimestampEdit.setFixedWidth(widthForTimestampEdit)
         self.AddActionDetail.setFixedWidth(widthForTimestampEdit * 0.25)
         self.CopyActionDetail.setFixedWidth(widthForTimestampEdit * 0.25)
         self.RemoveActionDetail.setFixedWidth(widthForTimestampEdit * 0.25)
-
-        self.DividendTimestampEdit.setFixedWidth(widthForTimestampEdit)
-        self.DividendNumberEdit.setFixedWidth(widthForTimestampEdit)
-        self.DividendSumEdit.setFixedWidth(widthForAmountEdit)
-        self.DividendTaxEdit.setFixedWidth(widthForAmountEdit)
-
-        self.TradeTimestampEdit.setFixedWidth(widthForTimestampEdit)
-        self.TradeNumberEdit.setFixedWidth(widthForTimestampEdit)
-        self.TradePriceEdit.setFixedWidth(widthForAmountEdit)
-        self.TradeQtyEdit.setFixedWidth(widthForAmountEdit)
-        self.TradeCouponEdit.setFixedWidth(widthForAmountEdit)
-        self.TradeBrokerFeeEdit.setFixedWidth(widthForAmountEdit)
-        self.TradeExchangeFeeEdit.setFixedWidth(widthForAmountEdit)
-
-        self.TransferFromAmount.setFixedWidth(widthForAmountEdit)
-        self.TransferToAmount.setFixedWidth(widthForAmountEdit)
-        self.TransferFeeAmount.setFixedWidth(widthForAmountEdit)
-        self.TransferFromTimestamp.setFixedWidth(widthForTimestampEdit)
-        self.TransferToTimestamp.setFixedWidth(widthForTimestampEdit)
-        self.TransferFeeTimestamp.setFixedWidth(widthForTimestampEdit)
 
         self.BalanceDate.setDateTime(QtCore.QDateTime.currentDateTime())
         self.HoldingsDate.setDateTime(QtCore.QDateTime.currentDateTime())
@@ -191,18 +183,17 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionsModel = QSqlRelationalTableModel(db=self.db)
         self.ActionsModel.setTable("actions")
         self.ActionsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        account_idx = self.ActionsModel.fieldIndex("account_id")
-        peer_idx = self.ActionsModel.fieldIndex("peer_id")
         self.ActionsModel.dataChanged.connect(self.OnOperationDataChanged)
         self.ActionsModel.select()
         self.ActionsDataMapper = QDataWidgetMapper(self)
         self.ActionsDataMapper.setModel(self.ActionsModel)
         self.ActionsDataMapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
         self.ActionsDataMapper.setItemDelegate(ActionDelegate(self.ActionsDataMapper))
-        self.ActionsDataMapper.addMapping(self.ActionAccountWidget, account_idx) # if no USER property QByteArray().setRawData("account_id", 10))
+        AddAndConfigureMappings(self.ActionsModel, self.ActionsDataMapper,
+                                [("timestamp",  self.ActionTimestampEdit,   widthForTimestampEdit,  None),
+                                 ("account_id", self.ActionAccountWidget,   0,                      None),
+                                 ("peer_id",    self.ActionPeerWidget,      0,                      None)])
         self.ActionAccountWidget.changed.connect(self.ActionsDataMapper.submit)
-        self.ActionsDataMapper.addMapping(self.ActionTimestampEdit, self.ActionsModel.fieldIndex("timestamp"))
-        self.ActionsDataMapper.addMapping(self.ActionPeerWidget, peer_idx)
         self.ActionPeerWidget.changed.connect(self.ActionsDataMapper.submit)
 
         self.ActionDetailsModel = QSqlRelationalTableModel(db=self.db)
@@ -244,32 +235,26 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TradesModel.setTable("trades")
         self.TradesModel.beforeInsert.connect(self.BeforeTradeInsert)
         self.TradesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        account_idx = self.TradesModel.fieldIndex("account_id")
-        asset_idx = self.TradesModel.fieldIndex("asset_id")
         self.TradesModel.dataChanged.connect(self.OnOperationDataChanged)
         self.TradesModel.select()
         self.TradesDataMapper = QDataWidgetMapper(self)
         self.TradesDataMapper.setModel(self.TradesModel)
         self.TradesDataMapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
         self.TradesDataMapper.setItemDelegate(TradeSqlDelegate(self.TradesDataMapper))
-        self.TradesDataMapper.addMapping(self.TradeAccountWidget, account_idx)
+        AddAndConfigureMappings(self.TradesModel, self.TradesDataMapper,
+                [("timestamp",      self.TradeTimestampEdit,    widthForTimestampEdit,  None),
+                 ("type",           self.BS_group,              0,                      None),
+                 ("account_id",     self.TradeAccountWidget,    0,                      None),
+                 ("asset_id",       self.TradeAssetWidget,      0,                      None),
+                 ("settlement",     self.TradeSettlementEdit,   0,                      None),
+                 ("number",         self.TradeNumberEdit,       widthForTimestampEdit,  None),
+                 ("price",          self.TradePriceEdit,        widthForAmountEdit,     self.doubleValidate6),
+                 ("qty",            self.TradeQtyEdit,          widthForAmountEdit,     self.doubleValidate6),
+                 ("coupon",         self.TradeCouponEdit,       widthForAmountEdit,     self.doubleValidate6),
+                 ("fee_broker",     self.TradeBrokerFeeEdit,    widthForAmountEdit,     self.doubleValidate6),
+                 ("fee_exchange",   self.TradeExchangeFeeEdit,  widthForAmountEdit,     self.doubleValidate6)])
         self.TradeAccountWidget.changed.connect(self.TradesDataMapper.submit)
-        self.TradesDataMapper.addMapping(self.TradeAssetWidget, asset_idx)
         self.TradeAssetWidget.changed.connect(self.TradesDataMapper.submit)
-        self.TradesDataMapper.addMapping(self.TradeTimestampEdit, self.TradesModel.fieldIndex("timestamp"))
-        self.TradesDataMapper.addMapping(self.BS_group, self.TradesModel.fieldIndex("type"))
-        self.TradesDataMapper.addMapping(self.TradeSettlementEdit, self.TradesModel.fieldIndex("settlement"))
-        self.TradesDataMapper.addMapping(self.TradeNumberEdit, self.TradesModel.fieldIndex("number"))
-        self.TradesDataMapper.addMapping(self.TradePriceEdit, self.TradesModel.fieldIndex("price"))
-        self.TradesDataMapper.addMapping(self.TradeQtyEdit, self.TradesModel.fieldIndex("qty"))
-        self.TradesDataMapper.addMapping(self.TradeCouponEdit, self.TradesModel.fieldIndex("coupon"))
-        self.TradesDataMapper.addMapping(self.TradeBrokerFeeEdit, self.TradesModel.fieldIndex("fee_broker"))
-        self.TradesDataMapper.addMapping(self.TradeExchangeFeeEdit, self.TradesModel.fieldIndex("fee_exchange"))
-        self.TradePriceEdit.setValidator(self.doubleValidate6)
-        self.TradeQtyEdit.setValidator(self.doubleValidate6)
-        self.TradeCouponEdit.setValidator(self.doubleValidate6)
-        self.TradeBrokerFeeEdit.setValidator(self.doubleValidate6)
-        self.TradeExchangeFeeEdit.setValidator(self.doubleValidate6)
 
         ###############################################################################################
         # CONFIGURE DIVIDENDS TAB                                                                     #
@@ -280,26 +265,23 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DividendsModel = QSqlTableModel(db=self.db)
         self.DividendsModel.setTable("dividends")
         self.DividendsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        account_idx = self.DividendsModel.fieldIndex("account_id")
-        asset_idx = self.DividendsModel.fieldIndex("asset_id")
         self.DividendsModel.dataChanged.connect(self.OnOperationDataChanged)
         self.DividendsModel.select()
         self.DividendsDataMapper = QDataWidgetMapper(self)
         self.DividendsDataMapper.setModel(self.DividendsModel)
         self.DividendsDataMapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
         self.DividendsDataMapper.setItemDelegate(DividendSqlDelegate(self.DividendsDataMapper))
-        self.DividendsDataMapper.addMapping(self.DividendAccountWidget, account_idx)
+        AddAndConfigureMappings(self.DividendsModel, self.DividendsDataMapper,
+                        [("timestamp",  self.DividendTimestampEdit,     widthForTimestampEdit,  None),
+                         ("account_id", self.DividendAccountWidget,     0,                      None),
+                         ("asset_id",   self.DividendAssetWidget,       0,                      None),
+                         ("number",     self.DividendNumberEdit,        widthForTimestampEdit,  None),
+                         ("sum",        self.DividendSumEdit,           widthForAmountEdit,     self.doubleValidate2),
+                         ("note",       self.DividendSumDescription,    0,                      None),
+                         ("sum_tax",    self.DividendTaxEdit,           widthForAmountEdit,     self.doubleValidate2),
+                         ("note_tax",   self.DividendTaxDescription,    0,                      None)])
         self.DividendAccountWidget.changed.connect(self.DividendsDataMapper.submit)
-        self.DividendsDataMapper.addMapping(self.DividendAssetWidget, asset_idx)
         self.DividendAssetWidget.changed.connect(self.DividendsDataMapper.submit)
-        self.DividendsDataMapper.addMapping(self.DividendTimestampEdit, self.DividendsModel.fieldIndex("timestamp"))
-        self.DividendsDataMapper.addMapping(self.DividendNumberEdit, self.DividendsModel.fieldIndex("number"))
-        self.DividendsDataMapper.addMapping(self.DividendSumEdit, self.DividendsModel.fieldIndex("sum"))
-        self.DividendsDataMapper.addMapping(self.DividendSumDescription, self.DividendsModel.fieldIndex("note"))
-        self.DividendsDataMapper.addMapping(self.DividendTaxEdit, self.DividendsModel.fieldIndex("sum_tax"))
-        self.DividendsDataMapper.addMapping(self.DividendTaxDescription, self.DividendsModel.fieldIndex("note_tax"))
-        self.DividendSumEdit.setValidator(self.doubleValidate2)
-        self.DividendTaxEdit.setValidator(self.doubleValidate2)
 
         ###############################################################################################
         # CONFIGURE TRANSFERS TAB                                                                     #
@@ -311,31 +293,54 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TransfersModel = QSqlTableModel(db=self.db)
         self.TransfersModel.setTable("transfers_combined")
         self.TransfersModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        from_idx = self.TransfersModel.fieldIndex("from_acc_id")
-        to_idx = self.TransfersModel.fieldIndex("to_acc_id")
-        fee_idx = self.TransfersModel.fieldIndex("fee_acc_id")
         self.TransfersModel.dataChanged.connect(self.OnOperationDataChanged)
         self.TransfersModel.select()
         self.TransfersDataMapper = QDataWidgetMapper(self)
         self.TransfersDataMapper.setModel(self.TransfersModel)
         self.TransfersDataMapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
         self.TransfersDataMapper.setItemDelegate(TransferSqlDelegate(self.TransfersDataMapper))
-        self.TransfersDataMapper.addMapping(self.TransferFromAccountWidget, from_idx)
+        AddAndConfigureMappings(self.TransfersModel, self.TransfersDataMapper,
+                    [("from_acc_id",    self.TransferFromAccountWidget, 0,                      None),
+                     ("to_acc_id",      self.TransferToAccountWidget,   0,                      None),
+                     ("fee_acc_id",     self.TransferFeeAccountWidget,  0,                      None),
+                     ("from_timestamp", self.TransferFromTimestamp,     widthForTimestampEdit,  None),
+                     ("to_timestamp",   self.TransferToTimestamp,       widthForTimestampEdit,  None),
+                     ("fee_timestamp",  self.TransferFeeTimestamp,      widthForTimestampEdit,  None),
+                     ("from_amount",    self.TransferFromAmount,        widthForAmountEdit,     self.doubleValidate2),
+                     ("to_amount",      self.TransferToAmount,          widthForAmountEdit,     self.doubleValidate2),
+                     ("fee_amount",     self.TransferFeeAmount,         widthForAmountEdit,     self.doubleValidate2),
+                     ("note",           self.TransferNote,              0,                      None)])
         self.TransferFromAccountWidget.changed.connect(self.TransfersDataMapper.submit)
-        self.TransfersDataMapper.addMapping(self.TransferToAccountWidget, to_idx)
         self.TransferToAccountWidget.changed.connect(self.TransfersDataMapper.submit)
-        self.TransfersDataMapper.addMapping(self.TransferFeeAccountWidget, fee_idx)
         self.TransferFeeAccountWidget.changed.connect(self.TransfersDataMapper.submit)
-        self.TransfersDataMapper.addMapping(self.TransferFromTimestamp, self.TransfersModel.fieldIndex("from_timestamp"))
-        self.TransfersDataMapper.addMapping(self.TransferToTimestamp, self.TransfersModel.fieldIndex("to_timestamp"))
-        self.TransfersDataMapper.addMapping(self.TransferFeeTimestamp, self.TransfersModel.fieldIndex("fee_timestamp"))
-        self.TransfersDataMapper.addMapping(self.TransferFromAmount, self.TransfersModel.fieldIndex("from_amount"))
-        self.TransfersDataMapper.addMapping(self.TransferToAmount, self.TransfersModel.fieldIndex("to_amount"))
-        self.TransfersDataMapper.addMapping(self.TransferFeeAmount, self.TransfersModel.fieldIndex("fee_amount"))
-        self.TransfersDataMapper.addMapping(self.TransferNote, self.TransfersModel.fieldIndex("note"))
-        self.TransferFromAmount.setValidator(self.doubleValidate2)
-        self.TransferToAmount.setValidator(self.doubleValidate2)
-        self.TransferFeeAmount.setValidator(self.doubleValidate2)
+
+        ###############################################################################################
+        # CONFIGURE CONVERSION TAB                                                                        #
+        ###############################################################################################
+        self.ConversionAccountWidget.init_DB(self.db)
+        self.ConversionFromAssetWidget.init_DB(self.db)
+        self.ConversionToAssetWidget.init_DB(self.db)
+
+        self.ConversionModel = QSqlTableModel(db=self.db)
+        self.ConversionModel.setTable("asset_conversion")
+        self.ConversionModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.ConversionModel.dataChanged.connect(self.OnOperationDataChanged)
+        self.ConversionModel.select()
+        self.ConversionDataMapper = QDataWidgetMapper(self)
+        self.ConversionDataMapper.setModel(self.ConversionModel)
+        self.ConversionDataMapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
+        self.ConversionDataMapper.setItemDelegate(ConversionSqlDelegate(self.ConversionDataMapper))
+        AddAndConfigureMappings(self.ConversionModel, self.ConversionDataMapper,
+                    [("timestamp",      self.ConversionTimestampEdit,   widthForTimestampEdit,  None),
+                     ("account_id",     self.ConversionAccountWidget,   0,                      None),
+                     ("from_asset_id",  self.ConversionFromAssetWidget, 0,                      None),
+                     ("to_asset_id",    self.ConversionToAssetWidget,   0,                      None),
+                     ("from_qty",       self.ConversionFromQtyEdit,     widthForAmountEdit,     self.doubleValidate6),
+                     ("to_qty",         self.ConversionToQtyEdit,       widthForAmountEdit,     self.doubleValidate6),
+                     ("note",           self.ConversionNoteEdit,        0,                      None)])
+        self.ConversionAccountWidget.changed.connect(self.ConversionDataMapper.submit)
+        self.ConversionFromAssetWidget.changed.connect(self.ConversionDataMapper.submit)
+        self.ConversionToAssetWidget.changed.connect(self.ConversionDataMapper.submit)
 
         ###############################################################################################
         # CONFIGURE ACTIONS                                                                           #
@@ -374,6 +379,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.NewOperationMenu.addAction('Transfer', self.CreateNewTransfer)
         self.NewOperationMenu.addAction('Buy / Sell', self.CreateNewTrade)
         self.NewOperationMenu.addAction('Dividend', self.CreateNewDividend)
+        self.NewOperationMenu.addAction('Corp. action', self.CreateNewConversion)
         self.NewOperationBtn.setMenu(self.NewOperationMenu)
         self.DeleteOperationBtn.clicked.connect(self.DeleteOperation)
         self.CopyOperationBtn.clicked.connect(self.CopyOperation)
@@ -507,6 +513,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 self.OperationsTabs.setCurrentIndex(TAB_TRANSFER)
                 self.TransfersModel.setFilter(f"transfers_combined.id = {operation_id}")
                 self.TransfersDataMapper.setCurrentModelIndex(self.TransfersDataMapper.model().index(0, 0))
+            elif (operation_type == TRANSACTION_CONVERSION):
+                self.OperationsTabs.setCurrentIndex(TAB_CONVERSION)
+                self.ConversionModel.setFilter("asset_conversion.id = {}".format(operation_id))
+                self.ConversionDataMapper.setCurrentModelIndex(self.ConversionDataMapper.model().index(0, 0))
             else:
                 assert False
 
@@ -571,6 +581,14 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 self.SubmitChangesForTab(TAB_TRANSFER)
             else:
                 self.RevertChangesForTab(TAB_TRANSFER)
+        if self.ConversionModel.isDirty():
+            reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
+                                          self.tr("Corporate action has uncommitted changes,\ndo you want to save it?"),
+                                          QMessageBox.Yes, QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                self.SubmitChangesForTab(TAB_CONVERSION)
+            else:
+                self.RevertChangesForTab(TAB_CONVERSION)
 
     def SetOperationsFilter(self):
         operations_filter = ""
@@ -657,6 +675,19 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DividendsModel.setRecord(0, new_record)
         self.DividendsDataMapper.toLast()
 
+    def CreateNewConversion(self):
+        self.CheckForNotSavedData()
+        self.OperationsTabs.setCurrentIndex(TAB_CONVERSION)
+        self.ConversionDataMapper.submit()
+        self.ConversionModel.setFilter("asset_conversion.id = 0")
+        new_record = self.ConversionModel.record()
+        new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
+        if (self.ChooseAccountBtn.account_id != 0):
+            new_record.setValue("account_id", self.ChooseAccountBtn.account_id)
+        assert self.ConversionModel.insertRows(0, 1)
+        self.ConversionModel.setRecord(0, new_record)
+        self.ConversionDataMapper.toLast()
+
     @Slot()
     def DeleteOperation(self):
         if QMessageBox().warning(self, self.tr("Confirmation"),
@@ -677,6 +708,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         elif (operation_type == TRANSACTION_TRANSFER):
             self.TransfersModel.removeRow(0)
             self.TransfersModel.submitAll()
+        elif (operation_type == TRANSACTION_CONVERSION):
+            self.ConversionModel.removeRow(0)
+            self.ConversionModel.submitAll()
         else:
             assert False
         self.UpdateLedger()
@@ -742,6 +776,16 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             assert self.TradesModel.insertRows(0, 1)
             self.TradesModel.setRecord(0, new_record)
             self.TradesDataMapper.toLast()
+        elif (active_tab == TAB_CONVERSION):
+            row = self.ConversionDataMapper.currentIndex()
+            self.ConversionDataMapper.submit()
+            new_record = self.ConversionModel.record()
+            new_record.setNull("id")
+            new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
+            self.ConversionModel.setFilter("asset_conversion.id = 0")
+            assert self.ConversionModel.insertRows(0, 1)
+            self.ConversionModel.setRecord(0, new_record)
+            self.ConversionDataMapper.toLast()
         else:
             assert False
 
@@ -787,6 +831,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             if not self.TradesModel.submitAll():
                 print(self.tr("Trade submit failed: "), self.TradesModel.lastError().text())
                 return
+        elif (tab2save == TAB_CONVERSION):
+            if not self.ConversionModel.submitAll():
+                print(self.tr("Corp.action submit failed: "), self.ConversionModel.lastError().text())
+                return
         else:
             assert False
         self.UpdateLedger()
@@ -804,6 +852,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             self.DividendsModel.revertAll()
         elif (tab2revert == TAB_TRADE):
             self.TradesModel.revertAll()
+        elif (tab2revert == TAB_CONVERSION):
+            self.ConversionModel.revertAll()
         else:
             assert False
         self.SaveOperationBtn.setEnabled(False)

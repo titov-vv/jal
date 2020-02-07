@@ -631,6 +631,84 @@ class Ui_LedgerMainWindow(object):
         self.gridLayout_5.addWidget(self.TransferToTimestamp, 3, 0, 1, 1)
 
         self.OperationsTabs.addWidget(self.TransferDetailsTab)
+        self.ConversionDetailsTab = QWidget()
+        self.ConversionDetailsTab.setObjectName(u"ConversionDetailsTab")
+        self.gridLayout_6 = QGridLayout(self.ConversionDetailsTab)
+        self.gridLayout_6.setObjectName(u"gridLayout_6")
+        self.ConversionFromAssetWidget = AssetSelector(self.ConversionDetailsTab)
+        self.ConversionFromAssetWidget.setObjectName(u"ConversionFromAssetWidget")
+
+        self.gridLayout_6.addWidget(self.ConversionFromAssetWidget, 3, 2, 1, 1)
+
+        self.horizontalSpacer_7 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.gridLayout_6.addItem(self.horizontalSpacer_7, 3, 4, 1, 1)
+
+        self.ConversionAccountLbl = QLabel(self.ConversionDetailsTab)
+        self.ConversionAccountLbl.setObjectName(u"ConversionAccountLbl")
+
+        self.gridLayout_6.addWidget(self.ConversionAccountLbl, 1, 1, 1, 1)
+
+        self.ConversionToLbl = QLabel(self.ConversionDetailsTab)
+        self.ConversionToLbl.setObjectName(u"ConversionToLbl")
+        self.ConversionToLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gridLayout_6.addWidget(self.ConversionToLbl, 4, 1, 1, 1)
+
+        self.ConversionToAssetWidget = AssetSelector(self.ConversionDetailsTab)
+        self.ConversionToAssetWidget.setObjectName(u"ConversionToAssetWidget")
+
+        self.gridLayout_6.addWidget(self.ConversionToAssetWidget, 4, 2, 1, 1)
+
+        self.ConversionTabLbl = QLabel(self.ConversionDetailsTab)
+        self.ConversionTabLbl.setObjectName(u"ConversionTabLbl")
+        self.ConversionTabLbl.setFont(font)
+
+        self.gridLayout_6.addWidget(self.ConversionTabLbl, 0, 0, 1, 1)
+
+        self.ConversionNoteEdit = QLineEdit(self.ConversionDetailsTab)
+        self.ConversionNoteEdit.setObjectName(u"ConversionNoteEdit")
+
+        self.gridLayout_6.addWidget(self.ConversionNoteEdit, 5, 2, 1, 3)
+
+        self.ConversionAccountWidget = AccountSelector(self.ConversionDetailsTab)
+        self.ConversionAccountWidget.setObjectName(u"ConversionAccountWidget")
+
+        self.gridLayout_6.addWidget(self.ConversionAccountWidget, 1, 2, 1, 1)
+
+        self.ConversionTimestampEdit = QDateTimeEdit(self.ConversionDetailsTab)
+        self.ConversionTimestampEdit.setObjectName(u"ConversionTimestampEdit")
+        self.ConversionTimestampEdit.setCalendarPopup(True)
+
+        self.gridLayout_6.addWidget(self.ConversionTimestampEdit, 1, 0, 1, 1)
+
+        self.verticalSpacer_3 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_6.addItem(self.verticalSpacer_3, 6, 0, 1, 1)
+
+        self.ConversionNoteLbl = QLabel(self.ConversionDetailsTab)
+        self.ConversionNoteLbl.setObjectName(u"ConversionNoteLbl")
+        self.ConversionNoteLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gridLayout_6.addWidget(self.ConversionNoteLbl, 5, 1, 1, 1)
+
+        self.ConversionFromLbl = QLabel(self.ConversionDetailsTab)
+        self.ConversionFromLbl.setObjectName(u"ConversionFromLbl")
+        self.ConversionFromLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gridLayout_6.addWidget(self.ConversionFromLbl, 3, 1, 1, 1)
+
+        self.ConversionFromQtyEdit = QLineEdit(self.ConversionDetailsTab)
+        self.ConversionFromQtyEdit.setObjectName(u"ConversionFromQtyEdit")
+
+        self.gridLayout_6.addWidget(self.ConversionFromQtyEdit, 3, 3, 1, 1)
+
+        self.ConversionToQtyEdit = QLineEdit(self.ConversionDetailsTab)
+        self.ConversionToQtyEdit.setObjectName(u"ConversionToQtyEdit")
+
+        self.gridLayout_6.addWidget(self.ConversionToQtyEdit, 4, 3, 1, 1)
+
+        self.OperationsTabs.addWidget(self.ConversionDetailsTab)
 
         self.horizontalLayout_4.addWidget(self.OperationsTabs)
 
@@ -782,7 +860,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(0)
+        self.OperationsTabs.setCurrentIndex(4)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)
@@ -873,6 +951,12 @@ class Ui_LedgerMainWindow(object):
         self.TransferFeeTimestamp.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.TransferToLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"To:", None))
         self.TransferToTimestamp.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
+        self.ConversionAccountLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Account:", None))
+        self.ConversionToLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"To:", None))
+        self.ConversionTabLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Corporate action", None))
+        self.ConversionTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
+        self.ConversionNoteLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Description:", None))
+        self.ConversionFromLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"From:", None))
         self.NewOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"New", None))
         self.CopyOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Copy", None))
         self.DeleteOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Del", None))

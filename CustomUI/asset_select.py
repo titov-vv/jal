@@ -215,7 +215,7 @@ class CurrencySelector(QWidget):
         row_idx = self.dialog.Model.index(0, 0).row()
         symbol = self.dialog.Model.record(row_idx).value(1)
         self.symbol.setText(symbol)
-        self.dialog.Model.setFilter(f"type_id={ACTIVE_TYPE_MONEY}")
+        self.dialog.Model.setFilter(f"type_id={ASSET_TYPE_MONEY}")
         self.changed.emit()
 
     @Signal
@@ -226,7 +226,7 @@ class CurrencySelector(QWidget):
 
     def init_DB(self, db):
         self.dialog.init_DB(db)
-        self.dialog.type_id = ACTIVE_TYPE_MONEY
+        self.dialog.type_id = ASSET_TYPE_MONEY
         self.dialog.setActiveFilter()
         self.dialog.AssetTypeCombo.setEnabled(False)
         self.completer = QCompleter(self.dialog.Model)

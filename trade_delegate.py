@@ -68,3 +68,26 @@ class TradeSqlDelegate(QSqlRelationalDelegate):
             model.setData(index, timestamp)
         else:
             QSqlRelationalDelegate.setModelData(self, editor, model, index)
+
+class ConversionSqlDelegate(QSqlRelationalDelegate):
+    def __init__(self, parent=None):
+        QSqlRelationalDelegate.__init__(self, parent)
+
+    def setEditorData(self, editor, index):
+        if (index.column() == 1):  # timestamp column
+            timestamp = index.model().data(index, Qt.EditRole)
+            if timestamp:
+                editor.setDateTime(datetime.fromtimestamp(timestamp))
+        elif (index.column() == 5) and (index.column() == 6):    # qty from and to
+            qty = index.model().data(index, Qt.EditRole)
+            if qty:
+                editor.setText(formatFloatLong(float(qty)))
+        else:
+            QSqlRelationalDelegate.setEditorData(self, editor, index)
+
+    def setModelData(self, editor, model, index):
+        if (index.column() == 1):  # timestamp column
+            timestamp = editor.dateTime().toSecsSinceEpoch()
+            model.setData(index, timestamp)
+        else:
+            QSqlRelationalDelegate.setModelData(self, editor, model, index)
