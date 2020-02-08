@@ -426,6 +426,21 @@ CREATE TABLE trades (
 );
 
 
+-- Table: deals
+DROP TABLE IF EXISTS deals;
+
+CREATE TABLE deals (
+    id             INTEGER PRIMARY KEY
+                           UNIQUE
+                           NOT NULL,
+    account_id     INTEGER NOT NULL,
+    asset_id       INTEGER NOT NULL,
+    open_sid  INTEGER NOT NULL,
+    close_sid INTEGER NOT NULL,
+    qty            REAL    NOT NULL
+);
+
+
 -- Table: transfer_notes
 DROP TABLE IF EXISTS transfer_notes;
 
