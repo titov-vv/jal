@@ -19,6 +19,7 @@ from CustomUI.account_select import AcountTypeEditDlg, AccountChoiceDlg
 from CustomUI.asset_select import AssetChoiceDlg
 from CustomUI.peer_select import PeerChoiceDlg
 from CustomUI.category_select import CategoryChoiceDlg
+from CustomUI.trade_action import TradeAction
 #-----------------------------------------------------------------------------------------------------------------------
 # model - QSqlTableModel where titles should be set for given columns
 # column_title_list - list of column_name/header_title pairs
@@ -225,11 +226,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         ###############################################################################################
         # CONFIGURE TRADES TAB                                                                        #
         ###############################################################################################
+        self.TradeActionWidget.init_DB(self.db)
         self.TradeAccountWidget.init_DB(self.db)
         self.TradeAssetWidget.init_DB(self.db)
-        self.BS_group = OptionGroup()
-        self.BS_group.addButton(self.BuyRadioBtn, 1)
-        self.BS_group.addButton(self.SellRadioBtn, 0)
 
         self.TradesModel = QSqlTableModel(db=self.db)
         self.TradesModel.setTable("trades")
@@ -243,7 +242,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TradesDataMapper.setItemDelegate(TradeSqlDelegate(self.TradesDataMapper))
         AddAndConfigureMappings(self.TradesModel, self.TradesDataMapper,
                 [("timestamp",      self.TradeTimestampEdit,    widthForTimestampEdit,  None),
-                 ("corp_action_id", self.BS_group,              0,                      None),
+                 ("id",             self.TradeActionWidget,     0,                      None),
                  ("account_id",     self.TradeAccountWidget,    0,                      None),
                  ("asset_id",       self.TradeAssetWidget,      0,                      None),
                  ("settlement",     self.TradeSettlementEdit,   0,                      None),

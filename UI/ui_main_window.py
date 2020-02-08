@@ -19,6 +19,7 @@ from CustomUI.account_select import AccountSelector
 from CustomUI.asset_select import AssetSelector
 from CustomUI.account_select import AccountButton
 from CustomUI.peer_select import PeerSelector
+from CustomUI.trade_action import TradeAction
 
 
 class Ui_LedgerMainWindow(object):
@@ -368,26 +369,6 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_3.addWidget(self.TradeNumberEdit, 2, 0, 1, 1)
 
-        self.TypeGroupFrame = QFrame(self.TradeDetailsTab)
-        self.TypeGroupFrame.setObjectName(u"TypeGroupFrame")
-        self.TypeGroupFrame.setFrameShape(QFrame.StyledPanel)
-        self.TypeGroupFrame.setFrameShadow(QFrame.Raised)
-        self.horizontalLayout_5 = QHBoxLayout(self.TypeGroupFrame)
-        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.horizontalLayout_5.setContentsMargins(9, 0, 9, 0)
-        self.BuyRadioBtn = QRadioButton(self.TypeGroupFrame)
-        self.BuyRadioBtn.setObjectName(u"BuyRadioBtn")
-
-        self.horizontalLayout_5.addWidget(self.BuyRadioBtn)
-
-        self.SellRadioBtn = QRadioButton(self.TypeGroupFrame)
-        self.SellRadioBtn.setObjectName(u"SellRadioBtn")
-
-        self.horizontalLayout_5.addWidget(self.SellRadioBtn)
-
-
-        self.gridLayout_3.addWidget(self.TypeGroupFrame, 4, 0, 1, 1)
-
         self.TradeFeeExchangeLbl = QLabel(self.TradeDetailsTab)
         self.TradeFeeExchangeLbl.setObjectName(u"TradeFeeExchangeLbl")
 
@@ -441,6 +422,11 @@ class Ui_LedgerMainWindow(object):
         self.TradeSymbolLbl.setObjectName(u"TradeSymbolLbl")
 
         self.gridLayout_3.addWidget(self.TradeSymbolLbl, 2, 1, 1, 1)
+
+        self.TradeActionWidget = TradeAction(self.TradeDetailsTab)
+        self.TradeActionWidget.setObjectName(u"TradeActionWidget")
+
+        self.gridLayout_3.addWidget(self.TradeActionWidget, 4, 0, 1, 1)
 
         self.OperationsTabs.addWidget(self.TradeDetailsTab)
         self.DividendDetailsTab = QWidget()
@@ -782,7 +768,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(0)
+        self.OperationsTabs.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)
@@ -835,8 +821,6 @@ class Ui_LedgerMainWindow(object):
 #if QT_CONFIG(tooltip)
         self.TradeNumberEdit.setToolTip(QCoreApplication.translate("LedgerMainWindow", u"Trade operation number", None))
 #endif // QT_CONFIG(tooltip)
-        self.BuyRadioBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Buy", None))
-        self.SellRadioBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Sell", None))
         self.TradeFeeExchangeLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Fee exchange", None))
         self.TradeTabLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Buy / Sell", None))
         self.TradeTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
