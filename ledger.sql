@@ -421,7 +421,6 @@ CREATE TABLE trades (
                            DEFAULT (0),
     coupon       REAL      DEFAULT (0),
     fee_broker   REAL      DEFAULT (0),
-    fee_exchange REAL      DEFAULT (0),
     sum          REAL      NOT NULL
                            DEFAULT (0)
 );
@@ -562,7 +561,7 @@ CREATE VIEW all_operations AS
                       t.asset_id,
                       t.qty AS qty_trid,
                       t.price AS price,
-                      t.fee_broker + t.fee_exchange AS fee_tax,
+                      t.fee_broker AS fee_tax,
                       l.sum_amount AS t_qty,
                       NULL AS note,
                       NULL AS note2,
@@ -1220,14 +1219,13 @@ END;
 DROP TRIGGER IF EXISTS trades_after_update;
 CREATE TRIGGER trades_after_update
          AFTER UPDATE OF timestamp,
-                         type,
+                         corp_action_id,
                          account_id,
                          asset_id,
                          qty,
                          price,
                          coupon,
-                         fee_broker,
-                         fee_exchange
+                         fee_broker
             ON trades
       FOR EACH ROW
           WHEN (

@@ -143,10 +143,10 @@ def importFrom1C(db_file, data_path):
     data.to_sql(name="dividends", con = db, if_exists='append', index=False, chunksize=100)
     print("Dividends loaded")
     data = pd.read_csv(data_path + "actions_trades.csv", sep='|', encoding='cp1251',
-                       dtype = {'type':int, 'number':str, 'account_id':int, 'sec_id':int},
+                       dtype = {'number':str, 'account_id':int, 'sec_id':int},
                        converters = {'timestamp': convert_datetime, 'settlement': convert_datetime,
                                      'quantity': convert_sum, 'price': convert_sum, 'coupon': convert_sum,
-                                     'fee_broker': convert_sum, 'fee_exchange': convert_sum, 'sum': convert_sum})
+                                     'fee': convert_sum, 'sum': convert_sum})
     data.rename(columns={'sec_id': 'asset_id'}, inplace=True)
     data.rename(columns={'quantity': 'qty'}, inplace=True)
     data.to_sql(name="trades", con = db, if_exists='append', index=False, chunksize=100)

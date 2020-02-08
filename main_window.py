@@ -250,8 +250,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                  ("price",          self.TradePriceEdit,        widthForAmountEdit,     self.doubleValidate6),
                  ("qty",            self.TradeQtyEdit,          widthForAmountEdit,     self.doubleValidate6),
                  ("coupon",         self.TradeCouponEdit,       widthForAmountEdit,     self.doubleValidate6),
-                 ("fee_broker",     self.TradeBrokerFeeEdit,    widthForAmountEdit,     self.doubleValidate6),
-                 ("fee_exchange",   self.TradeExchangeFeeEdit,  widthForAmountEdit,     self.doubleValidate6)])
+                 ("fee_broker",     self.TradeBrokerFeeEdit,    widthForAmountEdit,     self.doubleValidate6)])
         self.TradeAccountWidget.changed.connect(self.TradesDataMapper.submit)
         self.TradeAssetWidget.changed.connect(self.TradesDataMapper.submit)
 
@@ -789,14 +788,15 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def BeforeTradeInsert(self, record):
-        type = float(record.value("type"))
-        price = float(record.value("price"))
-        qty = float(record.value("qty"))
-        coupon = float(record.value("coupon"))
-        fee_broker = float(record.value("fee_broker"))
-        fee_exchange = float(record.value("fee_exchange"))
-        sum = round(price*qty, 2) + type*(fee_broker + fee_exchange) + coupon
-        record.setValue("sum", sum)
+        # type = float(record.value("type"))
+        # price = float(record.value("price"))
+        # qty = float(record.value("qty"))
+        # coupon = float(record.value("coupon"))
+        # fee_broker = float(record.value("fee_broker"))
+        # fee_exchange = float(record.value("fee_exchange"))
+        # sum = round(price*qty, 2) + type*(fee_broker + fee_exchange) + coupon
+        # record.setValue("sum", sum)
+        pass
 
     @Slot()
     def AddDetail(self):

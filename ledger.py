@@ -323,7 +323,7 @@ class Ledger:
 
     def processTrade(self, seq_id, id):
         query = QSqlQuery(self.db)
-        query.prepare("SELECT NULL, t.timestamp, t.account_id, c.currency_id, t.asset_id, t.qty, t.price, t.coupon, t.fee_broker+t.fee_exchange, t.sum "
+        query.prepare("SELECT NULL, t.timestamp, t.account_id, c.currency_id, t.asset_id, t.qty, t.price, t.coupon, t.fee_broker, t.sum "
                        "FROM trades AS t "
                        "LEFT JOIN accounts AS c ON t.account_id = c.id "
                        "WHERE t.id = :id")
