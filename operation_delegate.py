@@ -157,13 +157,16 @@ class OperationsNotesDelegate(QStyledItemDelegate):
             note2 = model.data(model.index(index.row(), FIELD_NOTE2), Qt.DisplayRole)
             text = note + "\n" + note2
         elif (type == TRANSACTION_TRADE):
-            qty = model.data(model.index(index.row(), FIELD_QTY_TRID), Qt.DisplayRole)
-            price = model.data(model.index(index.row(), FIELD_PRICE), Qt.DisplayRole)
-            fee = model.data(model.index(index.row(), FIELD_FEE_TAX), Qt.DisplayRole)
-            if (fee != 0):
-                text = f"{qty:+.2f} @ {price:.2f}\n({fee:.2f})"
-            else:
-                text = f"{qty:+.2f} @ {price:.2f}"
+            # Take corp.action description if any or construct Qty x Price for Buy/Sell operations
+            text = model.data(index, Qt.DisplayRole)
+            if not text:
+                qty = model.data(model.index(index.row(), FIELD_QTY_TRID), Qt.DisplayRole)
+                price = model.data(model.index(index.row(), FIELD_PRICE), Qt.DisplayRole)
+                fee = model.data(model.index(index.row(), FIELD_FEE_TAX), Qt.DisplayRole)
+                if (fee != 0):
+                    text = f"{qty:+.2f} @ {price:.2f}\n({fee:.2f})"
+                else:
+                    text = f"{qty:+.2f} @ {price:.2f}"
         else:
             assert False
         painter.drawText(option.rect, Qt.AlignLeft, text)
@@ -237,12 +240,13 @@ class OperationsTotalsDelegate(QStyledItemDelegate):
         total_money = model.data(index, Qt.DisplayRole)
         total_shares = model.data(model.index(index.row(), FIELD_TOTAL_QTY), Qt.DisplayRole)
         reconciled = model.data(model.index(index.row(), FIELD_RECONCILED), Qt.DisplayRole)
+        upper_part = "<void>"
+        lower_part = ''
         if (total_shares != ''):
-            text = f"{total_money:,.2f}\n{total_shares:,.2f}"
-        elif (total_money != ''):
-            text = f"{total_money:,.2f}\n"
-        else:
-            text = "<void>"
+            lower_part = f"{total_shares:,.2f}"
+        if (total_money != ''):
+            upper_part = f"{total_money:,.2f}\n"
+        text = upper_part + "\n" + lower_part
 
         if (reconciled == 1):
             pen.setColor(BLUE_COLOR)

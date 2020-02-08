@@ -563,7 +563,7 @@ CREATE VIEW all_operations AS
                       t.price AS price,
                       t.fee AS fee_tax,
                       l.sum_amount AS t_qty,
-                      NULL AS note,
+                      ca.note AS note,
                       NULL AS note2,
                       t.id AS operation_id
                  FROM trades AS t
@@ -573,6 +573,7 @@ CREATE VIEW all_operations AS
                       LEFT JOIN
                       ledger_sums AS l ON l.sid = q.id AND 
                                           l.book_account = 4
+                      LEFT JOIN corp_actions AS ca ON t.corp_action_id=ca.id
                UNION ALL
                SELECT 4 AS type,
                       r.tid,
