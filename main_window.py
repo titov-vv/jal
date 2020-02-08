@@ -750,6 +750,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             if not note:                           # If we don't have note - set it to NULL value to fire DB trigger
                 self.TransfersModel.setData(self.TransfersModel.index(0, self.TransfersModel.fieldIndex("note")), None)
             fee_amount = record.value(self.TransfersModel.fieldIndex("fee_amount"))
+            if not fee_amount:
+                fee_amount = 0
             if float(fee_amount) < CALC_TOLERANCE:   # If we don't have fee - set Fee Account to NULL to fire DB trigger
                 self.TransfersModel.setData(self.TransfersModel.index(0, self.TransfersModel.fieldIndex("fee_acc_id")), 0)
             if not self.TransfersModel.submitAll():

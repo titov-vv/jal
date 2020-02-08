@@ -52,7 +52,7 @@ class OperationsTypeDelegate(QStyledItemDelegate):
             text = "Δ"
             pen.setColor(DARK_GREEN_COLOR)
         elif (type == TRANSACTION_TRADE):
-            if (amount <= 0):  # For Buy we spend money while for Sell we get money
+            if (amount <= 0):  # TODO Change from amount to qty as amount might be 0 for Corp.Actions
                 text = "B"
                 pen.setColor(DARK_GREEN_COLOR)
             else:

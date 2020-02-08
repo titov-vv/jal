@@ -1,6 +1,6 @@
 from constants import *
 import re
-from ibflex import parser, AssetClass, BuySell, CashAction, Reorg
+from ibflex import parser, AssetClass, BuySell, CashAction, Reorg, Code
 from PySide2.QtSql import QSqlQuery
 from datetime import datetime
 
@@ -87,62 +87,59 @@ class StatementLoader:
         qty = IBtrade.quantity
         price = IBtrade.tradePrice
         fee = IBtrade.ibCommission
-        if IBtrade.buySell == BuySell.BUY:
-            self.createTrade(account_id, asset_id, 1, timestamp, settlement, number, qty, price, fee)
-        elif IBtrade.buySell == BuySell.SELL:
-            self.createTrade(account_id, asset_id, -1, timestamp, settlement, number, -qty, price, fee)
-        elif IBtrade.buySell == BuySell.CANCELBUY:
-            self.deleteTrade(account_id, asset_id, 1, timestamp, number)
-        elif IBtrade.buySell == BuySell.CANCELSELL:
-            self.deleteTrade(account_id, asset_id, -1, timestamp, number)
+        if IBtrade.buySell == BuySell.BUY or IBtrade.buySell == BuySell.SELL:
+            self.createTrade(account_id, asset_id, timestamp, settlement, number, qty, price, fee)
+        elif IBtrade.buySell == BuySell.CANCELBUY or IBtrade.buySell == BuySell.CANCELSELL:
+            self.deleteTrade(account_id, asset_id, timestamp, number, qty, price)
         else:
             print(f"Trade type f{IBtrade.buySell} is not implemented")
 
-    def createTrade(self, account_id, asset_id, type, timestamp, settlement, number, qty, price, fee):
+    def createTrade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee):
         query = QSqlQuery(self.db)
         query.prepare("SELECT id FROM trades "
                       "WHERE timestamp=:timestamp AND asset_id = :asset "
-                      "AND account_id = :account AND number = :number")
+                      "AND account_id = :account AND number = :number AND qty = :qty AND price = :price")
         query.bindValue(":timestamp", timestamp)
         query.bindValue(":asset", asset_id)
         query.bindValue(":account", account_id)
         query.bindValue(":number", number)
+        query.bindValue(":qty", qty)
+        query.bindValue(":price", price)
         assert query.exec_()
         if query.next():
             print(f"Trade #{number} already exists")
             return
-        query.prepare("INSERT INTO trades (timestamp, settlement, type, number, account_id, "
+        query.prepare("INSERT INTO trades (timestamp, settlement, corp_action_id, number, account_id, "
                       "asset_id, qty, price, fee_broker, sum) "
-                      "VALUES (:timestamp, :settlement, :type, :number, :account, "
+                      "VALUES (:timestamp, :settlement, 0, :number, :account, "
                       ":asset, :qty, :price, :fee, :sum)")
         query.bindValue(":timestamp", timestamp)
         query.bindValue(":settlement", settlement)
-        query.bindValue(":type", type)
         query.bindValue(":number", number)
         query.bindValue(":account", account_id)
         query.bindValue(":asset", asset_id)
         query.bindValue(":qty", float(qty))
         query.bindValue(":price", float(price))
         query.bindValue(":fee", float(fee))   #TODO check that here might be forced NULL value for corporate actions
-        query.bindValue(":sum", float(qty*price-fee))
+        query.bindValue(":sum", float(-qty*price-fee))
         assert query.exec_()
         self.db.commit()
         print(f"Trade #{number} added for account {account_id} asset {asset_id} @{timestamp}: {qty}x{price}")
 
-    #TODO add transaction details for matching trade
-    def deleteTrade(self, account_id, asset_id, type, timestamp, number):
+    def deleteTrade(self, account_id, asset_id, timestamp, number, qty, price):
         query = QSqlQuery(self.db)
         query.prepare("DELETE FROM trades "
-                      "WHERE timestamp=:timestamp AND type=:type AND asset_id=:asset "
-                      "AND account_id=:account AND number=:number")
+                      "WHERE timestamp=:timestamp AND asset_id=:asset "
+                      "AND account_id=:account AND number=:number AND qty=:qty AND price=:price")
         query.bindValue(":timestamp", timestamp)
-        query.bindValue(":type", type)
         query.bindValue(":asset", asset_id)
         query.bindValue(":account", account_id)
         query.bindValue(":number", number)
-        query.exec_()
+        query.bindValue(":qty", -qty)
+        query.bindValue(":price", price)
+        assert query.exec_()
         self.db.commit()
-        print(f"Trade #{number} cancelled for account {account_id} asset {asset_id} @{timestamp}")
+        print(f"Trade #{number} cancelled for account {account_id} asset {asset_id} @{timestamp}, Qty {qty}x{price}")
 
     def loadIBCurrencyTrade(self, IBtrade):
         if IBtrade.buySell == BuySell.BUY:
@@ -250,7 +247,30 @@ class StatementLoader:
         print(f"Transaction tax added: {note}, {amount}")
 
     def loadIBCorpAction(self, IBCorpAction):
-        print("*** MANUAL ENTRY REQUIRED ***")
+        if IBCorpAction.code == Code.CANCEL:
+            print("*** MANUAL ACTION REQUIRED ***")
+            print(f"Corporate action cancelled {IBCorpAction.type} for account {IBCorpAction.accountId} ({IBCorpAction.currency}): {IBCorpAction.actionDescription}")
+            print(f"@{IBCorpAction.dateTime} for {IBCorpAction.symbol}: Qty {IBCorpAction.quantity}, Value {IBCorpAction.value}, Type {IBCorpAction.type}, Code {IBCorpAction.code}")
+            return
+        if IBCorpAction.assetCategory == AssetClass.STOCK and (IBCorpAction.type == Reorg.MERGER or IBCorpAction.type == Reorg.SPINOFF):
+            account_id = self.findAccountID(IBCorpAction.accountId, IBCorpAction.currency)
+            if not account_id:
+                print(
+                    f"Account {IBCorpAction.accountId} ({IBCorpAction.currency}) not found. Skipping trade #{IBCorpAction.transactionID}")
+                return
+            asset_id = self.findAssetID(IBCorpAction.symbol)
+            if not asset_id:
+                print(f"Asset {IBCorpAction.symbol} not found. Skipping trade #{IBCorpAction.transactionID}")
+                return
+            timestamp = int(IBCorpAction.dateTime.timestamp())
+            settlement = timestamp
+            if IBCorpAction.transactionID:
+                number = IBCorpAction.transactionID
+            else:
+                number = ""
+            qty = IBCorpAction.quantity
+            self.createTrade(account_id, asset_id, timestamp, settlement, number, qty, 0, 0)
+        print("*** MANUAL ACTION REQUIRED ***")
         print(f"Corporate action {IBCorpAction.type} for account {IBCorpAction.accountId} ({IBCorpAction.currency}): {IBCorpAction.actionDescription}")
         print(f"@{IBCorpAction.dateTime} for {IBCorpAction.symbol}: Qty {IBCorpAction.quantity}, Value {IBCorpAction.value}, Type {IBCorpAction.type}, Code {IBCorpAction.code}")
 
