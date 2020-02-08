@@ -316,27 +316,16 @@ class Ui_LedgerMainWindow(object):
         self.gridLayout_3 = QGridLayout(self.TradeDetailsTab)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
         self.gridLayout_3.setContentsMargins(2, 2, 2, 2)
-        self.TradeExchangeFeeEdit = QLineEdit(self.TradeDetailsTab)
-        self.TradeExchangeFeeEdit.setObjectName(u"TradeExchangeFeeEdit")
-        self.TradeExchangeFeeEdit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gridLayout_3.addWidget(self.TradeExchangeFeeEdit, 6, 4, 1, 1)
-
-        self.TradeCouponLbl = QLabel(self.TradeDetailsTab)
-        self.TradeCouponLbl.setObjectName(u"TradeCouponLbl")
-
-        self.gridLayout_3.addWidget(self.TradeCouponLbl, 6, 1, 1, 1)
-
         self.TradePriceEdit = QLineEdit(self.TradeDetailsTab)
         self.TradePriceEdit.setObjectName(u"TradePriceEdit")
         self.TradePriceEdit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
         self.gridLayout_3.addWidget(self.TradePriceEdit, 4, 2, 1, 1)
 
-        self.TradeFeeBrokerLbl = QLabel(self.TradeDetailsTab)
-        self.TradeFeeBrokerLbl.setObjectName(u"TradeFeeBrokerLbl")
+        self.TradeFeeLbl = QLabel(self.TradeDetailsTab)
+        self.TradeFeeLbl.setObjectName(u"TradeFeeLbl")
 
-        self.gridLayout_3.addWidget(self.TradeFeeBrokerLbl, 5, 3, 1, 1)
+        self.gridLayout_3.addWidget(self.TradeFeeLbl, 5, 3, 1, 1)
 
         self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
@@ -348,12 +337,6 @@ class Ui_LedgerMainWindow(object):
         self.TradeSettlementEdit.setCalendarPopup(True)
 
         self.gridLayout_3.addWidget(self.TradeSettlementEdit, 5, 0, 1, 1)
-
-        self.TradeCouponEdit = QLineEdit(self.TradeDetailsTab)
-        self.TradeCouponEdit.setObjectName(u"TradeCouponEdit")
-        self.TradeCouponEdit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gridLayout_3.addWidget(self.TradeCouponEdit, 6, 2, 1, 1)
 
         self.label = QLabel(self.TradeDetailsTab)
         self.label.setObjectName(u"label")
@@ -369,22 +352,17 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_3.addWidget(self.TradeNumberEdit, 2, 0, 1, 1)
 
-        self.TradeFeeExchangeLbl = QLabel(self.TradeDetailsTab)
-        self.TradeFeeExchangeLbl.setObjectName(u"TradeFeeExchangeLbl")
-
-        self.gridLayout_3.addWidget(self.TradeFeeExchangeLbl, 6, 3, 1, 1)
-
         self.TradeTabLbl = QLabel(self.TradeDetailsTab)
         self.TradeTabLbl.setObjectName(u"TradeTabLbl")
         self.TradeTabLbl.setFont(font)
 
         self.gridLayout_3.addWidget(self.TradeTabLbl, 0, 0, 1, 1)
 
-        self.TradeBrokerFeeEdit = QLineEdit(self.TradeDetailsTab)
-        self.TradeBrokerFeeEdit.setObjectName(u"TradeBrokerFeeEdit")
-        self.TradeBrokerFeeEdit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.TradeFeeEdit = QLineEdit(self.TradeDetailsTab)
+        self.TradeFeeEdit.setObjectName(u"TradeFeeEdit")
+        self.TradeFeeEdit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
-        self.gridLayout_3.addWidget(self.TradeBrokerFeeEdit, 5, 4, 1, 1)
+        self.gridLayout_3.addWidget(self.TradeFeeEdit, 5, 4, 1, 1)
 
         self.TradeTimestampEdit = QDateTimeEdit(self.TradeDetailsTab)
         self.TradeTimestampEdit.setObjectName(u"TradeTimestampEdit")
@@ -427,6 +405,17 @@ class Ui_LedgerMainWindow(object):
         self.TradeActionWidget.setObjectName(u"TradeActionWidget")
 
         self.gridLayout_3.addWidget(self.TradeActionWidget, 4, 0, 1, 1)
+
+        self.TradeCouponLbl = QLabel(self.TradeDetailsTab)
+        self.TradeCouponLbl.setObjectName(u"TradeCouponLbl")
+
+        self.gridLayout_3.addWidget(self.TradeCouponLbl, 5, 1, 1, 1)
+
+        self.TradeCouponEdit = QLineEdit(self.TradeDetailsTab)
+        self.TradeCouponEdit.setObjectName(u"TradeCouponEdit")
+        self.TradeCouponEdit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gridLayout_3.addWidget(self.TradeCouponEdit, 5, 2, 1, 1)
 
         self.OperationsTabs.addWidget(self.TradeDetailsTab)
         self.DividendDetailsTab = QWidget()
@@ -810,8 +799,7 @@ class Ui_LedgerMainWindow(object):
         self.ActionTabLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Income / Spending", None))
         self.PeerLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Peer:", None))
         self.AccountLbl_2.setText(QCoreApplication.translate("LedgerMainWindow", u"Account:", None))
-        self.TradeCouponLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Coupon:", None))
-        self.TradeFeeBrokerLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Fee broker:", None))
+        self.TradeFeeLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Fee broker:", None))
 #if QT_CONFIG(tooltip)
         self.TradeSettlementEdit.setToolTip(QCoreApplication.translate("LedgerMainWindow", u"Trade settlement date", None))
 #endif // QT_CONFIG(tooltip)
@@ -821,12 +809,12 @@ class Ui_LedgerMainWindow(object):
 #if QT_CONFIG(tooltip)
         self.TradeNumberEdit.setToolTip(QCoreApplication.translate("LedgerMainWindow", u"Trade operation number", None))
 #endif // QT_CONFIG(tooltip)
-        self.TradeFeeExchangeLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Fee exchange", None))
         self.TradeTabLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Buy / Sell", None))
         self.TradeTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.TradePriceLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Price:", None))
         self.TradeAccountLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Account:", None))
         self.TradeSymbolLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Symbol:", None))
+        self.TradeCouponLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Coupon:", None))
         self.DividendSymbolLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Symbol:", None))
 #if QT_CONFIG(tooltip)
         self.DividendTaxEdit.setToolTip(QCoreApplication.translate("LedgerMainWindow", u"Tax amount", None))

@@ -110,7 +110,7 @@ class StatementLoader:
             print(f"Trade #{number} already exists")
             return
         query.prepare("INSERT INTO trades (timestamp, settlement, corp_action_id, number, account_id, "
-                      "asset_id, qty, price, fee_broker, sum) "
+                      "asset_id, qty, price, fee, sum) "
                       "VALUES (:timestamp, :settlement, 0, :number, :account, "
                       ":asset, :qty, :price, :fee, :sum)")
         query.bindValue(":timestamp", timestamp)

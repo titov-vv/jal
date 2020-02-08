@@ -577,20 +577,6 @@
                     <property name="bottomMargin">
                      <number>2</number>
                     </property>
-                    <item row="6" column="4">
-                     <widget class="QLineEdit" name="TradeExchangeFeeEdit">
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="6" column="1">
-                     <widget class="QLabel" name="TradeCouponLbl">
-                      <property name="text">
-                       <string>Coupon:</string>
-                      </property>
-                     </widget>
-                    </item>
                     <item row="4" column="2">
                      <widget class="QLineEdit" name="TradePriceEdit">
                       <property name="alignment">
@@ -599,7 +585,7 @@
                      </widget>
                     </item>
                     <item row="5" column="3">
-                     <widget class="QLabel" name="TradeFeeBrokerLbl">
+                     <widget class="QLabel" name="TradeFeeLbl">
                       <property name="text">
                        <string>Fee broker:</string>
                       </property>
@@ -641,13 +627,6 @@
                       </property>
                      </widget>
                     </item>
-                    <item row="6" column="2">
-                     <widget class="QLineEdit" name="TradeCouponEdit">
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
                     <item row="4" column="3">
                      <widget class="QLabel" name="label">
                       <property name="text">
@@ -675,13 +654,6 @@
                       </property>
                      </widget>
                     </item>
-                    <item row="6" column="3">
-                     <widget class="QLabel" name="TradeFeeExchangeLbl">
-                      <property name="text">
-                       <string>Fee exchange</string>
-                      </property>
-                     </widget>
-                    </item>
                     <item row="0" column="0">
                      <widget class="QLabel" name="TradeTabLbl">
                       <property name="font">
@@ -696,7 +668,7 @@
                      </widget>
                     </item>
                     <item row="5" column="4">
-                     <widget class="QLineEdit" name="TradeBrokerFeeEdit">
+                     <widget class="QLineEdit" name="TradeFeeEdit">
                       <property name="alignment">
                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                       </property>
@@ -748,6 +720,20 @@
                     </item>
                     <item row="4" column="0">
                      <widget class="TradeAction" name="TradeActionWidget" native="true"/>
+                    </item>
+                    <item row="5" column="1">
+                     <widget class="QLabel" name="TradeCouponLbl">
+                      <property name="text">
+                       <string>Coupon:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="5" column="2">
+                     <widget class="QLineEdit" name="TradeCouponEdit">
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
                     </item>
                    </layout>
                   </widget>
