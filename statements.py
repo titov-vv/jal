@@ -120,7 +120,7 @@ class StatementLoader:
         query.bindValue(":asset", asset_id)
         query.bindValue(":qty", float(qty))
         query.bindValue(":price", float(price))
-        query.bindValue(":fee", float(fee))   #TODO check that here might be forced NULL value for corporate actions
+        query.bindValue(":fee", -float(fee))
         query.bindValue(":sum", float(-qty*price-fee))
         assert query.exec_()
         self.db.commit()
