@@ -70,7 +70,7 @@ class OperationsTypeDelegate(QStyledItemDelegate):
                 text = "="
                 pen.setColor(DARK_RED_COLOR)
             else:
-                assert Falses
+                assert False
         else:
             assert False
 

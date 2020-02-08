@@ -102,18 +102,18 @@ class Ledger:
                        "FROM trades AS buy "
                        "INNER JOIN trades AS buy_before "
                        "ON buy.timestamp >= buy_before.timestamp and buy.asset_id = buy_before.asset_id and buy.account_id = buy_before.account_id "
-                       "WHERE buy.type = 1 and buy_before.type = 1 and buy.asset_id = :asset_id and buy.account_id = :account_id and buy.timestamp < :timestamp "
+                       "WHERE buy.qty > 0 and buy_before.qty > 0 and buy.asset_id = :asset_id and buy.account_id = :account_id and buy.timestamp < :timestamp "
                        "GROUP BY buy.timestamp, buy.qty")
         query.bindValue(":asset_id", asset_id)
         query.bindValue(":account_id", account_id)
         query.bindValue(":timestampe", timestamp)
         query.exec_()
         query.prepare("CREATE TEMPORARY TABLE outflux AS "
-                       "SELECT sell.timestamp, sum(sell_before.qty) - sell.qty AS qty_before, sum(sell_before.qty) AS qty_after "
+                       "SELECT sell.timestamp, sum(-sell_before.qty) + sell.qty AS qty_before, sum(-sell_before.qty) AS qty_after "
                        "FROM trades AS sell "
                        "INNER JOIN trades AS sell_before "
                        "ON sell.timestamp >= sell_before.timestamp and sell.asset_id = sell_before.asset_id and sell.account_id = sell_before.account_id "
-                       "WHERE sell.type = -1 and sell_before.type = -1 and sell.asset_id = :asset_id and sell.account_id = :account_id and sell.timestamp < :timestamp "
+                       "WHERE sell.qty < 0 and sell_before.qty < 0 and sell.asset_id = :asset_id and sell.account_id = :account_id and sell.timestamp < :timestamp "
                        "GROUP BY sell.timestamp, sell.qty")
         query.bindValue(":asset_id", asset_id)
         query.bindValue(":account_id", account_id)
@@ -225,19 +225,19 @@ class Ledger:
             last_deal = self.lastDeal(timestamp, asset_id, account_id)
             if (last_deal == None):   # There were no deals -> Select all sells
                 reminder = 0
-                query.prepare("SELECT t.id, t.qty, t.price FROM trades AS t WHERE t.type = -1 "
+                query.prepare("SELECT t.id, -t.qty, t.price FROM trades AS t WHERE t.qty < 0 "
                               "AND t.asset_id = :asset_id AND t.account_id = :account_id AND t.timestamp < :timestamp")
             else:
                 if (last_deal[3] == 1):  # SellFullMatch is true -> Select all sells after the closed deal (i.e. last sell timestamp)
                     reminder = 0
-                    query.prepare("SELECT t.id, t.qty, t.price FROM trades AS t "
-                                   "WHERE t.type = -1 AND t.asset_id = :asset_id AND t.account_id = :account_id "
+                    query.prepare("SELECT t.id, -t.qty, t.price FROM trades AS t "
+                                   "WHERE t.qty < 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
                                    "AND t.timestamp < :timestamp AND t.timestamp > :last_deal")
                     query.bindValue(":last_deal", last_deal[0])
                 else:
                     reminder = last_deal[4]
-                    query.prepare("SELECT t.id, t.qty, t.price FROM trades AS t "
-                                   "WHERE t.type = -1 AND t.asset_id = :asset_id AND t.account_id = :account_id "
+                    query.prepare("SELECT t.id, -t.qty, t.price FROM trades AS t "
+                                   "WHERE t.qty < 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
                                    "AND t.timestamp < :timestamp AND t.timestamp >= :last_deal")
                     query.bindValue(":last_deal", last_deal[0])
             query.bindValue(":asset_id", asset_id)
@@ -276,19 +276,19 @@ class Ledger:
             last_deal = self.lastDeal(timestamp, asset_id, account_id)
             if (last_deal == None):   # There were no deals -> Select all purchases
                 reminder = 0
-                query.prepare("SELECT t.id, t.qty, t.price FROM trades AS t WHERE t.type = 1 "
+                query.prepare("SELECT t.id, t.qty, t.price FROM trades AS t WHERE t.qty > 0 "
                               "AND t.asset_id = :asset_id AND t.account_id = :account_id AND t.timestamp < :timestamp")
             else:
                 if (last_deal[2] == 1):  # BuyFullMatch is true -> Select all purchases after the closed deal (i.e. last buy timestamp)
                     reminder = 0
                     query.prepare("SELECT t.id, t.qty, t.price FROM trades AS t "
-                                   "WHERE t.type = 1 AND t.asset_id = :asset_id AND t.account_id = :account_id "
+                                   "WHERE t.qty > 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
                                    "AND t.timestamp < :timestamp AND t.timestamp > :last_deal")
                     query.bindValue(":last_deal", last_deal[1])
                 else:
                     reminder = last_deal[4]
                     query.prepre("SELECT t.id, t.qty, t.price FROM trades AS t "
-                                   "WHERE t.type = 1 AND t.asset_id = :asset_id AND t.account_id = :account_id "
+                                   "WHERE t.qty > 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
                                    "AND t.timestamp < :timestamp AND t.timestamp >= :last_deal")
                     query.bindValue(":last_deal", last_deal[1])
             query.bindValue(":asset_id", asset_id)
@@ -323,19 +323,19 @@ class Ledger:
 
     def processTrade(self, seq_id, id):
         query = QSqlQuery(self.db)
-        query.prepare("SELECT t.type, t.timestamp, t.account_id, c.currency_id, t.asset_id, t.qty, t.price, t.coupon, t.fee_broker+t.fee_exchange, t.sum "
+        query.prepare("SELECT NULL, t.timestamp, t.account_id, c.currency_id, t.asset_id, t.qty, t.price, t.coupon, t.fee_broker+t.fee_exchange, t.sum "
                        "FROM trades AS t "
                        "LEFT JOIN accounts AS c ON t.account_id = c.id "
                        "WHERE t.id = :id")
         query.bindValue(":id", id)
         assert query.exec_()
         query.next()
-        type = query.value(0)
-        if (type == 1):
+        qty = query.value(5)
+        if (qty > 0):
             self.processBuy(seq_id, query.value(1), query.value(2), query.value(3), query.value(4), query.value(5),
-                            query.value(6), query.value(7), query.value(8), query.value(9))
+                            query.value(6), query.value(7), query.value(8), -query.value(9))
         else:
-            self.processSell(seq_id, query.value(1), query.value(2), query.value(3), query.value(4), query.value(5),
+            self.processSell(seq_id, query.value(1), query.value(2), query.value(3), query.value(4), -query.value(5),
                              query.value(6), query.value(7), query.value(8), query.value(9))
 
     def processTransferOut(self, seq_id, timestamp, account_id, currency_id, amount):

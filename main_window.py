@@ -229,7 +229,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TradeAssetWidget.init_DB(self.db)
         self.BS_group = OptionGroup()
         self.BS_group.addButton(self.BuyRadioBtn, 1)
-        self.BS_group.addButton(self.SellRadioBtn, -1)
+        self.BS_group.addButton(self.SellRadioBtn, 0)
 
         self.TradesModel = QSqlTableModel(db=self.db)
         self.TradesModel.setTable("trades")
@@ -243,7 +243,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TradesDataMapper.setItemDelegate(TradeSqlDelegate(self.TradesDataMapper))
         AddAndConfigureMappings(self.TradesModel, self.TradesDataMapper,
                 [("timestamp",      self.TradeTimestampEdit,    widthForTimestampEdit,  None),
-                 ("type",           self.BS_group,              0,                      None),
+                 ("corp_action_id", self.BS_group,              0,                      None),
                  ("account_id",     self.TradeAccountWidget,    0,                      None),
                  ("asset_id",       self.TradeAssetWidget,      0,                      None),
                  ("settlement",     self.TradeSettlementEdit,   0,                      None),

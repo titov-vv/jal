@@ -386,6 +386,18 @@ CREATE TABLE tags (
 );
 
 
+-- Table: corp_actions
+DROP TABLE IF EXISTS corp_actions;
+
+CREATE TABLE corp_actions (
+    id   INTEGER     PRIMARY KEY
+                     UNIQUE
+                     NOT NULL,
+    type INTEGER,
+    note TEXT (1024)
+);
+
+
 -- Table: trades
 DROP TABLE IF EXISTS trades;
 
@@ -395,7 +407,7 @@ CREATE TABLE trades (
                            NOT NULL,
     timestamp    INTEGER   NOT NULL,
     settlement   INTEGER   DEFAULT (0),
-    type         INTEGER   NOT NULL,
+    corp_action_id INTEGER   DEFAULT (0),
     number       TEXT (32) DEFAULT (''),
     account_id   INTEGER   REFERENCES accounts (id) ON DELETE CASCADE
                                                     ON UPDATE CASCADE
@@ -510,7 +522,8 @@ CREATE VIEW all_operations AS
                       NULL AS fee_tax,
                       NULL AS t_qty,
                       NULL AS note,
-                      NULL AS note2
+                      NULL AS note2,
+                      o.id AS operation_id
                  FROM actions AS o
                       LEFT JOIN
                       agents AS p ON o.peer_id = p.id
@@ -530,7 +543,8 @@ CREATE VIEW all_operations AS
                       d.sum_tax AS fee_tax,
                       NULL AS t_qty,
                       d.note AS note,
-                      d.note_tax AS note2
+                      d.note_tax AS note2,
+                      d.id AS operation_id
                  FROM dividends AS d
                       LEFT JOIN
                       ledger AS l ON d.asset_id = l.asset_id AND
@@ -544,14 +558,15 @@ CREATE VIEW all_operations AS
                       t.timestamp,
                       t.number AS num_peer,
                       t.account_id,
-                      ( -t.type * t.sum) AS amount,
+                      t.sum AS amount,
                       t.asset_id,
-                      (t.type * t.qty) AS qty_trid,
+                      t.qty AS qty_trid,
                       t.price AS price,
                       t.fee_broker + t.fee_exchange AS fee_tax,
                       l.sum_amount AS t_qty,
                       NULL AS note,
-                      NULL AS note2
+                      NULL AS note2,
+                      t.id AS operation_id
                  FROM trades AS t
                       LEFT JOIN
                       sequence AS q ON q.type = 3 AND 
@@ -572,17 +587,17 @@ CREATE VIEW all_operations AS
                       NULL AS fee_tax,
                       NULL AS t_qty,
                       n.note,
-                      a.name AS note2
+                      a.name AS note2,
+                      tr.id AS operation_id
                  FROM transfers AS r
                       LEFT JOIN
                       transfer_notes AS n ON r.tid = n.tid
                       LEFT JOIN
-                      transfers AS p ON r.tid = p.tid AND 
-                                        p.type = -r.type
+                      transfers AS tr ON r.tid = tr.tid AND
+                                        r.type = tr.type
                       LEFT JOIN
-                      accounts AS a ON a.id = p.account_id
-               UNION ALL
-                ORDER BY timestamp
+                      accounts AS a ON a.id = tr.account_id
+               ORDER BY timestamp
            )
            AS m
            LEFT JOIN
@@ -593,7 +608,7 @@ CREATE VIEW all_operations AS
            assets AS c ON a.currency_id = c.id
            LEFT JOIN
            sequence AS q ON m.type = q.type AND 
-                            m.id = q.operation_id
+                            m.operation_id = q.operation_id
            LEFT JOIN
            ledger_sums AS l ON l.sid = q.id AND 
                                (l.book_account = 3 OR 
