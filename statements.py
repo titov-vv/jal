@@ -110,9 +110,9 @@ class StatementLoader:
             print(f"Trade #{number} already exists")
             return
         query.prepare("INSERT INTO trades (timestamp, settlement, corp_action_id, number, account_id, "
-                      "asset_id, qty, price, fee, sum) "
+                      "asset_id, qty, price, fee) "
                       "VALUES (:timestamp, :settlement, 0, :number, :account, "
-                      ":asset, :qty, :price, :fee, :sum)")
+                      ":asset, :qty, :price, :fee)")
         query.bindValue(":timestamp", timestamp)
         query.bindValue(":settlement", settlement)
         query.bindValue(":number", number)
@@ -121,7 +121,6 @@ class StatementLoader:
         query.bindValue(":qty", float(qty))
         query.bindValue(":price", float(price))
         query.bindValue(":fee", -float(fee))
-        query.bindValue(":sum", float(-qty*price-fee))
         assert query.exec_()
         self.db.commit()
         print(f"Trade #{number} added for account {account_id} asset {asset_id} @{timestamp}: {qty}x{price}")

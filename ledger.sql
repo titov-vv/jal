@@ -420,9 +420,7 @@ CREATE TABLE trades (
     price        REAL      NOT NULL
                            DEFAULT (0),
     coupon       REAL      DEFAULT (0),
-    fee          REAL      DEFAULT (0),
-    sum          REAL      NOT NULL
-                           DEFAULT (0)
+    fee          REAL      DEFAULT (0)
 );
 
 
@@ -572,7 +570,7 @@ CREATE VIEW all_operations AS
                       t.timestamp,
                       t.number AS num_peer,
                       t.account_id,
-                      t.sum AS amount,
+                      -(t.price*t.qty) AS amount,
                       t.asset_id,
                       t.qty AS qty_trid,
                       t.price AS price,

@@ -229,7 +229,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.TradesModel = QSqlTableModel(db=self.db)
         self.TradesModel.setTable("trades")
-        self.TradesModel.beforeInsert.connect(self.BeforeTradeInsert)
         self.TradesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.TradesModel.dataChanged.connect(self.OnOperationDataChanged)
         self.TradesModel.select()
@@ -782,18 +781,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             assert False
         self.SaveOperationBtn.setEnabled(False)
         self.RevertOperationBtn.setEnabled(False)
-
-    @Slot()
-    def BeforeTradeInsert(self, record):
-        # type = float(record.value("type"))
-        # price = float(record.value("price"))
-        # qty = float(record.value("qty"))
-        # coupon = float(record.value("coupon"))
-        # fee_broker = float(record.value("fee_broker"))
-        # fee_exchange = float(record.value("fee_exchange"))
-        # sum = round(price*qty, 2) + type*(fee_broker + fee_exchange) + coupon
-        # record.setValue("sum", sum)
-        pass
 
     @Slot()
     def AddDetail(self):
