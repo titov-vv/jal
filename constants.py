@@ -44,8 +44,8 @@ PEER_FINANCIAL          = 1
 FEED_NONE       = -1
 FEED_CBR        = 0
 FEED_RU         = 1
-FEED_US         = 3
-FEED_EU         = 4
+FEED_US         = 2
+FEED_EU         = 3
 
 from PySide2.QtGui import QColor
 DARK_GREEN_COLOR = QColor(0, 100, 0)
