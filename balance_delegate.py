@@ -4,7 +4,15 @@ from PySide2.QtGui import QPalette, QBrush
 from PySide2.QtCore import Qt
 
 ########################################
-# FIELD NUMBERS
+# BALANCES FIELD NUMBERS
+FIELD_BALANCE       = 3
+FIELD_CURRENCY      = 4
+FIELD_BALANCE_ADJ   = 5
+FIELD_DAYS_UNREC    = 6
+FEILD_ACTIVE        = 7
+
+########################################
+# HOLDINGS FIELD NUMBERS
 FIELD_L1        = 0
 FIELD_L2        = 1
 FIELD_ACCOUNT   = 3
@@ -39,9 +47,15 @@ class BalanceDelegate(QStyledItemDelegate):
         column = index.column()
         record = model.record(index.row())
         value = record.value(column)
-        balance = record.value(3)
+        balance = record.value(FIELD_BALANCE)
+        unreconciled_days = record.value(FIELD_DAYS_UNREC)
 
-        if (column == 3) or (column == 5):
+        if unreconciled_days > 7:
+            painter.fillRect(option.rect, LIGHT_YELLOW_COLOR)
+        if unreconciled_days > 15:
+            painter.fillRect(option.rect, LIGHT_RED_COLOR)
+
+        if (column == FIELD_BALANCE) or (column == FIELD_BALANCE_ADJ):
             if value == "":
                 value = 0
             text = f"{value:,.2f}"
@@ -54,7 +68,7 @@ class BalanceDelegate(QStyledItemDelegate):
             font = painter.font()
             font.setBold(True)
             painter.setFont(font)
-            if (column == 3) or (column == 4):
+            if (column == FIELD_BALANCE) or (column == FIELD_CURRENCY):
                 text = ""
 
         painter.drawText(option.rect, alignment, text)
