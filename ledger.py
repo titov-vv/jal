@@ -323,7 +323,7 @@ class Ledger:
             if ((buy_sum - (price * buy_qty)) != 0):  # Profit if we have it
                 self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_INCOMES, currency_id, account_id, (buy_sum - (price * buy_qty)), None, None, CATEGORY_PROFIT)
         if (buy_qty < qty):   # Add new short position
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, asset_id, account_id, (buy_qty - qty), (buy_qty < qty) * price)
+            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, asset_id, account_id, (buy_qty - qty), (buy_qty - qty) * price)
         if coupon:
             self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_INCOMES, currency_id, account_id, -coupon, None, None, CATEGORY_PROFIT)
         if fee:   # Comission
