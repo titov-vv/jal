@@ -416,8 +416,8 @@ class Ledger:
         query.prepare("DELETE FROM ledger_sums WHERE timestamp >= :frontier")
         query.bindValue(":frontier", frontier)
         assert query.exec_()
-        query.prepare("DELETE FROM deals WHERE close_sid >= "
-                      "(SELECT MIN(id) FROM sequence WHERE timestamp >= :frontier AND type=3)")
+        query.prepare("DELETE FROM deals WHERE close_sid > "
+                      "(SELECT coalesce(MAX(id), 0) FROM sequence WHERE timestamp >= :frontier)")
         query.bindValue(":frontier", frontier)
         assert query.exec_()
         self.db.commit()
@@ -482,8 +482,8 @@ class Ledger:
         query.prepare("DELETE FROM ledger_sums WHERE timestamp >= :frontier")
         query.bindValue(":frontier", frontier)
         assert query.exec_()
-        query.prepare("DELETE FROM deals WHERE close_sid >= "
-                      "(SELECT MIN(id) FROM sequence WHERE timestamp >= :frontier AND type=3)")
+        query.prepare("DELETE FROM deals WHERE close_sid > "
+                      "(SELECT coalesce(MAX(id), 0) FROM sequence WHERE timestamp >= :frontier)")
         query.bindValue(":frontier", frontier)
         assert query.exec_()
         self.db.commit()
