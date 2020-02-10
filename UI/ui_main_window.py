@@ -56,6 +56,8 @@ class Ui_LedgerMainWindow(object):
         self.actionBackup.setObjectName(u"actionBackup")
         self.actionRestore = QAction(LedgerMainWindow)
         self.actionRestore.setObjectName(u"actionRestore")
+        self.PrepareTaxForms = QAction(LedgerMainWindow)
+        self.PrepareTaxForms.setObjectName(u"PrepareTaxForms")
         self.centralwidget = QWidget(LedgerMainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setMaximumSize(QSize(16777215, 16777215))
@@ -719,7 +721,7 @@ class Ui_LedgerMainWindow(object):
         LedgerMainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(LedgerMainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1700, 23))
+        self.menubar.setGeometry(QRect(0, 0, 1700, 22))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName(u"menuFile")
         self.menu_DAta = QMenu(self.menubar)
@@ -728,6 +730,8 @@ class Ui_LedgerMainWindow(object):
         self.menuPredefined_data.setObjectName(u"menuPredefined_data")
         self.menuLoad = QMenu(self.menubar)
         self.menuLoad.setObjectName(u"menuLoad")
+        self.menu_Reports = QMenu(self.menubar)
+        self.menu_Reports.setObjectName(u"menu_Reports")
         LedgerMainWindow.setMenuBar(self.menubar)
         self.StatusBar = QStatusBar(LedgerMainWindow)
         self.StatusBar.setObjectName(u"StatusBar")
@@ -736,6 +740,7 @@ class Ui_LedgerMainWindow(object):
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menu_DAta.menuAction())
         self.menubar.addAction(self.menuLoad.menuAction())
+        self.menubar.addAction(self.menu_Reports.menuAction())
         self.menuFile.addAction(self.actionExit)
         self.menu_DAta.addSeparator()
         self.menu_DAta.addAction(self.actionAccounts)
@@ -753,6 +758,7 @@ class Ui_LedgerMainWindow(object):
         self.menuPredefined_data.addAction(self.actionInitDB)
         self.menuLoad.addAction(self.action_Load_quotes)
         self.menuLoad.addAction(self.actionLoad_Statement)
+        self.menu_Reports.addAction(self.PrepareTaxForms)
 
         self.retranslateUi(LedgerMainWindow)
 
@@ -778,6 +784,7 @@ class Ui_LedgerMainWindow(object):
         self.actionCategories.setText(QCoreApplication.translate("LedgerMainWindow", u"&Categories", None))
         self.actionBackup.setText(QCoreApplication.translate("LedgerMainWindow", u"&Backup...", None))
         self.actionRestore.setText(QCoreApplication.translate("LedgerMainWindow", u"&Restore...", None))
+        self.PrepareTaxForms.setText(QCoreApplication.translate("LedgerMainWindow", u"&Data for taxes [RU]", None))
         self.BalanceBox.setTitle(QCoreApplication.translate("LedgerMainWindow", u"Balances", None))
         self.BalanceDate.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy", None))
         self.CurrencyLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Sum Currency:", None))
@@ -858,5 +865,6 @@ class Ui_LedgerMainWindow(object):
         self.menu_DAta.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&Data", None))
         self.menuPredefined_data.setTitle(QCoreApplication.translate("LedgerMainWindow", u"Predefined data", None))
         self.menuLoad.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&Load", None))
+        self.menu_Reports.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&Taxes", None))
     # retranslateUi
 

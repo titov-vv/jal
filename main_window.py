@@ -1,10 +1,11 @@
-from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu, QMessageBox, QAction
+from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu, QMessageBox, QAction, QInputDialog
 from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtCore import Slot, QMetaObject
 from PySide2.QtGui import QDoubleValidator
 from PySide2 import QtCore
 from UI.ui_main_window import Ui_LedgerMainWindow
 from ledger import Ledger
+from taxes import TaxesRus
 from bulk_db import importFrom1C, loadDbFromSQL, MakeBackup, RestoreBackup
 from statements import StatementLoader
 from rebuild_window import RebuildDialog
@@ -19,7 +20,6 @@ from CustomUI.account_select import AcountTypeEditDlg, AccountChoiceDlg
 from CustomUI.asset_select import AssetChoiceDlg
 from CustomUI.peer_select import PeerChoiceDlg
 from CustomUI.category_select import CategoryChoiceDlg
-from CustomUI.trade_action import TradeAction
 #-----------------------------------------------------------------------------------------------------------------------
 # model - QSqlTableModel where titles should be set for given columns
 # column_title_list - list of column_name/header_title pairs
@@ -325,6 +325,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.actionAssets.triggered.connect(self.EditAssets)
         self.actionPeers.triggered.connect(self.EditPeers)
         self.actionCategories.triggered.connect(self.EditCategories)
+        self.PrepareTaxForms.triggered.connect(self.ExportTaxForms)
         # INTERFACE ACTIONS
         self.MainTabs.currentChanged.connect(self.OnMainTabChange)
         self.BalanceDate.dateChanged.connect(self.onBalanceDateChange)
@@ -870,3 +871,17 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         if report_file:
             report_loader = StatementLoader(self.db)
             report_loader.loadIBFlex(report_file)
+
+    @Slot()
+    def ExportTaxForms(self):
+        year, ok = QInputDialog().getInt(self, "Year of report",
+                                          "Please enter a year (2018-2020):", 2019, 2018, 2020, 1)
+        if ok:
+            filename = QFileDialog.getSaveFileName(self, self.tr("Save tax forms to:"), ".", self.tr("Excel file (*.xls)"))
+            if filename[0]:
+                if filename[1] == self.tr("Excel file (*.xls)") and filename[0][-4:] != '.xls':
+                    taxes_file = filename[0] + '.xls'
+                else:
+                    taxes_file = filename[0]
+                taxes = TaxesRus(self.db)
+                taxes.save2file(taxes_file, year, 71)

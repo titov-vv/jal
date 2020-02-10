@@ -1264,7 +1264,7 @@
      <x>0</x>
      <y>0</y>
      <width>1700</width>
-     <height>23</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1304,9 +1304,16 @@
     <addaction name="action_Load_quotes"/>
     <addaction name="actionLoad_Statement"/>
    </widget>
+   <widget class="QMenu" name="menu_Reports">
+    <property name="title">
+     <string>&amp;Taxes</string>
+    </property>
+    <addaction name="PrepareTaxForms"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_DAta"/>
    <addaction name="menuLoad"/>
+   <addaction name="menu_Reports"/>
   </widget>
   <widget class="QStatusBar" name="StatusBar"/>
   <action name="actionExit">
@@ -1378,6 +1385,11 @@
   <action name="actionRestore">
    <property name="text">
     <string>&amp;Restore...</string>
+   </property>
+  </action>
+  <action name="PrepareTaxForms">
+   <property name="text">
+    <string>&amp;Data for taxes [RU]</string>
    </property>
   </action>
  </widget>
