@@ -1,4 +1,4 @@
-DB_PATH = "/home/vtitov/projects/ledger/ledger.sqlite"
+DB_PATH = "ledger.sqlite"
 CALC_TOLERANCE = 1e-10
 
 # PREDEFINED BOOK ACCOUNTS
