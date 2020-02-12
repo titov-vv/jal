@@ -551,7 +551,7 @@ class Ledger:
         query.bindValue(":balances_timestamp", timestamp)
         assert query.exec_()
 
-        query.prepare("INSERT INTO t_last_dates(account_id, timestamp) "
+        query.prepare("INSERT INTO t_last_dates(ref_id, timestamp) "
                       "SELECT account_id, MAX(timestamp) AS timestamp "
                       "FROM ledger "
                       "WHERE timestamp <= :balances_timestamp "
@@ -570,7 +570,7 @@ class Ledger:
                       "LEFT JOIN t_last_quotes AS act_q ON l.asset_id = act_q.asset_id "
                       "LEFT JOIN t_last_quotes AS cur_q ON a.currency_id = cur_q.asset_id "
                       "LEFT JOIN t_last_quotes AS cur_adj_q ON cur_adj_q.asset_id = :base_currency "
-                      "LEFT JOIN t_last_dates AS d ON l.account_id = d.account_id "
+                      "LEFT JOIN t_last_dates AS d ON l.account_id = d.ref_id "
                       "WHERE (book_account = :money_book OR book_account = :assets_book OR book_account = :liabilities_book) AND l.timestamp <= :balances_timestamp "
                       "GROUP BY l.account_id "
                       "HAVING ABS(balance)>0.0001")

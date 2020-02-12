@@ -360,7 +360,7 @@ CREATE TABLE t_last_assets (
 DROP TABLE IF EXISTS t_last_dates;
 
 CREATE TABLE t_last_dates (
-    account_id INTEGER NOT NULL,
+    ref_id INTEGER NOT NULL,
     timestamp  INTEGER NOT NULL
 );
 
