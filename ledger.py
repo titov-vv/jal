@@ -552,10 +552,10 @@ class Ledger:
         assert query.exec_()
 
         query.prepare("INSERT INTO t_last_dates(ref_id, timestamp) "
-                      "SELECT account_id, MAX(timestamp) AS timestamp "
+                      "SELECT account_id AS ref_id, MAX(timestamp) AS timestamp "
                       "FROM ledger "
                       "WHERE timestamp <= :balances_timestamp "
-                      "GROUP BY account_id")
+                      "GROUP BY ref_id")
         query.bindValue(":balances_timestamp", timestamp)
         assert query.exec_()
 

@@ -877,10 +877,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         year, ok = QInputDialog().getInt(self, "Year of report",
                                           "Please enter a year (2018-2020):", 2019, 2018, 2020, 1)
         if ok:
-            filename = QFileDialog.getSaveFileName(self, self.tr("Save tax forms to:"), ".", self.tr("Excel file (*.xls)"))
+            filename = QFileDialog.getSaveFileName(self, self.tr("Save tax forms to:"), ".", self.tr("Excel file (*.xlsx)"))
             if filename[0]:
-                if filename[1] == self.tr("Excel file (*.xls)") and filename[0][-4:] != '.xls':
-                    taxes_file = filename[0] + '.xls'
+                if filename[1] == self.tr("Excel file (*.xlsx)") and filename[0][-5:] != '.xlsx':
+                    taxes_file = filename[0] + '.xlsx'
                 else:
                     taxes_file = filename[0]
                 taxes = TaxesRus(self.db)

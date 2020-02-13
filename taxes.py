@@ -1,4 +1,5 @@
-import time, datetime, xlwt
+import time, datetime
+import xlsxwriter
 from PySide2.QtSql import QSqlQuery
 
 class TaxesRus:
@@ -9,7 +10,20 @@ class TaxesRus:
         year_begin = int(time.mktime(datetime.datetime.strptime(f"{year}", "%Y").timetuple()))
         year_end = int(time.mktime(datetime.datetime.strptime(f"{year+1}", "%Y").timetuple()))
 
-        wbk = xlwt.Workbook()
+        workbook = xlsxwriter.Workbook(filename=taxes_file)
+        header_format = workbook.add_format({'bold' : True,
+                                        'bg_color': '#808080'})  # 'gray'
+        column_name_format = workbook.add_format({'bold' : True,
+                                             'text_wrap' : True,
+                                             'align' : 'center',
+                                             'valign': 'vcenter',
+                                             'bg_color': '#808080',
+                                             'border' : 1})
+        amount_format = workbook.add_format({'num_format' : '# ### ##0.00',
+                                             'border' : 1})
+        rate_format = workbook.add_format({'num_format': '0.0000',
+                                           'border' : 1})
+        text_format = workbook.add_format({'border': 1})
 
         query = QSqlQuery(self.db)
         assert query.exec_("DELETE FROM t_last_dates")
@@ -39,18 +53,29 @@ class TaxesRus:
         query.bindValue(":account_id", account_id)
         assert query.exec_()
 
-        dividends_sheet = wbk.add_sheet("Dividends", cell_overwrite_ok=True)
-        dividends_sheet.write(0, 0, "Дивиденды, полученные в отчетном периоде")
-        dividends_sheet.write(1, 0, "Дата выплаты")
-        dividends_sheet.write(1, 1, "Ценная бумага")
-        dividends_sheet.write(1, 2, "Полное наименование")
-        dividends_sheet.write(1, 3, "Курс USD/RUB на дату выплаты")
-        dividends_sheet.write(1, 4, "Доход, USD")
-        dividends_sheet.write(1, 5, "Доход, RUB")
-        dividends_sheet.write(1, 6, "Налок упл., USD")
-        dividends_sheet.write(1, 7, "Налог упл., RUB")
-        dividends_sheet.write(1, 8, "Налок к уплате, RUB")
+        dividends_sheet = workbook.add_worksheet(name="Dividends")
+        dividends_sheet.merge_range(0, 0, 0, 8, "Дивиденды, полученные в отчетном периоде", header_format)
+        dividends_sheet.set_row(1, 30)
+        dividends_sheet.write(1, 0, "Дата выплаты", column_name_format)
+        dividends_sheet.set_column(0, 0, 10)
+        dividends_sheet.write(1, 1, "Ценная бумага", column_name_format)
+        dividends_sheet.set_column(1, 1, 8)
+        dividends_sheet.write(1, 2, "Полное наименование", column_name_format)
+        dividends_sheet.set_column(2, 2, 50)
+        dividends_sheet.write(1, 3, "Курс USD/RUB на дату выплаты", column_name_format)
+        dividends_sheet.set_column(3, 3, 16)
+        dividends_sheet.write(1, 4, "Доход, USD", column_name_format)
+        dividends_sheet.write(1, 5, "Доход, RUB", column_name_format)
+        dividends_sheet.write(1, 6, "Налок упл., USD", column_name_format)
+        dividends_sheet.write(1, 7, "Налог упл., RUB", column_name_format)
+        dividends_sheet.write(1, 8, "Налок к уплате, RUB", column_name_format)
+        dividends_sheet.set_column(4, 8, 12)
         row = 2
+        amount_rub_sum = 0
+        amount_usd_sum = 0
+        tax_usd_sum = 0
+        tax_us_rub_sum = 0
+        tax_ru_rub_sum = 0
         while query.next():
             amount_usd = float(query.value(4))
             tax_usd = -float(query.value(5))
@@ -62,16 +87,27 @@ class TaxesRus:
                 tax_ru_rub = tax_ru_rub - tax_us_rub
             else:
                 tax_ru_rub = 0
-            dividends_sheet.write(row, 0, datetime.datetime.fromtimestamp(query.value(1)).strftime('%d.%m.%Y'))
-            dividends_sheet.write(row, 1, query.value(2))
-            dividends_sheet.write(row, 2, query.value(3))
-            dividends_sheet.write(row, 3, f"{rate:.2f}")
-            dividends_sheet.write(row, 4, f"{amount_usd:.2f}")
-            dividends_sheet.write(row, 5, f"{amount_rub:.2f}")
-            dividends_sheet.write(row, 6, f"{tax_usd:.2f}")
-            dividends_sheet.write(row, 7, f"{tax_us_rub:.2f}")
-            dividends_sheet.write(row, 8, f"{tax_ru_rub:.2f}")
+            dividends_sheet.write(row, 0,
+                                  datetime.datetime.fromtimestamp(query.value(1)).strftime('%d.%m.%Y'), text_format)
+            dividends_sheet.write(row, 1, query.value(2), text_format)
+            dividends_sheet.write(row, 2, query.value(3), text_format)
+            dividends_sheet.write(row, 3, rate, rate_format)
+            dividends_sheet.write(row, 4, amount_usd, amount_format)
+            dividends_sheet.write(row, 5, amount_rub, amount_format)
+            dividends_sheet.write(row, 6, tax_usd, amount_format)
+            dividends_sheet.write(row, 7, tax_us_rub, amount_format)
+            dividends_sheet.write(row, 8, tax_ru_rub, amount_format)
+            amount_usd_sum += amount_usd
+            amount_rub_sum += amount_rub
+            tax_usd_sum += tax_usd
+            tax_us_rub_sum += tax_us_rub
+            tax_ru_rub_sum += tax_ru_rub
             row = row + 1
+        dividends_sheet.write(row, 4, amount_usd_sum, amount_format)
+        dividends_sheet.write(row, 5, amount_rub_sum, amount_format)
+        dividends_sheet.write(row, 6, tax_usd_sum, amount_format)
+        dividends_sheet.write(row, 7, tax_us_rub_sum, amount_format)
+        dividends_sheet.write(row, 8, tax_ru_rub_sum, amount_format)
 
         query.prepare("SELECT a.name, d.qty, o.timestamp, o.settlement, o.price, o.fee, "
                       "c.timestamp, c.settlement, c.price, c.fee FROM deals AS d "
@@ -86,11 +122,11 @@ class TaxesRus:
         query.bindValue(":account_id", account_id)
         query.exec_()
 
-        sheet = wbk.add_sheet("Deals", cell_overwrite_ok=True)
+        sheet = workbook.add_worksheet(name="Deals")
         row = 0
         while query.next():
             for column in range(query.record().count()):
                 sheet.write(row, column, query.value(column))
             row = row + 1
 
-        wbk.save(taxes_file)
+        workbook.close()
