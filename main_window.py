@@ -246,7 +246,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                  ("price",          self.TradePriceEdit,        widthForAmountEdit,     self.doubleValidate6),
                  ("qty",            self.TradeQtyEdit,          widthForAmountEdit,     self.doubleValidate6),
                  ("coupon",         self.TradeCouponEdit,       widthForAmountEdit,     self.doubleValidate6),
-                 ("fee",            self.TradeFeeEdit,    widthForAmountEdit,     self.doubleValidate6)])
+                 ("fee",            self.TradeFeeEdit,          widthForAmountEdit,     self.doubleValidate6)])
         self.TradeAccountWidget.changed.connect(self.TradesDataMapper.submit)
         self.TradeAssetWidget.changed.connect(self.TradesDataMapper.submit)
 
