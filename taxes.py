@@ -67,6 +67,7 @@ class TaxesRus:
 
         self.prepare_dividends(workbook, account_id, year_begin, year_end, formats)
         self.prepare_trades(workbook, account_id, year_begin, year_end, formats)
+        self.prepare_broker_fees(workbook, account_id, year_begin, year_end, formats)
         self.prepare_corporate_actions(workbook, account_id, year_begin, year_end, formats)
 
         workbook.close()
@@ -89,7 +90,8 @@ class TaxesRus:
         assert query.exec_()
         self.db.commit()
 
-        query.prepare("SELECT d.id, d.timestamp, s.name, s.full_name, d.sum, d.sum_tax, q.quote AS rate_cbr "
+        query.prepare("SELECT d.id, d.timestamp AS payment_date, s.name AS symbol, s.full_name AS full_name, "
+                      "d.sum AS amount, d.sum_tax AS tax_amount, q.quote AS rate_cbr "
                       # "datetime(d.timestamp, 'unixepoch', 'localtime') AS div_date " 
                       "FROM dividends AS d "
                       "LEFT JOIN assets AS s ON s.id = d.asset_id "
@@ -137,9 +139,9 @@ class TaxesRus:
                 even_odd = '_odd'
             else:
                 even_odd = '_even'
-            amount_usd = float(query.value(4))
-            tax_usd = -float(query.value(5))
-            rate = float(query.value(6))
+            amount_usd = float(query.value('amount'))
+            tax_usd = -float(query.value('tax_amount'))
+            rate = float(query.value('rate_cbr'))
             amount_rub = round(amount_usd * rate, 2)
             tax_us_rub = round(tax_usd * rate, 2)
             tax_ru_rub = round(0.13 * amount_rub, 2)
@@ -147,10 +149,10 @@ class TaxesRus:
                 tax_ru_rub = tax_ru_rub - tax_us_rub
             else:
                 tax_ru_rub = 0
-            sheet.write(row, 0, datetime.datetime.fromtimestamp(query.value(1)).strftime('%d.%m.%Y'),
+            sheet.write(row, 0, datetime.datetime.fromtimestamp(query.value('payment_date')).strftime('%d.%m.%Y'),
                         formats['text' + even_odd])
-            sheet.write(row, 1, query.value(2), formats['text' + even_odd])
-            sheet.write(row, 2, query.value(3), formats['text' + even_odd])
+            sheet.write(row, 1, query.value('symbol'), formats['text' + even_odd])
+            sheet.write(row, 2, query.value('full_name'), formats['text' + even_odd])
             sheet.write(row, 3, rate, formats['number_4' + even_odd])
             sheet.write(row, 4, amount_usd, formats['number_2' + even_odd])
             sheet.write(row, 5, amount_rub, formats['number_2' + even_odd])
@@ -341,6 +343,79 @@ class TaxesRus:
         sheet.write(row, 12, income_sum, formats['header_number'])
         sheet.write(row, 13, spending_sum, formats['header_number'])
         sheet.write(row, 14, profit_sum, formats['header_number'])
+
+    def prepare_broker_fees(self, workbook, account_id, begin, end, formats):
+        query = QSqlQuery(self.db)
+        query.prepare("DELETE FROM t_last_dates")
+        assert query.exec_()
+
+        query.prepare("INSERT INTO t_last_dates(ref_id, timestamp) "
+                      "SELECT a.id AS ref_id, MAX(q.timestamp) AS timestamp "
+                      "FROM actions AS a "
+                      "LEFT JOIN accounts AS c ON c.id = :account_id "
+                      "LEFT JOIN quotes AS q ON a.timestamp >= q.timestamp AND c.currency_id=q.asset_id "
+                      "LEFT JOIN action_details AS d ON d.pid=a.id "
+                      "WHERE a.timestamp>=:begin AND a.timestamp<:end "
+                      "AND a.account_id=:account_id AND d.note LIKE '%MONTHLY%' "
+                      "GROUP BY a.id")
+        query.bindValue(":begin", begin)
+        query.bindValue(":end", end)
+        query.bindValue(":account_id", account_id)
+        assert query.exec_()
+        self.db.commit()
+
+        query.prepare("SELECT a.timestamp AS payment_date, d.sum AS amount, d.note AS note, q.quote AS rate_cbr "
+                      "FROM actions AS a "
+                      "LEFT JOIN action_details AS d ON d.pid=a.id "
+                      "LEFT JOIN accounts AS c ON c.id = :account_id "
+                      "LEFT JOIN t_last_dates AS ld ON a.id=ld.ref_id "
+                      "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND c.currency_id=q.asset_id "
+                      "WHERE a.timestamp>=:begin AND a.timestamp<:end "
+                      "AND a.account_id=:account_id AND d.note LIKE '%MONTHLY%' ")
+        query.bindValue(":begin", begin)
+        query.bindValue(":end", end)
+        query.bindValue(":account_id", account_id)
+        assert query.exec_()
+
+        sheet = workbook.add_worksheet(name="Fees")
+        sheet.write(0, 0, "Отчет по комиссиям, уплаченным брокеру в отчетном периоде", formats['title'])
+        sheet.write(2, 0, "Документ-основание:")
+        sheet.write(3, 0, "Период:")
+        sheet.write(4, 0, "ФИО:")
+        sheet.write(5, 0, "Номер счета:")
+        sheet.set_row(7, 60)
+        sheet.write(7, 0, "Описание", formats['header'])
+        sheet.set_column(0, 0, 50)
+        sheet.write(7, 1, "Сумма, USD", formats['header'])
+        sheet.set_column(1, 1, 8)
+        sheet.write(7, 2, "Дата оплаты", formats['header'])
+        sheet.set_column(2, 2, 10)
+        sheet.write(7, 3, "Курс USD/RUB на дату оплаты", formats['header'])
+        sheet.set_column(3, 3, 10)
+        sheet.write(7, 4, "Сумма, RUB", formats['header'])
+        sheet.set_column(4, 4, 10)
+        for col in range(5):
+            sheet.write(8, col, f"({col + 1})", formats['header'])  # Put column numbers for reference
+        row = 9
+        amount_rub_sum = 0
+        while query.next():
+            if row % 2:
+                even_odd = '_odd'
+            else:
+                even_odd = '_even'
+            amount_usd = -float(query.value('amount'))
+            rate = float(query.value('rate_cbr'))
+            amount_rub = round(amount_usd * rate, 2)
+            sheet.write(row, 0, query.value('note'), formats['text' + even_odd])
+            sheet.write(row, 1, amount_usd, formats['number_2' + even_odd])
+            sheet.write(row, 2, datetime.datetime.fromtimestamp(query.value('payment_date')).strftime('%d.%m.%Y'),
+                        formats['text' + even_odd])
+            sheet.write(row, 3, rate, formats['number_4' + even_odd])
+            sheet.write(row, 4, amount_rub, formats['number_2' + even_odd])
+            amount_rub_sum += amount_rub
+            row = row + 1
+        sheet.write(row, 3, "ИТОГО", formats['header_number'])
+        sheet.write(row, 4, amount_rub_sum, formats['header_number'])
 
     def prepare_corporate_actions(self, workbook, account_id, begin, end, formats):
         sheet = workbook.add_worksheet(name="Corp.Actions")
