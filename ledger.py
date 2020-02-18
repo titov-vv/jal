@@ -407,6 +407,10 @@ class Ledger:
         if (frontier == ''):
             frontier = 0
 
+        query.prepare("DELETE FROM deals WHERE close_sid > "
+                      "(SELECT coalesce(MAX(id), 0) FROM sequence WHERE timestamp >= :frontier)")
+        query.bindValue(":frontier", frontier)
+        assert query.exec_()
         query.prepare("DELETE FROM ledger WHERE timestamp >= :frontier")
         query.bindValue(":frontier", frontier)
         assert query.exec_()
@@ -414,10 +418,6 @@ class Ledger:
         query.bindValue(":frontier", frontier)
         assert query.exec_()
         query.prepare("DELETE FROM ledger_sums WHERE timestamp >= :frontier")
-        query.bindValue(":frontier", frontier)
-        assert query.exec_()
-        query.prepare("DELETE FROM deals WHERE close_sid > "
-                      "(SELECT coalesce(MAX(id), 0) FROM sequence WHERE timestamp >= :frontier)")
         query.bindValue(":frontier", frontier)
         assert query.exec_()
         self.db.commit()
@@ -473,6 +473,10 @@ class Ledger:
         print(">> Re-build ledger from: ", datetime.datetime.fromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S'))
         start_time = datetime.datetime.now()
         print(">> Started @", start_time)
+        query.prepare("DELETE FROM deals WHERE close_sid > "
+                      "(SELECT coalesce(MAX(id), 0) FROM sequence WHERE timestamp >= :frontier)")
+        query.bindValue(":frontier", frontier)
+        assert query.exec_()
         query.prepare("DELETE FROM ledger WHERE timestamp >= :frontier")
         query.bindValue(":frontier", frontier)
         assert query.exec_()
@@ -480,10 +484,6 @@ class Ledger:
         query.bindValue(":frontier", frontier)
         assert query.exec_()
         query.prepare("DELETE FROM ledger_sums WHERE timestamp >= :frontier")
-        query.bindValue(":frontier", frontier)
-        assert query.exec_()
-        query.prepare("DELETE FROM deals WHERE close_sid > "
-                      "(SELECT coalesce(MAX(id), 0) FROM sequence WHERE timestamp >= :frontier)")
         query.bindValue(":frontier", frontier)
         assert query.exec_()
         self.db.commit()
