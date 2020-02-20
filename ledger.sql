@@ -607,7 +607,7 @@ CREATE VIEW all_operations AS
                       transfer_notes AS n ON r.tid = n.tid
                       LEFT JOIN
                       transfers AS tr ON r.tid = tr.tid AND
-                                        r.type = tr.type
+                                        r.type = -tr.type
                       LEFT JOIN
                       accounts AS a ON a.id = tr.account_id
                ORDER BY timestamp
