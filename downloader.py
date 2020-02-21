@@ -85,6 +85,8 @@ class QuoteDownloader:
             feed_id = query.value(2)
             isin = query.value(3)
             last_timestamp = query.value(4)
+            if last_timestamp == '':
+                last_timestamp = 0
             if last_timestamp > start_timestamp:
                 from_timestamp = last_timestamp
             else:
