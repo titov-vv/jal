@@ -31,7 +31,7 @@ class StatementLoader:
         if query.next():
             return query.value(0)
         else:
-            return 0
+            assert False   # We shouldn't be here as all assets from report should be added in advance
 
     def loadIBFlex(self, filename):
         report = parser.parse(filename)
@@ -40,6 +40,9 @@ class StatementLoader:
 
     def loadIBStatement(self, IBstatement):
         print(f"Load IB Flex-statement for account {IBstatement.accountId} from {IBstatement.fromDate} to {IBstatement.toDate}")
+
+        for asset in IBstatement.SecuritiesInfo:
+            self.storeIBAsset(asset)
         for trade in IBstatement.Trades:
             self.loadIBTrade(trade)
         for tax in IBstatement.TransactionTaxes:
@@ -58,6 +61,28 @@ class StatementLoader:
             elif cash_transaction.type == CashAction.DEPOSITWITHDRAW:
                 self.loadIBDepositWithdraw(cash_transaction)
 
+    def storeIBAsset(self, IBasset):
+        query = QSqlQuery(self.db)
+        query.prepare("SELECT id FROM assets WHERE name=:symbol")
+        query.bindValue(":symbol", IBasset.symbol)
+        assert query.exec_()
+        if query.next():
+            return  # Asset already present in DB
+
+        if IBasset.assetCategory == AssetClass.STOCK:
+            asset_type = 2
+            if IBasset.subCategory == "ETF":
+                asset_type = 4
+        if IBasset.assetCategory == AssetClass.BOND:
+            asset_type = 3
+        query.prepare("INSERT INTO assets(name, type_id, full_name, isin) VALUES(:symbol, :type, :full_name, :isin)")
+        query.bindValue(":symbol", IBasset.symbol)
+        query.bindValue(":type", asset_type)
+        query.bindValue(":full_name", IBasset.description)
+        query.bindValue(":isin", IBasset.isin)
+        assert query.exec_()
+        print(f"Asset added: {IBasset.symbol}")
+
     def loadIBTrade(self, IBtrade):
         if IBtrade.assetCategory == AssetClass.STOCK:
             self.loadIBStockTrade(IBtrade)
@@ -72,9 +97,6 @@ class StatementLoader:
             print(f"Account {IBtrade.accountId} ({IBtrade.currency}) not found. Skipping trade #{IBtrade.tradeID}")
             return
         asset_id = self.findAssetID(IBtrade.symbol)
-        if not asset_id:
-            print(f"Asset {IBtrade.symbol} not found. Skipping trade #{IBtrade.tradeID}")
-            return
         timestamp = int(IBtrade.dateTime.timestamp())
         if IBtrade.settleDateTarget:
             settlement = int(datetime.combine(IBtrade.settleDateTarget, datetime.min.time()).timestamp())
@@ -155,11 +177,6 @@ class StatementLoader:
             print(f"Currency transaction of type {IBtrade.buySell} is not implemented")
             return
         currency = IBtrade.symbol.split('.')
-        to_currency_id = self.findAssetID(currency[to_idx])
-        from_currency_id = self.findAssetID(currency[from_idx])
-        if not to_currency_id or not from_currency_id:
-            print(f"Assets for {IBtrade.symbol} not found. Skipping currency exchange transaction #{IBtrade.tradeID}")
-            return
         to_account_id = self.findAccountID(IBtrade.accountId, currency[to_idx])
         if not to_account_id:
             print(f"Account {IBtrade.accountId} ({currency[to_idx]}) not found. Skipping currency exchange transaction #{IBtrade.tradeID}")
@@ -258,9 +275,6 @@ class StatementLoader:
                     f"Account {IBCorpAction.accountId} ({IBCorpAction.currency}) not found. Skipping trade #{IBCorpAction.transactionID}")
                 return
             asset_id = self.findAssetID(IBCorpAction.symbol)
-            if not asset_id:
-                print(f"Asset {IBCorpAction.symbol} not found. Skipping trade #{IBCorpAction.transactionID}")
-                return
             timestamp = int(IBCorpAction.dateTime.timestamp())
             settlement = timestamp
             if IBCorpAction.transactionID:
@@ -282,9 +296,6 @@ class StatementLoader:
             print(f"Account {IBdividend.accountId} ({IBdividend.currency}) not found. Skipping dividend #{IBdividend.transactionID}")
             return
         asset_id = self.findAssetID(IBdividend.symbol)
-        if not asset_id:
-            print(f"Asset {IBdividend.symbol} not found. Skipping dividend #{IBdividend.transactionID}")
-            return
         timestamp = int(IBdividend.dateTime.timestamp())
         amount = float(IBdividend.amount)
         note = IBdividend.description
@@ -300,9 +311,6 @@ class StatementLoader:
                 f"Account {IBtax.accountId} ({IBtax.currency}) not found. Skipping withholding tax #{IBtax.transactionID}")
             return
         asset_id = self.findAssetID(IBtax.symbol)
-        if not asset_id:
-            print(f"Asset {IBtax.symbol} not found. Skipping withholding tax #{IBtax.transactionID}")
-            return
         timestamp = int(IBtax.dateTime.timestamp())
         amount = float(IBtax.amount)
         note = IBtax.description
