@@ -70,14 +70,31 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             self.db.close()
             QMetaObject.invokeMethod(self, "close", Qt.QueuedConnection)
             return
+
+        query = QSqlQuery(self.db)
+        query.exec_("SELECT value FROM settings WHERE name='SchemaVersion'")
+        query.next()
+        if query.value(0) != TARGET_SCHEMA:
+            self.db.close()
+            QMessageBox().critical(self, self.tr("Database version mismatch"),
+                                  self.tr("Database schema version is wrong"),
+                                  QMessageBox.Ok)
+            QMetaObject.invokeMethod(self, "close", Qt.QueuedConnection)
+            return
+
+        query = QSqlQuery(self.db)
+        query.exec_("SELECT value FROM settings WHERE name='BaseCurrency'")
+        query.next()
+        self.BaseCurrency = query.value(0)
+
         self.ledger = Ledger(self.db)
         self.downloader = QuoteDownloader(self.db)
 
-        self.balance_currency = CURRENCY_RUBLE
+        self.balance_currency = self.BaseCurrency
         self.balance_date = QtCore.QDateTime.currentSecsSinceEpoch()
         self.balance_active_only = 1
 
-        self.holdings_currency = CURRENCY_RUBLE
+        self.holdings_currency = self.BaseCurrency
         self.holdings_date = QtCore.QDateTime.currentSecsSinceEpoch()
 
         self.operations_since_timestamp = 0

@@ -630,7 +630,7 @@ class Ledger:
                       "GROUP BY a.id "
                       "HAVING ABS(total_value) > :tolerance")
         query.bindValue(":holdings_timestamp", timestamp)
-        query.bindValue(":tolerance", CALC_TOLERANCE)
+        query.bindValue(":tolerance", DISP_TOLERANCE)
         assert query.exec_()
 
         assert query.prepare("INSERT INTO holdings_aux (currency, account, asset, qty, value, quote, quote_adj, total, total_adj) "
@@ -647,7 +647,7 @@ class Ledger:
                              "HAVING ABS(qty) > :tolerance")
         query.bindValue(":recalc_currency", currency)
         query.bindValue(":holdings_timestamp", timestamp)
-        query.bindValue(":tolerance", CALC_TOLERANCE)
+        query.bindValue(":tolerance", DISP_TOLERANCE)
         assert query.exec_()
 
         query.prepare("INSERT INTO holdings_aux (currency, account, asset, qty, value, quote, quote_adj, total, total_adj) "
@@ -663,7 +663,7 @@ class Ledger:
                              "HAVING ABS(qty) > :tolerance")
         query.bindValue(":recalc_currency", currency)
         query.bindValue(":holdings_timestamp", timestamp)
-        query.bindValue(":tolerance", CALC_TOLERANCE)
+        query.bindValue(":tolerance", DISP_TOLERANCE)
         assert query.exec_()
 
         query.prepare("INSERT INTO holdings (level1, level2, currency, account, asset, asset_name, "

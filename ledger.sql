@@ -1390,8 +1390,9 @@ CREATE TRIGGER update_to INSTEAD OF UPDATE OF to_timestamp, to_acc_id, to_amount
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 1);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 2);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
+INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 
 -- Initialize default values for books
 INSERT INTO books (id, name) VALUES (1, 'Costs');
@@ -1425,6 +1426,10 @@ INSERT INTO data_sources (id, name) VALUES (1, 'MOEX');
 INSERT INTO data_sources (id, name) VALUES (2, 'NYSE/Nasdaq');
 INSERT INTO data_sources (id, name) VALUES (3, 'Euronext');
 
+-- Initialize common currencies
+INSERT INTO assets (id, name, type_id, full_name, web_id, src_id) VALUES (1, 'RUB', 1, 'Российский Рубль', NULL, -1);
+INSERT INTO assets (id, name, type_id, full_name, web_id, src_id) VALUES (2, 'USD', 1, 'Доллар США', 'R01235', 0);
+INSERT INTO assets (id, name, type_id, full_name, web_id, src_id) VALUES (3, 'EUR', 1, 'Евро', 'R01239', 0);
 
 COMMIT TRANSACTION;
 PRAGMA foreign_keys = on;
