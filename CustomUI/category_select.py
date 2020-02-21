@@ -29,13 +29,13 @@ class CategoryChoiceDlg(QDialog, Ui_CategoryChoiceDlg):
         self.Model.setHeaderData(self.Model.fieldIndex("id"), Qt.Horizontal, "")
         self.Model.setHeaderData(self.Model.fieldIndex("name"), Qt.Horizontal, "Name")
         self.Model.setHeaderData(self.Model.fieldIndex("often"), Qt.Horizontal, "Often")
-        self.Model.setHeaderData(self.Model.fieldIndex("special"), Qt.Horizontal, "Special")
 
         self.CategoriesList.setModel(self.Model)
         self.CategoriesList.setItemDelegate(CategoryDelegate(self.CategoriesList))
         self.CategoriesList.setColumnWidth(self.Model.fieldIndex("id"), 16)
         self.CategoriesList.setColumnHidden(self.Model.fieldIndex("pid"), True)
         self.CategoriesList.setColumnHidden(self.Model.fieldIndex("children_count"), True)
+        self.CategoriesList.setColumnHidden(self.Model.fieldIndex("special"), True)
         self.CategoriesList.horizontalHeader().setSectionResizeMode(self.Model.fieldIndex("name"), QHeaderView.Stretch)
         font = self.CategoriesList.horizontalHeader().font()
         font.setBold(True)
@@ -206,8 +206,8 @@ class CategoryDelegate(QSqlRelationalDelegate):
                 text = "+"
             painter.drawText(option.rect, Qt.AlignHCenter, text)
             painter.restore()
-        # Paint '*' for special and often categories or nothing for other
-        elif (index.column() == 3) or (index.column() == 4):  # 'often' and 'special' columns
+        # Paint '*' for often categories or nothing for other
+        elif (index.column() == 3):
             painter.save()
             model = index.model()
             status = model.data(index, Qt.DisplayRole)
@@ -221,9 +221,9 @@ class CategoryDelegate(QSqlRelationalDelegate):
             QSqlRelationalDelegate.paint(self, painter, option, index)
 
     def editorEvent(self, event, model, option, index):
-        if (index.column() != 3) and (index.column() != 4):
+        if (index.column() != 3):
             return False
-        # Only for 'often' and 'special' column
+        # Editor for 'often' column only
         if event.type() == QEvent.MouseButtonPress:
             if model.data(index, Qt.DisplayRole):   # Toggle value - from 1 to 0 and from 0 to 1
                 model.setData(index, 0)
