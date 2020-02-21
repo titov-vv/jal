@@ -13,7 +13,7 @@ from downloader import QuoteDownloader, QuotesUpdateDialog
 from balance_delegate import BalanceDelegate, HoldingsDelegate
 from operation_delegate import *
 from dividend_delegate import DividendSqlDelegate
-from trade_delegate import TradeSqlDelegate, OptionGroup
+from trade_delegate import TradeSqlDelegate
 from transfer_delegate import TransferSqlDelegate
 from action_delegate import ActionDelegate, ActionDetailDelegate
 from CustomUI.account_select import AcountTypeEditDlg, AccountChoiceDlg
@@ -178,7 +178,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionAccountWidget.init_DB(self.db)
         self.ActionPeerWidget.init_DB(self.db)
 
-        self.ActionsModel = QSqlRelationalTableModel(db=self.db)
+        self.ActionsModel = QSqlTableModel(db=self.db)
         self.ActionsModel.setTable("actions")
         self.ActionsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.ActionsModel.dataChanged.connect(self.OnOperationDataChanged)
@@ -211,7 +211,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionDetailsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  # To select only 1 row
         self.ActionDetailsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
         HideViewColumns(self.ActionDetailsTableView, ["id", "pid"])
-        # "name" and "tag" are columnt names from Relations
+        # "name" and "tag" are column names from Relations
         ViewSetColumnWidths(self.ActionDetailsTableView, [("name", 200), ("tag", 200), ("sum", 100),
                                                           ("alt_sum", 100), ("note", 400)])
         self.ActionDetailsTableView.horizontalHeader().setSectionResizeMode(
@@ -227,9 +227,12 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TradeAccountWidget.init_DB(self.db)
         self.TradeAssetWidget.init_DB(self.db)
 
-        self.TradesModel = QSqlTableModel(db=self.db)
+        self.TradesModel = QSqlRelationalTableModel(db=self.db)
         self.TradesModel.setTable("trades")
+        self.TradesModel.setJoinMode(QSqlRelationalTableModel.LeftJoin)
         self.TradesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        corp_action_idx = self.ActionDetailsModel.fieldIndex("corp_action_id")
+        self.ActionDetailsModel.setRelation(category_idx, QSqlRelation("corp_actions", "id", "type"))
         self.TradesModel.dataChanged.connect(self.OnOperationDataChanged)
         self.TradesModel.select()
         self.TradesDataMapper = QDataWidgetMapper(self)
@@ -238,7 +241,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TradesDataMapper.setItemDelegate(TradeSqlDelegate(self.TradesDataMapper))
         AddAndConfigureMappings(self.TradesModel, self.TradesDataMapper,
                 [("timestamp",      self.TradeTimestampEdit,    widthForTimestampEdit,  None),
-                 ("id",             self.TradeActionWidget,     0,                      None),
+                 ("corp_action_id", self.TradeActionWidget,     0,                      None),
                  ("account_id",     self.TradeAccountWidget,    0,                      None),
                  ("asset_id",       self.TradeAssetWidget,      0,                      None),
                  ("settlement",     self.TradeSettlementEdit,   0,                      None),
@@ -469,11 +472,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 self.ActionDetailsModel.setFilter(f"action_details.pid = {operation_id}")
             elif (operation_type == TRANSACTION_DIVIDEND):
                 self.OperationsTabs.setCurrentIndex(TAB_DIVIDEND)
-                self.DividendsModel.setFilter("dividends.id = {}".format(operation_id))
+                self.DividendsModel.setFilter(f"dividends.id = {operation_id}")
                 self.DividendsDataMapper.setCurrentModelIndex(self.DividendsDataMapper.model().index(0, 0))
             elif (operation_type == TRANSACTION_TRADE):
                 self.OperationsTabs.setCurrentIndex(TAB_TRADE)
-                self.TradesModel.setFilter("trades.id = {}".format(operation_id))
+                self.TradesModel.setFilter(f"trades.id = {operation_id}")
                 self.TradesDataMapper.setCurrentModelIndex(self.TradesDataMapper.model().index(0,0))
             elif (operation_type == TRANSACTION_TRANSFER):
                 self.OperationsTabs.setCurrentIndex(TAB_TRANSFER)
