@@ -265,9 +265,8 @@ CREATE TABLE ledger (
     book_account INTEGER NOT NULL
                          REFERENCES books (id) ON DELETE NO ACTION
                                                ON UPDATE NO ACTION,
-    asset_id    INTEGER NOT NULL
-                         REFERENCES assets (id) ON DELETE NO ACTION
-                                                 ON UPDATE NO ACTION,
+    asset_id    INTEGER REFERENCES assets (id) ON DELETE SET NULL
+                                               ON UPDATE SET NULL,
     account_id   INTEGER NOT NULL
                          REFERENCES accounts (id) ON DELETE NO ACTION
                                                   ON UPDATE NO ACTION,
@@ -291,9 +290,8 @@ CREATE TABLE ledger_sums (
     book_account INTEGER NOT NULL
                          REFERENCES books (id) ON DELETE NO ACTION
                                                ON UPDATE NO ACTION,
-    asset_id    INTEGER NOT NULL
-                         REFERENCES assets (id) ON DELETE NO ACTION
-                                                 ON UPDATE NO ACTION,
+    asset_id    INTEGER REFERENCES assets (id) ON DELETE SET NULL
+                                               ON UPDATE SET NULL,
     account_id   INTEGER NOT NULL
                          REFERENCES accounts (id) ON DELETE NO ACTION
                                                   ON UPDATE NO ACTION,
