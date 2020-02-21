@@ -50,9 +50,10 @@ CREATE TABLE action_details (
     pid         INTEGER    REFERENCES actions (id) ON DELETE CASCADE
                                                    ON UPDATE CASCADE
                            NOT NULL,
-    category_id INTEGER    REFERENCES categories (id) ON DELETE RESTRICT
+    category_id INTEGER    REFERENCES categories (id) ON DELETE SET DEFAULT
                                                       ON UPDATE CASCADE
-                           NOT NULL,
+                           NOT NULL
+                           DEFAULT (0),
     tag_id      INTEGER    REFERENCES tags (id) ON DELETE SET NULL
                                                 ON UPDATE CASCADE,
     sum         REAL       NOT NULL,
@@ -1386,6 +1387,12 @@ CREATE TRIGGER update_to INSTEAD OF UPDATE OF to_timestamp, to_acc_id, to_amount
      WHERE tid = OLD.id AND
            type = 1; END;
 
+-- Trigger to keep predefinded categories from deletion
+CREATE TRIGGER keep_predefined_categories BEFORE DELETE ON categories FOR EACH ROW WHEN OLD.special = 1
+BEGIN
+    SELECT RAISE(ABORT, "Can't delete predefinded category");
+END;
+
 
 -- Initialize default values for settings
 INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 2);
@@ -1423,6 +1430,17 @@ INSERT INTO data_sources (id, name) VALUES (0, 'Bank of Russia');
 INSERT INTO data_sources (id, name) VALUES (1, 'MOEX');
 INSERT INTO data_sources (id, name) VALUES (2, 'NYSE/Nasdaq');
 INSERT INTO data_sources (id, name) VALUES (3, 'Euronext');
+
+-- Initialize predefinded categories
+INSERT INTO categories (id, pid, name, often, special) VALUES (1, 0, 'Income', 0, 1);
+INSERT INTO categories (id, pid, name, often, special) VALUES (2, 0, 'Spending', 0, 1);
+INSERT INTO categories (id, pid, name, often, special) VALUES (3, 0, 'Profits', 0, 1);
+INSERT INTO categories (id, pid, name, often, special) VALUES (4, 1, 'Starting balance', 0, 1);
+INSERT INTO categories (id, pid, name, often, special) VALUES (5, 2, 'Fees', 0, 1);
+INSERT INTO categories (id, pid, name, often, special) VALUES (6, 2, 'Taxes', 0, 1);
+INSERT INTO categories (id, pid, name, often, special) VALUES (7, 3, 'Dividends', 0, 1);
+INSERT INTO categories (id, pid, name, often, special) VALUES (8, 3, 'Interest', 0, 1);
+INSERT INTO categories (id, pid, name, often, special) VALUES (9, 3, 'Results of investments', 0, 1);
 
 -- Initialize common currencies
 INSERT INTO assets (id, name, type_id, full_name, web_id, src_id) VALUES (1, 'RUB', 1, 'Российский Рубль', NULL, -1);
