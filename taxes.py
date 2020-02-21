@@ -1,8 +1,40 @@
 import time
 import datetime
 import xlsxwriter
+from PySide2.QtWidgets import QDialog, QFileDialog
+from PySide2.QtCore import Property, Slot
 from PySide2.QtSql import QSqlQuery
+from UI.ui_tax_export_dlg import Ui_TaxExportDlg
 
+class TaxExportDialog(QDialog, Ui_TaxExportDlg):
+    def __init__(self, db):
+        QDialog.__init__(self)
+        self.setupUi(self)
+
+        self.AccountWidget.init_DB(db)
+        self.FileSelectBtn.pressed.connect(self.OnFileBtn)
+
+    @Slot()
+    def OnFileBtn(self):
+        filename = QFileDialog.getSaveFileName(self, self.tr("Save tax forms to:"), ".", self.tr("Excel file (*.xlsx)"))
+        if filename[0]:
+            if filename[1] == self.tr("Excel file (*.xlsx)") and filename[0][-5:] != '.xlsx':
+                self.Filename.setText(filename[0] + '.xlsx')
+            else:
+                self.Filename.setText(filename[0])
+
+    def getYear(self):
+        return self.Year.value()
+
+    def getFilename(self):
+        return self.Filename.text()
+
+    def getAccount(self):
+        return self.AccountWidget.account_id
+
+    year = Property(int, fget=getYear)
+    filename = Property(int, fget=getFilename)
+    account = Property(int, fget=getAccount)
 
 class TaxesRus:
     def __init__(self, db):
