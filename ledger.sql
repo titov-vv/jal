@@ -1447,5 +1447,8 @@ INSERT INTO assets (id, name, type_id, full_name, web_id, src_id) VALUES (1, 'RU
 INSERT INTO assets (id, name, type_id, full_name, web_id, src_id) VALUES (2, 'USD', 1, 'Доллар США', 'R01235', 0);
 INSERT INTO assets (id, name, type_id, full_name, web_id, src_id) VALUES (3, 'EUR', 1, 'Евро', 'R01239', 0);
 
+-- Initialize rate for base currency
+INSERT INTO quotes (id, timestamp, asset_id, quote) VALUES (1, 946684800, 1, 1.0);
+
 COMMIT TRANSACTION;
 PRAGMA foreign_keys = on;

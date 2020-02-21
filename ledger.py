@@ -563,7 +563,7 @@ class Ledger:
                       "SELECT a.type_id AS account_type, l.account_id AS account, a.currency_id AS currency, "
                       "SUM(CASE WHEN l.book_account = 4 THEN l.amount*act_q.quote ELSE l.amount END) AS balance, "
                       "SUM(CASE WHEN l.book_account = 4 THEN l.amount*act_q.quote*cur_q.quote/cur_adj_q.quote ELSE l.amount*cur_q.quote/cur_adj_q.quote END) AS balance_adj, "
-                      "(d.timestamp - a.reconciled_on)/86400 AS unreconciled_days, "
+                      "(d.timestamp - coalesce(a.reconciled_on, 0))/86400 AS unreconciled_days, "
                       "a.active AS active "
                       "FROM ledger AS l "
                       "LEFT JOIN accounts AS a ON l.account_id = a.id "
@@ -693,38 +693,3 @@ class Ledger:
                       "GROUP BY currency "
                       ") ORDER BY currency, level1 DESC, account, level2 DESC")
         assert query.exec_()
-
-# Code for verification of old ledger, probably not needed anymore
-    # def PrintBalances(self, timestamp, currency_adjustment):
-    #     cursor = self.db.cursor()
-    #     cursor.executescript("DROP TABLE IF EXISTS temp.last_quotes;"
-    #                          "DROP TABLE IF EXISTS temp.last_dates;")
-    #     cursor.execute("CREATE TEMPORARY TABLE last_quotes AS "
-    #                    "SELECT MAX(timestamp) AS timestamp, asset_id, quote "
-    #                    "FROM quotes "
-    #                    "WHERE timestamp <= ? "
-    #                    "GROUP BY asset_id", (timestamp, ))
-    #     cursor.execute("CREATE TEMPORARY TABLE last_dates AS "
-    #                    "SELECT account_id, MAX(timestamp) AS timestamp "
-    #                    "FROM ledger "
-    #                    "WHERE timestamp <= ? "
-    #                    "GROUP BY account_id;", (timestamp, ))
-    #     cursor.execute("SELECT a.name AS account_name, c.name AS currency_name, "
-    #                    "SUM(CASE WHEN l.book_account = 4 THEN l.amount*act_q.quote ELSE l.amount END) AS sum, "
-    #                    "SUM(CASE WHEN l.book_account = 4 THEN l.amount*act_q.quote*cur_q.quote/cur_adj_q.quote ELSE l.amount*cur_q.quote/cur_adj_q.quote END) AS sum_adjusted, "
-    #                    "(d.timestamp - a.reconciled_on)/86400 AS unreconciled_days, "
-    #                    "a.active "
-    #                    "FROM ledger AS l "
-    #                    "LEFT JOIN accounts AS a ON l.account_id = a.id "
-    #                    "LEFT JOIN assets AS c ON a.currency_id = c.id "
-    #                    "LEFT JOIN temp.last_quotes AS act_q ON l.asset_id = act_q.asset_id "
-    #                    "LEFT JOIN temp.last_quotes AS cur_q ON a.currency_id = cur_q.asset_id "
-    #                    "LEFT JOIN temp.last_quotes AS cur_adj_q ON cur_adj_q.asset_id = ? "
-    #                    "LEFT JOIN temp.last_dates AS d ON l.account_id = d.account_id "
-    #                    "WHERE (book_account = ? OR book_account = ? OR book_account = ?) AND l.timestamp <= ? "
-    #                    "GROUP BY a.name "
-    #                    "HAVING ABS(sum)>0.0001",
-    #                    (currency_adjustment, BOOK_ACCOUNT_MONEY, BOOK_ACCOUNT_ASSETS, BOOK_ACCOUNT_LIABILITIES, timestamp))
-    #     balances = cursor.fetchall()
-    #     for row in balances:
-    #         print(row)
