@@ -232,7 +232,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TradesModel.setJoinMode(QSqlRelationalTableModel.LeftJoin)
         self.TradesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         corp_action_idx = self.ActionDetailsModel.fieldIndex("corp_action_id")
-        self.ActionDetailsModel.setRelation(category_idx, QSqlRelation("corp_actions", "id", "type"))
+        self.ActionDetailsModel.setRelation(corp_action_idx, QSqlRelation("corp_actions", "id", "type"))
         self.TradesModel.dataChanged.connect(self.OnOperationDataChanged)
         self.TradesModel.select()
         self.TradesDataMapper = QDataWidgetMapper(self)
