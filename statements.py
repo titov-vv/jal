@@ -1,22 +1,41 @@
 from constants import *
 import re
+import pandas
 from ibflex import parser, AssetClass, BuySell, CashAction, Reorg, Code
 from PySide2.QtSql import QSqlQuery
 from datetime import datetime
 
 TAX_NOTE_PATTERN = "^(.*) - (..) TAX$"
+CLIENT_PATTERN = "^Код клиента: (.*)$"
+
+QUIK_TIMESTAMP = 'Дата и время заключения сделки'
+QUIK_DEAL_NUMBER = 'Номер сделки'
+QUIK_SYMBOL = 'Код инструмента'
+QUIK_SECNAME = 'Краткое наименование инструмента'
+QUIK_DEAL_TYPE = 'Направление'
+QUIK_QTY = 'Кол-во'
+QUIK_PRICE = 'Цена'
+QUIK_COUPON = 'НКД'
+QUIK_SETTLEMENT = 'Дата расчётов'
+QUIK_BUY = 'Купля'
+QUIK_SELL = 'Продажа'
 
 class StatementLoader:
     def __init__(self, db):
         self.db = db
 
-    def findAccountID(self, accountNumber, accountCurrency):
+    def findAccountID(self, accountNumber, accountCurrency = ''):
         query = QSqlQuery(self.db)
-        query.prepare("SELECT a.id FROM accounts AS a "
-                      "LEFT JOIN assets AS c ON c.id=a.currency_id "
-                      "WHERE a.number=:account_number AND c.name=:currency_name")
+        if accountCurrency:
+            query.prepare("SELECT a.id FROM accounts AS a "
+                          "LEFT JOIN assets AS c ON c.id=a.currency_id "
+                          "WHERE a.number=:account_number AND c.name=:currency_name")
+            query.bindValue(":currency_name", accountCurrency)
+        else:
+            query.prepare("SELECT a.id FROM accounts AS a "
+                          "LEFT JOIN assets AS c ON c.id=a.currency_id "
+                          "WHERE a.number=:account_number")
         query.bindValue(":account_number", accountNumber)
-        query.bindValue(":currency_name", accountCurrency)
         assert query.exec_()
         if query.next():
             return query.value(0)
@@ -397,3 +416,29 @@ class StatementLoader:
         assert query.exec_()
         self.db.commit()
         print(f"Withholding tax added: {note}")
+
+    def loadQuikHtml(self, filename):
+        data = pandas.read_html(filename, encoding='cp1251')
+        report_info = data[0]
+        deals_info = data[1]
+        parts = re.match(CLIENT_PATTERN, report_info[0][2])
+        if parts:
+            account_number = parts.group(1)
+            account_id = self.findAccountID(account_number)
+            if not account_id:
+                print(f"Account {account_number} not found. Import cancelled.")
+                return
+        for index, row in deals_info.iterrows():
+            if row[QUIK_DEAL_TYPE] == QUIK_BUY:
+                qty = int(row[QUIK_QTY])
+            elif row[QUIK_DEAL_TYPE] == QUIK_SELL:
+                qty = -int(row[QUIK_QTY])
+            else:
+                break
+            asset_id = self.findAssetID(row[QUIK_SYMBOL])
+            timestamp = int(datetime.strptime(row[QUIK_TIMESTAMP], "%d.%m.%Y %H:%M:%S").timestamp())
+            settlement = int(datetime.strptime(row[QUIK_SETTLEMENT], "%d.%m.%Y").timestamp())
+            number = row[QUIK_DEAL_NUMBER]
+            price = float(row[QUIK_PRICE])
+            fee = 0  # there is monthly fee in Uralsib
+            self.createTrade(account_id, asset_id, timestamp, settlement, number, qty, price, fee)

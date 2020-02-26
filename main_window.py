@@ -886,11 +886,14 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def loadReportIBKR(self):
-        report_file, _filter = QFileDialog.getOpenFileName(self, self.tr("Select Interactive Brokers Flex-query to import"), ".",
-                                                           self.tr("IBRK flex-query (*.xml)"))
+        report_file, filter = QFileDialog.getOpenFileName(self, self.tr("Select Interactive Brokers Flex-query to import"), ".",
+                                                           self.tr("IBRK flex-query (*.xml);;Quik HTML-report (*.htm)"))
         if report_file:
             report_loader = StatementLoader(self.db)
-            report_loader.loadIBFlex(report_file)
+            if filter == self.tr("IBRK flex-query (*.xml)"):
+                report_loader.loadIBFlex(report_file)
+            if filter == self.tr("Quik HTML-report (*.htm)"):
+                report_loader.loadQuikHtml(report_file)
 
     @Slot()
     def ExportTaxForms(self):
