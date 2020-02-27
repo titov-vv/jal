@@ -6,6 +6,7 @@ from PySide2 import QtCore
 from UI.ui_main_window import Ui_LedgerMainWindow
 from ledger import Ledger
 from taxes import TaxesRus, TaxExportDialog
+from deals import Deals, DealsExportDialog
 from bulk_db import importFrom1C, loadDbFromSQL, MakeBackup, RestoreBackup
 from statements import StatementLoader
 from rebuild_window import RebuildDialog
@@ -890,7 +891,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def ReportDeals(self):
-        pass
+        deals_export_dialog = DealsExportDialog(self.db)
+        deals_export_dialog.setGeometry(self.x() + 64, self.y() + 64, deals_export_dialog.width(),
+                                      deals_export_dialog.height())
+        if deals_export_dialog.exec_():
+            deals = Deals(self.db)
+            deals.save2file(deals_export_dialog.filename, deals_export_dialog.account,
+                            deals_export_dialog.begin, deals_export_dialog.end)
 
     @Slot()
     def ExportTaxForms(self):
