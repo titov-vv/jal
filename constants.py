@@ -1,4 +1,5 @@
 DB_PATH = "ledger.sqlite"
+INIT_SCRIPT_PATH = 'ledger.sql'
 TARGET_SCHEMA = 2
 CALC_TOLERANCE = 1e-10
 DISP_TOLERANCE = 1e-4

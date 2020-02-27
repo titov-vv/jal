@@ -754,8 +754,6 @@ class Ui_LedgerMainWindow(object):
         self.menu_DAta.addAction(self.action_Re_build_Ledger)
         self.menu_DAta.addAction(self.action_Import)
         self.menuPredefined_data.addAction(self.actionAccountTypes)
-        self.menuPredefined_data.addSeparator()
-        self.menuPredefined_data.addAction(self.actionInitDB)
         self.menuLoad.addAction(self.action_Load_quotes)
         self.menuLoad.addAction(self.actionLoad_Statement)
         self.menu_Reports.addAction(self.PrepareTaxForms)

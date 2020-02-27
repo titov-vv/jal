@@ -63,11 +63,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.db.open()
         tables = self.db.tables(QSql.Tables)
         if tables == []:
-            if QMessageBox().warning(self, self.tr("Database is empty"),
-                                     self.tr("Would you like to build it from SQL-script?"),
-                                     QMessageBox.Yes, QMessageBox.No) == QMessageBox.Yes:
-                self.InitDB()
-            self.db.close()
+            self.InitDB()
             QMetaObject.invokeMethod(self, "close", Qt.QueuedConnection)
             return
 
@@ -338,7 +334,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.actionBackup.triggered.connect(self.Backup)
         self.actionRestore.triggered.connect(self.Restore)
         self.action_Re_build_Ledger.triggered.connect(self.ShowRebuildDialog)
-        self.actionInitDB.triggered.connect(self.InitDB)
         self.actionAccountTypes.triggered.connect(self.EditAccountTypes)
         self.actionAccounts.triggered.connect(self.EditAccounts)
         self.actionAssets.triggered.connect(self.EditAssets)
@@ -400,16 +395,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             qApp.quit()
 
     def InitDB(self):
-        init_script, _filter = QFileDialog.getOpenFileName(self, self.tr("Select init-script"), ".",  self.tr("SQL scripts (*.sql)"))
-        if init_script:
-            self.db.close()
-            loadDbFromSQL(DB_PATH, init_script)
-            QMessageBox().information(self, self.tr("Database initialized"),
+        self.db.close()
+        loadDbFromSQL(DB_PATH, INIT_SCRIPT_PATH)
+        QMessageBox().information(self, self.tr("Database initialized"),
                                   self.tr("Database have been initialized.\n"
                                           "You need to restart the application.\n"
                                           "Application terminates now."),
                                   QMessageBox.Ok)
-            qApp.quit()
 
     def ShowRebuildDialog(self):
         query = QSqlQuery(self.db)

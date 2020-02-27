@@ -1282,8 +1282,6 @@
       <string>Predefined data</string>
      </property>
      <addaction name="actionAccountTypes"/>
-     <addaction name="separator"/>
-     <addaction name="actionInitDB"/>
     </widget>
     <addaction name="separator"/>
     <addaction name="actionAccounts"/>
