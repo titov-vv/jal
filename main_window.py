@@ -85,16 +85,15 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         query = QSqlQuery(self.db)
         query.exec_("SELECT value FROM settings WHERE name='BaseCurrency'")
         query.next()
-        self.BaseCurrency = query.value(0)
+        self.balance_currency = query.value(0)
+        self.holdings_currency = query.value(0)
 
         self.ledger = Ledger(self.db)
         self.downloader = QuoteDownloader(self.db)
 
-        self.balance_currency = self.BaseCurrency
         self.balance_date = QtCore.QDateTime.currentSecsSinceEpoch()
         self.balance_active_only = 1
 
-        self.holdings_currency = self.BaseCurrency
         self.holdings_date = QtCore.QDateTime.currentSecsSinceEpoch()
 
         self.operations_since_timestamp = 0
@@ -894,6 +893,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 report_loader.loadIBFlex(report_file)
             if filter == self.tr("Quik HTML-report (*.htm)"):
                 report_loader.loadQuikHtml(report_file)
+            self.UpdateLedger()
 
     @Slot()
     def ExportTaxForms(self):

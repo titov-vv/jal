@@ -1,6 +1,7 @@
 from constants import *
 import re
 import pandas
+import math
 from ibflex import parser, AssetClass, BuySell, CashAction, Reorg, Code
 from PySide2.QtSql import QSqlQuery
 from datetime import datetime
@@ -15,6 +16,7 @@ QUIK_SECNAME = 'Краткое наименование инструмента'
 QUIK_DEAL_TYPE = 'Направление'
 QUIK_QTY = 'Кол-во'
 QUIK_PRICE = 'Цена'
+QUIK_AMOUNT = 'Объём'
 QUIK_COUPON = 'НКД'
 QUIK_SETTLEMENT = 'Дата расчётов'
 QUIK_BUY = 'Купля'
@@ -135,7 +137,7 @@ class StatementLoader:
         else:
             print(f"Trade type f{IBtrade.buySell} is not implemented")
 
-    def createTrade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee):
+    def createTrade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee, coupon=0):
         query = QSqlQuery(self.db)
         query.prepare("SELECT id FROM trades "
                       "WHERE timestamp=:timestamp AND asset_id = :asset "
@@ -151,9 +153,9 @@ class StatementLoader:
             print(f"Trade #{number} already exists")
             return
         query.prepare("INSERT INTO trades (timestamp, settlement, corp_action_id, number, account_id, "
-                      "asset_id, qty, price, fee) "
+                      "asset_id, qty, price, fee, coupon) "
                       "VALUES (:timestamp, :settlement, 0, :number, :account, "
-                      ":asset, :qty, :price, :fee)")
+                      ":asset, :qty, :price, :fee, :coupon)")
         query.bindValue(":timestamp", timestamp)
         query.bindValue(":settlement", settlement)
         query.bindValue(":number", number)
@@ -162,6 +164,7 @@ class StatementLoader:
         query.bindValue(":qty", float(qty))
         query.bindValue(":price", float(price))
         query.bindValue(":fee", -float(fee))
+        query.bindValue(":coupon", float(coupon))
         assert query.exec_()
         self.db.commit()
         print(f"Trade #{number} added for account {account_id} asset {asset_id} @{timestamp}: {qty}x{price}")
@@ -440,5 +443,9 @@ class StatementLoader:
             settlement = int(datetime.strptime(row[QUIK_SETTLEMENT], "%d.%m.%Y").timestamp())
             number = row[QUIK_DEAL_NUMBER]
             price = float(row[QUIK_PRICE])
+            amount = float(row[QUIK_AMOUNT])
+            lot_size = math.pow(10, round(math.log10(amount / (price*abs(qty)))))
+            qty = qty * lot_size
             fee = 0  # there is monthly fee in Uralsib
-            self.createTrade(account_id, asset_id, timestamp, settlement, number, qty, price, fee)
+            coupon = float(row[QUIK_COUPON])
+            self.createTrade(account_id, asset_id, timestamp, settlement, number, qty, price, fee, coupon)
