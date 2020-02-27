@@ -1304,8 +1304,9 @@
    </widget>
    <widget class="QMenu" name="menu_Reports">
     <property name="title">
-     <string>&amp;Taxes</string>
+     <string>&amp;Reports</string>
     </property>
+    <addaction name="MakeDealsReport"/>
     <addaction name="PrepareTaxForms"/>
    </widget>
    <addaction name="menuFile"/>
@@ -1387,7 +1388,12 @@
   </action>
   <action name="PrepareTaxForms">
    <property name="text">
-    <string>&amp;Data for taxes [RU]</string>
+    <string>Report for &amp;taxes [RU]</string>
+   </property>
+  </action>
+  <action name="MakeDealsReport">
+   <property name="text">
+    <string>&amp;Deals report</string>
    </property>
   </action>
  </widget>

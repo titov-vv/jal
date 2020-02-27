@@ -21,6 +21,18 @@ QUIK_COUPON = 'НКД'
 QUIK_SETTLEMENT = 'Дата расчётов'
 QUIK_BUY = 'Купля'
 QUIK_SELL = 'Продажа'
+QUIK_FEE1 = 'Комиссия Брокера'
+QUIK_FEE2 = 'Комиссия за ИТС'
+QUIK_FEE3 = 'Комиссия за организацию торговли'
+QUIK_FEE4 = 'Клиринговая комиссия'
+
+def convert_sum(val):
+    val = val.replace(' ', '')
+    try:
+        res = float(val)
+    except:
+        res = 0
+    return res
 
 class StatementLoader:
     def __init__(self, db):
@@ -421,7 +433,9 @@ class StatementLoader:
         print(f"Withholding tax added: {note}")
 
     def loadQuikHtml(self, filename):
-        data = pandas.read_html(filename, encoding='cp1251')
+        data = pandas.read_html(filename, encoding='cp1251',
+                                converters = {QUIK_QTY: convert_sum, QUIK_AMOUNT: convert_sum,
+                                              QUIK_PRICE: convert_sum, QUIK_COUPON: convert_sum})
         report_info = data[0]
         deals_info = data[1]
         parts = re.match(CLIENT_PATTERN, report_info[0][2])
@@ -442,10 +456,10 @@ class StatementLoader:
             timestamp = int(datetime.strptime(row[QUIK_TIMESTAMP], "%d.%m.%Y %H:%M:%S").timestamp())
             settlement = int(datetime.strptime(row[QUIK_SETTLEMENT], "%d.%m.%Y").timestamp())
             number = row[QUIK_DEAL_NUMBER]
-            price = float(row[QUIK_PRICE])
-            amount = float(row[QUIK_AMOUNT])
+            price = row[QUIK_PRICE]
+            amount = row[QUIK_AMOUNT]
             lot_size = math.pow(10, round(math.log10(amount / (price*abs(qty)))))
             qty = qty * lot_size
-            fee = 0  # there is monthly fee in Uralsib
-            coupon = float(row[QUIK_COUPON])
+            fee = float(row[QUIK_FEE1]) + float(row[QUIK_FEE2]) + float(row[QUIK_FEE3]) + float(row[QUIK_FEE4])
+            coupon = row[QUIK_COUPON]
             self.createTrade(account_id, asset_id, timestamp, settlement, number, qty, price, fee, coupon)

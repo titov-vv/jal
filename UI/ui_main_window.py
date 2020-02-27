@@ -58,6 +58,8 @@ class Ui_LedgerMainWindow(object):
         self.actionRestore.setObjectName(u"actionRestore")
         self.PrepareTaxForms = QAction(LedgerMainWindow)
         self.PrepareTaxForms.setObjectName(u"PrepareTaxForms")
+        self.MakeDealsReport = QAction(LedgerMainWindow)
+        self.MakeDealsReport.setObjectName(u"MakeDealsReport")
         self.centralwidget = QWidget(LedgerMainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setMaximumSize(QSize(16777215, 16777215))
@@ -756,6 +758,7 @@ class Ui_LedgerMainWindow(object):
         self.menuPredefined_data.addAction(self.actionAccountTypes)
         self.menuLoad.addAction(self.action_Load_quotes)
         self.menuLoad.addAction(self.actionLoad_Statement)
+        self.menu_Reports.addAction(self.MakeDealsReport)
         self.menu_Reports.addAction(self.PrepareTaxForms)
 
         self.retranslateUi(LedgerMainWindow)
@@ -782,7 +785,8 @@ class Ui_LedgerMainWindow(object):
         self.actionCategories.setText(QCoreApplication.translate("LedgerMainWindow", u"&Categories", None))
         self.actionBackup.setText(QCoreApplication.translate("LedgerMainWindow", u"&Backup...", None))
         self.actionRestore.setText(QCoreApplication.translate("LedgerMainWindow", u"&Restore...", None))
-        self.PrepareTaxForms.setText(QCoreApplication.translate("LedgerMainWindow", u"&Data for taxes [RU]", None))
+        self.PrepareTaxForms.setText(QCoreApplication.translate("LedgerMainWindow", u"Report for &taxes [RU]", None))
+        self.MakeDealsReport.setText(QCoreApplication.translate("LedgerMainWindow", u"&Deals report", None))
         self.BalanceBox.setTitle(QCoreApplication.translate("LedgerMainWindow", u"Balances", None))
         self.BalanceDate.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy", None))
         self.CurrencyLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Sum Currency:", None))
@@ -863,6 +867,6 @@ class Ui_LedgerMainWindow(object):
         self.menu_DAta.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&Data", None))
         self.menuPredefined_data.setTitle(QCoreApplication.translate("LedgerMainWindow", u"Predefined data", None))
         self.menuLoad.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&Load", None))
-        self.menu_Reports.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&Taxes", None))
+        self.menu_Reports.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&Reports", None))
     # retranslateUi
 

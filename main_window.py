@@ -339,6 +339,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.actionAssets.triggered.connect(self.EditAssets)
         self.actionPeers.triggered.connect(self.EditPeers)
         self.actionCategories.triggered.connect(self.EditCategories)
+        self.MakeDealsReport.triggered.connect(self.ReportDeals)
         self.PrepareTaxForms.triggered.connect(self.ExportTaxForms)
         # INTERFACE ACTIONS
         self.MainTabs.currentChanged.connect(self.OnMainTabChange)
@@ -886,6 +887,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             if filter == self.tr("Quik HTML-report (*.htm)"):
                 report_loader.loadQuikHtml(report_file)
             self.UpdateLedger()
+
+    @Slot()
+    def ReportDeals(self):
+        pass
 
     @Slot()
     def ExportTaxForms(self):
