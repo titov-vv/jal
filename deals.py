@@ -1,3 +1,4 @@
+import datetime
 import xlsxwriter
 from PySide2.QtWidgets import QDialog, QFileDialog
 from PySide2.QtCore import Property, Slot
@@ -49,16 +50,85 @@ class Deals:
     def save2file(self, deals_file, account_id, begin, end):
         workbook = xlsxwriter.Workbook(filename=deals_file)
 
+        title_cell = workbook.add_format({'bold': True,
+                                          'text_wrap': True,
+                                          'align': 'center',
+                                          'valign': 'vcenter'})
+        number_odd = workbook.add_format({'border': 1,
+                                          'align': 'center',
+                                          'valign': 'vcenter'})
+        number_even = workbook.add_format({'border': 1,
+                                           'align': 'center',
+                                           'valign': 'vcenter',
+                                           'bg_color': '#C0C0C0'})
+        number2_odd = workbook.add_format({'num_format': '#,###,##0.00',
+                                           'border': 1,
+                                           'valign': 'vcenter'})
+        number2_even = workbook.add_format({'num_format': '#,###,##0.00',
+                                            'border': 1,
+                                            'valign': 'vcenter',
+                                            'bg_color': '#C0C0C0'})
+        number4_odd = workbook.add_format({'num_format': '0.0000',
+                                           'border': 1})
+        number4_even = workbook.add_format({'num_format': '0.0000',
+                                            'border': 1,
+                                            'bg_color': '#C0C0C0'})
+        text_odd = workbook.add_format({'border': 1,
+                                        'valign': 'vcenter'})
+        text_even = workbook.add_format({'border': 1,
+                                         'valign': 'vcenter',
+                                         'bg_color': '#C0C0C0'})
+        formats = {'title': title_cell,
+                   'text_odd': text_odd, 'text_even': text_even,
+                   'number_odd': number_odd, 'number_even': number_even,
+                   'number_2_odd': number2_odd, 'number_2_even': number2_even,
+                   'number_4_odd': number4_odd, 'number_4_even': number4_even}
+
         sheet = workbook.add_worksheet(name="Deals")
 
         query = QSqlQuery(self.db)
-        query.prepare("SELECT * FROM deals_ext")
+        query.prepare("SELECT asset, open_timestamp, close_timestamp, open_price, close_price, "
+                      "qty, fee, profit, rel_profit FROM deals_ext "
+                      "WHERE account_id=:account_id AND close_timestamp>=:begin AND close_timestamp<=:end")
+        query.bindValue(":account_id", account_id)
+        query.bindValue(":begin", begin)
+        query.bindValue(":end", end)
         assert query.exec_()
-        row = 0
-        count = query.record().count()
+
+        sheet.merge_range(0, 0, 1, 0, "Asset", formats['title'])
+        sheet.set_column(0, 0, 15)
+        sheet.merge_range(0, 1, 0, 2, "Date", formats['title'])
+        sheet.write(1, 1, "Open", formats['title'])
+        sheet.write(1, 2, "Close", formats['title'])
+        sheet.set_column(1, 2, 20)
+        sheet.merge_range(0, 3, 0, 4, "Price", formats['title'])
+        sheet.write(1, 3, "Open", formats['title'])
+        sheet.write(1, 4, "Close", formats['title'])
+        sheet.merge_range(0, 5, 1, 5, "Qty", formats['title'])
+        sheet.merge_range(0, 6, 1, 6, "Fee", formats['title'])
+        sheet.merge_range(0, 7, 1, 7, "Profit / Loss", formats['title'])
+        sheet.set_column(3, 7, 10)
+        sheet.merge_range(0, 8, 1, 8, "Profit / Loss, %", formats['title'])
+        sheet.set_column(8, 8, 8)
+        row = 2
         while query.next():
-            for i in range(count):
-                sheet.write(row, i, query.value(i))
+            if row % 2:
+                even_odd = '_odd'
+            else:
+                even_odd = '_even'
+            sheet.write(row, 0, query.value('asset'), formats['text' + even_odd])
+            sheet.write(row, 1,
+                        datetime.datetime.fromtimestamp(query.value("open_timestamp")).strftime('%d.%m.%Y %H:%M:%S'),
+                        formats['text' + even_odd])
+            sheet.write(row, 2,
+                        datetime.datetime.fromtimestamp(query.value("close_timestamp")).strftime('%d.%m.%Y %H:%M:%S'),
+                        formats['text' + even_odd])
+            sheet.write(row, 3, float(query.value('open_price')), formats['number_4' + even_odd])
+            sheet.write(row, 4, float(query.value('close_price')), formats['number_4' + even_odd])
+            sheet.write(row, 5, float(query.value('qty')), formats['number' + even_odd])
+            sheet.write(row, 6, float(query.value('fee')), formats['number_4' + even_odd])
+            sheet.write(row, 7, float(query.value('profit')), formats['number_2' + even_odd])
+            sheet.write(row, 8, float(query.value('rel_profit')), formats['number_2' + even_odd])
             row = row + 1
 
         workbook.close()

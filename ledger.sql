@@ -673,6 +673,37 @@ CREATE VIEW transfers_combined AS
            transfer_notes AS n ON f.tid = n.tid
      WHERE f.type = -1;
 
+-- View: deals_ext
+DROP VIEW IF EXISTS deals_ext;
+CREATE VIEW deals_ext AS
+    SELECT d.account_id,
+           ac.name AS account,
+           d.asset_id,
+           at.name AS asset,
+           ot.timestamp AS open_timestamp,
+           ct.timestamp AS close_timestamp,
+           ot.price AS open_price,
+           ct.price AS close_price,
+           d.qty AS qty,
+           ot.fee + ct.fee AS fee,
+           d.qty * (ct.price - ot.price) - (ot.fee + ct.fee) AS profit,
+           coalesce(100 * (d.qty * (ct.price - ot.price) - (ot.fee + ct.fee) ) / (d.qty * ot.price), 0) AS rel_profit
+      FROM deals AS d
+           LEFT JOIN
+           sequence AS os ON d.open_sid = os.id
+           LEFT JOIN
+           trades AS ot ON ot.id = os.operation_id
+           LEFT JOIN
+           sequence AS cs ON d.close_sid = cs.id
+           LEFT JOIN
+           trades AS ct ON ct.id = cs.operation_id
+           LEFT JOIN
+           accounts AS ac ON d.account_id = ac.id
+           LEFT JOIN
+           assets AS at ON d.asset_id = at.id
+     ORDER BY ct.timestamp,
+              ot.timestamp;
+
 
 -- Trigger: action_details_after_delete
 DROP TRIGGER IF EXISTS action_details_after_delete;
