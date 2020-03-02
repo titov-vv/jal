@@ -461,5 +461,5 @@ class StatementLoader:
             lot_size = math.pow(10, round(math.log10(amount / (price*abs(qty)))))
             qty = qty * lot_size
             fee = float(row[QUIK_FEE1]) + float(row[QUIK_FEE2]) + float(row[QUIK_FEE3]) + float(row[QUIK_FEE4])
-            coupon = row[QUIK_COUPON]
-            self.createTrade(account_id, asset_id, timestamp, settlement, number, qty, price, fee, coupon)
+            coupon = float(row[QUIK_COUPON])
+            self.createTrade(account_id, asset_id, timestamp, settlement, number, qty, price, -fee, coupon)

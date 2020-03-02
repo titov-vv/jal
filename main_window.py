@@ -7,7 +7,7 @@ from UI.ui_main_window import Ui_LedgerMainWindow
 from ledger import Ledger
 from taxes import TaxesRus, TaxExportDialog
 from deals import Deals, DealsExportDialog
-from bulk_db import importFrom1C, loadDbFromSQL, MakeBackup, RestoreBackup
+from bulk_db import loadDbFromSQL, MakeBackup, RestoreBackup
 from statements import StatementLoader
 from rebuild_window import RebuildDialog
 from downloader import QuoteDownloader, QuotesUpdateDialog
@@ -331,7 +331,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.actionExit.triggered.connect(qApp.quit)
         self.action_Load_quotes.triggered.connect(self.UpdateQuotes)
         self.actionLoad_Statement.triggered.connect(self.loadReportIBKR)
-        self.action_Import.triggered.connect(self.ImportFrom1C)
         self.actionBackup.triggered.connect(self.Backup)
         self.actionRestore.triggered.connect(self.Restore)
         self.action_Re_build_Ledger.triggered.connect(self.ShowRebuildDialog)
@@ -370,14 +369,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.OperationsTableView.selectRow(0)
         self.OnOperationsRangeChange(0)
-
-    def ImportFrom1C(self):
-        import_directory = QFileDialog.getExistingDirectory(self, "Select directory with data to import")
-        if import_directory:
-            import_directory = import_directory + "/"
-            self.db.close()
-            importFrom1C(DB_PATH, import_directory)
-            self.db.open()
 
     def Backup(self):
         backup_directory = QFileDialog.getExistingDirectory(self, "Select directory to save backup")
