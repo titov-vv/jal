@@ -32,6 +32,12 @@ class DealsExportDialog(QDialog, Ui_DealsExportDlg):
     def getTo(self):
         return self.ToDate.dateTime().toSecsSinceEpoch()
 
+    def getGroupByDates(self):
+        if self.DateGroupCheckBox.isChecked():
+            return True
+        else:
+            return False
+
     def getFilename(self):
         return self.Filename.text()
 
@@ -40,6 +46,7 @@ class DealsExportDialog(QDialog, Ui_DealsExportDlg):
 
     begin = Property(int, fget=getFrom)
     end = Property(int, fget=getTo)
+    group_dates = Property(bool, fget=getGroupByDates)
     filename = Property(int, fget=getFilename)
     account = Property(int, fget=getAccount)
 
@@ -47,7 +54,7 @@ class Deals:
     def __init__(self, db):
         self.db = db
 
-    def save2file(self, deals_file, account_id, begin, end):
+    def save2file(self, deals_file, account_id, begin, end, group_dates):
         workbook = xlsxwriter.Workbook(filename=deals_file)
 
         title_cell = workbook.add_format({'bold': True,
@@ -87,9 +94,21 @@ class Deals:
         sheet = workbook.add_worksheet(name="Deals")
 
         query = QSqlQuery(self.db)
-        query.prepare("SELECT asset, open_timestamp, close_timestamp, open_price, close_price, "
-                      "qty, fee, profit, rel_profit FROM deals_ext "
-                      "WHERE account_id=:account_id AND close_timestamp>=:begin AND close_timestamp<=:end")
+        if group_dates:
+            query.prepare("SELECT asset, "
+                          "strftime('%s', datetime(open_timestamp, 'unixepoch', 'start of day')) as open_timestamp, "
+                          "strftime('%s', datetime(close_timestamp, 'unixepoch', 'start of day')) as close_timestamp, "
+                          "SUM(open_price*qty)/SUM(qty) as open_price, SUM(close_price*qty)/SUM(qty) AS close_price, "
+                          "SUM(qty) as qty, SUM(fee) as fee, SUM(profit) as profit, "
+                          "coalesce(100*SUM(qty*(close_price-open_price)-fee)/SUM(qty*open_price), 0) AS rel_profit "
+                          "FROM deals_ext "
+                          "WHERE account_id=:account_id AND close_timestamp>=:begin AND close_timestamp<=:end "
+                          "GROUP BY asset, open_timestamp, close_timestamp "
+                          "ORDER BY close_timestamp, open_timestamp")
+        else:
+            query.prepare("SELECT asset, open_timestamp, close_timestamp, open_price, close_price, "
+                          "qty, fee, profit, rel_profit FROM deals_ext "
+                          "WHERE account_id=:account_id AND close_timestamp>=:begin AND close_timestamp<=:end")
         query.bindValue(":account_id", account_id)
         query.bindValue(":begin", begin)
         query.bindValue(":end", end)
@@ -117,12 +136,18 @@ class Deals:
             else:
                 even_odd = '_even'
             sheet.write(row, 0, query.value('asset'), formats['text' + even_odd])
-            sheet.write(row, 1,
-                        datetime.datetime.fromtimestamp(query.value("open_timestamp")).strftime('%d.%m.%Y %H:%M:%S'),
-                        formats['text' + even_odd])
-            sheet.write(row, 2,
-                        datetime.datetime.fromtimestamp(query.value("close_timestamp")).strftime('%d.%m.%Y %H:%M:%S'),
-                        formats['text' + even_odd])
+            open = int(query.value("open_timestamp"))
+            close = int(query.value("close_timestamp"))
+            if group_dates:
+                sheet.write(row, 1, datetime.datetime.fromtimestamp(open).strftime('%d.%m.%Y'),
+                            formats['text' + even_odd])
+                sheet.write(row, 2, datetime.datetime.fromtimestamp(close).strftime('%d.%m.%Y'),
+                            formats['text' + even_odd])
+            else:
+                sheet.write(row, 1, datetime.datetime.fromtimestamp(open).strftime('%d.%m.%Y %H:%M:%S'),
+                            formats['text' + even_odd])
+                sheet.write(row, 2, datetime.datetime.fromtimestamp(close).strftime('%d.%m.%Y %H:%M:%S'),
+                            formats['text' + even_odd])
             sheet.write(row, 3, float(query.value('open_price')), formats['number_4' + even_odd])
             sheet.write(row, 4, float(query.value('close_price')), formats['number_4' + even_odd])
             sheet.write(row, 5, float(query.value('qty')), formats['number' + even_odd])

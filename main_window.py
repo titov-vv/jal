@@ -888,7 +888,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         if deals_export_dialog.exec_():
             deals = Deals(self.db)
             deals.save2file(deals_export_dialog.filename, deals_export_dialog.account,
-                            deals_export_dialog.begin, deals_export_dialog.end)
+                            deals_export_dialog.begin, deals_export_dialog.end, deals_export_dialog.group_dates)
 
     @Slot()
     def ExportTaxForms(self):
