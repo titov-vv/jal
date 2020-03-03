@@ -1419,7 +1419,7 @@ CREATE TRIGGER update_to INSTEAD OF UPDATE OF to_timestamp, to_acc_id, to_amount
            type = 1; END;
 
 -- Trigger to keep predefinded categories from deletion
-CREATE TRIGGER keep_predefined_categories BEFORE DELETE ON categories FOR EACH ROW WHEN OLD.special = 1
+CREATE TRIGGER keep_predefined_categories BEFORE DELETE ON categories FOR EACH ROW WHEN OLD.special = 1 AND (SELECT value FROM settings WHERE id=1)
 BEGIN
     SELECT RAISE(ABORT, "Can't delete predefinded category");
 END;
