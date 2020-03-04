@@ -600,7 +600,7 @@ CREATE VIEW all_operations AS
                       NULL AS t_qty,
                       n.note,
                       a.name AS note2,
-                      tr.id AS operation_id
+                      r.id AS operation_id
                  FROM transfers AS r
                       LEFT JOIN
                       transfer_notes AS n ON r.tid = n.tid
