@@ -245,7 +245,7 @@ class OperationsTotalsDelegate(QStyledItemDelegate):
         if (total_shares != ''):
             lower_part = f"{total_shares:,.2f}"
         if (total_money != ''):
-            upper_part = f"{total_money:,.2f}\n"
+            upper_part = f"{total_money:,.2f}"
         text = upper_part + "\n" + lower_part
 
         if (reconciled == 1):
