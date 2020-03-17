@@ -1288,6 +1288,7 @@
     <addaction name="actionAssets"/>
     <addaction name="actionPeers"/>
     <addaction name="actionCategories"/>
+    <addaction name="actionTags"/>
     <addaction name="menuPredefined_data"/>
     <addaction name="separator"/>
     <addaction name="actionBackup"/>
@@ -1394,6 +1395,11 @@
   <action name="MakeDealsReport">
    <property name="text">
     <string>&amp;Deals report</string>
+   </property>
+  </action>
+  <action name="actionTags">
+   <property name="text">
+    <string>&amp;Tags</string>
    </property>
   </action>
  </widget>

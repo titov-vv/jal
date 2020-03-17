@@ -2,6 +2,7 @@ from datetime import datetime
 from PySide2.QtCore import Qt
 from PySide2.QtSql import QSqlRelationalDelegate
 from CustomUI.category_select import CategorySelector
+from CustomUI.tag_select import TagSelector
 
 class ActionDelegate(QSqlRelationalDelegate):
     def __init__(self, parent=None):
@@ -38,15 +39,21 @@ class ActionDetailDelegate(QSqlRelationalDelegate):
             QSqlRelationalDelegate.paint(self, painter, option, index)
 
     def createEditor(self, aParent, option, index):
-        if index.column() != 2:
-            return QSqlRelationalDelegate.createEditor(self, aParent, option, index)
-        # show category selector
-        category_selector = CategorySelector(aParent)
-        category_selector.init_DB(index.model().database())
-        return category_selector
+        if index.column() == 2:  # show category selector
+            category_selector = CategorySelector(aParent)
+            category_selector.init_DB(index.model().database())
+            return category_selector
+        if index.column() == 3:  # show tag selector
+            tag_selector = TagSelector(aParent)
+            tag_selector.init_DB(index.model().database())
+            return tag_selector
+        return QSqlRelationalDelegate.createEditor(self, aParent, option, index)
 
     def setModelData(self, editor, model, index):
-        if index.column() != 2:
-            return QSqlRelationalDelegate.setModelData(self, editor, model, index)
-        # Assign category
-        model.setData(index, editor.category_id)
+        if index.column() == 2:  # Assign category
+            model.setData(index, editor.category_id)
+            return
+        if index.column() == 3:  # Assign tag
+            model.setData(index, editor.tag_id)
+            return
+        return QSqlRelationalDelegate.setModelData(self, editor, model, index)

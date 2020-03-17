@@ -21,6 +21,7 @@ from CustomUI.account_select import AcountTypeEditDlg, AccountChoiceDlg
 from CustomUI.asset_select import AssetChoiceDlg
 from CustomUI.peer_select import PeerChoiceDlg
 from CustomUI.category_select import CategoryChoiceDlg
+from CustomUI.tag_select import TagChoiceDlg
 #-----------------------------------------------------------------------------------------------------------------------
 # model - QSqlTableModel where titles should be set for given columns
 # column_title_list - list of column_name/header_title pairs
@@ -147,7 +148,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                                                    ("currency_name", ""), ("balance_adj", "Balance, RUB")])
         self.ConfigureTableView(self.BalancesTableView, self.BalancesModel,
                                 ["level1", "level2", "days_unreconciled", "active"],
-                                [("account_name", 100), ("balance", 100), ("currency_name", 40), ("balance_adj", 100)],
+                                [("account_name", 75), ("balance", 100), ("currency_name", 35), ("balance_adj", 110)],
                                 "account_name")
         self.BalancesTableView.setItemDelegate(BalanceDelegate(self.BalancesTableView))
         self.BalancesTableView.show()
@@ -339,6 +340,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.actionAssets.triggered.connect(self.EditAssets)
         self.actionPeers.triggered.connect(self.EditPeers)
         self.actionCategories.triggered.connect(self.EditCategories)
+        self.actionTags.triggered.connect(self.EditTags)
         self.MakeDealsReport.triggered.connect(self.ReportDeals)
         self.PrepareTaxForms.triggered.connect(self.ExportTaxForms)
         # INTERFACE ACTIONS
@@ -848,6 +850,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def EditCategories(self):
         dlg = CategoryChoiceDlg()
+        dlg.init_DB(self.db)
+        dlg.setFilter()
+        dlg.exec_()
+
+    @Slot()
+    def EditTags(self):
+        dlg = TagChoiceDlg()
         dlg.init_DB(self.db)
         dlg.setFilter()
         dlg.exec_()
