@@ -247,7 +247,7 @@ class Ledger:
         if (sell_qty < qty):   # Add new long position
             self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, asset_id, account_id, (qty - sell_qty), (qty - sell_qty) * price)
         if coupon:
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_COSTS, currency_id, account_id, coupon, None, None, CATEGORY_PROFIT)
+            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_COSTS, currency_id, account_id, coupon, None, None, CATEGORY_DIVIDEND)
         if fee:
             self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_COSTS, currency_id, account_id, fee, None, None, CATEGORY_FEES)
 
@@ -321,7 +321,7 @@ class Ledger:
         if (buy_qty < qty):   # Add new short position
             self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, asset_id, account_id, (buy_qty - qty), (buy_qty - qty) * price)
         if coupon:
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_INCOMES, currency_id, account_id, -coupon, None, None, CATEGORY_PROFIT)
+            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_INCOMES, currency_id, account_id, -coupon, None, None, CATEGORY_DIVIDEND)
         if fee:   # Comission
             self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_COSTS, currency_id, account_id, fee, None, None, CATEGORY_FEES)
 

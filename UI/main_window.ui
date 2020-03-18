@@ -1308,6 +1308,7 @@
      <string>&amp;Reports</string>
     </property>
     <addaction name="MakeDealsReport"/>
+    <addaction name="MakePLReport"/>
     <addaction name="PrepareTaxForms"/>
    </widget>
    <addaction name="menuFile"/>
@@ -1400,6 +1401,11 @@
   <action name="actionTags">
    <property name="text">
     <string>&amp;Tags</string>
+   </property>
+  </action>
+  <action name="MakePLReport">
+   <property name="text">
+    <string>&amp;Profit/Loss report</string>
    </property>
   </action>
  </widget>

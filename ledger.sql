@@ -374,6 +374,16 @@ CREATE TABLE t_last_quotes (
 );
 
 
+-- Table: t_months
+DROP TABLE IF EXISTS t_months;
+
+CREATE TABLE t_months (
+    month          INTEGER,
+    asset_id       INTEGER,
+    last_timestamp INTEGER
+);
+
+
 -- Table: tags
 DROP TABLE IF EXISTS tags;
 
@@ -1426,7 +1436,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 2);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 3);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 

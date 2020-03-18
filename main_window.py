@@ -6,7 +6,7 @@ from PySide2 import QtCore
 from UI.ui_main_window import Ui_LedgerMainWindow
 from ledger import Ledger
 from taxes import TaxesRus, TaxExportDialog
-from deals import Deals, DealsExportDialog
+from reports import Reports, ReportParamsDialog
 from bulk_db import loadDbFromSQL, MakeBackup, RestoreBackup
 from statements import StatementLoader
 from rebuild_window import RebuildDialog
@@ -342,6 +342,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.actionCategories.triggered.connect(self.EditCategories)
         self.actionTags.triggered.connect(self.EditTags)
         self.MakeDealsReport.triggered.connect(self.ReportDeals)
+        self.MakePLReport.triggered.connect(self.ReportProfitLoss)
         self.PrepareTaxForms.triggered.connect(self.ExportTaxForms)
         # INTERFACE ACTIONS
         self.MainTabs.currentChanged.connect(self.OnMainTabChange)
@@ -891,13 +892,22 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def ReportDeals(self):
-        deals_export_dialog = DealsExportDialog(self.db)
+        deals_export_dialog = ReportParamsDialog(self.db)
         deals_export_dialog.setGeometry(self.x() + 64, self.y() + 64, deals_export_dialog.width(),
-                                      deals_export_dialog.height())
+                                        deals_export_dialog.height())
         if deals_export_dialog.exec_():
-            deals = Deals(self.db)
-            deals.save2file(deals_export_dialog.filename, deals_export_dialog.account,
-                            deals_export_dialog.begin, deals_export_dialog.end, deals_export_dialog.group_dates)
+            deals = Reports(self.db, deals_export_dialog.filename)
+            deals.save_deals(deals_export_dialog.account,
+                             deals_export_dialog.begin, deals_export_dialog.end, deals_export_dialog.group_dates)
+
+    @Slot()
+    def ReportProfitLoss(self):
+        pl_export_dialog = ReportParamsDialog(self.db)
+        pl_export_dialog.setGeometry(self.x() + 64, self.y() + 64, pl_export_dialog.width(),
+                                     pl_export_dialog.height())
+        if pl_export_dialog.exec_():
+            deals = Reports(self.db, pl_export_dialog.filename)
+            deals.save_profit_loss(pl_export_dialog.account, pl_export_dialog.begin, pl_export_dialog.end)
 
     @Slot()
     def ExportTaxForms(self):
