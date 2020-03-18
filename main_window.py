@@ -357,6 +357,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
         self.OperationsTableView.customContextMenuRequested.connect(self.OnOperationsContextMenu)
         self.ChooseAccountBtn.clicked.connect(self.OnAccountChange)
+        self.SearchString.textChanged.connect(self.OnSearchChange)
         # OPERATIONS ACTIONS
         self.AddActionDetail.clicked.connect(self.AddDetail)
         self.RemoveActionDetail.clicked.connect(self.RemoveDetail)
@@ -562,6 +563,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 operations_filter = "all_operations.account_id = {}".format(self.ChooseAccountBtn.account_id)
             else:
                 operations_filter = operations_filter + " AND all_operations.account_id = {}".format(self.ChooseAccountBtn.account_id)
+
+        if self.SearchString.text():
+            operations_filter = operations_filter + " AND (num_peer LIKE '%{}%' OR asset LIKE '%{}%')".format(self.SearchString.text(), self.SearchString.text())
+
         self.OperationsModel.setFilter(operations_filter)
 
     @Slot()
@@ -580,6 +585,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def OnAccountChange(self):
+        self.SetOperationsFilter()
+
+    @Slot()
+    def OnSearchChange(self):
         self.SetOperationsFilter()
 
     def CreateNewAction(self):

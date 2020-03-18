@@ -335,6 +335,16 @@
                 </widget>
                </item>
                <item>
+                <widget class="QLabel" name="SearchLbl">
+                 <property name="text">
+                  <string>Search:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="SearchString"/>
+               </item>
+               <item>
                 <spacer name="horizontalSpacer">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>

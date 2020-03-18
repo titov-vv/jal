@@ -200,6 +200,16 @@ class Ui_LedgerMainWindow(object):
 
         self.horizontalLayout_3.addWidget(self.ChooseAccountBtn)
 
+        self.SearchLbl = QLabel(self.OperationConfigFrame)
+        self.SearchLbl.setObjectName(u"SearchLbl")
+
+        self.horizontalLayout_3.addWidget(self.SearchLbl)
+
+        self.SearchString = QLineEdit(self.OperationConfigFrame)
+        self.SearchString.setObjectName(u"SearchString")
+
+        self.horizontalLayout_3.addWidget(self.SearchString)
+
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_3.addItem(self.horizontalSpacer)
@@ -813,6 +823,7 @@ class Ui_LedgerMainWindow(object):
 
         self.AccountLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Account:", None))
         self.ChooseAccountBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"All", None))
+        self.SearchLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Search:", None))
         self.AddActionDetail.setText(QCoreApplication.translate("LedgerMainWindow", u" + ", None))
         self.CopyActionDetail.setText(QCoreApplication.translate("LedgerMainWindow", u">>", None))
         self.RemoveActionDetail.setText(QCoreApplication.translate("LedgerMainWindow", u" \u2014 ", None))
