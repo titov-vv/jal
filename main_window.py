@@ -341,6 +341,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.actionPeers.triggered.connect(self.EditPeers)
         self.actionCategories.triggered.connect(self.EditCategories)
         self.actionTags.triggered.connect(self.EditTags)
+        self.MakeIncomeSpendingReport.triggered.connect(self.ReportIncomeSpending)
         self.MakeDealsReport.triggered.connect(self.ReportDeals)
         self.MakePLReport.triggered.connect(self.ReportProfitLoss)
         self.PrepareTaxForms.triggered.connect(self.ExportTaxForms)
@@ -908,6 +909,15 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         if pl_export_dialog.exec_():
             deals = Reports(self.db, pl_export_dialog.filename)
             deals.save_profit_loss(pl_export_dialog.account, pl_export_dialog.begin, pl_export_dialog.end)
+
+    @Slot()
+    def ReportIncomeSpending(self):
+        income_spending_export_dialog = ReportParamsDialog(self.db)
+        income_spending_export_dialog.setGeometry(self.x() + 64, self.y() + 64, income_spending_export_dialog.width(),
+                                                  income_spending_export_dialog.height())
+        if income_spending_export_dialog.exec_():
+            deals = Reports(self.db, income_spending_export_dialog.filename)
+            deals.save_income_sending(income_spending_export_dialog.begin, income_spending_export_dialog.end)
 
     @Slot()
     def ExportTaxForms(self):

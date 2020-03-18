@@ -1307,6 +1307,7 @@
     <property name="title">
      <string>&amp;Reports</string>
     </property>
+    <addaction name="MakeIncomeSpendingReport"/>
     <addaction name="MakeDealsReport"/>
     <addaction name="MakePLReport"/>
     <addaction name="PrepareTaxForms"/>
@@ -1406,6 +1407,11 @@
   <action name="MakePLReport">
    <property name="text">
     <string>&amp;Profit/Loss report</string>
+   </property>
+  </action>
+  <action name="MakeIncomeSpendingReport">
+   <property name="text">
+    <string>&amp;Income/Spending report</string>
    </property>
   </action>
  </widget>

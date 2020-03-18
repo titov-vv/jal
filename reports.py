@@ -7,6 +7,9 @@ from PySide2 import QtCore
 from PySide2.QtSql import QSqlQuery
 from UI.ui_deals_export_dlg import Ui_DealsExportDlg
 
+# TODO Combine all reports into one function call and write different sheets in one file
+# TODO optimize with lists of fields
+
 class ReportParamsDialog(QDialog, Ui_DealsExportDlg):
     def __init__(self, db):
         QDialog.__init__(self)
@@ -258,6 +261,65 @@ class Reports:
             sheet.write(row, 4, float(query.value('profit')), self.formats['number_2' + even_odd])
             sheet.write(row, 5, float(query.value('dividend')), self.formats['number_2' + even_odd])
             sheet.write(row, 6, float(query.value('tax_fee')), self.formats['number_2' + even_odd])
+            row = row + 1
+
+        self.workbook.close()
+
+    def save_income_sending(self, begin, end):
+        sheet = self.workbook.add_worksheet(name="Income & Spending")
+
+        query = QSqlQuery(self.db)
+        assert query.exec_("DELETE FROM t_months")
+
+        query.prepare("INSERT INTO t_months (month, asset_id, last_timestamp) "
+                      "SELECT strftime('%s', datetime(timestamp, 'unixepoch', 'start of month') ) AS month, asset_id, MAX(timestamp) AS last_timestamp "
+                      "FROM quotes AS q "
+                      "LEFT JOIN assets AS a ON q.asset_id=a.id "
+                      "WHERE a.type_id=:asset_money "
+                      "GROUP BY month, asset_id")
+        query.bindValue(":asset_money", ASSET_TYPE_MONEY)
+        assert query.exec_()
+
+        query.prepare("SELECT strftime('%s', datetime(t.timestamp, 'unixepoch', 'start of month') ) AS month_timestamp, "
+                      "datetime(t.timestamp, 'unixepoch', 'start of month') AS month_date, a.name AS account, "
+                      "c.name AS currency, coalesce(q.quote, 1) AS rate, s.name AS category, sum(-t.amount) AS turnover "
+                      "FROM ledger AS t "
+                      "LEFT JOIN accounts AS a ON t.account_id = a.id "
+                      "LEFT JOIN assets AS c ON t.asset_id = c.id "
+                      "LEFT JOIN categories AS s ON t.category_id = s.id "
+                      "LEFT JOIN t_months AS d ON month_timestamp = d.month AND t.asset_id = d.asset_id "
+                      "LEFT JOIN quotes AS q ON d.last_timestamp = q.timestamp AND d.asset_id = q.asset_id "
+                      "WHERE (t.book_account=:book_costs OR t.book_account=:book_incomes) "
+                      "AND t.timestamp>=:begin AND t.timestamp<=:end "
+                      "GROUP BY month_timestamp, t.account_id, t.asset_id, t.category_id "
+                      "ORDER BY currency, month_timestamp, category")
+        query.bindValue(":book_costs", BOOK_ACCOUNT_COSTS)
+        query.bindValue(":book_incomes", BOOK_ACCOUNT_INCOMES)
+        query.bindValue(":begin", begin)
+        query.bindValue(":end", end)
+        assert query.exec_()
+
+        sheet.write(0, 0, "Period", self.formats['title'])
+        sheet.write(0, 1, "Account", self.formats['title'])
+        sheet.write(0, 2, "Currency", self.formats['title'])
+        sheet.write(0, 3, "Currency rate", self.formats['title'])
+        sheet.write(0, 4, "Category", self.formats['title'])
+        sheet.write(0, 5, "Turnover", self.formats['title'])
+        sheet.set_column(0, 7, 15)
+        row = 1
+        while query.next():
+            if row % 2:
+                even_odd = '_odd'
+            else:
+                even_odd = '_even'
+            period = int(query.value("month_timestamp"))
+            sheet.write(row, 0, datetime.datetime.fromtimestamp(period).strftime('%Y %B'),
+                        self.formats['text' + even_odd])
+            sheet.write(row, 1, query.value("account"), self.formats['text' + even_odd])
+            sheet.write(row, 2, query.value('currency'), self.formats['text' + even_odd])
+            sheet.write(row, 3, float(query.value('rate')), self.formats['number_2' + even_odd])
+            sheet.write(row, 4, query.value('category'), self.formats['text' + even_odd])
+            sheet.write(row, 5, float(query.value('turnover')), self.formats['number_2' + even_odd])
             row = row + 1
 
         self.workbook.close()
