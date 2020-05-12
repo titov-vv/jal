@@ -134,6 +134,8 @@ class AssetSelector(QWidget):
         self.layout.addWidget(self.button)
         self.setLayout(self.layout)
 
+        self.setFocusProxy(self.symbol)
+
         self.button.clicked.connect(self.OnButtonClicked)
 
         self.dialog = AssetChoiceDlg()
