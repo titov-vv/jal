@@ -3,6 +3,7 @@ from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTab
 from PySide2.QtCore import Slot, QMetaObject
 from PySide2.QtGui import QDoubleValidator
 from PySide2 import QtCore
+import os
 from UI.ui_main_window import Ui_LedgerMainWindow
 from ledger import Ledger
 from taxes import TaxesRus, TaxExportDialog
@@ -60,8 +61,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         QMainWindow.__init__(self, None)
         self.setupUi(self)
 
+        self.own_path = os.path.dirname(os.path.realpath(__file__)) + os.sep
         self.db = QSqlDatabase.addDatabase("QSQLITE")
-        self.db.setDatabaseName(DB_PATH)
+        self.db.setDatabaseName(self.own_path + DB_PATH)
         self.db.open()
         tables = self.db.tables(QSql.Tables)
         if tables == []:
@@ -378,13 +380,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def Backup(self):
         backup_directory = QFileDialog.getExistingDirectory(self, "Select directory to save backup")
         if backup_directory:
-            MakeBackup(DB_PATH, backup_directory)
+            MakeBackup(self.own_path + DB_PATH, backup_directory)
 
     def Restore(self):
         restore_directory = QFileDialog.getExistingDirectory(self, "Select directory to restore from")
         if restore_directory:
             self.db.close()
-            RestoreBackup(DB_PATH, restore_directory)
+            RestoreBackup(self.own_path + DB_PATH, restore_directory)
             QMessageBox().information(self, self.tr("Data restored"),
                                       self.tr("Database was loaded from the backup.\n"
                                               "You need to restart the application.\n"
@@ -394,7 +396,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     def InitDB(self):
         self.db.close()
-        loadDbFromSQL(DB_PATH, INIT_SCRIPT_PATH)
+        loadDbFromSQL(self.own_path + DB_PATH, self.own_path + INIT_SCRIPT_PATH)
         QMessageBox().information(self, self.tr("Database initialized"),
                                   self.tr("Database have been initialized.\n"
                                           "You need to restart the application.\n"
