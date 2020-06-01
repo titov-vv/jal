@@ -64,6 +64,7 @@ class StatementLoader:
         if query.next():
             return query.value(0)
         else:
+            print(f"Asset {symbol} not found")  # TODO need to add new asset if not found
             assert False   # We shouldn't be here as all assets from report should be added in advance
 
     def loadIBFlex(self, filename):

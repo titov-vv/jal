@@ -32,8 +32,9 @@ class QuotesUpdateDialog(QDialog, Ui_UpdateQuotesDlg):
 # Worker class
 #################################################################################################################
 class QuoteDownloader:
-    def __init__(self, db):
+    def __init__(self, db, status_bar):
         self.db = db
+        self.status_bar = status_bar
         self.session = requests.Session()
 
     def UpdateQuotes(self, start_timestamp, end_timestamp, use_proxy):
@@ -91,7 +92,6 @@ class QuoteDownloader:
                 from_timestamp = last_timestamp
             else:
                 from_timestamp = start_timestamp
-            print("LOAD: ", asset)
             if (feed_id == FEED_NONE):
                 continue
             elif (feed_id == FEED_CBR):
@@ -106,7 +106,9 @@ class QuoteDownloader:
                 print(f"Data feed {feed_id} is not implemented")
                 continue
             for date, quote in data.iterrows():
-                self.SubmitQuote(asset_id, int(date.timestamp()), float(quote[0]))
+                self.SubmitQuote(asset_id, asset, int(date.timestamp()), float(quote[0]))
+            qApp.processEvents()
+        self.status_bar.showMessage("All quotes loaded")
 
     def PrepareRussianCBReader(self):
         xml_root = xml_tree.fromstring(requests.get("http://www.cbr.ru/scripts/XML_valFull.asp").text)
@@ -202,7 +204,7 @@ class QuoteDownloader:
         close = data.set_index("Date")
         return close
 
-    def SubmitQuote(self, asset_id, timestamp, quote):
+    def SubmitQuote(self, asset_id, asset_name, timestamp, quote):
         old_id = 0
         query = QSqlQuery(self.db)
         assert query.prepare("SELECT id FROM quotes WHERE asset_id = :asset_id AND timestamp = :timestamp")
@@ -221,5 +223,5 @@ class QuoteDownloader:
         query.bindValue(":quote", quote)
         assert query.exec_()
         self.db.commit()
-        print("LOADED: ", asset_id, datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S'), quote)
+        self.status_bar.showMessage(f"Quote loaded: {asset_name} @ {datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")
 

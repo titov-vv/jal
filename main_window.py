@@ -89,7 +89,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.holdings_currency = query.value(0)
 
         self.ledger = Ledger(self.db)
-        self.downloader = QuoteDownloader(self.db)
+        self.downloader = QuoteDownloader(self.db, self.StatusBar)
 
         self.balance_date = QtCore.QDateTime.currentSecsSinceEpoch()
         self.balance_active_only = 1
