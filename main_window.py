@@ -4,6 +4,7 @@ from PySide2.QtCore import Slot, QMetaObject
 from PySide2.QtGui import QDoubleValidator
 from PySide2 import QtCore
 import os
+import logging
 from UI.ui_main_window import Ui_LedgerMainWindow
 from ledger import Ledger
 from taxes import TaxesRus, TaxExportDialog
@@ -376,6 +377,15 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.OperationsTableView.selectRow(0)
         self.OnOperationsRangeChange(0)
+
+        self.Logs.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        logging.getLogger().addHandler(self.Logs)
+        logging.getLogger().setLevel(logging.DEBUG)
+
+        logging.debug('damn, a bug')
+        logging.info('something to remember')
+        logging.warning('that\'s not right')
+        logging.error('foobar')
 
     def Backup(self):
         backup_directory = QFileDialog.getExistingDirectory(self, "Select directory to save backup")
