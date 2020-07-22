@@ -6,7 +6,7 @@ from PySide2.QtWidgets import QWidget
 
 
 def formatFloatLong(value):
-    if (abs(value - round(value, 2)) >= CALC_TOLERANCE):
+    if abs(value - round(value, 2)) >= CALC_TOLERANCE:
         text = str(value)
     else:
         text = f"{value:.2f}"

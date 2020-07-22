@@ -26,13 +26,13 @@ FIELD_PROFIT = 11
 
 
 def formatFloatLong(value):
-    if (abs(value - round(value)) <= 10e-2):
+    if abs(value - round(value)) <= 10e-2:
         text = f"{value:.0f}"
-    elif (abs(value - round(value, 2)) <= 10e-4):
+    elif abs(value - round(value, 2)) <= 10e-4:
         text = f"{value:.2f}"
-    elif (abs(value - round(value, 4)) <= 10e-6):
+    elif abs(value - round(value, 4)) <= 10e-6:
         text = f"{value:.4f}"
-    elif (abs(value - round(value, 6)) <= 10e-8):
+    elif abs(value - round(value, 6)) <= 10e-8:
         text = f"{value:.6f}"
     else:
         text = f"{value:.8f}"
@@ -128,21 +128,21 @@ class HoldingsDelegate(QStyledItemDelegate):
             #     text = formatFloatLong(float(data))
             alignment = Qt.AlignRight
 
-        if (column == FIELD_QTY):
+        if column == FIELD_QTY:
             amount = model.data(index, Qt.DisplayRole)
             if amount == '':
                 text = ""
             else:
                 text = formatFloatLong(float(amount))
 
-        if (column == FIELD_OPEN):
+        if column == FIELD_OPEN:
             amount = model.data(index, Qt.DisplayRole)
             if amount == '':
                 text = ""
             else:
                 text = f"{amount:.4f}"
 
-        if (column == FIELD_QUOTE):
+        if column == FIELD_QUOTE:
             amount = model.data(index, Qt.DisplayRole)
             if amount == '':
                 text = ""
@@ -156,7 +156,7 @@ class HoldingsDelegate(QStyledItemDelegate):
             else:
                 text = f"{amount:.2f}"
 
-        if (column >= FIELD_PROFIT):
+        if column >= FIELD_PROFIT:
             amount = model.data(index, Qt.DisplayRole)
             if amount == '':
                 text = ""

@@ -149,7 +149,7 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
 
     @Slot()
     def OnInactiveChange(self, state):
-        if (state == 0):
+        if state == 0:
             self.active_only = 1
         else:
             self.active_only = 0
@@ -298,7 +298,7 @@ class AccountSelector(QWidget):
         return self.p_account_id
 
     def setId(self, account_id):
-        if (self.p_account_id == account_id):
+        if self.p_account_id == account_id:
             return
         self.p_account_id = account_id
         self.dialog.Model.setFilter(f"accounts.id={account_id}")
@@ -345,7 +345,7 @@ class AccountDelegate(QSqlRelationalDelegate):
 
     def paint(self, painter, option, index):
         # Paint '*' for active account and nothing for inactive
-        if (index.column() == 4):  # 'active' column
+        if index.column() == 4:  # 'active' column
             painter.save()
             model = index.model()
             active = model.data(index, Qt.DisplayRole)
@@ -356,7 +356,7 @@ class AccountDelegate(QSqlRelationalDelegate):
             painter.drawText(option.rect, Qt.AlignHCenter, text)
             painter.restore()
         # Format unixtimestamp into readable form
-        elif (index.column() == 6):  # 'timestamp' column
+        elif index.column() == 6:  # 'timestamp' column
             painter.save()
             model = index.model()
             timestamp = model.data(index, Qt.DisplayRole)

@@ -162,7 +162,7 @@ class CategorySelector(QWidget):
         return self.p_category_id
 
     def setId(self, category_id):
-        if (self.p_category_id == category_id):
+        if self.p_category_id == category_id:
             return
         self.p_category_id = category_id
         self.dialog.Model.setFilter(f"id={category_id}")
@@ -208,7 +208,7 @@ class CategoryDelegate(QSqlRelationalDelegate):
         QSqlRelationalDelegate.__init__(self, parent)
 
     def paint(self, painter, option, index):
-        if (index.column() == 0):
+        if index.column() == 0:
             painter.save()
             model = index.model()
             children_count = model.data(model.index(index.row(), 5), Qt.DisplayRole)
@@ -218,7 +218,7 @@ class CategoryDelegate(QSqlRelationalDelegate):
             painter.drawText(option.rect, Qt.AlignHCenter, text)
             painter.restore()
         # Paint '*' for often categories or nothing for other
-        elif (index.column() == 3):
+        elif index.column() == 3:
             painter.save()
             model = index.model()
             status = model.data(index, Qt.DisplayRole)
@@ -232,7 +232,7 @@ class CategoryDelegate(QSqlRelationalDelegate):
             QSqlRelationalDelegate.paint(self, painter, option, index)
 
     def editorEvent(self, event, model, option, index):
-        if (index.column() != 3):
+        if index.column() != 3:
             return False
         # Editor for 'often' column only
         if event.type() == QEvent.MouseButtonPress:

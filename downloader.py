@@ -105,15 +105,15 @@ class QuoteDownloader:
             else:
                 from_timestamp = start_timestamp
             try:
-                if (feed_id == FEED_NONE):
+                if feed_id == FEED_NONE:
                     continue
-                elif (feed_id == FEED_CBR):
+                elif feed_id == FEED_CBR:
                     data = self.CBR_DataReader(asset, from_timestamp, end_timestamp)
-                elif (feed_id == FEED_RU):
+                elif feed_id == FEED_RU:
                     data = self.MOEX_DataReader(asset, from_timestamp, end_timestamp)
-                elif (feed_id == FEED_EU):
+                elif feed_id == FEED_EU:
                     data = self.Euronext_DataReader(asset, isin, from_timestamp, end_timestamp)
-                elif (feed_id == FEED_US):
+                elif feed_id == FEED_US:
                     data = self.US_DataReader(asset, from_timestamp, end_timestamp)
                 else:
                     logging.error(f"Data feed {feed_id} is not implemented")

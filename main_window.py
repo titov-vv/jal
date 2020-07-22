@@ -452,7 +452,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         query.exec_("SELECT ledger_frontier FROM frontier")
         query.next()
         current_frontier = query.value(0)
-        if (current_frontier == ''):
+        if current_frontier == '':
             current_frontier = 0
 
         rebuild_dialog = RebuildDialog(current_frontier)
@@ -497,7 +497,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def OnBalanceInactiveChange(self, state):
-        if (state == 0):
+        if state == 0:
             self.balance_active_only = 1
         else:
             self.balance_active_only = 0
@@ -519,20 +519,20 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             selected_row = idx[0].row()
             operation_type = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("type"))
             operation_id = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("id"))
-            if (operation_type == TRANSACTION_ACTION):
+            if operation_type == TRANSACTION_ACTION:
                 self.ActionsModel.setFilter(f"actions.id = {operation_id}")
                 self.ActionsDataMapper.setCurrentModelIndex(self.ActionsDataMapper.model().index(0, 0))
                 self.OperationsTabs.setCurrentIndex(TAB_ACTION)
                 self.ActionDetailsModel.setFilter(f"action_details.pid = {operation_id}")
-            elif (operation_type == TRANSACTION_DIVIDEND):
+            elif operation_type == TRANSACTION_DIVIDEND:
                 self.OperationsTabs.setCurrentIndex(TAB_DIVIDEND)
                 self.DividendsModel.setFilter(f"dividends.id = {operation_id}")
                 self.DividendsDataMapper.setCurrentModelIndex(self.DividendsDataMapper.model().index(0, 0))
-            elif (operation_type == TRANSACTION_TRADE):
+            elif operation_type == TRANSACTION_TRADE:
                 self.OperationsTabs.setCurrentIndex(TAB_TRADE)
                 self.TradesModel.setFilter(f"trades.id = {operation_id}")
                 self.TradesDataMapper.setCurrentModelIndex(self.TradesDataMapper.model().index(0, 0))
-            elif (operation_type == TRANSACTION_TRANSFER):
+            elif operation_type == TRANSACTION_TRANSFER:
                 self.OperationsTabs.setCurrentIndex(TAB_TRANSFER)
                 self.TransfersModel.setFilter(f"transfers_combined.id = {operation_id}")
                 self.TransfersDataMapper.setCurrentModelIndex(self.TransfersDataMapper.model().index(0, 0))
@@ -603,7 +603,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     def SetOperationsFilter(self):
         operations_filter = ""
-        if (self.operations_since_timestamp > 0):
+        if self.operations_since_timestamp > 0:
             operations_filter = "all_operations.timestamp >= {}".format(self.operations_since_timestamp)
 
         if self.ChooseAccountBtn.account_id != 0:
@@ -621,13 +621,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def OnOperationsRangeChange(self, range_index):
-        if (range_index == 0):  # last week
+        if range_index == 0:  # last week
             self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 604800
-        elif (range_index == 1):  # last month
+        elif range_index == 1:  # last month
             self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 2678400
-        elif (range_index == 2):  # last half-year
+        elif range_index == 2:  # last half-year
             self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 15811200
-        elif (range_index == 3):  # last year
+        elif range_index == 3:  # last year
             self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 31536000
         else:
             self.operations_since_timestamp = 0
@@ -648,7 +648,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionsModel.setFilter("actions.id = 0")
         new_record = self.ActionsModel.record()
         new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
-        if (self.ChooseAccountBtn.account_id != 0):
+        if self.ChooseAccountBtn.account_id != 0:
             new_record.setValue("account_id", self.ChooseAccountBtn.account_id)
         assert self.ActionsModel.insertRows(0, 1)
         self.ActionsModel.setRecord(0, new_record)
@@ -662,7 +662,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TransfersModel.setFilter(f"transfers_combined.id = 0")
         new_record = self.TransfersModel.record()
         new_record.setValue("from_timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
-        if (self.ChooseAccountBtn.account_id != 0):
+        if self.ChooseAccountBtn.account_id != 0:
             new_record.setValue("from_acc_id", self.ChooseAccountBtn.account_id)
         new_record.setValue("to_timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
         new_record.setValue("fee_timestamp", 0)
@@ -677,7 +677,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TradesModel.setFilter("trades.id = 0")
         new_record = self.TradesModel.record()
         new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
-        if (self.ChooseAccountBtn.account_id != 0):
+        if self.ChooseAccountBtn.account_id != 0:
             new_record.setValue("account_id", self.ChooseAccountBtn.account_id)
         assert self.TradesModel.insertRows(0, 1)
         self.TradesModel.setRecord(0, new_record)
@@ -690,7 +690,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DividendsModel.setFilter("dividends.id = 0")
         new_record = self.DividendsModel.record()
         new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
-        if (self.ChooseAccountBtn.account_id != 0):
+        if self.ChooseAccountBtn.account_id != 0:
             new_record.setValue("account_id", self.ChooseAccountBtn.account_id)
         assert self.DividendsModel.insertRows(0, 1)
         self.DividendsModel.setRecord(0, new_record)
@@ -704,16 +704,16 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             return
         index = self.OperationsTableView.currentIndex()
         operation_type = self.OperationsModel.data(self.OperationsModel.index(index.row(), 0))
-        if (operation_type == TRANSACTION_ACTION):
+        if operation_type == TRANSACTION_ACTION:
             self.ActionsModel.removeRow(0)
             self.ActionsModel.submitAll()
-        elif (operation_type == TRANSACTION_DIVIDEND):
+        elif operation_type == TRANSACTION_DIVIDEND:
             self.DividendsModel.removeRow(0)
             self.DividendsModel.submitAll()
-        elif (operation_type == TRANSACTION_TRADE):
+        elif operation_type == TRANSACTION_TRADE:
             self.TradesModel.removeRow(0)
             self.TradesModel.submitAll()
-        elif (operation_type == TRANSACTION_TRANSFER):
+        elif operation_type == TRANSACTION_TRANSFER:
             self.TransfersModel.removeRow(0)
             self.TransfersModel.submitAll()
         else:
@@ -725,7 +725,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def CopyOperation(self):
         self.CheckForNotSavedData()
         active_tab = self.OperationsTabs.currentIndex()
-        if (active_tab == TAB_ACTION):
+        if active_tab == TAB_ACTION:
             row = self.ActionsDataMapper.currentIndex()
             operation_id = self.ActionsModel.record(row).value(self.ActionsModel.fieldIndex("id"))
             self.ActionsDataMapper.submit()
@@ -749,7 +749,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 new_record.setNull("pid")
                 assert self.ActionDetailsModel.insertRows(0, 1)
                 self.ActionDetailsModel.setRecord(0, new_record)
-        elif (active_tab == TAB_TRANSFER):
+        elif active_tab == TAB_TRANSFER:
             row = self.TransfersDataMapper.currentIndex()
             self.TransfersDataMapper.submit()
             new_record = self.TransfersModel.record(row)
@@ -761,7 +761,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             assert self.TransfersModel.insertRows(0, 1)
             self.TransfersModel.setRecord(0, new_record)
             self.TransfersDataMapper.toLast()
-        elif (active_tab == TAB_DIVIDEND):
+        elif active_tab == TAB_DIVIDEND:
             row = self.DividendsDataMapper.currentIndex()
             self.DividendsDataMapper.submit()
             new_record = self.DividendsModel.record(row)
@@ -771,7 +771,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             assert self.DividendsModel.insertRows(0, 1)
             self.DividendsModel.setRecord(0, new_record)
             self.DividendsDataMapper.toLast()
-        elif (active_tab == TAB_TRADE):
+        elif active_tab == TAB_TRADE:
             row = self.TradesDataMapper.currentIndex()
             self.TradesDataMapper.submit()
             new_record = self.TradesModel.record(row)
@@ -795,7 +795,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.RevertChangesForTab(active_tab)
 
     def SubmitChangesForTab(self, tab2save):
-        if (tab2save == TAB_ACTION):
+        if tab2save == TAB_ACTION:
             pid = self.ActionsModel.data(self.ActionsModel.index(0, self.ActionsModel.fieldIndex("id")))
             if not self.ActionsModel.submitAll():
                 logging.fatal(self.tr("Action submit failed: ") + self.ActionDetailsModel.lastError().text())
@@ -807,7 +807,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             if not self.ActionDetailsModel.submitAll():
                 logging.fatal(self.tr("Action details submit failed: ") + self.ActionDetailsModel.lastError().text())
                 return
-        elif (tab2save == TAB_TRANSFER):
+        elif tab2save == TAB_TRANSFER:
             record = self.TransfersModel.record(0)
             note = record.value(self.TransfersModel.fieldIndex("note"))
             if not note:  # If we don't have note - set it to NULL value to fire DB trigger
@@ -822,11 +822,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             if not self.TransfersModel.submitAll():
                 logging.fatal(self.tr("Transfer submit failed: ") + self.TransfersModel.lastError().text())
                 return
-        elif (tab2save == TAB_DIVIDEND):
+        elif tab2save == TAB_DIVIDEND:
             if not self.DividendsModel.submitAll():
                 logging.fatal(self.tr("Dividend submit failed: ") + self.DividendsModel.lastError().text())
                 return
-        elif (tab2save == TAB_TRADE):
+        elif tab2save == TAB_TRADE:
             if not self.TradesModel.submitAll():
                 logging.fatal(self.tr("Trade submit failed: ") + self.TradesModel.lastError().text())
                 return
@@ -838,14 +838,14 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.RevertOperationBtn.setEnabled(False)
 
     def RevertChangesForTab(self, tab2revert):
-        if (tab2revert == TAB_ACTION):
+        if tab2revert == TAB_ACTION:
             self.ActionsModel.revertAll()
             self.ActionDetailsModel.revertAll()
-        elif (tab2revert == TAB_TRANSFER):
+        elif tab2revert == TAB_TRANSFER:
             self.TransfersModel.revertAll()
-        elif (tab2revert == TAB_DIVIDEND):
+        elif tab2revert == TAB_DIVIDEND:
             self.DividendsModel.revertAll()
-        elif (tab2revert == TAB_TRADE):
+        elif tab2revert == TAB_TRADE:
             self.TradesModel.revertAll()
         else:
             assert False

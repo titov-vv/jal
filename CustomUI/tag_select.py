@@ -118,7 +118,7 @@ class TagSelector(QWidget):
         return self.p_tag_id
 
     def setId(self, tag_id):
-        if (self.p_tag_id == tag_id):
+        if self.p_tag_id == tag_id:
             return
         self.p_tag_id = tag_id
         self.dialog.Model.setFilter(f"id={tag_id}")

@@ -162,7 +162,7 @@ class PeerSelector(QWidget):
         return self.p_peer_id
 
     def setId(self, peer_id):
-        if (self.p_peer_id == peer_id):
+        if self.p_peer_id == peer_id:
             return
         self.p_peer_id = peer_id
         self.dialog.Model.setFilter(f"id={peer_id}")
@@ -208,7 +208,7 @@ class PeerDelegate(QSqlRelationalDelegate):
         QSqlRelationalDelegate.__init__(self, parent)
 
     def paint(self, painter, option, index):
-        if (index.column() == 0):
+        if index.column() == 0:
             painter.save()
             model = index.model()
             children_count = model.data(model.index(index.row(), 4), Qt.DisplayRole)
@@ -218,7 +218,7 @@ class PeerDelegate(QSqlRelationalDelegate):
             painter.drawText(option.rect, Qt.AlignHCenter, text)
             painter.restore()
         # to align number to the right
-        elif (index.column() == 5):
+        elif index.column() == 5:
             painter.save()
             model = index.model()
             docs_count = model.data(index, Qt.DisplayRole)

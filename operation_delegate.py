@@ -42,32 +42,32 @@ class OperationsTypeDelegate(QStyledItemDelegate):
         amount = model.data(model.index(index.row(), FIELD_AMOUNT), Qt.DisplayRole)
         if amount == '':
             amount = 0
-        if (transaction_type == TRANSACTION_ACTION):
-            if (amount >= 0):
+        if transaction_type == TRANSACTION_ACTION:
+            if amount >= 0:
                 text = "+"
                 pen.setColor(DARK_GREEN_COLOR)
             else:
                 text = "—"
                 pen.setColor(DARK_RED_COLOR)
-        elif (transaction_type == TRANSACTION_DIVIDEND):
+        elif transaction_type == TRANSACTION_DIVIDEND:
             text = "Δ"
             pen.setColor(DARK_GREEN_COLOR)
-        elif (transaction_type == TRANSACTION_TRADE):
-            if (amount <= 0):  # TODO Change from amount to qty as amount might be 0 for Corp.Actions
+        elif transaction_type == TRANSACTION_TRADE:
+            if amount <= 0:  # TODO Change from amount to qty as amount might be 0 for Corp.Actions
                 text = "B"
                 pen.setColor(DARK_GREEN_COLOR)
             else:
                 text = "S"
                 pen.setColor(DARK_RED_COLOR)
-        elif (transaction_type == TRANSACTION_TRANSFER):
+        elif transaction_type == TRANSACTION_TRANSFER:
             transfer_subtype = model.data(model.index(index.row(), FIELD_QTY_TRID), Qt.DisplayRole)
-            if (transfer_subtype == TRANSFER_IN):
+            if transfer_subtype == TRANSFER_IN:
                 text = ">"
                 pen.setColor(DARK_BLUE_COLOR)
-            elif (transfer_subtype == TRANSFER_OUT):
+            elif transfer_subtype == TRANSFER_OUT:
                 text = "<"
                 pen.setColor(DARK_BLUE_COLOR)
-            elif (transfer_subtype == TRANSFER_FEE):
+            elif transfer_subtype == TRANSFER_FEE:
                 text = "="
                 pen.setColor(DARK_RED_COLOR)
             else:
@@ -122,19 +122,19 @@ class OperationsAccountDelegate(QStyledItemDelegate):
         model = index.model()
         account = model.data(index, Qt.DisplayRole)
         transaction_type = model.data(model.index(index.row(), FIELD_TYPE), Qt.DisplayRole)
-        if (transaction_type == TRANSACTION_ACTION):
+        if transaction_type == TRANSACTION_ACTION:
             text = account
         elif (transaction_type == TRANSACTION_TRADE) or (transaction_type == TRANSACTION_DIVIDEND):
             asset_name = model.data(model.index(index.row(), FIELD_ASSET_NAME), Qt.DisplayRole)
             text = account + "\n" + asset_name
-        elif (transaction_type == TRANSACTION_TRANSFER):
+        elif transaction_type == TRANSACTION_TRANSFER:
             account2 = model.data(model.index(index.row(), FIELD_NOTE2), Qt.DisplayRole)
             transfer_subtype = model.data(model.index(index.row(), FIELD_QTY_TRID), Qt.DisplayRole)
-            if (transfer_subtype == TRANSFER_FEE):
+            if transfer_subtype == TRANSFER_FEE:
                 text = account
-            elif (transfer_subtype == TRANSFER_OUT):
+            elif transfer_subtype == TRANSFER_OUT:
                 text = account + " -> " + account2
-            elif (transfer_subtype == TRANSFER_IN):
+            elif transfer_subtype == TRANSFER_IN:
                 text = account + " <- " + account2
             else:
                 assert False
@@ -152,22 +152,22 @@ class OperationsNotesDelegate(QStyledItemDelegate):
         painter.save()
         model = index.model()
         transaction_type = model.data(model.index(index.row(), FIELD_TYPE), Qt.DisplayRole)
-        if (transaction_type == TRANSACTION_ACTION):
+        if transaction_type == TRANSACTION_ACTION:
             text = model.data(model.index(index.row(), FIELD_PEER_NUMBER), Qt.DisplayRole)
-        elif (transaction_type == TRANSACTION_TRANSFER):
+        elif transaction_type == TRANSACTION_TRANSFER:
             text = model.data(index, Qt.DisplayRole)
-        elif (transaction_type == TRANSACTION_DIVIDEND):
+        elif transaction_type == TRANSACTION_DIVIDEND:
             note = model.data(index, Qt.DisplayRole)
             note2 = model.data(model.index(index.row(), FIELD_NOTE2), Qt.DisplayRole)
             text = note + "\n" + note2
-        elif (transaction_type == TRANSACTION_TRADE):
+        elif transaction_type == TRANSACTION_TRADE:
             # Take corp.action description if any or construct Qty x Price for Buy/Sell operations
             text = model.data(index, Qt.DisplayRole)
             if not text:
                 qty = model.data(model.index(index.row(), FIELD_QTY_TRID), Qt.DisplayRole)
                 price = model.data(model.index(index.row(), FIELD_PRICE), Qt.DisplayRole)
                 fee = model.data(model.index(index.row(), FIELD_FEE_TAX), Qt.DisplayRole)
-                if (fee != 0):
+                if fee != 0:
                     text = f"{qty:+.2f} @ {price:.2f}\n({fee:.2f})"
                 else:
                     text = f"{qty:+.2f} @ {price:.2f}"
@@ -195,10 +195,10 @@ class OperationsAmountDelegate(QStyledItemDelegate):
         transaction_type = model.data(model.index(index.row(), FIELD_TYPE), Qt.DisplayRole)
         qty = model.data(model.index(index.row(), FIELD_QTY_TRID), Qt.DisplayRole)
         tax = model.data(model.index(index.row(), FIELD_FEE_TAX), Qt.DisplayRole)
-        if (transaction_type == TRANSACTION_TRADE):
+        if transaction_type == TRANSACTION_TRADE:
             text = f"{amount:+,.2f}"
             rect.setHeight(H / 2)
-            if (amount >= 0):
+            if amount >= 0:
                 pen.setColor(DARK_GREEN_COLOR)
             else:
                 pen.setColor(DARK_RED_COLOR)
@@ -206,13 +206,13 @@ class OperationsAmountDelegate(QStyledItemDelegate):
             painter.drawText(option.rect, Qt.AlignRight, text)
             text = f"{qty:+,.2f}"
             rect.moveTop(Y + H / 2)
-            if (qty >= 0):
+            if qty >= 0:
                 pen.setColor(DARK_GREEN_COLOR)
             else:
                 pen.setColor(DARK_RED_COLOR)
             painter.setPen(pen)
             painter.drawText(option.rect, Qt.AlignRight, text)
-        elif (transaction_type == TRANSACTION_DIVIDEND):
+        elif transaction_type == TRANSACTION_DIVIDEND:
             text = f"{amount:+,.2f}"
             rect.setHeight(H / 2)
             pen.setColor(DARK_GREEN_COLOR)
@@ -224,7 +224,7 @@ class OperationsAmountDelegate(QStyledItemDelegate):
             painter.setPen(pen)
             painter.drawText(rect, Qt.AlignRight, text)
         else:
-            if (amount >= 0):
+            if amount >= 0:
                 pen.setColor(DARK_GREEN_COLOR)
             else:
                 pen.setColor(DARK_RED_COLOR)
@@ -248,13 +248,13 @@ class OperationsTotalsDelegate(QStyledItemDelegate):
         reconciled = model.data(model.index(index.row(), FIELD_RECONCILED), Qt.DisplayRole)
         upper_part = "<void>"
         lower_part = ''
-        if (total_shares != ''):
+        if total_shares != '':
             lower_part = f"{total_shares:,.2f}"
-        if (total_money != ''):
+        if total_money != '':
             upper_part = f"{total_money:,.2f}"
         text = upper_part + "\n" + lower_part
 
-        if (reconciled == 1):
+        if reconciled == 1:
             pen.setColor(BLUE_COLOR)
             painter.setPen(pen)
 
@@ -272,7 +272,7 @@ class OperationsCurrencyDelegate(QStyledItemDelegate):
         currency = model.data(index, Qt.DisplayRole)
         asset_name = model.data(model.index(index.row(), FIELD_ASSET), Qt.DisplayRole)
         text = " " + currency
-        if (asset_name != ""):
+        if asset_name != "":
             text = text + "\n " + asset_name
         painter.drawText(option.rect, Qt.AlignLeft, text)
         painter.restore()
