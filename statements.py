@@ -382,7 +382,8 @@ class StatementLoader:
         self.db.commit()
         logging.error(f"Fees added: {note}, {amount}")
 
-    def loadIBDepositWithdraw(self, IBcash):
+    # noinspection PyMethodMayBeStatic
+    def loadIBDepositWithdraw(IBcash):
         logging.warning("*** MANUAL ENTRY REQUIRED ***")
         logging.warning(f"{IBcash.dateTime} {IBcash.description}: {IBcash.accountId} {IBcash.amount} {IBcash.currency}")
 

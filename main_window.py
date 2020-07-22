@@ -128,6 +128,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         model.select()
         return model
 
+    # noinspection PyMethodMayBeStatic
     def ConfigureTableView(self, view, model, hide_columns_list, column_width_list, stretch_column):
         view.setModel(model)
         HideViewColumns(view, hide_columns_list)

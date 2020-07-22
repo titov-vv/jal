@@ -14,6 +14,18 @@ from constants import *
 
 
 #################################################################################################################
+# Function downlaod URL and return it content as string or empty string if site returns error
+#################################################################################################################
+def get_web_data(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.text
+    else:
+        logging.error(f"URL: {url} failed with {response}")
+        return ''
+
+
+#################################################################################################################
 # UI dialog class
 #################################################################################################################
 class QuotesUpdateDialog(QDialog, Ui_UpdateQuotesDlg):
@@ -111,18 +123,10 @@ class QuoteDownloader:
                 self.SubmitQuote(asset_id, asset, int(date.timestamp()), float(quote[0]))
         logging.info("Download completed")
 
-    def get_web_data(self, url):
-        response = requests.get(url)
-        if response.status_code == 200:
-            return response.text
-        else:
-            logging.error(f"URL: {url} failed with {response}")
-            return ''
-
     def PrepareRussianCBReader(self):
         rows = []
         try:
-            xml_root = xml_tree.fromstring(self.get_web_data("http://www.cbr.ru/scripts/XML_valFull.asp"))
+            xml_root = xml_tree.fromstring(get_web_data("http://www.cbr.ru/scripts/XML_valFull.asp"))
             for node in xml_root:
                 code = node.find("ParentCode").text if node is not None else None
                 iso = node.find("ISO_Char_Code").text if node is not None else None
@@ -136,7 +140,7 @@ class QuoteDownloader:
         date2 = datetime.fromtimestamp(end_timestamp + 86400).strftime('%d/%m/%Y')  # Add 1 day as CBR sets rate a day ahead
         code = str(self.CBR_codes.loc[self.CBR_codes["ISO_name"] == currency_code, "CBR_code"].values[0]).strip()
         url = f"http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1={date1}&date_req2={date2}&VAL_NM_RQ={code}"
-        xml_root = xml_tree.fromstring(self.get_web_data(url))
+        xml_root = xml_tree.fromstring(get_web_data(url))
         rows = []
         for node in xml_root:
             s_date = node.attrib['Date'] if node is not None else None
@@ -149,13 +153,14 @@ class QuoteDownloader:
         rates = data.set_index("Date")
         return rates
 
+    # noinspection PyMethodMayBeStatic
     def MOEX_DataReader(self, asset_code, start_timestamp, end_timestamp):
         engine = None
         market = None
         board_id = None
         # Get primary board ID
         url = f"http://iss.moex.com/iss/securities/{asset_code}.xml"
-        xml_root = xml_tree.fromstring(self.get_web_data(url))
+        xml_root = xml_tree.fromstring(get_web_data(url))
         for node in xml_root:
             if node.tag == 'data' and node.attrib['id'] == 'boards':
                 boards_data = list(node)
@@ -174,7 +179,7 @@ class QuoteDownloader:
         date1 = datetime.fromtimestamp(start_timestamp).strftime('%Y-%m-%d')
         date2 = datetime.fromtimestamp(end_timestamp).strftime('%Y-%m-%d')
         url = f"http://iss.moex.com/iss/history/engines/{engine}/markets/{market}/boards/{board_id}/securities/{asset_code}.xml?from={date1}&till={date2}"
-        xml_root = xml_tree.fromstring(self.get_web_data(url))
+        xml_root = xml_tree.fromstring(get_web_data(url))
         rows = []
         for node in xml_root:
             if node.tag == 'data' and node.attrib['id'] == 'history':
@@ -195,22 +200,24 @@ class QuoteDownloader:
         close = data.set_index("Date")
         return close
 
+    # noinspection PyMethodMayBeStatic
     def US_DataReader(self, asset_code, start_timestamp, end_timestamp):
         date1 = datetime.fromtimestamp(start_timestamp).strftime('%Y%m%d')
         date2 = datetime.fromtimestamp(end_timestamp).strftime('%Y%m%d')
         url = f"https://stooq.com/q/d/l/?s={asset_code}.US&i=d&d1={date1}&d2={date2}"
-        file = StringIO(self.get_web_data(url))
+        file = StringIO(get_web_data(url))
         data = pd.read_csv(file)
         data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
         data = data.drop(columns=['Open', 'High', 'Low', 'Volume'])
         close = data.set_index("Date")
         return close
 
+    # noinspection PyMethodMayBeStatic
     def Euronext_DataReader(self, asset_code, isin, start_timestamp, end_timestamp):
         start = int(start_timestamp * 1000)
         end = int(end_timestamp * 1000)
         url = f"https://euconsumer.euronext.com/nyx_eu_listings/price_chart/download_historical?typefile=csv&layout=vertical&typedate=dmy&separator=point&mic=XPAR&isin={isin}&name={asset_code}&namefile=Price_Data_Historical&from={start}&to={end}&adjusted=1&base=0"
-        file = StringIO(self.get_web_data(url))
+        file = StringIO(get_web_data(url))
         data = pd.read_csv(file, header=3)
         data['Date'] = pd.to_datetime(data['Date'], format="%d/%m/%Y")
         data = data.drop(

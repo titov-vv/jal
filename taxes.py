@@ -450,5 +450,6 @@ class TaxesRus:
         sheet.write(row, 4, amount_rub_sum, formats['header_number'])
 
     def prepare_corporate_actions(self, workbook, _account_id, _begin, _end, _formats):
+        _query = QSqlQuery(self.db)
         _sheet = workbook.add_worksheet(name="Corp.Actions")
         #TODO put here report on stock conversions
