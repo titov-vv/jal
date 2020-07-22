@@ -1264,6 +1264,16 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="LoggingTab">
+       <attribute name="title">
+        <string>Log messages</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <item>
+         <widget class="LogViewer" name="Logs"/>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -1454,6 +1464,11 @@
    <extends>QWidget</extends>
    <header>CustomUI/trade_action.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>LogViewer</class>
+   <extends>QPlainTextEdit</extends>
+   <header>CustomUI/log_viewer.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

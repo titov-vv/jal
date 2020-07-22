@@ -1,29 +1,35 @@
-from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu, QMessageBox, QAction, QInputDialog
-from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
+import logging
+import os
+
+from PySide2 import QtCore
 from PySide2.QtCore import Slot, QMetaObject
 from PySide2.QtGui import QDoubleValidator
-from PySide2 import QtCore
-import os
-import logging
-from UI.ui_main_window import Ui_LedgerMainWindow
-from ledger import Ledger
-from taxes import TaxesRus, TaxExportDialog
-from reports import Reports, ReportParamsDialog
-from bulk_db import loadDbFromSQL, MakeBackup, RestoreBackup
-from statements import StatementLoader
-from rebuild_window import RebuildDialog
-from downloader import QuoteDownloader, QuotesUpdateDialog
-from balance_delegate import BalanceDelegate, HoldingsDelegate
-from operation_delegate import *
-from dividend_delegate import DividendSqlDelegate
-from trade_delegate import TradeSqlDelegate
-from transfer_delegate import TransferSqlDelegate
-from action_delegate import ActionDelegate, ActionDetailDelegate
+from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel, QSqlRelationalTableModel, \
+    QSqlRelation
+from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu, \
+    QMessageBox, QAction, QFrame, QLabel
+
 from CustomUI.account_select import AcountTypeEditDlg, AccountChoiceDlg
 from CustomUI.asset_select import AssetChoiceDlg
-from CustomUI.peer_select import PeerChoiceDlg
 from CustomUI.category_select import CategoryChoiceDlg
+from CustomUI.peer_select import PeerChoiceDlg
 from CustomUI.tag_select import TagChoiceDlg
+from UI.ui_main_window import Ui_LedgerMainWindow
+from action_delegate import ActionDelegate, ActionDetailDelegate
+from balance_delegate import BalanceDelegate, HoldingsDelegate
+from bulk_db import loadDbFromSQL, MakeBackup, RestoreBackup
+from dividend_delegate import DividendSqlDelegate
+from downloader import QuoteDownloader, QuotesUpdateDialog
+from ledger import Ledger
+from operation_delegate import *
+from rebuild_window import RebuildDialog
+from reports import Reports, ReportParamsDialog
+from statements import StatementLoader
+from taxes import TaxesRus, TaxExportDialog
+from trade_delegate import TradeSqlDelegate
+from transfer_delegate import TransferSqlDelegate
+
+
 #-----------------------------------------------------------------------------------------------------------------------
 # model - QSqlTableModel where titles should be set for given columns
 # column_title_list - list of column_name/header_title pairs
@@ -57,6 +63,15 @@ def AddAndConfigureMappings(model, mapper, column_widget_list):
             column_widget[1].setValidator(column_widget[3])
 
 #-----------------------------------------------------------------------------------------------------------------------
+# a simple VLine, like the one you get from designer
+class VLine(QFrame):
+    def __init__(self):
+        super(VLine, self).__init__()
+        self.setFrameShape(QFrame.VLine)
+        self.setFrameShadow(QFrame.Sunken)
+
+#-----------------------------------------------------------------------------------------------------------------------
+
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def __init__(self):
         QMainWindow.__init__(self, None)
@@ -124,6 +139,12 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         view.horizontalHeader().setFont(font)
 
     def ConfigureUI(self):
+        # Customize Status bar and logs
+        self.NewLogEventLbl = QLabel()
+        self.StatusBar.addPermanentWidget(VLine())
+        self.StatusBar.addPermanentWidget(self.NewLogEventLbl)
+        self.Logs.setNotificationLabel(self.NewLogEventLbl)
+
         self.doubleValidate2 = QDoubleValidator(decimals=2)
         self.doubleValidate6 = QDoubleValidator(decimals=6)
         widthForAmountEdit = self.fontMetrics().width("888888888.88") * 1.5
@@ -430,6 +451,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         elif tab_index == 1:
             self.StatusBar.showMessage("Asset holdings report")
             self.UpdateHoldings()
+        elif tab_index == 2:
+            self.Logs.cleanNotification()
 
     @Slot()
     def onBalanceDateChange(self, new_date):
