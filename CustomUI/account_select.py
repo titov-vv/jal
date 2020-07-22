@@ -164,7 +164,7 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
         self.AccountsList.model().setFilter(account_filter)
 
     @Slot()
-    def OnAccountChosen(self, selected, deselected):
+    def OnAccountChosen(self, selected, _deselected):
         idx = selected.indexes()
         if idx:
             selected_row = idx[0].row()

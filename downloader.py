@@ -109,8 +109,9 @@ class QuoteDownloader:
             else:
                 logging.error(f"Data feed {feed_id} is not implemented")
                 continue
-            for date, quote in data.iterrows():
-                self.SubmitQuote(asset_id, asset, int(date.timestamp()), float(quote[0]))
+            if data is not None:
+                for date, quote in data.iterrows():
+                    self.SubmitQuote(asset_id, asset, int(date.timestamp()), float(quote[0]))
         logging.info("Download completed")
 
     def PrepareRussianCBReader(self):
@@ -141,8 +142,16 @@ class QuoteDownloader:
         return rates
 
     def MOEX_DataReader(self, asset_code, start_timestamp, end_timestamp):
+        engine = None
+        market = None
+        board_id = None
         # Get primary board ID
-        xml_root = xml_tree.fromstring(requests.get(f"http://iss.moex.com/iss/securities/{asset_code}.xml").text)
+        url = f"http://iss.moex.com/iss/securities/{asset_code}.xml"
+        response = requests.get(url)
+        if response.status_code != 200:             # TODO: HTTP error check implemented only for MOEX - do the same for other downloaders
+            logging.error(f"MOEX download failed with {response} at {url}")
+            return None
+        xml_root = xml_tree.fromstring(response.text)
         for node in xml_root:
             if node.tag == 'data' and node.attrib['id'] == 'boards':
                 boards_data = list(node)
@@ -154,19 +163,26 @@ class QuoteDownloader:
                                 engine = board.attrib['engine']
                                 market = board.attrib['market']
                                 board_id = board.attrib['boardid']
+        if (engine is None) or (market is None) or (board_id is None):
+            logging.error(f"Failed to find {asset_code} at {url}")
+            return None
 
         date1 = datetime.fromtimestamp(start_timestamp).strftime('%Y-%m-%d')
         date2 = datetime.fromtimestamp(end_timestamp).strftime('%Y-%m-%d')
-        xml_root = xml_tree.fromstring(requests.get(
-            f"http://iss.moex.com/iss/history/engines/{engine}/markets/{market}/boards/{board_id}/securities/{asset_code}.xml?from={date1}&till={date2}").text)
+        url = f"http://iss.moex.com/iss/history/engines/{engine}/markets/{market}/boards/{board_id}/securities/{asset_code}.xml?from={date1}&till={date2}"
+        response = requests.get(url)
+        if response.status_code != 200:
+            logging.error(f"MOEX download failed with {response} at {url}")
+            return None
+        xml_root = xml_tree.fromstring(response.text)
+        rows = []
         for node in xml_root:
             if node.tag == 'data' and node.attrib['id'] == 'history':
                 sections = list(node)
                 for section in sections:
                     if section.tag == "rows":
-                        hisotry_rows = list(section)
-                        rows = []
-                        for row in hisotry_rows:
+                        history_rows = list(section)
+                        for row in history_rows:
                             if row.tag == "row":
                                 if row.attrib['CLOSE']:
                                     if 'FACEVALUE' in row.attrib:  # Correction for bonds

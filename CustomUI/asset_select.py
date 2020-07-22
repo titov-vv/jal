@@ -67,7 +67,7 @@ class AssetChoiceDlg(QDialog, Ui_AssetChoiceDlg):
         self.AssetsList.model().setFilter(asset_filter)
 
     @Slot()
-    def OnActiveChosen(self, selected, deselected):
+    def OnActiveChosen(self, selected, _deselected):
         idx = selected.indexes()
         if idx:
             selected_row = idx[0].row()

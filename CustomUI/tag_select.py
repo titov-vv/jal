@@ -79,7 +79,7 @@ class TagChoiceDlg(QDialog, Ui_TagChoiceDlg):
             self.TagsList.model().setFilter("")
 
     @Slot()
-    def OnTagChosen(self, selected, deselected):
+    def OnTagChosen(self, selected, _deselected):
         idx = selected.indexes()
         if idx:
             selected_row = idx[0].row()

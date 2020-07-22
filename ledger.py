@@ -33,7 +33,7 @@ class Ledger:
             old_amount = 0.0
             old_value = 0.0
         new_amount = old_amount + amount
-        if value == None:
+        if value is None:
             new_value = old_value
         else:
             new_value = old_value + value
@@ -80,7 +80,7 @@ class Ledger:
     # TODO check that condition <= is really correct for timestamp in this function
     def getAmount(self, timestamp, book, account_id, asset_id = None):
         query = QSqlQuery(self.db)
-        if asset_id == None:
+        if asset_id is None:
             query.prepare("SELECT sum_amount FROM ledger_sums WHERE book_account = :book AND account_id = :account_id "
                           "AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1")
         else:

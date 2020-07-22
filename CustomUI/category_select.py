@@ -50,7 +50,7 @@ class CategoryChoiceDlg(QDialog, Ui_CategoryChoiceDlg):
         self.Model.select()
 
     @Slot()
-    def OnCategoryChosen(self, selected, deselected):
+    def OnCategoryChosen(self, selected, _deselected):
         idx = selected.indexes()
         if idx:
             selected_row = idx[0].row()
@@ -85,7 +85,7 @@ class CategoryChoiceDlg(QDialog, Ui_CategoryChoiceDlg):
         query = QSqlQuery(self.CategoriesList.model().database())
         query.prepare("SELECT c2.pid FROM categories AS c1 LEFT JOIN categories AS c2 ON c1.pid=c2.id WHERE c1.id = :current_id")
         id = self.CategoriesList.model().record(0).value(0)
-        if id == None:
+        if id is None:
             pid = self.last_parent
         else:
             query.bindValue(":current_id", id)

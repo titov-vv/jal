@@ -449,6 +449,6 @@ class TaxesRus:
         sheet.write(row, 3, "ИТОГО", formats['header_number'])
         sheet.write(row, 4, amount_rub_sum, formats['header_number'])
 
-    def prepare_corporate_actions(self, workbook, account_id, begin, end, formats):
-        sheet = workbook.add_worksheet(name="Corp.Actions")
+    def prepare_corporate_actions(self, workbook, _account_id, _begin, _end, _formats):
+        _sheet = workbook.add_worksheet(name="Corp.Actions")
         #TODO put here report on stock conversions

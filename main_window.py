@@ -82,7 +82,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.db.setDatabaseName(self.own_path + DB_PATH)
         self.db.open()
         tables = self.db.tables(QSql.Tables)
-        if tables == []:
+        if not tables:
             self.InitDB()
             QMetaObject.invokeMethod(self, "close", Qt.QueuedConnection)
             return
@@ -454,12 +454,12 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             self.Logs.cleanNotification()
 
     @Slot()
-    def onBalanceDateChange(self, new_date):
+    def onBalanceDateChange(self, _new_date):
         self.balance_date = self.BalanceDate.dateTime().toSecsSinceEpoch()
         self.UpdateBalances()
 
     @Slot()
-    def onHoldingsDateChange(self, new_date):
+    def onHoldingsDateChange(self, _new_date):
         self.holdings_date = self.HoldingsDate.dateTime().toSecsSinceEpoch()
         self.UpdateHoldings()
 
@@ -490,7 +490,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.BalancesModel.select()
 
     @Slot()
-    def OnOperationChange(self, selected, deselected):
+    def OnOperationChange(self, selected, _deselected):
         self.CheckForNotSavedData()
 
         ##################################################################
@@ -744,7 +744,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         elif (active_tab == TAB_DIVIDEND):
             row = self.DividendsDataMapper.currentIndex()
             self.DividendsDataMapper.submit()
-            new_record = self.DividendsModel.record()
+            new_record = self.DividendsModel.record(row)
             new_record.setNull("id")
             new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
             self.DividendsModel.setFilter("dividends.id = 0")
