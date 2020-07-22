@@ -756,14 +756,14 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         if (tab2save == TAB_ACTION):
             pid = self.ActionsModel.data(self.ActionsModel.index(0, self.ActionsModel.fieldIndex("id")))
             if not self.ActionsModel.submitAll():
-                print(self.tr("Action submit failed: "), self.ActionDetailsModel.lastError().text())
+                logging.fatal(self.tr("Action submit failed: ") + self.ActionDetailsModel.lastError().text())
                 return
             if pid == 0:        # we have saved new action record
                 pid = self.ActionsModel.query().lastInsertId()
             for row in range(self.ActionDetailsModel.rowCount()):
                 self.ActionDetailsModel.setData(self.ActionDetailsModel.index(row, 1), pid)
             if not self.ActionDetailsModel.submitAll():
-                print(self.tr("Action details submit failed: "), self.ActionDetailsModel.lastError().text())
+                logging.fatal(self.tr("Action details submit failed: ") + self.ActionDetailsModel.lastError().text())
                 return
         elif (tab2save == TAB_TRANSFER):
             record = self.TransfersModel.record(0)
@@ -776,15 +776,15 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             if abs(float(fee_amount)) < CALC_TOLERANCE:   # If we don't have fee - set Fee Account to NULL to fire DB trigger
                 self.TransfersModel.setData(self.TransfersModel.index(0, self.TransfersModel.fieldIndex("fee_acc_id")), None)
             if not self.TransfersModel.submitAll():
-                print(self.tr("Transfer submit failed: "), self.TransfersModel.lastError().text())
+                logging.fatal(self.tr("Transfer submit failed: ") + self.TransfersModel.lastError().text())
                 return
         elif (tab2save == TAB_DIVIDEND):
             if not self.DividendsModel.submitAll():
-                print(self.tr("Dividend submit failed: "), self.DividendsModel.lastError().text())
+                logging.fatal(self.tr("Dividend submit failed: ") + self.DividendsModel.lastError().text())
                 return
         elif (tab2save == TAB_TRADE):
             if not self.TradesModel.submitAll():
-                print(self.tr("Trade submit failed: "), self.TradesModel.lastError().text())
+                logging.fatal(self.tr("Trade submit failed: ") + self.TradesModel.lastError().text())
                 return
         else:
             assert False
