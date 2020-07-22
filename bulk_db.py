@@ -4,6 +4,7 @@ from constants import *
 import sqlite3
 import pandas as pd
 import math
+import logging
 #------------------------------------------------------------------------------
 backup_list = ["settings", "tags", "categories", "agents", "assets", "accounts", "corp_actions",
                "dividends", "trades", "actions", "action_details", "transfers", "transfer_notes", "quotes"]
@@ -16,7 +17,7 @@ def MakeBackup(db_file, backup_path):
         data.to_csv(f"{backup_path}/{table}.csv", sep="|", header=True, index=False)
 
     db.close()
-    print("Backup saved in: " + backup_path)
+    logging.info("Backup saved in: " + backup_path)
 
 def RestoreBackup(db_file, restore_path):
     db = sqlite3.connect(db_file)
@@ -31,6 +32,7 @@ def RestoreBackup(db_file, restore_path):
     for table in backup_list:
         cursor.execute(f"DELETE FROM {table}")
     db.commit()
+    logging.info("DB cleanup was completed")
 
     for table in backup_list:
         data = pd.read_csv(f"{restore_path}/{table}.csv", sep='|')
@@ -43,10 +45,11 @@ def RestoreBackup(db_file, restore_path):
 
     db.commit()
     db.close()
+    logging.info("Backup restored from: " + restore_path + " into " + db_file)
 
 def loadDbFromSQL(db_file, sql_file):
-    print("Load SQL-script: ", sql_file)
-    print("Into database:   ", db_file)
+    logging.info("Load SQL-script: ", sql_file)
+    logging.info("Into database:   ", db_file)
 
     with open(sql_file, 'r') as sql_file:
         sql_text = sql_file.read()
@@ -55,5 +58,5 @@ def loadDbFromSQL(db_file, sql_file):
     cursor.executescript(sql_text)
     db.commit()
     db.close()
-    print("DB script loaded")
+    logging.info("DB script loaded")
 

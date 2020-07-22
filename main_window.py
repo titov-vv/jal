@@ -381,11 +381,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.Logs.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
         logging.getLogger().addHandler(self.Logs)
         logging.getLogger().setLevel(logging.DEBUG)
-
-        logging.debug('damn, a bug')
-        logging.info('something to remember')
-        logging.warning('that\'s not right')
-        logging.error('foobar')
+        logging.info('Application started')
 
     def Backup(self):
         backup_directory = QFileDialog.getExistingDirectory(self, "Select directory to save backup")
