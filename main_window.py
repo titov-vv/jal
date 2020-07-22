@@ -1,7 +1,7 @@
 import logging
 import os
 
-from PySide2 import QtCore
+from PySide2 import QtCore, QtWidgets
 from PySide2.QtCore import Slot, QMetaObject
 from PySide2.QtGui import QDoubleValidator
 from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel, QSqlRelationalTableModel, \
@@ -9,7 +9,7 @@ from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTab
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu, \
     QMessageBox, QAction, QFrame, QLabel
 
-from CustomUI.account_select import AcountTypeEditDlg, AccountChoiceDlg
+from CustomUI.account_select import AccountTypeEditDlg, AccountChoiceDlg
 from CustomUI.asset_select import AssetChoiceDlg
 from CustomUI.category_select import CategoryChoiceDlg
 from CustomUI.peer_select import PeerChoiceDlg
@@ -353,7 +353,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         # CONFIGURE ACTIONS                                                                           #
         ###############################################################################################
         # MENU ACTIONS
-        self.actionExit.triggered.connect(qApp.quit)
+        self.actionExit.triggered.connect(QtWidgets.QApplication.instance().quit)
         self.action_Load_quotes.triggered.connect(self.UpdateQuotes)
         self.actionLoad_Statement.triggered.connect(self.loadReportIBKR)
         self.actionBackup.triggered.connect(self.Backup)
@@ -418,7 +418,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                                               "You need to restart the application.\n"
                                               "Application terminates now."),
                                       QMessageBox.Ok)
-            qApp.quit()
+            QtWidgets.QApplication.instance().quit()
 
     def InitDB(self):
         self.db.close()
@@ -865,7 +865,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def EditAccountTypes(self):
-        dlg = AcountTypeEditDlg()
+        dlg = AccountTypeEditDlg()
         dlg.init_DB(self.db)
         dlg.exec_()
 

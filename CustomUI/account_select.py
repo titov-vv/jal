@@ -13,7 +13,7 @@ from UI.ui_account_type_dlg import Ui_AccountTypesDlg
 ########################################################################################################################
 #  Predefined Account Types Editor
 ########################################################################################################################
-class AcountTypeEditDlg(QDialog, Ui_AccountTypesDlg):
+class AccountTypeEditDlg(QDialog, Ui_AccountTypesDlg):
     def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)
