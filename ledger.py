@@ -326,7 +326,7 @@ class Ledger:
             self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, asset_id, account_id, (buy_qty - qty), (buy_qty - qty) * price)
         if coupon:
             self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_INCOMES, currency_id, account_id, -coupon, None, None, CATEGORY_DIVIDEND)
-        if fee:   # Comission
+        if fee:
             self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_COSTS, currency_id, account_id, fee, None, None, CATEGORY_FEES)
 
     def processCorpAction(self):

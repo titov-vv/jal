@@ -244,7 +244,7 @@ class TaxesRus:
         assert query.exec_()
         self.db.commit()
 
-        # Take all actions without convertation
+        # Take all actions without conversion
         query.prepare("SELECT s.name AS symbol, d.qty AS qty, "
                       "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, "
                       "qos.quote AS os_rate, o.price AS o_price, o.fee AS o_fee, "
@@ -451,4 +451,4 @@ class TaxesRus:
 
     def prepare_corporate_actions(self, workbook, account_id, begin, end, formats):
         sheet = workbook.add_worksheet(name="Corp.Actions")
-        #TODO put here report on stock convertations
+        #TODO put here report on stock conversions

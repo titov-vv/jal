@@ -29,7 +29,7 @@ class LogViewer(QPlainTextEdit, logging.Handler):
         self.notification = label
         self.notification.setFixedWidth(self.notification.fontMetrics().width("Log: X"))
 
-    def removeNoficationLabel(self):
+    def removeNotificationLabel(self):
         self.notification.setText("")
         self.notification = None
 

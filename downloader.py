@@ -111,7 +111,7 @@ class QuoteDownloader:
                 continue
             for date, quote in data.iterrows():
                 self.SubmitQuote(asset_id, asset, int(date.timestamp()), float(quote[0]))
-        logging.info("Dowload completed")
+        logging.info("Download completed")
 
     def PrepareRussianCBReader(self):
         xml_root = xml_tree.fromstring(requests.get("http://www.cbr.ru/scripts/XML_valFull.asp").text)
