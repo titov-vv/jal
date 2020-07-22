@@ -1,5 +1,4 @@
 import logging
-# import pandas_datareader.data as web
 import xml.etree.ElementTree as xml_tree
 from datetime import datetime
 from io import StringIO
@@ -39,17 +38,8 @@ class QuotesUpdateDialog(QDialog, Ui_UpdateQuotesDlg):
 class QuoteDownloader:
     def __init__(self, db):
         self.db = db
-        self.session = requests.Session()
 
     def UpdateQuotes(self, start_timestamp, end_timestamp, use_proxy):
-        if use_proxy:
-            proxies = {"http": "http://135.245.192.7:8000",
-                       "https": "http://135.245.192.7:8000"}
-        else:
-            proxies = {"http": None,
-                        "https": None}
-        self.session.proxies = proxies
-
         self.PrepareRussianCBReader()
 
         query = QSqlQuery(self.db)
@@ -96,39 +86,53 @@ class QuoteDownloader:
                 from_timestamp = last_timestamp
             else:
                 from_timestamp = start_timestamp
-            if (feed_id == FEED_NONE):
-                continue
-            elif (feed_id == FEED_CBR):
-                data = self.CBR_DataReader(asset, from_timestamp, end_timestamp)
-            elif (feed_id == FEED_RU):
-                data = self.MOEX_DataReader(asset, from_timestamp, end_timestamp)
-            elif (feed_id == FEED_EU):
-                data = self.Euronext_DataReader(asset, isin, from_timestamp, end_timestamp)
-            elif (feed_id == FEED_US):
-                data = self.US_DataReader(asset, from_timestamp, end_timestamp)
-            else:
-                logging.error(f"Data feed {feed_id} is not implemented")
-                continue
+            try:
+                if (feed_id == FEED_NONE):
+                    continue
+                elif (feed_id == FEED_CBR):
+                    data = self.CBR_DataReader(asset, from_timestamp, end_timestamp)
+                elif (feed_id == FEED_RU):
+                    data = self.MOEX_DataReader(asset, from_timestamp, end_timestamp)
+                elif (feed_id == FEED_EU):
+                    data = self.Euronext_DataReader(asset, isin, from_timestamp, end_timestamp)
+                elif (feed_id == FEED_US):
+                    data = self.US_DataReader(asset, from_timestamp, end_timestamp)
+                else:
+                    logging.error(f"Data feed {feed_id} is not implemented")
+                    continue
+            except (xml_tree.ParseError, pd.errors.EmptyDataError):
+                logging.info(f"No data were downloaded for {asset}")
             if data is not None:
                 for date, quote in data.iterrows():
                     self.SubmitQuote(asset_id, asset, int(date.timestamp()), float(quote[0]))
         logging.info("Download completed")
 
+    def get_web_data(self, url):
+        response = requests.get(url)
+        if response.status_code == 200:
+            return response.text
+        else:
+            logging.error(f"URL: {url} failed with {response}")
+            return ''
+
     def PrepareRussianCBReader(self):
-        xml_root = xml_tree.fromstring(requests.get("http://www.cbr.ru/scripts/XML_valFull.asp").text)
         rows = []
-        for node in xml_root:
-            code = node.find("ParentCode").text if node is not None else None
-            iso = node.find("ISO_Char_Code").text if node is not None else None
-            rows.append({"ISO_name": iso, "CBR_code": code})
+        try:
+            xml_root = xml_tree.fromstring(self.get_web_data("http://www.cbr.ru/scripts/XML_valFull.asp"))
+            for node in xml_root:
+                code = node.find("ParentCode").text if node is not None else None
+                iso = node.find("ISO_Char_Code").text if node is not None else None
+                rows.append({"ISO_name": iso, "CBR_code": code})
+        except:
+            pass
         self.CBR_codes = pd.DataFrame(rows, columns=["ISO_name", "CBR_code"])
 
     def CBR_DataReader(self, currency_code, start_timestamp, end_timestamp):
         date1 = datetime.fromtimestamp(start_timestamp).strftime('%d/%m/%Y')
         date2 = datetime.fromtimestamp(end_timestamp + 86400).strftime('%d/%m/%Y')  # Add 1 day as CBR sets rate a day ahead
         code = str(self.CBR_codes.loc[self.CBR_codes["ISO_name"] == currency_code, "CBR_code"].values[0]).strip()
-        xml_root = xml_tree.fromstring(requests.get(
-            f"http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1={date1}&date_req2={date2}&VAL_NM_RQ={code}").text)
+        url = f"http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1={date1}&date_req2={date2}&VAL_NM_RQ={code}"
+        xml_root = xml_tree.fromstring(self.get_web_data(url))
         rows = []
         for node in xml_root:
             s_date = node.attrib['Date'] if node is not None else None
@@ -147,11 +151,7 @@ class QuoteDownloader:
         board_id = None
         # Get primary board ID
         url = f"http://iss.moex.com/iss/securities/{asset_code}.xml"
-        response = requests.get(url)
-        if response.status_code != 200:             # TODO: HTTP error check implemented only for MOEX - do the same for other downloaders
-            logging.error(f"MOEX download failed with {response} at {url}")
-            return None
-        xml_root = xml_tree.fromstring(response.text)
+        xml_root = xml_tree.fromstring(self.get_web_data(url))
         for node in xml_root:
             if node.tag == 'data' and node.attrib['id'] == 'boards':
                 boards_data = list(node)
@@ -170,11 +170,7 @@ class QuoteDownloader:
         date1 = datetime.fromtimestamp(start_timestamp).strftime('%Y-%m-%d')
         date2 = datetime.fromtimestamp(end_timestamp).strftime('%Y-%m-%d')
         url = f"http://iss.moex.com/iss/history/engines/{engine}/markets/{market}/boards/{board_id}/securities/{asset_code}.xml?from={date1}&till={date2}"
-        response = requests.get(url)
-        if response.status_code != 200:
-            logging.error(f"MOEX download failed with {response} at {url}")
-            return None
-        xml_root = xml_tree.fromstring(response.text)
+        xml_root = xml_tree.fromstring(self.get_web_data(url))
         rows = []
         for node in xml_root:
             if node.tag == 'data' and node.attrib['id'] == 'history':
@@ -196,13 +192,10 @@ class QuoteDownloader:
         return close
 
     def US_DataReader(self, asset_code, start_timestamp, end_timestamp):
-        # data = web.DataReader(asset_code, 'yahoo', start=datetime.fromtimestamp(start_timestamp),
-        #                end=datetime.fromtimestamp(end_timestamp), session=self.session)
-        # close = data.drop(columns=['High', 'Low', 'Open', 'Volume', 'Adj Close'])
         date1 = datetime.fromtimestamp(start_timestamp).strftime('%Y%m%d')
         date2 = datetime.fromtimestamp(end_timestamp).strftime('%Y%m%d')
-        web_data = requests.get(f"https://stooq.com/q/d/l/?s={asset_code}.US&i=d&d1={date1}&d2={date2}").text
-        file = StringIO(web_data)
+        url = f"https://stooq.com/q/d/l/?s={asset_code}.US&i=d&d1={date1}&d2={date2}"
+        file = StringIO(self.get_web_data(url))
         data = pd.read_csv(file)
         data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
         data = data.drop(columns=['Open', 'High', 'Low', 'Volume'])
@@ -212,9 +205,8 @@ class QuoteDownloader:
     def Euronext_DataReader(self, asset_code, isin, start_timestamp, end_timestamp):
         start = int(start_timestamp * 1000)
         end = int(end_timestamp * 1000)
-        web_data = requests.get(
-            f"https://euconsumer.euronext.com/nyx_eu_listings/price_chart/download_historical?typefile=csv&layout=vertical&typedate=dmy&separator=point&mic=XPAR&isin={isin}&name={asset_code}&namefile=Price_Data_Historical&from={start}&to={end}&adjusted=1&base=0").text
-        file = StringIO(web_data)
+        url = f"https://euconsumer.euronext.com/nyx_eu_listings/price_chart/download_historical?typefile=csv&layout=vertical&typedate=dmy&separator=point&mic=XPAR&isin={isin}&name={asset_code}&namefile=Price_Data_Historical&from={start}&to={end}&adjusted=1&base=0"
+        file = StringIO(self.get_web_data(url))
         data = pd.read_csv(file, header=3)
         data['Date'] = pd.to_datetime(data['Date'], format="%d/%m/%Y")
         data = data.drop(
