@@ -1,8 +1,12 @@
-from constants import *
-from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QCompleter, QHeaderView
-from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate, QSqlTableModel
+import logging
+
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
+from PySide2.QtSql import QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate, QSqlTableModel
+from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QCompleter, QHeaderView
+
 from UI.ui_asset_choice_dlg import Ui_AssetChoiceDlg
+from constants import *
+
 
 class AssetChoiceDlg(QDialog, Ui_AssetChoiceDlg):
     def __init__(self):
@@ -94,7 +98,7 @@ class AssetChoiceDlg(QDialog, Ui_AssetChoiceDlg):
     @Slot()
     def OnCommit(self):
         if not self.AssetsList.model().submitAll():
-            print(self.tr("Action submit failed: "), self.AssetsList.model().lastError().text())
+            logging.fatal(self.tr("Action submit failed: ") + self.AssetsList.model().lastError().text())
             return
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)

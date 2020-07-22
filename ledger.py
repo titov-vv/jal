@@ -1,7 +1,10 @@
 import datetime
 import logging
-from constants import *
+
 from PySide2.QtSql import QSqlQuery
+
+from constants import *
+
 
 ###################################################################################################
 #TODO Check are there positive lines for Incomes
@@ -468,7 +471,6 @@ class Ledger:
         else:
             frontier = timestamp
         logging.info(f"Re-build ledger from: {datetime.datetime.fromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
-        qApp.processEvents()
         start_time = datetime.datetime.now()
         query.prepare("DELETE FROM deals WHERE close_sid >= "
                       "(SELECT coalesce(MIN(id), 0) FROM sequence WHERE timestamp >= :frontier)")
@@ -523,7 +525,6 @@ class Ledger:
             i = i + 1
             if (i % 1000) == 0:
                 logging.info(f"Processed {i} records, current frontier: {datetime.datetime.fromtimestamp(new_frontier).strftime('%d/%m/%Y %H:%M:%S')}")
-                qApp.processEvents()
         assert query.exec_("PRAGMA synchronous = ON")
 
         end_time = datetime.datetime.now()

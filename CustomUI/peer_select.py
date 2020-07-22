@@ -1,7 +1,11 @@
-from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QCompleter, QHeaderView
-from PySide2.QtSql import QSqlTableModel, QSqlRelationalDelegate, QSqlQuery
+import logging
+
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
+from PySide2.QtSql import QSqlTableModel, QSqlRelationalDelegate, QSqlQuery
+from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QCompleter, QHeaderView
+
 from UI.ui_peer_choice_dlg import Ui_PeerChoiceDlg
+
 
 class PeerChoiceDlg(QDialog, Ui_PeerChoiceDlg):
     def __init__(self):
@@ -118,7 +122,7 @@ class PeerChoiceDlg(QDialog, Ui_PeerChoiceDlg):
     @Slot()
     def OnCommit(self):
         if not self.PeersList.model().submitAll():
-            print(self.tr("Action submit failed: "), self.PeersList.model().lastError().text())
+            logging.fatal(self.tr("Action submit failed: ") + self.PeersList.model().lastError().text())
             return
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)

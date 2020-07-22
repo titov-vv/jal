@@ -1,7 +1,11 @@
-from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QCompleter, QHeaderView
-from PySide2.QtSql import QSqlTableModel
+import logging
+
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
+from PySide2.QtSql import QSqlTableModel
+from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QCompleter, QHeaderView
+
 from UI.ui_tag_choice import Ui_TagChoiceDlg
+
 
 class TagChoiceDlg(QDialog, Ui_TagChoiceDlg):
     def __init__(self):
@@ -57,7 +61,7 @@ class TagChoiceDlg(QDialog, Ui_TagChoiceDlg):
     @Slot()
     def OnCommit(self):
         if not self.Model.submitAll():
-            print(self.tr("Action submit failed: "), self.Model.lastError().text())
+            logging.fatal(self.tr("Action submit failed: ") + self.Model.lastError().text())
             return
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)

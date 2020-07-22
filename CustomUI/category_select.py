@@ -1,7 +1,11 @@
-from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QCompleter, QHeaderView
-from PySide2.QtSql import QSqlTableModel, QSqlRelationalDelegate, QSqlQuery
+import logging
+
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex, QEvent
+from PySide2.QtSql import QSqlTableModel, QSqlRelationalDelegate, QSqlQuery
+from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QCompleter, QHeaderView
+
 from UI.ui_category_choice import Ui_CategoryChoiceDlg
+
 
 class CategoryChoiceDlg(QDialog, Ui_CategoryChoiceDlg):
     def __init__(self):
@@ -118,7 +122,7 @@ class CategoryChoiceDlg(QDialog, Ui_CategoryChoiceDlg):
     @Slot()
     def OnCommit(self):
         if not self.CategoriesList.model().submitAll():
-            print(self.tr("Action submit failed: "), self.CategoriesList.model().lastError().text())
+            logging.fatal(self.tr("Action submit failed: ") + self.CategoriesList.model().lastError().text())
             return
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)

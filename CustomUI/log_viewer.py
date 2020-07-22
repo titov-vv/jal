@@ -1,5 +1,7 @@
-from PySide2.QtWidgets import QPlainTextEdit
 import logging
+
+from PySide2.QtWidgets import QPlainTextEdit
+
 
 class LogViewer(QPlainTextEdit, logging.Handler):
     def __init__(self, parent=None):
@@ -10,3 +12,4 @@ class LogViewer(QPlainTextEdit, logging.Handler):
     def emit(self, record):
         msg = self.format(record)
         self.appendPlainText(msg)
+        qApp.processEvents()
