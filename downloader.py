@@ -1,5 +1,6 @@
 from constants import *
 import requests
+import logging
 from datetime import datetime
 from PySide2.QtSql import QSqlQuery
 from PySide2.QtWidgets import QDialog
@@ -103,7 +104,7 @@ class QuoteDownloader:
             elif (feed_id == FEED_US):
                 data = self.US_DataReader(asset, from_timestamp, end_timestamp)
             else:
-                print(f"Data feed {feed_id} is not implemented")
+                logging.error(f"Data feed {feed_id} is not implemented")
                 continue
             for date, quote in data.iterrows():
                 self.SubmitQuote(asset_id, asset, int(date.timestamp()), float(quote[0]))

@@ -1,4 +1,5 @@
 import datetime
+import logging
 from constants import *
 from PySide2.QtSql import QSqlQuery
 
@@ -466,9 +467,9 @@ class Ledger:
                 frontier = 0
         else:
             frontier = timestamp
-        print(">> Re-build ledger from: ", datetime.datetime.fromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S'))
+        logging.info(f"Re-build ledger from: {datetime.datetime.fromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
+        qApp.processEvents()
         start_time = datetime.datetime.now()
-        print(">> Started @", start_time)
         query.prepare("DELETE FROM deals WHERE close_sid >= "
                       "(SELECT coalesce(MIN(id), 0) FROM sequence WHERE timestamp >= :frontier)")
         query.bindValue(":frontier", frontier)
@@ -520,14 +521,13 @@ class Ledger:
             if (transaction_type == TRANSACTION_TRANSFER):
                 self.processTransfer(seq_id, transaction_id)
             i = i + 1
-            if (i % 2500) == 0:
-                print(">> Processed", i, "records at", datetime.datetime.now())
+            if (i % 1000) == 0:
+                logging.info(f"Processed {i} records, current frontier: {datetime.datetime.fromtimestamp(new_frontier).strftime('%d/%m/%Y %H:%M:%S')}")
+                qApp.processEvents()
         assert query.exec_("PRAGMA synchronous = ON")
 
         end_time = datetime.datetime.now()
-        print(">> Ended @", end_time)
-        print(">> Processed", i, "records; Time:", end_time - start_time)
-        print(">> New frontier:", datetime.datetime.fromtimestamp(new_frontier).strftime('%d/%m/%Y %H:%M:%S'))
+        logging.info(f"Ledger is complete. Processed {i} records; elapsed time: {end_time - start_time}, new frontier: {datetime.datetime.fromtimestamp(new_frontier).strftime('%d/%m/%Y %H:%M:%S')}")
 
     # Populate table balances with data calculated for given parameters:
     # 'timestamp' moment of time for balance
