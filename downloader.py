@@ -40,6 +40,10 @@ class QuoteDownloader:
         self.db = db
 
     def UpdateQuotes(self, start_timestamp, end_timestamp, use_proxy):
+        if use_proxy:
+            logging.fatal("Download via proxy is not implemented")
+            return
+
         self.PrepareRussianCBReader()
 
         query = QSqlQuery(self.db)
@@ -101,10 +105,10 @@ class QuoteDownloader:
                     logging.error(f"Data feed {feed_id} is not implemented")
                     continue
             except (xml_tree.ParseError, pd.errors.EmptyDataError):
-                logging.info(f"No data were downloaded for {asset}")
-            if data is not None:
-                for date, quote in data.iterrows():
-                    self.SubmitQuote(asset_id, asset, int(date.timestamp()), float(quote[0]))
+                logging.warning(f"No data were downloaded for {asset}")
+                continue
+            for date, quote in data.iterrows():
+                self.SubmitQuote(asset_id, asset, int(date.timestamp()), float(quote[0]))
         logging.info("Download completed")
 
     def get_web_data(self, url):
@@ -123,7 +127,7 @@ class QuoteDownloader:
                 code = node.find("ParentCode").text if node is not None else None
                 iso = node.find("ISO_Char_Code").text if node is not None else None
                 rows.append({"ISO_name": iso, "CBR_code": code})
-        except:
+        except xml_tree.ParseError:
             pass
         self.CBR_codes = pd.DataFrame(rows, columns=["ISO_name", "CBR_code"])
 

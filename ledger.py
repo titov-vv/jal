@@ -470,6 +470,7 @@ class Ledger:
                 frontier = 0
         else:
             frontier = timestamp
+        new_frontier = frontier     # this variable will be updated later together with ledger updates
         logging.info(f"Re-build ledger from: {datetime.datetime.fromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
         start_time = datetime.datetime.now()
         query.prepare("DELETE FROM deals WHERE close_sid >= "

@@ -13,7 +13,7 @@ class LogViewer(QPlainTextEdit, logging.Handler):
         self.notification = None
         self.last_level = 0
 
-    def emit(self, record):
+    def emit(self, record, **kwargs):
         # Store message in log window
         msg = self.format(record)
         self.appendPlainText(msg)

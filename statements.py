@@ -33,7 +33,7 @@ def convert_sum(val):
     val = val.replace(' ', '')
     try:
         res = float(val)
-    except:
+    except ValueError:
         res = 0
     return res
 
@@ -107,11 +107,14 @@ class StatementLoader:
             return  # Asset already present in DB
 
         if IBasset.assetCategory == AssetClass.STOCK:
-            asset_type = 2
+            asset_type = ASSET_TYPE_STOCK
             if IBasset.subCategory == "ETF":
-                asset_type = 4
-        if IBasset.assetCategory == AssetClass.BOND:
-            asset_type = 3
+                asset_type = ASSET_TYPE_ETF
+        elif IBasset.assetCategory == AssetClass.BOND:
+            asset_type = ASSET_TYPE_BOND
+        else:
+            logging.error(f"Unknown asset type {IBasset}")
+            return
         query.prepare("INSERT INTO assets(name, type_id, full_name, isin) VALUES(:symbol, :type, :full_name, :isin)")
         query.bindValue(":symbol", IBasset.symbol)
         query.bindValue(":type", asset_type)
@@ -153,7 +156,7 @@ class StatementLoader:
         else:
             logging.error(f"Trade type f{IBtrade.buySell} is not implemented")
 
-    def createTrade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee, coupon=0):
+    def createTrade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee, coupon=0.0):
         query = QSqlQuery(self.db)
         query.prepare("SELECT id FROM trades "
                       "WHERE timestamp=:timestamp AND asset_id = :asset "
@@ -437,6 +440,8 @@ class StatementLoader:
         logging.info(f"Withholding tax added: {note}")
 
     def loadQuikHtml(self, filename):
+        account_id = 0
+        account_number = ''
         data = pandas.read_html(filename, encoding='cp1251',
                                 converters = {QUIK_QTY: convert_sum, QUIK_AMOUNT: convert_sum,
                                               QUIK_PRICE: convert_sum, QUIK_COUPON: convert_sum})
@@ -446,9 +451,9 @@ class StatementLoader:
         if parts:
             account_number = parts.group(1)
             account_id = self.findAccountID(account_number)
-            if not account_id:
-                logging.error(f"Account {account_number} not found. Import cancelled.")
-                return
+        if account_id == 0:
+            logging.error(f"Account {account_number} not found. Import cancelled.")
+            return
         for index, row in deals_info.iterrows():
             if row[QUIK_DEAL_TYPE] == QUIK_BUY:
                 qty = int(row[QUIK_QTY])
