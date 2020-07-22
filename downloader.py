@@ -13,9 +13,9 @@ from UI.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from constants import *
 
 
-#################################################################################################################
+# ===================================================================================================================
 # Function downlaod URL and return it content as string or empty string if site returns error
-#################################################################################################################
+# ===================================================================================================================
 def get_web_data(url):
     response = requests.get(url)
     if response.status_code == 200:
@@ -25,9 +25,9 @@ def get_web_data(url):
         return ''
 
 
-#################################################################################################################
+# ===================================================================================================================
 # UI dialog class
-#################################################################################################################
+# ===================================================================================================================
 class QuotesUpdateDialog(QDialog, Ui_UpdateQuotesDlg):
     def __init__(self):
         QDialog.__init__(self)
@@ -44,12 +44,14 @@ class QuotesUpdateDialog(QDialog, Ui_UpdateQuotesDlg):
     def getUseProxy(self):
         return self.UseProxyCheck.isChecked()
 
-#################################################################################################################
+
+# ===================================================================================================================
 # Worker class
-#################################################################################################################
+# ===================================================================================================================
 class QuoteDownloader:
     def __init__(self, db):
         self.db = db
+        self.CBR_codes = None
 
     def UpdateQuotes(self, start_timestamp, end_timestamp, use_proxy):
         if use_proxy:
@@ -137,7 +139,8 @@ class QuoteDownloader:
 
     def CBR_DataReader(self, currency_code, start_timestamp, end_timestamp):
         date1 = datetime.fromtimestamp(start_timestamp).strftime('%d/%m/%Y')
-        date2 = datetime.fromtimestamp(end_timestamp + 86400).strftime('%d/%m/%Y')  # Add 1 day as CBR sets rate a day ahead
+        date2 = datetime.fromtimestamp(end_timestamp + 86400).strftime(
+            '%d/%m/%Y')  # Add 1 day as CBR sets rate a day ahead
         code = str(self.CBR_codes.loc[self.CBR_codes["ISO_name"] == currency_code, "CBR_code"].values[0]).strip()
         url = f"http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1={date1}&date_req2={date2}&VAL_NM_RQ={code}"
         xml_root = xml_tree.fromstring(get_web_data(url))
@@ -178,7 +181,8 @@ class QuoteDownloader:
 
         date1 = datetime.fromtimestamp(start_timestamp).strftime('%Y-%m-%d')
         date2 = datetime.fromtimestamp(end_timestamp).strftime('%Y-%m-%d')
-        url = f"http://iss.moex.com/iss/history/engines/{engine}/markets/{market}/boards/{board_id}/securities/{asset_code}.xml?from={date1}&till={date2}"
+        url = f"http://iss.moex.com/iss/history/engines/"\
+              f"{engine}/markets/{market}/boards/{board_id}/securities/{asset_code}.xml?from={date1}&till={date2}"
         xml_root = xml_tree.fromstring(get_web_data(url))
         rows = []
         for node in xml_root:
@@ -216,7 +220,9 @@ class QuoteDownloader:
     def Euronext_DataReader(self, asset_code, isin, start_timestamp, end_timestamp):
         start = int(start_timestamp * 1000)
         end = int(end_timestamp * 1000)
-        url = f"https://euconsumer.euronext.com/nyx_eu_listings/price_chart/download_historical?typefile=csv&layout=vertical&typedate=dmy&separator=point&mic=XPAR&isin={isin}&name={asset_code}&namefile=Price_Data_Historical&from={start}&to={end}&adjusted=1&base=0"
+        url = f"https://euconsumer.euronext.com/nyx_eu_listings/price_chart/download_historical?"\
+              f"typefile=csv&layout=vertical&typedate=dmy&separator=point&mic=XPAR&isin={isin}&name={asset_code}&"\
+              f"namefile=Price_Data_Historical&from={start}&to={end}&adjusted=1&base=0"
         file = StringIO(get_web_data(url))
         data = pd.read_csv(file, header=3)
         data['Date'] = pd.to_datetime(data['Date'], format="%d/%m/%Y")
@@ -239,11 +245,12 @@ class QuoteDownloader:
             assert query.prepare("UPDATE quotes SET quote=:quote WHERE id=:old_id")
             query.bindValue(":old_id", old_id)
         else:
-            assert query.prepare("INSERT INTO quotes(timestamp, asset_id, quote) VALUES (:timestamp, :asset_id, :quote)")
+            assert query.prepare(
+                "INSERT INTO quotes(timestamp, asset_id, quote) VALUES (:timestamp, :asset_id, :quote)")
             query.bindValue(":timestamp", timestamp)
             query.bindValue(":asset_id", asset_id)
         query.bindValue(":quote", quote)
         assert query.exec_()
         self.db.commit()
-        logging.info(f"Quote loaded: {asset_name} @ {datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")
-
+        logging.info(
+            f"Quote loaded: {asset_name} @ {datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")

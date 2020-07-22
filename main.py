@@ -12,7 +12,7 @@ if __name__ == "__main__":
     # app.setFont(font)
 
     window = MainWindow()
-    #window.showMaximized()
+    # window.showMaximized()
     window.show()
 
     sys.exit(app.exec_())

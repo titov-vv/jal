@@ -29,6 +29,7 @@ QUIK_FEE2 = 'Комиссия за ИТС'
 QUIK_FEE3 = 'Комиссия за организацию торговли'
 QUIK_FEE4 = 'Клиринговая комиссия'
 
+
 def convert_sum(val):
     val = val.replace(' ', '')
     try:
@@ -37,11 +38,12 @@ def convert_sum(val):
         res = 0
     return res
 
+
 class StatementLoader:
     def __init__(self, db):
         self.db = db
 
-    def findAccountID(self, accountNumber, accountCurrency = ''):
+    def findAccountID(self, accountNumber, accountCurrency=''):
         query = QSqlQuery(self.db)
         if accountCurrency:
             query.prepare("SELECT a.id FROM accounts AS a "
@@ -68,7 +70,7 @@ class StatementLoader:
             return query.value(0)
         else:
             logging.fatal(f"Asset {symbol} not found")  # TODO need to add new asset if not found
-            assert False   # We shouldn't be here as all assets from report should be added in advance
+            assert False  # We shouldn't be here as all assets from report should be added in advance
 
     def loadIBFlex(self, filename):
         report = parser.parse(filename)
@@ -76,7 +78,8 @@ class StatementLoader:
             self.loadIBStatement(statement)
 
     def loadIBStatement(self, IBstatement):
-        logging.info(f"Load IB Flex-statement for account {IBstatement.accountId} from {IBstatement.fromDate} to {IBstatement.toDate}")
+        logging.info(f"Load IB Flex-statement for account {IBstatement.accountId} "
+                     f"from {IBstatement.fromDate} to {IBstatement.toDate}")
 
         for asset in IBstatement.SecuritiesInfo:
             self.storeIBAsset(asset)
@@ -134,7 +137,8 @@ class StatementLoader:
     def loadIBStockTrade(self, IBtrade):
         account_id = self.findAccountID(IBtrade.accountId, IBtrade.currency)
         if not account_id:
-            logging.error(f"Account {IBtrade.accountId} ({IBtrade.currency}) not found. Skipping trade #{IBtrade.tradeID}")
+            logging.error(
+                f"Account {IBtrade.accountId} ({IBtrade.currency}) not found. Skipping trade #{IBtrade.tradeID}")
             return
         asset_id = self.findAssetID(IBtrade.symbol)
         timestamp = int(IBtrade.dateTime.timestamp())
@@ -201,39 +205,44 @@ class StatementLoader:
         query.bindValue(":price", price)
         assert query.exec_()
         self.db.commit()
-        logging.info(f"Trade #{number} cancelled for account {account_id} asset {asset_id} @{timestamp}, Qty {qty}x{price}")
+        logging.info(
+            f"Trade #{number} cancelled for account {account_id} asset {asset_id} @{timestamp}, Qty {qty}x{price}")
 
     def loadIBCurrencyTrade(self, IBtrade):
         if IBtrade.buySell == BuySell.BUY:
             from_idx = 1
             to_idx = 0
-            to_amount = float(IBtrade.quantity)    # positive value
+            to_amount = float(IBtrade.quantity)  # positive value
             from_amount = float(IBtrade.proceeds)  # already negative value
         elif IBtrade.buySell == BuySell.SELL:
             from_idx = 0
             to_idx = 1
             from_amount = float(IBtrade.quantity)  # already negative value
-            to_amount = float(IBtrade.proceeds)    # positive value
+            to_amount = float(IBtrade.proceeds)  # positive value
         else:
             logging.error(f"Currency transaction of type {IBtrade.buySell} is not implemented")
             return
         currency = IBtrade.symbol.split('.')
         to_account_id = self.findAccountID(IBtrade.accountId, currency[to_idx])
         if not to_account_id:
-            logging.error(f"Account {IBtrade.accountId} ({currency[to_idx]}) not found. Skipping currency exchange transaction #{IBtrade.tradeID}")
+            logging.error(f"Account {IBtrade.accountId} ({currency[to_idx]}) not found. "
+                          f"Skipping currency exchange transaction #{IBtrade.tradeID}")
             return
         from_account_id = self.findAccountID(IBtrade.accountId, currency[from_idx])
         if not from_account_id:
-            logging.error(f"Account {IBtrade.accountId} ({currency[from_idx]}) not found. Skipping currency exchange transaction #{IBtrade.tradeID}")
+            logging.error(f"Account {IBtrade.accountId} ({currency[from_idx]}) not found. "
+                          f"Skipping currency exchange transaction #{IBtrade.tradeID}")
             return
         fee_account_id = self.findAccountID(IBtrade.accountId, IBtrade.ibCommissionCurrency)
         if not fee_account_id:
-            logging.error(f"Account {IBtrade.accountId} ({IBtrade.ibCommissionCurrency}) not found. Skipping currency exchange transaction #{IBtrade.tradeID}")
+            logging.error(f"Account {IBtrade.accountId} ({IBtrade.ibCommissionCurrency}) not found. "
+                          f"Skipping currency exchange transaction #{IBtrade.tradeID}")
             return
         timestamp = int(IBtrade.dateTime.timestamp())
-        fee = float(IBtrade.ibCommission)   # already negative value
+        fee = float(IBtrade.ibCommission)  # already negative value
         note = IBtrade.exchange
-        self.createTransfer(timestamp, from_account_id, from_amount, to_account_id, to_amount, fee_account_id, fee, note)
+        self.createTransfer(timestamp, from_account_id, from_amount, to_account_id, to_amount, fee_account_id, fee,
+                            note)
 
     def createTransfer(self, timestamp, f_acc_id, f_amount, t_acc_id, t_amount, fee_acc_id, fee, note):
         query = QSqlQuery(self.db)
@@ -270,10 +279,11 @@ class StatementLoader:
     def loadIBTransactionTax(self, IBtax):
         account_id = self.findAccountID(IBtax.accountId, IBtax.currency)
         if not account_id:
-            logging.error(f"Account {IBtax.accountId} ({IBtax.currency}) not found. Skipping transaction tax #{IBtax.tradeID}")
+            logging.error(
+                f"Account {IBtax.accountId} ({IBtax.currency}) not found. Skipping transaction tax #{IBtax.tradeID}")
             return
         timestamp = int(datetime.combine(IBtax.date, datetime.min.time()).timestamp())
-        amount = float(IBtax.taxAmount) # value is negative already
+        amount = float(IBtax.taxAmount)  # value is negative already
         note = f"{IBtax.symbol} ({IBtax.description}) - {IBtax.taxDescription} (#{IBtax.tradeId})"
 
         query = QSqlQuery(self.db)
@@ -306,14 +316,17 @@ class StatementLoader:
     def loadIBCorpAction(self, IBCorpAction):
         if IBCorpAction.code == Code.CANCEL:
             logging.warning("*** MANUAL ACTION REQUIRED ***")
-            logging.warning(f"Corporate action cancelled {IBCorpAction.type} for account {IBCorpAction.accountId} ({IBCorpAction.currency}): {IBCorpAction.actionDescription}")
-            logging.warning(f"@{IBCorpAction.dateTime} for {IBCorpAction.symbol}: Qty {IBCorpAction.quantity}, Value {IBCorpAction.value}, Type {IBCorpAction.type}, Code {IBCorpAction.code}")
+            logging.warning(f"Corporate action cancelled {IBCorpAction.type} for account "
+                            f"{IBCorpAction.accountId} ({IBCorpAction.currency}): {IBCorpAction.actionDescription}")
+            logging.warning(f"@{IBCorpAction.dateTime} for {IBCorpAction.symbol}: Qty {IBCorpAction.quantity}, "
+                            f"Value {IBCorpAction.value}, Type {IBCorpAction.type}, Code {IBCorpAction.code}")
             return
-        if IBCorpAction.assetCategory == AssetClass.STOCK and (IBCorpAction.type == Reorg.MERGER or IBCorpAction.type == Reorg.SPINOFF):
+        if IBCorpAction.assetCategory == AssetClass.STOCK and (
+                IBCorpAction.type == Reorg.MERGER or IBCorpAction.type == Reorg.SPINOFF):
             account_id = self.findAccountID(IBCorpAction.accountId, IBCorpAction.currency)
             if not account_id:
-                logging.error(
-                    f"Account {IBCorpAction.accountId} ({IBCorpAction.currency}) not found. Skipping trade #{IBCorpAction.transactionID}")
+                logging.error(f"Account {IBCorpAction.accountId} ({IBCorpAction.currency}) not found. "
+                              f"Skipping trade #{IBCorpAction.transactionID}")
                 return
             asset_id = self.findAssetID(IBCorpAction.symbol)
             timestamp = int(IBCorpAction.dateTime.timestamp())
@@ -325,8 +338,10 @@ class StatementLoader:
             qty = IBCorpAction.quantity
             self.createTrade(account_id, asset_id, timestamp, settlement, number, qty, 0, 0)
         logging.warning("*** MANUAL ACTION REQUIRED ***")
-        logging.warning(f"Corporate action {IBCorpAction.type} for account {IBCorpAction.accountId} ({IBCorpAction.currency}): {IBCorpAction.actionDescription}")
-        logging.warning(f"@{IBCorpAction.dateTime} for {IBCorpAction.symbol}: Qty {IBCorpAction.quantity}, Value {IBCorpAction.value}, Type {IBCorpAction.type}, Code {IBCorpAction.code}")
+        logging.warning(f"Corporate action {IBCorpAction.type} for account "
+                        f"{IBCorpAction.accountId} ({IBCorpAction.currency}): {IBCorpAction.actionDescription}")
+        logging.warning(f"@{IBCorpAction.dateTime} for {IBCorpAction.symbol}: Qty {IBCorpAction.quantity}, "
+                        f"Value {IBCorpAction.value}, Type {IBCorpAction.type}, Code {IBCorpAction.code}")
 
     def loadIBDividend(self, IBdividend):
         if IBdividend.assetCategory != AssetClass.STOCK:
@@ -334,7 +349,8 @@ class StatementLoader:
             return
         account_id = self.findAccountID(IBdividend.accountId, IBdividend.currency)
         if not account_id:
-            logging.error(f"Account {IBdividend.accountId} ({IBdividend.currency}) not found. Skipping dividend #{IBdividend.transactionID}")
+            logging.error(f"Account {IBdividend.accountId} ({IBdividend.currency}) not found. "
+                          f"Skipping dividend #{IBdividend.transactionID}")
             return
         asset_id = self.findAssetID(IBdividend.symbol)
         timestamp = int(IBdividend.dateTime.timestamp())
@@ -348,8 +364,8 @@ class StatementLoader:
             return
         account_id = self.findAccountID(IBtax.accountId, IBtax.currency)
         if not account_id:
-            logging.error(
-                f"Account {IBtax.accountId} ({IBtax.currency}) not found. Skipping withholding tax #{IBtax.transactionID}")
+            logging.error(f"Account {IBtax.accountId} ({IBtax.currency}) not found. "
+                          f"Skipping withholding tax #{IBtax.transactionID}")
             return
         asset_id = self.findAssetID(IBtax.symbol)
         timestamp = int(IBtax.dateTime.timestamp())
@@ -360,12 +376,13 @@ class StatementLoader:
     def loadIBFee(self, IBfee):
         account_id = self.findAccountID(IBfee.accountId, IBfee.currency)
         if not account_id:
-            logging.error(f"Account {IBfee.accountId} ({IBfee.currency}) not found. Skipping transaction tax #{IBfee.transactionID}")
+            logging.error(f"Account {IBfee.accountId} ({IBfee.currency}) not found. "
+                          f"Skipping transaction tax #{IBfee.transactionID}")
             return
         timestamp = int(IBfee.dateTime.timestamp())
         amount = float(IBfee.amount)  # value may be both positive and negative
         note = IBfee.description
-        query=QSqlQuery(self.db)
+        query = QSqlQuery(self.db)
         query.prepare("INSERT INTO actions (timestamp, account_id, peer_id) "
                       "VALUES (:timestamp, :account_id, (SELECT organization_id FROM accounts WHERE id=:account_id))")
         query.bindValue(":timestamp", timestamp)
@@ -434,7 +451,7 @@ class StatementLoader:
         old_tax = query.value(1)
         query.prepare("UPDATE dividends SET sum_tax=:tax, note_tax=:note WHERE id=:dividend_id")
         query.bindValue(":dividend_id", dividend_id)
-        query.bindValue(":tax", old_tax+amount)
+        query.bindValue(":tax", old_tax + amount)
         query.bindValue(":note", country_code + " tax")
         assert query.exec_()
         self.db.commit()
@@ -444,8 +461,8 @@ class StatementLoader:
         account_id = 0
         account_number = ''
         data = pandas.read_html(filename, encoding='cp1251',
-                                converters = {QUIK_QTY: convert_sum, QUIK_AMOUNT: convert_sum,
-                                              QUIK_PRICE: convert_sum, QUIK_COUPON: convert_sum})
+                                converters={QUIK_QTY: convert_sum, QUIK_AMOUNT: convert_sum,
+                                            QUIK_PRICE: convert_sum, QUIK_COUPON: convert_sum})
         report_info = data[0]
         deals_info = data[1]
         parts = re.match(CLIENT_PATTERN, report_info[0][2])
@@ -468,7 +485,7 @@ class StatementLoader:
             number = row[QUIK_DEAL_NUMBER]
             price = row[QUIK_PRICE]
             amount = row[QUIK_AMOUNT]
-            lot_size = math.pow(10, round(math.log10(amount / (price*abs(qty)))))
+            lot_size = math.pow(10, round(math.log10(amount / (price * abs(qty)))))
             qty = qty * lot_size
             fee = float(row[QUIK_FEE1]) + float(row[QUIK_FEE2]) + float(row[QUIK_FEE3]) + float(row[QUIK_FEE4])
             coupon = float(row[QUIK_COUPON])

@@ -12,6 +12,8 @@ class AssetChoiceDlg(QDialog, Ui_AssetChoiceDlg):
     def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)
+        self.db = None
+        self.Model = None
         self.asset_id = 0
         self.type_id = 0
 
@@ -109,6 +111,7 @@ class AssetChoiceDlg(QDialog, Ui_AssetChoiceDlg):
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)
 
+
 ######################################################################################################################
 # The class itself is empty but it activates editors to use lookup tables
 ######################################################################################################################
@@ -116,12 +119,14 @@ class ActiveDelegate(QSqlRelationalDelegate):
     def __init__(self, parent=None):
         QSqlRelationalDelegate.__init__(self, parent)
 
+
 ######################################################################################################################
 # Full fledged selector for assets
 ######################################################################################################################
 class AssetSelector(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
+        self.completer = None
         self.p_asset_id = 0
 
         self.layout = QHBoxLayout()
@@ -189,12 +194,14 @@ class AssetSelector(QWidget):
         model = index.model()
         self.asset_id = model.data(model.index(index.row(), 0), Qt.DisplayRole)
 
+
 ######################################################################################################################
 # More compact selector to choose currency only
 ######################################################################################################################
 class CurrencySelector(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
+        self.completer = None
         self.p_asset_id = 0
 
         self.layout = QHBoxLayout()

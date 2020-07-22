@@ -11,6 +11,8 @@ class TagChoiceDlg(QDialog, Ui_TagChoiceDlg):
     def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)
+        self.db = None
+        self.Model = None
         self.tag_id = 0
         self.search_text = ""
 
@@ -90,9 +92,11 @@ class TagChoiceDlg(QDialog, Ui_TagChoiceDlg):
         self.search_text = self.SearchString.text()
         self.setFilter()
 
+
 class TagSelector(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
+        self.completer = None
         self.p_tag_id = 0
 
         self.layout = QHBoxLayout()

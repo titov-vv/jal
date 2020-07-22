@@ -4,27 +4,28 @@ from datetime import datetime
 from PySide2.QtCore import QSize, Qt
 from PySide2.QtGui import QTextDocument, QFont, QColor
 
-########################################
+# ===================================================================================================================
 # FIELD NUMBERS
-FIELD_TYPE          = 0
-FIELD_ID            = 1
-FIELD_TIMESTAMP     = 2
-FIELD_ACCOUNT_ID    = 3
-FIELD_ACCOUNT       = 4
-FIELD_PEER_NUMBER   = 5
-FIELD_ASSET_ID     = 6
-FIELD_ASSET        = 7
-FIELD_ASSET_NAME   = 8
-FIELD_NOTE          = 9
-FIELD_NOTE2         = 10
-FIELD_AMOUNT        = 11
-FIELD_QTY_TRID      = 12
-FIELD_PRICE         = 13
-FIELD_FEE_TAX       = 14
-FIELD_TOTAL_AMOUNT  = 15
-FIELD_TOTAL_QTY     = 16
-FIELD_CURRENCY      = 17
-FIELD_RECONCILED    = 18
+FIELD_TYPE = 0
+FIELD_ID = 1
+FIELD_TIMESTAMP = 2
+FIELD_ACCOUNT_ID = 3
+FIELD_ACCOUNT = 4
+FIELD_PEER_NUMBER = 5
+FIELD_ASSET_ID = 6
+FIELD_ASSET = 7
+FIELD_ASSET_NAME = 8
+FIELD_NOTE = 9
+FIELD_NOTE2 = 10
+FIELD_AMOUNT = 11
+FIELD_QTY_TRID = 12
+FIELD_PRICE = 13
+FIELD_FEE_TAX = 14
+FIELD_TOTAL_AMOUNT = 15
+FIELD_TOTAL_QTY = 16
+FIELD_CURRENCY = 17
+FIELD_RECONCILED = 18
+
 
 class OperationsTypeDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
@@ -91,6 +92,7 @@ class OperationsTypeDelegate(QStyledItemDelegate):
             h = h * 2
         return QSize(w, h)
 
+
 class OperationsTimestampDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         QStyledItemDelegate.__init__(self, parent)
@@ -109,6 +111,7 @@ class OperationsTimestampDelegate(QStyledItemDelegate):
             text = text + f"\n# {number}"
         painter.drawText(option.rect, Qt.AlignLeft, text)
         painter.restore()
+
 
 class OperationsAccountDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
@@ -139,6 +142,7 @@ class OperationsAccountDelegate(QStyledItemDelegate):
             assert False
         painter.drawText(option.rect, Qt.AlignLeft, text)
         painter.restore()
+
 
 class OperationsNotesDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
@@ -171,6 +175,7 @@ class OperationsNotesDelegate(QStyledItemDelegate):
             assert False
         painter.drawText(option.rect, Qt.AlignLeft, text)
         painter.restore()
+
 
 class OperationsAmountDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
@@ -209,12 +214,12 @@ class OperationsAmountDelegate(QStyledItemDelegate):
             painter.drawText(option.rect, Qt.AlignRight, text)
         elif (transaction_type == TRANSACTION_DIVIDEND):
             text = f"{amount:+,.2f}"
-            rect.setHeight(H/2)
+            rect.setHeight(H / 2)
             pen.setColor(DARK_GREEN_COLOR)
             painter.setPen(pen)
             painter.drawText(rect, Qt.AlignRight, text)
             text = f"-{tax:,.2f}"
-            rect.moveTop(Y+H/2)
+            rect.moveTop(Y + H / 2)
             pen.setColor(DARK_RED_COLOR)
             painter.setPen(pen)
             painter.drawText(rect, Qt.AlignRight, text)
@@ -227,6 +232,7 @@ class OperationsAmountDelegate(QStyledItemDelegate):
             painter.setPen(pen)
             painter.drawText(option.rect, Qt.AlignRight, text)
         painter.restore()
+
 
 class OperationsTotalsDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
@@ -254,6 +260,7 @@ class OperationsTotalsDelegate(QStyledItemDelegate):
 
         painter.drawText(option.rect, Qt.AlignRight, text)
         painter.restore()
+
 
 class OperationsCurrencyDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):

@@ -11,6 +11,8 @@ class PeerChoiceDlg(QDialog, Ui_PeerChoiceDlg):
     def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)
+        self.db = None
+        self.Model = None
         self.peer_id = 0
         self.last_parent = 0
         self.parent = 0
@@ -68,7 +70,7 @@ class PeerChoiceDlg(QDialog, Ui_PeerChoiceDlg):
             self.parent = self.PeersList.model().record(selected_row).value(0)
             self.last_parent = self.PeersList.model().record(selected_row).value(1)
             if self.search_text:
-                self.SearchString.setText("")   # it will also call self.setFilter()
+                self.SearchString.setText("")  # it will also call self.setFilter()
             else:
                 self.setFilter()
 
@@ -83,7 +85,8 @@ class PeerChoiceDlg(QDialog, Ui_PeerChoiceDlg):
         if self.search_text:  # list filtered by search string
             return
         query = QSqlQuery(self.PeersList.model().database())
-        query.prepare("SELECT a2.pid FROM agents AS a1 LEFT JOIN agents AS a2 ON a1.pid=a2.id WHERE a1.id = :current_id")
+        query.prepare(
+            "SELECT a2.pid FROM agents AS a1 LEFT JOIN agents AS a2 ON a1.pid=a2.id WHERE a1.id = :current_id")
         current_id = self.PeersList.model().record(0).value(0)
         if current_id is None:
             pid = self.last_parent
@@ -133,9 +136,11 @@ class PeerChoiceDlg(QDialog, Ui_PeerChoiceDlg):
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)
 
+
 class PeerSelector(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
+        self.completer = None
         self.p_peer_id = 0
 
         self.layout = QHBoxLayout()
@@ -194,9 +199,10 @@ class PeerSelector(QWidget):
         model = index.model()
         self.peer_id = model.data(model.index(index.row(), 0), Qt.DisplayRole)
 
-####################################################################################################################3
+
+# ===================================================================================================================
 # Delegate to display custom fields
-####################################################################################################################3
+# ===================================================================================================================
 class PeerDelegate(QSqlRelationalDelegate):
     def __init__(self, parent=None):
         QSqlRelationalDelegate.__init__(self, parent)

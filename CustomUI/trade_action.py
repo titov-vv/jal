@@ -3,9 +3,11 @@ from PySide2.QtWidgets import QWidget, QHBoxLayout, QLabel
 from PySide2.QtCore import Signal, Property
 from PySide2.QtGui import QPalette
 
+
 class TradeAction(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
+        self.db = None
         self.p_type = 0
 
         self.layout = QHBoxLayout()
@@ -47,5 +49,3 @@ class TradeAction(QWidget):
         pass
 
     corp_action_type = Property(int, getType, setType, notify=changed, user=True)
-
-

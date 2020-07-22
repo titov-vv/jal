@@ -5,10 +5,13 @@ import sqlite3
 import pandas as pd
 import math
 import logging
-#------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
 backup_list = ["settings", "tags", "categories", "agents", "assets", "accounts", "corp_actions",
                "dividends", "trades", "actions", "action_details", "transfers", "transfer_notes", "quotes"]
-#------------------------------------------------------------------------------
+
+
+# ------------------------------------------------------------------------------
 def MakeBackup(db_file, backup_path):
     db = sqlite3.connect(db_file)
 
@@ -18,6 +21,7 @@ def MakeBackup(db_file, backup_path):
 
     db.close()
     logging.info("Backup saved in: " + backup_path)
+
 
 def RestoreBackup(db_file, restore_path):
     db = sqlite3.connect(db_file)
@@ -37,7 +41,7 @@ def RestoreBackup(db_file, restore_path):
     for table in backup_list:
         data = pd.read_csv(f"{restore_path}/{table}.csv", sep='|')
         for column in data:
-            if data[column].dtype == 'float64':   # Correct possible mistakes due to float data type
+            if data[column].dtype == 'float64':  # Correct possible mistakes due to float data type
                 if table == 'transfers' and column == 'rate':  # But rate is calculated value with arbitrary precision
                     continue
                 data[column] = data[column].round(int(-math.log10(CALC_TOLERANCE)))
@@ -46,6 +50,7 @@ def RestoreBackup(db_file, restore_path):
     db.commit()
     db.close()
     logging.info("Backup restored from: " + restore_path + " into " + db_file)
+
 
 def loadDbFromSQL(db_file, sql_file):
     logging.info("Load SQL-script: ", sql_file)
@@ -59,4 +64,3 @@ def loadDbFromSQL(db_file, sql_file):
     db.commit()
     db.close()
     logging.info("DB script loaded")
-

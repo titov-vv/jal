@@ -4,6 +4,7 @@ from PySide2.QtSql import QSqlRelationalDelegate
 from CustomUI.category_select import CategorySelector
 from CustomUI.tag_select import TagSelector
 
+
 class ActionDelegate(QSqlRelationalDelegate):
     def __init__(self, parent=None):
         QSqlRelationalDelegate.__init__(self, parent)
@@ -20,6 +21,7 @@ class ActionDelegate(QSqlRelationalDelegate):
             model.setData(index, timestamp)
         else:
             QSqlRelationalDelegate.setModelData(self, editor, model, index)
+
 
 # This also helps to display Drop-down list for lookup fields
 class ActionDetailDelegate(QSqlRelationalDelegate):

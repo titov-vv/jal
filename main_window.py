@@ -30,12 +30,13 @@ from trade_delegate import TradeSqlDelegate
 from transfer_delegate import TransferSqlDelegate
 
 
-#-----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------
 # model - QSqlTableModel where titles should be set for given columns
 # column_title_list - list of column_name/header_title pairs
 def ModelSetColumnHeaders(model, column_title_list):
     for column_title in column_title_list:
         model.setHeaderData(model.fieldIndex(column_title[0]), Qt.Horizontal, column_title[1])
+
 
 # view - QTableView where columns will be hidden
 # columns_list - list of column names
@@ -43,11 +44,13 @@ def HideViewColumns(view, columns_list):
     for column in columns_list:
         view.setColumnHidden(view.model().fieldIndex(column), True)
 
+
 # view - QTableView where column width should be set
 # column_width_list - list of column_name/width pairs
 def ViewSetColumnWidths(view, column_width_list):
     for column_width in column_width_list:
         view.setColumnWidth(view.model().fieldIndex(column_width[0]), column_width[1])
+
 
 # This function gets a list of column_name/widget/width/validator pairs and:
 # 1) adds mapping between model and widget, 2) sets correct widget width, 3) set validator for widget
@@ -56,13 +59,15 @@ def ViewSetColumnWidths(view, column_width_list):
 # column_widget_list - list of column_name/widget/width pairs that should be mapped
 def AddAndConfigureMappings(model, mapper, column_widget_list):
     for column_widget in column_widget_list:
-        mapper.addMapping(column_widget[1], model.fieldIndex(column_widget[0]))  # if no USER property QByteArray().setRawData("account_id", 10))
+        mapper.addMapping(column_widget[1], model.fieldIndex(
+            column_widget[0]))  # if no USER property QByteArray().setRawData("account_id", 10))
         if column_widget[2]:
             column_widget[1].setFixedWidth(column_widget[2])
         if column_widget[3]:
             column_widget[1].setValidator(column_widget[3])
 
-#-----------------------------------------------------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------------------------------------------------
 # a simple VLine, like the one you get from designer
 class VLine(QFrame):
     def __init__(self):
@@ -70,7 +75,8 @@ class VLine(QFrame):
         self.setFrameShape(QFrame.VLine)
         self.setFrameShadow(QFrame.Sunken)
 
-#-----------------------------------------------------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------------------------------------------------
 
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def __init__(self):
@@ -93,8 +99,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         if query.value(0) != TARGET_SCHEMA:
             self.db.close()
             QMessageBox().critical(self, self.tr("Database version mismatch"),
-                                  self.tr("Database schema version is wrong"),
-                                  QMessageBox.Ok)
+                                   self.tr("Database schema version is wrong"),
+                                   QMessageBox.Ok)
             QMetaObject.invokeMethod(self, "close", Qt.QueuedConnection)
             return
 
@@ -113,6 +119,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.holdings_date = QtCore.QDateTime.currentSecsSinceEpoch()
 
         self.operations_since_timestamp = 0
+        self.current_index = None
 
         self.ConfigureUI()
         self.UpdateBalances()
@@ -139,6 +146,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         font.setBold(True)
         view.horizontalHeader().setFont(font)
 
+    # noinspection PyAttributeOutsideInit
     def ConfigureUI(self):
         # Customize Status bar and logs
         self.NewLogEventLbl = QLabel()
@@ -170,7 +178,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.HoldingsCurrencyCombo.setCurrentIndex(self.HoldingsCurrencyCombo.findText("RUB"))
 
         self.BalancesModel = self.UseSqlTable("balances", [("account_name", "Account"), ("balance", "Balance"),
-                                                   ("currency_name", ""), ("balance_adj", "Balance, RUB")])
+                                                           ("currency_name", ""), ("balance_adj", "Balance, RUB")])
         self.ConfigureTableView(self.BalancesTableView, self.BalancesModel,
                                 ["level1", "level2", "days_unreconciled", "active"],
                                 [("account_name", 75), ("balance", 100), ("currency_name", 35), ("balance_adj", 110)],
@@ -189,21 +197,30 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.ChooseAccountBtn.init_DB(self.db)
 
-        self.OperationsModel = self.UseSqlTable("all_operations", [("type", " "), ("timestamp", "Timestamp"), ("account", "Account"),
-                                                     ("note", "Notes"), ("amount", "Amount"), ("t_amount", "Balance"),
-                                                     ("currency", "Currency")])
+        self.OperationsModel = self.UseSqlTable("all_operations",
+                                                [("type", " "), ("timestamp", "Timestamp"), ("account", "Account"),
+                                                 ("note", "Notes"), ("amount", "Amount"), ("t_amount", "Balance"),
+                                                 ("currency", "Currency")])
         self.ConfigureTableView(self.OperationsTableView, self.OperationsModel,
                                 ["id", "account_id", "num_peer", "asset_id", "asset", "asset_name",
                                  "note2", "qty_trid", "price", "fee_tax", "t_qty", "reconciled"],
-                                [("type", 10), ("timestamp", widthForTimestampEdit * 0.7), ("account", 300), ("note", 300)],
+                                [("type", 10), ("timestamp", widthForTimestampEdit * 0.7), ("account", 300),
+                                 ("note", 300)],
                                 "note")
-        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("type"), OperationsTypeDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("timestamp"), OperationsTimestampDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("account"), OperationsAccountDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("note"), OperationsNotesDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("amount"), OperationsAmountDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("t_amount"), OperationsTotalsDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("currency"), OperationsCurrencyDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("type"),
+                                                          OperationsTypeDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("timestamp"),
+                                                          OperationsTimestampDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("account"),
+                                                          OperationsAccountDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("note"),
+                                                          OperationsNotesDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("amount"),
+                                                          OperationsAmountDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("t_amount"),
+                                                          OperationsTotalsDelegate(self.OperationsTableView))
+        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("currency"),
+                                                          OperationsCurrencyDelegate(self.OperationsTableView))
         self.OperationsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
         self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.OperationsTableView.setWordWrap(False)
@@ -439,7 +456,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             current_frontier = 0
 
         rebuild_dialog = RebuildDialog(current_frontier)
-        rebuild_dialog.setGeometry(self.x()+64, self.y()+64, rebuild_dialog.width(), rebuild_dialog.height())
+        rebuild_dialog.setGeometry(self.x() + 64, self.y() + 64, rebuild_dialog.width(), rebuild_dialog.height())
         if rebuild_dialog.exec_():
             rebuild_date = rebuild_dialog.getTimestamp()
             self.ledger.MakeFromTimestamp(rebuild_date)
@@ -514,7 +531,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             elif (operation_type == TRANSACTION_TRADE):
                 self.OperationsTabs.setCurrentIndex(TAB_TRADE)
                 self.TradesModel.setFilter(f"trades.id = {operation_id}")
-                self.TradesDataMapper.setCurrentModelIndex(self.TradesDataMapper.model().index(0,0))
+                self.TradesDataMapper.setCurrentModelIndex(self.TradesDataMapper.model().index(0, 0))
             elif (operation_type == TRANSACTION_TRANSFER):
                 self.OperationsTabs.setCurrentIndex(TAB_TRANSFER)
                 self.TransfersModel.setFilter(f"transfers_combined.id = {operation_id}")
@@ -593,22 +610,24 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             if operations_filter == "":
                 operations_filter = "all_operations.account_id = {}".format(self.ChooseAccountBtn.account_id)
             else:
-                operations_filter = operations_filter + " AND all_operations.account_id = {}".format(self.ChooseAccountBtn.account_id)
+                operations_filter = operations_filter + " AND all_operations.account_id = {}".format(
+                    self.ChooseAccountBtn.account_id)
 
         if self.SearchString.text():
-            operations_filter = operations_filter + " AND (num_peer LIKE '%{}%' OR asset LIKE '%{}%')".format(self.SearchString.text(), self.SearchString.text())
+            operations_filter = operations_filter + " AND (num_peer LIKE '%{}%' OR asset LIKE '%{}%')".format(
+                self.SearchString.text(), self.SearchString.text())
 
         self.OperationsModel.setFilter(operations_filter)
 
     @Slot()
     def OnOperationsRangeChange(self, range_index):
-        if (range_index == 0): # last week
+        if (range_index == 0):  # last week
             self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 604800
-        elif (range_index == 1): # last month
+        elif (range_index == 1):  # last month
             self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 2678400
-        elif (range_index == 2): # last half-year
+        elif (range_index == 2):  # last half-year
             self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 15811200
-        elif (range_index == 3): # last year
+        elif (range_index == 3):  # last year
             self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 31536000
         else:
             self.operations_since_timestamp = 0
@@ -680,8 +699,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def DeleteOperation(self):
         if QMessageBox().warning(self, self.tr("Confirmation"),
-                                      self.tr("Are you sure to delete this transaction?"),
-                                      QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
+                                 self.tr("Are you sure to delete this transaction?"),
+                                 QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
             return
         index = self.OperationsTableView.currentIndex()
         operation_type = self.OperationsModel.data(self.OperationsModel.index(index.row(), 0))
@@ -781,7 +800,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             if not self.ActionsModel.submitAll():
                 logging.fatal(self.tr("Action submit failed: ") + self.ActionDetailsModel.lastError().text())
                 return
-            if pid == 0:        # we have saved new action record
+            if pid == 0:  # we have saved new action record
                 pid = self.ActionsModel.query().lastInsertId()
             for row in range(self.ActionDetailsModel.rowCount()):
                 self.ActionDetailsModel.setData(self.ActionDetailsModel.index(row, 1), pid)
@@ -791,13 +810,15 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         elif (tab2save == TAB_TRANSFER):
             record = self.TransfersModel.record(0)
             note = record.value(self.TransfersModel.fieldIndex("note"))
-            if not note:                           # If we don't have note - set it to NULL value to fire DB trigger
+            if not note:  # If we don't have note - set it to NULL value to fire DB trigger
                 self.TransfersModel.setData(self.TransfersModel.index(0, self.TransfersModel.fieldIndex("note")), None)
             fee_amount = record.value(self.TransfersModel.fieldIndex("fee_amount"))
             if not fee_amount:
                 fee_amount = 0
-            if abs(float(fee_amount)) < CALC_TOLERANCE:   # If we don't have fee - set Fee Account to NULL to fire DB trigger
-                self.TransfersModel.setData(self.TransfersModel.index(0, self.TransfersModel.fieldIndex("fee_acc_id")), None)
+            if abs(float(
+                    fee_amount)) < CALC_TOLERANCE:  # If we don't have fee - set Fee Account to NULL to fire DB trigger
+                self.TransfersModel.setData(self.TransfersModel.index(0, self.TransfersModel.fieldIndex("fee_acc_id")),
+                                            None)
             if not self.TransfersModel.submitAll():
                 logging.fatal(self.tr("Transfer submit failed: ") + self.TransfersModel.lastError().text())
                 return
@@ -857,7 +878,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         current_frontier = query.value(0)
         if current_frontier == '':
             current_frontier = 0
-        if (QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - current_frontier) > 1296000: # if we have less then 15 days unreconciled
+        # ask for confirmation if we have less then 15 days unreconciled
+        if (QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - current_frontier) > 1296000:
             if QMessageBox().warning(self, self.tr("Confirmation"),
                                      self.tr("More than 2 weeks require rebuild. Do you want to do it right now?"),
                                      QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
@@ -917,13 +939,15 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         update_dialog = QuotesUpdateDialog()
         update_dialog.setGeometry(self.x() + 64, self.y() + 64, update_dialog.width(), update_dialog.height())
         if update_dialog.exec_():
-            self.downloader.UpdateQuotes(update_dialog.getStartDate(), update_dialog.getEndDate(), update_dialog.getUseProxy())
+            self.downloader.UpdateQuotes(update_dialog.getStartDate(), update_dialog.getEndDate(),
+                                         update_dialog.getUseProxy())
             self.StatusBar.showMessage("Quotes download completed", timeout=60)
 
     @Slot()
     def loadReportIBKR(self):
-        report_file, active_filter = QFileDialog.getOpenFileName(self, self.tr("Select Interactive Brokers Flex-query to import"), ".",
-                                                           self.tr("IBKR flex-query (*.xml);;Quik HTML-report (*.htm)"))
+        report_file, active_filter = \
+            QFileDialog.getOpenFileName(self, self.tr("Select Interactive Brokers Flex-query to import"), ".",
+                                        self.tr("IBKR flex-query (*.xml);;Quik HTML-report (*.htm)"))
         if report_file:
             report_loader = StatementLoader(self.db)
             if active_filter == self.tr("IBKR flex-query (*.xml)"):
@@ -963,7 +987,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def ExportTaxForms(self):
         tax_export_dialog = TaxExportDialog(self.db)
-        tax_export_dialog.setGeometry(self.x() + 64, self.y() + 64, tax_export_dialog.width(), tax_export_dialog.height())
+        tax_export_dialog.setGeometry(self.x() + 64, self.y() + 64, tax_export_dialog.width(),
+                                      tax_export_dialog.height())
         if tax_export_dialog.exec_():
             taxes = TaxesRus(self.db)
             taxes.save2file(tax_export_dialog.filename, tax_export_dialog.year, tax_export_dialog.account)

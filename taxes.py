@@ -6,6 +6,7 @@ from PySide2.QtCore import Property, Slot
 from PySide2.QtSql import QSqlQuery
 from UI.ui_tax_export_dlg import Ui_TaxExportDlg
 
+
 class TaxExportDialog(QDialog, Ui_TaxExportDlg):
     def __init__(self, db):
         QDialog.__init__(self)
@@ -36,13 +37,14 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
     filename = Property(int, fget=getFilename)
     account = Property(int, fget=getAccount)
 
+
 class TaxesRus:
     def __init__(self, db):
         self.db = db
 
     def save2file(self, taxes_file, year, account_id):
         year_begin = int(time.mktime(datetime.datetime.strptime(f"{year}", "%Y").timetuple()))
-        year_end = int(time.mktime(datetime.datetime.strptime(f"{year+1}", "%Y").timetuple()))
+        year_end = int(time.mktime(datetime.datetime.strptime(f"{year + 1}", "%Y").timetuple()))
 
         workbook = xlsxwriter.Workbook(filename=taxes_file)
         title_cell = workbook.add_format({'bold': True})
@@ -62,9 +64,9 @@ class TaxesRus:
                                           'align': 'center',
                                           'valign': 'vcenter'})
         number_even = workbook.add_format({'border': 1,
-                                          'align': 'center',
-                                          'valign': 'vcenter',
-                                          'bg_color': '#C0C0C0'})
+                                           'align': 'center',
+                                           'valign': 'vcenter',
+                                           'bg_color': '#C0C0C0'})
         number2_odd = workbook.add_format({'num_format': '#,###,##0.00',
                                            'border': 1,
                                            'valign': 'vcenter'})
@@ -159,7 +161,7 @@ class TaxesRus:
         sheet.write(7, 8, "Налок к уплате, RUB", formats['header'])
         sheet.set_column(4, 8, 12)
         for col in range(9):
-            sheet.write(8, col, f"({col+1})", formats['header'])  # Put column numbers for reference
+            sheet.write(8, col, f"({col + 1})", formats['header'])  # Put column numbers for reference
         row = 9
         amount_rub_sum = 0
         amount_usd_sum = 0
@@ -307,7 +309,7 @@ class TaxesRus:
         sheet.write(8, 13, "Расход, RUB", formats['header'])
         sheet.write(8, 14, "Финансовый результат, RUB", formats['header'])
         for col in range(15):
-            sheet.write(9, col, f"({col+1})", formats['header'])  # Put column numbers for reference
+            sheet.write(9, col, f"({col + 1})", formats['header'])  # Put column numbers for reference
         start_row = 10
         data_row = 0
         income_sum = 0
@@ -337,16 +339,16 @@ class TaxesRus:
             income = c_amount_rub
             spending = o_amount_rub + o_fee_rub + c_fee_rub
 
-            sheet.merge_range(row, 0, row+1, 0, query.value("symbol"), formats['text' + even_odd])
-            sheet.merge_range(row, 1, row+1, 1, qty, formats['number' + even_odd])
+            sheet.merge_range(row, 0, row + 1, 0, query.value("symbol"), formats['text' + even_odd])
+            sheet.merge_range(row, 1, row + 1, 1, qty, formats['number' + even_odd])
             sheet.write(row, 2, "Покупка", formats['text' + even_odd])
-            sheet.write(row+1, 2, "Продажа", formats['text' + even_odd])
+            sheet.write(row + 1, 2, "Продажа", formats['text' + even_odd])
             sheet.write(row, 3, datetime.datetime.fromtimestamp(query.value("o_date")).strftime('%d.%m.%Y'),
                         formats['text' + even_odd])
-            sheet.write(row+1, 3, datetime.datetime.fromtimestamp(query.value("c_date")).strftime('%d.%m.%Y'),
+            sheet.write(row + 1, 3, datetime.datetime.fromtimestamp(query.value("c_date")).strftime('%d.%m.%Y'),
                         formats['text' + even_odd])
             sheet.write(row, 4, o_fee_rate, formats['number_4' + even_odd])
-            sheet.write(row+1, 4, c_fee_rate, formats['number_4' + even_odd])
+            sheet.write(row + 1, 4, c_fee_rate, formats['number_4' + even_odd])
             sheet.write(row, 5, datetime.datetime.fromtimestamp(query.value("os_date")).strftime('%d.%m.%Y'),
                         formats['text' + even_odd])
             sheet.write(row + 1, 5, datetime.datetime.fromtimestamp(query.value("cs_date")).strftime('%d.%m.%Y'),
@@ -452,4 +454,4 @@ class TaxesRus:
     def prepare_corporate_actions(self, workbook, _account_id, _begin, _end, _formats):
         _query = QSqlQuery(self.db)
         _sheet = workbook.add_worksheet(name="Corp.Actions")
-        #TODO put here report on stock conversions
+        # TODO put here report on stock conversions

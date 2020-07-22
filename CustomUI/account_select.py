@@ -18,6 +18,9 @@ class AccountTypeEditDlg(QDialog, Ui_AccountTypesDlg):
         QDialog.__init__(self)
         self.setupUi(self)
 
+        self.db = None
+        self.Model = None
+
         self.AddAccTypeBtn.clicked.connect(self.OnAdd)
         self.RemoveAccTypeBtn.clicked.connect(self.OnRemove)
         self.CommitBtn.clicked.connect(self.OnCommit)
@@ -67,6 +70,7 @@ class AccountTypeEditDlg(QDialog, Ui_AccountTypesDlg):
         self.AccountTypeList.horizontalHeader().setFont(font)
         self.Model.select()
 
+
 ########################################################################################################################
 #  Account Choice and Edit
 ########################################################################################################################
@@ -75,7 +79,10 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
     def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)
+        self.db = None
+        self.Model = None
         self.account_id = 0
+        self.p_account_name = ''
         self.type_id = 0
         self.active_only = 1
 
@@ -106,7 +113,7 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
         self.Model = QSqlRelationalTableModel(db=self.db)
         self.Model.setTable("accounts")
         self.Model.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        self.Model.setJoinMode(QSqlRelationalTableModel.LeftJoin)   # to work correctly with NULL values in OrgId
+        self.Model.setJoinMode(QSqlRelationalTableModel.LeftJoin)  # to work correctly with NULL values in OrgId
         type_idx = self.Model.fieldIndex("type_id")
         self.Model.setRelation(type_idx, QSqlRelation("account_types", "id", "name"))
         currency_id = self.Model.fieldIndex("currency_id")
@@ -126,7 +133,8 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
         self.AccountsList.setColumnHidden(self.Model.fieldIndex("id"), True)
         self.AccountsList.setColumnHidden(self.Model.fieldIndex("type_id"), True)
         self.AccountsList.setColumnWidth(self.Model.fieldIndex("active"), 32)
-        self.AccountsList.setColumnWidth(self.Model.fieldIndex("reconciled_on"), self.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
+        self.AccountsList.setColumnWidth(self.Model.fieldIndex("reconciled_on"),
+                                         self.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
         self.AccountsList.horizontalHeader().setSectionResizeMode(self.Model.fieldIndex("name"), QHeaderView.Stretch)
         font = self.AccountsList.horizontalHeader().font()
         font.setBold(True)
@@ -179,8 +187,8 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
     @Slot()
     def OnAdd(self):
         new_record = self.AccountsList.model().record()
-        new_record.setValue(1, self.type_id)    # set current type
-        new_record.setValue(4, 1)               # set active
+        new_record.setValue(1, self.type_id)  # set current type
+        new_record.setValue(4, 1)  # set active
         assert self.AccountsList.model().insertRows(0, 1)
         self.AccountsList.model().setRecord(0, new_record)
         self.CommitBtn.setEnabled(True)
@@ -207,6 +215,7 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
         self.Model.revertAll()
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)
+
 
 ########################################################################################################################
 #  UI Button to choose accounts
@@ -259,6 +268,7 @@ class AccountButton(QPushButton):
         self.setText("ALL")
         self.clicked.emit()
 
+
 ########################################################################################################################
 #  Custom UI account Editor
 ########################################################################################################################
@@ -266,6 +276,7 @@ class AccountSelector(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self.p_account_id = 0
+        self.completer = None
 
         self.layout = QHBoxLayout()
         self.layout.setMargin(0)
@@ -324,9 +335,10 @@ class AccountSelector(QWidget):
         model = index.model()
         self.account_id = model.data(model.index(index.row(), 0), Qt.DisplayRole)
 
-####################################################################################################################3
+
+####################################################################################################################
 # Delegate to display custom editors
-####################################################################################################################3
+####################################################################################################################
 class AccountDelegate(QSqlRelationalDelegate):
     def __init__(self, parent=None):
         QSqlRelationalDelegate.__init__(self, parent)
@@ -362,7 +374,7 @@ class AccountDelegate(QSqlRelationalDelegate):
             return False
         # Only for 'active' column
         if event.type() == QEvent.MouseButtonPress:
-            if model.data(index, Qt.DisplayRole):   # Toggle 'active' value - from 1 to 0 and from 0 to 1
+            if model.data(index, Qt.DisplayRole):  # Toggle 'active' value - from 1 to 0 and from 0 to 1
                 model.setData(index, 0)
             else:
                 model.setData(index, 1)

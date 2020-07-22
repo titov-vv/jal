@@ -4,12 +4,14 @@ from PySide2.QtCore import Qt, Signal, Property, Slot
 from PySide2.QtSql import QSqlRelationalDelegate
 from PySide2.QtWidgets import QWidget
 
+
 def formatFloatLong(value):
     if (abs(value - round(value, 2)) >= CALC_TOLERANCE):
         text = str(value)
     else:
         text = f"{value:.2f}"
     return text
+
 
 class OptionGroup(QWidget):
     def __init__(self, parent=None):
@@ -37,7 +39,7 @@ class OptionGroup(QWidget):
         self.ButtonsList.append([button, linked_id])
         button.toggled.connect(self.OnButtonToggle)
 
-#    @Slot
+    #    @Slot
     def OnButtonToggle(self, checked):
         if checked:
             src = self.sender()
@@ -55,7 +57,7 @@ class TradeSqlDelegate(QSqlRelationalDelegate):
             timestamp = index.model().data(index, Qt.EditRole)
             if timestamp:
                 editor.setDateTime(datetime.fromtimestamp(timestamp))
-        elif (index.column() >= 7) and (index.column() <= 11): # price, qty, coupon, fees
+        elif (index.column() >= 7) and (index.column() <= 11):  # price, qty, coupon, fees
             amount = index.model().data(index, Qt.EditRole)
             if amount:
                 editor.setText(formatFloatLong(float(amount)))

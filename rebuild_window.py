@@ -3,6 +3,7 @@ from PySide2.QtWidgets import QDialog
 from PySide2 import QtCore
 from UI.ui_rebuild_window import Ui_ReBuildDialog
 
+
 class RebuildDialog(QDialog, Ui_ReBuildDialog):
     def __init__(self, frontier):
         QDialog.__init__(self)
@@ -19,5 +20,5 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
             return self.frontier
         elif self.DateRadionButton.isChecked():
             return self.CustomDateEdit.dateTime().toSecsSinceEpoch()
-        else: # self.AllRadioButton.isChecked()
+        else:  # self.AllRadioButton.isChecked()
             return 0

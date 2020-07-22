@@ -11,6 +11,8 @@ class CategoryChoiceDlg(QDialog, Ui_CategoryChoiceDlg):
     def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)
+        self.db = None
+        self.Model = None
         self.category_id = 0
         self.last_parent = 0
         self.parent = 0
@@ -68,7 +70,7 @@ class CategoryChoiceDlg(QDialog, Ui_CategoryChoiceDlg):
             self.parent = self.CategoriesList.model().record(selected_row).value(0)
             self.last_parent = self.CategoriesList.model().record(selected_row).value(1)
             if self.search_text:
-                self.SearchString.setText("")   # it will also call self.setFilter()
+                self.SearchString.setText("")  # it will also call self.setFilter()
             else:
                 self.setFilter()
 
@@ -83,7 +85,8 @@ class CategoryChoiceDlg(QDialog, Ui_CategoryChoiceDlg):
         if self.search_text:  # list filtered by search string
             return
         query = QSqlQuery(self.CategoriesList.model().database())
-        query.prepare("SELECT c2.pid FROM categories AS c1 LEFT JOIN categories AS c2 ON c1.pid=c2.id WHERE c1.id = :current_id")
+        query.prepare(
+            "SELECT c2.pid FROM categories AS c1 LEFT JOIN categories AS c2 ON c1.pid=c2.id WHERE c1.id = :current_id")
         current_id = self.CategoriesList.model().record(0).value(0)
         if current_id is None:
             pid = self.last_parent
@@ -133,10 +136,12 @@ class CategoryChoiceDlg(QDialog, Ui_CategoryChoiceDlg):
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)
 
+
 class CategorySelector(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self.p_category_id = 0
+        self.completer = None
 
         self.layout = QHBoxLayout()
         self.layout.setMargin(0)
@@ -195,9 +200,9 @@ class CategorySelector(QWidget):
         self.category_id = model.data(model.index(index.row(), 0), Qt.DisplayRole)
 
 
-####################################################################################################################3
+# ===================================================================================================================
 # Delegate to display custom editors
-####################################################################################################################3
+# ===================================================================================================================
 class CategoryDelegate(QSqlRelationalDelegate):
     def __init__(self, parent=None):
         QSqlRelationalDelegate.__init__(self, parent)
@@ -231,7 +236,7 @@ class CategoryDelegate(QSqlRelationalDelegate):
             return False
         # Editor for 'often' column only
         if event.type() == QEvent.MouseButtonPress:
-            if model.data(index, Qt.DisplayRole):   # Toggle value - from 1 to 0 and from 0 to 1
+            if model.data(index, Qt.DisplayRole):  # Toggle value - from 1 to 0 and from 0 to 1
                 model.setData(index, 0)
             else:
                 model.setData(index, 1)

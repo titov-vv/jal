@@ -7,6 +7,7 @@ from PySide2 import QtCore
 from PySide2.QtSql import QSqlQuery
 from UI.ui_deals_export_dlg import Ui_DealsExportDlg
 
+
 # TODO Combine all reports into one function call and write different sheets in one file
 # TODO optimize with lists of fields
 
@@ -23,7 +24,8 @@ class ReportParamsDialog(QDialog, Ui_DealsExportDlg):
 
     @Slot()
     def OnFileBtn(self):
-        filename = QFileDialog.getSaveFileName(self, self.tr("Save deals report to:"), ".", self.tr("Excel file (*.xlsx)"))
+        filename = QFileDialog.getSaveFileName(self, self.tr("Save deals report to:"), ".",
+                                               self.tr("Excel file (*.xlsx)"))
         if filename[0]:
             if filename[1] == self.tr("Excel file (*.xlsx)") and filename[0][-5:] != '.xlsx':
                 self.Filename.setText(filename[0] + '.xlsx')
@@ -54,10 +56,11 @@ class ReportParamsDialog(QDialog, Ui_DealsExportDlg):
     filename = Property(int, fget=getFilename)
     account = Property(int, fget=getAccount)
 
+
 class Reports:
     def __init__(self, db, report_filename):
         self.db = db
-        self. workbook = xlsxwriter.Workbook(filename=report_filename)
+        self.workbook = xlsxwriter.Workbook(filename=report_filename)
 
         title_cell = self.workbook.add_format({'bold': True,
                                                'text_wrap': True,
@@ -188,48 +191,57 @@ class Reports:
         query.bindValue(":end", end)
         assert query.exec_()
 
-        query.prepare("SELECT DISTINCT(m.month) AS period, coalesce(t.transfer, 0) AS transfer, coalesce(a.assets, 0) AS assets, "
-                      "coalesce(p.result, 0) AS result, coalesce(o.profit, 0) AS profit, coalesce(d.dividend, 0) AS dividend, "
-                      "coalesce(f.tax_fee, 0) AS tax_fee "
-                      "FROM t_months AS m "
-                      "LEFT JOIN ( "
-                      "  SELECT mt.month, SUM(-l.amount) AS transfer "
-                      "  FROM t_months AS mt "
-                      "  LEFT JOIN ledger AS l ON mt.month = CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) AS INTEGER) AND mt.asset_id=l.asset_id "
-                      "  WHERE l.book_account=:book_transfers AND l.account_id=:account_id GROUP BY mt.month "
-                      ") AS t ON t.month = m.month "
-                      "LEFT JOIN ( "
-                      "  SELECT ma.month, SUM(l.amount*q.quote) AS assets "
-                      "  FROM t_months AS ma "
-                      "  LEFT JOIN ledger AS l ON l.timestamp<=ma.month AND l.asset_id=ma.asset_id "
-                      "  LEFT JOIN quotes AS q ON ma.last_timestamp=q.timestamp AND ma.asset_id=q.asset_id "
-                      "  WHERE l.account_id = 76 AND (l.book_account=:book_money OR l.book_account=:book_assets) "
-                      "  GROUP BY ma.month "
-                      ") AS a ON a.month = m.month "
-                      "LEFT JOIN ( "
-                      "  SELECT CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) AS INTEGER) AS month, SUM(-l.amount) as result "
-                      "  FROM ledger AS l  "
-                      "  WHERE (l.book_account=:book_costs OR l.book_account=:book_incomes) AND l.account_id=:account_id "
-                      "  GROUP BY month "
-                      ") AS p ON p.month = m.month "
-                      "LEFT JOIN ( "
-                      "  SELECT CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) AS INTEGER) AS month, SUM(-l.amount) as profit "
-                      "  FROM ledger AS l "
-                      "  WHERE (l.book_account=:book_costs OR l.book_account=:book_incomes) AND category_id=9 AND l.account_id=:account_id "
-                      "  GROUP BY month "
-                      ") AS o ON o.month = m.month "
-                      "LEFT JOIN ( "
-                      "  SELECT CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) AS INTEGER) AS month, SUM(-l.amount) as dividend "
-                      "  FROM ledger AS l "
-                      "  WHERE (l.book_account=:book_costs OR l.book_account=:book_incomes) AND (l.category_id=7 OR l.category_id=8) AND l.account_id=:account_id "
-                      "  GROUP BY month "
-                      ") AS d ON d.month = m.month "
-                      "LEFT JOIN ( "
-                      "  SELECT CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) AS INTEGER) AS month, SUM(-l.amount) as tax_fee "
-                      "  FROM ledger AS l "
-                      "  WHERE l.book_account=:book_costs AND l.category_id<>7 AND l.category_id<>8 AND l.account_id=:account_id "
-                      "  GROUP BY month "
-                      ") AS f ON f.month = m.month")
+        query.prepare(
+            "SELECT DISTINCT(m.month) AS period, coalesce(t.transfer, 0) AS transfer, coalesce(a.assets, 0) AS assets, "
+            "coalesce(p.result, 0) AS result, coalesce(o.profit, 0) AS profit, coalesce(d.dividend, 0) AS dividend, "
+            "coalesce(f.tax_fee, 0) AS tax_fee "
+            "FROM t_months AS m "
+            "LEFT JOIN ( "
+            "  SELECT mt.month, SUM(-l.amount) AS transfer "
+            "  FROM t_months AS mt "
+            "  LEFT JOIN ledger AS l ON mt.month = "
+            "  CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) AS INTEGER) "
+            "  AND mt.asset_id=l.asset_id "
+            "  WHERE l.book_account=:book_transfers AND l.account_id=:account_id GROUP BY mt.month "
+            ") AS t ON t.month = m.month "
+            "LEFT JOIN ( "
+            "  SELECT ma.month, SUM(l.amount*q.quote) AS assets "
+            "  FROM t_months AS ma "
+            "  LEFT JOIN ledger AS l ON l.timestamp<=ma.month AND l.asset_id=ma.asset_id "
+            "  LEFT JOIN quotes AS q ON ma.last_timestamp=q.timestamp AND ma.asset_id=q.asset_id "
+            "  WHERE l.account_id = 76 AND (l.book_account=:book_money OR l.book_account=:book_assets) "
+            "  GROUP BY ma.month "
+            ") AS a ON a.month = m.month "
+            "LEFT JOIN ( "
+            "  SELECT CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) AS INTEGER) AS month,"
+            "  SUM(-l.amount) as result"
+            "  FROM ledger AS l  "
+            "  WHERE (l.book_account=:book_costs OR l.book_account=:book_incomes) AND l.account_id=:account_id "
+            "  GROUP BY month "
+            ") AS p ON p.month = m.month "
+            "LEFT JOIN ( "
+            "  SELECT CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) "
+            "  AS INTEGER) AS month, SUM(-l.amount) as profit "
+            "  FROM ledger AS l "
+            "  WHERE (l.book_account=:book_costs OR l.book_account=:book_incomes) "
+            "  AND category_id=9 AND l.account_id=:account_id "
+            "  GROUP BY month "
+            ") AS o ON o.month = m.month "
+            "LEFT JOIN ( "
+            "  SELECT CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) AS INTEGER) "
+            "  AS month, SUM(-l.amount) as dividend "
+            "  FROM ledger AS l "
+            "  WHERE (l.book_account=:book_costs OR l.book_account=:book_incomes) "
+            "  AND (l.category_id=7 OR l.category_id=8) AND l.account_id=:account_id "
+            "  GROUP BY month "
+            ") AS d ON d.month = m.month "
+            "LEFT JOIN ( "
+            "  SELECT CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) "
+            "  AS INTEGER) AS month, SUM(-l.amount) as tax_fee "
+            "  FROM ledger AS l "
+            "  WHERE l.book_account=:book_costs AND l.category_id<>7 AND l.category_id<>8 AND l.account_id=:account_id "
+            "  GROUP BY month "
+            ") AS f ON f.month = m.month")
         query.bindValue(":account_id", account_id)
         query.bindValue(":book_costs", BOOK_ACCOUNT_COSTS)
         query.bindValue(":book_incomes", BOOK_ACCOUNT_INCOMES)
@@ -272,7 +284,8 @@ class Reports:
         assert query.exec_("DELETE FROM t_months")
 
         query.prepare("INSERT INTO t_months (month, asset_id, last_timestamp) "
-                      "SELECT strftime('%s', datetime(timestamp, 'unixepoch', 'start of month') ) AS month, asset_id, MAX(timestamp) AS last_timestamp "
+                      "SELECT strftime('%s', datetime(timestamp, 'unixepoch', 'start of month') ) "
+                      "AS month, asset_id, MAX(timestamp) AS last_timestamp "
                       "FROM quotes AS q "
                       "LEFT JOIN assets AS a ON q.asset_id=a.id "
                       "WHERE a.type_id=:asset_money "
@@ -280,19 +293,20 @@ class Reports:
         query.bindValue(":asset_money", ASSET_TYPE_MONEY)
         assert query.exec_()
 
-        query.prepare("SELECT strftime('%s', datetime(t.timestamp, 'unixepoch', 'start of month') ) AS month_timestamp, "
-                      "datetime(t.timestamp, 'unixepoch', 'start of month') AS month_date, a.name AS account, "
-                      "c.name AS currency, coalesce(q.quote, 1) AS rate, s.name AS category, sum(-t.amount) AS turnover "
-                      "FROM ledger AS t "
-                      "LEFT JOIN accounts AS a ON t.account_id = a.id "
-                      "LEFT JOIN assets AS c ON t.asset_id = c.id "
-                      "LEFT JOIN categories AS s ON t.category_id = s.id "
-                      "LEFT JOIN t_months AS d ON month_timestamp = d.month AND t.asset_id = d.asset_id "
-                      "LEFT JOIN quotes AS q ON d.last_timestamp = q.timestamp AND d.asset_id = q.asset_id "
-                      "WHERE (t.book_account=:book_costs OR t.book_account=:book_incomes) "
-                      "AND t.timestamp>=:begin AND t.timestamp<=:end "
-                      "GROUP BY month_timestamp, t.account_id, t.asset_id, t.category_id "
-                      "ORDER BY currency, month_timestamp, category")
+        query.prepare(
+            "SELECT strftime('%s', datetime(t.timestamp, 'unixepoch', 'start of month') ) AS month_timestamp, "
+            "datetime(t.timestamp, 'unixepoch', 'start of month') AS month_date, a.name AS account, "
+            "c.name AS currency, coalesce(q.quote, 1) AS rate, s.name AS category, sum(-t.amount) AS turnover "
+            "FROM ledger AS t "
+            "LEFT JOIN accounts AS a ON t.account_id = a.id "
+            "LEFT JOIN assets AS c ON t.asset_id = c.id "
+            "LEFT JOIN categories AS s ON t.category_id = s.id "
+            "LEFT JOIN t_months AS d ON month_timestamp = d.month AND t.asset_id = d.asset_id "
+            "LEFT JOIN quotes AS q ON d.last_timestamp = q.timestamp AND d.asset_id = q.asset_id "
+            "WHERE (t.book_account=:book_costs OR t.book_account=:book_incomes) "
+            "AND t.timestamp>=:begin AND t.timestamp<=:end "
+            "GROUP BY month_timestamp, t.account_id, t.asset_id, t.category_id "
+            "ORDER BY currency, month_timestamp, category")
         query.bindValue(":book_costs", BOOK_ACCOUNT_COSTS)
         query.bindValue(":book_incomes", BOOK_ACCOUNT_INCOMES)
         query.bindValue(":begin", begin)

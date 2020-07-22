@@ -5,24 +5,25 @@ from PySide2.QtCore import Qt
 
 ########################################
 # BALANCES FIELD NUMBERS
-FIELD_BALANCE       = 3
-FIELD_CURRENCY      = 4
-FIELD_BALANCE_ADJ   = 5
-FIELD_DAYS_UNREC    = 6
-FIELD_ACTIVE        = 7
+FIELD_BALANCE = 3
+FIELD_CURRENCY = 4
+FIELD_BALANCE_ADJ = 5
+FIELD_DAYS_UNREC = 6
+FIELD_ACTIVE = 7
 
 ########################################
 # HOLDINGS FIELD NUMBERS
-FIELD_L1        = 0
-FIELD_L2        = 1
-FIELD_ACCOUNT   = 3
-FIELD_ASSET_NAME= 5
-FIELD_QTY       = 6
-FIELD_OPEN      = 7
-FIELD_QUOTE     = 8
-FIELD_SHARE     = 9
+FIELD_L1 = 0
+FIELD_L2 = 1
+FIELD_ACCOUNT = 3
+FIELD_ASSET_NAME = 5
+FIELD_QTY = 6
+FIELD_OPEN = 7
+FIELD_QUOTE = 8
+FIELD_SHARE = 9
 FIELD_PROFIT_REL = 10
-FIELD_PROFIT    = 11
+FIELD_PROFIT = 11
+
 
 def formatFloatLong(value):
     if (abs(value - round(value)) <= 10e-2):
@@ -36,6 +37,7 @@ def formatFloatLong(value):
     else:
         text = f"{value:.8f}"
     return text
+
 
 class BalanceDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
@@ -51,7 +53,7 @@ class BalanceDelegate(QStyledItemDelegate):
         unreconciled_days = record.value(FIELD_DAYS_UNREC)
         active_account = record.value(FIELD_ACTIVE)
 
-        if not active_account:      # Show inactive accounts in Italic text
+        if not active_account:  # Show inactive accounts in Italic text
             font = painter.font()
             font.setItalic(True)
             painter.setFont(font)
@@ -79,6 +81,7 @@ class BalanceDelegate(QStyledItemDelegate):
 
         painter.drawText(option.rect, alignment, text)
         painter.restore()
+
 
 class HoldingsDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
