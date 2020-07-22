@@ -9,7 +9,7 @@ FIELD_BALANCE       = 3
 FIELD_CURRENCY      = 4
 FIELD_BALANCE_ADJ   = 5
 FIELD_DAYS_UNREC    = 6
-FEILD_ACTIVE        = 7
+FIELD_ACTIVE        = 7
 
 ########################################
 # HOLDINGS FIELD NUMBERS
@@ -49,6 +49,12 @@ class BalanceDelegate(QStyledItemDelegate):
         value = record.value(column)
         balance = record.value(FIELD_BALANCE)
         unreconciled_days = record.value(FIELD_DAYS_UNREC)
+        active_account = record.value(FIELD_ACTIVE)
+
+        if not active_account:      # Show inactive accounts in Italic text
+            font = painter.font()
+            font.setItalic(True)
+            painter.setFont(font)
 
         if unreconciled_days > 7:
             painter.fillRect(option.rect, LIGHT_YELLOW_COLOR)
