@@ -332,14 +332,14 @@ class Ledger:
     def processCorpAction(self):
         pass
 
-    def processTrade(self, seq_id, id):
+    def processTrade(self, seq_id, trade_id):
         query = QSqlQuery(self.db)
         query.prepare("SELECT a.type, t.timestamp, t.account_id, c.currency_id, t.asset_id, t.qty, t.price, t.coupon, t.fee "
                       "FROM trades AS t "
                       "LEFT JOIN accounts AS c ON t.account_id = c.id "
                       "LEFT JOIN corp_actions AS a ON t.corp_action_id = a.id "
                       "WHERE t.id = :id")
-        query.bindValue(":id", id)
+        query.bindValue(":id", trade_id)
         assert query.exec_()
         query.next()
         if query.value(0):   # if we have a corp.action instead of normal trade
@@ -377,21 +377,21 @@ class Ledger:
         self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_MONEY, currency_id, account_id, -(fee - credit_sum))
         self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_COSTS, currency_id, account_id, fee, None, PEER_FINANCIAL, CATEGORY_FEES, None)
 
-    def processTransfer(self, seq_id, id):
+    def processTransfer(self, seq_id, transfer_id):
         query = QSqlQuery(self.db)
         query.prepare("SELECT t.type, t.timestamp, t.account_id, a.currency_id, t.amount "
                       "FROM transfers AS t "
                       "LEFT JOIN accounts AS a ON t.account_id = a.id "
                       "WHERE t.id = :id")
-        query.bindValue(":id", id)
+        query.bindValue(":id", transfer_id)
         assert query.exec_()
         query.next()
-        type = query.value(0)
-        if (type == TRANSFER_OUT):
+        transfer_type = query.value(0)
+        if (transfer_type == TRANSFER_OUT):
             self.processTransferOut(seq_id, query.value(1), query.value(2), query.value(3), -query.value(4))
-        elif (type == TRANSFER_IN):
+        elif (transfer_type == TRANSFER_IN):
             self.processTransferIn(seq_id, query.value(1), query.value(2), query.value(3), query.value(4))
-        elif (type == TRANSFER_FEE):
+        elif (transfer_type == TRANSFER_FEE):
             self.processTransferFee(seq_id, query.value(1), query.value(2), query.value(3), -query.value(4))
 
     # Rebuild transaction sequence and recalculate all amounts

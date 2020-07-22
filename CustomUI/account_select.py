@@ -92,7 +92,7 @@ class AccountChoiceDlg(QDialog, Ui_AccountChoiceDlg):
         else:
             return self.p_account_name
 
-    def setAccountName(self, id):
+    def setAccountName(self, account_id):
         pass
 
     @Signal
@@ -227,8 +227,8 @@ class AccountButton(QPushButton):
     def getId(self):
         return self.p_account_id
 
-    def setId(self, id):
-        self.p_account_id = id
+    def setId(self, account_id):
+        self.p_account_id = account_id
 
     @Signal
     def account_id_changed(self):
@@ -286,11 +286,11 @@ class AccountSelector(QWidget):
     def getId(self):
         return self.p_account_id
 
-    def setId(self, id):
-        if (self.p_account_id == id):
+    def setId(self, account_id):
+        if (self.p_account_id == account_id):
             return
-        self.p_account_id = id
-        self.dialog.Model.setFilter(f"accounts.id={id}")
+        self.p_account_id = account_id
+        self.dialog.Model.setFilter(f"accounts.id={account_id}")
         row_idx = self.dialog.Model.index(0, 0).row()
         account_name = self.dialog.Model.record(row_idx).value(2)
         self.name.setText(account_name)

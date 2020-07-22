@@ -21,10 +21,10 @@ class TradeAction(QWidget):
     def getType(self):
         return self.p_type
 
-    def setType(self, type):
+    def setType(self, trade_type):
         # if (self.p_type == type):
         #     return
-        self.p_type = type
+        self.p_type = trade_type
 
         if self.p_type:
             self.label.setText("CORP.ACTION")

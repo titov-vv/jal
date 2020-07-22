@@ -113,11 +113,11 @@ class TagSelector(QWidget):
     def getId(self):
         return self.p_tag_id
 
-    def setId(self, id):
-        if (self.p_tag_id == id):
+    def setId(self, tag_id):
+        if (self.p_tag_id == tag_id):
             return
-        self.p_tag_id = id
-        self.dialog.Model.setFilter(f"id={id}")
+        self.p_tag_id = tag_id
+        self.dialog.Model.setFilter(f"id={tag_id}")
         row_idx = self.dialog.Model.index(0, 0).row()
         name = self.dialog.Model.record(row_idx).value(1)
         self.name.setText(name)

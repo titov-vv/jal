@@ -147,11 +147,11 @@ class AssetSelector(QWidget):
     def getId(self):
         return self.p_asset_id
 
-    def setId(self, id):
-        if (self.p_asset_id == id):
+    def setId(self, asset_id):
+        if (self.p_asset_id == asset_id):
             return
-        self.p_asset_id = id
-        self.dialog.Model.setFilter(f"assets.id={id}")
+        self.p_asset_id = asset_id
+        self.dialog.Model.setFilter(f"assets.id={asset_id}")
         row_idx = self.dialog.Model.index(0, 0).row()
         symbol = self.dialog.Model.record(row_idx).value(1)
         full_name = self.dialog.Model.record(row_idx).value(3)
@@ -213,11 +213,11 @@ class CurrencySelector(QWidget):
     def getId(self):
         return self.p_asset_id
 
-    def setId(self, id):
-        if (self.p_asset_id == id):
+    def setId(self, asset_id):
+        if (self.p_asset_id == asset_id):
             return
-        self.p_asset_id = id
-        self.dialog.Model.setFilter(f"assets.id={id}")
+        self.p_asset_id = asset_id
+        self.dialog.Model.setFilter(f"assets.id={asset_id}")
         row_idx = self.dialog.Model.index(0, 0).row()
         symbol = self.dialog.Model.record(row_idx).value(1)
         self.symbol.setText(symbol)

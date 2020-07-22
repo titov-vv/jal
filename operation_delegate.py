@@ -37,28 +37,28 @@ class OperationsTypeDelegate(QStyledItemDelegate):
         pen = painter.pen()
 
         model = index.model()
-        type = model.data(index, Qt.DisplayRole)
+        transaction_type = model.data(index, Qt.DisplayRole)
         amount = model.data(model.index(index.row(), FIELD_AMOUNT), Qt.DisplayRole)
         if amount == '':
             amount = 0
-        if (type == TRANSACTION_ACTION):
+        if (transaction_type == TRANSACTION_ACTION):
             if (amount >= 0):
                 text = "+"
                 pen.setColor(DARK_GREEN_COLOR)
             else:
                 text = "—"
                 pen.setColor(DARK_RED_COLOR)
-        elif (type == TRANSACTION_DIVIDEND):
+        elif (transaction_type == TRANSACTION_DIVIDEND):
             text = "Δ"
             pen.setColor(DARK_GREEN_COLOR)
-        elif (type == TRANSACTION_TRADE):
+        elif (transaction_type == TRANSACTION_TRADE):
             if (amount <= 0):  # TODO Change from amount to qty as amount might be 0 for Corp.Actions
                 text = "B"
                 pen.setColor(DARK_GREEN_COLOR)
             else:
                 text = "S"
                 pen.setColor(DARK_RED_COLOR)
-        elif (type == TRANSACTION_TRANSFER):
+        elif (transaction_type == TRANSACTION_TRANSFER):
             transfer_subtype = model.data(model.index(index.row(), FIELD_QTY_TRID), Qt.DisplayRole)
             if (transfer_subtype == TRANSFER_IN):
                 text = ">"
@@ -80,14 +80,14 @@ class OperationsTypeDelegate(QStyledItemDelegate):
         painter.restore()
 
     def sizeHint(self, option, index):
-        type = index.data(Qt.DisplayRole)
+        transaction_type = index.data(Qt.DisplayRole)
         fontMetrics = option.fontMetrics
         document = QTextDocument("W")
         option.font.setWeight(QFont.Bold)
         document.setDefaultFont(option.font)
         w = document.idealWidth()
         h = fontMetrics.height()
-        if (type == TRANSACTION_DIVIDEND) or (type == TRANSACTION_TRADE):
+        if (transaction_type == TRANSACTION_DIVIDEND) or (transaction_type == TRANSACTION_TRADE):
             h = h * 2
         return QSize(w, h)
 
@@ -103,9 +103,9 @@ class OperationsTimestampDelegate(QStyledItemDelegate):
         model = index.model()
         timestamp = model.data(index, Qt.DisplayRole)
         text = datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')
-        type = model.data(model.index(index.row(), FIELD_TYPE), Qt.DisplayRole)
+        transaction_type = model.data(model.index(index.row(), FIELD_TYPE), Qt.DisplayRole)
         number = model.data(model.index(index.row(), FIELD_PEER_NUMBER), Qt.DisplayRole)
-        if (type == TRANSACTION_TRADE) or (type == TRANSACTION_DIVIDEND):
+        if (transaction_type == TRANSACTION_TRADE) or (transaction_type == TRANSACTION_DIVIDEND):
             text = text + f"\n# {number}"
         painter.drawText(option.rect, Qt.AlignLeft, text)
         painter.restore()
@@ -118,13 +118,13 @@ class OperationsAccountDelegate(QStyledItemDelegate):
         painter.save()
         model = index.model()
         account = model.data(index, Qt.DisplayRole)
-        type = model.data(model.index(index.row(), FIELD_TYPE), Qt.DisplayRole)
-        if (type == TRANSACTION_ACTION):
+        transaction_type = model.data(model.index(index.row(), FIELD_TYPE), Qt.DisplayRole)
+        if (transaction_type == TRANSACTION_ACTION):
             text = account
-        elif (type == TRANSACTION_TRADE) or (type == TRANSACTION_DIVIDEND):
+        elif (transaction_type == TRANSACTION_TRADE) or (transaction_type == TRANSACTION_DIVIDEND):
             asset_name = model.data(model.index(index.row(), FIELD_ASSET_NAME), Qt.DisplayRole)
             text = account + "\n" + asset_name
-        elif (type == TRANSACTION_TRANSFER):
+        elif (transaction_type == TRANSACTION_TRANSFER):
             account2 = model.data(model.index(index.row(), FIELD_NOTE2), Qt.DisplayRole)
             transfer_subtype = model.data(model.index(index.row(), FIELD_QTY_TRID), Qt.DisplayRole)
             if (transfer_subtype == TRANSFER_FEE):
@@ -147,16 +147,16 @@ class OperationsNotesDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         painter.save()
         model = index.model()
-        type = model.data(model.index(index.row(), FIELD_TYPE), Qt.DisplayRole)
-        if (type == TRANSACTION_ACTION):
+        transaction_type = model.data(model.index(index.row(), FIELD_TYPE), Qt.DisplayRole)
+        if (transaction_type == TRANSACTION_ACTION):
             text = model.data(model.index(index.row(), FIELD_PEER_NUMBER), Qt.DisplayRole)
-        elif (type == TRANSACTION_TRANSFER):
+        elif (transaction_type == TRANSACTION_TRANSFER):
             text = model.data(index, Qt.DisplayRole)
-        elif (type == TRANSACTION_DIVIDEND):
+        elif (transaction_type == TRANSACTION_DIVIDEND):
             note = model.data(index, Qt.DisplayRole)
             note2 = model.data(model.index(index.row(), FIELD_NOTE2), Qt.DisplayRole)
             text = note + "\n" + note2
-        elif (type == TRANSACTION_TRADE):
+        elif (transaction_type == TRANSACTION_TRADE):
             # Take corp.action description if any or construct Qty x Price for Buy/Sell operations
             text = model.data(index, Qt.DisplayRole)
             if not text:
@@ -187,10 +187,10 @@ class OperationsAmountDelegate(QStyledItemDelegate):
         amount = model.data(index, Qt.DisplayRole)
         if amount == '':
             amount = 0
-        type = model.data(model.index(index.row(), FIELD_TYPE), Qt.DisplayRole)
+        transaction_type = model.data(model.index(index.row(), FIELD_TYPE), Qt.DisplayRole)
         qty = model.data(model.index(index.row(), FIELD_QTY_TRID), Qt.DisplayRole)
         tax = model.data(model.index(index.row(), FIELD_FEE_TAX), Qt.DisplayRole)
-        if (type == TRANSACTION_TRADE):
+        if (transaction_type == TRANSACTION_TRADE):
             text = f"{amount:+,.2f}"
             rect.setHeight(H / 2)
             if (amount >= 0):
@@ -207,7 +207,7 @@ class OperationsAmountDelegate(QStyledItemDelegate):
                 pen.setColor(DARK_RED_COLOR)
             painter.setPen(pen)
             painter.drawText(option.rect, Qt.AlignRight, text)
-        elif (type == TRANSACTION_DIVIDEND):
+        elif (transaction_type == TRANSACTION_DIVIDEND):
             text = f"{amount:+,.2f}"
             rect.setHeight(H/2)
             pen.setColor(DARK_GREEN_COLOR)

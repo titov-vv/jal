@@ -84,11 +84,11 @@ class PeerChoiceDlg(QDialog, Ui_PeerChoiceDlg):
             return
         query = QSqlQuery(self.PeersList.model().database())
         query.prepare("SELECT a2.pid FROM agents AS a1 LEFT JOIN agents AS a2 ON a1.pid=a2.id WHERE a1.id = :current_id")
-        id = self.PeersList.model().record(0).value(0)
-        if id is None:
+        current_id = self.PeersList.model().record(0).value(0)
+        if current_id is None:
             pid = self.last_parent
         else:
-            query.bindValue(":current_id", id)
+            query.bindValue(":current_id", current_id)
             query.exec_()
             query.next()
             pid = query.value(0)
@@ -156,11 +156,11 @@ class PeerSelector(QWidget):
     def getId(self):
         return self.p_peer_id
 
-    def setId(self, id):
-        if (self.p_peer_id == id):
+    def setId(self, peer_id):
+        if (self.p_peer_id == peer_id):
             return
-        self.p_peer_id = id
-        self.dialog.Model.setFilter(f"id={id}")
+        self.p_peer_id = peer_id
+        self.dialog.Model.setFilter(f"id={peer_id}")
         row_idx = self.dialog.Model.index(0, 0).row()
         name = self.dialog.Model.record(row_idx).value(2)
         self.name.setText(name)

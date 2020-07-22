@@ -922,13 +922,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def loadReportIBKR(self):
-        report_file, filter = QFileDialog.getOpenFileName(self, self.tr("Select Interactive Brokers Flex-query to import"), ".",
+        report_file, active_filter = QFileDialog.getOpenFileName(self, self.tr("Select Interactive Brokers Flex-query to import"), ".",
                                                            self.tr("IBKR flex-query (*.xml);;Quik HTML-report (*.htm)"))
         if report_file:
             report_loader = StatementLoader(self.db)
-            if filter == self.tr("IBKR flex-query (*.xml)"):
+            if active_filter == self.tr("IBKR flex-query (*.xml)"):
                 report_loader.loadIBFlex(report_file)
-            if filter == self.tr("Quik HTML-report (*.htm)"):
+            if active_filter == self.tr("Quik HTML-report (*.htm)"):
                 report_loader.loadQuikHtml(report_file)
             self.UpdateLedger()
 

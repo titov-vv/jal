@@ -84,11 +84,11 @@ class CategoryChoiceDlg(QDialog, Ui_CategoryChoiceDlg):
             return
         query = QSqlQuery(self.CategoriesList.model().database())
         query.prepare("SELECT c2.pid FROM categories AS c1 LEFT JOIN categories AS c2 ON c1.pid=c2.id WHERE c1.id = :current_id")
-        id = self.CategoriesList.model().record(0).value(0)
-        if id is None:
+        current_id = self.CategoriesList.model().record(0).value(0)
+        if current_id is None:
             pid = self.last_parent
         else:
-            query.bindValue(":current_id", id)
+            query.bindValue(":current_id", current_id)
             query.exec_()
             query.next()
             pid = query.value(0)
@@ -156,11 +156,11 @@ class CategorySelector(QWidget):
     def getId(self):
         return self.p_category_id
 
-    def setId(self, id):
-        if (self.p_category_id == id):
+    def setId(self, category_id):
+        if (self.p_category_id == category_id):
             return
-        self.p_category_id = id
-        self.dialog.Model.setFilter(f"id={id}")
+        self.p_category_id = category_id
+        self.dialog.Model.setFilter(f"id={category_id}")
         row_idx = self.dialog.Model.index(0, 0).row()
         name = self.dialog.Model.record(row_idx).value(2)
         self.name.setText(name)

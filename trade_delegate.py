@@ -33,8 +33,8 @@ class OptionGroup(QWidget):
 
     Selection = Property(int, getSelection, setSelection, notify=selection_changed, user=True)
 
-    def addButton(self, button, id):
-        self.ButtonsList.append([button, id])
+    def addButton(self, button, linked_id):
+        self.ButtonsList.append([button, linked_id])
         button.toggled.connect(self.OnButtonToggle)
 
 #    @Slot

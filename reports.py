@@ -139,17 +139,17 @@ class Reports:
             else:
                 even_odd = '_even'
             sheet.write(row, 0, query.value('asset'), self.formats['text' + even_odd])
-            open = int(query.value("open_timestamp"))
-            close = int(query.value("close_timestamp"))
+            open_timestamp = int(query.value("open_timestamp"))
+            close_timestamp = int(query.value("close_timestamp"))
             if group_dates:
-                sheet.write(row, 1, datetime.datetime.fromtimestamp(open).strftime('%d.%m.%Y'),
+                sheet.write(row, 1, datetime.datetime.fromtimestamp(open_timestamp).strftime('%d.%m.%Y'),
                             self.formats['text' + even_odd])
-                sheet.write(row, 2, datetime.datetime.fromtimestamp(close).strftime('%d.%m.%Y'),
+                sheet.write(row, 2, datetime.datetime.fromtimestamp(close_timestamp).strftime('%d.%m.%Y'),
                             self.formats['text' + even_odd])
             else:
-                sheet.write(row, 1, datetime.datetime.fromtimestamp(open).strftime('%d.%m.%Y %H:%M:%S'),
+                sheet.write(row, 1, datetime.datetime.fromtimestamp(open_timestamp).strftime('%d.%m.%Y %H:%M:%S'),
                             self.formats['text' + even_odd])
-                sheet.write(row, 2, datetime.datetime.fromtimestamp(close).strftime('%d.%m.%Y %H:%M:%S'),
+                sheet.write(row, 2, datetime.datetime.fromtimestamp(close_timestamp).strftime('%d.%m.%Y %H:%M:%S'),
                             self.formats['text' + even_odd])
             sheet.write(row, 3, float(query.value('open_price')), self.formats['number_4' + even_odd])
             sheet.write(row, 4, float(query.value('close_price')), self.formats['number_4' + even_odd])
