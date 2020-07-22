@@ -1,15 +1,19 @@
-from constants import *
-import requests
 import logging
+# import pandas_datareader.data as web
+import xml.etree.ElementTree as xml_tree
 from datetime import datetime
+from io import StringIO
+
+import pandas as pd
+import requests
+from PySide2 import QtCore
 from PySide2.QtSql import QSqlQuery
 from PySide2.QtWidgets import QDialog
-from PySide2 import QtCore
-import pandas as pd
-#import pandas_datareader.data as web
-import xml.etree.ElementTree as xml_tree
-from io import StringIO
+
 from UI.ui_update_quotes_window import Ui_UpdateQuotesDlg
+from constants import *
+
+
 #################################################################################################################
 # UI dialog class
 #################################################################################################################
@@ -33,9 +37,8 @@ class QuotesUpdateDialog(QDialog, Ui_UpdateQuotesDlg):
 # Worker class
 #################################################################################################################
 class QuoteDownloader:
-    def __init__(self, db, status_bar):
+    def __init__(self, db):
         self.db = db
-        self.status_bar = status_bar
         self.session = requests.Session()
 
     def UpdateQuotes(self, start_timestamp, end_timestamp, use_proxy):
@@ -108,8 +111,7 @@ class QuoteDownloader:
                 continue
             for date, quote in data.iterrows():
                 self.SubmitQuote(asset_id, asset, int(date.timestamp()), float(quote[0]))
-            qApp.processEvents()
-        self.status_bar.showMessage("All quotes loaded")
+        logging.info("Dowload completed")
 
     def PrepareRussianCBReader(self):
         xml_root = xml_tree.fromstring(requests.get("http://www.cbr.ru/scripts/XML_valFull.asp").text)
@@ -224,5 +226,5 @@ class QuoteDownloader:
         query.bindValue(":quote", quote)
         assert query.exec_()
         self.db.commit()
-        self.status_bar.showMessage(f"Quote loaded: {asset_name} @ {datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")
+        logging.info(f"Quote loaded: {asset_name} @ {datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")
 

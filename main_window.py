@@ -105,7 +105,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.holdings_currency = query.value(0)
 
         self.ledger = Ledger(self.db)
-        self.downloader = QuoteDownloader(self.db, self.StatusBar)
+        self.downloader = QuoteDownloader(self.db)
 
         self.balance_date = QtCore.QDateTime.currentSecsSinceEpoch()
         self.balance_active_only = 1
@@ -401,8 +401,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.Logs.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
         logging.getLogger().addHandler(self.Logs)
-        logging.getLogger().setLevel(logging.DEBUG)
-        logging.info('Application started')
+        logging.getLogger().setLevel(logging.INFO)
 
     def Backup(self):
         backup_directory = QFileDialog.getExistingDirectory(self, "Select directory to save backup")
@@ -918,6 +917,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         update_dialog.setGeometry(self.x() + 64, self.y() + 64, update_dialog.width(), update_dialog.height())
         if update_dialog.exec_():
             self.downloader.UpdateQuotes(update_dialog.getStartDate(), update_dialog.getEndDate(), update_dialog.getUseProxy())
+            self.StatusBar.showMessage("Quotes download completed", timeout=60)
 
     @Slot()
     def loadReportIBKR(self):
