@@ -3,16 +3,16 @@
 ################################################################################
 ## Form generated from reading UI file 'deals_export_dlg.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.14.1
+## Created by: Qt User Interface Compiler version 5.15.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import (QCoreApplication, QMetaObject, QObject, QPoint,
-    QRect, QSize, QUrl, Qt)
+from PySide2.QtCore import (QCoreApplication, QDate, QDateTime, QMetaObject,
+    QObject, QPoint, QRect, QSize, QTime, QUrl, Qt)
 from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
-    QFontDatabase, QIcon, QLinearGradient, QPalette, QPainter, QPixmap,
-    QRadialGradient)
+    QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPalette, QPainter,
+    QPixmap, QRadialGradient)
 from PySide2.QtWidgets import *
 
 from CustomUI.account_select import AccountSelector
@@ -20,7 +20,7 @@ from CustomUI.account_select import AccountSelector
 
 class Ui_DealsExportDlg(object):
     def setupUi(self, DealsExportDlg):
-        if DealsExportDlg.objectName():
+        if not DealsExportDlg.objectName():
             DealsExportDlg.setObjectName(u"DealsExportDlg")
         DealsExportDlg.resize(603, 118)
         self.gridLayout = QGridLayout(DealsExportDlg)

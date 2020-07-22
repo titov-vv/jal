@@ -3,16 +3,16 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.14.1
+## Created by: Qt User Interface Compiler version 5.15.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import (QCoreApplication, QMetaObject, QObject, QPoint,
-    QRect, QSize, QUrl, Qt, QDate)
+from PySide2.QtCore import (QCoreApplication, QDate, QDateTime, QMetaObject,
+    QObject, QPoint, QRect, QSize, QTime, QUrl, Qt, QDate)
 from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
-    QFontDatabase, QIcon, QLinearGradient, QPalette, QPainter, QPixmap,
-    QRadialGradient)
+    QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPalette, QPainter,
+    QPixmap, QRadialGradient)
 from PySide2.QtWidgets import *
 
 from CustomUI.account_select import AccountSelector
@@ -20,11 +20,12 @@ from CustomUI.asset_select import AssetSelector
 from CustomUI.account_select import AccountButton
 from CustomUI.peer_select import PeerSelector
 from CustomUI.trade_action import TradeAction
+from CustomUI.log_viewer import LogViewer
 
 
 class Ui_LedgerMainWindow(object):
     def setupUi(self, LedgerMainWindow):
-        if LedgerMainWindow.objectName():
+        if not LedgerMainWindow.objectName():
             LedgerMainWindow.setObjectName(u"LedgerMainWindow")
         LedgerMainWindow.resize(1700, 900)
         LedgerMainWindow.setMinimumSize(QSize(0, 0))
@@ -733,6 +734,16 @@ class Ui_LedgerMainWindow(object):
         self.verticalLayout_4.addWidget(self.HoldingsTableView)
 
         self.MainTabs.addTab(self.HoldingsTab, "")
+        self.LoggingTab = QWidget()
+        self.LoggingTab.setObjectName(u"LoggingTab")
+        self.verticalLayout_5 = QVBoxLayout(self.LoggingTab)
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.Logs = LogViewer(self.LoggingTab)
+        self.Logs.setObjectName(u"Logs")
+
+        self.verticalLayout_5.addWidget(self.Logs)
+
+        self.MainTabs.addTab(self.LoggingTab, "")
 
         self.gridLayout.addWidget(self.MainTabs, 0, 0, 1, 1)
 
@@ -886,6 +897,7 @@ class Ui_LedgerMainWindow(object):
         self.HoldingsDate.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy", None))
         self.HoldingsCurrencyLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Common currency:", None))
         self.MainTabs.setTabText(self.MainTabs.indexOf(self.HoldingsTab), QCoreApplication.translate("LedgerMainWindow", u"Holdings", None))
+        self.MainTabs.setTabText(self.MainTabs.indexOf(self.LoggingTab), QCoreApplication.translate("LedgerMainWindow", u"Log messages", None))
         self.menuFile.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&File", None))
         self.menu_DAta.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&Data", None))
         self.menuPredefined_data.setTitle(QCoreApplication.translate("LedgerMainWindow", u"Predefined data", None))
