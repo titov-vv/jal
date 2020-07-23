@@ -1,96 +1,7 @@
-import logging
-
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
-from PySide2.QtSql import QSqlTableModel
-from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QCompleter, QHeaderView
+from PySide2.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QPushButton, QCompleter
 
-from UI.ui_tag_choice import Ui_TagChoiceDlg
-
-
-class TagChoiceDlg(QDialog, Ui_TagChoiceDlg):
-    def __init__(self):
-        QDialog.__init__(self)
-        self.setupUi(self)
-        self.db = None
-        self.Model = None
-        self.tag_id = 0
-        self.search_text = ""
-
-        self.SearchString.textChanged.connect(self.OnSearchChange)
-        self.AddTagBtn.clicked.connect(self.OnAdd)
-        self.RemoveTagBtn.clicked.connect(self.OnRemove)
-        self.CommitBtn.clicked.connect(self.OnCommit)
-        self.RevertBtn.clicked.connect(self.OnRevert)
-
-    def init_DB(self, db):
-        self.db = db
-        self.Model = QSqlTableModel(db=self.db)
-        self.Model.setTable("tags")
-        self.Model.setSort(self.Model.fieldIndex("tag"), Qt.AscendingOrder)
-        self.Model.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        self.Model.setHeaderData(self.Model.fieldIndex("tag"), Qt.Horizontal, "Tag")
-
-        self.TagsList.setModel(self.Model)
-        self.TagsList.setColumnHidden(self.Model.fieldIndex("id"), True)
-        self.TagsList.horizontalHeader().setSectionResizeMode(self.Model.fieldIndex("tag"), QHeaderView.Stretch)
-        font = self.TagsList.horizontalHeader().font()
-        font.setBold(True)
-        self.TagsList.horizontalHeader().setFont(font)
-
-        self.TagsList.selectionModel().selectionChanged.connect(self.OnTagChosen)
-        self.Model.dataChanged.connect(self.OnDataChanged)
-        self.Model.select()
-
-    @Slot()
-    def OnDataChanged(self):
-        self.CommitBtn.setEnabled(True)
-        self.RevertBtn.setEnabled(True)
-
-    @Slot()
-    def OnAdd(self):
-        assert self.Model.insertRows(0, 1)
-        self.CommitBtn.setEnabled(True)
-        self.RevertBtn.setEnabled(True)
-
-    @Slot()
-    def OnRemove(self):
-        idx = self.TagsList.selectionModel().selection().indexes()
-        selected_row = idx[0].row()
-        assert self.Model.removeRow(selected_row)
-        self.CommitBtn.setEnabled(True)
-        self.RevertBtn.setEnabled(True)
-
-    @Slot()
-    def OnCommit(self):
-        if not self.Model.submitAll():
-            logging.fatal(self.tr("Action submit failed: ") + self.Model.lastError().text())
-            return
-        self.CommitBtn.setEnabled(False)
-        self.RevertBtn.setEnabled(False)
-
-    @Slot()
-    def OnRevert(self):
-        self.Model.revertAll()
-        self.CommitBtn.setEnabled(False)
-        self.RevertBtn.setEnabled(False)
-
-    def setFilter(self):
-        if self.search_text:
-            self.TagsList.model().setFilter(f"tag LIKE '%{self.search_text}%'")
-        else:
-            self.TagsList.model().setFilter("")
-
-    @Slot()
-    def OnTagChosen(self, selected, _deselected):
-        idx = selected.indexes()
-        if idx:
-            selected_row = idx[0].row()
-            self.tag_id = self.TagsList.model().record(selected_row).value(0)
-
-    @Slot()
-    def OnSearchChange(self):
-        self.search_text = self.SearchString.text()
-        self.setFilter()
+from CustomUI.reference_data import ReferenceDataDialog
 
 
 class TagSelector(QWidget):
@@ -112,7 +23,7 @@ class TagSelector(QWidget):
         self.setFocusProxy(self.name)
 
         self.button.clicked.connect(self.OnButtonClicked)
-        self.dialog = TagChoiceDlg()
+        self.dialog = None
 
     def getId(self):
         return self.p_tag_id
@@ -135,7 +46,10 @@ class TagSelector(QWidget):
     tag_id = Property(int, getId, setId, notify=changed, user=True)
 
     def init_DB(self, db):
-        self.dialog.init_DB(db)
+        self.dialog = ReferenceDataDialog(db, "tags",
+                            [("id", None, 0, None),
+                             ("tag", "Tag", -1, Qt.AscendingOrder)],
+                            title="Tags", search_field="tag")
         self.completer = QCompleter(self.dialog.Model)
         self.completer.setCompletionColumn(self.dialog.Model.fieldIndex("tag"))
         self.completer.setCaseSensitivity(Qt.CaseInsensitive)
@@ -148,7 +62,7 @@ class TagSelector(QWidget):
         self.dialog.setFilter()
         res = self.dialog.exec_()
         if res:
-            self.tag_id = self.dialog.tag_id
+            self.tag_id = self.dialog.selected_id
 
     @Slot(QModelIndex)
     def OnCompletion(self, index):

@@ -8,6 +8,7 @@ uic -g python -o ./UI/ui_peer_choice_dlg.py ./UI/peer_choice_dlg.ui
 uic -g python -o ./UI/ui_account_type_dlg.py ./UI/account_type_dlg.ui
 uic -g python -o ./UI/ui_category_choice.py ./UI/category_choice_dlg.ui
 uic -g python -o ./UI/ui_tag_choice.py ./UI/tag_choice_dlg.ui
+uic -g python -o ./UI/ui_reference_data_dlg.py ./UI/reference_data_dlg.ui
 uic -g python -o ./UI/ui_tax_export_dlg.py ./UI/tax_export_dlg.ui
 uic -g python -o ./UI/ui_deals_export_dlg.py ./UI/deals_export_dlg.ui
 

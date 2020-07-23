@@ -9,11 +9,11 @@ from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTab
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu, \
     QMessageBox, QAction, QFrame, QLabel
 
-from CustomUI.account_select import AccountTypeEditDlg, AccountChoiceDlg
+from CustomUI.account_select import AccountChoiceDlg
 from CustomUI.asset_select import AssetChoiceDlg
 from CustomUI.category_select import CategoryChoiceDlg
 from CustomUI.peer_select import PeerChoiceDlg
-from CustomUI.tag_select import TagChoiceDlg
+from CustomUI.reference_data import ReferenceDataDialog
 from UI.ui_main_window import Ui_LedgerMainWindow
 from action_delegate import ActionDelegate, ActionDetailDelegate
 from balance_delegate import BalanceDelegate, HoldingsDelegate
@@ -888,9 +888,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def EditAccountTypes(self):
-        dlg = AccountTypeEditDlg()
-        dlg.init_DB(self.db)
-        dlg.exec_()
+        ReferenceDataDialog(self.db, "account_types",
+                            [("id", None, 0, None),
+                             ("name", "Account Type", -1, Qt.AscendingOrder)],
+                            title="Account Types").exec_()
 
     @Slot()
     def EditAccounts(self):
@@ -920,10 +921,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def EditTags(self):
-        dlg = TagChoiceDlg()
-        dlg.init_DB(self.db)
-        dlg.setFilter()
-        dlg.exec_()
+        ReferenceDataDialog(self.db, "tags",
+                            [("id", None, 0, None),
+                             ("tag", "Tag", -1, Qt.AscendingOrder)],
+                            title="Tags", search_field="tag").exec_()
 
     @Slot()
     def UpdateHoldings(self):
