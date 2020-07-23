@@ -34,7 +34,7 @@ class TagSelector(QWidget):
         self.p_tag_id = tag_id
         self.dialog.Model.setFilter(f"id={tag_id}")
         row_idx = self.dialog.Model.index(0, 0).row()
-        name = self.dialog.Model.record(row_idx).value(1)
+        name = self.dialog.Model.record(row_idx).value(self.dialog.Model.fieldIndex("name"))
         self.name.setText(name)
         self.dialog.Model.setFilter("")
         self.changed.emit()
@@ -47,8 +47,8 @@ class TagSelector(QWidget):
 
     def init_DB(self, db):
         self.dialog = ReferenceDataDialog(db, "tags",
-                            [("id", None, 0, None),
-                             ("tag", "Tag", -1, Qt.AscendingOrder)],
+                            [("id", None, 0, None, None),
+                             ("tag", "Tag", -1, Qt.AscendingOrder, None)],
                             title="Tags", search_field="tag")
         self.completer = QCompleter(self.dialog.Model)
         self.completer.setCompletionColumn(self.dialog.Model.fieldIndex("tag"))

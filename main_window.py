@@ -11,9 +11,8 @@ from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QData
 
 from CustomUI.account_select import AccountChoiceDlg
 from CustomUI.asset_select import AssetChoiceDlg
-from CustomUI.category_select import CategoryChoiceDlg
 from CustomUI.peer_select import PeerChoiceDlg
-from CustomUI.reference_data import ReferenceDataDialog
+from CustomUI.reference_data import ReferenceDataDialog, ReferenceBoolDelegate
 from UI.ui_main_window import Ui_LedgerMainWindow
 from action_delegate import ActionDelegate, ActionDetailDelegate
 from balance_delegate import BalanceDelegate, HoldingsDelegate
@@ -889,8 +888,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def EditAccountTypes(self):
         ReferenceDataDialog(self.db, "account_types",
-                            [("id", None, 0, None),
-                             ("name", "Account Type", -1, Qt.AscendingOrder)],
+                            [("id", None, 0, None, None),
+                             ("name", "Account Type", -1, Qt.AscendingOrder, None)],
                             title="Account Types").exec_()
 
     @Slot()
@@ -914,16 +913,24 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def EditCategories(self):
-        dlg = CategoryChoiceDlg()
-        dlg.init_DB(self.db)
-        dlg.setFilter()
-        dlg.exec_()
+        # dlg = CategoryChoiceDlg()
+        # dlg.init_DB(self.db)
+        # dlg.setFilter()
+        # dlg.exec_()
+        ReferenceDataDialog(self.db, "categories_ext",
+                            [("id", " ", 16, None, None),
+                             ("pid", None, 0, None, None),
+                             ("name", "Name", -1, Qt.AscendingOrder, None),
+                             ("often", "Often", None, None, ReferenceBoolDelegate),
+                             ("special", None, 0, None, None),
+                             ("children_count", None, None, None, None)],
+                            title="Categories", search_field="name", tree_view=True).exec_()
 
     @Slot()
     def EditTags(self):
         ReferenceDataDialog(self.db, "tags",
-                            [("id", None, 0, None),
-                             ("tag", "Tag", -1, Qt.AscendingOrder)],
+                            [("id", None, 0, None, None),
+                             ("tag", "Tag", -1, Qt.AscendingOrder, None)],
                             title="Tags", search_field="tag").exec_()
 
     @Slot()
