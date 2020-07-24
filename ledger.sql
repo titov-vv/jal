@@ -494,7 +494,7 @@ DROP INDEX IF EXISTS tid_type_unique;
 CREATE UNIQUE INDEX tid_type_unique ON transfers (tid, type);
 
 
--- View: agents_ext
+    -- View: agents_ext
 DROP VIEW IF EXISTS agents_ext;
 CREATE VIEW agents_ext AS
     SELECT a1.*,
@@ -646,6 +646,15 @@ CREATE VIEW categories_ext AS
            LEFT JOIN
            categories c2 ON c1.id = c2.pid
      GROUP BY c1.id;
+
+
+-- View: currencies
+DROP VIEW IF EXISTS currencies;
+CREATE VIEW currencies AS
+    SELECT id,
+           name
+      FROM assets
+     WHERE type_id = 1;
 
 
 -- View: frontier

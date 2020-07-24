@@ -315,17 +315,3 @@ class ReferenceTimestampDelegate(QStyledItemDelegate):
 class ReferenceLookupDelegate(QSqlRelationalDelegate):
     def __init__(self, parent=None):
         QSqlRelationalDelegate.__init__(self, parent)
-
-# -------------------------------------------------------------------------------------------------------------------
-# Make integer alignment to the right
-class ReferenceCurrencyDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
-    #
-    # def createEditor(self, aParent, option, index):
-    #     currency_selector = CurrencySelector(aParent)
-    #     currency_selector.init_DB(index.model().database())
-    #     return currency_selector
-    #
-    # def setModelData(self, editor, model, index):
-    #     model.setData(index, editor.selected_id)

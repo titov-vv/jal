@@ -10,7 +10,7 @@ from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QData
     QMessageBox, QAction, QFrame, QLabel
 
 from CustomUI.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, ReferenceIntDelegate, \
-    ReferenceLookupDelegate, ReferenceTimestampDelegate, ReferenceCurrencyDelegate
+    ReferenceLookupDelegate, ReferenceTimestampDelegate
 from UI.ui_main_window import Ui_LedgerMainWindow
 from action_delegate import ActionDelegate, ActionDetailDelegate
 from balance_delegate import BalanceDelegate, HoldingsDelegate
@@ -897,7 +897,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                             [("id", None, 0, None, None),
                              ("name", "Name", -1, Qt.AscendingOrder, None),
                              ("type_id", None, 0, None, None),
-                             ("currency_id", "Currency", None, None, ReferenceCurrencyDelegate),
+                             ("currency_id", "Currency", None, None, ReferenceLookupDelegate),
                              ("active", "Act", 32, None, ReferenceBoolDelegate),
                              ("number", "Account #", None, None, None),
                              ("reconciled_on", "Reconciled @", self.fontMetrics().width("00/00/0000 00:00:00") * 1.1,
@@ -905,7 +905,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                              ("organization_id", "Bank", None, None, ReferenceLookupDelegate)],
                             title="Assets", search_field="full_name", toggle=("active", "Show inactive"),
                             relations=[("type_id", "account_types", "id", "name", "Account type:"),
-                                       ("currency_id", "assets", "id", "name", None),
+                                       ("currency_id", "currencies", "id", "name", None),
                                        ("organization_id", "agents", "id", "name", None)]
                             ).exec_()
 
