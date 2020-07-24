@@ -10,8 +10,7 @@ from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QData
     QMessageBox, QAction, QFrame, QLabel
 
 from CustomUI.account_select import AccountChoiceDlg
-from CustomUI.asset_select import AssetChoiceDlg
-from CustomUI.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, ReferenceIntDelegate
+from CustomUI.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, ReferenceIntDelegate, ReferenceLookupDelegate
 from UI.ui_main_window import Ui_LedgerMainWindow
 from action_delegate import ActionDelegate, ActionDetailDelegate
 from balance_delegate import BalanceDelegate, HoldingsDelegate
@@ -889,7 +888,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         ReferenceDataDialog(self.db, "account_types",
                             [("id", None, 0, None, None),
                              ("name", "Account Type", -1, Qt.AscendingOrder, None)],
-                            title="Account Types").exec_()
+                            title="Account Types"
+                            ).exec_()
 
     @Slot()
     def EditAccounts(self):
@@ -899,9 +899,18 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def EditAssets(self):
-        dlg = AssetChoiceDlg()
-        dlg.init_DB(self.db)
-        dlg.exec_()
+        ReferenceDataDialog(self.db, "assets",
+                            [("id", None, 0, None, None),
+                             ("name", "Symbol", None, Qt.AscendingOrder, None),
+                             ("type_id", None, 0, None, None),
+                             ("full_name", "Name", -1, None, None),
+                             ("isin", "ISIN", None, None, None),
+                             ("web_id", "WebID", None, None, None),
+                             ("src_id", "Data source", None, None, ReferenceLookupDelegate)],
+                            title="Assets", search_field="full_name",
+                            relations=[("type_id", "asset_types", "id", "name", "Asset type:"),
+                                       ("src_id", "data_sources", "id", "name", None)]
+                            ).exec_()
 
     @Slot()
     def EditPeers(self):
@@ -912,7 +921,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                              ("location", "Location", None, None, None),
                              ("actions_count", "Docs count", None, None, ReferenceIntDelegate),
                              ("children_count", None, None, None, None)],
-                            title="Peers", search_field="name", tree_view=True).exec_()
+                            title="Peers", search_field="name", tree_view=True
+                            ).exec_()
 
     @Slot()
     def EditCategories(self):
@@ -923,14 +933,16 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                              ("often", "Often", None, None, ReferenceBoolDelegate),
                              ("special", None, 0, None, None),
                              ("children_count", None, None, None, None)],
-                            title="Categories", search_field="name", tree_view=True).exec_()
+                            title="Categories", search_field="name", tree_view=True
+                            ).exec_()
 
     @Slot()
     def EditTags(self):
         ReferenceDataDialog(self.db, "tags",
                             [("id", None, 0, None, None),
                              ("tag", "Tag", -1, Qt.AscendingOrder, None)],
-                            title="Tags", search_field="tag").exec_()
+                            title="Tags", search_field="tag"
+                            ).exec_()
 
     @Slot()
     def UpdateHoldings(self):

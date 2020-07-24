@@ -47,11 +47,11 @@ class Ui_ReferenceDataDialog(object):
 
         self.edit_layout.addWidget(self.GroupCombo)
 
-        self.ShowInactive = QCheckBox(self.EditFrame)
-        self.ShowInactive.setObjectName(u"ShowInactive")
-        self.ShowInactive.setChecked(False)
+        self.Toggle = QCheckBox(self.EditFrame)
+        self.Toggle.setObjectName(u"Toggle")
+        self.Toggle.setChecked(False)
 
-        self.edit_layout.addWidget(self.ShowInactive)
+        self.edit_layout.addWidget(self.Toggle)
 
         self.UpBtn = QPushButton(self.EditFrame)
         self.UpBtn.setObjectName(u"UpBtn")
@@ -137,7 +137,7 @@ class Ui_ReferenceDataDialog(object):
     def retranslateUi(self, ReferenceDataDialog):
         ReferenceDataDialog.setWindowTitle(QCoreApplication.translate("ReferenceDataDialog", u"Reference Data", None))
         self.GroupLbl.setText(QCoreApplication.translate("ReferenceDataDialog", u"Account Type:", None))
-        self.ShowInactive.setText(QCoreApplication.translate("ReferenceDataDialog", u"Show inactive", None))
+        self.Toggle.setText(QCoreApplication.translate("ReferenceDataDialog", u"Show inactive", None))
         self.UpBtn.setText(QCoreApplication.translate("ReferenceDataDialog", u"Up", None))
         self.AddBtn.setText(QCoreApplication.translate("ReferenceDataDialog", u"Add", None))
         self.RemoveBtn.setText(QCoreApplication.translate("ReferenceDataDialog", u"Del", None))

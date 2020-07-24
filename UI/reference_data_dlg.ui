@@ -67,7 +67,7 @@
        <widget class="QComboBox" name="GroupCombo"/>
       </item>
       <item>
-       <widget class="QCheckBox" name="ShowInactive">
+       <widget class="QCheckBox" name="Toggle">
         <property name="text">
          <string>Show inactive</string>
         </property>

@@ -6,7 +6,7 @@ from PySide2.QtWidgets import QDialog
 from PySide2.QtWidgets import QStyledItemDelegate
 
 from UI.ui_reference_data_dlg import Ui_ReferenceDataDialog
-from CustomUI.helpers import UseSqlTable, ConfigureTableView, hcol_idx
+from CustomUI.helpers import UseSqlTable, ConfigureTableView, hcol_idx, rel
 
 
 # --------------------------------------------------------------------------------------------------------------
@@ -22,7 +22,8 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     # search_field - field name which will be used for search from GUI
     # tree_view - table will be displayed as hierarchical tree with help of 3 columns: 'id', 'pid' and 'children_count'
     #  ('pid' will identify parent row for current row, and '+' will be displayed for row with 'children_count'>0
-    def __init__(self, db, table, columns, title='', search_field=None, tree_view=False):
+    # relations - list of tuples that define lookup relations to other tables in database:
+    def __init__(self, db, table, columns, title='', search_field=None, tree_view=False, relations=None):
         QDialog.__init__(self)
         self.setupUi(self)
 
@@ -30,12 +31,15 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.tree_view = tree_view
         self.parent = 0
         self.last_parent = 0
+        self.group_id = None
+        self.group_key_field = None
+        self.group_fkey_field = None
         self.search_text = ""
         self.search_field = search_field
 
         self.db = db
         self.table = table
-        self.Model = UseSqlTable(self.db, self.table, columns)
+        self.Model = UseSqlTable(self.db, self.table, columns, relations)
         ConfigureTableView(self.DataView, self.Model, columns)
         if self.tree_view:
             self.DataView.setItemDelegateForColumn(self.Model.fieldIndex("id"), ReferenceTreeDelegate(self.DataView))
@@ -43,6 +47,20 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
             if column[hcol_idx.DELEGATE] is not None:
                 self.DataView.setItemDelegateForColumn(self.Model.fieldIndex(column[hcol_idx.DB_NAME]),
                                                        column[hcol_idx.DELEGATE](self.DataView))
+
+        self.GroupLbl.setVisible(False)
+        self.GroupCombo.setVisible(False)
+        if relations is not None:
+            for relation in relations:
+                if relation[rel.GROUP_NAME] is not None:
+                    self.GroupLbl.setVisible(True)
+                    self.GroupLbl.setText(relation[rel.GROUP_NAME])
+                    self.GroupCombo.setVisible(True)
+                    self.group_key_field = relation[rel.KEY_FIELD]
+                    self.group_fkey_field = relation[rel.FOREIGN_KEY]
+                    relation_model = self.Model.relationModel(self.Model.fieldIndex(relation[rel.KEY_FIELD]))
+                    self.GroupCombo.setModel(relation_model)
+                    self.GroupCombo.setModelColumn(relation_model.fieldIndex(relation[rel.LOOKUP_FIELD]))
 
         self.setWindowTitle(title)
         if self.search_field is not None:
@@ -53,6 +71,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
         self.SearchString.textChanged.connect(self.OnSearchChange)
         self.UpBtn.clicked.connect(self.OnUpClick)
+        self.GroupCombo.currentIndexChanged.connect(self.OnGroupChange)
         self.AddBtn.clicked.connect(self.OnAdd)
         self.RemoveBtn.clicked.connect(self.OnRemove)
         self.CommitBtn.clicked.connect(self.OnCommit)
@@ -101,14 +120,23 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)
 
-    def setFilter(self):
+    def setFilter(self):  # TODO: correctly combine different conditions
+        conditions = []
         if self.search_text:
-            self.DataView.model().setFilter(f"{self.search_field} LIKE '%{self.search_text}%'")
+            conditions.append(f"{self.search_field} LIKE '%{self.search_text}%'")
         else:
             if self.tree_view:
-                self.DataView.model().setFilter(f"pid={self.parent}")
-            else:
-                self.DataView.model().setFilter("")
+                conditions.append(f"pid={self.parent}")
+
+        if self.group_id:
+            conditions.append(f"{self.table}.{self.group_key_field}={self.group_id}")
+
+        condition = ""
+        for line in conditions:
+            condition += line + " AND "
+        condition = condition[:-len(" AND ")]
+
+        self.DataView.model().setFilter(condition)
 
     @Slot()
     def OnSearchChange(self):
@@ -151,6 +179,12 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
             if pid == '':
                 pid = 0
         self.parent = pid
+        self.setFilter()
+
+    @Slot()
+    def OnGroupChange(self, list_id):
+        model = self.GroupCombo.model()
+        self.group_id = model.data(model.index(list_id, model.fieldIndex(self.group_fkey_field)))
         self.setFilter()
 
 # ===================================================================================================================
@@ -211,3 +245,9 @@ class ReferenceIntDelegate(QSqlRelationalDelegate):
         value = model.data(index, Qt.DisplayRole)
         painter.drawText(option.rect, Qt.AlignRight, f"{value} ")
         painter.restore()
+
+# -------------------------------------------------------------------------------------------------------------------
+# The class itself is empty but it activates built-in editors for lookup tables
+class ReferenceLookupDelegate(QSqlRelationalDelegate):
+    def __init__(self, parent=None):
+        QSqlRelationalDelegate.__init__(self, parent)
