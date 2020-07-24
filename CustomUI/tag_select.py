@@ -49,7 +49,7 @@ class TagSelector(QWidget):
         self.dialog = ReferenceDataDialog(db, "tags",
                             [("id", None, 0, None, None),
                              ("tag", "Tag", -1, Qt.AscendingOrder, None)],
-                            title="Tags", search_field="tag")
+                            title="Choose tag", search_field="tag")
         self.completer = QCompleter(self.dialog.Model)
         self.completer.setCompletionColumn(self.dialog.Model.fieldIndex("tag"))
         self.completer.setCaseSensitivity(Qt.CaseInsensitive)

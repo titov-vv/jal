@@ -11,8 +11,7 @@ from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QData
 
 from CustomUI.account_select import AccountChoiceDlg
 from CustomUI.asset_select import AssetChoiceDlg
-from CustomUI.peer_select import PeerChoiceDlg
-from CustomUI.reference_data import ReferenceDataDialog, ReferenceBoolDelegate
+from CustomUI.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, ReferenceIntDelegate
 from UI.ui_main_window import Ui_LedgerMainWindow
 from action_delegate import ActionDelegate, ActionDetailDelegate
 from balance_delegate import BalanceDelegate, HoldingsDelegate
@@ -906,17 +905,17 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def EditPeers(self):
-        dlg = PeerChoiceDlg()
-        dlg.init_DB(self.db)
-        dlg.setFilter()
-        dlg.exec_()
+        ReferenceDataDialog(self.db, "agents_ext",
+                            [("id", " ", 16, None, None),
+                             ("pid", None, 0, None, None),
+                             ("name", "Name", -1, Qt.AscendingOrder, None),
+                             ("location", "Location", None, None, None),
+                             ("actions_count", "Docs count", None, None, ReferenceIntDelegate),
+                             ("children_count", None, None, None, None)],
+                            title="Peers", search_field="name", tree_view=True).exec_()
 
     @Slot()
     def EditCategories(self):
-        # dlg = CategoryChoiceDlg()
-        # dlg.init_DB(self.db)
-        # dlg.setFilter()
-        # dlg.exec_()
         ReferenceDataDialog(self.db, "categories_ext",
                             [("id", " ", 16, None, None),
                              ("pid", None, 0, None, None),

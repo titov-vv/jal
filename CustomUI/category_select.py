@@ -1,6 +1,5 @@
-from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex, QEvent
-from PySide2.QtSql import QSqlTableModel, QSqlRelationalDelegate, QSqlQuery
-from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout, QLineEdit, QPushButton, QCompleter, QHeaderView
+from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
+from PySide2.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QPushButton, QCompleter
 
 
 from CustomUI.reference_data import ReferenceDataDialog, ReferenceBoolDelegate
@@ -55,14 +54,14 @@ class CategorySelector(QWidget):
                                            ("often", "Often", None, None, ReferenceBoolDelegate),
                                            ("special", None, 0, None, None),
                                            ("children_count", None, None, None, None)],
-                                          title="Categories", search_field="name", tree_view=True)
+                                          title="Choose category", search_field="name", tree_view=True)
         self.completer = QCompleter(self.dialog.Model)
         self.completer.setCompletionColumn(self.dialog.Model.fieldIndex("name"))
         self.completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.name.setCompleter(self.completer)
         self.completer.activated[QModelIndex].connect(self.OnCompletion)
 
-    def OnButtonClicked(self):
+    def OnButtonClicked(self):    # TODO: setFilter works for tree here and limits only to current level - fix it
         ref_point = self.mapToGlobal(self.name.geometry().bottomLeft())
         self.dialog.setGeometry(ref_point.x(), ref_point.y(), self.dialog.width(), self.dialog.height())
         self.dialog.setFilter()

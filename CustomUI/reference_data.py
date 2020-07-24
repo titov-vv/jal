@@ -154,8 +154,11 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.setFilter()
 
 # ===================================================================================================================
-# Delegate to display custom editors
+# Delegates to customize view of columns
 # ===================================================================================================================
+
+# -------------------------------------------------------------------------------------------------------------------
+# Display '+' if element have children
 class ReferenceTreeDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         QStyledItemDelegate.__init__(self, parent)
@@ -170,7 +173,9 @@ class ReferenceTreeDelegate(QStyledItemDelegate):
         painter.drawText(option.rect, Qt.AlignHCenter, text)
         painter.restore()
 
-
+# -------------------------------------------------------------------------------------------------------------------
+# Display '*' if true and empty cell if false
+# Toggle True/False by mouse click
 class ReferenceBoolDelegate(QSqlRelationalDelegate):
     def __init__(self, parent=None):
         QSqlRelationalDelegate.__init__(self, parent)
@@ -193,3 +198,16 @@ class ReferenceBoolDelegate(QSqlRelationalDelegate):
             else:
                 model.setData(index, 1)
         return True
+
+# -------------------------------------------------------------------------------------------------------------------
+# Make integer alignment to the right
+class ReferenceIntDelegate(QSqlRelationalDelegate):
+    def __init__(self, parent=None):
+        QSqlRelationalDelegate.__init__(self, parent)
+
+    def paint(self, painter, option, index):
+        painter.save()
+        model = index.model()
+        value = model.data(index, Qt.DisplayRole)
+        painter.drawText(option.rect, Qt.AlignRight, f"{value} ")
+        painter.restore()
