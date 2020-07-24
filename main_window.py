@@ -9,8 +9,8 @@ from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTab
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu, \
     QMessageBox, QAction, QFrame, QLabel
 
-from CustomUI.account_select import AccountChoiceDlg
-from CustomUI.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, ReferenceIntDelegate, ReferenceLookupDelegate
+from CustomUI.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, ReferenceIntDelegate, \
+    ReferenceLookupDelegate, ReferenceTimestampDelegate, ReferenceCurrencyDelegate
 from UI.ui_main_window import Ui_LedgerMainWindow
 from action_delegate import ActionDelegate, ActionDetailDelegate
 from balance_delegate import BalanceDelegate, HoldingsDelegate
@@ -893,9 +893,21 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def EditAccounts(self):
-        dlg = AccountChoiceDlg()
-        dlg.init_DB(self.db)
-        dlg.exec_()
+        ReferenceDataDialog(self.db, "accounts",
+                            [("id", None, 0, None, None),
+                             ("name", "Name", -1, Qt.AscendingOrder, None),
+                             ("type_id", None, 0, None, None),
+                             ("currency_id", "Currency", None, None, ReferenceCurrencyDelegate),
+                             ("active", "Act", 32, None, ReferenceBoolDelegate),
+                             ("number", "Account #", None, None, None),
+                             ("reconciled_on", "Reconciled @", self.fontMetrics().width("00/00/0000 00:00:00") * 1.1,
+                              None, ReferenceTimestampDelegate),
+                             ("organization_id", "Bank", None, None, ReferenceLookupDelegate)],
+                            title="Assets", search_field="full_name", toggle=("active", "Show inactive"),
+                            relations=[("type_id", "account_types", "id", "name", "Account type:"),
+                                       ("currency_id", "assets", "id", "name", None),
+                                       ("organization_id", "agents", "id", "name", None)]
+                            ).exec_()
 
     @Slot()
     def EditAssets(self):
