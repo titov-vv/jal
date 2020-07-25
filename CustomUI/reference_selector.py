@@ -41,9 +41,9 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
         if self.p_selected_id == selected_id:
             return
         self.p_selected_id = selected_id
-        self.dialog.Model.setFilter(f"id={selected_id}")                   ################
+        self.dialog.Model.setFilter(f"id={selected_id}")
         row_idx = self.dialog.Model.index(0, 0).row()
-        name = self.dialog.Model.record(row_idx).value(self.dialog.Model.fieldIndex(self.selector_field))   ##############3
+        name = self.dialog.Model.record(row_idx).value(self.dialog.Model.fieldIndex(self.selector_field))
         self.name.setText(name)
         self.dialog.Model.setFilter("")
         self.changed.emit()
@@ -57,7 +57,6 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
     def on_button_clicked(self):
         ref_point = self.mapToGlobal(self.name.geometry().bottomLeft())
         self.dialog.setGeometry(ref_point.x(), ref_point.y(), self.dialog.width(), self.dialog.height())
-        self.dialog.setFilter()               ################
         res = self.dialog.exec_()
         if res:
             self.selected_id = self.dialog.selected_id
