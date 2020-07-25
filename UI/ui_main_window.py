@@ -18,7 +18,7 @@ from PySide2.QtWidgets import *
 from CustomUI.account_select import AccountSelector
 from CustomUI.asset_select import AssetSelector
 from CustomUI.account_select import AccountButton
-from CustomUI.peer_select import PeerSelector
+from CustomUI.reference_selector import PeerSelector
 from CustomUI.trade_action import TradeAction
 from CustomUI.log_viewer import LogViewer
 

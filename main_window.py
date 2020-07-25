@@ -229,7 +229,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         # CONFIGURE ACTIONS TAB                                                                       #
         ###############################################################################################
         self.ActionAccountWidget.init_DB(self.db)
-        self.ActionPeerWidget.init_DB(self.db)
+        self.ActionPeerWidget.init_db(self.db)
 
         self.ActionsModel = QSqlTableModel(db=self.db)
         self.ActionsModel.setTable("actions")
