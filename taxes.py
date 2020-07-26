@@ -12,7 +12,7 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
         QDialog.__init__(self)
         self.setupUi(self)
 
-        self.AccountWidget.init_DB(db)
+        self.AccountWidget.init_db(db, "name")
         self.FileSelectBtn.pressed.connect(self.OnFileBtn)
 
     @Slot()
@@ -31,7 +31,7 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
         return self.Filename.text()
 
     def getAccount(self):
-        return self.AccountWidget.account_id
+        return self.AccountWidget.selected_id
 
     year = Property(int, fget=getYear)
     filename = Property(int, fget=getFilename)

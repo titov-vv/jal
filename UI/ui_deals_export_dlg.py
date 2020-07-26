@@ -15,14 +15,14 @@ from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
     QPixmap, QRadialGradient)
 from PySide2.QtWidgets import *
 
-from CustomUI.account_select import AccountSelector
+from CustomUI.reference_selector import AccountSelector
 
 
 class Ui_DealsExportDlg(object):
     def setupUi(self, DealsExportDlg):
         if not DealsExportDlg.objectName():
             DealsExportDlg.setObjectName(u"DealsExportDlg")
-        DealsExportDlg.resize(603, 118)
+        DealsExportDlg.resize(607, 118)
         self.gridLayout = QGridLayout(DealsExportDlg)
         self.gridLayout.setObjectName(u"gridLayout")
         self.AccountLbl = QLabel(DealsExportDlg)

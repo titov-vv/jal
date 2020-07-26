@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>603</width>
+    <width>607</width>
     <height>118</height>
    </rect>
   </property>
@@ -114,7 +114,7 @@
   <customwidget>
    <class>AccountSelector</class>
    <extends>QWidget</extends>
-   <header>CustomUI/account_select.h</header>
+   <header>CustomUI/reference_selector.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

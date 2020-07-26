@@ -228,7 +228,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         ###############################################################################################
         # CONFIGURE ACTIONS TAB                                                                       #
         ###############################################################################################
-        self.ActionAccountWidget.init_DB(self.db)
+        self.ActionAccountWidget.init_db(self.db, "name")
         self.ActionPeerWidget.init_db(self.db, "name")
 
         self.ActionsModel = QSqlTableModel(db=self.db)
@@ -277,7 +277,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         # CONFIGURE TRADES TAB                                                                        #
         ###############################################################################################
         self.TradeActionWidget.init_DB(self.db)
-        self.TradeAccountWidget.init_DB(self.db)
+        self.TradeAccountWidget.init_db(self.db, "name")
         self.TradeAssetWidget.init_DB(self.db)
 
         self.TradesModel = QSqlRelationalTableModel(db=self.db)
@@ -309,7 +309,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         ###############################################################################################
         # CONFIGURE DIVIDENDS TAB                                                                     #
         ###############################################################################################
-        self.DividendAccountWidget.init_DB(self.db)
+        self.DividendAccountWidget.init_db(self.db, "name")
         self.DividendAssetWidget.init_DB(self.db)
 
         self.DividendsModel = QSqlTableModel(db=self.db)
@@ -336,9 +336,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         ###############################################################################################
         # CONFIGURE TRANSFERS TAB                                                                     #
         ###############################################################################################
-        self.TransferFromAccountWidget.init_DB(self.db)
-        self.TransferToAccountWidget.init_DB(self.db)
-        self.TransferFeeAccountWidget.init_DB(self.db)
+        self.TransferFromAccountWidget.init_db(self.db, "name")
+        self.TransferToAccountWidget.init_db(self.db, "name")
+        self.TransferFeeAccountWidget.init_db(self.db, "name")
 
         self.TransfersModel = QSqlTableModel(db=self.db)
         self.TransfersModel.setTable("transfers_combined")

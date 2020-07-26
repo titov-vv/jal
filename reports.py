@@ -17,7 +17,7 @@ class ReportParamsDialog(QDialog, Ui_DealsExportDlg):
         self.setupUi(self)
 
         self.FileSelectBtn.setFixedWidth(self.FileSelectBtn.fontMetrics().width(" ... "))
-        self.AccountWidget.init_DB(db)
+        self.AccountWidget.init_db(db, "name")
         self.FileSelectBtn.pressed.connect(self.OnFileBtn)
 
         self.ToDate.setDate(QtCore.QDate.currentDate())
@@ -48,7 +48,7 @@ class ReportParamsDialog(QDialog, Ui_DealsExportDlg):
         return self.Filename.text()
 
     def getAccount(self):
-        return self.AccountWidget.account_id
+        return self.AccountWidget.selected_id
 
     begin = Property(int, fget=getFrom)
     end = Property(int, fget=getTo)
