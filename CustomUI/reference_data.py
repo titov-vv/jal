@@ -45,18 +45,11 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.db = db
         self.table = table
         self.Model = UseSqlTable(self.db, self.table, columns, relations)
-        ConfigureTableView(self.DataView, self.Model, columns)
-
+        self.delegates = ConfigureTableView(self.DataView, self.Model, columns)
         # Storage of delegates inside class is required to keep ownership and prevent SIGSEGV as
         # https://doc.qt.io/qt-5/qabstractitemview.html#setItemDelegateForColumn says:
         # Any existing column delegate for column will be removed, but not deleted.
         # QAbstractItemView does not take ownership of delegate.
-        self.delegates = []
-        for column in columns:
-            if column[hcol_idx.DELEGATE] is not None:
-                self.delegates.append(column[hcol_idx.DELEGATE](self.DataView))
-                self.DataView.setItemDelegateForColumn(self.Model.fieldIndex(column[hcol_idx.DB_NAME]),
-                                                       self.delegates[-1])
 
         self.GroupLbl.setVisible(False)
         self.GroupCombo.setVisible(False)

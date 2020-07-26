@@ -58,3 +58,15 @@ def ConfigureTableView(view, model, columns):
     font = view.horizontalHeader().font()
     font.setBold(True)
     view.horizontalHeader().setFont(font)
+
+    # Return value is a list of delegates because storage of delegates
+    # is required to keep ownership and prevent SIGSEGV as
+    # https://doc.qt.io/qt-5/qabstractitemview.html#setItemDelegateForColumn says:
+    # Any existing column delegate for column will be removed, but not deleted.
+    # QAbstractItemView does not take ownership of delegate.
+    delegates = []
+    for column in columns:
+        if column[hcol_idx.DELEGATE] is not None:
+            delegates.append(column[hcol_idx.DELEGATE](view))
+            view.setItemDelegateForColumn(model.fieldIndex(column[hcol_idx.DB_NAME]), delegates[-1])
+    return delegates
