@@ -43,11 +43,11 @@ class ActionDetailDelegate(QSqlRelationalDelegate):
     def createEditor(self, aParent, option, index):
         if index.column() == 2:  # show category selector
             category_selector = CategorySelector(aParent)
-            category_selector.init_db(index.model().database(), "name")
+            category_selector.init_db(index.model().database())
             return category_selector
         if index.column() == 3:  # show tag selector
             tag_selector = TagSelector(aParent)
-            tag_selector.init_db(index.model().database(), "tag")
+            tag_selector.init_db(index.model().database())
             return tag_selector
         return QSqlRelationalDelegate.createEditor(self, aParent, option, index)
 

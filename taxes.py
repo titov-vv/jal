@@ -12,7 +12,7 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
         QDialog.__init__(self)
         self.setupUi(self)
 
-        self.AccountWidget.init_db(db, "name")
+        self.AccountWidget.init_db(db)
         self.FileSelectBtn.pressed.connect(self.OnFileBtn)
 
     @Slot()

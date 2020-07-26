@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
-from PySide2.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QPushButton, QCompleter
+from PySide2.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QCompleter
 
 from CustomUI.reference_data import ReferenceDataDialog, ReferenceIntDelegate, ReferenceBoolDelegate, \
 ReferenceTimestampDelegate, ReferenceLookupDelegate
@@ -23,6 +23,10 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
         self.name = QLineEdit()
         self.name.setText("")
         self.layout.addWidget(self.name)
+        self.details = QLabel()
+        self.details.setText("")
+        self.details.setVisible(False)
+        self.layout.addWidget(self.details)
         self.button = QPushButton("...")
         self.button.setFixedWidth(self.button.fontMetrics().width(" ... "))
         self.layout.addWidget(self.button)
@@ -34,6 +38,7 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
 
         self.table = None
         self.selector_field = None
+        self.details_field = None
         self.dialog = None
 
     def getId(self):
@@ -47,6 +52,9 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
         row_idx = self.dialog.Model.index(0, 0).row()
         name = self.dialog.Model.record(row_idx).value(self.dialog.Model.fieldIndex(self.selector_field))
         self.name.setText(name)
+        if self.details_field:
+            details = self.dialog.Model.record(row_idx).value(self.dialog.Model.fieldIndex(self.details_field))
+            self.details.setText(details)
         self.dialog.Model.setFilter("")
         self.changed.emit()
 
@@ -64,9 +72,13 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
             self.selected_id = self.dialog.selected_id
 
     @abstractmethod
-    def init_db(self, table, selector_field):
+    def init_db(self, table, selector_field, details_field=None):
         self.table = table
         self.selector_field = selector_field
+        if details_field:
+            self.name.setFixedWidth(self.name.fontMetrics().width("X") * 15)
+            self.details_field = details_field
+            self.details.setVisible(True)
         self.completer = QCompleter(self.dialog.Model)
         self.completer.setCompletionColumn(self.dialog.Model.fieldIndex(self.selector_field))
         self.completer.setCaseSensitivity(Qt.CaseInsensitive)
@@ -83,7 +95,7 @@ class AccountSelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
         AbstractReferenceSelector.__init__(self, parent)
 
-    def init_db(self, db, selector_field):
+    def init_db(self, db):
         self.dialog = ReferenceDataDialog(db, "accounts",
                                           [("id", None, 0, None, None),
                                            ("name", "Name", -1, Qt.AscendingOrder, None),
@@ -99,14 +111,33 @@ class AccountSelector(AbstractReferenceSelector):
                                           relations=[("type_id", "account_types", "id", "name", "Account type:"),
                                                      ("currency_id", "currencies", "id", "name", None),
                                                      ("organization_id", "agents", "id", "name", None)])
-        super().init_db("accounts", selector_field)
+        super().init_db("accounts", "name")
+
+
+class AssetSelector(AbstractReferenceSelector):
+    def __init__(self, parent=None):
+        AbstractReferenceSelector.__init__(self, parent)
+
+    def init_db(self, db):
+        self.dialog = ReferenceDataDialog(db, "assets",
+                                          [("id", None, 0, None, None),
+                                           ("name", "Symbol", None, Qt.AscendingOrder, None),
+                                           ("type_id", None, 0, None, None),
+                                           ("full_name", "Name", -1, None, None),
+                                           ("isin", "ISIN", None, None, None),
+                                           ("web_id", "WebID", None, None, None),
+                                           ("src_id", "Data source", None, None, ReferenceLookupDelegate)],
+                                          title="Assets", search_field="full_name",
+                                          relations=[("type_id", "asset_types", "id", "name", "Asset type:"),
+                                                     ("src_id", "data_sources", "id", "name", None)])
+        super().init_db("assets", "name", "full_name")
 
 
 class PeerSelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
         AbstractReferenceSelector.__init__(self, parent)
 
-    def init_db(self, db, selector_field):
+    def init_db(self, db):
         self.dialog = ReferenceDataDialog(db, "agents_ext",
                                           [("id", " ", 16, None, None),
                                            ("pid", None, 0, None, None),
@@ -115,14 +146,14 @@ class PeerSelector(AbstractReferenceSelector):
                                            ("actions_count", "Docs count", None, None, ReferenceIntDelegate),
                                            ("children_count", None, None, None, None)],
                                           title="Choose peer", search_field="name", tree_view=True)
-        super().init_db("agents_ext", selector_field)
+        super().init_db("agents_ext", "name")
 
 
 class CategorySelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
         AbstractReferenceSelector.__init__(self, parent)
 
-    def init_db(self, db, selector_field):
+    def init_db(self, db):
         self.dialog = ReferenceDataDialog(db, "categories_ext",
                                           [("id", " ", 16, None, None),
                                            ("pid", None, 0, None, None),
@@ -131,16 +162,16 @@ class CategorySelector(AbstractReferenceSelector):
                                            ("special", None, 0, None, None),
                                            ("children_count", None, None, None, None)],
                                           title="Choose category", search_field="name", tree_view=True)
-        super().init_db("categories_ext", selector_field)
+        super().init_db("categories_ext", "name")
 
 
 class TagSelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
         AbstractReferenceSelector.__init__(self, parent)
 
-    def init_db(self, db, selector_field):
+    def init_db(self, db):
         self.dialog = ReferenceDataDialog(db, "tags",
                                           [("id", None, 0, None, None),
                                            ("tag", "Tag", -1, Qt.AscendingOrder, None)],
                                           title="Choose tag", search_field="tag")
-        super().init_db("tags", selector_field)
+        super().init_db("tags", "tag")

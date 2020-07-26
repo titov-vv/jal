@@ -17,7 +17,7 @@ class ReportParamsDialog(QDialog, Ui_DealsExportDlg):
         self.setupUi(self)
 
         self.FileSelectBtn.setFixedWidth(self.FileSelectBtn.fontMetrics().width(" ... "))
-        self.AccountWidget.init_db(db, "name")
+        self.AccountWidget.init_db(db)
         self.FileSelectBtn.pressed.connect(self.OnFileBtn)
 
         self.ToDate.setDate(QtCore.QDate.currentDate())

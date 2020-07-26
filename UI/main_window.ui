@@ -1445,7 +1445,7 @@
   <customwidget>
    <class>AssetSelector</class>
    <extends>QWidget</extends>
-   <header>CustomUI/asset_select.h</header>
+   <header>CustomUI/reference_selector.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

@@ -16,7 +16,7 @@ from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
 from PySide2.QtWidgets import *
 
 from CustomUI.reference_selector import AccountSelector
-from CustomUI.asset_select import AssetSelector
+from CustomUI.reference_selector import AssetSelector
 from CustomUI.account_select import AccountButton
 from CustomUI.reference_selector import PeerSelector
 from CustomUI.trade_action import TradeAction
