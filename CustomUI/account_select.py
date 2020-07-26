@@ -1,5 +1,5 @@
-from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
-from PySide2.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QPushButton, QMenu, QCompleter
+from PySide2.QtCore import Qt, Signal, Property
+from PySide2.QtWidgets import QPushButton, QMenu
 
 from CustomUI.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
     ReferenceLookupDelegate, ReferenceTimestampDelegate
