@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from PySide2.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QCompleter
 
-from CustomUI.reference_data import ReferenceDataDialog, ReferenceIntDelegate, ReferenceBoolDelegate, \
-ReferenceTimestampDelegate, ReferenceLookupDelegate
+from CustomUI.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, \
+    ReferenceIntDelegate, ReferenceBoolDelegate, ReferenceTimestampDelegate, ReferenceLookupDelegate
 
 
 # To solve metaclass conflict
@@ -139,7 +139,7 @@ class PeerSelector(AbstractReferenceSelector):
 
     def init_db(self, db):
         self.dialog = ReferenceDataDialog(db, "agents_ext",
-                                          [("id", " ", 16, None, None),
+                                          [("id", " ", 16, None, ReferenceTreeDelegate),
                                            ("pid", None, 0, None, None),
                                            ("name", "Name", -1, Qt.AscendingOrder, None),
                                            ("location", "Location", None, None, None),
@@ -155,7 +155,7 @@ class CategorySelector(AbstractReferenceSelector):
 
     def init_db(self, db):
         self.dialog = ReferenceDataDialog(db, "categories_ext",
-                                          [("id", " ", 16, None, None),
+                                          [("id", " ", 16, None, ReferenceTreeDelegate),
                                            ("pid", None, 0, None, None),
                                            ("name", "Name", -1, Qt.AscendingOrder, None),
                                            ("often", "Often", None, None, ReferenceBoolDelegate),

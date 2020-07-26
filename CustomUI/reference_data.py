@@ -46,8 +46,6 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.table = table
         self.Model = UseSqlTable(self.db, self.table, columns, relations)
         ConfigureTableView(self.DataView, self.Model, columns)
-        if self.tree_view:
-            self.DataView.setItemDelegateForColumn(self.Model.fieldIndex("id"), ReferenceTreeDelegate(self.DataView))
 
         # Storage of delegates inside class is required to keep ownership and prevent SIGSEGV as
         # https://doc.qt.io/qt-5/qabstractitemview.html#setItemDelegateForColumn says:

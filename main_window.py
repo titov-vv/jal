@@ -9,8 +9,8 @@ from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTab
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu, \
     QMessageBox, QAction, QFrame, QLabel
 
-from CustomUI.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, ReferenceIntDelegate, \
-    ReferenceLookupDelegate, ReferenceTimestampDelegate
+from CustomUI.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, ReferenceBoolDelegate, \
+    ReferenceIntDelegate, ReferenceLookupDelegate, ReferenceTimestampDelegate
 from UI.ui_main_window import Ui_LedgerMainWindow
 from action_delegate import ActionDelegate, ActionDetailDelegate
 from balance_delegate import BalanceDelegate, HoldingsDelegate
@@ -927,7 +927,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def EditPeers(self):
         ReferenceDataDialog(self.db, "agents_ext",
-                            [("id", " ", 16, None, None),
+                            [("id", " ", 16, None, ReferenceTreeDelegate),
                              ("pid", None, 0, None, None),
                              ("name", "Name", -1, Qt.AscendingOrder, None),
                              ("location", "Location", None, None, None),
@@ -939,7 +939,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def EditCategories(self):
         ReferenceDataDialog(self.db, "categories_ext",
-                            [("id", " ", 16, None, None),
+                            [("id", " ", 16, None, ReferenceTreeDelegate),
                              ("pid", None, 0, None, None),
                              ("name", "Name", -1, Qt.AscendingOrder, None),
                              ("often", "Often", None, None, ReferenceBoolDelegate),
