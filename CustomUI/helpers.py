@@ -1,6 +1,6 @@
 from PySide2.QtCore import Qt
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
-from PySide2.QtWidgets import QAbstractItemView, QHeaderView
+from PySide2.QtWidgets import QAbstractItemView, QHeaderView, QDataWidgetMapper
 
 class hcol_idx:
     DB_NAME = 0
@@ -15,6 +15,12 @@ class rel:
     FOREIGN_KEY = 2
     LOOKUP_FIELD = 3
     GROUP_NAME = 4
+
+class map:
+    DB_NAME = 0
+    WIDGET = 1
+    WIDTH = 2
+    VALIDATOR = 3
 
 
 def formatFloatLong(value):
@@ -60,6 +66,22 @@ def UseSqlTable(db, table_name, columns, relations, mappings=None):
         if column[hcol_idx.SORT_ORDER] is not None:
             model.setSort(model.fieldIndex(column[hcol_idx.DB_NAME]), column[hcol_idx.SORT_ORDER])
     return model
+
+# Use mappings to link between DB fields and GUI widgets with help of delegate
+# mapping is a list of tuples [(FIELD_NAME, GUI_WIDGET, WIDTH, VALIDATOR)]
+def ConfigureDataMappers(model, mappings, delegate):
+    mapper = QDataWidgetMapper(model)
+    mapper.setModel(model)
+    mapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
+    mapper.setItemDelegate(delegate(mapper))
+    for mapping in mappings:
+        # if no USER property we should use QByteArray().setRawData("account_id", 10)) here
+        mapper.addMapping(mapping[map.WIDGET], model.fieldIndex(mapping[map.DB_NAME]))
+        if mapping[map.WIDTH]:
+            mapping[map.WIDGET].setFixedWidth(mapping[map.WIDTH])
+        if mapping[map.VALIDATOR]:
+            mapping[map.WIDGET].setValidator(mapping[map.VALIDATOR])
+    return mapper
 
 def ConfigureTableView(view, model, columns):
     view.setModel(model)

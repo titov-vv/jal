@@ -4,12 +4,11 @@ import os
 from PySide2 import QtCore, QtWidgets
 from PySide2.QtCore import Slot, QMetaObject
 from PySide2.QtGui import QDoubleValidator
-from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTableModel, QSqlRelationalTableModel, \
-    QSqlRelation
-from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu, \
+from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlQueryModel
+from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QHeaderView, QMenu, \
     QMessageBox, QAction, QFrame, QLabel
 
-from CustomUI.helpers import UseSqlTable, ConfigureTableView
+from CustomUI.helpers import UseSqlTable, ConfigureTableView, ConfigureDataMappers
 from CustomUI.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, ReferenceBoolDelegate, \
     ReferenceIntDelegate, ReferenceLookupDelegate, ReferenceTimestampDelegate
 from UI.ui_main_window import Ui_LedgerMainWindow
@@ -28,43 +27,6 @@ from transfer_delegate import TransferSqlDelegate
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-# model - QSqlTableModel where titles should be set for given columns
-# column_title_list - list of column_name/header_title pairs
-def ModelSetColumnHeaders(model, column_title_list):
-    for column_title in column_title_list:
-        model.setHeaderData(model.fieldIndex(column_title[0]), Qt.Horizontal, column_title[1])
-
-
-# view - QTableView where columns will be hidden
-# columns_list - list of column names
-def HideViewColumns(view, columns_list):
-    for column in columns_list:
-        view.setColumnHidden(view.model().fieldIndex(column), True)
-
-
-# view - QTableView where column width should be set
-# column_width_list - list of column_name/width pairs
-def ViewSetColumnWidths(view, column_width_list):
-    for column_width in column_width_list:
-        view.setColumnWidth(view.model().fieldIndex(column_width[0]), column_width[1])
-
-
-# This function gets a list of column_name/widget/width/validator pairs and:
-# 1) adds mapping between model and widget, 2) sets correct widget width, 3) set validator for widget
-# model - QSqlTableModel from where data to be mapped to widgets
-# mapper - QDataWidgetMapper to map data
-# column_widget_list - list of column_name/widget/width pairs that should be mapped
-def AddAndConfigureMappings(model, mapper, column_widget_list):
-    for column_widget in column_widget_list:
-        mapper.addMapping(column_widget[1], model.fieldIndex(
-            column_widget[0]))  # if no USER property QByteArray().setRawData("account_id", 10))
-        if column_widget[2]:
-            column_widget[1].setFixedWidth(column_widget[2])
-        if column_widget[3]:
-            column_widget[1].setValidator(column_widget[3])
-
-
-# -----------------------------------------------------------------------------------------------------------------------
 # a simple VLine, like the one you get from designer
 class VLine(QFrame):
     def __init__(self):
@@ -74,7 +36,6 @@ class VLine(QFrame):
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def __init__(self):
         QMainWindow.__init__(self, None)
@@ -221,19 +182,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionAccountWidget.init_db(self.db)
         self.ActionPeerWidget.init_db(self.db)
 
-        self.ActionsModel = QSqlTableModel(db=self.db)
-        self.ActionsModel.setTable("actions")
-        self.ActionsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.ActionsModel = UseSqlTable(self.db, "actions", [], None)  # no columns to customize
         self.ActionsModel.dataChanged.connect(self.OnOperationDataChanged)
         self.ActionsModel.select()
-        self.ActionsDataMapper = QDataWidgetMapper(self)
-        self.ActionsDataMapper.setModel(self.ActionsModel)
-        self.ActionsDataMapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
-        self.ActionsDataMapper.setItemDelegate(ActionDelegate(self.ActionsDataMapper))
-        AddAndConfigureMappings(self.ActionsModel, self.ActionsDataMapper,
-                                [("timestamp",  self.ActionTimestampEdit,   widthForTimestampEdit,  None),
-                                 ("account_id", self.ActionAccountWidget,   0,                      None),
-                                 ("peer_id",    self.ActionPeerWidget,      0,                      None)])
+        action_mappers = [("timestamp",  self.ActionTimestampEdit,   widthForTimestampEdit,  None),
+                          ("account_id", self.ActionAccountWidget,   0,                      None),
+                          ("peer_id",    self.ActionPeerWidget,      0,                      None)]
+        self.ActionsDataMapper = ConfigureDataMappers(self.ActionsModel, action_mappers, ActionDelegate)
         self.ActionAccountWidget.changed.connect(self.ActionsDataMapper.submit)
         self.ActionPeerWidget.changed.connect(self.ActionsDataMapper.submit)
 
@@ -245,8 +200,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                                   ("alt_sum", "Amount *", 100, None, None),
                                   ("note", "Note", -1, None, None)]
         self.ActionDetailsModel = UseSqlTable(self.db, "action_details", action_details_columns,
-                                              relations = [("category_id", "categories", "id", "name", None),
-                                                           ("tag_id", "tags", "id", "tag", None)])
+                                              relations=[("category_id", "categories", "id", "name", None),
+                                                         ("tag_id", "tags", "id", "tag", None)])
         self.action_details_delegates = ConfigureTableView(self.ActionDetailsTableView, self.ActionDetailsModel,
                                                            action_details_columns)
         self.ActionDetailsModel.dataChanged.connect(self.OnOperationDataChanged)
@@ -264,29 +219,21 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TradeAccountWidget.init_db(self.db)
         self.TradeAssetWidget.init_db(self.db)
 
-        self.TradesModel = QSqlRelationalTableModel(db=self.db)
-        self.TradesModel.setTable("trades")
-        self.TradesModel.setJoinMode(QSqlRelationalTableModel.LeftJoin)
-        self.TradesModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        corp_action_idx = self.ActionDetailsModel.fieldIndex("corp_action_id")
-        self.ActionDetailsModel.setRelation(corp_action_idx, QSqlRelation("corp_actions", "id", "type"))
+        self.TradesModel = UseSqlTable(self.db, "trades", [], # no columns to customize
+                                       relations=[("corp_action_id", "corp_actions", "id", "type", None)])
         self.TradesModel.dataChanged.connect(self.OnOperationDataChanged)
         self.TradesModel.select()
-        self.TradesDataMapper = QDataWidgetMapper(self)
-        self.TradesDataMapper.setModel(self.TradesModel)
-        self.TradesDataMapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
-        self.TradesDataMapper.setItemDelegate(TradeSqlDelegate(self.TradesDataMapper))
-        AddAndConfigureMappings(self.TradesModel, self.TradesDataMapper,
-                [("timestamp",      self.TradeTimestampEdit,    widthForTimestampEdit,  None),
-                 ("corp_action_id", self.TradeActionWidget,     0,                      None),
-                 ("account_id",     self.TradeAccountWidget,    0,                      None),
-                 ("asset_id",       self.TradeAssetWidget,      0,                      None),
-                 ("settlement",     self.TradeSettlementEdit,   0,                      None),
-                 ("number",         self.TradeNumberEdit,       widthForTimestampEdit,  None),
-                 ("price",          self.TradePriceEdit,        widthForAmountEdit,     self.doubleValidate6),
-                 ("qty",            self.TradeQtyEdit,          widthForAmountEdit,     self.doubleValidate6),
-                 ("coupon",         self.TradeCouponEdit,       widthForAmountEdit,     self.doubleValidate6),
-                 ("fee",            self.TradeFeeEdit,          widthForAmountEdit,     self.doubleValidate6)])
+        trade_mappers = [("timestamp",      self.TradeTimestampEdit,    widthForTimestampEdit,  None),
+                         ("corp_action_id", self.TradeActionWidget,     0,                      None),
+                         ("account_id",     self.TradeAccountWidget,    0,                      None),
+                         ("asset_id",       self.TradeAssetWidget,      0,                      None),
+                         ("settlement",     self.TradeSettlementEdit,   0,                      None),
+                         ("number",         self.TradeNumberEdit,       widthForTimestampEdit,  None),
+                         ("price",          self.TradePriceEdit,        widthForAmountEdit,     self.doubleValidate6),
+                         ("qty",            self.TradeQtyEdit,          widthForAmountEdit,     self.doubleValidate6),
+                         ("coupon",         self.TradeCouponEdit,       widthForAmountEdit,     self.doubleValidate6),
+                         ("fee",            self.TradeFeeEdit,          widthForAmountEdit,     self.doubleValidate6)]
+        self.TradesDataMapper = ConfigureDataMappers(self.TradesModel, trade_mappers, TradeSqlDelegate)
         self.TradeAccountWidget.changed.connect(self.TradesDataMapper.submit)
         self.TradeAssetWidget.changed.connect(self.TradesDataMapper.submit)
 
@@ -296,24 +243,18 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DividendAccountWidget.init_db(self.db)
         self.DividendAssetWidget.init_db(self.db)
 
-        self.DividendsModel = QSqlTableModel(db=self.db)
-        self.DividendsModel.setTable("dividends")
-        self.DividendsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.DividendsModel = UseSqlTable(self.db, "dividends", [], None)
         self.DividendsModel.dataChanged.connect(self.OnOperationDataChanged)
         self.DividendsModel.select()
-        self.DividendsDataMapper = QDataWidgetMapper(self)
-        self.DividendsDataMapper.setModel(self.DividendsModel)
-        self.DividendsDataMapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
-        self.DividendsDataMapper.setItemDelegate(DividendSqlDelegate(self.DividendsDataMapper))
-        AddAndConfigureMappings(self.DividendsModel, self.DividendsDataMapper,
-                        [("timestamp",  self.DividendTimestampEdit,     widthForTimestampEdit,  None),
-                         ("account_id", self.DividendAccountWidget,     0,                      None),
-                         ("asset_id",   self.DividendAssetWidget,       0,                      None),
-                         ("number",     self.DividendNumberEdit,        widthForTimestampEdit,  None),
-                         ("sum",        self.DividendSumEdit,           widthForAmountEdit,     self.doubleValidate2),
-                         ("note",       self.DividendSumDescription,    0,                      None),
-                         ("sum_tax",    self.DividendTaxEdit,           widthForAmountEdit,     self.doubleValidate2),
-                         ("note_tax",   self.DividendTaxDescription,    0,                      None)])
+        dividend_mappers = [("timestamp",  self.DividendTimestampEdit,     widthForTimestampEdit,  None),
+                            ("account_id", self.DividendAccountWidget,     0,                      None),
+                            ("asset_id",   self.DividendAssetWidget,       0,                      None),
+                            ("number",     self.DividendNumberEdit,        widthForTimestampEdit,  None),
+                            ("sum",        self.DividendSumEdit,           widthForAmountEdit,     self.doubleValidate2),
+                            ("note",       self.DividendSumDescription,    0,                      None),
+                            ("sum_tax",    self.DividendTaxEdit,           widthForAmountEdit,     self.doubleValidate2),
+                            ("note_tax",   self.DividendTaxDescription,    0,                      None)]
+        self.DividendsDataMapper = ConfigureDataMappers(self.DividendsModel, dividend_mappers, DividendSqlDelegate)
         self.DividendAccountWidget.changed.connect(self.DividendsDataMapper.submit)
         self.DividendAssetWidget.changed.connect(self.DividendsDataMapper.submit)
 
@@ -324,26 +265,20 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TransferToAccountWidget.init_db(self.db)
         self.TransferFeeAccountWidget.init_db(self.db)
 
-        self.TransfersModel = QSqlTableModel(db=self.db)
-        self.TransfersModel.setTable("transfers_combined")
-        self.TransfersModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.TransfersModel = UseSqlTable(self.db, "transfers_combined", [], None)
         self.TransfersModel.dataChanged.connect(self.OnOperationDataChanged)
         self.TransfersModel.select()
-        self.TransfersDataMapper = QDataWidgetMapper(self)
-        self.TransfersDataMapper.setModel(self.TransfersModel)
-        self.TransfersDataMapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
-        self.TransfersDataMapper.setItemDelegate(TransferSqlDelegate(self.TransfersDataMapper))
-        AddAndConfigureMappings(self.TransfersModel, self.TransfersDataMapper,
-                    [("from_acc_id",    self.TransferFromAccountWidget, 0,                      None),
-                     ("to_acc_id",      self.TransferToAccountWidget,   0,                      None),
-                     ("fee_acc_id",     self.TransferFeeAccountWidget,  0,                      None),
-                     ("from_timestamp", self.TransferFromTimestamp,     widthForTimestampEdit,  None),
-                     ("to_timestamp",   self.TransferToTimestamp,       widthForTimestampEdit,  None),
-                     ("fee_timestamp",  self.TransferFeeTimestamp,      widthForTimestampEdit,  None),
-                     ("from_amount",    self.TransferFromAmount,        widthForAmountEdit,     self.doubleValidate2),
-                     ("to_amount",      self.TransferToAmount,          widthForAmountEdit,     self.doubleValidate2),
-                     ("fee_amount",     self.TransferFeeAmount,         widthForAmountEdit,     self.doubleValidate2),
-                     ("note",           self.TransferNote,              0,                      None)])
+        transfers_mappers = [("from_acc_id",    self.TransferFromAccountWidget, 0,                      None),
+                            ("to_acc_id",      self.TransferToAccountWidget,   0,                      None),
+                            ("fee_acc_id",     self.TransferFeeAccountWidget,  0,                      None),
+                            ("from_timestamp", self.TransferFromTimestamp,     widthForTimestampEdit,  None),
+                            ("to_timestamp",   self.TransferToTimestamp,       widthForTimestampEdit,  None),
+                            ("fee_timestamp",  self.TransferFeeTimestamp,      widthForTimestampEdit,  None),
+                            ("from_amount",    self.TransferFromAmount,        widthForAmountEdit,     self.doubleValidate2),
+                            ("to_amount",      self.TransferToAmount,          widthForAmountEdit,     self.doubleValidate2),
+                            ("fee_amount",     self.TransferFeeAmount,         widthForAmountEdit,     self.doubleValidate2),
+                            ("note",           self.TransferNote,              0,                      None)]
+        self.TransfersDataMapper = ConfigureDataMappers(self.TransfersModel, transfers_mappers, TransferSqlDelegate)
         self.TransferFromAccountWidget.changed.connect(self.TransfersDataMapper.submit)
         self.TransferToAccountWidget.changed.connect(self.TransfersDataMapper.submit)
         self.TransferFeeAccountWidget.changed.connect(self.TransfersDataMapper.submit)
