@@ -14,9 +14,9 @@ from CustomUI.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, 
     ReferenceIntDelegate, ReferenceLookupDelegate, ReferenceTimestampDelegate
 from UI.ui_main_window import Ui_LedgerMainWindow
 from action_delegate import ActionDelegate, ActionDetailDelegate
-from balance_delegate import HoldingsDelegate
 from view_delegate import BalanceAccountDelegate, BalanceAmountDelegate, BalanceAmountAdjustedDelegate, \
-BalanceCurrencyDelegate
+    BalanceCurrencyDelegate, HoldingsAccountDelegate, HoldingsFloatDelegate, HoldingsFloat4Delegate, \
+    HoldingsProfitDelegate, HoldingsFloat2Delegate
 from bulk_db import loadDbFromSQL, MakeBackup, RestoreBackup
 from dividend_delegate import DividendSqlDelegate
 from downloader import QuoteDownloader, QuotesUpdateDialog
@@ -189,13 +189,22 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         _ = ConfigureTableView(self.BalancesTableView, self.BalancesModel, balance_columns)
         self.BalancesTableView.show()
 
-        self.HoldingsModel = self.UseSqlTable("holdings", [("account", "C/A"), ("asset", ""), ("asset_name", "Asset"),
-                                                   ("qty", "Qty"), ("open", "Open"), ("quote", "Last"),
-                                                   ("share", "Share, %"), ("profit_rel", "P/L, %"), ("profit", "P/L"),
-                                                   ("value", "Value"), ("value_adj", "Value, RUB")])
-        self.ConfigureTableView(self.HoldingsTableView, self.HoldingsModel,
-                                ["level1", "level2", "currency"], [("account", 32)], "asset_name")
-        self.HoldingsTableView.setItemDelegate(HoldingsDelegate(self.HoldingsTableView))
+        holdings_columns = [("level1", None, None, None, None),
+                            ("level2", None, None, None, None),
+                            ("currency", None, None, None, None),
+                            ("account", "C/A", 32, None, HoldingsAccountDelegate),
+                            ("asset", " ", None, None, None),
+                            ("asset_name", "Asset", -1, None, None),
+                            ("qty", "Qty", None, None, HoldingsFloatDelegate),
+                            ("open", "Open", None, None, HoldingsFloat4Delegate),
+                            ("quote", "Last", None, None, HoldingsFloat4Delegate),
+                            ("share", "Share, %", None, None, HoldingsFloat2Delegate),
+                            ("profit_rel", "P/L, %", None, None, HoldingsProfitDelegate),
+                            ("profit", "P/L", None, None, HoldingsProfitDelegate),
+                            ("value", "Value", None, None, HoldingsFloat2Delegate),
+                            ("value_adj", "Value, RUB", None, None, HoldingsFloat2Delegate)]
+        self.HoldingsModel = UseSqlTable(self.db, "holdings", holdings_columns, None)
+        _ = ConfigureTableView(self.HoldingsTableView, self.HoldingsModel, holdings_columns)
         self.HoldingsTableView.show()
 
         self.ChooseAccountBtn.init_DB(self.db)

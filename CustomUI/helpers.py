@@ -15,6 +15,22 @@ class rel:
     FOREIGN_KEY = 2
     LOOKUP_FIELD = 3
     GROUP_NAME = 4
+
+
+def formatFloatLong(value):
+    if abs(value - round(value)) <= 10e-2:
+        text = f"{value:.0f}"
+    elif abs(value - round(value, 2)) <= 10e-4:
+        text = f"{value:.2f}"
+    elif abs(value - round(value, 4)) <= 10e-6:
+        text = f"{value:.4f}"
+    elif abs(value - round(value, 6)) <= 10e-8:
+        text = f"{value:.6f}"
+    else:
+        text = f"{value:.8f}"
+    return text
+
+
 # -------------------------------------------------------------------------------------------------------------------
 # column_list is a list of tuples: (db_column_name, display_column_name, width, sort_order, delegate)
 # column will be hidden if display_column_name is None
