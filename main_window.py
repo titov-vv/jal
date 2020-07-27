@@ -14,14 +14,11 @@ from CustomUI.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, 
     ReferenceIntDelegate, ReferenceLookupDelegate, ReferenceTimestampDelegate
 from UI.ui_main_window import Ui_LedgerMainWindow
 from action_delegate import ActionDelegate, ActionDetailDelegate
-from view_delegate import BalanceAccountDelegate, BalanceAmountDelegate, BalanceAmountAdjustedDelegate, \
-    BalanceCurrencyDelegate, HoldingsAccountDelegate, HoldingsFloatDelegate, HoldingsFloat4Delegate, \
-    HoldingsProfitDelegate, HoldingsFloat2Delegate
+from view_delegate import *
 from bulk_db import loadDbFromSQL, MakeBackup, RestoreBackup
 from dividend_delegate import DividendSqlDelegate
 from downloader import QuoteDownloader, QuotesUpdateDialog
 from ledger import Ledger
-from operation_delegate import *
 from rebuild_window import RebuildDialog
 from reports import Reports, ReportParamsDialog
 from statements import StatementLoader
@@ -209,33 +206,30 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.ChooseAccountBtn.init_DB(self.db)
 
-        self.OperationsModel = self.UseSqlTable("all_operations",
-                                                [("type", " "), ("timestamp", "Timestamp"), ("account", "Account"),
-                                                 ("note", "Notes"), ("amount", "Amount"), ("t_amount", "Balance"),
-                                                 ("currency", "Currency")])
-        self.ConfigureTableView(self.OperationsTableView, self.OperationsModel,
-                                ["id", "account_id", "num_peer", "asset_id", "asset", "asset_name",
-                                 "note2", "qty_trid", "price", "fee_tax", "t_qty", "reconciled"],
-                                [("type", 10), ("timestamp", widthForTimestampEdit * 0.7), ("account", 300),
-                                 ("note", 300)],
-                                "note")
-        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("type"),
-                                                          OperationsTypeDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("timestamp"),
-                                                          OperationsTimestampDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("account"),
-                                                          OperationsAccountDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("note"),
-                                                          OperationsNotesDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("amount"),
-                                                          OperationsAmountDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("t_amount"),
-                                                          OperationsTotalsDelegate(self.OperationsTableView))
-        self.OperationsTableView.setItemDelegateForColumn(self.OperationsModel.fieldIndex("currency"),
-                                                          OperationsCurrencyDelegate(self.OperationsTableView))
-        self.OperationsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
+        operations_columns = [("type", " ", 10, None, OperationsTypeDelegate),
+                              ("id", None, None, None, None),
+                              ("timestamp", "Timestamp", widthForTimestampEdit*0.7, None, OperationsTimestampDelegate),
+                              ("account_id", None, None, None, None),
+                              ("account", "Account", 300, None, OperationsAccountDelegate),
+                              ("num_peer", None, None, None, None),
+                              ("asset_id", None, None, None, None),
+                              ("asset", None, None, None, None),
+                              ("asset_name", None, None, None, None),
+                              ("note", "Notes", -1, None, OperationsNotesDelegate),
+                              ("note2", None, None, None, None),
+                              ("amount", "Amount", None, None, OperationsAmountDelegate),
+                              ("qty_trid", None, None, None, None),
+                              ("price", None, None, None, None),
+                              ("fee_tax", None, None, None, None),
+                              ("t_amount", "Balance", None, None, OperationsTotalsDelegate),
+                              ("t_qty", None, None, None, None),
+                              ("currency", "Currency", None, None, OperationsCurrencyDelegate),
+                              ("reconciled", None, None, None, None)]
+        self.OperationsModel = UseSqlTable(self.db, "all_operations", operations_columns, None)
+        _ = ConfigureTableView(self.OperationsTableView, self.OperationsModel, operations_columns)
+        self.OperationsModel.select()
+        self.OperationsTableView.setSelectionMode(QAbstractItemView.SingleSelection)  # disable multiple selection
         self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.OperationsTableView.setWordWrap(False)
         # next line forces usage of sizeHint() from delegate
         self.OperationsTableView.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.OperationsTableView.show()
