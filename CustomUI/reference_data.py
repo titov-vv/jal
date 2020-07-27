@@ -7,7 +7,7 @@ from PySide2.QtWidgets import QDialog
 from PySide2.QtWidgets import QStyledItemDelegate
 
 from UI.ui_reference_data_dlg import Ui_ReferenceDataDialog
-from CustomUI.helpers import UseSqlTable, ConfigureTableView, hcol_idx, rel
+from CustomUI.helpers import UseSqlTable, ConfigureTableView, rel
 
 
 # --------------------------------------------------------------------------------------------------------------

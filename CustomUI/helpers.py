@@ -23,7 +23,9 @@ class rel:
 # delegate is a function for custom paint and editors
 # relations - list of tuples that define lookup relations to other tables in database:
 #             [(KEY_FEILD, LOOKUP_TABLE, FOREIGN_KEY, LOOKUP_FIELD), ...]
-def UseSqlTable(db, table_name, columns, relations):
+# mappings - list of tuples that define widgets linked to the fields in view:
+#             [Field_name, MappedWidget, Width, Formatter]
+def UseSqlTable(db, table_name, columns, relations, mappings=None):
     if relations:
         model = QSqlRelationalTableModel(db=db)
     else:

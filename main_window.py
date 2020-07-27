@@ -9,11 +9,14 @@ from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlQueryModel, QSqlTab
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QDataWidgetMapper, QHeaderView, QMenu, \
     QMessageBox, QAction, QFrame, QLabel
 
+from CustomUI.helpers import UseSqlTable, ConfigureTableView
 from CustomUI.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, ReferenceBoolDelegate, \
     ReferenceIntDelegate, ReferenceLookupDelegate, ReferenceTimestampDelegate
 from UI.ui_main_window import Ui_LedgerMainWindow
 from action_delegate import ActionDelegate, ActionDetailDelegate
-from balance_delegate import BalanceDelegate, HoldingsDelegate
+from balance_delegate import HoldingsDelegate
+from view_delegate import BalanceAccountDelegate, BalanceAmountDelegate, BalanceAmountAdjustedDelegate, \
+BalanceCurrencyDelegate
 from bulk_db import loadDbFromSQL, MakeBackup, RestoreBackup
 from dividend_delegate import DividendSqlDelegate
 from downloader import QuoteDownloader, QuotesUpdateDialog
@@ -174,13 +177,16 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.HoldingsCurrencyCombo.setModelColumn(1)
         self.HoldingsCurrencyCombo.setCurrentIndex(self.HoldingsCurrencyCombo.findText("RUB"))
 
-        self.BalancesModel = self.UseSqlTable("balances", [("account_name", "Account"), ("balance", "Balance"),
-                                                           ("currency_name", ""), ("balance_adj", "Balance, RUB")])
-        self.ConfigureTableView(self.BalancesTableView, self.BalancesModel,
-                                ["level1", "level2", "days_unreconciled", "active"],
-                                [("account_name", 75), ("balance", 100), ("currency_name", 35), ("balance_adj", 110)],
-                                "account_name")
-        self.BalancesTableView.setItemDelegate(BalanceDelegate(self.BalancesTableView))
+        balance_columns = [("level1", None, None, None, None),
+                           ("level2", None, None, None, None),
+                           ("account_name", "Account", -1, None, BalanceAccountDelegate),
+                           ("balance", "Balance", 100, None, BalanceAmountDelegate),
+                           ("currency_name", " ", 35, None, BalanceCurrencyDelegate),
+                           ("balance_adj", "Balance, RUB", 110, None, BalanceAmountAdjustedDelegate),
+                           ("days_unreconciled", None, None, None, None),
+                           ("active", None, None, None, None)]
+        self.BalancesModel = UseSqlTable(self.db, "balances", balance_columns, None)
+        _ = ConfigureTableView(self.BalancesTableView, self.BalancesModel, balance_columns)
         self.BalancesTableView.show()
 
         self.HoldingsModel = self.UseSqlTable("holdings", [("account", "C/A"), ("asset", ""), ("asset_name", "Asset"),

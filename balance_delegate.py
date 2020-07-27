@@ -3,13 +3,6 @@ from PySide2.QtWidgets import QStyledItemDelegate
 from PySide2.QtGui import QPalette, QBrush
 from PySide2.QtCore import Qt
 
-########################################
-# BALANCES FIELD NUMBERS
-FIELD_BALANCE = 3
-FIELD_CURRENCY = 4
-FIELD_BALANCE_ADJ = 5
-FIELD_DAYS_UNREC = 6
-FIELD_ACTIVE = 7
 
 ########################################
 # HOLDINGS FIELD NUMBERS
@@ -37,50 +30,6 @@ def formatFloatLong(value):
     else:
         text = f"{value:.8f}"
     return text
-
-
-class BalanceDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
-
-    def paint(self, painter, option, index):
-        painter.save()
-        model = index.model()
-        column = index.column()
-        record = model.record(index.row())
-        value = record.value(column)
-        balance = record.value(FIELD_BALANCE)
-        unreconciled_days = record.value(FIELD_DAYS_UNREC)
-        active_account = record.value(FIELD_ACTIVE)
-
-        if not active_account:  # Show inactive accounts in Italic text
-            font = painter.font()
-            font.setItalic(True)
-            painter.setFont(font)
-
-        if unreconciled_days > 7:
-            painter.fillRect(option.rect, LIGHT_YELLOW_COLOR)
-        if unreconciled_days > 15:
-            painter.fillRect(option.rect, LIGHT_RED_COLOR)
-
-        if (column == FIELD_BALANCE) or (column == FIELD_BALANCE_ADJ):
-            if value == "":
-                value = 0
-            text = f"{value:,.2f}"
-            alignment = Qt.AlignRight
-        else:
-            text = value
-            alignment = Qt.AlignLeft
-
-        if balance == 0:
-            font = painter.font()
-            font.setBold(True)
-            painter.setFont(font)
-            if (column == FIELD_BALANCE) or (column == FIELD_CURRENCY):
-                text = ""
-
-        painter.drawText(option.rect, alignment, text)
-        painter.restore()
 
 
 class HoldingsDelegate(QStyledItemDelegate):

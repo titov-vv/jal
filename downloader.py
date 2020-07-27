@@ -114,7 +114,7 @@ class QuoteDownloader:
                 elif feed_id == FEED_EU:
                     data = self.Euronext_DataReader(asset, isin, from_timestamp, end_timestamp)
                 elif feed_id == FEED_US:
-                    data = self.US_DataReader(asset, from_timestamp, end_timestamp)
+                    data = self.Yahoo_Downloader(asset, from_timestamp, end_timestamp)
                 else:
                     logging.error(f"Data feed {feed_id} is not implemented")
                     continue
@@ -205,14 +205,13 @@ class QuoteDownloader:
         return close
 
     # noinspection PyMethodMayBeStatic
-    def US_DataReader(self, asset_code, start_timestamp, end_timestamp):
-        date1 = datetime.fromtimestamp(start_timestamp).strftime('%Y%m%d')
-        date2 = datetime.fromtimestamp(end_timestamp).strftime('%Y%m%d')
-        url = f"https://stooq.com/q/d/l/?s={asset_code}.US&i=d&d1={date1}&d2={date2}"
+    def Yahoo_Downloader(self, asset_code, start_timestamp, end_timestamp):
+        url = f"https://query1.finance.yahoo.com/v7/finance/download/{asset_code}?"\
+              f"period1={start_timestamp}&period2={end_timestamp}&interval=1d&events=history"
         file = StringIO(get_web_data(url))
         data = pd.read_csv(file)
         data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
-        data = data.drop(columns=['Open', 'High', 'Low', 'Volume'])
+        data = data.drop(columns=['Open', 'High', 'Low', 'Adj Close', 'Volume'])
         close = data.set_index("Date")
         return close
 
