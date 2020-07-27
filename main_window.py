@@ -124,25 +124,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def __del__(self):
         self.db.close()
 
-    def UseSqlTable(self, table_name, column_title_list):
-        model = QSqlTableModel(db=self.db)
-        model.setTable(table_name)
-        model.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        ModelSetColumnHeaders(model, column_title_list)
-        model.select()
-        return model
-
-    # noinspection PyMethodMayBeStatic
-    def ConfigureTableView(self, view, model, hide_columns_list, column_width_list, stretch_column):
-        view.setModel(model)
-        HideViewColumns(view, hide_columns_list)
-        ViewSetColumnWidths(view, column_width_list)
-        view.horizontalHeader().setSectionResizeMode(model.fieldIndex(stretch_column), QHeaderView.Stretch)
-        view.setSelectionBehavior(QAbstractItemView.SelectRows)
-        font = view.horizontalHeader().font()
-        font.setBold(True)
-        view.horizontalHeader().setFont(font)
-
     # noinspection PyAttributeOutsideInit
     def ConfigureUI(self):
         # Customize Status bar and logs
