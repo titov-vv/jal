@@ -5,6 +5,8 @@ from CustomUI.reference_selector import CategorySelector
 from CustomUI.reference_selector import TagSelector
 
 
+# TODO: Check below delegates and probably move it to view_delegates.py
+
 class ActionDelegate(QSqlRelationalDelegate):
     def __init__(self, parent=None):
         QSqlRelationalDelegate.__init__(self, parent)

@@ -237,28 +237,22 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionAccountWidget.changed.connect(self.ActionsDataMapper.submit)
         self.ActionPeerWidget.changed.connect(self.ActionsDataMapper.submit)
 
-        self.ActionDetailsModel = QSqlRelationalTableModel(db=self.db)
-        self.ActionDetailsModel.setTable("action_details")
-        self.ActionDetailsModel.setJoinMode(QSqlRelationalTableModel.LeftJoin)  # in order not to fail on NULL tags
-        self.ActionDetailsModel.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        category_idx = self.ActionDetailsModel.fieldIndex("category_id")
-        self.ActionDetailsModel.setRelation(category_idx, QSqlRelation("categories", "id", "name"))
-        tag_idx = self.ActionDetailsModel.fieldIndex("tag_id")
-        self.ActionDetailsModel.setRelation(tag_idx, QSqlRelation("tags", "id", "tag"))
-        ModelSetColumnHeaders(self.ActionDetailsModel, [("category_id", "Category"), ("tag_id", "Tags"),
-                                                        ("sum", "Amount"), ("alt_sum", "Amount *"), ("note", "Note")])
+        action_details_columns = [("id", None, None, None, None),
+                                  ("pid", None, None, None, None),
+                                  ("category_id", "Category", 200, None, ActionDetailDelegate),
+                                  ("tag_id", "Tag", 200, None, ActionDetailDelegate),
+                                  ("sum", "Amount", 100, None, None),
+                                  ("alt_sum", "Amount *", 100, None, None),
+                                  ("note", "Note", -1, None, None)]
+        self.ActionDetailsModel = UseSqlTable(self.db, "action_details", action_details_columns,
+                                              relations = [("category_id", "categories", "id", "name", None),
+                                                           ("tag_id", "tags", "id", "tag", None)])
+        self.action_details_delegates = ConfigureTableView(self.ActionDetailsTableView, self.ActionDetailsModel,
+                                                           action_details_columns)
         self.ActionDetailsModel.dataChanged.connect(self.OnOperationDataChanged)
         self.ActionDetailsModel.select()
-        self.ActionDetailsTableView.setModel(self.ActionDetailsModel)
-        self.ActionDetailsTableView.setItemDelegate(ActionDetailDelegate(self.ActionDetailsTableView))
-        self.ActionDetailsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  # To select only 1 row
-        self.ActionDetailsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
-        HideViewColumns(self.ActionDetailsTableView, ["id", "pid"])
-        # "name" and "tag" are column names from Relations
-        ViewSetColumnWidths(self.ActionDetailsTableView, [("name", 200), ("tag", 200), ("sum", 100),
-                                                          ("alt_sum", 100), ("note", 400)])
-        self.ActionDetailsTableView.horizontalHeader().setSectionResizeMode(
-            self.ActionDetailsModel.fieldIndex("note"), QHeaderView.Stretch)  # make notes to fill all remaining space
+        # self.ActionDetailsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  TODO: Is this line needed?
+        self.ActionDetailsTableView.setSelectionMode(QAbstractItemView.SingleSelection)  # disable multiple selection
         self.ActionDetailsTableView.horizontalHeader().moveSection(self.ActionDetailsModel.fieldIndex("note"),
                                                                    self.ActionDetailsModel.fieldIndex("name"))
         self.ActionDetailsTableView.show()
