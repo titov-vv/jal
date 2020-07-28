@@ -170,7 +170,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsModel = UseSqlTable(self.db, "all_operations", operations_columns, None)
         _ = ConfigureTableView(self.OperationsTableView, self.OperationsModel, operations_columns)
         self.OperationsModel.select()
-        self.OperationsTableView.setSelectionMode(QAbstractItemView.SingleSelection)  # disable multiple selection
         self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
         # next line forces usage of sizeHint() from delegate
         self.OperationsTableView.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
@@ -196,8 +195,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                                   ("pid", None, None, None, None),
                                   ("category_id", "Category", 200, None, ActionDetailDelegate),
                                   ("tag_id", "Tag", 200, None, ActionDetailDelegate),
-                                  ("sum", "Amount", 100, None, None),
-                                  ("alt_sum", "Amount *", 100, None, None),
+                                  ("sum", "Amount", 100, None, ActionDetailDelegate),
+                                  ("alt_sum", "Amount *", 100, None, ActionDetailDelegate),
                                   ("note", "Note", -1, None, None)]
         self.ActionDetailsModel = UseSqlTable(self.db, "action_details", action_details_columns,
                                               relations=[("category_id", "categories", "id", "name", None),
@@ -207,7 +206,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionDetailsModel.dataChanged.connect(self.OnOperationDataChanged)
         self.ActionDetailsModel.select()
         # self.ActionDetailsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  TODO: Is this line needed?
-        self.ActionDetailsTableView.setSelectionMode(QAbstractItemView.SingleSelection)  # disable multiple selection
         self.ActionDetailsTableView.horizontalHeader().moveSection(self.ActionDetailsModel.fieldIndex("note"),
                                                                    self.ActionDetailsModel.fieldIndex("name"))
         self.ActionDetailsTableView.show()

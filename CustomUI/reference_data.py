@@ -7,7 +7,7 @@ from PySide2.QtWidgets import QDialog
 from PySide2.QtWidgets import QStyledItemDelegate
 
 from UI.ui_reference_data_dlg import Ui_ReferenceDataDialog
-from CustomUI.helpers import UseSqlTable, ConfigureTableView, rel
+from CustomUI.helpers import UseSqlTable, ConfigureTableView, rel_idx
 
 
 # --------------------------------------------------------------------------------------------------------------
@@ -55,15 +55,15 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.GroupCombo.setVisible(False)
         if relations is not None:
             for relation in relations:
-                if relation[rel.GROUP_NAME] is not None:
+                if relation[rel_idx.GROUP_NAME] is not None:
                     self.GroupLbl.setVisible(True)
-                    self.GroupLbl.setText(relation[rel.GROUP_NAME])
+                    self.GroupLbl.setText(relation[rel_idx.GROUP_NAME])
                     self.GroupCombo.setVisible(True)
-                    self.group_key_field = relation[rel.KEY_FIELD]
-                    self.group_fkey_field = relation[rel.FOREIGN_KEY]
-                    relation_model = self.Model.relationModel(self.Model.fieldIndex(relation[rel.KEY_FIELD]))
+                    self.group_key_field = relation[rel_idx.KEY_FIELD]
+                    self.group_fkey_field = relation[rel_idx.FOREIGN_KEY]
+                    relation_model = self.Model.relationModel(self.Model.fieldIndex(relation[rel_idx.KEY_FIELD]))
                     self.GroupCombo.setModel(relation_model)
-                    self.GroupCombo.setModelColumn(relation_model.fieldIndex(relation[rel.LOOKUP_FIELD]))
+                    self.GroupCombo.setModelColumn(relation_model.fieldIndex(relation[rel_idx.LOOKUP_FIELD]))
 
         self.Toggle.setVisible(False)
         if toggle:

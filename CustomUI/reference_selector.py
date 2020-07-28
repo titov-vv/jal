@@ -72,6 +72,9 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
             self.selected_id = self.dialog.selected_id
 
     @abstractmethod
+    def init_db(self, db):
+        pass
+
     def init_db(self, table, selector_field, details_field=None):
         self.table = table
         self.selector_field = selector_field

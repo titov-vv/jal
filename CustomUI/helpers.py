@@ -9,14 +9,14 @@ class hcol_idx:
     SORT_ORDER = 3
     DELEGATE = 4
 
-class rel:
+class rel_idx:
     KEY_FIELD = 0
     LOOKUP_TABLE = 1
     FOREIGN_KEY = 2
     LOOKUP_FIELD = 3
     GROUP_NAME = 4
 
-class map:
+class map_idx:
     DB_NAME = 0
     WIDGET = 1
     WIDTH = 2
@@ -47,7 +47,7 @@ def formatFloatLong(value):
 #             [(KEY_FEILD, LOOKUP_TABLE, FOREIGN_KEY, LOOKUP_FIELD), ...]
 # mappings - list of tuples that define widgets linked to the fields in view:
 #             [Field_name, MappedWidget, Width, Formatter]
-def UseSqlTable(db, table_name, columns, relations, mappings=None):
+def UseSqlTable(db, table_name, columns, relations):
     if relations:
         model = QSqlRelationalTableModel(db=db)
     else:
@@ -57,9 +57,9 @@ def UseSqlTable(db, table_name, columns, relations, mappings=None):
     if relations:
         model.setJoinMode(QSqlRelationalTableModel.LeftJoin)  # to work correctly with NULL values in fields
         for relation in relations:
-            model.setRelation(model.fieldIndex(relation[rel.KEY_FIELD]),
-                              QSqlRelation(relation[rel.LOOKUP_TABLE],
-                                           relation[rel.FOREIGN_KEY], relation[rel.LOOKUP_FIELD]))
+            model.setRelation(model.fieldIndex(relation[rel_idx.KEY_FIELD]),
+                              QSqlRelation(relation[rel_idx.LOOKUP_TABLE],
+                                           relation[rel_idx.FOREIGN_KEY], relation[rel_idx.LOOKUP_FIELD]))
     for column in columns:
         if column[hcol_idx.DISPLAY_NAME]:
             model.setHeaderData(model.fieldIndex(column[hcol_idx.DB_NAME]), Qt.Horizontal, column[hcol_idx.DISPLAY_NAME])
@@ -76,11 +76,11 @@ def ConfigureDataMappers(model, mappings, delegate):
     mapper.setItemDelegate(delegate(mapper))
     for mapping in mappings:
         # if no USER property we should use QByteArray().setRawData("account_id", 10)) here
-        mapper.addMapping(mapping[map.WIDGET], model.fieldIndex(mapping[map.DB_NAME]))
-        if mapping[map.WIDTH]:
-            mapping[map.WIDGET].setFixedWidth(mapping[map.WIDTH])
-        if mapping[map.VALIDATOR]:
-            mapping[map.WIDGET].setValidator(mapping[map.VALIDATOR])
+        mapper.addMapping(mapping[map_idx.WIDGET], model.fieldIndex(mapping[map_idx.DB_NAME]))
+        if mapping[map_idx.WIDTH]:
+            mapping[map_idx.WIDGET].setFixedWidth(mapping[map_idx.WIDTH])
+        if mapping[map_idx.VALIDATOR]:
+            mapping[map_idx.WIDGET].setValidator(mapping[map_idx.VALIDATOR])
     return mapper
 
 def ConfigureTableView(view, model, columns):
@@ -95,6 +95,7 @@ def ConfigureTableView(view, model, columns):
                 view.setColumnWidth(model.fieldIndex(column[hcol_idx.DB_NAME]), column[hcol_idx.WIDTH])
 
     view.setSelectionBehavior(QAbstractItemView.SelectRows)
+    view.setSelectionMode(QAbstractItemView.SingleSelection)
     font = view.horizontalHeader().font()
     font.setBold(True)
     view.horizontalHeader().setFont(font)
