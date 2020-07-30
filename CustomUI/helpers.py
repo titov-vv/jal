@@ -1,6 +1,6 @@
 from PySide2.QtCore import Qt
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
-from PySide2.QtWidgets import QAbstractItemView, QHeaderView, QDataWidgetMapper
+from PySide2.QtWidgets import QAbstractItemView, QHeaderView, QDataWidgetMapper, QFrame
 
 class hcol_idx:
     DB_NAME = 0
@@ -35,6 +35,15 @@ def formatFloatLong(value):
     else:
         text = f"{value:.8f}"
     return text
+
+
+# -----------------------------------------------------------------------------------------------------------------------
+# a simple VLine, like the one from Qt Designer to use in Status Bar for example
+class VLine(QFrame):
+    def __init__(self):
+        super(VLine, self).__init__()
+        self.setFrameShape(QFrame.VLine)
+        self.setFrameShadow(QFrame.Sunken)
 
 
 # -------------------------------------------------------------------------------------------------------------------

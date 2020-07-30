@@ -5,10 +5,9 @@ from PySide2 import QtCore, QtWidgets
 from PySide2.QtCore import Slot, QMetaObject
 from PySide2.QtGui import QDoubleValidator
 from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlQueryModel
-from PySide2.QtWidgets import QMainWindow, QFileDialog, QAbstractItemView, QHeaderView, QMenu, \
-    QMessageBox, QAction, QFrame, QLabel
+from PySide2.QtWidgets import QMainWindow, QFileDialog, QHeaderView, QMenu, QMessageBox, QAction, QLabel
 
-from CustomUI.helpers import UseSqlTable, ConfigureTableView, ConfigureDataMappers
+from CustomUI.helpers import UseSqlTable, ConfigureTableView, ConfigureDataMappers, VLine
 from CustomUI.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, ReferenceBoolDelegate, \
     ReferenceIntDelegate, ReferenceLookupDelegate, ReferenceTimestampDelegate
 from UI.ui_main_window import Ui_LedgerMainWindow
@@ -24,15 +23,6 @@ from statements import StatementLoader
 from taxes import TaxesRus, TaxExportDialog
 from trade_delegate import TradeSqlDelegate
 from transfer_delegate import TransferSqlDelegate
-
-
-# -----------------------------------------------------------------------------------------------------------------------
-# a simple VLine, like the one you get from designer
-class VLine(QFrame):
-    def __init__(self):
-        super(VLine, self).__init__()
-        self.setFrameShape(QFrame.VLine)
-        self.setFrameShadow(QFrame.Sunken)
 
 
 # -----------------------------------------------------------------------------------------------------------------------
