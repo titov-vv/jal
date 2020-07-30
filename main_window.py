@@ -2,9 +2,9 @@ import logging
 import os
 
 from PySide2 import QtCore, QtWidgets
-from PySide2.QtCore import Slot, QMetaObject
+from PySide2.QtCore import Slot
 from PySide2.QtGui import QDoubleValidator
-from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlQueryModel
+from PySide2.QtSql import QSqlQuery, QSqlQueryModel
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QHeaderView, QMenu, QMessageBox, QAction, QLabel
 
 from CustomUI.helpers import UseSqlTable, ConfigureTableView, ConfigureDataMappers, VLine
@@ -13,7 +13,8 @@ from CustomUI.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, 
 from UI.ui_main_window import Ui_LedgerMainWindow
 from action_delegate import ActionDelegate, ActionDetailDelegate
 from view_delegate import *
-from DB.bulk_db import loadDbFromSQL, MakeBackup, RestoreBackup
+from DB.bulk_db import MakeBackup, RestoreBackup
+from DB.helpers import init_and_check_db
 from dividend_delegate import DividendSqlDelegate
 from downloader import QuoteDownloader, QuotesUpdateDialog
 from ledger import Ledger
@@ -32,24 +33,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.setupUi(self)
 
         self.own_path = os.path.dirname(os.path.realpath(__file__)) + os.sep
-        self.db = QSqlDatabase.addDatabase("QSQLITE")
-        self.db.setDatabaseName(self.own_path + DB_PATH)
-        self.db.open()
-        tables = self.db.tables(QSql.Tables)
-        if not tables:
-            self.InitDB()
-            QMetaObject.invokeMethod(self, "close", Qt.QueuedConnection)
-            return
-
-        query = QSqlQuery(self.db)
-        query.exec_("SELECT value FROM settings WHERE name='SchemaVersion'")
-        query.next()
-        if query.value(0) != TARGET_SCHEMA:
-            self.db.close()
-            QMessageBox().critical(self, self.tr("Database version mismatch"),
-                                   self.tr("Database schema version is wrong"),
-                                   QMessageBox.Ok)
-            QMetaObject.invokeMethod(self, "close", Qt.QueuedConnection)
+        self.db = init_and_check_db(self, self.own_path)
+        if not self.db:
             return
 
         query = QSqlQuery(self.db)
@@ -73,7 +58,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.UpdateBalances()
 
     def __del__(self):
-        self.db.close()
+        if self.db:
+            self.db.close()
 
     # noinspection PyAttributeOutsideInit
     def ConfigureUI(self):
@@ -341,15 +327,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                                               "Application terminates now."),
                                       QMessageBox.Ok)
             QtWidgets.QApplication.instance().quit()
-
-    def InitDB(self):
-        self.db.close()
-        loadDbFromSQL(self.own_path + DB_PATH, self.own_path + INIT_SCRIPT_PATH)
-        QMessageBox().information(self, self.tr("Database initialized"),
-                                  self.tr("Database have been initialized.\n"
-                                          "You need to restart the application.\n"
-                                          "Application terminates now."),
-                                  QMessageBox.Ok)
 
     def ShowRebuildDialog(self):
         query = QSqlQuery(self.db)
