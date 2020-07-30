@@ -13,7 +13,7 @@ from CustomUI.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, 
 from UI.ui_main_window import Ui_LedgerMainWindow
 from action_delegate import ActionDelegate, ActionDetailDelegate
 from view_delegate import *
-from bulk_db import loadDbFromSQL, MakeBackup, RestoreBackup
+from DB.bulk_db import loadDbFromSQL, MakeBackup, RestoreBackup
 from dividend_delegate import DividendSqlDelegate
 from downloader import QuoteDownloader, QuotesUpdateDialog
 from ledger import Ledger
