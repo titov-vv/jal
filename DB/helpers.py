@@ -33,3 +33,9 @@ def init_and_check_db(parent, db_path):
         return None
     return db
 
+
+def get_base_currency(db):
+    query = QSqlQuery(db)
+    query.exec_("SELECT value FROM settings WHERE name='BaseCurrency'")
+    query.next()
+    return query.value(0)

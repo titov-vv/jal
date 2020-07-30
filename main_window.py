@@ -14,7 +14,7 @@ from UI.ui_main_window import Ui_LedgerMainWindow
 from action_delegate import ActionDelegate, ActionDetailDelegate
 from view_delegate import *
 from DB.bulk_db import MakeBackup, RestoreBackup
-from DB.helpers import init_and_check_db
+from DB.helpers import init_and_check_db, get_base_currency
 from dividend_delegate import DividendSqlDelegate
 from downloader import QuoteDownloader, QuotesUpdateDialog
 from ledger import Ledger
@@ -37,11 +37,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         if not self.db:
             return
 
-        query = QSqlQuery(self.db)
-        query.exec_("SELECT value FROM settings WHERE name='BaseCurrency'")
-        query.next()
-        self.balance_currency = query.value(0)
-        self.holdings_currency = query.value(0)
+        self.balance_currency = get_base_currency(self.db)
+        self.holdings_currency = self.balance_currency
 
         self.ledger = Ledger(self.db)
         self.downloader = QuoteDownloader(self.db)
