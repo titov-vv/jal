@@ -17,7 +17,7 @@ class TradeAction(QWidget):
         self.setLayout(self.layout)
         self.palette = QPalette()
 
-    def init_DB(self, db):
+    def init_db(self, db):
         self.db = db
 
     def getType(self):
@@ -49,3 +49,6 @@ class TradeAction(QWidget):
         pass
 
     corp_action_type = Property(int, getType, setType, notify=changed, user=True)
+
+    def isCustom(self):
+        return True

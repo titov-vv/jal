@@ -151,9 +151,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         ###############################################################################################
         # CONFIGURE ACTIONS TAB                                                                       #
         ###############################################################################################
-        self.ActionAccountWidget.init_db(self.db)
-        self.ActionPeerWidget.init_db(self.db)
-
         self.ActionsModel = UseSqlTable(self.db, "actions", [], None)  # no columns to customize
         self.ActionsModel.dataChanged.connect(self.OnOperationDataChanged)
         self.ActionsModel.select()
@@ -186,10 +183,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         ###############################################################################################
         # CONFIGURE TRADES TAB                                                                        #
         ###############################################################################################
-        self.TradeActionWidget.init_DB(self.db)
-        self.TradeAccountWidget.init_db(self.db)
-        self.TradeAssetWidget.init_db(self.db)
-
         self.TradesModel = UseSqlTable(self.db, "trades", [], # no columns to customize
                                        relations=[("corp_action_id", "corp_actions", "id", "type", None)])
         self.TradesModel.dataChanged.connect(self.OnOperationDataChanged)
@@ -211,9 +204,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         ###############################################################################################
         # CONFIGURE DIVIDENDS TAB                                                                     #
         ###############################################################################################
-        self.DividendAccountWidget.init_db(self.db)
-        self.DividendAssetWidget.init_db(self.db)
-
         self.DividendsModel = UseSqlTable(self.db, "dividends", [], None)
         self.DividendsModel.dataChanged.connect(self.OnOperationDataChanged)
         self.DividendsModel.select()
@@ -232,10 +222,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         ###############################################################################################
         # CONFIGURE TRANSFERS TAB                                                                     #
         ###############################################################################################
-        self.TransferFromAccountWidget.init_db(self.db)
-        self.TransferToAccountWidget.init_db(self.db)
-        self.TransferFeeAccountWidget.init_db(self.db)
-
         self.TransfersModel = UseSqlTable(self.db, "transfers_combined", [], None)
         self.TransfersModel.dataChanged.connect(self.OnOperationDataChanged)
         self.TransfersModel.select()
