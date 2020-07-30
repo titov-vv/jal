@@ -158,8 +158,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                           ("account_id", self.ActionAccountWidget,   0,                      None),
                           ("peer_id",    self.ActionPeerWidget,      0,                      None)]
         self.ActionsDataMapper = ConfigureDataMappers(self.ActionsModel, action_mappers, ActionDelegate)
-        self.ActionAccountWidget.changed.connect(self.ActionsDataMapper.submit)
-        self.ActionPeerWidget.changed.connect(self.ActionsDataMapper.submit)
 
         action_details_columns = [("id", None, None, None, None),
                                   ("pid", None, None, None, None),
@@ -198,8 +196,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                          ("coupon",         self.TradeCouponEdit,       widthForAmountEdit,     self.doubleValidate6),
                          ("fee",            self.TradeFeeEdit,          widthForAmountEdit,     self.doubleValidate6)]
         self.TradesDataMapper = ConfigureDataMappers(self.TradesModel, trade_mappers, TradeSqlDelegate)
-        self.TradeAccountWidget.changed.connect(self.TradesDataMapper.submit)
-        self.TradeAssetWidget.changed.connect(self.TradesDataMapper.submit)
 
         ###############################################################################################
         # CONFIGURE DIVIDENDS TAB                                                                     #
@@ -216,8 +212,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                             ("sum_tax",    self.DividendTaxEdit,           widthForAmountEdit,     self.doubleValidate2),
                             ("note_tax",   self.DividendTaxDescription,    0,                      None)]
         self.DividendsDataMapper = ConfigureDataMappers(self.DividendsModel, dividend_mappers, DividendSqlDelegate)
-        self.DividendAccountWidget.changed.connect(self.DividendsDataMapper.submit)
-        self.DividendAssetWidget.changed.connect(self.DividendsDataMapper.submit)
 
         ###############################################################################################
         # CONFIGURE TRANSFERS TAB                                                                     #
@@ -225,7 +219,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.TransfersModel = UseSqlTable(self.db, "transfers_combined", [], None)
         self.TransfersModel.dataChanged.connect(self.OnOperationDataChanged)
         self.TransfersModel.select()
-        transfers_mappers = [("from_acc_id",    self.TransferFromAccountWidget, 0,                      None),
+        transfers_mappers = [("from_acc_id",   self.TransferFromAccountWidget, 0,                      None),
                             ("to_acc_id",      self.TransferToAccountWidget,   0,                      None),
                             ("fee_acc_id",     self.TransferFeeAccountWidget,  0,                      None),
                             ("from_timestamp", self.TransferFromTimestamp,     widthForTimestampEdit,  None),
@@ -236,9 +230,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                             ("fee_amount",     self.TransferFeeAmount,         widthForAmountEdit,     self.doubleValidate2),
                             ("note",           self.TransferNote,              0,                      None)]
         self.TransfersDataMapper = ConfigureDataMappers(self.TransfersModel, transfers_mappers, TransferSqlDelegate)
-        self.TransferFromAccountWidget.changed.connect(self.TransfersDataMapper.submit)
-        self.TransferToAccountWidget.changed.connect(self.TransfersDataMapper.submit)
-        self.TransferFeeAccountWidget.changed.connect(self.TransfersDataMapper.submit)
 
         ###############################################################################################
         # CONFIGURE ACTIONS                                                                           #

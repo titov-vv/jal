@@ -78,7 +78,9 @@ def UseSqlTable(db, table_name, columns, relations):
 
 # Use mappings to link between DB fields and GUI widgets with help of delegate
 # mapping is a list of tuples [(FIELD_NAME, GUI_WIDGET, WIDTH, VALIDATOR)]
-# If widget is a custom one -> initialize database connection for it
+# If widget is a custom one:
+#    - initialize database connection for it
+#    - connect "changed" signal to "submit" slot of QDataWidgetMapper (to reflect data changes in UI)
 def ConfigureDataMappers(model, mappings, delegate):
     mapper = QDataWidgetMapper(model)
     mapper.setModel(model)
@@ -87,6 +89,7 @@ def ConfigureDataMappers(model, mappings, delegate):
     for mapping in mappings:
         if hasattr(mapping[map_idx.WIDGET], "isCustom"):
             mapping[map_idx.WIDGET].init_db(model.database())
+            mapping[map_idx.WIDGET].changed.connect(mapper.submit)
         # if no USER property we should use QByteArray().setRawData("account_id", 10)) here
         mapper.addMapping(mapping[map_idx.WIDGET], model.fieldIndex(mapping[map_idx.DB_NAME]))
         if mapping[map_idx.WIDTH]:
