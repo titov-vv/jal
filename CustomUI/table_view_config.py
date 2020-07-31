@@ -27,6 +27,18 @@ class TableViewConfig:
         TRANSFERS: 'transfers_combined'
     }
 
+    # if True - then link model 'dataChanged' signal with self.parent.on_data_changed() slot
+    notify_changes = {
+        BALANCES: False,
+        HOLDINGS: False,
+        OPERATIONS: False,
+        ACTIONS: True,
+        ACTION_DETAILS: True,
+        TRADES: True,
+        DIVIDENDS: True,
+        TRANSFERS: True
+    }
+
     table_relations = {
         BALANCES: None,
         HOLDINGS: None,
@@ -164,6 +176,8 @@ class TableViewConfig:
         model = UseSqlTable(self.parent.db, self.table_names[i], self.table_view_columns[i],
                             relations=self.table_relations[i])
         model.select()
+        if self.notify_changes[i]:
+            model.dataChanged.connect(self.parent.on_data_changed)
         if self.views[i]:
             delegates = ConfigureTableView(self.views[i], model, self.table_view_columns[i])
             self.delegates_storage.append(delegates)
@@ -174,5 +188,5 @@ class TableViewConfig:
             self.mappers[i] = None
 
     def configure_all(self):
-        for view in self.views:
-            self.configure(view)
+        for table in self.table_names:
+            self.configure(table)

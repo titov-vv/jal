@@ -96,21 +96,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
         self.ActionsDataMapper = self.ui_config.mappers[self.ui_config.ACTIONS]
-        self.ActionsDataMapper.model().dataChanged.connect(self.OnOperationDataChanged)
+        self.TradesDataMapper = self.ui_config.mappers[self.ui_config.TRADES]
+        self.DividendsDataMapper = self.ui_config.mappers[self.ui_config.DIVIDENDS]
+        self.TransfersDataMapper = self.ui_config.mappers[self.ui_config.TRANSFERS]
 
-        self.ActionDetailsTableView.model().dataChanged.connect(self.OnOperationDataChanged)
         # self.ActionDetailsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  TODO: Is this line needed?
         self.ActionDetailsTableView.horizontalHeader().moveSection(self.ActionDetailsTableView.model().fieldIndex("note"),
                                                                    self.ActionDetailsTableView.model().fieldIndex("name"))
-
-        self.TradesDataMapper = self.ui_config.mappers[self.ui_config.TRADES]
-        self.TradesDataMapper.model().dataChanged.connect(self.OnOperationDataChanged)
-
-        self.DividendsDataMapper = self.ui_config.mappers[self.ui_config.DIVIDENDS]
-        self.DividendsDataMapper.model().dataChanged.connect(self.OnOperationDataChanged)
-
-        self.TransfersDataMapper = self.ui_config.mappers[self.ui_config.TRANSFERS]
-        self.TransfersDataMapper.model().dataChanged.connect(self.OnOperationDataChanged)
 
         ###############################################################################################
         # CONFIGURE ACTIONS                                                                           #
@@ -607,7 +599,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.RevertOperationBtn.setEnabled(True)
 
     @Slot()
-    def OnOperationDataChanged(self):
+    def on_data_changed(self):
         self.SaveOperationBtn.setEnabled(True)
         self.RevertOperationBtn.setEnabled(True)
 
