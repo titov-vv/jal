@@ -7,23 +7,20 @@ from PySide2.QtGui import QDoubleValidator
 from PySide2.QtSql import QSqlQuery, QSqlQueryModel
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QHeaderView, QMenu, QMessageBox, QAction, QLabel
 
-from CustomUI.helpers import UseSqlTable, ConfigureTableView, ConfigureDataMappers, VLine
+from CustomUI.helpers import VLine
 from CustomUI.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, ReferenceBoolDelegate, \
     ReferenceIntDelegate, ReferenceLookupDelegate, ReferenceTimestampDelegate
 from UI.ui_main_window import Ui_LedgerMainWindow
-from action_delegate import ActionDelegate, ActionDetailDelegate
 from view_delegate import *
 from DB.bulk_db import MakeBackup, RestoreBackup
 from DB.helpers import init_and_check_db, get_base_currency
-from dividend_delegate import DividendSqlDelegate
 from downloader import QuoteDownloader, QuotesUpdateDialog
 from ledger import Ledger
 from rebuild_window import RebuildDialog
 from reports import Reports, ReportParamsDialog
 from statements import StatementLoader
 from taxes import TaxesRus, TaxExportDialog
-from trade_delegate import TradeSqlDelegate
-from transfer_delegate import TransferSqlDelegate
+from CustomUI.table_view_config import TableViewConfig
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -68,12 +65,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.doubleValidate2 = QDoubleValidator(decimals=2)
         self.doubleValidate6 = QDoubleValidator(decimals=6)
-        widthForAmountEdit = self.fontMetrics().width("888888888.88") * 1.5
-        widthForTimestampEdit = self.fontMetrics().width("00/00/0000 00:00:00") * 1.5
+        self.widthForAmountEdit = self.fontMetrics().width("888888888.88") * 1.5
+        self.widthForTimestampEdit = self.fontMetrics().width("00/00/0000 00:00:00") * 1.5
+        self.ui_config = TableViewConfig(self)
 
-        self.AddActionDetail.setFixedWidth(widthForTimestampEdit * 0.25)
-        self.CopyActionDetail.setFixedWidth(widthForTimestampEdit * 0.25)
-        self.RemoveActionDetail.setFixedWidth(widthForTimestampEdit * 0.25)
+        self.AddActionDetail.setFixedWidth(self.widthForTimestampEdit * 0.25)
+        self.CopyActionDetail.setFixedWidth(self.widthForTimestampEdit * 0.25)
+        self.RemoveActionDetail.setFixedWidth(self.widthForTimestampEdit * 0.25)
 
         self.BalanceDate.setDateTime(QtCore.QDateTime.currentDateTime())
         self.HoldingsDate.setDateTime(QtCore.QDateTime.currentDateTime())
@@ -89,147 +87,30 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.HoldingsCurrencyCombo.setModelColumn(1)
         self.HoldingsCurrencyCombo.setCurrentIndex(self.HoldingsCurrencyCombo.findText("RUB"))
 
-        balance_columns = [("level1", None, None, None, None),
-                           ("level2", None, None, None, None),
-                           ("account_name", "Account", -1, None, BalanceAccountDelegate),
-                           ("balance", "Balance", 100, None, BalanceAmountDelegate),
-                           ("currency_name", " ", 35, None, BalanceCurrencyDelegate),
-                           ("balance_adj", "Balance, RUB", 110, None, BalanceAmountAdjustedDelegate),
-                           ("days_unreconciled", None, None, None, None),
-                           ("active", None, None, None, None)]
-        self.BalancesModel = UseSqlTable(self.db, "balances", balance_columns, None)
-        _ = ConfigureTableView(self.BalancesTableView, self.BalancesModel, balance_columns)
-        self.BalancesTableView.show()
-
-        holdings_columns = [("level1", None, None, None, None),
-                            ("level2", None, None, None, None),
-                            ("currency", None, None, None, None),
-                            ("account", "C/A", 32, None, HoldingsAccountDelegate),
-                            ("asset", " ", None, None, None),
-                            ("asset_name", "Asset", -1, None, None),
-                            ("qty", "Qty", None, None, HoldingsFloatDelegate),
-                            ("open", "Open", None, None, HoldingsFloat4Delegate),
-                            ("quote", "Last", None, None, HoldingsFloat4Delegate),
-                            ("share", "Share, %", None, None, HoldingsFloat2Delegate),
-                            ("profit_rel", "P/L, %", None, None, HoldingsProfitDelegate),
-                            ("profit", "P/L", None, None, HoldingsProfitDelegate),
-                            ("value", "Value", None, None, HoldingsFloat2Delegate),
-                            ("value_adj", "Value, RUB", None, None, HoldingsFloat2Delegate)]
-        self.HoldingsModel = UseSqlTable(self.db, "holdings", holdings_columns, None)
-        _ = ConfigureTableView(self.HoldingsTableView, self.HoldingsModel, holdings_columns)
-        self.HoldingsTableView.show()
+        self.ui_config.configure_all()
 
         self.ChooseAccountBtn.init_DB(self.db)
 
-        operations_columns = [("type", " ", 10, None, OperationsTypeDelegate),
-                              ("id", None, None, None, None),
-                              ("timestamp", "Timestamp", widthForTimestampEdit*0.7, None, OperationsTimestampDelegate),
-                              ("account_id", None, None, None, None),
-                              ("account", "Account", 300, None, OperationsAccountDelegate),
-                              ("num_peer", None, None, None, None),
-                              ("asset_id", None, None, None, None),
-                              ("asset", None, None, None, None),
-                              ("asset_name", None, None, None, None),
-                              ("note", "Notes", -1, None, OperationsNotesDelegate),
-                              ("note2", None, None, None, None),
-                              ("amount", "Amount", None, None, OperationsAmountDelegate),
-                              ("qty_trid", None, None, None, None),
-                              ("price", None, None, None, None),
-                              ("fee_tax", None, None, None, None),
-                              ("t_amount", "Balance", None, None, OperationsTotalsDelegate),
-                              ("t_qty", None, None, None, None),
-                              ("currency", "Currency", None, None, OperationsCurrencyDelegate),
-                              ("reconciled", None, None, None, None)]
-        self.OperationsModel = UseSqlTable(self.db, "all_operations", operations_columns, None)
-        _ = ConfigureTableView(self.OperationsTableView, self.OperationsModel, operations_columns)
-        self.OperationsModel.select()
         self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
         # next line forces usage of sizeHint() from delegate
         self.OperationsTableView.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.OperationsTableView.show()
 
-        ###############################################################################################
-        # CONFIGURE ACTIONS TAB                                                                       #
-        ###############################################################################################
-        self.ActionsModel = UseSqlTable(self.db, "actions", [], None)  # no columns to customize
-        self.ActionsModel.dataChanged.connect(self.OnOperationDataChanged)
-        self.ActionsModel.select()
-        action_mappers = [("timestamp",  self.ActionTimestampEdit,   widthForTimestampEdit,  None),
-                          ("account_id", self.ActionAccountWidget,   0,                      None),
-                          ("peer_id",    self.ActionPeerWidget,      0,                      None)]
-        self.ActionsDataMapper = ConfigureDataMappers(self.ActionsModel, action_mappers, ActionDelegate)
+        self.ActionsDataMapper = self.ui_config.mappers[self.ui_config.ACTIONS]
+        self.ActionsDataMapper.model().dataChanged.connect(self.OnOperationDataChanged)
 
-        action_details_columns = [("id", None, None, None, None),
-                                  ("pid", None, None, None, None),
-                                  ("category_id", "Category", 200, None, ActionDetailDelegate),
-                                  ("tag_id", "Tag", 200, None, ActionDetailDelegate),
-                                  ("sum", "Amount", 100, None, ActionDetailDelegate),
-                                  ("alt_sum", "Amount *", 100, None, ActionDetailDelegate),
-                                  ("note", "Note", -1, None, None)]
-        self.ActionDetailsModel = UseSqlTable(self.db, "action_details", action_details_columns,
-                                              relations=[("category_id", "categories", "id", "name", None),
-                                                         ("tag_id", "tags", "id", "tag", None)])
-        self.action_details_delegates = ConfigureTableView(self.ActionDetailsTableView, self.ActionDetailsModel,
-                                                           action_details_columns)
-        self.ActionDetailsModel.dataChanged.connect(self.OnOperationDataChanged)
-        self.ActionDetailsModel.select()
+        self.ActionDetailsTableView.model().dataChanged.connect(self.OnOperationDataChanged)
         # self.ActionDetailsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  TODO: Is this line needed?
-        self.ActionDetailsTableView.horizontalHeader().moveSection(self.ActionDetailsModel.fieldIndex("note"),
-                                                                   self.ActionDetailsModel.fieldIndex("name"))
-        self.ActionDetailsTableView.show()
+        self.ActionDetailsTableView.horizontalHeader().moveSection(self.ActionDetailsTableView.model().fieldIndex("note"),
+                                                                   self.ActionDetailsTableView.model().fieldIndex("name"))
 
-        ###############################################################################################
-        # CONFIGURE TRADES TAB                                                                        #
-        ###############################################################################################
-        self.TradesModel = UseSqlTable(self.db, "trades", [], # no columns to customize
-                                       relations=[("corp_action_id", "corp_actions", "id", "type", None)])
-        self.TradesModel.dataChanged.connect(self.OnOperationDataChanged)
-        self.TradesModel.select()
-        trade_mappers = [("timestamp",      self.TradeTimestampEdit,    widthForTimestampEdit,  None),
-                         ("corp_action_id", self.TradeActionWidget,     0,                      None),
-                         ("account_id",     self.TradeAccountWidget,    0,                      None),
-                         ("asset_id",       self.TradeAssetWidget,      0,                      None),
-                         ("settlement",     self.TradeSettlementEdit,   0,                      None),
-                         ("number",         self.TradeNumberEdit,       widthForTimestampEdit,  None),
-                         ("price",          self.TradePriceEdit,        widthForAmountEdit,     self.doubleValidate6),
-                         ("qty",            self.TradeQtyEdit,          widthForAmountEdit,     self.doubleValidate6),
-                         ("coupon",         self.TradeCouponEdit,       widthForAmountEdit,     self.doubleValidate6),
-                         ("fee",            self.TradeFeeEdit,          widthForAmountEdit,     self.doubleValidate6)]
-        self.TradesDataMapper = ConfigureDataMappers(self.TradesModel, trade_mappers, TradeSqlDelegate)
+        self.TradesDataMapper = self.ui_config.mappers[self.ui_config.TRADES]
+        self.TradesDataMapper.model().dataChanged.connect(self.OnOperationDataChanged)
 
-        ###############################################################################################
-        # CONFIGURE DIVIDENDS TAB                                                                     #
-        ###############################################################################################
-        self.DividendsModel = UseSqlTable(self.db, "dividends", [], None)
-        self.DividendsModel.dataChanged.connect(self.OnOperationDataChanged)
-        self.DividendsModel.select()
-        dividend_mappers = [("timestamp",  self.DividendTimestampEdit,     widthForTimestampEdit,  None),
-                            ("account_id", self.DividendAccountWidget,     0,                      None),
-                            ("asset_id",   self.DividendAssetWidget,       0,                      None),
-                            ("number",     self.DividendNumberEdit,        widthForTimestampEdit,  None),
-                            ("sum",        self.DividendSumEdit,           widthForAmountEdit,     self.doubleValidate2),
-                            ("note",       self.DividendSumDescription,    0,                      None),
-                            ("sum_tax",    self.DividendTaxEdit,           widthForAmountEdit,     self.doubleValidate2),
-                            ("note_tax",   self.DividendTaxDescription,    0,                      None)]
-        self.DividendsDataMapper = ConfigureDataMappers(self.DividendsModel, dividend_mappers, DividendSqlDelegate)
+        self.DividendsDataMapper = self.ui_config.mappers[self.ui_config.DIVIDENDS]
+        self.DividendsDataMapper.model().dataChanged.connect(self.OnOperationDataChanged)
 
-        ###############################################################################################
-        # CONFIGURE TRANSFERS TAB                                                                     #
-        ###############################################################################################
-        self.TransfersModel = UseSqlTable(self.db, "transfers_combined", [], None)
-        self.TransfersModel.dataChanged.connect(self.OnOperationDataChanged)
-        self.TransfersModel.select()
-        transfers_mappers = [("from_acc_id",   self.TransferFromAccountWidget, 0,                      None),
-                            ("to_acc_id",      self.TransferToAccountWidget,   0,                      None),
-                            ("fee_acc_id",     self.TransferFeeAccountWidget,  0,                      None),
-                            ("from_timestamp", self.TransferFromTimestamp,     widthForTimestampEdit,  None),
-                            ("to_timestamp",   self.TransferToTimestamp,       widthForTimestampEdit,  None),
-                            ("fee_timestamp",  self.TransferFeeTimestamp,      widthForTimestampEdit,  None),
-                            ("from_amount",    self.TransferFromAmount,        widthForAmountEdit,     self.doubleValidate2),
-                            ("to_amount",      self.TransferToAmount,          widthForAmountEdit,     self.doubleValidate2),
-                            ("fee_amount",     self.TransferFeeAmount,         widthForAmountEdit,     self.doubleValidate2),
-                            ("note",           self.TransferNote,              0,                      None)]
-        self.TransfersDataMapper = ConfigureDataMappers(self.TransfersModel, transfers_mappers, TransferSqlDelegate)
+        self.TransfersDataMapper = self.ui_config.mappers[self.ui_config.TRANSFERS]
+        self.TransfersDataMapper.model().dataChanged.connect(self.OnOperationDataChanged)
 
         ###############################################################################################
         # CONFIGURE ACTIONS                                                                           #
@@ -339,15 +220,17 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def OnBalanceCurrencyChange(self, currency_index):
         self.balance_currency = self.CurrencyNameModel.record(currency_index).value("id")
-        self.BalancesModel.setHeaderData(self.BalancesModel.fieldIndex("balance_adj"), Qt.Horizontal,
-                                         "Balance, " + self.CurrencyNameModel.record(currency_index).value("name"))
+        balances_model = self.BalancesTableView.model()
+        balances_model.setHeaderData(balances_model.fieldIndex("balance_adj"), Qt.Horizontal,
+                                     "Balance, " + self.CurrencyNameModel.record(currency_index).value("name"))
         self.UpdateBalances()
 
     @Slot()
     def OnHoldingsCurrencyChange(self, currency_index):
         self.holdings_currency = self.CurrencyNameModel.record(currency_index).value("id")
-        self.HoldingsModel.setHeaderData(self.HoldingsModel.fieldIndex("value_adj"), Qt.Horizontal,
-                                         "Value, " + self.CurrencyNameModel.record(currency_index).value("name"))
+        holidings_model = self.HoldingsTableView.model()
+        holidings_model.setHeaderData(holidings_model.fieldIndex("value_adj"), Qt.Horizontal,
+                                      "Value, " + self.CurrencyNameModel.record(currency_index).value("name"))
         self.UpdateHoldings()
 
     @Slot()
@@ -360,7 +243,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     def UpdateBalances(self):
         self.ledger.BuildBalancesTable(self.balance_date, self.balance_currency, self.balance_active_only)
-        self.BalancesModel.select()
+        self.BalancesTableView.model().select()
 
     @Slot()
     def OnOperationChange(self, selected, _deselected):
@@ -372,24 +255,25 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         idx = selected.indexes()
         if idx:
             selected_row = idx[0].row()
-            operation_type = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("type"))
-            operation_id = self.OperationsModel.record(selected_row).value(self.OperationsModel.fieldIndex("id"))
+            operations_table = self.OperationsTableView.model()
+            operation_type = operations_table.record(selected_row).value(operations_table.fieldIndex("type"))
+            operation_id = operations_table.record(selected_row).value(operations_table.fieldIndex("id"))
             if operation_type == TRANSACTION_ACTION:
-                self.ActionsModel.setFilter(f"actions.id = {operation_id}")
+                self.ActionsDataMapper.model().setFilter(f"actions.id = {operation_id}")
                 self.ActionsDataMapper.setCurrentModelIndex(self.ActionsDataMapper.model().index(0, 0))
                 self.OperationsTabs.setCurrentIndex(TAB_ACTION)
-                self.ActionDetailsModel.setFilter(f"action_details.pid = {operation_id}")
+                self.ActionDetailsTableView.model().setFilter(f"action_details.pid = {operation_id}")
             elif operation_type == TRANSACTION_DIVIDEND:
                 self.OperationsTabs.setCurrentIndex(TAB_DIVIDEND)
-                self.DividendsModel.setFilter(f"dividends.id = {operation_id}")
+                self.DividendsDataMapper.model().setFilter(f"dividends.id = {operation_id}")
                 self.DividendsDataMapper.setCurrentModelIndex(self.DividendsDataMapper.model().index(0, 0))
             elif operation_type == TRANSACTION_TRADE:
                 self.OperationsTabs.setCurrentIndex(TAB_TRADE)
-                self.TradesModel.setFilter(f"trades.id = {operation_id}")
+                self.TradesDataMapper.model().setFilter(f"trades.id = {operation_id}")
                 self.TradesDataMapper.setCurrentModelIndex(self.TradesDataMapper.model().index(0, 0))
             elif operation_type == TRANSACTION_TRANSFER:
                 self.OperationsTabs.setCurrentIndex(TAB_TRANSFER)
-                self.TransfersModel.setFilter(f"transfers_combined.id = {operation_id}")
+                self.TransfersDataMapper.model().setFilter(f"transfers_combined.id = {operation_id}")
                 self.TransfersDataMapper.setCurrentModelIndex(self.TransfersDataMapper.model().index(0, 0))
             else:
                 assert False
@@ -423,7 +307,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         model.select()
 
     def CheckForNotSavedData(self):
-        if self.ActionsModel.isDirty() or self.ActionDetailsModel.isDirty():
+        if self.ActionsDataMapper.model().isDirty() or self.ActionDetailsTableView.model().isDirty():
             reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
                                           self.tr("Transaction has uncommitted changes,\ndo you want to save it?"),
                                           QMessageBox.Yes, QMessageBox.No)
@@ -431,7 +315,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 self.SubmitChangesForTab(TAB_ACTION)
             else:
                 self.RevertChangesForTab(TAB_ACTION)
-        if self.DividendsModel.isDirty():
+        if self.DividendsDataMapper.model().isDirty():
             reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
                                           self.tr("Dividend has uncommitted changes,\ndo you want to save it?"),
                                           QMessageBox.Yes, QMessageBox.No)
@@ -439,7 +323,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 self.SubmitChangesForTab(TAB_DIVIDEND)
             else:
                 self.RevertChangesForTab(TAB_DIVIDEND)
-        if self.TradesModel.isDirty():
+        if self.TradesDataMapper.model().isDirty():
             reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
                                           self.tr("Trade has uncommitted changes,\ndo you want to save it?"),
                                           QMessageBox.Yes, QMessageBox.No)
@@ -447,7 +331,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 self.SubmitChangesForTab(TAB_TRADE)
             else:
                 self.RevertChangesForTab(TAB_TRADE)
-        if self.TransfersModel.isDirty():
+        if self.TransfersDataMapper.model().isDirty():
             reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
                                           self.tr("Transfer has uncommitted changes,\ndo you want to save it?"),
                                           QMessageBox.Yes, QMessageBox.No)
@@ -472,7 +356,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             operations_filter = operations_filter + " AND (num_peer LIKE '%{}%' OR asset LIKE '%{}%')".format(
                 self.SearchString.text(), self.SearchString.text())
 
-        self.OperationsModel.setFilter(operations_filter)
+        self.OperationsTableView.model().setFilter(operations_filter)
 
     @Slot()
     def OnOperationsRangeChange(self, range_index):
@@ -500,55 +384,55 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.CheckForNotSavedData()
         self.OperationsTabs.setCurrentIndex(TAB_ACTION)
         self.ActionsDataMapper.submit()
-        self.ActionsModel.setFilter("actions.id = 0")
-        new_record = self.ActionsModel.record()
+        self.ActionsDataMapper.model().setFilter("actions.id = 0")
+        new_record = self.ActionsDataMapper.model().record()
         new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
         if self.ChooseAccountBtn.account_id != 0:
             new_record.setValue("account_id", self.ChooseAccountBtn.account_id)
-        assert self.ActionsModel.insertRows(0, 1)
-        self.ActionsModel.setRecord(0, new_record)
-        self.ActionDetailsModel.setFilter("action_details.pid = 0")
+        assert self.ActionsDataMapper.model().insertRows(0, 1)
+        self.ActionsDataMapper.model().setRecord(0, new_record)
+        self.ActionDetailsTableView.model().setFilter("action_details.pid = 0")
         self.ActionsDataMapper.toLast()
 
     def CreateNewTransfer(self):
         self.CheckForNotSavedData()
         self.OperationsTabs.setCurrentIndex(TAB_TRANSFER)
         self.TransfersDataMapper.submit()
-        self.TransfersModel.setFilter(f"transfers_combined.id = 0")
-        new_record = self.TransfersModel.record()
+        self.TransfersDataMapper.model().setFilter(f"transfers_combined.id = 0")
+        new_record = self.TransfersDataMapper.model().record()
         new_record.setValue("from_timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
         if self.ChooseAccountBtn.account_id != 0:
             new_record.setValue("from_acc_id", self.ChooseAccountBtn.account_id)
         new_record.setValue("to_timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
         new_record.setValue("fee_timestamp", 0)
-        assert self.TransfersModel.insertRows(0, 1)
-        self.TransfersModel.setRecord(0, new_record)
+        assert self.TransfersDataMapper.model().insertRows(0, 1)
+        self.TransfersDataMapper.model().setRecord(0, new_record)
         self.TransfersDataMapper.toLast()
 
     def CreateNewTrade(self):
         self.CheckForNotSavedData()
         self.OperationsTabs.setCurrentIndex(TAB_TRADE)
         self.TradesDataMapper.submit()
-        self.TradesModel.setFilter("trades.id = 0")
-        new_record = self.TradesModel.record()
+        self.TradesDataMapper.model().setFilter("trades.id = 0")
+        new_record = self.TradesDataMapper.model().record()
         new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
         if self.ChooseAccountBtn.account_id != 0:
             new_record.setValue("account_id", self.ChooseAccountBtn.account_id)
-        assert self.TradesModel.insertRows(0, 1)
-        self.TradesModel.setRecord(0, new_record)
+        assert self.TradesDataMapper.model().insertRows(0, 1)
+        self.TradesDataMapper.model().setRecord(0, new_record)
         self.TradesDataMapper.toLast()
 
     def CreateNewDividend(self):
         self.CheckForNotSavedData()
         self.OperationsTabs.setCurrentIndex(TAB_DIVIDEND)
         self.DividendsDataMapper.submit()
-        self.DividendsModel.setFilter("dividends.id = 0")
-        new_record = self.DividendsModel.record()
+        self.DividendsDataMapper.model().setFilter("dividends.id = 0")
+        new_record = self.DividendsDataMapper.model().record()
         new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
         if self.ChooseAccountBtn.account_id != 0:
             new_record.setValue("account_id", self.ChooseAccountBtn.account_id)
-        assert self.DividendsModel.insertRows(0, 1)
-        self.DividendsModel.setRecord(0, new_record)
+        assert self.DividendsDataMapper.model().insertRows(0, 1)
+        self.DividendsDataMapper.model().setRecord(0, new_record)
         self.DividendsDataMapper.toLast()
 
     @Slot()
@@ -558,23 +442,24 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                                  QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
             return
         index = self.OperationsTableView.currentIndex()
-        operation_type = self.OperationsModel.data(self.OperationsModel.index(index.row(), 0))
+        operations_model = self.OperationsTableView.model()
+        operation_type = operations_model.data(operations_model.index(index.row(), 0))
         if operation_type == TRANSACTION_ACTION:
-            self.ActionsModel.removeRow(0)
-            self.ActionsModel.submitAll()
+            self.ActionsDataMapper.model().removeRow(0)
+            self.ActionsDataMapper.model().submitAll()
         elif operation_type == TRANSACTION_DIVIDEND:
-            self.DividendsModel.removeRow(0)
-            self.DividendsModel.submitAll()
+            self.DividendsDataMapper.model().removeRow(0)
+            self.DividendsDataMapper.model().submitAll()
         elif operation_type == TRANSACTION_TRADE:
-            self.TradesModel.removeRow(0)
-            self.TradesModel.submitAll()
+            self.TradesDataMapper.model().removeRow(0)
+            self.TradesDataMapper.model().submitAll()
         elif operation_type == TRANSACTION_TRANSFER:
-            self.TransfersModel.removeRow(0)
-            self.TransfersModel.submitAll()
+            self.TransfersDataMapper.model().removeRow(0)
+            self.TransfersDataMapper.model().submitAll()
         else:
             assert False
         self.UpdateLedger()
-        self.OperationsModel.select()
+        operations_model.select()
 
     @Slot()
     def CopyOperation(self):
@@ -582,17 +467,17 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         active_tab = self.OperationsTabs.currentIndex()
         if active_tab == TAB_ACTION:
             row = self.ActionsDataMapper.currentIndex()
-            operation_id = self.ActionsModel.record(row).value(self.ActionsModel.fieldIndex("id"))
+            operation_id = self.ActionsDataMapper.model().record(row).value(self.ActionsDataMapper.model().fieldIndex("id"))
             self.ActionsDataMapper.submit()
-            new_record = self.ActionsModel.record(row)
+            new_record = self.ActionsDataMapper.model().record(row)
             new_record.setNull("id")
             new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
-            self.ActionsModel.setFilter("actions.id = 0")
-            assert self.ActionsModel.insertRows(0, 1)
-            self.ActionsModel.setRecord(0, new_record)
+            self.ActionsDataMapper.model().setFilter("actions.id = 0")
+            assert self.ActionsDataMapper.model().insertRows(0, 1)
+            self.ActionsDataMapper.model().setRecord(0, new_record)
             self.ActionsDataMapper.toLast()
             # Get SQL records of details and insert it into details table
-            self.ActionDetailsModel.setFilter("action_details.pid = 0")
+            self.ActionDetailsTableView.model().setFilter("action_details.pid = 0")
             query = QSqlQuery(self.db)
             query.prepare("SELECT * FROM action_details WHERE pid = :pid ORDER BY id DESC")
             query.bindValue(":pid", operation_id)
@@ -602,39 +487,39 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 new_record = query.record()
                 new_record.setNull("id")
                 new_record.setNull("pid")
-                assert self.ActionDetailsModel.insertRows(0, 1)
-                self.ActionDetailsModel.setRecord(0, new_record)
+                assert self.ActionDetailsTableView.model().insertRows(0, 1)
+                self.ActionDetailsTableView.model().setRecord(0, new_record)
         elif active_tab == TAB_TRANSFER:
             row = self.TransfersDataMapper.currentIndex()
             self.TransfersDataMapper.submit()
-            new_record = self.TransfersModel.record(row)
+            new_record = self.TransfersDataMapper.model().record(row)
             new_record.setNull("id")
             new_record.setValue("from_timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
             new_record.setValue("to_timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
             new_record.setValue("fee_timestamp", 0)
-            self.TransfersModel.setFilter(f"transfers_combined.id = 0")
-            assert self.TransfersModel.insertRows(0, 1)
-            self.TransfersModel.setRecord(0, new_record)
+            self.TransfersDataMapper.model().setFilter(f"transfers_combined.id = 0")
+            assert self.TransfersDataMapper.model().insertRows(0, 1)
+            self.TransfersDataMapper.model().setRecord(0, new_record)
             self.TransfersDataMapper.toLast()
         elif active_tab == TAB_DIVIDEND:
             row = self.DividendsDataMapper.currentIndex()
             self.DividendsDataMapper.submit()
-            new_record = self.DividendsModel.record(row)
+            new_record = self.DividendsDataMapper.model().record(row)
             new_record.setNull("id")
             new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
-            self.DividendsModel.setFilter("dividends.id = 0")
-            assert self.DividendsModel.insertRows(0, 1)
-            self.DividendsModel.setRecord(0, new_record)
+            self.DividendsDataMapper.model().setFilter("dividends.id = 0")
+            assert self.DividendsDataMapper.model().insertRows(0, 1)
+            self.DividendsDataMapper.model().setRecord(0, new_record)
             self.DividendsDataMapper.toLast()
         elif active_tab == TAB_TRADE:
             row = self.TradesDataMapper.currentIndex()
             self.TradesDataMapper.submit()
-            new_record = self.TradesModel.record(row)
+            new_record = self.TradesDataMapper.model().record(row)
             new_record.setNull("id")
             new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
-            self.TradesModel.setFilter("trades.id = 0")
-            assert self.TradesModel.insertRows(0, 1)
-            self.TradesModel.setRecord(0, new_record)
+            self.TradesDataMapper.model().setFilter("trades.id = 0")
+            assert self.TradesDataMapper.model().insertRows(0, 1)
+            self.TradesDataMapper.model().setRecord(0, new_record)
             self.TradesDataMapper.toLast()
         else:
             assert False
@@ -651,57 +536,57 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     def SubmitChangesForTab(self, tab2save):
         if tab2save == TAB_ACTION:
-            pid = self.ActionsModel.data(self.ActionsModel.index(0, self.ActionsModel.fieldIndex("id")))
-            if not self.ActionsModel.submitAll():
-                logging.fatal(self.tr("Action submit failed: ") + self.ActionDetailsModel.lastError().text())
+            pid = self.ActionsDataMapper.model().data(self.ActionsDataMapper.model().index(0, self.ActionsDataMapper.model().fieldIndex("id")))
+            if not self.ActionsDataMapper.model().submitAll():
+                logging.fatal(self.tr("Action submit failed: ") + self.ActionDetailsTableView.model().lastError().text())
                 return
             if pid == 0:  # we have saved new action record
-                pid = self.ActionsModel.query().lastInsertId()
-            for row in range(self.ActionDetailsModel.rowCount()):
-                self.ActionDetailsModel.setData(self.ActionDetailsModel.index(row, 1), pid)
-            if not self.ActionDetailsModel.submitAll():
-                logging.fatal(self.tr("Action details submit failed: ") + self.ActionDetailsModel.lastError().text())
+                pid = self.ActionsDataMapper.model().query().lastInsertId()
+            for row in range(self.ActionDetailsTableView.model().rowCount()):
+                self.ActionDetailsTableView.model().setData(self.ActionDetailsTableView.model().index(row, 1), pid)
+            if not self.ActionDetailsTableView.model().submitAll():
+                logging.fatal(self.tr("Action details submit failed: ") + self.ActionDetailsTableView.model().lastError().text())
                 return
         elif tab2save == TAB_TRANSFER:
-            record = self.TransfersModel.record(0)
-            note = record.value(self.TransfersModel.fieldIndex("note"))
+            record = self.TransfersDataMapper.model().record(0)
+            note = record.value(self.TransfersDataMapper.model().fieldIndex("note"))
             if not note:  # If we don't have note - set it to NULL value to fire DB trigger
-                self.TransfersModel.setData(self.TransfersModel.index(0, self.TransfersModel.fieldIndex("note")), None)
-            fee_amount = record.value(self.TransfersModel.fieldIndex("fee_amount"))
+                self.TransfersDataMapper.model().setData(self.TransfersDataMapper.model().index(0, self.TransfersDataMapper.model().fieldIndex("note")), None)
+            fee_amount = record.value(self.TransfersDataMapper.model().fieldIndex("fee_amount"))
             if not fee_amount:
                 fee_amount = 0
             if abs(float(
                     fee_amount)) < CALC_TOLERANCE:  # If we don't have fee - set Fee Account to NULL to fire DB trigger
-                self.TransfersModel.setData(self.TransfersModel.index(0, self.TransfersModel.fieldIndex("fee_acc_id")),
+                self.TransfersDataMapper.model().setData(self.TransfersDataMapper.model().index(0, self.TransfersDataMapper.model().fieldIndex("fee_acc_id")),
                                             None)
-            if not self.TransfersModel.submitAll():
-                logging.fatal(self.tr("Transfer submit failed: ") + self.TransfersModel.lastError().text())
+            if not self.TransfersDataMapper.model().submitAll():
+                logging.fatal(self.tr("Transfer submit failed: ") + self.TransfersDataMapper.model().lastError().text())
                 return
         elif tab2save == TAB_DIVIDEND:
-            if not self.DividendsModel.submitAll():
-                logging.fatal(self.tr("Dividend submit failed: ") + self.DividendsModel.lastError().text())
+            if not self.DividendsDataMapper.model().submitAll():
+                logging.fatal(self.tr("Dividend submit failed: ") + self.DividendsDataMapper.model().lastError().text())
                 return
         elif tab2save == TAB_TRADE:
-            if not self.TradesModel.submitAll():
-                logging.fatal(self.tr("Trade submit failed: ") + self.TradesModel.lastError().text())
+            if not self.TradesDataMapper.model().submitAll():
+                logging.fatal(self.tr("Trade submit failed: ") + self.TradesDataMapper.model().lastError().text())
                 return
         else:
             assert False
         self.UpdateLedger()
-        self.OperationsModel.select()
+        self.OperationsTableView.model().select()
         self.SaveOperationBtn.setEnabled(False)
         self.RevertOperationBtn.setEnabled(False)
 
     def RevertChangesForTab(self, tab2revert):
         if tab2revert == TAB_ACTION:
-            self.ActionsModel.revertAll()
-            self.ActionDetailsModel.revertAll()
+            self.ActionsDataMapper.model().revertAll()
+            self.ActionDetailsTableView.model().revertAll()
         elif tab2revert == TAB_TRANSFER:
-            self.TransfersModel.revertAll()
+            self.TransfersDataMapper.model().revertAll()
         elif tab2revert == TAB_DIVIDEND:
-            self.DividendsModel.revertAll()
+            self.DividendsDataMapper.model().revertAll()
         elif tab2revert == TAB_TRADE:
-            self.TradesModel.revertAll()
+            self.TradesDataMapper.model().revertAll()
         else:
             assert False
         self.SaveOperationBtn.setEnabled(False)
@@ -709,14 +594,14 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def AddDetail(self):
-        new_record = self.ActionDetailsModel.record()
-        self.ActionDetailsModel.insertRecord(-1, new_record)
+        new_record = self.ActionDetailsTableView.model().record()
+        self.ActionDetailsTableView.model().insertRecord(-1, new_record)
 
     @Slot()
     def RemoveDetail(self):
         idx = self.ActionDetailsTableView.selectionModel().selection().indexes()
         selected_row = idx[0].row()
-        self.ActionDetailsModel.removeRow(selected_row)
+        self.ActionDetailsTableView.model().removeRow(selected_row)
         self.ActionDetailsTableView.setRowHidden(selected_row, True)
         self.SaveOperationBtn.setEnabled(True)
         self.RevertOperationBtn.setEnabled(True)
@@ -817,9 +702,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def UpdateHoldings(self):
         self.ledger.BuildHoldingsTable(self.holdings_date, self.holdings_currency)
-        self.HoldingsModel.select()
-        for row in range(self.HoldingsModel.rowCount()):
-            if self.HoldingsModel.data(self.HoldingsModel.index(row, 1)):
+        holidings_model = self.HoldingsTableView.model()
+        holidings_model.select()
+        for row in range(holidings_model.rowCount()):
+            if holidings_model.data(holidings_model.index(row, 1)):
                 self.HoldingsTableView.setSpan(row, 3, 1, 3)
         self.HoldingsTableView.show()
 
