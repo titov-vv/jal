@@ -1362,7 +1362,7 @@
     <property name="title">
      <string>&amp;Reports</string>
     </property>
-    <addaction name="MakeIncomeSpendingReport"/>
+    <addaction name="MakeCategoriesReport"/>
     <addaction name="MakeDealsReport"/>
     <addaction name="MakePLReport"/>
     <addaction name="PrepareTaxForms"/>
@@ -1451,7 +1451,7 @@
     <string>&amp;Profit/Loss report</string>
    </property>
   </action>
-  <action name="MakeIncomeSpendingReport">
+  <action name="MakeCategoriesReport">
    <property name="text">
     <string>&amp;Income/Spending report</string>
    </property>
