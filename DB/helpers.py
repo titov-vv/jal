@@ -39,3 +39,9 @@ def get_base_currency(db):
     query.exec_("SELECT value FROM settings WHERE name='BaseCurrency'")
     query.next()
     return query.value(0)
+
+def get_base_currency_name(db):
+    query = QSqlQuery(db)
+    query.exec_("SELECT name FROM assets WHERE id = (SELECT value FROM settings WHERE name='BaseCurrency')")
+    query.next()
+    return query.value(0)

@@ -167,7 +167,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QComboBox" name="BalancesCurrencyCombo"/>
+                <widget class="CurrencyCombo" name="BalancesCurrencyCombo"/>
                </item>
                <item>
                 <widget class="QCheckBox" name="ShowInactiveCheckBox">
@@ -432,7 +432,7 @@
                 <item>
                  <widget class="QStackedWidget" name="OperationsTabs">
                   <property name="currentIndex">
-                   <number>1</number>
+                   <number>0</number>
                   </property>
                   <widget class="QWidget" name="ActionDetailsTab">
                    <layout class="QGridLayout" name="gridLayout_4">
@@ -448,6 +448,32 @@
                     <property name="bottomMargin">
                      <number>2</number>
                     </property>
+                    <item row="1" column="2">
+                     <widget class="AccountSelector" name="ActionAccountWidget" native="true"/>
+                    </item>
+                    <item row="3" column="0" colspan="6">
+                     <widget class="QTableView" name="ActionDetailsTableView">
+                      <property name="alternatingRowColors">
+                       <bool>true</bool>
+                      </property>
+                      <attribute name="verticalHeaderVisible">
+                       <bool>false</bool>
+                      </attribute>
+                      <attribute name="verticalHeaderMinimumSectionSize">
+                       <number>20</number>
+                      </attribute>
+                      <attribute name="verticalHeaderDefaultSectionSize">
+                       <number>20</number>
+                      </attribute>
+                     </widget>
+                    </item>
+                    <item row="2" column="1">
+                     <widget class="QLabel" name="PeerLbl">
+                      <property name="text">
+                       <string>Peer:</string>
+                      </property>
+                     </widget>
+                    </item>
                     <item row="2" column="0">
                      <widget class="QFrame" name="ActionDetailBtnFrame">
                       <property name="frameShape">
@@ -474,6 +500,18 @@
                        </property>
                        <item>
                         <widget class="QPushButton" name="AddActionDetail">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>16777215</width>
+                           <height>16777215</height>
+                          </size>
+                         </property>
                          <property name="text">
                           <string> + </string>
                          </property>
@@ -481,6 +519,18 @@
                        </item>
                        <item>
                         <widget class="QPushButton" name="CopyActionDetail">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>16777215</width>
+                           <height>16777215</height>
+                          </size>
+                         </property>
                          <property name="text">
                           <string>&gt;&gt;</string>
                          </property>
@@ -488,6 +538,18 @@
                        </item>
                        <item>
                         <widget class="QPushButton" name="RemoveActionDetail">
+                         <property name="sizePolicy">
+                          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                           <horstretch>0</horstretch>
+                           <verstretch>0</verstretch>
+                          </sizepolicy>
+                         </property>
+                         <property name="maximumSize">
+                          <size>
+                           <width>16777215</width>
+                           <height>16777215</height>
+                          </size>
+                         </property>
                          <property name="text">
                           <string> — </string>
                          </property>
@@ -496,50 +558,8 @@
                       </layout>
                      </widget>
                     </item>
-                    <item row="1" column="0">
-                     <widget class="QDateTimeEdit" name="ActionTimestampEdit">
-                      <property name="displayFormat">
-                       <string>dd/MM/yyyy hh:mm:ss</string>
-                      </property>
-                      <property name="calendarPopup">
-                       <bool>true</bool>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="2">
-                     <widget class="AccountSelector" name="ActionAccountWidget" native="true"/>
-                    </item>
-                    <item row="3" column="0" colspan="6">
-                     <widget class="QTableView" name="ActionDetailsTableView">
-                      <property name="alternatingRowColors">
-                       <bool>true</bool>
-                      </property>
-                      <attribute name="verticalHeaderVisible">
-                       <bool>false</bool>
-                      </attribute>
-                      <attribute name="verticalHeaderMinimumSectionSize">
-                       <number>20</number>
-                      </attribute>
-                      <attribute name="verticalHeaderDefaultSectionSize">
-                       <number>20</number>
-                      </attribute>
-                     </widget>
-                    </item>
                     <item row="2" column="2">
                      <widget class="PeerSelector" name="ActionPeerWidget" native="true"/>
-                    </item>
-                    <item row="0" column="0">
-                     <widget class="QLabel" name="ActionTabLbl">
-                      <property name="font">
-                       <font>
-                        <weight>75</weight>
-                        <bold>true</bold>
-                       </font>
-                      </property>
-                      <property name="text">
-                       <string>Income / Spending</string>
-                      </property>
-                     </widget>
                     </item>
                     <item row="1" column="3">
                      <spacer name="ActionDetailsSpacer">
@@ -554,17 +574,33 @@
                       </property>
                      </spacer>
                     </item>
-                    <item row="2" column="1">
-                     <widget class="QLabel" name="PeerLbl">
+                    <item row="1" column="1">
+                     <widget class="QLabel" name="ActionAccountLabel">
                       <property name="text">
-                       <string>Peer:</string>
+                       <string>Account:</string>
                       </property>
                      </widget>
                     </item>
-                    <item row="1" column="1">
-                     <widget class="QLabel" name="AccountLbl_2">
+                    <item row="1" column="0">
+                     <widget class="QDateTimeEdit" name="ActionTimestampEdit">
+                      <property name="displayFormat">
+                       <string>dd/MM/yyyy hh:mm:ss</string>
+                      </property>
+                      <property name="calendarPopup">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="0">
+                     <widget class="QLabel" name="ActionTabLbl">
+                      <property name="font">
+                       <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                       </font>
+                      </property>
                       <property name="text">
-                       <string>Account:</string>
+                       <string>Income / Spending</string>
                       </property>
                      </widget>
                     </item>
@@ -1228,7 +1264,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QComboBox" name="HoldingsCurrencyCombo"/>
+            <widget class="CurrencyCombo" name="HoldingsCurrencyCombo"/>
            </item>
            <item>
             <spacer name="horizontalSpacer_3">
@@ -1469,6 +1505,11 @@
    <class>LogViewer</class>
    <extends>QPlainTextEdit</extends>
    <header>CustomUI/log_viewer.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CurrencyCombo</class>
+   <extends>QComboBox</extends>
+   <header>CustomUI/account_select.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

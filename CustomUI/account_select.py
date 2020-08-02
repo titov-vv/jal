@@ -1,5 +1,7 @@
 from PySide2.QtCore import Qt, Signal, Property
-from PySide2.QtWidgets import QPushButton, QMenu
+from PySide2.QtWidgets import QPushButton, QComboBox, QMenu
+from PySide2.QtSql import QSqlTableModel
+from DB.helpers import get_base_currency_name
 
 from CustomUI.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
     ReferenceLookupDelegate, ReferenceTimestampDelegate
@@ -37,7 +39,7 @@ class AccountButton(QPushButton):
     def account_id_changed(self):
         pass
 
-    def init_DB(self, db):
+    def init_db(self, db):
         self.dialog = ReferenceDataDialog(db, "accounts",
                             [("id", None, 0, None, None),
                              ("name", "Name", -1, Qt.AscendingOrder, None),
@@ -68,3 +70,23 @@ class AccountButton(QPushButton):
         self.account_id = 0
         self.setText("ANY")
         self.clicked.emit()
+
+
+class CurrencyCombo(QComboBox):
+    def __init__(self, parent):
+        QComboBox.__init__(self, parent)
+        self.model = None
+
+    def init_db(self, db):
+        self.model = QSqlTableModel(db=db)
+        self.model.setTable('currencies')
+        self.model.select()
+        self.setModel(self.model)
+        self.setModelColumn(1)
+        self.setCurrentIndex(self.findText(get_base_currency_name(db)))
+
+    def selected_currency(self):
+        return self.model.record(self.currentIndex()).value("id")
+
+    def selected_currency_name(self):
+        return self.model.record(self.currentIndex()).value("name")

@@ -4,7 +4,7 @@ import os
 from PySide2 import QtCore, QtWidgets
 from PySide2.QtCore import Slot
 from PySide2.QtGui import QDoubleValidator
-from PySide2.QtSql import QSqlQuery, QSqlQueryModel
+from PySide2.QtSql import QSqlQuery
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QHeaderView, QMenu, QMessageBox, QAction, QLabel
 
 from CustomUI.helpers import VLine
@@ -69,27 +69,14 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.widthForTimestampEdit = self.fontMetrics().width("00/00/0000 00:00:00") * 1.5
         self.ui_config = TableViewConfig(self)
 
-        self.AddActionDetail.setFixedWidth(self.widthForTimestampEdit * 0.25)
-        self.CopyActionDetail.setFixedWidth(self.widthForTimestampEdit * 0.25)
-        self.RemoveActionDetail.setFixedWidth(self.widthForTimestampEdit * 0.25)
-
         self.BalanceDate.setDateTime(QtCore.QDateTime.currentDateTime())
         self.HoldingsDate.setDateTime(QtCore.QDateTime.currentDateTime())
 
-        self.CurrencyNameQuery = QSqlQuery(self.db)
-        self.CurrencyNameQuery.exec_("SELECT id, name FROM assets WHERE type_id=1")
-        self.CurrencyNameModel = QSqlQueryModel()
-        self.CurrencyNameModel.setQuery(self.CurrencyNameQuery)
-        self.BalancesCurrencyCombo.setModel(self.CurrencyNameModel)
-        self.BalancesCurrencyCombo.setModelColumn(1)
-        self.BalancesCurrencyCombo.setCurrentIndex(self.BalancesCurrencyCombo.findText("RUB"))
-        self.HoldingsCurrencyCombo.setModel(self.CurrencyNameModel)
-        self.HoldingsCurrencyCombo.setModelColumn(1)
-        self.HoldingsCurrencyCombo.setCurrentIndex(self.HoldingsCurrencyCombo.findText("RUB"))
-
         self.ui_config.configure_all()
 
-        self.ChooseAccountBtn.init_DB(self.db)
+        self.BalancesCurrencyCombo.init_db(self.db)
+        self.HoldingsCurrencyCombo.init_db(self.db)
+        self.ChooseAccountBtn.init_db(self.db)
 
         self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
         # next line forces usage of sizeHint() from delegate
@@ -211,18 +198,18 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def OnBalanceCurrencyChange(self, currency_index):
-        self.balance_currency = self.CurrencyNameModel.record(currency_index).value("id")
+        self.balance_currency = self.BalancesCurrencyCombo.selected_currency()
         balances_model = self.BalancesTableView.model()
         balances_model.setHeaderData(balances_model.fieldIndex("balance_adj"), Qt.Horizontal,
-                                     "Balance, " + self.CurrencyNameModel.record(currency_index).value("name"))
+                                     "Balance, " + self.BalancesCurrencyCombo.selected_currency_name())
         self.UpdateBalances()
 
     @Slot()
     def OnHoldingsCurrencyChange(self, currency_index):
-        self.holdings_currency = self.CurrencyNameModel.record(currency_index).value("id")
+        self.holdings_currency = self.HoldingsCurrencyCombo.selected_currency()
         holidings_model = self.HoldingsTableView.model()
         holidings_model.setHeaderData(holidings_model.fieldIndex("value_adj"), Qt.Horizontal,
-                                      "Value, " + self.CurrencyNameModel.record(currency_index).value("name"))
+                                      "Value, " + self.HoldingsCurrencyCombo.selected_currency_name())
         self.UpdateHoldings()
 
     @Slot()
