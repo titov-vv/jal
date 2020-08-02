@@ -120,7 +120,7 @@ class TableViewConfig:
 
     def __init__(self, parent):
         self.parent = parent
-        self.delegates_storage = []
+        self.delegates_storage = []   #  Keep references to all created delegates here
         self.views = {
             self.BALANCES: parent.BalancesTableView,
             self.HOLDINGS: parent.HoldingsTableView,
@@ -175,17 +175,17 @@ class TableViewConfig:
     def configure(self, i):
         model = UseSqlTable(self.parent.db, self.table_names[i], self.table_view_columns[i],
                             relations=self.table_relations[i])
-        model.select()
-        if self.notify_changes[i]:
-            model.dataChanged.connect(self.parent.on_data_changed)
         if self.views[i]:
             delegates = ConfigureTableView(self.views[i], model, self.table_view_columns[i])
             self.delegates_storage.append(delegates)
             self.views[i].show()
+        if self.notify_changes[i]:
+            model.dataChanged.connect(self.parent.on_data_changed)
         if self.widget_mappers[i]:
             self.mappers[i] = ConfigureDataMappers(model, self.widget_mappers[i], self.mapper_delegates[i])
         else:
             self.mappers[i] = None
+        model.select()
 
     def configure_all(self):
         for table in self.table_names:
