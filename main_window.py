@@ -48,15 +48,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.operations_since_timestamp = 0
         self.current_index = None
 
-        self.ConfigureUI()
-        self.UpdateBalances()
-
-    def __del__(self):
-        if self.db:
-            self.db.close()
-
-    # noinspection PyAttributeOutsideInit
-    def ConfigureUI(self):
         # Customize Status bar and logs
         self.NewLogEventLbl = QLabel()
         self.StatusBar.addPermanentWidget(VLine())
@@ -73,77 +64,40 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.HoldingsDate.setDateTime(QtCore.QDateTime.currentDateTime())
 
         self.ui_config.configure_all()
+        self.ActionsDataMapper = self.ui_config.mappers[self.ui_config.ACTIONS]
+        self.TradesDataMapper = self.ui_config.mappers[self.ui_config.TRADES]
+        self.DividendsDataMapper = self.ui_config.mappers[self.ui_config.DIVIDENDS]
+        self.TransfersDataMapper = self.ui_config.mappers[self.ui_config.TRANSFERS]
 
         self.BalancesCurrencyCombo.init_db(self.db)
         self.HoldingsCurrencyCombo.init_db(self.db)
         self.ChooseAccountBtn.init_db(self.db)
 
         self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
-        # next line forces usage of sizeHint() from delegate
-        self.OperationsTableView.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-
-        self.ActionsDataMapper = self.ui_config.mappers[self.ui_config.ACTIONS]
-        self.TradesDataMapper = self.ui_config.mappers[self.ui_config.TRADES]
-        self.DividendsDataMapper = self.ui_config.mappers[self.ui_config.DIVIDENDS]
-        self.TransfersDataMapper = self.ui_config.mappers[self.ui_config.TRANSFERS]
-
-        # self.ActionDetailsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)  TODO: Is this line needed?
-        self.ActionDetailsTableView.horizontalHeader().moveSection(self.ActionDetailsTableView.model().fieldIndex("note"),
-                                                                   self.ActionDetailsTableView.model().fieldIndex("name"))
-
-        ###############################################################################################
-        # CONFIGURE ACTIONS                                                                           #
-        ###############################################################################################
-        # MENU ACTIONS
-        self.actionExit.triggered.connect(QtWidgets.QApplication.instance().quit)
-        self.action_Load_quotes.triggered.connect(self.UpdateQuotes)
-        self.actionLoad_Statement.triggered.connect(self.loadReportIBKR)
-        self.actionBackup.triggered.connect(self.Backup)
-        self.actionRestore.triggered.connect(self.Restore)
-        self.action_Re_build_Ledger.triggered.connect(self.ShowRebuildDialog)
-        self.actionAccountTypes.triggered.connect(self.EditAccountTypes)
-        self.actionAccounts.triggered.connect(self.EditAccounts)
-        self.actionAssets.triggered.connect(self.EditAssets)
-        self.actionPeers.triggered.connect(self.EditPeers)
-        self.actionCategories.triggered.connect(self.EditCategories)
-        self.actionTags.triggered.connect(self.EditTags)
-        self.MakeIncomeSpendingReport.triggered.connect(self.ReportIncomeSpending)
-        self.MakeDealsReport.triggered.connect(self.ReportDeals)
-        self.MakePLReport.triggered.connect(self.ReportProfitLoss)
-        self.PrepareTaxForms.triggered.connect(self.ExportTaxForms)
-        # INTERFACE ACTIONS
-        self.MainTabs.currentChanged.connect(self.OnMainTabChange)
-        self.BalanceDate.dateChanged.connect(self.onBalanceDateChange)
-        self.HoldingsDate.dateChanged.connect(self.onHoldingsDateChange)
-        self.BalancesCurrencyCombo.currentIndexChanged.connect(self.OnBalanceCurrencyChange)
-        self.HoldingsCurrencyCombo.currentIndexChanged.connect(self.OnHoldingsCurrencyChange)
-        self.ShowInactiveCheckBox.stateChanged.connect(self.OnBalanceInactiveChange)
-        self.DateRangeCombo.currentIndexChanged.connect(self.OnOperationsRangeChange)
-        # OPERATIONS TABLE ACTIONS
-        self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
-        self.OperationsTableView.customContextMenuRequested.connect(self.OnOperationsContextMenu)
-        self.ChooseAccountBtn.clicked.connect(self.OnAccountChange)
-        self.SearchString.textChanged.connect(self.OnSearchChange)
-        # OPERATIONS ACTIONS
-        self.AddActionDetail.clicked.connect(self.AddDetail)
-        self.RemoveActionDetail.clicked.connect(self.RemoveDetail)
         self.NewOperationMenu = QMenu()
         self.NewOperationMenu.addAction('Income / Spending', self.CreateNewAction)
         self.NewOperationMenu.addAction('Transfer', self.CreateNewTransfer)
         self.NewOperationMenu.addAction('Buy / Sell', self.CreateNewTrade)
         self.NewOperationMenu.addAction('Dividend', self.CreateNewDividend)
         self.NewOperationBtn.setMenu(self.NewOperationMenu)
-        self.DeleteOperationBtn.clicked.connect(self.DeleteOperation)
-        self.CopyOperationBtn.clicked.connect(self.CopyOperation)
-        self.SaveOperationBtn.clicked.connect(self.SaveOperation)
-        self.RevertOperationBtn.clicked.connect(self.RevertOperation)
+        # next line forces usage of sizeHint() from delegate
+        self.OperationsTableView.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
+        self.ActionDetailsTableView.horizontalHeader().moveSection(self.ActionDetailsTableView.model().fieldIndex("note"),
+                                                                   self.ActionDetailsTableView.model().fieldIndex("name"))
+        self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
         self.OperationsTableView.selectRow(0)
         self.OnOperationsRangeChange(0)
 
         self.Logs.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
         logging.getLogger().addHandler(self.Logs)
         logging.getLogger().setLevel(logging.INFO)
+
+        self.UpdateBalances()
+
+    def __del__(self):
+        if self.db:
+            self.db.close()
 
     def Backup(self):
         backup_directory = QFileDialog.getExistingDirectory(self, "Select directory to save backup")

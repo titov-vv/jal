@@ -1,4 +1,6 @@
 from view_delegate import *
+from PySide2 import QtWidgets
+from PySide2.QtCore import QObject, SIGNAL
 from action_delegate import ActionDelegate, ActionDetailDelegate
 from dividend_delegate import DividendSqlDelegate
 from trade_delegate import TradeSqlDelegate
@@ -15,6 +17,10 @@ class TableViewConfig:
     TRADES = 5
     DIVIDENDS = 6
     TRANSFERS = 7
+
+    ACTION_SRC = 0
+    ACTION_SIGNAL = 1
+    ACTION_SLOT = 2
 
     table_names = {
         BALANCES: 'balances',
@@ -171,6 +177,40 @@ class TableViewConfig:
                              "fee_amount", parent.TransferFeeAmount, parent.widthForAmountEdit, parent.doubleValidate2),
                              ("note", parent.TransferNote, 0, None)]
         }
+        self.actions = [
+            (parent.actionExit,             "triggered",        QtWidgets.QApplication.instance().quit),
+            (parent.action_Load_quotes,     "triggered",        parent.UpdateQuotes),
+            (parent.actionLoad_Statement,   "triggered",        parent.loadReportIBKR),
+            (parent.actionBackup,           "triggered",        parent.Backup),
+            (parent.actionRestore,          "triggered",        parent.Restore),
+            (parent.action_Re_build_Ledger, "triggered",        parent.ShowRebuildDialog),
+            (parent.actionAccountTypes,     "triggered",        parent.EditAccountTypes),
+            (parent.actionAccounts,         "triggered",        parent.EditAccounts),
+            (parent.actionAssets,           "triggered",        parent.EditAssets),
+            (parent.actionPeers,            "triggered",        parent.EditPeers),
+            (parent.actionCategories,       "triggered",        parent.EditCategories),
+            (parent.actionTags,             "triggered",        parent.EditTags),
+            (parent.MakeIncomeSpendingReport, "triggered",      parent.ReportIncomeSpending),
+            (parent.MakeDealsReport,        "triggered",        parent.ReportDeals),
+            (parent.MakePLReport,           "triggered",        parent.ReportProfitLoss),
+            (parent.PrepareTaxForms,        "triggered",        parent.ExportTaxForms),
+            (parent.MainTabs,               "currentChanged",   parent.OnMainTabChange),
+            (parent.BalanceDate,            "dateChanged",      parent.onBalanceDateChange),
+            (parent.HoldingsDate,           "dateChanged",      parent.onHoldingsDateChange),
+            (parent.BalancesCurrencyCombo,  "currentIndexChanged", parent.OnBalanceCurrencyChange),
+            (parent.HoldingsCurrencyCombo,  "currentIndexChanged", parent.OnHoldingsCurrencyChange),
+            (parent.ShowInactiveCheckBox,   "stateChanged",     parent.OnBalanceInactiveChange),
+            (parent.DateRangeCombo,         "currentIndexChanged", parent.OnOperationsRangeChange),
+            (parent.OperationsTableView,    "customContextMenuRequested", parent.OnOperationsContextMenu),
+            (parent.ChooseAccountBtn,       "clicked",          parent.OnAccountChange),
+            (parent.SearchString,           "textChanged",      parent.OnSearchChange),
+            (parent.AddActionDetail,        "clicked",          parent.AddDetail),
+            (parent.RemoveActionDetail,     "clicked",          parent.RemoveDetail),
+            (parent.DeleteOperationBtn,     "clicked",          parent.DeleteOperation),
+            (parent.CopyOperationBtn,       "clicked",          parent.CopyOperation),
+            (parent.SaveOperationBtn,       "clicked",          parent.SaveOperation),
+            (parent.RevertOperationBtn,     "clicked",          parent.RevertOperation)
+        ]
 
     def configure(self, i):
         model = UseSqlTable(self.parent.db, self.table_names[i], self.table_view_columns[i],
@@ -190,3 +230,5 @@ class TableViewConfig:
     def configure_all(self):
         for table in self.table_names:
             self.configure(table)
+        for action in self.actions:
+            QObject.connect(action[self.ACTION_SRC], SIGNAL(action[self.ACTION_SIGNAL]+'()'), action[self.ACTION_SLOT])

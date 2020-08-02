@@ -1350,7 +1350,6 @@
     <addaction name="actionBackup"/>
     <addaction name="actionRestore"/>
     <addaction name="action_Re_build_Ledger"/>
-    <addaction name="action_Import"/>
    </widget>
    <widget class="QMenu" name="menuLoad">
     <property name="title">
@@ -1387,14 +1386,6 @@
     <string>Re-build &amp;Ledger</string>
    </property>
   </action>
-  <action name="action_Import">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Import old...</string>
-   </property>
-  </action>
   <action name="action_Load_quotes">
    <property name="text">
     <string>Load &amp;Quotes</string>
@@ -1403,11 +1394,6 @@
   <action name="actionLoad_Statement">
    <property name="text">
     <string>Load &amp;Statement...</string>
-   </property>
-  </action>
-  <action name="actionInitDB">
-   <property name="text">
-    <string>Init &amp;DB</string>
    </property>
   </action>
   <action name="actionAccountTypes">
