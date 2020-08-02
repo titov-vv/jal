@@ -31,6 +31,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
         self.selected_id = 0
         self.p_selected_name = ''
+        self.dialog_visible = False
         self.tree_view = tree_view
         self.parent = 0
         self.last_parent = 0
@@ -93,6 +94,15 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.Model.select()
         self.setFilter()
 
+    # Overload ancestor method to activate/deactivate filters for table view
+    def exec_(self):
+        self.dialog_visible = True
+        self.setFilter()
+        res = super().exec_()
+        self.dialog_visible = False
+        self.resetFilter()
+        return res
+
     def getSelectedName(self):
         if self.selected_id == 0:
             return "ANY"
@@ -145,7 +155,13 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)
 
+    def resetFilter(self):
+        self.DataView.model().setFilter("")
+
     def setFilter(self):  # TODO: correctly combine different conditions
+        if not self.dialog_visible:
+            return
+
         conditions = []
         if self.search_text:
             conditions.append(f"{self.search_field} LIKE '%{self.search_text}%'")
