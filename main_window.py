@@ -90,14 +90,16 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OnOperationsRangeChange(0)
 
         self.Logs.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-        logging.getLogger().addHandler(self.Logs)
-        logging.getLogger().setLevel(logging.INFO)
+        self.logger = logging.getLogger()
+        self.logger.addHandler(self.Logs)
+        self.logger.setLevel(logging.INFO)
 
         self.UpdateBalances()
 
-    def __del__(self):
-        if self.db:
-            self.db.close()
+    def closeEvent(self, event):
+        self.logger.removeHandler(self.Logs)    # Removing handler (but it doesn't prevent exception at exit)
+        logging.raiseExceptions = False         # Silencing logging module exceptions
+        self.db.close()                         # Closing database file
 
     def Backup(self):
         backup_directory = QFileDialog.getExistingDirectory(self, "Select directory to save backup")
