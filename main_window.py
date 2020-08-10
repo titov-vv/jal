@@ -69,8 +69,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DividendsDataMapper = self.ui_config.mappers[self.ui_config.DIVIDENDS]
         self.TransfersDataMapper = self.ui_config.mappers[self.ui_config.TRANSFERS]
 
-        self.BalancesCurrencyCombo.init_db(self.db)
-        self.HoldingsCurrencyCombo.init_db(self.db)
+        self.BalancesCurrencyCombo.init_db(self.db)   # this line will trigger onBalanceDateChange -> view updated
+        self.HoldingsCurrencyCombo.init_db(self.db)   # and this will trigger onHoldingsDateChange -> view updated
         self.ChooseAccountBtn.init_db(self.db)
 
         self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -93,8 +93,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.logger = logging.getLogger()
         self.logger.addHandler(self.Logs)
         self.logger.setLevel(logging.INFO)
-
-        self.UpdateBalances()
 
     def closeEvent(self, event):
         self.logger.removeHandler(self.Logs)    # Removing handler (but it doesn't prevent exception at exit)
@@ -134,12 +132,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def OnMainTabChange(self, tab_index):
-        if tab_index == 0:
-            self.StatusBar.showMessage("Balances and Transactions")
-        elif tab_index == 1:
-            self.StatusBar.showMessage("Asset holdings report")
-            self.UpdateHoldings()
-        elif tab_index == 2:
+        if tab_index == 2:
             self.Logs.cleanNotification()
 
     @Slot()
