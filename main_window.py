@@ -16,7 +16,6 @@ from DB.bulk_db import MakeBackup, RestoreBackup
 from DB.helpers import init_and_check_db, get_base_currency
 from downloader import QuoteDownloader, QuotesUpdateDialog
 from ledger import Ledger
-from rebuild_window import RebuildDialog
 from reports import Reports, ReportParamsDialog
 from statements import StatementLoader
 from taxes import TaxesRus, TaxExportDialog
@@ -113,12 +112,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                                               "Application terminates now."),
                                       QMessageBox.Ok)
             QtWidgets.QApplication.instance().quit()
-
-    def ShowRebuildDialog(self):
-        rebuild_dialog = RebuildDialog(self, self.ledger.getCurrentFrontier())
-        if rebuild_dialog.exec_():
-            rebuild_date = rebuild_dialog.getTimestamp()
-            self.ledger.MakeFromTimestamp(rebuild_date)
 
     @Slot()
     def onBalanceDateChange(self, _new_date):

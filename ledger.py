@@ -4,6 +4,7 @@ import logging
 from PySide2.QtSql import QSqlQuery
 
 from constants import *
+from rebuild_window import RebuildDialog
 
 
 # ===================================================================================================================
@@ -750,3 +751,9 @@ class Ledger:
                       "GROUP BY currency "
                       ") ORDER BY currency, level1 DESC, account, level2 DESC")
         assert query.exec_()
+
+    def showRebuildDialog(self, parent):
+        rebuild_dialog = RebuildDialog(parent, self.getCurrentFrontier())
+        if rebuild_dialog.exec_():
+            rebuild_date = rebuild_dialog.getTimestamp()
+            self.MakeFromTimestamp(rebuild_date)

@@ -1,6 +1,7 @@
 from view_delegate import *
 from PySide2 import QtWidgets
 from PySide2.QtCore import QObject, SIGNAL
+from functools import partial
 from action_delegate import ActionDelegate, ActionDetailDelegate
 from dividend_delegate import DividendSqlDelegate
 from trade_delegate import TradeSqlDelegate
@@ -183,7 +184,7 @@ class TableViewConfig:
             (parent.actionLoad_Statement,   "triggered()",              parent.loadReportIBKR),
             (parent.actionBackup,           "triggered()",              parent.Backup),
             (parent.actionRestore,          "triggered()",              parent.Restore),
-            (parent.action_Re_build_Ledger, "triggered()",              parent.ShowRebuildDialog),
+            (parent.action_Re_build_Ledger, "triggered()",              partial(parent.ledger.showRebuildDialog, parent)),
             (parent.actionAccountTypes,     "triggered()",              parent.EditAccountTypes),
             (parent.actionAccounts,         "triggered()",              parent.EditAccounts),
             (parent.actionAssets,           "triggered()",              parent.EditAssets),
