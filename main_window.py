@@ -14,7 +14,7 @@ from UI.ui_main_window import Ui_LedgerMainWindow
 from view_delegate import *
 from DB.bulk_db import MakeBackup, RestoreBackup
 from DB.helpers import init_and_check_db, get_base_currency
-from downloader import QuoteDownloader, QuotesUpdateDialog
+from downloader import QuoteDownloader
 from ledger import Ledger
 from reports import Reports
 from statements import StatementLoader
@@ -616,14 +616,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             if holidings_model.data(holidings_model.index(row, 1)):
                 self.HoldingsTableView.setSpan(row, 3, 1, 3)
         self.HoldingsTableView.show()
-
-    @Slot()
-    def UpdateQuotes(self):
-        update_dialog = QuotesUpdateDialog(self)
-        if update_dialog.exec_():
-            self.downloader.UpdateQuotes(update_dialog.getStartDate(), update_dialog.getEndDate(),
-                                         update_dialog.getUseProxy())
-            self.StatusBar.showMessage("Quotes download completed", timeout=60)
 
     @Slot()
     def loadReportIBKR(self):

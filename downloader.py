@@ -58,6 +58,12 @@ class QuoteDownloader:
         self.db = db
         self.CBR_codes = None
 
+    def showQuoteDownloadDialog(self, parent):
+        dialog = QuotesUpdateDialog(parent)
+        if dialog.exec_():
+            self.UpdateQuotes(dialog.getStartDate(), dialog.getEndDate(), dialog.getUseProxy())
+            parent.StatusBar.showMessage("Quotes download completed", timeout=60000)
+
     def UpdateQuotes(self, start_timestamp, end_timestamp, use_proxy):
         if use_proxy:
             logging.fatal("Download via proxy is not implemented")

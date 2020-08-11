@@ -181,7 +181,7 @@ class TableViewConfig:
         }
         self.actions = [
             (parent.actionExit,             "triggered()",              QtWidgets.QApplication.instance().quit),
-            (parent.action_Load_quotes,     "triggered()",              parent.UpdateQuotes),
+            (parent.action_Load_quotes,     "triggered()",              partial(parent.downloader.showQuoteDownloadDialog, parent)),
             (parent.actionLoad_Statement,   "triggered()",              parent.loadReportIBKR),
             (parent.actionBackup,           "triggered()",              parent.Backup),
             (parent.actionRestore,          "triggered()",              parent.Restore),
