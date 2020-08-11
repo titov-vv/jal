@@ -6,6 +6,7 @@ from io import StringIO
 import pandas as pd
 import requests
 from PySide2 import QtCore
+from PySide2.QtCore import QObject, Signal
 from PySide2.QtSql import QSqlQuery
 from PySide2.QtWidgets import QDialog
 
@@ -53,8 +54,11 @@ class QuotesUpdateDialog(QDialog, Ui_UpdateQuotesDlg):
 # ===================================================================================================================
 # Worker class
 # ===================================================================================================================
-class QuoteDownloader:
+class QuoteDownloader(QObject):
+    download_completed = Signal()
+
     def __init__(self, db):
+        super().__init__()
         self.db = db
         self.CBR_codes = None
 
@@ -62,7 +66,7 @@ class QuoteDownloader:
         dialog = QuotesUpdateDialog(parent)
         if dialog.exec_():
             self.UpdateQuotes(dialog.getStartDate(), dialog.getEndDate(), dialog.getUseProxy())
-            parent.StatusBar.showMessage("Quotes download completed", timeout=60000)
+            self.download_completed.emit()
 
     def UpdateQuotes(self, start_timestamp, end_timestamp, use_proxy):
         if use_proxy:

@@ -35,6 +35,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.ledger = Ledger(self.db)
         self.downloader = QuoteDownloader(self.db)
+        self.downloader.download_completed.connect(self.onQuotesDownloadCompletion)
         self.reports = Reports(self.db)
         self.taxes = TaxesRus(self.db)
 
@@ -630,3 +631,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 report_loader.loadQuikHtml(report_file)
             self.UpdateLedger()
 
+    @Slot()
+    def onQuotesDownloadCompletion(self):
+        self.StatusBar.showMessage("Quotes download completed", timeout=60000)
