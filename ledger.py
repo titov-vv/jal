@@ -14,6 +14,16 @@ class Ledger:
     def __init__(self, db):
         self.db = db
 
+    # Returns timestamp of last operations that were calculated into ledger
+    def getCurrentFrontier(self):
+        query = QSqlQuery(self.db)
+        assert query.exec_("SELECT ledger_frontier FROM frontier")
+        query.next()
+        current_frontier = query.value(0)
+        if current_frontier == '':
+            current_frontier = 0
+        return current_frontier
+
     def appendTransaction(self, timestamp, seq_id, book, asset_id, account_id, amount, value=None, peer_id=None,
                           category_id=None, tag_id=None):
         query = QSqlQuery(self.db)

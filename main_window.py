@@ -38,7 +38,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.downloader = QuoteDownloader(self.db)
 
         # Customize Status bar and logs
-        self.NewLogEventLbl = QLabel()
+        self.NewLogEventLbl = QLabel(self)
         self.StatusBar.addPermanentWidget(VLine())
         self.StatusBar.addPermanentWidget(self.NewLogEventLbl)
         self.Logs.setNotificationLabel(self.NewLogEventLbl)
@@ -115,14 +115,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             QtWidgets.QApplication.instance().quit()
 
     def ShowRebuildDialog(self):
-        query = QSqlQuery(self.db)
-        query.exec_("SELECT ledger_frontier FROM frontier")
-        query.next()
-        current_frontier = query.value(0)
-        if current_frontier == '':
-            current_frontier = 0
-
-        rebuild_dialog = RebuildDialog(current_frontier)
+        rebuild_dialog = RebuildDialog(self.ledger.getCurrentFrontier())
         rebuild_dialog.setGeometry(self.x() + 64, self.y() + 64, rebuild_dialog.width(), rebuild_dialog.height())
         if rebuild_dialog.exec_():
             rebuild_date = rebuild_dialog.getTimestamp()
