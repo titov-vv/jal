@@ -16,7 +16,7 @@ from DB.bulk_db import MakeBackup, RestoreBackup
 from DB.helpers import init_and_check_db, get_base_currency
 from downloader import QuoteDownloader, QuotesUpdateDialog
 from ledger import Ledger
-from reports import Reports, ReportParamsDialog
+from reports import Reports
 from statements import StatementLoader
 from taxes import TaxesRus, TaxExportDialog
 from CustomUI.table_view_config import TableViewConfig
@@ -35,6 +35,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.ledger = Ledger(self.db)
         self.downloader = QuoteDownloader(self.db)
+        self.reports = Reports(self.db)
 
         # Customize Status bar and logs
         self.NewLogEventLbl = QLabel(self)
@@ -635,28 +636,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             if active_filter == self.tr("Quik HTML-report (*.htm)"):
                 report_loader.loadQuikHtml(report_file)
             self.UpdateLedger()
-
-    @Slot()
-    def ReportDeals(self):
-        deals_export_dialog = ReportParamsDialog(self, self.db)
-        if deals_export_dialog.exec_():
-            deals = Reports(self.db, deals_export_dialog.filename)
-            deals.save_deals(deals_export_dialog.account,
-                             deals_export_dialog.begin, deals_export_dialog.end, deals_export_dialog.group_dates)
-
-    @Slot()
-    def ReportProfitLoss(self):
-        pl_export_dialog = ReportParamsDialog(self, self.db)
-        if pl_export_dialog.exec_():
-            deals = Reports(self.db, pl_export_dialog.filename)
-            deals.save_profit_loss(pl_export_dialog.account, pl_export_dialog.begin, pl_export_dialog.end)
-
-    @Slot()
-    def ReportIncomeSpending(self):
-        income_spending_export_dialog = ReportParamsDialog(self, self.db)
-        if income_spending_export_dialog.exec_():
-            deals = Reports(self.db, income_spending_export_dialog.filename)
-            deals.save_income_sending(income_spending_export_dialog.begin, income_spending_export_dialog.end)
 
     @Slot()
     def ExportTaxForms(self):

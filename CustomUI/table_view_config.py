@@ -1,4 +1,5 @@
 from view_delegate import *
+from reports import Reports
 from PySide2 import QtWidgets
 from PySide2.QtCore import QObject, SIGNAL
 from functools import partial
@@ -191,9 +192,9 @@ class TableViewConfig:
             (parent.actionPeers,            "triggered()",              parent.EditPeers),
             (parent.actionCategories,       "triggered()",              parent.EditCategories),
             (parent.actionTags,             "triggered()",              parent.EditTags),
-            (parent.MakeCategoriesReport,   "triggered()",              parent.ReportIncomeSpending),
-            (parent.MakeDealsReport,        "triggered()",              parent.ReportDeals),
-            (parent.MakePLReport,           "triggered()",              parent.ReportProfitLoss),
+            (parent.MakeCategoriesReport,   "triggered()",              partial(parent.reports.create_report, parent, Reports.INCOME_SPENDING_REPORT))
+            (parent.MakeDealsReport,        "triggered()",              partial(parent.reports.create_report, parent, Reports.DEALS_REPORT))
+            (parent.MakePLReport,           "triggered()",              partial(parent.reports.create_report, parent, Reports.PROFIT_LOSS_REPORT))
             (parent.PrepareTaxForms,        "triggered()",              parent.ExportTaxForms),
             (parent.BalanceDate,            "dateChanged(QDate)",       parent.onBalanceDateChange),
             (parent.HoldingsDate,           "dateChanged(QDate)",       parent.onHoldingsDateChange),

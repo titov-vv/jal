@@ -1,4 +1,5 @@
 import datetime
+import logging
 import xlsxwriter
 from constants import *
 from PySide2.QtWidgets import QDialog, QFileDialog
@@ -63,10 +64,16 @@ class ReportParamsDialog(QDialog, Ui_DealsExportDlg):
 
 
 class Reports:
-    def __init__(self, db, report_filename):
-        self.db = db
-        self.workbook = xlsxwriter.Workbook(filename=report_filename)
+    DEALS_REPORT = 1
+    PROFIT_LOSS_REPORT = 2
+    INCOME_SPENDING_REPORT = 3
 
+    def __init__(self, db):
+        self.db = db
+        self.workbook = None
+        self.formats = None
+
+    def prepareFormatting(self):
         title_cell = self.workbook.add_format({'bold': True,
                                                'text_wrap': True,
                                                'align': 'center',
@@ -101,7 +108,29 @@ class Reports:
                         'number_2_odd': number2_odd, 'number_2_even': number2_even,
                         'number_4_odd': number4_odd, 'number_4_even': number4_even}
 
-    def save_deals(self, account_id, begin, end, group_dates):
+    def create_report(self, parent, report_type):
+        if report_type == self.DEALS_REPORT:
+            dialog_title = "Prepare deals report"
+        elif report_type == self.PROFIT_LOSS_REPORT:
+            dialog_title = "Prepare profit/loss report"
+        elif report_type == self.INCOME_SPENDING_REPORT:
+            dialog_title = "Prepare income/spending report"
+        else:
+            logging.warning("Unknown report type")
+
+        dialog = ReportParamsDialog(parent, self.db)
+        dialog.setWindowTitle(dialog_title)
+        if dialog.exec_():
+            if report_type == self.DEALS_REPORT:
+                self.save_deals(dialog.filename, dialog.account, dialog.begin, dialog.end, dialog.group_dates)
+            elif report_type == self.PROFIT_LOSS_REPORT:
+                self.save_profit_loss(dialog.filename, dialog.account, dialog.begin, dialog.end)
+            elif report_type == self.INCOME_SPENDING_REPORT:
+                self.save_income_sending(dialog.filename, dialog.begin, dialog.end)
+
+    def save_deals(self, report_filename, account_id, begin, end, group_dates):
+        self.workbook = xlsxwriter.Workbook(filename=report_filename)
+        self.prepareFormatting()
         sheet = self.workbook.add_worksheet(name="Deals")
 
         query = QSqlQuery(self.db)
@@ -169,7 +198,9 @@ class Reports:
 
         self.workbook.close()
 
-    def save_profit_loss(self, account_id, begin, end):
+    def save_profit_loss(self, report_filename, account_id, begin, end):
+        self.workbook = xlsxwriter.Workbook(filename=report_filename)
+        self.prepareFormatting()
         sheet = self.workbook.add_worksheet(name="P&L")
 
         query = QSqlQuery(self.db)
@@ -282,7 +313,9 @@ class Reports:
 
         self.workbook.close()
 
-    def save_income_sending(self, begin, end):
+    def save_income_sending(self, report_filename, begin, end):
+        self.workbook = xlsxwriter.Workbook(filename=report_filename)
+        self.prepareFormatting()
         sheet = self.workbook.add_worksheet(name="Income & Spending")
 
         query = QSqlQuery(self.db)
