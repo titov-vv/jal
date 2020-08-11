@@ -38,6 +38,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.downloader.download_completed.connect(self.onQuotesDownloadCompletion)
         self.reports = Reports(self.db)
         self.taxes = TaxesRus(self.db)
+        self.statements = StatementLoader(self.db)
+        self.statements.load_completed.connect(self.onStatementLoaded)
 
         # Customize Status bar and logs
         self.NewLogEventLbl = QLabel(self)
@@ -619,18 +621,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.HoldingsTableView.show()
 
     @Slot()
-    def loadReportIBKR(self):
-        report_file, active_filter = \
-            QFileDialog.getOpenFileName(self, self.tr("Select Interactive Brokers Flex-query to import"), ".",
-                                        self.tr("IBKR flex-query (*.xml);;Quik HTML-report (*.htm)"))
-        if report_file:
-            report_loader = StatementLoader(self.db)
-            if active_filter == self.tr("IBKR flex-query (*.xml)"):
-                report_loader.loadIBFlex(report_file)
-            if active_filter == self.tr("Quik HTML-report (*.htm)"):
-                report_loader.loadQuikHtml(report_file)
-            self.UpdateLedger()
-
-    @Slot()
     def onQuotesDownloadCompletion(self):
         self.StatusBar.showMessage("Quotes download completed", timeout=60000)
+
+    @Slot()
+    def onStatementLoaded(self):
+        self.StatusBar.showMessage("Statement load completed", timeout=60000)
+        self.UpdateLedger()

@@ -4,7 +4,9 @@ import re
 from datetime import datetime
 
 import pandas
+from PySide2.QtCore import QObject, Signal
 from PySide2.QtSql import QSqlQuery
+from PySide2.QtWidgets import QFileDialog
 from ibflex import parser, AssetClass, BuySell, CashAction, Reorg, Code
 
 from constants import *
@@ -39,9 +41,23 @@ def convert_sum(val):
     return res
 
 
-class StatementLoader:
+class StatementLoader(QObject):
+    load_completed = Signal()
+
     def __init__(self, db):
+        super().__init__()
         self.db = db
+
+    def loadReport(self):
+        report_file, active_filter = \
+            QFileDialog.getOpenFileName(None, self.tr("Select Interactive Brokers Flex-query to import"), ".",
+                                        self.tr("IBKR flex-query (*.xml);;Quik HTML-report (*.htm)"))
+        if report_file:
+            if active_filter == self.tr("IBKR flex-query (*.xml)"):
+                self.loadIBFlex(report_file)
+            if active_filter == self.tr("Quik HTML-report (*.htm)"):
+                self.loadQuikHtml(report_file)
+            self.load_completed.emit()
 
     def findAccountID(self, accountNumber, accountCurrency=''):
         query = QSqlQuery(self.db)
