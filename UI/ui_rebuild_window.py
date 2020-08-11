@@ -20,34 +20,72 @@ class Ui_ReBuildDialog(object):
     def setupUi(self, ReBuildDialog):
         if not ReBuildDialog.objectName():
             ReBuildDialog.setObjectName(u"ReBuildDialog")
-        ReBuildDialog.resize(260, 119)
+        ReBuildDialog.setWindowModality(Qt.ApplicationModal)
+        ReBuildDialog.resize(268, 140)
+        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(ReBuildDialog.sizePolicy().hasHeightForWidth())
+        ReBuildDialog.setSizePolicy(sizePolicy)
         font = QFont()
         font.setFamily(u"DejaVu Sans")
         ReBuildDialog.setFont(font)
-        self.DialogButtonBox = QDialogButtonBox(ReBuildDialog)
-        self.DialogButtonBox.setObjectName(u"DialogButtonBox")
-        self.DialogButtonBox.setGeometry(QRect(88, 90, 171, 32))
-        self.DialogButtonBox.setOrientation(Qt.Horizontal)
-        self.DialogButtonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.verticalLayout = QVBoxLayout(ReBuildDialog)
+        self.verticalLayout.setSpacing(2)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.TypeGroup = QGroupBox(ReBuildDialog)
         self.TypeGroup.setObjectName(u"TypeGroup")
-        self.TypeGroup.setGeometry(QRect(0, 0, 259, 91))
+        sizePolicy1 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.TypeGroup.sizePolicy().hasHeightForWidth())
+        self.TypeGroup.setSizePolicy(sizePolicy1)
+        self.formLayout = QFormLayout(self.TypeGroup)
+        self.formLayout.setObjectName(u"formLayout")
+        self.formLayout.setSizeConstraint(QLayout.SetMinimumSize)
+        self.formLayout.setFieldGrowthPolicy(QFormLayout.FieldsStayAtSizeHint)
+        self.formLayout.setHorizontalSpacing(15)
+        self.formLayout.setVerticalSpacing(0)
+        self.formLayout.setContentsMargins(2, 0, 2, 0)
         self.AllRadioButton = QRadioButton(self.TypeGroup)
         self.AllRadioButton.setObjectName(u"AllRadioButton")
-        self.AllRadioButton.setGeometry(QRect(10, 22, 100, 21))
+
+        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.AllRadioButton)
+
         self.LastRadioButton = QRadioButton(self.TypeGroup)
         self.LastRadioButton.setObjectName(u"LastRadioButton")
-        self.LastRadioButton.setGeometry(QRect(10, 44, 131, 21))
-        self.DateRadionButton = QRadioButton(self.TypeGroup)
-        self.DateRadionButton.setObjectName(u"DateRadionButton")
-        self.DateRadionButton.setGeometry(QRect(10, 66, 131, 21))
-        self.CustomDateEdit = QDateEdit(self.TypeGroup)
-        self.CustomDateEdit.setObjectName(u"CustomDateEdit")
-        self.CustomDateEdit.setGeometry(QRect(140, 64, 110, 24))
-        self.CustomDateEdit.setCalendarPopup(True)
+
+        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.LastRadioButton)
+
         self.FrontierDateLabel = QLabel(self.TypeGroup)
         self.FrontierDateLabel.setObjectName(u"FrontierDateLabel")
-        self.FrontierDateLabel.setGeometry(QRect(140, 46, 111, 16))
+
+        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.FrontierDateLabel)
+
+        self.DateRadionButton = QRadioButton(self.TypeGroup)
+        self.DateRadionButton.setObjectName(u"DateRadionButton")
+
+        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.DateRadionButton)
+
+        self.CustomDateEdit = QDateEdit(self.TypeGroup)
+        self.CustomDateEdit.setObjectName(u"CustomDateEdit")
+        self.CustomDateEdit.setCalendarPopup(True)
+
+        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.CustomDateEdit)
+
+
+        self.verticalLayout.addWidget(self.TypeGroup)
+
+        self.DialogButtonBox = QDialogButtonBox(ReBuildDialog)
+        self.DialogButtonBox.setObjectName(u"DialogButtonBox")
+        sizePolicy1.setHeightForWidth(self.DialogButtonBox.sizePolicy().hasHeightForWidth())
+        self.DialogButtonBox.setSizePolicy(sizePolicy1)
+        self.DialogButtonBox.setOrientation(Qt.Horizontal)
+        self.DialogButtonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+
+        self.verticalLayout.addWidget(self.DialogButtonBox)
+
 
         self.retranslateUi(ReBuildDialog)
         self.DialogButtonBox.accepted.connect(ReBuildDialog.accept)
@@ -59,10 +97,10 @@ class Ui_ReBuildDialog(object):
     def retranslateUi(self, ReBuildDialog):
         ReBuildDialog.setWindowTitle(QCoreApplication.translate("ReBuildDialog", u"Re-Build Ledger", None))
         self.TypeGroup.setTitle(QCoreApplication.translate("ReBuildDialog", u"Date Range", None))
-        self.AllRadioButton.setText(QCoreApplication.translate("ReBuildDialog", u"&All", None))
+        self.AllRadioButton.setText(QCoreApplication.translate("ReBuildDialog", u"&Full, from scratch", None))
         self.LastRadioButton.setText(QCoreApplication.translate("ReBuildDialog", u"Since &Last actual:", None))
+        self.FrontierDateLabel.setText(QCoreApplication.translate("ReBuildDialog", u"FrontierDate", None))
         self.DateRadionButton.setText(QCoreApplication.translate("ReBuildDialog", u"Since &Date:", None))
         self.CustomDateEdit.setDisplayFormat(QCoreApplication.translate("ReBuildDialog", u"dd/MM/yyyy", None))
-        self.FrontierDateLabel.setText(QCoreApplication.translate("ReBuildDialog", u"FrontierDate", None))
     # retranslateUi
 

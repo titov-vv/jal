@@ -8,12 +8,17 @@ from UI.ui_tax_export_dlg import Ui_TaxExportDlg
 
 
 class TaxExportDialog(QDialog, Ui_TaxExportDlg):
-    def __init__(self, db):
+    def __init__(self, parent, db):
         QDialog.__init__(self)
         self.setupUi(self)
 
         self.AccountWidget.init_db(db)
         self.FileSelectBtn.pressed.connect(self.OnFileBtn)
+
+        # center dialog with respect to parent window
+        x = parent.x() + parent.width()/2 - self.width()/2
+        y = parent.y() + parent.height()/2 - self.height()/2
+        self.setGeometry(x, y, self.width(), self.height())
 
     @Slot()
     def OnFileBtn(self):

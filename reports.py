@@ -12,7 +12,7 @@ from UI.ui_deals_export_dlg import Ui_DealsExportDlg
 # TODO optimize with lists of fields
 
 class ReportParamsDialog(QDialog, Ui_DealsExportDlg):
-    def __init__(self, db):
+    def __init__(self, parent, db):
         QDialog.__init__(self)
         self.setupUi(self)
 
@@ -21,6 +21,11 @@ class ReportParamsDialog(QDialog, Ui_DealsExportDlg):
         self.FileSelectBtn.pressed.connect(self.OnFileBtn)
 
         self.ToDate.setDate(QtCore.QDate.currentDate())
+
+        # center dialog with respect to parent window
+        x = parent.x() + parent.width()/2 - self.width()/2
+        y = parent.y() + parent.height()/2 - self.height()/2
+        self.setGeometry(x, y, self.width(), self.height())
 
     @Slot()
     def OnFileBtn(self):

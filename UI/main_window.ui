@@ -1383,7 +1383,7 @@
   </action>
   <action name="action_Re_build_Ledger">
    <property name="text">
-    <string>Re-build &amp;Ledger</string>
+    <string>Re-build &amp;Ledger...</string>
    </property>
   </action>
   <action name="action_Load_quotes">

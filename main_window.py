@@ -115,8 +115,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             QtWidgets.QApplication.instance().quit()
 
     def ShowRebuildDialog(self):
-        rebuild_dialog = RebuildDialog(self.ledger.getCurrentFrontier())
-        rebuild_dialog.setGeometry(self.x() + 64, self.y() + 64, rebuild_dialog.width(), rebuild_dialog.height())
+        rebuild_dialog = RebuildDialog(self, self.ledger.getCurrentFrontier())
         if rebuild_dialog.exec_():
             rebuild_date = rebuild_dialog.getTimestamp()
             self.ledger.MakeFromTimestamp(rebuild_date)
@@ -625,8 +624,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def UpdateQuotes(self):
-        update_dialog = QuotesUpdateDialog()
-        update_dialog.setGeometry(self.x() + 64, self.y() + 64, update_dialog.width(), update_dialog.height())
+        update_dialog = QuotesUpdateDialog(self)
         if update_dialog.exec_():
             self.downloader.UpdateQuotes(update_dialog.getStartDate(), update_dialog.getEndDate(),
                                          update_dialog.getUseProxy())
@@ -647,9 +645,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def ReportDeals(self):
-        deals_export_dialog = ReportParamsDialog(self.db)
-        deals_export_dialog.setGeometry(self.x() + 64, self.y() + 64, deals_export_dialog.width(),
-                                        deals_export_dialog.height())
+        deals_export_dialog = ReportParamsDialog(self, self.db)
         if deals_export_dialog.exec_():
             deals = Reports(self.db, deals_export_dialog.filename)
             deals.save_deals(deals_export_dialog.account,
@@ -657,27 +653,21 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def ReportProfitLoss(self):
-        pl_export_dialog = ReportParamsDialog(self.db)
-        pl_export_dialog.setGeometry(self.x() + 64, self.y() + 64, pl_export_dialog.width(),
-                                     pl_export_dialog.height())
+        pl_export_dialog = ReportParamsDialog(self, self.db)
         if pl_export_dialog.exec_():
             deals = Reports(self.db, pl_export_dialog.filename)
             deals.save_profit_loss(pl_export_dialog.account, pl_export_dialog.begin, pl_export_dialog.end)
 
     @Slot()
     def ReportIncomeSpending(self):
-        income_spending_export_dialog = ReportParamsDialog(self.db)
-        income_spending_export_dialog.setGeometry(self.x() + 64, self.y() + 64, income_spending_export_dialog.width(),
-                                                  income_spending_export_dialog.height())
+        income_spending_export_dialog = ReportParamsDialog(self, self.db)
         if income_spending_export_dialog.exec_():
             deals = Reports(self.db, income_spending_export_dialog.filename)
             deals.save_income_sending(income_spending_export_dialog.begin, income_spending_export_dialog.end)
 
     @Slot()
     def ExportTaxForms(self):
-        tax_export_dialog = TaxExportDialog(self.db)
-        tax_export_dialog.setGeometry(self.x() + 64, self.y() + 64, tax_export_dialog.width(),
-                                      tax_export_dialog.height())
+        tax_export_dialog = TaxExportDialog(self, self.db)
         if tax_export_dialog.exec_():
             taxes = TaxesRus(self.db)
             taxes.save2file(tax_export_dialog.filename, tax_export_dialog.year, tax_export_dialog.account)

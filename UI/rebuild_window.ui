@@ -2,13 +2,22 @@
 <ui version="4.0">
  <class>ReBuildDialog</class>
  <widget class="QDialog" name="ReBuildDialog">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>260</width>
-    <height>119</height>
+    <width>268</width>
+    <height>140</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="font">
    <font>
@@ -18,103 +27,116 @@
   <property name="windowTitle">
    <string>Re-Build Ledger</string>
   </property>
-  <widget class="QDialogButtonBox" name="DialogButtonBox">
-   <property name="geometry">
-    <rect>
-     <x>88</x>
-     <y>90</y>
-     <width>171</width>
-     <height>32</height>
-    </rect>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>2</number>
    </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
+   <property name="leftMargin">
+    <number>0</number>
    </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+   <property name="topMargin">
+    <number>0</number>
    </property>
-  </widget>
-  <widget class="QGroupBox" name="TypeGroup">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>259</width>
-     <height>91</height>
-    </rect>
+   <property name="rightMargin">
+    <number>0</number>
    </property>
-   <property name="title">
-    <string>Date Range</string>
+   <property name="bottomMargin">
+    <number>0</number>
    </property>
-   <widget class="QRadioButton" name="AllRadioButton">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>22</y>
-      <width>100</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>&amp;All</string>
-    </property>
-   </widget>
-   <widget class="QRadioButton" name="LastRadioButton">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>44</y>
-      <width>131</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Since &amp;Last actual:</string>
-    </property>
-   </widget>
-   <widget class="QRadioButton" name="DateRadionButton">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>66</y>
-      <width>131</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Since &amp;Date:</string>
-    </property>
-   </widget>
-   <widget class="QDateEdit" name="CustomDateEdit">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>64</y>
-      <width>110</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="displayFormat">
-     <string>dd/MM/yyyy</string>
-    </property>
-    <property name="calendarPopup">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QLabel" name="FrontierDateLabel">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>46</y>
-      <width>111</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>FrontierDate</string>
-    </property>
-   </widget>
-  </widget>
+   <item>
+    <widget class="QGroupBox" name="TypeGroup">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Date Range</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetMinimumSize</enum>
+      </property>
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::FieldsStayAtSizeHint</enum>
+      </property>
+      <property name="horizontalSpacing">
+       <number>15</number>
+      </property>
+      <property name="verticalSpacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>2</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>2</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QRadioButton" name="AllRadioButton">
+        <property name="text">
+         <string>&amp;Full, from scratch</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QRadioButton" name="LastRadioButton">
+        <property name="text">
+         <string>Since &amp;Last actual:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLabel" name="FrontierDateLabel">
+        <property name="text">
+         <string>FrontierDate</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QRadioButton" name="DateRadionButton">
+        <property name="text">
+         <string>Since &amp;Date:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QDateEdit" name="CustomDateEdit">
+        <property name="displayFormat">
+         <string>dd/MM/yyyy</string>
+        </property>
+        <property name="calendarPopup">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="DialogButtonBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections>

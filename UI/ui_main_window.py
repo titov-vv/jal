@@ -810,7 +810,7 @@ class Ui_LedgerMainWindow(object):
     def retranslateUi(self, LedgerMainWindow):
         LedgerMainWindow.setWindowTitle(QCoreApplication.translate("LedgerMainWindow", u"Ledger", None))
         self.actionExit.setText(QCoreApplication.translate("LedgerMainWindow", u"&Exit", None))
-        self.action_Re_build_Ledger.setText(QCoreApplication.translate("LedgerMainWindow", u"Re-build &Ledger", None))
+        self.action_Re_build_Ledger.setText(QCoreApplication.translate("LedgerMainWindow", u"Re-build &Ledger...", None))
         self.action_Load_quotes.setText(QCoreApplication.translate("LedgerMainWindow", u"Load &Quotes", None))
         self.actionLoad_Statement.setText(QCoreApplication.translate("LedgerMainWindow", u"Load &Statement...", None))
         self.actionAccountTypes.setText(QCoreApplication.translate("LedgerMainWindow", u"Account &Types", None))

@@ -5,7 +5,7 @@ from UI.ui_rebuild_window import Ui_ReBuildDialog
 
 
 class RebuildDialog(QDialog, Ui_ReBuildDialog):
-    def __init__(self, frontier):
+    def __init__(self, parent, frontier):
         QDialog.__init__(self)
         self.setupUi(self)
 
@@ -14,6 +14,11 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
         frontier_text = datetime.fromtimestamp(frontier).strftime('%d/%m/%Y')
         self.FrontierDateLabel.setText(frontier_text)
         self.CustomDateEdit.setDate(QtCore.QDate.currentDate())
+
+        # center dialog with respect to parent window
+        x = parent.x() + parent.width()/2 - self.width()/2
+        y = parent.y() + parent.height()/2 - self.height()/2
+        self.setGeometry(x, y, self.width(), self.height())
 
     def getTimestamp(self):
         if self.LastRadioButton.isChecked():

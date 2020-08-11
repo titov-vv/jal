@@ -29,11 +29,16 @@ def get_web_data(url):
 # UI dialog class
 # ===================================================================================================================
 class QuotesUpdateDialog(QDialog, Ui_UpdateQuotesDlg):
-    def __init__(self):
+    def __init__(self, parent):
         QDialog.__init__(self)
         self.setupUi(self)
         self.StartDateEdit.setDate(QtCore.QDate.currentDate().addMonths(-1))
         self.EndDateEdit.setDate(QtCore.QDate.currentDate())
+
+        # center dialog with respect to parent window
+        x = parent.x() + parent.width()/2 - self.width()/2
+        y = parent.y() + parent.height()/2 - self.height()/2
+        self.setGeometry(x, y, self.width(), self.height())
 
     def getStartDate(self):
         return self.StartDateEdit.dateTime().toSecsSinceEpoch()
