@@ -157,6 +157,17 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.BalancesTableView.model().select()
 
     @Slot()
+    def UpdateHoldings(self):
+        self.ledger.BuildHoldingsTable(self.holdings_date, self.holdings_currency)
+        holidings_model = self.HoldingsTableView.model()
+        holidings_model.select()
+        for row in range(holidings_model.rowCount()):
+            if holidings_model.data(holidings_model.index(row, 1)):
+                self.HoldingsTableView.setSpan(row, 3, 1, 3)
+        self.HoldingsTableView.show()
+
+
+    @Slot()
     def OnOperationChange(self, selected, _deselected):
         self.CheckForNotSavedData()
 
@@ -281,14 +292,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 31536000
         else:
             self.operations_since_timestamp = 0
-        self.SetOperationsFilter()
-
-    @Slot()
-    def OnAccountChange(self):
-        self.SetOperationsFilter()
-
-    @Slot()
-    def OnSearchChange(self):
         self.SetOperationsFilter()
 
     def CreateNewAction(self):
@@ -609,16 +612,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                              ("tag", "Tag", -1, Qt.AscendingOrder, None)],
                             title="Tags", search_field="tag"
                             ).exec_()
-
-    @Slot()
-    def UpdateHoldings(self):
-        self.ledger.BuildHoldingsTable(self.holdings_date, self.holdings_currency)
-        holidings_model = self.HoldingsTableView.model()
-        holidings_model.select()
-        for row in range(holidings_model.rowCount()):
-            if holidings_model.data(holidings_model.index(row, 1)):
-                self.HoldingsTableView.setSpan(row, 3, 1, 3)
-        self.HoldingsTableView.show()
 
     @Slot()
     def onQuotesDownloadCompletion(self):
