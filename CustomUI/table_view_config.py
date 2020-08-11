@@ -1,13 +1,15 @@
 from view_delegate import *
 from reports import Reports
 from PySide2 import QtWidgets
-from PySide2.QtCore import QObject, SIGNAL
+from PySide2.QtCore import QObject, SIGNAL, Slot
 from functools import partial
 from action_delegate import ActionDelegate, ActionDetailDelegate
 from dividend_delegate import DividendSqlDelegate
 from trade_delegate import TradeSqlDelegate
 from transfer_delegate import TransferSqlDelegate
 from CustomUI.helpers import UseSqlTable, ConfigureTableView, ConfigureDataMappers
+from CustomUI.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, ReferenceBoolDelegate, \
+    ReferenceIntDelegate, ReferenceLookupDelegate, ReferenceTimestampDelegate
 
 
 class TableViewConfig:
@@ -19,10 +21,24 @@ class TableViewConfig:
     TRADES = 5
     DIVIDENDS = 6
     TRANSFERS = 7
+    ACCOUNT_TYPES = 8
+    ACCOUNTS = 9
+    ASSETS = 10
+    PEERS = 11
+    CATEGORIES = 12
+    TAGS = 13
 
     ACTION_SRC = 0
     ACTION_SIGNAL = 1
     ACTION_SLOT = 2
+
+    DLG_TABLE = 0
+    DLG_TITLE = 1
+    DLG_COLUMNS = 2
+    DLG_SEARCH = 3
+    DLG_TOGGLE = 4
+    DLG_TREE = 5
+    DLG_RELATIONS = 6
 
     table_names = {
         BALANCES: 'balances',
@@ -179,6 +195,85 @@ class TableViewConfig:
                              "fee_amount", parent.TransferFeeAmount, parent.widthForAmountEdit, parent.doubleValidate2),
                              ("note", parent.TransferNote, 0, None)]
         }
+        self.dialogs = {
+            self.ACCOUNT_TYPES: ('account_types',
+                                 "Account Types",
+                                 [("id", None, 0, None, None),
+                                  ("name", "Account Type", -1, Qt.AscendingOrder, None)],
+                                 None,
+                                 None,
+                                 False,
+                                 None
+                                 ),
+            self.ACCOUNTS: ('accounts',
+                            "Assets",
+                            [("id", None, 0, None, None),
+                             ("name", "Name", -1, Qt.AscendingOrder, None),
+                             ("type_id", None, 0, None, None),
+                             ("currency_id", "Currency", None, None, ReferenceLookupDelegate),
+                             ("active", "Act", 32, None, ReferenceBoolDelegate),
+                             ("number", "Account #", None, None, None),
+                             ("reconciled_on", "Reconciled @", parent.widthForTimestampEdit,
+                              None, ReferenceTimestampDelegate),
+                             ("organization_id", "Bank", None, None, ReferenceLookupDelegate)],
+                            "name",
+                            ("active", "Show inactive"),
+                            False,
+                            [("type_id", "account_types", "id", "name", "Account type:"),
+                             ("currency_id", "currencies", "id", "name", None),
+                             ("organization_id", "agents", "id", "name", None)]
+                            ),
+            self.ASSETS: ("assets",
+                          "Assets",
+                          [("id", None, 0, None, None),
+                           ("name", "Symbol", None, Qt.AscendingOrder, None),
+                           ("type_id", None, 0, None, None),
+                           ("full_name", "Name", -1, None, None),
+                           ("isin", "ISIN", None, None, None),
+                           ("web_id", "WebID", None, None, None),
+                           ("src_id", "Data source", None, None, ReferenceLookupDelegate)],
+                          "full_name",
+                          None,
+                          False,
+                          [("type_id", "asset_types", "id", "name", "Asset type:"),
+                           ("src_id", "data_sources", "id", "name", None)]
+            ),
+            self.PEERS: ("agents_ext",
+                          "Peers",
+                          [("id", " ", 16, None, ReferenceTreeDelegate),
+                           ("pid", None, 0, None, None),
+                           ("name", "Name", -1, Qt.AscendingOrder, None),
+                           ("location", "Location", None, None, None),
+                           ("actions_count", "Docs count", None, None, ReferenceIntDelegate),
+                           ("children_count", None, None, None, None)],
+                          "name",
+                          None,
+                          True,
+                          None
+            ),
+            self.CATEGORIES: ("categories_ext",
+                              "Categories",
+                              [("id", " ", 16, None, ReferenceTreeDelegate),
+                               ("pid", None, 0, None, None),
+                               ("name", "Name", -1, Qt.AscendingOrder, None),
+                               ("often", "Often", None, None, ReferenceBoolDelegate),
+                               ("special", None, 0, None, None),
+                               ("children_count", None, None, None, None)],
+                              "name",
+                              None,
+                              True,
+                              None
+            ),
+            self.TAGS: ("tags",
+                        "Tags",
+                        [("id", None, 0, None, None),
+                         ("tag", "Tag", -1, Qt.AscendingOrder, None)],
+                        "tag",
+                        None,
+                        False,
+                        None
+            )
+        }
         self.actions = [
             (parent.actionExit,             "triggered()",              QtWidgets.QApplication.instance().quit),
             (parent.action_Load_quotes,     "triggered()",              partial(parent.downloader.showQuoteDownloadDialog, parent)),
@@ -186,12 +281,12 @@ class TableViewConfig:
             (parent.actionBackup,           "triggered()",              parent.Backup),
             (parent.actionRestore,          "triggered()",              parent.Restore),
             (parent.action_Re_build_Ledger, "triggered()",              partial(parent.ledger.showRebuildDialog, parent)),
-            (parent.actionAccountTypes,     "triggered()",              parent.EditAccountTypes),
-            (parent.actionAccounts,         "triggered()",              parent.EditAccounts),
-            (parent.actionAssets,           "triggered()",              parent.EditAssets),
-            (parent.actionPeers,            "triggered()",              parent.EditPeers),
-            (parent.actionCategories,       "triggered()",              parent.EditCategories),
-            (parent.actionTags,             "triggered()",              parent.EditTags),
+            (parent.actionAccountTypes,     "triggered()",              partial(self.show_dialog, self.ACCOUNT_TYPES)),
+            (parent.actionAccounts,         "triggered()",              partial(self.show_dialog, self.ACCOUNTS)),
+            (parent.actionAssets,           "triggered()",              partial(self.show_dialog, self.ASSETS)),
+            (parent.actionPeers,            "triggered()",              partial(self.show_dialog, self.PEERS)),
+            (parent.actionCategories,       "triggered()",              partial(self.show_dialog, self.CATEGORIES)),
+            (parent.actionTags,             "triggered()",              partial(self.show_dialog, self.TAGS)),
             (parent.MakeCategoriesReport,   "triggered()",              partial(parent.reports.create_report, parent, Reports.INCOME_SPENDING_REPORT)),
             (parent.MakeDealsReport,        "triggered()",              partial(parent.reports.create_report, parent, Reports.DEALS_REPORT)),
             (parent.MakePLReport,           "triggered()",              partial(parent.reports.create_report, parent, Reports.PROFIT_LOSS_REPORT)),
@@ -233,3 +328,15 @@ class TableViewConfig:
             self.configure(table)
         for action in self.actions:
             QObject.connect(action[self.ACTION_SRC], SIGNAL(action[self.ACTION_SIGNAL]), action[self.ACTION_SLOT])
+
+    @Slot()
+    def show_dialog(self, dlg_id):
+        ReferenceDataDialog(self.parent.db,
+                            self.dialogs[dlg_id][self.DLG_TABLE],
+                            self.dialogs[dlg_id][self.DLG_COLUMNS],
+                            title=self.dialogs[dlg_id][self.DLG_TABLE],
+                            search_field=self.dialogs[dlg_id][self.DLG_SEARCH],
+                            toggle=self.dialogs[dlg_id][self.DLG_TOGGLE],
+                            tree_view=self.dialogs[dlg_id][self.DLG_TREE],
+                            relations=self.dialogs[dlg_id][self.DLG_RELATIONS]
+                            ).exec_()

@@ -8,8 +8,6 @@ from PySide2.QtSql import QSqlQuery
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QHeaderView, QMenu, QMessageBox, QAction, QLabel
 
 from CustomUI.helpers import VLine
-from CustomUI.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, ReferenceBoolDelegate, \
-    ReferenceIntDelegate, ReferenceLookupDelegate, ReferenceTimestampDelegate
 from UI.ui_main_window import Ui_LedgerMainWindow
 from view_delegate import *
 from DB.bulk_db import MakeBackup, RestoreBackup
@@ -55,7 +53,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.doubleValidate2 = QDoubleValidator(decimals=2)
         self.doubleValidate6 = QDoubleValidator(decimals=6)
         self.widthForAmountEdit = self.fontMetrics().width("888888888.88") * 1.5
-        self.widthForTimestampEdit = self.fontMetrics().width("00/00/0000 00:00:00") * 1.5
+        self.widthForTimestampEdit = self.fontMetrics().width("00/00/0000 00:00:00") * 1.1
         self.ui_config = TableViewConfig(self)
         self.ui_config.configure_all()
         self.ActionsDataMapper = self.ui_config.mappers[self.ui_config.ACTIONS]
@@ -524,79 +522,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def on_data_changed(self):
         self.SaveOperationBtn.setEnabled(True)
         self.RevertOperationBtn.setEnabled(True)
-
-    @Slot()
-    def EditAccountTypes(self):
-        ReferenceDataDialog(self.db, "account_types",
-                            [("id", None, 0, None, None),
-                             ("name", "Account Type", -1, Qt.AscendingOrder, None)],
-                            title="Account Types"
-                            ).exec_()
-
-    @Slot()
-    def EditAccounts(self):
-        ReferenceDataDialog(self.db, "accounts",
-                            [("id", None, 0, None, None),
-                             ("name", "Name", -1, Qt.AscendingOrder, None),
-                             ("type_id", None, 0, None, None),
-                             ("currency_id", "Currency", None, None, ReferenceLookupDelegate),
-                             ("active", "Act", 32, None, ReferenceBoolDelegate),
-                             ("number", "Account #", None, None, None),
-                             ("reconciled_on", "Reconciled @", self.fontMetrics().width("00/00/0000 00:00:00") * 1.1,
-                              None, ReferenceTimestampDelegate),
-                             ("organization_id", "Bank", None, None, ReferenceLookupDelegate)],
-                            title="Assets", search_field="full_name", toggle=("active", "Show inactive"),
-                            relations=[("type_id", "account_types", "id", "name", "Account type:"),
-                                       ("currency_id", "currencies", "id", "name", None),
-                                       ("organization_id", "agents", "id", "name", None)]
-                            ).exec_()
-
-    @Slot()
-    def EditAssets(self):
-        ReferenceDataDialog(self.db, "assets",
-                            [("id", None, 0, None, None),
-                             ("name", "Symbol", None, Qt.AscendingOrder, None),
-                             ("type_id", None, 0, None, None),
-                             ("full_name", "Name", -1, None, None),
-                             ("isin", "ISIN", None, None, None),
-                             ("web_id", "WebID", None, None, None),
-                             ("src_id", "Data source", None, None, ReferenceLookupDelegate)],
-                            title="Assets", search_field="full_name",
-                            relations=[("type_id", "asset_types", "id", "name", "Asset type:"),
-                                       ("src_id", "data_sources", "id", "name", None)]
-                            ).exec_()
-
-    @Slot()
-    def EditPeers(self):
-        ReferenceDataDialog(self.db, "agents_ext",
-                            [("id", " ", 16, None, ReferenceTreeDelegate),
-                             ("pid", None, 0, None, None),
-                             ("name", "Name", -1, Qt.AscendingOrder, None),
-                             ("location", "Location", None, None, None),
-                             ("actions_count", "Docs count", None, None, ReferenceIntDelegate),
-                             ("children_count", None, None, None, None)],
-                            title="Peers", search_field="name", tree_view=True
-                            ).exec_()
-
-    @Slot()
-    def EditCategories(self):
-        ReferenceDataDialog(self.db, "categories_ext",
-                            [("id", " ", 16, None, ReferenceTreeDelegate),
-                             ("pid", None, 0, None, None),
-                             ("name", "Name", -1, Qt.AscendingOrder, None),
-                             ("often", "Often", None, None, ReferenceBoolDelegate),
-                             ("special", None, 0, None, None),
-                             ("children_count", None, None, None, None)],
-                            title="Categories", search_field="name", tree_view=True
-                            ).exec_()
-
-    @Slot()
-    def EditTags(self):
-        ReferenceDataDialog(self.db, "tags",
-                            [("id", None, 0, None, None),
-                             ("tag", "Tag", -1, Qt.AscendingOrder, None)],
-                            title="Tags", search_field="tag"
-                            ).exec_()
 
     @Slot()
     def onQuotesDownloadCompletion(self):
