@@ -192,10 +192,10 @@ class TableViewConfig:
             (parent.actionPeers,            "triggered()",              parent.EditPeers),
             (parent.actionCategories,       "triggered()",              parent.EditCategories),
             (parent.actionTags,             "triggered()",              parent.EditTags),
-            (parent.MakeCategoriesReport,   "triggered()",              partial(parent.reports.create_report, parent, Reports.INCOME_SPENDING_REPORT))
-            (parent.MakeDealsReport,        "triggered()",              partial(parent.reports.create_report, parent, Reports.DEALS_REPORT))
-            (parent.MakePLReport,           "triggered()",              partial(parent.reports.create_report, parent, Reports.PROFIT_LOSS_REPORT))
-            (parent.PrepareTaxForms,        "triggered()",              parent.ExportTaxForms),
+            (parent.MakeCategoriesReport,   "triggered()",              partial(parent.reports.create_report, parent, Reports.INCOME_SPENDING_REPORT)),
+            (parent.MakeDealsReport,        "triggered()",              partial(parent.reports.create_report, parent, Reports.DEALS_REPORT)),
+            (parent.MakePLReport,           "triggered()",              partial(parent.reports.create_report, parent, Reports.PROFIT_LOSS_REPORT)),
+            (parent.PrepareTaxForms,        "triggered()",              partial(parent.taxes.showTaxesDialog, parent)),
             (parent.BalanceDate,            "dateChanged(QDate)",       parent.onBalanceDateChange),
             (parent.HoldingsDate,           "dateChanged(QDate)",       parent.onHoldingsDateChange),
             (parent.BalancesCurrencyCombo,  "currentIndexChanged(int)", parent.OnBalanceCurrencyChange),

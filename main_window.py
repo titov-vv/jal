@@ -18,7 +18,7 @@ from downloader import QuoteDownloader, QuotesUpdateDialog
 from ledger import Ledger
 from reports import Reports
 from statements import StatementLoader
-from taxes import TaxesRus, TaxExportDialog
+from taxes import TaxesRus
 from CustomUI.table_view_config import TableViewConfig
 
 
@@ -36,6 +36,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ledger = Ledger(self.db)
         self.downloader = QuoteDownloader(self.db)
         self.reports = Reports(self.db)
+        self.taxes = TaxesRus(self.db)
 
         # Customize Status bar and logs
         self.NewLogEventLbl = QLabel(self)
@@ -637,9 +638,3 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 report_loader.loadQuikHtml(report_file)
             self.UpdateLedger()
 
-    @Slot()
-    def ExportTaxForms(self):
-        tax_export_dialog = TaxExportDialog(self, self.db)
-        if tax_export_dialog.exec_():
-            taxes = TaxesRus(self.db)
-            taxes.save2file(tax_export_dialog.filename, tax_export_dialog.year, tax_export_dialog.account)

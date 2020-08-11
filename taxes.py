@@ -47,6 +47,11 @@ class TaxesRus:
     def __init__(self, db):
         self.db = db
 
+    def showTaxesDialog(self, parent):
+        dialog = TaxExportDialog(parent, self.db)
+        if dialog.exec_():
+            self.save2file(dialog.filename, dialog.year, dialog.account)
+
     def save2file(self, taxes_file, year, account_id):
         year_begin = int(time.mktime(datetime.datetime.strptime(f"{year}", "%Y").timetuple()))
         year_end = int(time.mktime(datetime.datetime.strptime(f"{year + 1}", "%Y").timetuple()))
