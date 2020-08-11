@@ -36,6 +36,10 @@ class LogViewer(QPlainTextEdit, logging.Handler):
 
         self.app.processEvents()
 
+    def showEvent(self, event):
+        self.cleanNotification()
+        super().showEvent(event)
+
     def setNotificationLabel(self, label):
         self.notification = label
         self.notification.setFixedWidth(self.notification.fontMetrics().width("LOG"))

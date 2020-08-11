@@ -131,11 +131,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             self.ledger.MakeFromTimestamp(rebuild_date)
 
     @Slot()
-    def OnMainTabChange(self, tab_index):
-        if tab_index == 2:
-            self.Logs.cleanNotification()
-
-    @Slot()
     def onBalanceDateChange(self, _new_date):
         self.balance_date = self.BalanceDate.dateTime().toSecsSinceEpoch()
         self.UpdateBalances()

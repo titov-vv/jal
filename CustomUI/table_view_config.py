@@ -194,7 +194,6 @@ class TableViewConfig:
             (parent.MakeDealsReport,        "triggered()",              parent.ReportDeals),
             (parent.MakePLReport,           "triggered()",              parent.ReportProfitLoss),
             (parent.PrepareTaxForms,        "triggered()",              parent.ExportTaxForms),
-            (parent.MainTabs,               "currentChanged(int)",      parent.OnMainTabChange),
             (parent.BalanceDate,            "dateChanged(QDate)",       parent.onBalanceDateChange),
             (parent.HoldingsDate,           "dateChanged(QDate)",       parent.onHoldingsDateChange),
             (parent.BalancesCurrencyCombo,  "currentIndexChanged(int)", parent.OnBalanceCurrencyChange),
