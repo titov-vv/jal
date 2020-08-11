@@ -34,45 +34,48 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         if not self.db:
             return
 
-        self.balance_currency = get_base_currency(self.db)
-        self.holdings_currency = self.balance_currency
-
         self.ledger = Ledger(self.db)
         self.downloader = QuoteDownloader(self.db)
-
-        self.balance_date = QtCore.QDateTime.currentSecsSinceEpoch()
-        self.balance_active_only = 1
-
-        self.holdings_date = QtCore.QDateTime.currentSecsSinceEpoch()
-
-        self.operations_since_timestamp = 0
-        self.current_index = None
 
         # Customize Status bar and logs
         self.NewLogEventLbl = QLabel()
         self.StatusBar.addPermanentWidget(VLine())
         self.StatusBar.addPermanentWidget(self.NewLogEventLbl)
         self.Logs.setNotificationLabel(self.NewLogEventLbl)
+        self.Logs.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        self.logger = logging.getLogger()
+        self.logger.addHandler(self.Logs)
+        self.logger.setLevel(logging.INFO)
 
+        # Customize UI configutation
         self.doubleValidate2 = QDoubleValidator(decimals=2)
         self.doubleValidate6 = QDoubleValidator(decimals=6)
         self.widthForAmountEdit = self.fontMetrics().width("888888888.88") * 1.5
         self.widthForTimestampEdit = self.fontMetrics().width("00/00/0000 00:00:00") * 1.5
         self.ui_config = TableViewConfig(self)
-
-        self.BalanceDate.setDateTime(QtCore.QDateTime.currentDateTime())
-        self.HoldingsDate.setDateTime(QtCore.QDateTime.currentDateTime())
-
         self.ui_config.configure_all()
         self.ActionsDataMapper = self.ui_config.mappers[self.ui_config.ACTIONS]
         self.TradesDataMapper = self.ui_config.mappers[self.ui_config.TRADES]
         self.DividendsDataMapper = self.ui_config.mappers[self.ui_config.DIVIDENDS]
         self.TransfersDataMapper = self.ui_config.mappers[self.ui_config.TRANSFERS]
 
+        # Setup balance table
+        self.balance_currency = get_base_currency(self.db)
+        self.balance_date = QtCore.QDateTime.currentSecsSinceEpoch()
+        self.balance_active_only = 1
+        self.BalanceDate.setDateTime(QtCore.QDateTime.currentDateTime())
         self.BalancesCurrencyCombo.init_db(self.db)   # this line will trigger onBalanceDateChange -> view updated
+
+        # Setup holdings table
+        self.holdings_currency = self.balance_currency
+        self.holdings_date = QtCore.QDateTime.currentSecsSinceEpoch()
+        self.HoldingsDate.setDateTime(QtCore.QDateTime.currentDateTime())
         self.HoldingsCurrencyCombo.init_db(self.db)   # and this will trigger onHoldingsDateChange -> view updated
         self.ChooseAccountBtn.init_db(self.db)
 
+        # Setup operations table
+        self.operations_since_timestamp = 0
+        self.current_index = None
         self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.NewOperationMenu = QMenu()
         self.NewOperationMenu.addAction('Income / Spending', self.CreateNewAction)
@@ -88,11 +91,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
         self.OperationsTableView.selectRow(0)
         self.OnOperationsRangeChange(0)
-
-        self.Logs.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-        self.logger = logging.getLogger()
-        self.logger.addHandler(self.Logs)
-        self.logger.setLevel(logging.INFO)
 
     def closeEvent(self, event):
         self.logger.removeHandler(self.Logs)    # Removing handler (but it doesn't prevent exception at exit)
