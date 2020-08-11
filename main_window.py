@@ -372,7 +372,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             self.TransfersDataMapper.model().submitAll()
         else:
             assert False
-        self.UpdateLedger()
+        self.ledger.MakeUpToDate()
         operations_model.select()
 
     @Slot()
@@ -486,7 +486,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 return
         else:
             assert False
-        self.UpdateLedger()
+        self.ledger.MakeUpToDate()
         self.OperationsTableView.model().select()
         self.SaveOperationBtn.setEnabled(False)
         self.RevertOperationBtn.setEnabled(False)
@@ -524,21 +524,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def on_data_changed(self):
         self.SaveOperationBtn.setEnabled(True)
         self.RevertOperationBtn.setEnabled(True)
-
-    def UpdateLedger(self):
-        query = QSqlQuery(self.db)
-        query.exec_("SELECT ledger_frontier FROM frontier")
-        query.next()
-        current_frontier = query.value(0)
-        if current_frontier == '':
-            current_frontier = 0
-        # ask for confirmation if we have less then 15 days unreconciled
-        if (QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - current_frontier) > 1296000:
-            if QMessageBox().warning(self, self.tr("Confirmation"),
-                                     self.tr("More than 2 weeks require rebuild. Do you want to do it right now?"),
-                                     QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
-                return
-        self.ledger.MakeUpToDate()
 
     @Slot()
     def EditAccountTypes(self):
@@ -620,4 +605,4 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def onStatementLoaded(self):
         self.StatusBar.showMessage("Statement load completed", timeout=60000)
-        self.UpdateLedger()
+        self.ledger.MakeUpToDate()

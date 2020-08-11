@@ -1,6 +1,8 @@
 import datetime
 import logging
 
+from PySide2 import QtCore
+from PySide2.QtWidgets import QMessageBox
 from PySide2.QtSql import QSqlQuery
 
 from constants import *
@@ -430,19 +432,20 @@ class Ledger:
         elif transfer_type == TRANSFER_FEE:
             self.processTransferFee(seq_id, query.value(1), query.value(2), query.value(3), -query.value(4))
 
+    # TODO check if this method may be combined with the next one
     # Rebuild transaction sequence and recalculate all amounts
-    # timestamp:
-    # -1 - re-build from last valid operation (from ledger frontier)
-    # 0 - re-build from scratch
-    # any - re-build all operations after given timestamp
+    # from last valid operation (from ledger frontier) until present moment
+    # Methods asks for confirmation if we have more than 15 days unreconciled
     def MakeUpToDate(self):
-        query = QSqlQuery(self.db)
-        assert query.exec_("SELECT ledger_frontier FROM frontier")
-        query.next()
-        frontier = query.value(0)
-        if frontier == '':
-            frontier = 0
+        frontier = self.getCurrentFrontier()
+        if (QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - frontier) > 1296000:
+            if QMessageBox().warning(None, "Confirmation",
+                                     "More than 2 weeks require rebuild. Do you want to do it right now?",
+                                     QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
+                return
 
+        logging.info(f"Re-build ledger from: {datetime.datetime.fromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
+        query = QSqlQuery(self.db)
         query.prepare("DELETE FROM deals WHERE close_sid > "
                       "(SELECT coalesce(MIN(id), 0) FROM sequence WHERE timestamp >= :frontier)")
         query.bindValue(":frontier", frontier)
@@ -491,6 +494,7 @@ class Ledger:
                 self.processTrade(seq_id, transaction_id)
             if transaction_type == TRANSACTION_TRANSFER:
                 self.processTransfer(seq_id, transaction_id)
+        logging.info(f"Re-build ledger completed")
 
     # Rebuild transaction sequence and recalculate all amounts
     # timestamp:
