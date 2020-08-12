@@ -275,10 +275,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def OnAccountChange(self):
-        self.operations.account_id = self.ChooseAccountBtn.account_id
+        self.operations.setAccountId(self.ChooseAccountBtn.account_id)
 
     def OnSearchTextChange(self):
-        self.operations.searchText = self.SearchString.text()
+        self.operations.setSearchText(self.SearchString.text())
 
     @Slot()
     def OnOperationsRangeChange(self, range_index):

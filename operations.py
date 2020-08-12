@@ -1,15 +1,13 @@
 import logging
 
 from constants import *
-from PySide2.QtCore import QObject, Signal, Property, QDateTime
+from PySide2.QtCore import QObject, Signal, QDateTime
 from PySide2.QtWidgets import QMessageBox
 
 
 class LedgerOperationsView(QObject):
     activateOperationView = Signal(int)
     stateIsCommitted = Signal()
-    accountChanged = Signal()
-    searchTextChanged = Signal()
 
     OP_NAME = 0
     OP_MAPPER = 1
@@ -25,9 +23,6 @@ class LedgerOperationsView(QObject):
         self.start_date_of_view = 0
         self.table_view = operations_table_view
         self.operations = operations_details
-
-        self.accountChanged.connect(self.setOperationsFilter)
-        self.searchTextChanged.connect(self.setOperationsFilter)
 
     def setOperationsFilter(self):
         operations_filter = ""
@@ -48,30 +43,16 @@ class LedgerOperationsView(QObject):
 
         self.table_view.model().setFilter(operations_filter)
 
-    def getAccountId(self):
-        return self.p_account_id
-
     def setAccountId(self, account_id):
         if self.p_account_id == account_id:
             return
         self.p_account_id = account_id
-        self.accountChanged.emit()
-
-    account_id = Property(int, getAccountId, setAccountId, notify=accountChanged, user=True)
-
-    def getSearchText(self):
-        return self.p_search_text
+        self.setOperationsFilter()
 
     def setSearchText(self, search_text):
         if self.p_search_text == search_text:
             return
         self.p_search_text = search_text
-        self.searchTextChanged.emit()
-
-    searchText = Property(int, getSearchText, setSearchText, notify=searchTextChanged, user=True)
-
-    def setSearchText(self, text):
-        self.p_search_text = text
         self.setOperationsFilter()
 
     def setOperationsRange(self, start_date_of_view):
