@@ -56,16 +56,17 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.doubleValidate6 = QDoubleValidator(decimals=6)
         self.widthForAmountEdit = self.fontMetrics().width("888888888.88") * 1.5
         self.widthForTimestampEdit = self.fontMetrics().width("00/00/0000 00:00:00") * 1.25
+        self.operations = LedgerOperationsView(self.OperationsTableView)
         self.ui_config = TableViewConfig(self)
-        self.ui_config.configure_all()
 
+        self.ui_config.configure_all()
         self.operation_details = {
             TRANSACTION_ACTION: ('Transaction', self.ui_config.mappers[self.ui_config.ACTIONS], 'actions', self.ActionDetailsTableView, 'action_details'),
             TRANSACTION_TRADE: ('Trade', self.ui_config.mappers[self.ui_config.TRADES], 'trades', None, None),
             TRANSACTION_DIVIDEND: ('Dividend', self.ui_config.mappers[self.ui_config.DIVIDENDS], 'dividends', None, None),
             TRANSACTION_TRANSFER: ('Transfer', self.ui_config.mappers[self.ui_config.TRANSFERS], 'transfers_combined', None, None)
         }
-        self.operations = LedgerOperationsView(self.OperationsTableView, self.operation_details)
+        self.operations.setOperationsDetails(self.operation_details)
         self.operations.activateOperationView.connect(self.ShowOperationTab)
         self.operations.stateIsCommitted.connect(self.showCommitted)
 
@@ -88,8 +89,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.HoldingsCurrencyCombo.init_db(self.db)   # and this will trigger onHoldingsDateChange -> view updated
 
         self.ChooseAccountBtn.init_db(self.db)
-        # Setup operations table
-        # self.operations_since_timestamp = 0
         self.current_index = None
         self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.NewOperationMenu = QMenu()
@@ -220,7 +219,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         actionCopy = QAction(text="Copy", parent=self)
         actionCopy.triggered.connect(self.CopyOperation)
         actionDelete = QAction(text="Delete", parent=self)
-        actionDelete.triggered.connect(self.DeleteOperation)
+        actionDelete.triggered.connect(self.operations.deleteOperation())
         contextMenu.addAction(actionReconcile)
         contextMenu.addSeparator()
         contextMenu.addAction(actionCopy)
@@ -291,34 +290,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 7905600
         elif range_index == 3:  # last year
             operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 31536000
-        # self.SetOperationsFilter()
         self.operations.setOperationsRange(operations_since_timestamp)
-
-    @Slot()
-    def DeleteOperation(self):
-        if QMessageBox().warning(self, self.tr("Confirmation"),
-                                 self.tr("Are you sure to delete this transaction?"),
-                                 QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
-            return
-        index = self.OperationsTableView.currentIndex()
-        operations_model = self.OperationsTableView.model()
-        operation_type = operations_model.data(operations_model.index(index.row(), 0))
-        if operation_type == TRANSACTION_ACTION:
-            self.ActionsDataMapper.model().removeRow(0)
-            self.ActionsDataMapper.model().submitAll()
-        elif operation_type == TRANSACTION_DIVIDEND:
-            self.DividendsDataMapper.model().removeRow(0)
-            self.DividendsDataMapper.model().submitAll()
-        elif operation_type == TRANSACTION_TRADE:
-            self.TradesDataMapper.model().removeRow(0)
-            self.TradesDataMapper.model().submitAll()
-        elif operation_type == TRANSACTION_TRANSFER:
-            self.TransfersDataMapper.model().removeRow(0)
-            self.TransfersDataMapper.model().submitAll()
-        else:
-            assert False
-        self.ledger.MakeUpToDate()
-        operations_model.select()
 
     @Slot()
     def CopyOperation(self):
@@ -495,5 +467,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def showCommitted(self):
+        self.ledger.MakeUpToDate()
         self.SaveOperationBtn.setEnabled(False)
         self.RevertOperationBtn.setEnabled(False)

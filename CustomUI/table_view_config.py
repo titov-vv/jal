@@ -302,7 +302,7 @@ class TableViewConfig:
             (parent.SearchString,           "textChanged(QString)",     parent.OnSearchTextChange),
             (parent.AddActionDetail,        "clicked()",                parent.AddDetail),
             (parent.RemoveActionDetail,     "clicked()",                parent.RemoveDetail),
-            (parent.DeleteOperationBtn,     "clicked()",                parent.DeleteOperation),
+            (parent.DeleteOperationBtn,     "clicked()",                parent.operations.deleteOperation),
             (parent.CopyOperationBtn,       "clicked()",                parent.CopyOperation),
             (parent.SaveOperationBtn,       "clicked()",                parent.SaveOperation),
             (parent.RevertOperationBtn,     "clicked()",                parent.RevertOperation)

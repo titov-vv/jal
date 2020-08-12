@@ -15,13 +15,16 @@ class LedgerOperationsView(QObject):
     OP_CHILD_VIEW = 3
     OP_CHILD_TABLE = 4
     
-    def __init__(self, operations_table_view, operations_details):
+    def __init__(self, operations_table_view):
         super().__init__()
 
         self.p_account_id = 0
         self.p_search_text = ''
         self.start_date_of_view = 0
         self.table_view = operations_table_view
+        self.operations = None
+
+    def setOperationsDetails(self, operations_details):
         self.operations = operations_details
 
     def setOperationsFilter(self):
@@ -71,6 +74,20 @@ class LedgerOperationsView(QObject):
         mapper.model().setRecord(0, new_record)
         mapper.toLast()
         self.initChildDetails(operation_type)
+
+    def deleteOperation(self):
+        if QMessageBox().warning(None, "Confirmation",
+                                 "Are you sure to delete selected transacion?",
+                                 QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
+            return
+        index = self.table_view.currentIndex()
+        operations_model = self.table_view.model()
+        operation_type = operations_model.data(operations_model.index(index.row(), 0))
+        mapper = self.operations[operation_type][self.OP_MAPPER]
+        mapper.model().removeRow(0)
+        mapper.model().submitAll()
+        self.stateIsCommitted.emit()
+        operations_model.select()
         
     def checkForUncommittedChanges(self):
         for operation_type in self.operations:
@@ -112,8 +129,7 @@ class LedgerOperationsView(QObject):
                     self.tr("Action details submit failed: ") + self.operations[operation_type][
                         self.OP_CHILD_VIEW].model().lastError().text())
                 return
-        self.stateIsCommitted().emit()
-        self.ledger.MakeUpToDate()
+        self.stateIsCommitted.emit()
         self.table_view.model().select()
         
     def beforeMapperCommit(self, operation_type):
