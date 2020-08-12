@@ -1,13 +1,15 @@
 import logging
 
 from constants import *
-from PySide2.QtCore import QObject, Signal, QDateTime
+from PySide2.QtCore import QObject, Signal, Property, QDateTime
 from PySide2.QtWidgets import QMessageBox
 
 
 class LedgerOperationsView(QObject):
     activateOperationView = Signal(int)
     stateIsCommitted = Signal()
+    accountChanged = Signal()
+    searchTextChanged = Signal()
 
     OP_NAME = 0
     OP_MAPPER = 1
@@ -18,37 +20,58 @@ class LedgerOperationsView(QObject):
     def __init__(self, operations_table_view, operations_details):
         super().__init__()
 
-        self.selected_account_id = 0
-        self.search_text = ''
+        self.p_account_id = 0
+        self.p_search_text = ''
         self.start_date_of_view = 0
         self.table_view = operations_table_view
         self.operations = operations_details
+
+        self.accountChanged.connect(self.setOperationsFilter)
+        self.searchTextChanged.connect(self.setOperationsFilter)
 
     def setOperationsFilter(self):
         operations_filter = ""
         if self.start_date_of_view > 0:
             operations_filter = "all_operations.timestamp >= {}".format(self.start_date_of_view)
 
-        if self.selected_account_id != 0:
-            self.selected_account_id = self.selected_account_id
+        if self.p_account_id != 0:
+            self.p_account_id = self.p_account_id
             if operations_filter == "":
-                operations_filter = "all_operations.account_id = {}".format(self.selected_account_id)
+                operations_filter = "all_operations.account_id = {}".format(self.p_account_id)
             else:
                 operations_filter = operations_filter + " AND all_operations.account_id = {}".format(
-                    self.selected_account_id)
+                    self.p_account_id)
 
-        if self.search_text:
+        if self.p_search_text:
             operations_filter = operations_filter + " AND (num_peer LIKE '%{}%' OR asset LIKE '%{}%')".format(
-                self.search_text, self.search_text)
+                self.p_search_text, self.p_search_text)
 
         self.table_view.model().setFilter(operations_filter)
 
-    def setAccount(self, account_id):
-        self.selected_account_id = account_id
-        self.setOperationsFilter()
+    def getAccountId(self):
+        return self.p_account_id
+
+    def setAccountId(self, account_id):
+        if self.p_account_id == account_id:
+            return
+        self.p_account_id = account_id
+        self.accountChanged.emit()
+
+    account_id = Property(int, getAccountId, setAccountId, notify=accountChanged, user=True)
+
+    def getSearchText(self):
+        return self.p_search_text
+
+    def setSearchText(self, search_text):
+        if self.p_search_text == search_text:
+            return
+        self.p_search_text = search_text
+        self.searchTextChanged.emit()
+
+    searchText = Property(int, getSearchText, setSearchText, notify=searchTextChanged, user=True)
 
     def setSearchText(self, text):
-        self.search_text = text
+        self.p_search_text = text
         self.setOperationsFilter()
 
     def setOperationsRange(self, start_date_of_view):
@@ -143,11 +166,11 @@ class LedgerOperationsView(QObject):
     def prepareNewOperation(self, operation_type, new_operation_record):
         if operation_type == TRANSACTION_ACTION or operation_type == TRANSACTION_TRADE or operation_type == TRANSACTION_DIVIDEND:
             new_operation_record.setValue("timestamp", QDateTime.currentSecsSinceEpoch())
-            if self.selected_account_id != 0:
-                new_operation_record.setValue("account_id", self.selected_account_id)
+            if self.p_account_id != 0:
+                new_operation_record.setValue("account_id", self.p_account_id)
         if operation_type == TRANSACTION_TRANSFER:
             new_operation_record.setValue("from_timestamp", QDateTime.currentSecsSinceEpoch())
-            if self.selected_account_id != 0:
-                new_operation_record.setValue("from_acc_id", self.selected_account_id)
+            if self.p_account_id != 0:
+                new_operation_record.setValue("from_acc_id", self.p_account_id)
             new_operation_record.setValue("to_timestamp", QDateTime.currentSecsSinceEpoch())
             new_operation_record.setValue("fee_timestamp", 0)
