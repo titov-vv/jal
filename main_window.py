@@ -14,6 +14,7 @@ from DB.bulk_db import MakeBackup, RestoreBackup
 from DB.helpers import init_and_check_db, get_base_currency
 from downloader import QuoteDownloader
 from ledger import Ledger
+from operations import LedgerOperationsView
 from reports import Reports
 from statements import StatementLoader
 from taxes import TaxesRus
@@ -38,6 +39,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.taxes = TaxesRus(self.db)
         self.statements = StatementLoader(self.db)
         self.statements.load_completed.connect(self.onStatementLoaded)
+        self.operations = LedgerOperationsView(self.OperationsTableView)
 
         # Customize Status bar and logs
         self.NewLogEventLbl = QLabel(self)
@@ -73,8 +75,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.holdings_date = QtCore.QDateTime.currentSecsSinceEpoch()
         self.HoldingsDate.setDateTime(QtCore.QDateTime.currentDateTime())
         self.HoldingsCurrencyCombo.init_db(self.db)   # and this will trigger onHoldingsDateChange -> view updated
-        self.ChooseAccountBtn.init_db(self.db)
 
+        self.ChooseAccountBtn.init_db(self.db)
         # Setup operations table
         self.operations_since_timestamp = 0
         self.current_index = None
