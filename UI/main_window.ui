@@ -287,30 +287,24 @@
                </item>
                <item>
                 <widget class="QComboBox" name="DateRangeCombo">
-                 <property name="minimumSize">
-                  <size>
-                   <width>100</width>
-                   <height>0</height>
-                  </size>
-                 </property>
                  <item>
                   <property name="text">
-                   <string>last Week</string>
+                   <string>Week</string>
                   </property>
                  </item>
                  <item>
                   <property name="text">
-                   <string>last Month</string>
+                   <string>Month</string>
                   </property>
                  </item>
                  <item>
                   <property name="text">
-                   <string>last Half-year</string>
+                   <string>Quarter</string>
                   </property>
                  </item>
                  <item>
                   <property name="text">
-                   <string>last Year</string>
+                   <string>Year</string>
                   </property>
                  </item>
                  <item>

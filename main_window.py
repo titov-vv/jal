@@ -53,7 +53,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.doubleValidate2 = QDoubleValidator(decimals=2)
         self.doubleValidate6 = QDoubleValidator(decimals=6)
         self.widthForAmountEdit = self.fontMetrics().width("888888888.88") * 1.5
-        self.widthForTimestampEdit = self.fontMetrics().width("00/00/0000 00:00:00") * 1.1
+        self.widthForTimestampEdit = self.fontMetrics().width("00/00/0000 00:00:00") * 1.25
         self.ui_config = TableViewConfig(self)
         self.ui_config.configure_all()
         self.ActionsDataMapper = self.ui_config.mappers[self.ui_config.ACTIONS]
@@ -285,7 +285,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         elif range_index == 1:  # last month
             self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 2678400
         elif range_index == 2:  # last half-year
-            self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 15811200
+            self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 7905600
         elif range_index == 3:  # last year
             self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 31536000
         else:

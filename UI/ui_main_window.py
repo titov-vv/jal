@@ -183,7 +183,6 @@ class Ui_LedgerMainWindow(object):
         self.DateRangeCombo.addItem("")
         self.DateRangeCombo.addItem("")
         self.DateRangeCombo.setObjectName(u"DateRangeCombo")
-        self.DateRangeCombo.setMinimumSize(QSize(100, 0))
 
         self.horizontalLayout_3.addWidget(self.DateRangeCombo)
 
@@ -831,10 +830,10 @@ class Ui_LedgerMainWindow(object):
         self.ShowInactiveCheckBox.setText(QCoreApplication.translate("LedgerMainWindow", u"Show &Inactive", None))
         self.OperationsBox.setTitle(QCoreApplication.translate("LedgerMainWindow", u"Operations", None))
         self.DateRangeLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Time range:", None))
-        self.DateRangeCombo.setItemText(0, QCoreApplication.translate("LedgerMainWindow", u"last Week", None))
-        self.DateRangeCombo.setItemText(1, QCoreApplication.translate("LedgerMainWindow", u"last Month", None))
-        self.DateRangeCombo.setItemText(2, QCoreApplication.translate("LedgerMainWindow", u"last Half-year", None))
-        self.DateRangeCombo.setItemText(3, QCoreApplication.translate("LedgerMainWindow", u"last Year", None))
+        self.DateRangeCombo.setItemText(0, QCoreApplication.translate("LedgerMainWindow", u"Week", None))
+        self.DateRangeCombo.setItemText(1, QCoreApplication.translate("LedgerMainWindow", u"Month", None))
+        self.DateRangeCombo.setItemText(2, QCoreApplication.translate("LedgerMainWindow", u"Quarter", None))
+        self.DateRangeCombo.setItemText(3, QCoreApplication.translate("LedgerMainWindow", u"Year", None))
         self.DateRangeCombo.setItemText(4, QCoreApplication.translate("LedgerMainWindow", u"All", None))
 
         self.AccountLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Account:", None))
