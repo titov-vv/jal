@@ -24,13 +24,6 @@ from CustomUI.table_view_config import TableViewConfig
 
 # -----------------------------------------------------------------------------------------------------------------------
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):
-    OP_NAME = 0
-    OP_TAB = 1
-    OP_MAPPER = 2
-    OP_MAPPER_TABLE = 3
-    OP_VIEW = 4
-    OP_VIEW_TABLE = 5
-
     def __init__(self):
         QMainWindow.__init__(self, None)
         self.setupUi(self)
@@ -47,7 +40,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.taxes = TaxesRus(self.db)
         self.statements = StatementLoader(self.db)
         self.statements.load_completed.connect(self.onStatementLoaded)
-        self.operations = LedgerOperationsView(self.OperationsTableView)
 
         # Customize Status bar and logs
         self.NewLogEventLbl = QLabel(self)
@@ -67,12 +59,15 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ui_config = TableViewConfig(self)
         self.ui_config.configure_all()
 
-        self.op_details = {
-            TRANSACTION_ACTION: ('Transaction', TAB_ACTION, self.ui_config.mappers[self.ui_config.ACTIONS], 'actions', self.ActionDetailsTableView, 'action_details'),
-            TRANSACTION_TRADE: ('Trade', TAB_TRADE, self.ui_config.mappers[self.ui_config.TRADES], 'trades', None, None),
-            TRANSACTION_DIVIDEND: ('Dividend', TAB_DIVIDEND, self.ui_config.mappers[self.ui_config.DIVIDENDS], 'dividends', None, None),
-            TRANSACTION_TRANSFER: ('Transfer', TAB_TRANSFER, self.ui_config.mappers[self.ui_config.TRANSFERS], 'transfers_combined', None, None)
+        self.operation_details = {
+            TRANSACTION_ACTION: ('Transaction', self.ui_config.mappers[self.ui_config.ACTIONS], 'actions', self.ActionDetailsTableView, 'action_details'),
+            TRANSACTION_TRADE: ('Trade', self.ui_config.mappers[self.ui_config.TRADES], 'trades', None, None),
+            TRANSACTION_DIVIDEND: ('Dividend', self.ui_config.mappers[self.ui_config.DIVIDENDS], 'dividends', None, None),
+            TRANSACTION_TRANSFER: ('Transfer', self.ui_config.mappers[self.ui_config.TRANSFERS], 'transfers_combined', None, None)
         }
+        self.operations = LedgerOperationsView(self.OperationsTableView, self.operation_details)
+        self.operations.activateOperationView.connect(self.ShowOperationTab)
+        self.operations.stateIsCommitted.connect(self.showCommitted)
 
         self.ActionsDataMapper = self.ui_config.mappers[self.ui_config.ACTIONS]
         self.TradesDataMapper = self.ui_config.mappers[self.ui_config.TRADES]
@@ -94,14 +89,14 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.ChooseAccountBtn.init_db(self.db)
         # Setup operations table
-        self.operations_since_timestamp = 0
+        # self.operations_since_timestamp = 0
         self.current_index = None
         self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.NewOperationMenu = QMenu()
-        self.NewOperationMenu.addAction('Income / Spending', partial(self.CreateNewOperation, TRANSACTION_ACTION))
-        self.NewOperationMenu.addAction('Transfer', partial(self.CreateNewOperation, TRANSACTION_TRANSFER))
-        self.NewOperationMenu.addAction('Buy / Sell', partial(self.CreateNewOperation, TRANSACTION_TRADE))
-        self.NewOperationMenu.addAction('Dividend', partial(self.CreateNewOperation, TRANSACTION_DIVIDEND))
+        self.NewOperationMenu.addAction('Income / Spending', partial(self.operations.addNewOperation, TRANSACTION_ACTION))
+        self.NewOperationMenu.addAction('Transfer', partial(self.operations.addNewOperation, TRANSACTION_TRANSFER))
+        self.NewOperationMenu.addAction('Buy / Sell', partial(self.operations.addNewOperation, TRANSACTION_TRADE))
+        self.NewOperationMenu.addAction('Dividend', partial(self.operations.addNewOperation, TRANSACTION_DIVIDEND))
         self.NewOperationBtn.setMenu(self.NewOperationMenu)
         # next line forces usage of sizeHint() from delegate
         self.OperationsTableView.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
@@ -278,146 +273,143 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             else:
                 self.RevertChangesForTab(TAB_TRANSFER)
 
-    def SetOperationsFilter(self):
-        operations_filter = ""
-        if self.operations_since_timestamp > 0:
-            operations_filter = "all_operations.timestamp >= {}".format(self.operations_since_timestamp)
+    # def SetOperationsFilter(self):
+        # operations_filter = ""
+        # if self.operations_since_timestamp > 0:
+        #     operations_filter = "all_operations.timestamp >= {}".format(self.operations_since_timestamp)
+        #
+        # if self.ChooseAccountBtn.account_id != 0:
+        #     if operations_filter == "":
+        #         operations_filter = "all_operations.account_id = {}".format(self.ChooseAccountBtn.account_id)
+        #     else:
+        #         operations_filter = operations_filter + " AND all_operations.account_id = {}".format(
+        #             self.ChooseAccountBtn.account_id)
+        #
+        # if self.SearchString.text():
+        #     operations_filter = operations_filter + " AND (num_peer LIKE '%{}%' OR asset LIKE '%{}%')".format(
+        #         self.SearchString.text(), self.SearchString.text())
+        #
+        # self.OperationsTableView.model().setFilter(operations_filter)
 
-        if self.ChooseAccountBtn.account_id != 0:
-            if operations_filter == "":
-                operations_filter = "all_operations.account_id = {}".format(self.ChooseAccountBtn.account_id)
-            else:
-                operations_filter = operations_filter + " AND all_operations.account_id = {}".format(
-                    self.ChooseAccountBtn.account_id)
+    @Slot()
+    def OnAccountChange(self):
+        self.operations.setAccount(self.ChooseAccountBtn.account_id)
 
-        if self.SearchString.text():
-            operations_filter = operations_filter + " AND (num_peer LIKE '%{}%' OR asset LIKE '%{}%')".format(
-                self.SearchString.text(), self.SearchString.text())
-
-        self.OperationsTableView.model().setFilter(operations_filter)
+    def OnSearchTextChange(self):
+        self.operations.setSearchText(self.SearchString.text())
 
     @Slot()
     def OnOperationsRangeChange(self, range_index):
+        operations_since_timestamp = 0
         if range_index == 0:  # last week
-            self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 604800
+            operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 604800
         elif range_index == 1:  # last month
-            self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 2678400
+            operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 2678400
         elif range_index == 2:  # last half-year
-            self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 7905600
+            operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 7905600
         elif range_index == 3:  # last year
-            self.operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 31536000
-        else:
-            self.operations_since_timestamp = 0
-        self.SetOperationsFilter()
+            operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 31536000
+        # self.SetOperationsFilter()
+        self.operations.setOperationsRange(operations_since_timestamp)
 
-    def emit_before_mapper_commit(self, operation_type):
-        if operation_type == TRANSACTION_TRANSFER:
-            transfer_mapper = self.op_details[operation_type][self.OP_MAPPER]
-            record = transfer_mapper.model().record(0)
-            note = record.value(transfer_mapper.model().fieldIndex("note"))
-            if not note:  # If we don't have note - set it to NULL value to fire DB trigger
-                transfer_mapper.model().setData(transfer_mapper.model().index(0, transfer_mapper.model().fieldIndex("note")), None)
-            fee_amount = record.value(transfer_mapper.model().fieldIndex("fee_amount"))
-            if not fee_amount:
-                fee_amount = 0
-            if abs(float(fee_amount)) < CALC_TOLERANCE:  # If we don't have fee - set Fee Account to NULL to fire DB trigger
-                transfer_mapper.model().setData(transfer_mapper.model().index(0, transfer_mapper.model().fieldIndex("fee_acc_id")), None)
+    # def emit_before_mapper_commit(self, operation_type):
+    #     if operation_type == TRANSACTION_TRANSFER:
+    #         transfer_mapper = self.op_details[operation_type][self.OP_MAPPER]
+    #         record = transfer_mapper.model().record(0)
+    #         note = record.value(transfer_mapper.model().fieldIndex("note"))
+    #         if not note:  # If we don't have note - set it to NULL value to fire DB trigger
+    #             transfer_mapper.model().setData(transfer_mapper.model().index(0, transfer_mapper.model().fieldIndex("note")), None)
+    #         fee_amount = record.value(transfer_mapper.model().fieldIndex("fee_amount"))
+    #         if not fee_amount:
+    #             fee_amount = 0
+    #         if abs(float(fee_amount)) < CALC_TOLERANCE:  # If we don't have fee - set Fee Account to NULL to fire DB trigger
+    #             transfer_mapper.model().setData(transfer_mapper.model().index(0, transfer_mapper.model().fieldIndex("fee_acc_id")), None)
+    #
+    # def emit_before_view_commit(self, operation_type):
+    #     if operation_type == TRANSACTION_ACTION:
+    #         actions_mapper = self.op_details[operation_type][self.OP_MAPPER]
+    #         pid = actions_mapper.model().data(actions_mapper.model().index(0, actions_mapper.model().fieldIndex("id")))
+    #         if pid is None:  # we just have saved new action record (mapper submitAll() is called before this signal)
+    #             pid = actions_mapper.model().query().lastInsertId()
+    #         action_details_view = self.op_details[operation_type][self.OP_CHILD_VIEW]
+    #         for row in range(action_details_view.model().rowCount()):
+    #             action_details_view.model().setData(action_details_view.model().index(row, 1), pid)
 
-    def emit_before_view_commit(self, operation_type):
-        if operation_type == TRANSACTION_ACTION:
-            actions_mapper = self.op_details[operation_type][self.OP_MAPPER]
-            pid = actions_mapper.model().data(actions_mapper.model().index(0, actions_mapper.model().fieldIndex("id")))
-            if pid is None:  # we just have saved new action record (mapper submitAll() is called before this signal)
-                pid = actions_mapper.model().query().lastInsertId()
-            action_details_view = self.op_details[operation_type][self.OP_VIEW]
-            for row in range(action_details_view.model().rowCount()):
-                action_details_view.model().setData(action_details_view.model().index(row, 1), pid)
+    # def commit_operation(self, operation_type):
+    #     self.emit_before_mapper_commit(operation_type)
+    #     if self.op_details[operation_type][self.OP_MAPPER]:  # if mapper defined for operation type
+    #         if not self.op_details[operation_type][self.OP_MAPPER].model().submitAll():
+    #             logging.fatal(
+    #                 self.tr("Action submit failed: ") + self.op_details[operation_type][self.OP_MAPPER].model().lastError().text())
+    #             return
+    #
+    #     self.emit_before_view_commit(operation_type)
+    #     if self.op_details[operation_type][self.OP_CHILD_VIEW]:  # if mapper defined for operation type
+    #         if not self.op_details[operation_type][self.OP_CHILD_VIEW].model().submitAll():
+    #             logging.fatal(
+    #                 self.tr("Action details submit failed: ") + self.op_details[operation_type][self.OP_CHILD_VIEW].model().lastError().text())
+    #             return
+    #     self.emit_clean()
+    #     self.ledger.MakeUpToDate()
+    #     self.OperationsTableView.model().select()
 
-    def commit_operation(self, operation_type):
-        self.emit_before_mapper_commit(operation_type)
-        if self.op_details[operation_type][self.OP_MAPPER]:  # if mapper defined for operation type
-            if not self.op_details[operation_type][self.OP_MAPPER].model().submitAll():
-                logging.fatal(
-                    self.tr("Action submit failed: ") + self.op_details[operation_type][self.OP_MAPPER].model().lastError().text())
-                return
 
-        self.emit_before_view_commit(operation_type)
-        if self.op_details[operation_type][self.OP_VIEW]:  # if mapper defined for operation type
-            if not self.op_details[operation_type][self.OP_VIEW].model().submitAll():
-                logging.fatal(
-                    self.tr("Action details submit failed: ") + self.op_details[operation_type][self.OP_VIEW].model().lastError().text())
-                return
-        self.emit_clean()
-        self.ledger.MakeUpToDate()
-        self.OperationsTableView.model().select()
 
-    def emit_clean(self):
-        self.SaveOperationBtn.setEnabled(False)
-        self.RevertOperationBtn.setEnabled(False)
+    # def revert_operation(self, operation_type):
+    #     if self.op_details[operation_type][self.OP_MAPPER]:  # if mapper defined for operation type
+    #         self.op_details[operation_type][self.OP_MAPPER].model().revertAll()
+    #     if self.op_details[operation_type][self.OP_CHILD_VIEW]:  # if mapper defined for operation type
+    #         self.op_details[operation_type][self.OP_CHILD_VIEW].model().revertAll()
+    #     self.emit_clean()
 
-    def revert_operation(self, operation_type):
-        if self.op_details[operation_type][self.OP_MAPPER]:  # if mapper defined for operation type
-            self.op_details[operation_type][self.OP_MAPPER].model().revertAll()
-        if self.op_details[operation_type][self.OP_VIEW]:  # if mapper defined for operation type
-            self.op_details[operation_type][self.OP_VIEW].model().revertAll()
-        self.emit_clean()
+    # def ask_to_commit_changes(self, operation_type):
+    #     reply = QMessageBox().warning(None, "You have unsaved changes",
+    #                                   self.op_details[operation_type][self.OP_NAME] +
+    #                                   " has uncommitted changes,\ndo you want to save it?",
+    #                                   QMessageBox.Yes, QMessageBox.No)
+    #     if reply == QMessageBox.Yes:
+    #         self.commit_operation(operation_type)
+    #     else:
+    #         self.revert_operation(operation_type)
 
-    def ask_to_commit_changes(self, operation_type):
-        reply = QMessageBox().warning(None, "You have unsaved changes",
-                                      self.op_details[operation_type][self.OP_NAME] +
-                                      " has uncommitted changes,\ndo you want to save it?",
-                                      QMessageBox.Yes, QMessageBox.No)
-        if reply == QMessageBox.Yes:
-            self.commit_operation(operation_type)
-        else:
-            self.revert_operation(operation_type)
+    # def check_and_commit_changes(self):
+    #     for operation_type in self.op_details:
+    #         if self.op_details[operation_type][self.OP_MAPPER]:   # if mapper defined for operation type
+    #             if self.op_details[operation_type][self.OP_MAPPER].model().isDirty():
+    #                 self.ask_to_commit_changes(operation_type)
+    #         if self.op_details[operation_type][self.OP_CHILD_VIEW]:     # if view defined for operatation type
+    #             if self.op_details[operation_type][self.OP_CHILD_VIEW].model().isDirty():
+    #                 self.ask_to_commit_changes(operation_type)
 
-    def check_and_commit_changes(self):
-        for operation_type in self.op_details:
-            if self.op_details[operation_type][self.OP_MAPPER]:   # if mapper defined for operation type
-                if self.op_details[operation_type][self.OP_MAPPER].model().isDirty():
-                    self.ask_to_commit_changes(operation_type)
-            if self.op_details[operation_type][self.OP_VIEW]:     # if view defined for operatation type
-                if self.op_details[operation_type][self.OP_VIEW].model().isDirty():
-                    self.ask_to_commit_changes(operation_type)
+    # def create_new_details(self, operation_type):
+    #     view = self.op_details[operation_type][self.OP_CHILD_VIEW]
+    #     if view:
+    #         view.model().setFilter(f"{self.op_details[operation_type][self.OP_CHILD_TABLE]}.pid = 0")
 
-    def create_new_details(self, operation_type):
-        view = self.op_details[operation_type][self.OP_VIEW]
-        if view:
-            view.model().setFilter(f"{self.op_details[operation_type][self.OP_VIEW_TABLE]}.pid = 0")
+    # def emit_prepare_new_record(self, operation_type, new_record):
+    #     if operation_type == TRANSACTION_ACTION or operation_type == TRANSACTION_TRADE or operation_type == TRANSACTION_DIVIDEND:
+    #         new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
+    #         if self.ChooseAccountBtn.account_id != 0:
+    #             new_record.setValue("account_id", self.ChooseAccountBtn.account_id)
+    #     if operation_type == TRANSACTION_TRANSFER:
+    #         new_record.setValue("from_timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
+    #         if self.ChooseAccountBtn.account_id != 0:
+    #             new_record.setValue("from_acc_id", self.ChooseAccountBtn.account_id)
+    #         new_record.setValue("to_timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
+    #         new_record.setValue("fee_timestamp", 0)
 
-    def emit_prepare_new_record(self, operation_type, new_record):
-        if operation_type == TRANSACTION_ACTION:
-            new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
-            if self.ChooseAccountBtn.account_id != 0:
-                new_record.setValue("account_id", self.ChooseAccountBtn.account_id)
-        if operation_type == TRANSACTION_TRANSFER:
-            new_record.setValue("from_timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
-            if self.ChooseAccountBtn.account_id != 0:
-                new_record.setValue("from_acc_id", self.ChooseAccountBtn.account_id)
-            new_record.setValue("to_timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
-            new_record.setValue("fee_timestamp", 0)
-        if operation_type == TRANSACTION_TRADE:
-            new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
-            if self.ChooseAccountBtn.account_id != 0:
-                new_record.setValue("account_id", self.ChooseAccountBtn.account_id)
-        if operation_type == TRANSACTION_DIVIDEND:
-            new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
-            if self.ChooseAccountBtn.account_id != 0:
-                new_record.setValue("account_id", self.ChooseAccountBtn.account_id)
-
-    def CreateNewOperation(self, operation_type):
-        self.check_and_commit_changes()
-        self.OperationsTabs.setCurrentIndex(self.op_details[operation_type][self.OP_TAB])
-        mapper = self.op_details[operation_type][self.OP_MAPPER]
-        mapper.submit()
-        mapper.model().setFilter(f"{self.op_details[operation_type][self.OP_MAPPER_TABLE]}.id = 0")
-        new_record = mapper.model().record()
-        self.emit_prepare_new_record(operation_type, new_record)
-        assert mapper.model().insertRows(0, 1)
-        mapper.model().setRecord(0, new_record)
-        mapper.toLast()
-        self.create_new_details(operation_type)
+    # def CreateNewOperation(self, operation_type):
+    #     self.check_and_commit_changes()
+    #     self.OperationsTabs.setCurrentIndex(self.op_details[operation_type][self.OP_TAB])
+    #     mapper = self.op_details[operation_type][self.OP_MAPPER]
+    #     mapper.submit()
+    #     mapper.model().setFilter(f"{self.op_details[operation_type][self.OP_MAPPER_TABLE]}.id = 0")
+    #     new_record = mapper.model().record()
+    #     self.emit_prepare_new_record(operation_type, new_record)
+    #     assert mapper.model().insertRows(0, 1)
+    #     mapper.model().setRecord(0, new_record)
+    #     mapper.toLast()
+    #     self.create_new_details(operation_type)
 
     # def CreateNewAction(self, action_type):
     #     self.CheckForNotSavedData()
@@ -670,3 +662,18 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def onStatementLoaded(self):
         self.StatusBar.showMessage("Statement load completed", timeout=60000)
         self.ledger.MakeUpToDate()
+
+    @Slot()
+    def ShowOperationTab(self, operation_type):
+        tab_list = {
+            TRANSACTION_ACTION: TAB_ACTION,
+            TRANSACTION_TRANSFER: TAB_TRANSFER,
+            TRANSACTION_TRADE: TAB_TRADE,
+            TRANSACTION_DIVIDEND: TAB_DIVIDEND
+        }
+        self.OperationsTabs.setCurrentIndex(tab_list[operation_type])
+
+    @Slot()
+    def showCommitted(self):
+        self.SaveOperationBtn.setEnabled(False)
+        self.RevertOperationBtn.setEnabled(False)
