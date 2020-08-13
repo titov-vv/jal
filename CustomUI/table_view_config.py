@@ -51,18 +51,6 @@ class TableViewConfig:
         TRANSFERS: 'transfers_combined'
     }
 
-    # if True - then link model 'dataChanged' signal with self.parent.on_data_changed() slot
-    notify_changes = {
-        BALANCES: False,
-        HOLDINGS: False,
-        OPERATIONS: False,
-        ACTIONS: True,
-        ACTION_DETAILS: True,
-        TRADES: True,
-        DIVIDENDS: True,
-        TRANSFERS: True
-    }
-
     table_relations = {
         BALANCES: None,
         HOLDINGS: None,
@@ -302,9 +290,9 @@ class TableViewConfig:
             (parent.AddActionDetail,        "clicked()",                parent.AddDetail),
             (parent.RemoveActionDetail,     "clicked()",                parent.RemoveDetail),
             (parent.DeleteOperationBtn,     "clicked()",                parent.operations.deleteOperation),
-            (parent.CopyOperationBtn,       "clicked()",                parent.CopyOperation),
-            (parent.SaveOperationBtn,       "clicked()",                parent.SaveOperation),
-            (parent.RevertOperationBtn,     "clicked()",                parent.RevertOperation)
+            (parent.CopyOperationBtn,       "clicked()",                parent.operations.copyOperation),
+            (parent.SaveOperationBtn,       "clicked()",                parent.operations.commitOperation),
+            (parent.RevertOperationBtn,     "clicked()",                parent.operations.revertOperation)
         ]
 
     def configure(self, i):
@@ -314,8 +302,6 @@ class TableViewConfig:
             delegates = ConfigureTableView(self.views[i], model, self.table_view_columns[i])
             self.delegates_storage.append(delegates)
             self.views[i].show()
-        if self.notify_changes[i]:
-            model.dataChanged.connect(self.parent.on_data_changed)
         if self.widget_mappers[i]:
             self.mappers[i] = ConfigureDataMappers(model, self.widget_mappers[i], self.mapper_delegates[i])
         else:

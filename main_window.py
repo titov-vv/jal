@@ -5,7 +5,6 @@ from functools import partial
 from PySide2 import QtCore, QtWidgets
 from PySide2.QtCore import Slot
 from PySide2.QtGui import QDoubleValidator
-from PySide2.QtSql import QSqlQuery
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QHeaderView, QMenu, QMessageBox, QLabel
 
 from CustomUI.helpers import VLine
@@ -69,6 +68,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.operations.setOperationsDetails(self.operation_details)
         self.operations.activateOperationView.connect(self.ShowOperationTab)
         self.operations.stateIsCommitted.connect(self.showCommitted)
+        self.operations.stateIsModified.connect(self.showModified)
 
         self.ActionsDataMapper = self.ui_config.mappers[self.ui_config.ACTIONS]
         self.TradesDataMapper = self.ui_config.mappers[self.ui_config.TRADES]
@@ -89,8 +89,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.HoldingsCurrencyCombo.init_db(self.db)   # and this will trigger onHoldingsDateChange -> view updated
 
         self.ChooseAccountBtn.init_db(self.db)
-        # self.current_index = None
-        self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.NewOperationMenu = QMenu()
         self.NewOperationMenu.addAction('Income / Spending', partial(self.operations.addNewOperation, TRANSACTION_ACTION))
         self.NewOperationMenu.addAction('Transfer', partial(self.operations.addNewOperation, TRANSACTION_TRANSFER))
@@ -102,7 +100,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.ActionDetailsTableView.horizontalHeader().moveSection(self.ActionDetailsTableView.model().fieldIndex("note"),
                                                                    self.ActionDetailsTableView.model().fieldIndex("name"))
-        self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
         self.OperationsTableView.selectRow(0)
         self.OnOperationsRangeChange(0)
 
@@ -176,74 +173,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 self.HoldingsTableView.setSpan(row, 3, 1, 3)
         self.HoldingsTableView.show()
 
-
-    @Slot()
-    def OnOperationChange(self, selected, _deselected):
-        self.CheckForNotSavedData()
-
-        ##################################################################
-        # UPDATE VIEW FOR NEW SELECTED TRANSACTION                       #
-        ##################################################################
-        idx = selected.indexes()
-        if idx:
-            selected_row = idx[0].row()
-            operations_table = self.OperationsTableView.model()
-            operation_type = operations_table.record(selected_row).value(operations_table.fieldIndex("type"))
-            operation_id = operations_table.record(selected_row).value(operations_table.fieldIndex("id"))
-            if operation_type == TRANSACTION_ACTION:
-                self.ActionsDataMapper.model().setFilter(f"actions.id = {operation_id}")
-                self.ActionsDataMapper.setCurrentModelIndex(self.ActionsDataMapper.model().index(0, 0))
-                self.OperationsTabs.setCurrentIndex(TAB_ACTION)
-                self.ActionDetailsTableView.model().setFilter(f"action_details.pid = {operation_id}")
-            elif operation_type == TRANSACTION_DIVIDEND:
-                self.OperationsTabs.setCurrentIndex(TAB_DIVIDEND)
-                self.DividendsDataMapper.model().setFilter(f"dividends.id = {operation_id}")
-                self.DividendsDataMapper.setCurrentModelIndex(self.DividendsDataMapper.model().index(0, 0))
-            elif operation_type == TRANSACTION_TRADE:
-                self.OperationsTabs.setCurrentIndex(TAB_TRADE)
-                self.TradesDataMapper.model().setFilter(f"trades.id = {operation_id}")
-                self.TradesDataMapper.setCurrentModelIndex(self.TradesDataMapper.model().index(0, 0))
-            elif operation_type == TRANSACTION_TRANSFER:
-                self.OperationsTabs.setCurrentIndex(TAB_TRANSFER)
-                self.TransfersDataMapper.model().setFilter(f"transfers_combined.id = {operation_id}")
-                self.TransfersDataMapper.setCurrentModelIndex(self.TransfersDataMapper.model().index(0, 0))
-            else:
-                assert False
-
-    def CheckForNotSavedData(self):
-        if self.ActionsDataMapper.model().isDirty() or self.ActionDetailsTableView.model().isDirty():
-            reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
-                                          self.tr("Transaction has uncommitted changes,\ndo you want to save it?"),
-                                          QMessageBox.Yes, QMessageBox.No)
-            if reply == QMessageBox.Yes:
-                self.SubmitChangesForTab(TAB_ACTION)
-            else:
-                self.RevertChangesForTab(TAB_ACTION)
-        if self.DividendsDataMapper.model().isDirty():
-            reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
-                                          self.tr("Dividend has uncommitted changes,\ndo you want to save it?"),
-                                          QMessageBox.Yes, QMessageBox.No)
-            if reply == QMessageBox.Yes:
-                self.SubmitChangesForTab(TAB_DIVIDEND)
-            else:
-                self.RevertChangesForTab(TAB_DIVIDEND)
-        if self.TradesDataMapper.model().isDirty():
-            reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
-                                          self.tr("Trade has uncommitted changes,\ndo you want to save it?"),
-                                          QMessageBox.Yes, QMessageBox.No)
-            if reply == QMessageBox.Yes:
-                self.SubmitChangesForTab(TAB_TRADE)
-            else:
-                self.RevertChangesForTab(TAB_TRADE)
-        if self.TransfersDataMapper.model().isDirty():
-            reply = QMessageBox().warning(self, self.tr("You have unsaved changes"),
-                                          self.tr("Transfer has uncommitted changes,\ndo you want to save it?"),
-                                          QMessageBox.Yes, QMessageBox.No)
-            if reply == QMessageBox.Yes:
-                self.SubmitChangesForTab(TAB_TRANSFER)
-            else:
-                self.RevertChangesForTab(TAB_TRANSFER)
-
     @Slot()
     def OnAccountChange(self):
         self.operations.setAccountId(self.ChooseAccountBtn.account_id)
@@ -265,141 +194,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.operations.setOperationsRange(operations_since_timestamp)
 
     @Slot()
-    def CopyOperation(self):
-        self.CheckForNotSavedData()
-        active_tab = self.OperationsTabs.currentIndex()
-        if active_tab == TAB_ACTION:
-            row = self.ActionsDataMapper.currentIndex()
-            operation_id = self.ActionsDataMapper.model().record(row).value(self.ActionsDataMapper.model().fieldIndex("id"))
-            self.ActionsDataMapper.submit()
-            new_record = self.ActionsDataMapper.model().record(row)
-            new_record.setNull("id")
-            new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
-            self.ActionsDataMapper.model().setFilter("actions.id = 0")
-            assert self.ActionsDataMapper.model().insertRows(0, 1)
-            self.ActionsDataMapper.model().setRecord(0, new_record)
-            self.ActionsDataMapper.toLast()
-            # Get SQL records of details and insert it into details table
-            self.ActionDetailsTableView.model().setFilter("action_details.pid = 0")
-            query = QSqlQuery(self.db)
-            query.prepare("SELECT * FROM action_details WHERE pid = :pid ORDER BY id DESC")
-            query.bindValue(":pid", operation_id)
-            query.setForwardOnly(True)
-            assert query.exec_()
-            while query.next():
-                new_record = query.record()
-                new_record.setNull("id")
-                new_record.setNull("pid")
-                assert self.ActionDetailsTableView.model().insertRows(0, 1)
-                self.ActionDetailsTableView.model().setRecord(0, new_record)
-        elif active_tab == TAB_TRANSFER:
-            row = self.TransfersDataMapper.currentIndex()
-            self.TransfersDataMapper.submit()
-            new_record = self.TransfersDataMapper.model().record(row)
-            new_record.setNull("id")
-            new_record.setValue("from_timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
-            new_record.setValue("to_timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
-            new_record.setValue("fee_timestamp", 0)
-            self.TransfersDataMapper.model().setFilter(f"transfers_combined.id = 0")
-            assert self.TransfersDataMapper.model().insertRows(0, 1)
-            self.TransfersDataMapper.model().setRecord(0, new_record)
-            self.TransfersDataMapper.toLast()
-        elif active_tab == TAB_DIVIDEND:
-            row = self.DividendsDataMapper.currentIndex()
-            self.DividendsDataMapper.submit()
-            new_record = self.DividendsDataMapper.model().record(row)
-            new_record.setNull("id")
-            new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
-            self.DividendsDataMapper.model().setFilter("dividends.id = 0")
-            assert self.DividendsDataMapper.model().insertRows(0, 1)
-            self.DividendsDataMapper.model().setRecord(0, new_record)
-            self.DividendsDataMapper.toLast()
-        elif active_tab == TAB_TRADE:
-            row = self.TradesDataMapper.currentIndex()
-            self.TradesDataMapper.submit()
-            new_record = self.TradesDataMapper.model().record(row)
-            new_record.setNull("id")
-            new_record.setValue("timestamp", QtCore.QDateTime.currentSecsSinceEpoch())
-            self.TradesDataMapper.model().setFilter("trades.id = 0")
-            assert self.TradesDataMapper.model().insertRows(0, 1)
-            self.TradesDataMapper.model().setRecord(0, new_record)
-            self.TradesDataMapper.toLast()
-        else:
-            assert False
-
-    @Slot()
-    def SaveOperation(self):
-        active_tab = self.OperationsTabs.currentIndex()
-        self.SubmitChangesForTab(active_tab)
-
-    @Slot()
-    def RevertOperation(self):
-        active_tab = self.OperationsTabs.currentIndex()
-        self.RevertChangesForTab(active_tab)
-
-    def SubmitChangesForTab(self, tab2save):
-        if tab2save == TAB_ACTION:
-            if not self.ActionsDataMapper.model().submitAll():
-                logging.fatal(self.tr("Action submit failed: ") + self.ActionDetailsTableView.model().lastError().text())
-                return
-
-            pid = self.ActionsDataMapper.model().data(
-                self.ActionsDataMapper.model().index(0, self.ActionsDataMapper.model().fieldIndex("id")))
-            if pid is None:  # we have saved new action record
-                pid = self.ActionsDataMapper.model().query().lastInsertId()
-            for row in range(self.ActionDetailsTableView.model().rowCount()):
-                self.ActionDetailsTableView.model().setData(self.ActionDetailsTableView.model().index(row, 1), pid)
-
-            if not self.ActionDetailsTableView.model().submitAll():
-                logging.fatal(self.tr("Action details submit failed: ") + self.ActionDetailsTableView.model().lastError().text())
-                return
-        elif tab2save == TAB_TRANSFER:
-            record = self.TransfersDataMapper.model().record(0)
-            note = record.value(self.TransfersDataMapper.model().fieldIndex("note"))
-            if not note:  # If we don't have note - set it to NULL value to fire DB trigger
-                self.TransfersDataMapper.model().setData(self.TransfersDataMapper.model().index(0, self.TransfersDataMapper.model().fieldIndex("note")), None)
-            fee_amount = record.value(self.TransfersDataMapper.model().fieldIndex("fee_amount"))
-            if not fee_amount:
-                fee_amount = 0
-            if abs(float(
-                    fee_amount)) < CALC_TOLERANCE:  # If we don't have fee - set Fee Account to NULL to fire DB trigger
-                self.TransfersDataMapper.model().setData(self.TransfersDataMapper.model().index(0, self.TransfersDataMapper.model().fieldIndex("fee_acc_id")),
-                                            None)
-
-            if not self.TransfersDataMapper.model().submitAll():
-                logging.fatal(self.tr("Transfer submit failed: ") + self.TransfersDataMapper.model().lastError().text())
-                return
-        elif tab2save == TAB_DIVIDEND:
-            if not self.DividendsDataMapper.model().submitAll():
-                logging.fatal(self.tr("Dividend submit failed: ") + self.DividendsDataMapper.model().lastError().text())
-                return
-        elif tab2save == TAB_TRADE:
-            if not self.TradesDataMapper.model().submitAll():
-                logging.fatal(self.tr("Trade submit failed: ") + self.TradesDataMapper.model().lastError().text())
-                return
-        else:
-            assert False
-        self.ledger.MakeUpToDate()
-        self.OperationsTableView.model().select()
-        self.SaveOperationBtn.setEnabled(False)
-        self.RevertOperationBtn.setEnabled(False)
-
-    def RevertChangesForTab(self, tab2revert):
-        if tab2revert == TAB_ACTION:
-            self.ActionsDataMapper.model().revertAll()
-            self.ActionDetailsTableView.model().revertAll()
-        elif tab2revert == TAB_TRANSFER:
-            self.TransfersDataMapper.model().revertAll()
-        elif tab2revert == TAB_DIVIDEND:
-            self.DividendsDataMapper.model().revertAll()
-        elif tab2revert == TAB_TRADE:
-            self.TradesDataMapper.model().revertAll()
-        else:
-            assert False
-        self.SaveOperationBtn.setEnabled(False)
-        self.RevertOperationBtn.setEnabled(False)
-
-    @Slot()
     def AddDetail(self):
         new_record = self.ActionDetailsTableView.model().record()
         self.ActionDetailsTableView.model().insertRecord(-1, new_record)
@@ -410,11 +204,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         selected_row = idx[0].row()
         self.ActionDetailsTableView.model().removeRow(selected_row)
         self.ActionDetailsTableView.setRowHidden(selected_row, True)
-        self.SaveOperationBtn.setEnabled(True)
-        self.RevertOperationBtn.setEnabled(True)
-
-    @Slot()
-    def on_data_changed(self):
         self.SaveOperationBtn.setEnabled(True)
         self.RevertOperationBtn.setEnabled(True)
 
@@ -442,3 +231,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ledger.MakeUpToDate()
         self.SaveOperationBtn.setEnabled(False)
         self.RevertOperationBtn.setEnabled(False)
+
+    @Slot()
+    def showModified(self):
+        self.SaveOperationBtn.setEnabled(True)
+        self.RevertOperationBtn.setEnabled(True)

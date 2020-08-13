@@ -9,6 +9,7 @@ from PySide2.QtSql import QSqlQuery
 class LedgerOperationsView(QObject):
     activateOperationView = Signal(int)
     stateIsCommitted = Signal()
+    stateIsModified = Signal()
 
     OP_NAME = 0
     OP_MAPPER = 1
@@ -24,12 +25,20 @@ class LedgerOperationsView(QObject):
         self.start_date_of_view = 0
         self.table_view = operations_table_view
         self.operations = None
+        self.modified_operation_type = None
         self.current_index = None   # this variable is used for reconciliation only
 
+        self.table_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.table_view.customContextMenuRequested.connect(self.onOperationContextMenu)
 
     def setOperationsDetails(self, operations_details):
         self.operations = operations_details
+        for operation_type in self.operations:
+            if self.operations[operation_type][self.OP_MAPPER]:  # if mapper defined for operation type
+                self.operations[operation_type][self.OP_MAPPER].model().dataChanged.connect(self.onDataEdit)
+            if self.operations[operation_type][self.OP_CHILD_VIEW]:  # if view defined for operation type
+                self.operations[operation_type][self.OP_CHILD_VIEW].model().dataChanged.connect(self.onDataEdit)
+        self.table_view.selectionModel().selectionChanged.connect(self.OnOperationChange)
 
     def setOperationsFilter(self):
         operations_filter = ""
@@ -73,7 +82,7 @@ class LedgerOperationsView(QObject):
         mapper.submit()
         mapper.model().setFilter(f"{self.operations[operation_type][self.OP_MAPPER_TABLE]}.id = 0")
         new_record = mapper.model().record()
-        self.prepareNewOperation(operation_type, new_record)
+        new_record = self.prepareNewOperation(operation_type, new_record)
         assert mapper.model().insertRows(0, 1)
         mapper.model().setRecord(0, new_record)
         mapper.toLast()
@@ -92,49 +101,80 @@ class LedgerOperationsView(QObject):
         mapper.model().submitAll()
         self.stateIsCommitted.emit()
         operations_model.select()
+
+    @Slot()
+    def copyOperation(self):
+        self.checkForUncommittedChanges()
+        index = self.table_view.currentIndex()
+        operations_model = self.table_view.model()
+        operation_type = operations_model.data(operations_model.index(index.row(), 0))
+        mapper = self.operations[operation_type][self.OP_MAPPER]
+        row = mapper.currentIndex()
+        old_id = mapper.model().record(row).value(mapper.model().fieldIndex("id"))
+        mapper.submit()
+        new_record = mapper.model().record(row)
+        new_record = self.prepareNewOperation(operation_type, new_record)
+        mapper.model().setFilter(f"{self.operations[operation_type][self.OP_MAPPER_TABLE]}.id = 0")
+        assert mapper.model().insertRows(0, 1)
+        mapper.model().setRecord(0, new_record)
+        mapper.toLast()
+
+        if self.operations[operation_type][self.OP_CHILD_VIEW]:
+            child_view = self.operations[operation_type][self.OP_CHILD_VIEW]
+            child_view.model().setFilter(f"{self.operations[operation_type][self.OP_CHILD_TABLE]}.pid = 0")
+            query = QSqlQuery(mapper.model().database())
+            query.prepare(f"SELECT * FROM {self.operations[operation_type][self.OP_CHILD_TABLE]} "
+                          "WHERE pid = :pid ORDER BY id DESC")
+            query.bindValue(":pid", old_id)
+            query.setForwardOnly(True)
+            assert query.exec_()
+            while query.next():
+                new_record = query.record()
+                new_record.setNull("id")
+                new_record.setNull("pid")
+                assert child_view.model().insertRows(0, 1)
+                child_view.model().setRecord(0, new_record)
         
     def checkForUncommittedChanges(self):
-        for operation_type in self.operations:
-            if self.operations[operation_type][self.OP_MAPPER]:   # if mapper defined for operation type
-                if self.operations[operation_type][self.OP_MAPPER].model().isDirty():
-                    self.askToCommitChanges(operation_type)
-            if self.operations[operation_type][self.OP_CHILD_VIEW]:     # if view defined for operatation type
-                if self.operations[operation_type][self.OP_CHILD_VIEW].model().isDirty():
-                    self.askToCommitChanges(operation_type)
+        if self.modified_operation_type:
+            reply = QMessageBox().warning(None, "You have unsaved changes",
+                                          self.operations[self.modified_operation_type][self.OP_NAME] +
+                                          " has uncommitted changes,\ndo you want to save it?",
+                                          QMessageBox.Yes, QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                self.commitOperation()
+            else:
+                self.revertOperation()
 
-    def askToCommitChanges(self, operation_type):
-        reply = QMessageBox().warning(None, "You have unsaved changes",
-                                      self.operations[operation_type][self.OP_NAME] +
-                                      " has uncommitted changes,\ndo you want to save it?",
-                                      QMessageBox.Yes, QMessageBox.No)
-        if reply == QMessageBox.Yes:
-            self.commitOperation(operation_type)
-        else:
-            self.revertOperation(operation_type)
+    @Slot()
+    def revertOperation(self):
+        if self.modified_operation_type:
+            if self.operations[self.modified_operation_type][self.OP_MAPPER]:  # if mapper defined for operation type
+                self.operations[self.modified_operation_type][self.OP_MAPPER].model().revertAll()
+            if self.operations[self.modified_operation_type][self.OP_CHILD_VIEW]:  # if child view defined for operation type
+                self.operations[self.modified_operation_type][self.OP_CHILD_VIEW].model().revertAll()
+            self.modified_operation_type = None
+            self.stateIsCommitted.emit()
 
-    def revertOperation(self, operation_type):
-        if self.operations[operation_type][self.OP_MAPPER]:  # if mapper defined for operation type
-            self.operations[operation_type][self.OP_MAPPER].model().revertAll()
-        if self.operations[operation_type][self.OP_CHILD_VIEW]:  # if mapper defined for operation type
-            self.operations[operation_type][self.OP_CHILD_VIEW].model().revertAll()
-        self.stateIsCommitted.emit()
-
-    def commitOperation(self, operation_type):
-        self.beforeMapperCommit(operation_type)
-        if self.operations[operation_type][self.OP_MAPPER]:  # if mapper defined for operation type
-            if not self.operations[operation_type][self.OP_MAPPER].model().submitAll():
-                logging.fatal(
-                    self.tr("Action submit failed: ") + self.operations[operation_type][self.OP_MAPPER].model().lastError().text())
-                return
-        self.beforeChildViewCommit(operation_type)
-        if self.operations[operation_type][self.OP_CHILD_VIEW]:  # if mapper defined for operation type
-            if not self.operations[operation_type][self.OP_CHILD_VIEW].model().submitAll():
-                logging.fatal(
-                    self.tr("Action details submit failed: ") + self.operations[operation_type][
-                        self.OP_CHILD_VIEW].model().lastError().text())
-                return
-        self.stateIsCommitted.emit()
-        self.table_view.model().select()
+    @Slot()
+    def commitOperation(self):
+        if self.modified_operation_type:
+            self.beforeMapperCommit(self.modified_operation_type)
+            if self.operations[self.modified_operation_type][self.OP_MAPPER]:  # if mapper defined for operation type
+                if not self.operations[self.modified_operation_type][self.OP_MAPPER].model().submitAll():
+                    logging.fatal(
+                        self.tr("Action submit failed: ") + self.operations[self.modified_operation_type][self.OP_MAPPER].model().lastError().text())
+                    return
+            self.beforeChildViewCommit(self.modified_operation_type)
+            if self.operations[self.modified_operation_type][self.OP_CHILD_VIEW]:  # if child view defined for operation type
+                if not self.operations[self.modified_operation_type][self.OP_CHILD_VIEW].model().submitAll():
+                    logging.fatal(
+                        self.tr("Action details submit failed: ") + self.operations[self.modified_operation_type][
+                            self.OP_CHILD_VIEW].model().lastError().text())
+                    return
+            self.modified_operation_type = None
+            self.stateIsCommitted.emit()
+            self.table_view.model().select()
         
     def beforeMapperCommit(self, operation_type):
         if operation_type == TRANSACTION_TRANSFER:
@@ -165,6 +205,7 @@ class LedgerOperationsView(QObject):
             view.model().setFilter(f"{self.operations[operation_type][self.OP_CHILD_TABLE]}.pid = 0")
             
     def prepareNewOperation(self, operation_type, new_operation_record):
+        new_operation_record.setNull("id")
         if operation_type == TRANSACTION_ACTION or operation_type == TRANSACTION_TRADE or operation_type == TRANSACTION_DIVIDEND:
             new_operation_record.setValue("timestamp", QDateTime.currentSecsSinceEpoch())
             if self.p_account_id != 0:
@@ -175,6 +216,7 @@ class LedgerOperationsView(QObject):
                 new_operation_record.setValue("from_acc_id", self.p_account_id)
             new_operation_record.setValue("to_timestamp", QDateTime.currentSecsSinceEpoch())
             new_operation_record.setValue("fee_timestamp", 0)
+        return new_operation_record
 
     @Slot()
     def onOperationContextMenu(self, pos):
@@ -205,5 +247,37 @@ class LedgerOperationsView(QObject):
         model.select()
 
     @Slot()
-    def copyOperation(self):
-        pass
+    def OnOperationChange(self, selected, _deselected):
+        self.checkForUncommittedChanges()
+        idx = selected.indexes()
+        if idx:
+            selected_row = idx[0].row()
+            operations_model = self.table_view.model()
+            operation_type = operations_model.record(selected_row).value("type")
+            operation_id = operations_model.record(selected_row).value("id")
+            self.activateOperationView.emit(operation_type)
+
+            if self.operations[operation_type][self.OP_MAPPER]:  # if mapper defined for operation type
+                mapper = self.operations[operation_type][self.OP_MAPPER]
+                mapper.model().setFilter(f"{self.operations[operation_type][self.OP_MAPPER_TABLE]}.id = {operation_id}")
+                mapper.setCurrentModelIndex(mapper.model().index(0, 0))
+            if self.operations[operation_type][self.OP_CHILD_VIEW]:  # if child view defined for operation type
+                view = self.operations[operation_type][self.OP_CHILD_VIEW]
+                view.model().setFilter(f"{self.operations[operation_type][self.OP_CHILD_TABLE]}.pid = {operation_id}")
+
+    @Slot()
+    def onDataEdit(self):
+        index = self.table_view.currentIndex()
+        operations_model = self.table_view.model()
+        self.modified_operation_type = operations_model.data(operations_model.index(index.row(), 0))
+        if self.modified_operation_type is None:
+            for operation_type in self.operations:
+                if self.operations[operation_type][self.OP_MAPPER]:   # if mapper defined for operation type
+                    if self.operations[operation_type][self.OP_MAPPER].model().isDirty():
+                        self.modified_operation_type = operation_type
+                        break
+                if self.operations[operation_type][self.OP_CHILD_VIEW]:     # if view defined for operation type
+                    if self.operations[operation_type][self.OP_CHILD_VIEW].model().isDirty():
+                        self.modified_operation_type = operation_type
+                        break
+        self.stateIsModified.emit()

@@ -468,7 +468,6 @@ class Ledger:
                                      QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
                 return
 
-        logging.info(f"Re-build ledger from: {datetime.datetime.fromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
         query = QSqlQuery(self.db)
         query.prepare("DELETE FROM deals WHERE close_sid > "
                       "(SELECT coalesce(MIN(id), 0) FROM sequence WHERE timestamp >= :frontier)")
@@ -518,7 +517,6 @@ class Ledger:
                 self.processTrade(seq_id, transaction_id)
             if transaction_type == TRANSACTION_TRANSFER:
                 self.processTransfer(seq_id, transaction_id)
-        logging.info(f"Re-build ledger completed")
 
     # Rebuild transaction sequence and recalculate all amounts
     # timestamp:
