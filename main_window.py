@@ -6,7 +6,7 @@ from PySide2 import QtCore, QtWidgets
 from PySide2.QtCore import Slot
 from PySide2.QtGui import QDoubleValidator
 from PySide2.QtSql import QSqlQuery
-from PySide2.QtWidgets import QMainWindow, QFileDialog, QHeaderView, QMenu, QMessageBox, QAction, QLabel
+from PySide2.QtWidgets import QMainWindow, QFileDialog, QHeaderView, QMenu, QMessageBox, QLabel
 
 from CustomUI.helpers import VLine
 from UI.ui_main_window import Ui_LedgerMainWindow
@@ -89,7 +89,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.HoldingsCurrencyCombo.init_db(self.db)   # and this will trigger onHoldingsDateChange -> view updated
 
         self.ChooseAccountBtn.init_db(self.db)
-        self.current_index = None
+        # self.current_index = None
         self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.NewOperationMenu = QMenu()
         self.NewOperationMenu.addAction('Income / Spending', partial(self.operations.addNewOperation, TRANSACTION_ACTION))
@@ -209,34 +209,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 self.TransfersDataMapper.setCurrentModelIndex(self.TransfersDataMapper.model().index(0, 0))
             else:
                 assert False
-
-    @Slot()
-    def OnOperationsContextMenu(self, pos):
-        self.current_index = self.OperationsTableView.indexAt(pos)
-        contextMenu = QMenu(self)
-        actionReconcile = QAction(text="Reconcile", parent=self)
-        actionReconcile.triggered.connect(self.OnReconcile)
-        actionCopy = QAction(text="Copy", parent=self)
-        actionCopy.triggered.connect(self.CopyOperation)
-        actionDelete = QAction(text="Delete", parent=self)
-        actionDelete.triggered.connect(self.operations.deleteOperation())
-        contextMenu.addAction(actionReconcile)
-        contextMenu.addSeparator()
-        contextMenu.addAction(actionCopy)
-        contextMenu.addAction(actionDelete)
-        contextMenu.popup(self.OperationsTableView.viewport().mapToGlobal(pos))
-
-    @Slot()
-    def OnReconcile(self):
-        model = self.current_index.model()
-        timestamp = model.data(model.index(self.current_index.row(), 2), Qt.DisplayRole)
-        account_id = model.data(model.index(self.current_index.row(), 3), Qt.DisplayRole)
-        query = QSqlQuery(self.db)
-        query.prepare("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id")
-        query.bindValue(":timestamp", timestamp)
-        query.bindValue(":account_id", account_id)
-        assert query.exec_()
-        model.select()
 
     def CheckForNotSavedData(self):
         if self.ActionsDataMapper.model().isDirty() or self.ActionDetailsTableView.model().isDirty():

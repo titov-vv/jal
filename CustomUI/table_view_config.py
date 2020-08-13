@@ -297,7 +297,6 @@ class TableViewConfig:
             (parent.HoldingsCurrencyCombo,  "currentIndexChanged(int)", parent.OnHoldingsCurrencyChange),
             (parent.ShowInactiveCheckBox,   "stateChanged(int)",        parent.OnBalanceInactiveChange),
             (parent.DateRangeCombo,         "currentIndexChanged(int)", parent.OnOperationsRangeChange),
-            (parent.OperationsTableView,    "customContextMenuRequested(QPoint)", parent.OnOperationsContextMenu),
             (parent.ChooseAccountBtn,       "clicked()",                parent.OnAccountChange),
             (parent.SearchString,           "textChanged(QString)",     parent.OnSearchTextChange),
             (parent.AddActionDetail,        "clicked()",                parent.AddDetail),

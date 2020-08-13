@@ -1,8 +1,9 @@
 import logging
 
 from constants import *
-from PySide2.QtCore import QObject, Signal, QDateTime
-from PySide2.QtWidgets import QMessageBox
+from PySide2.QtCore import Qt, QObject, Signal, Slot, QDateTime
+from PySide2.QtWidgets import QMessageBox, QMenu, QAction
+from PySide2.QtSql import QSqlQuery
 
 
 class LedgerOperationsView(QObject):
@@ -23,6 +24,9 @@ class LedgerOperationsView(QObject):
         self.start_date_of_view = 0
         self.table_view = operations_table_view
         self.operations = None
+        self.current_index = None   # this variable is used for reconciliation only
+
+        self.table_view.customContextMenuRequested.connect(self.onOperationContextMenu)
 
     def setOperationsDetails(self, operations_details):
         self.operations = operations_details
@@ -171,3 +175,35 @@ class LedgerOperationsView(QObject):
                 new_operation_record.setValue("from_acc_id", self.p_account_id)
             new_operation_record.setValue("to_timestamp", QDateTime.currentSecsSinceEpoch())
             new_operation_record.setValue("fee_timestamp", 0)
+
+    @Slot()
+    def onOperationContextMenu(self, pos):
+        self.current_index = self.table_view.indexAt(pos)
+        contextMenu = QMenu(self.table_view)
+        actionReconcile = QAction(text="Reconcile", parent=self)
+        actionReconcile.triggered.connect(self.reconcileAtCurrentOperation)
+        actionCopy = QAction(text="Copy", parent=self)
+        actionCopy.triggered.connect(self.copyOperation)
+        actionDelete = QAction(text="Delete", parent=self)
+        actionDelete.triggered.connect(self.deleteOperation)
+        contextMenu.addAction(actionReconcile)
+        contextMenu.addSeparator()
+        contextMenu.addAction(actionCopy)
+        contextMenu.addAction(actionDelete)
+        contextMenu.popup(self.table_view.viewport().mapToGlobal(pos))
+
+    @Slot()
+    def reconcileAtCurrentOperation(self):
+        model = self.current_index.model()
+        timestamp = model.data(model.index(self.current_index.row(), 2), Qt.DisplayRole)
+        account_id = model.data(model.index(self.current_index.row(), 3), Qt.DisplayRole)
+        query = QSqlQuery(model.database())
+        query.prepare("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id")
+        query.bindValue(":timestamp", timestamp)
+        query.bindValue(":account_id", account_id)
+        assert query.exec_()
+        model.select()
+
+    @Slot()
+    def copyOperation(self):
+        pass
