@@ -1,3 +1,5 @@
+import datetime
+
 from PySide2.QtCore import Qt
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtWidgets import QAbstractItemView, QHeaderView, QDataWidgetMapper, QFrame
@@ -23,6 +25,9 @@ class map_idx:
     VALIDATOR = 3
 
 
+# -----------------------------------------------------------------------------------------------------------------------
+# Helpers to work with numbers
+
 def formatFloatLong(value):
     if abs(value - round(value)) <= 10e-2:
         text = f"{value:.0f}"
@@ -44,6 +49,50 @@ class VLine(QFrame):
         super(VLine, self).__init__()
         self.setFrameShape(QFrame.VLine)
         self.setFrameShadow(QFrame.Sunken)
+
+
+# -----------------------------------------------------------------------------------------------------------------------
+# Helpers to work with datetime
+class ManipulateDate:
+    @staticmethod
+    def toTimestamp(date_value):
+        time_value = datetime.time(0, 0, 0)
+        dt_value = datetime.datetime.combine(date_value, time_value)
+        return int(dt_value.timestamp())
+
+    @staticmethod
+    def startOfPreviousWeek():
+        prev_week = datetime.date.today() - datetime.timedelta(days = 7)
+        start_of_week = prev_week - datetime.timedelta(days = prev_week.weekday())
+        return ManipulateDate.toTimestamp(start_of_week)
+
+    @staticmethod
+    def startOfPreviousMonth():
+        day = datetime.date.today()
+        first_day_of_month = day.replace(day=1)
+        last_day_of_prev_month = first_day_of_month - datetime.timedelta(days=1)
+        first_day_of_prev_month = last_day_of_prev_month.replace(day=1)
+        return ManipulateDate.toTimestamp(first_day_of_prev_month)
+
+    @staticmethod
+    def startOfPreviousQuarter():
+        day = datetime.date.today()
+        current_month = day.month
+        prev_quarter_month = current_month - current_month % 3 - 3
+        if prev_quarter_month > 0:
+            quarter_back = day.replace(month = prev_quarter_month)
+        else:
+            quarter_back = day.replace(month = (prev_quarter_month + 12), year = (day.year - 1))
+        first_day_of_prev_quarter = quarter_back.replace(day=1)
+        return ManipulateDate.toTimestamp(first_day_of_prev_quarter)
+
+    @staticmethod
+    def startOfPreviousYear():
+        day = datetime.date.today()
+        first_day_of_year = day.replace(day=1, month=1)
+        last_day_of_prev_year = first_day_of_year - datetime.timedelta(days=1)
+        first_day_of_prev_year = last_day_of_prev_year.replace(day=1, month=1)
+        return ManipulateDate.toTimestamp(first_day_of_prev_year)
 
 
 # -------------------------------------------------------------------------------------------------------------------

@@ -7,7 +7,7 @@ from PySide2.QtCore import Slot
 from PySide2.QtGui import QDoubleValidator
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QHeaderView, QMenu, QMessageBox, QLabel
 
-from CustomUI.helpers import VLine
+from CustomUI.helpers import VLine, ManipulateDate
 from UI.ui_main_window import Ui_LedgerMainWindow
 from view_delegate import *
 from DB.bulk_db import MakeBackup, RestoreBackup
@@ -19,6 +19,15 @@ from reports import Reports
 from statements import StatementLoader
 from taxes import TaxesRus
 from CustomUI.table_view_config import TableViewConfig
+
+
+view_ranges = {
+    0: ManipulateDate.startOfPreviousWeek,
+    1: ManipulateDate.startOfPreviousMonth,
+    2: ManipulateDate.startOfPreviousQuarter,
+    3: ManipulateDate.startOfPreviousYear,
+    4: lambda: 0
+}
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -182,16 +191,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def OnOperationsRangeChange(self, range_index):
-        operations_since_timestamp = 0
-        if range_index == 0:  # last week
-            operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 604800
-        elif range_index == 1:  # last month
-            operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 2678400
-        elif range_index == 2:  # last half-year
-            operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 7905600
-        elif range_index == 3:  # last year
-            operations_since_timestamp = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - 31536000
-        self.operations.setOperationsRange(operations_since_timestamp)
+        self.operations.setOperationsRange(view_ranges[range_index]())
 
     @Slot()
     def AddDetail(self):
