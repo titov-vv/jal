@@ -172,7 +172,6 @@ class LedgerOperationsView(QObject):
         mapper = self.operations[operation_type][self.OP_MAPPER]
         row = mapper.currentIndex()
         old_id = mapper.model().record(row).value(mapper.model().fieldIndex("id"))
-        mapper.submit()
         new_record = mapper.model().record(row)
         new_record = self.prepareNewOperation(operation_type, new_record, copy_mode=True)
         mapper.model().setFilter(f"{self.operations[operation_type][self.OP_MAPPER_TABLE]}.id = 0")
