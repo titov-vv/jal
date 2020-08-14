@@ -14,7 +14,7 @@ from DB.bulk_db import MakeBackup, RestoreBackup
 from DB.helpers import init_and_check_db, get_base_currency
 from downloader import QuoteDownloader
 from ledger import Ledger
-from operations import LedgerOperationsView
+from operations import LedgerOperationsView, LedgerInitValues
 from reports import Reports
 from statements import StatementLoader
 from taxes import TaxesRus
@@ -60,10 +60,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.ui_config.configure_all()
         self.operation_details = {
-            TRANSACTION_ACTION: ('Transaction', self.ui_config.mappers[self.ui_config.ACTIONS], 'actions', self.ActionDetailsTableView, 'action_details'),
-            TRANSACTION_TRADE: ('Trade', self.ui_config.mappers[self.ui_config.TRADES], 'trades', None, None),
-            TRANSACTION_DIVIDEND: ('Dividend', self.ui_config.mappers[self.ui_config.DIVIDENDS], 'dividends', None, None),
-            TRANSACTION_TRANSFER: ('Transfer', self.ui_config.mappers[self.ui_config.TRANSFERS], 'transfers_combined', None, None)
+            TRANSACTION_ACTION: ('Transaction', self.ui_config.mappers[self.ui_config.ACTIONS], 'actions', self.ActionDetailsTableView, 'action_details', LedgerInitValues[TRANSACTION_ACTION]),
+            TRANSACTION_TRADE: ('Trade', self.ui_config.mappers[self.ui_config.TRADES], 'trades', None, None, LedgerInitValues[TRANSACTION_TRADE]),
+            TRANSACTION_DIVIDEND: ('Dividend', self.ui_config.mappers[self.ui_config.DIVIDENDS], 'dividends', None, None, LedgerInitValues[TRANSACTION_DIVIDEND]),
+            TRANSACTION_TRANSFER: ('Transfer', self.ui_config.mappers[self.ui_config.TRANSFERS], 'transfers_combined', None, None, LedgerInitValues[TRANSACTION_TRANSFER])
         }
         self.operations.setOperationsDetails(self.operation_details)
         self.operations.activateOperationView.connect(self.ShowOperationTab)

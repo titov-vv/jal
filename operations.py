@@ -5,6 +5,66 @@ from PySide2.QtCore import Qt, QObject, Signal, Slot, QDateTime
 from PySide2.QtWidgets import QMessageBox, QMenu, QAction
 from PySide2.QtSql import QSqlQuery
 
+INIT_NULL = 0
+INIT_VALUE = 1
+INIT_TIMESTAMP = 2
+INIT_ACCOUNT = 3
+
+IV_COPY = 0
+IV_TYPE = 1
+IV_VALUE = 2
+
+LedgerInitValues = {
+    TRANSACTION_ACTION: {
+    # FieldName, True-Copy, TypeOfInitialization, DefaultValue
+        'id': (False, INIT_NULL, None),
+        'timestamp': (False, INIT_TIMESTAMP, None),
+        'account_id': (True, INIT_ACCOUNT, None),
+        'peer_id': (True, INIT_VALUE, 0),
+        'alt_currency_id': (True, INIT_VALUE, None)
+    },
+    TRANSACTION_TRADE: {
+        'id': (False, INIT_NULL, None),
+        'timestamp': (False, INIT_TIMESTAMP, None),
+        'settlement': (True, INIT_VALUE, 0),
+        'corp_action_id': (False, INIT_VALUE, 0),
+        'number': (False, INIT_VALUE, ''),
+        'account_id': (True, INIT_ACCOUNT, None),
+        'asset_id': (True, INIT_VALUE, 0),
+        'qty': (True, INIT_VALUE, 0),
+        'price': (True, INIT_VALUE, 0),
+        'coupon': (True, INIT_VALUE, 0),
+        'fee': (True, INIT_VALUE, 0)
+    },
+    TRANSACTION_DIVIDEND: {
+        'id': (False, INIT_NULL, None),
+        'timestamp': (False, INIT_TIMESTAMP, None),
+        'number': (False, INIT_VALUE, ''),
+        'account_id': (True, INIT_ACCOUNT, None),
+        'asset_id': (True, INIT_VALUE, 0),
+        'sum': (True, INIT_VALUE, 0),
+        'sum_tax': (True, INIT_VALUE, 0),
+        'note': (True, INIT_VALUE, None),
+        'note_tax': (True, INIT_VALUE, None)
+    },
+    TRANSACTION_TRANSFER: {
+        'id': (False, INIT_NULL, None),
+        'from_id': (False, INIT_NULL, None),
+        'from_timestamp': (False, INIT_TIMESTAMP, None),
+        'from_acc_id': (True, INIT_ACCOUNT, None),
+        'to_id': (False, INIT_NULL, None),
+        'to_timestamp': (False, INIT_TIMESTAMP, None),
+        'to_acc_id': (True, INIT_ACCOUNT, None),
+        'fee_id': (False, INIT_NULL, None),
+        'fee_timestamp': (True, INIT_VALUE, 0),
+        'fee_acc_id': (True, INIT_VALUE, 0),
+        'from_amount': (True, INIT_VALUE, 0),
+        'to_amount': (True, INIT_VALUE, 0),
+        'fee_amount': (True, INIT_VALUE, 0),
+        'note': (True, INIT_VALUE, '')
+    }
+}
+
 
 class LedgerOperationsView(QObject):
     activateOperationView = Signal(int)
@@ -16,6 +76,7 @@ class LedgerOperationsView(QObject):
     OP_MAPPER_TABLE = 2
     OP_CHILD_VIEW = 3
     OP_CHILD_TABLE = 4
+    OP_INIT = 5
     
     def __init__(self, operations_table_view):
         super().__init__()
@@ -82,7 +143,7 @@ class LedgerOperationsView(QObject):
         mapper.submit()
         mapper.model().setFilter(f"{self.operations[operation_type][self.OP_MAPPER_TABLE]}.id = 0")
         new_record = mapper.model().record()
-        new_record = self.prepareNewOperation(operation_type, new_record)
+        new_record = self.prepareNewOperation(operation_type, new_record, copy_mode=False)
         assert mapper.model().insertRows(0, 1)
         mapper.model().setRecord(0, new_record)
         mapper.toLast()
@@ -113,7 +174,7 @@ class LedgerOperationsView(QObject):
         old_id = mapper.model().record(row).value(mapper.model().fieldIndex("id"))
         mapper.submit()
         new_record = mapper.model().record(row)
-        new_record = self.prepareNewOperation(operation_type, new_record)
+        new_record = self.prepareNewOperation(operation_type, new_record, copy_mode=True)
         mapper.model().setFilter(f"{self.operations[operation_type][self.OP_MAPPER_TABLE]}.id = 0")
         assert mapper.model().insertRows(0, 1)
         mapper.model().setRecord(0, new_record)
@@ -204,18 +265,19 @@ class LedgerOperationsView(QObject):
         if view:
             view.model().setFilter(f"{self.operations[operation_type][self.OP_CHILD_TABLE]}.pid = 0")
             
-    def prepareNewOperation(self, operation_type, new_operation_record):
-        new_operation_record.setNull("id")
-        if operation_type == TRANSACTION_ACTION or operation_type == TRANSACTION_TRADE or operation_type == TRANSACTION_DIVIDEND:
-            new_operation_record.setValue("timestamp", QDateTime.currentSecsSinceEpoch())
-            if self.p_account_id != 0:
-                new_operation_record.setValue("account_id", self.p_account_id)
-        if operation_type == TRANSACTION_TRANSFER:
-            new_operation_record.setValue("from_timestamp", QDateTime.currentSecsSinceEpoch())
-            if self.p_account_id != 0:
-                new_operation_record.setValue("from_acc_id", self.p_account_id)
-            new_operation_record.setValue("to_timestamp", QDateTime.currentSecsSinceEpoch())
-            new_operation_record.setValue("fee_timestamp", 0)
+    def prepareNewOperation(self, operation_type, new_operation_record, copy_mode=False):
+        init_values = self.operations[operation_type][self.OP_INIT]
+        for field in init_values:
+            if copy_mode and init_values[field][IV_COPY]:
+                continue
+            if init_values[field][IV_TYPE] == INIT_NULL:
+                new_operation_record.setNull(field)
+            if init_values[field][IV_TYPE] == INIT_TIMESTAMP:
+                new_operation_record.setValue(field, QDateTime.currentSecsSinceEpoch())
+            if  init_values[field][IV_TYPE] == INIT_ACCOUNT:
+                new_operation_record.setValue(field, self.p_account_id)
+            if init_values[field][IV_TYPE] == INIT_VALUE:
+                new_operation_record.setValue(field, init_values[field][IV_VALUE])
         return new_operation_record
 
     @Slot()
