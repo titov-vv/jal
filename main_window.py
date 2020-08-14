@@ -3,13 +3,14 @@ import os
 from functools import partial
 
 from PySide2 import QtCore, QtWidgets
-from PySide2.QtCore import Slot
+from PySide2.QtCore import Qt, Slot
 from PySide2.QtGui import QDoubleValidator
-from PySide2.QtWidgets import QMainWindow, QFileDialog, QHeaderView, QMenu, QMessageBox, QLabel
+from PySide2.QtWidgets import QMainWindow, QFileDialog, QMenu, QMessageBox, QLabel
 
-from CustomUI.helpers import VLine, ManipulateDate
 from UI.ui_main_window import Ui_LedgerMainWindow
-from view_delegate import *
+from CustomUI.helpers import VLine, ManipulateDate
+from CustomUI.table_view_config import TableViewConfig
+from constants import *
 from DB.bulk_db import MakeBackup, RestoreBackup
 from DB.helpers import init_and_check_db, get_base_currency
 from downloader import QuoteDownloader
@@ -18,17 +19,6 @@ from operations import LedgerOperationsView, LedgerInitValues
 from reports import Reports
 from statements import StatementLoader
 from taxes import TaxesRus
-from CustomUI.table_view_config import TableViewConfig
-
-
-# -----------------------------------------------------------------------------------------------------------------------
-view_ranges = {
-    0: ManipulateDate.startOfPreviousWeek,
-    1: ManipulateDate.startOfPreviousMonth,
-    2: ManipulateDate.startOfPreviousQuarter,
-    3: ManipulateDate.startOfPreviousYear,
-    4: lambda: 0
-}
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -70,20 +60,23 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.ui_config.configure_all()
         self.operation_details = {
-            TRANSACTION_ACTION: ('Transaction', self.ui_config.mappers[self.ui_config.ACTIONS], 'actions', self.ActionDetailsTableView, 'action_details', LedgerInitValues[TRANSACTION_ACTION]),
-            TRANSACTION_TRADE: ('Trade', self.ui_config.mappers[self.ui_config.TRADES], 'trades', None, None, LedgerInitValues[TRANSACTION_TRADE]),
-            TRANSACTION_DIVIDEND: ('Dividend', self.ui_config.mappers[self.ui_config.DIVIDENDS], 'dividends', None, None, LedgerInitValues[TRANSACTION_DIVIDEND]),
-            TRANSACTION_TRANSFER: ('Transfer', self.ui_config.mappers[self.ui_config.TRANSFERS], 'transfers_combined', None, None, LedgerInitValues[TRANSACTION_TRANSFER])
+            TRANSACTION_ACTION: (
+                'Income / Spending', self.ui_config.mappers[self.ui_config.ACTIONS], 'actions',
+                self.ActionDetailsTableView, 'action_details', LedgerInitValues[TRANSACTION_ACTION]),
+            TRANSACTION_TRADE: (
+                'Trade', self.ui_config.mappers[self.ui_config.TRADES], 'trades', None, None,
+                LedgerInitValues[TRANSACTION_TRADE]),
+            TRANSACTION_DIVIDEND: (
+                'Dividend', self.ui_config.mappers[self.ui_config.DIVIDENDS], 'dividends', None, None,
+                LedgerInitValues[TRANSACTION_DIVIDEND]),
+            TRANSACTION_TRANSFER: (
+                'Transfer', self.ui_config.mappers[self.ui_config.TRANSFERS], 'transfers_combined', None, None,
+                LedgerInitValues[TRANSACTION_TRANSFER])
         }
         self.operations.setOperationsDetails(self.operation_details)
         self.operations.activateOperationView.connect(self.ShowOperationTab)
         self.operations.stateIsCommitted.connect(self.showCommitted)
         self.operations.stateIsModified.connect(self.showModified)
-
-        self.ActionsDataMapper = self.ui_config.mappers[self.ui_config.ACTIONS]
-        self.TradesDataMapper = self.ui_config.mappers[self.ui_config.TRADES]
-        self.DividendsDataMapper = self.ui_config.mappers[self.ui_config.DIVIDENDS]
-        self.TransfersDataMapper = self.ui_config.mappers[self.ui_config.TRANSFERS]
 
         # Setup balance table
         self.balance_currency = get_base_currency(self.db)
@@ -98,19 +91,17 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.HoldingsDate.setDateTime(QtCore.QDateTime.currentDateTime())
         self.HoldingsCurrencyCombo.init_db(self.db)   # and this will trigger onHoldingsDateChange -> view updated
 
+        # Create menu for different operations
         self.ChooseAccountBtn.init_db(self.db)
         self.NewOperationMenu = QMenu()
-        self.NewOperationMenu.addAction('Income / Spending', partial(self.operations.addNewOperation, TRANSACTION_ACTION))
-        self.NewOperationMenu.addAction('Transfer', partial(self.operations.addNewOperation, TRANSACTION_TRANSFER))
-        self.NewOperationMenu.addAction('Buy / Sell', partial(self.operations.addNewOperation, TRANSACTION_TRADE))
-        self.NewOperationMenu.addAction('Dividend', partial(self.operations.addNewOperation, TRANSACTION_DIVIDEND))
+        for operation in self.operation_details:
+            self.NewOperationMenu.addAction(self.operation_details[operation][LedgerOperationsView.OP_NAME],
+                                            partial(self.operations.addNewOperation, operation))
         self.NewOperationBtn.setMenu(self.NewOperationMenu)
-        # next line forces usage of sizeHint() from delegate
-        self.OperationsTableView.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
         self.ActionDetailsTableView.horizontalHeader().moveSection(self.ActionDetailsTableView.model().fieldIndex("note"),
                                                                    self.ActionDetailsTableView.model().fieldIndex("name"))
-        self.OperationsTableView.selectRow(0)
+        self.OperationsTableView.selectRow(0)  # TODO find a way to select last row from self.operations
         self.OnOperationsRangeChange(0)
 
     @Slot()
@@ -119,6 +110,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         logging.raiseExceptions = False         # Silencing logging module exceptions
         self.db.close()                         # Closing database file
 
+    # TODO Check for optimization of db location and backup/restore functions
     def Backup(self):
         backup_directory = QFileDialog.getExistingDirectory(self, "Select directory to save backup")
         if backup_directory:
@@ -170,6 +162,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             self.balance_active_only = 0
         self.UpdateBalances()
 
+    # TODO Move UpdateBalances() and UpdateHoldings into ledger class
     def UpdateBalances(self):
         self.ledger.BuildBalancesTable(self.balance_date, self.balance_currency, self.balance_active_only)
         self.BalancesTableView.model().select()
@@ -193,6 +186,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def OnOperationsRangeChange(self, range_index):
+        view_ranges = {
+            0: ManipulateDate.startOfPreviousWeek,
+            1: ManipulateDate.startOfPreviousMonth,
+            2: ManipulateDate.startOfPreviousQuarter,
+            3: ManipulateDate.startOfPreviousYear,
+            4: lambda: 0
+        }
         self.operations.setOperationsRange(view_ranges[range_index]())
 
     @Slot()

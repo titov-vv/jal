@@ -2,7 +2,7 @@ import logging
 
 from constants import *
 from PySide2.QtCore import Qt, QObject, Signal, Slot, QDateTime
-from PySide2.QtWidgets import QMessageBox, QMenu, QAction
+from PySide2.QtWidgets import QMessageBox, QMenu, QAction, QHeaderView
 from PySide2.QtSql import QSqlQuery
 
 INIT_NULL = 0
@@ -91,6 +91,7 @@ class LedgerOperationsView(QObject):
 
         self.table_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.table_view.customContextMenuRequested.connect(self.onOperationContextMenu)
+        self.table_view.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)  # forces usage of sizeHint() from delegate
 
     def setOperationsDetails(self, operations_details):
         self.operations = operations_details
