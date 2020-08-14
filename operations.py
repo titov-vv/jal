@@ -1,6 +1,7 @@
 import logging
 
 from constants import *
+from CustomUI.helpers import ManipulateDate
 from PySide2.QtCore import Qt, QObject, Signal, Slot, QDateTime
 from PySide2.QtWidgets import QMessageBox, QMenu, QAction
 from PySide2.QtSql import QSqlQuery
@@ -91,6 +92,14 @@ class LedgerOperationsView(QObject):
 
         self.table_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.table_view.customContextMenuRequested.connect(self.onOperationContextMenu)
+
+        self.view_ranges = {
+            0: ManipulateDate.startOfPreviousWeek,
+            1: ManipulateDate.startOfPreviousMonth,
+            2: ManipulateDate.startOfPreviousQuarter,
+            3: ManipulateDate.startOfPreviousYear,
+            4: lambda: 0
+        }
 
     def setOperationsDetails(self, operations_details):
         self.operations = operations_details
