@@ -21,6 +21,7 @@ from taxes import TaxesRus
 from CustomUI.table_view_config import TableViewConfig
 
 
+# -----------------------------------------------------------------------------------------------------------------------
 view_ranges = {
     0: ManipulateDate.startOfPreviousWeek,
     1: ManipulateDate.startOfPreviousMonth,
@@ -112,6 +113,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.selectRow(0)
         self.OnOperationsRangeChange(0)
 
+    @Slot()
     def closeEvent(self, event):
         self.logger.removeHandler(self.Logs)    # Removing handler (but it doesn't prevent exception at exit)
         logging.raiseExceptions = False         # Silencing logging module exceptions
@@ -172,7 +174,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ledger.BuildBalancesTable(self.balance_date, self.balance_currency, self.balance_active_only)
         self.BalancesTableView.model().select()
 
-    @Slot()
     def UpdateHoldings(self):
         self.ledger.BuildHoldingsTable(self.holdings_date, self.holdings_currency)
         holidings_model = self.HoldingsTableView.model()
@@ -186,26 +187,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def OnAccountChange(self):
         self.operations.setAccountId(self.ChooseAccountBtn.account_id)
 
+    @Slot()
     def OnSearchTextChange(self):
         self.operations.setSearchText(self.SearchString.text())
 
     @Slot()
     def OnOperationsRangeChange(self, range_index):
         self.operations.setOperationsRange(view_ranges[range_index]())
-
-    @Slot()
-    def AddDetail(self):
-        new_record = self.ActionDetailsTableView.model().record()
-        self.ActionDetailsTableView.model().insertRecord(-1, new_record)
-
-    @Slot()
-    def RemoveDetail(self):
-        idx = self.ActionDetailsTableView.selectionModel().selection().indexes()
-        selected_row = idx[0].row()
-        self.ActionDetailsTableView.model().removeRow(selected_row)
-        self.ActionDetailsTableView.setRowHidden(selected_row, True)
-        self.SaveOperationBtn.setEnabled(True)
-        self.RevertOperationBtn.setEnabled(True)
 
     @Slot()
     def onQuotesDownloadCompletion(self):

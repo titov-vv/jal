@@ -194,6 +194,21 @@ class LedgerOperationsView(QObject):
                 new_record.setNull("pid")
                 assert child_view.model().insertRows(0, 1)
                 child_view.model().setRecord(0, new_record)
+
+    @Slot()
+    def addOperationChild(self, operation_type):
+        child_view = self.operations[operation_type][self.OP_CHILD_VIEW]
+        new_record = child_view.model().record()
+        child_view.model().insertRecord(-1, new_record)
+
+    @Slot()
+    def deleteOperationChild(self, operation_type):
+        child_view = self.operations[operation_type][self.OP_CHILD_VIEW]
+        idx = child_view.selectionModel().selection().indexes()
+        selected_row = idx[0].row()
+        child_view.model().removeRow(selected_row)
+        child_view.setRowHidden(selected_row, True)
+        self.stateIsModified.emit()
         
     def checkForUncommittedChanges(self):
         if self.modified_operation_type:
