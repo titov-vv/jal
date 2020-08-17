@@ -44,10 +44,10 @@ class Ledger:
         self.balances_view = None
         self.holdings_view = None
         self.balance_active_only = 1
-        self.balance_currency = get_base_currency(self.db)
+        self.balance_currency = None
         self.balance_date = QDateTime.currentSecsSinceEpoch()
         self.holdings_date = QDateTime.currentSecsSinceEpoch()
-        self.holdings_currency = self.balance_currency
+        self.holdings_currency = None
 
     def setViews(self, balances, holdings):
         self.balances_view = balances
@@ -90,10 +90,10 @@ class Ledger:
 
     def UpdateHoldings(self):
         self.BuildHoldingsTable()
-        holidings_model = self.holdings_view.model()
-        holidings_model.select()
-        for row in range(holidings_model.rowCount()):
-            if holidings_model.data(holidings_model.index(row, 1)):
+        holdings_model = self.holdings_view.model()
+        holdings_model.select()
+        for row in range(holdings_model.rowCount()):
+            if holdings_model.data(holdings_model.index(row, 1)):
                 self.holdings_view.setSpan(row, 3, 1, 3)
         self.holdings_view.show()
 
