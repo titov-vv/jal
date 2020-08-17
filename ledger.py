@@ -5,7 +5,7 @@ from constants import Setup, BookAccount, TransactionType, TransferSubtype, Pred
 from PySide2.QtCore import Qt, QDate, QDateTime
 from PySide2.QtWidgets import QDialog, QMessageBox
 from PySide2.QtSql import QSqlQuery
-from DB.helpers import get_base_currency
+from DB.helpers import get_base_currency, executeSQL
 from UI.ui_rebuild_window import Ui_ReBuildDialog
 
 
@@ -99,8 +99,7 @@ class Ledger:
 
     # Returns timestamp of last operations that were calculated into ledger
     def getCurrentFrontier(self):
-        query = QSqlQuery(self.db)
-        assert query.exec_("SELECT ledger_frontier FROM frontier")
+        query = executeSQL(self.db, "SELECT ledger_frontier FROM frontier")
         query.next()
         current_frontier = query.value(0)
         if current_frontier == '':
@@ -109,16 +108,11 @@ class Ledger:
 
     def appendTransaction(self, timestamp, seq_id, book, asset_id, account_id, amount, value=None, peer_id=None,
                           category_id=None, tag_id=None):
-        query = QSqlQuery(self.db)
-        query.prepare("SELECT sid, sum_amount, sum_value FROM ledger_sums "
-                      "WHERE book_account = :book AND asset_id = :asset_id "
-                      "AND account_id = :account_id AND sid <= :seq_id "
-                      "ORDER BY sid DESC LIMIT 1")
-        query.bindValue(":book", book)
-        query.bindValue(":asset_id", asset_id)
-        query.bindValue(":account_id", account_id)
-        query.bindValue(":seq_id", seq_id)
-        assert query.exec_()
+        query = executeSQL(self.db, "SELECT sid, sum_amount, sum_value FROM ledger_sums "
+                                    "WHERE book_account = :book AND asset_id = :asset_id "
+                                    "AND account_id = :account_id AND sid <= :seq_id "
+                                    "ORDER BY sid DESC LIMIT 1",
+                           [(":book", book), (":asset_id", asset_id), (":account_id", account_id), (":seq_id", seq_id)])
         if query.next():
             old_sid = query.value(0)
             old_amount = query.value(1)
@@ -177,18 +171,17 @@ class Ledger:
 
     # TODO check that condition <= is really correct for timestamp in this function
     def getAmount(self, timestamp, book, account_id, asset_id=None):
-        query = QSqlQuery(self.db)
         if asset_id is None:
-            query.prepare("SELECT sum_amount FROM ledger_sums WHERE book_account = :book AND account_id = :account_id "
-                          "AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1")
+            query = executeSQL(self.db,
+                               "SELECT sum_amount FROM ledger_sums WHERE book_account = :book AND "
+                               "account_id = :account_id AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1",
+                               [(":book", book), (":account_id", account_id), (":timestamp", timestamp)])
         else:
-            query.prepare("SELECT sum_amount FROM ledger_sums WHERE book_account = :book AND account_id = :account_id "
-                          "AND asset_id = :asset_id AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1")
-            query.bindValue(":asset_id", asset_id)
-        query.bindValue(":timestamp", timestamp)
-        query.bindValue(":book", book)
-        query.bindValue(":account_id", account_id)
-        assert query.exec_()
+            query = executeSQL(self.db, "SELECT sum_amount FROM ledger_sums WHERE book_account = :book "
+                                        "AND account_id = :account_id AND asset_id = :asset_id "
+                                        "AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1",
+                               [(":book", book), (":account_id", account_id),
+                                (":asset_id", asset_id), (":timestamp", timestamp)])
         if query.next():
             return float(query.value(0))
         else:
@@ -215,15 +208,12 @@ class Ledger:
         return debit
 
     def processActionDetails(self, seq_id, op_id):
-        query = QSqlQuery(self.db)
-        query.prepare(
-            "SELECT a.timestamp, a.account_id, a.peer_id, c.currency_id, d.sum as amount, d.category_id, d.tag_id "
-            "FROM actions as a "
-            "LEFT JOIN action_details AS d ON a.id=d.pid "
-            "LEFT JOIN accounts AS c ON a.account_id = c.id "
-            "WHERE pid = :pid")
-        query.bindValue(":pid", op_id)
-        assert query.exec_()
+        query = executeSQL(self.db, "SELECT a.timestamp, a.account_id, a.peer_id, c.currency_id, "
+                                    "d.sum as amount, d.category_id, d.tag_id "
+                                    "FROM actions as a "
+                                    "LEFT JOIN action_details AS d ON a.id=d.pid "
+                                    "LEFT JOIN accounts AS c ON a.account_id = c.id "
+                                    "WHERE pid = :pid", [(":pid", op_id)])
         while query.next():
             amount = query.value(4)
             if amount < 0:
@@ -234,16 +224,13 @@ class Ledger:
                                        query.value(1), -amount, None, query.value(2), query.value(5), query.value(6))
 
     def processAction(self, seq_id, op_id):
-        query = QSqlQuery(self.db)
-        query.prepare("SELECT a.timestamp, a.account_id, c.currency_id, sum(d.sum) "
-                      "FROM actions AS a "
-                      "LEFT JOIN action_details AS d ON a.id = d.pid "
-                      "LEFT JOIN accounts AS c ON a.account_id = c.id "
-                      "WHERE a.id = :id "
-                      "GROUP BY a.timestamp, a.account_id, c.currency_id "
-                      "ORDER BY a.timestamp, d.sum desc")
-        query.bindValue(":id", op_id)
-        assert query.exec_()
+        query = executeSQL(self.db, "SELECT a.timestamp, a.account_id, c.currency_id, sum(d.sum) "
+                                    "FROM actions AS a "
+                                    "LEFT JOIN action_details AS d ON a.id = d.pid "
+                                    "LEFT JOIN accounts AS c ON a.account_id = c.id "
+                                    "WHERE a.id = :id "
+                                    "GROUP BY a.timestamp, a.account_id, c.currency_id "
+                                    "ORDER BY a.timestamp, d.sum desc", [(":id", op_id)])
         query.next()
         timestamp = query.value(0)
         account_id = query.value(1)
@@ -261,13 +248,10 @@ class Ledger:
         self.processActionDetails(seq_id, op_id)
 
     def processDividend(self, seq_id, op_id):
-        query = QSqlQuery(self.db)
-        query.prepare("SELECT d.timestamp, d.account_id, c.currency_id, c.organization_id, d.sum, d.sum_tax "
-                      "FROM dividends AS d "
-                      "LEFT JOIN accounts AS c ON d.account_id = c.id "
-                      "WHERE d.id = :id")
-        query.bindValue(":id", op_id)
-        assert query.exec_()
+        query = executeSQL(self.db, "SELECT d.timestamp, d.account_id, c.currency_id, "
+                                    "c.organization_id, d.sum, d.sum_tax FROM dividends AS d "
+                                    "LEFT JOIN accounts AS c ON d.account_id = c.id "
+                                    "WHERE d.id = :id", [(":id", op_id)])
         query.next()
         timestamp = query.value(0)
         account_id = query.value(1)
@@ -447,15 +431,11 @@ class Ledger:
         pass
 
     def processTrade(self, seq_id, trade_id):
-        query = QSqlQuery(self.db)
-        query.prepare(
-            "SELECT a.type, t.timestamp, t.account_id, c.currency_id, t.asset_id, t.qty, t.price, t.coupon, t.fee "
-            "FROM trades AS t "
-            "LEFT JOIN accounts AS c ON t.account_id = c.id "
-            "LEFT JOIN corp_actions AS a ON t.corp_action_id = a.id "
-            "WHERE t.id = :id")
-        query.bindValue(":id", trade_id)
-        assert query.exec_()
+        query = executeSQL(self.db, "SELECT a.type, t.timestamp, t.account_id, c.currency_id, t.asset_id, "
+                                    "t.qty, t.price, t.coupon, t.fee FROM trades AS t "
+                                    "LEFT JOIN accounts AS c ON t.account_id = c.id "
+                                    "LEFT JOIN corp_actions AS a ON t.corp_action_id = a.id "
+                                    "WHERE t.id = :id", [(":id", trade_id)])
         query.next()
         if query.value(0):  # if we have a corp.action instead of normal trade
             # TODO change processing of Corp.action transactions to keep money flow
@@ -496,13 +476,10 @@ class Ledger:
                                PredefinedPeer.Financial, PredefinedCategory.Fees, None)
 
     def processTransfer(self, seq_id, transfer_id):
-        query = QSqlQuery(self.db)
-        query.prepare("SELECT t.type, t.timestamp, t.account_id, a.currency_id, t.amount "
-                      "FROM transfers AS t "
-                      "LEFT JOIN accounts AS a ON t.account_id = a.id "
-                      "WHERE t.id = :id")
-        query.bindValue(":id", transfer_id)
-        assert query.exec_()
+        query = executeSQL(self.db, "SELECT t.type, t.timestamp, t.account_id, a.currency_id, t.amount "
+                                    "FROM transfers AS t "
+                                    "LEFT JOIN accounts AS a ON t.account_id = a.id "
+                                    "WHERE t.id = :id", [(":id", transfer_id)])
         query.next()
         transfer_type = query.value(0)
         if transfer_type == TransferSubtype.Outgoing:
@@ -524,55 +501,41 @@ class Ledger:
                                      QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
                 return
 
-        query = QSqlQuery(self.db)
-        query.prepare("DELETE FROM deals WHERE close_sid > "
-                      "(SELECT coalesce(MIN(id), 0) FROM sequence WHERE timestamp >= :frontier)")
-        query.bindValue(":frontier", frontier)
-        assert query.exec_()
-        query.prepare("DELETE FROM ledger WHERE timestamp >= :frontier")
-        query.bindValue(":frontier", frontier)
-        assert query.exec_()
-        query.prepare("DELETE FROM sequence WHERE timestamp >= :frontier")
-        query.bindValue(":frontier", frontier)
-        assert query.exec_()
-        query.prepare("DELETE FROM ledger_sums WHERE timestamp >= :frontier")
-        query.bindValue(":frontier", frontier)
-        assert query.exec_()
+        _ = executeSQL(self.db, "DELETE FROM deals WHERE close_sid > "
+                                "(SELECT coalesce(MIN(id), 0) FROM sequence WHERE timestamp >= :frontier)",
+                       [(":frontier", frontier)])
+        _ = executeSQL(self.db, "DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
+        _ = executeSQL(self.db, "DELETE FROM sequence WHERE timestamp >= :frontier", [(":frontier", frontier)])
+        _ = executeSQL(self.db, "DELETE FROM ledger_sums WHERE timestamp >= :frontier", [(":frontier", frontier)])
         self.db.commit()
 
-        query.prepare("SELECT 1 AS type, a.id, a.timestamp, "
-                      "CASE WHEN SUM(d.sum)<0 THEN 5 ELSE 1 END AS seq FROM actions AS a "
-                      "LEFT JOIN action_details AS d ON a.id=d.pid WHERE timestamp >= :frontier GROUP BY a.id "
-                      "UNION ALL "
-                      "SELECT 2 AS type, id, timestamp, 2 AS seq FROM dividends WHERE timestamp >= :frontier "
-                      "UNION ALL "
-                      "SELECT 4 AS type, id, timestamp, 3 AS seq FROM transfers WHERE timestamp >= :frontier "
-                      "UNION ALL "
-                      "SELECT 3 AS type, id, timestamp, 4 AS seq FROM trades WHERE timestamp >= :frontier "
-                      "ORDER BY timestamp, seq")
-        query.bindValue(":frontier", frontier)
-        query.setForwardOnly(True)
-        assert query.exec_()
-        seq_query = QSqlQuery(self.db)
-        seq_query.prepare(
-            "INSERT INTO sequence(timestamp, type, operation_id) VALUES(:timestamp, :type, :operation_id)")
+        query = executeSQL(self.db,
+                           "SELECT 1 AS type, a.id, a.timestamp, "
+                           "CASE WHEN SUM(d.sum)<0 THEN 5 ELSE 1 END AS seq FROM actions AS a "
+                           "LEFT JOIN action_details AS d ON a.id=d.pid WHERE timestamp >= :frontier GROUP BY a.id "
+                           "UNION ALL "
+                           "SELECT 2 AS type, id, timestamp, 2 AS seq FROM dividends WHERE timestamp >= :frontier "
+                           "UNION ALL "
+                           "SELECT 4 AS type, id, timestamp, 3 AS seq FROM transfers WHERE timestamp >= :frontier "
+                           "UNION ALL "
+                           "SELECT 3 AS type, id, timestamp, 4 AS seq FROM trades WHERE timestamp >= :frontier "
+                           "ORDER BY timestamp, seq", [(":frontier", frontier)])
         while query.next():
-            transaction_type = query.value(0)
-            transaction_id = query.value(1)
+            type = query.value(0)
+            operation_id = query.value(1)
             new_frontier = query.value(2)
-            seq_query.bindValue(":timestamp", new_frontier)
-            seq_query.bindValue(":type", transaction_type)
-            seq_query.bindValue(":operation_id", transaction_id)
-            assert seq_query.exec_()
+            seq_query = executeSQL(self.db, "INSERT INTO sequence(timestamp, type, operation_id) "
+                                            "VALUES(:timestamp, :type, :operation_id)",
+                                   [(":timestamp", new_frontier), (":type", type), (":operation_id", operation_id)])
             seq_id = seq_query.lastInsertId()
-            if transaction_type == TransactionType.Action:
-                self.processAction(seq_id, transaction_id)
-            if transaction_type == TransactionType.Dividend:
-                self.processDividend(seq_id, transaction_id)
-            if transaction_type == TransactionType.Trade:
-                self.processTrade(seq_id, transaction_id)
-            if transaction_type == TransactionType.Transfer:
-                self.processTransfer(seq_id, transaction_id)
+            if type == TransactionType.Action:
+                self.processAction(seq_id, operation_id)
+            if type == TransactionType.Dividend:
+                self.processDividend(seq_id, operation_id)
+            if type == TransactionType.Trade:
+                self.processTrade(seq_id, operation_id)
+            if type == TransactionType.Transfer:
+                self.processTransfer(seq_id, operation_id)
 
     # Rebuild transaction sequence and recalculate all amounts
     # timestamp:
@@ -580,68 +543,49 @@ class Ledger:
     # 0 - re-build from scratch
     # any - re-build all operations after given timestamp
     def MakeFromTimestamp(self, timestamp):
-        query = QSqlQuery(self.db)
-        if timestamp < 0:  # get current frontier
-            assert query.exec_("SELECT ledger_frontier FROM frontier")
-            query.next()
-            frontier = query.value(0)
-            if frontier == '':
-                frontier = 0
+        if timestamp < 0:
+            frontier = self.getCurrentFrontier()
         else:
             frontier = timestamp
         new_frontier = frontier  # this variable will be updated later together with ledger updates
         logging.info(f"Re-build ledger from: {datetime.datetime.fromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
         start_time = datetime.datetime.now()
-        query.prepare("DELETE FROM deals WHERE close_sid >= "
-                      "(SELECT coalesce(MIN(id), 0) FROM sequence WHERE timestamp >= :frontier)")
-        query.bindValue(":frontier", frontier)
-        assert query.exec_()
-        query.prepare("DELETE FROM ledger WHERE timestamp >= :frontier")
-        query.bindValue(":frontier", frontier)
-        assert query.exec_()
-        query.prepare("DELETE FROM sequence WHERE timestamp >= :frontier")
-        query.bindValue(":frontier", frontier)
-        assert query.exec_()
-        query.prepare("DELETE FROM ledger_sums WHERE timestamp >= :frontier")
-        query.bindValue(":frontier", frontier)
-        assert query.exec_()
+        _ = executeSQL(self.db, "DELETE FROM deals WHERE close_sid >= "
+                                "(SELECT coalesce(MIN(id), 0) FROM sequence WHERE timestamp >= :frontier)",
+                       [(":frontier", frontier)])
+        _ = executeSQL(self.db, "DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
+        _ = executeSQL(self.db, "DELETE FROM sequence WHERE timestamp >= :frontier", [(":frontier", frontier)])
+        _ = executeSQL(self.db, "DELETE FROM ledger_sums WHERE timestamp >= :frontier", [(":frontier", frontier)])
         self.db.commit()
 
-        assert query.exec_("PRAGMA synchronous = OFF")
-        query.prepare("SELECT 1 AS type, a.id, a.timestamp, "
-                      "CASE WHEN SUM(d.sum)<0 THEN 5 ELSE 1 END AS seq FROM actions AS a "
-                      "LEFT JOIN action_details AS d ON a.id=d.pid WHERE timestamp >= :frontier GROUP BY a.id "
-                      "UNION ALL "
-                      "SELECT 2 AS type, id, timestamp, 2 AS seq FROM dividends WHERE timestamp >= :frontier "
-                      "UNION ALL "
-                      "SELECT 4 AS type, id, timestamp, 3 AS seq FROM transfers WHERE timestamp >= :frontier "
-                      "UNION ALL "
-                      "SELECT 3 AS type, id, timestamp, 4 AS seq FROM trades WHERE timestamp >= :frontier "
-                      "ORDER BY timestamp, seq")
-        query.bindValue(":frontier", frontier)
-        query.setForwardOnly(True)
-        assert query.exec_()
-        seq_query = QSqlQuery(self.db)
-        seq_query.prepare(
-            "INSERT INTO sequence(timestamp, type, operation_id) VALUES(:timestamp, :type, :operation_id)")
+        _ = executeSQL(self.db, "PRAGMA synchronous = OFF")
+        query = executeSQL(self.db, "SELECT 1 AS type, a.id, a.timestamp, "
+                                    "CASE WHEN SUM(d.sum)<0 THEN 5 ELSE 1 END AS seq FROM actions AS a "
+                                    "LEFT JOIN action_details AS d ON a.id=d.pid WHERE timestamp >= :frontier GROUP BY a.id "
+                                    "UNION ALL "
+                                    "SELECT 2 AS type, id, timestamp, 2 AS seq FROM dividends WHERE timestamp >= :frontier "
+                                    "UNION ALL "
+                                    "SELECT 4 AS type, id, timestamp, 3 AS seq FROM transfers WHERE timestamp >= :frontier "
+                                    "UNION ALL "
+                                    "SELECT 3 AS type, id, timestamp, 4 AS seq FROM trades WHERE timestamp >= :frontier "
+                                    "ORDER BY timestamp, seq", [(":frontier", frontier)])
         i = 0
         while query.next():
-            transaction_type = query.value(0)
-            transaction_id = query.value(1)
+            type = query.value(0)
+            operation_id = query.value(1)
             new_frontier = query.value(2)
-            seq_query.bindValue(":timestamp", new_frontier)
-            seq_query.bindValue(":type", transaction_type)
-            seq_query.bindValue(":operation_id", transaction_id)
-            assert seq_query.exec_()
+            seq_query = executeSQL(self.db, "INSERT INTO sequence(timestamp, type, operation_id) "
+                                            "VALUES(:timestamp, :type, :operation_id)",
+                                   [(":timestamp", new_frontier), (":type", type), (":operation_id", operation_id)])
             seq_id = seq_query.lastInsertId()
-            if transaction_type == TransactionType.Action:
-                self.processAction(seq_id, transaction_id)
-            if transaction_type == TransactionType.Dividend:
-                self.processDividend(seq_id, transaction_id)
-            if transaction_type == TransactionType.Trade:
-                self.processTrade(seq_id, transaction_id)
-            if transaction_type == TransactionType.Transfer:
-                self.processTransfer(seq_id, transaction_id)
+            if type == TransactionType.Action:
+                self.processAction(seq_id, operation_id)
+            if type == TransactionType.Dividend:
+                self.processDividend(seq_id, operation_id)
+            if type == TransactionType.Trade:
+                self.processTrade(seq_id, operation_id)
+            if type == TransactionType.Transfer:
+                self.processTransfer(seq_id, operation_id)
             i = i + 1
             if (i % 1000) == 0:
                 logging.info(f"Processed {i} records, current frontier: "
@@ -656,115 +600,92 @@ class Ledger:
     # 'timestamp' moment of time for balance
     # 'base_currency' to use for total values
     def BuildBalancesTable(self):
-        query = QSqlQuery(self.db)
-        assert query.exec_("DELETE FROM t_last_quotes")
-        assert query.exec_("DELETE FROM t_last_dates")
-        assert query.exec_("DELETE FROM balances_aux")
-        assert query.exec_("DELETE FROM balances")
-
-        query.prepare("INSERT INTO t_last_quotes(timestamp, asset_id, quote) "
-                      "SELECT MAX(timestamp) AS timestamp, asset_id, quote "
-                      "FROM quotes "
-                      "WHERE timestamp <= :balances_timestamp "
-                      "GROUP BY asset_id")
-        query.bindValue(":balances_timestamp", self.balance_date)
-        assert query.exec_()
-
-        query.prepare("INSERT INTO t_last_dates(ref_id, timestamp) "
-                      "SELECT account_id AS ref_id, MAX(timestamp) AS timestamp "
-                      "FROM ledger "
-                      "WHERE timestamp <= :balances_timestamp "
-                      "GROUP BY ref_id")
-        query.bindValue(":balances_timestamp", self.balance_date)
-        assert query.exec_()
-
-        query.prepare(
-            "INSERT INTO balances_aux(account_type, account, currency, balance, "
-            "balance_adj, unreconciled_days, active) "
-            "SELECT a.type_id AS account_type, l.account_id AS account, a.currency_id AS currency, "
-            "SUM(CASE WHEN l.book_account = 4 THEN l.amount*act_q.quote ELSE l.amount END) AS balance, "
-            "SUM(CASE WHEN l.book_account = 4 THEN l.amount*act_q.quote*cur_q.quote/cur_adj_q.quote "
-            "ELSE l.amount*cur_q.quote/cur_adj_q.quote END) AS balance_adj, "
-            "(d.timestamp - coalesce(a.reconciled_on, 0))/86400 AS unreconciled_days, "
-            "a.active AS active "
-            "FROM ledger AS l "
-            "LEFT JOIN accounts AS a ON l.account_id = a.id "
-            "LEFT JOIN t_last_quotes AS act_q ON l.asset_id = act_q.asset_id "
-            "LEFT JOIN t_last_quotes AS cur_q ON a.currency_id = cur_q.asset_id "
-            "LEFT JOIN t_last_quotes AS cur_adj_q ON cur_adj_q.asset_id = :base_currency "
-            "LEFT JOIN t_last_dates AS d ON l.account_id = d.ref_id "
-            "WHERE (book_account = :money_book OR book_account = :assets_book OR book_account = :liabilities_book) "
-            "AND l.timestamp <= :balances_timestamp "
-            "GROUP BY l.account_id "
-            "HAVING ABS(balance)>0.0001")
-        query.bindValue(":base_currency", self.balance_currency)
-        query.bindValue(":money_book", BookAccount.Money)
-        query.bindValue(":assets_book", BookAccount.Assets)
-        query.bindValue(":liabilities_book", BookAccount.Liabilities)
-        query.bindValue(":balances_timestamp", self.balance_date)
-        assert query.exec_()
-
-        query.prepare(
-            "INSERT INTO balances(level1, level2, account_name, currency_name, "
-            "balance, balance_adj, days_unreconciled, active) "
-            "SELECT  level1, level2, account, currency, balance, balance_adj, unreconciled_days, active "
-            "FROM ( "
-            "SELECT 0 AS level1, 0 AS level2, account_type, a.name AS account, c.name AS currency, "
-            "balance, balance_adj, unreconciled_days, b.active "
-            "FROM balances_aux AS b LEFT JOIN accounts AS a ON b.account = a.id "
-            "LEFT JOIN assets AS c ON b.currency = c.id "
-            "WHERE b.active >= :active_only "
-            "UNION "
-            "SELECT 0 AS level1, 1 AS level2, account_type, t.name AS account, c.name AS currency, 0 AS balance, "
-            "SUM(balance_adj) AS balance_adj, 0 AS unreconciled_days, 1 AS active "
-            "FROM balances_aux AS b LEFT JOIN account_types AS t ON b.account_type = t.id "
-            "LEFT JOIN assets AS c ON c.id = :base_currency "
-            "WHERE active >= :active_only "
-            "GROUP BY account_type "
-            "UNION "
-            "SELECT 1 AS level1, 0 AS level2, -1 AS account_type, 'Total' AS account, c.name AS currency, "
-            "0 AS balance, SUM(balance_adj) AS balance_adj, 0 AS unreconciled_days, 1 AS active "
-            "FROM balances_aux LEFT JOIN assets AS c ON c.id = :base_currency "
-            "WHERE active >= :active_only "
-            ") ORDER BY level1, account_type, level2"
-        )
-        query.bindValue(":base_currency", self.balance_currency)
-        query.bindValue(":active_only", self.balance_active_only)
-        assert query.exec_()
+        _ = executeSQL(self.db, "DELETE FROM t_last_quotes")
+        _ = executeSQL(self.db, "DELETE FROM t_last_dates")
+        _ = executeSQL(self.db, "DELETE FROM balances_aux")
+        _ = executeSQL(self.db, "DELETE FROM balances")
+        _ = executeSQL(self.db, "INSERT INTO t_last_quotes(timestamp, asset_id, quote) "
+                                "SELECT MAX(timestamp) AS timestamp, asset_id, quote "
+                                "FROM quotes "
+                                "WHERE timestamp <= :balances_timestamp "
+                                "GROUP BY asset_id", [(":balances_timestamp", self.balance_date)])
+        _ = executeSQL(self.db, "INSERT INTO t_last_dates(ref_id, timestamp) "
+                                "SELECT account_id AS ref_id, MAX(timestamp) AS timestamp "
+                                "FROM ledger "
+                                "WHERE timestamp <= :balances_timestamp "
+                                "GROUP BY ref_id", [(":balances_timestamp", self.balance_date)])
+        _ = executeSQL(self.db,
+                       "INSERT INTO balances_aux(account_type, account, currency, balance, "
+                        "balance_adj, unreconciled_days, active) "
+                        "SELECT a.type_id AS account_type, l.account_id AS account, a.currency_id AS currency, "
+                        "SUM(CASE WHEN l.book_account = 4 THEN l.amount*act_q.quote ELSE l.amount END) AS balance, "
+                        "SUM(CASE WHEN l.book_account = 4 THEN l.amount*act_q.quote*cur_q.quote/cur_adj_q.quote "
+                        "ELSE l.amount*cur_q.quote/cur_adj_q.quote END) AS balance_adj, "
+                        "(d.timestamp - coalesce(a.reconciled_on, 0))/86400 AS unreconciled_days, "
+                        "a.active AS active "
+                        "FROM ledger AS l "
+                        "LEFT JOIN accounts AS a ON l.account_id = a.id "
+                        "LEFT JOIN t_last_quotes AS act_q ON l.asset_id = act_q.asset_id "
+                        "LEFT JOIN t_last_quotes AS cur_q ON a.currency_id = cur_q.asset_id "
+                        "LEFT JOIN t_last_quotes AS cur_adj_q ON cur_adj_q.asset_id = :base_currency "
+                        "LEFT JOIN t_last_dates AS d ON l.account_id = d.ref_id "
+                        "WHERE (book_account = :money_book OR book_account = :assets_book OR book_account = :liabilities_book) "
+                        "AND l.timestamp <= :balances_timestamp "
+                        "GROUP BY l.account_id "
+                        "HAVING ABS(balance)>0.0001",
+                       [(":base_currency", self.balance_currency), (":money_book", BookAccount.Money),
+                        (":assets_book", BookAccount.Assets), (":liabilities_book", BookAccount.Liabilities),
+                        (":balances_timestamp", self.balance_date)])
+        _ = executeSQL(self.db,
+                       "INSERT INTO balances(level1, level2, account_name, currency_name, "
+                        "balance, balance_adj, days_unreconciled, active) "
+                        "SELECT  level1, level2, account, currency, balance, balance_adj, unreconciled_days, active "
+                        "FROM ( "
+                        "SELECT 0 AS level1, 0 AS level2, account_type, a.name AS account, c.name AS currency, "
+                        "balance, balance_adj, unreconciled_days, b.active "
+                        "FROM balances_aux AS b LEFT JOIN accounts AS a ON b.account = a.id "
+                        "LEFT JOIN assets AS c ON b.currency = c.id "
+                        "WHERE b.active >= :active_only "
+                        "UNION "
+                        "SELECT 0 AS level1, 1 AS level2, account_type, t.name AS account, c.name AS currency, "
+                        "0 AS balance, SUM(balance_adj) AS balance_adj, 0 AS unreconciled_days, 1 AS active "
+                        "FROM balances_aux AS b LEFT JOIN account_types AS t ON b.account_type = t.id "
+                        "LEFT JOIN assets AS c ON c.id = :base_currency "
+                        "WHERE active >= :active_only "
+                        "GROUP BY account_type "
+                        "UNION "
+                        "SELECT 1 AS level1, 0 AS level2, -1 AS account_type, 'Total' AS account, c.name AS currency, "
+                        "0 AS balance, SUM(balance_adj) AS balance_adj, 0 AS unreconciled_days, 1 AS active "
+                        "FROM balances_aux LEFT JOIN assets AS c ON c.id = :base_currency "
+                        "WHERE active >= :active_only "
+                        ") ORDER BY level1, account_type, level2",
+                       [(":base_currency", self.balance_currency), (":active_only", self.balance_active_only)])
         self.db.commit()
 
     def BuildHoldingsTable(self):
-        query = QSqlQuery(self.db)
-        assert query.exec_("DELETE FROM t_last_quotes")
-        assert query.exec_("DELETE FROM t_last_assets")
-        assert query.exec_("DELETE FROM holdings_aux")
-        assert query.exec_("DELETE FROM holdings")
-
-        assert query.prepare("INSERT INTO t_last_quotes(timestamp, asset_id, quote) "
-                             "SELECT MAX(timestamp) AS timestamp, asset_id, quote "
-                             "FROM quotes "
-                             "WHERE timestamp <= :balances_timestamp "
-                             "GROUP BY asset_id")
-        query.bindValue(":balances_timestamp", self.holdings_date)
-        assert query.exec_()
-
+        _ = executeSQL(self.db, "DELETE FROM t_last_quotes")
+        _ = executeSQL(self.db, "DELETE FROM t_last_assets")
+        _ = executeSQL(self.db, "DELETE FROM holdings_aux")
+        _ = executeSQL(self.db, "DELETE FROM holdings")
+        _ = executeSQL(self.db, "INSERT INTO t_last_quotes(timestamp, asset_id, quote) "
+                                "SELECT MAX(timestamp) AS timestamp, asset_id, quote "
+                                 "FROM quotes "
+                                 "WHERE timestamp <= :balances_timestamp "
+                                 "GROUP BY asset_id", [(":balances_timestamp", self.holdings_date)])
         # TODO Is account name really required in this temporary table?
-        assert query.prepare("INSERT INTO t_last_assets (id, name, total_value) "
-                             "SELECT a.id, a.name, "
-                             "SUM(CASE WHEN a.currency_id = l.asset_id THEN l.amount "
-                             "ELSE (l.amount*q.quote) END) AS total_value "
-                             "FROM ledger AS l "
-                             "LEFT JOIN accounts AS a ON l.account_id = a.id "
-                             "LEFT JOIN t_last_quotes AS q ON l.asset_id = q.asset_id "
-                             "WHERE (l.book_account = 3 OR l.book_account = 4 OR l.book_account = 5) "
-                             "AND a.type_id = 4 AND l.timestamp <= :holdings_timestamp "
-                             "GROUP BY a.id "
-                             "HAVING ABS(total_value) > :tolerance")
-        query.bindValue(":holdings_timestamp", self.holdings_date)
-        query.bindValue(":tolerance", Setup.DISP_TOLERANCE)
-        assert query.exec_()
-
-        assert query.prepare(
+        _ = executeSQL(self.db, "INSERT INTO t_last_assets (id, name, total_value) "
+                                "SELECT a.id, a.name, "
+                                 "SUM(CASE WHEN a.currency_id = l.asset_id THEN l.amount "
+                                 "ELSE (l.amount*q.quote) END) AS total_value "
+                                 "FROM ledger AS l "
+                                 "LEFT JOIN accounts AS a ON l.account_id = a.id "
+                                 "LEFT JOIN t_last_quotes AS q ON l.asset_id = q.asset_id "
+                                 "WHERE (l.book_account = 3 OR l.book_account = 4 OR l.book_account = 5) "
+                                 "AND a.type_id = 4 AND l.timestamp <= :holdings_timestamp "
+                                 "GROUP BY a.id "
+                                 "HAVING ABS(total_value) > :tolerance",
+                       [(":holdings_timestamp", self.holdings_date), (":tolerance", Setup.DISP_TOLERANCE)])
+        _ = executeSQL(self.db,
             "INSERT INTO holdings_aux (currency, account, asset, qty, value, quote, quote_adj, total, total_adj) "
             "SELECT a.currency_id, l.account_id, l.asset_id, sum(l.amount) AS qty, sum(l.value), "
             "q.quote, q.quote*cur_q.quote/cur_adj_q.quote, t.total_value, t.total_value*cur_q.quote/cur_adj_q.quote "
@@ -776,13 +697,10 @@ class Ledger:
             "LEFT JOIN t_last_assets AS t ON l.account_id = t.id "
             "WHERE l.book_account = 4 AND l.timestamp <= :holdings_timestamp "
             "GROUP BY l.account_id, l.asset_id "
-            "HAVING ABS(qty) > :tolerance")
-        query.bindValue(":recalc_currency", self.holdings_currency)
-        query.bindValue(":holdings_timestamp", self.holdings_date)
-        query.bindValue(":tolerance", Setup.DISP_TOLERANCE)
-        assert query.exec_()
-
-        query.prepare(
+            "HAVING ABS(qty) > :tolerance",
+                       [(":recalc_currency", self.holdings_currency), (":holdings_timestamp", self.holdings_date),
+                        (":tolerance", Setup.DISP_TOLERANCE)])
+        _ = executeSQL(self.db,
             "INSERT INTO holdings_aux (currency, account, asset, qty, value, quote, quote_adj, total, total_adj) "
             "SELECT a.currency_id, l.account_id, l.asset_id, sum(l.amount) AS qty, sum(l.value), 1, "
             "cur_q.quote/cur_adj_q.quote, t.total_value, t.total_value*cur_q.quote/cur_adj_q.quote "
@@ -793,46 +711,43 @@ class Ledger:
             "LEFT JOIN t_last_assets AS t ON l.account_id = t.id "
             "WHERE (l.book_account = 3 OR l.book_account = 5) AND a.type_id = 4 AND l.timestamp <= :holdings_timestamp "
             "GROUP BY l.account_id, l.asset_id "
-            "HAVING ABS(qty) > :tolerance")
-        query.bindValue(":recalc_currency", self.holdings_currency)
-        query.bindValue(":holdings_timestamp", self.holdings_date)
-        query.bindValue(":tolerance", Setup.DISP_TOLERANCE)
-        assert query.exec_()
-
-        query.prepare("INSERT INTO holdings (level1, level2, currency, account, asset, asset_name, "
-                      "qty, open, quote, share, profit_rel, profit, value, value_adj) "
-                      "SELECT * FROM ( """
-                      "SELECT 0 AS level1, 0 AS level2, c.name AS currency, a.name AS account, "
-                      "s.name AS asset, s.full_name AS asset_name, "
-                      "h.qty, h.value/h.qty AS open, h.quote, 100*h.quote*h.qty/h.total AS share, "
-                      "100*(h.quote*h.qty/h.value-1) AS profit_rel, h.quote*h.qty-h.value AS profit, "
-                      "h.qty*h.quote AS value, h.qty*h.quote_adj AS value_adj "
-                      "FROM holdings_aux AS h "
-                      "LEFT JOIN assets AS c ON h.currency = c.id "
-                      "LEFT JOIN accounts AS a ON h.account = a.id "
-                      "LEFT JOIN assets AS s ON h.asset = s.id "
-                      "UNION "
-                      "SELECT 0 AS level1, 1 AS level2, c.name AS currency, "
-                      "a.name AS account, '' AS asset, '' AS asset_name, "
-                      "NULL AS qty, NULL AS open, NULL as quote, NULL AS share, "
-                      "100*SUM(h.quote*h.qty-h.value)/(SUM(h.qty*h.quote)-SUM(h.quote*h.qty-h.value)) AS profit_rel, "
-                      "SUM(h.quote*h.qty-h.value) AS profit, SUM(h.qty*h.quote) AS value, "
-                      "SUM(h.qty*h.quote_adj) AS value_adj "
-                      "FROM holdings_aux AS h "
-                      "LEFT JOIN assets AS c ON h.currency = c.id "
-                      "LEFT JOIN accounts AS a ON h.account = a.id "
-                      "GROUP BY currency, account "
-                      "UNION "
-                      "SELECT 1 AS level1, 1 AS level2, c.name AS currency, c.name AS account, '' AS asset, "
-                      "c.full_name AS asset_name, NULL AS qty, NULL AS open, NULL as quote, NULL AS share, "
-                      "100*SUM(h.quote*h.qty-h.value)/(SUM(h.qty*h.quote)-SUM(h.quote*h.qty-h.value)) AS profit_rel, "
-                      "SUM(h.quote*h.qty-h.value) AS profit, SUM(h.qty*h.quote) AS value, "
-                      "SUM(h.qty*h.quote_adj) AS value_adj "
-                      "FROM holdings_aux AS h "
-                      "LEFT JOIN assets AS c ON h.currency = c.id "
-                      "GROUP BY currency "
-                      ") ORDER BY currency, level1 DESC, account, level2 DESC")
-        assert query.exec_()
+            "HAVING ABS(qty) > :tolerance",
+                       [(":recalc_currency", self.holdings_currency), (":holdings_timestamp", self.holdings_date),
+                        (":tolerance", Setup.DISP_TOLERANCE)])
+        _ = executeSQL(self.db,
+                       "INSERT INTO holdings (level1, level2, currency, account, asset, asset_name, "
+                       "qty, open, quote, share, profit_rel, profit, value, value_adj) "
+                       "SELECT * FROM ( """
+                       "SELECT 0 AS level1, 0 AS level2, c.name AS currency, a.name AS account, "
+                       "s.name AS asset, s.full_name AS asset_name, "
+                       "h.qty, h.value/h.qty AS open, h.quote, 100*h.quote*h.qty/h.total AS share, "
+                       "100*(h.quote*h.qty/h.value-1) AS profit_rel, h.quote*h.qty-h.value AS profit, "
+                       "h.qty*h.quote AS value, h.qty*h.quote_adj AS value_adj "
+                       "FROM holdings_aux AS h "
+                       "LEFT JOIN assets AS c ON h.currency = c.id "
+                       "LEFT JOIN accounts AS a ON h.account = a.id "
+                       "LEFT JOIN assets AS s ON h.asset = s.id "
+                       "UNION "
+                       "SELECT 0 AS level1, 1 AS level2, c.name AS currency, "
+                       "a.name AS account, '' AS asset, '' AS asset_name, "
+                       "NULL AS qty, NULL AS open, NULL as quote, NULL AS share, "
+                       "100*SUM(h.quote*h.qty-h.value)/(SUM(h.qty*h.quote)-SUM(h.quote*h.qty-h.value)) AS profit_rel, "
+                       "SUM(h.quote*h.qty-h.value) AS profit, SUM(h.qty*h.quote) AS value, "
+                       "SUM(h.qty*h.quote_adj) AS value_adj "
+                       "FROM holdings_aux AS h "
+                       "LEFT JOIN assets AS c ON h.currency = c.id "
+                       "LEFT JOIN accounts AS a ON h.account = a.id "
+                       "GROUP BY currency, account "
+                       "UNION "
+                       "SELECT 1 AS level1, 1 AS level2, c.name AS currency, c.name AS account, '' AS asset, "
+                       "c.full_name AS asset_name, NULL AS qty, NULL AS open, NULL as quote, NULL AS share, "
+                       "100*SUM(h.quote*h.qty-h.value)/(SUM(h.qty*h.quote)-SUM(h.quote*h.qty-h.value)) AS profit_rel, "
+                       "SUM(h.quote*h.qty-h.value) AS profit, SUM(h.qty*h.quote) AS value, "
+                       "SUM(h.qty*h.quote_adj) AS value_adj "
+                       "FROM holdings_aux AS h "
+                       "LEFT JOIN assets AS c ON h.currency = c.id "
+                       "GROUP BY currency "
+                       ") ORDER BY currency, level1 DESC, account, level2 DESC")
 
     def showRebuildDialog(self, parent):
         rebuild_dialog = RebuildDialog(parent, self.getCurrentFrontier())
