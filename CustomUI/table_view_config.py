@@ -116,17 +116,6 @@ class TableViewConfig:
         TRANSFERS: []
     }
 
-    mapper_delegates = {
-        BALANCES: None,
-        HOLDINGS: None,
-        OPERATIONS: None,
-        ACTIONS: MapperDelegate,
-        ACTION_DETAILS: None,
-        TRADES: MapperDelegate,
-        DIVIDENDS: MapperDelegate,
-        TRANSFERS: MapperDelegate
-    }
-
     def __init__(self, parent):
         self.parent = parent
         self.delegates_storage = []   #  Keep references to all created delegates here
@@ -300,7 +289,7 @@ class TableViewConfig:
             self.delegates_storage.append(delegates)
             self.views[i].show()
         if self.widget_mappers[i]:
-            self.mappers[i] = ConfigureDataMappers(model, self.widget_mappers[i], self.mapper_delegates[i])
+            self.mappers[i] = ConfigureDataMappers(model, self.widget_mappers[i], MapperDelegate)
         else:
             self.mappers[i] = None
         model.select()
