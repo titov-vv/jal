@@ -2,12 +2,13 @@ import logging
 from datetime import datetime
 
 from PySide2.QtCore import Qt, Signal, Property, Slot, QEvent
-from PySide2.QtSql import QSqlQuery, QSqlRelationalDelegate
+from PySide2.QtSql import QSqlRelationalDelegate
 from PySide2.QtWidgets import QDialog
 from PySide2.QtWidgets import QStyledItemDelegate
 
 from UI.ui_reference_data_dlg import Ui_ReferenceDataDialog
 from CustomUI.helpers import UseSqlTable, ConfigureTableView, rel_idx
+from DB.helpers import executeSQL
 
 
 # --------------------------------------------------------------------------------------------------------------
@@ -211,15 +212,13 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     def OnUpClick(self):
         if self.search_text:  # list filtered by search string
             return
-        query = QSqlQuery(self.db)
-        query.prepare(f"SELECT c2.pid FROM {self.table} AS c1 LEFT JOIN {self.table} AS c2 ON c1.pid=c2.id "
-                      f"WHERE c1.id = :current_id")
         current_id = self.DataView.model().record(0).value("id")
         if current_id is None:
             pid = self.last_parent
         else:
-            query.bindValue(":current_id", current_id)
-            query.exec_()
+            query = executeSQL(self.db,
+                               f"SELECT c2.pid FROM {self.table} AS c1 LEFT JOIN {self.table} AS c2 ON c1.pid=c2.id "\
+                               f"WHERE c1.id = :current_id", [(":current_id", current_id)])
             query.next()
             pid = query.value(0)
             if pid == '':

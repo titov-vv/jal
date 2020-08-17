@@ -1,7 +1,7 @@
 import datetime
 
 from PySide2.QtCore import Qt
-from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlQuery
+from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtWidgets import QAbstractItemView, QHeaderView, QDataWidgetMapper, QFrame
 
 class hcol_idx:
