@@ -12,7 +12,7 @@ from CustomUI.helpers import VLine, ManipulateDate
 from CustomUI.table_view_config import TableViewConfig
 from constants import *
 from DB.bulk_db import MakeBackup, RestoreBackup
-from DB.helpers import init_and_check_db, get_base_currency
+from DB.helpers import init_and_check_db, get_base_currency, get_dbfilename
 from downloader import QuoteDownloader
 from ledger import Ledger
 from operations import LedgerOperationsView, LedgerInitValues
@@ -110,21 +110,19 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         logging.raiseExceptions = False         # Silencing logging module exceptions
         self.db.close()                         # Closing database file
 
-    # TODO Check for optimization of db location and backup/restore functions
     def Backup(self):
         backup_directory = QFileDialog.getExistingDirectory(self, "Select directory to save backup")
         if backup_directory:
-            MakeBackup(self.own_path + DB_PATH, backup_directory)
+            MakeBackup(get_dbfilename(self.own_path), backup_directory)
 
     def Restore(self):
         restore_directory = QFileDialog.getExistingDirectory(self, "Select directory to restore from")
         if restore_directory:
             self.db.close()
-            RestoreBackup(self.own_path + DB_PATH, restore_directory)
+            RestoreBackup(get_dbfilename(self.own_path), restore_directory)
             QMessageBox().information(self, self.tr("Data restored"),
                                       self.tr("Database was loaded from the backup.\n"
-                                              "You need to restart the application.\n"
-                                              "Application terminates now."),
+                                              "Application will be restarted now."),
                                       QMessageBox.Ok)
             QtWidgets.QApplication.instance().quit()
 

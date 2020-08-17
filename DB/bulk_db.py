@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from constants import *
+from constants import CALC_TOLERANCE
 import sqlite3
 import pandas as pd
 import math

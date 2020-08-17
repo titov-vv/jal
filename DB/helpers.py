@@ -5,14 +5,17 @@ from PySide2.QtWidgets import QMessageBox
 from DB.bulk_db import loadDbFromSQL
 
 
+def get_dbfilename(app_path):
+    return app_path + DB_PATH
+
 def init_and_check_db(parent, db_path):
     db = QSqlDatabase.addDatabase("QSQLITE")
-    db.setDatabaseName(db_path + DB_PATH)
+    db.setDatabaseName(get_dbfilename(db_path))
     db.open()
     tables = db.tables(QSql.Tables)
     if not tables:
         db.close()
-        loadDbFromSQL(db_path + DB_PATH, db_path + INIT_SCRIPT_PATH)
+        loadDbFromSQL(get_dbfilename(db_path), db_path + INIT_SCRIPT_PATH)
         QMessageBox().information(parent, parent.tr("Database initialized"),
                                   parent.tr("Database have been initialized.\n"
                                           "You need to restart the application.\n"

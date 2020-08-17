@@ -413,7 +413,7 @@ class StatementLoader(QObject):
         query.bindValue(":note", note)
         assert query.exec_()
         self.db.commit()
-        logging.error(f"Fees added: {note}, {amount}")
+        logging.info(f"Fees added: {note}, {amount}")
 
     # noinspection PyMethodMayBeStatic
     def loadIBDepositWithdraw(self, IBcash):
