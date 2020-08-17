@@ -7,11 +7,11 @@ import pandas as pd
 import requests
 from PySide2 import QtCore
 from PySide2.QtCore import QObject, Signal
-from PySide2.QtSql import QSqlQuery
 from PySide2.QtWidgets import QDialog
 
 from UI.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from constants import Setup, MarketDataFeed
+from DB.helpers import executeSQL
 
 
 # ===================================================================================================================
@@ -75,11 +75,10 @@ class QuoteDownloader(QObject):
     def UpdateQuotes(self, start_timestamp, end_timestamp):
         self.PrepareRussianCBReader()
 
-        query = QSqlQuery(self.db)
-        assert query.exec_("DELETE FROM holdings_aux")
+        executeSQL(self.db, "DELETE FROM holdings_aux")
 
-        # Collect list of assets that are held on end date
-        assert query.prepare(
+        # Collect list of assets that are/were held on end date
+        executeSQL(self.db,
             "INSERT INTO holdings_aux(asset) "
             "SELECT l.asset_id AS asset FROM ledger AS l "
             "WHERE l.book_account = 4 AND l.timestamp <= :end_timestamp "
@@ -92,33 +91,25 @@ class QuoteDownloader(QObject):
             "SELECT DISTINCT a.currency_id AS asset FROM ledger AS l "
             "LEFT JOIN accounts AS a ON a.id = l.account_id "
             "WHERE (l.book_account = 3 OR l.book_account = 5) "
-            "AND l.timestamp >= :start_timestamp AND l.timestamp <= :end_timestamp")
-        query.bindValue(":start_timestamp", start_timestamp)
-        query.bindValue(":end_timestamp", end_timestamp)
-        query.bindValue(":tolerance", Setup.CALC_TOLERANCE)
-        assert query.exec_()
+            "AND l.timestamp >= :start_timestamp AND l.timestamp <= :end_timestamp",
+                   [(":start_timestamp", start_timestamp),
+                    (":end_timestamp", end_timestamp),
+                    (":tolerance", Setup.CALC_TOLERANCE)])
 
         # Get a list of symbols ordered by data source ID
-        assert query.prepare("SELECT h.asset, a.name, a.src_id, a.isin, MAX(q.timestamp) AS last_timestamp "
-                             "FROM holdings_aux AS h "
-                             "LEFT JOIN assets AS a ON a.id=h.asset "
-                             "LEFT JOIN quotes AS q ON q.asset_id=h.asset "
-                             "GROUP BY h.asset "
-                             "ORDER BY a.src_id")
-        query.setForwardOnly(True)
-        assert query.exec_()
+        query = executeSQL(self.db, "SELECT h.asset, a.name, a.src_id, a.isin, MAX(q.timestamp) AS last_timestamp "
+                                    "FROM holdings_aux AS h "
+                                    "LEFT JOIN assets AS a ON a.id=h.asset "
+                                    "LEFT JOIN quotes AS q ON q.asset_id=h.asset "
+                                    "GROUP BY h.asset "
+                                    "ORDER BY a.src_id")
         while query.next():
             asset_id = query.value(0)
             asset = query.value(1)
             feed_id = query.value(2)
             isin = query.value(3)
-            last_timestamp = query.value(4)
-            if last_timestamp == '':
-                last_timestamp = 0
-            if last_timestamp > start_timestamp:
-                from_timestamp = last_timestamp
-            else:
-                from_timestamp = start_timestamp
+            last_timestamp = query.value(4) if query.value(4) != '' else 0
+            from_timestamp = last_timestamp if last_timestamp > start_timestamp else start_timestamp
             try:
                 data = self.data_loaders[feed_id](asset, isin, from_timestamp, end_timestamp)
             except (xml_tree.ParseError, pd.errors.EmptyDataError):
@@ -147,8 +138,7 @@ class QuoteDownloader(QObject):
 
     def CBR_DataReader(self, currency_code, _isin, start_timestamp, end_timestamp):
         date1 = datetime.fromtimestamp(start_timestamp).strftime('%d/%m/%Y')
-        date2 = datetime.fromtimestamp(end_timestamp + 86400).strftime(
-            '%d/%m/%Y')  # Add 1 day as CBR sets rate a day ahead
+        date2 = datetime.fromtimestamp(end_timestamp + 86400).strftime('%d/%m/%Y')  # add 1 as CBR sets rate a day ahead
         code = str(self.CBR_codes.loc[self.CBR_codes["ISO_name"] == currency_code, "CBR_code"].values[0]).strip()
         url = f"http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1={date1}&date_req2={date2}&VAL_NM_RQ={code}"
         xml_root = xml_tree.fromstring(get_web_data(url))
@@ -184,7 +174,7 @@ class QuoteDownloader(QObject):
                                 market = board.attrib['market']
                                 board_id = board.attrib['boardid']
         if (engine is None) or (market is None) or (board_id is None):
-            logging.error(f"Failed to find {asset_code} at {url}")
+            logging.warning(f"Failed to find {asset_code} at {url}")
             return None
 
         date1 = datetime.fromtimestamp(start_timestamp).strftime('%Y-%m-%d')
@@ -241,23 +231,17 @@ class QuoteDownloader(QObject):
 
     def SubmitQuote(self, asset_id, asset_name, timestamp, quote):
         old_id = 0
-        query = QSqlQuery(self.db)
-        assert query.prepare("SELECT id FROM quotes WHERE asset_id = :asset_id AND timestamp = :timestamp")
-        query.bindValue(":asset_id", asset_id)
-        query.bindValue(":timestamp", timestamp)
-        assert query.exec_()
-        while query.next():
+        query = executeSQL(self.db,
+                           "SELECT id FROM quotes WHERE asset_id = :asset_id AND timestamp = :timestamp",
+                           [(":asset_id", asset_id), (":timestamp", timestamp)])
+        if query.next():
             old_id = query.value(0)
         if old_id:
-            assert query.prepare("UPDATE quotes SET quote=:quote WHERE id=:old_id")
-            query.bindValue(":old_id", old_id)
+            executeSQL(self.db, "UPDATE quotes SET quote=:quote WHERE id=:old_id",
+                       [(":quote", quote), (":old_id", old_id), ])
         else:
-            assert query.prepare(
-                "INSERT INTO quotes(timestamp, asset_id, quote) VALUES (:timestamp, :asset_id, :quote)")
-            query.bindValue(":timestamp", timestamp)
-            query.bindValue(":asset_id", asset_id)
-        query.bindValue(":quote", quote)
-        assert query.exec_()
+            executeSQL(self.db, "INSERT INTO quotes(timestamp, asset_id, quote) VALUES (:timestamp, :asset_id, :quote)",
+                       [(":timestamp", timestamp), (":asset_id", asset_id), (":quote", quote)])
         self.db.commit()
         logging.info(
             f"Quote loaded: {asset_name} @ {datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")

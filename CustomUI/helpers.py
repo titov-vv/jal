@@ -1,7 +1,7 @@
 import datetime
 
 from PySide2.QtCore import Qt
-from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
+from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlQuery
 from PySide2.QtWidgets import QAbstractItemView, QHeaderView, QDataWidgetMapper, QFrame
 
 class hcol_idx:
@@ -125,6 +125,7 @@ def UseSqlTable(db, table_name, columns, relations):
             model.setSort(model.fieldIndex(column[hcol_idx.DB_NAME]), column[hcol_idx.SORT_ORDER])
     return model
 
+# -------------------------------------------------------------------------------------------------------------------
 # Use mappings to link between DB fields and GUI widgets with help of delegate
 # mapping is a list of tuples [(FIELD_NAME, GUI_WIDGET, WIDTH, VALIDATOR)]
 # If widget is a custom one:
@@ -147,6 +148,12 @@ def ConfigureDataMappers(model, mappings, delegate):
             mapping[map_idx.WIDGET].setValidator(mapping[map_idx.VALIDATOR])
     return mapper
 
+# -------------------------------------------------------------------------------------------------------------------
+# Return value is a list of delegates because storage of delegates
+# is required to keep ownership and prevent SIGSEGV as
+# https://doc.qt.io/qt-5/qabstractitemview.html#setItemDelegateForColumn says:
+# Any existing column delegate for column will be removed, but not deleted.
+# QAbstractItemView does not take ownership of delegate.
 def ConfigureTableView(view, model, columns):
     view.setModel(model)
     for column in columns:
@@ -164,11 +171,6 @@ def ConfigureTableView(view, model, columns):
     font.setBold(True)
     view.horizontalHeader().setFont(font)
 
-    # Return value is a list of delegates because storage of delegates
-    # is required to keep ownership and prevent SIGSEGV as
-    # https://doc.qt.io/qt-5/qabstractitemview.html#setItemDelegateForColumn says:
-    # Any existing column delegate for column will be removed, but not deleted.
-    # QAbstractItemView does not take ownership of delegate.
     delegates = []
     for column in columns:
         if column[hcol_idx.DELEGATE] is not None:
