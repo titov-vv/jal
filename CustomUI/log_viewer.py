@@ -1,5 +1,5 @@
 import logging
-from constants import *
+from constants import CustomColor
 
 from PySide2 import QtWidgets
 from PySide2.QtWidgets import QPlainTextEdit
@@ -25,11 +25,11 @@ class LogViewer(QPlainTextEdit, logging.Handler):
             if self.last_level < record.levelno:
                 palette = self.notification.palette()
                 if record.levelno <= logging.INFO:
-                    palette.setColor(self.notification.backgroundRole(), LIGHT_BLUE_COLOR)
+                    palette.setColor(self.notification.backgroundRole(), CustomColor.LightBlue)
                 elif record.levelno <= logging.WARNING:
-                    palette.setColor(self.notification.backgroundRole(), LIGHT_YELLOW_COLOR)
+                    palette.setColor(self.notification.backgroundRole(), CustomColor.LightYellow)
                 else:
-                    palette.setColor(self.notification.backgroundRole(), LIGHT_RED_COLOR)
+                    palette.setColor(self.notification.backgroundRole(), CustomColor.LightRed)
                 self.notification.setPalette(palette)
                 self.notification.setText("LOG")
                 self.last_level = record.levelno

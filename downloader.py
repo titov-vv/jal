@@ -11,7 +11,7 @@ from PySide2.QtSql import QSqlQuery
 from PySide2.QtWidgets import QDialog
 
 from UI.ui_update_quotes_window import Ui_UpdateQuotesDlg
-from constants import *
+from constants import Setup, MarketDataFeed
 
 
 # ===================================================================================================================
@@ -120,15 +120,15 @@ class QuoteDownloader(QObject):
             else:
                 from_timestamp = start_timestamp
             try:
-                if feed_id == FEED_NONE:
+                if feed_id == MarketDataFeed.NA:
                     continue
-                elif feed_id == FEED_CBR:
+                elif feed_id == MarketDataFeed.CBR:
                     data = self.CBR_DataReader(asset, from_timestamp, end_timestamp)
-                elif feed_id == FEED_RU:
+                elif feed_id == MarketDataFeed.RU:
                     data = self.MOEX_DataReader(asset, from_timestamp, end_timestamp)
-                elif feed_id == FEED_EU:
+                elif feed_id == MarketDataFeed.EU:
                     data = self.Euronext_DataReader(asset, isin, from_timestamp, end_timestamp)
-                elif feed_id == FEED_US:
+                elif feed_id == MarketDataFeed.US:
                     data = self.Yahoo_Downloader(asset, from_timestamp, end_timestamp)
                 else:
                     logging.error(f"Data feed {feed_id} is not implemented")

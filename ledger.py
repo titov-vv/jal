@@ -1,7 +1,7 @@
 import datetime
 import logging
 
-from constants import *
+from constants import Setup, BookAccount, TransactionType, TransferSubtype, PredefinedCategory, PredefinedPeer
 from PySide2.QtCore import Qt, QDate, QDateTime
 from PySide2.QtWidgets import QDialog, QMessageBox
 from PySide2.QtSql import QSqlQuery
@@ -280,11 +280,11 @@ class Ledger:
             self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id,
                                    (dividend_sum - returned_sum))
         self.appendTransaction(timestamp, seq_id, BookAccount.Incomes, currency_id, account_id, -dividend_sum, None,
-                               peer_id, CATEGORY_DIVIDEND)
+                               peer_id, PredefinedCategory.Dividends)
         if tax_sum:
             self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id, tax_sum)
             self.appendTransaction(timestamp, seq_id, BookAccount.Costs, currency_id, account_id, -tax_sum, None,
-                                   peer_id, CATEGORY_TAXES)
+                                   peer_id, PredefinedCategory.Taxes)
 
     def processBuy(self, seq_id, timestamp, account_id, currency_id, asset_id, qty, price, coupon, fee):
         trade_sum = round(price * qty, 2) + fee + coupon
@@ -353,16 +353,16 @@ class Ledger:
             self.appendTransaction(timestamp, seq_id, BookAccount.Assets, asset_id, account_id, sell_qty, sell_sum)
             if ((price * sell_qty) - sell_sum) != 0:  # Profit if we have it
                 self.appendTransaction(timestamp, seq_id, BookAccount.Incomes, currency_id, account_id,
-                                       ((price * sell_qty) - sell_sum), None, None, CATEGORY_PROFIT)
+                                       ((price * sell_qty) - sell_sum), None, None, PredefinedCategory.Profit)
         if sell_qty < qty:  # Add new long position
             self.appendTransaction(timestamp, seq_id, BookAccount.Assets, asset_id, account_id, (qty - sell_qty),
                                    (qty - sell_qty) * price)
         if coupon:
             self.appendTransaction(timestamp, seq_id, BookAccount.Costs, currency_id, account_id, coupon, None, None,
-                                   CATEGORY_DIVIDEND)
+                                   PredefinedCategory.Dividends)
         if fee:
             self.appendTransaction(timestamp, seq_id, BookAccount.Costs, currency_id, account_id, fee, None, None,
-                                   CATEGORY_FEES)
+                                   PredefinedCategory.Fees)
 
     def processSell(self, seq_id, timestamp, account_id, currency_id, asset_id, qty, price, coupon, fee):
         trade_sum = round(price * qty, 2) - fee + coupon
@@ -432,16 +432,16 @@ class Ledger:
             self.appendTransaction(timestamp, seq_id, BookAccount.Assets, asset_id, account_id, -buy_qty, -buy_sum)
             if (buy_sum - (price * buy_qty)) != 0:  # Profit if we have it
                 self.appendTransaction(timestamp, seq_id, BookAccount.Incomes, currency_id, account_id,
-                                       (buy_sum - (price * buy_qty)), None, None, CATEGORY_PROFIT)
+                                       (buy_sum - (price * buy_qty)), None, None, PredefinedCategory.Profit)
         if buy_qty < qty:  # Add new short position
             self.appendTransaction(timestamp, seq_id, BookAccount.Assets, asset_id, account_id, (buy_qty - qty),
                                    (buy_qty - qty) * price)
         if coupon:
             self.appendTransaction(timestamp, seq_id, BookAccount.Incomes, currency_id, account_id, -coupon, None,
-                                   None, CATEGORY_DIVIDEND)
+                                   None, PredefinedCategory.Dividends)
         if fee:
             self.appendTransaction(timestamp, seq_id, BookAccount.Costs, currency_id, account_id, fee, None, None,
-                                   CATEGORY_FEES)
+                                   PredefinedCategory.Fees)
 
     def processCorpAction(self):
         pass
@@ -493,7 +493,7 @@ class Ledger:
         credit_sum = self.takeCredit(seq_id, timestamp, account_id, currency_id, fee)
         self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id, -(fee - credit_sum))
         self.appendTransaction(timestamp, seq_id, BookAccount.Costs, currency_id, account_id, fee, None,
-                               PEER_FINANCIAL, CATEGORY_FEES, None)
+                               PredefinedPeer.Financial, PredefinedCategory.Fees, None)
 
     def processTransfer(self, seq_id, transfer_id):
         query = QSqlQuery(self.db)
@@ -505,11 +505,11 @@ class Ledger:
         assert query.exec_()
         query.next()
         transfer_type = query.value(0)
-        if transfer_type == TRANSFER_OUT:
+        if transfer_type == TransferSubtype.Outgoing:
             self.processTransferOut(seq_id, query.value(1), query.value(2), query.value(3), -query.value(4))
-        elif transfer_type == TRANSFER_IN:
+        elif transfer_type == TransferSubtype.Incoming:
             self.processTransferIn(seq_id, query.value(1), query.value(2), query.value(3), query.value(4))
-        elif transfer_type == TRANSFER_FEE:
+        elif transfer_type == TransferSubtype.Fee:
             self.processTransferFee(seq_id, query.value(1), query.value(2), query.value(3), -query.value(4))
 
     # TODO check if this method may be combined with the next one

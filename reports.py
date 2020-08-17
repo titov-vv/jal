@@ -1,7 +1,7 @@
 import datetime
 import logging
 import xlsxwriter
-from constants import *
+from constants import BookAccount, PredefinedAsset
 from PySide2.QtWidgets import QDialog, QFileDialog
 from PySide2.QtCore import Property, Slot
 from PySide2 import QtCore
@@ -328,7 +328,7 @@ class Reports:
                       "LEFT JOIN assets AS a ON q.asset_id=a.id "
                       "WHERE a.type_id=:asset_money "
                       "GROUP BY month, asset_id")
-        query.bindValue(":asset_money", ASSET_TYPE_MONEY)
+        query.bindValue(":asset_money", PredefinedAsset.Money)
         assert query.exec_()
 
         query.prepare(

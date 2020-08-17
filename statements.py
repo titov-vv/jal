@@ -8,8 +8,8 @@ from PySide2.QtCore import QObject, Signal
 from PySide2.QtSql import QSqlQuery
 from PySide2.QtWidgets import QFileDialog
 from ibflex import parser, AssetClass, BuySell, CashAction, Reorg, Code
+from constants import Setup, TransactionType, PredefinedAsset, PredefinedCategory
 
-from constants import *
 
 TAX_NOTE_PATTERN = "^(.*) - (..) TAX$"
 CLIENT_PATTERN = "^Код клиента: (.*)$"
@@ -126,11 +126,11 @@ class StatementLoader(QObject):
             return  # Asset already present in DB
 
         if IBasset.assetCategory == AssetClass.STOCK:
-            asset_type = ASSET_TYPE_STOCK
+            asset_type = PredefinedAsset.Stock
             if IBasset.subCategory == "ETF":
-                asset_type = ASSET_TYPE_ETF
+                asset_type = PredefinedAsset.ETF
         elif IBasset.assetCategory == AssetClass.BOND:
-            asset_type = ASSET_TYPE_BOND
+            asset_type = PredefinedAsset.Bond
         else:
             logging.error(f"Unknown asset type {IBasset}")
             return
@@ -322,7 +322,7 @@ class StatementLoader(QObject):
         query.prepare("INSERT INTO action_details (pid, category_id, sum, note) "
                       "VALUES (:pid, :category_id, :sum, :note)")
         query.bindValue(":pid", pid)
-        query.bindValue(":category_id", CATEGORY_TAXES)
+        query.bindValue(":category_id", PredefinedCategory.Taxes)
         query.bindValue(":sum", amount)
         query.bindValue(":note", note)
         assert query.exec_()
@@ -408,7 +408,7 @@ class StatementLoader(QObject):
         query.prepare("INSERT INTO action_details (pid, category_id, sum, note) "
                       "VALUES (:pid, :category_id, :sum, :note)")
         query.bindValue(":pid", pid)
-        query.bindValue(":category_id", CATEGORY_FEES)
+        query.bindValue(":category_id", PredefinedCategory.Fees)
         query.bindValue(":sum", amount)
         query.bindValue(":note", note)
         assert query.exec_()

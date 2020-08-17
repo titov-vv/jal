@@ -4,7 +4,7 @@ from PySide2.QtWidgets import QStyledItemDelegate
 from PySide2.QtCore import Qt, QSize
 from PySide2.QtGui import QTextDocument, QFont
 
-from constants import *
+from constants import TransactionType, TransferSubtype, CustomColor
 from CustomUI.helpers import formatFloatLong
 
 
@@ -87,9 +87,9 @@ class BalanceAmountAdjustedDelegate(QStyledItemDelegate):
         unreconciled_days = record.value("days_unreconciled")
 
         if unreconciled_days > 7:
-            painter.fillRect(option.rect, LIGHT_YELLOW_COLOR)
+            painter.fillRect(option.rect, CustomColor.LightYellow)
         if unreconciled_days > 15:
-            painter.fillRect(option.rect, LIGHT_RED_COLOR)
+            painter.fillRect(option.rect, CustomColor.LightRed)
 
         if value == "":
             value = 0
@@ -117,10 +117,10 @@ class HoldingsAccountDelegate(QStyledItemDelegate):
         level2 = record.value("level2")
 
         if level1:
-            painter.fillRect(option.rect, LIGHT_PURPLE_COLOR)
+            painter.fillRect(option.rect, CustomColor.LightPurple)
             text = text + " / " + record.value("asset_name")
         elif level2:
-            painter.fillRect(option.rect, LIGHT_BLUE_COLOR)
+            painter.fillRect(option.rect, CustomColor.LightBlue)
         else:
             text = ""
         font = painter.font()
@@ -145,9 +145,9 @@ class HoldingsFloatDelegate(QStyledItemDelegate):
         level2 = record.value("level2")
 
         if level1:
-            painter.fillRect(option.rect, LIGHT_PURPLE_COLOR)
+            painter.fillRect(option.rect, CustomColor.LightPurple)
         elif level2:
-            painter.fillRect(option.rect, LIGHT_BLUE_COLOR)
+            painter.fillRect(option.rect, CustomColor.LightBlue)
 
         if amount == '':
             text = ""
@@ -171,9 +171,9 @@ class HoldingsFloat4Delegate(QStyledItemDelegate):
         level2 = record.value("level2")
 
         if level1:
-            painter.fillRect(option.rect, LIGHT_PURPLE_COLOR)
+            painter.fillRect(option.rect, CustomColor.LightPurple)
         elif level2:
-            painter.fillRect(option.rect, LIGHT_BLUE_COLOR)
+            painter.fillRect(option.rect, CustomColor.LightBlue)
 
         if amount == '':
             text = ""
@@ -197,21 +197,21 @@ class HoldingsProfitDelegate(QStyledItemDelegate):
         level2 = record.value("level2")
 
         if level1:
-            painter.fillRect(option.rect, LIGHT_PURPLE_COLOR)
+            painter.fillRect(option.rect, CustomColor.LightPurple)
             font = painter.font()
             font.setBold(True)
             painter.setFont(font)
         elif level2:
-            painter.fillRect(option.rect, LIGHT_BLUE_COLOR)
+            painter.fillRect(option.rect, CustomColor.LightBlue)
             font = painter.font()
             font.setBold(True)
             painter.setFont(font)
         else:
             if amount:
                 if amount >= 0:
-                    painter.fillRect(option.rect, LIGHT_GREEN_COLOR)
+                    painter.fillRect(option.rect, CustomColor.LightGreen)
                 else:
-                    painter.fillRect(option.rect, LIGHT_RED_COLOR)
+                    painter.fillRect(option.rect, CustomColor.LightRed)
 
         if amount == '':
             text = ""
@@ -235,12 +235,12 @@ class HoldingsFloat2Delegate(QStyledItemDelegate):
         level2 = record.value("level2")
 
         if level1:
-            painter.fillRect(option.rect, LIGHT_PURPLE_COLOR)
+            painter.fillRect(option.rect, CustomColor.LightPurple)
             font = painter.font()
             font.setBold(True)
             painter.setFont(font)
         elif level2:
-            painter.fillRect(option.rect, LIGHT_BLUE_COLOR)
+            painter.fillRect(option.rect, CustomColor.LightBlue)
             font = painter.font()
             font.setBold(True)
             painter.setFont(font)
@@ -273,31 +273,31 @@ class OperationsTypeDelegate(QStyledItemDelegate):
         if transaction_type == TransactionType.Action:
             if amount >= 0:
                 text = "+"
-                pen.setColor(DARK_GREEN_COLOR)
+                pen.setColor(CustomColor.DarkGreen)
             else:
                 text = "—"
-                pen.setColor(DARK_RED_COLOR)
+                pen.setColor(CustomColor.DarkRed)
         elif transaction_type == TransactionType.Dividend:
             text = "Δ"
-            pen.setColor(DARK_GREEN_COLOR)
+            pen.setColor(CustomColor.DarkGreen)
         elif transaction_type == TransactionType.Trade:
             if amount <= 0:  # TODO Change from amount to qty as amount might be 0 for Corp.Actions
                 text = "B"
-                pen.setColor(DARK_GREEN_COLOR)
+                pen.setColor(CustomColor.DarkGreen)
             else:
                 text = "S"
-                pen.setColor(DARK_RED_COLOR)
+                pen.setColor(CustomColor.DarkRed)
         elif transaction_type == TransactionType.Transfer:
             transfer_subtype = record.value("qty_trid")
-            if transfer_subtype == TRANSFER_IN:
+            if transfer_subtype == TransferSubtype.Incoming:
                 text = ">"
-                pen.setColor(DARK_BLUE_COLOR)
-            elif transfer_subtype == TRANSFER_OUT:
+                pen.setColor(CustomColor.DarkBlue)
+            elif transfer_subtype == TransferSubtype.Outgoing:
                 text = "<"
-                pen.setColor(DARK_BLUE_COLOR)
-            elif transfer_subtype == TRANSFER_FEE:
+                pen.setColor(CustomColor.DarkBlue)
+            elif transfer_subtype == TransferSubtype.Fee:
                 text = "="
-                pen.setColor(DARK_RED_COLOR)
+                pen.setColor(CustomColor.DarkRed)
             else:
                 assert False
         else:
@@ -360,11 +360,11 @@ class OperationsAccountDelegate(QStyledItemDelegate):
         elif transaction_type == TransactionType.Transfer:
             account2 = record.value("note2")
             transfer_subtype = record.value("qty_trid")
-            if transfer_subtype == TRANSFER_FEE:
+            if transfer_subtype == TransferSubtype.Fee:
                 text = account
-            elif transfer_subtype == TRANSFER_OUT:
+            elif transfer_subtype == TransferSubtype.Outgoing:
                 text = account + " -> " + account2
-            elif transfer_subtype == TRANSFER_IN:
+            elif transfer_subtype == TransferSubtype.Incoming:
                 text = account + " <- " + account2
             else:
                 assert False
@@ -429,35 +429,35 @@ class OperationsAmountDelegate(QStyledItemDelegate):
             text = f"{amount:+,.2f}"
             rect.setHeight(H / 2)
             if amount >= 0:
-                pen.setColor(DARK_GREEN_COLOR)
+                pen.setColor(CustomColor.DarkGreen)
             else:
-                pen.setColor(DARK_RED_COLOR)
+                pen.setColor(CustomColor.DarkRed)
             painter.setPen(pen)
             painter.drawText(option.rect, Qt.AlignRight, text)
             text = f"{qty:+,.2f}"
             rect.moveTop(Y + H / 2)
             if qty >= 0:
-                pen.setColor(DARK_GREEN_COLOR)
+                pen.setColor(CustomColor.DarkGreen)
             else:
-                pen.setColor(DARK_RED_COLOR)
+                pen.setColor(CustomColor.DarkRed)
             painter.setPen(pen)
             painter.drawText(option.rect, Qt.AlignRight, text)
         elif transaction_type == TransactionType.Dividend:
             text = f"{amount:+,.2f}"
             rect.setHeight(H / 2)
-            pen.setColor(DARK_GREEN_COLOR)
+            pen.setColor(CustomColor.DarkGreen)
             painter.setPen(pen)
             painter.drawText(rect, Qt.AlignRight, text)
             text = f"{tax:,.2f}"
             rect.moveTop(Y + H / 2)
-            pen.setColor(DARK_RED_COLOR)
+            pen.setColor(CustomColor.DarkRed)
             painter.setPen(pen)
             painter.drawText(rect, Qt.AlignRight, text)
         else:
             if amount >= 0:
-                pen.setColor(DARK_GREEN_COLOR)
+                pen.setColor(CustomColor.DarkGreen)
             else:
-                pen.setColor(DARK_RED_COLOR)
+                pen.setColor(CustomColor.DarkRed)
             text = f"{amount:+,.2f}\n"
             painter.setPen(pen)
             painter.drawText(option.rect, Qt.AlignRight, text)
@@ -486,7 +486,7 @@ class OperationsTotalsDelegate(QStyledItemDelegate):
         text = upper_part + "\n" + lower_part
 
         if reconciled == 1:
-            pen.setColor(BLUE_COLOR)
+            pen.setColor(CustomColor.Blue)
             painter.setPen(pen)
 
         painter.drawText(option.rect, Qt.AlignRight, text)

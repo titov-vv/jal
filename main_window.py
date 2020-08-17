@@ -10,7 +10,7 @@ from PySide2.QtWidgets import QMainWindow, QFileDialog, QMenu, QMessageBox, QLab
 from UI.ui_main_window import Ui_LedgerMainWindow
 from CustomUI.helpers import VLine, ManipulateDate
 from CustomUI.table_view_config import TableViewConfig
-from constants import *
+from constants import TransactionType
 from DB.bulk_db import MakeBackup, RestoreBackup
 from DB.helpers import init_and_check_db, get_dbfilename
 from downloader import QuoteDownloader
@@ -176,10 +176,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def ShowOperationTab(self, operation_type):
         tab_list = {
-            TransactionType.Action: TAB_ACTION,
-            TransactionType.Transfer: TAB_TRANSFER,
-            TransactionType.Trade: TAB_TRADE,
-            TransactionType.Dividend: TAB_DIVIDEND
+            TransactionType.Action: 0,
+            TransactionType.Transfer: 3,
+            TransactionType.Trade: 1,
+            TransactionType.Dividend: 2
         }
         self.OperationsTabs.setCurrentIndex(tab_list[operation_type])
 

@@ -1,6 +1,6 @@
 import logging
 
-from constants import *
+from constants import Setup, TransactionType
 from PySide2.QtCore import Qt, QObject, Signal, Slot, QDateTime
 from PySide2.QtWidgets import QMessageBox, QMenu, QAction, QHeaderView
 from PySide2.QtSql import QSqlQuery
