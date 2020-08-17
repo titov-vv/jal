@@ -1,16 +1,5 @@
-from constants import *
-from datetime import datetime
-from PySide2.QtCore import Qt, Signal, Property, Slot
-from PySide2.QtSql import QSqlRelationalDelegate
+from PySide2.QtCore import Signal, Property
 from PySide2.QtWidgets import QWidget
-
-
-def formatFloatLong(value):
-    if abs(value - round(value, 2)) >= CALC_TOLERANCE:
-        text = str(value)
-    else:
-        text = f"{value:.2f}"
-    return text
 
 
 class OptionGroup(QWidget):
@@ -46,27 +35,3 @@ class OptionGroup(QWidget):
             for button in self.ButtonsList:
                 if button[0] == src:
                     self.selected_btn = button[1]
-
-
-class TradeSqlDelegate(QSqlRelationalDelegate):
-    def __init__(self, parent=None):
-        QSqlRelationalDelegate.__init__(self, parent)
-
-    def setEditorData(self, editor, index):
-        if (index.column() == 1) or (index.column() == 2):  # timestamp & settlement columns
-            timestamp = index.model().data(index, Qt.EditRole)
-            if timestamp:
-                editor.setDateTime(datetime.fromtimestamp(timestamp))
-        elif (index.column() >= 7) and (index.column() <= 11):  # price, qty, coupon, fees
-            amount = index.model().data(index, Qt.EditRole)
-            if amount:
-                editor.setText(formatFloatLong(float(amount)))
-        else:
-            QSqlRelationalDelegate.setEditorData(self, editor, index)
-
-    def setModelData(self, editor, model, index):
-        if (index.column() == 1) or (index.column() == 2):  # timestamp & settlement columns
-            timestamp = editor.dateTime().toSecsSinceEpoch()
-            model.setData(index, timestamp)
-        else:
-            QSqlRelationalDelegate.setModelData(self, editor, model, index)

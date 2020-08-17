@@ -3,10 +3,7 @@ from reports import Reports
 from PySide2 import QtWidgets
 from PySide2.QtCore import QObject, SIGNAL, Slot
 from functools import partial
-from action_delegate import ActionDelegate, ActionDetailDelegate
-from dividend_delegate import DividendSqlDelegate
-from trade_delegate import TradeSqlDelegate
-from transfer_delegate import TransferSqlDelegate
+from mapper_delegate import MapperDelegate
 from CustomUI.helpers import UseSqlTable, ConfigureTableView, ConfigureDataMappers
 from CustomUI.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, ReferenceBoolDelegate, \
     ReferenceIntDelegate, ReferenceLookupDelegate, ReferenceTimestampDelegate
@@ -109,10 +106,10 @@ class TableViewConfig:
         ACTIONS: [],
         ACTION_DETAILS: [("id", None, None, None, None),
                          ("pid", None, None, None, None),
-                         ("category_id", "Category", 200, None, ActionDetailDelegate),
-                         ("tag_id", "Tag", 200, None, ActionDetailDelegate),
-                         ("sum", "Amount", 100, None, ActionDetailDelegate),
-                         ("alt_sum", "Amount *", 100, None, ActionDetailDelegate),
+                         ("category_id", "Category", 200, None, MapperDelegate),
+                         ("tag_id", "Tag", 200, None, MapperDelegate),
+                         ("sum", "Amount", 100, None, MapperDelegate),
+                         ("alt_sum", "Amount *", 100, None, MapperDelegate),
                          ("note", "Note", -1, None, None)],
         TRADES: [],
         DIVIDENDS: [],
@@ -123,11 +120,11 @@ class TableViewConfig:
         BALANCES: None,
         HOLDINGS: None,
         OPERATIONS: None,
-        ACTIONS: ActionDelegate,
+        ACTIONS: MapperDelegate,
         ACTION_DETAILS: None,
-        TRADES: TradeSqlDelegate,
-        DIVIDENDS: DividendSqlDelegate,
-        TRANSFERS: TransferSqlDelegate
+        TRADES: MapperDelegate,
+        DIVIDENDS: MapperDelegate,
+        TRANSFERS: MapperDelegate
     }
 
     def __init__(self, parent):
