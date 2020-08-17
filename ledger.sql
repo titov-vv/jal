@@ -109,6 +109,8 @@ CREATE TABLE assets (
     web_id    TEXT (32),
     src_id    INTEGER    REFERENCES data_sources (id) ON DELETE SET NULL
                                                       ON UPDATE CASCADE
+                         NOT NULL
+                         DEFAULT ( -1)
 );
 
 

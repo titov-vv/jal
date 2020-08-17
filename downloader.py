@@ -58,6 +58,13 @@ class QuoteDownloader(QObject):
         super().__init__()
         self.db = db
         self.CBR_codes = None
+        self.data_loaders = {
+            MarketDataFeed.NA: self.Dummy_DataReader,
+            MarketDataFeed.CBR: self.CBR_DataReader,
+            MarketDataFeed.RU: self.MOEX_DataReader,
+            MarketDataFeed.EU: self.Euronext_DataReader,
+            MarketDataFeed.US: self.Yahoo_Downloader
+        }
 
     def showQuoteDownloadDialog(self, parent):
         dialog = QuotesUpdateDialog(parent)
@@ -113,24 +120,13 @@ class QuoteDownloader(QObject):
             else:
                 from_timestamp = start_timestamp
             try:
-                if feed_id == MarketDataFeed.NA:
-                    continue
-                elif feed_id == MarketDataFeed.CBR:
-                    data = self.CBR_DataReader(asset, from_timestamp, end_timestamp)
-                elif feed_id == MarketDataFeed.RU:
-                    data = self.MOEX_DataReader(asset, from_timestamp, end_timestamp)
-                elif feed_id == MarketDataFeed.EU:
-                    data = self.Euronext_DataReader(asset, isin, from_timestamp, end_timestamp)
-                elif feed_id == MarketDataFeed.US:
-                    data = self.Yahoo_Downloader(asset, from_timestamp, end_timestamp)
-                else:
-                    logging.error(f"Data feed {feed_id} is not implemented")
-                    continue
+                data = self.data_loaders[feed_id](asset, isin, from_timestamp, end_timestamp)
             except (xml_tree.ParseError, pd.errors.EmptyDataError):
                 logging.warning(f"No data were downloaded for {asset}")
                 continue
-            for date, quote in data.iterrows():
-                self.SubmitQuote(asset_id, asset, int(date.timestamp()), float(quote[0]))
+            if data is not None:
+                for date, quote in data.iterrows():
+                    self.SubmitQuote(asset_id, asset, int(date.timestamp()), float(quote[0]))
         logging.info("Download completed")
 
     def PrepareRussianCBReader(self):
@@ -145,7 +141,11 @@ class QuoteDownloader(QObject):
             pass
         self.CBR_codes = pd.DataFrame(rows, columns=["ISO_name", "CBR_code"])
 
-    def CBR_DataReader(self, currency_code, start_timestamp, end_timestamp):
+    # Empty method to make a unified call for any asset
+    def Dummy_DataReader(self, _symbol, _isin, _start_timestamp, _end_timestamp):
+        return None
+
+    def CBR_DataReader(self, currency_code, _isin, start_timestamp, end_timestamp):
         date1 = datetime.fromtimestamp(start_timestamp).strftime('%d/%m/%Y')
         date2 = datetime.fromtimestamp(end_timestamp + 86400).strftime(
             '%d/%m/%Y')  # Add 1 day as CBR sets rate a day ahead
@@ -165,7 +165,7 @@ class QuoteDownloader(QObject):
         return rates
 
     # noinspection PyMethodMayBeStatic
-    def MOEX_DataReader(self, asset_code, start_timestamp, end_timestamp):
+    def MOEX_DataReader(self, asset_code, _isin, start_timestamp, end_timestamp):
         engine = None
         market = None
         board_id = None
@@ -213,7 +213,7 @@ class QuoteDownloader(QObject):
         return close
 
     # noinspection PyMethodMayBeStatic
-    def Yahoo_Downloader(self, asset_code, start_timestamp, end_timestamp):
+    def Yahoo_Downloader(self, asset_code, _isin, start_timestamp, end_timestamp):
         url = f"https://query1.finance.yahoo.com/v7/finance/download/{asset_code}?"\
               f"period1={start_timestamp}&period2={end_timestamp}&interval=1d&events=history"
         file = StringIO(get_web_data(url))
