@@ -2,9 +2,10 @@ import datetime
 import logging
 
 from constants import *
-from PySide2 import QtCore
+from PySide2.QtCore import Qt, QDate, QDateTime
 from PySide2.QtWidgets import QDialog, QMessageBox
 from PySide2.QtSql import QSqlQuery
+from DB.helpers import get_base_currency
 from UI.ui_rebuild_window import Ui_ReBuildDialog
 
 
@@ -17,7 +18,7 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
         self.frontier = frontier
         frontier_text = datetime.datetime.fromtimestamp(frontier).strftime('%d/%m/%Y')
         self.FrontierDateLabel.setText(frontier_text)
-        self.CustomDateEdit.setDate(QtCore.QDate.currentDate())
+        self.CustomDateEdit.setDate(QDate.currentDate())
 
         # center dialog with respect to parent window
         x = parent.x() + parent.width()/2 - self.width()/2
@@ -40,6 +41,61 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
 class Ledger:
     def __init__(self, db):
         self.db = db
+        self.balances_view = None
+        self.holdings_view = None
+        self.balance_active_only = 1
+        self.balance_currency = get_base_currency(self.db)
+        self.balance_date = QDateTime.currentSecsSinceEpoch()
+        self.holdings_date = QDateTime.currentSecsSinceEpoch()
+        self.holdings_currency = self.balance_currency
+
+    def setViews(self, balances, holdings):
+        self.balances_view = balances
+        self.holdings_view = holdings
+
+    def setActiveBalancesOnly(self, active_only):
+        if self.balance_active_only != active_only:
+            self.balance_active_only = active_only
+            self.UpdateBalances()
+
+    def setBalancesDate(self, balance_date):
+        if self.balance_date != balance_date:
+            self.balance_date = balance_date
+            self.UpdateBalances()
+
+    def setBalancesCurrency(self, currency_id, currency_name):
+        if self.balance_currency != currency_id:
+            self.balance_currency = currency_id
+            balances_model = self.balances_view.model()
+            balances_model.setHeaderData(balances_model.fieldIndex("balance_adj"), Qt.Horizontal,
+                                         "Balance, " + currency_name)
+            self.UpdateBalances()
+
+    def UpdateBalances(self):
+        self.BuildBalancesTable()
+        self.balances_view.model().select()
+
+    def setHoldingsDate(self, holdings_date):
+        if self.holdings_date != holdings_date:
+            self.holdings_date = holdings_date
+            self.UpdateHoldings()
+
+    def setHoldingsCurrency(self, currency_id, currency_name):
+        if self.holdings_currency != currency_id:
+            self.holdings_currency = currency_id
+            holidings_model = self.holdings_view.model()
+            holidings_model.setHeaderData(holidings_model.fieldIndex("value_adj"), Qt.Horizontal,
+                                          "Value, " + currency_name)
+            self.UpdateHoldings()
+
+    def UpdateHoldings(self):
+        self.BuildHoldingsTable()
+        holidings_model = self.holdings_view.model()
+        holidings_model.select()
+        for row in range(holidings_model.rowCount()):
+            if holidings_model.data(holidings_model.index(row, 1)):
+                self.holdings_view.setSpan(row, 3, 1, 3)
+        self.holdings_view.show()
 
     # Returns timestamp of last operations that were calculated into ledger
     def getCurrentFrontier(self):
@@ -462,7 +518,7 @@ class Ledger:
     # Methods asks for confirmation if we have more than 15 days unreconciled
     def MakeUpToDate(self):
         frontier = self.getCurrentFrontier()
-        if (QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - frontier) > 1296000:
+        if (QDateTime.currentDateTime().toSecsSinceEpoch() - frontier) > 1296000:
             if QMessageBox().warning(None, "Confirmation",
                                      "More than 2 weeks require rebuild. Do you want to do it right now?",
                                      QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
@@ -599,7 +655,7 @@ class Ledger:
     # Populate table balances with data calculated for given parameters:
     # 'timestamp' moment of time for balance
     # 'base_currency' to use for total values
-    def BuildBalancesTable(self, timestamp, base_currency, active_only):
+    def BuildBalancesTable(self):
         query = QSqlQuery(self.db)
         assert query.exec_("DELETE FROM t_last_quotes")
         assert query.exec_("DELETE FROM t_last_dates")
@@ -611,7 +667,7 @@ class Ledger:
                       "FROM quotes "
                       "WHERE timestamp <= :balances_timestamp "
                       "GROUP BY asset_id")
-        query.bindValue(":balances_timestamp", timestamp)
+        query.bindValue(":balances_timestamp", self.balance_date)
         assert query.exec_()
 
         query.prepare("INSERT INTO t_last_dates(ref_id, timestamp) "
@@ -619,7 +675,7 @@ class Ledger:
                       "FROM ledger "
                       "WHERE timestamp <= :balances_timestamp "
                       "GROUP BY ref_id")
-        query.bindValue(":balances_timestamp", timestamp)
+        query.bindValue(":balances_timestamp", self.balance_date)
         assert query.exec_()
 
         query.prepare(
@@ -641,11 +697,11 @@ class Ledger:
             "AND l.timestamp <= :balances_timestamp "
             "GROUP BY l.account_id "
             "HAVING ABS(balance)>0.0001")
-        query.bindValue(":base_currency", base_currency)
+        query.bindValue(":base_currency", self.balance_currency)
         query.bindValue(":money_book", BOOK_ACCOUNT_MONEY)
         query.bindValue(":assets_book", BOOK_ACCOUNT_ASSETS)
         query.bindValue(":liabilities_book", BOOK_ACCOUNT_LIABILITIES)
-        query.bindValue(":balances_timestamp", timestamp)
+        query.bindValue(":balances_timestamp", self.balance_date)
         assert query.exec_()
 
         query.prepare(
@@ -672,12 +728,12 @@ class Ledger:
             "WHERE active >= :active_only "
             ") ORDER BY level1, account_type, level2"
         )
-        query.bindValue(":base_currency", base_currency)
-        query.bindValue(":active_only", active_only)
+        query.bindValue(":base_currency", self.balance_currency)
+        query.bindValue(":active_only", self.balance_active_only)
         assert query.exec_()
         self.db.commit()
 
-    def BuildHoldingsTable(self, timestamp, currency):
+    def BuildHoldingsTable(self):
         query = QSqlQuery(self.db)
         assert query.exec_("DELETE FROM t_last_quotes")
         assert query.exec_("DELETE FROM t_last_assets")
@@ -689,7 +745,7 @@ class Ledger:
                              "FROM quotes "
                              "WHERE timestamp <= :balances_timestamp "
                              "GROUP BY asset_id")
-        query.bindValue(":balances_timestamp", timestamp)
+        query.bindValue(":balances_timestamp", self.holdings_date)
         assert query.exec_()
 
         # TODO Is account name really required in this temporary table?
@@ -704,7 +760,7 @@ class Ledger:
                              "AND a.type_id = 4 AND l.timestamp <= :holdings_timestamp "
                              "GROUP BY a.id "
                              "HAVING ABS(total_value) > :tolerance")
-        query.bindValue(":holdings_timestamp", timestamp)
+        query.bindValue(":holdings_timestamp", self.holdings_date)
         query.bindValue(":tolerance", DISP_TOLERANCE)
         assert query.exec_()
 
@@ -721,8 +777,8 @@ class Ledger:
             "WHERE l.book_account = 4 AND l.timestamp <= :holdings_timestamp "
             "GROUP BY l.account_id, l.asset_id "
             "HAVING ABS(qty) > :tolerance")
-        query.bindValue(":recalc_currency", currency)
-        query.bindValue(":holdings_timestamp", timestamp)
+        query.bindValue(":recalc_currency", self.holdings_currency)
+        query.bindValue(":holdings_timestamp", self.holdings_date)
         query.bindValue(":tolerance", DISP_TOLERANCE)
         assert query.exec_()
 
@@ -738,8 +794,8 @@ class Ledger:
             "WHERE (l.book_account = 3 OR l.book_account = 5) AND a.type_id = 4 AND l.timestamp <= :holdings_timestamp "
             "GROUP BY l.account_id, l.asset_id "
             "HAVING ABS(qty) > :tolerance")
-        query.bindValue(":recalc_currency", currency)
-        query.bindValue(":holdings_timestamp", timestamp)
+        query.bindValue(":recalc_currency", self.holdings_currency)
+        query.bindValue(":holdings_timestamp", self.holdings_date)
         query.bindValue(":tolerance", DISP_TOLERANCE)
         assert query.exec_()
 

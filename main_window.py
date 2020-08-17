@@ -3,7 +3,7 @@ import os
 from functools import partial
 
 from PySide2 import QtCore, QtWidgets
-from PySide2.QtCore import Qt, Slot
+from PySide2.QtCore import Slot
 from PySide2.QtGui import QDoubleValidator
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QMenu, QMessageBox, QLabel
 
@@ -12,7 +12,7 @@ from CustomUI.helpers import VLine, ManipulateDate
 from CustomUI.table_view_config import TableViewConfig
 from constants import *
 from DB.bulk_db import MakeBackup, RestoreBackup
-from DB.helpers import init_and_check_db, get_base_currency, get_dbfilename
+from DB.helpers import init_and_check_db, get_dbfilename
 from downloader import QuoteDownloader
 from ledger import Ledger
 from operations import LedgerOperationsView, LedgerInitValues
@@ -78,16 +78,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.operations.stateIsCommitted.connect(self.showCommitted)
         self.operations.stateIsModified.connect(self.showModified)
 
-        # Setup balance table
-        self.balance_currency = get_base_currency(self.db)
-        self.balance_date = QtCore.QDateTime.currentSecsSinceEpoch()
-        self.balance_active_only = 1
+        # Setup balance and holdings tables
+        self.ledger.setViews(self.BalancesTableView, self.HoldingsTableView)
         self.BalanceDate.setDateTime(QtCore.QDateTime.currentDateTime())
         self.BalancesCurrencyCombo.init_db(self.db)   # this line will trigger onBalanceDateChange -> view updated
-
-        # Setup holdings table
-        self.holdings_currency = self.balance_currency
-        self.holdings_date = QtCore.QDateTime.currentSecsSinceEpoch()
         self.HoldingsDate.setDateTime(QtCore.QDateTime.currentDateTime())
         self.HoldingsCurrencyCombo.init_db(self.db)   # and this will trigger onHoldingsDateChange -> view updated
 
@@ -128,51 +122,28 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def onBalanceDateChange(self, _new_date):
-        self.balance_date = self.BalanceDate.dateTime().toSecsSinceEpoch()
-        self.UpdateBalances()
+        self.ledger.setBalancesDate(self.BalanceDate.dateTime().toSecsSinceEpoch())
 
     @Slot()
     def onHoldingsDateChange(self, _new_date):
-        self.holdings_date = self.HoldingsDate.dateTime().toSecsSinceEpoch()
-        self.UpdateHoldings()
+        self.ledger.setHoldingsDate(self.HoldingsDate.dateTime().toSecsSinceEpoch())
 
     @Slot()
-    def OnBalanceCurrencyChange(self, currency_index):
-        self.balance_currency = self.BalancesCurrencyCombo.selected_currency()
-        balances_model = self.BalancesTableView.model()
-        balances_model.setHeaderData(balances_model.fieldIndex("balance_adj"), Qt.Horizontal,
-                                     "Balance, " + self.BalancesCurrencyCombo.selected_currency_name())
-        self.UpdateBalances()
+    def OnBalanceCurrencyChange(self, _currency_index):
+        self.ledger.setBalancesCurrency(self.BalancesCurrencyCombo.selected_currency(),
+                                        self.BalancesCurrencyCombo.selected_currency_name())
 
     @Slot()
-    def OnHoldingsCurrencyChange(self, currency_index):
-        self.holdings_currency = self.HoldingsCurrencyCombo.selected_currency()
-        holidings_model = self.HoldingsTableView.model()
-        holidings_model.setHeaderData(holidings_model.fieldIndex("value_adj"), Qt.Horizontal,
-                                      "Value, " + self.HoldingsCurrencyCombo.selected_currency_name())
-        self.UpdateHoldings()
+    def OnHoldingsCurrencyChange(self, _currency_index):
+        self.ledger.setHoldingsCurrency(self.HoldingsCurrencyCombo.selected_currency(),
+                                        self.HoldingsCurrencyCombo.selected_currency_name())
 
     @Slot()
     def OnBalanceInactiveChange(self, state):
         if state == 0:
-            self.balance_active_only = 1
+            self.ledger.setActiveBalancesOnly(1)
         else:
-            self.balance_active_only = 0
-        self.UpdateBalances()
-
-    # TODO Move UpdateBalances() and UpdateHoldings into ledger class
-    def UpdateBalances(self):
-        self.ledger.BuildBalancesTable(self.balance_date, self.balance_currency, self.balance_active_only)
-        self.BalancesTableView.model().select()
-
-    def UpdateHoldings(self):
-        self.ledger.BuildHoldingsTable(self.holdings_date, self.holdings_currency)
-        holidings_model = self.HoldingsTableView.model()
-        holidings_model.select()
-        for row in range(holidings_model.rowCount()):
-            if holidings_model.data(holidings_model.index(row, 1)):
-                self.HoldingsTableView.setSpan(row, 3, 1, 3)
-        self.HoldingsTableView.show()
+            self.ledger.setActiveBalancesOnly(0)
 
     @Slot()
     def OnAccountChange(self):
