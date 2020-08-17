@@ -8,7 +8,7 @@ class Setup:
     DISP_TOLERANCE = 1e-4
 
 
-class BookAccount:  # PREDEFINED BOOK ACCOUNTSК
+class BookAccount:  # PREDEFINED BOOK ACCOUNTS
     Costs = 1
     Incomes = 2
     Money = 3
