@@ -31,7 +31,7 @@ def get_web_data(url):
 # ===================================================================================================================
 class QuotesUpdateDialog(QDialog, Ui_UpdateQuotesDlg):
     def __init__(self, parent):
-        QDialog.__init__(self)
+        QDialog.__init__(self, parent=parent)
         self.setupUi(self)
         self.StartDateEdit.setDate(QtCore.QDate.currentDate().addMonths(-1))
         self.EndDateEdit.setDate(QtCore.QDate.currentDate())
@@ -46,9 +46,6 @@ class QuotesUpdateDialog(QDialog, Ui_UpdateQuotesDlg):
 
     def getEndDate(self):
         return self.EndDateEdit.dateTime().toSecsSinceEpoch()
-
-    def getUseProxy(self):
-        return self.UseProxyCheck.isChecked()
 
 
 # ===================================================================================================================
@@ -65,14 +62,10 @@ class QuoteDownloader(QObject):
     def showQuoteDownloadDialog(self, parent):
         dialog = QuotesUpdateDialog(parent)
         if dialog.exec_():
-            self.UpdateQuotes(dialog.getStartDate(), dialog.getEndDate(), dialog.getUseProxy())
+            self.UpdateQuotes(dialog.getStartDate(), dialog.getEndDate())
             self.download_completed.emit()
 
-    def UpdateQuotes(self, start_timestamp, end_timestamp, use_proxy):
-        if use_proxy:
-            logging.fatal("Download via proxy is not implemented")
-            return
-
+    def UpdateQuotes(self, start_timestamp, end_timestamp):
         self.PrepareRussianCBReader()
 
         query = QSqlQuery(self.db)

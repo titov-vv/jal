@@ -6,16 +6,23 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>250</width>
-    <height>140</height>
+    <width>256</width>
+    <height>107</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Update asset's quotes</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="1">
-    <widget class="QDateEdit" name="EndDateEdit">
+   <item row="0" column="0">
+    <widget class="QLabel" name="StartDateLbl">
+     <property name="text">
+      <string>Start date</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QDateEdit" name="StartDateEdit">
      <property name="displayFormat">
       <string>dd/MM/yyyy</string>
      </property>
@@ -24,7 +31,7 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
+   <item row="2" column="1">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -41,27 +48,13 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="1">
-    <widget class="QDateEdit" name="StartDateEdit">
+   <item row="1" column="1">
+    <widget class="QDateEdit" name="EndDateEdit">
      <property name="displayFormat">
       <string>dd/MM/yyyy</string>
      </property>
      <property name="calendarPopup">
       <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="StartDateLbl">
-     <property name="text">
-      <string>Start date</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QCheckBox" name="UseProxyCheck">
-     <property name="text">
-      <string>Use &amp;Proxy</string>
      </property>
     </widget>
    </item>

@@ -20,26 +20,13 @@ class Ui_UpdateQuotesDlg(object):
     def setupUi(self, UpdateQuotesDlg):
         if not UpdateQuotesDlg.objectName():
             UpdateQuotesDlg.setObjectName(u"UpdateQuotesDlg")
-        UpdateQuotesDlg.resize(250, 140)
+        UpdateQuotesDlg.resize(256, 107)
         self.gridLayout = QGridLayout(UpdateQuotesDlg)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.EndDateEdit = QDateEdit(UpdateQuotesDlg)
-        self.EndDateEdit.setObjectName(u"EndDateEdit")
-        self.EndDateEdit.setCalendarPopup(True)
+        self.StartDateLbl = QLabel(UpdateQuotesDlg)
+        self.StartDateLbl.setObjectName(u"StartDateLbl")
 
-        self.gridLayout.addWidget(self.EndDateEdit, 1, 1, 1, 1)
-
-        self.buttonBox = QDialogButtonBox(UpdateQuotesDlg)
-        self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
-
-        self.gridLayout.addWidget(self.buttonBox, 3, 1, 1, 1)
-
-        self.EndDateLbl = QLabel(UpdateQuotesDlg)
-        self.EndDateLbl.setObjectName(u"EndDateLbl")
-
-        self.gridLayout.addWidget(self.EndDateLbl, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.StartDateLbl, 0, 0, 1, 1)
 
         self.StartDateEdit = QDateEdit(UpdateQuotesDlg)
         self.StartDateEdit.setObjectName(u"StartDateEdit")
@@ -47,15 +34,23 @@ class Ui_UpdateQuotesDlg(object):
 
         self.gridLayout.addWidget(self.StartDateEdit, 0, 1, 1, 1)
 
-        self.StartDateLbl = QLabel(UpdateQuotesDlg)
-        self.StartDateLbl.setObjectName(u"StartDateLbl")
+        self.buttonBox = QDialogButtonBox(UpdateQuotesDlg)
+        self.buttonBox.setObjectName(u"buttonBox")
+        self.buttonBox.setOrientation(Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
 
-        self.gridLayout.addWidget(self.StartDateLbl, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.buttonBox, 2, 1, 1, 1)
 
-        self.UseProxyCheck = QCheckBox(UpdateQuotesDlg)
-        self.UseProxyCheck.setObjectName(u"UseProxyCheck")
+        self.EndDateLbl = QLabel(UpdateQuotesDlg)
+        self.EndDateLbl.setObjectName(u"EndDateLbl")
 
-        self.gridLayout.addWidget(self.UseProxyCheck, 2, 1, 1, 1)
+        self.gridLayout.addWidget(self.EndDateLbl, 1, 0, 1, 1)
+
+        self.EndDateEdit = QDateEdit(UpdateQuotesDlg)
+        self.EndDateEdit.setObjectName(u"EndDateEdit")
+        self.EndDateEdit.setCalendarPopup(True)
+
+        self.gridLayout.addWidget(self.EndDateEdit, 1, 1, 1, 1)
 
 
         self.retranslateUi(UpdateQuotesDlg)
@@ -67,10 +62,9 @@ class Ui_UpdateQuotesDlg(object):
 
     def retranslateUi(self, UpdateQuotesDlg):
         UpdateQuotesDlg.setWindowTitle(QCoreApplication.translate("UpdateQuotesDlg", u"Update asset's quotes", None))
-        self.EndDateEdit.setDisplayFormat(QCoreApplication.translate("UpdateQuotesDlg", u"dd/MM/yyyy", None))
-        self.EndDateLbl.setText(QCoreApplication.translate("UpdateQuotesDlg", u"End date", None))
-        self.StartDateEdit.setDisplayFormat(QCoreApplication.translate("UpdateQuotesDlg", u"dd/MM/yyyy", None))
         self.StartDateLbl.setText(QCoreApplication.translate("UpdateQuotesDlg", u"Start date", None))
-        self.UseProxyCheck.setText(QCoreApplication.translate("UpdateQuotesDlg", u"Use &Proxy", None))
+        self.StartDateEdit.setDisplayFormat(QCoreApplication.translate("UpdateQuotesDlg", u"dd/MM/yyyy", None))
+        self.EndDateLbl.setText(QCoreApplication.translate("UpdateQuotesDlg", u"End date", None))
+        self.EndDateEdit.setDisplayFormat(QCoreApplication.translate("UpdateQuotesDlg", u"dd/MM/yyyy", None))
     # retranslateUi
 
