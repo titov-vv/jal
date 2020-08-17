@@ -132,7 +132,7 @@ class Ledger:
             new_value = old_value
         else:
             new_value = old_value + value
-        if (abs(new_amount - old_amount) + abs(new_value - old_value)) <= (2 * CALC_TOLERANCE):
+        if (abs(new_amount - old_amount) + abs(new_value - old_value)) <= (2 * Setup.CALC_TOLERANCE):
             return
 
         query.prepare(
@@ -761,7 +761,7 @@ class Ledger:
                              "GROUP BY a.id "
                              "HAVING ABS(total_value) > :tolerance")
         query.bindValue(":holdings_timestamp", self.holdings_date)
-        query.bindValue(":tolerance", DISP_TOLERANCE)
+        query.bindValue(":tolerance", Setup.DISP_TOLERANCE)
         assert query.exec_()
 
         assert query.prepare(
@@ -779,7 +779,7 @@ class Ledger:
             "HAVING ABS(qty) > :tolerance")
         query.bindValue(":recalc_currency", self.holdings_currency)
         query.bindValue(":holdings_timestamp", self.holdings_date)
-        query.bindValue(":tolerance", DISP_TOLERANCE)
+        query.bindValue(":tolerance", Setup.DISP_TOLERANCE)
         assert query.exec_()
 
         query.prepare(
@@ -796,7 +796,7 @@ class Ledger:
             "HAVING ABS(qty) > :tolerance")
         query.bindValue(":recalc_currency", self.holdings_currency)
         query.bindValue(":holdings_timestamp", self.holdings_date)
-        query.bindValue(":tolerance", DISP_TOLERANCE)
+        query.bindValue(":tolerance", Setup.DISP_TOLERANCE)
         assert query.exec_()
 
         query.prepare("INSERT INTO holdings (level1, level2, currency, account, asset, asset_name, "

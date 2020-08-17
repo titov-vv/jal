@@ -2,7 +2,7 @@ from datetime import datetime
 from PySide2.QtCore import Qt
 from PySide2.QtSql import QSqlRelationalDelegate
 
-from constants import CALC_TOLERANCE
+from constants import Setup
 from CustomUI.reference_selector import CategorySelector
 from CustomUI.reference_selector import TagSelector
 
@@ -59,7 +59,7 @@ class FloatDelegate(QSqlRelationalDelegate):
         QSqlRelationalDelegate.__init__(self, parent)
 
     def formatFloatLong(self, value):
-        if abs(value - round(value, 2)) >= CALC_TOLERANCE:
+        if abs(value - round(value, 2)) >= Setup.CALC_TOLERANCE:
             text = str(value)
         else:
             text = f"{value:.2f}"

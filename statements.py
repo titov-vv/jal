@@ -271,7 +271,7 @@ class StatementLoader(QObject):
         if query.next():
             logging.warning(f"Currency exchange {f_amount}->{t_amount} already exists")
             return
-        if abs(fee) > CALC_TOLERANCE:
+        if abs(fee) > Setup.CALC_TOLERANCE:
             query.prepare("INSERT INTO transfers_combined (from_timestamp, from_acc_id, from_amount, "
                           "to_timestamp, to_acc_id, to_amount, fee_timestamp, fee_acc_id, fee_amount, note) "
                           "VALUES (:timestamp, :f_acc_id, :f_amount, :timestamp, :t_acc_id, :t_amount, "

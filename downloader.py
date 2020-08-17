@@ -95,7 +95,7 @@ class QuoteDownloader(QObject):
             "AND l.timestamp >= :start_timestamp AND l.timestamp <= :end_timestamp")
         query.bindValue(":start_timestamp", start_timestamp)
         query.bindValue(":end_timestamp", end_timestamp)
-        query.bindValue(":tolerance", CALC_TOLERANCE)
+        query.bindValue(":tolerance", Setup.CALC_TOLERANCE)
         assert query.exec_()
 
         # Get a list of symbols ordered by data source ID

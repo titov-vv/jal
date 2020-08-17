@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from constants import CALC_TOLERANCE
+from constants import Setup
 import sqlite3
 import pandas as pd
 import math
@@ -44,7 +44,7 @@ def RestoreBackup(db_file, restore_path):
             if data[column].dtype == 'float64':  # Correct possible mistakes due to float data type
                 if table == 'transfers' and column == 'rate':  # But rate is calculated value with arbitrary precision
                     continue
-                data[column] = data[column].round(int(-math.log10(CALC_TOLERANCE)))
+                data[column] = data[column].round(int(-math.log10(Setup.CALC_TOLERANCE)))
         data.to_sql(name=table, con=db, if_exists='append', index=False, chunksize=100)
 
     db.commit()

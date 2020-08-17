@@ -1,4 +1,4 @@
-from constants import *
+from constants import Setup
 from PySide2.QtCore import Qt, QMetaObject
 from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery
 from PySide2.QtWidgets import QMessageBox
@@ -6,7 +6,7 @@ from DB.bulk_db import loadDbFromSQL
 
 
 def get_dbfilename(app_path):
-    return app_path + DB_PATH
+    return app_path + Setup.DB_PATH
 
 def init_and_check_db(parent, db_path):
     db = QSqlDatabase.addDatabase("QSQLITE")
@@ -15,7 +15,7 @@ def init_and_check_db(parent, db_path):
     tables = db.tables(QSql.Tables)
     if not tables:
         db.close()
-        loadDbFromSQL(get_dbfilename(db_path), db_path + INIT_SCRIPT_PATH)
+        loadDbFromSQL(get_dbfilename(db_path), db_path + Setup.INIT_SCRIPT_PATH)
         QMessageBox().information(parent, parent.tr("Database initialized"),
                                   parent.tr("Database have been initialized.\n"
                                           "You need to restart the application.\n"
@@ -27,7 +27,7 @@ def init_and_check_db(parent, db_path):
     query = QSqlQuery(db)
     query.exec_("SELECT value FROM settings WHERE name='SchemaVersion'")
     query.next()
-    if query.value(0) != TARGET_SCHEMA:
+    if query.value(0) != Setup.TARGET_SCHEMA:
         db.close()
         QMessageBox().critical(parent, parent.tr("Database version mismatch"),
                                parent.tr("Database schema version is wrong"),

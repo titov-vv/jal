@@ -1,10 +1,11 @@
 from PySide2.QtGui import QColor
 
-DB_PATH = "ledger.sqlite"
-INIT_SCRIPT_PATH = 'ledger.sql'
-TARGET_SCHEMA = 4
-CALC_TOLERANCE = 1e-10
-DISP_TOLERANCE = 1e-4
+class Setup:
+    DB_PATH = "ledger.sqlite"
+    INIT_SCRIPT_PATH = 'ledger.sql'
+    TARGET_SCHEMA = 4
+    CALC_TOLERANCE = 1e-10
+    DISP_TOLERANCE = 1e-4
 
 # PREDEFINED BOOK ACCOUNTS
 BOOK_ACCOUNT_COSTS = 1

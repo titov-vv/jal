@@ -262,7 +262,7 @@ class LedgerOperationsView(QObject):
             fee_amount = record.value(transfer_mapper.model().fieldIndex("fee_amount"))
             if not fee_amount:
                 fee_amount = 0
-            if abs(float(fee_amount)) < CALC_TOLERANCE:  # If we don't have fee - set Fee Account to NULL to fire DB trigger
+            if abs(float(fee_amount)) < Setup.CALC_TOLERANCE:  # If we don't have fee - set Fee Account to NULL to fire DB trigger
                 transfer_mapper.model().setData(transfer_mapper.model().index(0, transfer_mapper.model().fieldIndex("fee_acc_id")), None)
 
     def beforeChildViewCommit(self, operation_type):
