@@ -306,7 +306,7 @@ class StatementLoader(QObject):
         query.prepare("SELECT id FROM all_operations "
                       "WHERE type = :type AND timestamp=:timestamp AND account_id=:account_id AND amount=:amount")
         query.bindValue(":timestamp", timestamp)
-        query.bindValue(":type", TRANSACTION_ACTION)
+        query.bindValue(":type", TransactionType.Action)
         query.bindValue(":account_id", account_id)
         query.bindValue(":amount", amount)
         assert query.exec_()

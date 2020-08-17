@@ -195,15 +195,15 @@ class Ledger:
             return 0.0
 
     def takeCredit(self, seq_id, timestamp, account_id, currency_id, action_sum):
-        money_available = self.getAmount(timestamp, BOOK_ACCOUNT_MONEY, account_id)
+        money_available = self.getAmount(timestamp, BookAccount.Money, account_id)
         credit = 0
         if money_available < action_sum:
             credit = action_sum - money_available
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_LIABILITIES, currency_id, account_id, -credit)
+            self.appendTransaction(timestamp, seq_id, BookAccount.Liabilities, currency_id, account_id, -credit)
         return credit
 
     def returnCredit(self, seq_id, timestamp, account_id, currency_id, action_sum):
-        CreditValue = -1.0 * self.getAmount(timestamp, BOOK_ACCOUNT_LIABILITIES, account_id)
+        CreditValue = -1.0 * self.getAmount(timestamp, BookAccount.Liabilities, account_id)
         debit = 0
         if CreditValue > 0:
             if CreditValue >= action_sum:
@@ -211,7 +211,7 @@ class Ledger:
             else:
                 debit = CreditValue
         if debit > 0:
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_LIABILITIES, currency_id, account_id, debit)
+            self.appendTransaction(timestamp, seq_id, BookAccount.Liabilities, currency_id, account_id, debit)
         return debit
 
     def processActionDetails(self, seq_id, op_id):
@@ -227,10 +227,10 @@ class Ledger:
         while query.next():
             amount = query.value(4)
             if amount < 0:
-                self.appendTransaction(query.value(0), seq_id, BOOK_ACCOUNT_COSTS, query.value(3),
+                self.appendTransaction(query.value(0), seq_id, BookAccount.Costs, query.value(3),
                                        query.value(1), -amount, None, query.value(2), query.value(5), query.value(6))
             else:
-                self.appendTransaction(query.value(0), seq_id, BOOK_ACCOUNT_INCOMES, query.value(3),
+                self.appendTransaction(query.value(0), seq_id, BookAccount.Incomes, query.value(3),
                                        query.value(1), -amount, None, query.value(2), query.value(5), query.value(6))
 
     def processAction(self, seq_id, op_id):
@@ -251,12 +251,12 @@ class Ledger:
         action_sum = query.value(3)
         if action_sum < 0:
             credit_sum = self.takeCredit(seq_id, timestamp, account_id, currency_id, -action_sum)
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_MONEY, currency_id, account_id,
+            self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id,
                                    -(-action_sum - credit_sum))
         else:
             returned_sum = self.returnCredit(seq_id, timestamp, account_id, currency_id, action_sum)
             if returned_sum < action_sum:
-                self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_MONEY, currency_id, account_id,
+                self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id,
                                        (action_sum - returned_sum))
         self.processActionDetails(seq_id, op_id)
 
@@ -277,13 +277,13 @@ class Ledger:
         tax_sum = query.value(5)
         returned_sum = self.returnCredit(seq_id, timestamp, account_id, currency_id, (dividend_sum - tax_sum))
         if returned_sum < dividend_sum:
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_MONEY, currency_id, account_id,
+            self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id,
                                    (dividend_sum - returned_sum))
-        self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_INCOMES, currency_id, account_id, -dividend_sum, None,
+        self.appendTransaction(timestamp, seq_id, BookAccount.Incomes, currency_id, account_id, -dividend_sum, None,
                                peer_id, CATEGORY_DIVIDEND)
         if tax_sum:
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_MONEY, currency_id, account_id, tax_sum)
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_COSTS, currency_id, account_id, -tax_sum, None,
+            self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id, tax_sum)
+            self.appendTransaction(timestamp, seq_id, BookAccount.Costs, currency_id, account_id, -tax_sum, None,
                                    peer_id, CATEGORY_TAXES)
 
     def processBuy(self, seq_id, timestamp, account_id, currency_id, asset_id, qty, price, coupon, fee):
@@ -297,7 +297,7 @@ class Ledger:
         deal_query.bindValue(":asset_id", asset_id)
         deal_query.bindValue(":close_sid", seq_id)
         query = QSqlQuery(self.db)
-        if self.getAmount(timestamp, BOOK_ACCOUNT_ASSETS, account_id, asset_id) < 0:
+        if self.getAmount(timestamp, BookAccount.Assets, account_id, asset_id) < 0:
             query.prepare("SELECT d.open_sid AS open, abs(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
                           "LEFT JOIN sequence AS os ON os.type=3 AND os.id=d.open_sid "
                           "JOIN trades AS o ON o.id = os.operation_id "
@@ -347,21 +347,21 @@ class Ledger:
                     break
         credit_sum = self.takeCredit(seq_id, timestamp, account_id, currency_id, trade_sum)
         if trade_sum != credit_sum:
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_MONEY, currency_id, account_id,
+            self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id,
                                    -(trade_sum - credit_sum))
         if sell_qty > 0:  # Result of closed deals
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, asset_id, account_id, sell_qty, sell_sum)
+            self.appendTransaction(timestamp, seq_id, BookAccount.Assets, asset_id, account_id, sell_qty, sell_sum)
             if ((price * sell_qty) - sell_sum) != 0:  # Profit if we have it
-                self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_INCOMES, currency_id, account_id,
+                self.appendTransaction(timestamp, seq_id, BookAccount.Incomes, currency_id, account_id,
                                        ((price * sell_qty) - sell_sum), None, None, CATEGORY_PROFIT)
         if sell_qty < qty:  # Add new long position
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, asset_id, account_id, (qty - sell_qty),
+            self.appendTransaction(timestamp, seq_id, BookAccount.Assets, asset_id, account_id, (qty - sell_qty),
                                    (qty - sell_qty) * price)
         if coupon:
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_COSTS, currency_id, account_id, coupon, None, None,
+            self.appendTransaction(timestamp, seq_id, BookAccount.Costs, currency_id, account_id, coupon, None, None,
                                    CATEGORY_DIVIDEND)
         if fee:
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_COSTS, currency_id, account_id, fee, None, None,
+            self.appendTransaction(timestamp, seq_id, BookAccount.Costs, currency_id, account_id, fee, None, None,
                                    CATEGORY_FEES)
 
     def processSell(self, seq_id, timestamp, account_id, currency_id, asset_id, qty, price, coupon, fee):
@@ -375,7 +375,7 @@ class Ledger:
         deal_query.bindValue(":asset_id", asset_id)
         deal_query.bindValue(":close_sid", seq_id)
         query = QSqlQuery(self.db)
-        if self.getAmount(timestamp, BOOK_ACCOUNT_ASSETS, account_id, asset_id) > 0:
+        if self.getAmount(timestamp, BookAccount.Assets, account_id, asset_id) > 0:
             query.prepare("SELECT d.open_sid AS open, abs(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
                           "LEFT JOIN sequence AS os ON os.type=3 AND os.id=d.open_sid "
                           "JOIN trades AS o ON o.id = os.operation_id "
@@ -426,21 +426,21 @@ class Ledger:
                     break
         returned_sum = self.returnCredit(seq_id, timestamp, account_id, currency_id, trade_sum)
         if returned_sum < trade_sum:
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_MONEY, currency_id, account_id,
+            self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id,
                                    (trade_sum - returned_sum))
         if buy_qty > 0:  # Result of closed deals
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, asset_id, account_id, -buy_qty, -buy_sum)
+            self.appendTransaction(timestamp, seq_id, BookAccount.Assets, asset_id, account_id, -buy_qty, -buy_sum)
             if (buy_sum - (price * buy_qty)) != 0:  # Profit if we have it
-                self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_INCOMES, currency_id, account_id,
+                self.appendTransaction(timestamp, seq_id, BookAccount.Incomes, currency_id, account_id,
                                        (buy_sum - (price * buy_qty)), None, None, CATEGORY_PROFIT)
         if buy_qty < qty:  # Add new short position
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_ASSETS, asset_id, account_id, (buy_qty - qty),
+            self.appendTransaction(timestamp, seq_id, BookAccount.Assets, asset_id, account_id, (buy_qty - qty),
                                    (buy_qty - qty) * price)
         if coupon:
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_INCOMES, currency_id, account_id, -coupon, None,
+            self.appendTransaction(timestamp, seq_id, BookAccount.Incomes, currency_id, account_id, -coupon, None,
                                    None, CATEGORY_DIVIDEND)
         if fee:
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_COSTS, currency_id, account_id, fee, None, None,
+            self.appendTransaction(timestamp, seq_id, BookAccount.Costs, currency_id, account_id, fee, None, None,
                                    CATEGORY_FEES)
 
     def processCorpAction(self):
@@ -479,20 +479,20 @@ class Ledger:
 
     def processTransferOut(self, seq_id, timestamp, account_id, currency_id, amount):
         credit_sum = self.takeCredit(seq_id, timestamp, account_id, currency_id, amount)
-        self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_MONEY, currency_id, account_id, -(amount - credit_sum))
-        self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_TRANSFERS, currency_id, account_id, amount)
+        self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id, -(amount - credit_sum))
+        self.appendTransaction(timestamp, seq_id, BookAccount.Transfers, currency_id, account_id, amount)
 
     def processTransferIn(self, seq_id, timestamp, account_id, currency_id, amount):
         returned_sum = self.returnCredit(seq_id, timestamp, account_id, currency_id, amount)
         if returned_sum < amount:
-            self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_MONEY, currency_id, account_id,
+            self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id,
                                    (amount - returned_sum))
-        self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_TRANSFERS, currency_id, account_id, -amount)
+        self.appendTransaction(timestamp, seq_id, BookAccount.Transfers, currency_id, account_id, -amount)
 
     def processTransferFee(self, seq_id, timestamp, account_id, currency_id, fee):
         credit_sum = self.takeCredit(seq_id, timestamp, account_id, currency_id, fee)
-        self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_MONEY, currency_id, account_id, -(fee - credit_sum))
-        self.appendTransaction(timestamp, seq_id, BOOK_ACCOUNT_COSTS, currency_id, account_id, fee, None,
+        self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id, -(fee - credit_sum))
+        self.appendTransaction(timestamp, seq_id, BookAccount.Costs, currency_id, account_id, fee, None,
                                PEER_FINANCIAL, CATEGORY_FEES, None)
 
     def processTransfer(self, seq_id, transfer_id):
@@ -565,13 +565,13 @@ class Ledger:
             seq_query.bindValue(":operation_id", transaction_id)
             assert seq_query.exec_()
             seq_id = seq_query.lastInsertId()
-            if transaction_type == TRANSACTION_ACTION:
+            if transaction_type == TransactionType.Action:
                 self.processAction(seq_id, transaction_id)
-            if transaction_type == TRANSACTION_DIVIDEND:
+            if transaction_type == TransactionType.Dividend:
                 self.processDividend(seq_id, transaction_id)
-            if transaction_type == TRANSACTION_TRADE:
+            if transaction_type == TransactionType.Trade:
                 self.processTrade(seq_id, transaction_id)
-            if transaction_type == TRANSACTION_TRANSFER:
+            if transaction_type == TransactionType.Transfer:
                 self.processTransfer(seq_id, transaction_id)
 
     # Rebuild transaction sequence and recalculate all amounts
@@ -634,13 +634,13 @@ class Ledger:
             seq_query.bindValue(":operation_id", transaction_id)
             assert seq_query.exec_()
             seq_id = seq_query.lastInsertId()
-            if transaction_type == TRANSACTION_ACTION:
+            if transaction_type == TransactionType.Action:
                 self.processAction(seq_id, transaction_id)
-            if transaction_type == TRANSACTION_DIVIDEND:
+            if transaction_type == TransactionType.Dividend:
                 self.processDividend(seq_id, transaction_id)
-            if transaction_type == TRANSACTION_TRADE:
+            if transaction_type == TransactionType.Trade:
                 self.processTrade(seq_id, transaction_id)
-            if transaction_type == TRANSACTION_TRANSFER:
+            if transaction_type == TransactionType.Transfer:
                 self.processTransfer(seq_id, transaction_id)
             i = i + 1
             if (i % 1000) == 0:
@@ -698,9 +698,9 @@ class Ledger:
             "GROUP BY l.account_id "
             "HAVING ABS(balance)>0.0001")
         query.bindValue(":base_currency", self.balance_currency)
-        query.bindValue(":money_book", BOOK_ACCOUNT_MONEY)
-        query.bindValue(":assets_book", BOOK_ACCOUNT_ASSETS)
-        query.bindValue(":liabilities_book", BOOK_ACCOUNT_LIABILITIES)
+        query.bindValue(":money_book", BookAccount.Money)
+        query.bindValue(":assets_book", BookAccount.Assets)
+        query.bindValue(":liabilities_book", BookAccount.Liabilities)
         query.bindValue(":balances_timestamp", self.balance_date)
         assert query.exec_()
 

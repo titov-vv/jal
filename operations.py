@@ -15,7 +15,7 @@ IV_TYPE = 1
 IV_VALUE = 2
 
 LedgerInitValues = {
-    TRANSACTION_ACTION: {
+    TransactionType.Action: {
     # FieldName, True-Copy, TypeOfInitialization, DefaultValue
         'id': (False, INIT_NULL, None),
         'timestamp': (False, INIT_TIMESTAMP, None),
@@ -23,7 +23,7 @@ LedgerInitValues = {
         'peer_id': (True, INIT_VALUE, 0),
         'alt_currency_id': (True, INIT_VALUE, None)
     },
-    TRANSACTION_TRADE: {
+    TransactionType.Trade: {
         'id': (False, INIT_NULL, None),
         'timestamp': (False, INIT_TIMESTAMP, None),
         'settlement': (True, INIT_VALUE, 0),
@@ -36,7 +36,7 @@ LedgerInitValues = {
         'coupon': (True, INIT_VALUE, 0),
         'fee': (True, INIT_VALUE, 0)
     },
-    TRANSACTION_DIVIDEND: {
+    TransactionType.Dividend: {
         'id': (False, INIT_NULL, None),
         'timestamp': (False, INIT_TIMESTAMP, None),
         'number': (False, INIT_VALUE, ''),
@@ -47,7 +47,7 @@ LedgerInitValues = {
         'note': (True, INIT_VALUE, None),
         'note_tax': (True, INIT_VALUE, None)
     },
-    TRANSACTION_TRANSFER: {
+    TransactionType.Transfer: {
         'id': (False, INIT_NULL, None),
         'from_id': (False, INIT_NULL, None),
         'from_timestamp': (False, INIT_TIMESTAMP, None),
@@ -253,7 +253,7 @@ class LedgerOperationsView(QObject):
             self.table_view.model().select()
         
     def beforeMapperCommit(self, operation_type):
-        if operation_type == TRANSACTION_TRANSFER:
+        if operation_type == TransactionType.Transfer:
             transfer_mapper = self.operations[operation_type][self.OP_MAPPER]
             record = transfer_mapper.model().record(0)
             note = record.value(transfer_mapper.model().fieldIndex("note"))
@@ -266,7 +266,7 @@ class LedgerOperationsView(QObject):
                 transfer_mapper.model().setData(transfer_mapper.model().index(0, transfer_mapper.model().fieldIndex("fee_acc_id")), None)
 
     def beforeChildViewCommit(self, operation_type):
-        if operation_type == TRANSACTION_ACTION:
+        if operation_type == TransactionType.Action:
             actions_mapper = self.operations[operation_type][self.OP_MAPPER]
             pid = actions_mapper.model().data(actions_mapper.model().index(0, actions_mapper.model().fieldIndex("id")))
             if pid is None:  # we just have saved new action record (mapper submitAll() is called before this signal)

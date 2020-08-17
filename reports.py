@@ -279,11 +279,11 @@ class Reports:
             "  GROUP BY month "
             ") AS f ON f.month = m.month")
         query.bindValue(":account_id", account_id)
-        query.bindValue(":book_costs", BOOK_ACCOUNT_COSTS)
-        query.bindValue(":book_incomes", BOOK_ACCOUNT_INCOMES)
-        query.bindValue(":book_money", BOOK_ACCOUNT_MONEY)
-        query.bindValue(":book_assets", BOOK_ACCOUNT_ASSETS)
-        query.bindValue(":book_transfers", BOOK_ACCOUNT_TRANSFERS)
+        query.bindValue(":book_costs", BookAccount.Costs)
+        query.bindValue(":book_incomes", BookAccount.Incomes)
+        query.bindValue(":book_money", BookAccount.Money)
+        query.bindValue(":book_assets", BookAccount.Assets)
+        query.bindValue(":book_transfers", BookAccount.Transfers)
         assert query.exec_()
 
         sheet.write(0, 0, "Period", self.formats['title'])
@@ -345,8 +345,8 @@ class Reports:
             "AND t.timestamp>=:begin AND t.timestamp<=:end "
             "GROUP BY month_timestamp, t.account_id, t.asset_id, t.category_id "
             "ORDER BY currency, month_timestamp, category")
-        query.bindValue(":book_costs", BOOK_ACCOUNT_COSTS)
-        query.bindValue(":book_incomes", BOOK_ACCOUNT_INCOMES)
+        query.bindValue(":book_costs", BookAccount.Costs)
+        query.bindValue(":book_incomes", BookAccount.Incomes)
         query.bindValue(":begin", begin)
         query.bindValue(":end", end)
         assert query.exec_()

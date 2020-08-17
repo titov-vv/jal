@@ -270,24 +270,24 @@ class OperationsTypeDelegate(QStyledItemDelegate):
         amount = record.value("amount")
         if amount == '':
             amount = 0
-        if transaction_type == TRANSACTION_ACTION:
+        if transaction_type == TransactionType.Action:
             if amount >= 0:
                 text = "+"
                 pen.setColor(DARK_GREEN_COLOR)
             else:
                 text = "—"
                 pen.setColor(DARK_RED_COLOR)
-        elif transaction_type == TRANSACTION_DIVIDEND:
+        elif transaction_type == TransactionType.Dividend:
             text = "Δ"
             pen.setColor(DARK_GREEN_COLOR)
-        elif transaction_type == TRANSACTION_TRADE:
+        elif transaction_type == TransactionType.Trade:
             if amount <= 0:  # TODO Change from amount to qty as amount might be 0 for Corp.Actions
                 text = "B"
                 pen.setColor(DARK_GREEN_COLOR)
             else:
                 text = "S"
                 pen.setColor(DARK_RED_COLOR)
-        elif transaction_type == TRANSACTION_TRANSFER:
+        elif transaction_type == TransactionType.Transfer:
             transfer_subtype = record.value("qty_trid")
             if transfer_subtype == TRANSFER_IN:
                 text = ">"
@@ -316,7 +316,7 @@ class OperationsTypeDelegate(QStyledItemDelegate):
         document.setDefaultFont(option.font)
         w = document.idealWidth()
         h = fontMetrics.height()
-        if (transaction_type == TRANSACTION_DIVIDEND) or (transaction_type == TRANSACTION_TRADE):
+        if (transaction_type == TransactionType.Dividend) or (transaction_type == TransactionType.Trade):
             h = h * 2
         return QSize(w, h)
 
@@ -336,7 +336,7 @@ class OperationsTimestampDelegate(QStyledItemDelegate):
         transaction_type = record.value("type")
         number = record.value("num_peer")
         text = datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')
-        if (transaction_type == TRANSACTION_TRADE) or (transaction_type == TRANSACTION_DIVIDEND):
+        if (transaction_type == TransactionType.Trade) or (transaction_type == TransactionType.Dividend):
             text = text + f"\n# {number}"
         painter.drawText(option.rect, Qt.AlignLeft, text)
         painter.restore()
@@ -352,12 +352,12 @@ class OperationsAccountDelegate(QStyledItemDelegate):
         record = model.record(index.row())
         account = record.value(index.column())
         transaction_type = record.value("type")
-        if transaction_type == TRANSACTION_ACTION:
+        if transaction_type == TransactionType.Action:
             text = account
-        elif (transaction_type == TRANSACTION_TRADE) or (transaction_type == TRANSACTION_DIVIDEND):
+        elif (transaction_type == TransactionType.Trade) or (transaction_type == TransactionType.Dividend):
             asset_name = record.value("asset_name")
             text = account + "\n" + asset_name
-        elif transaction_type == TRANSACTION_TRANSFER:
+        elif transaction_type == TransactionType.Transfer:
             account2 = record.value("note2")
             transfer_subtype = record.value("qty_trid")
             if transfer_subtype == TRANSFER_FEE:
@@ -383,13 +383,13 @@ class OperationsNotesDelegate(QStyledItemDelegate):
         model = index.model()
         record = model.record(index.row())
         transaction_type = record.value("type")
-        if transaction_type == TRANSACTION_ACTION:
+        if transaction_type == TransactionType.Action:
             text = record.value("num_peer")
-        elif transaction_type == TRANSACTION_TRANSFER:
+        elif transaction_type == TransactionType.Transfer:
             text = record.value(index.column())
-        elif transaction_type == TRANSACTION_DIVIDEND:
+        elif transaction_type == TransactionType.Dividend:
             text = record.value(index.column()) + "\n" + record.value("note2")
-        elif transaction_type == TRANSACTION_TRADE:
+        elif transaction_type == TransactionType.Trade:
             # Take corp.action description if any or construct Qty x Price for Buy/Sell operations
             text = record.value(index.column())
             if not text:
@@ -425,7 +425,7 @@ class OperationsAmountDelegate(QStyledItemDelegate):
         transaction_type = record.value("type")
         qty = record.value("qty_trid")
         tax = record.value("fee_tax")
-        if transaction_type == TRANSACTION_TRADE:
+        if transaction_type == TransactionType.Trade:
             text = f"{amount:+,.2f}"
             rect.setHeight(H / 2)
             if amount >= 0:
@@ -442,7 +442,7 @@ class OperationsAmountDelegate(QStyledItemDelegate):
                 pen.setColor(DARK_RED_COLOR)
             painter.setPen(pen)
             painter.drawText(option.rect, Qt.AlignRight, text)
-        elif transaction_type == TRANSACTION_DIVIDEND:
+        elif transaction_type == TransactionType.Dividend:
             text = f"{amount:+,.2f}"
             rect.setHeight(H / 2)
             pen.setColor(DARK_GREEN_COLOR)

@@ -60,18 +60,18 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.ui_config.configure_all()
         self.operation_details = {
-            TRANSACTION_ACTION: (
+            TransactionType.Action: (
                 'Income / Spending', self.ui_config.mappers[self.ui_config.ACTIONS], 'actions',
-                self.ActionDetailsTableView, 'action_details', LedgerInitValues[TRANSACTION_ACTION]),
-            TRANSACTION_TRADE: (
+                self.ActionDetailsTableView, 'action_details', LedgerInitValues[TransactionType.Action]),
+            TransactionType.Trade: (
                 'Trade', self.ui_config.mappers[self.ui_config.TRADES], 'trades', None, None,
-                LedgerInitValues[TRANSACTION_TRADE]),
-            TRANSACTION_DIVIDEND: (
+                LedgerInitValues[TransactionType.Trade]),
+            TransactionType.Dividend: (
                 'Dividend', self.ui_config.mappers[self.ui_config.DIVIDENDS], 'dividends', None, None,
-                LedgerInitValues[TRANSACTION_DIVIDEND]),
-            TRANSACTION_TRANSFER: (
+                LedgerInitValues[TransactionType.Dividend]),
+            TransactionType.Transfer: (
                 'Transfer', self.ui_config.mappers[self.ui_config.TRANSFERS], 'transfers_combined', None, None,
-                LedgerInitValues[TRANSACTION_TRANSFER])
+                LedgerInitValues[TransactionType.Transfer])
         }
         self.operations.setOperationsDetails(self.operation_details)
         self.operations.activateOperationView.connect(self.ShowOperationTab)
@@ -176,10 +176,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def ShowOperationTab(self, operation_type):
         tab_list = {
-            TRANSACTION_ACTION: TAB_ACTION,
-            TRANSACTION_TRANSFER: TAB_TRANSFER,
-            TRANSACTION_TRADE: TAB_TRADE,
-            TRANSACTION_DIVIDEND: TAB_DIVIDEND
+            TransactionType.Action: TAB_ACTION,
+            TransactionType.Transfer: TAB_TRANSFER,
+            TransactionType.Trade: TAB_TRADE,
+            TransactionType.Dividend: TAB_DIVIDEND
         }
         self.OperationsTabs.setCurrentIndex(tab_list[operation_type])
 
