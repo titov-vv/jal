@@ -3,7 +3,7 @@ import logging
 from constants import Setup, TransactionType
 from PySide2.QtCore import Qt, QObject, Signal, Slot, QDateTime
 from PySide2.QtWidgets import QMessageBox, QMenu, QAction, QHeaderView
-from PySide2.QtSql import QSqlQuery
+from DB.helpers import executeSQL
 
 INIT_NULL = 0
 INIT_VALUE = 1
@@ -183,12 +183,9 @@ class LedgerOperationsView(QObject):
         if self.operations[operation_type][self.OP_CHILD_VIEW]:
             child_view = self.operations[operation_type][self.OP_CHILD_VIEW]
             child_view.model().setFilter(f"{self.operations[operation_type][self.OP_CHILD_TABLE]}.pid = 0")
-            query = QSqlQuery(mapper.model().database())
-            query.prepare(f"SELECT * FROM {self.operations[operation_type][self.OP_CHILD_TABLE]} "
-                          "WHERE pid = :pid ORDER BY id DESC")
-            query.bindValue(":pid", old_id)
-            query.setForwardOnly(True)
-            assert query.exec_()
+            query = executeSQL(mapper.model().database(),
+                               f"SELECT * FROM {self.operations[operation_type][self.OP_CHILD_TABLE]} "
+                               "WHERE pid = :pid ORDER BY id DESC", [(":pid", old_id)])
             while query.next():
                 new_record = query.record()
                 new_record.setNull("id")
@@ -316,11 +313,8 @@ class LedgerOperationsView(QObject):
         model = self.current_index.model()
         timestamp = model.data(model.index(self.current_index.row(), 2), Qt.DisplayRole)
         account_id = model.data(model.index(self.current_index.row(), 3), Qt.DisplayRole)
-        query = QSqlQuery(model.database())
-        query.prepare("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id")
-        query.bindValue(":timestamp", timestamp)
-        query.bindValue(":account_id", account_id)
-        assert query.exec_()
+        _ = executeSQL(model.database(), "UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
+                       [(":timestamp", timestamp), (":account_id", account_id)])
         model.select()
 
     @Slot()
