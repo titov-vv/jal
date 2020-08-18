@@ -68,6 +68,7 @@ class FloatDelegate(QSqlRelationalDelegate):
     def setEditorData(self, editor, index):
         amount = index.model().data(index, Qt.EditRole)
         if amount:
+            # TODO for some widgets here should be 'editor.setValue(amount)' - make alignment
             editor.setText(self.formatFloatLong(float(amount)))
         else:
             QSqlRelationalDelegate.setEditorData(self, editor, index)
@@ -78,7 +79,6 @@ class FloatDelegate(QSqlRelationalDelegate):
         text = ""
         if amount:
             text = self.formatFloatLong(float(amount))
-            # text = f"{amount:.2f}"
         painter.drawText(option.rect, Qt.AlignRight, text)
         painter.restore()
 

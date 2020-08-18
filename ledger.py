@@ -466,10 +466,22 @@ class Ledger:
     # from last valid operation (from ledger frontier) until present moment
     # Methods asks for confirmation if we have more than 15 days unreconciled
     def MakeUpToDate(self):
+        operations_count = 0
         frontier = self.getCurrentFrontier()
-        if (QDateTime.currentDateTime().toSecsSinceEpoch() - frontier) > 1296000:
+        query = executeSQL(self.db, "SELECT SUM(cnt) FROM ("
+                                    "SELECT COUNT(id) AS cnt FROM actions WHERE timestamp >= :frontier "
+                                    "UNION ALL "
+                                    "SELECT COUNT(id) AS cnt FROM dividends WHERE timestamp >= :frontier "
+                                    "UNION ALL "
+                                    "SELECT COUNT(id) AS cnt FROM transfers WHERE timestamp >= :frontier "
+                                    "UNION ALL "
+                                    "SELECT COUNT(id) AS cnt FROM trades WHERE timestamp >= :frontier)",
+                           [(":frontier", frontier)])
+        if query.next():
+            operations_count = query.value(0)
+        if operations_count > 50:
             if QMessageBox().warning(None, "Confirmation",
-                                     "More than 2 weeks require rebuild. Do you want to do it right now?",
+                                     f"{operations_count} operations require rebuild. Do you want to do it right now?",
                                      QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
                 return
 
