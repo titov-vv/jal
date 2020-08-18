@@ -1,6 +1,6 @@
-import datetime
 import logging
 
+from datetime import datetime
 from constants import Setup, BookAccount, TransactionType, TransferSubtype, PredefinedCategory, PredefinedPeer
 from PySide2.QtCore import Qt, QDate, QDateTime
 from PySide2.QtWidgets import QDialog, QMessageBox
@@ -15,7 +15,7 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
 
         self.LastRadioButton.toggle()
         self.frontier = frontier
-        frontier_text = datetime.datetime.fromtimestamp(frontier).strftime('%d/%m/%Y')
+        frontier_text = datetime.fromtimestamp(frontier).strftime('%d/%m/%Y')
         self.FrontierDateLabel.setText(frontier_text)
         self.CustomDateEdit.setDate(QDate.currentDate())
 
@@ -47,10 +47,11 @@ TIMESTAMP = 2
 TRANSACTION_SUBTYPE = 3
 ACCOUNT_ID = 4
 CURRENCY_ID = 5
-AMOUNT = 6
-PRICE_CATEGORY = 7
-COUPON_FEE = 8
-FEE_TAX_TAG = 9
+ASSET_ID = 6
+AMOUNT_QTY = 7
+PRICE_CATEGORY = 8
+COUPON_FEE = 9
+FEE_TAX_TAG = 10
 
 class Ledger:
     SILENT_REBUILD_THRESHOLD = 50
@@ -203,7 +204,9 @@ class Ledger:
             self.appendTransaction(timestamp, seq_id, BookAccount.Liabilities, currency_id, account_id, debit)
         return debit
 
-    def processActionDetails(self, seq_id, op_id):
+    def processActionDetails(self):
+        seq_id = self.current_seq
+        op_id = self.current[OPERATION_ID]
         query = executeSQL(self.db, "SELECT a.timestamp, a.account_id, a.peer_id, c.currency_id, "
                                     "d.sum as amount, d.category_id, d.tag_id "
                                     "FROM actions as a "
@@ -211,25 +214,20 @@ class Ledger:
                                     "LEFT JOIN accounts AS c ON a.account_id = c.id "
                                     "WHERE pid = :pid", [(":pid", op_id)])
         while query.next():
-            amount = query.value(4)
+            timestamp, account_id, peer_id, currency_id, amount, category_id, tag_id = readSQLrecord(query)
             if amount < 0:
-                self.appendTransaction(query.value(0), seq_id, BookAccount.Costs, query.value(3),
-                                       query.value(1), -amount, None, query.value(2), query.value(5), query.value(6))
+                self.appendTransaction(timestamp, seq_id, BookAccount.Costs, currency_id,
+                                       account_id, -amount, None, peer_id, category_id, tag_id)
             else:
-                self.appendTransaction(query.value(0), seq_id, BookAccount.Incomes, query.value(3),
-                                       query.value(1), -amount, None, query.value(2), query.value(5), query.value(6))
+                self.appendTransaction(timestamp, seq_id, BookAccount.Incomes, currency_id,
+                                       account_id, -amount, None, peer_id, category_id, tag_id)
 
     def processAction(self):
         seq_id = self.current_seq
-        op_id = self.current[OPERATION_ID]
-        timestamp, account_id, currency_id, action_sum = readSQL(self.db,
-            "SELECT a.timestamp, a.account_id, c.currency_id, sum(d.sum) "
-            "FROM actions AS a "
-            "LEFT JOIN action_details AS d ON a.id = d.pid "
-            "LEFT JOIN accounts AS c ON a.account_id = c.id "
-            "WHERE a.id = :id "
-            "GROUP BY a.timestamp, a.account_id, c.currency_id "
-            "ORDER BY a.timestamp, d.sum desc", [(":id", op_id)])
+        timestamp = self.current[TIMESTAMP]
+        account_id = self.current[ACCOUNT_ID]
+        currency_id = self.current[CURRENCY_ID]
+        action_sum = self.current[AMOUNT_QTY]
         if action_sum < 0:
             credit_sum = self.takeCredit(seq_id, timestamp, account_id, currency_id, -action_sum)
             self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id,
@@ -239,28 +237,36 @@ class Ledger:
             if returned_sum < action_sum:
                 self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id,
                                        (action_sum - returned_sum))
-        self.processActionDetails(seq_id, op_id)
+        self.processActionDetails()
 
     def processDividend(self):
         seq_id = self.current_seq
-        op_id = self.current[OPERATION_ID]
-        timestamp, account_id, currency_id, peer_id, dividend_sum, tax_sum = readSQL(self.db,
-            "SELECT d.timestamp, d.account_id, c.currency_id, "
-            "c.organization_id, d.sum, d.sum_tax FROM dividends AS d "
-            "LEFT JOIN accounts AS c ON d.account_id = c.id "
-            "WHERE d.id = :id", [(":id", op_id)])
+        timestamp = self.current[TIMESTAMP]
+        account_id = self.current[ACCOUNT_ID]
+        currency_id = self.current[CURRENCY_ID]
+        dividend_sum = self.current[AMOUNT_QTY]
+        tax_sum = self.current[FEE_TAX_TAG]
         returned_sum = self.returnCredit(seq_id, timestamp, account_id, currency_id, (dividend_sum - tax_sum))
         if returned_sum < dividend_sum:
             self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id,
                                    (dividend_sum - returned_sum))
         self.appendTransaction(timestamp, seq_id, BookAccount.Incomes, currency_id, account_id, -dividend_sum, None,
-                               peer_id, PredefinedCategory.Dividends)
+                               None, PredefinedCategory.Dividends)
         if tax_sum:
             self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id, tax_sum)
             self.appendTransaction(timestamp, seq_id, BookAccount.Costs, currency_id, account_id, -tax_sum, None,
-                                   peer_id, PredefinedCategory.Taxes)
+                                   None, PredefinedCategory.Taxes)
 
-    def processBuy(self, seq_id, timestamp, account_id, currency_id, asset_id, qty, price, coupon, fee):
+    def processBuy(self):
+        seq_id = self.current_seq
+        timestamp = self.current[TIMESTAMP]
+        account_id = self.current[ACCOUNT_ID]
+        currency_id = self.current[CURRENCY_ID]
+        asset_id = self.current[ASSET_ID]
+        qty = self.current[AMOUNT_QTY]
+        price = self.current[PRICE_CATEGORY]
+        coupon = self.current[COUPON_FEE]
+        fee = self.current[FEE_TAX_TAG]
         trade_sum = round(price * qty, 2) + fee + coupon
         sell_qty = 0
         sell_sum = 0
@@ -325,7 +331,16 @@ class Ledger:
             self.appendTransaction(timestamp, seq_id, BookAccount.Costs, currency_id, account_id, fee, None, None,
                                    PredefinedCategory.Fees)
 
-    def processSell(self, seq_id, timestamp, account_id, currency_id, asset_id, qty, price, coupon, fee):
+    def processSell(self):
+        seq_id = self.current_seq
+        timestamp = self.current[TIMESTAMP]
+        account_id = self.current[ACCOUNT_ID]
+        currency_id = self.current[CURRENCY_ID]
+        asset_id = self.current[ASSET_ID]
+        qty = -self.current[AMOUNT_QTY]
+        price = self.current[PRICE_CATEGORY]
+        coupon = self.current[COUPON_FEE]
+        fee = self.current[FEE_TAX_TAG]
         trade_sum = round(price * qty, 2) - fee + coupon
         buy_qty = 0
         buy_sum = 0
@@ -394,66 +409,58 @@ class Ledger:
         pass
 
     def processTrade(self):
-        seq_id = self.current_seq
-        trade_id = self.current[OPERATION_ID]
-        query = executeSQL(self.db, "SELECT a.type, t.timestamp, t.account_id, c.currency_id, t.asset_id, "
-                                    "t.qty, t.price, t.coupon, t.fee FROM trades AS t "
-                                    "LEFT JOIN accounts AS c ON t.account_id = c.id "
-                                    "LEFT JOIN corp_actions AS a ON t.corp_action_id = a.id "
-                                    "WHERE t.id = :id", [(":id", trade_id)])
-        query.next()
-        if query.value(0):  # if we have a corp.action instead of normal trade
+        if self.current[TRANSACTION_SUBTYPE]:  # if we have a corp.action instead of normal trade
             # TODO change processing of Corp.action transactions to keep money flow
-            qty = query.value(5)
-            if qty > 0:
-                self.processBuy(seq_id, query.value(1), query.value(2), query.value(3), query.value(4), query.value(5),
-                                query.value(6), query.value(7), query.value(8))
+            if self.current[AMOUNT_QTY] > 0:
+                self.processBuy()
             else:
-                self.processSell(seq_id, query.value(1), query.value(2), query.value(3), query.value(4),
-                                 -query.value(5),
-                                 query.value(6), query.value(7), query.value(8))
+                self.processSell()
         else:
-            qty = query.value(5)
-            if qty > 0:
-                self.processBuy(seq_id, query.value(1), query.value(2), query.value(3), query.value(4), query.value(5),
-                                query.value(6), query.value(7), query.value(8))
+            if self.current[AMOUNT_QTY] > 0:
+                self.processBuy()
             else:
-                self.processSell(seq_id, query.value(1), query.value(2), query.value(3), query.value(4),
-                                 -query.value(5),
-                                 query.value(6), query.value(7), query.value(8))
+                self.processSell()
 
-    def processTransferOut(self, seq_id, timestamp, account_id, currency_id, amount):
+    def processTransferOut(self):
+        seq_id = self.current_seq
+        timestamp = self.current[TIMESTAMP]
+        account_id = self.current[ACCOUNT_ID]
+        currency_id = self.current[CURRENCY_ID]
+        amount = -self.current[AMOUNT_QTY]
         credit_sum = self.takeCredit(seq_id, timestamp, account_id, currency_id, amount)
         self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id, -(amount - credit_sum))
         self.appendTransaction(timestamp, seq_id, BookAccount.Transfers, currency_id, account_id, amount)
 
-    def processTransferIn(self, seq_id, timestamp, account_id, currency_id, amount):
+    def processTransferIn(self):
+        seq_id = self.current_seq
+        timestamp = self.current[TIMESTAMP]
+        account_id = self.current[ACCOUNT_ID]
+        currency_id = self.current[CURRENCY_ID]
+        amount = self.current[AMOUNT_QTY]
         returned_sum = self.returnCredit(seq_id, timestamp, account_id, currency_id, amount)
         if returned_sum < amount:
             self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id,
                                    (amount - returned_sum))
         self.appendTransaction(timestamp, seq_id, BookAccount.Transfers, currency_id, account_id, -amount)
 
-    def processTransferFee(self, seq_id, timestamp, account_id, currency_id, fee):
+    def processTransferFee(self):
+        seq_id = self.current_seq
+        timestamp = self.current[TIMESTAMP]
+        account_id = self.current[ACCOUNT_ID]
+        currency_id = self.current[CURRENCY_ID]
+        fee = -self.current[AMOUNT_QTY]
         credit_sum = self.takeCredit(seq_id, timestamp, account_id, currency_id, fee)
         self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id, -(fee - credit_sum))
         self.appendTransaction(timestamp, seq_id, BookAccount.Costs, currency_id, account_id, fee, None,
                                PredefinedPeer.Financial, PredefinedCategory.Fees, None)
 
     def processTransfer(self):
-        seq_id = self.current_seq
-        transfer_id = self.current[OPERATION_ID]
-        transfer_type, timestamp, account_id, currency_id, amount = readSQL(self.db,
-            "SELECT t.type, t.timestamp, t.account_id, a.currency_id, t.amount "
-            "FROM transfers AS t "
-            "LEFT JOIN accounts AS a ON t.account_id = a.id "
-            "WHERE t.id = :id", [(":id", transfer_id)])
-        if transfer_type == TransferSubtype.Outgoing:
-            self.processTransferOut(seq_id, timestamp, account_id, currency_id, -amount)
-        elif transfer_type == TransferSubtype.Incoming:
-            self.processTransferIn(seq_id, timestamp, account_id, currency_id, amount)
-        elif transfer_type == TransferSubtype.Fee:
-            self.processTransferFee(seq_id, timestamp, account_id, currency_id, -amount)
+        operationTransfer = {
+            TransferSubtype.Outgoing: self.processTransferOut,
+            TransferSubtype.Fee: self.processTransferFee,
+            TransferSubtype.Incoming: self.processTransferIn
+        }
+        operationTransfer[self.current[TRANSACTION_SUBTYPE]]()
 
     # Rebuild transaction sequence and recalculate all amounts
     # timestamp:
@@ -483,8 +490,8 @@ class Ledger:
                                          QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
                     return
         if not silent:
-            logging.info(f"Re-build ledger from: {datetime.datetime.fromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
-        start_time = datetime.datetime.now()
+            logging.info(f"Re-build ledger from: {datetime.fromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
+        start_time = datetime.now()
         _ = executeSQL(self.db, "DELETE FROM deals WHERE close_sid >= "
                                 "(SELECT coalesce(MIN(id), 0) FROM sequence WHERE timestamp >= :frontier)",
                        [(":frontier", frontier)])
@@ -495,10 +502,9 @@ class Ledger:
 
         if fast_and_dirty:  # For 30k operations difference of execution time is - with 0:02:41 / without 0:11:44
             _ = executeSQL(self.db, "PRAGMA synchronous = OFF")
-        query = executeSQL(self.db, "SELECT type, id, timestamp, subtype, account, currency, amount, "
+        query = executeSQL(self.db, "SELECT type, id, timestamp, subtype, account, currency, asset, amount, "
                                     "price_category, coupon_peer, fee_tax_tag FROM all_transactions "
                                     "WHERE timestamp >= :frontier", [(":frontier", frontier)])
-        i = 0
         while query.next():
             self.current = readSQLrecord(query)
             seq_query = executeSQL(self.db, "INSERT INTO sequence(timestamp, type, operation_id) "
@@ -507,17 +513,16 @@ class Ledger:
                                     (":operation_id", self.current[OPERATION_ID])])
             self.current_seq = seq_query.lastInsertId()
             operationProcess[self.current[TRANSACTION_TYPE]]()
-            i = i + 1
-            if not silent and (i % 1000) == 0:
-                logging.info(f"Processed {int(i/1000)}k records, current frontier: "
-                             f"{datetime.datetime.fromtimestamp(self.current[TIMESTAMP]).strftime('%d/%m/%Y %H:%M:%S')}")
+            if not silent and (query.at() % 1000) == 0:
+                logging.info(f"Processed {int(query.at()/1000)}k records, current frontier: "
+                             f"{datetime.fromtimestamp(self.current[TIMESTAMP]).strftime('%d/%m/%Y %H:%M:%S')}")
         if fast_and_dirty:
             _ = executeSQL(self.db, "PRAGMA synchronous = ON")
 
-        end_time = datetime.datetime.now()
+        end_time = datetime.now()
         if not silent:
-            logging.info(f"Ledger is complete. Processed {i} records; elapsed time: {end_time - start_time}, "
-                         f"new frontier: {datetime.datetime.fromtimestamp(self.current[TIMESTAMP]).strftime('%d/%m/%Y %H:%M:%S')}")
+            logging.info(f"Ledger is complete. Elapsed time: {end_time - start_time}, "
+                         f"new frontier: {datetime.fromtimestamp(self.current[TIMESTAMP]).strftime('%d/%m/%Y %H:%M:%S')}")
 
     # Populate table balances with data calculated for given parameters:
     # 'timestamp' moment of time for balance
