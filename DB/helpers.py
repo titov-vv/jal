@@ -40,10 +40,15 @@ def readSQL(db, sql_text, params = []):
     if not query.exec_():
         logging.error(f"SQL exec: '{query.lastError().text()}' for query '{sql_text}' with params '{params}'")
         return None
-    values = []
     if query.next():
-        for i in range(query.record().count()):
-            values.append(query.value(i))
+        return readSQLrecord(query)
+    else:
+        return None
+
+def readSQLrecord(query):
+    values = []
+    for i in range(query.record().count()):
+        values.append(query.value(i))
     if values:
         if len(values) == 1:
             return values[0]

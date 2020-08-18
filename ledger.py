@@ -4,7 +4,7 @@ import logging
 from constants import Setup, BookAccount, TransactionType, TransferSubtype, PredefinedCategory, PredefinedPeer
 from PySide2.QtCore import Qt, QDate, QDateTime
 from PySide2.QtWidgets import QDialog, QMessageBox
-from DB.helpers import executeSQL, readSQL
+from DB.helpers import executeSQL, readSQL, readSQLrecord
 from UI.ui_rebuild_window import Ui_ReBuildDialog
 
 
@@ -40,11 +40,25 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
 # TODO Check are there positive lines for Incomes
 # TODO Check are there negative lines for Costs
 # ===================================================================================================================
+# constants to use instead in indices in self.current which contains details about currently processed operation
+TRANSACTION_TYPE = 0
+OPERATION_ID = 1
+TIMESTAMP = 2
+TRANSACTION_SUBTYPE = 3
+ACCOUNT_ID = 4
+CURRENCY_ID = 5
+AMOUNT = 6
+PRICE_CATEGORY = 7
+COUPON_FEE = 8
+FEE_TAX_TAG = 9
+
 class Ledger:
     SILENT_REBUILD_THRESHOLD = 50
 
     def __init__(self, db):
         self.db = db
+        self.current = []
+        self.current_seq = -1
         self.balances_view = None
         self.holdings_view = None
         self.balance_active_only = 1
@@ -205,7 +219,9 @@ class Ledger:
                 self.appendTransaction(query.value(0), seq_id, BookAccount.Incomes, query.value(3),
                                        query.value(1), -amount, None, query.value(2), query.value(5), query.value(6))
 
-    def processAction(self, seq_id, op_id):
+    def processAction(self):
+        seq_id = self.current_seq
+        op_id = self.current[OPERATION_ID]
         timestamp, account_id, currency_id, action_sum = readSQL(self.db,
             "SELECT a.timestamp, a.account_id, c.currency_id, sum(d.sum) "
             "FROM actions AS a "
@@ -225,7 +241,9 @@ class Ledger:
                                        (action_sum - returned_sum))
         self.processActionDetails(seq_id, op_id)
 
-    def processDividend(self, seq_id, op_id):
+    def processDividend(self):
+        seq_id = self.current_seq
+        op_id = self.current[OPERATION_ID]
         timestamp, account_id, currency_id, peer_id, dividend_sum, tax_sum = readSQL(self.db,
             "SELECT d.timestamp, d.account_id, c.currency_id, "
             "c.organization_id, d.sum, d.sum_tax FROM dividends AS d "
@@ -375,7 +393,9 @@ class Ledger:
     def processCorpAction(self):
         pass
 
-    def processTrade(self, seq_id, trade_id):
+    def processTrade(self):
+        seq_id = self.current_seq
+        trade_id = self.current[OPERATION_ID]
         query = executeSQL(self.db, "SELECT a.type, t.timestamp, t.account_id, c.currency_id, t.asset_id, "
                                     "t.qty, t.price, t.coupon, t.fee FROM trades AS t "
                                     "LEFT JOIN accounts AS c ON t.account_id = c.id "
@@ -420,7 +440,9 @@ class Ledger:
         self.appendTransaction(timestamp, seq_id, BookAccount.Costs, currency_id, account_id, fee, None,
                                PredefinedPeer.Financial, PredefinedCategory.Fees, None)
 
-    def processTransfer(self, seq_id, transfer_id):
+    def processTransfer(self):
+        seq_id = self.current_seq
+        transfer_id = self.current[OPERATION_ID]
         transfer_type, timestamp, account_id, currency_id, amount = readSQL(self.db,
             "SELECT t.type, t.timestamp, t.account_id, a.currency_id, t.amount "
             "FROM transfers AS t "
@@ -436,34 +458,30 @@ class Ledger:
     # Rebuild transaction sequence and recalculate all amounts
     # timestamp:
     # -1 - re-build from last valid operation (from ledger frontier)
+    #      will asks for confirmation if we have more than SILENT_REBUILD_THRESHOLD operations require rebuild
     # 0 - re-build from scratch
     # any - re-build all operations after given timestamp
-    # Methods asks for confirmation if we have more than SILENT_REBUILD_THRESHOLD operations require rebuild
     def rebuild(self, from_timestamp=-1, fast_and_dirty=False, silent=True):
+        operationProcess = {
+            TransactionType.Action: self.processAction,
+            TransactionType.Dividend: self.processDividend,
+            TransactionType.Trade: self.processTrade,
+            TransactionType.Transfer: self.processTransfer,
+        }
+
         if from_timestamp >= 0:
             frontier = from_timestamp
             silent = False
         else:
-            operations_count = 0
             frontier = self.getCurrentFrontier()
-            query = executeSQL(self.db, "SELECT SUM(cnt) FROM ("
-                                        "SELECT COUNT(id) AS cnt FROM actions WHERE timestamp >= :frontier "
-                                        "UNION ALL "
-                                        "SELECT COUNT(id) AS cnt FROM dividends WHERE timestamp >= :frontier "
-                                        "UNION ALL "
-                                        "SELECT COUNT(id) AS cnt FROM transfers WHERE timestamp >= :frontier "
-                                        "UNION ALL "
-                                        "SELECT COUNT(id) AS cnt FROM trades WHERE timestamp >= :frontier)",
+            operations_count = readSQL(self.db, "SELECT COUNT(id) FROM all_transactions WHERE timestamp >= :frontier",
                                [(":frontier", frontier)])
-            if query.next():
-                operations_count = query.value(0)
             if operations_count > self.SILENT_REBUILD_THRESHOLD:
                 silent = False
                 if QMessageBox().warning(None, "Confirmation",
                                          f"{operations_count} operations require rebuild. Do you want to do it right now?",
                                          QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
                     return
-        new_frontier = frontier  # this variable will be updated later together with ledger updates
         if not silent:
             logging.info(f"Re-build ledger from: {datetime.datetime.fromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
         start_time = datetime.datetime.now()
@@ -475,48 +493,31 @@ class Ledger:
         _ = executeSQL(self.db, "DELETE FROM ledger_sums WHERE timestamp >= :frontier", [(":frontier", frontier)])
         self.db.commit()
 
-        # For 30k operations difference of execution time is - with 0:02:41 / without 0:11:44
-        if fast_and_dirty:
+        if fast_and_dirty:  # For 30k operations difference of execution time is - with 0:02:41 / without 0:11:44
             _ = executeSQL(self.db, "PRAGMA synchronous = OFF")
-        query = executeSQL(self.db,
-                           "SELECT 1 AS type, a.id, a.timestamp, "
-                           "CASE WHEN SUM(d.sum)<0 THEN 5 ELSE 1 END AS seq FROM actions AS a "
-                           "LEFT JOIN action_details AS d ON a.id=d.pid WHERE timestamp >= :frontier GROUP BY a.id "
-                           "UNION ALL "
-                           "SELECT 2 AS type, id, timestamp, 2 AS seq FROM dividends WHERE timestamp >= :frontier "
-                           "UNION ALL "
-                           "SELECT 4 AS type, id, timestamp, 3 AS seq FROM transfers WHERE timestamp >= :frontier "
-                           "UNION ALL "
-                           "SELECT 3 AS type, id, timestamp, 4 AS seq FROM trades WHERE timestamp >= :frontier "
-                           "ORDER BY timestamp, seq", [(":frontier", frontier)])
+        query = executeSQL(self.db, "SELECT type, id, timestamp, subtype, account, currency, amount, "
+                                    "price_category, coupon_peer, fee_tax_tag FROM all_transactions "
+                                    "WHERE timestamp >= :frontier", [(":frontier", frontier)])
         i = 0
         while query.next():
-            type = query.value(0)
-            operation_id = query.value(1)
-            new_frontier = query.value(2)
+            self.current = readSQLrecord(query)
             seq_query = executeSQL(self.db, "INSERT INTO sequence(timestamp, type, operation_id) "
                                             "VALUES(:timestamp, :type, :operation_id)",
-                                   [(":timestamp", new_frontier), (":type", type), (":operation_id", operation_id)])
-            seq_id = seq_query.lastInsertId()
-            if type == TransactionType.Action:
-                self.processAction(seq_id, operation_id)
-            if type == TransactionType.Dividend:
-                self.processDividend(seq_id, operation_id)
-            if type == TransactionType.Trade:
-                self.processTrade(seq_id, operation_id)
-            if type == TransactionType.Transfer:
-                self.processTransfer(seq_id, operation_id)
+                                   [(":timestamp", self.current[TIMESTAMP]), (":type", self.current[TRANSACTION_TYPE]),
+                                    (":operation_id", self.current[OPERATION_ID])])
+            self.current_seq = seq_query.lastInsertId()
+            operationProcess[self.current[TRANSACTION_TYPE]]()
             i = i + 1
             if not silent and (i % 1000) == 0:
                 logging.info(f"Processed {int(i/1000)}k records, current frontier: "
-                             f"{datetime.datetime.fromtimestamp(new_frontier).strftime('%d/%m/%Y %H:%M:%S')}")
+                             f"{datetime.datetime.fromtimestamp(self.current[TIMESTAMP]).strftime('%d/%m/%Y %H:%M:%S')}")
         if fast_and_dirty:
             _ = executeSQL(self.db, "PRAGMA synchronous = ON")
 
         end_time = datetime.datetime.now()
         if not silent:
             logging.info(f"Ledger is complete. Processed {i} records; elapsed time: {end_time - start_time}, "
-                         f"new frontier: {datetime.datetime.fromtimestamp(new_frontier).strftime('%d/%m/%Y %H:%M:%S')}")
+                         f"new frontier: {datetime.datetime.fromtimestamp(self.current[TIMESTAMP]).strftime('%d/%m/%Y %H:%M:%S')}")
 
     # Populate table balances with data calculated for given parameters:
     # 'timestamp' moment of time for balance

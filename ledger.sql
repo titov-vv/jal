@@ -639,6 +639,69 @@ CREATE VIEW all_operations AS
                                 l.book_account = 5);
 
 
+-- View: all_transactions
+DROP VIEW IF EXISTS all_transactions;
+CREATE VIEW all_transactions AS
+    SELECT at.*,
+           a.currency_id AS currency
+      FROM (
+               SELECT 1 AS type,
+                      a.id,
+                      a.timestamp,
+                      CASE WHEN SUM(d.sum) < 0 THEN COUNT(d.sum) ELSE -COUNT(d.sum) END AS subtype,
+                      a.account_id AS account,
+                      SUM(d.sum) AS amount,
+                      d.category_id AS price_category,
+                      a.peer_id AS coupon_peer,
+                      d.tag_id AS fee_tax_tag
+                 FROM actions AS a
+                      LEFT JOIN
+                      action_details AS d ON a.id = d.pid
+                GROUP BY a.id
+               UNION ALL
+               SELECT 2 AS type,
+                      id,
+                      timestamp,
+                      0 AS subtype,
+                      account_id AS account,
+                      sum AS amount,
+                      NULL AS price_category,
+                      NULL AS coupon_peer,
+                      sum_tax AS fee_tax_tag
+                 FROM dividends
+               UNION ALL
+               SELECT 4 AS type,
+                      id,
+                      timestamp,
+                      type AS subtype,
+                      account_id AS account,
+                      amount,
+                      NULL AS price_category,
+                      NULL AS coupon_peer,
+                      NULL AS fee_tax_tag
+                 FROM transfers
+               UNION ALL
+               SELECT 3 AS type,
+                      t.id,
+                      t.timestamp,
+                      coalesce(ca.type, 0) AS subtype,
+                      t.account_id AS account,
+                      t.qty AS amount,
+                      t.price AS price_category,
+                      t.coupon AS coupon_peer,
+                      t.fee AS fee_tax_tag
+                 FROM trades AS t
+                      LEFT JOIN
+                      corp_actions AS ca ON t.corp_action_id = ca.id
+                ORDER BY timestamp,
+                         type,
+                         subtype
+           )
+           AS at
+           LEFT JOIN
+           accounts AS a ON at.account = a.id;
+
+
 -- View: categories_ext
 DROP VIEW IF EXISTS categories_ext;
 CREATE VIEW categories_ext AS
