@@ -50,7 +50,7 @@ CURRENCY_ID = 5
 ASSET_ID = 6
 AMOUNT_QTY = 7
 PRICE_CATEGORY = 8
-COUPON_FEE = 9
+COUPON_PEER = 9
 FEE_TAX_TAG = 10
 
 class Ledger:
@@ -123,11 +123,11 @@ class Ledger:
             current_frontier = 0
         return current_frontier
 
-    def appendTransaction(self, book, asset_id, account_id, amount, value=None, peer_id=None, category_id=None, tag_id=None):
+    def appendTransaction(self, book, asset_id, amount, value=None, peer_id=None, category_id=None, tag_id=None):
         seq_id = self.current_seq
         timestamp = self.current[TIMESTAMP]
         # asset_id = self.current[ASSET_ID]
-        # account_id = self.current[ACCOUNT_ID]
+        account_id = self.current[ACCOUNT_ID]
         try:
             old_sid, old_amount, old_value = readSQL(self.db,
                 "SELECT sid, sum_amount, sum_value FROM ledger_sums "
@@ -195,7 +195,7 @@ class Ledger:
         credit = 0
         if money_available < action_sum:
             credit = action_sum - money_available
-            self.appendTransaction(BookAccount.Liabilities, currency_id, account_id, -credit)
+            self.appendTransaction(BookAccount.Liabilities, currency_id, -credit)
         return credit
 
     def returnCredit(self, action_sum):
@@ -210,7 +210,7 @@ class Ledger:
             else:
                 debit = CreditValue
         if debit > 0:
-            self.appendTransaction(BookAccount.Liabilities, currency_id, account_id, debit)
+            self.appendTransaction(BookAccount.Liabilities, currency_id, debit)
         return debit
 
     def processActionDetails(self):
@@ -224,11 +224,9 @@ class Ledger:
         while query.next():
             timestamp, account_id, peer_id, currency_id, amount, category_id, tag_id = readSQLrecord(query)
             if amount < 0:
-                self.appendTransaction(BookAccount.Costs, currency_id,
-                                       account_id, -amount, None, peer_id, category_id, tag_id)
+                self.appendTransaction(BookAccount.Costs, currency_id, -amount, None, peer_id, category_id, tag_id)
             else:
-                self.appendTransaction(BookAccount.Incomes, currency_id,
-                                       account_id, -amount, None, peer_id, category_id, tag_id)
+                self.appendTransaction(BookAccount.Incomes, currency_id, -amount, None, peer_id, category_id, tag_id)
 
     def processAction(self):
         account_id = self.current[ACCOUNT_ID]
@@ -236,13 +234,11 @@ class Ledger:
         action_sum = self.current[AMOUNT_QTY]
         if action_sum < 0:
             credit_sum = self.takeCredit(-action_sum)
-            self.appendTransaction(BookAccount.Money, currency_id, account_id,
-                                   -(-action_sum - credit_sum))
+            self.appendTransaction(BookAccount.Money, currency_id, -(-action_sum - credit_sum))
         else:
             returned_sum = self.returnCredit(action_sum)
             if returned_sum < action_sum:
-                self.appendTransaction(BookAccount.Money, currency_id, account_id,
-                                       (action_sum - returned_sum))
+                self.appendTransaction(BookAccount.Money, currency_id, (action_sum - returned_sum))
         self.processActionDetails()
 
     def processDividend(self):
@@ -252,14 +248,11 @@ class Ledger:
         tax_sum = self.current[FEE_TAX_TAG]
         returned_sum = self.returnCredit(dividend_sum - tax_sum)
         if returned_sum < dividend_sum:
-            self.appendTransaction(BookAccount.Money, currency_id, account_id,
-                                   (dividend_sum - returned_sum))
-        self.appendTransaction(BookAccount.Incomes, currency_id, account_id, -dividend_sum, None,
-                               None, PredefinedCategory.Dividends)
+            self.appendTransaction(BookAccount.Money, currency_id, (dividend_sum - returned_sum))
+        self.appendTransaction(BookAccount.Incomes, currency_id, -dividend_sum, None, None, PredefinedCategory.Dividends)
         if tax_sum:
-            self.appendTransaction(BookAccount.Money, currency_id, account_id, tax_sum)
-            self.appendTransaction(BookAccount.Costs, currency_id, account_id, -tax_sum, None,
-                                   None, PredefinedCategory.Taxes)
+            self.appendTransaction(BookAccount.Money, currency_id, tax_sum)
+            self.appendTransaction(BookAccount.Costs, currency_id, -tax_sum, None, None, PredefinedCategory.Taxes)
 
     def processBuy(self):
         seq_id = self.current_seq
@@ -269,7 +262,7 @@ class Ledger:
         asset_id = self.current[ASSET_ID]
         qty = self.current[AMOUNT_QTY]
         price = self.current[PRICE_CATEGORY]
-        coupon = self.current[COUPON_FEE]
+        coupon = self.current[COUPON_PEER]
         fee = self.current[FEE_TAX_TAG]
         trade_sum = round(price * qty, 2) + fee + coupon
         sell_qty = 0
@@ -318,22 +311,17 @@ class Ledger:
                     break
         credit_sum = self.takeCredit(trade_sum)
         if trade_sum != credit_sum:
-            self.appendTransaction(BookAccount.Money, currency_id, account_id,
-                                   -(trade_sum - credit_sum))
+            self.appendTransaction(BookAccount.Money, currency_id, -(trade_sum - credit_sum))
         if sell_qty > 0:  # Result of closed deals
-            self.appendTransaction(BookAccount.Assets, asset_id, account_id, sell_qty, sell_sum)
+            self.appendTransaction(BookAccount.Assets, asset_id, sell_qty, sell_sum)
             if ((price * sell_qty) - sell_sum) != 0:  # Profit if we have it
-                self.appendTransaction(BookAccount.Incomes, currency_id, account_id,
-                                       ((price * sell_qty) - sell_sum), None, None, PredefinedCategory.Profit)
+                self.appendTransaction(BookAccount.Incomes, currency_id, ((price * sell_qty) - sell_sum), None, None, PredefinedCategory.Profit)
         if sell_qty < qty:  # Add new long position
-            self.appendTransaction(BookAccount.Assets, asset_id, account_id, (qty - sell_qty),
-                                   (qty - sell_qty) * price)
+            self.appendTransaction(BookAccount.Assets, asset_id, (qty - sell_qty), (qty - sell_qty) * price)
         if coupon:
-            self.appendTransaction(BookAccount.Costs, currency_id, account_id, coupon, None, None,
-                                   PredefinedCategory.Dividends)
+            self.appendTransaction(BookAccount.Costs, currency_id, coupon, None, None, PredefinedCategory.Dividends)
         if fee:
-            self.appendTransaction(BookAccount.Costs, currency_id, account_id, fee, None, None,
-                                   PredefinedCategory.Fees)
+            self.appendTransaction(BookAccount.Costs, currency_id, fee, None, None, PredefinedCategory.Fees)
 
     def processSell(self):
         seq_id = self.current_seq
@@ -343,7 +331,7 @@ class Ledger:
         asset_id = self.current[ASSET_ID]
         qty = -self.current[AMOUNT_QTY]
         price = self.current[PRICE_CATEGORY]
-        coupon = self.current[COUPON_FEE]
+        coupon = self.current[COUPON_PEER]
         fee = self.current[FEE_TAX_TAG]
         trade_sum = round(price * qty, 2) - fee + coupon
         buy_qty = 0
@@ -392,22 +380,17 @@ class Ledger:
                     break
         returned_sum = self.returnCredit(trade_sum)
         if returned_sum < trade_sum:
-            self.appendTransaction(BookAccount.Money, currency_id, account_id,
-                                   (trade_sum - returned_sum))
+            self.appendTransaction(BookAccount.Money, currency_id, (trade_sum - returned_sum))
         if buy_qty > 0:  # Result of closed deals
-            self.appendTransaction(BookAccount.Assets, asset_id, account_id, -buy_qty, -buy_sum)
+            self.appendTransaction(BookAccount.Assets, asset_id, -buy_qty, -buy_sum)
             if (buy_sum - (price * buy_qty)) != 0:  # Profit if we have it
-                self.appendTransaction(BookAccount.Incomes, currency_id, account_id,
-                                       (buy_sum - (price * buy_qty)), None, None, PredefinedCategory.Profit)
+                self.appendTransaction(BookAccount.Incomes, currency_id, (buy_sum - (price * buy_qty)), None, None, PredefinedCategory.Profit)
         if buy_qty < qty:  # Add new short position
-            self.appendTransaction(BookAccount.Assets, asset_id, account_id, (buy_qty - qty),
-                                   (buy_qty - qty) * price)
+            self.appendTransaction(BookAccount.Assets, asset_id, (buy_qty - qty), (buy_qty - qty) * price)
         if coupon:
-            self.appendTransaction(BookAccount.Incomes, currency_id, account_id, -coupon, None,
-                                   None, PredefinedCategory.Dividends)
+            self.appendTransaction(BookAccount.Incomes, currency_id, -coupon, None, None, PredefinedCategory.Dividends)
         if fee:
-            self.appendTransaction(BookAccount.Costs, currency_id, account_id, fee, None, None,
-                                   PredefinedCategory.Fees)
+            self.appendTransaction(BookAccount.Costs, currency_id, fee, None, None, PredefinedCategory.Fees)
 
     def processCorpAction(self):
         pass
@@ -430,8 +413,8 @@ class Ledger:
         currency_id = self.current[CURRENCY_ID]
         amount = -self.current[AMOUNT_QTY]
         credit_sum = self.takeCredit(amount)
-        self.appendTransaction(BookAccount.Money, currency_id, account_id, -(amount - credit_sum))
-        self.appendTransaction(BookAccount.Transfers, currency_id, account_id, amount)
+        self.appendTransaction(BookAccount.Money, currency_id, -(amount - credit_sum))
+        self.appendTransaction(BookAccount.Transfers, currency_id, amount)
 
     def processTransferIn(self):
         account_id = self.current[ACCOUNT_ID]
@@ -439,18 +422,16 @@ class Ledger:
         amount = self.current[AMOUNT_QTY]
         returned_sum = self.returnCredit(amount)
         if returned_sum < amount:
-            self.appendTransaction(BookAccount.Money, currency_id, account_id,
-                                   (amount - returned_sum))
-        self.appendTransaction(BookAccount.Transfers, currency_id, account_id, -amount)
+            self.appendTransaction(BookAccount.Money, currency_id, (amount - returned_sum))
+        self.appendTransaction(BookAccount.Transfers, currency_id, -amount)
 
     def processTransferFee(self):
         account_id = self.current[ACCOUNT_ID]
         currency_id = self.current[CURRENCY_ID]
         fee = -self.current[AMOUNT_QTY]
         credit_sum = self.takeCredit(fee)
-        self.appendTransaction(BookAccount.Money, currency_id, account_id, -(fee - credit_sum))
-        self.appendTransaction(BookAccount.Costs, currency_id, account_id, fee, None,
-                               PredefinedPeer.Financial, PredefinedCategory.Fees, None)
+        self.appendTransaction(BookAccount.Money, currency_id, -(fee - credit_sum))
+        self.appendTransaction(BookAccount.Costs, currency_id, fee, None, PredefinedPeer.Financial, PredefinedCategory.Fees, None)
 
     def processTransfer(self):
         operationTransfer = {
