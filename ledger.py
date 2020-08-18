@@ -4,7 +4,7 @@ import logging
 from constants import Setup, BookAccount, TransactionType, TransferSubtype, PredefinedCategory, PredefinedPeer
 from PySide2.QtCore import Qt, QDate, QDateTime
 from PySide2.QtWidgets import QDialog, QMessageBox
-from DB.helpers import executeSQL
+from DB.helpers import executeSQL, readSQL
 from UI.ui_rebuild_window import Ui_ReBuildDialog
 
 
@@ -103,25 +103,21 @@ class Ledger:
 
     # Returns timestamp of last operations that were calculated into ledger
     def getCurrentFrontier(self):
-        query = executeSQL(self.db, "SELECT ledger_frontier FROM frontier")
-        query.next()
-        current_frontier = query.value(0)
+        current_frontier = readSQL(self.db, "SELECT ledger_frontier FROM frontier")
         if current_frontier == '':
             current_frontier = 0
         return current_frontier
 
     def appendTransaction(self, timestamp, seq_id, book, asset_id, account_id, amount, value=None, peer_id=None,
                           category_id=None, tag_id=None):
-        query = executeSQL(self.db, "SELECT sid, sum_amount, sum_value FROM ledger_sums "
-                                    "WHERE book_account = :book AND asset_id = :asset_id "
-                                    "AND account_id = :account_id AND sid <= :seq_id "
-                                    "ORDER BY sid DESC LIMIT 1",
-                           [(":book", book), (":asset_id", asset_id), (":account_id", account_id), (":seq_id", seq_id)])
-        if query.next():
-            old_sid = query.value(0)
-            old_amount = query.value(1)
-            old_value = query.value(2)
-        else:
+        try:
+            old_sid, old_amount, old_value = readSQL(self.db,
+                "SELECT sid, sum_amount, sum_value FROM ledger_sums "
+                "WHERE book_account = :book AND asset_id = :asset_id "
+                "AND account_id = :account_id AND sid <= :seq_id "
+                "ORDER BY sid DESC LIMIT 1",
+                [(":book", book), (":asset_id", asset_id), (":account_id", account_id), (":seq_id", seq_id)])
+        except:
             old_sid = -1
             old_amount = 0.0
             old_value = 0.0
@@ -210,18 +206,14 @@ class Ledger:
                                        query.value(1), -amount, None, query.value(2), query.value(5), query.value(6))
 
     def processAction(self, seq_id, op_id):
-        query = executeSQL(self.db, "SELECT a.timestamp, a.account_id, c.currency_id, sum(d.sum) "
-                                    "FROM actions AS a "
-                                    "LEFT JOIN action_details AS d ON a.id = d.pid "
-                                    "LEFT JOIN accounts AS c ON a.account_id = c.id "
-                                    "WHERE a.id = :id "
-                                    "GROUP BY a.timestamp, a.account_id, c.currency_id "
-                                    "ORDER BY a.timestamp, d.sum desc", [(":id", op_id)])
-        query.next()
-        timestamp = query.value(0)
-        account_id = query.value(1)
-        currency_id = query.value(2)
-        action_sum = query.value(3)
+        timestamp, account_id, currency_id, action_sum = readSQL(self.db,
+            "SELECT a.timestamp, a.account_id, c.currency_id, sum(d.sum) "
+            "FROM actions AS a "
+            "LEFT JOIN action_details AS d ON a.id = d.pid "
+            "LEFT JOIN accounts AS c ON a.account_id = c.id "
+            "WHERE a.id = :id "
+            "GROUP BY a.timestamp, a.account_id, c.currency_id "
+            "ORDER BY a.timestamp, d.sum desc", [(":id", op_id)])
         if action_sum < 0:
             credit_sum = self.takeCredit(seq_id, timestamp, account_id, currency_id, -action_sum)
             self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id,
@@ -234,17 +226,11 @@ class Ledger:
         self.processActionDetails(seq_id, op_id)
 
     def processDividend(self, seq_id, op_id):
-        query = executeSQL(self.db, "SELECT d.timestamp, d.account_id, c.currency_id, "
-                                    "c.organization_id, d.sum, d.sum_tax FROM dividends AS d "
-                                    "LEFT JOIN accounts AS c ON d.account_id = c.id "
-                                    "WHERE d.id = :id", [(":id", op_id)])
-        query.next()
-        timestamp = query.value(0)
-        account_id = query.value(1)
-        currency_id = query.value(2)
-        peer_id = query.value(3)
-        dividend_sum = query.value(4)
-        tax_sum = query.value(5)
+        timestamp, account_id, currency_id, peer_id, dividend_sum, tax_sum = readSQL(self.db,
+            "SELECT d.timestamp, d.account_id, c.currency_id, "
+            "c.organization_id, d.sum, d.sum_tax FROM dividends AS d "
+            "LEFT JOIN accounts AS c ON d.account_id = c.id "
+            "WHERE d.id = :id", [(":id", op_id)])
         returned_sum = self.returnCredit(seq_id, timestamp, account_id, currency_id, (dividend_sum - tax_sum))
         if returned_sum < dividend_sum:
             self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id,
@@ -435,18 +421,17 @@ class Ledger:
                                PredefinedPeer.Financial, PredefinedCategory.Fees, None)
 
     def processTransfer(self, seq_id, transfer_id):
-        query = executeSQL(self.db, "SELECT t.type, t.timestamp, t.account_id, a.currency_id, t.amount "
-                                    "FROM transfers AS t "
-                                    "LEFT JOIN accounts AS a ON t.account_id = a.id "
-                                    "WHERE t.id = :id", [(":id", transfer_id)])
-        query.next()
-        transfer_type = query.value(0)
+        transfer_type, timestamp, account_id, currency_id, amount = readSQL(self.db,
+            "SELECT t.type, t.timestamp, t.account_id, a.currency_id, t.amount "
+            "FROM transfers AS t "
+            "LEFT JOIN accounts AS a ON t.account_id = a.id "
+            "WHERE t.id = :id", [(":id", transfer_id)])
         if transfer_type == TransferSubtype.Outgoing:
-            self.processTransferOut(seq_id, query.value(1), query.value(2), query.value(3), -query.value(4))
+            self.processTransferOut(seq_id, timestamp, account_id, currency_id, -amount)
         elif transfer_type == TransferSubtype.Incoming:
-            self.processTransferIn(seq_id, query.value(1), query.value(2), query.value(3), query.value(4))
+            self.processTransferIn(seq_id, timestamp, account_id, currency_id, amount)
         elif transfer_type == TransferSubtype.Fee:
-            self.processTransferFee(seq_id, query.value(1), query.value(2), query.value(3), -query.value(4))
+            self.processTransferFee(seq_id, timestamp, account_id, currency_id, -amount)
 
     # Rebuild transaction sequence and recalculate all amounts
     # timestamp:
@@ -493,16 +478,17 @@ class Ledger:
         # For 30k operations difference of execution time is - with 0:02:41 / without 0:11:44
         if fast_and_dirty:
             _ = executeSQL(self.db, "PRAGMA synchronous = OFF")
-        query = executeSQL(self.db, "SELECT 1 AS type, a.id, a.timestamp, "
-                                    "CASE WHEN SUM(d.sum)<0 THEN 5 ELSE 1 END AS seq FROM actions AS a "
-                                    "LEFT JOIN action_details AS d ON a.id=d.pid WHERE timestamp >= :frontier GROUP BY a.id "
-                                    "UNION ALL "
-                                    "SELECT 2 AS type, id, timestamp, 2 AS seq FROM dividends WHERE timestamp >= :frontier "
-                                    "UNION ALL "
-                                    "SELECT 4 AS type, id, timestamp, 3 AS seq FROM transfers WHERE timestamp >= :frontier "
-                                    "UNION ALL "
-                                    "SELECT 3 AS type, id, timestamp, 4 AS seq FROM trades WHERE timestamp >= :frontier "
-                                    "ORDER BY timestamp, seq", [(":frontier", frontier)])
+        query = executeSQL(self.db,
+                           "SELECT 1 AS type, a.id, a.timestamp, "
+                           "CASE WHEN SUM(d.sum)<0 THEN 5 ELSE 1 END AS seq FROM actions AS a "
+                           "LEFT JOIN action_details AS d ON a.id=d.pid WHERE timestamp >= :frontier GROUP BY a.id "
+                           "UNION ALL "
+                           "SELECT 2 AS type, id, timestamp, 2 AS seq FROM dividends WHERE timestamp >= :frontier "
+                           "UNION ALL "
+                           "SELECT 4 AS type, id, timestamp, 3 AS seq FROM transfers WHERE timestamp >= :frontier "
+                           "UNION ALL "
+                           "SELECT 3 AS type, id, timestamp, 4 AS seq FROM trades WHERE timestamp >= :frontier "
+                           "ORDER BY timestamp, seq", [(":frontier", frontier)])
         i = 0
         while query.next():
             type = query.value(0)
@@ -522,7 +508,7 @@ class Ledger:
                 self.processTransfer(seq_id, operation_id)
             i = i + 1
             if not silent and (i % 1000) == 0:
-                logging.info(f"Processed {i/1000}k records, current frontier: "
+                logging.info(f"Processed {int(i/1000)}k records, current frontier: "
                              f"{datetime.datetime.fromtimestamp(new_frontier).strftime('%d/%m/%Y %H:%M:%S')}")
         if fast_and_dirty:
             _ = executeSQL(self.db, "PRAGMA synchronous = ON")

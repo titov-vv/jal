@@ -69,9 +69,7 @@ def init_and_check_db(parent, db_path):
         _ = QMetaObject.invokeMethod(parent, "close", Qt.QueuedConnection)
         return None
 
-    query = executeSQL(db, "SELECT value FROM settings WHERE name='SchemaVersion'")
-    query.next()
-    if query.value(0) != Setup.TARGET_SCHEMA:
+    if readSQL(db, "SELECT value FROM settings WHERE name='SchemaVersion'") != Setup.TARGET_SCHEMA:
         db.close()
         QMessageBox().critical(parent, parent.tr("Database version mismatch"),
                                parent.tr("Database schema version is wrong"),
@@ -82,12 +80,8 @@ def init_and_check_db(parent, db_path):
 
 # -------------------------------------------------------------------------------------------------------------------
 def get_base_currency(db):
-    query = executeSQL(db, "SELECT value FROM settings WHERE name='BaseCurrency'")
-    query.next()
-    return query.value(0)
+    return readSQL(db, "SELECT value FROM settings WHERE name='BaseCurrency'")
 
 # -------------------------------------------------------------------------------------------------------------------
 def get_base_currency_name(db):
-    query = executeSQL(db, "SELECT name FROM assets WHERE id = (SELECT value FROM settings WHERE name='BaseCurrency')")
-    query.next()
-    return query.value(0)
+    return readSQL(db, "SELECT name FROM assets WHERE id = (SELECT value FROM settings WHERE name='BaseCurrency')")
