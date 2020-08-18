@@ -295,16 +295,10 @@ class Ledger:
             if query.next():
                 reminder = query.value(1)  # value(1) = non-matched reminder of last Sell trade
                 last_sid = query.value(0)  # value(0) = sid of Sell trade from the last deal
-                if reminder:  # we have some not fully matched Sell trade - start from it
-                    query.prepare("SELECT s.id, -t.qty, t.price FROM trades AS t "
-                                  "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
-                                  "WHERE t.qty < 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
-                                  "AND s.id < :sid AND s.id >= :last_sid")
-                else:  # start from next Sell trade
-                    query.prepare("SELECT s.id, -t.qty, t.price FROM trades AS t "
-                                  "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
-                                  "WHERE t.qty < 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
-                                  "AND s.id < :sid AND s.id >= :last_sid")
+                query.prepare("SELECT s.id, -t.qty, t.price FROM trades AS t "
+                              "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
+                              "WHERE t.qty < 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
+                              "AND s.id < :sid AND s.id >= :last_sid")
                 query.bindValue(":last_sid", last_sid)
             else:  # There were no deals -> Select all sells
                 reminder = 0
@@ -373,16 +367,10 @@ class Ledger:
             if query.next():
                 reminder = query.value(1)  # value(1) = non-matched reminder of last Sell trade
                 last_sid = query.value(0)  # value(0) = sid of Buy trade from last deal
-                if reminder:  # we have some not fully matched Buy trade - start from it
-                    query.prepare("SELECT s.id, t.qty, t.price FROM trades AS t "
-                                  "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
-                                  "WHERE t.qty > 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
-                                  "AND s.id < :sid AND s.id >= :last_sid")
-                else:  # start from next Buy trade
-                    query.prepare("SELECT s.id, t.qty, t.price FROM trades AS t "
-                                  "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
-                                  "WHERE t.qty > 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
-                                  "AND s.id < :sid AND s.id >= :last_sid")
+                query.prepare("SELECT s.id, t.qty, t.price FROM trades AS t "
+                              "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
+                              "WHERE t.qty > 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
+                              "AND s.id < :sid AND s.id >= :last_sid")
                 query.bindValue(":last_sid", last_sid)
             else:  # There were no deals -> Select all purchases
                 reminder = 0
