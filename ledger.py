@@ -125,6 +125,10 @@ class Ledger:
 
     def appendTransaction(self, timestamp, seq_id, book, asset_id, account_id, amount, value=None, peer_id=None,
                           category_id=None, tag_id=None):
+        # seq_id = self.current_seq
+        # timestamp = self.current[TIMESTAMP]
+        # asset_id = self.current[ASSET_ID]
+        # account_id = self.current[ACCOUNT_ID]
         try:
             old_sid, old_amount, old_value = readSQL(self.db,
                 "SELECT sid, sum_amount, sum_value FROM ledger_sums "
@@ -184,7 +188,11 @@ class Ledger:
         else:
             return 0.0
 
-    def takeCredit(self, seq_id, timestamp, account_id, currency_id, action_sum):
+    def takeCredit(self, action_sum):
+        seq_id = self.current_seq
+        timestamp = self.current[TIMESTAMP]
+        account_id = self.current[ACCOUNT_ID]
+        currency_id = self.current[CURRENCY_ID]
         money_available = self.getAmount(timestamp, BookAccount.Money, account_id)
         credit = 0
         if money_available < action_sum:
@@ -192,7 +200,11 @@ class Ledger:
             self.appendTransaction(timestamp, seq_id, BookAccount.Liabilities, currency_id, account_id, -credit)
         return credit
 
-    def returnCredit(self, seq_id, timestamp, account_id, currency_id, action_sum):
+    def returnCredit(self, action_sum):
+        seq_id = self.current_seq
+        timestamp = self.current[TIMESTAMP]
+        account_id = self.current[ACCOUNT_ID]
+        currency_id = self.current[CURRENCY_ID]
         CreditValue = -1.0 * self.getAmount(timestamp, BookAccount.Liabilities, account_id)
         debit = 0
         if CreditValue > 0:
@@ -229,11 +241,11 @@ class Ledger:
         currency_id = self.current[CURRENCY_ID]
         action_sum = self.current[AMOUNT_QTY]
         if action_sum < 0:
-            credit_sum = self.takeCredit(seq_id, timestamp, account_id, currency_id, -action_sum)
+            credit_sum = self.takeCredit(-action_sum)
             self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id,
                                    -(-action_sum - credit_sum))
         else:
-            returned_sum = self.returnCredit(seq_id, timestamp, account_id, currency_id, action_sum)
+            returned_sum = self.returnCredit(action_sum)
             if returned_sum < action_sum:
                 self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id,
                                        (action_sum - returned_sum))
@@ -246,7 +258,7 @@ class Ledger:
         currency_id = self.current[CURRENCY_ID]
         dividend_sum = self.current[AMOUNT_QTY]
         tax_sum = self.current[FEE_TAX_TAG]
-        returned_sum = self.returnCredit(seq_id, timestamp, account_id, currency_id, (dividend_sum - tax_sum))
+        returned_sum = self.returnCredit(dividend_sum - tax_sum)
         if returned_sum < dividend_sum:
             self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id,
                                    (dividend_sum - returned_sum))
@@ -312,7 +324,7 @@ class Ledger:
                 sell_sum = sell_sum + (next_deal_qty * query.value(2))  # value(2) = price
                 if sell_qty == qty:
                     break
-        credit_sum = self.takeCredit(seq_id, timestamp, account_id, currency_id, trade_sum)
+        credit_sum = self.takeCredit(trade_sum)
         if trade_sum != credit_sum:
             self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id,
                                    -(trade_sum - credit_sum))
@@ -386,7 +398,7 @@ class Ledger:
                 buy_sum = buy_sum + (next_deal_qty * query.value(2))  # value(2) = price
                 if buy_qty == qty:
                     break
-        returned_sum = self.returnCredit(seq_id, timestamp, account_id, currency_id, trade_sum)
+        returned_sum = self.returnCredit(trade_sum)
         if returned_sum < trade_sum:
             self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id,
                                    (trade_sum - returned_sum))
@@ -427,7 +439,7 @@ class Ledger:
         account_id = self.current[ACCOUNT_ID]
         currency_id = self.current[CURRENCY_ID]
         amount = -self.current[AMOUNT_QTY]
-        credit_sum = self.takeCredit(seq_id, timestamp, account_id, currency_id, amount)
+        credit_sum = self.takeCredit(amount)
         self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id, -(amount - credit_sum))
         self.appendTransaction(timestamp, seq_id, BookAccount.Transfers, currency_id, account_id, amount)
 
@@ -437,7 +449,7 @@ class Ledger:
         account_id = self.current[ACCOUNT_ID]
         currency_id = self.current[CURRENCY_ID]
         amount = self.current[AMOUNT_QTY]
-        returned_sum = self.returnCredit(seq_id, timestamp, account_id, currency_id, amount)
+        returned_sum = self.returnCredit(amount)
         if returned_sum < amount:
             self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id,
                                    (amount - returned_sum))
@@ -449,7 +461,7 @@ class Ledger:
         account_id = self.current[ACCOUNT_ID]
         currency_id = self.current[CURRENCY_ID]
         fee = -self.current[AMOUNT_QTY]
-        credit_sum = self.takeCredit(seq_id, timestamp, account_id, currency_id, fee)
+        credit_sum = self.takeCredit(fee)
         self.appendTransaction(timestamp, seq_id, BookAccount.Money, currency_id, account_id, -(fee - credit_sum))
         self.appendTransaction(timestamp, seq_id, BookAccount.Costs, currency_id, account_id, fee, None,
                                PredefinedPeer.Financial, PredefinedCategory.Fees, None)

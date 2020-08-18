@@ -650,6 +650,7 @@ CREATE VIEW all_transactions AS
                       a.timestamp,
                       CASE WHEN SUM(d.sum) < 0 THEN COUNT(d.sum) ELSE -COUNT(d.sum) END AS subtype,
                       a.account_id AS account,
+                      NULL AS asset,
                       SUM(d.sum) AS amount,
                       d.category_id AS price_category,
                       a.peer_id AS coupon_peer,
@@ -664,6 +665,7 @@ CREATE VIEW all_transactions AS
                       timestamp,
                       0 AS subtype,
                       account_id AS account,
+                      asset_id AS asset,
                       sum AS amount,
                       NULL AS price_category,
                       NULL AS coupon_peer,
@@ -675,6 +677,7 @@ CREATE VIEW all_transactions AS
                       timestamp,
                       type AS subtype,
                       account_id AS account,
+                      NULL AS asset,
                       amount,
                       NULL AS price_category,
                       NULL AS coupon_peer,
@@ -686,6 +689,7 @@ CREATE VIEW all_transactions AS
                       t.timestamp,
                       coalesce(ca.type, 0) AS subtype,
                       t.account_id AS account,
+                      t.asset_id AS asset,
                       t.qty AS amount,
                       t.price AS price_category,
                       t.coupon AS coupon_peer,
@@ -1510,7 +1514,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 4);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 5);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 
