@@ -24,6 +24,9 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
         y = parent.y() + parent.height()/2 - self.height()/2
         self.setGeometry(x, y, self.width(), self.height())
 
+    def isFastAndDirty(self):
+        return self.FastAndDirty.isChecked()
+
     def getTimestamp(self):
         if self.LastRadioButton.isChecked():
             return self.frontier
@@ -57,12 +60,12 @@ class Ledger:
     def setActiveBalancesOnly(self, active_only):
         if self.balance_active_only != active_only:
             self.balance_active_only = active_only
-            self.UpdateBalances()
+            self.updateBalancesView()
 
     def setBalancesDate(self, balance_date):
         if self.balance_date != balance_date:
             self.balance_date = balance_date
-            self.UpdateBalances()
+            self.updateBalancesView()
 
     def setBalancesCurrency(self, currency_id, currency_name):
         if self.balance_currency != currency_id:
@@ -70,16 +73,16 @@ class Ledger:
             balances_model = self.balances_view.model()
             balances_model.setHeaderData(balances_model.fieldIndex("balance_adj"), Qt.Horizontal,
                                          "Balance, " + currency_name)
-            self.UpdateBalances()
+            self.updateBalancesView()
 
-    def UpdateBalances(self):
+    def updateBalancesView(self):
         self.BuildBalancesTable()
         self.balances_view.model().select()
 
     def setHoldingsDate(self, holdings_date):
         if self.holdings_date != holdings_date:
             self.holdings_date = holdings_date
-            self.UpdateHoldings()
+            self.updateHoldingsView()
 
     def setHoldingsCurrency(self, currency_id, currency_name):
         if self.holdings_currency != currency_id:
@@ -87,9 +90,9 @@ class Ledger:
             holidings_model = self.holdings_view.model()
             holidings_model.setHeaderData(holidings_model.fieldIndex("value_adj"), Qt.Horizontal,
                                           "Value, " + currency_name)
-            self.UpdateHoldings()
+            self.updateHoldingsView()
 
-    def UpdateHoldings(self):
+    def updateHoldingsView(self):
         self.BuildHoldingsTable()
         holdings_model = self.holdings_view.model()
         holdings_model.select()
@@ -130,44 +133,26 @@ class Ledger:
         if (abs(new_amount - old_amount) + abs(new_value - old_value)) <= (2 * Setup.CALC_TOLERANCE):
             return
 
-        query.prepare(
-            "INSERT INTO ledger (timestamp, sid, book_account, asset_id, account_id, "
-            "amount, value, peer_id, category_id, tag_id) "
-            "VALUES(:timestamp, :sid, :book, :asset_id, :account_id, :amount, :value, :peer_id, :category_id, :tag_id)")
-        query.bindValue(":timestamp", timestamp)
-        query.bindValue(":sid", seq_id)
-        query.bindValue(":book", book)
-        query.bindValue(":asset_id", asset_id)
-        query.bindValue(":account_id", account_id)
-        query.bindValue(":amount", amount)
-        query.bindValue(":value", value)
-        query.bindValue(":peer_id", peer_id)
-        query.bindValue(":category_id", category_id)
-        query.bindValue(":tag_id", tag_id)
-        assert query.exec_()
+        _ = executeSQL(self.db, "INSERT INTO ledger (timestamp, sid, book_account, asset_id, account_id, "
+                                "amount, value, peer_id, category_id, tag_id) "
+                                "VALUES(:timestamp, :sid, :book, :asset_id, :account_id, "
+                                ":amount, :value, :peer_id, :category_id, :tag_id)",
+                       [(":timestamp", timestamp), (":sid", seq_id), (":book", book), (":asset_id", asset_id),
+                        (":account_id", account_id), (":amount", amount), (":value", value),
+                        (":peer_id", peer_id), (":category_id", category_id), (":tag_id", tag_id)])
         if seq_id == old_sid:
-            query.prepare("UPDATE ledger_sums SET sum_amount = :new_amount, sum_value = :new_value"
-                          " WHERE sid = :sid AND book_account = :book"
-                          " AND asset_id = :asset_id AND account_id = :account_id")
-            query.bindValue(":new_amount", new_amount)
-            query.bindValue(":new_value", new_value)
-            query.bindValue(":sid", seq_id)
-            query.bindValue(":book", book)
-            query.bindValue(":asset_id", asset_id)
-            query.bindValue(":account_id", account_id)
-            assert query.exec_()
+            _ = executeSQL(self.db, "UPDATE ledger_sums SET sum_amount = :new_amount, sum_value = :new_value"
+                                    " WHERE sid = :sid AND book_account = :book"
+                                    " AND asset_id = :asset_id AND account_id = :account_id",
+                           [(":new_amount", new_amount), (":new_value", new_value), (":sid", seq_id),
+                            (":book", book), (":asset_id", asset_id), (":account_id", account_id)])
         else:
-            query.prepare(
-                "INSERT INTO ledger_sums(sid, timestamp, book_account, asset_id, account_id, sum_amount, sum_value) "
-                "VALUES(:sid, :timestamp, :book, :asset_id, :account_id, :new_amount, :new_value)")
-            query.bindValue(":sid", seq_id)
-            query.bindValue(":timestamp", timestamp)
-            query.bindValue(":book", book)
-            query.bindValue(":asset_id", asset_id)
-            query.bindValue(":account_id", account_id)
-            query.bindValue(":new_amount", new_amount)
-            query.bindValue(":new_value", new_value)
-            assert query.exec_()
+            _ = executeSQL(self.db, "INSERT INTO ledger_sums(sid, timestamp, book_account, "
+                                    "asset_id, account_id, sum_amount, sum_value) "
+                                    "VALUES(:sid, :timestamp, :book, :asset_id, "
+                                    ":account_id, :new_amount, :new_value)",
+                           [(":sid", seq_id), (":timestamp", timestamp), (":book", book), (":asset_id", asset_id),
+                            (":account_id", account_id), (":new_amount", new_amount), (":new_value", new_value)])
         self.db.commit()
 
     # TODO check that condition <= is really correct for timestamp in this function
@@ -469,7 +454,7 @@ class Ledger:
     # 0 - re-build from scratch
     # any - re-build all operations after given timestamp
     # Methods asks for confirmation if we have more than SILENT_REBUILD_THRESHOLD operations require rebuild
-    def rebuild(self, from_timestamp=-1, silent=True):
+    def rebuild(self, from_timestamp=-1, fast_and_dirty=False, silent=True):
         if from_timestamp >= 0:
             frontier = from_timestamp
             silent = False
@@ -505,8 +490,9 @@ class Ledger:
         _ = executeSQL(self.db, "DELETE FROM ledger_sums WHERE timestamp >= :frontier", [(":frontier", frontier)])
         self.db.commit()
 
-        # TODO check if it gives a big difference
-        _ = executeSQL(self.db, "PRAGMA synchronous = OFF")
+        # For 30k operations difference of execution time is - with 0:02:41 / without 0:11:44
+        if fast_and_dirty:
+            _ = executeSQL(self.db, "PRAGMA synchronous = OFF")
         query = executeSQL(self.db, "SELECT 1 AS type, a.id, a.timestamp, "
                                     "CASE WHEN SUM(d.sum)<0 THEN 5 ELSE 1 END AS seq FROM actions AS a "
                                     "LEFT JOIN action_details AS d ON a.id=d.pid WHERE timestamp >= :frontier GROUP BY a.id "
@@ -536,9 +522,10 @@ class Ledger:
                 self.processTransfer(seq_id, operation_id)
             i = i + 1
             if not silent and (i % 1000) == 0:
-                logging.info(f"Processed {i} records, current frontier: "
+                logging.info(f"Processed {i/1000}k records, current frontier: "
                              f"{datetime.datetime.fromtimestamp(new_frontier).strftime('%d/%m/%Y %H:%M:%S')}")
-        assert query.exec_("PRAGMA synchronous = ON")
+        if fast_and_dirty:
+            _ = executeSQL(self.db, "PRAGMA synchronous = ON")
 
         end_time = datetime.datetime.now()
         if not silent:
@@ -701,5 +688,5 @@ class Ledger:
     def showRebuildDialog(self, parent):
         rebuild_dialog = RebuildDialog(parent, self.getCurrentFrontier())
         if rebuild_dialog.exec_():
-            rebuild_date = rebuild_dialog.getTimestamp()
-            self.rebuild(from_timestamp=rebuild_date, silent=False)
+            self.rebuild(from_timestamp=rebuild_dialog.getTimestamp(),
+                         fast_and_dirty=rebuild_dialog.isFastAndDirty(), silent=False)

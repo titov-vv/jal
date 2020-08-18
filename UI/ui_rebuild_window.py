@@ -77,6 +77,12 @@ class Ui_ReBuildDialog(object):
 
         self.verticalLayout.addWidget(self.TypeGroup)
 
+        self.FastAndDirty = QCheckBox(ReBuildDialog)
+        self.FastAndDirty.setObjectName(u"FastAndDirty")
+        self.FastAndDirty.setChecked(True)
+
+        self.verticalLayout.addWidget(self.FastAndDirty)
+
         self.DialogButtonBox = QDialogButtonBox(ReBuildDialog)
         self.DialogButtonBox.setObjectName(u"DialogButtonBox")
         sizePolicy1.setHeightForWidth(self.DialogButtonBox.sizePolicy().hasHeightForWidth())
@@ -102,5 +108,6 @@ class Ui_ReBuildDialog(object):
         self.FrontierDateLabel.setText(QCoreApplication.translate("ReBuildDialog", u"FrontierDate", None))
         self.DateRadionButton.setText(QCoreApplication.translate("ReBuildDialog", u"Since &Date:", None))
         self.CustomDateEdit.setDisplayFormat(QCoreApplication.translate("ReBuildDialog", u"dd/MM/yyyy", None))
+        self.FastAndDirty.setText(QCoreApplication.translate("ReBuildDialog", u"Fast, &unreliable", None))
     # retranslateUi
 
