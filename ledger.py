@@ -4,8 +4,7 @@ import logging
 from constants import Setup, BookAccount, TransactionType, TransferSubtype, PredefinedCategory, PredefinedPeer
 from PySide2.QtCore import Qt, QDate, QDateTime
 from PySide2.QtWidgets import QDialog, QMessageBox
-from PySide2.QtSql import QSqlQuery
-from DB.helpers import get_base_currency, executeSQL
+from DB.helpers import executeSQL
 from UI.ui_rebuild_window import Ui_ReBuildDialog
 
 
@@ -274,40 +273,32 @@ class Ledger:
         trade_sum = round(price * qty, 2) + fee + coupon
         sell_qty = 0
         sell_sum = 0
-        deal_query = QSqlQuery(self.db)
-        deal_query.prepare("INSERT INTO deals(account_id, asset_id, open_sid, close_sid, qty) "
-                           "VALUES(:account_id, :asset_id, :open_sid, :close_sid, :qty)")
-        deal_query.bindValue(":account_id", account_id)
-        deal_query.bindValue(":asset_id", asset_id)
-        deal_query.bindValue(":close_sid", seq_id)
-        query = QSqlQuery(self.db)
         if self.getAmount(timestamp, BookAccount.Assets, account_id, asset_id) < 0:
-            query.prepare("SELECT d.open_sid AS open, abs(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
-                          "LEFT JOIN sequence AS os ON os.type=3 AND os.id=d.open_sid "
-                          "JOIN trades AS o ON o.id = os.operation_id "
-                          "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
-                          "GROUP BY d.open_sid "
-                          "ORDER BY d.close_sid DESC, d.open_sid DESC LIMIT 1")
-            query.bindValue(":asset_id", asset_id)
-            query.bindValue(":account_id", account_id)
-            query.bindValue(":timestamp", timestamp)
-            assert query.exec_()
+            query = executeSQL(self.db,
+                               "SELECT d.open_sid AS open, abs(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
+                               "LEFT JOIN sequence AS os ON os.type=3 AND os.id=d.open_sid "
+                               "JOIN trades AS o ON o.id = os.operation_id "
+                               "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
+                               "GROUP BY d.open_sid "
+                               "ORDER BY d.close_sid DESC, d.open_sid DESC LIMIT 1",
+                               [(":account_id", account_id), (":asset_id", asset_id)])
             if query.next():
                 reminder = query.value(1)  # value(1) = non-matched reminder of last Sell trade
                 last_sid = query.value(0)  # value(0) = sid of Sell trade from the last deal
-                query.prepare("SELECT s.id, -t.qty, t.price FROM trades AS t "
-                              "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
-                              "WHERE t.qty < 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
-                              "AND s.id < :sid AND s.id >= :last_sid")
-                query.bindValue(":last_sid", last_sid)
+                query = executeSQL(self.db,
+                                   "SELECT s.id, -t.qty, t.price FROM trades AS t "
+                                   "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
+                                   "WHERE t.qty < 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
+                                   "AND s.id < :sid AND s.id >= :last_sid",
+                                   [(":account_id", account_id), (":asset_id", asset_id),
+                                    (":sid", seq_id), (":last_sid", last_sid)])
             else:  # There were no deals -> Select all sells
                 reminder = 0
-                query.prepare("SELECT s.id, -t.qty, t.price FROM trades AS t "
-                              "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
-                              "WHERE t.qty < 0 AND t.asset_id=:asset_id AND t.account_id=:account_id AND s.id<:sid")
-            query.bindValue(":asset_id", asset_id)
-            query.bindValue(":sid", seq_id)
-            assert query.exec_()
+                query = executeSQL(self.db,
+                                   "SELECT s.id, -t.qty, t.price FROM trades AS t "
+                                   "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
+                                   "WHERE t.qty<0 AND t.asset_id=:asset_id AND t.account_id=:account_id AND s.id<:sid",
+                                   [(":account_id", account_id), (":asset_id", asset_id), (":sid", seq_id)])
             while query.next():
                 if reminder:
                     next_deal_qty = reminder
@@ -316,9 +307,10 @@ class Ledger:
                     next_deal_qty = query.value(1)  # value(1) = quantity
                 if (sell_qty + next_deal_qty) >= qty:  # we are buying less or the same amount as was sold previously
                     next_deal_qty = qty - sell_qty
-                deal_query.bindValue(":open_sid", query.value(0))
-                deal_query.bindValue(":qty", next_deal_qty)
-                assert deal_query.exec_()
+                _ = executeSQL(self.db, "INSERT INTO deals(account_id, asset_id, open_sid, close_sid, qty) "
+                                        "VALUES(:account_id, :asset_id, :open_sid, :close_sid, :qty)",
+                               [(":account_id", account_id), (":asset_id", asset_id), (":open_sid", query.value(0)),
+                                (":close_sid", seq_id), (":qty", next_deal_qty)])
                 sell_qty = sell_qty + next_deal_qty
                 sell_sum = sell_sum + (next_deal_qty * query.value(2))  # value(2) = price
                 if sell_qty == qty:
@@ -346,41 +338,32 @@ class Ledger:
         trade_sum = round(price * qty, 2) - fee + coupon
         buy_qty = 0
         buy_sum = 0
-        deal_query = QSqlQuery(self.db)
-        deal_query.prepare("INSERT INTO deals(account_id, asset_id, open_sid, close_sid, qty) "
-                           "VALUES(:account_id, :asset_id, :open_sid, :close_sid, :qty)")
-        deal_query.bindValue(":account_id", account_id)
-        deal_query.bindValue(":asset_id", asset_id)
-        deal_query.bindValue(":close_sid", seq_id)
-        query = QSqlQuery(self.db)
         if self.getAmount(timestamp, BookAccount.Assets, account_id, asset_id) > 0:
-            query.prepare("SELECT d.open_sid AS open, abs(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
-                          "LEFT JOIN sequence AS os ON os.type=3 AND os.id=d.open_sid "
-                          "JOIN trades AS o ON o.id = os.operation_id "
-                          "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
-                          "GROUP BY d.open_sid "
-                          "ORDER BY d.close_sid DESC, d.open_sid DESC LIMIT 1")
-            query.bindValue(":asset_id", asset_id)
-            query.bindValue(":account_id", account_id)
-            query.bindValue(":timestamp", timestamp)
-            assert query.exec_()
+            query = executeSQL(self.db,
+                               "SELECT d.open_sid AS open, abs(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
+                               "LEFT JOIN sequence AS os ON os.type=3 AND os.id=d.open_sid "
+                               "JOIN trades AS o ON o.id = os.operation_id "
+                               "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
+                               "GROUP BY d.open_sid "
+                               "ORDER BY d.close_sid DESC, d.open_sid DESC LIMIT 1",
+                               [(":account_id", account_id), (":asset_id", asset_id)])
             if query.next():
                 reminder = query.value(1)  # value(1) = non-matched reminder of last Sell trade
                 last_sid = query.value(0)  # value(0) = sid of Buy trade from last deal
-                query.prepare("SELECT s.id, t.qty, t.price FROM trades AS t "
-                              "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
-                              "WHERE t.qty > 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
-                              "AND s.id < :sid AND s.id >= :last_sid")
-                query.bindValue(":last_sid", last_sid)
+                query = executeSQL(self.db,
+                                   "SELECT s.id, t.qty, t.price FROM trades AS t "
+                                   "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
+                                   "WHERE t.qty > 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
+                                   "AND s.id < :sid AND s.id >= :last_sid",
+                                   [(":asset_id", asset_id), (":account_id", account_id),
+                                    (":sid", seq_id), (":last_sid", last_sid)])
             else:  # There were no deals -> Select all purchases
                 reminder = 0
-                query.prepare("SELECT s.id, t.qty, t.price FROM trades AS t "
-                              "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
-                              "WHERE t.qty > 0 AND t.asset_id=:asset_id AND t.account_id=:account_id AND s.id<:sid")
-            query.bindValue(":asset_id", asset_id)
-            query.bindValue(":account_id", account_id)
-            query.bindValue(":sid", seq_id)
-            assert query.exec_()
+                query = executeSQL(self.db,
+                                   "SELECT s.id, t.qty, t.price FROM trades AS t "
+                                   "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
+                                   "WHERE t.qty>0 AND t.asset_id=:asset_id AND t.account_id=:account_id AND s.id<:sid",
+                                   [(":asset_id", asset_id), (":account_id", account_id), (":sid", seq_id)])
             while query.next():
                 if reminder > 0:
                     next_deal_qty = reminder
@@ -389,9 +372,10 @@ class Ledger:
                     next_deal_qty = query.value(1)  # value(1) = quantity
                 if (buy_qty + next_deal_qty) >= qty:  # we are selling less or the same amount as was bought previously
                     next_deal_qty = qty - buy_qty
-                deal_query.bindValue(":open_sid", query.value(0))
-                deal_query.bindValue(":qty", next_deal_qty)
-                assert deal_query.exec_()
+                _ = executeSQL(self.db, "INSERT INTO deals(account_id, asset_id, open_sid, close_sid, qty) "
+                                        "VALUES(:account_id, :asset_id, :open_sid, :close_sid, :qty)",
+                               [(":account_id", account_id), (":asset_id", asset_id), (":open_sid", query.value(0)),
+                                (":close_sid", seq_id), (":qty", next_deal_qty)])
                 buy_qty = buy_qty + next_deal_qty
                 buy_sum = buy_sum + (next_deal_qty * query.value(2))  # value(2) = price
                 if buy_qty == qty:
