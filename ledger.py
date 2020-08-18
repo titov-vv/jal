@@ -38,6 +38,8 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
 # TODO Check are there negative lines for Costs
 # ===================================================================================================================
 class Ledger:
+    SILENT_REBUILD_THRESHOLD = 50
+
     def __init__(self, db):
         self.db = db
         self.balances_view = None
@@ -461,78 +463,39 @@ class Ledger:
         elif transfer_type == TransferSubtype.Fee:
             self.processTransferFee(seq_id, query.value(1), query.value(2), query.value(3), -query.value(4))
 
-    # TODO check if this method may be combined with the next one
-    # Rebuild transaction sequence and recalculate all amounts
-    # from last valid operation (from ledger frontier) until present moment
-    # Methods asks for confirmation if we have more than 15 days unreconciled
-    def MakeUpToDate(self):
-        operations_count = 0
-        frontier = self.getCurrentFrontier()
-        query = executeSQL(self.db, "SELECT SUM(cnt) FROM ("
-                                    "SELECT COUNT(id) AS cnt FROM actions WHERE timestamp >= :frontier "
-                                    "UNION ALL "
-                                    "SELECT COUNT(id) AS cnt FROM dividends WHERE timestamp >= :frontier "
-                                    "UNION ALL "
-                                    "SELECT COUNT(id) AS cnt FROM transfers WHERE timestamp >= :frontier "
-                                    "UNION ALL "
-                                    "SELECT COUNT(id) AS cnt FROM trades WHERE timestamp >= :frontier)",
-                           [(":frontier", frontier)])
-        if query.next():
-            operations_count = query.value(0)
-        if operations_count > 50:
-            if QMessageBox().warning(None, "Confirmation",
-                                     f"{operations_count} operations require rebuild. Do you want to do it right now?",
-                                     QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
-                return
-
-        _ = executeSQL(self.db, "DELETE FROM deals WHERE close_sid > "
-                                "(SELECT coalesce(MIN(id), 0) FROM sequence WHERE timestamp >= :frontier)",
-                       [(":frontier", frontier)])
-        _ = executeSQL(self.db, "DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
-        _ = executeSQL(self.db, "DELETE FROM sequence WHERE timestamp >= :frontier", [(":frontier", frontier)])
-        _ = executeSQL(self.db, "DELETE FROM ledger_sums WHERE timestamp >= :frontier", [(":frontier", frontier)])
-        self.db.commit()
-
-        query = executeSQL(self.db,
-                           "SELECT 1 AS type, a.id, a.timestamp, "
-                           "CASE WHEN SUM(d.sum)<0 THEN 5 ELSE 1 END AS seq FROM actions AS a "
-                           "LEFT JOIN action_details AS d ON a.id=d.pid WHERE timestamp >= :frontier GROUP BY a.id "
-                           "UNION ALL "
-                           "SELECT 2 AS type, id, timestamp, 2 AS seq FROM dividends WHERE timestamp >= :frontier "
-                           "UNION ALL "
-                           "SELECT 4 AS type, id, timestamp, 3 AS seq FROM transfers WHERE timestamp >= :frontier "
-                           "UNION ALL "
-                           "SELECT 3 AS type, id, timestamp, 4 AS seq FROM trades WHERE timestamp >= :frontier "
-                           "ORDER BY timestamp, seq", [(":frontier", frontier)])
-        while query.next():
-            type = query.value(0)
-            operation_id = query.value(1)
-            new_frontier = query.value(2)
-            seq_query = executeSQL(self.db, "INSERT INTO sequence(timestamp, type, operation_id) "
-                                            "VALUES(:timestamp, :type, :operation_id)",
-                                   [(":timestamp", new_frontier), (":type", type), (":operation_id", operation_id)])
-            seq_id = seq_query.lastInsertId()
-            if type == TransactionType.Action:
-                self.processAction(seq_id, operation_id)
-            if type == TransactionType.Dividend:
-                self.processDividend(seq_id, operation_id)
-            if type == TransactionType.Trade:
-                self.processTrade(seq_id, operation_id)
-            if type == TransactionType.Transfer:
-                self.processTransfer(seq_id, operation_id)
-
     # Rebuild transaction sequence and recalculate all amounts
     # timestamp:
     # -1 - re-build from last valid operation (from ledger frontier)
     # 0 - re-build from scratch
     # any - re-build all operations after given timestamp
-    def MakeFromTimestamp(self, timestamp):
-        if timestamp < 0:
-            frontier = self.getCurrentFrontier()
+    # Methods asks for confirmation if we have more than SILENT_REBUILD_THRESHOLD operations require rebuild
+    def rebuild(self, from_timestamp=-1, silent=True):
+        if from_timestamp >= 0:
+            frontier = from_timestamp
+            silent = False
         else:
-            frontier = timestamp
+            operations_count = 0
+            frontier = self.getCurrentFrontier()
+            query = executeSQL(self.db, "SELECT SUM(cnt) FROM ("
+                                        "SELECT COUNT(id) AS cnt FROM actions WHERE timestamp >= :frontier "
+                                        "UNION ALL "
+                                        "SELECT COUNT(id) AS cnt FROM dividends WHERE timestamp >= :frontier "
+                                        "UNION ALL "
+                                        "SELECT COUNT(id) AS cnt FROM transfers WHERE timestamp >= :frontier "
+                                        "UNION ALL "
+                                        "SELECT COUNT(id) AS cnt FROM trades WHERE timestamp >= :frontier)",
+                               [(":frontier", frontier)])
+            if query.next():
+                operations_count = query.value(0)
+            if operations_count > self.SILENT_REBUILD_THRESHOLD:
+                silent = False
+                if QMessageBox().warning(None, "Confirmation",
+                                         f"{operations_count} operations require rebuild. Do you want to do it right now?",
+                                         QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
+                    return
         new_frontier = frontier  # this variable will be updated later together with ledger updates
-        logging.info(f"Re-build ledger from: {datetime.datetime.fromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
+        if not silent:
+            logging.info(f"Re-build ledger from: {datetime.datetime.fromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
         start_time = datetime.datetime.now()
         _ = executeSQL(self.db, "DELETE FROM deals WHERE close_sid >= "
                                 "(SELECT coalesce(MIN(id), 0) FROM sequence WHERE timestamp >= :frontier)",
@@ -542,6 +505,7 @@ class Ledger:
         _ = executeSQL(self.db, "DELETE FROM ledger_sums WHERE timestamp >= :frontier", [(":frontier", frontier)])
         self.db.commit()
 
+        # TODO check if it gives a big difference
         _ = executeSQL(self.db, "PRAGMA synchronous = OFF")
         query = executeSQL(self.db, "SELECT 1 AS type, a.id, a.timestamp, "
                                     "CASE WHEN SUM(d.sum)<0 THEN 5 ELSE 1 END AS seq FROM actions AS a "
@@ -571,14 +535,15 @@ class Ledger:
             if type == TransactionType.Transfer:
                 self.processTransfer(seq_id, operation_id)
             i = i + 1
-            if (i % 1000) == 0:
+            if not silent and (i % 1000) == 0:
                 logging.info(f"Processed {i} records, current frontier: "
                              f"{datetime.datetime.fromtimestamp(new_frontier).strftime('%d/%m/%Y %H:%M:%S')}")
         assert query.exec_("PRAGMA synchronous = ON")
 
         end_time = datetime.datetime.now()
-        logging.info(f"Ledger is complete. Processed {i} records; elapsed time: {end_time - start_time}, "
-                     f"new frontier: {datetime.datetime.fromtimestamp(new_frontier).strftime('%d/%m/%Y %H:%M:%S')}")
+        if not silent:
+            logging.info(f"Ledger is complete. Processed {i} records; elapsed time: {end_time - start_time}, "
+                         f"new frontier: {datetime.datetime.fromtimestamp(new_frontier).strftime('%d/%m/%Y %H:%M:%S')}")
 
     # Populate table balances with data calculated for given parameters:
     # 'timestamp' moment of time for balance
@@ -737,4 +702,4 @@ class Ledger:
         rebuild_dialog = RebuildDialog(parent, self.getCurrentFrontier())
         if rebuild_dialog.exec_():
             rebuild_date = rebuild_dialog.getTimestamp()
-            self.MakeFromTimestamp(rebuild_date)
+            self.rebuild(from_timestamp=rebuild_date, silent=False)

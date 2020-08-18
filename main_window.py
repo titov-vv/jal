@@ -171,7 +171,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def onStatementLoaded(self):
         self.StatusBar.showMessage("Statement load completed", timeout=60000)
-        self.ledger.MakeUpToDate()
+        self.ledger.rebuild()
 
     @Slot()
     def ShowOperationTab(self, operation_type):
@@ -185,7 +185,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def showCommitted(self):
-        self.ledger.MakeUpToDate()
+        self.ledger.rebuild()
         self.SaveOperationBtn.setEnabled(False)
         self.RevertOperationBtn.setEnabled(False)
 
