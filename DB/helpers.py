@@ -27,6 +27,32 @@ def executeSQL(db, sql_text, params = [], forward_only = True):
     return query
 
 # -------------------------------------------------------------------------------------------------------------------
+# the same as executeSQL() but after query execution it takes first line of it
+# and packs all field values in a list to return
+def readSQL(db, sql_text, params = []):
+    query = QSqlQuery(db)
+    query.setForwardOnly(True)
+    if not query.prepare(sql_text):
+        logging.error(f"SQL prep: '{query.lastError().text()}' for query '{sql_text}' with params '{params}'")
+        return None
+    for param in params:
+        query.bindValue(param[0], param[1])
+    if not query.exec_():
+        logging.error(f"SQL exec: '{query.lastError().text()}' for query '{sql_text}' with params '{params}'")
+        return None
+    values = []
+    if query.next():
+        for i in range(query.record().count()):
+            values.append(query.value(i))
+    if values:
+        if len(values) == 1:
+            return values[0]
+        else:
+            return values
+    else:
+        return None
+
+# -------------------------------------------------------------------------------------------------------------------
 def init_and_check_db(parent, db_path):
     db = QSqlDatabase.addDatabase("QSQLITE")
     db.setDatabaseName(get_dbfilename(db_path))

@@ -8,7 +8,7 @@ from PySide2.QtWidgets import QStyledItemDelegate
 
 from UI.ui_reference_data_dlg import Ui_ReferenceDataDialog
 from CustomUI.helpers import UseSqlTable, ConfigureTableView, rel_idx
-from DB.helpers import executeSQL
+from DB.helpers import readSQL
 
 
 # --------------------------------------------------------------------------------------------------------------
@@ -216,11 +216,9 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         if current_id is None:
             pid = self.last_parent
         else:
-            query = executeSQL(self.db,
-                               f"SELECT c2.pid FROM {self.table} AS c1 LEFT JOIN {self.table} AS c2 ON c1.pid=c2.id "\
-                               f"WHERE c1.id = :current_id", [(":current_id", current_id)])
-            query.next()
-            pid = query.value(0)
+            pid = readSQL(self.db,
+                          f"SELECT c2.pid FROM {self.table} AS c1 LEFT JOIN {self.table} AS c2 ON c1.pid=c2.id "\
+                          f"WHERE c1.id = :current_id", [(":current_id", current_id)])
             if pid == '':
                 pid = 0
         self.parent = pid
