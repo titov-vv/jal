@@ -181,7 +181,9 @@ class Ledger:
         self.db.commit()
 
     # TODO check that condition <= is really correct for timestamp in this function
-    def getAmount(self, timestamp, book, account_id, asset_id=None):
+    def getAmount(self, book, asset_id=None):
+        timestamp = self.current[TIMESTAMP]
+        account_id = self.current[ACCOUNT_ID]
         if asset_id is None:
             query = executeSQL(self.db,
                                "SELECT sum_amount FROM ledger_sums WHERE book_account = :book AND "
@@ -199,9 +201,7 @@ class Ledger:
             return 0.0
 
     def takeCredit(self, action_sum):
-        timestamp = self.current[TIMESTAMP]
-        account_id = self.current[ACCOUNT_ID]
-        money_available = self.getAmount(timestamp, BookAccount.Money, account_id)
+        money_available = self.getAmount(BookAccount.Money)
         credit = 0
         if money_available < action_sum:
             credit = action_sum - money_available
@@ -209,9 +209,7 @@ class Ledger:
         return credit
 
     def returnCredit(self, action_sum):
-        timestamp = self.current[TIMESTAMP]
-        account_id = self.current[ACCOUNT_ID]
-        CreditValue = -1.0 * self.getAmount(timestamp, BookAccount.Liabilities, account_id)
+        CreditValue = -1.0 * self.getAmount(BookAccount.Liabilities)
         debit = 0
         if CreditValue > 0:
             if CreditValue >= action_sum:
@@ -227,9 +225,7 @@ class Ledger:
         query = executeSQL(self.db, "SELECT sum as amount, category_id, tag_id FROM action_details AS d WHERE pid=:pid",
                            [(":pid", op_id)])
         while query.next():
-            amount, category_id, tag_id = readSQLrecord(query)
-            self.current[PRICE_CATEGORY] = category_id
-            self.current[FEE_TAX_TAG] = tag_id
+            amount, self.current[PRICE_CATEGORY], self.current[FEE_TAX_TAG] = readSQLrecord(query)
             if amount < 0:
                 self.appendTransaction(BookAccount.Costs, -amount)
             else:
@@ -237,8 +233,6 @@ class Ledger:
 
     def processAction(self):
         action_sum = self.current[AMOUNT_QTY]
-        category_id = self.current[PRICE_CATEGORY]
-        tag_id = self.current[FEE_TAX_TAG]
         if action_sum < 0:
             credit_sum = self.takeCredit(-action_sum)
             self.appendTransaction(BookAccount.Money, -(-action_sum - credit_sum))
@@ -246,7 +240,6 @@ class Ledger:
             returned_sum = self.returnCredit(action_sum)
             if returned_sum < action_sum:
                 self.appendTransaction(BookAccount.Money, action_sum - returned_sum)
-
         if self.current[TRANSACTION_SUBTYPE] == ActionSubtype.SingleIncome:
             self.appendTransaction(BookAccount.Incomes, -action_sum)
         elif self.current[TRANSACTION_SUBTYPE] == ActionSubtype.SingleSpending:
@@ -269,7 +262,6 @@ class Ledger:
 
     def processBuy(self):
         seq_id = self.current_seq
-        timestamp = self.current[TIMESTAMP]
         account_id = self.current[ACCOUNT_ID]
         asset_id = self.current[ASSET_ID]
         qty = self.current[AMOUNT_QTY]
@@ -279,7 +271,7 @@ class Ledger:
         trade_sum = round(price * qty, 2) + fee + coupon
         sell_qty = 0
         sell_sum = 0
-        if self.getAmount(timestamp, BookAccount.Assets, account_id, asset_id) < 0:
+        if self.getAmount(BookAccount.Assets, asset_id) < 0:
             query = executeSQL(self.db,
                                "SELECT d.open_sid AS open, abs(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
                                "LEFT JOIN sequence AS os ON os.type=3 AND os.id=d.open_sid "
@@ -340,7 +332,6 @@ class Ledger:
 
     def processSell(self):
         seq_id = self.current_seq
-        timestamp = self.current[TIMESTAMP]
         account_id = self.current[ACCOUNT_ID]
         asset_id = self.current[ASSET_ID]
         qty = -self.current[AMOUNT_QTY]
@@ -350,7 +341,7 @@ class Ledger:
         trade_sum = round(price * qty, 2) - fee + coupon
         buy_qty = 0
         buy_sum = 0
-        if self.getAmount(timestamp, BookAccount.Assets, account_id, asset_id) > 0:
+        if self.getAmount(BookAccount.Assets, asset_id) > 0:
             query = executeSQL(self.db,
                                "SELECT d.open_sid AS open, abs(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
                                "LEFT JOIN sequence AS os ON os.type=3 AND os.id=d.open_sid "
