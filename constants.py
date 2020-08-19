@@ -23,6 +23,9 @@ class TransactionType:   # PREDEFINED TRANSACTION TYPES
     Trade = 3
     Transfer = 4
 
+class ActionSubtype:
+    SingleIncome = -1
+    SingleSpending = 1
 
 class TransferSubtype:   # TRANSFER SUB-TYPES
     Fee = 0

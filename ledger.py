@@ -1,7 +1,8 @@
 import logging    # 12,461,266.91
 
 from datetime import datetime
-from constants import Setup, BookAccount, TransactionType, TransferSubtype, PredefinedCategory, PredefinedPeer
+from constants import Setup, BookAccount, TransactionType, ActionSubtype, \
+    TransferSubtype, PredefinedCategory, PredefinedPeer
 from PySide2.QtCore import Qt, QDate, QDateTime
 from PySide2.QtWidgets import QDialog, QMessageBox
 from DB.helpers import executeSQL, readSQL, readSQLrecord
@@ -228,6 +229,8 @@ class Ledger:
 
     def processAction(self):
         action_sum = self.current[AMOUNT_QTY]
+        category_id = self.current[PRICE_CATEGORY]
+        tag_id = self.current[FEE_TAX_TAG]
         if action_sum < 0:
             credit_sum = self.takeCredit(-action_sum)
             self.appendTransaction(BookAccount.Money, -(-action_sum - credit_sum))
@@ -235,7 +238,13 @@ class Ledger:
             returned_sum = self.returnCredit(action_sum)
             if returned_sum < action_sum:
                 self.appendTransaction(BookAccount.Money, action_sum - returned_sum)
-        self.processActionDetails()
+
+        if self.current[TRANSACTION_SUBTYPE] == ActionSubtype.SingleIncome:
+            self.appendTransaction(BookAccount.Incomes, -action_sum, None, category_id, tag_id)
+        elif self.current[TRANSACTION_SUBTYPE] == ActionSubtype.SingleSpending:
+            self.appendTransaction(BookAccount.Costs, -action_sum, None, category_id, tag_id)
+        else:
+            self.processActionDetails()
 
     def processDividend(self):
         dividend_sum = self.current[AMOUNT_QTY]
