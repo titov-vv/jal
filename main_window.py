@@ -4,7 +4,6 @@ from functools import partial
 
 from PySide2 import QtCore, QtWidgets
 from PySide2.QtCore import Slot
-from PySide2.QtGui import QDoubleValidator
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QMenu, QMessageBox, QLabel
 
 from UI.ui_main_window import Ui_LedgerMainWindow
@@ -163,6 +162,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def onQuotesDownloadCompletion(self):
         self.StatusBar.showMessage("Quotes download completed", timeout=60000)
+        self.ledger.updateBalancesView()
+        self.ledger.updateBalancesView()
 
     @Slot()
     def onStatementLoaded(self):

@@ -126,7 +126,7 @@ def UseSqlTable(db, table_name, columns, relations):
 
 # -------------------------------------------------------------------------------------------------------------------
 # Use mappings to link between DB fields and GUI widgets with help of delegate
-# mapping is a list of tuples [(FIELD_NAME, GUI_WIDGET, WIDTH)]
+# mapping is a list of tuples [(FIELD_NAME, GUI_WIDGET)]
 # If widget is a custom one:
 #    - initialize database connection for it
 #    - connect "changed" signal to "submit" slot of QDataWidgetMapper (to reflect data changes in UI)
