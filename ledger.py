@@ -124,6 +124,10 @@ class Ledger:
             current_frontier = 0
         return current_frontier
 
+    # Add one more transaction to 'book' of ledger.
+    # If book is Assets and value is not None then amount contains Asset Quantity and Value contains amount
+    #    of money in current account currency. Otherwise Amount contains only money value.
+    # Method uses Account, Asset,Peer, Category and Tag values from current transaction
     def appendTransaction(self, book, amount, value=None):
         seq_id = self.current_seq
         timestamp = self.current[TIMESTAMP]
@@ -133,12 +137,13 @@ class Ledger:
             asset_id = self.current[CURRENCY_ID]
         account_id = self.current[ACCOUNT_ID]
         if book == BookAccount.Costs or book == BookAccount.Incomes:
+            peer_id = self.current[COUPON_PEER]
             category_id = self.current[PRICE_CATEGORY]
             tag_id = self.current[FEE_TAX_TAG]
-        else:
+        else:  # TODO - check None for empty values (to put NULL in DB)
+            peer_id = None
             category_id = None
             tag_id = None
-        peer_id = self.current[COUPON_PEER]  # TODO - check None for empty values (to put NULL in DB)
         try:
             old_sid, old_amount, old_value = readSQL(self.db,
                 "SELECT sid, sum_amount, sum_value FROM ledger_sums "
@@ -156,7 +161,7 @@ class Ledger:
         else:
             new_value = old_value + value
         if (abs(new_amount - old_amount) + abs(new_value - old_value)) <= (2 * Setup.CALC_TOLERANCE):
-            return
+            return  # we have zero amount - no reason to put it into ledger
 
         _ = executeSQL(self.db, "INSERT INTO ledger (timestamp, sid, book_account, asset_id, account_id, "
                                 "amount, value, peer_id, category_id, tag_id) "
@@ -181,24 +186,25 @@ class Ledger:
         self.db.commit()
 
     # TODO check that condition <= is really correct for timestamp in this function
+    # Returns Amount measured in current account currency or asset_id that 'book' has at current ledger frontier
     def getAmount(self, book, asset_id=None):
         timestamp = self.current[TIMESTAMP]
         account_id = self.current[ACCOUNT_ID]
         if asset_id is None:
-            query = executeSQL(self.db,
+            amount = readSQL(self.db,
                                "SELECT sum_amount FROM ledger_sums WHERE book_account = :book AND "
                                "account_id = :account_id AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1",
                                [(":book", book), (":account_id", account_id), (":timestamp", timestamp)])
         else:
-            query = executeSQL(self.db, "SELECT sum_amount FROM ledger_sums WHERE book_account = :book "
+            amount = readSQL(self.db, "SELECT sum_amount FROM ledger_sums WHERE book_account = :book "
                                         "AND account_id = :account_id AND asset_id = :asset_id "
                                         "AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1",
                                [(":book", book), (":account_id", account_id),
                                 (":asset_id", asset_id), (":timestamp", timestamp)])
-        if query.next():
-            return float(query.value(0))
-        else:
+        if amount is None:
             return 0.0
+        else:
+            return float(amount)
 
     def takeCredit(self, action_sum):
         money_available = self.getAmount(BookAccount.Money)
@@ -221,9 +227,8 @@ class Ledger:
         return debit
 
     def processActionDetails(self):
-        op_id = self.current[OPERATION_ID]
         query = executeSQL(self.db, "SELECT sum as amount, category_id, tag_id FROM action_details AS d WHERE pid=:pid",
-                           [(":pid", op_id)])
+                           [(":pid", self.current[OPERATION_ID])])
         while query.next():
             amount, self.current[PRICE_CATEGORY], self.current[FEE_TAX_TAG] = readSQLrecord(query)
             if amount < 0:
@@ -266,9 +271,7 @@ class Ledger:
         asset_id = self.current[ASSET_ID]
         qty = self.current[AMOUNT_QTY]
         price = self.current[PRICE_CATEGORY]
-        coupon = self.current[COUPON_PEER]
-        fee = self.current[FEE_TAX_TAG]
-        trade_sum = round(price * qty, 2) + fee + coupon
+        trade_sum = round(price * qty, 2) + self.current[FEE_TAX_TAG] + self.current[COUPON_PEER]
         sell_qty = 0
         sell_sum = 0
         if self.getAmount(BookAccount.Assets, asset_id) < 0:
@@ -280,9 +283,8 @@ class Ledger:
                                "GROUP BY d.open_sid "
                                "ORDER BY d.close_sid DESC, d.open_sid DESC LIMIT 1",
                                [(":account_id", account_id), (":asset_id", asset_id)])
-            if query.next():
-                reminder = query.value(1)  # value(1) = non-matched reminder of last Sell trade
-                last_sid = query.value(0)  # value(0) = sid of Sell trade from the last deal
+            if query.next():  # sid of Sell trade from the last deal and non-matched reminder of last Sell trade
+                last_sid, reminder = readSQLrecord(query)
                 query = executeSQL(self.db,
                                    "SELECT s.id, -t.qty, t.price FROM trades AS t "
                                    "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
@@ -298,19 +300,20 @@ class Ledger:
                                    "WHERE t.qty<0 AND t.asset_id=:asset_id AND t.account_id=:account_id AND s.id<:sid",
                                    [(":account_id", account_id), (":asset_id", asset_id), (":sid", seq_id)])
             while query.next():
+                deal_sid, deal_qty, deal_price = readSQLrecord(query)
                 if reminder:
                     next_deal_qty = reminder
                     reminder = 0
                 else:
-                    next_deal_qty = query.value(1)  # value(1) = quantity
+                    next_deal_qty = deal_qty
                 if (sell_qty + next_deal_qty) >= qty:  # we are buying less or the same amount as was sold previously
                     next_deal_qty = qty - sell_qty
                 _ = executeSQL(self.db, "INSERT INTO deals(account_id, asset_id, open_sid, close_sid, qty) "
                                         "VALUES(:account_id, :asset_id, :open_sid, :close_sid, :qty)",
-                               [(":account_id", account_id), (":asset_id", asset_id), (":open_sid", query.value(0)),
+                               [(":account_id", account_id), (":asset_id", asset_id), (":open_sid", deal_sid),
                                 (":close_sid", seq_id), (":qty", next_deal_qty)])
                 sell_qty = sell_qty + next_deal_qty
-                sell_sum = sell_sum + (next_deal_qty * query.value(2))  # value(2) = price
+                sell_sum = sell_sum + (next_deal_qty * deal_price)
                 if sell_qty == qty:
                     break
         credit_sum = self.takeCredit(trade_sum)
@@ -323,12 +326,12 @@ class Ledger:
                 self.appendTransaction(BookAccount.Incomes, ((price * sell_qty) - sell_sum))
         if sell_qty < qty:  # Add new long position
             self.appendTransaction(BookAccount.Assets, (qty - sell_qty), (qty - sell_qty) * price)
-        if coupon:
+        if self.current[COUPON_PEER]:
             self.current[PRICE_CATEGORY] = PredefinedCategory.Dividends
-            self.appendTransaction(BookAccount.Costs, coupon)
-        if fee:
+            self.appendTransaction(BookAccount.Costs, self.current[COUPON_PEER])
+        if self.current[FEE_TAX_TAG]:
             self.current[PRICE_CATEGORY] = PredefinedCategory.Fees
-            self.appendTransaction(BookAccount.Costs, fee)
+            self.appendTransaction(BookAccount.Costs, self.current[FEE_TAX_TAG])
 
     def processSell(self):
         seq_id = self.current_seq
@@ -336,9 +339,7 @@ class Ledger:
         asset_id = self.current[ASSET_ID]
         qty = -self.current[AMOUNT_QTY]
         price = self.current[PRICE_CATEGORY]
-        coupon = self.current[COUPON_PEER]
-        fee = self.current[FEE_TAX_TAG]
-        trade_sum = round(price * qty, 2) - fee + coupon
+        trade_sum = round(price * qty, 2) - self.current[FEE_TAX_TAG] + self.current[COUPON_PEER]
         buy_qty = 0
         buy_sum = 0
         if self.getAmount(BookAccount.Assets, asset_id) > 0:
@@ -350,9 +351,8 @@ class Ledger:
                                "GROUP BY d.open_sid "
                                "ORDER BY d.close_sid DESC, d.open_sid DESC LIMIT 1",
                                [(":account_id", account_id), (":asset_id", asset_id)])
-            if query.next():
-                reminder = query.value(1)  # value(1) = non-matched reminder of last Sell trade
-                last_sid = query.value(0)  # value(0) = sid of Buy trade from last deal
+            if query.next(): # sid of Buy trade from last deal and non-matched reminder of last Sell trade
+                last_sid, reminder = readSQLrecord(query)
                 query = executeSQL(self.db,
                                    "SELECT s.id, t.qty, t.price FROM trades AS t "
                                    "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
@@ -368,19 +368,20 @@ class Ledger:
                                    "WHERE t.qty>0 AND t.asset_id=:asset_id AND t.account_id=:account_id AND s.id<:sid",
                                    [(":asset_id", asset_id), (":account_id", account_id), (":sid", seq_id)])
             while query.next():
+                deal_sid, deal_qty, deal_price = readSQLrecord(query)
                 if reminder > 0:
                     next_deal_qty = reminder
                     reminder = 0
                 else:
-                    next_deal_qty = query.value(1)  # value(1) = quantity
+                    next_deal_qty = deal_qty
                 if (buy_qty + next_deal_qty) >= qty:  # we are selling less or the same amount as was bought previously
                     next_deal_qty = qty - buy_qty
                 _ = executeSQL(self.db, "INSERT INTO deals(account_id, asset_id, open_sid, close_sid, qty) "
                                         "VALUES(:account_id, :asset_id, :open_sid, :close_sid, :qty)",
-                               [(":account_id", account_id), (":asset_id", asset_id), (":open_sid", query.value(0)),
+                               [(":account_id", account_id), (":asset_id", asset_id), (":open_sid", deal_sid),
                                 (":close_sid", seq_id), (":qty", next_deal_qty)])
                 buy_qty = buy_qty + next_deal_qty
-                buy_sum = buy_sum + (next_deal_qty * query.value(2))  # value(2) = price
+                buy_sum = buy_sum + (next_deal_qty * deal_price)
                 if buy_qty == qty:
                     break
         returned_sum = self.returnCredit(trade_sum)
@@ -393,12 +394,12 @@ class Ledger:
                 self.appendTransaction(BookAccount.Incomes, (buy_sum - (price * buy_qty)))
         if buy_qty < qty:  # Add new short position
             self.appendTransaction(BookAccount.Assets, (buy_qty - qty), (buy_qty - qty) * price)
-        if coupon:
+        if self.current[COUPON_PEER]:
             self.current[PRICE_CATEGORY] = PredefinedCategory.Dividends
-            self.appendTransaction(BookAccount.Incomes, -coupon)
-        if fee:
+            self.appendTransaction(BookAccount.Incomes, -self.current[COUPON_PEER])
+        if self.current[FEE_TAX_TAG]:
             self.current[PRICE_CATEGORY] = PredefinedCategory.Fees
-            self.appendTransaction(BookAccount.Costs, fee)
+            self.appendTransaction(BookAccount.Costs, self.current[FEE_TAX_TAG])
 
     def processCorpAction(self):
         pass
