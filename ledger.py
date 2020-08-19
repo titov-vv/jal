@@ -1,4 +1,4 @@
-import logging
+import logging    # 12,461,266.91
 
 from datetime import datetime
 from constants import Setup, BookAccount, TransactionType, TransferSubtype, PredefinedCategory, PredefinedPeer
@@ -217,14 +217,10 @@ class Ledger:
 
     def processActionDetails(self):
         op_id = self.current[OPERATION_ID]
-        query = executeSQL(self.db, "SELECT a.timestamp, a.account_id, a.peer_id, c.currency_id, "
-                                    "d.sum as amount, d.category_id, d.tag_id "
-                                    "FROM actions as a "
-                                    "LEFT JOIN action_details AS d ON a.id=d.pid "
-                                    "LEFT JOIN accounts AS c ON a.account_id = c.id "
-                                    "WHERE pid = :pid", [(":pid", op_id)])
+        query = executeSQL(self.db, "SELECT sum as amount, category_id, tag_id FROM action_details AS d WHERE pid=:pid",
+                           [(":pid", op_id)])
         while query.next():
-            timestamp, account_id, peer_id, currency_id, amount, category_id, tag_id = readSQLrecord(query)
+            amount, category_id, tag_id = readSQLrecord(query)
             if amount < 0:
                 self.appendTransaction(BookAccount.Costs, -amount, None, category_id, tag_id)
             else:
@@ -422,7 +418,7 @@ class Ledger:
         credit_sum = self.takeCredit(fee)
         self.current[COUPON_PEER] = PredefinedPeer.Financial
         self.appendTransaction(BookAccount.Money, -(fee - credit_sum))
-        self.appendTransaction(BookAccount.Costs, fee, None, PredefinedCategory.Fees, None)
+        self.appendTransaction(BookAccount.Costs, fee, None, PredefinedCategory.Fees)
 
     def processTransfer(self):
         operationTransfer = {
