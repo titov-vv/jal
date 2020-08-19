@@ -3,7 +3,7 @@ import datetime
 import xlsxwriter
 import logging
 from reports.helpers import xslxFormat
-from DB.helpers import executeSQL
+from DB.helpers import executeSQL, readSQLrecord
 from PySide2.QtWidgets import QDialog, QFileDialog
 from PySide2.QtCore import Property, Slot
 from PySide2.QtSql import QSqlQuery
@@ -130,29 +130,26 @@ class TaxesRus:
         tax_us_rub_sum = 0
         tax_ru_rub_sum = 0
         while query.next():
-            amount_usd = float(query.value('amount'))
-            tax_usd = -float(query.value('tax_amount'))
-            rate = float(query.value('rate_cbr'))
-            amount_rub = round(amount_usd * rate, 2)
-            tax_us_rub = round(tax_usd * rate, 2)
+            id, payment_date, symbol, full_name, amount_usd, tax_usd, rate = readSQLrecord(query)
+            amount_rub = round(float(amount_usd) * float(rate), 2)
+            tax_us_rub = round(float(-tax_usd) * float(rate), 2)
             tax_ru_rub = round(0.13 * amount_rub, 2)
             if tax_ru_rub > tax_us_rub:
                 tax_ru_rub = tax_ru_rub - tax_us_rub
             else:
                 tax_ru_rub = 0
-            sheet.write(row, 0, datetime.datetime.fromtimestamp(query.value('payment_date')).strftime('%d.%m.%Y'),
-                        formats.Text(row))
-            sheet.write(row, 1, query.value('symbol'), formats.Text(row))
-            sheet.write(row, 2, query.value('full_name'), formats.Text(row))
-            sheet.write(row, 3, rate, formats.Number(row, 4))
-            sheet.write(row, 4, amount_usd, formats.Number(row, 2))
+            sheet.write(row, 0, datetime.datetime.fromtimestamp(payment_date).strftime('%d.%m.%Y'), formats.Text(row))
+            sheet.write(row, 1, symbol, formats.Text(row))
+            sheet.write(row, 2, full_name, formats.Text(row))
+            sheet.write(row, 3, float(rate), formats.Number(row, 4))
+            sheet.write(row, 4, float(amount_usd), formats.Number(row, 2))
             sheet.write(row, 5, amount_rub, formats.Number(row, 2))
-            sheet.write(row, 6, tax_usd, formats.Number(row, 2))
+            sheet.write(row, 6, float(-tax_usd), formats.Number(row, 2))
             sheet.write(row, 7, tax_us_rub, formats.Number(row, 2))
             sheet.write(row, 8, tax_ru_rub, formats.Number(row, 2))
-            amount_usd_sum += amount_usd
+            amount_usd_sum += float(amount_usd)
             amount_rub_sum += amount_rub
-            tax_usd_sum += tax_usd
+            tax_usd_sum += float(-tax_usd)
             tax_us_rub_sum += tax_us_rub
             tax_ru_rub_sum += tax_ru_rub
             row = row + 1
@@ -265,49 +262,37 @@ class TaxesRus:
         spending_sum = 0
         profit_sum = 0
         while query.next():
+            symbol, qty, o_date, o_fee_rate, os_date, o_rate, o_price, o_fee_usd, c_date, c_fee_rate, cs_date, c_rate, c_price, c_fee_usd, corp_action_type = readSQLrecord(query)
             row = start_row + (data_row * 2)
-            qty = float(query.value("qty"))
-            o_price = float(query.value("o_price"))
-            o_rate = float(query.value("os_rate"))
-            c_price = float(query.value("c_price"))
-            c_rate = float(query.value("cs_rate"))
-            o_amount_usd = round(o_price * qty, 2)
-            o_amount_rub = round(o_amount_usd * o_rate, 2)
-            c_amount_usd = round(c_price * qty, 2)
-            c_amount_rub = round(c_amount_usd * c_rate, 2)
-            o_fee_usd = float(query.value("o_fee"))
-            o_fee_rate = float(query.value("o_rate"))
-            o_fee_rub = round(o_fee_usd * o_fee_rate, 2)
-            c_fee_usd = float(query.value("c_fee"))
-            c_fee_rate = float(query.value("c_rate"))
+            o_amount_usd = round(float(o_price) * float(qty), 2)
+            o_amount_rub = round(o_amount_usd * float(o_rate), 2)
+            c_amount_usd = round(float(c_price) * float(qty), 2)
+            c_amount_rub = round(float(c_amount_usd) * float(c_rate), 2)
+            o_fee_rub = round(float(o_fee_usd) * o_fee_rate, 2)
             c_fee_rub = round(c_fee_usd * c_fee_rate, 2)
             income = c_amount_rub
             spending = o_amount_rub + o_fee_rub + c_fee_rub
 
-            sheet.merge_range(row, 0, row + 1, 0, query.value("symbol"), formats.Text(data_row))
-            sheet.merge_range(row, 1, row + 1, 1, qty, formats.Number(data_row, 0, True))
+            sheet.merge_range(row, 0, row + 1, 0, symbol, formats.Text(data_row))
+            sheet.merge_range(row, 1, row + 1, 1, float(qty), formats.Number(data_row, 0, True))
             sheet.write(row, 2, "Покупка", formats.Text(data_row))
             sheet.write(row + 1, 2, "Продажа", formats.Text(data_row))
-            sheet.write(row, 3, datetime.datetime.fromtimestamp(query.value("o_date")).strftime('%d.%m.%Y'),
-                        formats.Text(data_row))
-            sheet.write(row + 1, 3, datetime.datetime.fromtimestamp(query.value("c_date")).strftime('%d.%m.%Y'),
-                        formats.Text(data_row))
-            sheet.write(row, 4, o_fee_rate, formats.Number(data_row, 4))
-            sheet.write(row + 1, 4, c_fee_rate, formats.Number(data_row, 4))
-            sheet.write(row, 5, datetime.datetime.fromtimestamp(query.value("os_date")).strftime('%d.%m.%Y'),
-                        formats.Text(data_row))
-            sheet.write(row + 1, 5, datetime.datetime.fromtimestamp(query.value("cs_date")).strftime('%d.%m.%Y'),
-                        formats.Text(data_row))
-            sheet.write(row, 6, o_rate, formats.Number(data_row, 4))
-            sheet.write(row + 1, 6, c_rate, formats.Number(data_row, 4))
-            sheet.write(row, 7, o_price, formats.Number(data_row, 6))
-            sheet.write(row + 1, 7, c_price, formats.Number(data_row, 6))
+            sheet.write(row, 3, datetime.datetime.fromtimestamp(o_date).strftime('%d.%m.%Y'), formats.Text(data_row))
+            sheet.write(row + 1, 3, datetime.datetime.fromtimestamp(c_date).strftime('%d.%m.%Y'), formats.Text(data_row))
+            sheet.write(row, 4, float(o_fee_rate), formats.Number(data_row, 4))
+            sheet.write(row + 1, 4, float(c_fee_rate), formats.Number(data_row, 4))
+            sheet.write(row, 5, datetime.datetime.fromtimestamp(os_date).strftime('%d.%m.%Y'), formats.Text(data_row))
+            sheet.write(row + 1, 5, datetime.datetime.fromtimestamp(cs_date).strftime('%d.%m.%Y'), formats.Text(data_row))
+            sheet.write(row, 6, float(o_rate), formats.Number(data_row, 4))
+            sheet.write(row + 1, 6, float(c_rate), formats.Number(data_row, 4))
+            sheet.write(row, 7, float(o_price), formats.Number(data_row, 6))
+            sheet.write(row + 1, 7, float(c_price), formats.Number(data_row, 6))
             sheet.write(row, 8, o_amount_usd, formats.Number(data_row, 2))
             sheet.write(row + 1, 8, c_amount_usd, formats.Number(data_row, 2))
             sheet.write(row, 9, o_amount_rub, formats.Number(data_row, 2))
             sheet.write(row + 1, 9, c_amount_rub, formats.Number(data_row, 2))
-            sheet.write(row, 10, o_fee_usd, formats.Number(data_row, 6))
-            sheet.write(row + 1, 10, c_fee_usd, formats.Number(data_row, 6))
+            sheet.write(row, 10, float(o_fee_usd), formats.Number(data_row, 6))
+            sheet.write(row + 1, 10, float(c_fee_usd), formats.Number(data_row, 6))
             sheet.write(row, 11, o_fee_rub, formats.Number(data_row, 2))
             sheet.write(row + 1, 11, c_fee_rub, formats.Number(data_row, 2))
             sheet.merge_range(row, 12, row + 1, 12, income, formats.Number(data_row, 2))
@@ -370,14 +355,13 @@ class TaxesRus:
         row = 9
         amount_rub_sum = 0
         while query.next():
-            amount_usd = -float(query.value('amount'))
-            rate = float(query.value('rate_cbr'))
-            amount_rub = round(amount_usd * rate, 2)
-            sheet.write(row, 0, query.value('note'), formats.Text(row))
+            payment_date, amount, note, rate = readSQLrecord(query)
+            amount_usd = -float(amount)
+            amount_rub = round(amount_usd * float(rate), 2)
+            sheet.write(row, 0, note, formats.Text(row))
             sheet.write(row, 1, amount_usd, formats.Number(row, 2))
-            sheet.write(row, 2, datetime.datetime.fromtimestamp(query.value('payment_date')).strftime('%d.%m.%Y'),
-                        formats.Text(row))
-            sheet.write(row, 3, rate, formats.Number(row, 4))
+            sheet.write(row, 2, datetime.datetime.fromtimestamp(payment_date).strftime('%d.%m.%Y'), formats.Text(row))
+            sheet.write(row, 3, float(rate), formats.Number(row, 4))
             sheet.write(row, 4, amount_rub, formats.Number(row, 2))
             amount_rub_sum += amount_rub
             row = row + 1
