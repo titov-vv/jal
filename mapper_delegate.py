@@ -1,6 +1,8 @@
 from datetime import datetime
 from PySide2.QtCore import Qt
 from PySide2.QtSql import QSqlRelationalDelegate
+from PySide2.QtWidgets import QLineEdit
+from PySide2.QtGui import QDoubleValidator
 
 from constants import Setup
 from CustomUI.reference_selector import CategorySelector
@@ -65,10 +67,15 @@ class FloatDelegate(QSqlRelationalDelegate):
             text = f"{value:.2f}"
         return text
 
+    # this is required when edit operation is called from QTableView
+    def createEditor(self, aParent, option, index):
+        float_editor = QLineEdit(aParent)
+        float_editor.setValidator(QDoubleValidator(decimals=2))
+        return float_editor
+
     def setEditorData(self, editor, index):
         amount = index.model().data(index, Qt.EditRole)
         if amount:
-            # TODO for some widgets here should be 'editor.setValue(amount)' - make alignment
             editor.setText(self.formatFloatLong(float(amount)))
         else:
             QSqlRelationalDelegate.setEditorData(self, editor, index)
