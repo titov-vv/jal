@@ -6,7 +6,3 @@ uic -g python -o ./UI/ui_reference_data_dlg.py ./UI/reference_data_dlg.ui
 uic -g python -o ./UI/ui_tax_export_dlg.py ./UI/tax_export_dlg.ui
 uic -g python -o ./UI/ui_deals_export_dlg.py ./UI/deals_export_dlg.ui
 
-sed -i 's/QUrl, Qt)/QUrl, Qt, QDate)/' ./UI/ui_main_window.py
-sed -i 's/from CustomUI\//from CustomUI./g' ./UI/ui_main_window.py
-sed -i 's/from CustomUI\//from CustomUI./g' ./UI/ui_tax_export_dlg.py
-sed -i 's/from CustomUI\//from CustomUI./g' ./UI/ui_deals_export_dlg.py

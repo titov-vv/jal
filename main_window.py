@@ -15,9 +15,9 @@ from DB.helpers import init_and_check_db, get_dbfilename
 from downloader import QuoteDownloader
 from ledger import Ledger
 from operations import LedgerOperationsView, LedgerInitValues
-from reports import Reports
+from reports.reports import Reports
 from statements import StatementLoader
-from taxes import TaxesRus
+from reports.taxes import TaxesRus
 
 
 # -----------------------------------------------------------------------------------------------------------------------

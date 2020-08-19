@@ -1,6 +1,6 @@
 from view_delegate import *
 from constants import ColumnWidth
-from reports import Reports
+from reports.reports import Reports
 from PySide2 import QtWidgets
 from PySide2.QtCore import QObject, SIGNAL, Slot
 from functools import partial
