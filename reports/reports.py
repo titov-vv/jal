@@ -2,6 +2,7 @@ import datetime
 import logging
 import xlsxwriter
 from constants import BookAccount, PredefinedAsset
+from reports.helpers import xslxFormat
 from PySide2.QtWidgets import QDialog, QFileDialog
 from PySide2.QtCore import Property, Slot
 from PySide2 import QtCore
@@ -72,6 +73,7 @@ class Reports:
         self.db = db
         self.workbook = None
         self.formats = None
+        self.fmt = None
 
     def prepareFormatting(self):
         title_cell = self.workbook.add_format({'bold': True,
@@ -130,7 +132,7 @@ class Reports:
 
     def save_deals(self, report_filename, account_id, begin, end, group_dates):
         self.workbook = xlsxwriter.Workbook(filename=report_filename)
-        self.prepareFormatting()
+        self.fmt = xslxFormat(self.workbook)
         sheet = self.workbook.add_worksheet(name="Deals")
 
         query = QSqlQuery(self.db)
@@ -154,46 +156,42 @@ class Reports:
         query.bindValue(":end", end)
         assert query.exec_()
 
-        sheet.merge_range(0, 0, 1, 0, "Asset", self.formats['title'])
+        sheet.merge_range(0, 0, 1, 0, "Asset", self.fmt.ColumnHeader())
         sheet.set_column(0, 0, 15)
-        sheet.merge_range(0, 1, 0, 2, "Date", self.formats['title'])
-        sheet.write(1, 1, "Open", self.formats['title'])
-        sheet.write(1, 2, "Close", self.formats['title'])
+        sheet.merge_range(0, 1, 0, 2, "Date", self.fmt.ColumnHeader())
+        sheet.write(1, 1, "Open", self.fmt.ColumnHeader())
+        sheet.write(1, 2, "Close", self.fmt.ColumnHeader())
         sheet.set_column(1, 2, 20)
-        sheet.merge_range(0, 3, 0, 4, "Price", self.formats['title'])
-        sheet.write(1, 3, "Open", self.formats['title'])
-        sheet.write(1, 4, "Close", self.formats['title'])
-        sheet.merge_range(0, 5, 1, 5, "Qty", self.formats['title'])
-        sheet.merge_range(0, 6, 1, 6, "Fee", self.formats['title'])
-        sheet.merge_range(0, 7, 1, 7, "Profit / Loss", self.formats['title'])
+        sheet.merge_range(0, 3, 0, 4, "Price", self.fmt.ColumnHeader())
+        sheet.write(1, 3, "Open", self.fmt.ColumnHeader())
+        sheet.write(1, 4, "Close", self.fmt.ColumnHeader())
+        sheet.merge_range(0, 5, 1, 5, "Qty", self.fmt.ColumnHeader())
+        sheet.merge_range(0, 6, 1, 6, "Fee", self.fmt.ColumnHeader())
+        sheet.merge_range(0, 7, 1, 7, "Profit / Loss", self.fmt.ColumnHeader())
         sheet.set_column(3, 7, 10)
-        sheet.merge_range(0, 8, 1, 8, "Profit / Loss, %", self.formats['title'])
+        sheet.merge_range(0, 8, 1, 8, "Profit / Loss, %", self.fmt.ColumnHeader())
         sheet.set_column(8, 8, 8)
         row = 2
         while query.next():
-            if row % 2:
-                even_odd = '_odd'
-            else:
-                even_odd = '_even'
-            sheet.write(row, 0, query.value('asset'), self.formats['text' + even_odd])
+            sheet.write(row, 0, query.value('asset'), self.fmt.Text(row))
             open_timestamp = int(query.value("open_timestamp"))
             close_timestamp = int(query.value("close_timestamp"))
             if group_dates:
                 sheet.write(row, 1, datetime.datetime.fromtimestamp(open_timestamp).strftime('%d.%m.%Y'),
-                            self.formats['text' + even_odd])
+                            self.fmt.Text(row))
                 sheet.write(row, 2, datetime.datetime.fromtimestamp(close_timestamp).strftime('%d.%m.%Y'),
-                            self.formats['text' + even_odd])
+                            self.fmt.Text(row))
             else:
                 sheet.write(row, 1, datetime.datetime.fromtimestamp(open_timestamp).strftime('%d.%m.%Y %H:%M:%S'),
-                            self.formats['text' + even_odd])
+                            self.fmt.Text(row))
                 sheet.write(row, 2, datetime.datetime.fromtimestamp(close_timestamp).strftime('%d.%m.%Y %H:%M:%S'),
-                            self.formats['text' + even_odd])
-            sheet.write(row, 3, float(query.value('open_price')), self.formats['number_4' + even_odd])
-            sheet.write(row, 4, float(query.value('close_price')), self.formats['number_4' + even_odd])
-            sheet.write(row, 5, float(query.value('qty')), self.formats['number' + even_odd])
-            sheet.write(row, 6, float(query.value('fee')), self.formats['number_4' + even_odd])
-            sheet.write(row, 7, float(query.value('profit')), self.formats['number_2' + even_odd])
-            sheet.write(row, 8, float(query.value('rel_profit')), self.formats['number_2' + even_odd])
+                            self.fmt.Text(row))
+            sheet.write(row, 3, float(query.value('open_price')), self.fmt.Number(row, 4))
+            sheet.write(row, 4, float(query.value('close_price')), self.fmt.Number(row, 4))
+            sheet.write(row, 5, float(query.value('qty')), self.fmt.Number(row, 0, True))
+            sheet.write(row, 6, float(query.value('fee')), self.fmt.Number(row, 4))
+            sheet.write(row, 7, float(query.value('profit')), self.fmt.Number(row, 2))
+            sheet.write(row, 8, float(query.value('rel_profit')), self.fmt.Number(row, 2))
             row = row + 1
 
         self.workbook.close()

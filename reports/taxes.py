@@ -2,6 +2,7 @@ import time
 import datetime
 import xlsxwriter
 import logging
+from reports.helpers import xslxFormat
 from PySide2.QtWidgets import QDialog, QFileDialog
 from PySide2.QtCore import Property, Slot
 from PySide2.QtSql import QSqlQuery
@@ -49,6 +50,7 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
 class TaxesRus:
     def __init__(self, db):
         self.db = db
+        
 
     def showTaxesDialog(self, parent):
         dialog = TaxExportDialog(parent, self.db)
@@ -60,58 +62,8 @@ class TaxesRus:
         year_end = int(time.mktime(datetime.datetime.strptime(f"{year + 1}", "%Y").timetuple()))
 
         workbook = xlsxwriter.Workbook(filename=taxes_file)
-
-        title_cell = workbook.add_format({'bold': True})
-        column_header_cell = workbook.add_format({'bold': True,
-                                                  'text_wrap': True,
-                                                  'align': 'center',
-                                                  'valign': 'vcenter',
-                                                  'bg_color': '#808080',
-                                                  'font_color': '#FFFFFF',
-                                                  'border': 1})
-        column_header_num_cell = workbook.add_format({'bold': True,
-                                                      'num_format': '#,###,##0.00',
-                                                      'bg_color': '#808080',
-                                                      'font_color': '#FFFFFF',
-                                                      'border': 1})
-        number_odd = workbook.add_format({'border': 1,
-                                          'align': 'center',
-                                          'valign': 'vcenter'})
-        number_even = workbook.add_format({'border': 1,
-                                           'align': 'center',
-                                           'valign': 'vcenter',
-                                           'bg_color': '#C0C0C0'})
-        number2_odd = workbook.add_format({'num_format': '#,###,##0.00',
-                                           'border': 1,
-                                           'valign': 'vcenter'})
-        number2_even = workbook.add_format({'num_format': '#,###,##0.00',
-                                            'border': 1,
-                                            'valign': 'vcenter',
-                                            'bg_color': '#C0C0C0'})
-        number4_odd = workbook.add_format({'num_format': '0.0000',
-                                           'border': 1})
-        number4_even = workbook.add_format({'num_format': '0.0000',
-                                            'border': 1,
-                                            'bg_color': '#C0C0C0'})
-        number6_odd = workbook.add_format({'num_format': '0.000000',
-                                           'border': 1})
-        number6_even = workbook.add_format({'num_format': '0.000000',
-                                            'border': 1,
-                                            'bg_color': '#C0C0C0'})
-        text_odd = workbook.add_format({'border': 1,
-                                        'valign': 'vcenter'})
-        text_even = workbook.add_format({'border': 1,
-                                         'valign': 'vcenter',
-                                         'bg_color': '#C0C0C0'})
-
-        formats = {'title': title_cell,
-                   'header': column_header_cell,
-                   'header_number': column_header_num_cell,
-                   'text_odd': text_odd,                'text_even': text_even,
-                   'number_odd': number_odd,            'number_even': number_even,
-                   'number_2_odd': number2_odd,         'number_2_even': number2_even,
-                   'number_4_odd': number4_odd,         'number_4_even': number4_even,
-                   'number_6_odd': number6_odd,         'number_6_even': number6_even}
+        
+        formats = xslxFormat(workbook)
 
         self.prepare_dividends(workbook, account_id, year_begin, year_end, formats)
         self.prepare_trades(workbook, account_id, year_begin, year_end, formats)
@@ -157,28 +109,28 @@ class TaxesRus:
         assert query.exec_()
 
         sheet = workbook.add_worksheet(name="Dividends")
-        sheet.write(0, 0, "Отчет по дивидендам, полученным в отчетном периоде", formats['title'])
+        sheet.write(0, 0, "Отчет по дивидендам, полученным в отчетном периоде", formats.Bold())
         sheet.write(2, 0, "Документ-основание:")
         sheet.write(3, 0, "Период:")
         sheet.write(4, 0, "ФИО:")
         sheet.write(5, 0, "Номер счета:")
         sheet.set_row(7, 30)
-        sheet.write(7, 0, "Дата выплаты", formats['header'])
+        sheet.write(7, 0, "Дата выплаты", formats.ColumnHeader())
         sheet.set_column(0, 0, 10)
-        sheet.write(7, 1, "Ценная бумага", formats['header'])
+        sheet.write(7, 1, "Ценная бумага", formats.ColumnHeader())
         sheet.set_column(1, 1, 8)
-        sheet.write(7, 2, "Полное наименование", formats['header'])
+        sheet.write(7, 2, "Полное наименование", formats.ColumnHeader())
         sheet.set_column(2, 2, 50)
-        sheet.write(7, 3, "Курс USD/RUB на дату выплаты", formats['header'])
+        sheet.write(7, 3, "Курс USD/RUB на дату выплаты", formats.ColumnHeader())
         sheet.set_column(3, 3, 16)
-        sheet.write(7, 4, "Доход, USD", formats['header'])
-        sheet.write(7, 5, "Доход, RUB", formats['header'])
-        sheet.write(7, 6, "Налок упл., USD", formats['header'])
-        sheet.write(7, 7, "Налог упл., RUB", formats['header'])
-        sheet.write(7, 8, "Налок к уплате, RUB", formats['header'])
+        sheet.write(7, 4, "Доход, USD", formats.ColumnHeader())
+        sheet.write(7, 5, "Доход, RUB", formats.ColumnHeader())
+        sheet.write(7, 6, "Налок упл., USD", formats.ColumnHeader())
+        sheet.write(7, 7, "Налог упл., RUB", formats.ColumnHeader())
+        sheet.write(7, 8, "Налок к уплате, RUB", formats.ColumnHeader())
         sheet.set_column(4, 8, 12)
         for col in range(9):
-            sheet.write(8, col, f"({col + 1})", formats['header'])  # Put column numbers for reference
+            sheet.write(8, col, f"({col + 1})", formats.ColumnHeader())  # Put column numbers for reference
         row = 9
         amount_rub_sum = 0
         amount_usd_sum = 0
@@ -186,10 +138,6 @@ class TaxesRus:
         tax_us_rub_sum = 0
         tax_ru_rub_sum = 0
         while query.next():
-            if row % 2:
-                even_odd = '_odd'
-            else:
-                even_odd = '_even'
             amount_usd = float(query.value('amount'))
             tax_usd = -float(query.value('tax_amount'))
             rate = float(query.value('rate_cbr'))
@@ -201,27 +149,27 @@ class TaxesRus:
             else:
                 tax_ru_rub = 0
             sheet.write(row, 0, datetime.datetime.fromtimestamp(query.value('payment_date')).strftime('%d.%m.%Y'),
-                        formats['text' + even_odd])
-            sheet.write(row, 1, query.value('symbol'), formats['text' + even_odd])
-            sheet.write(row, 2, query.value('full_name'), formats['text' + even_odd])
-            sheet.write(row, 3, rate, formats['number_4' + even_odd])
-            sheet.write(row, 4, amount_usd, formats['number_2' + even_odd])
-            sheet.write(row, 5, amount_rub, formats['number_2' + even_odd])
-            sheet.write(row, 6, tax_usd, formats['number_2' + even_odd])
-            sheet.write(row, 7, tax_us_rub, formats['number_2' + even_odd])
-            sheet.write(row, 8, tax_ru_rub, formats['number_2' + even_odd])
+                        formats.Text(row))
+            sheet.write(row, 1, query.value('symbol'), formats.Text(row))
+            sheet.write(row, 2, query.value('full_name'), formats.Text(row))
+            sheet.write(row, 3, rate, formats.Number(row, 4))
+            sheet.write(row, 4, amount_usd, formats.Number(row, 2))
+            sheet.write(row, 5, amount_rub, formats.Number(row, 2))
+            sheet.write(row, 6, tax_usd, formats.Number(row, 2))
+            sheet.write(row, 7, tax_us_rub, formats.Number(row, 2))
+            sheet.write(row, 8, tax_ru_rub, formats.Number(row, 2))
             amount_usd_sum += amount_usd
             amount_rub_sum += amount_rub
             tax_usd_sum += tax_usd
             tax_us_rub_sum += tax_us_rub
             tax_ru_rub_sum += tax_ru_rub
             row = row + 1
-        sheet.write(row, 3, "ИТОГО", formats['header_number'])
-        sheet.write(row, 4, amount_usd_sum, formats['header_number'])
-        sheet.write(row, 5, amount_rub_sum, formats['header_number'])
-        sheet.write(row, 6, tax_usd_sum, formats['header_number'])
-        sheet.write(row, 7, tax_us_rub_sum, formats['header_number'])
-        sheet.write(row, 8, tax_ru_rub_sum, formats['header_number'])
+        sheet.write(row, 3, "ИТОГО", formats.ColumnFooter())
+        sheet.write(row, 4, amount_usd_sum, formats.ColumnFooter())
+        sheet.write(row, 5, amount_rub_sum, formats.ColumnFooter())
+        sheet.write(row, 6, tax_usd_sum, formats.ColumnFooter())
+        sheet.write(row, 7, tax_us_rub_sum, formats.ColumnFooter())
+        sheet.write(row, 8, tax_ru_rub_sum, formats.ColumnFooter())
 
     def prepare_trades(self, workbook, account_id, begin, end, formats):
         query = QSqlQuery(self.db)
@@ -296,37 +244,37 @@ class TaxesRus:
         assert query.exec_()
 
         sheet = workbook.add_worksheet(name="Deals")
-        sheet.write(0, 0, "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде", formats['title'])
+        sheet.write(0, 0, "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде", formats.Bold())
         sheet.write(2, 0, "Документ-основание:")
         sheet.write(4, 0, "Период:")
         sheet.write(5, 0, "ФИО:")
         sheet.write(6, 0, "Номер счета:")
         sheet.set_row(8, 60)
-        sheet.write(8, 0, "Ценная бумага", formats['header'])
+        sheet.write(8, 0, "Ценная бумага", formats.ColumnHeader())
         sheet.set_column(0, 2, 8)
-        sheet.write(8, 1, "Кол-во", formats['header'])
-        sheet.write(8, 2, "Тип сделки", formats['header'])
+        sheet.write(8, 1, "Кол-во", formats.ColumnHeader())
+        sheet.write(8, 2, "Тип сделки", formats.ColumnHeader())
         sheet.set_column(3, 3, 10)
-        sheet.write(8, 3, "Дата сделки", formats['header'])
+        sheet.write(8, 3, "Дата сделки", formats.ColumnHeader())
         sheet.set_column(4, 4, 9)
-        sheet.write(8, 4, "Курс USD/RUB на дату сделки", formats['header'])
+        sheet.write(8, 4, "Курс USD/RUB на дату сделки", formats.ColumnHeader())
         sheet.set_column(5, 5, 10)
-        sheet.write(8, 5, "Дата поставки", formats['header'])
+        sheet.write(8, 5, "Дата поставки", formats.ColumnHeader())
         sheet.set_column(6, 6, 9)
-        sheet.write(8, 6, "Курс USD/RUB на дату поставки", formats['header'])
+        sheet.write(8, 6, "Курс USD/RUB на дату поставки", formats.ColumnHeader())
         sheet.set_column(7, 10, 12)
-        sheet.write(8, 7, "Цена, USD", formats['header'])
-        sheet.write(8, 8, "Сумма сделки, USD", formats['header'])
-        sheet.write(8, 9, "Сумма сделки, RUB", formats['header'])
-        sheet.write(8, 10, "Комиссия, USD", formats['header'])
+        sheet.write(8, 7, "Цена, USD", formats.ColumnHeader())
+        sheet.write(8, 8, "Сумма сделки, USD", formats.ColumnHeader())
+        sheet.write(8, 9, "Сумма сделки, RUB", formats.ColumnHeader())
+        sheet.write(8, 10, "Комиссия, USD", formats.ColumnHeader())
         sheet.set_column(11, 11, 9)
-        sheet.write(8, 11, "Комиссия, RUB", formats['header'])
+        sheet.write(8, 11, "Комиссия, RUB", formats.ColumnHeader())
         sheet.set_column(12, 14, 12)
-        sheet.write(8, 12, "Доход, RUB", formats['header'])
-        sheet.write(8, 13, "Расход, RUB", formats['header'])
-        sheet.write(8, 14, "Финансовый результат, RUB", formats['header'])
+        sheet.write(8, 12, "Доход, RUB", formats.ColumnHeader())
+        sheet.write(8, 13, "Расход, RUB", formats.ColumnHeader())
+        sheet.write(8, 14, "Финансовый результат, RUB", formats.ColumnHeader())
         for col in range(15):
-            sheet.write(9, col, f"({col + 1})", formats['header'])  # Put column numbers for reference
+            sheet.write(9, col, f"({col + 1})", formats.ColumnHeader())  # Put column numbers for reference
         start_row = 10
         data_row = 0
         income_sum = 0
@@ -334,10 +282,6 @@ class TaxesRus:
         profit_sum = 0
         while query.next():
             row = start_row + (data_row * 2)
-            if data_row % 2:
-                even_odd = '_odd'
-            else:
-                even_odd = '_even'
             qty = float(query.value("qty"))
             o_price = float(query.value("o_price"))
             o_rate = float(query.value("os_rate"))
@@ -356,44 +300,44 @@ class TaxesRus:
             income = c_amount_rub
             spending = o_amount_rub + o_fee_rub + c_fee_rub
 
-            sheet.merge_range(row, 0, row + 1, 0, query.value("symbol"), formats['text' + even_odd])
-            sheet.merge_range(row, 1, row + 1, 1, qty, formats['number' + even_odd])
-            sheet.write(row, 2, "Покупка", formats['text' + even_odd])
-            sheet.write(row + 1, 2, "Продажа", formats['text' + even_odd])
+            sheet.merge_range(row, 0, row + 1, 0, query.value("symbol"), formats.Text(data_row))
+            sheet.merge_range(row, 1, row + 1, 1, qty, formats.Number(data_row, 0, True))
+            sheet.write(row, 2, "Покупка", formats.Text(data_row))
+            sheet.write(row + 1, 2, "Продажа", formats.Text(data_row))
             sheet.write(row, 3, datetime.datetime.fromtimestamp(query.value("o_date")).strftime('%d.%m.%Y'),
-                        formats['text' + even_odd])
+                        formats.Text(data_row))
             sheet.write(row + 1, 3, datetime.datetime.fromtimestamp(query.value("c_date")).strftime('%d.%m.%Y'),
-                        formats['text' + even_odd])
-            sheet.write(row, 4, o_fee_rate, formats['number_4' + even_odd])
-            sheet.write(row + 1, 4, c_fee_rate, formats['number_4' + even_odd])
+                        formats.Text(data_row))
+            sheet.write(row, 4, o_fee_rate, formats.Number(data_row, 4))
+            sheet.write(row + 1, 4, c_fee_rate, formats.Number(data_row, 4))
             sheet.write(row, 5, datetime.datetime.fromtimestamp(query.value("os_date")).strftime('%d.%m.%Y'),
-                        formats['text' + even_odd])
+                        formats.Text(data_row))
             sheet.write(row + 1, 5, datetime.datetime.fromtimestamp(query.value("cs_date")).strftime('%d.%m.%Y'),
-                        formats['text' + even_odd])
-            sheet.write(row, 6, o_rate, formats['number_4' + even_odd])
-            sheet.write(row + 1, 6, c_rate, formats['number_4' + even_odd])
-            sheet.write(row, 7, o_price, formats['number_6' + even_odd])
-            sheet.write(row + 1, 7, c_price, formats['number_6' + even_odd])
-            sheet.write(row, 8, o_amount_usd, formats['number_2' + even_odd])
-            sheet.write(row + 1, 8, c_amount_usd, formats['number_2' + even_odd])
-            sheet.write(row, 9, o_amount_rub, formats['number_2' + even_odd])
-            sheet.write(row + 1, 9, c_amount_rub, formats['number_2' + even_odd])
-            sheet.write(row, 10, o_fee_usd, formats['number_6' + even_odd])
-            sheet.write(row + 1, 10, c_fee_usd, formats['number_6' + even_odd])
-            sheet.write(row, 11, o_fee_rub, formats['number_2' + even_odd])
-            sheet.write(row + 1, 11, c_fee_rub, formats['number_2' + even_odd])
-            sheet.merge_range(row, 12, row + 1, 12, income, formats['number_2' + even_odd])
-            sheet.merge_range(row, 13, row + 1, 13, spending, formats['number_2' + even_odd])
-            sheet.merge_range(row, 14, row + 1, 14, income - spending, formats['number_2' + even_odd])
+                        formats.Text(data_row))
+            sheet.write(row, 6, o_rate, formats.Number(data_row, 4))
+            sheet.write(row + 1, 6, c_rate, formats.Number(data_row, 4))
+            sheet.write(row, 7, o_price, formats.Number(data_row, 6))
+            sheet.write(row + 1, 7, c_price, formats.Number(data_row, 6))
+            sheet.write(row, 8, o_amount_usd, formats.Number(data_row, 2))
+            sheet.write(row + 1, 8, c_amount_usd, formats.Number(data_row, 2))
+            sheet.write(row, 9, o_amount_rub, formats.Number(data_row, 2))
+            sheet.write(row + 1, 9, c_amount_rub, formats.Number(data_row, 2))
+            sheet.write(row, 10, o_fee_usd, formats.Number(data_row, 6))
+            sheet.write(row + 1, 10, c_fee_usd, formats.Number(data_row, 6))
+            sheet.write(row, 11, o_fee_rub, formats.Number(data_row, 2))
+            sheet.write(row + 1, 11, c_fee_rub, formats.Number(data_row, 2))
+            sheet.merge_range(row, 12, row + 1, 12, income, formats.Number(data_row, 2))
+            sheet.merge_range(row, 13, row + 1, 13, spending, formats.Number(data_row, 2))
+            sheet.merge_range(row, 14, row + 1, 14, income - spending, formats.Number(data_row, 2))
             income_sum += income
             spending_sum += spending
             profit_sum += income - spending
             data_row = data_row + 1
         row = start_row + (data_row * 2)
-        sheet.write(row, 11, "ИТОГО", formats['header_number'])
-        sheet.write(row, 12, income_sum, formats['header_number'])
-        sheet.write(row, 13, spending_sum, formats['header_number'])
-        sheet.write(row, 14, profit_sum, formats['header_number'])
+        sheet.write(row, 11, "ИТОГО", formats.ColumnFooter())
+        sheet.write(row, 12, income_sum, formats.ColumnFooter())
+        sheet.write(row, 13, spending_sum, formats.ColumnFooter())
+        sheet.write(row, 14, profit_sum, formats.ColumnFooter())
 
     def prepare_broker_fees(self, workbook, account_id, begin, end, formats):
         query = QSqlQuery(self.db)
@@ -429,44 +373,40 @@ class TaxesRus:
         assert query.exec_()
 
         sheet = workbook.add_worksheet(name="Fees")
-        sheet.write(0, 0, "Отчет по комиссиям, уплаченным брокеру в отчетном периоде", formats['title'])
+        sheet.write(0, 0, "Отчет по комиссиям, уплаченным брокеру в отчетном периоде", formats.Bold())
         sheet.write(2, 0, "Документ-основание:")
         sheet.write(3, 0, "Период:")
         sheet.write(4, 0, "ФИО:")
         sheet.write(5, 0, "Номер счета:")
         sheet.set_row(7, 60)
-        sheet.write(7, 0, "Описание", formats['header'])
+        sheet.write(7, 0, "Описание", formats.ColumnHeader())
         sheet.set_column(0, 0, 50)
-        sheet.write(7, 1, "Сумма, USD", formats['header'])
+        sheet.write(7, 1, "Сумма, USD", formats.ColumnHeader())
         sheet.set_column(1, 1, 8)
-        sheet.write(7, 2, "Дата оплаты", formats['header'])
+        sheet.write(7, 2, "Дата оплаты", formats.ColumnHeader())
         sheet.set_column(2, 2, 10)
-        sheet.write(7, 3, "Курс USD/RUB на дату оплаты", formats['header'])
+        sheet.write(7, 3, "Курс USD/RUB на дату оплаты", formats.ColumnHeader())
         sheet.set_column(3, 3, 10)
-        sheet.write(7, 4, "Сумма, RUB", formats['header'])
+        sheet.write(7, 4, "Сумма, RUB", formats.ColumnHeader())
         sheet.set_column(4, 4, 10)
         for col in range(5):
-            sheet.write(8, col, f"({col + 1})", formats['header'])  # Put column numbers for reference
+            sheet.write(8, col, f"({col + 1})", formats.ColumnHeader())  # Put column numbers for reference
         row = 9
         amount_rub_sum = 0
         while query.next():
-            if row % 2:
-                even_odd = '_odd'
-            else:
-                even_odd = '_even'
             amount_usd = -float(query.value('amount'))
             rate = float(query.value('rate_cbr'))
             amount_rub = round(amount_usd * rate, 2)
-            sheet.write(row, 0, query.value('note'), formats['text' + even_odd])
-            sheet.write(row, 1, amount_usd, formats['number_2' + even_odd])
+            sheet.write(row, 0, query.value('note'), formats.Text(row))
+            sheet.write(row, 1, amount_usd, formats.Number(row, 2))
             sheet.write(row, 2, datetime.datetime.fromtimestamp(query.value('payment_date')).strftime('%d.%m.%Y'),
-                        formats['text' + even_odd])
-            sheet.write(row, 3, rate, formats['number_4' + even_odd])
-            sheet.write(row, 4, amount_rub, formats['number_2' + even_odd])
+                        formats.Text(row))
+            sheet.write(row, 3, rate, formats.Number(row, 4))
+            sheet.write(row, 4, amount_rub, formats.Number(row, 2))
             amount_rub_sum += amount_rub
             row = row + 1
-        sheet.write(row, 3, "ИТОГО", formats['header_number'])
-        sheet.write(row, 4, amount_rub_sum, formats['header_number'])
+        sheet.write(row, 3, "ИТОГО", formats.ColumnFooter())
+        sheet.write(row, 4, amount_rub_sum, formats.ColumnFooter())
 
     def prepare_corporate_actions(self, workbook, _account_id, _begin, _end, _formats):
         _query = QSqlQuery(self.db)
