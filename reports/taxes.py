@@ -3,6 +3,7 @@ import datetime
 import xlsxwriter
 import logging
 from reports.helpers import xslxFormat
+from DB.helpers import executeSQL
 from PySide2.QtWidgets import QDialog, QFileDialog
 from PySide2.QtCore import Property, Slot
 from PySide2.QtSql import QSqlQuery
@@ -76,38 +77,29 @@ class TaxesRus:
             logging.error(f"Can't write taxes report into file '{taxes_file}'")
 
     def prepare_dividends(self, workbook, account_id, begin, end, formats):
-        query = QSqlQuery(self.db)
-        query.prepare("DELETE FROM t_last_dates")
-        assert query.exec_()
-
-        query.prepare("INSERT INTO t_last_dates(ref_id, timestamp) "
-                      "SELECT d.id AS ref_id, MAX(q.timestamp) AS timestamp "
-                      "FROM dividends AS d "
-                      "LEFT JOIN accounts AS a ON d.account_id=a.id "
-                      "LEFT JOIN quotes AS q ON d.timestamp >= q.timestamp AND a.currency_id=q.asset_id "
-                      "WHERE d.timestamp>=:begin AND d.timestamp<:end AND d.account_id=:account_id "
-                      "GROUP BY d.id")
-        query.bindValue(":begin", begin)
-        query.bindValue(":end", end)
-        query.bindValue(":account_id", account_id)
-        assert query.exec_()
+        _ = executeSQL(self.db, "DELETE FROM t_last_dates")
+        _ = executeSQL(self.db,
+                       "INSERT INTO t_last_dates(ref_id, timestamp) "
+                       "SELECT d.id AS ref_id, MAX(q.timestamp) AS timestamp "
+                       "FROM dividends AS d "
+                       "LEFT JOIN accounts AS a ON d.account_id=a.id "
+                       "LEFT JOIN quotes AS q ON d.timestamp >= q.timestamp AND a.currency_id=q.asset_id "
+                       "WHERE d.timestamp>=:begin AND d.timestamp<:end AND d.account_id=:account_id "
+                       "GROUP BY d.id", [(":begin", begin), (":end", end), (":account_id", account_id)])
         self.db.commit()
 
-        query.prepare("SELECT d.id, d.timestamp AS payment_date, s.name AS symbol, s.full_name AS full_name, "
-                      "d.sum AS amount, d.sum_tax AS tax_amount, q.quote AS rate_cbr "
-                      # "datetime(d.timestamp, 'unixepoch', 'localtime') AS div_date " 
-                      "FROM dividends AS d "
-                      "LEFT JOIN assets AS s ON s.id = d.asset_id "
-                      "LEFT JOIN accounts AS a ON d.account_id = a.id "
-                      "LEFT JOIN t_last_dates AS ld ON d.id=ld.ref_id "
-                      "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND a.currency_id=q.asset_id "
-                      "WHERE d.timestamp>=:begin AND d.timestamp<:end AND d.account_id=:account_id "
-                      "ORDER BY d.timestamp")
-        query.bindValue(":begin", begin)
-        query.bindValue(":end", end)
-        query.bindValue(":account_id", account_id)
-        assert query.exec_()
-
+        query = executeSQL(self.db,
+                           "SELECT d.id, d.timestamp AS payment_date, s.name AS symbol, s.full_name AS full_name, "
+                           "d.sum AS amount, d.sum_tax AS tax_amount, q.quote AS rate_cbr "
+                           # "datetime(d.timestamp, 'unixepoch', 'localtime') AS div_date " 
+                           "FROM dividends AS d "
+                           "LEFT JOIN assets AS s ON s.id = d.asset_id "
+                           "LEFT JOIN accounts AS a ON d.account_id = a.id "
+                           "LEFT JOIN t_last_dates AS ld ON d.id=ld.ref_id "
+                           "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND a.currency_id=q.asset_id "
+                           "WHERE d.timestamp>=:begin AND d.timestamp<:end AND d.account_id=:account_id "
+                           "ORDER BY d.timestamp",
+                           [(":begin", begin), (":end", end), (":account_id", account_id)])
         sheet = workbook.add_worksheet(name="Dividends")
         sheet.write(0, 0, "Отчет по дивидендам, полученным в отчетном периоде", formats.Bold())
         sheet.write(2, 0, "Документ-основание:")
@@ -172,77 +164,69 @@ class TaxesRus:
         sheet.write(row, 8, tax_ru_rub_sum, formats.ColumnFooter())
 
     def prepare_trades(self, workbook, account_id, begin, end, formats):
-        query = QSqlQuery(self.db)
-        query.prepare("DELETE FROM t_last_dates")
-        assert query.exec_()
-
-        query.prepare("INSERT INTO t_last_dates(ref_id, timestamp) "
-                      "SELECT ref_id, MAX(q.timestamp) AS timestamp "
-                      "FROM (SELECT o.timestamp AS ref_id "
-                      "FROM deals AS d "
-                      "LEFT JOIN sequence AS os ON os.id=d.open_sid "
-                      "LEFT JOIN trades AS o ON os.operation_id=o.id "
-                      "WHERE o.timestamp<:end AND d.account_id=:account_id "
-                      "UNION "
-                      "SELECT c.timestamp AS ref_id "
-                      "FROM deals AS d "
-                      "LEFT JOIN sequence AS cs ON cs.id=d.close_sid "
-                      "LEFT JOIN trades AS c ON cs.operation_id=c.id "
-                      "WHERE c.timestamp<:end AND d.account_id=:account_id "
-                      "UNION "
-                      "SELECT o.settlement AS ref_id "
-                      "FROM deals AS d "
-                      "LEFT JOIN sequence AS os ON os.id=d.open_sid "
-                      "LEFT JOIN trades AS o ON os.operation_id=o.id "
-                      "WHERE o.timestamp<:end AND d.account_id=:account_id "
-                      "UNION "
-                      "SELECT c.settlement AS ref_id "
-                      "FROM deals AS d "
-                      "LEFT JOIN sequence AS cs ON cs.id=d.close_sid "
-                      "LEFT JOIN trades AS c ON cs.operation_id=c.id "
-                      "WHERE c.timestamp<:end AND d.account_id=:account_id "
-                      "ORDER BY ref_id) "
-                      "LEFT JOIN accounts AS a ON a.id = :account_id "
-                      "LEFT JOIN quotes AS q ON ref_id >= q.timestamp AND a.currency_id=q.asset_id "
-                      "GROUP BY ref_id")
-        query.bindValue(":begin", begin)
-        query.bindValue(":end", end)
-        query.bindValue(":account_id", account_id)
-        assert query.exec_()
+        _ = executeSQL(self.db, "DELETE FROM t_last_dates")
+        _ = executeSQL(self.db,
+                       "INSERT INTO t_last_dates(ref_id, timestamp) "
+                       "SELECT ref_id, MAX(q.timestamp) AS timestamp "
+                       "FROM (SELECT o.timestamp AS ref_id "
+                       "FROM deals AS d "
+                       "LEFT JOIN sequence AS os ON os.id=d.open_sid "
+                       "LEFT JOIN trades AS o ON os.operation_id=o.id "
+                       "WHERE o.timestamp<:end AND d.account_id=:account_id "
+                       "UNION "
+                       "SELECT c.timestamp AS ref_id "
+                       "FROM deals AS d "
+                       "LEFT JOIN sequence AS cs ON cs.id=d.close_sid "
+                       "LEFT JOIN trades AS c ON cs.operation_id=c.id "
+                       "WHERE c.timestamp<:end AND d.account_id=:account_id "
+                       "UNION "
+                       "SELECT o.settlement AS ref_id "
+                       "FROM deals AS d "
+                       "LEFT JOIN sequence AS os ON os.id=d.open_sid "
+                       "LEFT JOIN trades AS o ON os.operation_id=o.id "
+                       "WHERE o.timestamp<:end AND d.account_id=:account_id "
+                       "UNION "
+                       "SELECT c.settlement AS ref_id "
+                       "FROM deals AS d "
+                       "LEFT JOIN sequence AS cs ON cs.id=d.close_sid "
+                       "LEFT JOIN trades AS c ON cs.operation_id=c.id "
+                       "WHERE c.timestamp<:end AND d.account_id=:account_id "
+                       "ORDER BY ref_id) "
+                       "LEFT JOIN accounts AS a ON a.id = :account_id "
+                       "LEFT JOIN quotes AS q ON ref_id >= q.timestamp AND a.currency_id=q.asset_id "
+                       "GROUP BY ref_id",
+                       [(":begin", begin), (":end", end), (":account_id", account_id)])
         self.db.commit()
 
         # Take all actions without conversion
-        query.prepare("SELECT s.name AS symbol, d.qty AS qty, "
-                      "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, "
-                      "qos.quote AS os_rate, o.price AS o_price, o.fee AS o_fee, "
-                      "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, "
-                      "qcs.quote AS cs_rate, c.price AS c_price, c.fee AS c_fee, "
-                      "coalesce(ao.type, ac.type, 0) AS corp_action_type "
-                      "FROM deals AS d "
-                      "LEFT JOIN sequence AS os ON os.id=d.open_sid "
-                      "LEFT JOIN trades AS o ON os.operation_id=o.id "
-                      "LEFT JOIN sequence AS cs ON cs.id=d.close_sid "
-                      "LEFT JOIN trades AS c ON cs.operation_id=c.id "
-                      "LEFT JOIN assets AS s ON o.asset_id=s.id "
-                      "LEFT JOIN accounts AS a ON a.id = :account_id "
-                      "LEFT JOIN t_last_dates AS ldo ON o.timestamp=ldo.ref_id "
-                      "LEFT JOIN quotes AS qo ON ldo.timestamp=qo.timestamp AND a.currency_id=qo.asset_id "
-                      "LEFT JOIN t_last_dates AS ldos ON o.settlement=ldos.ref_id "
-                      "LEFT JOIN quotes AS qos ON ldos.timestamp=qos.timestamp AND a.currency_id=qos.asset_id "
-                      "LEFT JOIN t_last_dates AS ldc ON c.timestamp=ldc.ref_id "
-                      "LEFT JOIN quotes AS qc ON ldc.timestamp=qc.timestamp AND a.currency_id=qc.asset_id "
-                      "LEFT JOIN t_last_dates AS ldcs ON c.settlement=ldcs.ref_id "
-                      "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
-                      "LEFT JOIN corp_actions AS ao ON ao.id=o.corp_action_id "
-                      "LEFT JOIN corp_actions AS ac ON ac.id=c.corp_action_id "
-                      "WHERE c.timestamp>=:begin AND c.timestamp<:end "
-                      "AND d.account_id=:account_id AND corp_action_type != 1 "
-                      "ORDER BY o.timestamp, c.timestamp")
-        query.bindValue(":begin", begin)
-        query.bindValue(":end", end)
-        query.bindValue(":account_id", account_id)
-        assert query.exec_()
-
+        query = executeSQL(self.db,
+                           "SELECT s.name AS symbol, d.qty AS qty, "
+                           "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, "
+                           "qos.quote AS os_rate, o.price AS o_price, o.fee AS o_fee, "
+                           "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, "
+                           "qcs.quote AS cs_rate, c.price AS c_price, c.fee AS c_fee, "
+                           "coalesce(ao.type, ac.type, 0) AS corp_action_type "
+                           "FROM deals AS d "
+                           "LEFT JOIN sequence AS os ON os.id=d.open_sid "
+                           "LEFT JOIN trades AS o ON os.operation_id=o.id "
+                           "LEFT JOIN sequence AS cs ON cs.id=d.close_sid "
+                           "LEFT JOIN trades AS c ON cs.operation_id=c.id "
+                           "LEFT JOIN assets AS s ON o.asset_id=s.id "
+                           "LEFT JOIN accounts AS a ON a.id = :account_id "
+                           "LEFT JOIN t_last_dates AS ldo ON o.timestamp=ldo.ref_id "
+                           "LEFT JOIN quotes AS qo ON ldo.timestamp=qo.timestamp AND a.currency_id=qo.asset_id "
+                           "LEFT JOIN t_last_dates AS ldos ON o.settlement=ldos.ref_id "
+                           "LEFT JOIN quotes AS qos ON ldos.timestamp=qos.timestamp AND a.currency_id=qos.asset_id "
+                           "LEFT JOIN t_last_dates AS ldc ON c.timestamp=ldc.ref_id "
+                           "LEFT JOIN quotes AS qc ON ldc.timestamp=qc.timestamp AND a.currency_id=qc.asset_id "
+                           "LEFT JOIN t_last_dates AS ldcs ON c.settlement=ldcs.ref_id "
+                           "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
+                           "LEFT JOIN corp_actions AS ao ON ao.id=o.corp_action_id "
+                           "LEFT JOIN corp_actions AS ac ON ac.id=c.corp_action_id "
+                           "WHERE c.timestamp>=:begin AND c.timestamp<:end "
+                           "AND d.account_id=:account_id AND corp_action_type != 1 "
+                           "ORDER BY o.timestamp, c.timestamp",
+                           [(":begin", begin), (":end", end), (":account_id", account_id)])
         sheet = workbook.add_worksheet(name="Deals")
         sheet.write(0, 0, "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде", formats.Bold())
         sheet.write(2, 0, "Документ-основание:")
@@ -340,38 +324,30 @@ class TaxesRus:
         sheet.write(row, 14, profit_sum, formats.ColumnFooter())
 
     def prepare_broker_fees(self, workbook, account_id, begin, end, formats):
-        query = QSqlQuery(self.db)
-        query.prepare("DELETE FROM t_last_dates")
-        assert query.exec_()
-
-        query.prepare("INSERT INTO t_last_dates(ref_id, timestamp) "
-                      "SELECT a.id AS ref_id, MAX(q.timestamp) AS timestamp "
-                      "FROM actions AS a "
-                      "LEFT JOIN accounts AS c ON c.id = :account_id "
-                      "LEFT JOIN quotes AS q ON a.timestamp >= q.timestamp AND c.currency_id=q.asset_id "
-                      "LEFT JOIN action_details AS d ON d.pid=a.id "
-                      "WHERE a.timestamp>=:begin AND a.timestamp<:end "
-                      "AND a.account_id=:account_id AND d.note LIKE '%MONTHLY%' "
-                      "GROUP BY a.id")
-        query.bindValue(":begin", begin)
-        query.bindValue(":end", end)
-        query.bindValue(":account_id", account_id)
-        assert query.exec_()
+        _ = executeSQL(self.db, "DELETE FROM t_last_dates")
+        _ = executeSQL(self.db,
+                       "INSERT INTO t_last_dates(ref_id, timestamp) "
+                       "SELECT a.id AS ref_id, MAX(q.timestamp) AS timestamp "
+                       "FROM actions AS a "
+                       "LEFT JOIN accounts AS c ON c.id = :account_id "
+                       "LEFT JOIN quotes AS q ON a.timestamp >= q.timestamp AND c.currency_id=q.asset_id "
+                       "LEFT JOIN action_details AS d ON d.pid=a.id "
+                       "WHERE a.timestamp>=:begin AND a.timestamp<:end "
+                       "AND a.account_id=:account_id AND d.note LIKE '%MONTHLY%' "
+                       "GROUP BY a.id",
+                       [(":begin", begin), (":end", end), (":account_id", account_id)])
         self.db.commit()
 
-        query.prepare("SELECT a.timestamp AS payment_date, d.sum AS amount, d.note AS note, q.quote AS rate_cbr "
-                      "FROM actions AS a "
-                      "LEFT JOIN action_details AS d ON d.pid=a.id "
-                      "LEFT JOIN accounts AS c ON c.id = :account_id "
-                      "LEFT JOIN t_last_dates AS ld ON a.id=ld.ref_id "
-                      "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND c.currency_id=q.asset_id "
-                      "WHERE a.timestamp>=:begin AND a.timestamp<:end "
-                      "AND a.account_id=:account_id AND d.note LIKE '%MONTHLY%' ")
-        query.bindValue(":begin", begin)
-        query.bindValue(":end", end)
-        query.bindValue(":account_id", account_id)
-        assert query.exec_()
-
+        query = executeSQL(self.db,
+                           "SELECT a.timestamp AS payment_date, d.sum AS amount, d.note AS note, q.quote AS rate_cbr "
+                           "FROM actions AS a "
+                           "LEFT JOIN action_details AS d ON d.pid=a.id "
+                           "LEFT JOIN accounts AS c ON c.id = :account_id "
+                           "LEFT JOIN t_last_dates AS ld ON a.id=ld.ref_id "
+                           "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND c.currency_id=q.asset_id "
+                           "WHERE a.timestamp>=:begin AND a.timestamp<:end "
+                           "AND a.account_id=:account_id AND d.note LIKE '%MONTHLY%' ",
+                           [(":begin", begin), (":end", end), (":account_id", account_id)])
         sheet = workbook.add_worksheet(name="Fees")
         sheet.write(0, 0, "Отчет по комиссиям, уплаченным брокеру в отчетном периоде", formats.Bold())
         sheet.write(2, 0, "Документ-основание:")
