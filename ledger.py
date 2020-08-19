@@ -1,7 +1,7 @@
 import logging
 
 from datetime import datetime
-from constants import Setup, BookAccount, TransactionType, ActionSubtype, \
+from constants import Setup, BookAccount, TransactionType, ActionSubtype, CorporateAction, \
     TransferSubtype, PredefinedCategory, PredefinedPeer
 from PySide2.QtCore import Qt, QDate, QDateTime
 from PySide2.QtWidgets import QDialog, QMessageBox
@@ -188,40 +188,37 @@ class Ledger:
     # TODO check that condition <= is really correct for timestamp in this function
     # Returns Amount measured in current account currency or asset_id that 'book' has at current ledger frontier
     def getAmount(self, book, asset_id=None):
-        timestamp = self.current[TIMESTAMP]
-        account_id = self.current[ACCOUNT_ID]
         if asset_id is None:
             amount = readSQL(self.db,
                                "SELECT sum_amount FROM ledger_sums WHERE book_account = :book AND "
                                "account_id = :account_id AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1",
-                               [(":book", book), (":account_id", account_id), (":timestamp", timestamp)])
+                               [(":book", book), (":account_id", self.current[ACCOUNT_ID]),
+                                (":timestamp", self.current[TIMESTAMP])])
         else:
             amount = readSQL(self.db, "SELECT sum_amount FROM ledger_sums WHERE book_account = :book "
                                         "AND account_id = :account_id AND asset_id = :asset_id "
                                         "AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1",
-                               [(":book", book), (":account_id", account_id),
-                                (":asset_id", asset_id), (":timestamp", timestamp)])
-        if amount is None:
-            return 0.0
-        else:
-            return float(amount)
+                               [(":book", book), (":account_id", self.current[ACCOUNT_ID]),
+                                (":asset_id", asset_id), (":timestamp", self.current[TIMESTAMP])])
+        amount = float(amount) if amount is not None else 0.0
+        return amount
 
-    def takeCredit(self, action_sum):
+    def takeCredit(self, operation_amount):
         money_available = self.getAmount(BookAccount.Money)
         credit = 0
-        if money_available < action_sum:
-            credit = action_sum - money_available
+        if money_available < operation_amount:
+            credit = operation_amount - money_available
             self.appendTransaction(BookAccount.Liabilities, -credit)
         return credit
 
-    def returnCredit(self, action_sum):
-        CreditValue = -1.0 * self.getAmount(BookAccount.Liabilities)
+    def returnCredit(self, operation_amount):
+        current_credit_value = -1.0 * self.getAmount(BookAccount.Liabilities)
         debit = 0
-        if CreditValue > 0:
-            if CreditValue >= action_sum:
-                debit = action_sum
+        if current_credit_value > 0:
+            if current_credit_value >= operation_amount:
+                debit = operation_amount
             else:
-                debit = CreditValue
+                debit = current_credit_value
         if debit > 0:
             self.appendTransaction(BookAccount.Liabilities, debit)
         return debit
@@ -231,39 +228,37 @@ class Ledger:
                            [(":pid", self.current[OPERATION_ID])])
         while query.next():
             amount, self.current[PRICE_CATEGORY], self.current[FEE_TAX_TAG] = readSQLrecord(query)
-            if amount < 0:
-                self.appendTransaction(BookAccount.Costs, -amount)
-            else:
-                self.appendTransaction(BookAccount.Incomes, -amount)
+            book = BookAccount.Costs if amount < 0 else BookAccount.Incomes
+            self.appendTransaction(book, -amount)
 
     def processAction(self):
-        action_sum = self.current[AMOUNT_QTY]
-        if action_sum < 0:
-            credit_sum = self.takeCredit(-action_sum)
-            self.appendTransaction(BookAccount.Money, -(-action_sum - credit_sum))
+        action_amount = self.current[AMOUNT_QTY]
+        if action_amount < 0:
+            credit_taken = self.takeCredit(-action_amount)
+            self.appendTransaction(BookAccount.Money, -(-action_amount - credit_taken))
         else:
-            returned_sum = self.returnCredit(action_sum)
-            if returned_sum < action_sum:
-                self.appendTransaction(BookAccount.Money, action_sum - returned_sum)
+            credit_returned = self.returnCredit(action_amount)
+            if credit_returned < action_amount:
+                self.appendTransaction(BookAccount.Money, action_amount - credit_returned)
         if self.current[TRANSACTION_SUBTYPE] == ActionSubtype.SingleIncome:
-            self.appendTransaction(BookAccount.Incomes, -action_sum)
+            self.appendTransaction(BookAccount.Incomes, -action_amount)
         elif self.current[TRANSACTION_SUBTYPE] == ActionSubtype.SingleSpending:
-            self.appendTransaction(BookAccount.Costs, -action_sum)
+            self.appendTransaction(BookAccount.Costs, -action_amount)
         else:
             self.processActionDetails()
 
     def processDividend(self):
-        dividend_sum = self.current[AMOUNT_QTY]
-        tax_sum = self.current[FEE_TAX_TAG]
-        returned_sum = self.returnCredit(dividend_sum - tax_sum)
-        if returned_sum < dividend_sum:
-            self.appendTransaction(BookAccount.Money, dividend_sum - returned_sum)
+        dividend_amount = self.current[AMOUNT_QTY]
+        tax_amount = self.current[FEE_TAX_TAG]
+        credit_returned = self.returnCredit(dividend_amount - tax_amount)
+        if credit_returned < dividend_amount:
+            self.appendTransaction(BookAccount.Money, dividend_amount - credit_returned)
         self.current[PRICE_CATEGORY] = PredefinedCategory.Dividends
-        self.appendTransaction(BookAccount.Incomes, -dividend_sum)
-        if tax_sum:
-            self.appendTransaction(BookAccount.Money, tax_sum)
+        self.appendTransaction(BookAccount.Incomes, -dividend_amount)
+        if tax_amount:
+            self.appendTransaction(BookAccount.Money, tax_amount)
             self.current[PRICE_CATEGORY] = PredefinedCategory.Taxes
-            self.appendTransaction(BookAccount.Costs, -tax_sum)
+            self.appendTransaction(BookAccount.Costs, -tax_amount)
 
     def processBuy(self):
         seq_id = self.current_seq
@@ -271,9 +266,9 @@ class Ledger:
         asset_id = self.current[ASSET_ID]
         qty = self.current[AMOUNT_QTY]
         price = self.current[PRICE_CATEGORY]
-        trade_sum = round(price * qty, 2) + self.current[FEE_TAX_TAG] + self.current[COUPON_PEER]
+        trade_value = round(price * qty, 2) + self.current[FEE_TAX_TAG] + self.current[COUPON_PEER]
         sell_qty = 0
-        sell_sum = 0
+        sell_value = 0
         if self.getAmount(BookAccount.Assets, asset_id) < 0:
             query = executeSQL(self.db,
                                "SELECT d.open_sid AS open, abs(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
@@ -313,17 +308,16 @@ class Ledger:
                                [(":account_id", account_id), (":asset_id", asset_id), (":open_sid", deal_sid),
                                 (":close_sid", seq_id), (":qty", next_deal_qty)])
                 sell_qty = sell_qty + next_deal_qty
-                sell_sum = sell_sum + (next_deal_qty * deal_price)
+                sell_value = sell_value + (next_deal_qty * deal_price)
                 if sell_qty == qty:
                     break
-        credit_sum = self.takeCredit(trade_sum)
-        if trade_sum != credit_sum:
-            self.appendTransaction(BookAccount.Money, -(trade_sum - credit_sum))
-        if sell_qty > 0:  # Result of closed deals
-            self.appendTransaction(BookAccount.Assets, sell_qty, sell_sum)
-            if ((price * sell_qty) - sell_sum) != 0:  # Profit if we have it
-                self.current[PRICE_CATEGORY] = PredefinedCategory.Profit
-                self.appendTransaction(BookAccount.Incomes, ((price * sell_qty) - sell_sum))
+        credit_taken = self.takeCredit(trade_value)
+        if trade_value != credit_taken:
+            self.appendTransaction(BookAccount.Money, -(trade_value - credit_taken))
+        if sell_qty > 0:  # Add result of closed deals
+            self.appendTransaction(BookAccount.Assets, sell_qty, sell_value)
+            self.current[PRICE_CATEGORY] = PredefinedCategory.Profit
+            self.appendTransaction(BookAccount.Incomes, ((price * sell_qty) - sell_value))
         if sell_qty < qty:  # Add new long position
             self.appendTransaction(BookAccount.Assets, (qty - sell_qty), (qty - sell_qty) * price)
         if self.current[COUPON_PEER]:
@@ -339,9 +333,9 @@ class Ledger:
         asset_id = self.current[ASSET_ID]
         qty = -self.current[AMOUNT_QTY]
         price = self.current[PRICE_CATEGORY]
-        trade_sum = round(price * qty, 2) - self.current[FEE_TAX_TAG] + self.current[COUPON_PEER]
+        trade_value = round(price * qty, 2) - self.current[FEE_TAX_TAG] + self.current[COUPON_PEER]
         buy_qty = 0
-        buy_sum = 0
+        buy_value = 0
         if self.getAmount(BookAccount.Assets, asset_id) > 0:
             query = executeSQL(self.db,
                                "SELECT d.open_sid AS open, abs(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
@@ -381,17 +375,16 @@ class Ledger:
                                [(":account_id", account_id), (":asset_id", asset_id), (":open_sid", deal_sid),
                                 (":close_sid", seq_id), (":qty", next_deal_qty)])
                 buy_qty = buy_qty + next_deal_qty
-                buy_sum = buy_sum + (next_deal_qty * deal_price)
+                buy_value = buy_value + (next_deal_qty * deal_price)
                 if buy_qty == qty:
                     break
-        returned_sum = self.returnCredit(trade_sum)
-        if returned_sum < trade_sum:
-            self.appendTransaction(BookAccount.Money, (trade_sum - returned_sum))
-        if buy_qty > 0:  # Result of closed deals
-            self.appendTransaction(BookAccount.Assets, -buy_qty, -buy_sum)
-            if (buy_sum - (price * buy_qty)) != 0:  # Profit if we have it
-                self.current[PRICE_CATEGORY] = PredefinedCategory.Profit
-                self.appendTransaction(BookAccount.Incomes, (buy_sum - (price * buy_qty)))
+        credit_returned = self.returnCredit(trade_value)
+        if credit_returned < trade_value:
+            self.appendTransaction(BookAccount.Money, (trade_value - credit_returned))
+        if buy_qty > 0:  # Add result of closed deals
+            self.appendTransaction(BookAccount.Assets, -buy_qty, -buy_value)
+            self.current[PRICE_CATEGORY] = PredefinedCategory.Profit
+            self.appendTransaction(BookAccount.Incomes, (buy_value - (price * buy_qty)))
         if buy_qty < qty:  # Add new short position
             self.appendTransaction(BookAccount.Assets, (buy_qty - qty), (buy_qty - qty) * price)
         if self.current[COUPON_PEER]:
@@ -401,40 +394,38 @@ class Ledger:
             self.current[PRICE_CATEGORY] = PredefinedCategory.Fees
             self.appendTransaction(BookAccount.Costs, self.current[FEE_TAX_TAG])
 
-    def processCorpAction(self):
-        pass
+    def processBuySell(self):
+        if self.current[AMOUNT_QTY] > 0:
+            self.processBuy()
+        else:
+            self.processSell()
 
     def processTrade(self):
-        if self.current[TRANSACTION_SUBTYPE]:  # if we have a corp.action instead of normal trade
-            # TODO change processing of Corp.action transactions to keep money flow
-            if self.current[AMOUNT_QTY] > 0:
-                self.processBuy()
-            else:
-                self.processSell()
-        else:
-            if self.current[AMOUNT_QTY] > 0:
-                self.processBuy()
-            else:
-                self.processSell()
+        operationTrade = {   # TODO implement corporate actions processing
+            CorporateAction.NA: self.processBuySell,
+            CorporateAction.Conversion: self.processBuySell,
+            CorporateAction.SpinOff: self.processBuySell
+        }
+        operationTrade[self.current[TRANSACTION_SUBTYPE]]()
 
     def processTransferOut(self):
         amount = -self.current[AMOUNT_QTY]
-        credit_sum = self.takeCredit(amount)
-        self.appendTransaction(BookAccount.Money, -(amount - credit_sum))
+        credit_taken = self.takeCredit(amount)
+        self.appendTransaction(BookAccount.Money, -(amount - credit_taken))
         self.appendTransaction(BookAccount.Transfers, amount)
 
     def processTransferIn(self):
         amount = self.current[AMOUNT_QTY]
-        returned_sum = self.returnCredit(amount)
-        if returned_sum < amount:
-            self.appendTransaction(BookAccount.Money, (amount - returned_sum))
+        credit_returned = self.returnCredit(amount)
+        if credit_returned < amount:
+            self.appendTransaction(BookAccount.Money, (amount - credit_returned))
         self.appendTransaction(BookAccount.Transfers, -amount)
 
     def processTransferFee(self):
         fee = -self.current[AMOUNT_QTY]
-        credit_sum = self.takeCredit(fee)
+        credit_taken = self.takeCredit(fee)
         self.current[COUPON_PEER] = PredefinedPeer.Financial
-        self.appendTransaction(BookAccount.Money, -(fee - credit_sum))
+        self.appendTransaction(BookAccount.Money, -(fee - credit_taken))
         self.current[PRICE_CATEGORY] = PredefinedCategory.Fees
         self.appendTransaction(BookAccount.Costs, fee)
 
@@ -507,6 +498,8 @@ class Ledger:
         if not silent:
             logging.info(f"Ledger is complete. Elapsed time: {end_time - start_time}, "
                          f"new frontier: {datetime.fromtimestamp(self.current[TIMESTAMP]).strftime('%d/%m/%Y %H:%M:%S')}")
+        self.updateBalancesView()
+        self.updateHoldingsView()
 
     # Populate table balances with data calculated for given parameters:
     # 'timestamp' moment of time for balance

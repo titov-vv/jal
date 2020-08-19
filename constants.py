@@ -34,6 +34,7 @@ class TransferSubtype:   # TRANSFER SUB-TYPES
 
 
 class CorporateAction:   # CORPORATE ACTIONS FOR ASSETS
+    NA = 0
     Conversion = 1
     SpinOff = 2
 
