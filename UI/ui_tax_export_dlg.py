@@ -84,7 +84,7 @@ class Ui_TaxExportDlg(object):
     # setupUi
 
     def retranslateUi(self, TaxExportDlg):
-        TaxExportDlg.setWindowTitle(QCoreApplication.translate("TaxExportDlg", u"Dialog", None))
+        TaxExportDlg.setWindowTitle(QCoreApplication.translate("TaxExportDlg", u"Select parameters and filename for tax report", None))
         self.FileLbl.setText(QCoreApplication.translate("TaxExportDlg", u"Filename", None))
         self.Year.setSuffix("")
         self.YearLbl.setText(QCoreApplication.translate("TaxExportDlg", u"Year:", None))

@@ -753,6 +753,7 @@ class Ui_LedgerMainWindow(object):
         self.LoggingTab.setObjectName(u"LoggingTab")
         self.verticalLayout_5 = QVBoxLayout(self.LoggingTab)
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.verticalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.Logs = LogViewer(self.LoggingTab)
         self.Logs.setObjectName(u"Logs")
 

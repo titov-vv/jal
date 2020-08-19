@@ -1,12 +1,14 @@
 import time
 import datetime
 import xlsxwriter
+import logging
 from PySide2.QtWidgets import QDialog, QFileDialog
 from PySide2.QtCore import Property, Slot
 from PySide2.QtSql import QSqlQuery
 from UI.ui_tax_export_dlg import Ui_TaxExportDlg
 
 
+#-----------------------------------------------------------------------------------------------------------------------
 class TaxExportDialog(QDialog, Ui_TaxExportDlg):
     def __init__(self, parent, db):
         QDialog.__init__(self)
@@ -43,6 +45,7 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
     account = Property(int, fget=getAccount)
 
 
+#-----------------------------------------------------------------------------------------------------------------------
 class TaxesRus:
     def __init__(self, db):
         self.db = db
@@ -57,6 +60,7 @@ class TaxesRus:
         year_end = int(time.mktime(datetime.datetime.strptime(f"{year + 1}", "%Y").timetuple()))
 
         workbook = xlsxwriter.Workbook(filename=taxes_file)
+
         title_cell = workbook.add_format({'bold': True})
         column_header_cell = workbook.add_format({'bold': True,
                                                   'text_wrap': True,
@@ -114,7 +118,10 @@ class TaxesRus:
         self.prepare_broker_fees(workbook, account_id, year_begin, year_end, formats)
         self.prepare_corporate_actions(workbook, account_id, year_begin, year_end, formats)
 
-        workbook.close()
+        try:
+            workbook.close()
+        except:
+            logging.error(f"Can't write taxes report into file '{taxes_file}'")
 
     def prepare_dividends(self, workbook, account_id, begin, end, formats):
         query = QSqlQuery(self.db)
