@@ -22,7 +22,6 @@ class map_idx:
     DB_NAME = 0
     WIDGET = 1
     WIDTH = 2
-    VALIDATOR = 3
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -127,7 +126,7 @@ def UseSqlTable(db, table_name, columns, relations):
 
 # -------------------------------------------------------------------------------------------------------------------
 # Use mappings to link between DB fields and GUI widgets with help of delegate
-# mapping is a list of tuples [(FIELD_NAME, GUI_WIDGET, WIDTH, VALIDATOR)]
+# mapping is a list of tuples [(FIELD_NAME, GUI_WIDGET, WIDTH)]
 # If widget is a custom one:
 #    - initialize database connection for it
 #    - connect "changed" signal to "submit" slot of QDataWidgetMapper (to reflect data changes in UI)
@@ -144,8 +143,6 @@ def ConfigureDataMappers(model, mappings, delegate):
         mapper.addMapping(mapping[map_idx.WIDGET], model.fieldIndex(mapping[map_idx.DB_NAME]))
         if mapping[map_idx.WIDTH]:
             mapping[map_idx.WIDGET].setFixedWidth(mapping[map_idx.WIDTH])
-        if mapping[map_idx.VALIDATOR]:
-            mapping[map_idx.WIDGET].setValidator(mapping[map_idx.VALIDATOR])
     return mapper
 
 # -------------------------------------------------------------------------------------------------------------------

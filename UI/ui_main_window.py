@@ -22,6 +22,7 @@ from CustomUI.reference_selector import PeerSelector
 from CustomUI.trade_action import TradeAction
 from CustomUI.log_viewer import LogViewer
 from CustomUI.account_select import CurrencyCombo
+from CustomUI.amount_editor import AmountEdit
 
 
 class Ui_LedgerMainWindow(object):
@@ -344,7 +345,7 @@ class Ui_LedgerMainWindow(object):
         self.gridLayout_3 = QGridLayout(self.TradeDetailsTab)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
         self.gridLayout_3.setContentsMargins(2, 2, 2, 2)
-        self.TradePriceEdit = QLineEdit(self.TradeDetailsTab)
+        self.TradePriceEdit = AmountEdit(self.TradeDetailsTab)
         self.TradePriceEdit.setObjectName(u"TradePriceEdit")
         self.TradePriceEdit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
@@ -386,7 +387,7 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_3.addWidget(self.TradeTabLbl, 0, 0, 1, 1)
 
-        self.TradeFeeEdit = QLineEdit(self.TradeDetailsTab)
+        self.TradeFeeEdit = AmountEdit(self.TradeDetailsTab)
         self.TradeFeeEdit.setObjectName(u"TradeFeeEdit")
         self.TradeFeeEdit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
@@ -403,7 +404,7 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_3.addWidget(self.TradePriceLbl, 4, 1, 1, 1)
 
-        self.TradeQtyEdit = QLineEdit(self.TradeDetailsTab)
+        self.TradeQtyEdit = AmountEdit(self.TradeDetailsTab)
         self.TradeQtyEdit.setObjectName(u"TradeQtyEdit")
         self.TradeQtyEdit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
@@ -439,7 +440,7 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_3.addWidget(self.TradeCouponLbl, 5, 1, 1, 1)
 
-        self.TradeCouponEdit = QLineEdit(self.TradeDetailsTab)
+        self.TradeCouponEdit = AmountEdit(self.TradeDetailsTab)
         self.TradeCouponEdit.setObjectName(u"TradeCouponEdit")
         self.TradeCouponEdit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
@@ -457,7 +458,7 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_2.addWidget(self.DividendSymbolLbl, 6, 2, 1, 1)
 
-        self.DividendTaxEdit = QLineEdit(self.DividendDetailsTab)
+        self.DividendTaxEdit = AmountEdit(self.DividendDetailsTab)
         self.DividendTaxEdit.setObjectName(u"DividendTaxEdit")
         self.DividendTaxEdit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
@@ -481,7 +482,7 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_2.addWidget(self.DividendTaxLbl, 8, 1, 1, 1)
 
-        self.DividendSumEdit = QLineEdit(self.DividendDetailsTab)
+        self.DividendSumEdit = AmountEdit(self.DividendDetailsTab)
         self.DividendSumEdit.setObjectName(u"DividendSumEdit")
         self.DividendSumEdit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
@@ -546,7 +547,7 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_5.addWidget(self.TransferNote, 5, 1, 1, 4)
 
-        self.TransferFromAmount = QLineEdit(self.TransferDetailsTab)
+        self.TransferFromAmount = AmountEdit(self.TransferDetailsTab)
         self.TransferFromAmount.setObjectName(u"TransferFromAmount")
         self.TransferFromAmount.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
@@ -556,7 +557,7 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_5.addItem(self.horizontalSpacer_4, 3, 4, 1, 1)
 
-        self.TransferFeeAmount = QLineEdit(self.TransferDetailsTab)
+        self.TransferFeeAmount = AmountEdit(self.TransferDetailsTab)
         self.TransferFeeAmount.setObjectName(u"TransferFeeAmount")
         self.TransferFeeAmount.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
@@ -598,7 +599,7 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_5.addWidget(self.TransferToAccountWidget, 3, 2, 1, 1)
 
-        self.TransferToAmount = QLineEdit(self.TransferDetailsTab)
+        self.TransferToAmount = AmountEdit(self.TransferDetailsTab)
         self.TransferToAmount.setObjectName(u"TransferToAmount")
         self.TransferToAmount.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
@@ -800,7 +801,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(0)
+        self.OperationsTabs.setCurrentIndex(3)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)

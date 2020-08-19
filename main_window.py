@@ -51,9 +51,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.logger.setLevel(logging.INFO)
 
         # Customize UI configutation
-        self.doubleValidate2 = QDoubleValidator(decimals=2)
-        self.doubleValidate6 = QDoubleValidator(decimals=6)
-        self.widthForAmountEdit = self.fontMetrics().width("888888888.88") * 1.5
         self.widthForTimestampEdit = self.fontMetrics().width("00/00/0000 00:00:00") * 1.25
         self.operations = LedgerOperationsView(self.OperationsTableView)
         self.ui_config = TableViewConfig(self)

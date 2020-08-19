@@ -426,7 +426,7 @@
                 <item>
                  <widget class="QStackedWidget" name="OperationsTabs">
                   <property name="currentIndex">
-                   <number>0</number>
+                   <number>3</number>
                   </property>
                   <widget class="QWidget" name="ActionDetailsTab">
                    <layout class="QGridLayout" name="gridLayout_4">
@@ -618,7 +618,7 @@
                      <number>2</number>
                     </property>
                     <item row="4" column="2">
-                     <widget class="QLineEdit" name="TradePriceEdit">
+                     <widget class="AmountEdit" name="TradePriceEdit">
                       <property name="alignment">
                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                       </property>
@@ -708,7 +708,7 @@
                      </widget>
                     </item>
                     <item row="5" column="4">
-                     <widget class="QLineEdit" name="TradeFeeEdit">
+                     <widget class="AmountEdit" name="TradeFeeEdit">
                       <property name="alignment">
                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                       </property>
@@ -732,7 +732,7 @@
                      </widget>
                     </item>
                     <item row="4" column="4">
-                     <widget class="QLineEdit" name="TradeQtyEdit">
+                     <widget class="AmountEdit" name="TradeQtyEdit">
                       <property name="alignment">
                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                       </property>
@@ -769,7 +769,7 @@
                      </widget>
                     </item>
                     <item row="5" column="2">
-                     <widget class="QLineEdit" name="TradeCouponEdit">
+                     <widget class="AmountEdit" name="TradeCouponEdit">
                       <property name="alignment">
                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                       </property>
@@ -802,7 +802,7 @@
                      </widget>
                     </item>
                     <item row="8" column="2">
-                     <widget class="QLineEdit" name="DividendTaxEdit">
+                     <widget class="AmountEdit" name="DividendTaxEdit">
                       <property name="toolTip">
                        <string>Tax amount</string>
                       </property>
@@ -842,7 +842,7 @@
                      </widget>
                     </item>
                     <item row="7" column="2">
-                     <widget class="QLineEdit" name="DividendSumEdit">
+                     <widget class="AmountEdit" name="DividendSumEdit">
                       <property name="toolTip">
                        <string>Dividend amount</string>
                       </property>
@@ -964,7 +964,7 @@
                      <widget class="QLineEdit" name="TransferNote"/>
                     </item>
                     <item row="2" column="3">
-                     <widget class="QLineEdit" name="TransferFromAmount">
+                     <widget class="AmountEdit" name="TransferFromAmount">
                       <property name="alignment">
                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                       </property>
@@ -984,7 +984,7 @@
                      </spacer>
                     </item>
                     <item row="4" column="3">
-                     <widget class="QLineEdit" name="TransferFeeAmount">
+                     <widget class="AmountEdit" name="TransferFeeAmount">
                       <property name="alignment">
                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                       </property>
@@ -1040,7 +1040,7 @@
                      <widget class="AccountSelector" name="TransferToAccountWidget" native="true"/>
                     </item>
                     <item row="3" column="3">
-                     <widget class="QLineEdit" name="TransferToAmount">
+                     <widget class="AmountEdit" name="TransferToAmount">
                       <property name="alignment">
                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                       </property>
@@ -1490,6 +1490,11 @@
    <class>CurrencyCombo</class>
    <extends>QComboBox</extends>
    <header>CustomUI/account_select.h</header>
+  </customwidget>
+  <customwidget>
+   <class>AmountEdit</class>
+   <extends>QLineEdit</extends>
+   <header>CustomUI/amount_editor.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
