@@ -3,7 +3,7 @@ from constants import Setup
 from PySide2.QtCore import Qt, QMetaObject
 from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery
 from PySide2.QtWidgets import QMessageBox
-from DB.bulk_db import loadDbFromSQL
+from DB.backup_restore import loadDbFromSQL
 
 # -------------------------------------------------------------------------------------------------------------------
 def get_dbfilename(app_path):

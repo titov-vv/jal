@@ -11,7 +11,7 @@ from UI.ui_main_window import Ui_LedgerMainWindow
 from CustomUI.helpers import VLine, ManipulateDate
 from CustomUI.table_view_config import TableViewConfig
 from constants import TransactionType
-from DB.bulk_db import MakeBackup, RestoreBackup
+from DB.backup_restore import MakeBackup, RestoreBackup
 from DB.helpers import init_and_check_db, get_dbfilename
 from downloader import QuoteDownloader
 from ledger import Ledger
