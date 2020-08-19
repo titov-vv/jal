@@ -50,8 +50,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.logger.addHandler(self.Logs)
         self.logger.setLevel(logging.INFO)
 
-        # Customize UI configutation
-        self.widthForTimestampEdit = self.fontMetrics().width("00/00/0000 00:00:00") * 1.25
+        # Customize UI configuration
         self.operations = LedgerOperationsView(self.OperationsTableView)
         self.ui_config = TableViewConfig(self)
 

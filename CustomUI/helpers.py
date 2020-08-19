@@ -1,8 +1,9 @@
 import datetime
 
+from constants import ColumnWidth
 from PySide2.QtCore import Qt
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
-from PySide2.QtWidgets import QAbstractItemView, QHeaderView, QDataWidgetMapper, QFrame
+from PySide2.QtWidgets import QAbstractItemView, QHeaderView, QDataWidgetMapper, QFrame, QDateTimeEdit
 
 class hcol_idx:
     DB_NAME = 0
@@ -21,7 +22,6 @@ class rel_idx:
 class map_idx:
     DB_NAME = 0
     WIDGET = 1
-    WIDTH = 2
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -141,8 +141,10 @@ def ConfigureDataMappers(model, mappings, delegate):
             mapping[map_idx.WIDGET].changed.connect(mapper.submit)
         # if no USER property we should use QByteArray().setRawData("account_id", 10)) here
         mapper.addMapping(mapping[map_idx.WIDGET], model.fieldIndex(mapping[map_idx.DB_NAME]))
-        if mapping[map_idx.WIDTH]:
-            mapping[map_idx.WIDGET].setFixedWidth(mapping[map_idx.WIDTH])
+        # adjust width of QDateTimeEdits to show full date-time string
+        if isinstance(mapping[map_idx.WIDGET], QDateTimeEdit):
+            mapping[map_idx.WIDGET].setFixedWidth(
+                mapping[map_idx.WIDGET].fontMetrics().width("00/00/0000 00:00:00") * 1.25)
     return mapper
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -157,9 +159,13 @@ def ConfigureTableView(view, model, columns):
         if column[hcol_idx.DISPLAY_NAME] is None:   # hide column
             view.setColumnHidden(model.fieldIndex(column[hcol_idx.DB_NAME]), True)
         if column[hcol_idx.WIDTH] is not None:
-            if column[hcol_idx.WIDTH] < 0:
-                view.horizontalHeader().setSectionResizeMode(model.fieldIndex(column[hcol_idx.DB_NAME]), QHeaderView.Stretch)
-            else:
+            if column[hcol_idx.WIDTH] == ColumnWidth.STRETCH:
+                view.horizontalHeader().setSectionResizeMode(model.fieldIndex(column[hcol_idx.DB_NAME]),
+                                                             QHeaderView.Stretch)
+            elif column[hcol_idx.WIDTH] == ColumnWidth.FOR_DATETIME:
+                view.setColumnWidth(model.fieldIndex(column[hcol_idx.DB_NAME]),
+                                    view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
+            else:  # set custom width
                 view.setColumnWidth(model.fieldIndex(column[hcol_idx.DB_NAME]), column[hcol_idx.WIDTH])
 
     view.setSelectionBehavior(QAbstractItemView.SelectRows)

@@ -378,6 +378,11 @@ class Ui_LedgerMainWindow(object):
 
         self.TradeNumberEdit = QLineEdit(self.TradeDetailsTab)
         self.TradeNumberEdit.setObjectName(u"TradeNumberEdit")
+        sizePolicy6 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        sizePolicy6.setHorizontalStretch(0)
+        sizePolicy6.setVerticalStretch(0)
+        sizePolicy6.setHeightForWidth(self.TradeNumberEdit.sizePolicy().hasHeightForWidth())
+        self.TradeNumberEdit.setSizePolicy(sizePolicy6)
 
         self.gridLayout_3.addWidget(self.TradeNumberEdit, 2, 0, 1, 1)
 
@@ -490,6 +495,8 @@ class Ui_LedgerMainWindow(object):
 
         self.DividendNumberEdit = QLineEdit(self.DividendDetailsTab)
         self.DividendNumberEdit.setObjectName(u"DividendNumberEdit")
+        sizePolicy6.setHeightForWidth(self.DividendNumberEdit.sizePolicy().hasHeightForWidth())
+        self.DividendNumberEdit.setSizePolicy(sizePolicy6)
 
         self.gridLayout_2.addWidget(self.DividendNumberEdit, 6, 1, 1, 1)
 
@@ -801,7 +808,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(3)
+        self.OperationsTabs.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)
