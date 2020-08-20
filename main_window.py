@@ -171,7 +171,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.StatusBar.showMessage("Statement load completed", timeout=60000)
         self.ledger.rebuild()
 
-    @Slot
+    @Slot()
     def onStatementLoadFailure(self):
         self.StatusBar.showMessage("Statement load failed", timeout=60000)
 

@@ -127,7 +127,7 @@ class StatementLoader(QObject):
                 if self.loadQuikHtml(report_file):
                     self.load_completed.emit()
                 else:
-                    self.load_failed_emit()
+                    self.load_failed.emit()
 
     def findAccountID(self, accountNumber, accountCurrency=''):
         if accountCurrency:
@@ -546,7 +546,7 @@ class StatementLoader(QObject):
             logging.error("Can't get account number from the statement.")
             return False
         if account_id is None:
-            logging.error(f"Account {parts.group(1)} not found. Import cancelled.")
+            logging.error(f"Account with number {parts.group(1)} not found. Import cancelled.")
             return False
 
         for index, row in deals_info.iterrows():
