@@ -2,16 +2,13 @@ import datetime
 import logging
 import xlsxwriter
 from constants import BookAccount, PredefinedAsset
-from reports.helpers import xslxFormat
+from reports.helpers import xslxFormat, xlsxWriteRow
 from PySide2.QtWidgets import QDialog, QFileDialog
 from PySide2.QtCore import Property, Slot
 from PySide2 import QtCore
 from PySide2.QtSql import QSqlQuery
 from UI.ui_deals_export_dlg import Ui_DealsExportDlg
 
-
-# TODO Combine all reports into one function call and write different sheets in one file
-# TODO optimize with lists of fields
 
 class ReportParamsDialog(QDialog, Ui_DealsExportDlg):
     def __init__(self, parent, db):
@@ -73,42 +70,6 @@ class Reports:
         self.db = db
         self.workbook = None
         self.formats = None
-        self.fmt = None
-
-    def prepareFormatting(self):
-        title_cell = self.workbook.add_format({'bold': True,
-                                               'text_wrap': True,
-                                               'align': 'center',
-                                               'valign': 'vcenter'})
-        number_odd = self.workbook.add_format({'border': 1,
-                                               'align': 'center',
-                                               'valign': 'vcenter'})
-        number_even = self.workbook.add_format({'border': 1,
-                                                'align': 'center',
-                                                'valign': 'vcenter',
-                                                'bg_color': '#C0C0C0'})
-        number2_odd = self.workbook.add_format({'num_format': '#,###,##0.00',
-                                                'border': 1,
-                                                'valign': 'vcenter'})
-        number2_even = self.workbook.add_format({'num_format': '#,###,##0.00',
-                                                 'border': 1,
-                                                 'valign': 'vcenter',
-                                                 'bg_color': '#C0C0C0'})
-        number4_odd = self.workbook.add_format({'num_format': '0.0000',
-                                                'border': 1})
-        number4_even = self.workbook.add_format({'num_format': '0.0000',
-                                                 'border': 1,
-                                                 'bg_color': '#C0C0C0'})
-        text_odd = self.workbook.add_format({'border': 1,
-                                             'valign': 'vcenter'})
-        text_even = self.workbook.add_format({'border': 1,
-                                              'valign': 'vcenter',
-                                              'bg_color': '#C0C0C0'})
-        self.formats = {'title': title_cell,
-                        'text_odd': text_odd, 'text_even': text_even,
-                        'number_odd': number_odd, 'number_even': number_even,
-                        'number_2_odd': number2_odd, 'number_2_even': number2_even,
-                        'number_4_odd': number4_odd, 'number_4_even': number4_even}
 
     def create_report(self, parent, report_type):
         if report_type == self.DEALS_REPORT:
@@ -132,7 +93,7 @@ class Reports:
 
     def save_deals(self, report_filename, account_id, begin, end, group_dates):
         self.workbook = xlsxwriter.Workbook(filename=report_filename)
-        self.fmt = xslxFormat(self.workbook)
+        self.formats = xslxFormat(self.workbook)
         sheet = self.workbook.add_worksheet(name="Deals")
 
         query = QSqlQuery(self.db)
@@ -156,42 +117,46 @@ class Reports:
         query.bindValue(":end", end)
         assert query.exec_()
 
-        sheet.merge_range(0, 0, 1, 0, "Asset", self.fmt.ColumnHeader())
-        sheet.set_column(0, 0, 15)
-        sheet.merge_range(0, 1, 0, 2, "Date", self.fmt.ColumnHeader())
-        sheet.write(1, 1, "Open", self.fmt.ColumnHeader())
-        sheet.write(1, 2, "Close", self.fmt.ColumnHeader())
-        sheet.set_column(1, 2, 20)
-        sheet.merge_range(0, 3, 0, 4, "Price", self.fmt.ColumnHeader())
-        sheet.write(1, 3, "Open", self.fmt.ColumnHeader())
-        sheet.write(1, 4, "Close", self.fmt.ColumnHeader())
-        sheet.merge_range(0, 5, 1, 5, "Qty", self.fmt.ColumnHeader())
-        sheet.merge_range(0, 6, 1, 6, "Fee", self.fmt.ColumnHeader())
-        sheet.merge_range(0, 7, 1, 7, "Profit / Loss", self.fmt.ColumnHeader())
-        sheet.set_column(3, 7, 10)
-        sheet.merge_range(0, 8, 1, 8, "Profit / Loss, %", self.fmt.ColumnHeader())
-        sheet.set_column(8, 8, 8)
+        header_row = {
+            0: ("Asset", self.formats.ColumnHeader(), 15, 0, 1),
+            1: ("Date", self.formats.ColumnHeader(), 0, 1, 0),
+            3: ("Price", self.formats.ColumnHeader(), 0, 1, 0),
+            5: ("Qty", self.formats.ColumnHeader(), 10, 0, 1),
+            6: ("Fre", self.formats.ColumnHeader(), 10, 0, 1),
+            7: ("Profit / Loss", self.formats.ColumnHeader(), 10, 0, 1),
+            8: ("Profit / Loss, %", self.formats.ColumnHeader(), 8, 0, 1)
+        }
+        xlsxWriteRow(sheet, 0, header_row)
+
+        header_row = {
+            1: ("Open", self.formats.ColumnHeader(), 20, 0, 0),
+            2: ("Close", self.formats.ColumnHeader(), 20, 0, 0),
+            3: ("Open", self.formats.ColumnHeader(), 10, 0, 0),
+            4: ("Close", self.formats.ColumnHeader(), 10, 0, 0)
+        }
+        xlsxWriteRow(sheet, 1, header_row)
+
         row = 2
         while query.next():
-            sheet.write(row, 0, query.value('asset'), self.fmt.Text(row))
+            sheet.write(row, 0, query.value('asset'), self.formats.Text(row))
             open_timestamp = int(query.value("open_timestamp"))
             close_timestamp = int(query.value("close_timestamp"))
             if group_dates:
                 sheet.write(row, 1, datetime.datetime.fromtimestamp(open_timestamp).strftime('%d.%m.%Y'),
-                            self.fmt.Text(row))
+                            self.formats.Text(row))
                 sheet.write(row, 2, datetime.datetime.fromtimestamp(close_timestamp).strftime('%d.%m.%Y'),
-                            self.fmt.Text(row))
+                            self.formats.Text(row))
             else:
                 sheet.write(row, 1, datetime.datetime.fromtimestamp(open_timestamp).strftime('%d.%m.%Y %H:%M:%S'),
-                            self.fmt.Text(row))
+                            self.formats.Text(row))
                 sheet.write(row, 2, datetime.datetime.fromtimestamp(close_timestamp).strftime('%d.%m.%Y %H:%M:%S'),
-                            self.fmt.Text(row))
-            sheet.write(row, 3, float(query.value('open_price')), self.fmt.Number(row, 4))
-            sheet.write(row, 4, float(query.value('close_price')), self.fmt.Number(row, 4))
-            sheet.write(row, 5, float(query.value('qty')), self.fmt.Number(row, 0, True))
-            sheet.write(row, 6, float(query.value('fee')), self.fmt.Number(row, 4))
-            sheet.write(row, 7, float(query.value('profit')), self.fmt.Number(row, 2))
-            sheet.write(row, 8, float(query.value('rel_profit')), self.fmt.Number(row, 2))
+                            self.formats.Text(row))
+            sheet.write(row, 3, float(query.value('open_price')), self.formats.Number(row, 4))
+            sheet.write(row, 4, float(query.value('close_price')), self.formats.Number(row, 4))
+            sheet.write(row, 5, float(query.value('qty')), self.formats.Number(row, 0, True))
+            sheet.write(row, 6, float(query.value('fee')), self.formats.Number(row, 4))
+            sheet.write(row, 7, float(query.value('profit')), self.formats.Number(row, 2))
+            sheet.write(row, 8, float(query.value('rel_profit')), self.formats.Number(row, 2))
             row = row + 1
 
         self.workbook.close()
@@ -284,13 +249,13 @@ class Reports:
         query.bindValue(":book_transfers", BookAccount.Transfers)
         assert query.exec_()
 
-        sheet.write(0, 0, "Period", self.formats['title'])
-        sheet.write(0, 1, "In / Out", self.formats['title'])
-        sheet.write(0, 2, "Assets value", self.formats['title'])
-        sheet.write(0, 3, "Total result", self.formats['title'])
-        sheet.write(0, 4, "Profit / Loss", self.formats['title'])
-        sheet.write(0, 5, "Dividends, Coupons, Interest", self.formats['title'])
-        sheet.write(0, 6, "Taxes & Fees", self.formats['title'])
+        sheet.write(0, 0, "Period", self.formats.ColumnHeader())
+        sheet.write(0, 1, "In / Out", self.formats.ColumnHeader())
+        sheet.write(0, 2, "Assets value", self.formats.ColumnHeader())
+        sheet.write(0, 3, "Total result", self.formats.ColumnHeader())
+        sheet.write(0, 4, "Profit / Loss", self.formats.ColumnHeader())
+        sheet.write(0, 5, "Dividends, Coupons, Interest", self.formats.ColumnHeader())
+        sheet.write(0, 6, "Taxes & Fees", self.formats.ColumnHeader())
         sheet.set_column(0, 6, 15)
         row = 1
         while query.next():
@@ -300,13 +265,13 @@ class Reports:
                 even_odd = '_even'
             period = int(query.value("period"))
             sheet.write(row, 0, datetime.datetime.fromtimestamp(period).strftime('%Y %B'),
-                        self.formats['text' + even_odd])
-            sheet.write(row, 1, float(query.value("transfer")), self.formats['number_2' + even_odd])
-            sheet.write(row, 2, float(query.value('assets')), self.formats['number_2' + even_odd])
-            sheet.write(row, 3, float(query.value('result')), self.formats['number_2' + even_odd])
-            sheet.write(row, 4, float(query.value('profit')), self.formats['number_2' + even_odd])
-            sheet.write(row, 5, float(query.value('dividend')), self.formats['number_2' + even_odd])
-            sheet.write(row, 6, float(query.value('tax_fee')), self.formats['number_2' + even_odd])
+                        self.formats.Text(row))
+            sheet.write(row, 1, float(query.value("transfer")), self.formats.Number(row, 2))
+            sheet.write(row, 2, float(query.value('assets')), self.formats.Number(row, 2))
+            sheet.write(row, 3, float(query.value('result')), self.formats.Number(row, 2))
+            sheet.write(row, 4, float(query.value('profit')), self.formats.Number(row, 2))
+            sheet.write(row, 5, float(query.value('dividend')), self.formats.Number(row, 2))
+            sheet.write(row, 6, float(query.value('tax_fee')), self.formats.Number(row, 2))
             row = row + 1
 
         self.workbook.close()
@@ -349,12 +314,12 @@ class Reports:
         query.bindValue(":end", end)
         assert query.exec_()
 
-        sheet.write(0, 0, "Period", self.formats['title'])
-        sheet.write(0, 1, "Account", self.formats['title'])
-        sheet.write(0, 2, "Currency", self.formats['title'])
-        sheet.write(0, 3, "Currency rate", self.formats['title'])
-        sheet.write(0, 4, "Category", self.formats['title'])
-        sheet.write(0, 5, "Turnover", self.formats['title'])
+        sheet.write(0, 0, "Period", self.formats.ColumnHeader())
+        sheet.write(0, 1, "Account", self.formats.ColumnHeader())
+        sheet.write(0, 2, "Currency", self.formats.ColumnHeader())
+        sheet.write(0, 3, "Currency rate", self.formats.ColumnHeader())
+        sheet.write(0, 4, "Category", self.formats.ColumnHeader())
+        sheet.write(0, 5, "Turnover", self.formats.ColumnHeader())
         sheet.set_column(0, 7, 15)
         row = 1
         while query.next():
@@ -364,12 +329,12 @@ class Reports:
                 even_odd = '_even'
             period = int(query.value("month_timestamp"))
             sheet.write(row, 0, datetime.datetime.fromtimestamp(period).strftime('%Y %B'),
-                        self.formats['text' + even_odd])
-            sheet.write(row, 1, query.value("account"), self.formats['text' + even_odd])
-            sheet.write(row, 2, query.value('currency'), self.formats['text' + even_odd])
-            sheet.write(row, 3, float(query.value('rate')), self.formats['number_2' + even_odd])
-            sheet.write(row, 4, query.value('category'), self.formats['text' + even_odd])
-            sheet.write(row, 5, float(query.value('turnover')), self.formats['number_2' + even_odd])
+                        self.formats.Text(row))
+            sheet.write(row, 1, query.value("account"), self.formats.Text(row))
+            sheet.write(row, 2, query.value('currency'), self.formats.Text(row))
+            sheet.write(row, 3, float(query.value('rate')), self.formats.Number(row, 2))
+            sheet.write(row, 4, query.value('category'), self.formats.Text(row))
+            sheet.write(row, 5, float(query.value('turnover')), self.formats.Number(row, 2))
             row = row + 1
 
         self.workbook.close()

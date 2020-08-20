@@ -173,6 +173,7 @@ class StatementLoader(QObject):
             return False
         for statement in report.FlexStatements:
             self.loadIBStatement(statement)
+        return True
 
     def loadIBStatement(self, IBstatement):
         logging.info(f"Load IB Flex-statement for account {IBstatement.accountId} "
