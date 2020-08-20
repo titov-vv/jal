@@ -163,7 +163,7 @@ class Reports:
 
     def save_profit_loss(self, report_filename, account_id, begin, end):
         self.workbook = xlsxwriter.Workbook(filename=report_filename)
-        self.prepareFormatting()
+        self.formats = xslxFormat(self.workbook)
         sheet = self.workbook.add_worksheet(name="P&L")
 
         query = QSqlQuery(self.db)
@@ -259,10 +259,6 @@ class Reports:
         sheet.set_column(0, 6, 15)
         row = 1
         while query.next():
-            if row % 2:
-                even_odd = '_odd'
-            else:
-                even_odd = '_even'
             period = int(query.value("period"))
             sheet.write(row, 0, datetime.datetime.fromtimestamp(period).strftime('%Y %B'),
                         self.formats.Text(row))
@@ -278,7 +274,7 @@ class Reports:
 
     def save_income_sending(self, report_filename, begin, end):
         self.workbook = xlsxwriter.Workbook(filename=report_filename)
-        self.prepareFormatting()
+        self.formats = xslxFormat(self.workbook)
         sheet = self.workbook.add_worksheet(name="Income & Spending")
 
         query = QSqlQuery(self.db)
@@ -323,10 +319,6 @@ class Reports:
         sheet.set_column(0, 7, 15)
         row = 1
         while query.next():
-            if row % 2:
-                even_odd = '_odd'
-            else:
-                even_odd = '_even'
             period = int(query.value("month_timestamp"))
             sheet.write(row, 0, datetime.datetime.fromtimestamp(period).strftime('%Y %B'),
                         self.formats.Text(row))
