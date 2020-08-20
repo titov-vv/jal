@@ -50,7 +50,12 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
 class TaxesRus:
     def __init__(self, db):
         self.db = db
-        
+        self.reports = {
+            "Dividends": self.prepare_dividends,
+            "Deals": self.prepare_trades,
+            "Fees": self.prepare_broker_fees,
+            "Corporate actions": self.prepare_corporate_actions
+        }
 
     def showTaxesDialog(self, parent):
         dialog = TaxExportDialog(parent, self.db)
@@ -62,18 +67,11 @@ class TaxesRus:
         year_end = int(time.mktime(datetime.strptime(f"{year + 1}", "%Y").timetuple()))
 
         workbook = xlsxwriter.Workbook(filename=taxes_file)
-        
         formats = xslxFormat(workbook)
 
-        sheet = workbook.add_worksheet(name="Dividends")
-        self.prepare_dividends(sheet, account_id, year_begin, year_end, formats)
-        sheet = workbook.add_worksheet(name="Deals")
-        self.prepare_trades(sheet, account_id, year_begin, year_end, formats)
-        sheet = workbook.add_worksheet(name="Fees")
-        self.prepare_broker_fees(sheet, account_id, year_begin, year_end, formats)
-        sheet = workbook.add_worksheet(name="Corporate actions")
-        self.prepare_corporate_actions(sheet, account_id, year_begin, year_end, formats)
-
+        for report in self.reports:
+            sheet = workbook.add_worksheet(name=report)
+            self.reports[report](sheet, account_id, year_begin, year_end, formats)
         try:
             workbook.close()
         except:
