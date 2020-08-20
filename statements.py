@@ -5,7 +5,7 @@ from datetime import datetime
 
 import pandas
 from PySide2.QtCore import QObject, Signal
-from PySide2.QtSql import QSqlQuery, QSqlTableModel
+from PySide2.QtSql import QSqlTableModel
 from PySide2.QtWidgets import QDialog, QFileDialog
 from ibflex import parser, AssetClass, BuySell, CashAction, Reorg, Code
 from constants import Setup, TransactionType, PredefinedAsset, PredefinedCategory
@@ -22,7 +22,11 @@ class ReportType:
 #-----------------------------------------------------------------------------------------------------------------------
 class IBKR:
     TaxNotePattern = "^(.*) - (..) TAX$"
-    
+    AssetType = {
+        AssetClass.STOCK: PredefinedAsset.Stock,
+        AssetClass.BOND: PredefinedAsset.Bond
+    }
+
 
 #-----------------------------------------------------------------------------------------------------------------------
 class Quik:
@@ -115,20 +119,29 @@ class StatementLoader(QObject):
         super().__init__()
         self.parent = parent
         self.db = db
+        self.loaders = {
+            ReportType.IBKR: self.loadIBFlex,
+            ReportType.Quik: self.loadQuikHtml
+        }
+        self.ib_trade_loaders = {
+            AssetClass.STOCK: self.loadIBStockTrade,
+            AssetClass.CASH: self.loadIBCurrencyTrade
+        }
 
+    # Displays file choose dialog and loads corresponding report if user have chosen a file
     def loadReport(self):
         report_file, active_filter = \
             QFileDialog.getOpenFileName(None, "Select statement file to import", ".",
                                         f"{ReportType.IBKR};;{ReportType.Quik}")
         if report_file:
-            if active_filter == ReportType.IBKR:
-                self.loadIBFlex(report_file)
-            if active_filter == ReportType.Quik:
-                if self.loadQuikHtml(report_file):
-                    self.load_completed.emit()
-                else:
-                    self.load_failed.emit()
+            result = self.loaders[active_filter](report_file)
+            if result:
+                self.load_completed.emit()
+            else:
+                self.load_failed.emit()
 
+    # Searches for account_id by account number and optional currency
+    # Returns: account_id or None if no account was found
     def findAccountID(self, accountNumber, accountCurrency=''):
         if accountCurrency:
             account_id = readSQL(self.db, "SELECT a.id FROM accounts AS a "
@@ -153,7 +166,11 @@ class StatementLoader(QObject):
         return asset_id
 
     def loadIBFlex(self, filename):
-        report = parser.parse(filename)
+        try:
+            report = parser.parse(filename)
+        except:
+            logging.error("Failed to parse Interactive Brokers flex-report")
+            return False
         for statement in report.FlexStatements:
             self.loadIBStatement(statement)
 
@@ -162,13 +179,21 @@ class StatementLoader(QObject):
                      f"from {IBstatement.fromDate} to {IBstatement.toDate}")
 
         for asset in IBstatement.SecuritiesInfo:
-            self.storeIBAsset(asset)
+            if self.storeIBAsset(asset) is None:
+                return False
+
         for trade in IBstatement.Trades:
-            self.loadIBTrade(trade)
+            try:
+                self.ib_trade_loaders[trade.assetCategory](trade)
+            except:
+                logging.error(f"Load of {trade.assetCategory} is not implemented. Skipping trade #{trade.tradeID}")
+
         for tax in IBstatement.TransactionTaxes:
             self.loadIBTransactionTax(tax)
+            
         for corp_action in IBstatement.CorporateActions:
             self.loadIBCorpAction(corp_action)
+            
         # 1st loop to load all dividends separately - to allow tax match in 2nd loop
         for cash_transaction in IBstatement.CashTransactions:
             if cash_transaction.type == CashAction.DIVIDEND:
@@ -182,64 +207,42 @@ class StatementLoader(QObject):
                 self.loadIBDepositWithdraw(cash_transaction)
 
     def storeIBAsset(self, IBasset):
-        query = QSqlQuery(self.db)
-        query.prepare("SELECT id FROM assets WHERE name=:symbol")
-        query.bindValue(":symbol", IBasset.symbol)
-        assert query.exec_()
-        if query.next():
-            return  # Asset already present in DB
+        asset_id = readSQL(self.db, "SELECT id FROM assets WHERE name=:symbol", [(":symbol", IBasset.symbol)])
+        if asset_id is not None:
+            return asset_id
+        try:
+            asset_type = IBKR.AssetType[IBasset.assetCategory]
+        except:
+            logging.error(f"Asset type {IBasset.assetCategory} is not supported")
+            return None
+        if IBasset.subCategory == "ETF":
+            asset_type = PredefinedAsset.ETF
+        return addNewAsset(IBasset.symbol, IBasset.description, asset_type, IBasset.isin)
 
-        if IBasset.assetCategory == AssetClass.STOCK:
-            asset_type = PredefinedAsset.Stock
-            if IBasset.subCategory == "ETF":
-                asset_type = PredefinedAsset.ETF
-        elif IBasset.assetCategory == AssetClass.BOND:
-            asset_type = PredefinedAsset.Bond
-        else:
-            logging.error(f"Unknown asset type {IBasset}")
-            return
-        addNewAsset(IBasset.symbol, IBasset.description, asset_type, IBasset.isin)
-        # query.prepare("INSERT INTO assets(name, type_id, full_name, isin) VALUES(:symbol, :type, :full_name, :isin)")
-        # query.bindValue(":symbol", IBasset.symbol)
-        # query.bindValue(":type", asset_type)
-        # query.bindValue(":full_name", IBasset.description)
-        # query.bindValue(":isin", IBasset.isin)
-        # assert query.exec_()
-        # logging.info(f"Asset added: {IBasset.symbol}")
-
-    def loadIBTrade(self, IBtrade):
-        if IBtrade.assetCategory == AssetClass.STOCK:
-            self.loadIBStockTrade(IBtrade)
-        elif IBtrade.assetCategory == AssetClass.CASH:
-            self.loadIBCurrencyTrade(IBtrade)
-        else:
-            logging.error(f"Load of {IBtrade.assetCategory} is not implemented. Skipping trade #{IBtrade.tradeID}")
-
-    def loadIBStockTrade(self, IBtrade):
-        account_id = self.findAccountID(IBtrade.accountId, IBtrade.currency)
+    def loadIBStockTrade(self, trade):
+        trade_action = {
+            BuySell.BUY: self.createTrade,
+            BuySell.SELL: self.createTrade,
+            BuySell.CANCELBUY: self.deleteTrade,
+            BuySell.CANCELSELL: self.deleteTrade
+        }
+        account_id = self.findAccountID(trade.accountId, trade.currency)
         if account_id is None:
-            logging.error(
-                f"Account {IBtrade.accountId} ({IBtrade.currency}) not found. Skipping trade #{IBtrade.tradeID}")
+            logging.error(f"Account {trade.accountId} ({trade.currency}) not found. Skipping trade #{trade.tradeID}")
             return
-        asset_id = self.findAssetID(IBtrade.symbol)
-        timestamp = int(IBtrade.dateTime.timestamp())
-        if IBtrade.settleDateTarget:
-            settlement = int(datetime.combine(IBtrade.settleDateTarget, datetime.min.time()).timestamp())
-        else:
-            settlement = timestamp
-        if IBtrade.tradeID:
-            number = IBtrade.tradeID
-        else:
-            number = ""
-        qty = IBtrade.quantity
-        price = IBtrade.tradePrice
-        fee = IBtrade.ibCommission
-        if IBtrade.buySell == BuySell.BUY or IBtrade.buySell == BuySell.SELL:
-            self.createTrade(account_id, asset_id, timestamp, settlement, number, qty, price, fee)
-        elif IBtrade.buySell == BuySell.CANCELBUY or IBtrade.buySell == BuySell.CANCELSELL:
-            self.deleteTrade(account_id, asset_id, timestamp, number, qty, price)
-        else:
-            logging.error(f"Trade type f{IBtrade.buySell} is not implemented")
+        asset_id = self.findAssetID(trade.symbol)
+        timestamp = int(trade.dateTime.timestamp())
+        settlement = 0
+        if trade.settleDateTarget:
+            settlement = int(datetime.combine(trade.settleDateTarget, datetime.min.time()).timestamp())
+        number = trade.tradeID if trade.tradeID else ""
+        qty = trade.quantity
+        price = trade.tradePrice
+        fee = trade.ibCommission
+        try:
+            trade_action[trade.buySell](account_id, asset_id, timestamp, settlement, number, qty, price, fee)
+        except:
+            logging.error(f"Trade type f{trade.buySell} is not implemented. Skipped trade #{number}")
 
     def createTrade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee, coupon=0.0):
         trade_id = readSQL(self.db,
@@ -249,7 +252,7 @@ class StatementLoader(QObject):
                            [(":timestamp", timestamp), (":asset", asset_id), (":account", account_id),
                             (":number", number), (":qty", qty), (":price", price)])
         if trade_id:
-            logging.warning(f"Trade #{number} already exists in ledger. Skipped")
+            logging.info(f"Trade #{number} already exists in ledger. Skipped")
             return
 
         _ = executeSQL(self.db,
@@ -263,124 +266,93 @@ class StatementLoader(QObject):
         self.db.commit()
         logging.info(f"Trade #{number} added for account {account_id} asset {asset_id} @{timestamp}: {qty}x{price}")
 
-    def deleteTrade(self, account_id, asset_id, timestamp, number, qty, price):
-        query = QSqlQuery(self.db)
-        query.prepare("DELETE FROM trades "
-                      "WHERE timestamp=:timestamp AND asset_id=:asset "
-                      "AND account_id=:account AND number=:number AND qty=:qty AND price=:price")
-        query.bindValue(":timestamp", timestamp)
-        query.bindValue(":asset", asset_id)
-        query.bindValue(":account", account_id)
-        query.bindValue(":number", number)
-        query.bindValue(":qty", -qty)
-        query.bindValue(":price", price)
-        assert query.exec_()
+    def deleteTrade(self, account_id, asset_id, timestamp, _settlement, number, qty, price, _fee):
+        _ = executeSQL(self.db, "DELETE FROM trades "
+                                "WHERE timestamp=:timestamp AND asset_id=:asset "
+                                "AND account_id=:account AND number=:number AND qty=:qty AND price=:price",
+                       [(":timestamp", timestamp), (":asset", asset_id), (":account", account_id),
+                        (":number", number), (":qty", -qty), (":price", price)])
         self.db.commit()
-        logging.info(
-            f"Trade #{number} cancelled for account {account_id} asset {asset_id} @{timestamp}, Qty {qty}x{price}")
+        logging.info(f"Trade #{number} cancelled for account {account_id} asset {asset_id} @{timestamp}: {qty}x{price}")
 
-    def loadIBCurrencyTrade(self, IBtrade):
-        if IBtrade.buySell == BuySell.BUY:
+    def loadIBCurrencyTrade(self, trade):
+        if trade.buySell == BuySell.BUY:
             from_idx = 1
             to_idx = 0
-            to_amount = float(IBtrade.quantity)  # positive value
-            from_amount = float(IBtrade.proceeds)  # already negative value
-        elif IBtrade.buySell == BuySell.SELL:
+            to_amount = float(trade.quantity)  # positive value
+            from_amount = float(trade.proceeds)  # already negative value
+        elif trade.buySell == BuySell.SELL:
             from_idx = 0
             to_idx = 1
-            from_amount = float(IBtrade.quantity)  # already negative value
-            to_amount = float(IBtrade.proceeds)  # positive value
+            from_amount = float(trade.quantity)  # already negative value
+            to_amount = float(trade.proceeds)  # positive value
         else:
-            logging.error(f"Currency transaction of type {IBtrade.buySell} is not implemented")
+            logging.error(f"Currency transaction of type {trade.buySell} is not implemented")
             return
-        currency = IBtrade.symbol.split('.')
-        to_account_id = self.findAccountID(IBtrade.accountId, currency[to_idx])
-        if to_account_id is None:
-            logging.error(f"Account {IBtrade.accountId} ({currency[to_idx]}) not found. "
-                          f"Skipping currency exchange transaction #{IBtrade.tradeID}")
+        currency = trade.symbol.split('.')
+        to_account = self.findAccountID(trade.accountId, currency[to_idx])
+        from_account = self.findAccountID(trade.accountId, currency[from_idx])
+        fee_account = self.findAccountID(trade.accountId, trade.ibCommissionCurrency)
+        if to_account is None or from_account is None or fee_account is None:
+            logging.error(f"Account {trade.accountId} ({currency[to_idx]}) not found. "
+                          f"Currency transaction #{trade.tradeID} skipped")
             return
-        from_account_id = self.findAccountID(IBtrade.accountId, currency[from_idx])
-        if from_account_id is None:
-            logging.error(f"Account {IBtrade.accountId} ({currency[from_idx]}) not found. "
-                          f"Skipping currency exchange transaction #{IBtrade.tradeID}")
-            return
-        fee_account_id = self.findAccountID(IBtrade.accountId, IBtrade.ibCommissionCurrency)
-        if fee_account_id is None:
-            logging.error(f"Account {IBtrade.accountId} ({IBtrade.ibCommissionCurrency}) not found. "
-                          f"Skipping currency exchange transaction #{IBtrade.tradeID}")
-            return
-        timestamp = int(IBtrade.dateTime.timestamp())
-        fee = float(IBtrade.ibCommission)  # already negative value
-        note = IBtrade.exchange
-        self.createTransfer(timestamp, from_account_id, from_amount, to_account_id, to_amount, fee_account_id, fee,
-                            note)
+        timestamp = int(trade.dateTime.timestamp())
+        fee = float(trade.ibCommission)  # already negative value
+        note = trade.exchange
+        self.createTransfer(timestamp, from_account, from_amount, to_account, to_amount, fee_account, fee, note)
 
     def createTransfer(self, timestamp, f_acc_id, f_amount, t_acc_id, t_amount, fee_acc_id, fee, note):
-        query = QSqlQuery(self.db)
-        query.prepare("SELECT id FROM transfers_combined "
-                      "WHERE from_timestamp=:timestamp AND from_acc_id=:from_acc_id AND to_acc_id=:to_acc_id")
-        query.bindValue(":timestamp", timestamp)
-        query.bindValue(":from_acc_id", f_acc_id)
-        query.bindValue(":to_acc_id", t_acc_id)
-        assert query.exec_()
-        if query.next():
-            logging.warning(f"Currency exchange {f_amount}->{t_amount} already exists")
+        transfer_id = readSQL(self.db,
+                              "SELECT id FROM transfers_combined "
+                              "WHERE from_timestamp=:timestamp AND from_acc_id=:from_acc_id AND to_acc_id=:to_acc_id",
+                              [(":timestamp", timestamp), (":from_acc_id", f_acc_id), (":to_acc_id", t_acc_id)])
+        if transfer_id:
+            logging.info(f"Currency exchange {f_amount}->{t_amount} already exists in ledger. Skipped")
             return
         if abs(fee) > Setup.CALC_TOLERANCE:
-            query.prepare("INSERT INTO transfers_combined (from_timestamp, from_acc_id, from_amount, "
-                          "to_timestamp, to_acc_id, to_amount, fee_timestamp, fee_acc_id, fee_amount, note) "
-                          "VALUES (:timestamp, :f_acc_id, :f_amount, :timestamp, :t_acc_id, :t_amount, "
-                          ":timestamp, :fee_acc_id, :fee_amount, :note)")
-            query.bindValue(":fee_acc_id", fee_acc_id)
-            query.bindValue(":fee_amount", fee)
+            _ = executeSQL(self.db,
+                           "INSERT INTO transfers_combined (from_timestamp, from_acc_id, from_amount, "
+                           "to_timestamp, to_acc_id, to_amount, fee_timestamp, fee_acc_id, fee_amount, note) "
+                           "VALUES (:timestamp, :f_acc_id, :f_amount, :timestamp, :t_acc_id, :t_amount, "
+                           ":timestamp, :fee_acc_id, :fee_amount, :note)",
+                           [(":timestamp", timestamp), (":f_acc_id", f_acc_id), (":t_acc_id", t_acc_id),
+                            (":f_amount", f_amount), (":t_amount", t_amount), (":fee_acc_id", fee_acc_id),
+                            (":fee_amount", fee), (":note", note)])
         else:
-            query.prepare("INSERT INTO transfers_combined (from_timestamp, from_acc_id, from_amount, "
-                          "to_timestamp, to_acc_id, to_amount, note) "
-                          "VALUES (:timestamp, :f_acc_id, :f_amount, :timestamp, :t_acc_id, :t_amount, :note)")
-        query.bindValue(":timestamp", timestamp)
-        query.bindValue(":f_acc_id", f_acc_id)
-        query.bindValue(":t_acc_id", t_acc_id)
-        query.bindValue(":f_amount", f_amount)
-        query.bindValue(":t_amount", t_amount)
-        query.bindValue(":note", note)
-        assert query.exec_()
+            _ = executeSQL(self.db,
+                           "INSERT INTO transfers_combined (from_timestamp, from_acc_id, from_amount, "
+                           "to_timestamp, to_acc_id, to_amount, note) "
+                           "VALUES (:timestamp, :f_acc_id, :f_amount, :timestamp, :t_acc_id, :t_amount, :note)",
+                           [(":timestamp", timestamp), (":f_acc_id", f_acc_id), (":t_acc_id", t_acc_id),
+                            (":f_amount", f_amount), (":t_amount", t_amount), (":note", note)])
         self.db.commit()
-        logging.info(f"Currency exchange {f_amount}->{t_amount} added @{timestamp}")
+        logging.info(f"Currency exchange {f_amount}->{t_amount} added")
 
     def loadIBTransactionTax(self, IBtax):
         account_id = self.findAccountID(IBtax.accountId, IBtax.currency)
         if account_id is None:
-            logging.error(
-                f"Account {IBtax.accountId} ({IBtax.currency}) not found. Skipping transaction tax #{IBtax.tradeID}")
+            logging.error(f"Account {IBtax.accountId} ({IBtax.currency}) not found. Tax #{IBtax.tradeID} skipped")
             return
         timestamp = int(datetime.combine(IBtax.date, datetime.min.time()).timestamp())
         amount = float(IBtax.taxAmount)  # value is negative already
         note = f"{IBtax.symbol} ({IBtax.description}) - {IBtax.taxDescription} (#{IBtax.tradeId})"
 
-        query = QSqlQuery(self.db)
-        query.prepare("SELECT id FROM all_operations "
-                      "WHERE type = :type AND timestamp=:timestamp AND account_id=:account_id AND amount=:amount")
-        query.bindValue(":timestamp", timestamp)
-        query.bindValue(":type", TransactionType.Action)
-        query.bindValue(":account_id", account_id)
-        query.bindValue(":amount", amount)
-        assert query.exec_()
-        if query.next():
+        id = readSQL(self.db, "SELECT id FROM all_operations WHERE type = :type "
+                              "AND timestamp=:timestamp AND account_id=:account_id AND amount=:amount",
+                     [(":timestamp", timestamp), (":type", TransactionType.Action),
+                      (":account_id", account_id), (":amount", amount)])
+        if id:
             logging.warning(f"Tax transaction #{IBtax.tradeId} already exists")
             return
-        query.prepare("INSERT INTO actions (timestamp, account_id, peer_id) "
-                      "VALUES (:timestamp, :account_id, (SELECT organization_id FROM accounts WHERE id=:account_id))")
-        query.bindValue(":timestamp", timestamp)
-        query.bindValue(":account_id", account_id)
-        assert query.exec_()
+        query = executeSQL(self.db,
+                           "INSERT INTO actions (timestamp, account_id, peer_id) VALUES "
+                           "(:timestamp, :account_id, (SELECT organization_id FROM accounts WHERE id=:account_id))",
+                           [(":timestamp", timestamp), (":account_id", account_id)])
         pid = query.lastInsertId()
-        query.prepare("INSERT INTO action_details (pid, category_id, sum, note) "
-                      "VALUES (:pid, :category_id, :sum, :note)")
-        query.bindValue(":pid", pid)
-        query.bindValue(":category_id", PredefinedCategory.Taxes)
-        query.bindValue(":sum", amount)
-        query.bindValue(":note", note)
-        assert query.exec_()
+        _ = executeSQL(self.db, "INSERT INTO action_details (pid, category_id, sum, note) "
+                                "VALUES (:pid, :category_id, :sum, :note)",
+                       [(":pid", pid), (":category_id", PredefinedCategory.Taxes), (":sum", amount), (":note", note)])
         self.db.commit()
         logging.info(f"Transaction tax added: {note}, {amount}")
 
@@ -414,87 +386,69 @@ class StatementLoader(QObject):
         logging.warning(f"@{IBCorpAction.dateTime} for {IBCorpAction.symbol}: Qty {IBCorpAction.quantity}, "
                         f"Value {IBCorpAction.value}, Type {IBCorpAction.type}, Code {IBCorpAction.code}")
 
-    def loadIBDividend(self, IBdividend):
-        if IBdividend.assetCategory != AssetClass.STOCK:
-            logging.error(f"Dividend for {IBdividend.assetCategory} not implemented")
+    def loadIBDividend(self, dividend):
+        if dividend.assetCategory != AssetClass.STOCK:
+            logging.error(f"Dividend for {dividend.assetCategory} not implemented")
             return
-        account_id = self.findAccountID(IBdividend.accountId, IBdividend.currency)
+        account_id = self.findAccountID(dividend.accountId, dividend.currency)
         if account_id is None:
-            logging.error(f"Account {IBdividend.accountId} ({IBdividend.currency}) not found. "
-                          f"Skipping dividend #{IBdividend.transactionID}")
+            logging.error(f"Account {dividend.accountId} ({dividend.currency}) not found. "
+                          f"Skipping dividend #{dividend.transactionID}")
             return
-        asset_id = self.findAssetID(IBdividend.symbol)
-        timestamp = int(IBdividend.dateTime.timestamp())
-        amount = float(IBdividend.amount)
-        note = IBdividend.description
+        asset_id = self.findAssetID(dividend.symbol)
+        timestamp = int(dividend.dateTime.timestamp())
+        amount = float(dividend.amount)
+        note = dividend.description
         self.createDividend(timestamp, account_id, asset_id, amount, note)
 
-    def loadIBWithholdingTax(self, IBtax):
-        if IBtax.assetCategory != AssetClass.STOCK:
-            logging.error(f"Withholding tax for {IBtax.assetCategory} not implemented")
+    def loadIBWithholdingTax(self, tax):
+        if tax.assetCategory != AssetClass.STOCK:
+            logging.error(f"Withholding tax for {tax.assetCategory} not implemented")
             return
-        account_id = self.findAccountID(IBtax.accountId, IBtax.currency)
+        account_id = self.findAccountID(tax.accountId, tax.currency)
         if account_id is None:
-            logging.error(f"Account {IBtax.accountId} ({IBtax.currency}) not found. "
-                          f"Skipping withholding tax #{IBtax.transactionID}")
+            logging.error(f"Account {tax.accountId} ({tax.currency}) not found. Tax #{tax.transactionID} skipped")
             return
-        asset_id = self.findAssetID(IBtax.symbol)
-        timestamp = int(IBtax.dateTime.timestamp())
-        amount = float(IBtax.amount)
-        note = IBtax.description
+        asset_id = self.findAssetID(tax.symbol)
+        timestamp = int(tax.dateTime.timestamp())
+        amount = float(tax.amount)
+        note = tax.description
         self.addWithholdingTax(timestamp, account_id, asset_id, amount, note)
 
-    def loadIBFee(self, IBfee):
-        account_id = self.findAccountID(IBfee.accountId, IBfee.currency)
+    def loadIBFee(self, fee):
+        account_id = self.findAccountID(fee.accountId, fee.currency)
         if account_id is None:
-            logging.error(f"Account {IBfee.accountId} ({IBfee.currency}) not found. "
-                          f"Skipping transaction tax #{IBfee.transactionID}")
+            logging.error(f"Account {fee.accountId} ({fee.currency}) not found. Fax #{fee.transactionID} skipped")
             return
-        timestamp = int(IBfee.dateTime.timestamp())
-        amount = float(IBfee.amount)  # value may be both positive and negative
-        note = IBfee.description
-        query = QSqlQuery(self.db)
-        query.prepare("INSERT INTO actions (timestamp, account_id, peer_id) "
-                      "VALUES (:timestamp, :account_id, (SELECT organization_id FROM accounts WHERE id=:account_id))")
-        query.bindValue(":timestamp", timestamp)
-        query.bindValue(":account_id", account_id)
-        assert query.exec_()
+        timestamp = int(fee.dateTime.timestamp())
+        amount = float(fee.amount)  # value may be both positive and negative
+        note = fee.description
+        query = executeSQL(self.db,"INSERT INTO actions (timestamp, account_id, peer_id) VALUES "
+                               "(:timestamp, :account_id, (SELECT organization_id FROM accounts WHERE id=:account_id))",
+                       [(":timestamp", timestamp), (":account_id", account_id)])
         pid = query.lastInsertId()
-        query.prepare("INSERT INTO action_details (pid, category_id, sum, note) "
-                      "VALUES (:pid, :category_id, :sum, :note)")
-        query.bindValue(":pid", pid)
-        query.bindValue(":category_id", PredefinedCategory.Fees)
-        query.bindValue(":sum", amount)
-        query.bindValue(":note", note)
-        assert query.exec_()
+        _ = executeSQL(self.db, "INSERT INTO action_details (pid, category_id, sum, note) "
+                                "VALUES (:pid, :category_id, :sum, :note)",
+                       [(":pid", pid), (":category_id", PredefinedCategory.Fees), (":sum", amount), (":note", note)])
         self.db.commit()
         logging.info(f"Fees added: {note}, {amount}")
 
     # noinspection PyMethodMayBeStatic
-    def loadIBDepositWithdraw(self, IBcash):
+    def loadIBDepositWithdraw(self, cash):
         logging.warning("*** MANUAL ENTRY REQUIRED ***")
-        logging.warning(f"{IBcash.dateTime} {IBcash.description}: {IBcash.accountId} {IBcash.amount} {IBcash.currency}")
+        logging.warning(f"{cash.dateTime} {cash.description}: {cash.accountId} {cash.amount} {cash.currency}")
 
     def createDividend(self, timestamp, account_id, asset_id, amount, note):
-        query = QSqlQuery(self.db)
-        query.prepare("SELECT id FROM dividends "
-                      "WHERE timestamp=:timestamp AND account_id=:account_id AND asset_id=:asset_id AND note=:note")
-        query.bindValue(":timestamp", timestamp)
-        query.bindValue(":account_id", account_id)
-        query.bindValue(":asset_id", asset_id)
-        query.bindValue(":note", note)
-        assert query.exec_()
-        if query.next():
+        id = readSQL(self.db, "SELECT id FROM dividends WHERE timestamp=:timestamp "
+                              "AND account_id=:account_id AND asset_id=:asset_id AND note=:note",
+                     [(":timestamp", timestamp), (":account_id", account_id), (":asset_id", asset_id), (":note", note)])
+        if id:
             logging.warning(f"Dividend already exists: {note}")
             return
-        query.prepare("INSERT INTO dividends (timestamp, account_id, asset_id, sum, note) "
-                      "VALUES (:timestamp, :account_id, :asset_id, :sum, :note)")
-        query.bindValue(":timestamp", timestamp)
-        query.bindValue(":account_id", account_id)
-        query.bindValue(":asset_id", asset_id)
-        query.bindValue(":sum", amount)
-        query.bindValue(":note", note)
-        assert query.exec_()
+        _ = executeSQL(self.db, "INSERT INTO dividends (timestamp, account_id, asset_id, sum, note) "
+                                "VALUES (:timestamp, :account_id, :asset_id, :sum, :note)",
+                       [(":timestamp", timestamp), (":account_id", account_id), (":asset_id", asset_id),
+                        (":sum", amount), (":note", note)])
         self.db.commit()
         logging.info(f"Dividend added: {note}")
 
@@ -502,29 +456,22 @@ class StatementLoader(QObject):
         parts = re.match(IBKR.TaxNotePattern, note)
         if not parts:
             logging.warning("*** MANUAL ENTRY REQUIRED ***")
-            logging.warning(f"Strange tax found: {note}")
+            logging.warning(f"Unhandled tax pattern found: {note}")
             return
         dividend_note = parts.group(1) + '%'
         country_code = parts.group(2)
-        query = QSqlQuery(self.db)
-        query.prepare("SELECT id, sum_tax FROM dividends "
-                      "WHERE timestamp=:timestamp AND account_id=:account_id AND asset_id=:asset_id "
-                      "AND note LIKE :dividend_description")
-        query.bindValue(":timestamp", timestamp)
-        query.bindValue(":account_id", account_id)
-        query.bindValue(":asset_id", asset_id)
-        query.bindValue(":dividend_description", dividend_note)
-        assert query.exec_()
-        if not query.next():
+        try:
+            dividend_id, old_tax = readSQL(self.db,
+                                           "SELECT id, sum_tax FROM dividends "
+                                           "WHERE timestamp=:timestamp AND account_id=:account_id "
+                                           "AND asset_id=:asset_id AND note LIKE :dividend_description",
+                                           [(":timestamp", timestamp), (":account_id", account_id),
+                                            (":asset_id", asset_id), (":dividend_description", dividend_note)])
+        except:
             logging.warning(f"Dividend not found for withholding tax: {note}")
             return
-        dividend_id = query.value(0)
-        old_tax = query.value(1)
-        query.prepare("UPDATE dividends SET sum_tax=:tax, note_tax=:note WHERE id=:dividend_id")
-        query.bindValue(":dividend_id", dividend_id)
-        query.bindValue(":tax", old_tax + amount)
-        query.bindValue(":note", country_code + " tax")
-        assert query.exec_()
+        _ = executeSQL(self.db, "UPDATE dividends SET sum_tax=:tax, note_tax=:note WHERE id=:dividend_id",
+                       [(":dividend_id", dividend_id), (":tax", old_tax + amount), (":note", country_code + " tax")])
         self.db.commit()
         logging.info(f"Withholding tax added: {note}")
 
