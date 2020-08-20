@@ -52,3 +52,24 @@ class xslxFormat:
                                     'align': align,
                                     'valign': 'vcenter',
                                     'bg_color': bg_color})
+
+#-----------------------------------------------------------------------------------------------------------------------
+ROW_DATA = 0
+ROW_FORMAT = 1
+ROW_WIDTH = 2
+ROW_SPAN_H = 3
+ROW_SPAN_V = 4
+
+
+def xlsxWriteRow(wksheet, row, columns, height=None):
+    if height:
+        wksheet.set_row(row, height)
+    for column in columns:
+        cd = columns[column]
+        if len(cd) != 2:
+            if cd[ROW_WIDTH]:
+                wksheet.set_column(column, column, cd[ROW_WIDTH])
+            if cd[ROW_SPAN_H] or cd[ROW_SPAN_V]:
+                wksheet.merge_range(row, column, row+cd[ROW_SPAN_V], column+cd[ROW_SPAN_H],
+                                    cd[ROW_DATA], cd[ROW_FORMAT])
+        wksheet.write(row, column, cd[ROW_DATA], cd[ROW_FORMAT])
