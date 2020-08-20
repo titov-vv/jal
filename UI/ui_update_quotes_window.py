@@ -20,6 +20,7 @@ class Ui_UpdateQuotesDlg(object):
     def setupUi(self, UpdateQuotesDlg):
         if not UpdateQuotesDlg.objectName():
             UpdateQuotesDlg.setObjectName(u"UpdateQuotesDlg")
+        UpdateQuotesDlg.setWindowModality(Qt.ApplicationModal)
         UpdateQuotesDlg.resize(256, 107)
         self.gridLayout = QGridLayout(UpdateQuotesDlg)
         self.gridLayout.setObjectName(u"gridLayout")

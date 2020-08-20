@@ -5,34 +5,50 @@ from datetime import datetime
 
 import pandas
 from PySide2.QtCore import QObject, Signal
-from PySide2.QtSql import QSqlQuery
-from PySide2.QtWidgets import QFileDialog
+from PySide2.QtSql import QSqlQuery, QSqlTableModel
+from PySide2.QtWidgets import QDialog, QFileDialog
 from ibflex import parser, AssetClass, BuySell, CashAction, Reorg, Code
 from constants import Setup, TransactionType, PredefinedAsset, PredefinedCategory
+from DB.helpers import executeSQL, readSQL
+from UI.add_asset_dlg import Ui_AddAssetDialog
 
 
-TAX_NOTE_PATTERN = "^(.*) - (..) TAX$"
-CLIENT_PATTERN = "^Код клиента: (.*)$"
-
-QUIK_TIMESTAMP = 'Дата и время заключения сделки'
-QUIK_DEAL_NUMBER = 'Номер сделки'
-QUIK_SYMBOL = 'Код инструмента'
-QUIK_SECNAME = 'Краткое наименование инструмента'
-QUIK_DEAL_TYPE = 'Направление'
-QUIK_QTY = 'Кол-во'
-QUIK_PRICE = 'Цена'
-QUIK_AMOUNT = 'Объём'
-QUIK_COUPON = 'НКД'
-QUIK_SETTLEMENT = 'Дата расчётов'
-QUIK_BUY = 'Купля'
-QUIK_SELL = 'Продажа'
-QUIK_FEE1 = 'Комиссия Брокера'
-QUIK_FEE2 = 'Комиссия за ИТС'
-QUIK_FEE3 = 'Комиссия за организацию торговли'
-QUIK_FEE4 = 'Клиринговая комиссия'
+#-----------------------------------------------------------------------------------------------------------------------
+class ReportType:
+    IBKR = 'IBKR flex-query (*.xml)'
+    Quik = 'Quik HTML-report (*.htm)'
 
 
-def convert_sum(val):
+#-----------------------------------------------------------------------------------------------------------------------
+class IBKR:
+    TaxNotePattern = "^(.*) - (..) TAX$"
+    
+
+#-----------------------------------------------------------------------------------------------------------------------
+class Quik:
+    ClientPattern = "^Код клиента: (.*)$"
+    DateTime = 'Дата и время заключения сделки'
+    TradeNumber = 'Номер сделки'
+    Symbol = 'Код инструмента'
+    Name = 'Краткое наименование инструмента'
+    Type = 'Направление'
+    Qty = 'Кол-во'
+    Price = 'Цена'
+    Amount = 'Объём'
+    Coupon = 'НКД'
+    SettleDate = 'Дата расчётов'
+    Buy = 'Купля'
+    Sell = 'Продажа'
+    Fee = 'Комиссия Брокера'
+    FeeEx1 = 'Комиссия за ИТС'
+    FeeEx2 = 'Комиссия за организацию торговли'
+    FeeEx3 = 'Клиринговая комиссия'
+    Total = 'ИТОГО'
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Strip white spaces from numbers imported form Quik html-report
+def convert_amount(val):
     val = val.replace(' ', '')
     try:
         res = float(val)
@@ -41,52 +57,100 @@ def convert_sum(val):
     return res
 
 
+def addNewAsset(db, symbol, name, asset_type, isin, data_source=-1):
+    _ = executeSQL(db, "INSERT INTO assets(name, type_id, full_name, isin, src_id) "
+                       "VALUES(:symbol, :type, :full_name, :isin, :data_src)",
+                   [(":symbol", symbol), (":type", asset_type), (":full_name", name),
+                    (":isin", isin), (":data_src", data_source)])
+    db.commit()
+    asset_id = readSQL(db, "SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)])
+    if asset_id is not None:
+        logging.info(f"New asset with id {asset_id} was added: {symbol} - '{name}'")
+    else:
+        logging.error(f"Failed to add new asset: {symbol}")
+    return asset_id
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+class AddAssetDialog(QDialog, Ui_AddAssetDialog):
+    def __init__(self, parent, db, symbol):
+        QDialog.__init__(self)
+        self.setupUi(self)
+        self.db = db
+        self.asset_id = None
+
+        self.SymbolEdit.setText(symbol)
+
+        self.type_model = QSqlTableModel(db=db)
+        self.type_model.setTable('asset_types')
+        self.type_model.select()
+        self.TypeCombo.setModel(self.type_model)
+        self.TypeCombo.setModelColumn(1)
+
+        self.data_src_model = QSqlTableModel(db=db)
+        self.data_src_model.setTable('data_sources')
+        self.data_src_model.select()
+        self.DataSrcCombo.setModel(self.data_src_model)
+        self.DataSrcCombo.setModelColumn(1)
+
+        # center dialog with respect to parent window
+        x = parent.x() + parent.width()/2 - self.width()/2
+        y = parent.y() + parent.height()/2 - self.height()/2
+        self.setGeometry(x, y, self.width(), self.height())
+
+    def accept(self):
+        self.asset_id = addNewAsset(self.db, self.SymbolEdit.text(), self.NameEdit.text(),
+                                    self.type_model.record(self.TypeCombo.currentIndex()).value("id"),
+                                    self.isinEdit.text(),
+                                    self.data_src_model.record(self.DataSrcCombo.currentIndex()).value("id"))
+        super().accept()
+
+
+#-----------------------------------------------------------------------------------------------------------------------
 class StatementLoader(QObject):
     load_completed = Signal()
+    load_failed = Signal()
 
-    def __init__(self, db):
+    def __init__(self, parent, db):
         super().__init__()
+        self.parent = parent
         self.db = db
 
     def loadReport(self):
         report_file, active_filter = \
-            QFileDialog.getOpenFileName(None, self.tr("Select Interactive Brokers Flex-query to import"), ".",
-                                        self.tr("IBKR flex-query (*.xml);;Quik HTML-report (*.htm)"))
+            QFileDialog.getOpenFileName(None, "Select statement file to import", ".",
+                                        f"{ReportType.IBKR};;{ReportType.Quik}")
         if report_file:
-            if active_filter == self.tr("IBKR flex-query (*.xml)"):
+            if active_filter == ReportType.IBKR:
                 self.loadIBFlex(report_file)
-            if active_filter == self.tr("Quik HTML-report (*.htm)"):
-                self.loadQuikHtml(report_file)
-            self.load_completed.emit()
+            if active_filter == ReportType.Quik:
+                if self.loadQuikHtml(report_file):
+                    self.load_completed.emit()
+                else:
+                    self.load_failed_emit()
 
     def findAccountID(self, accountNumber, accountCurrency=''):
-        query = QSqlQuery(self.db)
         if accountCurrency:
-            query.prepare("SELECT a.id FROM accounts AS a "
-                          "LEFT JOIN assets AS c ON c.id=a.currency_id "
-                          "WHERE a.number=:account_number AND c.name=:currency_name")
-            query.bindValue(":currency_name", accountCurrency)
+            account_id = readSQL(self.db, "SELECT a.id FROM accounts AS a "
+                                          "LEFT JOIN assets AS c ON c.id=a.currency_id "
+                                          "WHERE a.number=:account_number AND c.name=:currency_name",
+                                 [(":account_number", accountNumber), (":currency_name", accountCurrency)])
         else:
-            query.prepare("SELECT a.id FROM accounts AS a "
-                          "LEFT JOIN assets AS c ON c.id=a.currency_id "
-                          "WHERE a.number=:account_number")
-        query.bindValue(":account_number", accountNumber)
-        assert query.exec_()
-        if query.next():
-            return query.value(0)
-        else:
-            return 0
+            account_id = readSQL(self.db, "SELECT a.id FROM accounts AS a "
+                                          "LEFT JOIN assets AS c ON c.id=a.currency_id "
+                                          "WHERE a.number=:account_number", [(":account_number", accountNumber)])
+        return account_id
 
+    # Searches for asset_id in database and returns it.
+    # If asset is not found - shows dialog for new asset creation.
+    # Returns: asset_id or None if new asset creation failed
     def findAssetID(self, symbol):
-        query = QSqlQuery(self.db)
-        query.prepare("SELECT id FROM assets WHERE name=:symbol")
-        query.bindValue(":symbol", symbol)
-        assert query.exec_()
-        if query.next():
-            return query.value(0)
-        else:
-            logging.fatal(f"Asset {symbol} not found")  # TODO need to add new asset if not found
-            assert False  # We shouldn't be here as all assets from report should be added in advance
+        asset_id = readSQL(self.db, "SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)])
+        if asset_id is None:
+            dialog = AddAssetDialog(self.parent, self.db, symbol)
+            dialog.exec_()
+            asset_id = dialog.asset_id
+        return asset_id
 
     def loadIBFlex(self, filename):
         report = parser.parse(filename)
@@ -134,13 +198,14 @@ class StatementLoader(QObject):
         else:
             logging.error(f"Unknown asset type {IBasset}")
             return
-        query.prepare("INSERT INTO assets(name, type_id, full_name, isin) VALUES(:symbol, :type, :full_name, :isin)")
-        query.bindValue(":symbol", IBasset.symbol)
-        query.bindValue(":type", asset_type)
-        query.bindValue(":full_name", IBasset.description)
-        query.bindValue(":isin", IBasset.isin)
-        assert query.exec_()
-        logging.info(f"Asset added: {IBasset.symbol}")
+        addNewAsset(IBasset.symbol, IBasset.description, asset_type, IBasset.isin)
+        # query.prepare("INSERT INTO assets(name, type_id, full_name, isin) VALUES(:symbol, :type, :full_name, :isin)")
+        # query.bindValue(":symbol", IBasset.symbol)
+        # query.bindValue(":type", asset_type)
+        # query.bindValue(":full_name", IBasset.description)
+        # query.bindValue(":isin", IBasset.isin)
+        # assert query.exec_()
+        # logging.info(f"Asset added: {IBasset.symbol}")
 
     def loadIBTrade(self, IBtrade):
         if IBtrade.assetCategory == AssetClass.STOCK:
@@ -152,7 +217,7 @@ class StatementLoader(QObject):
 
     def loadIBStockTrade(self, IBtrade):
         account_id = self.findAccountID(IBtrade.accountId, IBtrade.currency)
-        if not account_id:
+        if account_id is None:
             logging.error(
                 f"Account {IBtrade.accountId} ({IBtrade.currency}) not found. Skipping trade #{IBtrade.tradeID}")
             return
@@ -177,34 +242,24 @@ class StatementLoader(QObject):
             logging.error(f"Trade type f{IBtrade.buySell} is not implemented")
 
     def createTrade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee, coupon=0.0):
-        query = QSqlQuery(self.db)
-        query.prepare("SELECT id FROM trades "
-                      "WHERE timestamp=:timestamp AND asset_id = :asset "
-                      "AND account_id = :account AND number = :number AND qty = :qty AND price = :price")
-        query.bindValue(":timestamp", timestamp)
-        query.bindValue(":asset", asset_id)
-        query.bindValue(":account", account_id)
-        query.bindValue(":number", number)
-        query.bindValue(":qty", qty)
-        query.bindValue(":price", price)
-        assert query.exec_()
-        if query.next():
-            logging.warning(f"Trade #{number} already exists")
+        trade_id = readSQL(self.db,
+                           "SELECT id FROM trades "
+                           "WHERE timestamp=:timestamp AND asset_id = :asset "
+                           "AND account_id = :account AND number = :number AND qty = :qty AND price = :price",
+                           [(":timestamp", timestamp), (":asset", asset_id), (":account", account_id),
+                            (":number", number), (":qty", qty), (":price", price)])
+        if trade_id:
+            logging.warning(f"Trade #{number} already exists in ledger. Skipped")
             return
-        query.prepare("INSERT INTO trades (timestamp, settlement, corp_action_id, number, account_id, "
-                      "asset_id, qty, price, fee, coupon) "
-                      "VALUES (:timestamp, :settlement, 0, :number, :account, "
-                      ":asset, :qty, :price, :fee, :coupon)")
-        query.bindValue(":timestamp", timestamp)
-        query.bindValue(":settlement", settlement)
-        query.bindValue(":number", number)
-        query.bindValue(":account", account_id)
-        query.bindValue(":asset", asset_id)
-        query.bindValue(":qty", float(qty))
-        query.bindValue(":price", float(price))
-        query.bindValue(":fee", -float(fee))
-        query.bindValue(":coupon", float(coupon))
-        assert query.exec_()
+
+        _ = executeSQL(self.db,
+                       "INSERT INTO trades (timestamp, settlement, corp_action_id, number, account_id, "
+                       "asset_id, qty, price, fee, coupon) "
+                       "VALUES (:timestamp, :settlement, 0, :number, :account, "
+                       ":asset, :qty, :price, :fee, :coupon)",
+                       [(":timestamp", timestamp), (":settlement", settlement), (":number", number),
+                        (":account", account_id), (":asset", asset_id), (":qty", float(qty)),
+                        (":price", float(price)), (":fee", -float(fee)), (":coupon", float(coupon))])
         self.db.commit()
         logging.info(f"Trade #{number} added for account {account_id} asset {asset_id} @{timestamp}: {qty}x{price}")
 
@@ -240,17 +295,17 @@ class StatementLoader(QObject):
             return
         currency = IBtrade.symbol.split('.')
         to_account_id = self.findAccountID(IBtrade.accountId, currency[to_idx])
-        if not to_account_id:
+        if to_account_id is None:
             logging.error(f"Account {IBtrade.accountId} ({currency[to_idx]}) not found. "
                           f"Skipping currency exchange transaction #{IBtrade.tradeID}")
             return
         from_account_id = self.findAccountID(IBtrade.accountId, currency[from_idx])
-        if not from_account_id:
+        if from_account_id is None:
             logging.error(f"Account {IBtrade.accountId} ({currency[from_idx]}) not found. "
                           f"Skipping currency exchange transaction #{IBtrade.tradeID}")
             return
         fee_account_id = self.findAccountID(IBtrade.accountId, IBtrade.ibCommissionCurrency)
-        if not fee_account_id:
+        if fee_account_id is None:
             logging.error(f"Account {IBtrade.accountId} ({IBtrade.ibCommissionCurrency}) not found. "
                           f"Skipping currency exchange transaction #{IBtrade.tradeID}")
             return
@@ -294,7 +349,7 @@ class StatementLoader(QObject):
 
     def loadIBTransactionTax(self, IBtax):
         account_id = self.findAccountID(IBtax.accountId, IBtax.currency)
-        if not account_id:
+        if account_id is None:
             logging.error(
                 f"Account {IBtax.accountId} ({IBtax.currency}) not found. Skipping transaction tax #{IBtax.tradeID}")
             return
@@ -340,7 +395,7 @@ class StatementLoader(QObject):
         if IBCorpAction.assetCategory == AssetClass.STOCK and (
                 IBCorpAction.type == Reorg.MERGER or IBCorpAction.type == Reorg.SPINOFF):
             account_id = self.findAccountID(IBCorpAction.accountId, IBCorpAction.currency)
-            if not account_id:
+            if account_id is None:
                 logging.error(f"Account {IBCorpAction.accountId} ({IBCorpAction.currency}) not found. "
                               f"Skipping trade #{IBCorpAction.transactionID}")
                 return
@@ -364,7 +419,7 @@ class StatementLoader(QObject):
             logging.error(f"Dividend for {IBdividend.assetCategory} not implemented")
             return
         account_id = self.findAccountID(IBdividend.accountId, IBdividend.currency)
-        if not account_id:
+        if account_id is None:
             logging.error(f"Account {IBdividend.accountId} ({IBdividend.currency}) not found. "
                           f"Skipping dividend #{IBdividend.transactionID}")
             return
@@ -379,7 +434,7 @@ class StatementLoader(QObject):
             logging.error(f"Withholding tax for {IBtax.assetCategory} not implemented")
             return
         account_id = self.findAccountID(IBtax.accountId, IBtax.currency)
-        if not account_id:
+        if account_id is None:
             logging.error(f"Account {IBtax.accountId} ({IBtax.currency}) not found. "
                           f"Skipping withholding tax #{IBtax.transactionID}")
             return
@@ -391,7 +446,7 @@ class StatementLoader(QObject):
 
     def loadIBFee(self, IBfee):
         account_id = self.findAccountID(IBfee.accountId, IBfee.currency)
-        if not account_id:
+        if account_id is None:
             logging.error(f"Account {IBfee.accountId} ({IBfee.currency}) not found. "
                           f"Skipping transaction tax #{IBfee.transactionID}")
             return
@@ -444,7 +499,7 @@ class StatementLoader(QObject):
         logging.info(f"Dividend added: {note}")
 
     def addWithholdingTax(self, timestamp, account_id, asset_id, amount, note):
-        parts = re.match(TAX_NOTE_PATTERN, note)
+        parts = re.match(IBKR.TaxNotePattern, note)
         if not parts:
             logging.warning("*** MANUAL ENTRY REQUIRED ***")
             logging.warning(f"Strange tax found: {note}")
@@ -474,35 +529,48 @@ class StatementLoader(QObject):
         logging.info(f"Withholding tax added: {note}")
 
     def loadQuikHtml(self, filename):
-        account_id = 0
-        account_number = ''
-        data = pandas.read_html(filename, encoding='cp1251',
-                                converters={QUIK_QTY: convert_sum, QUIK_AMOUNT: convert_sum,
-                                            QUIK_PRICE: convert_sum, QUIK_COUPON: convert_sum})
+        try:
+            data = pandas.read_html(filename, encoding='cp1251',
+                                    converters={Quik.Qty: convert_amount, Quik.Amount: convert_amount,
+                                                Quik.Price: convert_amount, Quik.Coupon: convert_amount})
+        except:
+            logging.error("Can't read statement file")
+            return False
+
         report_info = data[0]
         deals_info = data[1]
-        parts = re.match(CLIENT_PATTERN, report_info[0][2])
+        parts = re.match(Quik.ClientPattern, report_info[0][2])
         if parts:
-            account_number = parts.group(1)
-            account_id = self.findAccountID(account_number)
-        if account_id == 0:
-            logging.error(f"Account {account_number} not found. Import cancelled.")
-            return
+            account_id = self.findAccountID(parts.group(1))
+        else:
+            logging.error("Can't get account number from the statement.")
+            return False
+        if account_id is None:
+            logging.error(f"Account {parts.group(1)} not found. Import cancelled.")
+            return False
+
         for index, row in deals_info.iterrows():
-            if row[QUIK_DEAL_TYPE] == QUIK_BUY:
-                qty = int(row[QUIK_QTY])
-            elif row[QUIK_DEAL_TYPE] == QUIK_SELL:
-                qty = -int(row[QUIK_QTY])
+            if row[Quik.Type] == Quik.Buy:
+                qty = int(row[Quik.Qty])
+            elif row[Quik.Type] == Quik.Sell:
+                qty = -int(row[Quik.Qty])
+            elif row[Quik.Type] == Quik.Total:
+                break   # End of statement reached
             else:
-                break
-            asset_id = self.findAssetID(row[QUIK_SYMBOL])
-            timestamp = int(datetime.strptime(row[QUIK_TIMESTAMP], "%d.%m.%Y %H:%M:%S").timestamp())
-            settlement = int(datetime.strptime(row[QUIK_SETTLEMENT], "%d.%m.%Y").timestamp())
-            number = row[QUIK_DEAL_NUMBER]
-            price = row[QUIK_PRICE]
-            amount = row[QUIK_AMOUNT]
+                logging.warning(f"Unknown operation type {row[Quik.Type]}. Skipped.")
+                continue
+            asset_id = self.findAssetID(row[Quik.Symbol])
+            if asset_id is None:
+                logging.warning(f"Unknown asset {row[Quik.Symbol]}. Skipped.")
+                continue
+            timestamp = int(datetime.strptime(row[Quik.DateTime], "%d.%m.%Y %H:%M:%S").timestamp())
+            settlement = int(datetime.strptime(row[Quik.SettleDate], "%d.%m.%Y").timestamp())
+            number = row[Quik.TradeNumber]
+            price = row[Quik.Price]
+            amount = row[Quik.Amount]
             lot_size = math.pow(10, round(math.log10(amount / (price * abs(qty)))))
             qty = qty * lot_size
-            fee = float(row[QUIK_FEE1]) + float(row[QUIK_FEE2]) + float(row[QUIK_FEE3]) + float(row[QUIK_FEE4])
-            coupon = float(row[QUIK_COUPON])
+            fee = float(row[Quik.Fee]) + float(row[Quik.FeeEx1]) + float(row[Quik.FeeEx2]) + float(row[Quik.FeeEx3])
+            coupon = float(row[Quik.Coupon])
             self.createTrade(account_id, asset_id, timestamp, settlement, number, qty, price, -fee, coupon)
+        return True

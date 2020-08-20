@@ -36,8 +36,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.downloader.download_completed.connect(self.onQuotesDownloadCompletion)
         self.reports = Reports(self.db)
         self.taxes = TaxesRus(self.db)
-        self.statements = StatementLoader(self.db)
+        self.statements = StatementLoader(self, self.db)
         self.statements.load_completed.connect(self.onStatementLoaded)
+        self.statements.load_failed.connect(self.onStatementLoadFailure)
 
         # Customize Status bar and logs
         self.NewLogEventLbl = QLabel(self)
@@ -169,6 +170,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def onStatementLoaded(self):
         self.StatusBar.showMessage("Statement load completed", timeout=60000)
         self.ledger.rebuild()
+
+    @Slot
+    def onStatementLoadFailure(self):
+        self.StatusBar.showMessage("Statement load failed", timeout=60000)
 
     @Slot()
     def ShowOperationTab(self, operation_type):
