@@ -25,6 +25,7 @@ class Ui_AddAssetDialog(object):
         AddAssetDialog.setModal(False)
         self.gridLayout = QGridLayout(AddAssetDialog)
         self.gridLayout.setObjectName(u"gridLayout")
+        self.gridLayout.setContentsMargins(2, 2, 2, 2)
         self.isinEdit = QLineEdit(AddAssetDialog)
         self.isinEdit.setObjectName(u"isinEdit")
 
@@ -83,10 +84,10 @@ class Ui_AddAssetDialog(object):
 
         self.gridLayout.addWidget(self.DataSrcLbl, 4, 0, 1, 1)
 
-        QWidget.setTabOrder(self.SymbolEdit, self.NameEdit)
         QWidget.setTabOrder(self.NameEdit, self.TypeCombo)
         QWidget.setTabOrder(self.TypeCombo, self.isinEdit)
         QWidget.setTabOrder(self.isinEdit, self.DataSrcCombo)
+        QWidget.setTabOrder(self.DataSrcCombo, self.SymbolEdit)
 
         self.retranslateUi(AddAssetDialog)
         self.buttonBox.accepted.connect(AddAssetDialog.accept)

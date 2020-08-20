@@ -81,6 +81,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.HoldingsDate.setDateTime(QtCore.QDateTime.currentDateTime())
         self.HoldingsCurrencyCombo.init_db(self.db)   # and this will trigger onHoldingsDateChange -> view updated
 
+        # Setup reports tab
+        self.ReportAccountBtn.init_db(self.db)
+
         # Create menu for different operations
         self.ChooseAccountBtn.init_db(self.db)
         self.NewOperationMenu = QMenu()

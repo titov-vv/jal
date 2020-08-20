@@ -67,9 +67,9 @@ class Ui_LedgerMainWindow(object):
         self.centralwidget = QWidget(LedgerMainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setMaximumSize(QSize(16777215, 16777215))
-        self.gridLayout = QGridLayout(self.centralwidget)
-        self.gridLayout.setObjectName(u"gridLayout")
-        self.gridLayout.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_6 = QVBoxLayout(self.centralwidget)
+        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
+        self.verticalLayout_6.setContentsMargins(0, 0, 0, 0)
         self.MainTabs = QTabWidget(self.centralwidget)
         self.MainTabs.setObjectName(u"MainTabs")
         self.MainTabs.setTabPosition(QTabWidget.West)
@@ -708,26 +708,26 @@ class Ui_LedgerMainWindow(object):
         self.verticalLayout_4.setSpacing(0)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
-        self.frame = QFrame(self.HoldingsTab)
-        self.frame.setObjectName(u"frame")
-        self.frame.setFrameShape(QFrame.NoFrame)
-        self.frame.setFrameShadow(QFrame.Plain)
-        self.horizontalLayout_7 = QHBoxLayout(self.frame)
+        self.HoldingsParamsFrame = QFrame(self.HoldingsTab)
+        self.HoldingsParamsFrame.setObjectName(u"HoldingsParamsFrame")
+        self.HoldingsParamsFrame.setFrameShape(QFrame.NoFrame)
+        self.HoldingsParamsFrame.setFrameShadow(QFrame.Plain)
+        self.horizontalLayout_7 = QHBoxLayout(self.HoldingsParamsFrame)
         self.horizontalLayout_7.setSpacing(6)
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
         self.horizontalLayout_7.setContentsMargins(2, 2, 2, 2)
-        self.HoldingsDate = QDateEdit(self.frame)
+        self.HoldingsDate = QDateEdit(self.HoldingsParamsFrame)
         self.HoldingsDate.setObjectName(u"HoldingsDate")
         self.HoldingsDate.setCalendarPopup(True)
 
         self.horizontalLayout_7.addWidget(self.HoldingsDate)
 
-        self.HoldingsCurrencyLbl = QLabel(self.frame)
+        self.HoldingsCurrencyLbl = QLabel(self.HoldingsParamsFrame)
         self.HoldingsCurrencyLbl.setObjectName(u"HoldingsCurrencyLbl")
 
         self.horizontalLayout_7.addWidget(self.HoldingsCurrencyLbl)
 
-        self.HoldingsCurrencyCombo = CurrencyCombo(self.frame)
+        self.HoldingsCurrencyCombo = CurrencyCombo(self.HoldingsParamsFrame)
         self.HoldingsCurrencyCombo.setObjectName(u"HoldingsCurrencyCombo")
 
         self.horizontalLayout_7.addWidget(self.HoldingsCurrencyCombo)
@@ -737,7 +737,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_7.addItem(self.horizontalSpacer_3)
 
 
-        self.verticalLayout_4.addWidget(self.frame)
+        self.verticalLayout_4.addWidget(self.HoldingsParamsFrame)
 
         self.HoldingsTableView = QTableView(self.HoldingsTab)
         self.HoldingsTableView.setObjectName(u"HoldingsTableView")
@@ -749,6 +749,104 @@ class Ui_LedgerMainWindow(object):
         self.verticalLayout_4.addWidget(self.HoldingsTableView)
 
         self.MainTabs.addTab(self.HoldingsTab, "")
+        self.ReportsTab = QWidget()
+        self.ReportsTab.setObjectName(u"ReportsTab")
+        self.verticalLayout_7 = QVBoxLayout(self.ReportsTab)
+        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
+        self.verticalLayout_7.setContentsMargins(0, 0, 0, 0)
+        self.ReportParamsFrame = QFrame(self.ReportsTab)
+        self.ReportParamsFrame.setObjectName(u"ReportParamsFrame")
+        self.ReportParamsFrame.setFrameShape(QFrame.NoFrame)
+        self.ReportParamsFrame.setFrameShadow(QFrame.Plain)
+        self.gridLayout = QGridLayout(self.ReportParamsFrame)
+        self.gridLayout.setSpacing(6)
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.gridLayout.setContentsMargins(2, 2, 2, 2)
+        self.ReportFromEdit = QDateEdit(self.ReportParamsFrame)
+        self.ReportFromEdit.setObjectName(u"ReportFromEdit")
+        self.ReportFromEdit.setCalendarPopup(True)
+
+        self.gridLayout.addWidget(self.ReportFromEdit, 0, 4, 1, 1)
+
+        self.ReportGroupCheck = QCheckBox(self.ReportParamsFrame)
+        self.ReportGroupCheck.setObjectName(u"ReportGroupCheck")
+
+        self.gridLayout.addWidget(self.ReportGroupCheck, 1, 5, 1, 1)
+
+        self.ReportRangeCombo = QComboBox(self.ReportParamsFrame)
+        self.ReportRangeCombo.addItem("")
+        self.ReportRangeCombo.addItem("")
+        self.ReportRangeCombo.addItem("")
+        self.ReportRangeCombo.addItem("")
+        self.ReportRangeCombo.setObjectName(u"ReportRangeCombo")
+
+        self.gridLayout.addWidget(self.ReportRangeCombo, 0, 5, 1, 1)
+
+        self.comboBox = QComboBox(self.ReportParamsFrame)
+        self.comboBox.addItem("")
+        self.comboBox.addItem("")
+        self.comboBox.addItem("")
+        self.comboBox.setObjectName(u"comboBox")
+
+        self.gridLayout.addWidget(self.comboBox, 0, 2, 1, 1)
+
+        self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 6, 1, 1)
+
+        self.ReportFromLbl = QLabel(self.ReportParamsFrame)
+        self.ReportFromLbl.setObjectName(u"ReportFromLbl")
+        self.ReportFromLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gridLayout.addWidget(self.ReportFromLbl, 0, 3, 1, 1)
+
+        self.ReportAccountLbl = QLabel(self.ReportParamsFrame)
+        self.ReportAccountLbl.setObjectName(u"ReportAccountLbl")
+
+        self.gridLayout.addWidget(self.ReportAccountLbl, 1, 0, 1, 1)
+
+        self.ReportToLbl = QLabel(self.ReportParamsFrame)
+        self.ReportToLbl.setObjectName(u"ReportToLbl")
+        self.ReportToLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gridLayout.addWidget(self.ReportToLbl, 1, 3, 1, 1)
+
+        self.ReportTypeLbl = QLabel(self.ReportParamsFrame)
+        self.ReportTypeLbl.setObjectName(u"ReportTypeLbl")
+
+        self.gridLayout.addWidget(self.ReportTypeLbl, 0, 0, 1, 1)
+
+        self.ReportAccountBtn = AccountButton(self.ReportParamsFrame)
+        self.ReportAccountBtn.setObjectName(u"ReportAccountBtn")
+
+        self.gridLayout.addWidget(self.ReportAccountBtn, 1, 2, 1, 1)
+
+        self.ReportToEdit = QDateEdit(self.ReportParamsFrame)
+        self.ReportToEdit.setObjectName(u"ReportToEdit")
+        self.ReportToEdit.setCalendarPopup(True)
+
+        self.gridLayout.addWidget(self.ReportToEdit, 1, 4, 1, 1)
+
+        self.RunReportButton = QPushButton(self.ReportParamsFrame)
+        self.RunReportButton.setObjectName(u"RunReportButton")
+
+        self.gridLayout.addWidget(self.RunReportButton, 0, 7, 1, 1)
+
+        self.SaveReportBtn = QPushButton(self.ReportParamsFrame)
+        self.SaveReportBtn.setObjectName(u"SaveReportBtn")
+
+        self.gridLayout.addWidget(self.SaveReportBtn, 1, 7, 1, 1)
+
+
+        self.verticalLayout_7.addWidget(self.ReportParamsFrame)
+
+        self.ReportTableView = QTableView(self.ReportsTab)
+        self.ReportTableView.setObjectName(u"ReportTableView")
+        self.ReportTableView.setFrameShape(QFrame.Panel)
+
+        self.verticalLayout_7.addWidget(self.ReportTableView)
+
+        self.MainTabs.addTab(self.ReportsTab, "")
         self.LoggingTab = QWidget()
         self.LoggingTab.setObjectName(u"LoggingTab")
         self.verticalLayout_5 = QVBoxLayout(self.LoggingTab)
@@ -761,7 +859,7 @@ class Ui_LedgerMainWindow(object):
 
         self.MainTabs.addTab(self.LoggingTab, "")
 
-        self.gridLayout.addWidget(self.MainTabs, 0, 0, 1, 1)
+        self.verticalLayout_6.addWidget(self.MainTabs)
 
         LedgerMainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(LedgerMainWindow)
@@ -910,6 +1008,26 @@ class Ui_LedgerMainWindow(object):
         self.HoldingsDate.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy", None))
         self.HoldingsCurrencyLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Common currency:", None))
         self.MainTabs.setTabText(self.MainTabs.indexOf(self.HoldingsTab), QCoreApplication.translate("LedgerMainWindow", u"Holdings", None))
+        self.ReportFromEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy", None))
+        self.ReportGroupCheck.setText(QCoreApplication.translate("LedgerMainWindow", u"Group dates", None))
+        self.ReportRangeCombo.setItemText(0, "")
+        self.ReportRangeCombo.setItemText(1, QCoreApplication.translate("LedgerMainWindow", u"This Year", None))
+        self.ReportRangeCombo.setItemText(2, QCoreApplication.translate("LedgerMainWindow", u"Previous Year", None))
+        self.ReportRangeCombo.setItemText(3, QCoreApplication.translate("LedgerMainWindow", u"3 last years", None))
+
+        self.comboBox.setItemText(0, QCoreApplication.translate("LedgerMainWindow", u"Income / Spending", None))
+        self.comboBox.setItemText(1, QCoreApplication.translate("LedgerMainWindow", u"Profit / Loss", None))
+        self.comboBox.setItemText(2, QCoreApplication.translate("LedgerMainWindow", u"Deals", None))
+
+        self.ReportFromLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"From:", None))
+        self.ReportAccountLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Account:", None))
+        self.ReportToLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"To:", None))
+        self.ReportTypeLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Report:", None))
+        self.ReportAccountBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"PushButton", None))
+        self.ReportToEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy", None))
+        self.RunReportButton.setText(QCoreApplication.translate("LedgerMainWindow", u"Run", None))
+        self.SaveReportBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Save", None))
+        self.MainTabs.setTabText(self.MainTabs.indexOf(self.ReportsTab), QCoreApplication.translate("LedgerMainWindow", u"Reports", None))
         self.MainTabs.setTabText(self.MainTabs.indexOf(self.LoggingTab), QCoreApplication.translate("LedgerMainWindow", u"Log messages", None))
         self.menuFile.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&File", None))
         self.menu_DAta.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&Data", None))

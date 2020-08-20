@@ -26,7 +26,7 @@
      <height>16777215</height>
     </size>
    </property>
-   <layout class="QGridLayout" name="gridLayout">
+   <layout class="QVBoxLayout" name="verticalLayout_6">
     <property name="leftMargin">
      <number>0</number>
     </property>
@@ -39,7 +39,7 @@
     <property name="bottomMargin">
      <number>0</number>
     </property>
-    <item row="0" column="0">
+    <item>
      <widget class="QTabWidget" name="MainTabs">
       <property name="tabPosition">
        <enum>QTabWidget::West</enum>
@@ -1229,7 +1229,7 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QFrame" name="frame">
+         <widget class="QFrame" name="HoldingsParamsFrame">
           <property name="frameShape">
            <enum>QFrame::NoFrame</enum>
           </property>
@@ -1302,6 +1302,197 @@
           <attribute name="verticalHeaderDefaultSectionSize">
            <number>20</number>
           </attribute>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="ReportsTab">
+       <attribute name="title">
+        <string>Reports</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_7">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QFrame" name="ReportParamsFrame">
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Plain</enum>
+          </property>
+          <layout class="QGridLayout" name="gridLayout">
+           <property name="leftMargin">
+            <number>2</number>
+           </property>
+           <property name="topMargin">
+            <number>2</number>
+           </property>
+           <property name="rightMargin">
+            <number>2</number>
+           </property>
+           <property name="bottomMargin">
+            <number>2</number>
+           </property>
+           <property name="spacing">
+            <number>6</number>
+           </property>
+           <item row="0" column="4">
+            <widget class="QDateEdit" name="ReportFromEdit">
+             <property name="displayFormat">
+              <string>dd/MM/yyyy</string>
+             </property>
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="5">
+            <widget class="QCheckBox" name="ReportGroupCheck">
+             <property name="text">
+              <string>Group dates</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="5">
+            <widget class="QComboBox" name="ReportRangeCombo">
+             <item>
+              <property name="text">
+               <string> </string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>This Year</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Previous Year</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>3 last years</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QComboBox" name="comboBox">
+             <item>
+              <property name="text">
+               <string>Income / Spending</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Profit / Loss</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Deals</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="0" column="6">
+            <spacer name="ReportFrameSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="0" column="3">
+            <widget class="QLabel" name="ReportFromLbl">
+             <property name="text">
+              <string>From:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="ReportAccountLbl">
+             <property name="text">
+              <string>Account:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QLabel" name="ReportToLbl">
+             <property name="text">
+              <string>To:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="ReportTypeLbl">
+             <property name="text">
+              <string>Report:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="AccountButton" name="ReportAccountBtn">
+             <property name="text">
+              <string>PushButton</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="4">
+            <widget class="QDateEdit" name="ReportToEdit">
+             <property name="displayFormat">
+              <string>dd/MM/yyyy</string>
+             </property>
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="7">
+            <widget class="QPushButton" name="RunReportButton">
+             <property name="text">
+              <string>Run</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="7">
+            <widget class="QPushButton" name="SaveReportBtn">
+             <property name="text">
+              <string>Save</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTableView" name="ReportTableView">
+          <property name="frameShape">
+           <enum>QFrame::Panel</enum>
+          </property>
          </widget>
         </item>
        </layout>
