@@ -1348,7 +1348,7 @@
             <number>6</number>
            </property>
            <item row="0" column="4">
-            <widget class="QDateEdit" name="ReportFromEdit">
+            <widget class="QDateEdit" name="ReportFromDate">
              <property name="displayFormat">
               <string>dd/MM/yyyy</string>
              </property>
@@ -1368,7 +1368,7 @@
             <widget class="QComboBox" name="ReportRangeCombo">
              <item>
               <property name="text">
-               <string> </string>
+               <string>Custom</string>
               </property>
              </item>
              <item>
@@ -1389,7 +1389,7 @@
             </widget>
            </item>
            <item row="0" column="2">
-            <widget class="QComboBox" name="comboBox">
+            <widget class="QComboBox" name="ReportTypeCombo">
              <item>
               <property name="text">
                <string>Income / Spending</string>
@@ -1462,7 +1462,7 @@
             </widget>
            </item>
            <item row="1" column="4">
-            <widget class="QDateEdit" name="ReportToEdit">
+            <widget class="QDateEdit" name="ReportToDate">
              <property name="displayFormat">
               <string>dd/MM/yyyy</string>
              </property>
@@ -1472,7 +1472,7 @@
             </widget>
            </item>
            <item row="0" column="7">
-            <widget class="QPushButton" name="RunReportButton">
+            <widget class="QPushButton" name="RunReportBtn">
              <property name="text">
               <string>Run</string>
              </property>

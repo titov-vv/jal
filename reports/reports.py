@@ -4,10 +4,21 @@ import xlsxwriter
 from constants import BookAccount, PredefinedAsset
 from reports.helpers import xslxFormat, xlsxWriteRow
 from PySide2.QtWidgets import QDialog, QFileDialog
-from PySide2.QtCore import Property, Slot
+from PySide2.QtCore import QObject, Property, Slot
 from PySide2 import QtCore
 from PySide2.QtSql import QSqlQuery
 from UI.ui_deals_export_dlg import Ui_DealsExportDlg
+
+###
+# https://stackoverflow.com/questions/31475965/fastest-way-to-populate-qtableview-from-pandas-data-frame
+# https://stackoverflow.com/questions/44603119/how-to-display-a-pandas-data-frame-with-pyqt5-pyside2
+# https://stackoverflow.com/questions/41192293/make-qtableview-editable-when-model-is-pandas-dataframe
+# https://learndataanalysis.org/display-pandas-dataframe-with-pyqt5-qtableview-widget/
+
+class ReportType:
+    IncomeSpending = 1
+    ProfitLoss = 2
+    Deals = 3
 
 
 class ReportParamsDialog(QDialog, Ui_DealsExportDlg):
@@ -61,15 +72,21 @@ class ReportParamsDialog(QDialog, Ui_DealsExportDlg):
     account = Property(int, fget=getAccount)
 
 
-class Reports:
-    DEALS_REPORT = 1
-    PROFIT_LOSS_REPORT = 2
-    INCOME_SPENDING_REPORT = 3
+class Reports(QObject):
+    def __init__(self, db, report_table_view):
+        super().__init__()
 
-    def __init__(self, db):
         self.db = db
+        self.table_view = report_table_view
+
         self.workbook = None
         self.formats = None
+
+    def runReport(self, type, begin=0, end=0, account_id=0, group_dates=0):
+        print("RUN")
+
+    def saveReport(self):
+        print("SAVE")
 
     def create_report(self, parent, report_type):
         if report_type == self.DEALS_REPORT:

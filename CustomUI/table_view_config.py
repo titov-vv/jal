@@ -1,6 +1,6 @@
 from view_delegate import *
 from constants import ColumnWidth
-from reports.reports import Reports
+from reports.reports import ReportType
 from PySide2 import QtWidgets
 from PySide2.QtCore import QObject, SIGNAL, Slot
 from functools import partial
@@ -260,17 +260,20 @@ class TableViewConfig:
             (parent.actionPeers,            "triggered()",              partial(self.show_dialog, self.PEERS)),
             (parent.actionCategories,       "triggered()",              partial(self.show_dialog, self.CATEGORIES)),
             (parent.actionTags,             "triggered()",              partial(self.show_dialog, self.TAGS)),
-            (parent.MakeCategoriesReport,   "triggered()",              partial(parent.reports.create_report, parent, Reports.INCOME_SPENDING_REPORT)),
-            (parent.MakeDealsReport,        "triggered()",              partial(parent.reports.create_report, parent, Reports.DEALS_REPORT)),
-            (parent.MakePLReport,           "triggered()",              partial(parent.reports.create_report, parent, Reports.PROFIT_LOSS_REPORT)),
+            (parent.MakeCategoriesReport,   "triggered()",              partial(parent.reports.create_report, parent, ReportType.IncomeSpending)),
+            (parent.MakeDealsReport,        "triggered()",              partial(parent.reports.create_report, parent, ReportType.Deals)),
+            (parent.MakePLReport,           "triggered()",              partial(parent.reports.create_report, parent, ReportType.ProfitLoss)),
             (parent.PrepareTaxForms,        "triggered()",              partial(parent.taxes.showTaxesDialog, parent)),
             (parent.BalanceDate,            "dateChanged(QDate)",       parent.onBalanceDateChange),
             (parent.HoldingsDate,           "dateChanged(QDate)",       parent.onHoldingsDateChange),
             (parent.BalancesCurrencyCombo,  "currentIndexChanged(int)", parent.OnBalanceCurrencyChange),
             (parent.HoldingsCurrencyCombo,  "currentIndexChanged(int)", parent.OnHoldingsCurrencyChange),
+            (parent.ReportRangeCombo,       "currentIndexChanged(int)", parent.onReportRangeChange),
+            (parent.RunReportBtn,           "clicked()",                parent.onRunReport),
+            (parent.SaveReportBtn,          "clicked()",                parent.reports.saveReport),
             (parent.ShowInactiveCheckBox,   "stateChanged(int)",        parent.OnBalanceInactiveChange),
             (parent.DateRangeCombo,         "currentIndexChanged(int)", parent.OnOperationsRangeChange),
-            (parent.ChooseAccountBtn,       "clicked()",                parent.OnAccountChange),
+            (parent.ChooseAccountBtn,       "changed(int)",             parent.operations.setAccountId),
             (parent.SearchString,           "textChanged(QString)",     parent.OnSearchTextChange),
             (parent.AddActionDetail,        "clicked()",                partial(parent.operations.addOperationChild, TransactionType.Action)),
             (parent.RemoveActionDetail,     "clicked()",                partial(parent.operations.deleteOperationChild, TransactionType.Action)),

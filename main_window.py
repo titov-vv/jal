@@ -3,7 +3,7 @@ import os
 from functools import partial
 
 from PySide2 import QtCore, QtWidgets
-from PySide2.QtCore import Slot
+from PySide2.QtCore import Slot, QDateTime
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QMenu, QMessageBox, QLabel
 
 from UI.ui_main_window import Ui_LedgerMainWindow
@@ -15,7 +15,7 @@ from DB.helpers import init_and_check_db, get_dbfilename
 from downloader import QuoteDownloader
 from ledger import Ledger
 from operations import LedgerOperationsView, LedgerInitValues
-from reports.reports import Reports
+from reports.reports import Reports, ReportType
 from statements import StatementLoader
 from reports.taxes import TaxesRus
 
@@ -34,7 +34,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ledger = Ledger(self.db)
         self.downloader = QuoteDownloader(self.db)
         self.downloader.download_completed.connect(self.onQuotesDownloadCompletion)
-        self.reports = Reports(self.db)
         self.taxes = TaxesRus(self.db)
         self.statements = StatementLoader(self, self.db)
         self.statements.load_completed.connect(self.onStatementLoaded)
@@ -49,6 +48,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.logger = logging.getLogger()
         self.logger.addHandler(self.Logs)
         self.logger.setLevel(logging.INFO)
+
+        # Setup reports tab
+        self.ReportAccountBtn.init_db(self.db)
+        self.reports = Reports(self.db, self.ReportTableView)
 
         # Customize UI configuration
         self.operations = LedgerOperationsView(self.OperationsTableView)
@@ -80,9 +83,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.BalancesCurrencyCombo.init_db(self.db)   # this line will trigger onBalanceDateChange -> view updated
         self.HoldingsDate.setDateTime(QtCore.QDateTime.currentDateTime())
         self.HoldingsCurrencyCombo.init_db(self.db)   # and this will trigger onHoldingsDateChange -> view updated
-
-        # Setup reports tab
-        self.ReportAccountBtn.init_db(self.db)
 
         # Create menu for different operations
         self.ChooseAccountBtn.init_db(self.db)
@@ -145,8 +145,29 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             self.ledger.setActiveBalancesOnly(0)
 
     @Slot()
-    def OnAccountChange(self):
-        self.operations.setAccountId(self.ChooseAccountBtn.account_id)
+    def onReportRangeChange(self, range_index):
+        report_ranges = {
+            0: lambda: (0, 0),
+            1: lambda: (1570000000, 1580000000),
+            2: ManipulateDate.startOfPreviousWeek,
+            3: ManipulateDate.startOfPreviousWeek
+        }
+        begin, end = report_ranges[range_index]()
+        self.ReportFromDate.setDateTime(QDateTime.fromSecsSinceEpoch(begin))
+        self.ReportToDate.setDateTime(QDateTime.fromSecsSinceEpoch(end))
+        self.reports.setRange(begin, end)
+
+    @Slot()
+    def onRunReport(self):
+        types = {
+            0: ReportType.IncomeSpending,
+            1: ReportType.ProfitLoss,
+            2: ReportType.Deals
+        }
+        report_type = types[self.ReportTypeCombo.currentIndex()]
+        begin = self.ReportFromDate.dateTime().toSecsSinceEpoch()
+        end = self.ReportToDate.dateTime().toSecsSinceEpoch()
+        group_dates = 1 if self.ReportGroupCheck.isChecked() else 0
 
     @Slot()
     def OnSearchTextChange(self):

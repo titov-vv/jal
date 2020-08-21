@@ -11,6 +11,8 @@ from CustomUI.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, 
 #  UI Button to choose accounts
 ########################################################################################################################
 class AccountButton(QPushButton):
+    changed = Signal(int)
+
     def __init__(self, parent):
         QPushButton.__init__(self, parent)
         self.p_account_id = 0
@@ -29,11 +31,7 @@ class AccountButton(QPushButton):
     def setId(self, account_id):
         self.p_account_id = account_id
 
-    @Signal
-    def account_id_changed(self):
-        pass
-
-    account_id = Property(int, getId, setId, notify=account_id_changed)
+    account_id = Property(int, getId, setId, notify=changed)
 
     @Signal
     def account_id_changed(self):
@@ -64,12 +62,13 @@ class AccountButton(QPushButton):
         if res:
             self.account_id = self.dialog.selected_id
             self.setText(self.dialog.SelectedName)
-            self.clicked.emit()
+            self.changed.emit(self.account_id)
 
     def ClearAccount(self):
-        self.account_id = 0
-        self.setText("ANY")
-        self.clicked.emit()
+        if self.account_id:
+            self.account_id = 0
+            self.setText("ANY")
+            self.changed.emit(self.account_id)
 
 
 class CurrencyCombo(QComboBox):
