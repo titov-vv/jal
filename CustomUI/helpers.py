@@ -222,7 +222,10 @@ def ConfigureTableView(view, model, columns):
 
     delegates = []
     for column in columns:
-        if column[hcol_idx.DELEGATE] is not None:
+        if column[hcol_idx.DELEGATE] is None:
+            # Use standard delegate / Remove old delegate if there was any
+            view.setItemDelegateForColumn(model.fieldIndex(column[hcol_idx.DB_NAME]), None)
+        else:
             delegates.append(column[hcol_idx.DELEGATE](view))
             view.setItemDelegateForColumn(model.fieldIndex(column[hcol_idx.DB_NAME]), delegates[-1])
     return delegates

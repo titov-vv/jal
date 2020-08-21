@@ -75,28 +75,11 @@ class ReportParamsDialog(QDialog, Ui_DealsExportDlg):
     account = Property(int, fget=getAccount)
 
 
+PREPARE_REPORT_QUERY = 0
+REPORT_COLUMNS = 1
+
 class Reports(QObject):
     report_failure = Signal(str)
-
-    report_view_columns = {
-        ReportType.IncomeSpending: [],
-        ReportType.ProfitLoss: [("period", "Period", ColumnWidth.FOR_DATETIME, None, ReportsYearMonthDelegate),
-                                ("transfer", "In / Out", None, None, ReportsFloat2Delegate),
-                                ("assets", "Assets value", None, None, ReportsFloat2Delegate),
-                                ("result", "Total result", None, None, ReportsFloat2Delegate),
-                                ("profit", "Profit / Loss", None, None, ReportsProfitDelegate),
-                                ("dividend", "Returns", None, None, ReportsFloat2Delegate),
-                                ("tax_fee", "Taxes & Fees", None, None, ReportsFloat2Delegate)],
-        ReportType.Deals: [("asset", "Asset", 300, None, None),
-                           ("open_timestamp", "Open Date", ColumnWidth.FOR_DATETIME, None, ReportsTimestampDelegate),
-                           ("close_timestamp", "Close Date", ColumnWidth.FOR_DATETIME, None, ReportsTimestampDelegate),
-                           ("open_price", "Open Price", None, None, ReportsFloat4Delegate),
-                           ("close_price", "Close Price", None, None, ReportsFloat4Delegate),
-                           ("qty", "Qty", None, None, ReportsFloatDelegate),
-                           ("fee", "Fee", None, None, ReportsFloat2Delegate),
-                           ("profit", "P/L", None, None, ReportsProfitDelegate),
-                           ("rel_profit", "P/L, %", None, None, ReportsProfitDelegate)]
-    }
 
     def __init__(self, db, report_table_view):
         super().__init__()
@@ -104,18 +87,42 @@ class Reports(QObject):
         self.db = db
         self.table_view = report_table_view
         self.delegates = []
+        self.current_report = None
+        self.query = None
+        self.model = None
 
         self.workbook = None
         self.formats = None
 
-
-    def runReport(self, type, begin=0, end=0, account_id=0, group_dates=0):
-        reports = {
-            ReportType.IncomeSpending: self.prepareIncomeSpendingReport,
-            ReportType.ProfitLoss: self.prepareProfitLossReport,
-            ReportType.Deals: self.prepareDealsReport
+        self.reports = {
+            ReportType.IncomeSpending: (self.prepareIncomeSpendingReport,
+                                        []),
+            ReportType.ProfitLoss: (self.prepareProfitLossReport,
+                                    [("period", "Period", ColumnWidth.FOR_DATETIME, None, ReportsYearMonthDelegate),
+                                    ("transfer", "In / Out", None, None, ReportsFloat2Delegate),
+                                    ("assets", "Assets value", None, None, ReportsFloat2Delegate),
+                                    ("result", "Total result", None, None, ReportsFloat2Delegate),
+                                    ("profit", "Profit / Loss", None, None, ReportsProfitDelegate),
+                                    ("dividend", "Returns", None, None, ReportsFloat2Delegate),
+                                    ("tax_fee", "Taxes & Fees", None, None, ReportsFloat2Delegate)]),
+            ReportType.Deals: (self.prepareDealsReport,
+                               [("asset", "Asset", 300, None, None),
+                               ("open_timestamp", "Open Date", ColumnWidth.FOR_DATETIME, None, ReportsTimestampDelegate),
+                               ("close_timestamp", "Close Date", ColumnWidth.FOR_DATETIME, None, ReportsTimestampDelegate),
+                               ("open_price", "Open Price", None, None, ReportsFloat4Delegate),
+                               ("close_price", "Close Price", None, None, ReportsFloat4Delegate),
+                               ("qty", "Qty", None, None, ReportsFloatDelegate),
+                               ("fee", "Fee", None, None, ReportsFloat2Delegate),
+                               ("profit", "P/L", None, None, ReportsProfitDelegate),
+                               ("rel_profit", "P/L, %", None, None, ReportsProfitDelegate)])
         }
-        reports[type](begin, end, account_id, group_dates)
+
+    def runReport(self, report_type, begin=0, end=0, account_id=0, group_dates=0):
+        self.reports[report_type][PREPARE_REPORT_QUERY](begin, end, account_id, group_dates)
+
+        self.model = UseSqlQuery(self.db, self.query, self.reports[report_type][REPORT_COLUMNS])
+        self.delegates = ConfigureTableView(self.table_view, self.model, self.reports[report_type][REPORT_COLUMNS])
+        self.model.select()
 
     def saveReport(self):
         filename, filter = QFileDialog.getSaveFileName(None, "Save deals report to:", ".", "Excel file (*.xlsx)")
@@ -127,15 +134,12 @@ class Reports(QObject):
     def prepareIncomeSpendingReport(self, begin, end, account_id, group_dates):
         print("I/S")
 
-    def prepareProfitLossReport(self, begin, end, account_id, group_dates):
-        print("DEALS")
-
     def prepareDealsReport(self, begin, end, account_id, group_dates):
         if account_id == 0:
             self.report_failure.emit("Deals report requires exact account")
-            return
+            return None
         if group_dates == 1:
-            query = executeSQL(self.db,
+            self.query = executeSQL(self.db,
                                "SELECT asset, "
                                "strftime('%s', datetime(open_timestamp, 'unixepoch', 'start of day')) as open_timestamp, "
                                "strftime('%s', datetime(close_timestamp, 'unixepoch', 'start of day')) as close_timestamp, "
@@ -148,18 +152,15 @@ class Reports(QObject):
                                "ORDER BY close_timestamp, open_timestamp",
                                [(":account_id", account_id), (":begin", begin), (":end", end)], forward_only=False)
         else:
-            query = executeSQL(self.db, "SELECT asset, open_timestamp, close_timestamp, open_price, close_price, "
+            self.query = executeSQL(self.db, "SELECT asset, open_timestamp, close_timestamp, open_price, close_price, "
                                         "qty, fee, profit, rel_profit FROM deals_ext "
                                         "WHERE account_id=:account_id AND close_timestamp>=:begin AND close_timestamp<=:end",
                                [(":account_id", account_id), (":begin", begin), (":end", end)], forward_only=False)
-        model = UseSqlQuery(self.db, query, self.report_view_columns[ReportType.Deals])
-        self.delegates = ConfigureTableView(self.table_view, model, self.report_view_columns[ReportType.Deals])
-        model.select()
 
     def prepareProfitLossReport(self, begin, end, account_id, group_dates):
         if account_id == 0:
             self.report_failure.emit("Profit/Loss report requires exact account")
-            return
+            return None
         _ = executeSQL(self.db, "DELETE FROM t_months")
         _ = executeSQL(self.db, "INSERT INTO t_months(asset_id, month, last_timestamp) "
                                 "SELECT DISTINCT(l.asset_id) AS asset_id, m.m_start, MAX(q.timestamp) AS last_timestamp "
@@ -179,7 +180,7 @@ class Reports(QObject):
                                 "GROUP BY m.m_start, l.asset_id "
                                 "ORDER BY m.m_start, l.asset_id",
                        [(":account_id", account_id), (":begin", begin), (":end", end)])
-        query = executeSQL(self.db,
+        self.query = executeSQL(self.db,
             "SELECT DISTINCT(m.month) AS period, coalesce(t.transfer, 0) AS transfer, coalesce(a.assets, 0) AS assets, "
             "coalesce(p.result, 0) AS result, coalesce(o.profit, 0) AS profit, coalesce(d.dividend, 0) AS dividend, "
             "coalesce(f.tax_fee, 0) AS tax_fee "
@@ -231,12 +232,9 @@ class Reports(QObject):
             "  GROUP BY month "
             ") AS f ON f.month = m.month",
             [(":account_id", account_id), (":book_costs", BookAccount.Costs), (":book_incomes", BookAccount.Incomes),
-             (":book_money", BookAccount.Money), (":book_assets", BookAccount.Assets), (":book_transfers", BookAccount.Transfers)],
+             (":book_money", BookAccount.Money), (":book_assets", BookAccount.Assets),
+             (":book_transfers", BookAccount.Transfers)],
                            forward_only=False)
-        model = UseSqlQuery(self.db, query, self.report_view_columns[ReportType.ProfitLoss])
-        self.delegates = ConfigureTableView(self.table_view, model, self.report_view_columns[ReportType.ProfitLoss])
-        model.select()
-
 
     def create_report(self, parent, report_type):
         if report_type == self.DEALS_REPORT:
