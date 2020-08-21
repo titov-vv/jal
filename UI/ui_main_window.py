@@ -858,6 +858,12 @@ class Ui_LedgerMainWindow(object):
         self.ReportTableView.setObjectName(u"ReportTableView")
         self.ReportTableView.setFrameShape(QFrame.Panel)
         self.ReportTableView.setFrameShadow(QFrame.Sunken)
+        self.ReportTableView.setAlternatingRowColors(True)
+        self.ReportTableView.setGridStyle(Qt.DotLine)
+        self.ReportTableView.setWordWrap(False)
+        self.ReportTableView.verticalHeader().setVisible(False)
+        self.ReportTableView.verticalHeader().setMinimumSectionSize(20)
+        self.ReportTableView.verticalHeader().setDefaultSectionSize(20)
 
         self.verticalLayout_7.addWidget(self.ReportTableView)
 

@@ -1520,6 +1520,24 @@
           <property name="frameShadow">
            <enum>QFrame::Sunken</enum>
           </property>
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
+          <property name="gridStyle">
+           <enum>Qt::DotLine</enum>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
+          </property>
+          <attribute name="verticalHeaderVisible">
+           <bool>false</bool>
+          </attribute>
+          <attribute name="verticalHeaderMinimumSectionSize">
+           <number>20</number>
+          </attribute>
+          <attribute name="verticalHeaderDefaultSectionSize">
+           <number>20</number>
+          </attribute>
          </widget>
         </item>
        </layout>

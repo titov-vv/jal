@@ -508,3 +508,76 @@ class OperationsCurrencyDelegate(QStyledItemDelegate):
             text = text + "\n " + asset_name
         painter.drawText(option.rect, Qt.AlignLeft, text)
         painter.restore()
+
+
+class ReportsFloatDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        QStyledItemDelegate.__init__(self, parent)
+
+    def paint(self, painter, option, index):
+        painter.save()
+        model = index.model()
+        record = model.record(index.row())
+        amount = record.value(index.column())
+        text = formatFloatLong(float(amount)) if amount != '' else ''
+        painter.drawText(option.rect, Qt.AlignRight, text)
+        painter.restore()
+
+
+class ReportsFloat2Delegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        QStyledItemDelegate.__init__(self, parent)
+
+    def paint(self, painter, option, index):
+        painter.save()
+        model = index.model()
+        record = model.record(index.row())
+        amount = record.value(index.column())
+        text = f"{amount:.2f}" if amount != '' else ''
+        painter.drawText(option.rect, Qt.AlignRight, text)
+        painter.restore()
+
+
+class ReportsFloat4Delegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        QStyledItemDelegate.__init__(self, parent)
+
+    def paint(self, painter, option, index):
+        painter.save()
+        model = index.model()
+        record = model.record(index.row())
+        amount = record.value(index.column())
+        text = f"{amount:.4f}" if amount != '' else ''
+        painter.drawText(option.rect, Qt.AlignRight, text)
+        painter.restore()
+
+
+class ReportsProfitDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        QStyledItemDelegate.__init__(self, parent)
+
+    def paint(self, painter, option, index):
+        painter.save()
+        model = index.model()
+        record = model.record(index.row())
+        amount = record.value(index.column())
+        if amount:
+            if amount >= 0:
+                painter.fillRect(option.rect, CustomColor.LightGreen)
+            else:
+                painter.fillRect(option.rect, CustomColor.LightRed)
+        text = f"{amount:,.2f}"
+        painter.drawText(option.rect, Qt.AlignRight, text)
+        painter.restore()
+
+
+class ReportsTimestampDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        QStyledItemDelegate.__init__(self, parent)
+
+    def displayText(self, value, locale):
+        if isinstance(value, str):  # already SQL-preprocessed date
+            text = datetime.fromtimestamp(int(value)).strftime('%d/%m/%Y')
+        else:
+            text = datetime.fromtimestamp(value).strftime('%d/%m/%Y %H:%M:%S')
+        return text

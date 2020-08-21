@@ -1,7 +1,8 @@
 import datetime
 import logging
 import xlsxwriter
-from constants import BookAccount, PredefinedAsset
+from constants import BookAccount, PredefinedAsset, ColumnWidth
+from view_delegate import *
 from DB.helpers import executeSQL
 from CustomUI.helpers import UseSqlQuery, ConfigureTableView
 from reports.helpers import xslxFormat, xlsxWriteRow
@@ -80,15 +81,15 @@ class Reports(QObject):
     report_view_columns = {
         ReportType.IncomeSpending: [],
         ReportType.ProfitLoss: [],
-        ReportType.Deals: [("asset", "Asset", None, None, None),
-                           ("open_timestamp", "Open Date", None, None, None),
-                           ("close_timestamp", "Close Date", None, None, None),
-                           ("open_price", "Open Price", None, None, None),
-                           ("close_price", "Close Price", None, None, None),
-                           ("qty", "Qty", None, None, None),
-                           ("fee", "Fee", None, None, None),
-                           ("profit", "P/L", None, None, None),
-                           ("rel_profit", "P/L", None, None, None)]
+        ReportType.Deals: [("asset", "Asset", 300, None, None),
+                           ("open_timestamp", "Open Date", ColumnWidth.FOR_DATETIME, None, ReportsTimestampDelegate),
+                           ("close_timestamp", "Close Date", ColumnWidth.FOR_DATETIME, None, ReportsTimestampDelegate),
+                           ("open_price", "Open Price", None, None, ReportsFloat4Delegate),
+                           ("close_price", "Close Price", None, None, ReportsFloat4Delegate),
+                           ("qty", "Qty", None, None, ReportsFloatDelegate),
+                           ("fee", "Fee", None, None, ReportsFloat2Delegate),
+                           ("profit", "P/L", None, None, ReportsProfitDelegate),
+                           ("rel_profit", "P/L, %", None, None, ReportsProfitDelegate)]
     }
 
     def __init__(self, db, report_table_view):
