@@ -134,8 +134,7 @@ class ManipulateDate:
 # delegate is a function for custom paint and editors
 # relations - list of tuples that define lookup relations to other tables in database:
 #             [(KEY_FEILD, LOOKUP_TABLE, FOREIGN_KEY, LOOKUP_FIELD), ...]
-# mappings - list of tuples that define widgets linked to the fields in view:
-#             [Field_name, MappedWidget, Width, Formatter]
+# Returns QSqlTableModel/QSqlRelationalQueryModel
 def UseSqlTable(db, table_name, columns, relations):
     if relations:
         model = QSqlRelationalTableModel(db=db)
@@ -154,6 +153,21 @@ def UseSqlTable(db, table_name, columns, relations):
             model.setHeaderData(model.fieldIndex(column[hcol_idx.DB_NAME]), Qt.Horizontal, column[hcol_idx.DISPLAY_NAME])
         if column[hcol_idx.SORT_ORDER] is not None:
             model.setSort(model.fieldIndex(column[hcol_idx.DB_NAME]), column[hcol_idx.SORT_ORDER])
+    return model
+
+# -------------------------------------------------------------------------------------------------------------------
+# column_list is a list of tuples: (db_column_name, display_column_name, width, sort_order, delegate)
+# column will be hidden if display_column_name is None
+# column with negative with will be stretched
+# sort order is ignored as it might be set by Query itself
+# delegate is a function for custom paint and editors
+# Returns : QSqlTableModel
+def UseSqlQuery(db, query, columns):
+    model = QSqlTableModel(db=db)
+    model.setQuery(query)
+    for column in columns:
+        if column[hcol_idx.DISPLAY_NAME]:
+            model.setHeaderData(model.fieldIndex(column[hcol_idx.DB_NAME]), Qt.Horizontal, column[hcol_idx.DISPLAY_NAME])
     return model
 
 # -------------------------------------------------------------------------------------------------------------------

@@ -52,6 +52,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         # Setup reports tab
         self.ReportAccountBtn.init_db(self.db)
         self.reports = Reports(self.db, self.ReportTableView)
+        self.reports.report_failure.connect(self.onReportFailure)
 
         # Customize UI configuration
         self.operations = LedgerOperationsView(self.OperationsTableView)
@@ -169,6 +170,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         end = self.ReportToDate.dateTime().toSecsSinceEpoch()
         group_dates = 1 if self.ReportGroupCheck.isChecked() else 0
         self.reports.runReport(report_type, begin, end, self.ReportAccountBtn.account_id, group_dates)
+
+    @Slot()
+    def onReportFailure(self, error_msg):
+        self.StatusBar.showMessage(error_msg, timeout=30000)
 
     @Slot()
     def OnSearchTextChange(self):
