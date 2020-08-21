@@ -750,10 +750,10 @@ WITH RECURSIVE tree (
         UNION
         SELECT categories.id,
                tree.level + 1 AS level,
-               CASE WHEN tree.level == 0 THEN tree.L2 ELSE tree.L1 END AS L0,
-               tree.L2 AS L1,
+               CASE WHEN tree.level == 0 THEN tree.L2 ELSE (CASE WHEN tree.level == 1 THEN tree.L0 ELSE tree.L1 END) END AS L0,
+               CASE WHEN tree.level == 0 THEN categories.name ELSE tree.L2 END AS L1,
                categories.name AS L2,
-               tree.path || "/" || categories.name AS path
+               tree.path || CHAR(127) || categories.name AS path
           FROM categories
                JOIN
                tree

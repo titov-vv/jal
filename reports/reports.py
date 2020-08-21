@@ -13,12 +13,6 @@ from PySide2 import QtCore
 from PySide2.QtSql import QSqlQuery
 from UI.ui_deals_export_dlg import Ui_DealsExportDlg
 
-###
-# https://stackoverflow.com/questions/31475965/fastest-way-to-populate-qtableview-from-pandas-data-frame
-# https://stackoverflow.com/questions/44603119/how-to-display-a-pandas-data-frame-with-pyqt5-pyside2
-# https://stackoverflow.com/questions/41192293/make-qtableview-editable-when-model-is-pandas-dataframe
-# https://learndataanalysis.org/display-pandas-dataframe-with-pyqt5-qtableview-widget/
-
 class ReportType:
     IncomeSpending = 1
     ProfitLoss = 2
@@ -26,6 +20,7 @@ class ReportType:
 
 
 class PandasModel(QAbstractTableModel):
+    CATEGORY_LEVEL_SEPARATOR = chr(127)
 
     def __init__(self, data):
         QAbstractTableModel.__init__(self)
@@ -41,13 +36,19 @@ class PandasModel(QAbstractTableModel):
         if index.isValid():
             if role == Qt.DisplayRole:
                 if index.column() == 0:
-                    RowH = self._data.index[index.row()]
-                    if RowH[0] == RowH[1] and RowH[1] == RowH[2]:  # 1st level header
-                        return RowH[2]
-                    elif RowH[0] == RowH[1]:                       # 2nd level header
-                        return "  " + RowH[2]
-                    else:                                          # 3rd level header
-                        return "    " + RowH[2]
+                    row_header = str(self._data.index[index.row()])
+                    level = row_header.count(self.CATEGORY_LEVEL_SEPARATOR)
+                    if level > 0:
+                        row_header = row_header.rsplit(self.CATEGORY_LEVEL_SEPARATOR, 1)[1]
+                    for i in range(level):
+                        row_header = "  " + row_header
+                    return row_header
+                    # if RowH[0] == RowH[1] and RowH[1] == RowH[2]:  # 1st level header
+                    #     return RowH[2]
+                    # elif RowH[1] == RowH[2]:                       # 2nd level header
+                    #     return "  " + RowH[2]
+                    # else:                                          # 3rd level header
+                    #     return "    " + RowH[2]
                 else:
                     if isinstance(self._data.iloc[index.row(), index.column() - 1], str):
                         return ''
@@ -200,7 +201,7 @@ class Reports(QObject):
              (":begin", begin), (":end", end)])
         self.db.commit()
         self.query = executeSQL(self.db,
-                                "SELECT c.id, c.level, c.L0, c.L1, c.L2, "
+                                "SELECT c.id, c.level, c.L0, c.L1, c.L2, c.path, "
                                 "strftime('%Y', datetime(p.row_key, 'unixepoch')) AS year, "
                                 "strftime('%m', datetime(p.row_key, 'unixepoch')) AS month, p.value "
                                 "FROM categories_tree AS c "
@@ -209,22 +210,20 @@ class Reports(QObject):
         table = []
         while self.query.next():
             row = readSQLrecord(self.query)
-            year = str(row[5]) if row[5] != '' else None
-            month = str(row[6]) if row[6] != '' else None
+            year = str(row[6])# if row[6] != '' else None
+            month = str(row[7])# if row[7] != '' else None
+            value = row[8] if row[8] != '' else 0
             table.append({
-                'L0': row[2],
-                'L1': row[3],
-                'L2': row[4],
+                'category': row[5],
                 'Y': year,
                 'M': month,
-                'value': row[7]
+                'value': value
             })
         data = pd.DataFrame(table)
         data = data.fillna(0)
-        data = pd.pivot_table(data, index=['L0', 'L1', 'L2'], columns=['Y', 'M'],
-                              values='value', aggfunc=sum, fill_value=0.0)
+        data = pd.pivot_table(data, index=['category'], columns=['Y', 'M'],
+                              values='value', aggfunc=sum, fill_value=0.0, margins=True, margins_name='Total')
         self.dataframe = data
-        print(data)
 
     def prepareDealsReport(self, begin, end, account_id, group_dates):
         if account_id == 0:
