@@ -148,14 +148,14 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def onReportRangeChange(self, range_index):
         report_ranges = {
             0: lambda: (0, 0),
-            1: lambda: (1570000000, 1580000000),
-            2: ManipulateDate.startOfPreviousWeek,
-            3: ManipulateDate.startOfPreviousWeek
+            1: ManipulateDate.Last3Months,
+            2: ManipulateDate.RangeYTD,
+            3: ManipulateDate.RangeThisYear,
+            4: ManipulateDate.RangePreviousYear
         }
         begin, end = report_ranges[range_index]()
         self.ReportFromDate.setDateTime(QDateTime.fromSecsSinceEpoch(begin))
         self.ReportToDate.setDateTime(QDateTime.fromSecsSinceEpoch(end))
-        self.reports.setRange(begin, end)
 
     @Slot()
     def onRunReport(self):
@@ -168,6 +168,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         begin = self.ReportFromDate.dateTime().toSecsSinceEpoch()
         end = self.ReportToDate.dateTime().toSecsSinceEpoch()
         group_dates = 1 if self.ReportGroupCheck.isChecked() else 0
+        self.reports.runReport(report_type, begin, end, self.ReportAccountBtn.account_id, group_dates)
 
     @Slot()
     def OnSearchTextChange(self):

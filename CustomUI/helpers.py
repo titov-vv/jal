@@ -76,8 +76,7 @@ class ManipulateDate:
     @staticmethod
     def startOfPreviousQuarter():
         day = datetime.date.today()
-        current_month = day.month
-        prev_quarter_month = current_month - current_month % 3 - 3
+        prev_quarter_month = day.month - day.month % 3 - 3
         if prev_quarter_month > 0:
             quarter_back = day.replace(month = prev_quarter_month)
         else:
@@ -92,6 +91,39 @@ class ManipulateDate:
         last_day_of_prev_year = first_day_of_year - datetime.timedelta(days=1)
         first_day_of_prev_year = last_day_of_prev_year.replace(day=1, month=1)
         return ManipulateDate.toTimestamp(first_day_of_prev_year)
+
+    @staticmethod
+    def Last3Months():
+        day = datetime.date.today()
+        end = day + datetime.timedelta(days=1)
+        begin_month = day.month - 3
+        if begin_month > 0:
+            begin = day.replace(month=begin_month)
+        else:
+            begin = day.replace(month=(begin_month + 12), year=(day.year - 1))
+        begin = begin.replace(day=1)
+        return (ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end))
+
+    @staticmethod
+    def RangeYTD():
+        day = datetime.date.today()
+        end = day + datetime.timedelta(days=1)
+        begin = day.replace(day=1, year=(day.year - 1))
+        return (ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end))
+
+    @staticmethod
+    def RangeThisYear():
+        day = datetime.date.today()
+        end = day + datetime.timedelta(days=1)
+        begin = day.replace(day=1, month=1)
+        return (ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end))
+
+    @staticmethod
+    def RangePreviousYear():
+        day = datetime.date.today()
+        end = day.replace(day=1, month=1)
+        begin = end.replace(year=(day.year - 1))
+        return (ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end))
 
 
 # -------------------------------------------------------------------------------------------------------------------

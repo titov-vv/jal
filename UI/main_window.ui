@@ -1231,10 +1231,10 @@
         <item>
          <widget class="QFrame" name="HoldingsParamsFrame">
           <property name="frameShape">
-           <enum>QFrame::NoFrame</enum>
+           <enum>QFrame::Panel</enum>
           </property>
           <property name="frameShadow">
-           <enum>QFrame::Plain</enum>
+           <enum>QFrame::Sunken</enum>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_7">
            <property name="spacing">
@@ -1290,6 +1290,9 @@
         </item>
         <item>
          <widget class="QTableView" name="HoldingsTableView">
+          <property name="frameShape">
+           <enum>QFrame::Panel</enum>
+          </property>
           <property name="alternatingRowColors">
            <bool>true</bool>
           </property>
@@ -1326,10 +1329,10 @@
         <item>
          <widget class="QFrame" name="ReportParamsFrame">
           <property name="frameShape">
-           <enum>QFrame::NoFrame</enum>
+           <enum>QFrame::Panel</enum>
           </property>
           <property name="frameShadow">
-           <enum>QFrame::Plain</enum>
+           <enum>QFrame::Sunken</enum>
           </property>
           <layout class="QGridLayout" name="gridLayout">
            <property name="leftMargin">
@@ -1347,8 +1350,87 @@
            <property name="spacing">
             <number>6</number>
            </property>
+           <item row="1" column="4">
+            <widget class="QLabel" name="ReportToLbl">
+             <property name="text">
+              <string>To:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3" rowspan="2">
+            <widget class="Line" name="line_2">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Sunken</enum>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
            <item row="0" column="4">
-            <widget class="QDateEdit" name="ReportFromDate">
+            <widget class="QLabel" name="ReportFromLbl">
+             <property name="text">
+              <string>From:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="ReportTypeLbl">
+             <property name="text">
+              <string>Report:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="AccountButton" name="ReportAccountBtn">
+             <property name="text">
+              <string>PushButton</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="6">
+            <widget class="QComboBox" name="ReportRangeCombo">
+             <item>
+              <property name="text">
+               <string>Custom range</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Quarter to date</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Year to date</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>This year</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Previous year</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="1" column="5">
+            <widget class="QDateEdit" name="ReportToDate">
              <property name="displayFormat">
               <string>dd/MM/yyyy</string>
              </property>
@@ -1357,35 +1439,24 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="5">
+           <item row="0" column="8">
+            <spacer name="ReportFrameSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="1" column="6">
             <widget class="QCheckBox" name="ReportGroupCheck">
              <property name="text">
               <string>Group dates</string>
              </property>
-            </widget>
-           </item>
-           <item row="0" column="5">
-            <widget class="QComboBox" name="ReportRangeCombo">
-             <item>
-              <property name="text">
-               <string>Custom</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>This Year</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Previous Year</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>3 last years</string>
-              </property>
-             </item>
             </widget>
            </item>
            <item row="0" column="2">
@@ -1407,26 +1478,20 @@
              </item>
             </widget>
            </item>
-           <item row="0" column="6">
-            <spacer name="ReportFrameSpacer">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="0" column="3">
-            <widget class="QLabel" name="ReportFromLbl">
+           <item row="0" column="9">
+            <widget class="QPushButton" name="RunReportBtn">
              <property name="text">
-              <string>From:</string>
+              <string>Run</string>
              </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </widget>
+           </item>
+           <item row="0" column="5">
+            <widget class="QDateEdit" name="ReportFromDate">
+             <property name="displayFormat">
+              <string>dd/MM/yyyy</string>
+             </property>
+             <property name="calendarPopup">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -1437,48 +1502,7 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="3">
-            <widget class="QLabel" name="ReportToLbl">
-             <property name="text">
-              <string>To:</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="ReportTypeLbl">
-             <property name="text">
-              <string>Report:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <widget class="AccountButton" name="ReportAccountBtn">
-             <property name="text">
-              <string>PushButton</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="4">
-            <widget class="QDateEdit" name="ReportToDate">
-             <property name="displayFormat">
-              <string>dd/MM/yyyy</string>
-             </property>
-             <property name="calendarPopup">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="7">
-            <widget class="QPushButton" name="RunReportBtn">
-             <property name="text">
-              <string>Run</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="7">
+           <item row="1" column="9">
             <widget class="QPushButton" name="SaveReportBtn">
              <property name="text">
               <string>Save</string>
@@ -1492,6 +1516,9 @@
          <widget class="QTableView" name="ReportTableView">
           <property name="frameShape">
            <enum>QFrame::Panel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Sunken</enum>
           </property>
          </widget>
         </item>
