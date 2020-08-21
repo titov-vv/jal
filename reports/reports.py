@@ -41,13 +41,19 @@ class PandasModel(QAbstractTableModel):
         if index.isValid():
             if role == Qt.DisplayRole:
                 if index.column() == 0:
-                    return self._data.index[index.row()][2]
+                    RowH = self._data.index[index.row()]
+                    if RowH[0] == RowH[1] and RowH[1] == RowH[2]:
+                        return RowH[0]
+                    elif RowH[1] == RowH[2]:
+                        return "  " + RowH[1]
+                    else:
+                        return "    " + RowH[2]
                 else:
-                    return str(self._data.iloc[index.row(), index.column()])
+                    return f"{self._data.iloc[index.row(), index.column()]:,.2f}"
         return None
 
     def headerData(self, col, orientation, role):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+        if (orientation == Qt.Horizontal and role == Qt.DisplayRole) and (col != 0):
             return str(self._data.columns[col][0]) + '/' + str(self._data.columns[col][1])
         return None
 
