@@ -3,7 +3,7 @@ from PySide2.QtGui import QColor
 class Setup:
     DB_PATH = "ledger.sqlite"
     INIT_SCRIPT_PATH = 'ledger.sql'
-    TARGET_SCHEMA = 5
+    TARGET_SCHEMA = 6
     CALC_TOLERANCE = 1e-10
     DISP_TOLERANCE = 1e-4
 
@@ -45,6 +45,9 @@ class CorporateAction:   # CORPORATE ACTIONS FOR ASSETS
 
 
 class PredefinedCategory:
+    Income = 1
+    Spending = 2
+    Profits = 3
     Fees = 5
     Taxes = 6
     Dividends = 7

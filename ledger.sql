@@ -386,6 +386,16 @@ CREATE TABLE t_months (
 );
 
 
+-- Table: t_pivot
+DROP TABLE IF EXISTS t_pivot;
+
+CREATE TABLE t_pivot (
+    row_key INTEGER NOT NULL,
+    col_key INTEGER NOT NULL,
+    value   REAL
+);
+
+
 -- Table: tags
 DROP TABLE IF EXISTS tags;
 
@@ -715,6 +725,49 @@ CREATE VIEW categories_ext AS
            LEFT JOIN
            categories c2 ON c1.id = c2.pid
      GROUP BY c1.id;
+
+
+-- View: categories_tree
+DROP VIEW IF EXISTS categories_tree;
+CREATE VIEW categories_tree AS
+WITH RECURSIVE tree (
+        id,
+        level,
+        L0,
+        L1,
+        L2,
+        path
+    )
+    AS (
+        SELECT id,
+               0,
+               name,
+               name,
+               name,
+               name
+          FROM categories
+         WHERE pid = 0
+        UNION
+        SELECT categories.id,
+               tree.level + 1 AS level,
+               CASE WHEN tree.level == 0 THEN tree.L2 ELSE tree.L1 END AS L0,
+               tree.L2 AS L1,
+               categories.name AS L2,
+               tree.path || "/" || categories.name AS path
+          FROM categories
+               JOIN
+               tree
+         WHERE categories.pid = tree.id
+    )
+    SELECT id,
+           level,
+           L0,
+           L1,
+           L2,
+           path
+      FROM tree
+     ORDER BY path;
+
 
 
 -- View: currencies

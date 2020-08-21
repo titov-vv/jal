@@ -35,26 +35,29 @@ class PandasModel(QAbstractTableModel):
         return self._data.shape[0]
 
     def columnCount(self, parnet=None):
-        return self._data.shape[1]
+        return self._data.shape[1] + 1   # Left most column will serve as a header
 
     def data(self, index, role=Qt.DisplayRole):
         if index.isValid():
             if role == Qt.DisplayRole:
                 if index.column() == 0:
                     RowH = self._data.index[index.row()]
-                    if RowH[0] == RowH[1] and RowH[1] == RowH[2]:
-                        return RowH[0]
-                    elif RowH[1] == RowH[2]:
-                        return "  " + RowH[1]
-                    else:
+                    if RowH[0] == RowH[1] and RowH[1] == RowH[2]:  # 1st level header
+                        return RowH[2]
+                    elif RowH[0] == RowH[1]:                       # 2nd level header
+                        return "  " + RowH[2]
+                    else:                                          # 3rd level header
                         return "    " + RowH[2]
                 else:
-                    return f"{self._data.iloc[index.row(), index.column()]:,.2f}"
+                    if isinstance(self._data.iloc[index.row(), index.column() - 1], str):
+                        return ''
+                    else:
+                        return f"{self._data.iloc[index.row(), index.column() - 1]:,.2f}"
         return None
 
     def headerData(self, col, orientation, role):
         if (orientation == Qt.Horizontal and role == Qt.DisplayRole) and (col != 0):
-            return str(self._data.columns[col][0]) + '/' + str(self._data.columns[col][1])
+            return str(self._data.columns[col-1][0]) + '/' + str(self._data.columns[col-1][1])
         return None
 
 
@@ -173,6 +176,7 @@ class Reports(QObject):
 
     def prepareIncomeSpendingReport(self, begin, end, account_id, group_dates):
         _ = executeSQL(self.db, "DELETE FROM t_months")
+        _ = executeSQL(self.db, "DELETE FROM t_pivot")
         _ = executeSQL(self.db,
                        "INSERT INTO t_months (month, asset_id, last_timestamp) "
                       "SELECT strftime('%s', datetime(timestamp, 'unixepoch', 'start of month') ) "
@@ -194,29 +198,29 @@ class Reports(QObject):
             "GROUP BY row_key, col_key",
             [(":book_costs", BookAccount.Costs), (":book_incomes", BookAccount.Incomes),
              (":begin", begin), (":end", end)])
+        self.db.commit()
         self.query = executeSQL(self.db,
-                                "SELECT coalesce(c2.id, c1.id) AS cat_id, c0.name AS L0, c1.name AS L1, c2.name AS L2, "
+                                "SELECT c.id, c.level, c.L0, c.L1, c.L2, "
                                 "strftime('%Y', datetime(p.row_key, 'unixepoch')) AS year, "
                                 "strftime('%m', datetime(p.row_key, 'unixepoch')) AS month, p.value "
-                                "FROM categories AS c0 "
-                                "LEFT JOIN categories AS c1 on c0.id=c1.pid OR c1.id=c0.id "
-                                "LEFT JOIN categories AS c2 ON c1.id=c2.pid OR c1.id=c2.id "
-                                "LEFT JOIN t_pivot AS p ON p.col_key=cat_id "
-                                "WHERE c0.pid = 0")
+                                "FROM categories_tree AS c "
+                                "LEFT JOIN t_pivot AS p ON p.col_key=c.id "
+                                "ORDER BY c.path, year, month")
         table = []
         while self.query.next():
             row = readSQLrecord(self.query)
-            year = int(row[4]) if row[4]!='' else 0
-            month = int(row[5]) if row[5] != '' else 0
+            year = str(row[5]) if row[5] != '' else None
+            month = str(row[6]) if row[6] != '' else None
             table.append({
-                'L0': row[1],
-                'L1': row[2],
-                'L2': row[3],
+                'L0': row[2],
+                'L1': row[3],
+                'L2': row[4],
                 'Y': year,
                 'M': month,
-                'value': row[6]
+                'value': row[7]
             })
         data = pd.DataFrame(table)
+        data = data.fillna(0)
         data = pd.pivot_table(data, index=['L0', 'L1', 'L2'], columns=['Y', 'M'],
                               values='value', aggfunc=sum, fill_value=0.0)
         self.dataframe = data
@@ -268,6 +272,7 @@ class Reports(QObject):
                                 "GROUP BY m.m_start, l.asset_id "
                                 "ORDER BY m.m_start, l.asset_id",
                        [(":account_id", account_id), (":begin", begin), (":end", end)])
+        self.db.commit()
         self.query = executeSQL(self.db,
             "SELECT DISTINCT(m.month) AS period, coalesce(t.transfer, 0) AS transfer, coalesce(a.assets, 0) AS assets, "
             "coalesce(p.result, 0) AS result, coalesce(o.profit, 0) AS profit, coalesce(d.dividend, 0) AS dividend, "
