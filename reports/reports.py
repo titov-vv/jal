@@ -80,7 +80,13 @@ class Reports(QObject):
 
     report_view_columns = {
         ReportType.IncomeSpending: [],
-        ReportType.ProfitLoss: [],
+        ReportType.ProfitLoss: [("period", "Period", ColumnWidth.FOR_DATETIME, None, ReportsYearMonthDelegate),
+                                ("transfer", "In / Out", None, None, ReportsFloat2Delegate),
+                                ("assets", "Assets value", None, None, ReportsFloat2Delegate),
+                                ("result", "Total result", None, None, ReportsFloat2Delegate),
+                                ("profit", "Profit / Loss", None, None, ReportsProfitDelegate),
+                                ("dividend", "Returns", None, None, ReportsFloat2Delegate),
+                                ("tax_fee", "Taxes & Fees", None, None, ReportsFloat2Delegate)],
         ReportType.Deals: [("asset", "Asset", 300, None, None),
                            ("open_timestamp", "Open Date", ColumnWidth.FOR_DATETIME, None, ReportsTimestampDelegate),
                            ("close_timestamp", "Close Date", ColumnWidth.FOR_DATETIME, None, ReportsTimestampDelegate),
@@ -97,9 +103,11 @@ class Reports(QObject):
 
         self.db = db
         self.table_view = report_table_view
+        self.delegates = []
 
         self.workbook = None
         self.formats = None
+
 
     def runReport(self, type, begin=0, end=0, account_id=0, group_dates=0):
         reports = {
@@ -110,7 +118,11 @@ class Reports(QObject):
         reports[type](begin, end, account_id, group_dates)
 
     def saveReport(self):
-        print("SAVE")
+        filename, filter = QFileDialog.getSaveFileName(None, "Save deals report to:", ".", "Excel file (*.xlsx)")
+        if filename:
+            if filter == self.tr("Excel file (*.xlsx)") and filename[-5:] != '.xlsx':
+                filename = filename + '.xlsx'
+        print(filename)
 
     def prepareIncomeSpendingReport(self, begin, end, account_id, group_dates):
         print("I/S")
@@ -141,7 +153,88 @@ class Reports(QObject):
                                         "WHERE account_id=:account_id AND close_timestamp>=:begin AND close_timestamp<=:end",
                                [(":account_id", account_id), (":begin", begin), (":end", end)], forward_only=False)
         model = UseSqlQuery(self.db, query, self.report_view_columns[ReportType.Deals])
-        delegates = ConfigureTableView(self.table_view, model, self.report_view_columns[ReportType.Deals])
+        self.delegates = ConfigureTableView(self.table_view, model, self.report_view_columns[ReportType.Deals])
+        model.select()
+
+    def prepareProfitLossReport(self, begin, end, account_id, group_dates):
+        if account_id == 0:
+            self.report_failure.emit("Profit/Loss report requires exact account")
+            return
+        _ = executeSQL(self.db, "DELETE FROM t_months")
+        _ = executeSQL(self.db, "INSERT INTO t_months(asset_id, month, last_timestamp) "
+                                "SELECT DISTINCT(l.asset_id) AS asset_id, m.m_start, MAX(q.timestamp) AS last_timestamp "
+                                "FROM ledger AS l "
+                                "LEFT JOIN "
+                                "(WITH RECURSIVE months(m_start) AS "
+                                "( "
+                                "  VALUES(CAST(strftime('%s', date(:begin, 'unixepoch', 'start of month')) AS INTEGER)) "
+                                "  UNION ALL "
+                                "  SELECT CAST(strftime('%s', date(m_start, 'unixepoch', '+1 month')) AS INTEGER) "
+                                "  FROM months "
+                                "  WHERE m_start < :end "
+                                ") "
+                                "SELECT m_start FROM months) AS m "
+                                "LEFT JOIN quotes AS q ON q.timestamp<=m.m_start AND q.asset_id=l.asset_id "
+                                "WHERE l.timestamp>=:begin AND l.timestamp<=:end AND l.account_id=:account_id "
+                                "GROUP BY m.m_start, l.asset_id "
+                                "ORDER BY m.m_start, l.asset_id",
+                       [(":account_id", account_id), (":begin", begin), (":end", end)])
+        query = executeSQL(self.db,
+            "SELECT DISTINCT(m.month) AS period, coalesce(t.transfer, 0) AS transfer, coalesce(a.assets, 0) AS assets, "
+            "coalesce(p.result, 0) AS result, coalesce(o.profit, 0) AS profit, coalesce(d.dividend, 0) AS dividend, "
+            "coalesce(f.tax_fee, 0) AS tax_fee "
+            "FROM t_months AS m "
+            "LEFT JOIN ( "
+            "  SELECT mt.month, SUM(-l.amount) AS transfer "
+            "  FROM t_months AS mt "
+            "  LEFT JOIN ledger AS l ON mt.month = "
+            "  CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) AS INTEGER) "
+            "  AND mt.asset_id=l.asset_id "
+            "  WHERE l.book_account=:book_transfers AND l.account_id=:account_id GROUP BY mt.month "
+            ") AS t ON t.month = m.month "
+            "LEFT JOIN ( "
+            "  SELECT ma.month, SUM(l.amount*q.quote) AS assets "
+            "  FROM t_months AS ma "
+            "  LEFT JOIN ledger AS l ON l.timestamp<=ma.month AND l.asset_id=ma.asset_id "
+            "  LEFT JOIN quotes AS q ON ma.last_timestamp=q.timestamp AND ma.asset_id=q.asset_id "
+            "  WHERE l.account_id = 76 AND (l.book_account=:book_money OR l.book_account=:book_assets) "
+            "  GROUP BY ma.month "
+            ") AS a ON a.month = m.month "
+            "LEFT JOIN ( "
+            "  SELECT CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) AS INTEGER) AS month,"
+            "  SUM(-l.amount) as result"
+            "  FROM ledger AS l  "
+            "  WHERE (l.book_account=:book_costs OR l.book_account=:book_incomes) AND l.account_id=:account_id "
+            "  GROUP BY month "
+            ") AS p ON p.month = m.month "
+            "LEFT JOIN ( "
+            "  SELECT CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) "
+            "  AS INTEGER) AS month, SUM(-l.amount) as profit "
+            "  FROM ledger AS l "
+            "  WHERE (l.book_account=:book_costs OR l.book_account=:book_incomes) "
+            "  AND category_id=9 AND l.account_id=:account_id "
+            "  GROUP BY month "
+            ") AS o ON o.month = m.month "
+            "LEFT JOIN ( "
+            "  SELECT CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) AS INTEGER) "
+            "  AS month, SUM(-l.amount) as dividend "
+            "  FROM ledger AS l "
+            "  WHERE (l.book_account=:book_costs OR l.book_account=:book_incomes) "
+            "  AND (l.category_id=7 OR l.category_id=8) AND l.account_id=:account_id "
+            "  GROUP BY month "
+            ") AS d ON d.month = m.month "
+            "LEFT JOIN ( "
+            "  SELECT CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) "
+            "  AS INTEGER) AS month, SUM(-l.amount) as tax_fee "
+            "  FROM ledger AS l "
+            "  WHERE l.book_account=:book_costs AND l.category_id<>7 AND l.category_id<>8 AND l.account_id=:account_id "
+            "  GROUP BY month "
+            ") AS f ON f.month = m.month",
+            [(":account_id", account_id), (":book_costs", BookAccount.Costs), (":book_incomes", BookAccount.Incomes),
+             (":book_money", BookAccount.Money), (":book_assets", BookAccount.Assets), (":book_transfers", BookAccount.Transfers)],
+                           forward_only=False)
+        model = UseSqlQuery(self.db, query, self.report_view_columns[ReportType.ProfitLoss])
+        self.delegates = ConfigureTableView(self.table_view, model, self.report_view_columns[ReportType.ProfitLoss])
         model.select()
 
 

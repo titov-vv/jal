@@ -581,3 +581,12 @@ class ReportsTimestampDelegate(QStyledItemDelegate):
         else:
             text = datetime.fromtimestamp(value).strftime('%d/%m/%Y %H:%M:%S')
         return text
+
+
+class ReportsYearMonthDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        QStyledItemDelegate.__init__(self, parent)
+
+    def displayText(self, value, locale):
+        text = datetime.fromtimestamp(value).strftime('%Y %B')
+        return text
