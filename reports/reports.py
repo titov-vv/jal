@@ -1,13 +1,14 @@
 import datetime
 import logging
 import xlsxwriter
+import pandas as pd
 from constants import BookAccount, PredefinedAsset, ColumnWidth
 from view_delegate import *
-from DB.helpers import executeSQL
+from DB.helpers import executeSQL, readSQLrecord
 from CustomUI.helpers import UseSqlQuery, ConfigureTableView
 from reports.helpers import xslxFormat, xlsxWriteRow
 from PySide2.QtWidgets import QDialog, QFileDialog
-from PySide2.QtCore import QObject, Property, Slot, Signal
+from PySide2.QtCore import Qt, QObject, Property, Slot, Signal, QAbstractTableModel
 from PySide2 import QtCore
 from PySide2.QtSql import QSqlQuery
 from UI.ui_deals_export_dlg import Ui_DealsExportDlg
@@ -22,6 +23,33 @@ class ReportType:
     IncomeSpending = 1
     ProfitLoss = 2
     Deals = 3
+
+
+class PandasModel(QAbstractTableModel):
+
+    def __init__(self, data):
+        QAbstractTableModel.__init__(self)
+        self._data = data
+
+    def rowCount(self, parent=None):
+        return self._data.shape[0]
+
+    def columnCount(self, parnet=None):
+        return self._data.shape[1]
+
+    def data(self, index, role=Qt.DisplayRole):
+        if index.isValid():
+            if role == Qt.DisplayRole:
+                if index.column() == 0:
+                    return self._data.index[index.row()][2]
+                else:
+                    return str(self._data.iloc[index.row(), index.column()])
+        return None
+
+    def headerData(self, col, orientation, role):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return str(self._data.columns[col][0]) + '/' + str(self._data.columns[col][1])
+        return None
 
 
 class ReportParamsDialog(QDialog, Ui_DealsExportDlg):
@@ -89,6 +117,7 @@ class Reports(QObject):
         self.delegates = []
         self.current_report = None
         self.query = None
+        self.dataframe = None
         self.model = None
 
         self.workbook = None
@@ -120,9 +149,14 @@ class Reports(QObject):
     def runReport(self, report_type, begin=0, end=0, account_id=0, group_dates=0):
         self.reports[report_type][PREPARE_REPORT_QUERY](begin, end, account_id, group_dates)
 
-        self.model = UseSqlQuery(self.db, self.query, self.reports[report_type][REPORT_COLUMNS])
-        self.delegates = ConfigureTableView(self.table_view, self.model, self.reports[report_type][REPORT_COLUMNS])
-        self.model.select()
+        if report_type != ReportType.IncomeSpending:
+            self.model = UseSqlQuery(self.db, self.query, self.reports[report_type][REPORT_COLUMNS])
+            self.delegates = ConfigureTableView(self.table_view, self.model, self.reports[report_type][REPORT_COLUMNS])
+            self.model.select()
+        else:
+            self.model = PandasModel(self.dataframe)
+            self.table_view.setModel(self.model)
+            self.table_view.show()
 
     def saveReport(self):
         filename, filter = QFileDialog.getSaveFileName(None, "Save deals report to:", ".", "Excel file (*.xlsx)")
@@ -132,7 +166,55 @@ class Reports(QObject):
         print(filename)
 
     def prepareIncomeSpendingReport(self, begin, end, account_id, group_dates):
-        print("I/S")
+        _ = executeSQL(self.db, "DELETE FROM t_months")
+        _ = executeSQL(self.db,
+                       "INSERT INTO t_months (month, asset_id, last_timestamp) "
+                      "SELECT strftime('%s', datetime(timestamp, 'unixepoch', 'start of month') ) "
+                      "AS month, asset_id, MAX(timestamp) AS last_timestamp "
+                      "FROM quotes AS q "
+                      "LEFT JOIN assets AS a ON q.asset_id=a.id "
+                      "WHERE a.type_id=:asset_money "
+                      "GROUP BY month, asset_id",
+                       [(":asset_money", PredefinedAsset.Money)])
+        _ = executeSQL(self.db,
+            "INSERT INTO t_pivot (row_key, col_key, value) "
+            "SELECT strftime('%s', datetime(t.timestamp, 'unixepoch', 'start of month') ) AS row_key, "
+            "t.category_id AS col_key, sum(-t.amount * coalesce(q.quote, 1)) AS value "
+            "FROM ledger AS t "
+            "LEFT JOIN t_months AS d ON row_key = d.month AND t.asset_id = d.asset_id "
+            "LEFT JOIN quotes AS q ON d.last_timestamp = q.timestamp AND t.asset_id = q.asset_id "
+            "WHERE (t.book_account=:book_costs OR t.book_account=:book_incomes) "
+            "AND t.timestamp>=:begin AND t.timestamp<=:end "
+            "GROUP BY row_key, col_key",
+            [(":book_costs", BookAccount.Costs), (":book_incomes", BookAccount.Incomes),
+             (":begin", begin), (":end", end)])
+        self.query = executeSQL(self.db,
+                                "SELECT coalesce(c2.id, c1.id) AS cat_id, c0.name AS L0, c1.name AS L1, c2.name AS L2, "
+                                "strftime('%Y', datetime(p.row_key, 'unixepoch')) AS year, "
+                                "strftime('%m', datetime(p.row_key, 'unixepoch')) AS month, p.value "
+                                "FROM categories AS c0 "
+                                "LEFT JOIN categories AS c1 on c0.id=c1.pid OR c1.id=c0.id "
+                                "LEFT JOIN categories AS c2 ON c1.id=c2.pid OR c1.id=c2.id "
+                                "LEFT JOIN t_pivot AS p ON p.col_key=cat_id "
+                                "WHERE c0.pid = 0")
+        table = []
+        while self.query.next():
+            row = readSQLrecord(self.query)
+            year = int(row[4]) if row[4]!='' else 0
+            month = int(row[5]) if row[5] != '' else 0
+            table.append({
+                'L0': row[1],
+                'L1': row[2],
+                'L2': row[3],
+                'Y': year,
+                'M': month,
+                'value': row[6]
+            })
+        data = pd.DataFrame(table)
+        data = pd.pivot_table(data, index=['L0', 'L1', 'L2'], columns=['Y', 'M'],
+                              values='value', aggfunc=sum, fill_value=0.0)
+        self.dataframe = data
+        print(data)
 
     def prepareDealsReport(self, begin, end, account_id, group_dates):
         if account_id == 0:
@@ -236,6 +318,11 @@ class Reports(QObject):
              (":book_transfers", BookAccount.Transfers)],
                            forward_only=False)
 
+
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
     def create_report(self, parent, report_type):
         if report_type == self.DEALS_REPORT:
             dialog_title = "Prepare deals report"
