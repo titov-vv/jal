@@ -3,7 +3,7 @@ from PySide2.QtGui import QColor
 class Setup:
     DB_PATH = "ledger.sqlite"
     INIT_SCRIPT_PATH = 'ledger.sql'
-    TARGET_SCHEMA = 6
+    TARGET_SCHEMA = 7
     CALC_TOLERANCE = 1e-10
     DISP_TOLERANCE = 1e-4
 

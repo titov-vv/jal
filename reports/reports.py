@@ -186,7 +186,7 @@ class Reports(QObject):
              (":begin", begin), (":end", end)])
         self.db.commit()
         self.query = executeSQL(self.db,
-                                "SELECT c.id, c.level, c.L0, c.L1, c.L2, c.path, "
+                                "SELECT c.id, c.level, c.path, "
                                 "strftime('%Y', datetime(p.row_key, 'unixepoch')) AS year, "
                                 "strftime('%m', datetime(p.row_key, 'unixepoch')) AS month, p.value "
                                 "FROM categories_tree AS c "
@@ -194,13 +194,13 @@ class Reports(QObject):
                                 "ORDER BY c.path, year, month")
         table = []
         while self.query.next():
-            row = readSQLrecord(self.query)
-            value = row[8] if row[8] != '' else 0
+            id, level, category, year, month, value = readSQLrecord(self.query)
+            turnover = value if value != '' else 0
             table.append({
-                'category': row[5],
-                'Y': row[6],
-                'M': row[7],
-                'turnover': value
+                'category': category,
+                'Y': year,
+                'M': month,
+                'turnover': turnover
             })
         data = pd.DataFrame(table)
         data = pd.pivot_table(data, index=['category'], columns=['Y', 'M'], values=['turnover'],

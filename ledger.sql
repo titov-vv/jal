@@ -733,26 +733,17 @@ CREATE VIEW categories_tree AS
 WITH RECURSIVE tree (
         id,
         level,
-        L0,
-        L1,
-        L2,
         path
     )
     AS (
         SELECT id,
                0,
-               name,
-               name,
-               name,
                name
           FROM categories
          WHERE pid = 0
         UNION
         SELECT categories.id,
                tree.level + 1 AS level,
-               CASE WHEN tree.level == 0 THEN tree.L2 ELSE (CASE WHEN tree.level == 1 THEN tree.L0 ELSE tree.L1 END) END AS L0,
-               CASE WHEN tree.level == 0 THEN categories.name ELSE tree.L2 END AS L1,
-               categories.name AS L2,
                tree.path || CHAR(127) || categories.name AS path
           FROM categories
                JOIN
@@ -761,9 +752,6 @@ WITH RECURSIVE tree (
     )
     SELECT id,
            level,
-           L0,
-           L1,
-           L2,
            path
       FROM tree
      ORDER BY path;
@@ -1567,7 +1555,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 5);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 7);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 
