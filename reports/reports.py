@@ -18,9 +18,12 @@ class ReportType:
     ProfitLoss = 2
     Deals = 3
 
+TOTAL_NAME = 'TOTAL'
+
 
 class PandasModel(QAbstractTableModel):
     CATEGORY_LEVEL_SEPARATOR = chr(127)
+    CATEGORY_INTEND = "  "
 
     def __init__(self, data):
         QAbstractTableModel.__init__(self)
@@ -30,7 +33,7 @@ class PandasModel(QAbstractTableModel):
         return self._data.shape[0]
 
     def columnCount(self, parnet=None):
-        return self._data.shape[1] + 1   # Left most column will serve as a header
+        return self._data.shape[1] + 1    # +1 as extra leftmost column serves as a category header
 
     def data(self, index, role=Qt.DisplayRole):
         if index.isValid():
@@ -41,24 +44,20 @@ class PandasModel(QAbstractTableModel):
                     if level > 0:
                         row_header = row_header.rsplit(self.CATEGORY_LEVEL_SEPARATOR, 1)[1]
                     for i in range(level):
-                        row_header = "  " + row_header
+                        row_header = self.CATEGORY_INTEND + row_header
                     return row_header
-                    # if RowH[0] == RowH[1] and RowH[1] == RowH[2]:  # 1st level header
-                    #     return RowH[2]
-                    # elif RowH[1] == RowH[2]:                       # 2nd level header
-                    #     return "  " + RowH[2]
-                    # else:                                          # 3rd level header
-                    #     return "    " + RowH[2]
                 else:
-                    if isinstance(self._data.iloc[index.row(), index.column() - 1], str):
-                        return ''
-                    else:
-                        return f"{self._data.iloc[index.row(), index.column() - 1]:,.2f}"
+                    return f"{self._data.iloc[index.row(), index.column() - 1]:,.2f}"
         return None
 
     def headerData(self, col, orientation, role):
-        if (orientation == Qt.Horizontal and role == Qt.DisplayRole) and (col != 0):
-            return str(self._data.columns[col-1][0]) + '/' + str(self._data.columns[col-1][1])
+        if (orientation == Qt.Horizontal and role == Qt.DisplayRole):
+            if col == 0:        # Leftmost column serves as a category header
+                return None
+            if col == self._data.shape[1]:   # Rightmost total header
+                return str(self._data.columns[col-1][0])
+            col_date = datetime(year=int(self._data.columns[col-1][0]), month=int(self._data.columns[col-1][1]), day=1)
+            return col_date.strftime("%Y %b")
         return None
 
 
@@ -210,19 +209,18 @@ class Reports(QObject):
         table = []
         while self.query.next():
             row = readSQLrecord(self.query)
-            year = str(row[6])# if row[6] != '' else None
-            month = str(row[7])# if row[7] != '' else None
             value = row[8] if row[8] != '' else 0
             table.append({
                 'category': row[5],
-                'Y': year,
-                'M': month,
-                'value': value
+                'Y': row[6],
+                'M': row[7],
+                'turnover': value
             })
         data = pd.DataFrame(table)
-        data = data.fillna(0)
-        data = pd.pivot_table(data, index=['category'], columns=['Y', 'M'],
-                              values='value', aggfunc=sum, fill_value=0.0, margins=True, margins_name='Total')
+        data = pd.pivot_table(data, index=['category'], columns=['Y', 'M'], values='turnover',
+                              aggfunc=sum, fill_value=0.0, margins=True, margins_name=TOTAL_NAME)
+        if data.columns[0][1] == '':   # if some categories have no data and we have null 1st column
+            data = data.drop(columns=[data.columns[0]])
         self.dataframe = data
 
     def prepareDealsReport(self, begin, end, account_id, group_dates):
