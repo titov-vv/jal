@@ -1616,9 +1616,6 @@
     <property name="title">
      <string>&amp;Reports</string>
     </property>
-    <addaction name="MakeCategoriesReport"/>
-    <addaction name="MakeDealsReport"/>
-    <addaction name="MakePLReport"/>
     <addaction name="PrepareTaxForms"/>
    </widget>
    <addaction name="menuFile"/>
@@ -1687,7 +1684,7 @@
   </action>
   <action name="PrepareTaxForms">
    <property name="text">
-    <string>Report for &amp;taxes [RU]</string>
+    <string>&amp;Tax report [RU]</string>
    </property>
   </action>
   <action name="MakeDealsReport">
