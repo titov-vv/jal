@@ -11,7 +11,9 @@ from PySide2.QtWidgets import QFileDialog
 from PySide2.QtCore import Qt, QObject, Signal, QAbstractTableModel
 
 
+TREE_LEVEL_SEPARATOR = chr(127)
 TOTAL_NAME = 'TOTAL'
+
 
 class ReportType:
     IncomeSpending = 1
@@ -21,7 +23,7 @@ class ReportType:
 
 #-----------------------------------------------------------------------------------------------------------------------
 class PandasModel(QAbstractTableModel):
-    CATEGORY_LEVEL_SEPARATOR = chr(127)
+
     CATEGORY_INTEND = "  "
 
     def __init__(self, data):
@@ -39,9 +41,9 @@ class PandasModel(QAbstractTableModel):
             if role == Qt.DisplayRole:
                 if index.column() == 0:
                     row_header = str(self._data.index[index.row()])
-                    level = row_header.count(self.CATEGORY_LEVEL_SEPARATOR)
+                    level = row_header.count(TREE_LEVEL_SEPARATOR)
                     if level > 0:
-                        row_header = row_header.rsplit(self.CATEGORY_LEVEL_SEPARATOR, 1)[1]
+                        row_header = row_header.rsplit(TREE_LEVEL_SEPARATOR, 1)[1]
                     for i in range(level):
                         row_header = self.CATEGORY_INTEND + row_header
                     return row_header
@@ -54,8 +56,8 @@ class PandasModel(QAbstractTableModel):
             if col == 0:        # Leftmost column serves as a category header
                 return None
             if col == self._data.shape[1]:   # Rightmost total header
-                return str(self._data.columns[col-1][0])
-            col_date = datetime(year=int(self._data.columns[col-1][0]), month=int(self._data.columns[col-1][1]), day=1)
+                return str(self._data.columns[col-1][1])
+            col_date = datetime(year=int(self._data.columns[col-1][1]), month=int(self._data.columns[col-1][2]), day=1)
             return col_date.strftime("%Y %b")
         return None
 
@@ -201,10 +203,33 @@ class Reports(QObject):
                 'turnover': value
             })
         data = pd.DataFrame(table)
-        data = pd.pivot_table(data, index=['category'], columns=['Y', 'M'], values='turnover',
+        data = pd.pivot_table(data, index=['category'], columns=['Y', 'M'], values=['turnover'],
                               aggfunc=sum, fill_value=0.0, margins=True, margins_name=TOTAL_NAME)
         if data.columns[0][1] == '':   # if some categories have no data and we have null 1st column
             data = data.drop(columns=[data.columns[0]])
+        # Calculate sub-totals from bottom to top
+        totals = {}
+        prev_level = 0
+        for index, row in data[::-1].iterrows():
+            if index == TOTAL_NAME:
+                continue
+            level = index.count(TREE_LEVEL_SEPARATOR)
+            if level > prev_level:
+                totals[level] = row['turnover']
+                prev_level = level
+            elif level == prev_level:
+                try:
+                    totals[level] = totals[level] + row['turnover']
+                except KeyError:
+                    totals[level] = row['turnover']
+            elif level < prev_level:
+                try:
+                    totals[level] = totals[level] + totals[prev_level] + row['turnover']
+                except KeyError:
+                    totals[level] = totals[prev_level] + row['turnover']
+                sub_total = totals.pop(prev_level, None)
+                data.loc[index, :] = sub_total.values
+                prev_level = level
         self.dataframe = data
 
     def prepareDealsReport(self, begin, end, account_id, group_dates):
