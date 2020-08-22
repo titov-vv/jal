@@ -590,3 +590,24 @@ class ReportsYearMonthDelegate(QStyledItemDelegate):
     def displayText(self, value, locale):
         text = datetime.fromtimestamp(value).strftime('%Y %B')
         return text
+
+class ReportsPandasDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        QStyledItemDelegate.__init__(self, parent)
+
+    def paint(self, painter, option, index):
+        painter.save()
+        pen = painter.pen()
+        model = index.model()
+        if index.column() == 0:
+            text = model.data(index, Qt.DisplayRole)
+            painter.drawText(option.rect, Qt.AlignLeft, text)
+        else:
+            amount = model.data(index, Qt.DisplayRole)
+            if amount == 0:
+                pen.setColor(CustomColor.Grey)
+                painter.setPen(pen)
+            text = f"{amount:,.2f}"
+            painter.drawText(option.rect, Qt.AlignRight, text)
+        painter.setPen(pen)
+        painter.restore()

@@ -47,7 +47,7 @@ class PandasModel(QAbstractTableModel):
                         row_header = self.CATEGORY_INTEND + row_header
                     return row_header
                 else:
-                    return f"{self._data.iloc[index.row(), index.column() - 1]:,.2f}"
+                    return self._data.iloc[index.row(), index.column() - 1]
         return None
 
     def headerData(self, col, orientation, role):
@@ -113,7 +113,8 @@ class ReportParamsDialog(QDialog, Ui_DealsExportDlg):
 
 
 PREPARE_REPORT_QUERY = 0
-REPORT_COLUMNS = 1
+SHOW_REPORT = 1
+REPORT_COLUMNS = 2
 
 class Reports(QObject):
     report_failure = Signal(str)
@@ -134,8 +135,10 @@ class Reports(QObject):
 
         self.reports = {
             ReportType.IncomeSpending: (self.prepareIncomeSpendingReport,
+                                        self.showPandasReport,
                                         []),
             ReportType.ProfitLoss: (self.prepareProfitLossReport,
+                                    self.showSqlQueryReport,
                                     [("period", "Period", ColumnWidth.FOR_DATETIME, None, ReportsYearMonthDelegate),
                                     ("transfer", "In / Out", None, None, ReportsFloat2Delegate),
                                     ("assets", "Assets value", None, None, ReportsFloat2Delegate),
@@ -144,6 +147,7 @@ class Reports(QObject):
                                     ("dividend", "Returns", None, None, ReportsFloat2Delegate),
                                     ("tax_fee", "Taxes & Fees", None, None, ReportsFloat2Delegate)]),
             ReportType.Deals: (self.prepareDealsReport,
+                               self.showSqlQueryReport,
                                [("asset", "Asset", 300, None, None),
                                ("open_timestamp", "Open Date", ColumnWidth.FOR_DATETIME, None, ReportsTimestampDelegate),
                                ("close_timestamp", "Close Date", ColumnWidth.FOR_DATETIME, None, ReportsTimestampDelegate),
@@ -157,15 +161,28 @@ class Reports(QObject):
 
     def runReport(self, report_type, begin=0, end=0, account_id=0, group_dates=0):
         self.reports[report_type][PREPARE_REPORT_QUERY](begin, end, account_id, group_dates)
+        self.reports[report_type][SHOW_REPORT](report_type)
 
-        if report_type != ReportType.IncomeSpending:
-            self.model = UseSqlQuery(self.db, self.query, self.reports[report_type][REPORT_COLUMNS])
-            self.delegates = ConfigureTableView(self.table_view, self.model, self.reports[report_type][REPORT_COLUMNS])
-            self.model.select()
-        else:
-            self.model = PandasModel(self.dataframe)
-            self.table_view.setModel(self.model)
-            self.table_view.show()
+    def showSqlQueryReport(self, report_type):
+        self.model = UseSqlQuery(self.db, self.query, self.reports[report_type][REPORT_COLUMNS])
+        self.delegates = ConfigureTableView(self.table_view, self.model, self.reports[report_type][REPORT_COLUMNS])
+        self.model.select()
+
+    def showPandasReport(self, report_type):
+        self.model = PandasModel(self.dataframe)
+        self.table_view.setModel(self.model)
+        self.delegates = []
+        for column in range(self.model.columnCount()):
+            if column == 0:
+                self.table_view.setColumnWidth(column, 300)
+            else:
+                self.table_view.setColumnWidth(column, 100)
+            self.delegates.append(ReportsPandasDelegate(self.table_view))
+            self.table_view.setItemDelegateForColumn(column, self.delegates[-1])
+        font = self.table_view.horizontalHeader().font()
+        font.setBold(True)
+        self.table_view.horizontalHeader().setFont(font)
+        self.table_view.show()
 
     def saveReport(self):
         filename, filter = QFileDialog.getSaveFileName(None, "Save deals report to:", ".", "Excel file (*.xlsx)")

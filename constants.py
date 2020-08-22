@@ -79,6 +79,7 @@ class CustomColor:
     DarkRed = QColor(139, 0, 0)
     DarkBlue = QColor(0, 0, 139)
     Blue = QColor(0, 0, 255)
+    Grey = QColor(127, 127, 127)
     LightBlue = QColor(150, 200, 255)
     LightPurple = QColor(200, 150, 255)
     LightGreen = QColor(127, 255, 127)
