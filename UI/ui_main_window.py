@@ -920,9 +920,6 @@ class Ui_LedgerMainWindow(object):
         self.menuPredefined_data.addAction(self.actionAccountTypes)
         self.menuLoad.addAction(self.action_Load_quotes)
         self.menuLoad.addAction(self.actionLoad_Statement)
-        self.menu_Reports.addAction(self.MakeCategoriesReport)
-        self.menu_Reports.addAction(self.MakeDealsReport)
-        self.menu_Reports.addAction(self.MakePLReport)
         self.menu_Reports.addAction(self.PrepareTaxForms)
 
         self.retranslateUi(LedgerMainWindow)
@@ -947,7 +944,7 @@ class Ui_LedgerMainWindow(object):
         self.actionCategories.setText(QCoreApplication.translate("LedgerMainWindow", u"&Categories", None))
         self.actionBackup.setText(QCoreApplication.translate("LedgerMainWindow", u"&Backup...", None))
         self.actionRestore.setText(QCoreApplication.translate("LedgerMainWindow", u"&Restore...", None))
-        self.PrepareTaxForms.setText(QCoreApplication.translate("LedgerMainWindow", u"Report for &taxes [RU]", None))
+        self.PrepareTaxForms.setText(QCoreApplication.translate("LedgerMainWindow", u"&Tax report [RU]", None))
         self.MakeDealsReport.setText(QCoreApplication.translate("LedgerMainWindow", u"&Deals report", None))
         self.actionTags.setText(QCoreApplication.translate("LedgerMainWindow", u"&Tags", None))
         self.MakePLReport.setText(QCoreApplication.translate("LedgerMainWindow", u"&Profit/Loss report", None))

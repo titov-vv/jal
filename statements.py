@@ -10,7 +10,7 @@ from PySide2.QtWidgets import QDialog, QFileDialog
 from ibflex import parser, AssetClass, BuySell, CashAction, Reorg, Code
 from constants import Setup, TransactionType, PredefinedAsset, PredefinedCategory
 from DB.helpers import executeSQL, readSQL
-from UI.add_asset_dlg import Ui_AddAssetDialog
+from UI.ui_add_asset_dlg import Ui_AddAssetDialog
 
 
 #-----------------------------------------------------------------------------------------------------------------------
