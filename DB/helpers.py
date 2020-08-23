@@ -1,9 +1,23 @@
 import logging
 from constants import Setup
-from PySide2.QtCore import Qt, QMetaObject
 from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery
-from PySide2.QtWidgets import QMessageBox
 from DB.backup_restore import loadDbFromSQL
+
+
+class LedgerInitError:
+    DbInitSuccess = 0
+    EmptyDbInitialized = 1
+    WrongSchemaVersion = 2
+    _messages = {
+        0: "No error",
+        1: "Database was initialized. You need to start application again.",
+        2: "Database version mismatch. Can't start application."
+    }
+
+    def __init__(self, code):
+        self.code = code
+        self.message = self._messages[code]
+
 
 # -------------------------------------------------------------------------------------------------------------------
 def get_dbfilename(app_path):
@@ -58,7 +72,13 @@ def readSQLrecord(query):
         return None
 
 # -------------------------------------------------------------------------------------------------------------------
-def init_and_check_db(parent, db_path):
+# This function:
+# 1) checks that DB file is present and contains some data
+#    if not - it will initialize DB with help of SQL-script
+# 2) checks that DB looks like a valid one:
+#    if schema version is invalid it will close DB
+# Returns: db hanlder, LedgerInitError(code = 0 if db initialzied successfully)
+def init_and_check_db(db_path):
     db = QSqlDatabase.addDatabase("QSQLITE")
     db.setDatabaseName(get_dbfilename(db_path))
     db.open()
@@ -66,22 +86,12 @@ def init_and_check_db(parent, db_path):
     if not tables:
         db.close()
         loadDbFromSQL(get_dbfilename(db_path), db_path + Setup.INIT_SCRIPT_PATH)
-        QMessageBox().information(parent, parent.tr("Database initialized"),
-                                  parent.tr("Database have been initialized.\n"
-                                          "You need to restart the application.\n"
-                                          "Application terminates now."),
-                                  QMessageBox.Ok)
-        _ = QMetaObject.invokeMethod(parent, "close", Qt.QueuedConnection)
-        return None
+        return None, LedgerInitError(LedgerInitError.EmptyDbInitialized)
 
     if readSQL(db, "SELECT value FROM settings WHERE name='SchemaVersion'") != Setup.TARGET_SCHEMA:
         db.close()
-        QMessageBox().critical(parent, parent.tr("Database version mismatch"),
-                               parent.tr("Database schema version is wrong"),
-                               QMessageBox.Ok)
-        _ = QMetaObject.invokeMethod(parent, "close", Qt.QueuedConnection)
-        return None
-    return db
+        return None, LedgerInitError(LedgerInitError.WrongSchemaVersion)
+    return db, LedgerInitError(LedgerInitError.DbInitSuccess)
 
 # -------------------------------------------------------------------------------------------------------------------
 def get_base_currency(db):

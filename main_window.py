@@ -1,5 +1,4 @@
 import logging
-import os
 from functools import partial
 
 from PySide2 import QtCore, QtWidgets
@@ -7,11 +6,12 @@ from PySide2.QtCore import Slot, QDateTime
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QMenu, QMessageBox, QLabel
 
 from UI.ui_main_window import Ui_LedgerMainWindow
+from UI.ui_abort_window import Ui_AbortWindow
 from CustomUI.helpers import VLine, ManipulateDate
 from CustomUI.table_view_config import TableViewConfig
 from constants import TransactionType
 from DB.backup_restore import MakeBackup, RestoreBackup
-from DB.helpers import init_and_check_db, get_dbfilename
+from DB.helpers import get_dbfilename
 from downloader import QuoteDownloader
 from ledger import Ledger
 from operations import LedgerOperationsView, LedgerInitValues
@@ -20,16 +20,22 @@ from statements import StatementLoader
 from reports.taxes import TaxesRus
 
 
-# -----------------------------------------------------------------------------------------------------------------------
-class MainWindow(QMainWindow, Ui_LedgerMainWindow):
-    def __init__(self):
+#-----------------------------------------------------------------------------------------------------------------------
+# This simly displays one message and OK button - to facilitate start-up error communication
+class AbortWindow(QMainWindow, Ui_AbortWindow):
+    def __init__(self, msg):
         QMainWindow.__init__(self, None)
         self.setupUi(self)
 
-        self.own_path = os.path.dirname(os.path.realpath(__file__)) + os.sep
-        self.db = init_and_check_db(self, self.own_path)
-        if not self.db:
-            return
+        self.MessageLbl.setText(msg)
+
+#-----------------------------------------------------------------------------------------------------------------------
+class MainWindow(QMainWindow, Ui_LedgerMainWindow):
+    def __init__(self, db):
+        QMainWindow.__init__(self, None)
+        self.setupUi(self)
+
+        self.db = db
 
         self.ledger = Ledger(self.db)
         self.downloader = QuoteDownloader(self.db)

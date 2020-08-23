@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 from constants import Setup
 import sqlite3
 import pandas as pd
@@ -53,14 +51,10 @@ def RestoreBackup(db_file, restore_path):
 
 
 def loadDbFromSQL(db_file, sql_file):
-    logging.info("Load SQL-script: ", sql_file)
-    logging.info("Into database:   ", db_file)
-
-    with open(sql_file, 'r') as sql_file:
+    with open(sql_file, 'r', encoding='utf-8') as sql_file:
         sql_text = sql_file.read()
     db = sqlite3.connect(db_file)
     cursor = db.cursor()
     cursor.executescript(sql_text)
     db.commit()
     db.close()
-    logging.info("DB script loaded")
