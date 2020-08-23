@@ -1,5 +1,5 @@
 # ledger
-ledger is a roject for personal finance tracking.
+ledger is a project for personal finance tracking.
 
 It was designed to keep records of personal incomes/spendings and investments with up-to-date information about multi-currency account balances and portfolio value.
 
@@ -27,5 +27,8 @@ ledger depends on:
 * [ibflex](https://github.com/csingley/ibflex) - Interactive Brokers flex-reports import
 
 ### Screenshots
-Qt have better look on Linux out of the box. Here is main program window:
+Qt have a better look on Linux out of the box. Here is main program window:
 ![Main Window on Linux](https://github.com/titov-vv/ledger/blob/master/screenshots/main_linux.png?raw=true)
+
+The same window on Windows - the same functions with a bit different look:
+![Main Window on Windows](https://github.com/titov-vv/ledger/blob/master/screenshots/main_windows.png?raw=true)
