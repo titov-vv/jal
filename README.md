@@ -38,4 +38,9 @@ Below is a view of main window where one account is chosen ('Mastercard') and ac
 ![One Account](https://github.com/titov-vv/ledger/blob/master/screenshots/one_account_view.png?raw=true)
 
 Example of investment account view with Buy, Sell and Dividend operations recorded (there is an asset select/edit window on top):
-![One Account](https://github.com/titov-vv/ledger/blob/master/screenshots/stocks_and_investment_account.png?raw=true) 
+![One Account](https://github.com/titov-vv/ledger/blob/master/screenshots/stocks_and_investment_account.png?raw=true)
+
+'Holdings' tab contains portfolio overview (You display account and portfolio balances for any date).
+Holdings are grouped by currencies and then by accounts.
+![One Account](https://github.com/titov-vv/ledger/blob/master/screenshots/investment_portfolio_holdings.png?raw=true)
+ 
