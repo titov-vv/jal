@@ -338,16 +338,13 @@ class LedgerOperationsView(QObject):
 
     @Slot()
     def onDataEdit(self, index_start, _index_stop, _role):
-        modified_model = index_start.model()
-        self.modified_operation_type = modified_model.data(modified_model.index(index_start.row(), 0))
-        if self.modified_operation_type == TransactionType.NA:
-            for operation_type in self.operations:
-                if self.operations[operation_type][self.OP_MAPPER]:   # if mapper defined for operation type
-                    if self.operations[operation_type][self.OP_MAPPER].model().isDirty():
-                        self.modified_operation_type = operation_type
-                        break
-                if self.operations[operation_type][self.OP_CHILD_VIEW]:     # if view defined for operation type
-                    if self.operations[operation_type][self.OP_CHILD_VIEW].model().isDirty():
-                        self.modified_operation_type = operation_type
-                        break
+        for operation_type in self.operations:
+            if self.operations[operation_type][self.OP_MAPPER]:   # if mapper defined for operation type
+                if self.operations[operation_type][self.OP_MAPPER].model().isDirty():
+                    self.modified_operation_type = operation_type
+                    break
+            if self.operations[operation_type][self.OP_CHILD_VIEW]:     # if view defined for operation type
+                if self.operations[operation_type][self.OP_CHILD_VIEW].model().isDirty():
+                    self.modified_operation_type = operation_type
+                    break
         self.stateIsModified.emit()
