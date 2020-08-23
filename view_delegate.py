@@ -338,7 +338,7 @@ class OperationsTimestampDelegate(QStyledItemDelegate):
         text = datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')
         if (transaction_type == TransactionType.Trade) or (transaction_type == TransactionType.Dividend):
             text = text + f"\n# {number}"
-        painter.drawText(option.rect, Qt.AlignLeft, text)
+        painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
         painter.restore()
 
 
@@ -370,7 +370,7 @@ class OperationsAccountDelegate(QStyledItemDelegate):
                 assert False
         else:
             assert False
-        painter.drawText(option.rect, Qt.AlignLeft, text)
+        painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
         painter.restore()
 
 
@@ -402,7 +402,7 @@ class OperationsNotesDelegate(QStyledItemDelegate):
                     text = f"{qty:+.2f} @ {price:.2f}"
         else:
             assert False
-        painter.drawText(option.rect, Qt.AlignLeft, text)
+        painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
         painter.restore()
 
 
@@ -433,7 +433,7 @@ class OperationsAmountDelegate(QStyledItemDelegate):
             else:
                 pen.setColor(CustomColor.DarkRed)
             painter.setPen(pen)
-            painter.drawText(option.rect, Qt.AlignRight, text)
+            painter.drawText(option.rect, Qt.AlignRight  | Qt.AlignVCenter, text)
             text = f"{qty:+,.2f}"
             rect.moveTop(Y + H / 2)
             if qty >= 0:
@@ -441,7 +441,7 @@ class OperationsAmountDelegate(QStyledItemDelegate):
             else:
                 pen.setColor(CustomColor.DarkRed)
             painter.setPen(pen)
-            painter.drawText(option.rect, Qt.AlignRight, text)
+            painter.drawText(option.rect, Qt.AlignRight | Qt.AlignVCenter, text)
         elif transaction_type == TransactionType.Dividend:
             text = f"{amount:+,.2f}"
             rect.setHeight(H / 2)
@@ -452,15 +452,15 @@ class OperationsAmountDelegate(QStyledItemDelegate):
             rect.moveTop(Y + H / 2)
             pen.setColor(CustomColor.DarkRed)
             painter.setPen(pen)
-            painter.drawText(rect, Qt.AlignRight, text)
+            painter.drawText(option.rect, Qt.AlignRight | Qt.AlignVCenter, text)
         else:
             if amount >= 0:
                 pen.setColor(CustomColor.DarkGreen)
             else:
                 pen.setColor(CustomColor.DarkRed)
-            text = f"{amount:+,.2f}\n"
+            text = f"{amount:+,.2f}"
             painter.setPen(pen)
-            painter.drawText(option.rect, Qt.AlignRight, text)
+            painter.drawText(option.rect, Qt.AlignRight | Qt.AlignVCenter, text)
         painter.restore()
 
 
@@ -483,13 +483,16 @@ class OperationsTotalsDelegate(QStyledItemDelegate):
             lower_part = f"{total_shares:,.2f}"
         if total_money != '':
             upper_part = f"{total_money:,.2f}"
-        text = upper_part + "\n" + lower_part
+        if lower_part == '':
+            text = upper_part
+        else:
+            text = upper_part + "\n" + lower_part
 
         if reconciled == 1:
             pen.setColor(CustomColor.Blue)
             painter.setPen(pen)
 
-        painter.drawText(option.rect, Qt.AlignRight, text)
+        painter.drawText(option.rect, Qt.AlignRight | Qt.AlignVCenter, text)
         painter.restore()
 
 
@@ -506,7 +509,7 @@ class OperationsCurrencyDelegate(QStyledItemDelegate):
         text = " " + currency
         if asset_name != "":
             text = text + "\n " + asset_name
-        painter.drawText(option.rect, Qt.AlignLeft, text)
+        painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
         painter.restore()
 
 
