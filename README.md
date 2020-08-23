@@ -43,4 +43,11 @@ Example of investment account view with Buy, Sell and Dividend operations record
 'Holdings' tab contains portfolio overview (You display account and portfolio balances for any date).
 Holdings are grouped by currencies and then by accounts.
 ![One Account](https://github.com/titov-vv/ledger/blob/master/screenshots/investment_portfolio_holdings.png?raw=true)
- 
+
+Examples of reports are below:
+Monthly incomes/spendings *(categories hierarchy is supported with sub-totals calculation)*
+ ![One Account](https://github.com/titov-vv/ledger/blob/master/screenshots/report_income_spending.png?raw=true)
+Profit/Loss for investment account *(Assets value to be fixed, Returns include dividends and other payments)*
+ ![One Account](https://github.com/titov-vv/ledger/blob/master/screenshots/report_profit_loss.png?raw=true)
+List of all closed deals for investment account
+ ![One Account](https://github.com/titov-vv/ledger/blob/master/screenshots/report_deals.png?raw=true)
