@@ -426,8 +426,9 @@
                 <item>
                  <widget class="QStackedWidget" name="OperationsTabs">
                   <property name="currentIndex">
-                   <number>1</number>
+                   <number>0</number>
                   </property>
+                  <widget class="QWidget" name="NoOperationTab"/>
                   <widget class="QWidget" name="ActionDetailsTab">
                    <layout class="QGridLayout" name="gridLayout_4">
                     <property name="leftMargin">

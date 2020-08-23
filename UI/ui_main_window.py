@@ -247,6 +247,9 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.OperationsTabs = QStackedWidget(self.OperationDetails)
         self.OperationsTabs.setObjectName(u"OperationsTabs")
+        self.NoOperationTab = QWidget()
+        self.NoOperationTab.setObjectName(u"NoOperationTab")
+        self.OperationsTabs.addWidget(self.NoOperationTab)
         self.ActionDetailsTab = QWidget()
         self.ActionDetailsTab.setObjectName(u"ActionDetailsTab")
         self.gridLayout_4 = QGridLayout(self.ActionDetailsTab)
@@ -925,7 +928,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(1)
+        self.OperationsTabs.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)
