@@ -23,6 +23,7 @@ class BookAccount:  # PREDEFINED BOOK ACCOUNTS
 
 
 class TransactionType:   # PREDEFINED TRANSACTION TYPES
+    NA = 0
     Action = 1
     Dividend = 2
     Trade = 3

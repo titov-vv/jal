@@ -214,10 +214,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def ShowOperationTab(self, operation_type):
         tab_list = {
-            TransactionType.Action: 0,
-            TransactionType.Transfer: 3,
-            TransactionType.Trade: 1,
-            TransactionType.Dividend: 2
+            TransactionType.NA: 0,
+            TransactionType.Action: 1,
+            TransactionType.Transfer: 4,
+            TransactionType.Trade: 2,
+            TransactionType.Dividend: 3
         }
         self.OperationsTabs.setCurrentIndex(tab_list[operation_type])
 
