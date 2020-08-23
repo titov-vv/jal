@@ -32,3 +32,10 @@ Qt have a better look on Linux out of the box. Here is main program window:
 
 The same window on Windows - the same functions with a bit different look:
 ![Main Window on Windows](https://github.com/titov-vv/ledger/blob/master/screenshots/main_windows.png?raw=true)
+
+Accounts are be arranged in groups (Cash, Cards, Investments, etc), each account holds one currency.
+Below is a view of main window where one account is chosen ('Mastercard') and account select/edit window is opened on top:
+![One Account](https://github.com/titov-vv/ledger/blob/master/screenshots/one_account_view.png?raw=true)
+
+Example of investment account view with Buy, Sell and Dividend operations recorded (there is an asset select/edit window on top):
+![One Account](https://github.com/titov-vv/ledger/blob/master/screenshots/stocks_and_investment_account.png?raw=true) 
