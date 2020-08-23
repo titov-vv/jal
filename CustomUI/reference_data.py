@@ -66,6 +66,8 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
                     relation_model = self.Model.relationModel(self.Model.fieldIndex(relation[rel_idx.KEY_FIELD]))
                     self.GroupCombo.setModel(relation_model)
                     self.GroupCombo.setModelColumn(relation_model.fieldIndex(relation[rel_idx.LOOKUP_FIELD]))
+                    self.group_id = relation_model.data(relation_model.index(0,
+                                    relation_model.fieldIndex(self.group_fkey_field)))
 
         self.Toggle.setVisible(False)
         if toggle:
