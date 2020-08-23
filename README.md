@@ -1,10 +1,10 @@
 # ledger
 ledger is a project for personal finance tracking.
 
-It was designed to keep records of personal incomes/spendings and investments with up-to-date information about multi-currency account balances and portfolio value.
+It was designed to keep records of personal incomes/spendings and investments with up-to-date information about account's balances and portfolio value.
 
 ### Main features
-- multiple accounts with different currencies (basic currency is Russian Rouble but might be changed in future versions)
+- multiple accounts with different currencies (base currency is russian rouble but might be changed in future versions)
 - 4 types of transactions: 
     1. Generic income/spending operations that may be splitted into several categories
     2. Transfers of money between different accounts and currencies
@@ -14,17 +14,21 @@ It was designed to keep records of personal incomes/spendings and investments wi
     1. monthly incomes/spendings splitted by category
     2. profit/loss report for investments accounts
     3. closed deals report 
-- stock quotes updates for US (Yahoo), EU (Euronext) and RU (MOEX) stocks
+- stock quotes updates for US (Yahoo), EU (Euronext) and RU (MOEX) exchanges traded stocks
 - securities transactions import from Quik HTML-reports for russian brokers and from Interactive Brokers flex-queries
 - tax report preparation for foreign investments according to Russian Tax Law
 
+### Installation
+ledger was created to be portable - it doesn't require specific installation instructions. All you need is to have Python 3.8.1 or higher and satisfy dependencies listed below.
+Start the program by running: `main.py` on Windows or `./main.py` on Linux or you may simply double click the filename if your system is setup to launch python interpreter this way.
+
 ### Dependencies
 ledger depends on:
-* [Qt for Python (PySide2)](https://wiki.qt.io/Qt_for_Python) - GUI library
+* [Qt for Python (PySide2)](https://wiki.qt.io/Qt_for_Python) *>=5.15* - GUI library (versions below 5.15 may cause problems with `uic` at least)
 * [pandas](https://pandas.pydata.org/) - different data operations
 * [requests](https://requests.readthedocs.io/) - stock quotes update from the internet
 * [xlsxwriter](https://xlsxwriter.readthedocs.io/) - reports export into XLS format
-* [ibflex](https://github.com/csingley/ibflex) - Interactive Brokers flex-reports import
+* [ibflex](https://github.com/csingley/ibflex) *>=0.14* - Interactive Brokers flex-reports import 
 
 ### Screenshots
 Qt have a better look on Linux out of the box. Here is main program window:
