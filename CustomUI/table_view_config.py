@@ -179,7 +179,7 @@ class TableViewConfig:
                                  None
                                  ),
             self.ACCOUNTS: ('accounts',
-                            "Assets",
+                            "Accounts",
                             [("id", None, 0, None, None),
                              ("name", "Name", ColumnWidth.STRETCH, Qt.AscendingOrder, None),
                              ("type_id", None, 0, None, None),
@@ -304,7 +304,7 @@ class TableViewConfig:
         ReferenceDataDialog(self.parent.db,
                             self.dialogs[dlg_id][self.DLG_TABLE],
                             self.dialogs[dlg_id][self.DLG_COLUMNS],
-                            title=self.dialogs[dlg_id][self.DLG_TABLE],
+                            title=self.dialogs[dlg_id][self.DLG_TITLE],
                             search_field=self.dialogs[dlg_id][self.DLG_SEARCH],
                             toggle=self.dialogs[dlg_id][self.DLG_TOGGLE],
                             tree_view=self.dialogs[dlg_id][self.DLG_TREE],
