@@ -6,7 +6,7 @@ import logging
 import traceback
 from PySide2.QtWidgets import QApplication
 from main_window import MainWindow, AbortWindow
-from DB.helpers import init_and_check_db
+from DB.helpers import init_and_check_db, LedgerInitError
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -22,6 +22,9 @@ if __name__ == "__main__":
 
     own_path = os.path.dirname(os.path.realpath(__file__)) + os.sep
     db, error = init_and_check_db(own_path)
+
+    if error.code == LedgerInitError.EmptyDbInitialized:
+        db, error = init_and_check_db(own_path)
 
     app = QApplication([])
     if db is None:
