@@ -3,9 +3,8 @@ Project for personal finance tracking
 
 ### Dependencies
 Project depends on:
-* **PySide2** - GUI library
-* **sqlite3** - DB initialization and backup/restore operations
-* **pandas** - different data operations
-* **requests** - stock quotes update from the internet
-* **xlsxwriter** - reports export into XLS format
-* **ibflex** - Interactive Brokers flex-reports import
+* [Qt for Python (PySide2)](https://wiki.qt.io/Qt_for_Python) - GUI library
+* [pandas](https://pandas.pydata.org/) - different data operations
+* [requests](https://requests.readthedocs.io/) - stock quotes update from the internet
+* [xlsxwriter](https://xlsxwriter.readthedocs.io/) - reports export into XLS format
+* [ibflex](https://github.com/csingley/ibflex) - Interactive Brokers flex-reports import
