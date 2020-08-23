@@ -337,11 +337,10 @@ class LedgerOperationsView(QObject):
                 view.model().setFilter(f"{self.operations[operation_type][self.OP_CHILD_TABLE]}.pid = {operation_id}")
 
     @Slot()
-    def onDataEdit(self):
-        index = self.table_view.currentIndex()
-        operations_model = self.table_view.model()
-        self.modified_operation_type = operations_model.data(operations_model.index(index.row(), 0))
-        if self.modified_operation_type is None:
+    def onDataEdit(self, index_start, _index_stop, _role):
+        modified_model = index_start.model()
+        self.modified_operation_type = modified_model.data(modified_model.index(index_start.row(), 0))
+        if self.modified_operation_type == TransactionType.NA:
             for operation_type in self.operations:
                 if self.operations[operation_type][self.OP_MAPPER]:   # if mapper defined for operation type
                     if self.operations[operation_type][self.OP_MAPPER].model().isDirty():

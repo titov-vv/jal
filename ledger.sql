@@ -1135,7 +1135,7 @@ CREATE TRIGGER insert_transfers_w_none_w_fee INSTEAD OF INSERT ON transfers_comb
                           )
                           VALUES (
                               (
-                                  SELECT MAX(tid) + 1
+                                  SELECT COALESCE(MAX(tid), 0) + 1
                                     FROM transfers
                               ),
 -                             1,
@@ -1207,7 +1207,7 @@ CREATE TRIGGER insert_transfers_w_note_wo_fee INSTEAD OF INSERT ON transfers_com
                           )
                           VALUES (
                               (
-                                  SELECT MAX(tid) + 1
+                                  SELECT COALESCE(MAX(tid), 0) + 1
                                     FROM transfers
                               ),
 -                             1,
@@ -1259,7 +1259,7 @@ CREATE TRIGGER insert_transfers_wo_note_w_fee INSTEAD OF INSERT ON transfers_com
                           )
                           VALUES (
                               (
-                                  SELECT MAX(tid) + 1
+                                  SELECT COALESCE(MAX(tid), 0) + 1
                                     FROM transfers
                               ),
 -                             1,
@@ -1319,7 +1319,7 @@ CREATE TRIGGER insert_transfers_wo_note_wo_fee INSTEAD OF INSERT ON transfers_co
                           )
                           VALUES (
                               (
-                                  SELECT MAX(tid) + 1
+                                  SELECT COALESCE(MAX(tid), 0) + 1
                                     FROM transfers
                               ),
 -                             1,
