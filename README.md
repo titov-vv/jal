@@ -28,4 +28,4 @@ ledger depends on:
 
 ### Screenshots
 Qt have better look on Linux out of the box. Here is main program window:
-![Main Window on Linux](https://github.com/titov_vv/ledger/blob/master/main_linux.png?raw=true)
+![Main Window on Linux](https://github.com/titov-vv/ledger/blob/master/screenshots/main_linux.png?raw=true)
