@@ -38,6 +38,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.last_parent = 0
         self.group_id = None
         self.group_key_field = None
+        self.group_key_index = None
         self.group_fkey_field = None
         self.toggle_state = False
         self.toggle_field = None
@@ -62,8 +63,9 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
                     self.GroupLbl.setText(relation[rel_idx.GROUP_NAME])
                     self.GroupCombo.setVisible(True)
                     self.group_key_field = relation[rel_idx.KEY_FIELD]
+                    self.group_key_index = self.Model.fieldIndex(relation[rel_idx.KEY_FIELD])
                     self.group_fkey_field = relation[rel_idx.FOREIGN_KEY]
-                    relation_model = self.Model.relationModel(self.Model.fieldIndex(relation[rel_idx.KEY_FIELD]))
+                    relation_model = self.Model.relationModel(self.group_key_index)
                     self.GroupCombo.setModel(relation_model)
                     self.GroupCombo.setModelColumn(relation_model.fieldIndex(relation[rel_idx.LOOKUP_FIELD]))
                     self.group_id = relation_model.data(relation_model.index(0,
@@ -146,6 +148,11 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
     @Slot()
     def OnCommit(self):
+        if self.group_key_index is not None:
+            record = self.Model.record(0)
+            group_field = record.value(self.Model.fieldIndex(self.group_key_field))
+            if not group_field:
+                self.Model.setData(self.Model.index(0, self.group_key_index), self.group_id)
         if not self.Model.submitAll():
             logging.fatal(self.tr("Action submit failed: ") + self.Model.lastError().text())
             return
