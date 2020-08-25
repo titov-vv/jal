@@ -27,10 +27,11 @@ if __name__ == "__main__":
         db, error = init_and_check_db(own_path)
 
     app = QApplication([])
+
     if db is None:
         window = AbortWindow(error.message)
     else:
-        window = MainWindow(db)
+        window = MainWindow(app, db, own_path)
     window.show()
 
     sys.exit(app.exec_())

@@ -1,9 +1,11 @@
+import os
 import logging
 from functools import partial
 
 from PySide2 import QtCore, QtWidgets
-from PySide2.QtCore import Slot, QDateTime
-from PySide2.QtWidgets import QMainWindow, QFileDialog, QMenu, QMessageBox, QLabel
+from PySide2.QtCore import Slot, QDateTime, QDir, QLocale, QTranslator, QEvent
+from PySide2.QtGui import QIcon
+from PySide2.QtWidgets import QMainWindow, QFileDialog, QMenu, QMessageBox, QLabel, QActionGroup, QAction
 
 from UI.ui_main_window import Ui_LedgerMainWindow
 from UI.ui_abort_window import Ui_AbortWindow
@@ -31,11 +33,13 @@ class AbortWindow(QMainWindow, Ui_AbortWindow):
 
 #-----------------------------------------------------------------------------------------------------------------------
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):
-    def __init__(self, db):
+    def __init__(self, app, db, own_path):
         QMainWindow.__init__(self, None)
         self.setupUi(self)
 
+        self.app = app
         self.db = db
+        self.own_path = own_path
 
         self.ledger = Ledger(self.db)
         self.downloader = QuoteDownloader(self.db)
@@ -101,6 +105,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.ActionDetailsTableView.horizontalHeader().moveSection(self.ActionDetailsTableView.model().fieldIndex("note"),
                                                                    self.ActionDetailsTableView.model().fieldIndex("name"))
+
+        self.currentLanguage = None
+        self.translator = None
+        self.langGroup = QActionGroup(self.menuLanguage)
+        self.createLanguageMenu()
+        self.langGroup.triggered.connect(self.onLanguageChanged)
+
         self.OperationsTableView.selectRow(0)  # TODO find a way to select last row from self.operations
         self.OnOperationsRangeChange(0)
 
@@ -109,6 +120,43 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.logger.removeHandler(self.Logs)    # Removing handler (but it doesn't prevent exception at exit)
         logging.raiseExceptions = False         # Silencing logging module exceptions
         self.db.close()                         # Closing database file
+
+    @Slot()
+    def changeEvent(self, event):
+        if event:
+            if event.type() == QEvent.LanguageChange:
+                self.retranslateUi(self)
+        super().changeEvent(event)
+
+    def createLanguageMenu(self):
+        langPath = self.own_path + "i18n" + os.sep
+
+        langDirectory = QDir(langPath)
+        for language_file in langDirectory.entryList(['*.qm']):
+            language_code = language_file.split('.')[0]
+            language = QLocale.languageToString(QLocale(language_code).language())
+            language_icon = QIcon(langPath + language_code + '.png')
+            action = QAction(language_icon, language, self)
+            action.setCheckable(True)
+            action.setData(language_code)
+            self.menuLanguage.addAction(action)
+            self.langGroup.addAction(action)
+
+    @Slot()
+    def onLanguageChanged(self, action):
+        if action:
+            self.loadLanguage(action.data())
+
+    def loadLanguage(self, language_code):
+        if language_code != self.currentLanguage:
+            self.currentLanguage = language_code
+            self.app.removeTranslator(self.translator)
+            self.translator = QTranslator()
+            language_file = self.own_path + "i18n" + os.sep + language_code + '.qm'
+            self.translator.load(language_file)
+            self.app.installTranslator(self.translator)
+            self.StatusBar.showMessage(f"Language {QLocale.languageToString(QLocale(language_code).language())} loaded",
+                                       timeout=60000)
 
     def Backup(self):
         backup_directory = QFileDialog.getExistingDirectory(self, "Select directory to save backup")
@@ -124,7 +172,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                                       self.tr("Database was loaded from the backup.\n"
                                               "Application will be restarted now."),
                                       QMessageBox.Ok)
-            QtWidgets.QApplication.instance().quit()
+            self.app.quit()
 
     @Slot()
     def onBalanceDateChange(self, _new_date):

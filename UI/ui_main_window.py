@@ -899,6 +899,8 @@ class Ui_LedgerMainWindow(object):
         self.menuLoad.setObjectName(u"menuLoad")
         self.menu_Reports = QMenu(self.menubar)
         self.menu_Reports.setObjectName(u"menu_Reports")
+        self.menuLanguage = QMenu(self.menubar)
+        self.menuLanguage.setObjectName(u"menuLanguage")
         LedgerMainWindow.setMenuBar(self.menubar)
         self.StatusBar = QStatusBar(LedgerMainWindow)
         self.StatusBar.setObjectName(u"StatusBar")
@@ -908,6 +910,7 @@ class Ui_LedgerMainWindow(object):
         self.menubar.addAction(self.menu_DAta.menuAction())
         self.menubar.addAction(self.menuLoad.menuAction())
         self.menubar.addAction(self.menu_Reports.menuAction())
+        self.menubar.addAction(self.menuLanguage.menuAction())
         self.menuFile.addAction(self.actionExit)
         self.menu_DAta.addSeparator()
         self.menu_DAta.addAction(self.actionAccounts)
@@ -1056,5 +1059,6 @@ class Ui_LedgerMainWindow(object):
         self.menuPredefined_data.setTitle(QCoreApplication.translate("LedgerMainWindow", u"Predefined data", None))
         self.menuLoad.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&Load", None))
         self.menu_Reports.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&Reports", None))
+        self.menuLanguage.setTitle(QCoreApplication.translate("LedgerMainWindow", u"L&anguage", None))
     # retranslateUi
 

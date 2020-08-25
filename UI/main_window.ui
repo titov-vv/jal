@@ -1619,10 +1619,16 @@
     </property>
     <addaction name="PrepareTaxForms"/>
    </widget>
+   <widget class="QMenu" name="menuLanguage">
+    <property name="title">
+     <string>L&amp;anguage</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_DAta"/>
    <addaction name="menuLoad"/>
    <addaction name="menu_Reports"/>
+   <addaction name="menuLanguage"/>
   </widget>
   <widget class="QStatusBar" name="StatusBar"/>
   <action name="actionExit">
