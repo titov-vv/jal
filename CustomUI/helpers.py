@@ -156,7 +156,8 @@ def UseSqlTable(db, table_name, columns, relations):
                                            relation[rel_idx.FOREIGN_KEY], relation[rel_idx.LOOKUP_FIELD]))
     for column in columns:
         if column[hcol_idx.DISPLAY_NAME]:
-            model.setHeaderData(model.fieldIndex(column[hcol_idx.DB_NAME]), Qt.Horizontal, column[hcol_idx.DISPLAY_NAME])
+            model.setHeaderData(model.fieldIndex(column[hcol_idx.DB_NAME]), Qt.Horizontal,
+                                g_tr('TableViewConfig', column[hcol_idx.DISPLAY_NAME]))
         if column[hcol_idx.SORT_ORDER] is not None:
             model.setSort(model.fieldIndex(column[hcol_idx.DB_NAME]), column[hcol_idx.SORT_ORDER])
     return model

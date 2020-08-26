@@ -60,17 +60,17 @@
 <context>
     <name>AccountButton</name>
     <message>
-        <location filename="../CustomUI/account_select.py" line="81"/>
+        <location filename="../CustomUI/account_select.py" line="71"/>
         <source>ANY</source>
         <translation>Любой</translation>
     </message>
     <message>
-        <location filename="../CustomUI/account_select.py" line="78"/>
+        <location filename="../CustomUI/account_select.py" line="24"/>
         <source>Choose account</source>
         <translation>Выбрать счет</translation>
     </message>
     <message>
-        <location filename="../CustomUI/account_select.py" line="79"/>
+        <location filename="../CustomUI/account_select.py" line="25"/>
         <source>Any account</source>
         <translation>Любой счет</translation>
     </message>
@@ -695,7 +695,7 @@ do you want to save it?</source>
 <context>
     <name>LogViewer</name>
     <message>
-        <location filename="../CustomUI/log_viewer.py" line="63"/>
+        <location filename="../CustomUI/log_viewer.py" line="45"/>
         <source>LOG</source>
         <translation>СБЩ</translation>
     </message>
@@ -703,54 +703,58 @@ do you want to save it?</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../main_window.py" line="162"/>
-        <source> language is loaded</source>
-        <translation> язык загружен</translation>
-    </message>
-    <message>
-        <location filename="../main_window.py" line="167"/>
+        <location filename="../main_window.py" line="153"/>
         <source>Select directory to save backup</source>
         <translation>Выберите каталог для сохранения бэкапа</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="177"/>
+        <location filename="../main_window.py" line="163"/>
         <source>Data restored</source>
         <translation>Данные восстановлены</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="177"/>
-        <source>Database was loaded from the backup.
-Application will be restarted now.</source>
-        <translation>Данные загружены из бэкапа.
-Приложение будет перезапущено.</translation>
-    </message>
-    <message>
-        <location filename="../main_window.py" line="172"/>
+        <location filename="../main_window.py" line="158"/>
         <source>Select directory to restore from</source>
         <translation>Выберите каталог из которого восстановить</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="255"/>
+        <location filename="../main_window.py" line="242"/>
         <source>Quotes download completed</source>
         <translation>Загрузка котировок завершена</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="261"/>
+        <location filename="../main_window.py" line="248"/>
         <source>Statement load completed</source>
         <translation>Загрузка отчета завершена успешно</translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="266"/>
+        <location filename="../main_window.py" line="253"/>
         <source>Statement load failed</source>
         <translation>Загрузка отчета неуспешна</translation>
     </message>
-</context>
-<context>
-    <name>QCoreApplication.self</name>
     <message>
-        <location filename="../CustomUI/table_view_config.py" line="171"/>
-        <source>Account Type</source>
-        <translation>Тип счета</translation>
+        <location filename="../main_window.py" line="143"/>
+        <source>Restart required</source>
+        <translation>Требуется рестарт</translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="143"/>
+        <source>Language was changed to </source>
+        <translation>Язык был изменён на </translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="163"/>
+        <source>You should restart application to apply changes
+Application will be terminated now</source>
+        <translation>Вы должны перезапустить приложение, чтобы применить изменения
+Приложение сейчас завершит свою работу</translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="163"/>
+        <source>Database was loaded from the backup.
+</source>
+        <translation>Данные были загружены из бэкапа.
+</translation>
     </message>
 </context>
 <context>
@@ -1174,6 +1178,211 @@ Application will be restarted now.</source>
         <location filename="../CustomUI/table_view_config.py" line="239"/>
         <source>Tags</source>
         <translation>Тэги</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="171"/>
+        <source>Account Type</source>
+        <translation>Тип счета</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="226"/>
+        <source>Name</source>
+        <translation>Наименование</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="180"/>
+        <source>Currency</source>
+        <translation>Валюта</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="180"/>
+        <source>Act.</source>
+        <translation>Акт.</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="180"/>
+        <source>Account #</source>
+        <translation>№ счета</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="180"/>
+        <source>Reconciled @</source>
+        <translation>Сверен @</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="180"/>
+        <source>Bank</source>
+        <translation>Банк</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="180"/>
+        <source>Show inactive</source>
+        <translation>Показывать неактивные</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="180"/>
+        <source>Account type:</source>
+        <translation>Тип счета:</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="90"/>
+        <source>Account</source>
+        <translation>Счет</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="101"/>
+        <source>Balance</source>
+        <translation>Баланс</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="69"/>
+        <source>Balance, RUB</source>
+        <translation>Баланс, RUB</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="75"/>
+        <source>C/A</source>
+        <translation>В/С</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="77"/>
+        <source>Asset</source>
+        <translation>ЦБ</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="78"/>
+        <source>Qty</source>
+        <translation>Кол-во</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="79"/>
+        <source>Open</source>
+        <translation>Цена откр.</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="80"/>
+        <source>Last</source>
+        <translation>Цена закр.</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="81"/>
+        <source>Share, %</source>
+        <translation>Доля, %</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="82"/>
+        <source>P/L, %</source>
+        <translation>Приб/уб, %</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="83"/>
+        <source>P/L</source>
+        <translation>Приб/уб</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="84"/>
+        <source>Value</source>
+        <translation>Оценка</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="85"/>
+        <source>Value, RUB</source>
+        <translation>Оценка, RUB</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="88"/>
+        <source>Timestamp</source>
+        <translation>Дата/Время</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="95"/>
+        <source>Notes</source>
+        <translation>Описание</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="110"/>
+        <source>Amount</source>
+        <translation>Сумма</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="108"/>
+        <source>Category</source>
+        <translation>Категория</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="239"/>
+        <source>Tag</source>
+        <translation>Тэг</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="111"/>
+        <source>Amount *</source>
+        <translation>Сумма *</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="112"/>
+        <source>Note</source>
+        <translation>Описание</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="198"/>
+        <source>Symbol</source>
+        <translation>Символ</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="198"/>
+        <source>ISIN</source>
+        <translation>ISIN</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="198"/>
+        <source>WebID</source>
+        <translation>WebID</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="198"/>
+        <source>Data source</source>
+        <translation>Ист.котировок</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="198"/>
+        <source>Asset type:</source>
+        <translation>Тип ЦБ:</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="213"/>
+        <source>Location</source>
+        <translation>Адрес</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="213"/>
+        <source>Docs count</source>
+        <translation>Кол-во док.</translation>
+    </message>
+    <message>
+        <location filename="../CustomUI/table_view_config.py" line="226"/>
+        <source>Often</source>
+        <translation>Частая</translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="72"/>
+        <source>Income / Spending</source>
+        <translation>Доход / Расход</translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="75"/>
+        <source>Trade</source>
+        <translation>Сделка</translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="78"/>
+        <source>Dividend</source>
+        <translation>Дивиденд</translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="81"/>
+        <source>Transfer</source>
+        <translation>Перевод</translation>
     </message>
 </context>
 <context>

@@ -70,16 +70,16 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ui_config.configure_all()
         self.operation_details = {
             TransactionType.Action: (
-                'Income / Spending', self.ui_config.mappers[self.ui_config.ACTIONS], 'actions',
+                g_tr('TableViewConfig', "Income / Spending"), self.ui_config.mappers[self.ui_config.ACTIONS], 'actions',
                 self.ActionDetailsTableView, 'action_details', LedgerInitValues[TransactionType.Action]),
             TransactionType.Trade: (
-                'Trade', self.ui_config.mappers[self.ui_config.TRADES], 'trades', None, None,
+                g_tr('TableViewConfig', "Trade"), self.ui_config.mappers[self.ui_config.TRADES], 'trades', None, None,
                 LedgerInitValues[TransactionType.Trade]),
             TransactionType.Dividend: (
-                'Dividend', self.ui_config.mappers[self.ui_config.DIVIDENDS], 'dividends', None, None,
+                g_tr('TableViewConfig', "Dividend"), self.ui_config.mappers[self.ui_config.DIVIDENDS], 'dividends', None, None,
                 LedgerInitValues[TransactionType.Dividend]),
             TransactionType.Transfer: (
-                'Transfer', self.ui_config.mappers[self.ui_config.TRANSFERS], 'transfers_combined', None, None,
+                g_tr('TableViewConfig', "Transfer"), self.ui_config.mappers[self.ui_config.TRANSFERS], 'transfers_combined', None, None,
                 LedgerInitValues[TransactionType.Transfer])
         }
         self.operations.setOperationsDetails(self.operation_details)
