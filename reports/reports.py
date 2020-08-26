@@ -108,8 +108,8 @@ class Reports(QObject):
         }
 
     def runReport(self, report_type, begin=0, end=0, account_id=0, group_dates=0):
-        self.reports[report_type][PREPARE_REPORT_QUERY](begin, end, account_id, group_dates)
-        self.reports[report_type][SHOW_REPORT](report_type)
+        if self.reports[report_type][PREPARE_REPORT_QUERY](begin, end, account_id, group_dates):
+            self.reports[report_type][SHOW_REPORT](report_type)
 
     def showSqlQueryReport(self, report_type):
         self.model = UseSqlQuery(self.db, self.query, self.reports[report_type][REPORT_COLUMNS])
@@ -231,11 +231,12 @@ class Reports(QObject):
                 data.loc[index, :] = sub_total.values
                 prev_level = level
         self.dataframe = data
+        return True
 
     def prepareDealsReport(self, begin, end, account_id, group_dates):
         if account_id == 0:
             self.report_failure.emit("Deals report requires exact account")
-            return None
+            return False
         if group_dates == 1:
             self.query = executeSQL(self.db,
                                "SELECT asset, "
@@ -254,11 +255,12 @@ class Reports(QObject):
                                         "qty, fee, profit, rel_profit FROM deals_ext "
                                         "WHERE account_id=:account_id AND close_timestamp>=:begin AND close_timestamp<=:end",
                                [(":account_id", account_id), (":begin", begin), (":end", end)], forward_only=False)
+        return True
 
     def prepareProfitLossReport(self, begin, end, account_id, group_dates):
         if account_id == 0:
             self.report_failure.emit("Profit/Loss report requires exact account")
-            return None
+            return False
         _ = executeSQL(self.db, "DELETE FROM t_months")
         _ = executeSQL(self.db, "INSERT INTO t_months(asset_id, month, last_timestamp) "
                                 "SELECT DISTINCT(l.asset_id) AS asset_id, m.m_start, MAX(q.timestamp) AS last_timestamp "
@@ -334,3 +336,4 @@ class Reports(QObject):
              (":book_money", BookAccount.Money), (":book_assets", BookAccount.Assets),
              (":book_transfers", BookAccount.Transfers)],
                            forward_only=False)
+        return True
