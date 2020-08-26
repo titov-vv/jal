@@ -3,10 +3,11 @@ import logging
 from datetime import datetime
 from constants import Setup, BookAccount, TransactionType, ActionSubtype, CorporateAction, \
     TransferSubtype, PredefinedCategory, PredefinedPeer
-from PySide2.QtCore import Qt, QDate, QDateTime
+from PySide2.QtCore import QCoreApplication, Qt, QDate, QDateTime
 from PySide2.QtWidgets import QDialog, QMessageBox
 from DB.helpers import executeSQL, readSQL, readSQLrecord
 from DB.routines import calculateBalances, calculateHoldings
+from CustomUI.helpers import g_tr
 from UI.ui_rebuild_window import Ui_ReBuildDialog
 
 
@@ -89,7 +90,7 @@ class Ledger:
             self.balance_currency = currency_id
             balances_model = self.balances_view.model()
             balances_model.setHeaderData(balances_model.fieldIndex("balance_adj"), Qt.Horizontal,
-                                         "Balance, " + currency_name)
+                                         g_tr('Ledger', "Balance, ") + currency_name)
             self.updateBalancesView()
 
     def updateBalancesView(self):
@@ -106,7 +107,7 @@ class Ledger:
             self.holdings_currency = currency_id
             holidings_model = self.holdings_view.model()
             holidings_model.setHeaderData(holidings_model.fieldIndex("value_adj"), Qt.Horizontal,
-                                          "Value, " + currency_name)
+                                          g_tr('Ledger', "Value, ") + currency_name)
             self.updateHoldingsView()
 
     def updateHoldingsView(self):
@@ -461,12 +462,13 @@ class Ledger:
                                [(":frontier", frontier)])
             if operations_count > self.SILENT_REBUILD_THRESHOLD:
                 silent = False
-                if QMessageBox().warning(None, "Confirmation",
-                                         f"{operations_count} operations require rebuild. Do you want to do it right now?",
+                if QMessageBox().warning(None, g_tr('Ledger', "Confirmation"), f"{operations_count}" +
+                                         g_tr('Ledger', " operations require rebuild. Do you want to do it right now?"),
                                          QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
                     return
         if not silent:
-            logging.info(f"Re-build ledger from: {datetime.fromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
+            logging.info(g_tr('Ledger', "Re-build ledger from: ") +
+                         f"{datetime.fromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
         start_time = datetime.now()
         _ = executeSQL(self.db, "DELETE FROM deals WHERE close_sid >= "
                                 "(SELECT coalesce(MIN(id), 0) FROM sequence WHERE timestamp >= :frontier)",
@@ -490,15 +492,16 @@ class Ledger:
             self.current_seq = seq_query.lastInsertId()
             operationProcess[self.current[TRANSACTION_TYPE]]()
             if not silent and (query.at() % 1000) == 0:
-                logging.info(f"Processed {int(query.at()/1000)}k records, current frontier: "
+                logging.info(g_tr('Ledger', "Processed ") + f"{int(query.at()/1000)}" +
+                             g_tr('Ledger', "k records, current frontier: ") +
                              f"{datetime.fromtimestamp(self.current[TIMESTAMP]).strftime('%d/%m/%Y %H:%M:%S')}")
         if fast_and_dirty:
             _ = executeSQL(self.db, "PRAGMA synchronous = ON")
 
         end_time = datetime.now()
         if not silent:
-            logging.info(f"Ledger is complete. Elapsed time: {end_time - start_time}, "
-                         f"new frontier: {datetime.fromtimestamp(self.current[TIMESTAMP]).strftime('%d/%m/%Y %H:%M:%S')}")
+            logging.info(g_tr('Ledger', "Ledger is complete. Elapsed time: ") + f"{end_time - start_time}" +
+                         g_tr('Ledger', ", new frontier: ") + f"{datetime.fromtimestamp(self.current[TIMESTAMP]).strftime('%d/%m/%Y %H:%M:%S')}")
         self.updateBalancesView()
         self.updateHoldingsView()
 

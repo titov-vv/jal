@@ -5,14 +5,13 @@ import pandas as pd
 from constants import BookAccount, PredefinedAsset, ColumnWidth
 from view_delegate import *
 from DB.helpers import executeSQL, readSQLrecord
-from CustomUI.helpers import UseSqlQuery, ConfigureTableView
+from CustomUI.helpers import g_tr, UseSqlQuery, ConfigureTableView
 from reports.helpers import xslxFormat, xlsxWriteRow
 from PySide2.QtWidgets import QFileDialog
 from PySide2.QtCore import Qt, QObject, Signal, QAbstractTableModel
 
 
 TREE_LEVEL_SEPARATOR = chr(127)
-TOTAL_NAME = 'TOTAL'
 
 
 class ReportType:
@@ -133,15 +132,16 @@ class Reports(QObject):
         self.table_view.show()
 
     def saveReport(self):
-        filename, filter = QFileDialog.getSaveFileName(None, "Save deals report to:", ".", "Excel file (*.xlsx)")
+        filename, filter = QFileDialog.getSaveFileName(None, g_tr('Reports', "Save report to:"),
+                                                       ".", g_tr('Reports', "Excel files (*.xlsx)"))
         if filename:
-            if filter == self.tr("Excel file (*.xlsx)") and filename[-5:] != '.xlsx':
+            if filter == g_tr('Reports', "Excel files (*.xlsx)") and filename[-5:] != '.xlsx':
                 filename = filename + '.xlsx'
         else:
             return
         workbook = xlsxwriter.Workbook(filename=filename)
         formats = xslxFormat(workbook)
-        sheet = workbook.add_worksheet(name="Deals")
+        sheet = workbook.add_worksheet(name=g_tr('Reports', "Report"))
 
         model = self.table_view.model()
         headers = {}
@@ -158,7 +158,7 @@ class Reports(QObject):
         try:
             workbook.close()
         except:
-            logging.error(f"Can't write taxes report into file '{filename}'")
+            logging.error(g_tr('Reports', "Can't save report into file ") + f"'{filename}'")
 
     def prepareIncomeSpendingReport(self, begin, end, account_id, group_dates):
         _ = executeSQL(self.db, "DELETE FROM t_months")
@@ -204,14 +204,14 @@ class Reports(QObject):
             })
         data = pd.DataFrame(table)
         data = pd.pivot_table(data, index=['category'], columns=['Y', 'M'], values=['turnover'],
-                              aggfunc=sum, fill_value=0.0, margins=True, margins_name=TOTAL_NAME)
+                              aggfunc=sum, fill_value=0.0, margins=True, margins_name=g_tr('Reports', "TOTAL"))
         if data.columns[0][1] == '':   # if some categories have no data and we have null 1st column
             data = data.drop(columns=[data.columns[0]])
         # Calculate sub-totals from bottom to top
         totals = {}
         prev_level = 0
         for index, row in data[::-1].iterrows():
-            if index == TOTAL_NAME:
+            if index == g_tr('Reports', "TOTAL"):
                 continue
             level = index.count(TREE_LEVEL_SEPARATOR)
             if level > prev_level:
@@ -235,7 +235,7 @@ class Reports(QObject):
 
     def prepareDealsReport(self, begin, end, account_id, group_dates):
         if account_id == 0:
-            self.report_failure.emit("Deals report requires exact account")
+            self.report_failure.emit(g_tr('Reports', "You should select account to create Deals report"))
             return False
         if group_dates == 1:
             self.query = executeSQL(self.db,
@@ -259,7 +259,7 @@ class Reports(QObject):
 
     def prepareProfitLossReport(self, begin, end, account_id, group_dates):
         if account_id == 0:
-            self.report_failure.emit("Profit/Loss report requires exact account")
+            self.report_failure.emit(g_tr('Reports', "You should select account to create Profit/Loss report"))
             return False
         _ = executeSQL(self.db, "DELETE FROM t_months")
         _ = executeSQL(self.db, "INSERT INTO t_months(asset_id, month, last_timestamp) "

@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from PySide2.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QCompleter
 
+from CustomUI.helpers import g_tr
 from CustomUI.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, \
     ReferenceIntDelegate, ReferenceBoolDelegate, ReferenceTimestampDelegate, ReferenceLookupDelegate
 
@@ -104,7 +105,7 @@ class AccountSelector(AbstractReferenceSelector):
     def init_db(self, db):
         self.dialog = ReferenceDataDialog(db, "accounts",
                                           [("id", None, 0, None, None),
-                                           ("name", "Name", -1, Qt.AscendingOrder, None),
+                                           ("name", g_tr('AccountSelector', "Name"), -1, Qt.AscendingOrder, None),
                                            ("type_id", None, 0, None, None),
                                            ("currency_id", "Currency", None, None, ReferenceLookupDelegate),
                                            ("active", "Act", 32, None, ReferenceBoolDelegate),
@@ -113,7 +114,7 @@ class AccountSelector(AbstractReferenceSelector):
                                             self.fontMetrics().width("00/00/0000 00:00:00") * 1.1,
                                             None, ReferenceTimestampDelegate),
                                            ("organization_id", "Bank", None, None, ReferenceLookupDelegate)],
-                                          title="Assets", search_field="full_name", toggle=("active", "Show inactive"),
+                                          title=g_tr('AccountSelector', "Accounts"), search_field="full_name", toggle=("active", "Show inactive"),
                                           relations=[("type_id", "account_types", "id", "name", "Account type:"),
                                                      ("currency_id", "currencies", "id", "name", None),
                                                      ("organization_id", "agents", "id", "name", None)])

@@ -2,14 +2,13 @@ import os
 import logging
 from functools import partial
 
-from PySide2 import QtCore, QtWidgets
 from PySide2.QtCore import Slot, QDateTime, QDir, QLocale, QTranslator, QEvent
 from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QMenu, QMessageBox, QLabel, QActionGroup, QAction
 
 from UI.ui_main_window import Ui_LedgerMainWindow
 from UI.ui_abort_window import Ui_AbortWindow
-from CustomUI.helpers import VLine, ManipulateDate
+from CustomUI.helpers import g_tr, VLine, ManipulateDate
 from CustomUI.table_view_config import TableViewConfig
 from constants import TransactionType
 from DB.backup_restore import MakeBackup, RestoreBackup
@@ -90,9 +89,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         # Setup balance and holdings tables
         self.ledger.setViews(self.BalancesTableView, self.HoldingsTableView)
-        self.BalanceDate.setDateTime(QtCore.QDateTime.currentDateTime())
+        self.BalanceDate.setDateTime(QDateTime.currentDateTime())
         self.BalancesCurrencyCombo.init_db(self.db)   # this line will trigger onBalanceDateChange -> view updated
-        self.HoldingsDate.setDateTime(QtCore.QDateTime.currentDateTime())
+        self.HoldingsDate.setDateTime(QDateTime.currentDateTime())
         self.HoldingsCurrencyCombo.init_db(self.db)   # and this will trigger onHoldingsDateChange -> view updated
 
         # Create menu for different operations
@@ -120,6 +119,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.logger.removeHandler(self.Logs)    # Removing handler (but it doesn't prevent exception at exit)
         logging.raiseExceptions = False         # Silencing logging module exceptions
         self.db.close()                         # Closing database file
+
+    def retranslateUi(self, my_main_wnd):
+        super().retranslateUi(self)
+        self.ChooseAccountBtn.retranslateUi()
+        self.Logs.retranslateUi()
 
     @Slot()
     def changeEvent(self, event):
@@ -155,22 +159,24 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             language_file = self.own_path + "i18n" + os.sep + language_code + '.qm'
             self.translator.load(language_file)
             self.app.installTranslator(self.translator)
-            self.StatusBar.showMessage(f"Language {QLocale.languageToString(QLocale(language_code).language())} loaded",
+            self.StatusBar.showMessage(QLocale.languageToString(QLocale(language_code).language())
+                                       + g_tr('MainWindow', " language is loaded"),
                                        timeout=60000)
 
     def Backup(self):
-        backup_directory = QFileDialog.getExistingDirectory(self, "Select directory to save backup")
+        backup_directory = QFileDialog.getExistingDirectory(self, g_tr('MainWindow', "Select directory to save backup"))
         if backup_directory:
             MakeBackup(get_dbfilename(self.own_path), backup_directory)
 
     def Restore(self):
-        restore_directory = QFileDialog.getExistingDirectory(self, "Select directory to restore from")
+        restore_directory = QFileDialog.getExistingDirectory(self, g_tr('MainWindow',
+                                                                        "Select directory to restore from"))
         if restore_directory:
             self.db.close()
             RestoreBackup(get_dbfilename(self.own_path), restore_directory)
-            QMessageBox().information(self, self.tr("Data restored"),
-                                      self.tr("Database was loaded from the backup.\n"
-                                              "Application will be restarted now."),
+            QMessageBox().information(self, g_tr('MainWindow', "Data restored"),
+                                      g_tr('MainWindow', "Database was loaded from the backup.\n"
+                                                         "Application will be restarted now."),
                                       QMessageBox.Ok)
             self.app.quit()
 
@@ -246,18 +252,18 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def onQuotesDownloadCompletion(self):
-        self.StatusBar.showMessage("Quotes download completed", timeout=60000)
+        self.StatusBar.showMessage(g_tr('MainWindow', "Quotes download completed"), timeout=60000)
         self.ledger.updateBalancesView()
         self.ledger.updateBalancesView()
 
     @Slot()
     def onStatementLoaded(self):
-        self.StatusBar.showMessage("Statement load completed", timeout=60000)
+        self.StatusBar.showMessage(g_tr('MainWindow', "Statement load completed"), timeout=60000)
         self.ledger.rebuild()
 
     @Slot()
     def onStatementLoadFailure(self):
-        self.StatusBar.showMessage("Statement load failed", timeout=60000)
+        self.StatusBar.showMessage(g_tr('MainWindow', "Statement load failed"), timeout=60000)
 
     @Slot()
     def ShowOperationTab(self, operation_type):

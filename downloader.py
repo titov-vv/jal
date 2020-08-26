@@ -12,6 +12,7 @@ from PySide2.QtWidgets import QDialog
 from UI.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from constants import Setup, MarketDataFeed
 from DB.helpers import executeSQL
+from CustomUI.helpers import g_tr
 
 
 # ===================================================================================================================
@@ -22,7 +23,7 @@ def get_web_data(url):
     if response.status_code == 200:
         return response.text
     else:
-        logging.error(f"URL: {url} failed with {response}")
+        logging.error(f"URL: {url}" + g_tr('QuotesUpdateDialog', " failed with response ") + f"{response}")
         return ''
 
 
@@ -113,12 +114,12 @@ class QuoteDownloader(QObject):
             try:
                 data = self.data_loaders[feed_id](asset, isin, from_timestamp, end_timestamp)
             except (xml_tree.ParseError, pd.errors.EmptyDataError):
-                logging.warning(f"No data were downloaded for {asset}")
+                logging.warning(g_tr('QuotesUpdateDialog', "No data were downloaded for ") + f"{asset}")
                 continue
             if data is not None:
                 for date, quote in data.iterrows():
                     self.SubmitQuote(asset_id, asset, int(date.timestamp()), float(quote[0]))
-        logging.info("Download completed")
+        logging.info(g_tr('QuotesUpdateDialog', "Download completed"))
 
     def PrepareRussianCBReader(self):
         rows = []
@@ -243,5 +244,5 @@ class QuoteDownloader(QObject):
             executeSQL(self.db, "INSERT INTO quotes(timestamp, asset_id, quote) VALUES (:timestamp, :asset_id, :quote)",
                        [(":timestamp", timestamp), (":asset_id", asset_id), (":quote", quote)])
         self.db.commit()
-        logging.info(
-            f"Quote loaded: {asset_name} @ {datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")
+        logging.info(g_tr('QuotesUpdateDialog', "Quote loaded: ") +
+                     f"{asset_name} @ {datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")

@@ -3,7 +3,7 @@ from constants import Setup
 from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery
 from DB.backup_restore import loadDbFromSQL
 
-
+# No translation of the file because these routines might be used before QApplication initialization
 class LedgerInitError:
     DbInitSuccess = 0
     EmptyDbInitialized = 1

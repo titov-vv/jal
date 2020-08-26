@@ -1,7 +1,7 @@
 import datetime
 
 from constants import ColumnWidth
-from PySide2.QtCore import Qt
+from PySide2.QtCore import QCoreApplication, Qt
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtWidgets import QAbstractItemView, QHeaderView, QDataWidgetMapper, QFrame, QDateTimeEdit
 
@@ -22,6 +22,12 @@ class rel_idx:
 class map_idx:
     DB_NAME = 0
     WIDGET = 1
+
+
+# -----------------------------------------------------------------------------------------------------------------------
+# Global translate helper to make lines shorter in code
+def g_tr(context, text):
+    return QCoreApplication.translate(context, text)
 
 
 # -----------------------------------------------------------------------------------------------------------------------

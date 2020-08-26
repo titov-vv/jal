@@ -2,6 +2,7 @@ from PySide2.QtWidgets import QWidget, QHBoxLayout, QLabel
 from PySide2.QtCore import Signal, Property
 from PySide2.QtGui import QPalette
 from constants import CustomColor
+from CustomUI.helpers import g_tr
 
 
 class TradeAction(QWidget):
@@ -29,11 +30,11 @@ class TradeAction(QWidget):
         self.p_type = trade_type
 
         if self.p_type:
-            self.label.setText("CORP.ACTION")
+            self.label.setText(g_tr('TradeAction', "CORP.ACTION"))
             self.palette.setColor(self.label.foregroundRole(), CustomColor.DarkBlue)
             self.label.setPalette(self.palette)
         else:
-            self.label.setText("TRADE")
+            self.label.setText(g_tr('TradeAction', "TRADE"))
             self.palette.setColor(self.label.foregroundRole(), CustomColor.DarkGreen)
             self.label.setPalette(self.palette)
         #         else:

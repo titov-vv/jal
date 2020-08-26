@@ -7,7 +7,7 @@ from PySide2.QtWidgets import QDialog
 from PySide2.QtWidgets import QStyledItemDelegate
 
 from UI.ui_reference_data_dlg import Ui_ReferenceDataDialog
-from CustomUI.helpers import UseSqlTable, ConfigureTableView, rel_idx
+from CustomUI.helpers import g_tr, UseSqlTable, ConfigureTableView, rel_idx
 from DB.helpers import readSQL
 
 
@@ -110,7 +110,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
     def getSelectedName(self):
         if self.selected_id == 0:
-            return "ANY"
+            return g_tr('ReferenceDataDialog', "ANY")
         else:
             return self.p_selected_name
 
@@ -132,7 +132,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     def OnAdd(self):
         new_record = self.Model.record()
         if self.tree_view:
-            new_record.setValue("pid", self.parent)  # set current parent
+            new_record.setValue('pid', self.parent)  # set current parent
         assert self.Model.insertRows(0, 1)
         self.Model.setRecord(0, new_record)
         self.CommitBtn.setEnabled(True)
@@ -154,7 +154,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
             if not group_field:
                 self.Model.setData(self.Model.index(0, self.group_key_index), self.group_id)
         if not self.Model.submitAll():
-            logging.fatal(self.tr("Action submit failed: ") + self.Model.lastError().text())
+            logging.fatal(g_tr('ReferenceDataDialog', "Submit failed: ") + self.Model.lastError().text())
             return
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)
@@ -203,17 +203,17 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         idx = selected.indexes()
         if idx:
             selected_row = idx[0].row()
-            self.selected_id = self.DataView.model().record(selected_row).value("id")
-            self.p_selected_name = self.DataView.model().record(selected_row).value("name")
+            self.selected_id = self.DataView.model().record(selected_row).value('id')
+            self.p_selected_name = self.DataView.model().record(selected_row).value('name')
 
     @Slot()
     def OnClicked(self, index):
         if index.column() == 0:
             selected_row = index.row()
-            self.parent = self.DataView.model().record(selected_row).value("id")
-            self.last_parent = self.DataView.model().record(selected_row).value("pid")
+            self.parent = self.DataView.model().record(selected_row).value('id')
+            self.last_parent = self.DataView.model().record(selected_row).value('pid')
             if self.search_text:
-                self.SearchString.setText("")  # it will also call self.setFilter()
+                self.SearchString.setText('')  # it will also call self.setFilter()
             else:
                 self.setFilter()
 
@@ -221,7 +221,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     def OnUpClick(self):
         if self.search_text:  # list filtered by search string
             return
-        current_id = self.DataView.model().record(0).value("id")
+        current_id = self.DataView.model().record(0).value('id')
         if current_id is None:
             pid = self.last_parent
         else:
@@ -260,10 +260,10 @@ class ReferenceTreeDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         painter.save()
         model = index.model()
-        children_count = model.data(model.index(index.row(), model.fieldIndex("children_count")), Qt.DisplayRole)
-        text = ""
+        children_count = model.data(model.index(index.row(), model.fieldIndex('children_count')), Qt.DisplayRole)
+        text = ''
         if children_count:
-            text = "+"
+            text = '+'
         painter.drawText(option.rect, Qt.AlignHCenter, text)
         painter.restore()
 
@@ -279,9 +279,9 @@ class ReferenceBoolDelegate(QStyledItemDelegate):
         model = index.model()
         status = model.data(index, Qt.DisplayRole)
         if status:
-            text = " * "
+            text = ' * '
         else:
-            text = ""
+            text = ''
         painter.drawText(option.rect, Qt.AlignHCenter, text)
         painter.restore()
 

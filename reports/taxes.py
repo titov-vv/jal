@@ -3,6 +3,7 @@ from datetime import datetime
 import xlsxwriter
 import logging
 from reports.helpers import xslxFormat, xlsxWriteRow
+from CustomUI.helpers import g_tr
 from DB.helpers import executeSQL, readSQLrecord
 from PySide2.QtWidgets import QDialog, QFileDialog
 from PySide2.QtCore import Property, Slot
@@ -25,9 +26,10 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
 
     @Slot()
     def OnFileBtn(self):
-        filename = QFileDialog.getSaveFileName(self, self.tr("Save tax forms to:"), ".", self.tr("Excel file (*.xlsx)"))
+        filename = QFileDialog.getSaveFileName(self, g_tr('TaxExportDialog', "Save tax reports to:"),
+                                               ".", g_tr('TaxExportDialog', "Excel files (*.xlsx)"))
         if filename[0]:
-            if filename[1] == self.tr("Excel file (*.xlsx)") and filename[0][-5:] != '.xlsx':
+            if filename[1] == g_tr('TaxExportDialog', "Excel files (*.xlsx)") and filename[0][-5:] != '.xlsx':
                 self.Filename.setText(filename[0] + '.xlsx')
             else:
                 self.Filename.setText(filename[0])
@@ -51,10 +53,10 @@ class TaxesRus:
     def __init__(self, db):
         self.db = db
         self.reports = {
-            "Dividends": self.prepare_dividends,
-            "Deals": self.prepare_trades,
-            "Fees": self.prepare_broker_fees,
-            "Corporate actions": self.prepare_corporate_actions
+            "Дивиденды": self.prepare_dividends,
+            "Сделки": self.prepare_trades,
+            "Комиссии": self.prepare_broker_fees,
+            "Корп.события": self.prepare_corporate_actions
         }
 
     def showTaxesDialog(self, parent):
@@ -75,7 +77,7 @@ class TaxesRus:
         try:
             workbook.close()
         except:
-            logging.error(f"Can't write taxes report into file '{taxes_file}'")
+            logging.error(g_tr('TaxesRus', "Can't write tax report into file ") + f"'{taxes_file}'")
 
     def add_report_header(self, sheet, formats, title):
         sheet.write(0, 0, title, formats.Bold())

@@ -4,6 +4,7 @@ from constants import Setup, TransactionType
 from PySide2.QtCore import Qt, QObject, Signal, Slot, QDateTime
 from PySide2.QtWidgets import QMessageBox, QMenu, QAction, QHeaderView
 from DB.helpers import executeSQL
+from CustomUI.helpers import g_tr
 
 INIT_NULL = 0
 INIT_VALUE = 1
@@ -151,8 +152,8 @@ class LedgerOperationsView(QObject):
         self.initChildDetails(operation_type)
 
     def deleteOperation(self):
-        if QMessageBox().warning(None, "Confirmation",
-                                 "Are you sure to delete selected transacion?",
+        if QMessageBox().warning(None, g_tr('LedgerOperationsView', "Confirmation"),
+                                 g_tr('LedgerOperationsView', "Are you sure to delete selected transacion?"),
                                  QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
             return
         index = self.table_view.currentIndex()
@@ -210,9 +211,9 @@ class LedgerOperationsView(QObject):
         
     def checkForUncommittedChanges(self):
         if self.modified_operation_type:
-            reply = QMessageBox().warning(None, "You have unsaved changes",
+            reply = QMessageBox().warning(None, g_tr('LedgerOperationsView', "You have unsaved changes"),
                                           self.operations[self.modified_operation_type][self.OP_NAME] +
-                                          " has uncommitted changes,\ndo you want to save it?",
+                                          g_tr('LedgerOperationsView', " has uncommitted changes,\ndo you want to save it?"),
                                           QMessageBox.Yes, QMessageBox.No)
             if reply == QMessageBox.Yes:
                 self.commitOperation()
@@ -236,13 +237,13 @@ class LedgerOperationsView(QObject):
             if self.operations[self.modified_operation_type][self.OP_MAPPER]:  # if mapper defined for operation type
                 if not self.operations[self.modified_operation_type][self.OP_MAPPER].model().submitAll():
                     logging.fatal(
-                        self.tr("Action submit failed: ") + self.operations[self.modified_operation_type][self.OP_MAPPER].model().lastError().text())
+                        g_tr('LedgerOperationsView', "Submit failed: ") + self.operations[self.modified_operation_type][self.OP_MAPPER].model().lastError().text())
                     return
             self.beforeChildViewCommit(self.modified_operation_type)
             if self.operations[self.modified_operation_type][self.OP_CHILD_VIEW]:  # if child view defined for operation type
                 if not self.operations[self.modified_operation_type][self.OP_CHILD_VIEW].model().submitAll():
                     logging.fatal(
-                        self.tr("Action details submit failed: ") + self.operations[self.modified_operation_type][
+                        g_tr('LedgerOperationsView', "Details submit failed: ") + self.operations[self.modified_operation_type][
                             self.OP_CHILD_VIEW].model().lastError().text())
                     return
             self.modified_operation_type = None
@@ -296,11 +297,11 @@ class LedgerOperationsView(QObject):
     def onOperationContextMenu(self, pos):
         self.current_index = self.table_view.indexAt(pos)
         contextMenu = QMenu(self.table_view)
-        actionReconcile = QAction(text="Reconcile", parent=self)
+        actionReconcile = QAction(text=g_tr('LedgerOperationsView', "Reconcile"), parent=self)
         actionReconcile.triggered.connect(self.reconcileAtCurrentOperation)
-        actionCopy = QAction(text="Copy", parent=self)
+        actionCopy = QAction(text=g_tr('LedgerOperationsView', "Copy"), parent=self)
         actionCopy.triggered.connect(self.copyOperation)
-        actionDelete = QAction(text="Delete", parent=self)
+        actionDelete = QAction(text=g_tr('LedgerOperationsView', "Delete"), parent=self)
         actionDelete.triggered.connect(self.deleteOperation)
         contextMenu.addAction(actionReconcile)
         contextMenu.addSeparator()

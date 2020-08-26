@@ -1,8 +1,7 @@
 from view_delegate import *
 from constants import ColumnWidth
-from reports.reports import ReportType
 from PySide2 import QtWidgets
-from PySide2.QtCore import QObject, SIGNAL, Slot
+from PySide2.QtCore import QCoreApplication, QObject, SIGNAL, Slot
 from functools import partial
 from mapper_delegate import MapperDelegate
 from CustomUI.helpers import UseSqlTable, ConfigureTableView, ConfigureDataMappers
@@ -170,16 +169,16 @@ class TableViewConfig:
         }
         self.dialogs = {
             self.ACCOUNT_TYPES: ('account_types',
-                                 "Account Types",
+                                 QCoreApplication.translate('TableViewConfig', "Account Types"),
                                  [("id", None, 0, None, None),
-                                  ("name", "Account Type", ColumnWidth.STRETCH, Qt.AscendingOrder, None)],
+                                  ("name", self.tr("Account Type"), ColumnWidth.STRETCH, Qt.AscendingOrder, None)],
                                  None,
                                  None,
                                  False,
                                  None
                                  ),
             self.ACCOUNTS: ('accounts',
-                            "Accounts",
+                            QCoreApplication.translate('TableViewConfig', "Accounts"),
                             [("id", None, 0, None, None),
                              ("name", "Name", ColumnWidth.STRETCH, Qt.AscendingOrder, None),
                              ("type_id", None, 0, None, None),
@@ -197,7 +196,7 @@ class TableViewConfig:
                              ("organization_id", "agents", "id", "name", None)]
                             ),
             self.ASSETS: ("assets",
-                          "Assets",
+                          QCoreApplication.translate('TableViewConfig', "Assets"),
                           [("id", None, 0, None, None),
                            ("name", "Symbol", None, Qt.AscendingOrder, None),
                            ("type_id", None, 0, None, None),
@@ -212,7 +211,7 @@ class TableViewConfig:
                            ("src_id", "data_sources", "id", "name", None)]
             ),
             self.PEERS: ("agents_ext",
-                          "Peers",
+                          QCoreApplication.translate('TableViewConfig', "Peers"),
                           [("id", " ", 16, None, ReferenceTreeDelegate),
                            ("pid", None, 0, None, None),
                            ("name", "Name", ColumnWidth.STRETCH, Qt.AscendingOrder, None),
@@ -225,7 +224,7 @@ class TableViewConfig:
                           None
             ),
             self.CATEGORIES: ("categories_ext",
-                              "Categories",
+                              QCoreApplication.translate('TableViewConfig', "Categories"),
                               [("id", " ", 16, None, ReferenceTreeDelegate),
                                ("pid", None, 0, None, None),
                                ("name", "Name", ColumnWidth.STRETCH, Qt.AscendingOrder, None),
@@ -238,7 +237,7 @@ class TableViewConfig:
                               None
             ),
             self.TAGS: ("tags",
-                        "Tags",
+                        QCoreApplication.translate('TableViewConfig', "Tags"),
                         [("id", None, 0, None, None),
                          ("tag", "Tag", ColumnWidth.STRETCH, Qt.AscendingOrder, None)],
                         "tag",
@@ -280,6 +279,9 @@ class TableViewConfig:
             (parent.RevertOperationBtn,     "clicked()",                parent.operations.revertOperation)
         ]
 
+    def tr(self, name):
+        pass
+
     def configure(self, i):
         model = UseSqlTable(self.parent.db, self.table_names[i], self.table_view_columns[i],
                             relations=self.table_relations[i])
@@ -304,7 +306,7 @@ class TableViewConfig:
         ReferenceDataDialog(self.parent.db,
                             self.dialogs[dlg_id][self.DLG_TABLE],
                             self.dialogs[dlg_id][self.DLG_COLUMNS],
-                            title=self.dialogs[dlg_id][self.DLG_TITLE],
+                            title=QCoreApplication.translate('TableViewConfig', self.dialogs[dlg_id][self.DLG_TITLE]),
                             search_field=self.dialogs[dlg_id][self.DLG_SEARCH],
                             toggle=self.dialogs[dlg_id][self.DLG_TOGGLE],
                             tree_view=self.dialogs[dlg_id][self.DLG_TREE],

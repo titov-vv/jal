@@ -4,6 +4,8 @@ import pandas as pd
 import math
 import logging
 
+from CustomUI.helpers import g_tr
+
 # ------------------------------------------------------------------------------
 backup_list = ["settings", "tags", "categories", "agents", "assets", "accounts", "corp_actions",
                "dividends", "trades", "actions", "action_details", "transfers", "transfer_notes", "quotes"]
@@ -18,7 +20,7 @@ def MakeBackup(db_file, backup_path):
         data.to_csv(f"{backup_path}/{table}.csv", sep="|", header=True, index=False)
 
     db.close()
-    logging.info("Backup saved in: " + backup_path)
+    logging.info(g_tr('', "Backup saved in: ") + backup_path)
 
 
 def RestoreBackup(db_file, restore_path):
@@ -34,7 +36,7 @@ def RestoreBackup(db_file, restore_path):
     for table in backup_list:
         cursor.execute(f"DELETE FROM {table}")
     db.commit()
-    logging.info("DB cleanup was completed")
+    logging.info(g_tr('', "DB cleanup was completed"))
 
     for table in backup_list:
         data = pd.read_csv(f"{restore_path}/{table}.csv", sep='|')
@@ -47,7 +49,7 @@ def RestoreBackup(db_file, restore_path):
 
     db.commit()
     db.close()
-    logging.info("Backup restored from: " + restore_path + " into " + db_file)
+    logging.info(g_tr('', "Backup restored from: ") + restore_path + g_tr('', " into ") + db_file)
 
 
 def loadDbFromSQL(db_file, sql_file):
