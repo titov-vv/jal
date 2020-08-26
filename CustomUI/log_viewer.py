@@ -14,7 +14,6 @@ class LogViewer(QPlainTextEdit, logging.Handler):
         self.notification = None  # Here is QLabel element to display LOG update status
         self.clear_color = None   # Variable to store initial "clear" background color
         self.last_level = 0       # Max last log level
-        self.notification_text = g_tr('LogViewer', "LOG")
 
     def emit(self, record, **kwargs):
         # Store message in log window
@@ -32,7 +31,7 @@ class LogViewer(QPlainTextEdit, logging.Handler):
                 else:
                     palette.setColor(self.notification.backgroundRole(), CustomColor.LightRed)
                 self.notification.setPalette(palette)
-                self.notification.setText(self.notification_text)
+                self.notification.setText(g_tr('LogViewer', "LOG"))
                 self.last_level = record.levelno
 
         self.app.processEvents()
@@ -43,7 +42,7 @@ class LogViewer(QPlainTextEdit, logging.Handler):
 
     def setNotificationLabel(self, label):
         self.notification = label
-        self.notification.setFixedWidth(self.notification.fontMetrics().width(self.notification_text))
+        self.notification.setFixedWidth(self.notification.fontMetrics().width(g_tr('LogViewer', "LOG")))
         self.notification.setAutoFillBackground(True)
         self.clear_color = self.notification.palette().color(self.notification.backgroundRole())
 
@@ -58,7 +57,3 @@ class LogViewer(QPlainTextEdit, logging.Handler):
         self.notification.setPalette(palette)
         self.notification.setText("")
 
-    def retranslateUi(self):
-        if self.notification:
-            self.notification_text = g_tr('LogViewer', "LOG")
-            self.notification.setFixedWidth(self.notification.fontMetrics().width(self.notification_text))

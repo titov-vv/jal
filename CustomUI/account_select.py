@@ -72,15 +72,6 @@ class AccountButton(QPushButton):
             self.changed.emit(self.account_id)
 
 
-    def retranslateUi(self):
-        if self.db:  # for correct translation dialog should be recreated before UI updates
-            self.init_db(self.db)
-        self.Menu.actions()[0].setText(g_tr('AccountButton', "Choose account"))
-        self.Menu.actions()[1].setText(g_tr('AccountButton', "Any account"))
-        if self.p_account_id == 0:
-            self.setText(g_tr('AccountButton', "ANY"))
-
-
 class CurrencyCombo(QComboBox):
     def __init__(self, parent):
         QComboBox.__init__(self, parent)

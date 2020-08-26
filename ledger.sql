@@ -256,6 +256,17 @@ CREATE TABLE holdings_aux (
 );
 
 
+-- Table: languages
+DROP TABLE IF EXISTS languages;
+
+CREATE TABLE languages (
+    id       INTEGER  PRIMARY KEY AUTOINCREMENT
+                      UNIQUE
+                      NOT NULL,
+    language CHAR (2) UNIQUE
+                      NOT NULL
+);
+
 -- Table: ledger
 DROP TABLE IF EXISTS ledger;
 
@@ -1555,9 +1566,14 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 7);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 8);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
+INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
+
+-- Initialize available languages
+INSERT INTO languages (id, language) VALUES (1, 'en');
+INSERT INTO languages (id, language) VALUES (2, 'ru');
 
 -- Initialize default values for books
 INSERT INTO books (id, name) VALUES (1, 'Costs');

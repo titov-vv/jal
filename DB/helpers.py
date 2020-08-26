@@ -94,6 +94,15 @@ def init_and_check_db(db_path):
     return db, LedgerInitError(LedgerInitError.DbInitSuccess)
 
 # -------------------------------------------------------------------------------------------------------------------
+def get_language(db):
+    language = ''
+    if db:
+        language = readSQL(db, "SELECT l.language FROM settings AS s "
+                               "LEFT JOIN languages AS l ON s.value=l.id WHERE s.name='Language'")
+    language = 'us' if language == '' else language
+    return language
+
+# -------------------------------------------------------------------------------------------------------------------
 def get_base_currency(db):
     return readSQL(db, "SELECT value FROM settings WHERE name='BaseCurrency'")
 

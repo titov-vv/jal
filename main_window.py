@@ -2,7 +2,7 @@ import os
 import logging
 from functools import partial
 
-from PySide2.QtCore import Slot, QDateTime, QDir, QLocale, QTranslator, QEvent
+from PySide2.QtCore import Slot, QDateTime, QDir, QLocale
 from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QMenu, QMessageBox, QLabel, QActionGroup, QAction
 
@@ -12,7 +12,7 @@ from CustomUI.helpers import g_tr, VLine, ManipulateDate
 from CustomUI.table_view_config import TableViewConfig
 from constants import TransactionType
 from DB.backup_restore import MakeBackup, RestoreBackup
-from DB.helpers import get_dbfilename
+from DB.helpers import get_dbfilename, executeSQL
 from downloader import QuoteDownloader
 from ledger import Ledger
 from operations import LedgerOperationsView, LedgerInitValues
@@ -32,13 +32,13 @@ class AbortWindow(QMainWindow, Ui_AbortWindow):
 
 #-----------------------------------------------------------------------------------------------------------------------
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):
-    def __init__(self, app, db, own_path):
+    def __init__(self, db, own_path, language):
         QMainWindow.__init__(self, None)
         self.setupUi(self)
 
-        self.app = app
         self.db = db
         self.own_path = own_path
+        self.currentLanguage = language
 
         self.ledger = Ledger(self.db)
         self.downloader = QuoteDownloader(self.db)
@@ -105,8 +105,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ActionDetailsTableView.horizontalHeader().moveSection(self.ActionDetailsTableView.model().fieldIndex("note"),
                                                                    self.ActionDetailsTableView.model().fieldIndex("name"))
 
-        self.currentLanguage = None
-        self.translator = None
         self.langGroup = QActionGroup(self.menuLanguage)
         self.createLanguageMenu()
         self.langGroup.triggered.connect(self.onLanguageChanged)
@@ -120,20 +118,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         logging.raiseExceptions = False         # Silencing logging module exceptions
         self.db.close()                         # Closing database file
 
-    def retranslateUi(self, my_main_wnd):
-        super().retranslateUi(self)
-        self.ChooseAccountBtn.retranslateUi()
-        self.Logs.retranslateUi()
-
-    @Slot()
-    def changeEvent(self, event):
-        if event:
-            if event.type() == QEvent.LanguageChange:
-                self.retranslateUi(self)
-        super().changeEvent(event)
-
     def createLanguageMenu(self):
-        langPath = self.own_path + "i18n" + os.sep
+        langPath = self.own_path + "languages" + os.sep
 
         langDirectory = QDir(langPath)
         for language_file in langDirectory.entryList(['*.qm']):
@@ -148,20 +134,20 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def onLanguageChanged(self, action):
-        if action:
-            self.loadLanguage(action.data())
-
-    def loadLanguage(self, language_code):
+        language_code = action.data()
         if language_code != self.currentLanguage:
-            self.currentLanguage = language_code
-            self.app.removeTranslator(self.translator)
-            self.translator = QTranslator()
-            language_file = self.own_path + "i18n" + os.sep + language_code + '.qm'
-            self.translator.load(language_file)
-            self.app.installTranslator(self.translator)
-            self.StatusBar.showMessage(QLocale.languageToString(QLocale(language_code).language())
-                                       + g_tr('MainWindow', " language is loaded"),
-                                       timeout=60000)
+            executeSQL(self.db,
+                       "UPDATE settings "
+                       "SET value=(SELECT id FROM languages WHERE language = :new_language) WHERE name ='Language'",
+                       [(':new_language', language_code)])
+            QMessageBox().information(self, g_tr('MainWindow', "Restart required"),
+                                      g_tr('MainWindow', "Language was changed to ") +
+                                      QLocale.languageToString(QLocale(language_code).language()) + "\n" +
+                                      g_tr('MainWindow', "You should restart application to apply changes\n"
+                                           "Application will be terminated now"),
+                                      QMessageBox.Ok)
+            self.close()
+
 
     def Backup(self):
         backup_directory = QFileDialog.getExistingDirectory(self, g_tr('MainWindow', "Select directory to save backup"))
@@ -175,10 +161,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             self.db.close()
             RestoreBackup(get_dbfilename(self.own_path), restore_directory)
             QMessageBox().information(self, g_tr('MainWindow', "Data restored"),
-                                      g_tr('MainWindow', "Database was loaded from the backup.\n"
-                                                         "Application will be restarted now."),
+                                      g_tr('MainWindow', "Database was loaded from the backup.\n") +
+                                      g_tr('MainWindow', "You should restart application to apply changes\n"
+                                           "Application will be terminated now"),
                                       QMessageBox.Ok)
-            self.app.quit()
+            self.close()
 
     @Slot()
     def onBalanceDateChange(self, _new_date):
