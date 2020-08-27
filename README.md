@@ -1,7 +1,7 @@
 # ledger
 ledger is a project for personal finance tracking.
 
-*[English](README.md), [Русский](README.ru.md)*
+*[English](README.md), [Русский](docs/README.ru.md)*
 
 It was designed to keep records of personal incomes/spendings and investments with up-to-date information about account's balances and portfolio value.
 
