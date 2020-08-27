@@ -273,3 +273,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def showModified(self):
         self.SaveOperationBtn.setEnabled(True)
         self.RevertOperationBtn.setEnabled(True)
+
+    @Slot()
+    def importSlip(self):
+        print("Import Stub")

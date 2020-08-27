@@ -1611,7 +1611,6 @@
      <string>&amp;Load</string>
     </property>
     <addaction name="action_Load_quotes"/>
-    <addaction name="actionLoad_Statement"/>
    </widget>
    <widget class="QMenu" name="menu_Reports">
     <property name="title">
@@ -1624,9 +1623,17 @@
      <string>L&amp;anguage</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuImport">
+    <property name="title">
+     <string>&amp;Import</string>
+    </property>
+    <addaction name="actionImportSlipRU"/>
+    <addaction name="actionImportStatement"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_DAta"/>
    <addaction name="menuLoad"/>
+   <addaction name="menuImport"/>
    <addaction name="menu_Reports"/>
    <addaction name="menuLanguage"/>
   </widget>
@@ -1649,9 +1656,9 @@
     <string>Load &amp;Quotes...</string>
    </property>
   </action>
-  <action name="actionLoad_Statement">
+  <action name="actionImportStatement">
    <property name="text">
-    <string>Load &amp;Statement...</string>
+    <string>&amp;Broker statement...</string>
    </property>
   </action>
   <action name="actionAccountTypes">
@@ -1712,6 +1719,11 @@
   <action name="MakeCategoriesReport">
    <property name="text">
     <string>&amp;Income/Spending report</string>
+   </property>
+  </action>
+  <action name="actionImportSlipRU">
+   <property name="text">
+    <string>Slip [RU]...</string>
    </property>
   </action>
  </widget>
