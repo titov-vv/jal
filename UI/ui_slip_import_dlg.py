@@ -61,45 +61,75 @@ class Ui_ImportSlipDlg(object):
         self.formLayout = QFormLayout(self.SlipDataGroup)
         self.formLayout.setObjectName(u"formLayout")
         self.formLayout.setContentsMargins(2, 2, 2, 2)
-        self.lineEdit = QLineEdit(self.SlipDataGroup)
-        self.lineEdit.setObjectName(u"lineEdit")
+        self.FD = QLineEdit(self.SlipDataGroup)
+        self.FD.setObjectName(u"FD")
 
-        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.lineEdit)
+        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.FD)
 
-        self.lineEdit_2 = QLineEdit(self.SlipDataGroup)
-        self.lineEdit_2.setObjectName(u"lineEdit_2")
+        self.FN = QLineEdit(self.SlipDataGroup)
+        self.FN.setObjectName(u"FN")
 
-        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.lineEdit_2)
+        self.formLayout.setWidget(4, QFormLayout.FieldRole, self.FN)
 
-        self.lineEdit_3 = QLineEdit(self.SlipDataGroup)
-        self.lineEdit_3.setObjectName(u"lineEdit_3")
+        self.FP = QLineEdit(self.SlipDataGroup)
+        self.FP.setObjectName(u"FP")
 
-        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.lineEdit_3)
+        self.formLayout.setWidget(3, QFormLayout.FieldRole, self.FP)
 
         self.FNlbl = QLabel(self.SlipDataGroup)
         self.FNlbl.setObjectName(u"FNlbl")
 
-        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.FNlbl)
+        self.formLayout.setWidget(4, QFormLayout.LabelRole, self.FNlbl)
 
         self.FPlbl = QLabel(self.SlipDataGroup)
         self.FPlbl.setObjectName(u"FPlbl")
 
-        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.FPlbl)
+        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.FPlbl)
 
         self.GetSlipBtn = QPushButton(self.SlipDataGroup)
         self.GetSlipBtn.setObjectName(u"GetSlipBtn")
 
-        self.formLayout.setWidget(3, QFormLayout.FieldRole, self.GetSlipBtn)
+        self.formLayout.setWidget(6, QFormLayout.FieldRole, self.GetSlipBtn)
 
         self.FDlbl = QLabel(self.SlipDataGroup)
         self.FDlbl.setObjectName(u"FDlbl")
 
-        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.FDlbl)
+        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.FDlbl)
 
         self.DummyLbl = QLabel(self.SlipDataGroup)
         self.DummyLbl.setObjectName(u"DummyLbl")
 
-        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.DummyLbl)
+        self.formLayout.setWidget(6, QFormLayout.LabelRole, self.DummyLbl)
+
+        self.TimestampLbl = QLabel(self.SlipDataGroup)
+        self.TimestampLbl.setObjectName(u"TimestampLbl")
+
+        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.TimestampLbl)
+
+        self.AmountLbl = QLabel(self.SlipDataGroup)
+        self.AmountLbl.setObjectName(u"AmountLbl")
+
+        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.AmountLbl)
+
+        self.SlipTimstamp = QDateTimeEdit(self.SlipDataGroup)
+        self.SlipTimstamp.setObjectName(u"SlipTimstamp")
+
+        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.SlipTimstamp)
+
+        self.SlipAmount = QLineEdit(self.SlipDataGroup)
+        self.SlipAmount.setObjectName(u"SlipAmount")
+
+        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.SlipAmount)
+
+        self.SlipTypeLbl = QLabel(self.SlipDataGroup)
+        self.SlipTypeLbl.setObjectName(u"SlipTypeLbl")
+
+        self.formLayout.setWidget(5, QFormLayout.LabelRole, self.SlipTypeLbl)
+
+        self.SlipType = QLineEdit(self.SlipDataGroup)
+        self.SlipType.setObjectName(u"SlipType")
+
+        self.formLayout.setWidget(5, QFormLayout.FieldRole, self.SlipType)
 
 
         self.verticalLayout.addWidget(self.SlipDataGroup)
@@ -192,6 +222,10 @@ class Ui_ImportSlipDlg(object):
         self.GetSlipBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Get Slip", None))
         self.FDlbl.setText(QCoreApplication.translate("ImportSlipDlg", u"FD:", None))
         self.DummyLbl.setText("")
+        self.TimestampLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Date/Time:", None))
+        self.AmountLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Amount:", None))
+        self.SlipTimstamp.setDisplayFormat(QCoreApplication.translate("ImportSlipDlg", u"dd/MM/yyyy hh:mm:ss", None))
+        self.SlipTypeLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Type:", None))
         self.SlipGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"Slip", None))
         self.PeerLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Peer:", None))
         self.LinesLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Lines:", None))

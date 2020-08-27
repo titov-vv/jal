@@ -166,95 +166,123 @@
     </message>
 </context>
 <context>
+    <name>ImportSlipDialog</name>
+    <message>
+        <location filename="../slips.py" line="23"/>
+        <source>Select file with QR code</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ImportSlipDlg</name>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="183"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="213"/>
         <source>Import Slip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="184"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="214"/>
         <source>From QR-code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="185"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="215"/>
         <source>Get from clipboard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="188"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="218"/>
         <source>Load from file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="187"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="217"/>
         <source>From JSON-file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="189"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="219"/>
         <source>From slip data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="190"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="220"/>
         <source>FN:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="191"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="221"/>
         <source>FP:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="192"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="222"/>
         <source>Get Slip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="193"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="223"/>
         <source>FD:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="195"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="229"/>
         <source>Slip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="196"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="230"/>
         <source>Peer:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="197"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="231"/>
         <source>Lines:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="198"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="232"/>
         <source>Imported:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="199"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="233"/>
         <source>To be added:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="200"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="234"/>
         <source>Clear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="201"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="235"/>
         <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="202"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="236"/>
         <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="225"/>
+        <source>Date/Time:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="226"/>
+        <source>Amount:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="227"/>
+        <source>dd/MM/yyyy hh:mm:ss</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="228"/>
+        <source>Type:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -804,53 +832,53 @@ do you want to save it?</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../main_window.py" line="153"/>
+        <location filename="../main_window.py" line="154"/>
         <source>Select directory to save backup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="163"/>
+        <location filename="../main_window.py" line="164"/>
         <source>Data restored</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="158"/>
+        <location filename="../main_window.py" line="159"/>
         <source>Select directory to restore from</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="242"/>
+        <location filename="../main_window.py" line="243"/>
         <source>Quotes download completed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="248"/>
+        <location filename="../main_window.py" line="249"/>
         <source>Statement load completed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="253"/>
+        <location filename="../main_window.py" line="254"/>
         <source>Statement load failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="143"/>
+        <location filename="../main_window.py" line="144"/>
         <source>Restart required</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="143"/>
+        <location filename="../main_window.py" line="144"/>
         <source>Language was changed to </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="163"/>
+        <location filename="../main_window.py" line="164"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="163"/>
+        <location filename="../main_window.py" line="164"/>
         <source>Database was loaded from the backup.
 </source>
         <translation type="unfinished"></translation>
@@ -1464,22 +1492,22 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="72"/>
+        <location filename="../main_window.py" line="73"/>
         <source>Income / Spending</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="75"/>
+        <location filename="../main_window.py" line="76"/>
         <source>Trade</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="78"/>
+        <location filename="../main_window.py" line="79"/>
         <source>Dividend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="81"/>
+        <location filename="../main_window.py" line="82"/>
         <source>Transfer</source>
         <translation type="unfinished"></translation>
     </message>

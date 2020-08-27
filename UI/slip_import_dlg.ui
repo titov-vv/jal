@@ -110,49 +110,83 @@
       <property name="bottomMargin">
        <number>2</number>
       </property>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="lineEdit"/>
-      </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="lineEdit_2"/>
+       <widget class="QLineEdit" name="FD"/>
       </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="lineEdit_3"/>
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="FN"/>
       </item>
-      <item row="2" column="0">
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="FP"/>
+      </item>
+      <item row="4" column="0">
        <widget class="QLabel" name="FNlbl">
         <property name="text">
          <string>FN:</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="FPlbl">
         <property name="text">
          <string>FP:</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="6" column="1">
        <widget class="QPushButton" name="GetSlipBtn">
         <property name="text">
          <string>Get Slip</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="FDlbl">
         <property name="text">
          <string>FD:</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
+      <item row="6" column="0">
        <widget class="QLabel" name="DummyLbl">
         <property name="text">
          <string> </string>
         </property>
        </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="TimestampLbl">
+        <property name="text">
+         <string>Date/Time:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="AmountLbl">
+        <property name="text">
+         <string>Amount:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QDateTimeEdit" name="SlipTimstamp">
+        <property name="displayFormat">
+         <string>dd/MM/yyyy hh:mm:ss</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="SlipAmount"/>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="SlipTypeLbl">
+        <property name="text">
+         <string>Type:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QLineEdit" name="SlipType"/>
       </item>
      </layout>
     </widget>
