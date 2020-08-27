@@ -22,7 +22,7 @@ It was designed to keep records of personal incomes/spendings and investments wi
 
 ### Installation
 ledger was created to be portable - it doesn't require specific installation instructions. All you need is to have Python 3.8.1 or higher and satisfy dependencies listed below.
-Start the program by running: `main.py` on Windows or `./main.py` on Linux or you may simply double click the filename if your system is setup to launch python interpreter this way.
+Then you may download/clone repository from https://github.com/titov-vv/ledger and start the program by running: `main.py` on Windows or `./main.py` on Linux or you may simply double click the filename if your system is setup to launch python interpreter this way.
 Database will be initialized automatically with minimal required set of data and you will be able to start use of the program.
 
 ### Dependencies
