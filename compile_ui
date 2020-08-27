@@ -6,6 +6,7 @@ uic -g python -o ./UI/ui_update_quotes_window.py ./UI/quotes_update.ui
 uic -g python -o ./UI/ui_reference_data_dlg.py ./UI/reference_data_dlg.ui
 uic -g python -o ./UI/ui_tax_export_dlg.py ./UI/tax_export_dlg.ui
 uic -g python -o ./UI/ui_add_asset_dlg.py ./UI/add_asset_dlg.ui
+uic -g python -o ./UI/ui_slip_import_dlg.py ./UI/slip_import_dlg.ui
 
 pylupdate5 -noobsolete -translate-function g_tr ledger.pro
 

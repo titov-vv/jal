@@ -166,6 +166,99 @@
     </message>
 </context>
 <context>
+    <name>ImportSlipDlg</name>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="183"/>
+        <source>Import Slip</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="184"/>
+        <source>From QR-code</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="185"/>
+        <source>Get from clipboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="188"/>
+        <source>Load from file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="187"/>
+        <source>From JSON-file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="189"/>
+        <source>From slip data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="190"/>
+        <source>FN:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="191"/>
+        <source>FP:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="192"/>
+        <source>Get Slip</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="193"/>
+        <source>FD:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="195"/>
+        <source>Slip</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="196"/>
+        <source>Peer:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="197"/>
+        <source>Lines:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="198"/>
+        <source>Imported:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="199"/>
+        <source>To be added:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="200"/>
+        <source>Clear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="201"/>
+        <source>Add</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="202"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Ledger</name>
     <message>
         <location filename="../ledger.py" line="92"/>

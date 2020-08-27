@@ -19,6 +19,7 @@ from operations import LedgerOperationsView, LedgerInitValues
 from reports.reports import Reports, ReportType
 from statements import StatementLoader
 from reports.taxes import TaxesRus
+from slips import ImportSlipDialog
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -276,4 +277,5 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def importSlip(self):
-        print("Import Stub")
+        dialog = ImportSlipDialog(self)
+        dialog.exec_()
