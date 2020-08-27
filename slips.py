@@ -1,9 +1,11 @@
+import io
 import re
 from pyzbar import pyzbar
 from PIL import Image
 
-from PySide2.QtCore import QDateTime
-from PySide2.QtWidgets import QDialog, QFileDialog
+from PySide2.QtCore import QDateTime, QBuffer
+from PySide2.QtWidgets import QApplication, QDialog, QFileDialog
+from PySide2.QtGui import QImage, QClipboard
 from CustomUI.helpers import g_tr
 from UI.ui_slip_import_dlg import Ui_ImportSlipDlg
 
@@ -17,6 +19,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.setupUi(self)
 
         self.LoadQRfromFileBtn.clicked.connect(self.loadQR)
+        self.GetClipboardBtn.clicked.connect(self.readClipboardQR)
 
     def loadQR(self):
         qr_file, _filter = \
@@ -27,6 +30,18 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             for barcode in barcodes:
                 print(f"Found QR: {barcode.data.decode('utf-8')}")
                 self.parseQRdata(barcode.data.decode('utf-8'))
+
+    def readClipboardQR(self):
+        clip = QApplication.clipboard()
+        img = clip.image()
+        buffer = QBuffer()
+        buffer.open(QBuffer.ReadWrite)
+        img.save(buffer, "BMP")
+        pil_im = Image.open(io.BytesIO(buffer.data()))
+        barcodes = pyzbar.decode(pil_im, symbols=[pyzbar.ZBarSymbol.QRCODE])
+        for barcode in barcodes:
+            print(f"Got QR: {barcode.data.decode('utf-8')}")
+            self.parseQRdata(barcode.data.decode('utf-8'))
 
     def parseQRdata(self, data):
         parts = re.match(self.QR_pattern, data)
