@@ -15,6 +15,8 @@ from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
     QPixmap, QRadialGradient)
 from PySide2.QtWidgets import *
 
+from PySide2.QtMultimediaWidgets import QVideoWidget
+
 
 class Ui_ImportSlipDlg(object):
     def setupUi(self, ImportSlipDlg):
@@ -47,6 +49,11 @@ class Ui_ImportSlipDlg(object):
 
 
         self.verticalLayout.addWidget(self.QRGroup)
+
+        self.Viewfinder = QVideoWidget(ImportSlipDlg)
+        self.Viewfinder.setObjectName(u"Viewfinder")
+
+        self.verticalLayout.addWidget(self.Viewfinder)
 
         self.JSONGroup = QGroupBox(ImportSlipDlg)
         self.JSONGroup.setObjectName(u"JSONGroup")

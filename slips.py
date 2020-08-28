@@ -9,7 +9,6 @@ from PySide2.QtCore import QDateTime, QBuffer, QThread
 from PySide2.QtWidgets import QApplication, QDialog, QFileDialog
 # This QCamera staff ran good on Windows but didn't fly on Linux from the box until 'cheese' installation
 from PySide2.QtMultimedia import QCameraInfo, QCamera, QCameraImageCapture, QVideoFrame
-from PySide2.QtMultimediaWidgets import QCameraViewfinder
 from CustomUI.helpers import g_tr
 from UI.ui_slip_import_dlg import Ui_ImportSlipDlg
 
@@ -63,7 +62,9 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
 
     def readyForCapture(self):
         print("capture ready")
+        self.cam.searchAndLock()
         self.capture.capture()
+        self.cam.unlock()
 
     def processBufferedImage(self, id, frame):
         print("img ready")
@@ -77,22 +78,31 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             print(f"Got QR: {barcodes[0].data.decode('utf-8')}")
             self.parseQRdata(barcodes[0].data.decode('utf-8'))
             self.cam.stop()
+            self.cam.unload()
+            self.Viewfinder.setVisible(False)
+            self.cam = None
         else:
             QThread.sleep(1)
+            self.cam.searchAndLock()
             self.capture.capture()
+            self.cam.unlock()
 
     def CaptureError(self, id, error, msg):
         print(f"capture error: {msg}")
 
     def readCameraQR(self):
+        if len(QCameraInfo.availableCameras()) == 0:
+            logging.warning(g_tr('ImportSlipDialog', "There are no cameras available"))
+            return
+
         camera_info = QCameraInfo.defaultCamera()
         self.cam = QCamera(camera_info)
         self.cam.errorOccurred.connect(self.log_error)
         self.capture = QCameraImageCapture(self.cam)
 
-        self.viewfinder = QCameraViewfinder()
-        self.viewfinder.show()
-        self.cam.setViewfinder(self.viewfinder)
+        self.cam.setViewfinder(self.Viewfinder)
+        self.Viewfinder.setFixedHeight(400)
+        self.Viewfinder.setVisible(True)
 
         self.capture.imageCaptured.connect(self.processCaptureImage)
         self.capture.imageSaved.connect(self.processSavedImage)
