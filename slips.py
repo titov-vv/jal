@@ -1,6 +1,9 @@
 import io
 import re
+import uuid
+import json
 import logging
+import requests
 from pyzbar import pyzbar
 from PIL import Image
 
@@ -9,26 +12,31 @@ from PySide2.QtWidgets import QApplication, QDialog, QFileDialog
 # This QCamera staff ran good on Windows but didn't fly on Linux from the box until 'cheese' installation
 from PySide2.QtMultimedia import QCameraInfo, QCamera, QCameraImageCapture, QVideoFrame
 from CustomUI.helpers import g_tr
+from DB.helpers import get_ru_tax_session
 from UI.ui_slip_import_dlg import Ui_ImportSlipDlg
 
 
 class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
     qr_data_available = Signal(str)
     qr_data_validated = Signal()
+    json_data_available = Signal()
 
     QR_pattern = "^t=(.*)&s=(.*)&fn=(.*)&i=(.*)&fp=(.*)&n=(.*)$"
     timestamp_patterns = ['yyyyMMddTHHmm', 'yyyyMMddTHHmmss', 'yyyy-MM-ddTHH:mm', 'yyyy-MM-ddTHH:mm:ss']
 
-    def __init__(self, parent):
+    def __init__(self, parent, db):
         QDialog.__init__(self, parent=parent)
         self.setupUi(self)
         self.initUi()
+        self.db=db
+
         self.CameraGroup.setVisible(False)
         self.cameraActive = False
         self.camera = None
         self.img_capture = None
 
         self.QR_data = ''
+        self.slip_json = ''
 
         self.qr_data_available.connect(self.parseQRdata)
         self.LoadQRfromFileBtn.clicked.connect(self.loadFileQR)
@@ -174,4 +182,29 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.qr_data_validated.emit()
 
     def downloadSlipJSON(self):
-        print("Download slip stub")
+        session_id = get_ru_tax_session(self.db)
+        if session_id == '':
+            logging.warning(g_tr('ImportSlipDialog', "No Russian Tax SessionId available"))
+            return
+        s = requests.Session()
+        s.headers['ClientVersion'] = '2.9.0'
+        s.headers['Device-Id'] = str(uuid.uuid1())
+        s.headers['Device-OS'] = 'Android'
+        s.headers['sessionId'] = session_id
+        s.headers['Content-Type'] = 'application/json; charset=UTF-8'
+        s.headers['Accept-Encoding'] = 'gzip'
+        s.headers['User-Agent'] = 'okhttp/4.2.2'
+        payload = '{' + f'"qr": "{self.QR_data}"' + '}'
+        response = s.post('https://irkkt-mobile.nalog.ru:8888/v2/ticket', data=payload)
+        if response.status_code != 200:
+            logging.error(g_tr('ImportSlipDialog', "Get ticket id failed with response ")+f"{response}/{response.text}")
+            return
+        logging.info(g_tr('ImportSlipDialog', "Slip found: " + response.text))
+        json_content = json.loads(response.text)
+        url = "https://irkkt-mobile.nalog.ru:8888/v2/tickets/" + json_content['id']
+        response = s.get(url)
+        if response.status_code != 200:
+            logging.error(g_tr('ImportSlipDialog', "Get ticket failed with response ")+f"{response}/{response.text}")
+            return
+        logging.info(g_tr('ImportSlipDialog', "Slip loaded: " + response.text))
+        self.slip_json = json.loads(response.text)

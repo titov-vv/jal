@@ -109,3 +109,7 @@ def get_base_currency(db):
 # -------------------------------------------------------------------------------------------------------------------
 def get_base_currency_name(db):
     return readSQL(db, "SELECT name FROM assets WHERE id = (SELECT value FROM settings WHERE name='BaseCurrency')")
+
+# -------------------------------------------------------------------------------------------------------------------
+def get_ru_tax_session(db):
+    return readSQL(db, "SELECT value FROM settings WHERE name='RuTaxSessionId'")
