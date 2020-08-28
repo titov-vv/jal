@@ -30,15 +30,20 @@ class Ui_ImportSlipDlg(object):
         self.horizontalLayout = QHBoxLayout(self.QRGroup)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(2, 2, 2, 2)
-        self.GetClipboardBtn = QPushButton(self.QRGroup)
-        self.GetClipboardBtn.setObjectName(u"GetClipboardBtn")
+        self.GetQRfromClipboardBtn = QPushButton(self.QRGroup)
+        self.GetQRfromClipboardBtn.setObjectName(u"GetQRfromClipboardBtn")
 
-        self.horizontalLayout.addWidget(self.GetClipboardBtn)
+        self.horizontalLayout.addWidget(self.GetQRfromClipboardBtn)
 
         self.LoadQRfromFileBtn = QPushButton(self.QRGroup)
         self.LoadQRfromFileBtn.setObjectName(u"LoadQRfromFileBtn")
 
         self.horizontalLayout.addWidget(self.LoadQRfromFileBtn)
+
+        self.GetQRfromCameraBtn = QPushButton(self.QRGroup)
+        self.GetQRfromCameraBtn.setObjectName(u"GetQRfromCameraBtn")
+
+        self.horizontalLayout.addWidget(self.GetQRfromCameraBtn)
 
 
         self.verticalLayout.addWidget(self.QRGroup)
@@ -212,8 +217,9 @@ class Ui_ImportSlipDlg(object):
     def retranslateUi(self, ImportSlipDlg):
         ImportSlipDlg.setWindowTitle(QCoreApplication.translate("ImportSlipDlg", u"Import Slip", None))
         self.QRGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"From QR-code", None))
-        self.GetClipboardBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Get from clipboard", None))
+        self.GetQRfromClipboardBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Get from clipboard", None))
         self.LoadQRfromFileBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Load from file", None))
+        self.GetQRfromCameraBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Get from camera", None))
         self.JSONGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"From JSON-file", None))
         self.LoadJSONfromFileBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Load from file", None))
         self.SlipDataGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"From slip data", None))

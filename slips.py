@@ -1,11 +1,15 @@
 import io
 import re
+# below needed for QR recognition
 from pyzbar import pyzbar
 from PIL import Image
+# below are for camera recognition
+import cv2
+import imutils
+from imutils.video import WebcamVideoStream
 
 from PySide2.QtCore import QDateTime, QBuffer
 from PySide2.QtWidgets import QApplication, QDialog, QFileDialog
-from PySide2.QtGui import QImage, QClipboard
 from CustomUI.helpers import g_tr
 from UI.ui_slip_import_dlg import Ui_ImportSlipDlg
 
@@ -19,7 +23,8 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.setupUi(self)
 
         self.LoadQRfromFileBtn.clicked.connect(self.loadQR)
-        self.GetClipboardBtn.clicked.connect(self.readClipboardQR)
+        self.GetQRfromClipboardBtn.clicked.connect(self.readClipboardQR)
+        self.GetQRfromCameraBtn.clicked.connect(self.readCameraQR)
 
     def loadQR(self):
         qr_file, _filter = \
@@ -42,6 +47,25 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         for barcode in barcodes:
             print(f"Got QR: {barcode.data.decode('utf-8')}")
             self.parseQRdata(barcode.data.decode('utf-8'))
+
+    def readCameraQR(self):
+        vs = WebcamVideoStream(src=0).start()
+        while True:
+            frame = vs.read()                         # Grab the frame from the stream
+            frame = imutils.resize(frame, width=512)  # Resize to acceptable size
+            cv2.imshow("Barcode Scanner", frame)  # Display frame for user
+            barcodes = pyzbar.decode(frame, symbols=[pyzbar.ZBarSymbol.QRCODE])
+            if barcodes:
+                barcode= barcodes[0]
+                print(f"Found QR: {barcode.data.decode('utf-8')}")
+                self.parseQRdata(barcode.data.decode('utf-8'))
+                break
+
+            key = cv2.waitKey(1) & 0xFF      # Break from loop if Q is pressed
+            if key == ord("q"):
+                break
+        cv2.destroyAllWindows()
+        vs.stop()
 
     def parseQRdata(self, data):
         parts = re.match(self.QR_pattern, data)

@@ -48,7 +48,7 @@
        <number>2</number>
       </property>
       <item>
-       <widget class="QPushButton" name="GetClipboardBtn">
+       <widget class="QPushButton" name="GetQRfromClipboardBtn">
         <property name="text">
          <string>Get from clipboard</string>
         </property>
@@ -58,6 +58,13 @@
        <widget class="QPushButton" name="LoadQRfromFileBtn">
         <property name="text">
          <string>Load from file</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="GetQRfromCameraBtn">
+        <property name="text">
+         <string>Get from camera</string>
         </property>
        </widget>
       </item>
@@ -150,7 +157,7 @@
       <item row="6" column="0">
        <widget class="QLabel" name="DummyLbl">
         <property name="text">
-         <string> </string>
+         <string/>
         </property>
        </widget>
       </item>
