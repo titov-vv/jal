@@ -1,11 +1,10 @@
 import io
 import re
 import logging
-# below needed for QR recognition
 from pyzbar import pyzbar
 from PIL import Image
 
-from PySide2.QtCore import QDateTime, QBuffer, QThread
+from PySide2.QtCore import Slot, Signal, QDateTime, QBuffer, QThread
 from PySide2.QtWidgets import QApplication, QDialog, QFileDialog
 # This QCamera staff ran good on Windows but didn't fly on Linux from the box until 'cheese' installation
 from PySide2.QtMultimedia import QCameraInfo, QCamera, QCameraImageCapture, QVideoFrame
@@ -14,109 +13,155 @@ from UI.ui_slip_import_dlg import Ui_ImportSlipDlg
 
 
 class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
+    qr_data_available = Signal(str)
+    qr_data_validated = Signal()
+
     QR_pattern = "^t=(.*)&s=(.*)&fn=(.*)&i=(.*)&fp=(.*)&n=(.*)$"
     timestamp_patterns = ['yyyyMMddTHHmm', 'yyyyMMddTHHmmss', 'yyyy-MM-ddTHH:mm', 'yyyy-MM-ddTHH:mm:ss']
 
     def __init__(self, parent):
         QDialog.__init__(self, parent=parent)
         self.setupUi(self)
+        self.initUi()
+        self.CameraGroup.setVisible(False)
+        self.cameraActive = False
+        self.camera = None
+        self.img_capture = None
 
-        self.LoadQRfromFileBtn.clicked.connect(self.loadQR)
+        self.QR_data = ''
+
+        self.qr_data_available.connect(self.parseQRdata)
+        self.LoadQRfromFileBtn.clicked.connect(self.loadFileQR)
         self.GetQRfromClipboardBtn.clicked.connect(self.readClipboardQR)
         self.GetQRfromCameraBtn.clicked.connect(self.readCameraQR)
+        self.StopCameraBtn.clicked.connect(self.closeCamera)
+        self.GetSlipBtn.clicked.connect(self.downloadSlipJSON)
 
-        self.cam = None
-        self.capture = None
-        self.viewfinder = None
+    def closeEvent(self, arg__1):
+        if self.cameraActive:
+            self.closeCamera()
 
-    def loadQR(self):
+    def initUi(self):
+        self.GetSlipBtn.setEnabled(False)
+        self.SlipAmount.setText('')
+        self.FN.setText('')
+        self.FD.setText('')
+        self.FP.setText('')
+        self.SlipType.setText('')
+
+    #------------------------------------------------------------------------------------------
+    # Loads graphics file and tries to read QR-code from it.
+    # Assignes self.QR_data after successful read and emit signal qr_data_available
+    @Slot()
+    def loadFileQR(self):
+        self.initUi()
         qr_file, _filter = \
             QFileDialog.getOpenFileName(self, g_tr('ImportSlipDialog', "Select file with QR code"),
                                         ".", "JPEG images (*.jpg);;PNG images (*.png)")
         if qr_file:
             barcodes = pyzbar.decode(Image.open(qr_file), symbols=[pyzbar.ZBarSymbol.QRCODE])
-            for barcode in barcodes:
-                print(f"Found QR: {barcode.data.decode('utf-8')}")
-                self.parseQRdata(barcode.data.decode('utf-8'))
+            if barcodes:
+                self.qr_data_available.emit(barcodes[0].data.decode('utf-8'))
+            else:
+                logging.warning('ImportSlipDialog', "No QR codes were found in file")
 
-    def readClipboardQR(self):
-        clip = QApplication.clipboard()
-        img = clip.image()
+    #------------------------------------------------------------------------------------------
+    # Qt operates with QImage class while pyzbar need PIL.Image as input
+    # So, we first need to save QImage into the buffer and then read PIL.Image out from buffer
+    # Returns: True if QR found, False if no QR found
+    # Emits: qr_data_available(str: qr_data) if QR found
+    def readImageQR(self, image):
         buffer = QBuffer()
         buffer.open(QBuffer.ReadWrite)
-        img.save(buffer, "BMP")
-        pil_im = Image.open(io.BytesIO(buffer.data()))
-        barcodes = pyzbar.decode(pil_im, symbols=[pyzbar.ZBarSymbol.QRCODE])
-        for barcode in barcodes:
-            print(f"Got QR: {barcode.data.decode('utf-8')}")
-            self.parseQRdata(barcode.data.decode('utf-8'))
-
-    def log_error(self):
-        logging.info("Cam error")
-
-    def processCaptureImage(self, id, preview):
-        print(f"captured #{id}")
-
-    def processSavedImage(self, id, name):
-        print(f"saved #{id} at {name}")
-
-    def readyForCapture(self):
-        print("capture ready")
-        self.cam.searchAndLock()
-        self.capture.capture()
-        self.cam.unlock()
-
-    def processBufferedImage(self, id, frame):
-        print("img ready")
-        img = frame.image()
-        buffer = QBuffer()
-        buffer.open(QBuffer.ReadWrite)
-        img.save(buffer, "BMP")
-        pil_im = Image.open(io.BytesIO(buffer.data()))
-        barcodes = pyzbar.decode(pil_im, symbols=[pyzbar.ZBarSymbol.QRCODE])
+        image.save(buffer, "BMP")
+        pillow_image = Image.open(io.BytesIO(buffer.data()))
+        barcodes = pyzbar.decode(pillow_image, symbols=[pyzbar.ZBarSymbol.QRCODE])
         if barcodes:
-            print(f"Got QR: {barcodes[0].data.decode('utf-8')}")
-            self.parseQRdata(barcodes[0].data.decode('utf-8'))
-            self.cam.stop()
-            self.cam.unload()
-            self.Viewfinder.setVisible(False)
-            self.cam = None
+            self.qr_data_available.emit(barcodes[0].data.decode('utf-8'))
+            return True
         else:
-            QThread.sleep(1)
-            self.cam.searchAndLock()
-            self.capture.capture()
-            self.cam.unlock()
+            return False
 
-    def CaptureError(self, id, error, msg):
-        print(f"capture error: {msg}")
+    @Slot()
+    def readClipboardQR(self):
+        self.initUi()
+        if not self.readImageQR(QApplication.clipboard().image()):
+            logging.warning('ImportSlipDialog', "No QR codes found in clipboard")
 
+    @Slot()
     def readCameraQR(self):
+        self.initUi()
         if len(QCameraInfo.availableCameras()) == 0:
             logging.warning(g_tr('ImportSlipDialog', "There are no cameras available"))
             return
+        self.cameraActive = True
+        self.CameraGroup.setVisible(True)
+        self.SlipDataGroup.setVisible(False)
 
         camera_info = QCameraInfo.defaultCamera()
-        self.cam = QCamera(camera_info)
-        self.cam.errorOccurred.connect(self.log_error)
-        self.capture = QCameraImageCapture(self.cam)
+        logging.info(g_tr('ImportSlipDialog', "Read QR with camera: " + camera_info.deviceName()))
+        self.camera = QCamera(camera_info)
+        self.camera.errorOccurred.connect(self.onCameraError)
+        self.img_capture = QCameraImageCapture(self.camera)
+        self.img_capture.setCaptureDestination(QCameraImageCapture.CaptureToBuffer)
+        self.img_capture.setBufferFormat(QVideoFrame.Format_RGB32)
+        self.img_capture.error.connect(self.onCameraCaptureError)
+        self.img_capture.readyForCaptureChanged.connect(self.onReadyForCapture)
+        self.img_capture.imageAvailable.connect(self.onCameraImageReady)
+        self.camera.setViewfinder(self.Viewfinder)
+        self.camera.setCaptureMode(QCamera.CaptureStillImage)
+        self.camera.start()
 
-        self.cam.setViewfinder(self.Viewfinder)
-        self.Viewfinder.setFixedHeight(400)
-        self.Viewfinder.setVisible(True)
+    @Slot()
+    def closeCamera(self):
+        self.camera.stop()
+        self.camera.unload()
+        self.CameraGroup.setVisible(False)
+        self.SlipDataGroup.setVisible(True)
+        self.img_capture = None
+        self.camera = None
+        self.cameraActive = False
 
-        self.capture.imageCaptured.connect(self.processCaptureImage)
-        self.capture.imageSaved.connect(self.processSavedImage)
-        self.capture.imageAvailable.connect(self.processBufferedImage)
-        self.capture.readyForCaptureChanged.connect(self.readyForCapture)
-        self.capture.error.connect(self.CaptureError)
+    @Slot()
+    def onCameraError(self, error):
+        logging.error(g_tr('ImportSlipDialog', "Camera error: " + str(error) + " / " + self.camera.errorString()))
 
-        self.capture.setCaptureDestination(QCameraImageCapture.CaptureToBuffer)
-        self.capture.setBufferFormat(QVideoFrame.Format_RGB32)
-        self.cam.setCaptureMode(QCamera.CaptureStillImage)
-        self.cam.start()
+    @Slot()
+    def onCameraCaptureError(self, _id, error, msg):
+        logging.error(g_tr('ImportSlipDialog', "Camera error: " + str(error) + " / " + msg))
 
-    def parseQRdata(self, data):
-        parts = re.match(self.QR_pattern, data)
+    #----------------------------------------------------------------------
+    # This event happens once upon camera start - it triggers first capture
+    # Consequent captures will be initiated after image processing in self.onCameraImageReady
+    @Slot()
+    def onReadyForCapture(self):
+        self.camera.searchAndLock()
+        self.img_capture.capture()
+        self.camera.unlock()
+
+    #----------------------------------------------------------------------
+    # Try to decode QR from captured frame
+    # Close camera if decoded successfully otherwise try to capture again
+    def onCameraImageReady(self, _id, captured_image):
+        if self.readImageQR(captured_image.image()):
+            self.closeCamera()
+        else:
+            QThread.sleep(1)
+            self.camera.searchAndLock()
+            self.img_capture.capture()
+            self.camera.unlock()
+
+    #-----------------------------------------------------------------------------------------------
+    # Check if available QR data matches with self.QR_pattern
+    # Emits qr_data_validated if match found. Otherwise shows warning message but allows to proceed
+    @Slot()
+    def parseQRdata(self, qr_data):
+        self.QR_data = qr_data
+        self.GetSlipBtn.setEnabled(True)
+
+        parts = re.match(self.QR_pattern, qr_data)
+        if not parts:
+            logging.warning(g_tr('ImportSlipDialog', "QR available but pattern isn't recognized: " + self.QR_data))
         for timestamp_pattern in self.timestamp_patterns:
             datetime = QDateTime.fromString(parts.group(1), timestamp_pattern)
             if datetime.isValid():
@@ -126,3 +171,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.FD.setText(parts.group(4))
         self.FP.setText(parts.group(5))
         self.SlipType.setText(parts.group(6))
+        self.qr_data_validated.emit()
+
+    def downloadSlipJSON(self):
+        print("Download slip stub")

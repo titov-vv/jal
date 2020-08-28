@@ -22,7 +22,7 @@ class Ui_ImportSlipDlg(object):
     def setupUi(self, ImportSlipDlg):
         if not ImportSlipDlg.objectName():
             ImportSlipDlg.setObjectName(u"ImportSlipDlg")
-        ImportSlipDlg.resize(517, 665)
+        ImportSlipDlg.resize(600, 700)
         self.verticalLayout = QVBoxLayout(ImportSlipDlg)
         self.verticalLayout.setSpacing(6)
         self.verticalLayout.setObjectName(u"verticalLayout")
@@ -30,6 +30,7 @@ class Ui_ImportSlipDlg(object):
         self.QRGroup = QGroupBox(ImportSlipDlg)
         self.QRGroup.setObjectName(u"QRGroup")
         self.horizontalLayout = QHBoxLayout(self.QRGroup)
+        self.horizontalLayout.setSpacing(6)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(2, 2, 2, 2)
         self.GetQRfromClipboardBtn = QPushButton(self.QRGroup)
@@ -50,25 +51,15 @@ class Ui_ImportSlipDlg(object):
 
         self.verticalLayout.addWidget(self.QRGroup)
 
-        self.Viewfinder = QVideoWidget(ImportSlipDlg)
-        self.Viewfinder.setObjectName(u"Viewfinder")
-
-        self.verticalLayout.addWidget(self.Viewfinder)
-
-        self.JSONGroup = QGroupBox(ImportSlipDlg)
-        self.JSONGroup.setObjectName(u"JSONGroup")
-        self.horizontalLayout_2 = QHBoxLayout(self.JSONGroup)
-        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
-        self.LoadJSONfromFileBtn = QPushButton(self.JSONGroup)
-        self.LoadJSONfromFileBtn.setObjectName(u"LoadJSONfromFileBtn")
-
-        self.horizontalLayout_2.addWidget(self.LoadJSONfromFileBtn)
-
-
-        self.verticalLayout.addWidget(self.JSONGroup)
-
-        self.SlipDataGroup = QGroupBox(ImportSlipDlg)
+        self.frame_2 = QFrame(ImportSlipDlg)
+        self.frame_2.setObjectName(u"frame_2")
+        self.frame_2.setFrameShape(QFrame.StyledPanel)
+        self.frame_2.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_3 = QHBoxLayout(self.frame_2)
+        self.horizontalLayout_3.setSpacing(2)
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.SlipDataGroup = QGroupBox(self.frame_2)
         self.SlipDataGroup.setObjectName(u"SlipDataGroup")
         self.formLayout = QFormLayout(self.SlipDataGroup)
         self.formLayout.setObjectName(u"formLayout")
@@ -144,7 +135,63 @@ class Ui_ImportSlipDlg(object):
         self.formLayout.setWidget(5, QFormLayout.FieldRole, self.SlipType)
 
 
-        self.verticalLayout.addWidget(self.SlipDataGroup)
+        self.horizontalLayout_3.addWidget(self.SlipDataGroup)
+
+        self.CameraGroup = QGroupBox(self.frame_2)
+        self.CameraGroup.setObjectName(u"CameraGroup")
+        self.verticalLayout_2 = QVBoxLayout(self.CameraGroup)
+        self.verticalLayout_2.setSpacing(2)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.verticalLayout_2.setContentsMargins(2, 2, 2, 2)
+        self.Viewfinder = QVideoWidget(self.CameraGroup)
+        self.Viewfinder.setObjectName(u"Viewfinder")
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.Viewfinder.sizePolicy().hasHeightForWidth())
+        self.Viewfinder.setSizePolicy(sizePolicy)
+
+        self.verticalLayout_2.addWidget(self.Viewfinder)
+
+        self.frame_3 = QFrame(self.CameraGroup)
+        self.frame_3.setObjectName(u"frame_3")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.frame_3.sizePolicy().hasHeightForWidth())
+        self.frame_3.setSizePolicy(sizePolicy1)
+        self.frame_3.setFrameShape(QFrame.NoFrame)
+        self.frame_3.setFrameShadow(QFrame.Plain)
+        self.horizontalLayout_5 = QHBoxLayout(self.frame_3)
+        self.horizontalLayout_5.setSpacing(2)
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
+        self.StopCameraBtn = QPushButton(self.frame_3)
+        self.StopCameraBtn.setObjectName(u"StopCameraBtn")
+
+        self.horizontalLayout_5.addWidget(self.StopCameraBtn)
+
+
+        self.verticalLayout_2.addWidget(self.frame_3)
+
+
+        self.horizontalLayout_3.addWidget(self.CameraGroup)
+
+
+        self.verticalLayout.addWidget(self.frame_2)
+
+        self.JSONGroup = QGroupBox(ImportSlipDlg)
+        self.JSONGroup.setObjectName(u"JSONGroup")
+        self.horizontalLayout_2 = QHBoxLayout(self.JSONGroup)
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
+        self.LoadJSONfromFileBtn = QPushButton(self.JSONGroup)
+        self.LoadJSONfromFileBtn.setObjectName(u"LoadJSONfromFileBtn")
+
+        self.horizontalLayout_2.addWidget(self.LoadJSONfromFileBtn)
+
+
+        self.verticalLayout.addWidget(self.JSONGroup)
 
         self.SlipGroup = QGroupBox(ImportSlipDlg)
         self.SlipGroup.setObjectName(u"SlipGroup")
@@ -223,13 +270,11 @@ class Ui_ImportSlipDlg(object):
 
     def retranslateUi(self, ImportSlipDlg):
         ImportSlipDlg.setWindowTitle(QCoreApplication.translate("ImportSlipDlg", u"Import Slip", None))
-        self.QRGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"From QR-code", None))
+        self.QRGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"QR-code", None))
         self.GetQRfromClipboardBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Get from clipboard", None))
         self.LoadQRfromFileBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Load from file", None))
         self.GetQRfromCameraBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Get from camera", None))
-        self.JSONGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"From JSON-file", None))
-        self.LoadJSONfromFileBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Load from file", None))
-        self.SlipDataGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"From slip data", None))
+        self.SlipDataGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"Slip data", None))
         self.FNlbl.setText(QCoreApplication.translate("ImportSlipDlg", u"FN:", None))
         self.FPlbl.setText(QCoreApplication.translate("ImportSlipDlg", u"FP:", None))
         self.GetSlipBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Get Slip", None))
@@ -239,6 +284,10 @@ class Ui_ImportSlipDlg(object):
         self.AmountLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Amount:", None))
         self.SlipTimstamp.setDisplayFormat(QCoreApplication.translate("ImportSlipDlg", u"dd/MM/yyyy hh:mm:ss", None))
         self.SlipTypeLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Type:", None))
+        self.CameraGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"Camera", None))
+        self.StopCameraBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Stop Camera", None))
+        self.JSONGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"From JSON-file", None))
+        self.LoadJSONfromFileBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Load from file", None))
         self.SlipGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"Slip", None))
         self.PeerLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Peer:", None))
         self.LinesLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Lines:", None))
