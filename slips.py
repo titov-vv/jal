@@ -202,4 +202,23 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             self.parseJSON()
 
     def parseJSON(self):
-        pass
+        if 'ticket' in self.slip_json:
+            sub = self.slip_json['ticket']
+            if 'document' in sub:
+                sub = sub['document']
+                if 'receipt' in sub:
+                    slip = sub['receipt']
+                else:
+                    logging.error(g_tr('ImportSlipDialog', "Can't find 'receipt' tag  in json 'document'"))
+                    return
+            else:
+                logging.error(g_tr('ImportSlipDialog', "Can't find 'document' tag  in json 'ticket'"))
+                return
+        else:
+            slip = self.slip_json
+
+        if 'user' in slip:
+            self.SlipShopName.setText(slip['user'])
+        else:
+            if 'userInn' in slip:
+                self.SlipShopName.setText(self.slipsAPI.get_shop_name_by_inn(slip['userInn']))

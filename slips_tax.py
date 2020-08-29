@@ -20,8 +20,8 @@ class SlipsTaxAPI:
 
         session_id = self.get_ru_tax_session()
         if session_id == '':
-            logging.warning(g_tr('ImportSlipDialog', "No Russian Tax SessionId available"))
-            return
+            logging.warning(g_tr('SlipsTaxAPI', "No Russian Tax SessionId available"))
+            return None
         s = requests.Session()
         s.headers['ClientVersion'] = '2.9.0'
         s.headers['Device-Id'] = str(uuid.uuid1())
@@ -34,16 +34,48 @@ class SlipsTaxAPI:
         response = s.post('https://irkkt-mobile.nalog.ru:8888/v2/ticket', data=payload)
         if response.status_code != 200:
             logging.error(
-                g_tr('ImportSlipDialog', "Get ticket id failed with response ") +
+                g_tr('SlipsTaxAPI', "Get ticket id failed with response ") +
                 f"{response}/{response.text} for {payload}")
-            return
-        logging.info(g_tr('ImportSlipDialog', "Slip found: " + response.text))
+            return None
+        logging.info(g_tr('SlipsTaxAPI', "Slip found: " + response.text))
         json_content = json.loads(response.text)
         url = "https://irkkt-mobile.nalog.ru:8888/v2/tickets/" + json_content['id']
         response = s.get(url)
         if response.status_code != 200:
-            logging.error(g_tr('ImportSlipDialog', "Get ticket failed with response ") + f"{response}/{response.text}")
-            return
-        logging.info(g_tr('ImportSlipDialog', "Slip loaded: " + response.text))
+            logging.error(g_tr('SlipsTaxAPI', "Get ticket failed with response: ") + f"{response}/{response.text}")
+            return None
+        logging.info(g_tr('SlipsTaxAPI', "Slip loaded: " + response.text))
         slip_json = json.loads(response.text)
         return slip_json
+
+    #----------------------------------------------------------------------------------------------------------------
+    # Gets company name by Russian INN
+    # Returns short or long name if fount and empty string otherwise
+    def get_shop_name_by_inn(self, inn):
+        if len(inn) != 10 and len(inn) != 12:
+            logging.warning(g_tr('SlipsTaxAPI', "Incorrect legth of INN. Can't get company name."))
+            return ''
+        s = requests.Session()
+        s.headers['User-Agent'] = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0'
+        s.headers['Content-Type'] = "application/x-www-form-urlencoded"
+        payload = f"vyp3CaptchaToken=&page=&query={inn}&region={inn[0]}{inn[1]}&PreventChromeAutocomplete="
+        response = s.post('https://egrul.nalog.ru/', data=payload)
+        if response.status_code != 200:
+            logging.error(g_tr('SlipsTaxAPI', "Failed to get token for INN: ") + f"{response}/{response.text}")
+            return ''
+        result = json.loads(response.text)
+        token = result['t']
+        response = s.get('https://egrul.nalog.ru/search-result/' + token)
+        if response.status_code != 200:
+            logging.error(g_tr('SlipsTaxAPI', "Failed to get details about INN: ") + f"{response}/{response.text}")
+            return ''
+        result = json.loads(response.text)
+        try:
+            return result['rows'][0]['c']   # Return short name if exists
+        except:
+            pass
+        try:
+            return result['rows'][0]['n']   # Return long name if exists
+        except:
+            logging.warning(g_tr('SlipsTaxAPI', "Can't get company name from: ") + response.text)
+            return ''
