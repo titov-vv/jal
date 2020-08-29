@@ -13,7 +13,6 @@ from PySide2.QtMultimedia import QCameraInfo, QCamera, QCameraImageCapture, QVid
 from CustomUI.helpers import g_tr
 from slips_tax import SlipsTaxAPI
 from view_delegate import SlipLinesPandasDelegate
-from mapper_delegate import CategoryDelegate
 from UI.ui_slip_import_dlg import Ui_ImportSlipDlg
 
 
