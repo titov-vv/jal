@@ -111,3 +111,6 @@ def get_base_currency_name(db):
     return readSQL(db, "SELECT name FROM assets WHERE id = (SELECT value FROM settings WHERE name='BaseCurrency')")
 
 # -------------------------------------------------------------------------------------------------------------------
+
+def get_category_name(db, category_id):
+    return readSQL(db, "SELECT c.name FROM categories AS c WHERE c.id=:category_id", [(":category_id", category_id)])

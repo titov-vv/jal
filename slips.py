@@ -302,21 +302,16 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         for column in range(self.model.columnCount()):
             if column == 0:
                 self.LinesTableView.horizontalHeader().setSectionResizeMode(column, QHeaderView.Stretch)
-                self.delegates.append(SlipLinesPandasDelegate(self.LinesTableView))
-                self.LinesTableView.setItemDelegateForColumn(column, self.delegates[-1])
             elif column == 1:
                 self.LinesTableView.setColumnWidth(column, 200)
-                self.delegates.append(CategoryDelegate(self.LinesTableView))
-                self.LinesTableView.setItemDelegateForColumn(column, self.delegates[-1])
             else:
                 self.LinesTableView.setColumnWidth(column, 100)
-                self.delegates.append(SlipLinesPandasDelegate(self.LinesTableView))
-                self.LinesTableView.setItemDelegateForColumn(column, self.delegates[-1])
+            self.delegates.append(SlipLinesPandasDelegate(self.LinesTableView))
+            self.LinesTableView.setItemDelegateForColumn(column, self.delegates[-1])
         font = self.LinesTableView.horizontalHeader().font()
         font.setBold(True)
         self.LinesTableView.horizontalHeader().setFont(font)
         self.LinesTableView.show()
-        self.aaa = lines
 
     def addOperation(self):
-        print(self.aaa)
+        pass

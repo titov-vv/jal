@@ -6,6 +6,8 @@ from PySide2.QtGui import QTextDocument, QFont
 
 from constants import TransactionType, TransferSubtype, CustomColor
 from CustomUI.helpers import formatFloatLong
+from CustomUI.reference_selector import CategorySelector
+from DB.helpers import get_category_name
 
 
 class BalanceAccountDelegate(QStyledItemDelegate):
@@ -626,6 +628,9 @@ class SlipLinesPandasDelegate(QStyledItemDelegate):
         if index.column() == 0:
             text = model.data(index, Qt.DisplayRole)
             painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
+        if index.column() == 1:
+            text = get_category_name(index.model().database(), int(model.data(index, Qt.DisplayRole)))
+            painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
         elif index.column() == 2:
             amount = model.data(index, Qt.DisplayRole)
             if amount == 2:
@@ -635,3 +640,11 @@ class SlipLinesPandasDelegate(QStyledItemDelegate):
             painter.drawText(option.rect, Qt.AlignRight | Qt.AlignVCenter, text)
         painter.setPen(pen)
         painter.restore()
+
+    def createEditor(self, aParent, option, index):
+        category_selector = CategorySelector(aParent)
+        category_selector.init_db(index.model().database())
+        return category_selector
+
+    def setModelData(self, editor, model, index):
+        model.setData(index, editor.selected_id)
