@@ -225,6 +225,9 @@ class Ui_ImportSlipDlg(object):
 
         self.LinesTableView = QTableView(self.SlipGroup)
         self.LinesTableView.setObjectName(u"LinesTableView")
+        self.LinesTableView.verticalHeader().setVisible(False)
+        self.LinesTableView.verticalHeader().setMinimumSectionSize(20)
+        self.LinesTableView.verticalHeader().setDefaultSectionSize(20)
 
         self.gridLayout.addWidget(self.LinesTableView, 4, 1, 1, 3)
 
@@ -287,7 +290,7 @@ class Ui_ImportSlipDlg(object):
 
         self.AddOperationBtn = QPushButton(self.DialogButtonsFrame)
         self.AddOperationBtn.setObjectName(u"AddOperationBtn")
-        self.AddOperationBtn.setEnabled(False)
+        self.AddOperationBtn.setEnabled(True)
 
         self.horizontalLayout_4.addWidget(self.AddOperationBtn)
 

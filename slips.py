@@ -13,15 +13,25 @@ from PySide2.QtMultimedia import QCameraInfo, QCamera, QCameraImageCapture, QVid
 from CustomUI.helpers import g_tr
 from slips_tax import SlipsTaxAPI
 from view_delegate import SlipLinesPandasDelegate
+from mapper_delegate import CategoryDelegate
 from UI.ui_slip_import_dlg import Ui_ImportSlipDlg
 
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Custom model to display and edit slip lines
 class PandasLinesModel(QAbstractTableModel):
-    def __init__(self, data):
+    def __init__(self, data, db):
         QAbstractTableModel.__init__(self)
         self._data = data
+        self._db = db
+
+    def flags(self, index):
+        if not index.isValid():
+            return Qt.ItemIsEnabled
+        return super().flags(index) | Qt.ItemIsEditable
+
+    def database(self):
+        return self._db
 
     def rowCount(self, parent=None):
         return self._data.shape[0]
@@ -34,6 +44,13 @@ class PandasLinesModel(QAbstractTableModel):
             if role == Qt.DisplayRole:
                 return self._data.iloc[index.row(), index.column()]
         return None
+
+    def setData(self, index, value, role=Qt.EditRole):
+        if index.isValid():
+            if role == Qt.EditRole:
+                self._data.iloc[index.row(), index.column()] = value
+                self.dataChanged.emit(index, index)
+                return True
 
     def headerData(self, col, orientation, role=Qt.DisplayRole):
         if (orientation == Qt.Horizontal and role == Qt.DisplayRole):
@@ -82,6 +99,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.StopCameraBtn.clicked.connect(self.closeCamera)
         self.GetSlipBtn.clicked.connect(self.downloadSlipJSON)
         self.LoadJSONfromFileBtn.clicked.connect(self.loadFileSlipJSON)
+        self.AddOperationBtn.clicked.connect(self.addOperation)
 
     def closeEvent(self, arg__1):
         if self.cameraActive:
@@ -277,20 +295,28 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         lines['category'] = 0
         lines = lines[['name', 'category', 'sum']]
 
-        self.model = PandasLinesModel(lines)
+        self.model = PandasLinesModel(lines, self.db)
         self.LinesTableView.setModel(self.model)
 
         self.delegates = []
         for column in range(self.model.columnCount()):
             if column == 0:
                 self.LinesTableView.horizontalHeader().setSectionResizeMode(column, QHeaderView.Stretch)
+                self.delegates.append(SlipLinesPandasDelegate(self.LinesTableView))
+                self.LinesTableView.setItemDelegateForColumn(column, self.delegates[-1])
             elif column == 1:
                 self.LinesTableView.setColumnWidth(column, 200)
+                self.delegates.append(CategoryDelegate(self.LinesTableView))
+                self.LinesTableView.setItemDelegateForColumn(column, self.delegates[-1])
             else:
                 self.LinesTableView.setColumnWidth(column, 100)
-            self.delegates.append(SlipLinesPandasDelegate(self.LinesTableView))
-            self.LinesTableView.setItemDelegateForColumn(column, self.delegates[-1])
+                self.delegates.append(SlipLinesPandasDelegate(self.LinesTableView))
+                self.LinesTableView.setItemDelegateForColumn(column, self.delegates[-1])
         font = self.LinesTableView.horizontalHeader().font()
         font.setBold(True)
         self.LinesTableView.horizontalHeader().setFont(font)
         self.LinesTableView.show()
+        self.aaa = lines
+
+    def addOperation(self):
+        print(self.aaa)

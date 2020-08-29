@@ -626,9 +626,9 @@ class SlipLinesPandasDelegate(QStyledItemDelegate):
         if index.column() == 0:
             text = model.data(index, Qt.DisplayRole)
             painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
-        else:
+        elif index.column() == 2:
             amount = model.data(index, Qt.DisplayRole)
-            if amount == 0:
+            if amount == 2:
                 pen.setColor(CustomColor.Grey)
                 painter.setPen(pen)
             text = f"{amount:,.2f}"

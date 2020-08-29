@@ -354,7 +354,17 @@
        </widget>
       </item>
       <item row="4" column="1" colspan="3">
-       <widget class="QTableView" name="LinesTableView"/>
+       <widget class="QTableView" name="LinesTableView">
+        <attribute name="verticalHeaderVisible">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="verticalHeaderMinimumSectionSize">
+         <number>20</number>
+        </attribute>
+        <attribute name="verticalHeaderDefaultSectionSize">
+         <number>20</number>
+        </attribute>
+       </widget>
       </item>
       <item row="2" column="1">
        <widget class="QDateTimeEdit" name="SlipDateTime">
@@ -440,7 +450,7 @@
       <item>
        <widget class="QPushButton" name="AddOperationBtn">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="text">
          <string>Add</string>
