@@ -142,7 +142,7 @@
          <item row="6" column="1">
           <widget class="QPushButton" name="GetSlipBtn">
            <property name="text">
-            <string>Get Slip</string>
+            <string>Get slip from internet</string>
            </property>
           </widget>
          </item>
@@ -261,7 +261,7 @@
             <item>
              <widget class="QPushButton" name="StopCameraBtn">
               <property name="text">
-               <string>Stop Camera</string>
+               <string>Stop camera</string>
               </property>
              </widget>
             </item>
@@ -320,20 +320,41 @@
       <property name="bottomMargin">
        <number>2</number>
       </property>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="SlipShopName"/>
-      </item>
-      <item row="1" column="0">
+      <item row="4" column="0">
        <widget class="QLabel" name="PeerLbl">
         <property name="text">
          <string>Peer:</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1" colspan="2">
-       <widget class="QTableView" name="tableView"/>
+      <item row="5" column="1" colspan="2">
+       <widget class="QTableView" name="LinesTableView"/>
       </item>
-      <item row="2" column="0">
+      <item row="2" column="1">
+       <widget class="QDateTimeEdit" name="SlipDateTime">
+        <property name="displayFormat">
+         <string>dd/MM/yyyy hh:mm:ss</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="SlipShopName"/>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLabel" name="LoadedLbl">
+        <property name="text">
+         <string>Imported:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="2">
+       <widget class="QLabel" name="StoredLbl">
+        <property name="text">
+         <string>To be added:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
        <widget class="QLabel" name="LinesLbl">
         <property name="text">
          <string>Lines:</string>
@@ -343,22 +364,25 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QLabel" name="LoadedLbl">
+      <item row="1" column="1">
+       <widget class="QLabel" name="DateTimeLbl">
         <property name="text">
-         <string>Imported:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QLabel" name="StoredLbl">
-        <property name="text">
-         <string>To be added:</string>
+         <string>Date / Time:</string>
         </property>
        </widget>
       </item>
       <item row="1" column="2">
+       <widget class="QLabel" name="AccountLbl">
+        <property name="text">
+         <string>Account:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
        <widget class="AccountSelector" name="AccountEdit" native="true"/>
+      </item>
+      <item row="4" column="2">
+       <widget class="PeerSelector" name="PeerEdit" native="true"/>
       </item>
      </layout>
     </widget>
@@ -419,6 +443,12 @@
   </customwidget>
   <customwidget>
    <class>AccountSelector</class>
+   <extends>QWidget</extends>
+   <header>CustomUI/reference_selector.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PeerSelector</class>
    <extends>QWidget</extends>
    <header>CustomUI/reference_selector.h</header>
    <container>1</container>

@@ -2,10 +2,11 @@ import io
 import re
 import json
 import logging
+import pandas as pd
 from pyzbar import pyzbar
 from PIL import Image
 
-from PySide2.QtCore import Slot, Signal, QDateTime, QBuffer, QThread
+from PySide2.QtCore import Qt, Slot, Signal, QDateTime, QBuffer, QThread, QAbstractTableModel
 from PySide2.QtWidgets import QApplication, QDialog, QFileDialog
 # This QCamera staff ran good on Windows but didn't fly on Linux from the box until 'cheese' installation
 from PySide2.QtMultimedia import QCameraInfo, QCamera, QCameraImageCapture, QVideoFrame
@@ -14,6 +15,37 @@ from slips_tax import SlipsTaxAPI
 from UI.ui_slip_import_dlg import Ui_ImportSlipDlg
 
 
+#-----------------------------------------------------------------------------------------------------------------------
+# Custom model to display and edit slip lines
+class PandasLinesModel(QAbstractTableModel):
+    def __init__(self, data):
+        QAbstractTableModel.__init__(self)
+        self._data = data
+
+    def rowCount(self, parent=None):
+        return self._data.shape[0]
+
+    def columnCount(self, parnet=None):
+        return self._data.shape[1]
+
+    def data(self, index, role=Qt.DisplayRole):
+        if index.isValid():
+            if role == Qt.DisplayRole:
+                return str(self._data.iloc[index.row(), index.column()])
+        return None
+
+    # def headerData(self, col, orientation, role=Qt.DisplayRole):
+    #     if (orientation == Qt.Horizontal and role == Qt.DisplayRole):
+    #         if col == 0:        # Leftmost column serves as a category header
+    #             return None
+    #         if col == self._data.shape[1]:   # Rightmost total header
+    #             return str(self._data.columns[col-1][1])
+    #         col_date = datetime(year=int(self._data.columns[col-1][1]), month=int(self._data.columns[col-1][2]), day=1)
+    #         return col_date.strftime("%Y %b")
+    #     return None
+
+
+#-----------------------------------------------------------------------------------------------------------------------
 class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
     qr_data_available = Signal(str)
     qr_data_validated = Signal()
@@ -27,6 +59,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.setupUi(self)
         self.initUi()
         self.db=db
+        self.model = None
 
         self.CameraGroup.setVisible(False)
         self.cameraActive = False
@@ -38,6 +71,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
 
         self.slipsAPI = SlipsTaxAPI(self.db)
         self.AccountEdit.init_db(self.db)
+        self.PeerEdit.init_db(self.db)
 
         self.qr_data_available.connect(self.parseQRdata)
         self.LoadQRfromFileBtn.clicked.connect(self.loadFileQR)
@@ -202,6 +236,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             self.parseJSON()
 
     def parseJSON(self):
+        # Slip data might be in a root element or in ticket/document/receipt
         if 'ticket' in self.slip_json:
             sub = self.slip_json['ticket']
             if 'document' in sub:
@@ -217,8 +252,27 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         else:
             slip = self.slip_json
 
+        # Shop name may be present or only INN may be there
         if 'user' in slip:
             self.SlipShopName.setText(slip['user'])
         else:
             if 'userInn' in slip:
                 self.SlipShopName.setText(self.slipsAPI.get_shop_name_by_inn(slip['userInn']))
+        try:
+            lines = pd.DataFrame(slip['items'])
+        except:
+            return
+
+        # Get date from timestamp
+        if 'dateTime' in slip:
+            slip_datetime = QDateTime()
+            slip_datetime.setSecsSinceEpoch(int(slip['dateTime']))
+            self.SlipDateTime.setDateTime(slip_datetime)
+
+        # Convert price to roubles
+        lines['price'] = lines['price'] / 100
+        lines['sum'] = lines['sum'] / 100
+
+        self.model = PandasLinesModel(lines)
+        self.LinesTableView.setModel(self.model)
+        self.LinesTableView.show()
