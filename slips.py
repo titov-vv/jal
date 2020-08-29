@@ -7,11 +7,12 @@ from pyzbar import pyzbar
 from PIL import Image
 
 from PySide2.QtCore import Qt, Slot, Signal, QDateTime, QBuffer, QThread, QAbstractTableModel
-from PySide2.QtWidgets import QApplication, QDialog, QFileDialog
+from PySide2.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView
 # This QCamera staff ran good on Windows but didn't fly on Linux from the box until 'cheese' installation
 from PySide2.QtMultimedia import QCameraInfo, QCamera, QCameraImageCapture, QVideoFrame
 from CustomUI.helpers import g_tr
 from slips_tax import SlipsTaxAPI
+from view_delegate import SlipLinesPandasDelegate
 from UI.ui_slip_import_dlg import Ui_ImportSlipDlg
 
 
@@ -31,18 +32,18 @@ class PandasLinesModel(QAbstractTableModel):
     def data(self, index, role=Qt.DisplayRole):
         if index.isValid():
             if role == Qt.DisplayRole:
-                return str(self._data.iloc[index.row(), index.column()])
+                return self._data.iloc[index.row(), index.column()]
         return None
 
-    # def headerData(self, col, orientation, role=Qt.DisplayRole):
-    #     if (orientation == Qt.Horizontal and role == Qt.DisplayRole):
-    #         if col == 0:        # Leftmost column serves as a category header
-    #             return None
-    #         if col == self._data.shape[1]:   # Rightmost total header
-    #             return str(self._data.columns[col-1][1])
-    #         col_date = datetime(year=int(self._data.columns[col-1][1]), month=int(self._data.columns[col-1][2]), day=1)
-    #         return col_date.strftime("%Y %b")
-    #     return None
+    def headerData(self, col, orientation, role=Qt.DisplayRole):
+        if (orientation == Qt.Horizontal and role == Qt.DisplayRole):
+            if col == 0:
+                return g_tr('PandasLinesModel', "Product name")
+            if col == 1:
+                return g_tr('PandasLinesModel', "Category")
+            if col == 2:
+                return g_tr('PandasLinesModel', "Amount")
+        return None
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -60,6 +61,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.initUi()
         self.db=db
         self.model = None
+        self.delegates = []
 
         self.CameraGroup.setVisible(False)
         self.cameraActive = False
@@ -271,8 +273,24 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
 
         # Convert price to roubles
         lines['price'] = lines['price'] / 100
-        lines['sum'] = lines['sum'] / 100
+        lines['sum'] = -lines['sum'] / 100
+        lines['category'] = 0
+        lines = lines[['name', 'category', 'sum']]
 
         self.model = PandasLinesModel(lines)
         self.LinesTableView.setModel(self.model)
+
+        self.delegates = []
+        for column in range(self.model.columnCount()):
+            if column == 0:
+                self.LinesTableView.horizontalHeader().setSectionResizeMode(column, QHeaderView.Stretch)
+            elif column == 1:
+                self.LinesTableView.setColumnWidth(column, 200)
+            else:
+                self.LinesTableView.setColumnWidth(column, 100)
+            self.delegates.append(SlipLinesPandasDelegate(self.LinesTableView))
+            self.LinesTableView.setItemDelegateForColumn(column, self.delegates[-1])
+        font = self.LinesTableView.horizontalHeader().font()
+        font.setBold(True)
+        self.LinesTableView.horizontalHeader().setFont(font)
         self.LinesTableView.show()

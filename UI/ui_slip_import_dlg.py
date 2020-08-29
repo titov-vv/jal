@@ -24,122 +24,151 @@ class Ui_ImportSlipDlg(object):
     def setupUi(self, ImportSlipDlg):
         if not ImportSlipDlg.objectName():
             ImportSlipDlg.setObjectName(u"ImportSlipDlg")
-        ImportSlipDlg.resize(600, 700)
+        ImportSlipDlg.resize(850, 587)
         self.verticalLayout = QVBoxLayout(ImportSlipDlg)
         self.verticalLayout.setSpacing(6)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(2, 2, 2, 2)
-        self.QRGroup = QGroupBox(ImportSlipDlg)
+        self.InputFrame = QFrame(ImportSlipDlg)
+        self.InputFrame.setObjectName(u"InputFrame")
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.InputFrame.sizePolicy().hasHeightForWidth())
+        self.InputFrame.setSizePolicy(sizePolicy)
+        self.InputFrame.setFrameShape(QFrame.NoFrame)
+        self.InputFrame.setFrameShadow(QFrame.Plain)
+        self.horizontalLayout_3 = QHBoxLayout(self.InputFrame)
+        self.horizontalLayout_3.setSpacing(2)
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.QRGroup = QGroupBox(self.InputFrame)
         self.QRGroup.setObjectName(u"QRGroup")
-        self.horizontalLayout = QHBoxLayout(self.QRGroup)
-        self.horizontalLayout.setSpacing(6)
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalLayout.setContentsMargins(2, 2, 2, 2)
-        self.GetQRfromClipboardBtn = QPushButton(self.QRGroup)
-        self.GetQRfromClipboardBtn.setObjectName(u"GetQRfromClipboardBtn")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.QRGroup.sizePolicy().hasHeightForWidth())
+        self.QRGroup.setSizePolicy(sizePolicy1)
+        self.QRGroup.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
+        self.verticalLayout_3 = QVBoxLayout(self.QRGroup)
+        self.verticalLayout_3.setSpacing(6)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.verticalLayout_3.setContentsMargins(2, 2, 2, 2)
+        self.GetQRfromCameraBtn = QPushButton(self.QRGroup)
+        self.GetQRfromCameraBtn.setObjectName(u"GetQRfromCameraBtn")
 
-        self.horizontalLayout.addWidget(self.GetQRfromClipboardBtn)
+        self.verticalLayout_3.addWidget(self.GetQRfromCameraBtn)
 
         self.LoadQRfromFileBtn = QPushButton(self.QRGroup)
         self.LoadQRfromFileBtn.setObjectName(u"LoadQRfromFileBtn")
 
-        self.horizontalLayout.addWidget(self.LoadQRfromFileBtn)
+        self.verticalLayout_3.addWidget(self.LoadQRfromFileBtn)
 
-        self.GetQRfromCameraBtn = QPushButton(self.QRGroup)
-        self.GetQRfromCameraBtn.setObjectName(u"GetQRfromCameraBtn")
+        self.GetQRfromClipboardBtn = QPushButton(self.QRGroup)
+        self.GetQRfromClipboardBtn.setObjectName(u"GetQRfromClipboardBtn")
 
-        self.horizontalLayout.addWidget(self.GetQRfromCameraBtn)
+        self.verticalLayout_3.addWidget(self.GetQRfromClipboardBtn)
+
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.verticalLayout_3.addItem(self.verticalSpacer)
 
 
-        self.verticalLayout.addWidget(self.QRGroup)
+        self.horizontalLayout_3.addWidget(self.QRGroup)
 
-        self.frame_2 = QFrame(ImportSlipDlg)
-        self.frame_2.setObjectName(u"frame_2")
-        self.frame_2.setFrameShape(QFrame.StyledPanel)
-        self.frame_2.setFrameShadow(QFrame.Raised)
-        self.horizontalLayout_3 = QHBoxLayout(self.frame_2)
-        self.horizontalLayout_3.setSpacing(2)
-        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
-        self.SlipDataGroup = QGroupBox(self.frame_2)
+        self.SlipDataGroup = QGroupBox(self.InputFrame)
         self.SlipDataGroup.setObjectName(u"SlipDataGroup")
-        self.formLayout = QFormLayout(self.SlipDataGroup)
-        self.formLayout.setObjectName(u"formLayout")
-        self.formLayout.setContentsMargins(2, 2, 2, 2)
-        self.FD = QLineEdit(self.SlipDataGroup)
-        self.FD.setObjectName(u"FD")
-
-        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.FD)
-
-        self.FN = QLineEdit(self.SlipDataGroup)
-        self.FN.setObjectName(u"FN")
-
-        self.formLayout.setWidget(4, QFormLayout.FieldRole, self.FN)
-
-        self.FP = QLineEdit(self.SlipDataGroup)
-        self.FP.setObjectName(u"FP")
-
-        self.formLayout.setWidget(3, QFormLayout.FieldRole, self.FP)
-
-        self.FNlbl = QLabel(self.SlipDataGroup)
-        self.FNlbl.setObjectName(u"FNlbl")
-
-        self.formLayout.setWidget(4, QFormLayout.LabelRole, self.FNlbl)
-
-        self.FPlbl = QLabel(self.SlipDataGroup)
-        self.FPlbl.setObjectName(u"FPlbl")
-
-        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.FPlbl)
-
+        sizePolicy1.setHeightForWidth(self.SlipDataGroup.sizePolicy().hasHeightForWidth())
+        self.SlipDataGroup.setSizePolicy(sizePolicy1)
+        self.gridLayout_2 = QGridLayout(self.SlipDataGroup)
+        self.gridLayout_2.setObjectName(u"gridLayout_2")
+        self.gridLayout_2.setContentsMargins(2, 2, 2, 2)
         self.GetSlipBtn = QPushButton(self.SlipDataGroup)
         self.GetSlipBtn.setObjectName(u"GetSlipBtn")
 
-        self.formLayout.setWidget(6, QFormLayout.FieldRole, self.GetSlipBtn)
-
-        self.FDlbl = QLabel(self.SlipDataGroup)
-        self.FDlbl.setObjectName(u"FDlbl")
-
-        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.FDlbl)
-
-        self.DummyLbl = QLabel(self.SlipDataGroup)
-        self.DummyLbl.setObjectName(u"DummyLbl")
-
-        self.formLayout.setWidget(6, QFormLayout.LabelRole, self.DummyLbl)
-
-        self.TimestampLbl = QLabel(self.SlipDataGroup)
-        self.TimestampLbl.setObjectName(u"TimestampLbl")
-
-        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.TimestampLbl)
+        self.gridLayout_2.addWidget(self.GetSlipBtn, 7, 1, 1, 1)
 
         self.AmountLbl = QLabel(self.SlipDataGroup)
         self.AmountLbl.setObjectName(u"AmountLbl")
 
-        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.AmountLbl)
-
-        self.SlipTimstamp = QDateTimeEdit(self.SlipDataGroup)
-        self.SlipTimstamp.setObjectName(u"SlipTimstamp")
-
-        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.SlipTimstamp)
-
-        self.SlipAmount = QLineEdit(self.SlipDataGroup)
-        self.SlipAmount.setObjectName(u"SlipAmount")
-
-        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.SlipAmount)
-
-        self.SlipTypeLbl = QLabel(self.SlipDataGroup)
-        self.SlipTypeLbl.setObjectName(u"SlipTypeLbl")
-
-        self.formLayout.setWidget(5, QFormLayout.LabelRole, self.SlipTypeLbl)
+        self.gridLayout_2.addWidget(self.AmountLbl, 0, 2, 1, 1)
 
         self.SlipType = QLineEdit(self.SlipDataGroup)
         self.SlipType.setObjectName(u"SlipType")
 
-        self.formLayout.setWidget(5, QFormLayout.FieldRole, self.SlipType)
+        self.gridLayout_2.addWidget(self.SlipType, 4, 3, 1, 1)
+
+        self.SlipTimstamp = QDateTimeEdit(self.SlipDataGroup)
+        self.SlipTimstamp.setObjectName(u"SlipTimstamp")
+
+        self.gridLayout_2.addWidget(self.SlipTimstamp, 0, 1, 1, 1)
+
+        self.TimestampLbl = QLabel(self.SlipDataGroup)
+        self.TimestampLbl.setObjectName(u"TimestampLbl")
+
+        self.gridLayout_2.addWidget(self.TimestampLbl, 0, 0, 1, 1)
+
+        self.FDlbl = QLabel(self.SlipDataGroup)
+        self.FDlbl.setObjectName(u"FDlbl")
+
+        self.gridLayout_2.addWidget(self.FDlbl, 2, 0, 1, 1)
+
+        self.SlipAmount = QLineEdit(self.SlipDataGroup)
+        self.SlipAmount.setObjectName(u"SlipAmount")
+
+        self.gridLayout_2.addWidget(self.SlipAmount, 0, 3, 1, 1)
+
+        self.FP = QLineEdit(self.SlipDataGroup)
+        self.FP.setObjectName(u"FP")
+
+        self.gridLayout_2.addWidget(self.FP, 2, 3, 1, 1)
+
+        self.FD = QLineEdit(self.SlipDataGroup)
+        self.FD.setObjectName(u"FD")
+
+        self.gridLayout_2.addWidget(self.FD, 2, 1, 1, 1)
+
+        self.FNlbl = QLabel(self.SlipDataGroup)
+        self.FNlbl.setObjectName(u"FNlbl")
+
+        self.gridLayout_2.addWidget(self.FNlbl, 4, 0, 1, 1)
+
+        self.DummyLbl = QLabel(self.SlipDataGroup)
+        self.DummyLbl.setObjectName(u"DummyLbl")
+
+        self.gridLayout_2.addWidget(self.DummyLbl, 7, 0, 1, 1)
+
+        self.SlipTypeLbl = QLabel(self.SlipDataGroup)
+        self.SlipTypeLbl.setObjectName(u"SlipTypeLbl")
+
+        self.gridLayout_2.addWidget(self.SlipTypeLbl, 4, 2, 1, 1)
+
+        self.FN = QLineEdit(self.SlipDataGroup)
+        self.FN.setObjectName(u"FN")
+
+        self.gridLayout_2.addWidget(self.FN, 4, 1, 1, 1)
+
+        self.LoadJSONfromFileBtn = QPushButton(self.SlipDataGroup)
+        self.LoadJSONfromFileBtn.setObjectName(u"LoadJSONfromFileBtn")
+
+        self.gridLayout_2.addWidget(self.LoadJSONfromFileBtn, 7, 3, 1, 1)
+
+        self.FPlbl = QLabel(self.SlipDataGroup)
+        self.FPlbl.setObjectName(u"FPlbl")
+
+        self.gridLayout_2.addWidget(self.FPlbl, 2, 2, 1, 1)
+
+        self.line = QFrame(self.SlipDataGroup)
+        self.line.setObjectName(u"line")
+        self.line.setFrameShape(QFrame.HLine)
+        self.line.setFrameShadow(QFrame.Sunken)
+
+        self.gridLayout_2.addWidget(self.line, 5, 0, 1, 4)
 
 
         self.horizontalLayout_3.addWidget(self.SlipDataGroup)
 
-        self.CameraGroup = QGroupBox(self.frame_2)
+        self.CameraGroup = QGroupBox(self.InputFrame)
         self.CameraGroup.setObjectName(u"CameraGroup")
         self.verticalLayout_2 = QVBoxLayout(self.CameraGroup)
         self.verticalLayout_2.setSpacing(2)
@@ -147,94 +176,62 @@ class Ui_ImportSlipDlg(object):
         self.verticalLayout_2.setContentsMargins(2, 2, 2, 2)
         self.Viewfinder = QVideoWidget(self.CameraGroup)
         self.Viewfinder.setObjectName(u"Viewfinder")
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.Viewfinder.sizePolicy().hasHeightForWidth())
-        self.Viewfinder.setSizePolicy(sizePolicy)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.Viewfinder.sizePolicy().hasHeightForWidth())
+        self.Viewfinder.setSizePolicy(sizePolicy2)
 
         self.verticalLayout_2.addWidget(self.Viewfinder)
 
-        self.frame_3 = QFrame(self.CameraGroup)
-        self.frame_3.setObjectName(u"frame_3")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.frame_3.sizePolicy().hasHeightForWidth())
-        self.frame_3.setSizePolicy(sizePolicy1)
-        self.frame_3.setFrameShape(QFrame.NoFrame)
-        self.frame_3.setFrameShadow(QFrame.Plain)
-        self.horizontalLayout_5 = QHBoxLayout(self.frame_3)
+        self.CameraBtnFrame = QFrame(self.CameraGroup)
+        self.CameraBtnFrame.setObjectName(u"CameraBtnFrame")
+        sizePolicy3 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.CameraBtnFrame.sizePolicy().hasHeightForWidth())
+        self.CameraBtnFrame.setSizePolicy(sizePolicy3)
+        self.CameraBtnFrame.setFrameShape(QFrame.NoFrame)
+        self.CameraBtnFrame.setFrameShadow(QFrame.Plain)
+        self.horizontalLayout_5 = QHBoxLayout(self.CameraBtnFrame)
         self.horizontalLayout_5.setSpacing(2)
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
-        self.StopCameraBtn = QPushButton(self.frame_3)
+        self.StopCameraBtn = QPushButton(self.CameraBtnFrame)
         self.StopCameraBtn.setObjectName(u"StopCameraBtn")
 
         self.horizontalLayout_5.addWidget(self.StopCameraBtn)
 
 
-        self.verticalLayout_2.addWidget(self.frame_3)
+        self.verticalLayout_2.addWidget(self.CameraBtnFrame)
 
 
         self.horizontalLayout_3.addWidget(self.CameraGroup)
 
 
-        self.verticalLayout.addWidget(self.frame_2)
-
-        self.JSONGroup = QGroupBox(ImportSlipDlg)
-        self.JSONGroup.setObjectName(u"JSONGroup")
-        self.horizontalLayout_2 = QHBoxLayout(self.JSONGroup)
-        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
-        self.LoadJSONfromFileBtn = QPushButton(self.JSONGroup)
-        self.LoadJSONfromFileBtn.setObjectName(u"LoadJSONfromFileBtn")
-
-        self.horizontalLayout_2.addWidget(self.LoadJSONfromFileBtn)
-
-
-        self.verticalLayout.addWidget(self.JSONGroup)
+        self.verticalLayout.addWidget(self.InputFrame)
 
         self.SlipGroup = QGroupBox(ImportSlipDlg)
         self.SlipGroup.setObjectName(u"SlipGroup")
+        sizePolicy2.setHeightForWidth(self.SlipGroup.sizePolicy().hasHeightForWidth())
+        self.SlipGroup.setSizePolicy(sizePolicy2)
         self.gridLayout = QGridLayout(self.SlipGroup)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(2, 2, 2, 2)
         self.PeerLbl = QLabel(self.SlipGroup)
         self.PeerLbl.setObjectName(u"PeerLbl")
 
-        self.gridLayout.addWidget(self.PeerLbl, 4, 0, 1, 1)
+        self.gridLayout.addWidget(self.PeerLbl, 3, 0, 1, 1)
 
         self.LinesTableView = QTableView(self.SlipGroup)
         self.LinesTableView.setObjectName(u"LinesTableView")
 
-        self.gridLayout.addWidget(self.LinesTableView, 5, 1, 1, 2)
+        self.gridLayout.addWidget(self.LinesTableView, 4, 1, 1, 3)
 
         self.SlipDateTime = QDateTimeEdit(self.SlipGroup)
         self.SlipDateTime.setObjectName(u"SlipDateTime")
 
         self.gridLayout.addWidget(self.SlipDateTime, 2, 1, 1, 1)
-
-        self.SlipShopName = QLineEdit(self.SlipGroup)
-        self.SlipShopName.setObjectName(u"SlipShopName")
-
-        self.gridLayout.addWidget(self.SlipShopName, 4, 1, 1, 1)
-
-        self.LoadedLbl = QLabel(self.SlipGroup)
-        self.LoadedLbl.setObjectName(u"LoadedLbl")
-
-        self.gridLayout.addWidget(self.LoadedLbl, 3, 1, 1, 1)
-
-        self.StoredLbl = QLabel(self.SlipGroup)
-        self.StoredLbl.setObjectName(u"StoredLbl")
-
-        self.gridLayout.addWidget(self.StoredLbl, 3, 2, 1, 1)
-
-        self.LinesLbl = QLabel(self.SlipGroup)
-        self.LinesLbl.setObjectName(u"LinesLbl")
-        self.LinesLbl.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignTop)
-
-        self.gridLayout.addWidget(self.LinesLbl, 5, 0, 1, 1)
 
         self.DateTimeLbl = QLabel(self.SlipGroup)
         self.DateTimeLbl.setObjectName(u"DateTimeLbl")
@@ -244,48 +241,67 @@ class Ui_ImportSlipDlg(object):
         self.AccountLbl = QLabel(self.SlipGroup)
         self.AccountLbl.setObjectName(u"AccountLbl")
 
-        self.gridLayout.addWidget(self.AccountLbl, 1, 2, 1, 1)
-
-        self.AccountEdit = AccountSelector(self.SlipGroup)
-        self.AccountEdit.setObjectName(u"AccountEdit")
-
-        self.gridLayout.addWidget(self.AccountEdit, 2, 2, 1, 1)
+        self.gridLayout.addWidget(self.AccountLbl, 1, 3, 1, 1)
 
         self.PeerEdit = PeerSelector(self.SlipGroup)
         self.PeerEdit.setObjectName(u"PeerEdit")
 
-        self.gridLayout.addWidget(self.PeerEdit, 4, 2, 1, 1)
+        self.gridLayout.addWidget(self.PeerEdit, 3, 3, 1, 1)
+
+        self.SlipShopName = QLineEdit(self.SlipGroup)
+        self.SlipShopName.setObjectName(u"SlipShopName")
+
+        self.gridLayout.addWidget(self.SlipShopName, 3, 1, 1, 1)
+
+        self.LinesLbl = QLabel(self.SlipGroup)
+        self.LinesLbl.setObjectName(u"LinesLbl")
+        self.LinesLbl.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignTop)
+
+        self.gridLayout.addWidget(self.LinesLbl, 4, 0, 1, 1)
+
+        self.AccountEdit = AccountSelector(self.SlipGroup)
+        self.AccountEdit.setObjectName(u"AccountEdit")
+
+        self.gridLayout.addWidget(self.AccountEdit, 2, 3, 1, 1)
+
+        self.label = QLabel(self.SlipGroup)
+        self.label.setObjectName(u"label")
+
+        self.gridLayout.addWidget(self.label, 3, 2, 1, 1)
 
 
         self.verticalLayout.addWidget(self.SlipGroup)
 
-        self.frame = QFrame(ImportSlipDlg)
-        self.frame.setObjectName(u"frame")
-        self.frame.setFrameShape(QFrame.StyledPanel)
-        self.frame.setFrameShadow(QFrame.Raised)
-        self.horizontalLayout_4 = QHBoxLayout(self.frame)
+        self.DialogButtonsFrame = QFrame(ImportSlipDlg)
+        self.DialogButtonsFrame.setObjectName(u"DialogButtonsFrame")
+        self.DialogButtonsFrame.setFrameShape(QFrame.NoFrame)
+        self.DialogButtonsFrame.setFrameShadow(QFrame.Plain)
+        self.horizontalLayout_4 = QHBoxLayout(self.DialogButtonsFrame)
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.horizontalLayout_4.setContentsMargins(2, 2, 2, 2)
-        self.ClearBtn = QPushButton(self.frame)
+        self.ClearBtn = QPushButton(self.DialogButtonsFrame)
         self.ClearBtn.setObjectName(u"ClearBtn")
+        self.ClearBtn.setEnabled(False)
 
         self.horizontalLayout_4.addWidget(self.ClearBtn)
 
-        self.AddOperationBtn = QPushButton(self.frame)
+        self.AddOperationBtn = QPushButton(self.DialogButtonsFrame)
         self.AddOperationBtn.setObjectName(u"AddOperationBtn")
+        self.AddOperationBtn.setEnabled(False)
 
         self.horizontalLayout_4.addWidget(self.AddOperationBtn)
 
-        self.CloseBtn = QPushButton(self.frame)
+        self.CloseBtn = QPushButton(self.DialogButtonsFrame)
         self.CloseBtn.setObjectName(u"CloseBtn")
 
         self.horizontalLayout_4.addWidget(self.CloseBtn)
 
 
-        self.verticalLayout.addWidget(self.frame)
+        self.verticalLayout.addWidget(self.DialogButtonsFrame)
 
 
         self.retranslateUi(ImportSlipDlg)
+        self.CloseBtn.clicked.connect(ImportSlipDlg.close)
 
         QMetaObject.connectSlotsByName(ImportSlipDlg)
     # setupUi
@@ -293,31 +309,29 @@ class Ui_ImportSlipDlg(object):
     def retranslateUi(self, ImportSlipDlg):
         ImportSlipDlg.setWindowTitle(QCoreApplication.translate("ImportSlipDlg", u"Import Slip", None))
         self.QRGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"QR-code", None))
-        self.GetQRfromClipboardBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Get from clipboard", None))
-        self.LoadQRfromFileBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Load from file", None))
         self.GetQRfromCameraBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Get from camera", None))
+        self.LoadQRfromFileBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Load from file", None))
+        self.GetQRfromClipboardBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Get from clipboard", None))
         self.SlipDataGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"Slip data", None))
-        self.FNlbl.setText(QCoreApplication.translate("ImportSlipDlg", u"FN:", None))
-        self.FPlbl.setText(QCoreApplication.translate("ImportSlipDlg", u"FP:", None))
         self.GetSlipBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Get slip from internet", None))
-        self.FDlbl.setText(QCoreApplication.translate("ImportSlipDlg", u"FD:", None))
-        self.DummyLbl.setText("")
-        self.TimestampLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Date/Time:", None))
         self.AmountLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Amount:", None))
         self.SlipTimstamp.setDisplayFormat(QCoreApplication.translate("ImportSlipDlg", u"dd/MM/yyyy hh:mm:ss", None))
+        self.TimestampLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Date/Time:", None))
+        self.FDlbl.setText(QCoreApplication.translate("ImportSlipDlg", u"FD:", None))
+        self.FNlbl.setText(QCoreApplication.translate("ImportSlipDlg", u"FN:", None))
+        self.DummyLbl.setText("")
         self.SlipTypeLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Type:", None))
+        self.LoadJSONfromFileBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Load slip from JSON file", None))
+        self.FPlbl.setText(QCoreApplication.translate("ImportSlipDlg", u"FP:", None))
         self.CameraGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"Camera", None))
         self.StopCameraBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Stop camera", None))
-        self.JSONGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"From JSON-file", None))
-        self.LoadJSONfromFileBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Load from file", None))
         self.SlipGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"Slip", None))
         self.PeerLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Peer:", None))
         self.SlipDateTime.setDisplayFormat(QCoreApplication.translate("ImportSlipDlg", u"dd/MM/yyyy hh:mm:ss", None))
-        self.LoadedLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Imported:", None))
-        self.StoredLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"To be added:", None))
-        self.LinesLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Lines:", None))
         self.DateTimeLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Date / Time:", None))
         self.AccountLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Account:", None))
+        self.LinesLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Lines:", None))
+        self.label.setText(QCoreApplication.translate("ImportSlipDlg", u"-->", None))
         self.ClearBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Clear", None))
         self.AddOperationBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Add", None))
         self.CloseBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Close", None))
