@@ -16,6 +16,7 @@ from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont,
 from PySide2.QtWidgets import *
 
 from PySide2.QtMultimediaWidgets import QVideoWidget
+from CustomUI.reference_selector import AccountSelector
 
 
 class Ui_ImportSlipDlg(object):
@@ -198,15 +199,10 @@ class Ui_ImportSlipDlg(object):
         self.gridLayout = QGridLayout(self.SlipGroup)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(2, 2, 2, 2)
-        self.lineEdit_4 = QLineEdit(self.SlipGroup)
-        self.lineEdit_4.setObjectName(u"lineEdit_4")
+        self.SlipShopName = QLineEdit(self.SlipGroup)
+        self.SlipShopName.setObjectName(u"SlipShopName")
 
-        self.gridLayout.addWidget(self.lineEdit_4, 1, 1, 1, 1)
-
-        self.lineEdit_5 = QLineEdit(self.SlipGroup)
-        self.lineEdit_5.setObjectName(u"lineEdit_5")
-
-        self.gridLayout.addWidget(self.lineEdit_5, 1, 2, 1, 1)
+        self.gridLayout.addWidget(self.SlipShopName, 1, 1, 1, 1)
 
         self.PeerLbl = QLabel(self.SlipGroup)
         self.PeerLbl.setObjectName(u"PeerLbl")
@@ -233,6 +229,11 @@ class Ui_ImportSlipDlg(object):
         self.StoredLbl.setObjectName(u"StoredLbl")
 
         self.gridLayout.addWidget(self.StoredLbl, 0, 2, 1, 1)
+
+        self.AccountEdit = AccountSelector(self.SlipGroup)
+        self.AccountEdit.setObjectName(u"AccountEdit")
+
+        self.gridLayout.addWidget(self.AccountEdit, 1, 2, 1, 1)
 
 
         self.verticalLayout.addWidget(self.SlipGroup)

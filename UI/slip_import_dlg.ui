@@ -321,10 +321,7 @@
        <number>2</number>
       </property>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="lineEdit_4"/>
-      </item>
-      <item row="1" column="2">
-       <widget class="QLineEdit" name="lineEdit_5"/>
+       <widget class="QLineEdit" name="SlipShopName"/>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="PeerLbl">
@@ -359,6 +356,9 @@
          <string>To be added:</string>
         </property>
        </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="AccountSelector" name="AccountEdit" native="true"/>
       </item>
      </layout>
     </widget>
@@ -415,6 +415,12 @@
    <class>QVideoWidget</class>
    <extends>QWidget</extends>
    <header>PySide2/QtMultimediaWidgets.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AccountSelector</class>
+   <extends>QWidget</extends>
+   <header>CustomUI/reference_selector.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

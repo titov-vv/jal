@@ -1,9 +1,7 @@
 import io
 import re
-import uuid
 import json
 import logging
-import requests
 from pyzbar import pyzbar
 from PIL import Image
 
@@ -12,7 +10,7 @@ from PySide2.QtWidgets import QApplication, QDialog, QFileDialog
 # This QCamera staff ran good on Windows but didn't fly on Linux from the box until 'cheese' installation
 from PySide2.QtMultimedia import QCameraInfo, QCamera, QCameraImageCapture, QVideoFrame
 from CustomUI.helpers import g_tr
-from DB.helpers import get_ru_tax_session
+from slips_tax import SlipsTaxAPI
 from UI.ui_slip_import_dlg import Ui_ImportSlipDlg
 
 
@@ -36,7 +34,10 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.img_capture = None
 
         self.QR_data = ''
-        self.slip_json = ''
+        self.slip_json = None
+
+        self.slipsAPI = SlipsTaxAPI(self.db)
+        self.AccountEdit.init_db(self.db)
 
         self.qr_data_available.connect(self.parseQRdata)
         self.LoadQRfromFileBtn.clicked.connect(self.loadFileQR)
@@ -44,6 +45,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.GetQRfromCameraBtn.clicked.connect(self.readCameraQR)
         self.StopCameraBtn.clicked.connect(self.closeCamera)
         self.GetSlipBtn.clicked.connect(self.downloadSlipJSON)
+        self.LoadJSONfromFileBtn.clicked.connect(self.loadFileSlipJSON)
 
     def closeEvent(self, arg__1):
         if self.cameraActive:
@@ -167,6 +169,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.QR_data = qr_data
         self.GetSlipBtn.setEnabled(True)
 
+        logging.info(g_tr('ImportSlipDialog', "QR: " +self.QR_data))
         parts = re.match(self.QR_pattern, qr_data)
         if not parts:
             logging.warning(g_tr('ImportSlipDialog', "QR available but pattern isn't recognized: " + self.QR_data))
@@ -182,29 +185,21 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.qr_data_validated.emit()
 
     def downloadSlipJSON(self):
-        session_id = get_ru_tax_session(self.db)
-        if session_id == '':
-            logging.warning(g_tr('ImportSlipDialog', "No Russian Tax SessionId available"))
-            return
-        s = requests.Session()
-        s.headers['ClientVersion'] = '2.9.0'
-        s.headers['Device-Id'] = str(uuid.uuid1())
-        s.headers['Device-OS'] = 'Android'
-        s.headers['sessionId'] = session_id
-        s.headers['Content-Type'] = 'application/json; charset=UTF-8'
-        s.headers['Accept-Encoding'] = 'gzip'
-        s.headers['User-Agent'] = 'okhttp/4.2.2'
-        payload = '{' + f'"qr": "{self.QR_data}"' + '}'
-        response = s.post('https://irkkt-mobile.nalog.ru:8888/v2/ticket', data=payload)
-        if response.status_code != 200:
-            logging.error(g_tr('ImportSlipDialog', "Get ticket id failed with response ")+f"{response}/{response.text}")
-            return
-        logging.info(g_tr('ImportSlipDialog', "Slip found: " + response.text))
-        json_content = json.loads(response.text)
-        url = "https://irkkt-mobile.nalog.ru:8888/v2/tickets/" + json_content['id']
-        response = s.get(url)
-        if response.status_code != 200:
-            logging.error(g_tr('ImportSlipDialog', "Get ticket failed with response ")+f"{response}/{response.text}")
-            return
-        logging.info(g_tr('ImportSlipDialog', "Slip loaded: " + response.text))
-        self.slip_json = json.loads(response.text)
+        timestamp = self.SlipTimstamp.dateTime().toSecsSinceEpoch()
+        self.slip_json = self.slipsAPI.get_slip(timestamp, float(self.SlipAmount.text()), self.FN.text(),
+                                                self.FD.text(), self.FP.text(), self.SlipType.text())
+        if self.slip_json:
+            self.parseJSON()
+
+    @Slot()
+    def loadFileSlipJSON(self):
+        json_file, _filter = \
+            QFileDialog.getOpenFileName(self, g_tr('ImportSlipDialog', "Select file with slip JSON data"),
+                                        ".", "JSON files (*.json)")
+        if json_file:
+            with open(json_file) as f:
+                self.slip_json = json.load(f)
+            self.parseJSON()
+
+    def parseJSON(self):
+        pass
