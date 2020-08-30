@@ -327,7 +327,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             return
         if self.PeerEdit.selected_id == 0:
             logging.warning(g_tr('ImportSlipDialog',
-                                 "Not possible to import slip: can't import: no account set for import"))
+                                 "Not possible to import slip: can't import: no peer set for import"))
             return
         if self.slip_lines[self.slip_lines['category'] == 0].shape[0] != 0:
             logging.warning(g_tr('ImportSlipDialog', "Not possible to import slip: some categories are not set"))
@@ -360,12 +360,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.slip_lines = None
         self.LinesTableView.setModel(None)
 
-        self.SlipAmount.setText('')
-        self.FN.setText('')
-        self.FD.setText('')
-        self.FP.setText('')
-        self.SlipType.setText('')
-        self.SlipShopName.setText('')
+        self.initUi()
 
     def match_shop_name(self, shop_name):
         return readSQL(self.db, "SELECT mapped_to FROM map_peer WHERE value=:shop_name",

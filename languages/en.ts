@@ -198,11 +198,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips.py" line="329"/>
-        <source>Not possible to import slip: can&apos;t import: no account set for import</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../slips.py" line="333"/>
         <source>Not possible to import slip: some categories are not set</source>
         <translation type="unfinished"></translation>
@@ -210,6 +205,11 @@
     <message>
         <location filename="../slips_tax.py" line="72"/>
         <source>Operation might be pending on server side. Try again later.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../slips.py" line="329"/>
+        <source>Not possible to import slip: can&apos;t import: no peer set for import</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1163,12 +1163,12 @@ Application will be terminated now</source>
     </message>
     <message>
         <location filename="../slips_tax.py" line="33"/>
-        <source>Session refreshed: {response.text}</source>
+        <source>Session refreshed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../slips_tax.py" line="42"/>
-        <source>Can&apos;t refresh session, response: {response}/{response.text}</source>
+        <source>Can&apos;t refresh session, response: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="ru" sourcelanguage="en">
+<!DOCTYPE TS>
+<TS version="2.1" language="ru" sourcelanguage="en">
 <context>
     <name></name>
     <message>
@@ -170,47 +171,47 @@
     <message>
         <location filename="../slips.py" line="125"/>
         <source>Select file with QR code</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите файл с QR-кодом</translation>
     </message>
     <message>
         <location filename="../slips.py" line="161"/>
         <source>There are no cameras available</source>
-        <translation type="unfinished"></translation>
+        <translation>Нет доступных камер</translation>
     </message>
     <message>
         <location filename="../slips.py" line="253"/>
         <source>Select file with slip JSON data</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите файл с JSON-данными чека</translation>
     </message>
     <message>
         <location filename="../slips.py" line="269"/>
         <source>Can&apos;t find &apos;receipt&apos; tag  in json &apos;document&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось найти тэг &apos;receipt&apos; в json &apos;document&apos;</translation>
     </message>
     <message>
         <location filename="../slips.py" line="272"/>
         <source>Can&apos;t find &apos;document&apos; tag  in json &apos;ticket&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось найти тэг &apos;document&apos; в json &apos;ticket&apos;</translation>
     </message>
     <message>
         <location filename="../slips.py" line="326"/>
         <source>Not possible to import slip: no account set for import</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../slips.py" line="329"/>
-        <source>Not possible to import slip: can&apos;t import: no account set for import</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно добавить чек: не указан счет для импорта</translation>
     </message>
     <message>
         <location filename="../slips.py" line="333"/>
         <source>Not possible to import slip: some categories are not set</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно добавить чек: категории указаны не для всех строк</translation>
     </message>
     <message>
         <location filename="../slips_tax.py" line="72"/>
         <source>Operation might be pending on server side. Try again later.</source>
-        <translation type="unfinished"></translation>
+        <translation>Операция обрабатывается на стороне сервера. Попробуйте ещё раз позже.</translation>
+    </message>
+    <message>
+        <location filename="../slips.py" line="329"/>
+        <source>Not possible to import slip: can&apos;t import: no peer set for import</source>
+        <translation>Невозможно добавить чек: не указан контрагент для импорта</translation>
     </message>
 </context>
 <context>
@@ -218,132 +219,132 @@
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="314"/>
         <source>Import Slip</source>
-        <translation type="unfinished"></translation>
+        <translation>Импорт чека</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="318"/>
         <source>Get from clipboard</source>
-        <translation type="unfinished"></translation>
+        <translation>Получить из буфера</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="317"/>
         <source>Load from file</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузить из файла</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="325"/>
         <source>FN:</source>
-        <translation type="unfinished"></translation>
+        <translation>ФН:</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="329"/>
         <source>FP:</source>
-        <translation type="unfinished"></translation>
+        <translation>ФП:</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="324"/>
         <source>FD:</source>
-        <translation type="unfinished"></translation>
+        <translation>ФД:</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="332"/>
         <source>Slip</source>
-        <translation type="unfinished"></translation>
+        <translation>Чек</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="333"/>
         <source>Peer:</source>
-        <translation type="unfinished">Контрагент:</translation>
+        <translation>Контрагент:</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="337"/>
         <source>Lines:</source>
-        <translation type="unfinished"></translation>
+        <translation>Строки:</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="339"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>Очистить</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="340"/>
         <source>Add</source>
-        <translation type="unfinished">Добавить</translation>
+        <translation>Добавить</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="341"/>
         <source>Close</source>
-        <translation type="unfinished">Закрыть</translation>
+        <translation>Закрыть</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="323"/>
         <source>Date/Time:</source>
-        <translation type="unfinished"></translation>
+        <translation>Дата/Время:</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="321"/>
         <source>Amount:</source>
-        <translation type="unfinished"></translation>
+        <translation>Сумма:</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="334"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
-        <translation type="unfinished"></translation>
+        <translation>dd/MM/yyyy hh:mm:ss</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="327"/>
         <source>Type:</source>
-        <translation type="unfinished">Тип:</translation>
+        <translation>Тип:</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="316"/>
         <source>Get from camera</source>
-        <translation type="unfinished"></translation>
+        <translation>Сканировать камерой</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="315"/>
         <source>QR-code</source>
-        <translation type="unfinished"></translation>
+        <translation>QR-код</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="319"/>
         <source>Slip data</source>
-        <translation type="unfinished"></translation>
+        <translation>Данные чека</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="330"/>
         <source>Camera</source>
-        <translation type="unfinished"></translation>
+        <translation>Камера</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="320"/>
         <source>Get slip from internet</source>
-        <translation type="unfinished"></translation>
+        <translation>Получить чек с сайта ФНС</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="331"/>
         <source>Stop camera</source>
-        <translation type="unfinished"></translation>
+        <translation>Закрыть камеру</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="335"/>
         <source>Date / Time:</source>
-        <translation type="unfinished"></translation>
+        <translation>Дата / Время:</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="336"/>
         <source>Account:</source>
-        <translation type="unfinished">Счет:</translation>
+        <translation>Счет:</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="328"/>
         <source>Load slip from JSON file</source>
-        <translation type="unfinished"></translation>
+        <translation>Загузить чека из JSON-файла</translation>
     </message>
     <message>
         <location filename="../UI/ui_slip_import_dlg.py" line="338"/>
         <source>--&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>--&gt;</translation>
     </message>
 </context>
 <context>
@@ -952,17 +953,17 @@ Application will be terminated now</source>
     <message>
         <location filename="../slips.py" line="58"/>
         <source>Product name</source>
-        <translation type="unfinished"></translation>
+        <translation>Название продукта</translation>
     </message>
     <message>
         <location filename="../slips.py" line="62"/>
         <source>Amount</source>
-        <translation type="unfinished">Сумма</translation>
+        <translation>Сумма</translation>
     </message>
     <message>
         <location filename="../slips.py" line="60"/>
         <source>Category</source>
-        <translation type="unfinished">Категория</translation>
+        <translation>Категория</translation>
     </message>
 </context>
 <context>
@@ -1132,47 +1133,47 @@ Application will be terminated now</source>
     <message>
         <location filename="../slips_tax.py" line="49"/>
         <source>No Russian Tax SessionId available</source>
-        <translation type="unfinished"></translation>
+        <translation>Нет SessionId для загрузки чека с сайта ФНС</translation>
     </message>
     <message>
         <location filename="../slips_tax.py" line="65"/>
         <source>Get ticket id failed with response </source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка при получении id чека </translation>
     </message>
     <message>
         <location filename="../slips_tax.py" line="77"/>
         <source>Get ticket failed with response: </source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка при получении чека: </translation>
     </message>
     <message>
         <location filename="../slips_tax.py" line="88"/>
         <source>Incorrect legth of INN. Can&apos;t get company name.</source>
-        <translation type="unfinished"></translation>
+        <translation>Неверная длина ИНН. Невозможно найти название организации.</translation>
     </message>
     <message>
         <location filename="../slips_tax.py" line="96"/>
         <source>Failed to get token for INN: </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно получить ЕГРЮЛ токен для ИНН: </translation>
     </message>
     <message>
         <location filename="../slips_tax.py" line="102"/>
         <source>Failed to get details about INN: </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно получить информацию по ИНН из ЕГРЮЛ: </translation>
     </message>
     <message>
         <location filename="../slips_tax.py" line="112"/>
         <source>Can&apos;t get company name from: </source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось получить название огранизации из: </translation>
     </message>
     <message>
         <location filename="../slips_tax.py" line="33"/>
-        <source>Session refreshed: {response.text}</source>
-        <translation type="unfinished"></translation>
+        <source>Session refreshed: </source>
+        <translation>Сессия обновлена: </translation>
     </message>
     <message>
         <location filename="../slips_tax.py" line="42"/>
-        <source>Can&apos;t refresh session, response: {response}/{response.text}</source>
-        <translation type="unfinished"></translation>
+        <source>Can&apos;t refresh session, response: </source>
+        <translation>Невозможно обвновить сессию, ответ: </translation>
     </message>
 </context>
 <context>
