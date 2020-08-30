@@ -278,4 +278,4 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def importSlip(self):
         dialog = ImportSlipDialog(self, self.db)
-        dialog.exec_()
+        dialog.show()

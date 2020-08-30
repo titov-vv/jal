@@ -284,7 +284,7 @@ class Ui_ImportSlipDlg(object):
         self.horizontalLayout_4.setContentsMargins(2, 2, 2, 2)
         self.ClearBtn = QPushButton(self.DialogButtonsFrame)
         self.ClearBtn.setObjectName(u"ClearBtn")
-        self.ClearBtn.setEnabled(False)
+        self.ClearBtn.setEnabled(True)
 
         self.horizontalLayout_4.addWidget(self.ClearBtn)
 

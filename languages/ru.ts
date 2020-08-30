@@ -168,28 +168,48 @@
 <context>
     <name>ImportSlipDialog</name>
     <message>
-        <location filename="../slips.py" line="122"/>
+        <location filename="../slips.py" line="123"/>
         <source>Select file with QR code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips.py" line="158"/>
+        <location filename="../slips.py" line="159"/>
         <source>There are no cameras available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips.py" line="250"/>
+        <location filename="../slips.py" line="251"/>
         <source>Select file with slip JSON data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips.py" line="266"/>
+        <location filename="../slips.py" line="267"/>
         <source>Can&apos;t find &apos;receipt&apos; tag  in json &apos;document&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips.py" line="269"/>
+        <location filename="../slips.py" line="270"/>
         <source>Can&apos;t find &apos;document&apos; tag  in json &apos;ticket&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../slips.py" line="318"/>
+        <source>Not possible to import slip: no account set for import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../slips.py" line="321"/>
+        <source>Not possible to import slip: can&apos;t import: no account set for import</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../slips.py" line="325"/>
+        <source>Not possible to import slip: some categories are not set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../slips_tax.py" line="72"/>
+        <source>Operation might be pending on server side. Try again later.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -930,17 +950,17 @@ Application will be terminated now</source>
 <context>
     <name>PandasLinesModel</name>
     <message>
-        <location filename="../slips.py" line="58"/>
+        <location filename="../slips.py" line="57"/>
         <source>Product name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips.py" line="62"/>
+        <location filename="../slips.py" line="61"/>
         <source>Amount</source>
         <translation type="unfinished">Сумма</translation>
     </message>
     <message>
-        <location filename="../slips.py" line="60"/>
+        <location filename="../slips.py" line="59"/>
         <source>Category</source>
         <translation type="unfinished">Категория</translation>
     </message>
@@ -1110,38 +1130,48 @@ Application will be terminated now</source>
 <context>
     <name>SlipsTaxAPI</name>
     <message>
-        <location filename="../slips_tax.py" line="23"/>
+        <location filename="../slips_tax.py" line="49"/>
         <source>No Russian Tax SessionId available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="36"/>
+        <location filename="../slips_tax.py" line="65"/>
         <source>Get ticket id failed with response </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="45"/>
+        <location filename="../slips_tax.py" line="77"/>
         <source>Get ticket failed with response: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="56"/>
+        <location filename="../slips_tax.py" line="88"/>
         <source>Incorrect legth of INN. Can&apos;t get company name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="64"/>
+        <location filename="../slips_tax.py" line="96"/>
         <source>Failed to get token for INN: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="70"/>
+        <location filename="../slips_tax.py" line="102"/>
         <source>Failed to get details about INN: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="80"/>
+        <location filename="../slips_tax.py" line="112"/>
         <source>Can&apos;t get company name from: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../slips_tax.py" line="33"/>
+        <source>Session refreshed: {response.text}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../slips_tax.py" line="42"/>
+        <source>Can&apos;t refresh session, response: {response}/{response.text}</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

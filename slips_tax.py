@@ -68,6 +68,9 @@ class SlipsTaxAPI:
             return None
         logging.info(g_tr('SlipsTaxAPI', "Slip found: " + response.text))
         json_content = json.loads(response.text)
+        if json_content['status'] != '2':  # Valid slip status is 2, other statuses are not fully clear
+            logging.warning(g_tr('ImportSlipDialog', "Operation might be pending on server side. Try again later."))
+            return None
         url = "https://irkkt-mobile.nalog.ru:8888/v2/tickets/" + json_content['id']
         response = s.get(url)
         if response.status_code != 200:

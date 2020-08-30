@@ -11,6 +11,7 @@ from PySide2.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView
 # This QCamera staff ran good on Windows but didn't fly on Linux from the box until 'cheese' installation
 from PySide2.QtMultimedia import QCameraInfo, QCamera, QCameraImageCapture, QVideoFrame
 from CustomUI.helpers import g_tr
+from DB.helpers import executeSQL
 from slips_tax import SlipsTaxAPI
 from view_delegate import SlipLinesPandasDelegate
 from UI.ui_slip_import_dlg import Ui_ImportSlipDlg
@@ -86,6 +87,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
 
         self.QR_data = ''
         self.slip_json = None
+        self.slip_lines = None
 
         self.slipsAPI = SlipsTaxAPI(self.db)
         self.AccountEdit.init_db(self.db)
@@ -99,6 +101,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.GetSlipBtn.clicked.connect(self.downloadSlipJSON)
         self.LoadJSONfromFileBtn.clicked.connect(self.loadFileSlipJSON)
         self.AddOperationBtn.clicked.connect(self.addOperation)
+        self.ClearBtn.clicked.connect(self.clearSlipData)
 
     def closeEvent(self, arg__1):
         if self.cameraActive:
@@ -278,7 +281,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             if 'userInn' in slip:
                 self.SlipShopName.setText(self.slipsAPI.get_shop_name_by_inn(slip['userInn']))
         try:
-            lines = pd.DataFrame(slip['items'])
+            self.slip_lines = pd.DataFrame(slip['items'])
         except:
             return
 
@@ -289,12 +292,12 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             self.SlipDateTime.setDateTime(slip_datetime)
 
         # Convert price to roubles
-        lines['price'] = lines['price'] / 100
-        lines['sum'] = -lines['sum'] / 100
-        lines['category'] = 0
-        lines = lines[['name', 'category', 'sum']]
+        self.slip_lines['price'] = self.slip_lines['price'] / 100
+        self.slip_lines['sum'] = -self.slip_lines['sum'] / 100
+        self.slip_lines['category'] = 0
+        self.slip_lines = self.slip_lines[['name', 'category', 'sum']]
 
-        self.model = PandasLinesModel(lines, self.db)
+        self.model = PandasLinesModel(self.slip_lines, self.db)
         self.LinesTableView.setModel(self.model)
 
         self.delegates = []
@@ -313,4 +316,48 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.LinesTableView.show()
 
     def addOperation(self):
-        pass
+        if self.AccountEdit.selected_id == 0:
+            logging.warning(g_tr('ImportSlipDialog', "Not possible to import slip: no account set for import"))
+            return
+        if self.PeerEdit.selected_id == 0:
+            logging.warning(g_tr('ImportSlipDialog',
+                                 "Not possible to import slip: can't import: no account set for import"))
+            return
+        if self.slip_lines[self.slip_lines['category'] == 0].shape[0] != 0:
+            logging.warning(g_tr('ImportSlipDialog', "Not possible to import slip: some categories are not set"))
+            return
+
+        query = executeSQL(self.db, "INSERT INTO actions (timestamp, account_id, peer_id) "
+                                     "VALUES (:timestamp, :account_id, :peer_id)",
+                            [(":timestamp", self.SlipDateTime.dateTime().toSecsSinceEpoch()),
+                             (":account_id", self.AccountEdit.selected_id),
+                             (":peer_id", self.PeerEdit.selected_id)])
+        pid = query.lastInsertId()
+        # update mappings
+        _ = executeSQL(self.db, "INSERT INTO map_peer (value, mapped_to) VALUES (:peer_name, :peer_id)",
+                       [(":peer_name", self.SlipShopName.text()), (":peer_id", self.PeerEdit.selected_id)])
+
+        for index, row in self.slip_lines.iterrows():
+            _ = executeSQL(self.db, "INSERT INTO action_details (pid, category_id, sum, note) "
+                                    "VALUES (:pid, :category_id, :amount, :note)",
+                           [(":pid", pid), (":category_id", row['category']),
+                            (":amount", row['sum']), (":note", row['name'])])
+            # update mappings
+            _ = executeSQL(self.db, "INSERT INTO map_category (value, mapped_to) VALUES (:item_name, :category_id)",
+                           [(":item_name", row['name']), (":category_id", row['category'])])
+        self.db.commit()
+        self.clearSlipData()
+
+    def clearSlipData(self):
+        self.QR_data = ''
+        self.slip_json = None
+        self.slip_lines = None
+        self.LinesTableView.setModel(None)
+
+        self.SlipAmount.setText('')
+        self.FN.setText('')
+        self.FD.setText('')
+        self.FP.setText('')
+        self.SlipType.setText('')
+        self.SlipShopName.setText('')
+

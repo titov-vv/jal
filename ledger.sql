@@ -314,6 +314,36 @@ CREATE TABLE ledger_sums (
 );
 
 
+-- Table: map_category
+DROP TABLE IF EXISTS map_category;
+
+CREATE TABLE map_category (
+    id        INTEGER        PRIMARY KEY
+                             UNIQUE
+                             NOT NULL,
+    value     VARCHAR (1024) NOT NULL,
+    mapped_to INTEGER        NOT NULL
+                             REFERENCES categories (id) ON DELETE SET DEFAULT
+                                                        ON UPDATE CASCADE
+                             DEFAULT (0)
+);
+
+
+-- Table: map_peer
+DROP TABLE IF EXISTS map_peer;
+
+CREATE TABLE map_peer (
+    id        INTEGER        PRIMARY KEY
+                             UNIQUE
+                             NOT NULL,
+    value     VARCHAR (1024) NOT NULL,
+    mapped_to INTEGER        REFERENCES agents (id) ON DELETE SET DEFAULT
+                                                    ON UPDATE CASCADE
+                             NOT NULL
+                             DEFAULT (0)
+);
+
+
 -- Table: quotes
 DROP TABLE IF EXISTS quotes;
 
@@ -1566,7 +1596,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 8);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 9);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
