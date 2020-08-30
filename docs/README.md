@@ -19,6 +19,9 @@ It was designed to keep records of personal incomes/spendings and investments wi
 - stock quotes updates for US (Yahoo), EU (Euronext) and RU (MOEX) exchanges traded stocks
 - securities transactions import from Quik HTML-reports for russian brokers and from Interactive Brokers flex-queries
 - tax report preparation for foreign investments according to Russian Tax Law
+- *experimental* download russian electronic slips from russian tax authority:
+    1. QR code may be scanned from camera, clipboard image or image file on disk
+    2. Authorization via login/password to FNS personal account or ESIA/Gosuslugi (no passwords are stored in the progam, only SessionId is stored - you may check in source code)
 
 ### Installation
 ledger was created to be portable - it doesn't require specific installation instructions. All you need is to have Python 3.8.1 or higher and satisfy dependencies listed below.
@@ -29,9 +32,11 @@ Database will be initialized automatically with minimal required set of data and
 ledger depends on:
 * [Qt for Python (PySide2)](https://wiki.qt.io/Qt_for_Python) *>=5.15* - GUI library (versions below 5.15 may cause problems with `uic` at least)
 * [pandas](https://pandas.pydata.org/) - different data operations
-* [requests](https://requests.readthedocs.io/) - stock quotes update from the internet
+* [requests](https://requests.readthedocs.io/) - stock quotes update from the internet; electronic slip download
 * [xlsxwriter](https://xlsxwriter.readthedocs.io/) - reports export into XLS format
 * [ibflex](https://github.com/csingley/ibflex) *>=0.14* - Interactive Brokers flex-reports import 
+* [pyzbar](https://github.com/NaturalHistoryMuseum/pyzbar/) - electronic slip QR-code recognition
+* [Pillow](https://pillow.readthedocs.io/en/stable/) - work with images
 
 ### Screenshots
 Qt have a better look on Linux out of the box. Here is main program window:
@@ -45,18 +50,20 @@ Below is a view of main window where one account is chosen ('Mastercard') and ac
 ![One Account](https://github.com/titov-vv/ledger/blob/master/screenshots/one_account_view.png?raw=true)
 
 Example of investment account view with Buy, Sell and Dividend operations recorded (there is an asset select/edit window on top):
-![One Account](https://github.com/titov-vv/ledger/blob/master/screenshots/stocks_and_investment_account.png?raw=true)
+![Investment Account](https://github.com/titov-vv/ledger/blob/master/screenshots/stocks_and_investment_account.png?raw=true)
 
 'Holdings' tab contains portfolio overview (You display account and portfolio balances for any date).
 Holdings are grouped by currencies and then by accounts.
-![One Account](https://github.com/titov-vv/ledger/blob/master/screenshots/investment_portfolio_holdings.png?raw=true)
+![Holdings](https://github.com/titov-vv/ledger/blob/master/screenshots/investment_portfolio_holdings.png?raw=true)
 
 Examples of reports are below:
 Monthly incomes/spendings *(categories hierarchy is supported with sub-totals calculation)*
- ![One Account](https://github.com/titov-vv/ledger/blob/master/screenshots/report_income_spending.png?raw=true)
+![Income/Spending report](https://github.com/titov-vv/ledger/blob/master/screenshots/report_income_spending.png?raw=true)
 Profit/Loss for investment account *(Assets value to be fixed, Returns include dividends and other payments)*
- ![One Account](https://github.com/titov-vv/ledger/blob/master/screenshots/report_profit_loss.png?raw=true)
+![Profit/Loss report](https://github.com/titov-vv/ledger/blob/master/screenshots/report_profit_loss.png?raw=true)
 List of all closed deals for investment account
- ![One Account](https://github.com/titov-vv/ledger/blob/master/screenshots/report_deals.png?raw=true)
+![Deals report](https://github.com/titov-vv/ledger/blob/master/screenshots/report_deals.png?raw=true)
+
  ---
- [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Ftitov-vv.github.io%2Fledger%2F&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
+
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Ftitov-vv.github.io%2Fledger%2F&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
