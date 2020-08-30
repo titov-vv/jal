@@ -203,7 +203,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="96"/>
+        <location filename="../slips_tax.py" line="195"/>
         <source>Operation might be pending on server side. Try again later.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -890,6 +890,44 @@ do you want to save it?</source>
     </message>
 </context>
 <context>
+    <name>LoginFNSDialog</name>
+    <message>
+        <location filename="../UI/ui_login_fns_dlg.py" line="180"/>
+        <source>Authorization FNS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_login_fns_dlg.py" line="181"/>
+        <source>INN:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_login_fns_dlg.py" line="182"/>
+        <source>Password:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_login_fns_dlg.py" line="183"/>
+        <source>Login</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_login_fns_dlg.py" line="186"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_login_fns_dlg.py" line="185"/>
+        <source>FNS Login</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_login_fns_dlg.py" line="187"/>
+        <source>ESIA Login</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MainWindow</name>
     <message>
         <location filename="../main_window.py" line="154"/>
@@ -1127,48 +1165,78 @@ Application will be terminated now</source>
 <context>
     <name>SlipsTaxAPI</name>
     <message>
-        <location filename="../slips_tax.py" line="40"/>
+        <location filename="../slips_tax.py" line="139"/>
         <source>No Russian Tax SessionId available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="89"/>
-        <source>Get ticket id failed with response </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../slips_tax.py" line="101"/>
-        <source>Get ticket failed with response: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../slips_tax.py" line="112"/>
+        <location filename="../slips_tax.py" line="211"/>
         <source>Incorrect legth of INN. Can&apos;t get company name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="120"/>
+        <location filename="../slips_tax.py" line="219"/>
         <source>Failed to get token for INN: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="126"/>
+        <location filename="../slips_tax.py" line="225"/>
         <source>Failed to get details about INN: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="136"/>
+        <location filename="../slips_tax.py" line="235"/>
         <source>Can&apos;t get company name from: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="58"/>
+        <location filename="../slips_tax.py" line="157"/>
         <source>Session refreshed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="67"/>
+        <location filename="../slips_tax.py" line="166"/>
         <source>Can&apos;t refresh session, response: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../slips_tax.py" line="35"/>
+        <source>ESIA login completed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../slips_tax.py" line="77"/>
+        <source>FNS login successful: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../slips_tax.py" line="112"/>
+        <source>ESIA login successful: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../slips_tax.py" line="75"/>
+        <source>FNS login failed: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../slips_tax.py" line="97"/>
+        <source>Get ESIA URL failed: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../slips_tax.py" line="110"/>
+        <source>ESIA login failed: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../slips_tax.py" line="188"/>
+        <source>Get ticket id failed: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../slips_tax.py" line="200"/>
+        <source>Get ticket failed: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>

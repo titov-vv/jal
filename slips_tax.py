@@ -72,7 +72,7 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
         payload = '{' + f'"client_secret":"{client_secret}","inn":"{inn}","password":"{password}"' + '}'
         response = s.post('https://irkkt-mobile.nalog.ru:8888/v2/mobile/users/lkfl/auth', data=payload)
         if response.status_code != 200:
-            logging.error(g_tr('SlipsTaxAPI', "FNS login failed with response ") + f"{response}/{response.text}")
+            logging.error(g_tr('SlipsTaxAPI', "FNS login failed: ") + f"{response}/{response.text}")
             return
         logging.info(g_tr('SlipsTaxAPI', "FNS login successful: ") + f"{response.text}")
         json_content = json.loads(response.text)
@@ -94,7 +94,7 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
         self.web_session.headers['User-Agent'] = 'okhttp/4.2.2'
         response = self.web_session.get('https://irkkt-mobile.nalog.ru:8888/v2/mobile/users/esia/auth/url')
         if response.status_code != 200:
-            logging.error(g_tr('SlipsTaxAPI', "Get ESIA URL failed with response ") + f"{response}/{response.text}")
+            logging.error(g_tr('SlipsTaxAPI', "Get ESIA URL failed: ") + f"{response}/{response.text}")
             return
         json_content = json.loads(response.text)
         auth_url = json_content['url']
@@ -107,7 +107,7 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
                   + '}'
         response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/mobile/users/esia/auth', data=payload)
         if response.status_code != 200:
-            logging.error(g_tr('SlipsTaxAPI', "ESIA login failed with response ") + f"{response}/{response.text}")
+            logging.error(g_tr('SlipsTaxAPI', "ESIA login failed: ") + f"{response}/{response.text}")
             return
         logging.info(g_tr('SlipsTaxAPI', "ESIA login successful: ") + f"{response.text}")
         json_content = json.loads(response.text)
@@ -186,7 +186,7 @@ class SlipsTaxAPI:
                 self.refresh_session()
             else:
                 logging.error(
-                    g_tr('SlipsTaxAPI', "Get ticket id failed with response ") +
+                    g_tr('SlipsTaxAPI', "Get ticket id failed: ") +
                     f"{response}/{response.text} for {payload}")
             return None
         logging.info(g_tr('SlipsTaxAPI', "Slip found: " + response.text))
@@ -197,7 +197,7 @@ class SlipsTaxAPI:
         url = "https://irkkt-mobile.nalog.ru:8888/v2/tickets/" + json_content['id']
         response = s.get(url)
         if response.status_code != 200:
-            logging.error(g_tr('SlipsTaxAPI', "Get ticket failed with response: ") + f"{response}/{response.text}")
+            logging.error(g_tr('SlipsTaxAPI', "Get ticket failed: ") + f"{response}/{response.text}")
             return None
         logging.info(g_tr('SlipsTaxAPI', "Slip loaded: " + response.text))
         slip_json = json.loads(response.text)
