@@ -2,18 +2,74 @@ import uuid
 import json
 import logging
 import requests
-
 from datetime import datetime
+
+from PySide2.QtWidgets import QDialog
 from DB.helpers import readSQL, executeSQL
 from CustomUI.helpers import g_tr
+from UI.ui_login_fns_dlg import Ui_LoginFNSDialog
 
 
+#-----------------------------------------------------------------------------------------------------------------------
+class LoginFNS(QDialog, Ui_LoginFNSDialog):
+    def __init__(self, db, parent=None):
+        QDialog.__init__(self, parent=parent)
+        self.setupUi(self)
+        self.db = db
+
+        self.FNSLoginBtn.clicked.connect(self.login_fns)
+
+    def login_fns(self):
+        client_secret = readSQL(self.db, "SELECT value FROM settings WHERE name='RuTaxClientSecret'")
+        inn = self.InnEdit.text()
+        password = self.PasswordEdit.text()
+
+        s = requests.Session()
+        s.headers['ClientVersion'] = '2.9.0'
+        s.headers['Device-Id'] = str(uuid.uuid1())
+        s.headers['Device-OS'] = 'Android'
+        s.headers['Content-Type'] = 'application/json; charset=UTF-8'
+        s.headers['Accept-Encoding'] = 'gzip'
+        s.headers['User-Agent'] = 'okhttp/4.2.2'
+        payload = '{' + f'"client_secret":"{client_secret}","inn":"{inn}","password":"{password}"' + '}'
+        response = s.post('https://irkkt-mobile.nalog.ru:8888/v2/mobile/users/lkfl/auth', data=payload)
+        if response.status_code != 200:
+            logging.error(g_tr('SlipsTaxAPI', "FNS login failed with response ") + f"{response}/{response.text}")
+            return
+        logging.info(g_tr('SlipsTaxAPI', "FNS login successful: ") + f"{response.text}")
+        json_content = json.loads(response.text)
+        new_session_id = json_content['sessionId']
+        new_refresh_token = json_content['refresh_token']
+
+        # TODO make inserts instead of updates???
+        _ = executeSQL(self.db, "UPDATE settings SET value=:new_session WHERE name='RuTaxSessionId'",
+                       [(":new_session", new_session_id)])
+        _ = executeSQL(self.db, "UPDATE settings SET value=:new_refresh_token WHERE name='RuTaxRefreshToken'",
+                       [(":new_refresh_token", new_refresh_token)])
+        self.db.commit()
+        self.accept()
+
+    def login_esia(self):
+        print("ESIA stub")
+
+#-----------------------------------------------------------------------------------------------------------------------
 class SlipsTaxAPI:
     def __init__(self, db):
         self.db = db
 
     def get_ru_tax_session(self):
-        return readSQL(self.db, "SELECT value FROM settings WHERE name='RuTaxSessionId'")
+        stored_id = readSQL(self.db, "SELECT value FROM settings WHERE name='RuTaxSessionId'")
+        if stored_id is not None:
+            return stored_id
+
+        login_dialog = LoginFNS(self.db)
+        if login_dialog.exec_() == QDialog.Accepted:
+            stored_id = readSQL(self.db, "SELECT value FROM settings WHERE name='RuTaxSessionId'")
+            if stored_id is not None:
+                return stored_id
+
+        logging.warning(g_tr('SlipsTaxAPI', "No Russian Tax SessionId available"))
+        return None
 
     def refresh_session(self):
         session_id = self.get_ru_tax_session()
@@ -45,8 +101,7 @@ class SlipsTaxAPI:
         date_time = datetime.fromtimestamp(timestamp).strftime('%Y%m%dT%H%M%S')
 
         session_id = self.get_ru_tax_session()
-        if session_id == '':
-            logging.warning(g_tr('SlipsTaxAPI', "No Russian Tax SessionId available"))
+        if session_id == None:
             return None
         s = requests.Session()
         s.headers['ClientVersion'] = '2.9.0'

@@ -203,7 +203,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="72"/>
+        <location filename="../slips_tax.py" line="96"/>
         <source>Operation might be pending on server side. Try again later.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1127,47 +1127,47 @@ Application will be terminated now</source>
 <context>
     <name>SlipsTaxAPI</name>
     <message>
-        <location filename="../slips_tax.py" line="49"/>
+        <location filename="../slips_tax.py" line="40"/>
         <source>No Russian Tax SessionId available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="65"/>
+        <location filename="../slips_tax.py" line="89"/>
         <source>Get ticket id failed with response </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="77"/>
+        <location filename="../slips_tax.py" line="101"/>
         <source>Get ticket failed with response: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="88"/>
+        <location filename="../slips_tax.py" line="112"/>
         <source>Incorrect legth of INN. Can&apos;t get company name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="96"/>
+        <location filename="../slips_tax.py" line="120"/>
         <source>Failed to get token for INN: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="102"/>
+        <location filename="../slips_tax.py" line="126"/>
         <source>Failed to get details about INN: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="112"/>
+        <location filename="../slips_tax.py" line="136"/>
         <source>Can&apos;t get company name from: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="33"/>
+        <location filename="../slips_tax.py" line="58"/>
         <source>Session refreshed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../slips_tax.py" line="42"/>
+        <location filename="../slips_tax.py" line="67"/>
         <source>Can&apos;t refresh session, response: </source>
         <translation type="unfinished"></translation>
     </message>
