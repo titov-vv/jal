@@ -253,6 +253,7 @@ class Ui_ImportSlipDlg(object):
 
         self.SlipShopName = QLineEdit(self.SlipGroup)
         self.SlipShopName.setObjectName(u"SlipShopName")
+        self.SlipShopName.setEnabled(False)
 
         self.gridLayout.addWidget(self.SlipShopName, 3, 1, 1, 1)
 

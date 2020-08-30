@@ -391,7 +391,11 @@
        <widget class="PeerSelector" name="PeerEdit" native="true"/>
       </item>
       <item row="3" column="1">
-       <widget class="QLineEdit" name="SlipShopName"/>
+       <widget class="QLineEdit" name="SlipShopName">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+       </widget>
       </item>
       <item row="4" column="0">
        <widget class="QLabel" name="LinesLbl">

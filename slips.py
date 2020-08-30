@@ -11,7 +11,7 @@ from PySide2.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView
 # This QCamera staff ran good on Windows but didn't fly on Linux from the box until 'cheese' installation
 from PySide2.QtMultimedia import QCameraInfo, QCamera, QCameraImageCapture, QVideoFrame
 from CustomUI.helpers import g_tr
-from DB.helpers import executeSQL
+from DB.helpers import executeSQL, readSQL
 from slips_tax import SlipsTaxAPI
 from view_delegate import SlipLinesPandasDelegate
 from UI.ui_slip_import_dlg import Ui_ImportSlipDlg
@@ -279,7 +279,13 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             self.SlipShopName.setText(slip['user'])
         else:
             if 'userInn' in slip:
-                self.SlipShopName.setText(self.slipsAPI.get_shop_name_by_inn(slip['userInn']))
+                name_by_inn = self.slipsAPI.get_shop_name_by_inn(slip['userInn'])
+                if name_by_inn:
+                    self.SlipShopName.setText(name_by_inn)
+                else:
+                    self.SlipShopName.setText(slip['userInn'])
+        self.PeerEdit.selected_id = self.match_shop_name(self.SlipShopName.text())
+
         try:
             self.slip_lines = pd.DataFrame(slip['items'])
         except:
@@ -361,3 +367,6 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.SlipType.setText('')
         self.SlipShopName.setText('')
 
+    def match_shop_name(self, shop_name):
+        return readSQL(self.db, "SELECT mapped_to FROM map_peer WHERE value=:shop_name",
+                       [(":shop_name", shop_name)])
