@@ -1600,6 +1600,9 @@ INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 9);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
+INSERT INTO settings(id, name, value) VALUES (4, 'RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
+INSERT INTO settings(id, name, value) VALUES (5, 'RuTaxSessionId', '');
+INSERT INTO settings(id, name, value) VALUES (6, 'RuTaxRefreshToken', '');
 
 -- Initialize available languages
 INSERT INTO languages (id, language) VALUES (1, 'en');
