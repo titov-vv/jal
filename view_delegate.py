@@ -477,6 +477,7 @@ class OperationsTotalsDelegate(QStyledItemDelegate):
         model = index.model()
         record = model.record(index.row())
         total_money = record.value(index.column())
+        transaction_type = record.value("type")
         total_shares = record.value("t_qty")
         reconciled = record.value("reconciled")
         upper_part = "<void>"
@@ -485,7 +486,7 @@ class OperationsTotalsDelegate(QStyledItemDelegate):
             lower_part = f"{total_shares:,.2f}"
         if total_money != '':
             upper_part = f"{total_money:,.2f}"
-        if lower_part == '':
+        if transaction_type == TransactionType.Action or transaction_type == TransactionType.Transfer:
             text = upper_part
         else:
             text = upper_part + "\n" + lower_part

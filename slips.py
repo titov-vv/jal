@@ -108,7 +108,6 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             self.closeCamera()
 
     def initUi(self):
-        self.GetSlipBtn.setEnabled(False)
         self.SlipAmount.setText('')
         self.FN.setText('')
         self.FD.setText('')
@@ -223,7 +222,6 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
     @Slot()
     def parseQRdata(self, qr_data):
         self.QR_data = qr_data
-        self.GetSlipBtn.setEnabled(True)
 
         logging.info(g_tr('ImportSlipDialog', "QR: " +self.QR_data))
         parts = re.match(self.QR_pattern, qr_data)
