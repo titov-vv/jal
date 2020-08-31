@@ -284,7 +284,9 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
                     self.SlipShopName.setText(name_by_inn)
                 else:
                     self.SlipShopName.setText(slip['userInn'])
-        self.PeerEdit.selected_id = self.match_shop_name(self.SlipShopName.text())
+        peer_id = self.match_shop_name(self.SlipShopName.text())
+        if peer_id is not None:
+            self.PeerEdit.selected_id = peer_id
 
         try:
             self.slip_lines = pd.DataFrame(slip['items'])
