@@ -61,6 +61,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         # Setup reports tab
         self.ReportAccountBtn.init_db(self.db)
+        self.ReportCategoryEdit.init_db(self.db)
         self.reports = Reports(self.db, self.ReportTableView)
         self.reports.report_failure.connect(self.onReportFailure)
 
@@ -211,13 +212,17 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         types = {
             0: ReportType.IncomeSpending,
             1: ReportType.ProfitLoss,
-            2: ReportType.Deals
+            2: ReportType.Deals,
+            3: ReportType.ByCategory
         }
         report_type = types[self.ReportTypeCombo.currentIndex()]
         begin = self.ReportFromDate.dateTime().toSecsSinceEpoch()
         end = self.ReportToDate.dateTime().toSecsSinceEpoch()
         group_dates = 1 if self.ReportGroupCheck.isChecked() else 0
-        self.reports.runReport(report_type, begin, end, self.ReportAccountBtn.account_id, group_dates)
+        if report_type == ReportType.ByCategory:
+            self.reports.runReport(report_type, begin, end, self.ReportCategoryEdit.selected_id, group_dates)
+        else:
+            self.reports.runReport(report_type, begin, end, self.ReportAccountBtn.account_id, group_dates)
 
     @Slot()
     def onReportFailure(self, error_msg):

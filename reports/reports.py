@@ -18,6 +18,7 @@ class ReportType:
     IncomeSpending = 1
     ProfitLoss = 2
     Deals = 3
+    ByCategory = 4
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -103,7 +104,14 @@ class Reports(QObject):
                                ("qty", "Qty", None, None, ReportsFloatDelegate),
                                ("fee", "Fee", None, None, ReportsFloat2Delegate),
                                ("profit", "P/L", None, None, ReportsProfitDelegate),
-                               ("rel_profit", "P/L, %", None, None, ReportsProfitDelegate)])
+                               ("rel_profit", "P/L, %", None, None, ReportsProfitDelegate)]),
+            ReportType.ByCategory: (self.prepareCategoryReport,
+                                    self.showSqlQueryReport,
+                                    [("timestamp", "Timestamp", ColumnWidth.FOR_DATETIME, None, ReportsTimestampDelegate),
+                                     ("account", "Account", 200, None, None),
+                                     ("name", "Peer Name", 200, None, None),
+                                     ("sum", "Amount", 200, None, ReportsFloat2Delegate),
+                                     ("note", "Note", -1, None, None)])
         }
 
     def runReport(self, report_type, begin=0, end=0, account_id=0, group_dates=0):
@@ -336,4 +344,18 @@ class Reports(QObject):
              (":book_money", BookAccount.Money), (":book_assets", BookAccount.Assets),
              (":book_transfers", BookAccount.Transfers)],
                            forward_only=False)
+        return True
+
+    def prepareCategoryReport(self, begin, end, category_id, group_dates):
+        if category_id == 0:
+            self.report_failure.emit(g_tr('Reports', "You should select category to create By Category report"))
+            return False
+        self.query = executeSQL(self.db, "SELECT a.timestamp, ac.name AS account, p.name, d.sum, d.note "
+                                         "FROM actions AS a "
+                                         "LEFT JOIN action_details AS d ON d.pid=a.id "
+                                         "LEFT JOIN agents AS p ON p.id=a.peer_id "
+                                         "LEFT JOIN accounts AS ac ON ac.id=a.account_id "
+                                         "WHERE a.timestamp>=:begin AND a.timestamp<=:end "
+                                         "AND d.category_id=:category_id",
+                                [(":category_id", category_id), (":begin", begin), (":end", end)], forward_only=False)
         return True

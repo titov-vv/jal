@@ -1351,13 +1351,50 @@
            <property name="spacing">
             <number>6</number>
            </property>
-           <item row="1" column="4">
-            <widget class="QLabel" name="ReportToLbl">
-             <property name="text">
-              <string>To:</string>
+           <item row="0" column="10">
+            <spacer name="ReportFrameSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
              </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="1" column="2">
+            <widget class="AccountButton" name="ReportAccountBtn">
+             <property name="text">
+              <string>PushButton</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="9">
+            <widget class="CategorySelector" name="ReportCategoryEdit" native="true"/>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="ReportTypeLbl">
+             <property name="text">
+              <string>Report:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="5">
+            <widget class="QDateEdit" name="ReportToDate">
+             <property name="displayFormat">
+              <string>dd/MM/yyyy</string>
+             </property>
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="ReportAccountLbl">
+             <property name="text">
+              <string>Account:</string>
              </property>
             </widget>
            </item>
@@ -1377,6 +1414,16 @@
              </property>
             </widget>
            </item>
+           <item row="1" column="4">
+            <widget class="QLabel" name="ReportToLbl">
+             <property name="text">
+              <string>To:</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
            <item row="0" column="4">
             <widget class="QLabel" name="ReportFromLbl">
              <property name="text">
@@ -1387,17 +1434,55 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="ReportTypeLbl">
+           <item row="1" column="6">
+            <widget class="QCheckBox" name="ReportGroupCheck">
              <property name="text">
-              <string>Report:</string>
+              <string>Group dates</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="2">
-            <widget class="AccountButton" name="ReportAccountBtn">
+           <item row="0" column="2">
+            <widget class="QComboBox" name="ReportTypeCombo">
+             <item>
+              <property name="text">
+               <string>Income / Spending</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Profit / Loss</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Deals</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>By Category</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="1" column="11">
+            <widget class="QPushButton" name="SaveReportBtn">
              <property name="text">
-              <string>PushButton</string>
+              <string>Save</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="11">
+            <widget class="QPushButton" name="RunReportBtn">
+             <property name="text">
+              <string>Run</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="8">
+            <widget class="QLabel" name="ReportCategoryLbl">
+             <property name="text">
+              <string>Category:</string>
              </property>
             </widget>
            </item>
@@ -1430,62 +1515,6 @@
              </item>
             </widget>
            </item>
-           <item row="1" column="5">
-            <widget class="QDateEdit" name="ReportToDate">
-             <property name="displayFormat">
-              <string>dd/MM/yyyy</string>
-             </property>
-             <property name="calendarPopup">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="8">
-            <spacer name="ReportFrameSpacer">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="1" column="6">
-            <widget class="QCheckBox" name="ReportGroupCheck">
-             <property name="text">
-              <string>Group dates</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QComboBox" name="ReportTypeCombo">
-             <item>
-              <property name="text">
-               <string>Income / Spending</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Profit / Loss</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Deals</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-           <item row="0" column="9">
-            <widget class="QPushButton" name="RunReportBtn">
-             <property name="text">
-              <string>Run</string>
-             </property>
-            </widget>
-           </item>
            <item row="0" column="5">
             <widget class="QDateEdit" name="ReportFromDate">
              <property name="displayFormat">
@@ -1496,17 +1525,10 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="ReportAccountLbl">
-             <property name="text">
-              <string>Account:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="9">
-            <widget class="QPushButton" name="SaveReportBtn">
-             <property name="text">
-              <string>Save</string>
+           <item row="0" column="7" rowspan="2">
+            <widget class="Line" name="line_3">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
              </property>
             </widget>
            </item>
@@ -1771,6 +1793,12 @@
    <class>AmountEdit</class>
    <extends>QLineEdit</extends>
    <header>CustomUI/amount_editor.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CategorySelector</class>
+   <extends>QWidget</extends>
+   <header>CustomUI/reference_selector.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
