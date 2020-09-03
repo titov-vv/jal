@@ -653,7 +653,7 @@ CREATE VIEW all_operations AS
                SELECT 4 AS type,
                       r.tid,
                       r.timestamp,
-                      NULL AS num_peer,
+                      c.name AS num_peer,
                       r.account_id,
                       r.amount,
                       NULL AS asset_id,
@@ -672,6 +672,8 @@ CREATE VIEW all_operations AS
                                         r.type = -tr.type
                       LEFT JOIN
                       accounts AS a ON a.id = tr.account_id
+                      LEFT JOIN
+                      assets AS c ON c.id = a.currency_id
                ORDER BY timestamp
            )
            AS m

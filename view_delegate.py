@@ -388,7 +388,17 @@ class OperationsNotesDelegate(QStyledItemDelegate):
         if transaction_type == TransactionType.Action:
             text = record.value("num_peer")
         elif transaction_type == TransactionType.Transfer:
-            text = record.value(index.column())
+            exchange_text = ''
+            currency1 = record.value("currency")
+            currency2 = record.value("num_peer")
+            rate = -record.value("price")           # TODO Fix negative rate values in database
+            if currency1 != currency2:
+                if rate > 1:
+                    exchange_text = f" [1 {currency1} = {rate:.4f} {currency2}]"
+                else:
+                    rate = 1 / rate
+                    exchange_text = f" [{rate:.4f} {currency1} = 1 {currency2}]"
+            text = record.value(index.column()) + exchange_text
         elif transaction_type == TransactionType.Dividend:
             text = record.value(index.column()) + "\n" + record.value("note2")
         elif transaction_type == TransactionType.Trade:
