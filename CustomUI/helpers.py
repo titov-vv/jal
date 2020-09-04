@@ -1,3 +1,4 @@
+import sys
 import datetime
 
 from constants import ColumnWidth
@@ -28,6 +29,15 @@ class map_idx:
 # Global translate helper to make lines shorter in code
 def g_tr(context, text):
     return QCoreApplication.translate(context, text)
+
+
+# -----------------------------------------------------------------------------------------------------------------------
+# Returns True if all modules from module_list are present in the system
+def dependency_present(module_list):
+    result = True
+    for module in module_list:
+        result = result and (module in sys.modules)
+    return result
 
 
 # -----------------------------------------------------------------------------------------------------------------------

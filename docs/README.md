@@ -35,8 +35,10 @@ ledger depends on:
 * [requests](https://requests.readthedocs.io/) - stock quotes update from the internet; electronic slip download
 * [xlsxwriter](https://xlsxwriter.readthedocs.io/) - reports export into XLS format
 * [ibflex](https://github.com/csingley/ibflex) *>=0.14* - Interactive Brokers flex-reports import 
-* [pyzbar](https://github.com/NaturalHistoryMuseum/pyzbar/) - electronic slip QR-code recognition
-* [Pillow](https://pillow.readthedocs.io/en/stable/) - work with images
+* [pyzbar](https://github.com/NaturalHistoryMuseum/pyzbar/) <sup>*</sup> - electronic slip QR-code recognition
+* [Pillow](https://pillow.readthedocs.io/en/stable/) <sup>*</sup> - work with images
+
+<sup>*</sup> - optional dependencies (electronic slip import will be disabled)
 
 ### Screenshots
 Qt have a better look on Linux out of the box. Here is main program window:  

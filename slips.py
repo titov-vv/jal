@@ -3,8 +3,12 @@ import re
 import json
 import logging
 import pandas as pd
-from pyzbar import pyzbar
-from PIL import Image
+try:
+    from pyzbar import pyzbar
+    from PIL import Image
+except ImportError:
+    pass   # We should not be in this module as dependencies have been checked in main_window.py and calls are disabled
+
 
 from PySide2.QtCore import Qt, Slot, Signal, QDateTime, QBuffer, QThread, QAbstractTableModel
 from PySide2.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView

@@ -8,7 +8,7 @@ from PySide2.QtWidgets import QMainWindow, QFileDialog, QMenu, QMessageBox, QLab
 
 from UI.ui_main_window import Ui_LedgerMainWindow
 from UI.ui_abort_window import Ui_AbortWindow
-from CustomUI.helpers import g_tr, VLine, ManipulateDate
+from CustomUI.helpers import g_tr, VLine, ManipulateDate, dependency_present
 from CustomUI.table_view_config import TableViewConfig
 from constants import TransactionType
 from DB.backup_restore import MakeBackup, RestoreBackup
@@ -48,6 +48,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.statements = StatementLoader(self, self.db)
         self.statements.load_completed.connect(self.onStatementLoaded)
         self.statements.load_failed.connect(self.onStatementLoadFailure)
+
+        self.actionImportSlipRU.setEnabled(dependency_present(['pyzbar', 'PIL']))
 
         # Customize Status bar and logs
         self.NewLogEventLbl = QLabel(self)

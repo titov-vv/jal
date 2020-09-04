@@ -38,8 +38,10 @@ ledger использует следующие пакеты для своей р
 * [requests](https://requests.readthedocs.io/) - обновление котировок через интернет; загрузка электронных чеков
 * [xlsxwriter](https://xlsxwriter.readthedocs.io/) - эспорт отчетов в формате Excel
 * [ibflex](https://github.com/csingley/ibflex) *>=0.14* - импорт flex-отчетов Interactive Brokers
-* [pyzbar](https://github.com/NaturalHistoryMuseum/pyzbar/) - распознавание QR-кодов электронных чеков
-* [Pillow](https://pillow.readthedocs.io/en/stable/) - работа с изображениями
+* [pyzbar](https://github.com/NaturalHistoryMuseum/pyzbar/) <sup>*</sup> - распознавание QR-кодов электронных чеков
+* [Pillow](https://pillow.readthedocs.io/en/stable/) <sup>*</sup> - работа с изображениями
+
+<sup>*</sup> - необязательные зависимости (распознавание чеков будет недоступно)
 
 ### Скриншоты
 Основные скриншоты можно посмотреть на англоязычной версии данной страницы - они отличаются только языком.
