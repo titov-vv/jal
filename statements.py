@@ -222,7 +222,7 @@ class StatementLoader(QObject):
             return None
         if IBasset.subCategory == "ETF":
             asset_type = PredefinedAsset.ETF
-        return addNewAsset(IBasset.symbol, IBasset.description, asset_type, IBasset.isin)
+        return addNewAsset(self.db, IBasset.symbol, IBasset.description, asset_type, IBasset.isin)
 
     def loadIBStockTrade(self, trade):
         trade_action = {
