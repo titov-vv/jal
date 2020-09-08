@@ -169,8 +169,8 @@ class StatementLoader(QObject):
     def loadIBFlex(self, filename):
         try:
             report = parser.parse(filename)
-        except:
-            logging.error(g_tr('StatementLoader', "Failed to parse Interactive Brokers flex-report"))
+        except Exception as e:
+            logging.error(g_tr('StatementLoader', "Failed to parse Interactive Brokers flex-report") + f": {e}")
             return False
         for statement in report.FlexStatements:
             self.loadIBStatement(statement)
