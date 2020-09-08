@@ -169,8 +169,8 @@ class StatementLoader(QObject):
     def loadIBFlex(self, filename):
         try:
             report = parser.parse(filename)
-        except:
-            logging.error(g_tr('StatementLoader', "Failed to parse Interactive Brokers flex-report"))
+        except Exception as e:
+            logging.error(g_tr('StatementLoader', "Failed to parse Interactive Brokers flex-report") + f": {e}")
             return False
         for statement in report.FlexStatements:
             self.loadIBStatement(statement)
@@ -222,7 +222,7 @@ class StatementLoader(QObject):
             return None
         if IBasset.subCategory == "ETF":
             asset_type = PredefinedAsset.ETF
-        return addNewAsset(IBasset.symbol, IBasset.description, asset_type, IBasset.isin)
+        return addNewAsset(self.db, IBasset.symbol, IBasset.description, asset_type, IBasset.isin)
 
     def loadIBStockTrade(self, trade):
         trade_action = {
