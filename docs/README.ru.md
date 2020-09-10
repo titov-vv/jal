@@ -46,8 +46,10 @@ ledger использует следующие пакеты для своей р
 ### Скриншоты
 Основные скриншоты можно посмотреть на англоязычной версии данной страницы - они отличаются только языком.
 Функционал актуальный только для России - загрузка электронных чеков с сайта ФНС:
+
 Диалог авторизации (выбрана страница с авторизацией через Госуслуги):  
 ![FSN authorization dialog](https://github.com/titov-vv/ledger/blob/master/screenshots/fns_auth_dialog.png?raw=true)
+
 Диалог импорта чека:  
 ![Electronic slip import dialog](https://github.com/titov-vv/ledger/blob/master/screenshots/slip_import.png?raw=true) 
 
