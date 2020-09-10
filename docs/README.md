@@ -33,6 +33,7 @@ You may get message _"Database schema version is outdated. Please execute update
 In this case you need to use script `update_db_schema.py` from updates folder. Example of usage in Linux:
 
 `./update_db_schema.py ../ledger.sqlite`
+
 This will apply required changes to your database file (as usual it's a good idea to backup your `ledger.sqlite` before any activity)
 
 ### Dependencies

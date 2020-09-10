@@ -2,7 +2,7 @@ import datetime
 import logging
 import xlsxwriter
 import pandas as pd
-from constants import BookAccount, PredefinedAsset, ColumnWidth
+from constants import BookAccount, PredefinedAsset, PredefinedCategory, ColumnWidth
 from view_delegate import *
 from DB.helpers import executeSQL, readSQLrecord
 from CustomUI.helpers import g_tr, UseSqlQuery, ConfigureTableView
@@ -307,7 +307,7 @@ class Reports(QObject):
             "  FROM t_months AS ma "
             "  LEFT JOIN ledger AS l ON l.timestamp<=ma.month AND l.asset_id=ma.asset_id "
             "  LEFT JOIN quotes AS q ON ma.last_timestamp=q.timestamp AND ma.asset_id=q.asset_id "
-            "  WHERE l.account_id = 76 AND (l.book_account=:book_money OR l.book_account=:book_assets) "
+            "  WHERE l.account_id =:account_id AND (l.book_account=:book_money OR l.book_account=:book_assets) "
             "  GROUP BY ma.month "
             ") AS a ON a.month = m.month "
             "LEFT JOIN ( "
@@ -322,7 +322,7 @@ class Reports(QObject):
             "  AS INTEGER) AS month, SUM(-l.amount) as profit "
             "  FROM ledger AS l "
             "  WHERE (l.book_account=:book_costs OR l.book_account=:book_incomes) "
-            "  AND category_id=9 AND l.account_id=:account_id "
+            "  AND category_id=:category_profit AND l.account_id=:account_id "
             "  GROUP BY month "
             ") AS o ON o.month = m.month "
             "LEFT JOIN ( "
@@ -330,7 +330,7 @@ class Reports(QObject):
             "  AS month, SUM(-l.amount) as dividend "
             "  FROM ledger AS l "
             "  WHERE (l.book_account=:book_costs OR l.book_account=:book_incomes) "
-            "  AND (l.category_id=7 OR l.category_id=8) AND l.account_id=:account_id "
+            "  AND (l.category_id=:category_dividend OR l.category_id=:category_interest) AND l.account_id=:account_id "
             "  GROUP BY month "
             ") AS d ON d.month = m.month "
             "LEFT JOIN ( "
@@ -342,7 +342,8 @@ class Reports(QObject):
             ") AS f ON f.month = m.month",
             [(":account_id", account_id), (":book_costs", BookAccount.Costs), (":book_incomes", BookAccount.Incomes),
              (":book_money", BookAccount.Money), (":book_assets", BookAccount.Assets),
-             (":book_transfers", BookAccount.Transfers)],
+             (":book_transfers", BookAccount.Transfers), (":category_profit", PredefinedCategory.Profit),
+             (":category_dividend", PredefinedCategory.Dividends), (":category_interest", PredefinedCategory.Interest)],
                            forward_only=False)
         return True
 
