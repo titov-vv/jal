@@ -28,6 +28,13 @@ ledger was created to be portable - it doesn't require specific installation ins
 Then you may download/clone code from [the GitHub repository](https://github.com/titov-vv/ledger) and start the program by running: `main.py` on Windows or `./main.py` on Linux or you may simply double click the filename if your system is setup to launch python interpreter this way.
 Database will be initialized automatically with minimal required set of data and you will be able to start use of the program.
 
+### Update to newer version
+You may get message _"Database schema version is outdated. Please execute update script."_ after upgrade to newer version.
+In this case you need to use script `update_db_schema.py` from updates folder. Example of usage in Linux:
+
+`./update_db_schema.py ../ledger.sqlite`
+This will apply required changes to your database file (as usual it's a good idea to backup your `ledger.sqlite` before any activity)
+
 ### Dependencies
 ledger depends on:
 * [Qt for Python (PySide2)](https://wiki.qt.io/Qt_for_Python) *>=5.15* - GUI library (versions below 5.15 may cause problems with `uic` at least)

@@ -7,11 +7,13 @@ from DB.backup_restore import loadDbFromSQL
 class LedgerInitError:
     DbInitSuccess = 0
     EmptyDbInitialized = 1
-    WrongSchemaVersion = 2
+    OutdatedDbSchema = 2
+    NewerDbSchema = 3
     _messages = {
         0: "No error",
         1: "Database was initialized. You need to start application again.",
-        2: "Database version mismatch. Can't start application."
+        2: "Database schema version is outdated. Please execute update script.",
+        3: "Unsupported database schema. Please update application"
     }
 
     def __init__(self, code):
@@ -88,9 +90,14 @@ def init_and_check_db(db_path):
         loadDbFromSQL(get_dbfilename(db_path), db_path + Setup.INIT_SCRIPT_PATH)
         return None, LedgerInitError(LedgerInitError.EmptyDbInitialized)
 
-    if readSQL(db, "SELECT value FROM settings WHERE name='SchemaVersion'") != Setup.TARGET_SCHEMA:
+    schema_version = readSQL(db, "SELECT value FROM settings WHERE name='SchemaVersion'")
+    if schema_version < Setup.TARGET_SCHEMA:
         db.close()
-        return None, LedgerInitError(LedgerInitError.WrongSchemaVersion)
+        return None, LedgerInitError(LedgerInitError.OutdatedDbSchema)
+    elif schema_version > Setup.TARGET_SCHEMA:
+        db.close()
+        return None, LedgerInitError(LedgerInitError.NewerDbSchema)
+
     return db, LedgerInitError(LedgerInitError.DbInitSuccess)
 
 # -------------------------------------------------------------------------------------------------------------------
