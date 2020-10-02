@@ -122,8 +122,14 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
 
 #-----------------------------------------------------------------------------------------------------------------------
 class SlipsTaxAPI:
+    # Status codes that may be returned as result of class methods
+    Failure = -1
+    Success = 0
+    Pending = 1
+
     def __init__(self, db):
         self.db = db
+        self.slip_json = None
 
     def get_ru_tax_session(self):
         stored_id = readSQL(self.db, "SELECT value FROM settings WHERE name='RuTaxSessionId'")
@@ -162,15 +168,17 @@ class SlipsTaxAPI:
                            [(":new_session", new_session_id)])
             _ = executeSQL(self.db, "UPDATE settings SET value=:new_refresh_token WHERE name='RuTaxRefreshToken'",
                            [(":new_refresh_token", new_refresh_token)])
+            return SlipsTaxAPI.Pending   # not Success as it is sent transparently to upper callers
         else:
             logging.error(g_tr('SlipsTaxAPI', "Can't refresh session, response: ") + f"{response}/{response.text}")
+            return SlipsTaxAPI.Failure
 
     def get_slip(self, timestamp, amount, fn, fd, fp, slip_type):
         date_time = datetime.fromtimestamp(timestamp).strftime('%Y%m%dT%H%M%S')
 
         session_id = self.get_ru_tax_session()
         if session_id == '':
-            return None
+            return SlipsTaxAPI.Failure
         s = requests.Session()
         s.headers['ClientVersion'] = '2.9.0'
         s.headers['Device-Id'] = str(uuid.uuid1())
@@ -183,25 +191,25 @@ class SlipsTaxAPI:
         response = s.post('https://irkkt-mobile.nalog.ru:8888/v2/ticket', data=payload)
         if response.status_code != 200:
             if response.status_code == 401 and response.text == "Session was not found":
-                self.refresh_session()
+                return self.refresh_session()
             else:
                 logging.error(
                     g_tr('SlipsTaxAPI', "Get ticket id failed: ") +
                     f"{response}/{response.text} for {payload}")
-            return None
+                return SlipsTaxAPI.Failure
         logging.info(g_tr('SlipsTaxAPI', "Slip found: " + response.text))
         json_content = json.loads(response.text)
         if json_content['status'] != '2':  # Valid slip status is 2, other statuses are not fully clear
-            logging.warning(g_tr('ImportSlipDialog', "Operation might be pending on server side. Try again later."))
-            return None
+            logging.warning(g_tr('ImportSlipDialog', "Operation might be pending on server side. Trying again."))
+            return SlipsTaxAPI.Pending
         url = "https://irkkt-mobile.nalog.ru:8888/v2/tickets/" + json_content['id']
         response = s.get(url)
         if response.status_code != 200:
             logging.error(g_tr('SlipsTaxAPI', "Get ticket failed: ") + f"{response}/{response.text}")
-            return None
+            return SlipsTaxAPI.Failure
         logging.info(g_tr('SlipsTaxAPI', "Slip loaded: " + response.text))
-        slip_json = json.loads(response.text)
-        return slip_json
+        self.slip_json = json.loads(response.text)
+        return SlipsTaxAPI.Success
 
     #----------------------------------------------------------------------------------------------------------------
     # Gets company name by Russian INN

@@ -1,5 +1,6 @@
 import io
 import re
+import time
 import json
 import logging
 import pandas as pd
@@ -244,9 +245,21 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
 
     def downloadSlipJSON(self):
         timestamp = self.SlipTimstamp.dateTime().toSecsSinceEpoch()
-        self.slip_json = self.slipsAPI.get_slip(timestamp, float(self.SlipAmount.text()), self.FN.text(),
-                                                self.FD.text(), self.FP.text(), self.SlipType.text())
-        if self.slip_json:
+
+        attempt = 0
+        while True:
+            result = self.slipsAPI.get_slip(timestamp, float(self.SlipAmount.text()), self.FN.text(),
+                                            self.FD.text(), self.FP.text(), self.SlipType.text())
+            if result != SlipsTaxAPI.Pending:
+                break
+            if attempt > 5:
+                logging.warning(g_tr('ImportSlipDialog', "Max retry count exceeded."))
+                break
+            attempt += 1
+            time.sleep(0.5) # wait half a second before next attempt
+
+        if result == SlipsTaxAPI.Success:
+            self.slip_json = self.slipsAPI.slip_json
             self.parseJSON()
 
     @Slot()
