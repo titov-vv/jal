@@ -273,7 +273,7 @@ class Ledger:
         sell_value = 0
         if self.getAmount(BookAccount.Assets, asset_id) < 0:
             query = executeSQL(self.db,
-                               "SELECT d.open_sid AS open, abs(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
+                               "SELECT d.close_sid AS close, ABS(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
                                "LEFT JOIN sequence AS os ON os.type=3 AND os.id=d.open_sid "
                                "JOIN trades AS o ON o.id = os.operation_id "
                                "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
@@ -340,7 +340,7 @@ class Ledger:
         buy_value = 0
         if self.getAmount(BookAccount.Assets, asset_id) > 0:
             query = executeSQL(self.db,
-                               "SELECT d.open_sid AS open, abs(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
+                               "SELECT d.close_sid AS close, ABS(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
                                "LEFT JOIN sequence AS os ON os.type=3 AND os.id=d.open_sid "
                                "JOIN trades AS o ON o.id = os.operation_id "
                                "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
