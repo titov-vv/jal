@@ -199,7 +199,7 @@ class SlipsTaxAPI:
                 return SlipsTaxAPI.Failure
         logging.info(g_tr('SlipsTaxAPI', "Slip found: " + response.text))
         json_content = json.loads(response.text)
-        if json_content['status'] != '2':  # Valid slip status is 2, other statuses are not fully clear
+        if json_content['status'] != 2:  # Valid slip status is 2, other statuses are not fully clear
             logging.warning(g_tr('ImportSlipDialog', "Operation might be pending on server side. Trying again."))
             return SlipsTaxAPI.Pending
         url = "https://irkkt-mobile.nalog.ru:8888/v2/tickets/" + json_content['id']
