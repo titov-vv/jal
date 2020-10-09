@@ -264,6 +264,7 @@ class TableViewConfig:
             (parent.BalanceDate,            "dateChanged(QDate)",       parent.onBalanceDateChange),
             (parent.HoldingsDate,           "dateChanged(QDate)",       parent.onHoldingsDateChange),
             (parent.BalancesCurrencyCombo,  "currentIndexChanged(int)", parent.OnBalanceCurrencyChange),
+            (parent.BalancesTableView,      "doubleClicked(QModelIndex)", parent.OnBalanceDoubleClick),
             (parent.HoldingsCurrencyCombo,  "currentIndexChanged(int)", parent.OnHoldingsCurrencyChange),
             (parent.ReportRangeCombo,       "currentIndexChanged(int)", parent.onReportRangeChange),
             (parent.RunReportBtn,           "clicked()",                parent.onRunReport),

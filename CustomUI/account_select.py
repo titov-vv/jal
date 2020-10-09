@@ -2,7 +2,7 @@ from PySide2.QtCore import Qt, Signal, Property
 from PySide2.QtWidgets import QPushButton, QComboBox, QMenu
 from PySide2.QtSql import QSqlTableModel
 from CustomUI.helpers import g_tr
-from DB.helpers import get_base_currency_name
+from DB.helpers import  get_base_currency_name, get_account_name
 
 from CustomUI.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
     ReferenceLookupDelegate, ReferenceTimestampDelegate
@@ -32,6 +32,11 @@ class AccountButton(QPushButton):
 
     def setId(self, account_id):
         self.p_account_id = account_id
+        if self.p_account_id:
+            self.setText(get_account_name(self.db, account_id))
+        else:
+            self.setText(g_tr('AccountButton', "ANY"))
+        self.changed.emit(self.p_account_id)
 
     account_id = Property(int, getId, setId, notify=changed)
 
@@ -62,14 +67,9 @@ class AccountButton(QPushButton):
         res = self.dialog.exec_()
         if res:
             self.account_id = self.dialog.selected_id
-            self.setText(self.dialog.SelectedName)
-            self.changed.emit(self.account_id)
 
     def ClearAccount(self):
-        if self.account_id:
-            self.account_id = 0
-            self.setText(g_tr('AccountButton', "ANY"))
-            self.changed.emit(self.account_id)
+        self.account_id = 0
 
 
 class CurrencyCombo(QComboBox):

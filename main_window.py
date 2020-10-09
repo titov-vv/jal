@@ -12,7 +12,7 @@ from CustomUI.helpers import g_tr, VLine, ManipulateDate, dependency_present
 from CustomUI.table_view_config import TableViewConfig
 from constants import TransactionType
 from DB.backup_restore import MakeBackup, RestoreBackup
-from DB.helpers import get_dbfilename, executeSQL
+from DB.helpers import get_dbfilename, get_account_id, executeSQL
 from downloader import QuoteDownloader
 from ledger import Ledger
 from operations import LedgerOperationsView, LedgerInitValues
@@ -195,6 +195,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             self.ledger.setActiveBalancesOnly(1)
         else:
             self.ledger.setActiveBalancesOnly(0)
+
+    @Slot()
+    def OnBalanceDoubleClick(self, index):
+        id = get_account_id(self.db, index.model().record(index.row()).value("account_name"))
+        self.ChooseAccountBtn.account_id = id
 
     @Slot()
     def onReportRangeChange(self, range_index):
