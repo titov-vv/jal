@@ -72,21 +72,29 @@ class AccountButton(QPushButton):
         self.account_id = 0
 
 
-class CurrencyCombo(QComboBox):
+class ComboBoxDB(QComboBox):
     def __init__(self, parent):
         QComboBox.__init__(self, parent)
         self.model = None
+        self.table_name = ''
+        self.field_name = ''
 
     def init_db(self, db):
+        self.table_name =  self.property('table_name')
+        self.field_name = self.property('field_name')
+
         self.model = QSqlTableModel(db=db)
-        self.model.setTable('currencies')
+        self.model.setTable(self.table_name)
         self.model.select()
         self.setModel(self.model)
-        self.setModelColumn(1)
+        self.setModelColumn(self.model.fieldIndex(self.field_name))
         self.setCurrentIndex(self.findText(get_base_currency_name(db)))
 
-    def selected_currency(self):
+    def isCustom(self):
+        return True
+
+    def selected_id(self):
         return self.model.record(self.currentIndex()).value("id")
 
-    def selected_currency_name(self):
-        return self.model.record(self.currentIndex()).value("name")
+    def selected_name(self):
+        return self.model.record(self.currentIndex()).value(self.field_name)

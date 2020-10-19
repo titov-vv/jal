@@ -181,13 +181,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def OnBalanceCurrencyChange(self, _currency_index):
-        self.ledger.setBalancesCurrency(self.BalancesCurrencyCombo.selected_currency(),
-                                        self.BalancesCurrencyCombo.selected_currency_name())
+        self.ledger.setBalancesCurrency(self.BalancesCurrencyCombo.selected_id(),
+                                        self.BalancesCurrencyCombo.selected_name())
 
     @Slot()
     def OnHoldingsCurrencyChange(self, _currency_index):
-        self.ledger.setHoldingsCurrency(self.HoldingsCurrencyCombo.selected_currency(),
-                                        self.HoldingsCurrencyCombo.selected_currency_name())
+        self.ledger.setHoldingsCurrency(self.HoldingsCurrencyCombo.selected_id(),
+                                        self.HoldingsCurrencyCombo.selected_name())
 
     @Slot()
     def OnBalanceInactiveChange(self, state):

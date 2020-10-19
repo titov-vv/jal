@@ -167,7 +167,14 @@
                 </widget>
                </item>
                <item>
-                <widget class="CurrencyCombo" name="BalancesCurrencyCombo"/>
+                <widget class="ComboBoxDB" name="BalancesCurrencyCombo">
+                 <property name="table_name" stdset="0">
+                  <string notr="true">currencies</string>
+                 </property>
+                 <property name="field_name" stdset="0">
+                  <string notr="true">name</string>
+                 </property>
+                </widget>
                </item>
                <item>
                 <widget class="QCheckBox" name="ShowInactiveCheckBox">
@@ -1271,7 +1278,14 @@
             </widget>
            </item>
            <item>
-            <widget class="CurrencyCombo" name="HoldingsCurrencyCombo"/>
+            <widget class="ComboBoxDB" name="HoldingsCurrencyCombo">
+             <property name="table_name" stdset="0">
+              <string notr="true">currencies</string>
+             </property>
+             <property name="field_name" stdset="0">
+              <string notr="true">name</string>
+             </property>
+            </widget>
            </item>
            <item>
             <spacer name="horizontalSpacer_3">
@@ -1785,7 +1799,7 @@
    <header>CustomUI/log_viewer.h</header>
   </customwidget>
   <customwidget>
-   <class>CurrencyCombo</class>
+   <class>ComboBoxDB</class>
    <extends>QComboBox</extends>
    <header>CustomUI/account_select.h</header>
   </customwidget>

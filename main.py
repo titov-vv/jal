@@ -14,7 +14,7 @@ from DB.helpers import init_and_check_db, LedgerInitError, get_language
 def exception_logger(exctype, value, tb):
     info = traceback.format_exception(exctype, value, tb)
     logging.fatal(f"EXCEPTION: {info}")
-    sys._excepthook(exctype, value, tb)
+    sys.__excepthook__(exctype, value, tb)
 
 
 #-----------------------------------------------------------------------------------------------------------------------

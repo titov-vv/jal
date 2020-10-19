@@ -18,7 +18,7 @@ from CustomUI.account_select import AccountButton
 from CustomUI.reference_selector import PeerSelector
 from CustomUI.trade_action import TradeAction
 from CustomUI.log_viewer import LogViewer
-from CustomUI.account_select import CurrencyCombo
+from CustomUI.account_select import ComboBoxDB
 from CustomUI.amount_editor import AmountEdit
 from CustomUI.reference_selector import CategorySelector
 
@@ -121,8 +121,10 @@ class Ui_LedgerMainWindow(object):
 
         self.horizontalLayout_2.addWidget(self.CurrencyLbl)
 
-        self.BalancesCurrencyCombo = CurrencyCombo(self.BalanceConfigFrame)
+        self.BalancesCurrencyCombo = ComboBoxDB(self.BalanceConfigFrame)
         self.BalancesCurrencyCombo.setObjectName(u"BalancesCurrencyCombo")
+        self.BalancesCurrencyCombo.setProperty("table_name", u"currencies")
+        self.BalancesCurrencyCombo.setProperty("field_name", u"name")
 
         self.horizontalLayout_2.addWidget(self.BalancesCurrencyCombo)
 
@@ -730,8 +732,10 @@ class Ui_LedgerMainWindow(object):
 
         self.horizontalLayout_7.addWidget(self.HoldingsCurrencyLbl)
 
-        self.HoldingsCurrencyCombo = CurrencyCombo(self.HoldingsParamsFrame)
+        self.HoldingsCurrencyCombo = ComboBoxDB(self.HoldingsParamsFrame)
         self.HoldingsCurrencyCombo.setObjectName(u"HoldingsCurrencyCombo")
+        self.HoldingsCurrencyCombo.setProperty("table_name", u"currencies")
+        self.HoldingsCurrencyCombo.setProperty("field_name", u"name")
 
         self.horizontalLayout_7.addWidget(self.HoldingsCurrencyCombo)
 
