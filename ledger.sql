@@ -185,6 +185,20 @@ CREATE TABLE categories (
 );
 
 
+-- Create new table with list of countries
+CREATE TABLE countries (
+    id           INTEGER      PRIMARY KEY
+                              UNIQUE
+                              NOT NULL,
+    name         VARCHAR (64) UNIQUE
+                              NOT NULL,
+    code         CHAR (3)     UNIQUE
+                              NOT NULL,
+    tax_ageement INTEGER      NOT NULL
+                              DEFAULT (0)
+);
+
+
 -- Table: data_sources
 DROP TABLE IF EXISTS data_sources;
 
@@ -215,7 +229,9 @@ CREATE TABLE dividends (
                            DEFAULT (0),
     sum_tax    REAL        DEFAULT (0),
     note       TEXT (1014),
-    note_tax   TEXT (64) 
+    tax_country_id INTEGER     REFERENCES countries (id) ON DELETE CASCADE
+                                                         ON UPDATE CASCADE
+                               DEFAULT (0)
 );
 
 
@@ -579,7 +595,7 @@ CREATE VIEW all_operations AS
            m.qty_trid,
            m.price,
            m.fee_tax,
-           l.sum_amount AS t_amount,
+           coalesce(money.sum_amount, 0) + coalesce(debt.sum_amount, 0) AS t_amount,
            m.t_qty,
            c.name AS currency,
            CASE WHEN m.timestamp <= a.reconciled_on THEN 1 ELSE 0 END AS reconciled
@@ -617,14 +633,16 @@ CREATE VIEW all_operations AS
                       d.sum_tax AS fee_tax,
                       NULL AS t_qty,
                       d.note AS note,
-                      d.note_tax AS note2,
+                      c.name AS note2,
                       d.id AS operation_id
                  FROM dividends AS d
                       LEFT JOIN
                       ledger AS l ON d.asset_id = l.asset_id AND
-                                     d.account_id = l.account_id AND 
-                                     l.book_account = 4 AND 
+                                     d.account_id = l.account_id AND
+                                     l.book_account = 4 AND
                                      l.timestamp <= d.timestamp
+                      LEFT JOIN
+                      countries AS c ON d.tax_country_id = c.id
                 GROUP BY d.id
                UNION ALL
                SELECT 3 AS type,
@@ -632,7 +650,7 @@ CREATE VIEW all_operations AS
                       t.timestamp,
                       t.number AS num_peer,
                       t.account_id,
-                      -(t.price*t.qty) AS amount,
+                      -(t.price * t.qty) AS amount,
                       t.asset_id,
                       t.qty AS qty_trid,
                       t.price AS price,
@@ -643,12 +661,13 @@ CREATE VIEW all_operations AS
                       t.id AS operation_id
                  FROM trades AS t
                       LEFT JOIN
-                      sequence AS q ON q.type = 3 AND 
+                      sequence AS q ON q.type = 3 AND
                                        t.id = q.operation_id
                       LEFT JOIN
-                      ledger_sums AS l ON l.sid = q.id AND 
+                      ledger_sums AS l ON l.sid = q.id AND
                                           l.book_account = 4
-                      LEFT JOIN corp_actions AS ca ON t.corp_action_id=ca.id
+                      LEFT JOIN
+                      corp_actions AS ca ON t.corp_action_id = ca.id
                UNION ALL
                SELECT 4 AS type,
                       r.tid,
@@ -669,7 +688,7 @@ CREATE VIEW all_operations AS
                       transfer_notes AS n ON r.tid = n.tid
                       LEFT JOIN
                       transfers AS tr ON r.tid = tr.tid AND
-                                        r.type = -tr.type
+                                         r.type = -tr.type
                       LEFT JOIN
                       accounts AS a ON a.id = tr.account_id
                       LEFT JOIN
@@ -684,12 +703,14 @@ CREATE VIEW all_operations AS
            LEFT JOIN
            assets AS c ON a.currency_id = c.id
            LEFT JOIN
-           sequence AS q ON m.type = q.type AND 
+           sequence AS q ON m.type = q.type AND
                             m.operation_id = q.operation_id
            LEFT JOIN
-           ledger_sums AS l ON l.sid = q.id AND 
-                               (l.book_account = 3 OR 
-                                l.book_account = 5);
+           ledger_sums AS money ON money.sid = q.id AND
+                                   money.book_account = 3
+           LEFT JOIN
+           ledger_sums AS debt ON debt.sid = q.id AND
+                                  debt.book_account = 5;
 
 
 -- View: all_transactions
@@ -1598,7 +1619,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 9);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 11);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
@@ -1657,6 +1678,11 @@ INSERT INTO categories (id, pid, name, often, special) VALUES (9, 3, 'Results of
 INSERT INTO assets (id, name, type_id, full_name, web_id, src_id) VALUES (1, 'RUB', 1, 'Российский Рубль', NULL, -1);
 INSERT INTO assets (id, name, type_id, full_name, web_id, src_id) VALUES (2, 'USD', 1, 'Доллар США', 'R01235', 0);
 INSERT INTO assets (id, name, type_id, full_name, web_id, src_id) VALUES (3, 'EUR', 1, 'Евро', 'R01239', 0);
+
+-- Initialize some pre-defined countries
+INSERT INTO countries (id, name, code, tax_ageement) VALUES (1, 'N/A', 'xx', 0);
+INSERT INTO countries (id, name, code, tax_ageement) VALUES (1, 'Russia', 'ru', 0);
+INSERT INTO countries (id, name, code, tax_ageement) VALUES (2, 'United States', 'us', 1);
 
 -- Initialize rate for base currency
 INSERT INTO quotes (id, timestamp, asset_id, quote) VALUES (1, 946684800, 1, 1.0);
