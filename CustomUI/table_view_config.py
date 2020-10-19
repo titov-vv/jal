@@ -251,7 +251,7 @@ class TableViewConfig:
                              [("id", None, 0, None, None),
                               ("name", g_tr('TableViewConfig', "Country"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
                               ("code", g_tr('TableViewConfig', "Code"), 50, None, None),
-                              ("tax_agreement", g_tr('TableViewConfig', "Tax Treaty"), None, None, ReferenceBoolDelegate)],
+                              ("tax_treaty", g_tr('TableViewConfig', "Tax Treaty"), None, None, ReferenceBoolDelegate)],
                              None,
                              None,
                              False,

@@ -480,7 +480,7 @@ class StatementLoader(QObject):
         country_code = parts.group(2).lower()
         country_id = get_country_by_code(self.db, country_code)
         if country_id == 0:
-            query = executeSQL(self.db, "INSERT INTO countries(name, code, tax_agreement) VALUES (:name, :code, 0)",
+            query = executeSQL(self.db, "INSERT INTO countries(name, code, tax_treaty) VALUES (:name, :code, 0)",
                                [(":name", "Country_" + country_code), (":code", country_code)])
             country_id = query.lastInsertId()
             logging.warning(g_tr('StatementLoader', "New dummy country added with code ") + country_code)

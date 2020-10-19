@@ -194,7 +194,7 @@ CREATE TABLE countries (
                               NOT NULL,
     code         CHAR (3)     UNIQUE
                               NOT NULL,
-    tax_agreement INTEGER     NOT NULL
+    tax_treaty INTEGER        NOT NULL
                               DEFAULT (0)
 );
 

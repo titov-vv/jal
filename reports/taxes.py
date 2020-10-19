@@ -58,6 +58,10 @@ class TaxesRus:
             "Комиссии": self.prepare_broker_fees,
             "Корп.события": self.prepare_corporate_actions
         }
+        self.bool_text = {
+            0: 'Нет',
+            1: 'Да'
+        }
 
     def showTaxesDialog(self, parent):
         dialog = TaxExportDialog(parent, self.db)
@@ -108,7 +112,9 @@ class TaxesRus:
             5: ("Доход, RUB", formats.ColumnHeader(), 12, 0, 0),
             6: ("Налог упл., USD", formats.ColumnHeader(), 12, 0, 0),
             7: ("Налог упл., RUB", formats.ColumnHeader(), 12, 0, 0),
-            8: ("Налок к уплате, RUB", formats.ColumnHeader(), 12, 0, 0)
+            8: ("Налок к уплате, RUB", formats.ColumnHeader(), 12, 0, 0),
+            9: ("Страна", formats.ColumnHeader(), 20, 0, 0),
+            10: ("СОИДН", formats.ColumnHeader(), 7, 0, 0)
         }
         xlsxWriteRow(sheet, 7, header_row, 30)
         for column in range(len(header_row)):  # Put column numbers for reference
@@ -117,10 +123,12 @@ class TaxesRus:
 
         query = executeSQL(self.db,
                            "SELECT d.timestamp AS payment_date, s.name AS symbol, s.full_name AS full_name, "
-                           "d.sum AS amount, d.sum_tax AS tax_amount, q.quote AS rate_cbr "
+                           "d.sum AS amount, d.sum_tax AS tax_amount, q.quote AS rate_cbr , "
+                           "c.name AS country, c.tax_treaty AS tax_treaty "
                            "FROM dividends AS d "
                            "LEFT JOIN assets AS s ON s.id = d.asset_id "
                            "LEFT JOIN accounts AS a ON d.account_id = a.id "
+                           "LEFT JOIN countries AS c ON d.tax_country_id = c.id "
                            "LEFT JOIN t_last_dates AS ld ON d.id=ld.ref_id "
                            "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND a.currency_id=q.asset_id "
                            "WHERE d.timestamp>=:begin AND d.timestamp<:end AND d.account_id=:account_id "
@@ -133,14 +141,15 @@ class TaxesRus:
         tax_us_rub_sum = 0
         tax_ru_rub_sum = 0
         while query.next():
-            payment_date, symbol, full_name, amount_usd, tax_usd, rate = readSQLrecord(query)
+            payment_date, symbol, full_name, amount_usd, tax_usd, rate, country, tax_treaty = readSQLrecord(query)
             amount_rub = round(amount_usd * rate, 2)
             tax_us_rub = round(-tax_usd * rate, 2)
             tax_ru_rub = round(0.13 * amount_rub, 2)
-            if tax_ru_rub > tax_us_rub:
-                tax_ru_rub = tax_ru_rub - tax_us_rub
-            else:
-                tax_ru_rub = 0
+            if tax_treaty:
+                if tax_ru_rub > tax_us_rub:
+                    tax_ru_rub = tax_ru_rub - tax_us_rub
+                else:
+                    tax_ru_rub = 0
             xlsxWriteRow(sheet, row, {
                 0: (datetime.fromtimestamp(payment_date).strftime('%d.%m.%Y'), formats.Text(row)),
                 1: (symbol, formats.Text(row)),
@@ -150,7 +159,9 @@ class TaxesRus:
                 5: (amount_rub, formats.Number(row, 2)),
                 6: (-tax_usd, formats.Number(row, 2)),
                 7: (tax_us_rub, formats.Number(row, 2)),
-                8: (tax_ru_rub, formats.Number(row, 2))
+                8: (tax_ru_rub, formats.Number(row, 2)),
+                9: (country, formats.Text(row)),
+                10: (self.bool_text[tax_treaty], formats.Text(row))
             })
             amount_usd_sum += amount_usd
             amount_rub_sum += amount_rub
