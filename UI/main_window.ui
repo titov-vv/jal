@@ -1639,6 +1639,7 @@
     <addaction name="actionPeers"/>
     <addaction name="actionCategories"/>
     <addaction name="actionTags"/>
+    <addaction name="actionCountries"/>
     <addaction name="menuPredefined_data"/>
     <addaction name="separator"/>
     <addaction name="actionBackup"/>
@@ -1763,6 +1764,11 @@
   <action name="actionImportSlipRU">
    <property name="text">
     <string>Slip [RU]...</string>
+   </property>
+  </action>
+  <action name="actionCountries">
+   <property name="text">
+    <string>Countries</string>
    </property>
   </action>
  </widget>

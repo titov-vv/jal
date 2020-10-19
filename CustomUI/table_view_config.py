@@ -24,6 +24,7 @@ class TableViewConfig:
     PEERS = 11
     CATEGORIES = 12
     TAGS = 13
+    COUNTRIES = 14
 
     ACTION_SRC = 0
     ACTION_SIGNAL = 1
@@ -167,6 +168,7 @@ class TableViewConfig:
                              ("note", parent.TransferNote)]
         }
         self.dialogs = {
+            # see DLG_ constants for reference
             self.ACCOUNT_TYPES: ('account_types',
                                  g_tr('TableViewConfig', g_tr('TableViewConfig', "Account Types")),
                                  [("id", None, 0, None, None),
@@ -243,6 +245,17 @@ class TableViewConfig:
                         None,
                         False,
                         None
+            ),
+            self.COUNTRIES: ("countries",
+                             g_tr('TableViewConfig', "Countries"),
+                             [("id", None, 0, None, None),
+                              ("name", g_tr('TableViewConfig', "Country"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
+                              ("code", g_tr('TableViewConfig', "Code"), 50, None, None),
+                              ("tax_agreement", g_tr('TableViewConfig', "Tax Treaty"), None, None, ReferenceBoolDelegate)],
+                             None,
+                             None,
+                             False,
+                             None
             )
         }
         self.actions = [
@@ -259,6 +272,7 @@ class TableViewConfig:
             (parent.actionPeers,            "triggered()",              partial(self.show_dialog, self.PEERS)),
             (parent.actionCategories,       "triggered()",              partial(self.show_dialog, self.CATEGORIES)),
             (parent.actionTags,             "triggered()",              partial(self.show_dialog, self.TAGS)),
+            (parent.actionCountries,        "triggered()",              partial(self.show_dialog, self.COUNTRIES)),
             (parent.PrepareTaxForms,        "triggered()",              partial(parent.taxes.showTaxesDialog, parent)),
             (parent.BalanceDate,            "dateChanged(QDate)",       parent.onBalanceDateChange),
             (parent.HoldingsDate,           "dateChanged(QDate)",       parent.onHoldingsDateChange),
