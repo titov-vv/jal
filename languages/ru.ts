@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="ru" sourcelanguage="en">
+<!DOCTYPE TS>
+<TS version="2.1" language="ru" sourcelanguage="en">
 <context>
     <name></name>
     <message>
@@ -1000,7 +1001,7 @@ Application will be terminated now</source>
     <message>
         <location filename="../view_delegate.py" line="403"/>
         <source>Tax: </source>
-        <translation type="unfinished"></translation>
+        <translation>Налог: </translation>
     </message>
 </context>
 <context>
