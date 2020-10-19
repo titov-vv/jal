@@ -12,7 +12,7 @@ from CustomUI.helpers import g_tr, VLine, ManipulateDate, dependency_present
 from CustomUI.table_view_config import TableViewConfig
 from constants import TransactionType
 from DB.backup_restore import MakeBackup, RestoreBackup
-from DB.helpers import get_dbfilename, get_account_id, executeSQL
+from DB.helpers import get_dbfilename, get_account_id, get_base_currency, executeSQL
 from downloader import QuoteDownloader
 from ledger import Ledger
 from operations import LedgerOperationsView, LedgerInitValues
@@ -94,9 +94,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         # Setup balance and holdings tables
         self.ledger.setViews(self.BalancesTableView, self.HoldingsTableView)
         self.BalanceDate.setDateTime(QDateTime.currentDateTime())
-        self.BalancesCurrencyCombo.init_db(self.db)   # this line will trigger onBalanceDateChange -> view updated
+        self.BalancesCurrencyCombo.init_db(self.db, get_base_currency(db))
         self.HoldingsDate.setDateTime(QDateTime.currentDateTime())
-        self.HoldingsCurrencyCombo.init_db(self.db)   # and this will trigger onHoldingsDateChange -> view updated
+        self.HoldingsCurrencyCombo.init_db(self.db, get_base_currency(db))
 
         # Create menu for different operations
         self.ChooseAccountBtn.init_db(self.db)
@@ -181,13 +181,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def OnBalanceCurrencyChange(self, _currency_index):
-        self.ledger.setBalancesCurrency(self.BalancesCurrencyCombo.selected_id(),
-                                        self.BalancesCurrencyCombo.selected_name())
+        self.ledger.setBalancesCurrency(self.BalancesCurrencyCombo.selected_id,
+                                        self.BalancesCurrencyCombo.selected_name)
 
     @Slot()
     def OnHoldingsCurrencyChange(self, _currency_index):
-        self.ledger.setHoldingsCurrency(self.HoldingsCurrencyCombo.selected_id(),
-                                        self.HoldingsCurrencyCombo.selected_name())
+        self.ledger.setHoldingsCurrency(self.HoldingsCurrencyCombo.selected_id,
+                                        self.HoldingsCurrencyCombo.selected_name)
 
     @Slot()
     def OnBalanceInactiveChange(self, state):

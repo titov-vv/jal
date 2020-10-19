@@ -1,8 +1,8 @@
-from PySide2.QtCore import Qt, Signal, Property
+from PySide2.QtCore import Qt, Signal, Slot, Property
 from PySide2.QtWidgets import QPushButton, QComboBox, QMenu
 from PySide2.QtSql import QSqlTableModel
 from CustomUI.helpers import g_tr
-from DB.helpers import  get_base_currency_name, get_account_name
+from DB.helpers import  get_account_name, get_field_by_id_from_table
 
 from CustomUI.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
     ReferenceLookupDelegate, ReferenceTimestampDelegate
@@ -73,13 +73,39 @@ class AccountButton(QPushButton):
 
 
 class ComboBoxDB(QComboBox):
+    changed = Signal(int)
+
     def __init__(self, parent):
         QComboBox.__init__(self, parent)
+        self.p_selected_id = 0
         self.model = None
         self.table_name = ''
         self.field_name = ''
+        self.activated.connect(self.OnUserSelection)
 
-    def init_db(self, db):
+    def isCustom(self):
+        return True
+
+    def getId(self):
+        return self.p_selected_id
+
+    def setId(self, new_id):
+        if self.p_selected_id == new_id:
+            return
+        self.p_selected_id = new_id
+        name = get_field_by_id_from_table(self.model.database(),self.table_name, self.field_name, self.p_selected_id)
+        if self.currentIndex() == self.findText(name):
+            return
+        self.setCurrentIndex(self.findText(name))
+
+    selected_id = Property(int, getId, setId, notify=changed, user=True)
+
+    def getName(self):
+        return self.model.record(self.currentIndex()).value(self.field_name)
+
+    selected_name = Property(str, getName, None)
+
+    def init_db(self, db, default_id=None):
         self.table_name =  self.property('table_name')
         self.field_name = self.property('field_name')
 
@@ -88,13 +114,12 @@ class ComboBoxDB(QComboBox):
         self.model.select()
         self.setModel(self.model)
         self.setModelColumn(self.model.fieldIndex(self.field_name))
-        self.setCurrentIndex(self.findText(get_base_currency_name(db)))
 
-    def isCustom(self):
-        return True
+        if default_id is not None:
+            self.selected_id = default_id
+            self.changed.emit(self.selected_id)
 
-    def selected_id(self):
-        return self.model.record(self.currentIndex()).value("id")
-
-    def selected_name(self):
-        return self.model.record(self.currentIndex()).value(self.field_name)
+    @Slot()
+    def OnUserSelection(self, _selected_index):
+        self.selected_id = self.model.record(self.currentIndex()).value("id")
+        self.changed.emit(self.selected_id)

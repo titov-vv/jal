@@ -964,6 +964,16 @@
                       </property>
                      </widget>
                     </item>
+                    <item row="9" column="3">
+                     <widget class="ComboBoxDB" name="DividendTaxCountry">
+                      <property name="table_name" stdset="0">
+                       <string notr="true">countries</string>
+                      </property>
+                      <property name="field_name" stdset="0">
+                       <string notr="true">name</string>
+                      </property>
+                     </widget>
+                    </item>
                    </layout>
                   </widget>
                   <widget class="QWidget" name="TransferDetailsTab">

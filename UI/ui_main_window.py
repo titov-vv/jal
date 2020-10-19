@@ -548,6 +548,13 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_2.addWidget(self.DividendTaxDescription, 8, 3, 1, 2)
 
+        self.DividendTaxCountry = ComboBoxDB(self.DividendDetailsTab)
+        self.DividendTaxCountry.setObjectName(u"DividendTaxCountry")
+        self.DividendTaxCountry.setProperty("table_name", u"countries")
+        self.DividendTaxCountry.setProperty("field_name", u"name")
+
+        self.gridLayout_2.addWidget(self.DividendTaxCountry, 9, 3, 1, 1)
+
         self.OperationsTabs.addWidget(self.DividendDetailsTab)
         self.TransferDetailsTab = QWidget()
         self.TransferDetailsTab.setObjectName(u"TransferDetailsTab")

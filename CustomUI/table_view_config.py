@@ -154,7 +154,8 @@ class TableViewConfig:
                              ("sum", parent.DividendSumEdit),
                              ("note", parent.DividendSumDescription),
                              ("sum_tax", parent.DividendTaxEdit),
-                             ("note_tax", parent.DividendTaxDescription)],
+                             ("note_tax", parent.DividendTaxDescription),
+                             ("tax_country_id", parent.DividendTaxCountry)],
             self.TRANSFERS: [("from_acc_id", parent.TransferFromAccountWidget),
                              ("to_acc_id", parent.TransferToAccountWidget),
                              ("fee_acc_id", parent.TransferFeeAccountWidget),
@@ -163,8 +164,7 @@ class TableViewConfig:
                              ("fee_timestamp", parent.TransferFeeTimestamp),
                              ("from_amount", parent.TransferFromAmount),
                              ("to_amount", parent.TransferToAmount),
-                             (
-                             "fee_amount", parent.TransferFeeAmount),
+                             ("fee_amount", parent.TransferFeeAmount),
                              ("note", parent.TransferNote)]
         }
         self.dialogs = {
@@ -263,9 +263,9 @@ class TableViewConfig:
             (parent.PrepareTaxForms,        "triggered()",              partial(parent.taxes.showTaxesDialog, parent)),
             (parent.BalanceDate,            "dateChanged(QDate)",       parent.onBalanceDateChange),
             (parent.HoldingsDate,           "dateChanged(QDate)",       parent.onHoldingsDateChange),
-            (parent.BalancesCurrencyCombo,  "currentIndexChanged(int)", parent.OnBalanceCurrencyChange),
+            (parent.BalancesCurrencyCombo,  "changed(int)",             parent.OnBalanceCurrencyChange),
             (parent.BalancesTableView,      "doubleClicked(QModelIndex)", parent.OnBalanceDoubleClick),
-            (parent.HoldingsCurrencyCombo,  "currentIndexChanged(int)", parent.OnHoldingsCurrencyChange),
+            (parent.HoldingsCurrencyCombo,  "changed(int)",             parent.OnHoldingsCurrencyChange),
             (parent.ReportRangeCombo,       "currentIndexChanged(int)", parent.onReportRangeChange),
             (parent.RunReportBtn,           "clicked()",                parent.onRunReport),
             (parent.SaveReportBtn,          "clicked()",                parent.reports.saveReport),
