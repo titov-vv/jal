@@ -848,7 +848,7 @@
                     <item row="8" column="1">
                      <widget class="QLabel" name="DividendTaxLbl">
                       <property name="text">
-                       <string>Tax amount:</string>
+                       <string>Tax amount / country:</string>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -957,14 +957,7 @@
                       </property>
                      </spacer>
                     </item>
-                    <item row="8" column="3" colspan="2">
-                     <widget class="QLineEdit" name="DividendTaxDescription">
-                      <property name="toolTip">
-                       <string>Tax description</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="9" column="3">
+                    <item row="8" column="3">
                      <widget class="ComboBoxDB" name="DividendTaxCountry">
                       <property name="table_name" stdset="0">
                        <string notr="true">countries</string>

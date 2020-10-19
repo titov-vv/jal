@@ -543,17 +543,12 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_2.addItem(self.horizontalSpacer_6, 2, 4, 1, 1)
 
-        self.DividendTaxDescription = QLineEdit(self.DividendDetailsTab)
-        self.DividendTaxDescription.setObjectName(u"DividendTaxDescription")
-
-        self.gridLayout_2.addWidget(self.DividendTaxDescription, 8, 3, 1, 2)
-
         self.DividendTaxCountry = ComboBoxDB(self.DividendDetailsTab)
         self.DividendTaxCountry.setObjectName(u"DividendTaxCountry")
         self.DividendTaxCountry.setProperty("table_name", u"countries")
         self.DividendTaxCountry.setProperty("field_name", u"name")
 
-        self.gridLayout_2.addWidget(self.DividendTaxCountry, 9, 3, 1, 1)
+        self.gridLayout_2.addWidget(self.DividendTaxCountry, 8, 3, 1, 1)
 
         self.OperationsTabs.addWidget(self.DividendDetailsTab)
         self.TransferDetailsTab = QWidget()
@@ -1032,7 +1027,7 @@ class Ui_LedgerMainWindow(object):
         self.DividendTaxEdit.setToolTip(QCoreApplication.translate("LedgerMainWindow", u"Tax amount", None))
 #endif // QT_CONFIG(tooltip)
         self.DividendTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
-        self.DividendTaxLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Tax amount:", None))
+        self.DividendTaxLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Tax amount / country:", None))
 #if QT_CONFIG(tooltip)
         self.DividendSumEdit.setToolTip(QCoreApplication.translate("LedgerMainWindow", u"Dividend amount", None))
 #endif // QT_CONFIG(tooltip)
@@ -1044,9 +1039,6 @@ class Ui_LedgerMainWindow(object):
         self.DividendSumLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Dividend amount:", None))
 #if QT_CONFIG(tooltip)
         self.DividendSumDescription.setToolTip(QCoreApplication.translate("LedgerMainWindow", u"Dividend description", None))
-#endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
-        self.DividendTaxDescription.setToolTip(QCoreApplication.translate("LedgerMainWindow", u"Tax description", None))
 #endif // QT_CONFIG(tooltip)
         self.TransferTextLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Text:", None))
         self.TransferFromTimestamp.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))

@@ -154,7 +154,6 @@ class TableViewConfig:
                              ("sum", parent.DividendSumEdit),
                              ("note", parent.DividendSumDescription),
                              ("sum_tax", parent.DividendTaxEdit),
-                             ("note_tax", parent.DividendTaxDescription),
                              ("tax_country_id", parent.DividendTaxCountry)],
             self.TRANSFERS: [("from_acc_id", parent.TransferFromAccountWidget),
                              ("to_acc_id", parent.TransferToAccountWidget),

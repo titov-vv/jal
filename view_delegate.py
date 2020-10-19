@@ -5,7 +5,7 @@ from PySide2.QtCore import Qt, QSize
 from PySide2.QtGui import QTextDocument, QFont
 
 from constants import TransactionType, TransferSubtype, CustomColor
-from CustomUI.helpers import formatFloatLong
+from CustomUI.helpers import g_tr, formatFloatLong
 from CustomUI.reference_selector import CategorySelector
 from DB.helpers import get_category_name
 
@@ -400,7 +400,7 @@ class OperationsNotesDelegate(QStyledItemDelegate):
                     exchange_text = f" [{rate:.4f} {currency1} = 1 {currency2}]"
             text = record.value(index.column()) + exchange_text
         elif transaction_type == TransactionType.Dividend:
-            text = record.value(index.column()) + "\n" + record.value("note2")
+            text = record.value(index.column()) + "\n" + g_tr('OperationsDelegate', "Tax: ") + record.value("note2")
         elif transaction_type == TransactionType.Trade:
             # Take corp.action description if any or construct Qty x Price for Buy/Sell operations
             text = record.value(index.column())
