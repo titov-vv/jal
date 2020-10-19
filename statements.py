@@ -9,7 +9,7 @@ from PySide2.QtSql import QSqlTableModel
 from PySide2.QtWidgets import QDialog, QFileDialog
 from ibflex import parser, AssetClass, BuySell, CashAction, Reorg, Code
 from constants import Setup, TransactionType, PredefinedAsset, PredefinedCategory
-from DB.helpers import executeSQL, readSQL
+from DB.helpers import executeSQL, readSQL, get_country_by_code
 from CustomUI.helpers import g_tr
 from UI.ui_add_asset_dlg import Ui_AddAssetDialog
 
@@ -477,7 +477,13 @@ class StatementLoader(QObject):
             logging.warning(g_tr('StatementLoader', "Unhandled tax pattern found: ") + f"{note}")
             return
         dividend_note = parts.group(1) + '%'
-        country_code = parts.group(2)
+        country_code = parts.group(2).lower()
+        country_id = get_country_by_code(self.db, country_code)
+        if country_id == 0:
+            query = executeSQL(self.db, "INSERT INTO countries(name, code, tax_agreement) VALUES (:name, :code, 0)",
+                               [(":name", "Country_" + country_code), (":code", country_code)])
+            country_id = query.lastInsertId()
+            logging.warning(g_tr('StatementLoader', "New dummy country added with code ") + country_code)
         try:
             dividend_id, old_tax = readSQL(self.db,
                                            "SELECT id, sum_tax FROM dividends "
@@ -488,8 +494,8 @@ class StatementLoader(QObject):
         except:
             logging.warning(g_tr('StatementLoader', "Dividend not found for withholding tax: ") + f"{note}")
             return
-        _ = executeSQL(self.db, "UPDATE dividends SET sum_tax=:tax, note_tax=:note WHERE id=:dividend_id",
-                       [(":dividend_id", dividend_id), (":tax", old_tax + amount), (":note", country_code + " tax")])
+        _ = executeSQL(self.db, "UPDATE dividends SET sum_tax=:tax, tax_country_id=:country_id WHERE id=:dividend_id",
+                       [(":dividend_id", dividend_id), (":tax", old_tax + amount), (":country_id", country_id)])
         self.db.commit()
         logging.info(g_tr('StatementLoader', "Withholding tax added: ") + f"{note}")
 

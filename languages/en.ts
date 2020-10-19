@@ -1446,48 +1446,53 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../statements.py" line="489"/>
+        <location filename="../statements.py" line="495"/>
         <source>Dividend not found for withholding tax: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../statements.py" line="494"/>
+        <location filename="../statements.py" line="500"/>
         <source>Withholding tax added: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../statements.py" line="502"/>
+        <location filename="../statements.py" line="508"/>
         <source>Can&apos;t read statement file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../statements.py" line="511"/>
+        <location filename="../statements.py" line="517"/>
         <source>Can&apos;t get account number from the statement.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../statements.py" line="514"/>
+        <location filename="../statements.py" line="520"/>
         <source>Account with number </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../statements.py" line="514"/>
+        <location filename="../statements.py" line="520"/>
         <source> not found. Import cancelled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../statements.py" line="526"/>
+        <location filename="../statements.py" line="532"/>
         <source>Unknown operation type </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../statements.py" line="530"/>
+        <location filename="../statements.py" line="536"/>
         <source>Unknown asset </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../statements.py" line="359"/>
         <source>Tax transaction #</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../statements.py" line="486"/>
+        <source>New dummy country added with code </source>
         <translation type="unfinished"></translation>
     </message>
 </context>

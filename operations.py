@@ -46,7 +46,7 @@ LedgerInitValues = {
         'sum': (True, INIT_VALUE, 0),
         'sum_tax': (True, INIT_VALUE, 0),
         'note': (True, INIT_VALUE, None),
-        'note_tax': (True, INIT_VALUE, None)
+        'tax_country_id': (True, INIT_VALUE, 0)
     },
     TransactionType.Transfer: {
         'id': (False, INIT_NULL, None),
