@@ -231,8 +231,6 @@ def ConfigureTableView(view, model, columns):
             else:  # set custom width
                 view.setColumnWidth(model.fieldIndex(column[hcol_idx.DB_NAME]), column[hcol_idx.WIDTH])
 
-    view.setSelectionBehavior(QAbstractItemView.SelectRows)
-    view.setSelectionMode(QAbstractItemView.SingleSelection)
     font = view.horizontalHeader().font()
     font.setBold(True)
     view.horizontalHeader().setFont(font)
