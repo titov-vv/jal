@@ -213,25 +213,28 @@ class SlipsTaxAPI:
 
     #----------------------------------------------------------------------------------------------------------------
     # Gets company name by Russian INN
-    # Returns short or long name if fount and empty string otherwise
+    # Returns short or long name if fount and initial INN otherwise
     def get_shop_name_by_inn(self, inn):
         if len(inn) != 10 and len(inn) != 12:
             logging.warning(g_tr('SlipsTaxAPI', "Incorrect legth of INN. Can't get company name."))
-            return ''
+            return inn
         s = requests.Session()
         s.headers['User-Agent'] = 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0'
         s.headers['Content-Type'] = "application/x-www-form-urlencoded"
-        payload = f"vyp3CaptchaToken=&page=&query={inn}&region={inn[0]}{inn[1]}&PreventChromeAutocomplete="
+        region_list = "77,78,01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,"\
+                      "30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,"\
+                      "61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,79,83,86,87,89,91,92,99"
+        payload = f"vyp3CaptchaToken=&page=&query={inn}&region={region_list}&PreventChromeAutocomplete="
         response = s.post('https://egrul.nalog.ru/', data=payload)
         if response.status_code != 200:
             logging.error(g_tr('SlipsTaxAPI', "Failed to get token for INN: ") + f"{response}/{response.text}")
-            return ''
+            return inn
         result = json.loads(response.text)
         token = result['t']
         response = s.get('https://egrul.nalog.ru/search-result/' + token)
         if response.status_code != 200:
             logging.error(g_tr('SlipsTaxAPI', "Failed to get details about INN: ") + f"{response}/{response.text}")
-            return ''
+            return inn
         result = json.loads(response.text)
         try:
             return result['rows'][0]['c']   # Return short name if exists
@@ -241,4 +244,4 @@ class SlipsTaxAPI:
             return result['rows'][0]['n']   # Return long name if exists
         except:
             logging.warning(g_tr('SlipsTaxAPI', "Can't get company name from: ") + response.text)
-            return ''
+            return inn

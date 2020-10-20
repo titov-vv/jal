@@ -289,16 +289,13 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         else:
             slip = self.slip_json
 
-        # Shop name may be present or only INN may be there
+        shop_name = ''
         if 'user' in slip:
-            self.SlipShopName.setText(slip['user'])
-        else:
-            if 'userInn' in slip:
-                name_by_inn = self.slipsAPI.get_shop_name_by_inn(slip['userInn'])
-                if name_by_inn:
-                    self.SlipShopName.setText(name_by_inn)
-                else:
-                    self.SlipShopName.setText(slip['userInn'])
+            shop_name = self.SlipShopName.setText(slip['user'])
+        if (not shop_name) and ('userInn' in slip):
+            shop_name = self.slipsAPI.get_shop_name_by_inn(slip['userInn'])
+        self.SlipShopName.setText(shop_name)
+
         peer_id = self.match_shop_name(self.SlipShopName.text())
         if peer_id is not None:
             self.PeerEdit.selected_id = peer_id
