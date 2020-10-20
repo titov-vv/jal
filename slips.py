@@ -289,6 +289,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         else:
             slip = self.slip_json
 
+        # Get shop name
         shop_name = ''
         if 'user' in slip:
             shop_name = self.SlipShopName.setText(slip['user'])
@@ -314,6 +315,10 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         # Convert price to roubles
         self.slip_lines['price'] = self.slip_lines['price'] / 100
         self.slip_lines['sum'] = -self.slip_lines['sum'] / 100
+        # Use quantity if it differs from 1 unit value
+        self.slip_lines.loc[self.slip_lines['quantity'] != 1, 'name'] = \
+            self.slip_lines.agg('{0[name]} ({0[quantity]:g} x {0[price]:.2f})'.format, axis=1)
+        # Assign empty category
         self.slip_lines['category'] = 0
         self.slip_lines = self.slip_lines[['name', 'category', 'sum']]
 
