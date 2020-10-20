@@ -164,9 +164,6 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="3">
-          <widget class="QLineEdit" name="SlipType"/>
-         </item>
          <item row="0" column="1">
           <widget class="QDateTimeEdit" name="SlipTimstamp">
            <property name="displayFormat">
@@ -240,6 +237,20 @@
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
+          </widget>
+         </item>
+         <item row="4" column="3">
+          <widget class="QComboBox" name="SlipType">
+           <item>
+            <property name="text">
+             <string>Purchase</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Return</string>
+            </property>
+           </item>
           </widget>
          </item>
         </layout>

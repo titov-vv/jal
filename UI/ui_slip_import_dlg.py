@@ -90,11 +90,6 @@ class Ui_ImportSlipDlg(object):
 
         self.gridLayout_2.addWidget(self.AmountLbl, 0, 2, 1, 1)
 
-        self.SlipType = QLineEdit(self.SlipDataGroup)
-        self.SlipType.setObjectName(u"SlipType")
-
-        self.gridLayout_2.addWidget(self.SlipType, 4, 3, 1, 1)
-
         self.SlipTimstamp = QDateTimeEdit(self.SlipDataGroup)
         self.SlipTimstamp.setObjectName(u"SlipTimstamp")
 
@@ -161,6 +156,13 @@ class Ui_ImportSlipDlg(object):
         self.line.setFrameShadow(QFrame.Sunken)
 
         self.gridLayout_2.addWidget(self.line, 5, 0, 1, 4)
+
+        self.SlipType = QComboBox(self.SlipDataGroup)
+        self.SlipType.addItem("")
+        self.SlipType.addItem("")
+        self.SlipType.setObjectName(u"SlipType")
+
+        self.gridLayout_2.addWidget(self.SlipType, 4, 3, 1, 1)
 
 
         self.horizontalLayout_3.addWidget(self.SlipDataGroup)
@@ -324,6 +326,9 @@ class Ui_ImportSlipDlg(object):
         self.SlipTypeLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Type:", None))
         self.LoadJSONfromFileBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Load slip from JSON file", None))
         self.FPlbl.setText(QCoreApplication.translate("ImportSlipDlg", u"FP:", None))
+        self.SlipType.setItemText(0, QCoreApplication.translate("ImportSlipDlg", u"Purchase", None))
+        self.SlipType.setItemText(1, QCoreApplication.translate("ImportSlipDlg", u"Return", None))
+
         self.CameraGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"Camera", None))
         self.StopCameraBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Stop camera", None))
         self.SlipGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"Slip", None))

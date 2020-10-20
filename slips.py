@@ -117,7 +117,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.FN.setText('')
         self.FD.setText('')
         self.FP.setText('')
-        self.SlipType.setText('')
+        self.SlipType.setCurrentIndex(0)
 
     #------------------------------------------------------------------------------------------
     # Loads graphics file and tries to read QR-code from it.
@@ -240,7 +240,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.FN.setText(parts.group(3))
         self.FD.setText(parts.group(4))
         self.FP.setText(parts.group(5))
-        self.SlipType.setText(parts.group(6))
+        self.SlipType.setCurrentIndex(int(parts.group(6)) - 1)
         self.qr_data_validated.emit()
 
     def downloadSlipJSON(self):
@@ -249,7 +249,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         attempt = 0
         while True:
             result = self.slipsAPI.get_slip(timestamp, float(self.SlipAmount.text()), self.FN.text(),
-                                            self.FD.text(), self.FP.text(), self.SlipType.text())
+                                            self.FD.text(), self.FP.text(), self.SlipType.currentIndex())
             if result != SlipsTaxAPI.Pending:
                 break
             if attempt > 5:

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="ru" sourcelanguage="en">
+<!DOCTYPE TS>
+<TS version="2.1" language="ru" sourcelanguage="en">
 <context>
     <name></name>
     <message>
@@ -221,134 +222,144 @@
 <context>
     <name>ImportSlipDlg</name>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="311"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="313"/>
         <source>Import Slip</source>
         <translation>Импорт чека</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="315"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="317"/>
         <source>Get from clipboard</source>
         <translation>Получить из буфера</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="314"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="316"/>
         <source>Load from file</source>
         <translation>Загрузить из файла</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="322"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="324"/>
         <source>FN:</source>
         <translation>ФН:</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="326"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="328"/>
         <source>FP:</source>
         <translation>ФП:</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="321"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="323"/>
         <source>FD:</source>
         <translation>ФД:</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="329"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="334"/>
         <source>Slip</source>
         <translation>Чек</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="330"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="335"/>
         <source>Peer:</source>
         <translation>Контрагент:</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="334"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="339"/>
         <source>Lines:</source>
         <translation>Строки:</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="336"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="341"/>
         <source>Clear</source>
         <translation>Очистить</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="337"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="342"/>
         <source>Add</source>
         <translation>Добавить</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="338"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="343"/>
         <source>Close</source>
         <translation>Закрыть</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="320"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="322"/>
         <source>Date/Time:</source>
         <translation>Дата/Время:</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="318"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="320"/>
         <source>Amount:</source>
         <translation>Сумма:</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="331"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="336"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
         <translation>dd/MM/yyyy hh:mm:ss</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="324"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="326"/>
         <source>Type:</source>
         <translation>Тип:</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="313"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="315"/>
         <source>Get from camera</source>
         <translation>Сканировать камерой</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="312"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="314"/>
         <source>QR-code</source>
         <translation>QR-код</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="316"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="318"/>
         <source>Slip data</source>
         <translation>Данные чека</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="327"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="332"/>
         <source>Camera</source>
         <translation>Камера</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="317"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="319"/>
         <source>Get slip from internet</source>
         <translation>Получить чек с сайта ФНС</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="328"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="333"/>
         <source>Stop camera</source>
         <translation>Закрыть камеру</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="332"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="337"/>
         <source>Date / Time:</source>
         <translation>Дата / Время:</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="333"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="338"/>
         <source>Account:</source>
         <translation>Счет:</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="325"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="327"/>
         <source>Load slip from JSON file</source>
         <translation>Загузить чека из JSON-файла</translation>
     </message>
     <message>
-        <location filename="../UI/ui_slip_import_dlg.py" line="335"/>
+        <location filename="../UI/ui_slip_import_dlg.py" line="340"/>
         <source>--&gt;</source>
         <translation>--&gt;</translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="329"/>
+        <source>Purchase</source>
+        <translation>Покупка</translation>
+    </message>
+    <message>
+        <location filename="../UI/ui_slip_import_dlg.py" line="330"/>
+        <source>Return</source>
+        <translation>Возврат</translation>
     </message>
 </context>
 <context>
