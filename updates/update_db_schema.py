@@ -3,7 +3,7 @@
 import sys
 import sqlite3
 
-TARGET_SCHEMA = 10
+TARGET_SCHEMA = 11
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
