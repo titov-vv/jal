@@ -17,7 +17,7 @@ It was designed to keep records of personal incomes/spendings and investments wi
     2. profit/loss report for investments accounts
     3. closed deals report 
 - stock quotes updates for US (Yahoo), EU (Euronext) and RU (MOEX) exchanges traded stocks
-- securities transactions import from Quik HTML-reports for russian brokers and from Interactive Brokers flex-queries
+- securities transactions import from Quik HTML-reports for russian brokers (KIT-Finance, Uralsib Broker) and from Interactive Brokers flex-queries
 - tax report preparation for foreign investments according to Russian Tax Law
 - *experimental* download russian electronic slips from russian tax authority:
     1. QR code may be scanned from camera, clipboard image or image file on disk
@@ -40,6 +40,7 @@ This will apply required changes to your database file (as usual it's a good ide
 ledger depends on:
 * [Qt for Python (PySide2)](https://wiki.qt.io/Qt_for_Python) *>=5.15* - GUI library (versions below 5.15 may cause problems with `uic` at least)
 * [pandas](https://pandas.pydata.org/) - different data operations
+* [lxml](https://lxml.de/) - pandas dependency for read_html() method (somehow was not installed automatically under Windows)
 * [requests](https://requests.readthedocs.io/) - stock quotes update from the internet; electronic slip download
 * [xlsxwriter](https://xlsxwriter.readthedocs.io/) - reports export into XLS format
 * [ibflex](https://github.com/csingley/ibflex) *>=0.14* - Interactive Brokers flex-reports import 

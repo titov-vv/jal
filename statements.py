@@ -45,7 +45,8 @@ class Quik:
     Buy = 'Купля'
     Sell = 'Продажа'
     Fee = 'Комиссия Брокера'
-    FeeEx1 = 'Комиссия за ИТС'
+    FeeEx = 'Суммарная комиссия ТС'    # This line is used in KIT Broker reports
+    FeeEx1 = 'Комиссия за ИТС'         # Below 3 lines are used in Uralsib Borker reports
     FeeEx2 = 'Комиссия за организацию торговли'
     FeeEx3 = 'Клиринговая комиссия'
     Total = 'ИТОГО'
@@ -526,7 +527,7 @@ class StatementLoader(QObject):
                 qty = int(row[Quik.Qty])
             elif row[Quik.Type] == Quik.Sell:
                 qty = -int(row[Quik.Qty])
-            elif row[Quik.Type] == Quik.Total:
+            elif row[Quik.Type][:len(Quik.Total)] == Quik.Total:
                 break   # End of statement reached
             else:
                 logging.warning(g_tr('StatementLoader', "Unknown operation type ") + f"'{row[Quik.Type]}'")
@@ -542,7 +543,11 @@ class StatementLoader(QObject):
             amount = row[Quik.Amount]
             lot_size = math.pow(10, round(math.log10(amount / (price * abs(qty)))))
             qty = qty * lot_size
-            fee = float(row[Quik.Fee]) + float(row[Quik.FeeEx1]) + float(row[Quik.FeeEx2]) + float(row[Quik.FeeEx3])
+            fee = float(row[Quik.Fee])
+            if Quik.FeeEx in row:  # Broker dependent fee import
+                fee = fee + float(row[Quik.FeeEx])
+            else:
+                fee = fee + float(row[Quik.FeeEx1]) + float(row[Quik.FeeEx2]) + float(row[Quik.FeeEx3])
             coupon = float(row[Quik.Coupon])
             self.createTrade(account_id, asset_id, timestamp, settlement, number, qty, price, -fee, coupon)
         return True
