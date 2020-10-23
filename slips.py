@@ -249,7 +249,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         attempt = 0
         while True:
             result = self.slipsAPI.get_slip(timestamp, float(self.SlipAmount.text()), self.FN.text(),
-                                            self.FD.text(), self.FP.text(), self.SlipType.currentIndex())
+                                            self.FD.text(), self.FP.text(), self.SlipType.currentIndex() + 1)
             if result != SlipsTaxAPI.Pending:
                 break
             if attempt > 5:
