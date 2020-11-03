@@ -113,7 +113,7 @@ class QuoteDownloader(QObject):
             from_timestamp = last_timestamp if last_timestamp > start_timestamp else start_timestamp
             try:
                 data = self.data_loaders[feed_id](asset, isin, from_timestamp, end_timestamp)
-            except (xml_tree.ParseError, pd.errors.EmptyDataError):
+            except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
                 logging.warning(g_tr('QuotesUpdateDialog', "No data were downloaded for ") + f"{asset}")
                 continue
             if data is not None:
