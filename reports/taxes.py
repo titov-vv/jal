@@ -3,11 +3,11 @@ from datetime import datetime
 import xlsxwriter
 import logging
 from reports.helpers import xslxFormat, xlsxWriteRow
-from CustomUI.helpers import g_tr
-from DB.helpers import executeSQL, readSQLrecord
+from ui_custom.helpers import g_tr
+from db.helpers import executeSQL, readSQLrecord
 from PySide2.QtWidgets import QDialog, QFileDialog
 from PySide2.QtCore import Property, Slot
-from UI.ui_tax_export_dlg import Ui_TaxExportDlg
+from ui.ui_tax_export_dlg import Ui_TaxExportDlg
 
 
 #-----------------------------------------------------------------------------------------------------------------------

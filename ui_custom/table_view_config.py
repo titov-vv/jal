@@ -4,8 +4,8 @@ from PySide2 import QtWidgets
 from PySide2.QtCore import QObject, SIGNAL, Slot
 from functools import partial
 from mapper_delegate import MapperDelegate
-from CustomUI.helpers import g_tr, UseSqlTable, ConfigureTableView, ConfigureDataMappers
-from CustomUI.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, ReferenceBoolDelegate, \
+from ui_custom.helpers import g_tr, UseSqlTable, ConfigureTableView, ConfigureDataMappers
+from ui_custom.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, ReferenceBoolDelegate, \
     ReferenceIntDelegate, ReferenceLookupDelegate, ReferenceTimestampDelegate
 
 

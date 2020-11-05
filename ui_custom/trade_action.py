@@ -2,7 +2,7 @@ from PySide2.QtWidgets import QWidget, QHBoxLayout, QLabel
 from PySide2.QtCore import Signal, Property
 from PySide2.QtGui import QPalette
 from constants import CustomColor
-from CustomUI.helpers import g_tr
+from ui_custom.helpers import g_tr
 
 
 class TradeAction(QWidget):

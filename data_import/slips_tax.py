@@ -9,9 +9,9 @@ from PySide2.QtCore import Signal, Slot, QUrl
 from PySide2.QtWidgets import QDialog
 from PySide2.QtWebEngineWidgets import QWebEngineProfile, QWebEnginePage
 from PySide2.QtWebEngineCore import QWebEngineUrlRequestInterceptor
-from DB.helpers import readSQL, executeSQL
-from CustomUI.helpers import g_tr
-from UI.ui_login_fns_dlg import Ui_LoginFNSDialog
+from db.helpers import readSQL, executeSQL
+from ui_custom.helpers import g_tr
+from ui.ui_login_fns_dlg import Ui_LoginFNSDialog
 
 
 #-----------------------------------------------------------------------------------------------------------------------

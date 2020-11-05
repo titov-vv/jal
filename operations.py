@@ -3,8 +3,8 @@ import logging
 from constants import Setup, TransactionType
 from PySide2.QtCore import Qt, QObject, Signal, Slot, QDateTime
 from PySide2.QtWidgets import QMessageBox, QMenu, QAction, QHeaderView
-from DB.helpers import executeSQL
-from CustomUI.helpers import g_tr
+from db.helpers import executeSQL
+from ui_custom.helpers import g_tr
 
 INIT_NULL = 0
 INIT_VALUE = 1

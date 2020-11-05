@@ -12,15 +12,15 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
-from CustomUI.reference_selector import AccountSelector
-from CustomUI.reference_selector import AssetSelector
-from CustomUI.account_select import AccountButton
-from CustomUI.reference_selector import PeerSelector
-from CustomUI.trade_action import TradeAction
-from CustomUI.log_viewer import LogViewer
-from CustomUI.account_select import ComboBoxDB
-from CustomUI.amount_editor import AmountEdit
-from CustomUI.reference_selector import CategorySelector
+from ui_custom.reference_selector import AccountSelector
+from ui_custom.reference_selector import AssetSelector
+from ui_custom.account_select import AccountButton
+from ui_custom.reference_selector import PeerSelector
+from ui_custom.trade_action import TradeAction
+from ui_custom.log_viewer import LogViewer
+from ui_custom.account_select import ComboBoxDB
+from ui_custom.amount_editor import AmountEdit
+from ui_custom.reference_selector import CategorySelector
 
 
 class Ui_LedgerMainWindow(object):

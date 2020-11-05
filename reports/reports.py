@@ -4,8 +4,8 @@ import xlsxwriter
 import pandas as pd
 from constants import BookAccount, PredefinedAsset, PredefinedCategory, ColumnWidth
 from view_delegate import *
-from DB.helpers import executeSQL, readSQLrecord
-from CustomUI.helpers import g_tr, UseSqlQuery, ConfigureTableView
+from db.helpers import executeSQL, readSQLrecord
+from ui_custom.helpers import g_tr, UseSqlQuery, ConfigureTableView
 from reports.helpers import xslxFormat, xlsxWriteRow
 from PySide2.QtWidgets import QFileDialog
 from PySide2.QtCore import Qt, QObject, Signal, QAbstractTableModel

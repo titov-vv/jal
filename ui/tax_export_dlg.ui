@@ -96,7 +96,7 @@
   <customwidget>
    <class>AccountSelector</class>
    <extends>QWidget</extends>
-   <header>CustomUI/reference_selector.h</header>
+   <header>ui_custom/reference_selector.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

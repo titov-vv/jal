@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from PySide2.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QCompleter
 
-from CustomUI.helpers import g_tr
-from CustomUI.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, \
+from ui_custom.helpers import g_tr
+from ui_custom.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, \
     ReferenceIntDelegate, ReferenceBoolDelegate, ReferenceTimestampDelegate, ReferenceLookupDelegate
 
 

@@ -2,7 +2,7 @@ import logging
 from constants import CustomColor
 from PySide2 import QtWidgets
 from PySide2.QtWidgets import QPlainTextEdit
-from CustomUI.helpers import g_tr
+from ui_custom.helpers import g_tr
 
 
 class LogViewer(QPlainTextEdit, logging.Handler):

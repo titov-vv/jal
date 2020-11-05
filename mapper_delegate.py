@@ -5,8 +5,8 @@ from PySide2.QtWidgets import QLineEdit
 from PySide2.QtGui import QDoubleValidator
 
 from constants import Setup
-from CustomUI.reference_selector import CategorySelector
-from CustomUI.reference_selector import TagSelector
+from ui_custom.reference_selector import CategorySelector
+from ui_custom.reference_selector import TagSelector
 
 
 # -----------------------------------------------------------------------------------------------------------------------

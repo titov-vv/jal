@@ -13,8 +13,8 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 from PySide2.QtMultimediaWidgets import QVideoWidget
-from CustomUI.reference_selector import AccountSelector
-from CustomUI.reference_selector import PeerSelector
+from ui_custom.reference_selector import AccountSelector
+from ui_custom.reference_selector import PeerSelector
 
 
 class Ui_ImportSlipDlg(object):
@@ -217,19 +217,6 @@ class Ui_ImportSlipDlg(object):
         self.gridLayout = QGridLayout(self.SlipGroup)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(2, 2, 2, 2)
-        self.PeerLbl = QLabel(self.SlipGroup)
-        self.PeerLbl.setObjectName(u"PeerLbl")
-
-        self.gridLayout.addWidget(self.PeerLbl, 3, 0, 1, 1)
-
-        self.LinesTableView = QTableView(self.SlipGroup)
-        self.LinesTableView.setObjectName(u"LinesTableView")
-        self.LinesTableView.verticalHeader().setVisible(False)
-        self.LinesTableView.verticalHeader().setMinimumSectionSize(20)
-        self.LinesTableView.verticalHeader().setDefaultSectionSize(20)
-
-        self.gridLayout.addWidget(self.LinesTableView, 4, 1, 1, 3)
-
         self.SlipDateTime = QDateTimeEdit(self.SlipGroup)
         self.SlipDateTime.setObjectName(u"SlipDateTime")
 
@@ -240,15 +227,20 @@ class Ui_ImportSlipDlg(object):
 
         self.gridLayout.addWidget(self.DateTimeLbl, 1, 1, 1, 1)
 
-        self.AccountLbl = QLabel(self.SlipGroup)
-        self.AccountLbl.setObjectName(u"AccountLbl")
+        self.CorrespondenceLbl = QLabel(self.SlipGroup)
+        self.CorrespondenceLbl.setObjectName(u"CorrespondenceLbl")
 
-        self.gridLayout.addWidget(self.AccountLbl, 1, 3, 1, 1)
+        self.gridLayout.addWidget(self.CorrespondenceLbl, 3, 2, 1, 1)
 
         self.PeerEdit = PeerSelector(self.SlipGroup)
         self.PeerEdit.setObjectName(u"PeerEdit")
 
         self.gridLayout.addWidget(self.PeerEdit, 3, 3, 1, 1)
+
+        self.PeerLbl = QLabel(self.SlipGroup)
+        self.PeerLbl.setObjectName(u"PeerLbl")
+
+        self.gridLayout.addWidget(self.PeerLbl, 3, 0, 1, 1)
 
         self.SlipShopName = QLineEdit(self.SlipGroup)
         self.SlipShopName.setObjectName(u"SlipShopName")
@@ -262,15 +254,33 @@ class Ui_ImportSlipDlg(object):
 
         self.gridLayout.addWidget(self.LinesLbl, 4, 0, 1, 1)
 
+        self.AccountLbl = QLabel(self.SlipGroup)
+        self.AccountLbl.setObjectName(u"AccountLbl")
+
+        self.gridLayout.addWidget(self.AccountLbl, 1, 3, 1, 1)
+
         self.AccountEdit = AccountSelector(self.SlipGroup)
         self.AccountEdit.setObjectName(u"AccountEdit")
 
         self.gridLayout.addWidget(self.AccountEdit, 2, 3, 1, 1)
 
-        self.label = QLabel(self.SlipGroup)
-        self.label.setObjectName(u"label")
+        self.LinesTableView = QTableView(self.SlipGroup)
+        self.LinesTableView.setObjectName(u"LinesTableView")
+        self.LinesTableView.verticalHeader().setVisible(False)
+        self.LinesTableView.verticalHeader().setMinimumSectionSize(20)
+        self.LinesTableView.verticalHeader().setDefaultSectionSize(20)
 
-        self.gridLayout.addWidget(self.label, 3, 2, 1, 1)
+        self.gridLayout.addWidget(self.LinesTableView, 4, 1, 1, 4)
+
+        self.AssignCategoryBtn = QPushButton(self.SlipGroup)
+        self.AssignCategoryBtn.setObjectName(u"AssignCategoryBtn")
+
+        self.gridLayout.addWidget(self.AssignCategoryBtn, 2, 4, 1, 1)
+
+        self.AssignTagBtn = QPushButton(self.SlipGroup)
+        self.AssignTagBtn.setObjectName(u"AssignTagBtn")
+
+        self.gridLayout.addWidget(self.AssignTagBtn, 3, 4, 1, 1)
 
 
         self.verticalLayout.addWidget(self.SlipGroup)
@@ -332,12 +342,14 @@ class Ui_ImportSlipDlg(object):
         self.CameraGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"Camera", None))
         self.StopCameraBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Stop camera", None))
         self.SlipGroup.setTitle(QCoreApplication.translate("ImportSlipDlg", u"Slip", None))
-        self.PeerLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Peer:", None))
         self.SlipDateTime.setDisplayFormat(QCoreApplication.translate("ImportSlipDlg", u"dd/MM/yyyy hh:mm:ss", None))
         self.DateTimeLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Date / Time:", None))
-        self.AccountLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Account:", None))
+        self.CorrespondenceLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"-->", None))
+        self.PeerLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Peer:", None))
         self.LinesLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Lines:", None))
-        self.label.setText(QCoreApplication.translate("ImportSlipDlg", u"-->", None))
+        self.AccountLbl.setText(QCoreApplication.translate("ImportSlipDlg", u"Account:", None))
+        self.AssignCategoryBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Auto-assign categories", None))
+        self.AssignTagBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Set Tag for all lines", None))
         self.ClearBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Clear", None))
         self.AddOperationBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Add", None))
         self.CloseBtn.setText(QCoreApplication.translate("ImportSlipDlg", u"Close", None))

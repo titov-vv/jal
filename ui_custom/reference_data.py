@@ -6,9 +6,9 @@ from PySide2.QtSql import QSqlRelationalDelegate
 from PySide2.QtWidgets import QDialog
 from PySide2.QtWidgets import QStyledItemDelegate
 
-from UI.ui_reference_data_dlg import Ui_ReferenceDataDialog
-from CustomUI.helpers import g_tr, UseSqlTable, ConfigureTableView, rel_idx
-from DB.helpers import readSQL
+from ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
+from ui_custom.helpers import g_tr, UseSqlTable, ConfigureTableView, rel_idx
+from db.helpers import readSQL
 
 
 # --------------------------------------------------------------------------------------------------------------

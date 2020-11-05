@@ -6,20 +6,20 @@ from PySide2.QtCore import Slot, QDateTime, QDir, QLocale
 from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QMenu, QMessageBox, QLabel, QActionGroup, QAction
 
-from UI.ui_main_window import Ui_LedgerMainWindow
-from UI.ui_abort_window import Ui_AbortWindow
-from CustomUI.helpers import g_tr, VLine, ManipulateDate, dependency_present
-from CustomUI.table_view_config import TableViewConfig
+from ui.ui_main_window import Ui_LedgerMainWindow
+from ui.ui_abort_window import Ui_AbortWindow
+from ui_custom.helpers import g_tr, VLine, ManipulateDate, dependency_present
+from ui_custom.table_view_config import TableViewConfig
 from constants import TransactionType
-from DB.backup_restore import MakeBackup, RestoreBackup
-from DB.helpers import get_dbfilename, get_account_id, get_base_currency, executeSQL
-from downloader import QuoteDownloader
+from db.backup_restore import MakeBackup, RestoreBackup
+from db.helpers import get_dbfilename, get_account_id, get_base_currency, executeSQL
+from data_import.downloader import QuoteDownloader
 from ledger import Ledger
 from operations import LedgerOperationsView, LedgerInitValues
 from reports.reports import Reports, ReportType
-from statements import StatementLoader
+from data_import.statements import StatementLoader
 from reports.taxes import TaxesRus
-from slips import ImportSlipDialog
+from data_import.slips import ImportSlipDialog
 
 
 #-----------------------------------------------------------------------------------------------------------------------

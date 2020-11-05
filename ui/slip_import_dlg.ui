@@ -357,26 +357,6 @@
       <property name="bottomMargin">
        <number>2</number>
       </property>
-      <item row="3" column="0">
-       <widget class="QLabel" name="PeerLbl">
-        <property name="text">
-         <string>Peer:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1" colspan="3">
-       <widget class="QTableView" name="LinesTableView">
-        <attribute name="verticalHeaderVisible">
-         <bool>false</bool>
-        </attribute>
-        <attribute name="verticalHeaderMinimumSectionSize">
-         <number>20</number>
-        </attribute>
-        <attribute name="verticalHeaderDefaultSectionSize">
-         <number>20</number>
-        </attribute>
-       </widget>
-      </item>
       <item row="2" column="1">
        <widget class="QDateTimeEdit" name="SlipDateTime">
         <property name="displayFormat">
@@ -391,15 +371,22 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="3">
-       <widget class="QLabel" name="AccountLbl">
+      <item row="3" column="2">
+       <widget class="QLabel" name="CorrespondenceLbl">
         <property name="text">
-         <string>Account:</string>
+         <string>--&gt;</string>
         </property>
        </widget>
       </item>
       <item row="3" column="3">
        <widget class="PeerSelector" name="PeerEdit" native="true"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="PeerLbl">
+        <property name="text">
+         <string>Peer:</string>
+        </property>
+       </widget>
       </item>
       <item row="3" column="1">
        <widget class="QLineEdit" name="SlipShopName">
@@ -418,13 +405,40 @@
         </property>
        </widget>
       </item>
+      <item row="1" column="3">
+       <widget class="QLabel" name="AccountLbl">
+        <property name="text">
+         <string>Account:</string>
+        </property>
+       </widget>
+      </item>
       <item row="2" column="3">
        <widget class="AccountSelector" name="AccountEdit" native="true"/>
       </item>
-      <item row="3" column="2">
-       <widget class="QLabel" name="label">
+      <item row="4" column="1" colspan="4">
+       <widget class="QTableView" name="LinesTableView">
+        <attribute name="verticalHeaderVisible">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="verticalHeaderMinimumSectionSize">
+         <number>20</number>
+        </attribute>
+        <attribute name="verticalHeaderDefaultSectionSize">
+         <number>20</number>
+        </attribute>
+       </widget>
+      </item>
+      <item row="2" column="4">
+       <widget class="QPushButton" name="AssignCategoryBtn">
         <property name="text">
-         <string>--&gt;</string>
+         <string>Auto-assign categories</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="4">
+       <widget class="QPushButton" name="AssignTagBtn">
+        <property name="text">
+         <string>Set Tag for all lines</string>
         </property>
        </widget>
       </item>
@@ -494,13 +508,13 @@
   <customwidget>
    <class>AccountSelector</class>
    <extends>QWidget</extends>
-   <header>CustomUI/reference_selector.h</header>
+   <header>ui_custom/reference_selector.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>PeerSelector</class>
    <extends>QWidget</extends>
-   <header>CustomUI/reference_selector.h</header>
+   <header>ui_custom/reference_selector.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

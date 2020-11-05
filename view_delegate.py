@@ -5,9 +5,9 @@ from PySide2.QtCore import Qt, QSize
 from PySide2.QtGui import QTextDocument, QFont
 
 from constants import TransactionType, TransferSubtype, CustomColor
-from CustomUI.helpers import g_tr, formatFloatLong
-from CustomUI.reference_selector import CategorySelector
-from DB.helpers import get_category_name
+from ui_custom.helpers import g_tr, formatFloatLong
+from ui_custom.reference_selector import CategorySelector
+from db.helpers import get_category_name
 
 
 class BalanceAccountDelegate(QStyledItemDelegate):
@@ -396,7 +396,7 @@ class OperationsNotesDelegate(QStyledItemDelegate):
                 if rate > 1:
                     exchange_text = f" [1 {currency1} = {rate:.4f} {currency2}]"
                 else:
-                    rate = 1 / rate
+                    rate = 1 / rate     # TODO: fix division by zero
                     exchange_text = f" [{rate:.4f} {currency1} = 1 {currency2}]"
             text = record.value(index.column()) + exchange_text
         elif transaction_type == TransactionType.Dividend:

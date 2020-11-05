@@ -15,11 +15,11 @@ from PySide2.QtCore import Qt, Slot, Signal, QDateTime, QBuffer, QThread, QAbstr
 from PySide2.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView
 # This QCamera staff ran good on Windows but didn't fly on Linux from the box until 'cheese' installation
 from PySide2.QtMultimedia import QCameraInfo, QCamera, QCameraImageCapture, QVideoFrame
-from CustomUI.helpers import g_tr
-from DB.helpers import executeSQL, readSQL
-from slips_tax import SlipsTaxAPI
+from ui_custom.helpers import g_tr, dependency_present
+from db.helpers import executeSQL, readSQL
+from data_import.slips_tax import SlipsTaxAPI
 from view_delegate import SlipLinesPandasDelegate
-from UI.ui_slip_import_dlg import Ui_ImportSlipDlg
+from ui.ui_slip_import_dlg import Ui_ImportSlipDlg
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -107,6 +107,8 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.LoadJSONfromFileBtn.clicked.connect(self.loadFileSlipJSON)
         self.AddOperationBtn.clicked.connect(self.addOperation)
         self.ClearBtn.clicked.connect(self.clearSlipData)
+
+        self.AssignCategoryBtn.setEnabled(dependency_present(['tensorflow']))
 
     def closeEvent(self, arg__1):
         if self.cameraActive:

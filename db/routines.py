@@ -1,5 +1,5 @@
 from constants import Setup, BookAccount
-from DB.helpers import executeSQL
+from db.helpers import executeSQL
 
 
 # Populate table balances with data calculated for given parameters:

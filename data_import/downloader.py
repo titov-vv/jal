@@ -9,10 +9,10 @@ from PySide2 import QtCore
 from PySide2.QtCore import QObject, Signal
 from PySide2.QtWidgets import QDialog
 
-from UI.ui_update_quotes_window import Ui_UpdateQuotesDlg
+from ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from constants import Setup, MarketDataFeed
-from DB.helpers import executeSQL
-from CustomUI.helpers import g_tr
+from db.helpers import executeSQL
+from ui_custom.helpers import g_tr
 
 
 # ===================================================================================================================

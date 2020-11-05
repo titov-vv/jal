@@ -9,9 +9,9 @@ from PySide2.QtSql import QSqlTableModel
 from PySide2.QtWidgets import QDialog, QFileDialog
 from ibflex import parser, AssetClass, BuySell, CashAction, Reorg, Code
 from constants import Setup, TransactionType, PredefinedAsset, PredefinedCategory
-from DB.helpers import executeSQL, readSQL, get_country_by_code
-from CustomUI.helpers import g_tr
-from UI.ui_add_asset_dlg import Ui_AddAssetDialog
+from db.helpers import executeSQL, readSQL, get_country_by_code
+from ui_custom.helpers import g_tr
+from ui.ui_add_asset_dlg import Ui_AddAssetDialog
 
 
 #-----------------------------------------------------------------------------------------------------------------------

@@ -5,10 +5,10 @@ from constants import Setup, BookAccount, TransactionType, ActionSubtype, Corpor
     TransferSubtype, PredefinedCategory, PredefinedPeer
 from PySide2.QtCore import QCoreApplication, Qt, QDate, QDateTime
 from PySide2.QtWidgets import QDialog, QMessageBox
-from DB.helpers import executeSQL, readSQL, readSQLrecord
-from DB.routines import calculateBalances, calculateHoldings
-from CustomUI.helpers import g_tr
-from UI.ui_rebuild_window import Ui_ReBuildDialog
+from db.helpers import executeSQL, readSQL, readSQLrecord
+from db.routines import calculateBalances, calculateHoldings
+from ui_custom.helpers import g_tr
+from ui.ui_rebuild_window import Ui_ReBuildDialog
 
 
 class RebuildDialog(QDialog, Ui_ReBuildDialog):

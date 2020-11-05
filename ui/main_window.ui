@@ -1788,51 +1788,51 @@
   <customwidget>
    <class>AccountSelector</class>
    <extends>QWidget</extends>
-   <header>CustomUI/reference_selector.h</header>
+   <header>ui_custom/reference_selector.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>AssetSelector</class>
    <extends>QWidget</extends>
-   <header>CustomUI/reference_selector.h</header>
+   <header>ui_custom/reference_selector.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>AccountButton</class>
    <extends>QPushButton</extends>
-   <header>CustomUI/account_select.h</header>
+   <header>ui_custom/account_select.h</header>
   </customwidget>
   <customwidget>
    <class>PeerSelector</class>
    <extends>QWidget</extends>
-   <header>CustomUI/reference_selector.h</header>
+   <header>ui_custom/reference_selector.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>TradeAction</class>
    <extends>QWidget</extends>
-   <header>CustomUI/trade_action.h</header>
+   <header>ui_custom/trade_action.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>LogViewer</class>
    <extends>QPlainTextEdit</extends>
-   <header>CustomUI/log_viewer.h</header>
+   <header>ui_custom/log_viewer.h</header>
   </customwidget>
   <customwidget>
    <class>ComboBoxDB</class>
    <extends>QComboBox</extends>
-   <header>CustomUI/account_select.h</header>
+   <header>ui_custom/account_select.h</header>
   </customwidget>
   <customwidget>
    <class>AmountEdit</class>
    <extends>QLineEdit</extends>
-   <header>CustomUI/amount_editor.h</header>
+   <header>ui_custom/amount_editor.h</header>
   </customwidget>
   <customwidget>
    <class>CategorySelector</class>
    <extends>QWidget</extends>
-   <header>CustomUI/reference_selector.h</header>
+   <header>ui_custom/reference_selector.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

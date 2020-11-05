@@ -4,7 +4,7 @@ import pandas as pd
 import math
 import logging
 
-from CustomUI.helpers import g_tr
+from ui_custom.helpers import g_tr
 
 # ------------------------------------------------------------------------------
 backup_list = ["settings", "tags", "categories", "agents", "assets", "accounts", "corp_actions",

@@ -7,7 +7,7 @@ import traceback
 from PySide2.QtCore import QTranslator
 from PySide2.QtWidgets import QApplication
 from main_window import MainWindow, AbortWindow
-from DB.helpers import init_and_check_db, LedgerInitError, get_language
+from db.helpers import init_and_check_db, LedgerInitError, get_language
 
 
 #-----------------------------------------------------------------------------------------------------------------------
