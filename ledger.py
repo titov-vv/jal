@@ -273,7 +273,7 @@ class Ledger:
         sell_value = 0
         if self.getAmount(BookAccount.Assets, asset_id) < 0:
             query = executeSQL(self.db,
-                               "SELECT d.close_sid AS close, ABS(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
+                               "SELECT d.open_sid AS open, ABS(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
                                "LEFT JOIN sequence AS os ON os.type=3 AND os.id=d.open_sid "
                                "JOIN trades AS o ON o.id = os.operation_id "
                                "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
@@ -282,13 +282,22 @@ class Ledger:
                                [(":account_id", account_id), (":asset_id", asset_id)])
             if query.next():  # sid of Sell trade from the last deal and non-matched reminder of last Sell trade
                 last_sid, reminder = readSQLrecord(query)
-                query = executeSQL(self.db,
-                                   "SELECT s.id, -t.qty, t.price FROM trades AS t "
-                                   "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
-                                   "WHERE t.qty < 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
-                                   "AND s.id < :sid AND s.id >= :last_sid",
-                                   [(":account_id", account_id), (":asset_id", asset_id),
-                                    (":sid", seq_id), (":last_sid", last_sid)])
+                if reminder < 0:   # Last Buy didn't fully match Sell Trade and we need to start from this partial Sell
+                    query = executeSQL(self.db,
+                                       "SELECT s.id, -t.qty, t.price FROM trades AS t "
+                                       "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
+                                       "WHERE t.qty < 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
+                                       "AND s.id < :sid AND s.id >= :last_sid",
+                                       [(":account_id", account_id), (":asset_id", asset_id),
+                                        (":sid", seq_id), (":last_sid", last_sid)])
+                else:   # Sell trade was fully matched by Buy in the last deal - we need to take next Sell Trade
+                    query = executeSQL(self.db,
+                                       "SELECT s.id, -t.qty, t.price FROM trades AS t "
+                                       "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
+                                       "WHERE t.qty < 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
+                                       "AND s.id < :sid AND s.id > :last_sid",
+                                       [(":account_id", account_id), (":asset_id", asset_id),
+                                        (":sid", seq_id), (":last_sid", last_sid)])
             else:  # There were no deals -> Select all sells
                 reminder = 0
                 query = executeSQL(self.db,
@@ -298,7 +307,7 @@ class Ledger:
                                    [(":account_id", account_id), (":asset_id", asset_id), (":sid", seq_id)])
             while query.next():
                 deal_sid, deal_qty, deal_price = readSQLrecord(query)
-                if reminder:
+                if reminder < 0:
                     next_deal_qty = reminder
                     reminder = 0
                 else:
@@ -340,7 +349,7 @@ class Ledger:
         buy_value = 0
         if self.getAmount(BookAccount.Assets, asset_id) > 0:
             query = executeSQL(self.db,
-                               "SELECT d.close_sid AS close, ABS(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
+                               "SELECT d.open_sid AS open, ABS(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
                                "LEFT JOIN sequence AS os ON os.type=3 AND os.id=d.open_sid "
                                "JOIN trades AS o ON o.id = os.operation_id "
                                "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
@@ -349,13 +358,22 @@ class Ledger:
                                [(":account_id", account_id), (":asset_id", asset_id)])
             if query.next(): # sid of Buy trade from last deal and non-matched reminder of last Sell trade
                 last_sid, reminder = readSQLrecord(query)
-                query = executeSQL(self.db,
-                                   "SELECT s.id, t.qty, t.price FROM trades AS t "
-                                   "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
-                                   "WHERE t.qty > 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
-                                   "AND s.id < :sid AND s.id >= :last_sid",
-                                   [(":asset_id", asset_id), (":account_id", account_id),
-                                    (":sid", seq_id), (":last_sid", last_sid)])
+                if reminder > 0:   # Last Sell didn't fully match Buy Trade and we need to start from this partial Buy
+                    query = executeSQL(self.db,
+                                       "SELECT s.id, t.qty, t.price FROM trades AS t "
+                                       "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
+                                       "WHERE t.qty > 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
+                                       "AND s.id < :sid AND s.id >= :last_sid",
+                                       [(":asset_id", asset_id), (":account_id", account_id),
+                                        (":sid", seq_id), (":last_sid", last_sid)])
+                else:   # Buy trade was fully matched by Sell in the last deal - we need to take next Buy Trade
+                    query = executeSQL(self.db,
+                                       "SELECT s.id, t.qty, t.price FROM trades AS t "
+                                       "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
+                                       "WHERE t.qty > 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
+                                       "AND s.id < :sid AND s.id > :last_sid",
+                                       [(":asset_id", asset_id), (":account_id", account_id),
+                                        (":sid", seq_id), (":last_sid", last_sid)])
             else:  # There were no deals -> Select all purchases
                 reminder = 0
                 query = executeSQL(self.db,
@@ -364,7 +382,7 @@ class Ledger:
                                    "WHERE t.qty>0 AND t.asset_id=:asset_id AND t.account_id=:account_id AND s.id<:sid",
                                    [(":asset_id", asset_id), (":account_id", account_id), (":sid", seq_id)])
             while query.next():
-                deal_sid, deal_qty, deal_price = readSQLrecord(query)
+                deal_sid, deal_qty, deal_price = readSQLrecord(query)  # deal_sid -> trade_sid
                 if reminder > 0:
                     next_deal_qty = reminder
                     reminder = 0
