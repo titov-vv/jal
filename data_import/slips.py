@@ -11,7 +11,7 @@ except ImportError:
     pass   # We should not be in this module as dependencies have been checked in main_window.py and calls are disabled
 
 
-from PySide2.QtCore import Qt, Slot, Signal, QDateTime, QBuffer, QThread, QAbstractTableModel
+from PySide2.QtCore import Qt, Slot, Signal, QDateTime, QBuffer, QThread, QAbstractTableModel, QModelIndex
 from PySide2.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView
 # This QCamera staff ran good on Windows but didn't fly on Linux from the box until 'cheese' installation
 from PySide2.QtMultimedia import QCameraInfo, QCamera, QCameraImageCapture, QVideoFrame
@@ -20,6 +20,7 @@ from db.helpers import executeSQL, readSQL
 from data_import.slips_tax import SlipsTaxAPI
 from view_delegate import SlipLinesPandasDelegate
 from ui.ui_slip_import_dlg import Ui_ImportSlipDlg
+from data_import.category_recognizer import recognize_categories
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -107,6 +108,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.LoadJSONfromFileBtn.clicked.connect(self.loadFileSlipJSON)
         self.AddOperationBtn.clicked.connect(self.addOperation)
         self.ClearBtn.clicked.connect(self.clearSlipData)
+        self.AssignCategoryBtn.clicked.connect(self.recognizeCategories)
 
         self.AssignCategoryBtn.setEnabled(dependency_present(['tensorflow']))
 
@@ -386,3 +388,8 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
     def match_shop_name(self, shop_name):
         return readSQL(self.db, "SELECT mapped_to FROM map_peer WHERE value=:shop_name",
                        [(":shop_name", shop_name)])
+
+    @Slot()
+    def recognizeCategories(self):
+        self.slip_lines['category'] = recognize_categories(self.db, self.slip_lines['name'].tolist())
+        self.model.dataChanged.emit(None, None)  # refresh full view
