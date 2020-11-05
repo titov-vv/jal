@@ -36,7 +36,10 @@ def g_tr(context, text):
 def dependency_present(module_list):
     result = True
     for module in module_list:
-        result = result and (module in sys.modules)
+        try:
+            __import__(module)
+        except ImportError:
+            result = False
     return result
 
 
