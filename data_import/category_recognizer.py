@@ -61,5 +61,6 @@ def recognize_categories(db, purchases):
     NewX = tf.keras.preprocessing.sequence.pad_sequences(purchases_sequenced, padding='post', maxlen=64)
     NewY = nn_model.predict(NewX)
     result = tf.keras.backend.argmax(NewY, axis=1)
+    probability = NewY.max(axis=1)
 
-    return result.numpy().tolist()
+    return result.numpy().tolist(), probability.tolist()

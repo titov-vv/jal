@@ -324,6 +324,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             self.slip_lines.agg('{0[name]} ({0[quantity]:g} x {0[price]:.2f})'.format, axis=1)
         # Assign empty category
         self.slip_lines['category'] = 0
+        self.slip_lines['c_probability'] = 1
         self.slip_lines = self.slip_lines[['name', 'category', 'sum']]
 
         self.model = PandasLinesModel(self.slip_lines, self.db)
@@ -391,5 +392,6 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
 
     @Slot()
     def recognizeCategories(self):
-        self.slip_lines['category'] = recognize_categories(self.db, self.slip_lines['name'].tolist())
+        self.slip_lines['category'], self.slip_lines['c_probability'] = \
+            recognize_categories(self.db, self.slip_lines['name'].tolist())
         self.model.dataChanged.emit(None, None)  # refresh full view
