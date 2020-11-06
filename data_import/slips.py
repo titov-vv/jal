@@ -64,7 +64,9 @@ class PandasLinesModel(QAbstractTableModel):
                 return g_tr('PandasLinesModel', "Product name")
             if col == 1:
                 return g_tr('PandasLinesModel', "Category")
-            if col == 2:
+            if col == 3:
+                return g_tr('PandasLinesModel', "Tag")
+            if col == 4:
                 return g_tr('PandasLinesModel', "Amount")
         return None
 
@@ -324,8 +326,10 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             self.slip_lines.agg('{0[name]} ({0[quantity]:g} x {0[price]:.2f})'.format, axis=1)
         # Assign empty category
         self.slip_lines['category'] = 0
-        self.slip_lines['c_probability'] = 1
-        self.slip_lines = self.slip_lines[['name', 'category', 'sum']]
+        self.slip_lines['confidence'] = 1
+        # Assign empty tags
+        self.slip_lines['tag'] = None
+        self.slip_lines = self.slip_lines[['name', 'category', 'confidence', 'tag', 'sum']]
 
         self.model = PandasLinesModel(self.slip_lines, self.db)
         self.LinesTableView.setModel(self.model)
@@ -336,6 +340,8 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
                 self.LinesTableView.horizontalHeader().setSectionResizeMode(column, QHeaderView.Stretch)
             elif column == 1:
                 self.LinesTableView.setColumnWidth(column, 200)
+            elif column == 2:
+                self.LinesTableView.setColumnHidden(column, True)
             else:
                 self.LinesTableView.setColumnWidth(column, 100)
             self.delegates.append(SlipLinesPandasDelegate(self.LinesTableView))
@@ -368,9 +374,9 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
                        [(":peer_name", self.SlipShopName.text()), (":peer_id", self.PeerEdit.selected_id)])
 
         for index, row in self.slip_lines.iterrows():
-            _ = executeSQL(self.db, "INSERT INTO action_details (pid, category_id, sum, note) "
-                                    "VALUES (:pid, :category_id, :amount, :note)",
-                           [(":pid", pid), (":category_id", row['category']),
+            _ = executeSQL(self.db, "INSERT INTO action_details (pid, category_id, tag_id, sum, note) "
+                                    "VALUES (:pid, :category_id, :tag_id, :amount, :note)",
+                           [(":pid", pid), (":category_id", row['category']), (":tag_id", row['tag']),
                             (":amount", row['sum']), (":note", row['name'])])
             # update mappings
             _ = executeSQL(self.db, "INSERT INTO map_category (value, mapped_to) VALUES (:item_name, :category_id)",
@@ -392,6 +398,6 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
 
     @Slot()
     def recognizeCategories(self):
-        self.slip_lines['category'], self.slip_lines['c_probability'] = \
+        self.slip_lines['category'], self.slip_lines['confidence'] = \
             recognize_categories(self.db, self.slip_lines['name'].tolist())
         self.model.dataChanged.emit(None, None)  # refresh full view
