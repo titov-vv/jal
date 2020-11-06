@@ -173,47 +173,47 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="131"/>
+        <location filename="../data_import/slips.py" line="135"/>
         <source>Select file with QR code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="167"/>
+        <location filename="../data_import/slips.py" line="171"/>
         <source>There are no cameras available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="258"/>
+        <location filename="../data_import/slips.py" line="262"/>
         <source>Max retry count exceeded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="270"/>
+        <location filename="../data_import/slips.py" line="274"/>
         <source>Select file with slip JSON data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="286"/>
+        <location filename="../data_import/slips.py" line="290"/>
         <source>Can&apos;t find &apos;receipt&apos; tag  in json &apos;document&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="289"/>
+        <location filename="../data_import/slips.py" line="293"/>
         <source>Can&apos;t find &apos;document&apos; tag  in json &apos;ticket&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="347"/>
+        <location filename="../data_import/slips.py" line="356"/>
         <source>Not possible to import slip: no account set for import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="350"/>
+        <location filename="../data_import/slips.py" line="359"/>
         <source>Not possible to import slip: can&apos;t import: no peer set for import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="354"/>
+        <location filename="../data_import/slips.py" line="363"/>
         <source>Not possible to import slip: some categories are not set</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1028,18 +1028,23 @@ Application will be terminated now</source>
 <context>
     <name>PandasLinesModel</name>
     <message>
-        <location filename="../data_import/slips.py" line="63"/>
+        <location filename="../data_import/slips.py" line="64"/>
         <source>Product name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="65"/>
+        <location filename="../data_import/slips.py" line="66"/>
         <source>Category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="67"/>
+        <location filename="../data_import/slips.py" line="70"/>
         <source>Amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/slips.py" line="68"/>
+        <source>Tag</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
