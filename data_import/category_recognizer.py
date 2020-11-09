@@ -5,7 +5,7 @@ try:
 except ImportError:
     pass   # We should not be in this module as dependencies have been checked in slips.py and calls are disabled
 
-from db.helpers import executeSQL, readSQLrecord, readSQL
+from db.helpers import executeSQL, readSQLrecord
 
 #----------------------------------------------------------------------------------------------------------------------
 
@@ -28,7 +28,18 @@ def clean_text(text):
 
 
 def recognize_categories(db, purchases):
-    used_classes_number = readSQL(db, "SELECT COUNT(DISTINCT mapped_to) AS cnt FROM map_category")
+    # Load only categories that were used for import
+    query = executeSQL(db, "SELECT DISTINCT mapped_to AS category FROM map_category")
+    table = []
+    classes_number = 0
+    while query.next():
+        category = readSQLrecord(query)
+        table.append({
+            'idx': classes_number,
+            'category': category
+        })
+        classes_number += 1
+    categories = pd.DataFrame(table)
 
     # Load data from DB into pandas dataframe
     query = executeSQL(db, "SELECT value, mapped_to FROM map_category")
@@ -40,6 +51,8 @@ def recognize_categories(db, purchases):
             'mapped_to': mapped_to
         })
     data = pd.DataFrame(table)
+    data = data.merge(categories, left_on="mapped_to", right_on='category')
+    data = data.drop(columns=['mapped_to', 'category'])     # we don't need this column as we will use custom 'idx'
 
     data['cleaned_value'] = data.value.apply(clean_text)
 
@@ -53,15 +66,14 @@ def recognize_categories(db, purchases):
     X = tf.keras.preprocessing.sequence.pad_sequences(descriptions_sequenced, padding='post', maxlen=max_desc_len)
 
     # prepare Y values
-    Y = tf.keras.utils.to_categorical(data.mapped_to)
-    classes_number = Y.shape[1]
+    Y = tf.keras.utils.to_categorical(data.idx)
 
     # prepare and train model
     nn_model = tf.keras.Sequential(
         [tf.keras.layers.Embedding(input_length=max_desc_len, input_dim=dictionary_size + 1, output_dim=50),
          tf.keras.layers.Flatten(),
-         tf.keras.layers.Dense(used_classes_number + 1, activation='relu'),
-         tf.keras.layers.Dense(used_classes_number + 1, activation='relu'),
+         tf.keras.layers.Dense(classes_number + 1, activation='relu'),
+         tf.keras.layers.Dense(classes_number + 1, activation='relu'),
          tf.keras.layers.Dense(classes_number, activation='softmax')
          ])
     nn_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
@@ -71,7 +83,8 @@ def recognize_categories(db, purchases):
     purchases_sequenced = tokenizer.texts_to_sequences(purchases)
     NewX = tf.keras.preprocessing.sequence.pad_sequences(purchases_sequenced, padding='post', maxlen=max_desc_len)
     NewY = nn_model.predict(NewX)
-    result = tf.keras.backend.argmax(NewY, axis=1)
+    result_idx = tf.keras.backend.argmax(NewY, axis=1)
+    result = categories.take(result_idx.numpy().tolist()).category
     probability = NewY.max(axis=1)
 
-    return result.numpy().tolist(), probability.tolist()
+    return result.tolist(), probability.tolist()
