@@ -70,10 +70,9 @@ def recognize_categories(db, purchases):
 
     # prepare and train model
     nn_model = tf.keras.Sequential(
-        [tf.keras.layers.Embedding(input_length=max_desc_len, input_dim=dictionary_size + 1, output_dim=50),
+        [tf.keras.layers.Embedding(input_length=max_desc_len, input_dim=dictionary_size + 1, output_dim=classes_number * 2),
          tf.keras.layers.Flatten(),
-         tf.keras.layers.Dense(classes_number + 1, activation='relu'),
-         tf.keras.layers.Dense(classes_number + 1, activation='relu'),
+         tf.keras.layers.Dense(classes_number * 4, activation='relu'),
          tf.keras.layers.Dense(classes_number, activation='softmax')
          ])
     nn_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
