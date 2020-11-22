@@ -27,6 +27,7 @@ class IBKR:
         AssetClass.STOCK: PredefinedAsset.Stock,
         AssetClass.BOND: PredefinedAsset.Bond
     }
+    DummyExchange = "VALUE"
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -372,6 +373,8 @@ class StatementLoader(QObject):
         logging.info(g_tr('StatementLoader', "Transaction tax added: ") + f"{note}, {amount}")
 
     def loadIBCorpAction(self, IBCorpAction):
+        if IBCorpAction.listingExchange == IBKR.DummyExchange:   # Skip artificial corporate actions
+            return
         if IBCorpAction.code == Code.CANCEL:
             logging.warning(g_tr('StatementLoader', "*** MANUAL ACTION REQUIRED ***"))
             logging.warning(f"Corporate action cancelled {IBCorpAction.type} for account "
@@ -395,6 +398,7 @@ class StatementLoader(QObject):
                 number = ""
             qty = IBCorpAction.quantity
             self.createTrade(account_id, asset_id, timestamp, settlement, number, qty, 0, 0)
+            return
         logging.warning(g_tr('StatementLoader', "*** MANUAL ACTION REQUIRED ***"))
         logging.warning(f"Corporate action {IBCorpAction.type} for account "
                         f"{IBCorpAction.accountId} ({IBCorpAction.currency}): {IBCorpAction.actionDescription}")
