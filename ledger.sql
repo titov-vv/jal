@@ -485,7 +485,6 @@ CREATE TABLE trades (
                            NOT NULL,
     timestamp    INTEGER   NOT NULL,
     settlement   INTEGER   DEFAULT (0),
-    corp_action_id INTEGER   DEFAULT (0),
     number       TEXT (32) DEFAULT (''),
     account_id   INTEGER   REFERENCES accounts (id) ON DELETE CASCADE
                                                     ON UPDATE CASCADE
@@ -1452,7 +1451,6 @@ END;
 DROP TRIGGER IF EXISTS trades_after_update;
 CREATE TRIGGER trades_after_update
          AFTER UPDATE OF timestamp,
-                         corp_action_id,
                          account_id,
                          asset_id,
                          qty,
