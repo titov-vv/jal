@@ -472,6 +472,7 @@ CREATE TABLE corp_actions (
                              UNIQUE
                              NOT NULL,
     timestamp    INTEGER     NOT NULL,
+    number       TEXT (32)   DEFAULT (''),
     account_id   INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
                                                       ON UPDATE CASCADE
                              NOT NULL,
