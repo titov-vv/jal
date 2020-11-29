@@ -468,11 +468,23 @@ CREATE TABLE tags (
 DROP TABLE IF EXISTS corp_actions;
 
 CREATE TABLE corp_actions (
-    id   INTEGER     PRIMARY KEY
-                     UNIQUE
-                     NOT NULL,
-    type INTEGER,
-    note TEXT (1024)
+    id           INTEGER     PRIMARY KEY
+                             UNIQUE
+                             NOT NULL,
+    timestamp    INTEGER     NOT NULL,
+    account_id   INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
+                                                      ON UPDATE CASCADE
+                             NOT NULL,
+    type         INTEGER     NOT NULL,
+    asset_id     INTEGER     REFERENCES assets (id) ON DELETE RESTRICT
+                                                    ON UPDATE CASCADE
+                             NOT NULL,
+    qty          REAL        NOT NULL,
+    asset_id_new INTEGER     REFERENCES assets (id) ON DELETE RESTRICT
+                                                    ON UPDATE CASCADE
+                             NOT NULL,
+    qty_new      REAL        NOT NULL,
+    note         TEXT (1024)
 );
 
 
