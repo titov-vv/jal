@@ -242,8 +242,7 @@ class TaxesRus:
                            "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, "
                            "qos.quote AS os_rate, o.price AS o_price, o.fee AS o_fee, "
                            "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, "
-                           "qcs.quote AS cs_rate, c.price AS c_price, c.fee AS c_fee, "
-                           "coalesce(ao.type, ac.type, 0) AS corp_action_type "
+                           "qcs.quote AS cs_rate, c.price AS c_price, c.fee AS c_fee "
                            "FROM deals AS d "
                            "LEFT JOIN sequence AS os ON os.id=d.open_sid "
                            "LEFT JOIN trades AS o ON os.operation_id=o.id "
@@ -259,10 +258,7 @@ class TaxesRus:
                            "LEFT JOIN quotes AS qc ON ldc.timestamp=qc.timestamp AND a.currency_id=qc.asset_id "
                            "LEFT JOIN t_last_dates AS ldcs ON c.settlement=ldcs.ref_id "
                            "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
-                           "LEFT JOIN corp_actions AS ao ON ao.id=o.corp_action_id "
-                           "LEFT JOIN corp_actions AS ac ON ac.id=c.corp_action_id "
-                           "WHERE c.timestamp>=:begin AND c.timestamp<:end "
-                           "AND d.account_id=:account_id AND corp_action_type != 1 "
+                           "WHERE c.timestamp>=:begin AND c.timestamp<:end AND d.account_id=:account_id "
                            "ORDER BY o.timestamp, c.timestamp",
                            [(":begin", begin), (":end", end), (":account_id", account_id)])
         start_row = 9
@@ -272,7 +268,7 @@ class TaxesRus:
         profit_sum = 0.0
         while query.next():
             symbol, qty, o_date, o_fee_rate, os_date, o_rate, o_price, o_fee_usd, \
-                c_date, c_fee_rate, cs_date, c_rate, c_price, c_fee_usd, corp_action_type = readSQLrecord(query)
+                c_date, c_fee_rate, cs_date, c_rate, c_price, c_fee_usd = readSQLrecord(query)
             row = start_row + (data_row * 2)
             o_amount_usd = round(o_price * qty, 2)
             o_amount_rub = round(o_amount_usd * o_rate, 2)
