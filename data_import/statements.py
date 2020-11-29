@@ -266,10 +266,9 @@ class StatementLoader(QObject):
             return
 
         _ = executeSQL(self.db,
-                       "INSERT INTO trades (timestamp, settlement, corp_action_id, number, account_id, "
+                       "INSERT INTO trades (timestamp, settlement, number, account_id, "
                        "asset_id, qty, price, fee, coupon) "
-                       "VALUES (:timestamp, :settlement, 0, :number, :account, "
-                       ":asset, :qty, :price, :fee, :coupon)",
+                       "VALUES (:timestamp, :settlement, :number, :account, :asset, :qty, :price, :fee, :coupon)",
                        [(":timestamp", timestamp), (":settlement", settlement), (":number", number),
                         (":account", account_id), (":asset", asset_id), (":qty", float(qty)),
                         (":price", float(price)), (":fee", -float(fee)), (":coupon", float(coupon))])
