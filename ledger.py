@@ -414,17 +414,10 @@ class Ledger:
             self.current[PRICE_CATEGORY] = PredefinedCategory.Fees
             self.appendTransaction(BookAccount.Costs, self.current[FEE_TAX_TAG])
 
-    def processBuySell(self):
-        if self.current[AMOUNT_QTY] > 0:
-            self.processBuy()
-        else:
-            self.processSell()
-
     def processTrade(self):
-        operationTrade = {   # TODO implement corporate actions processing
-            CorporateAction.NA: self.processBuySell,
-            CorporateAction.Conversion: self.processBuySell,
-            CorporateAction.SpinOff: self.processBuySell
+        operationTrade = {
+            -1: self.processSell,
+            1: self.processBuy
         }
         operationTrade[self.current[TRANSACTION_SUBTYPE]]()
 

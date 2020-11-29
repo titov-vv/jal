@@ -759,7 +759,7 @@ CREATE VIEW all_transactions AS
                SELECT 3 AS type,
                       t.id,
                       t.timestamp,
-                      coalesce(ca.type, 0) AS subtype,
+                      iif(t.qty<0, -1, 1) AS subtype,
                       t.account_id AS account,
                       t.asset_id AS asset,
                       t.qty AS amount,
@@ -767,8 +767,6 @@ CREATE VIEW all_transactions AS
                       t.coupon AS coupon_peer,
                       t.fee AS fee_tax_tag
                  FROM trades AS t
-                      LEFT JOIN
-                      corp_actions AS ca ON t.corp_action_id = ca.id
                 ORDER BY timestamp,
                          type,
                          subtype
