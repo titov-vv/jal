@@ -56,7 +56,7 @@ class TableViewConfig:
         ACTIONS: None,
         ACTION_DETAILS: [("category_id", "categories", "id", "name", None),
                          ("tag_id", "tags", "id", "tag", None)],
-        TRADES: [("corp_action_id", "corp_actions", "id", "type", None)],
+        TRADES: None,
         DIVIDENDS: None,
         TRANSFERS: None
     }
@@ -139,7 +139,6 @@ class TableViewConfig:
                            ("peer_id", parent.ActionPeerWidget)],
             self.ACTION_DETAILS: None,
             self.TRADES: [("timestamp", parent.TradeTimestampEdit),
-                          ("corp_action_id", parent.TradeActionWidget),
                           ("account_id", parent.TradeAccountWidget),
                           ("asset_id", parent.TradeAssetWidget),
                           ("settlement", parent.TradeSettlementEdit),

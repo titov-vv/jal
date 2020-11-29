@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.15.1
+## Created by: Qt User Interface Compiler version 5.15.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -16,7 +16,6 @@ from ui_custom.reference_selector import AccountSelector
 from ui_custom.reference_selector import AssetSelector
 from ui_custom.account_select import AccountButton
 from ui_custom.reference_selector import PeerSelector
-from ui_custom.trade_action import TradeAction
 from ui_custom.log_viewer import LogViewer
 from ui_custom.account_select import ComboBoxDB
 from ui_custom.amount_editor import AmountEdit
@@ -445,11 +444,6 @@ class Ui_LedgerMainWindow(object):
         self.TradeSymbolLbl.setObjectName(u"TradeSymbolLbl")
 
         self.gridLayout_3.addWidget(self.TradeSymbolLbl, 2, 1, 1, 1)
-
-        self.TradeActionWidget = TradeAction(self.TradeDetailsTab)
-        self.TradeActionWidget.setObjectName(u"TradeActionWidget")
-
-        self.gridLayout_3.addWidget(self.TradeActionWidget, 4, 0, 1, 1)
 
         self.TradeCouponLbl = QLabel(self.TradeDetailsTab)
         self.TradeCouponLbl.setObjectName(u"TradeCouponLbl")
@@ -966,7 +960,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(0)
+        self.OperationsTabs.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)
