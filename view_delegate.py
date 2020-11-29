@@ -402,16 +402,13 @@ class OperationsNotesDelegate(QStyledItemDelegate):
         elif transaction_type == TransactionType.Dividend:
             text = record.value(index.column()) + "\n" + g_tr('OperationsDelegate', "Tax: ") + record.value("note2")
         elif transaction_type == TransactionType.Trade:
-            # Take corp.action description if any or construct Qty x Price for Buy/Sell operations
-            text = record.value(index.column())
-            if not text:
-                qty = record.value("qty_trid")
-                price = record.value("price")
-                fee = record.value("fee_tax")
-                if fee != 0:
-                    text = f"{qty:+.2f} @ {price:.2f}\n({fee:.2f})"
-                else:
-                    text = f"{qty:+.2f} @ {price:.2f}"
+            qty = record.value("qty_trid")
+            price = record.value("price")
+            fee = record.value("fee_tax")
+            if fee != 0:
+                text = f"{qty:+.2f} @ {price:.2f}\n({fee:.2f})"
+            else:
+                text = f"{qty:+.2f} @ {price:.2f}"
         else:
             assert False
         painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
