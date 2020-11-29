@@ -4,7 +4,7 @@ from PySide2.QtWidgets import QStyledItemDelegate
 from PySide2.QtCore import Qt, QSize
 from PySide2.QtGui import QTextDocument, QFont
 
-from constants import TransactionType, TransferSubtype, CustomColor
+from constants import TransactionType, TransferSubtype, CustomColor, CorporateAction
 from ui_custom.helpers import g_tr, formatFloatLong
 from ui_custom.reference_selector import CategorySelector, TagSelector
 from db.helpers import get_category_name
@@ -283,7 +283,7 @@ class OperationsTypeDelegate(QStyledItemDelegate):
             text = "Δ"
             pen.setColor(CustomColor.DarkGreen)
         elif transaction_type == TransactionType.Trade:
-            if amount <= 0:  # TODO Change from amount to qty as amount might be 0 for Corp.Actions
+            if amount <= 0:
                 text = "B"
                 pen.setColor(CustomColor.DarkGreen)
             else:
@@ -302,6 +302,9 @@ class OperationsTypeDelegate(QStyledItemDelegate):
                 pen.setColor(CustomColor.DarkRed)
             else:
                 assert False
+        elif transaction_type == TransactionType.CorporateAction:
+            corp_action_type = record.value("fee_tax")
+            text = "⭮"  # TODO diffirenciate between corp.actions types
         else:
             assert False
 
@@ -318,7 +321,9 @@ class OperationsTypeDelegate(QStyledItemDelegate):
         document.setDefaultFont(option.font)
         w = document.idealWidth()
         h = fontMetrics.height()
-        if (transaction_type == TransactionType.Dividend) or (transaction_type == TransactionType.Trade):
+        if (transaction_type == TransactionType.Dividend) \
+                or (transaction_type == TransactionType.Trade) \
+                or (transaction_type == TransactionType.CorporateAction):
             h = h * 2
         return QSize(w, h)
 
@@ -338,7 +343,9 @@ class OperationsTimestampDelegate(QStyledItemDelegate):
         transaction_type = record.value("type")
         number = record.value("num_peer")
         text = datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')
-        if (transaction_type == TransactionType.Trade) or (transaction_type == TransactionType.Dividend):
+        if (transaction_type == TransactionType.Trade) \
+                or (transaction_type == TransactionType.Dividend) \
+                or (transaction_type == TransactionType.CorporateAction):
             text = text + f"\n# {number}"
         painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
         painter.restore()
@@ -356,7 +363,9 @@ class OperationsAccountDelegate(QStyledItemDelegate):
         transaction_type = record.value("type")
         if transaction_type == TransactionType.Action:
             text = account
-        elif (transaction_type == TransactionType.Trade) or (transaction_type == TransactionType.Dividend):
+        elif (transaction_type == TransactionType.Trade) \
+                or (transaction_type == TransactionType.Dividend) \
+                or (transaction_type == TransactionType.CorporateAction):
             asset_name = record.value("asset_name")
             text = account + "\n" + asset_name
         elif transaction_type == TransactionType.Transfer:
@@ -377,6 +386,13 @@ class OperationsAccountDelegate(QStyledItemDelegate):
 
 
 class OperationsNotesDelegate(QStyledItemDelegate):
+    CorpActionNames = {
+        CorporateAction.SymbolChange: g_tr('OperationsDelegate', "Symbol change {old} -> {new}"),
+        CorporateAction.Split: "Split  {old} {before} into {after}",
+        CorporateAction.SpinOff: "Spin-off {after} {new} from {before} {old}",
+        CorporateAction.Merger: "Merger {before} {old} into {after} {new}"
+    }
+
     def __init__(self, parent=None):
         QStyledItemDelegate.__init__(self, parent)
 
@@ -409,6 +425,15 @@ class OperationsNotesDelegate(QStyledItemDelegate):
                 text = f"{qty:+.2f} @ {price:.2f}\n({fee:.2f})"
             else:
                 text = f"{qty:+.2f} @ {price:.2f}"
+        elif transaction_type == TransactionType.CorporateAction:
+            sub_type = record.value("fee_tax")
+            symbol_before = record.value("asset")
+            symbol_after = record.value("note")
+            qty_before = record.value("amount")
+            qty_after = record.value("qty_trid")
+            text = self.CorpActionNames[sub_type].format(old=symbol_before, new=symbol_after,
+                                                         before=qty_before, after=qty_after) \
+                   + "\n" + record.value("note2")
         else:
             assert False
         painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
@@ -462,7 +487,7 @@ class OperationsAmountDelegate(QStyledItemDelegate):
             pen.setColor(CustomColor.DarkRed)
             painter.setPen(pen)
             painter.drawText(option.rect, Qt.AlignRight | Qt.AlignVCenter, text)
-        else:
+        elif transaction_type == TransactionType.Action or transaction_type == TransactionType.Transfer:
             if amount >= 0:
                 pen.setColor(CustomColor.DarkGreen)
             else:
@@ -470,6 +495,25 @@ class OperationsAmountDelegate(QStyledItemDelegate):
             text = f"{amount:+,.2f}"
             painter.setPen(pen)
             painter.drawText(option.rect, Qt.AlignRight | Qt.AlignVCenter, text)
+        elif transaction_type == TransactionType.CorporateAction:
+            sub_type = record.value("fee_tax")
+            qty_before = -record.value("amount")
+            qty_after = record.value("qty_trid")
+            if sub_type == CorporateAction.SpinOff:
+                text = ""
+            else:
+                text = f"{qty_before:+,.2f}"
+            rect.setHeight(H / 2)
+            pen.setColor(CustomColor.DarkRed)
+            painter.setPen(pen)
+            painter.drawText(option.rect, Qt.AlignRight | Qt.AlignVCenter, text)
+            text = f"{qty_after:+,.2f}"
+            rect.moveTop(Y + H / 2)
+            pen.setColor(CustomColor.DarkGreen)
+            painter.setPen(pen)
+            painter.drawText(option.rect, Qt.AlignRight | Qt.AlignVCenter, text)
+        else:
+            assert  False
         painter.restore()
 
 
@@ -493,7 +537,15 @@ class OperationsTotalsDelegate(QStyledItemDelegate):
             lower_part = f"{total_shares:,.2f}"
         if total_money != '':
             upper_part = f"{total_money:,.2f}"
-        if transaction_type == TransactionType.Action or transaction_type == TransactionType.Transfer:
+        if transaction_type == TransactionType.CorporateAction:
+            sub_type = record.value("fee_tax")
+            if sub_type == CorporateAction.SpinOff:
+                qty_before = record.value("amount")
+            else:
+                qty_before = 0
+            qty_after = record.value("qty_trid")
+            text = f"{qty_before:,.2f}\n{qty_after:,.2f}"
+        elif transaction_type == TransactionType.Action or transaction_type == TransactionType.Transfer:
             text = upper_part
         else:
             text = upper_part + "\n" + lower_part
@@ -514,11 +566,15 @@ class OperationsCurrencyDelegate(QStyledItemDelegate):
         painter.save()
         model = index.model()
         record = model.record(index.row())
-        currency = record.value(index.column())
-        asset_name = record.value("asset")
-        text = " " + currency
-        if asset_name != "":
-            text = text + "\n " + asset_name
+        transaction_type = record.value("type")
+        if transaction_type == TransactionType.CorporateAction:
+            text = " " + record.value("asset") + "\n " + record.value("note")
+        else:
+            currency = record.value(index.column())
+            asset_name = record.value("asset")
+            text = " " + currency
+            if asset_name != "":
+                text = text + "\n " + asset_name
         painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
         painter.restore()
 
