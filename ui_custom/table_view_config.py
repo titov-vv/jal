@@ -171,8 +171,13 @@ class TableViewConfig:
                              ("fee_amount", parent.TransferFeeAmount),
                              ("note", parent.TransferNote)],
             self.CORP_ACTIONS: [("timestamp", parent.CorpActionTimestampEdit),
+                                ("number", parent.CorpActionNumberEdit),
                                 ("type", parent.CorpActionTypeCombo),
                                 ("account_id", parent.CorpActionAccountWidget),
+                                ("asset_id", parent.TradeAssetWidgetBefore),
+                                ("qty", parent.CorpActionQtyBeforeEdit),
+                                ("asset_id_new", parent.TradeAssetWidgetAfter),
+                                ("qty_new", parent.CorpActionQtyAfterEdit),
                                 ("note", parent.CorpActionNodeEdit)]
         }
         self.dialogs = {

@@ -138,7 +138,9 @@ class MapperDelegate(QSqlRelationalDelegate):
                                    11: self.float_delegate,
                                    12: self.float_delegate},
             'corp_actions': {1: self.timestamp_delegate,
-                             4: self.combobox_delegate}
+                             4: self.combobox_delegate,
+                             6: self.float_delegate,
+                             8: self.float_delegate}
         }
 
     def getDelegate(self, index):
