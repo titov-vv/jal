@@ -1151,9 +1151,6 @@
                     <property name="bottomMargin">
                      <number>2</number>
                     </property>
-                    <item row="5" column="2" colspan="3">
-                     <widget class="QLineEdit" name="CorpActionNodeEdit"/>
-                    </item>
                     <item row="3" column="3">
                      <widget class="QLabel" name="CorpActionQtyAfterLbl">
                       <property name="text">
@@ -1223,16 +1220,6 @@
                       </property>
                      </widget>
                     </item>
-                    <item row="5" column="1">
-                     <widget class="QLabel" name="CorpActionTextLbl">
-                      <property name="text">
-                       <string>Text:</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
                     <item row="2" column="1">
                      <widget class="QLabel" name="CorpActionFromLbl">
                       <property name="text">
@@ -1285,6 +1272,19 @@
                     </item>
                     <item row="3" column="2">
                      <widget class="AssetSelector" name="CorpActionAssetAfter" native="true"/>
+                    </item>
+                    <item row="5" column="0">
+                     <widget class="QLabel" name="CorpActionTextLbl">
+                      <property name="text">
+                       <string>Text:</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="5" column="1" colspan="4">
+                     <widget class="QLineEdit" name="CorpActionNodeEdit"/>
                     </item>
                    </layout>
                   </widget>

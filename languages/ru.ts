@@ -587,7 +587,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1163"/>
+        <location filename="../ui/ui_main_window.py" line="1162"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
         <translation></translation>
     </message>
@@ -672,7 +672,7 @@
         <translation>Описание дивиденда</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1160"/>
+        <location filename="../ui/ui_main_window.py" line="1163"/>
         <source>Text:</source>
         <translation>Текст:</translation>
     </message>
@@ -877,7 +877,7 @@
         <translation>Кол-во:</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1161"/>
+        <location filename="../ui/ui_main_window.py" line="1160"/>
         <source>Before:</source>
         <translation>До:</translation>
     </message>
@@ -887,7 +887,7 @@
         <translation>После:</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1162"/>
+        <location filename="../ui/ui_main_window.py" line="1161"/>
         <source>N/A;Merger;Spin-Off;Symbol change;Split</source>
         <translation>N/A;Объединение компании;Выделение компании;Смена символа;Сплит акций</translation>
     </message>

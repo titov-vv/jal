@@ -654,11 +654,6 @@ class Ui_LedgerMainWindow(object):
         self.gridLayout_6 = QGridLayout(self.CorpActionDetailsTab)
         self.gridLayout_6.setObjectName(u"gridLayout_6")
         self.gridLayout_6.setContentsMargins(2, 2, 2, 2)
-        self.CorpActionNodeEdit = QLineEdit(self.CorpActionDetailsTab)
-        self.CorpActionNodeEdit.setObjectName(u"CorpActionNodeEdit")
-
-        self.gridLayout_6.addWidget(self.CorpActionNodeEdit, 5, 2, 1, 3)
-
         self.CorpActionQtyAfterLbl = QLabel(self.CorpActionDetailsTab)
         self.CorpActionQtyAfterLbl.setObjectName(u"CorpActionQtyAfterLbl")
 
@@ -710,12 +705,6 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_6.addWidget(self.CorpActionQtyBeforeLbl, 2, 3, 1, 1)
 
-        self.CorpActionTextLbl = QLabel(self.CorpActionDetailsTab)
-        self.CorpActionTextLbl.setObjectName(u"CorpActionTextLbl")
-        self.CorpActionTextLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gridLayout_6.addWidget(self.CorpActionTextLbl, 5, 1, 1, 1)
-
         self.CorpActionFromLbl = QLabel(self.CorpActionDetailsTab)
         self.CorpActionFromLbl.setObjectName(u"CorpActionFromLbl")
         self.CorpActionFromLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
@@ -748,6 +737,17 @@ class Ui_LedgerMainWindow(object):
         self.CorpActionAssetAfter.setObjectName(u"CorpActionAssetAfter")
 
         self.gridLayout_6.addWidget(self.CorpActionAssetAfter, 3, 2, 1, 1)
+
+        self.CorpActionTextLbl = QLabel(self.CorpActionDetailsTab)
+        self.CorpActionTextLbl.setObjectName(u"CorpActionTextLbl")
+        self.CorpActionTextLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gridLayout_6.addWidget(self.CorpActionTextLbl, 5, 0, 1, 1)
+
+        self.CorpActionNodeEdit = QLineEdit(self.CorpActionDetailsTab)
+        self.CorpActionNodeEdit.setObjectName(u"CorpActionNodeEdit")
+
+        self.gridLayout_6.addWidget(self.CorpActionNodeEdit, 5, 1, 1, 4)
 
         self.OperationsTabs.addWidget(self.CorpActionDetailsTab)
 
@@ -1157,10 +1157,10 @@ class Ui_LedgerMainWindow(object):
         self.CorpActionAccountLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Account:", None))
         self.CorpActionTabLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Corporate Action", None))
         self.CorpActionQtyBeforeLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Qty:", None))
-        self.CorpActionTextLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Text:", None))
         self.CorpActionFromLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Before:", None))
         self.CorpActionTypeCombo.setProperty("stringModelData", QCoreApplication.translate("LedgerMainWindow", u"N/A;Merger;Spin-Off;Symbol change;Split", None))
         self.CorpActionTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
+        self.CorpActionTextLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Text:", None))
         self.NewOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"New", None))
         self.CopyOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Copy", None))
         self.DeleteOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Del", None))
