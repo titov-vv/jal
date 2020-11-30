@@ -174,9 +174,9 @@ class TableViewConfig:
                                 ("number", parent.CorpActionNumberEdit),
                                 ("type", parent.CorpActionTypeCombo),
                                 ("account_id", parent.CorpActionAccountWidget),
-                                ("asset_id", parent.TradeAssetWidgetBefore),
+                                ("asset_id", parent.CorpActionAssetBefore),
+                                ("asset_id_new", parent.CorpActionAssetAfter),
                                 ("qty", parent.CorpActionQtyBeforeEdit),
-                                ("asset_id_new", parent.TradeAssetWidgetAfter),
                                 ("qty_new", parent.CorpActionQtyAfterEdit),
                                 ("note", parent.CorpActionNodeEdit)]
         }

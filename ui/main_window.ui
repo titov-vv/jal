@@ -1151,22 +1151,41 @@
                     <property name="bottomMargin">
                      <number>2</number>
                     </property>
-                    <item row="1" column="0">
-                     <widget class="QDateTimeEdit" name="CorpActionTimestampEdit">
-                      <property name="displayFormat">
-                       <string>dd/MM/yyyy hh:mm:ss</string>
-                      </property>
-                      <property name="calendarPopup">
-                       <bool>true</bool>
+                    <item row="5" column="2" colspan="3">
+                     <widget class="QLineEdit" name="CorpActionNodeEdit"/>
+                    </item>
+                    <item row="3" column="3">
+                     <widget class="QLabel" name="CorpActionQtyAfterLbl">
+                      <property name="text">
+                       <string>Qty:</string>
                       </property>
                      </widget>
                     </item>
-                    <item row="3" column="0">
-                     <widget class="QComboBox" name="CorpActionTypeCombo">
-                      <property name="stringModelData" stdset="0">
-                       <string>N/A;Merger;Spin-Off;Symbol change;Split</string>
+                    <item row="2" column="4">
+                     <widget class="QLineEdit" name="CorpActionQtyBeforeEdit"/>
+                    </item>
+                    <item row="3" column="1">
+                     <widget class="QLabel" name="CorpActionToLbl">
+                      <property name="text">
+                       <string>After:</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                       </property>
                      </widget>
+                    </item>
+                    <item row="1" column="2" colspan="2">
+                     <widget class="AccountSelector" name="CorpActionAccountWidget" native="true"/>
+                    </item>
+                    <item row="1" column="1">
+                     <widget class="QLabel" name="CorpActionAccountLbl">
+                      <property name="text">
+                       <string>Account:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="4">
+                     <widget class="QLineEdit" name="CorpActionQtyAfterEdit"/>
                     </item>
                     <item row="6" column="0">
                      <spacer name="verticalSpacer_3">
@@ -1181,67 +1200,8 @@
                       </property>
                      </spacer>
                     </item>
-                    <item row="5" column="2" colspan="3">
-                     <widget class="QLineEdit" name="CorpActionNodeEdit"/>
-                    </item>
-                    <item row="3" column="4">
-                     <widget class="QLineEdit" name="CorpActionQtyAfterEdit"/>
-                    </item>
                     <item row="2" column="2">
-                     <widget class="AssetSelector" name="TradeAssetWidgetBefore" native="true"/>
-                    </item>
-                    <item row="2" column="1">
-                     <widget class="QLabel" name="CorpActionFromLbl">
-                      <property name="text">
-                       <string>Before:</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="2">
-                     <widget class="AssetSelector" name="TradeAssetWidgetAfter" native="true"/>
-                    </item>
-                    <item row="2" column="0">
-                     <widget class="QLineEdit" name="CorpActionNumberEdit">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="4">
-                     <widget class="QLineEdit" name="CorpActionQtyBeforeEdit"/>
-                    </item>
-                    <item row="2" column="3">
-                     <widget class="QLabel" name="CorpActionQtyBeforeLbl">
-                      <property name="text">
-                       <string>Qty:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="1">
-                     <widget class="QLabel" name="CorpActionToLbl">
-                      <property name="text">
-                       <string>After:</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="5" column="1">
-                     <widget class="QLabel" name="CorpActionTextLbl">
-                      <property name="text">
-                       <string>Text:</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
+                     <widget class="AssetSelector" name="CorpActionAssetBefore" native="true"/>
                     </item>
                     <item row="0" column="0">
                      <widget class="QLabel" name="CorpActionTabLbl">
@@ -1256,21 +1216,34 @@
                       </property>
                      </widget>
                     </item>
-                    <item row="1" column="1">
-                     <widget class="QLabel" name="CorpActionAccountLbl">
-                      <property name="text">
-                       <string>Account:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="3">
-                     <widget class="QLabel" name="CorpActionQtyAfterLbl">
+                    <item row="2" column="3">
+                     <widget class="QLabel" name="CorpActionQtyBeforeLbl">
                       <property name="text">
                        <string>Qty:</string>
                       </property>
                      </widget>
                     </item>
-                    <item row="2" column="5">
+                    <item row="5" column="1">
+                     <widget class="QLabel" name="CorpActionTextLbl">
+                      <property name="text">
+                       <string>Text:</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="1">
+                     <widget class="QLabel" name="CorpActionFromLbl">
+                      <property name="text">
+                       <string>Before:</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="6">
                      <spacer name="horizontalSpacer_7">
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
@@ -1283,8 +1256,35 @@
                       </property>
                      </spacer>
                     </item>
-                    <item row="1" column="2" colspan="2">
-                     <widget class="AccountSelector" name="CorpActionAccountWidget" native="true"/>
+                    <item row="2" column="0">
+                     <widget class="QLineEdit" name="CorpActionNumberEdit">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="0">
+                     <widget class="QComboBox" name="CorpActionTypeCombo">
+                      <property name="stringModelData" stdset="0">
+                       <string>N/A;Merger;Spin-Off;Symbol change;Split</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="0">
+                     <widget class="QDateTimeEdit" name="CorpActionTimestampEdit">
+                      <property name="displayFormat">
+                       <string>dd/MM/yyyy hh:mm:ss</string>
+                      </property>
+                      <property name="calendarPopup">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="2">
+                     <widget class="AssetSelector" name="CorpActionAssetAfter" native="true"/>
                     </item>
                    </layout>
                   </widget>
