@@ -651,6 +651,51 @@ class Ui_LedgerMainWindow(object):
         self.OperationsTabs.addWidget(self.TransferDetailsTab)
         self.CorpActionDetailsTab = QWidget()
         self.CorpActionDetailsTab.setObjectName(u"CorpActionDetailsTab")
+        self.gridLayout_6 = QGridLayout(self.CorpActionDetailsTab)
+        self.gridLayout_6.setObjectName(u"gridLayout_6")
+        self.gridLayout_6.setContentsMargins(2, 2, 2, 2)
+        self.CorpActionTimestampEdit = QDateTimeEdit(self.CorpActionDetailsTab)
+        self.CorpActionTimestampEdit.setObjectName(u"CorpActionTimestampEdit")
+        self.CorpActionTimestampEdit.setCalendarPopup(True)
+
+        self.gridLayout_6.addWidget(self.CorpActionTimestampEdit, 1, 0, 1, 1)
+
+        self.verticalSpacer_3 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_6.addItem(self.verticalSpacer_3, 4, 0, 1, 1)
+
+        self.CorpActionAccountWidget = AccountSelector(self.CorpActionDetailsTab)
+        self.CorpActionAccountWidget.setObjectName(u"CorpActionAccountWidget")
+
+        self.gridLayout_6.addWidget(self.CorpActionAccountWidget, 1, 2, 1, 1)
+
+        self.CorpActionNodeEdit = QLineEdit(self.CorpActionDetailsTab)
+        self.CorpActionNodeEdit.setObjectName(u"CorpActionNodeEdit")
+
+        self.gridLayout_6.addWidget(self.CorpActionNodeEdit, 3, 1, 1, 2)
+
+        self.CorpActionTextLbl = QLabel(self.CorpActionDetailsTab)
+        self.CorpActionTextLbl.setObjectName(u"CorpActionTextLbl")
+        self.CorpActionTextLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gridLayout_6.addWidget(self.CorpActionTextLbl, 3, 0, 1, 1)
+
+        self.CorpActionTabLbl = QLabel(self.CorpActionDetailsTab)
+        self.CorpActionTabLbl.setObjectName(u"CorpActionTabLbl")
+        self.CorpActionTabLbl.setFont(font)
+
+        self.gridLayout_6.addWidget(self.CorpActionTabLbl, 0, 0, 1, 1)
+
+        self.CorpActionAccountLbl = QLabel(self.CorpActionDetailsTab)
+        self.CorpActionAccountLbl.setObjectName(u"CorpActionAccountLbl")
+
+        self.gridLayout_6.addWidget(self.CorpActionAccountLbl, 1, 1, 1, 1)
+
+        self.CorpActionTypeCombo = QComboBox(self.CorpActionDetailsTab)
+        self.CorpActionTypeCombo.setObjectName(u"CorpActionTypeCombo")
+
+        self.gridLayout_6.addWidget(self.CorpActionTypeCombo, 2, 0, 1, 1)
+
         self.OperationsTabs.addWidget(self.CorpActionDetailsTab)
 
         self.horizontalLayout_4.addWidget(self.OperationsTabs)
@@ -1054,6 +1099,11 @@ class Ui_LedgerMainWindow(object):
         self.TransferFeeTimestamp.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.TransferToLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"To:", None))
         self.TransferToTimestamp.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
+        self.CorpActionTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
+        self.CorpActionTextLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Text:", None))
+        self.CorpActionTabLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Corporate Action", None))
+        self.CorpActionAccountLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Account:", None))
+        self.CorpActionTypeCombo.setProperty("stringModelData", QCoreApplication.translate("LedgerMainWindow", u"Merger;Spin-Off;Symbol change;Split", None))
         self.NewOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"New", None))
         self.CopyOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Copy", None))
         self.DeleteOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Del", None))

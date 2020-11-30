@@ -90,6 +90,20 @@ class FloatDelegate(QSqlRelationalDelegate):
         painter.restore()
 
 # -----------------------------------------------------------------------------------------------------------------------
+# Delegate to categorical data display in ComboBox
+# ComboBox should have it's own StringListModel assigned (done via 'stringModelData' dynamic property
+# ComboBox has zero-based index - so we need to do +/-1 in methods
+class ComboBoxDelegate(QSqlRelationalDelegate):
+    def __init__(self, parent=None):
+        QSqlRelationalDelegate.__init__(self, parent)
+
+    def setEditorData(self, editor, index):
+        editor.setCurrentIndex(index.data() - 1)
+
+    def setModelData(self, editor, model, index):
+        model.setData(index, editor.currentIndex() + 1)
+
+# -----------------------------------------------------------------------------------------------------------------------
 # Delegate wrapper class which allows proper delegate selection by table/field basis
 class MapperDelegate(QSqlRelationalDelegate):
     def __init__(self, parent=None):
@@ -99,6 +113,7 @@ class MapperDelegate(QSqlRelationalDelegate):
         self.category_delegate = CategoryDelegate()
         self.tag_delegate = TagDelegate()
         self.float_delegate = FloatDelegate()
+        self.combobox_delegate = ComboBoxDelegate()
 
         self.delegates = {
             'actions': {1: self.timestamp_delegate},
@@ -121,7 +136,9 @@ class MapperDelegate(QSqlRelationalDelegate):
                                    8: self.timestamp_delegate,
                                    10: self.float_delegate,
                                    11: self.float_delegate,
-                                   12: self.float_delegate}
+                                   12: self.float_delegate},
+            'corp_actions': {1: self.timestamp_delegate,
+                             4: self.combobox_delegate}
         }
 
     def getDelegate(self, index):

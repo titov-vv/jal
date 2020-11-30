@@ -1,10 +1,9 @@
-import sys
 import datetime
 
 from constants import ColumnWidth
-from PySide2.QtCore import QCoreApplication, Qt
+from PySide2.QtCore import QCoreApplication, Qt, QStringListModel
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
-from PySide2.QtWidgets import QAbstractItemView, QHeaderView, QDataWidgetMapper, QFrame, QDateTimeEdit
+from PySide2.QtWidgets import QHeaderView, QDataWidgetMapper, QFrame, QDateTimeEdit
 
 class hcol_idx:
     DB_NAME = 0
@@ -18,7 +17,7 @@ class rel_idx:
     LOOKUP_TABLE = 1
     FOREIGN_KEY = 2
     LOOKUP_FIELD = 3
-    GROUP_NAME = 4
+    GROUP_NAME = 4          # Name of group field if Reference Data dialog
 
 class map_idx:
     DB_NAME = 0
@@ -205,6 +204,10 @@ def ConfigureDataMappers(model, mappings, delegate):
         if hasattr(mapping[map_idx.WIDGET], "isCustom"):
             mapping[map_idx.WIDGET].init_db(model.database())
             mapping[map_idx.WIDGET].changed.connect(mapper.submit)
+        if mapping[map_idx.WIDGET].property("stringModelData") is not None:
+            # Load lookup values from dynamic property into combo-box model
+            comboModel = QStringListModel(mapping[map_idx.WIDGET].property("stringModelData").split(';'))
+            mapping[map_idx.WIDGET].setModel(comboModel)
         # if no USER property we should use QByteArray().setRawData("account_id", 10)) here
         mapper.addMapping(mapping[map_idx.WIDGET], model.fieldIndex(mapping[map_idx.DB_NAME]))
         # adjust width of QDateTimeEdits to show full date-time string

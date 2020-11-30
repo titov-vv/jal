@@ -134,7 +134,7 @@ class TableViewConfig:
             self.TRANSFERS: None,
             self.CORP_ACTIONS: None
         }
-        self.mappers = {}
+        self.mappers = {}           # Here mapper objects will be stored
         self.widget_mappers = {
             self.BALANCES: None,
             self.HOLDINGS: None,
@@ -170,7 +170,10 @@ class TableViewConfig:
                              ("to_amount", parent.TransferToAmount),
                              ("fee_amount", parent.TransferFeeAmount),
                              ("note", parent.TransferNote)],
-            self.CORP_ACTIONS: None
+            self.CORP_ACTIONS: [("timestamp", parent.CorpActionTimestampEdit),
+                                ("type", parent.CorpActionTypeCombo),
+                                ("account_id", parent.CorpActionAccountWidget),
+                                ("note", parent.CorpActionNodeEdit)]
         }
         self.dialogs = {
             # see DLG_ constants for reference
