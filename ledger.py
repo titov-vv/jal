@@ -1,9 +1,9 @@
 import logging
 
 from datetime import datetime
-from constants import Setup, BookAccount, TransactionType, ActionSubtype, CorporateAction, \
-    TransferSubtype, PredefinedCategory, PredefinedPeer
-from PySide2.QtCore import QCoreApplication, Qt, QDate, QDateTime
+from constants import Setup, BookAccount, TransactionType, ActionSubtype, TransferSubtype, \
+    PredefinedCategory, PredefinedPeer
+from PySide2.QtCore import Qt, QDate, QDateTime
 from PySide2.QtWidgets import QDialog, QMessageBox
 from db.helpers import executeSQL, readSQL, readSQLrecord
 from db.routines import calculateBalances, calculateHoldings
@@ -450,6 +450,9 @@ class Ledger:
         }
         operationTransfer[self.current[TRANSACTION_SUBTYPE]]()
 
+    def processCorporateAction(self):
+        pass
+
     # Rebuild transaction sequence and recalculate all amounts
     # timestamp:
     # -1 - re-build from last valid operation (from ledger frontier)
@@ -462,6 +465,7 @@ class Ledger:
             TransactionType.Dividend: self.processDividend,
             TransactionType.Trade: self.processTrade,
             TransactionType.Transfer: self.processTransfer,
+            TransactionType.CorporateAction: self.processCorporateAction
         }
 
         if from_timestamp >= 0:

@@ -703,6 +703,7 @@ CREATE VIEW all_operations AS
                       accounts AS a ON a.id = tr.account_id
                       LEFT JOIN
                       assets AS c ON c.id = a.currency_id
+               UNION ALL
                SELECT 5 AS type,
                       ca.id,
                       ca.timestamp,
@@ -795,9 +796,21 @@ CREATE VIEW all_transactions AS
                       t.coupon AS coupon_peer,
                       t.fee AS fee_tax_tag
                  FROM trades AS t
-                ORDER BY timestamp,
-                         type,
-                         subtype
+               UNION ALL
+               SELECT 5 AS type,
+                      a.id,
+                      a.timestamp,
+                      a.type AS subtype,
+                      a.account_id AS account,
+                      a.asset_id AS asset,
+                      a.qty AS amount,
+                      a.qty_new AS price_category,
+                      a.asset_id_new AS coupon_peer,
+                      NULL AS fee_tax_tag
+                  FROM corp_actions AS a
+               ORDER BY timestamp,
+                        type,
+                        subtype
            )
            AS at
            LEFT JOIN
