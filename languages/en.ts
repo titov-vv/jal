@@ -872,11 +872,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1156"/>
-        <source>Merger;Spin-Off;Symbol change;Split</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../ui/ui_main_window.py" line="1163"/>
         <source>Qty:</source>
         <translation type="unfinished"></translation>
@@ -889,6 +884,11 @@
     <message>
         <location filename="../ui/ui_main_window.py" line="1159"/>
         <source>After:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_main_window.py" line="1156"/>
+        <source>N/A;Merger;Spin-Off;Symbol change;Split</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

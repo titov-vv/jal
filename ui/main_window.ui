@@ -1164,7 +1164,7 @@
                     <item row="3" column="0">
                      <widget class="QComboBox" name="CorpActionTypeCombo">
                       <property name="stringModelData" stdset="0">
-                       <string>Merger;Spin-Off;Symbol change;Split</string>
+                       <string>N/A;Merger;Spin-Off;Symbol change;Split</string>
                       </property>
                      </widget>
                     </item>

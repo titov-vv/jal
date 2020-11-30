@@ -1153,7 +1153,7 @@ class Ui_LedgerMainWindow(object):
         self.TransferToLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"To:", None))
         self.TransferToTimestamp.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.CorpActionTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
-        self.CorpActionTypeCombo.setProperty("stringModelData", QCoreApplication.translate("LedgerMainWindow", u"Merger;Spin-Off;Symbol change;Split", None))
+        self.CorpActionTypeCombo.setProperty("stringModelData", QCoreApplication.translate("LedgerMainWindow", u"N/A;Merger;Spin-Off;Symbol change;Split", None))
         self.CorpActionFromLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Before:", None))
         self.CorpActionQtyBeforeLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Qty:", None))
         self.CorpActionToLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"After:", None))

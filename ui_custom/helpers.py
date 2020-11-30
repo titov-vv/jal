@@ -1,7 +1,7 @@
 import datetime
 
 from constants import ColumnWidth
-from PySide2.QtCore import QCoreApplication, Qt, QStringListModel
+from PySide2.QtCore import QCoreApplication, Qt, QStringListModel, QByteArray
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtWidgets import QHeaderView, QDataWidgetMapper, QFrame, QDateTimeEdit
 
@@ -208,8 +208,10 @@ def ConfigureDataMappers(model, mappings, delegate):
             # Load lookup values from dynamic property into combo-box model
             comboModel = QStringListModel(mapping[map_idx.WIDGET].property("stringModelData").split(';'))
             mapping[map_idx.WIDGET].setModel(comboModel)
-        # if no USER property we should use QByteArray().setRawData("account_id", 10)) here
-        mapper.addMapping(mapping[map_idx.WIDGET], model.fieldIndex(mapping[map_idx.DB_NAME]))
+            mapper.addMapping(mapping[map_idx.WIDGET], model.fieldIndex(mapping[map_idx.DB_NAME]),
+                              QByteArray().setRawData("currentIndex", 12))
+        else:  # ComboBox has no USER property so we use QByteArray above, and simple mapping for others below
+            mapper.addMapping(mapping[map_idx.WIDGET], model.fieldIndex(mapping[map_idx.DB_NAME]))
         # adjust width of QDateTimeEdits to show full date-time string
         if isinstance(mapping[map_idx.WIDGET], QDateTimeEdit):
             mapping[map_idx.WIDGET].setFixedWidth(

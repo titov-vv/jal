@@ -873,11 +873,6 @@
         <translation>Корпоративное действие</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1156"/>
-        <source>Merger;Spin-Off;Symbol change;Split</source>
-        <translation>Объединение компании;Выделение компании;Смена символа;Сплит акций</translation>
-    </message>
-    <message>
         <location filename="../ui/ui_main_window.py" line="1163"/>
         <source>Qty:</source>
         <translation>Кол-во:</translation>
@@ -891,6 +886,11 @@
         <location filename="../ui/ui_main_window.py" line="1159"/>
         <source>After:</source>
         <translation>После:</translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_main_window.py" line="1156"/>
+        <source>N/A;Merger;Spin-Off;Symbol change;Split</source>
+        <translation>N/A;Объединение компании;Выделение компании;Смена символа;Сплит акций</translation>
     </message>
 </context>
 <context>
