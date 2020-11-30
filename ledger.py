@@ -1,7 +1,7 @@
 import logging
 
 from datetime import datetime
-from constants import Setup, BookAccount, TransactionType, ActionSubtype, TransferSubtype, \
+from constants import Setup, BookAccount, TransactionType, ActionSubtype, TransferSubtype, CorporateAction, \
     PredefinedCategory, PredefinedPeer
 from PySide2.QtCore import Qt, QDate, QDateTime
 from PySide2.QtWidgets import QDialog, QMessageBox
@@ -43,7 +43,8 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
 # TODO Check are there positive lines for Incomes
 # TODO Check are there negative lines for Costs
 # ===================================================================================================================
-# constants to use instead in indices in self.current which contains details about currently processed operation
+# constants to use instead in indices in self.current which is a list
+# that contains details about currently processed operation
 TRANSACTION_TYPE = 0
 OPERATION_ID = 1
 TIMESTAMP = 2
@@ -450,8 +451,28 @@ class Ledger:
         }
         operationTransfer[self.current[TRANSACTION_SUBTYPE]]()
 
+    def processAssetConversion(self):
+        print("AAAAAAAA")
+
+    # Spin-Off is equal to Buy operation with 0 price
+    def processSpinOff(self):
+        operation_details = self.current
+        # Values for TIMESTAMP, ACCOUNT_ID remains the same
+        self.current[ASSET_ID] = operation_details[COUPON_PEER]
+        self.current[AMOUNT_QTY] = operation_details[PRICE_CATEGORY]
+        self.current[PRICE_CATEGORY] = 0
+        self.current[COUPON_PEER] = 0
+        self.current[FEE_TAX_TAG] = 0
+        self.processBuy()
+
     def processCorporateAction(self):
-        pass
+        operationCorpAction = {
+            CorporateAction.Merger: self.processAssetConversion,
+            CorporateAction.Split: self.processAssetConversion,
+            CorporateAction.SymbolChange: self.processAssetConversion,
+            CorporateAction.SpinOff: self.processSpinOff
+        }
+        operationCorpAction[self.current[TRANSACTION_SUBTYPE]]()
 
     # Rebuild transaction sequence and recalculate all amounts
     # timestamp:

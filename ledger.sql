@@ -1518,6 +1518,58 @@ BEGIN
                 timestamp >= NEW.timestamp;
 END;
 
+-- Triggers for corp_actions table
+DROP TRIGGER IF EXISTS corp_after_delete;
+CREATE TRIGGER corp_after_delete
+         AFTER DELETE
+            ON corp_actions
+      FOR EACH ROW
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= OLD.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= OLD.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= OLD.timestamp;
+END;
+
+DROP TRIGGER IF EXISTS corp_after_insert;
+CREATE TRIGGER corp_after_insert
+         AFTER INSERT
+            ON corp_actions
+      FOR EACH ROW
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= NEW.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= NEW.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= NEW.timestamp;
+END;
+
+DROP TRIGGER IF EXISTS corp_after_update;
+CREATE TRIGGER corp_after_update
+         AFTER UPDATE OF timestamp,
+                         account_id,
+                         type,
+                         asset_id,
+                         qty,
+                         asset_id_new,
+                         qty_new
+            ON corp_actions
+      FOR EACH ROW
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= OLD.timestamp OR
+                timestamp >= NEW.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= OLD.timestamp OR
+                timestamp >= NEW.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= OLD.timestamp OR
+                timestamp >= NEW.timestamp;
+END;
+
 -- Trigger: transfers_after_delete
 DROP TRIGGER IF EXISTS transfers_after_delete;
 CREATE TRIGGER transfers_after_delete
