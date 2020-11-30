@@ -649,6 +649,9 @@ class Ui_LedgerMainWindow(object):
         self.gridLayout_5.addWidget(self.TransferToTimestamp, 3, 0, 1, 1)
 
         self.OperationsTabs.addWidget(self.TransferDetailsTab)
+        self.CorpActionDetailsTab = QWidget()
+        self.CorpActionDetailsTab.setObjectName(u"CorpActionDetailsTab")
+        self.OperationsTabs.addWidget(self.CorpActionDetailsTab)
 
         self.horizontalLayout_4.addWidget(self.OperationsTabs)
 
@@ -960,7 +963,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(2)
+        self.OperationsTabs.setCurrentIndex(5)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)

@@ -384,37 +384,37 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="483"/>
+        <location filename="../ledger.py" line="476"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="483"/>
+        <location filename="../ledger.py" line="476"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="488"/>
+        <location filename="../ledger.py" line="481"/>
         <source>Re-build ledger from: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="521"/>
+        <location filename="../ledger.py" line="514"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="521"/>
+        <location filename="../ledger.py" line="514"/>
         <source>, new frontier: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="513"/>
+        <location filename="../ledger.py" line="506"/>
         <source>Processed </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="513"/>
+        <location filename="../ledger.py" line="506"/>
         <source>k records, current frontier: </source>
         <translation></translation>
     </message>
@@ -422,447 +422,447 @@
 <context>
     <name>LedgerMainWindow</name>
     <message>
-        <location filename="../ui/ui_main_window.py" line="970"/>
+        <location filename="../ui/ui_main_window.py" line="973"/>
         <source>Ledger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="971"/>
+        <location filename="../ui/ui_main_window.py" line="974"/>
         <source>&amp;Exit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="972"/>
+        <location filename="../ui/ui_main_window.py" line="975"/>
         <source>Re-build &amp;Ledger...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="973"/>
+        <location filename="../ui/ui_main_window.py" line="976"/>
         <source>Load &amp;Quotes...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="974"/>
+        <location filename="../ui/ui_main_window.py" line="977"/>
         <source>&amp;Broker statement...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="975"/>
+        <location filename="../ui/ui_main_window.py" line="978"/>
         <source>Account &amp;Types</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="976"/>
+        <location filename="../ui/ui_main_window.py" line="979"/>
         <source>&amp;Accounts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="977"/>
+        <location filename="../ui/ui_main_window.py" line="980"/>
         <source>A&amp;ssets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="978"/>
+        <location filename="../ui/ui_main_window.py" line="981"/>
         <source>&amp;Peers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="979"/>
+        <location filename="../ui/ui_main_window.py" line="982"/>
         <source>&amp;Categories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="980"/>
+        <location filename="../ui/ui_main_window.py" line="983"/>
         <source>&amp;Backup...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="981"/>
+        <location filename="../ui/ui_main_window.py" line="984"/>
         <source>&amp;Restore...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="982"/>
+        <location filename="../ui/ui_main_window.py" line="985"/>
         <source>&amp;Tax report [RU]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="983"/>
+        <location filename="../ui/ui_main_window.py" line="986"/>
         <source>&amp;Deals report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="984"/>
+        <location filename="../ui/ui_main_window.py" line="987"/>
         <source>&amp;Tags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="985"/>
+        <location filename="../ui/ui_main_window.py" line="988"/>
         <source>&amp;Profit/Loss report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="986"/>
+        <location filename="../ui/ui_main_window.py" line="989"/>
         <source>&amp;Income/Spending report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="987"/>
+        <location filename="../ui/ui_main_window.py" line="990"/>
         <source>Slip [RU]...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="988"/>
+        <location filename="../ui/ui_main_window.py" line="991"/>
         <source>Countries</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="989"/>
+        <location filename="../ui/ui_main_window.py" line="992"/>
         <source>Balances</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1084"/>
+        <location filename="../ui/ui_main_window.py" line="1087"/>
         <source>dd/MM/yyyy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="991"/>
+        <location filename="../ui/ui_main_window.py" line="994"/>
         <source>Sum Currency:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="992"/>
+        <location filename="../ui/ui_main_window.py" line="995"/>
         <source>Show &amp;Inactive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="993"/>
+        <location filename="../ui/ui_main_window.py" line="996"/>
         <source>Operations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="994"/>
+        <location filename="../ui/ui_main_window.py" line="997"/>
         <source>Time range:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="995"/>
+        <location filename="../ui/ui_main_window.py" line="998"/>
         <source>Week</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="996"/>
+        <location filename="../ui/ui_main_window.py" line="999"/>
         <source>Month</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="997"/>
+        <location filename="../ui/ui_main_window.py" line="1000"/>
         <source>Quarter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="998"/>
+        <location filename="../ui/ui_main_window.py" line="1001"/>
         <source>Year</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1002"/>
+        <location filename="../ui/ui_main_window.py" line="1005"/>
         <source>All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1066"/>
+        <location filename="../ui/ui_main_window.py" line="1069"/>
         <source>Account:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1003"/>
+        <location filename="../ui/ui_main_window.py" line="1006"/>
         <source>Search:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1004"/>
+        <location filename="../ui/ui_main_window.py" line="1007"/>
         <source>Peer:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1005"/>
+        <location filename="../ui/ui_main_window.py" line="1008"/>
         <source> + </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1006"/>
+        <location filename="../ui/ui_main_window.py" line="1009"/>
         <source>&gt;&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1007"/>
+        <location filename="../ui/ui_main_window.py" line="1010"/>
         <source> u2014 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1053"/>
+        <location filename="../ui/ui_main_window.py" line="1056"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1070"/>
+        <location filename="../ui/ui_main_window.py" line="1073"/>
         <source>Income / Spending</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1011"/>
+        <location filename="../ui/ui_main_window.py" line="1014"/>
         <source>Fee broker:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1013"/>
+        <location filename="../ui/ui_main_window.py" line="1016"/>
         <source>Trade settlement date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1050"/>
+        <location filename="../ui/ui_main_window.py" line="1053"/>
         <source>N/A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1017"/>
+        <location filename="../ui/ui_main_window.py" line="1020"/>
         <source>Quantity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1019"/>
+        <location filename="../ui/ui_main_window.py" line="1022"/>
         <source>Trade operation number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1021"/>
+        <location filename="../ui/ui_main_window.py" line="1024"/>
         <source>Buy / Sell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1023"/>
+        <location filename="../ui/ui_main_window.py" line="1026"/>
         <source>Price:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1027"/>
+        <location filename="../ui/ui_main_window.py" line="1030"/>
         <source>Symbol:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1026"/>
+        <location filename="../ui/ui_main_window.py" line="1029"/>
         <source>Coupon:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1029"/>
+        <location filename="../ui/ui_main_window.py" line="1032"/>
         <source>Tax amount</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1032"/>
+        <location filename="../ui/ui_main_window.py" line="1035"/>
         <source>Tax amount / country:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1034"/>
+        <location filename="../ui/ui_main_window.py" line="1037"/>
         <source>Dividend amount</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1037"/>
+        <location filename="../ui/ui_main_window.py" line="1040"/>
         <source>Dividend operation number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1039"/>
+        <location filename="../ui/ui_main_window.py" line="1042"/>
         <source>Dividend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1041"/>
+        <location filename="../ui/ui_main_window.py" line="1044"/>
         <source>Dividend amount:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1043"/>
+        <location filename="../ui/ui_main_window.py" line="1046"/>
         <source>Dividend description</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1045"/>
+        <location filename="../ui/ui_main_window.py" line="1048"/>
         <source>Text:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1068"/>
+        <location filename="../ui/ui_main_window.py" line="1071"/>
         <source>From:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1048"/>
+        <location filename="../ui/ui_main_window.py" line="1051"/>
         <source>Transfer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1049"/>
+        <location filename="../ui/ui_main_window.py" line="1052"/>
         <source>Fee:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1067"/>
+        <location filename="../ui/ui_main_window.py" line="1070"/>
         <source>To:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1054"/>
+        <location filename="../ui/ui_main_window.py" line="1057"/>
         <source>New</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1055"/>
+        <location filename="../ui/ui_main_window.py" line="1058"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1056"/>
+        <location filename="../ui/ui_main_window.py" line="1059"/>
         <source>Del</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1075"/>
+        <location filename="../ui/ui_main_window.py" line="1078"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1058"/>
+        <location filename="../ui/ui_main_window.py" line="1061"/>
         <source>Revert</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1059"/>
+        <location filename="../ui/ui_main_window.py" line="1062"/>
         <source>Balance &amp;&amp; Operations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1061"/>
+        <location filename="../ui/ui_main_window.py" line="1064"/>
         <source>Common currency:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1062"/>
+        <location filename="../ui/ui_main_window.py" line="1065"/>
         <source>Holdings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1063"/>
+        <location filename="../ui/ui_main_window.py" line="1066"/>
         <source>PushButton</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1064"/>
+        <location filename="../ui/ui_main_window.py" line="1067"/>
         <source>Report:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1069"/>
+        <location filename="../ui/ui_main_window.py" line="1072"/>
         <source>Group dates</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1071"/>
+        <location filename="../ui/ui_main_window.py" line="1074"/>
         <source>Profit / Loss</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1072"/>
+        <location filename="../ui/ui_main_window.py" line="1075"/>
         <source>Deals</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1073"/>
+        <location filename="../ui/ui_main_window.py" line="1076"/>
         <source>By Category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1076"/>
+        <location filename="../ui/ui_main_window.py" line="1079"/>
         <source>Run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1077"/>
+        <location filename="../ui/ui_main_window.py" line="1080"/>
         <source>Category:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1078"/>
+        <location filename="../ui/ui_main_window.py" line="1081"/>
         <source>Custom range</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1079"/>
+        <location filename="../ui/ui_main_window.py" line="1082"/>
         <source>Quarter to date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1080"/>
+        <location filename="../ui/ui_main_window.py" line="1083"/>
         <source>Year to date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1081"/>
+        <location filename="../ui/ui_main_window.py" line="1084"/>
         <source>This year</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1082"/>
+        <location filename="../ui/ui_main_window.py" line="1085"/>
         <source>Previous year</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1085"/>
+        <location filename="../ui/ui_main_window.py" line="1088"/>
         <source>Reports</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1086"/>
+        <location filename="../ui/ui_main_window.py" line="1089"/>
         <source>Log messages</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1087"/>
+        <location filename="../ui/ui_main_window.py" line="1090"/>
         <source>&amp;File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1088"/>
+        <location filename="../ui/ui_main_window.py" line="1091"/>
         <source>&amp;Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1089"/>
+        <location filename="../ui/ui_main_window.py" line="1092"/>
         <source>Predefined data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1090"/>
+        <location filename="../ui/ui_main_window.py" line="1093"/>
         <source>&amp;Load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1091"/>
+        <location filename="../ui/ui_main_window.py" line="1094"/>
         <source>&amp;Reports</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1092"/>
+        <location filename="../ui/ui_main_window.py" line="1095"/>
         <source>L&amp;anguage</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="1093"/>
+        <location filename="../ui/ui_main_window.py" line="1096"/>
         <source>&amp;Import</source>
         <translation type="unfinished"></translation>
     </message>
@@ -870,48 +870,48 @@
 <context>
     <name>LedgerOperationsView</name>
     <message>
-        <location filename="../operations.py" line="155"/>
+        <location filename="../operations.py" line="157"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../operations.py" line="155"/>
+        <location filename="../operations.py" line="157"/>
         <source>Are you sure to delete selected transacion?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../operations.py" line="214"/>
+        <location filename="../operations.py" line="216"/>
         <source>You have unsaved changes</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../operations.py" line="214"/>
+        <location filename="../operations.py" line="216"/>
         <source> has uncommitted changes,
 do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../operations.py" line="239"/>
+        <location filename="../operations.py" line="241"/>
         <source>Submit failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../operations.py" line="245"/>
+        <location filename="../operations.py" line="247"/>
         <source>Details submit failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../operations.py" line="300"/>
+        <location filename="../operations.py" line="302"/>
         <source>Reconcile</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../operations.py" line="302"/>
+        <location filename="../operations.py" line="304"/>
         <source>Copy</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../operations.py" line="304"/>
+        <location filename="../operations.py" line="306"/>
         <source>Delete</source>
         <translation></translation>
     </message>
@@ -965,53 +965,53 @@ do you want to save it?</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../main_window.py" line="157"/>
+        <location filename="../main_window.py" line="160"/>
         <source>Select directory to save backup</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="167"/>
+        <location filename="../main_window.py" line="170"/>
         <source>Data restored</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="162"/>
+        <location filename="../main_window.py" line="165"/>
         <source>Select directory to restore from</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="255"/>
+        <location filename="../main_window.py" line="258"/>
         <source>Quotes download completed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="261"/>
+        <location filename="../main_window.py" line="264"/>
         <source>Statement load completed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="266"/>
+        <location filename="../main_window.py" line="269"/>
         <source>Statement load failed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="147"/>
+        <location filename="../main_window.py" line="150"/>
         <source>Restart required</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="147"/>
+        <location filename="../main_window.py" line="150"/>
         <source>Language was changed to </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="167"/>
+        <location filename="../main_window.py" line="170"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="167"/>
+        <location filename="../main_window.py" line="170"/>
         <source>Database was loaded from the backup.
 </source>
         <translation></translation>
@@ -1020,9 +1020,29 @@ Application will be terminated now</source>
 <context>
     <name>OperationsDelegate</name>
     <message>
-        <location filename="../view_delegate.py" line="403"/>
+        <location filename="../view_delegate.py" line="419"/>
         <source>Tax: </source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../view_delegate.py" line="390"/>
+        <source>Symbol change {old} -&gt; {new}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../view_delegate.py" line="392"/>
+        <source>Spin-off {after} {new} from {before} {old}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../view_delegate.py" line="393"/>
+        <source>Merger {before} {old} into {after} {new}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../view_delegate.py" line="391"/>
+        <source>Split {old} {before} into {after}</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1549,238 +1569,243 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="91"/>
+        <location filename="../ui_custom/table_view_config.py" line="94"/>
         <source>Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="102"/>
+        <location filename="../ui_custom/table_view_config.py" line="105"/>
         <source>Balance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="70"/>
+        <location filename="../ui_custom/table_view_config.py" line="73"/>
         <source>Balance, RUB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="76"/>
+        <location filename="../ui_custom/table_view_config.py" line="79"/>
         <source>C/A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="78"/>
+        <location filename="../ui_custom/table_view_config.py" line="81"/>
         <source>Asset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="79"/>
+        <location filename="../ui_custom/table_view_config.py" line="82"/>
         <source>Qty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="80"/>
+        <location filename="../ui_custom/table_view_config.py" line="83"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="81"/>
+        <location filename="../ui_custom/table_view_config.py" line="84"/>
         <source>Last</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="82"/>
+        <location filename="../ui_custom/table_view_config.py" line="85"/>
         <source>Share, %</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="83"/>
+        <location filename="../ui_custom/table_view_config.py" line="86"/>
         <source>P/L, %</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="84"/>
+        <location filename="../ui_custom/table_view_config.py" line="87"/>
         <source>P/L</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="85"/>
+        <location filename="../ui_custom/table_view_config.py" line="88"/>
         <source>Value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="86"/>
+        <location filename="../ui_custom/table_view_config.py" line="89"/>
         <source>Value, RUB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="89"/>
+        <location filename="../ui_custom/table_view_config.py" line="92"/>
         <source>Timestamp</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="96"/>
+        <location filename="../ui_custom/table_view_config.py" line="99"/>
         <source>Notes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="111"/>
+        <location filename="../ui_custom/table_view_config.py" line="114"/>
         <source>Amount</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="181"/>
+        <location filename="../ui_custom/table_view_config.py" line="186"/>
         <source>Currency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="109"/>
+        <location filename="../ui_custom/table_view_config.py" line="112"/>
         <source>Category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="240"/>
+        <location filename="../ui_custom/table_view_config.py" line="245"/>
         <source>Tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="112"/>
+        <location filename="../ui_custom/table_view_config.py" line="115"/>
         <source>Amount *</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="113"/>
+        <location filename="../ui_custom/table_view_config.py" line="116"/>
         <source>Note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="172"/>
+        <location filename="../ui_custom/table_view_config.py" line="177"/>
         <source>Account Types</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="172"/>
+        <location filename="../ui_custom/table_view_config.py" line="177"/>
         <source>Account Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="181"/>
+        <location filename="../ui_custom/table_view_config.py" line="186"/>
         <source>Accounts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="227"/>
+        <location filename="../ui_custom/table_view_config.py" line="232"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="181"/>
+        <location filename="../ui_custom/table_view_config.py" line="186"/>
         <source>Act.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="181"/>
+        <location filename="../ui_custom/table_view_config.py" line="186"/>
         <source>Account #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="181"/>
+        <location filename="../ui_custom/table_view_config.py" line="186"/>
         <source>Reconciled @</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="181"/>
+        <location filename="../ui_custom/table_view_config.py" line="186"/>
         <source>Bank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="181"/>
+        <location filename="../ui_custom/table_view_config.py" line="186"/>
         <source>Show inactive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="181"/>
+        <location filename="../ui_custom/table_view_config.py" line="186"/>
         <source>Account type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="199"/>
+        <location filename="../ui_custom/table_view_config.py" line="204"/>
         <source>Assets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="199"/>
+        <location filename="../ui_custom/table_view_config.py" line="204"/>
         <source>Symbol</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="199"/>
+        <location filename="../ui_custom/table_view_config.py" line="204"/>
         <source>ISIN</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="199"/>
+        <location filename="../ui_custom/table_view_config.py" line="204"/>
         <source>WebID</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="199"/>
+        <location filename="../ui_custom/table_view_config.py" line="204"/>
         <source>Data source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="199"/>
+        <location filename="../ui_custom/table_view_config.py" line="204"/>
         <source>Asset type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="214"/>
+        <location filename="../ui_custom/table_view_config.py" line="219"/>
         <source>Peers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="214"/>
+        <location filename="../ui_custom/table_view_config.py" line="219"/>
         <source>Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="214"/>
+        <location filename="../ui_custom/table_view_config.py" line="219"/>
         <source>Docs count</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="227"/>
+        <location filename="../ui_custom/table_view_config.py" line="232"/>
         <source>Categories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="227"/>
+        <location filename="../ui_custom/table_view_config.py" line="232"/>
         <source>Often</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="240"/>
+        <location filename="../ui_custom/table_view_config.py" line="245"/>
         <source>Tags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="249"/>
+        <location filename="../ui_custom/table_view_config.py" line="254"/>
         <source>Countries</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="249"/>
+        <location filename="../ui_custom/table_view_config.py" line="254"/>
         <source>Country</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="249"/>
+        <location filename="../ui_custom/table_view_config.py" line="254"/>
         <source>Code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="249"/>
+        <location filename="../ui_custom/table_view_config.py" line="254"/>
         <source>Tax Treaty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../main_window.py" line="88"/>
+        <source>Corp. Action</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1831,19 +1856,6 @@ Application will be terminated now</source>
         <location filename="../reports/taxes.py" line="84"/>
         <source>Can&apos;t write tax report into file </source>
         <translation></translation>
-    </message>
-</context>
-<context>
-    <name>TradeAction</name>
-    <message>
-        <location filename="../ui_custom/trade_action.py" line="33"/>
-        <source>CORP.ACTION</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui_custom/trade_action.py" line="37"/>
-        <source>TRADE</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

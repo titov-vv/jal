@@ -386,17 +386,17 @@ class OperationsAccountDelegate(QStyledItemDelegate):
 
 
 class OperationsNotesDelegate(QStyledItemDelegate):
-    CorpActionNames = {
-        CorporateAction.SymbolChange: g_tr('OperationsDelegate', "Symbol change {old} -> {new}"),
-        CorporateAction.Split: "Split  {old} {before} into {after}",
-        CorporateAction.SpinOff: "Spin-off {after} {new} from {before} {old}",
-        CorporateAction.Merger: "Merger {before} {old} into {after} {new}"
-    }
-
     def __init__(self, parent=None):
         QStyledItemDelegate.__init__(self, parent)
 
     def paint(self, painter, option, index):
+        CorpActionNames = {
+            CorporateAction.SymbolChange: g_tr('OperationsDelegate', "Symbol change {old} -> {new}"),
+            CorporateAction.Split: g_tr('OperationsDelegate', "Split {old} {before} into {after}"),
+            CorporateAction.SpinOff: g_tr('OperationsDelegate', "Spin-off {after} {new} from {before} {old}"),
+            CorporateAction.Merger: g_tr('OperationsDelegate', "Merger {before} {old} into {after} {new}")
+        }
+
         painter.save()
         model = index.model()
         record = model.record(index.row())
@@ -431,7 +431,7 @@ class OperationsNotesDelegate(QStyledItemDelegate):
             symbol_after = record.value("note")
             qty_before = record.value("amount")
             qty_after = record.value("qty_trid")
-            text = self.CorpActionNames[sub_type].format(old=symbol_before, new=symbol_after,
+            text = CorpActionNames[sub_type].format(old=symbol_before, new=symbol_after,
                                                          before=qty_before, after=qty_after) \
                    + "\n" + record.value("note2")
         else:

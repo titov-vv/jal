@@ -84,7 +84,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 LedgerInitValues[TransactionType.Dividend]),
             TransactionType.Transfer: (
                 g_tr('TableViewConfig', "Transfer"), self.ui_config.mappers[self.ui_config.TRANSFERS], 'transfers_combined', None, None,
-                LedgerInitValues[TransactionType.Transfer])
+                LedgerInitValues[TransactionType.Transfer]),
+            TransactionType.CorporateAction: (
+                g_tr('TableViewConfig', "Corp. Action"), self.ui_config.mappers[self.ui_config.CORP_ACTIONS], 'corp_actions', None, None,
+                LedgerInitValues[TransactionType.CorporateAction])
         }
         self.operations.setOperationsDetails(self.operation_details)
         self.operations.activateOperationView.connect(self.ShowOperationTab)
@@ -272,7 +275,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             TransactionType.Action: 1,
             TransactionType.Transfer: 4,
             TransactionType.Trade: 2,
-            TransactionType.Dividend: 3
+            TransactionType.Dividend: 3,
+            TransactionType.CorporateAction: 5
         }
         self.OperationsTabs.setCurrentIndex(tab_list[operation_type])
 

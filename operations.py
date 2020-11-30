@@ -62,6 +62,9 @@ LedgerInitValues = {
         'to_amount': (True, INIT_VALUE, 0),
         'fee_amount': (True, INIT_VALUE, 0),
         'note': (True, INIT_VALUE, '')
+    },
+    TransactionType.CorporateAction: {
+
     }
 }
 

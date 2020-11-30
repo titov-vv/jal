@@ -445,7 +445,7 @@
                 <item>
                  <widget class="QStackedWidget" name="OperationsTabs">
                   <property name="currentIndex">
-                   <number>2</number>
+                   <number>5</number>
                   </property>
                   <widget class="QWidget" name="NoOperationTab"/>
                   <widget class="QWidget" name="ActionDetailsTab">
@@ -1137,6 +1137,7 @@
                     </item>
                    </layout>
                   </widget>
+                  <widget class="QWidget" name="CorpActionDetailsTab"/>
                  </widget>
                 </item>
                 <item>

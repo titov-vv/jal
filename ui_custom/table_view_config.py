@@ -18,13 +18,14 @@ class TableViewConfig:
     TRADES = 5
     DIVIDENDS = 6
     TRANSFERS = 7
-    ACCOUNT_TYPES = 8
-    ACCOUNTS = 9
-    ASSETS = 10
-    PEERS = 11
-    CATEGORIES = 12
-    TAGS = 13
-    COUNTRIES = 14
+    CORP_ACTIONS = 8
+    ACCOUNT_TYPES = 9
+    ACCOUNTS = 10
+    ASSETS = 11
+    PEERS = 12
+    CATEGORIES = 13
+    TAGS = 14
+    COUNTRIES = 15
 
     ACTION_SRC = 0
     ACTION_SIGNAL = 1
@@ -46,7 +47,8 @@ class TableViewConfig:
         ACTION_DETAILS: 'action_details',
         TRADES: 'trades',
         DIVIDENDS: 'dividends',
-        TRANSFERS: 'transfers_combined'
+        TRANSFERS: 'transfers_combined',
+        CORP_ACTIONS: 'corp_actions'
     }
 
     table_relations = {
@@ -58,7 +60,8 @@ class TableViewConfig:
                          ("tag_id", "tags", "id", "tag", None)],
         TRADES: None,
         DIVIDENDS: None,
-        TRANSFERS: None
+        TRANSFERS: None,
+        CORP_ACTIONS: None
     }
 
     table_view_columns = {
@@ -113,7 +116,8 @@ class TableViewConfig:
                          ("note", g_tr('TableViewConfig', "Note"), ColumnWidth.STRETCH, None, None)],
         TRADES: [],
         DIVIDENDS: [],
-        TRANSFERS: []
+        TRANSFERS: [],
+        CORP_ACTIONS: []
     }
 
     def __init__(self, parent):
@@ -127,7 +131,8 @@ class TableViewConfig:
             self.ACTION_DETAILS: parent.ActionDetailsTableView,
             self.TRADES: None,
             self.DIVIDENDS: None,
-            self.TRANSFERS: None
+            self.TRANSFERS: None,
+            self.CORP_ACTIONS: None
         }
         self.mappers = {}
         self.widget_mappers = {
@@ -164,7 +169,8 @@ class TableViewConfig:
                              ("from_amount", parent.TransferFromAmount),
                              ("to_amount", parent.TransferToAmount),
                              ("fee_amount", parent.TransferFeeAmount),
-                             ("note", parent.TransferNote)]
+                             ("note", parent.TransferNote)],
+            self.CORP_ACTIONS: None
         }
         self.dialogs = {
             # see DLG_ constants for reference
