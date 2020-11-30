@@ -703,6 +703,22 @@ CREATE VIEW all_operations AS
                       accounts AS a ON a.id = tr.account_id
                       LEFT JOIN
                       assets AS c ON c.id = a.currency_id
+               SELECT 5 AS type,
+                      ca.id,
+                      ca.timestamp,
+                      ca.number AS num_peer,
+                      ca.account_id,
+                      ca.qty AS amount,
+                      ca.asset_id,
+                      ca.qty_new AS qty_trid,
+                      NULL AS price,
+                      ca.type AS fee_tax,
+                      NULL AS t_qty,
+                      a.name AS note,
+                      a.full_name AS note2,
+                      ca.id AS operation_id
+                 FROM corp_actions AS ca
+                      LEFT JOIN assets AS a ON ca.asset_id_new=a.id
                ORDER BY timestamp
            )
            AS m
