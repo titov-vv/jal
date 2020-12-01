@@ -458,7 +458,7 @@ class Ledger:
         qty = self.current[AMOUNT_QTY]
         buy_qty = 0
         buy_value = 0
-        if self.getAmount(BookAccount.Assets, asset_id) < (qty + Setup.CALC_TOLERANCE):
+        if self.getAmount(BookAccount.Assets, asset_id) < (qty - 2*Setup.CALC_TOLERANCE):
             logging.fatal(g_tr('Ledger', "Conversion failed. Asset amount is not enogh. Date: ")
                           + f"{datetime.fromtimestamp(self.current[TIMESTAMP]).strftime('%d/%m/%Y %H:%M:%S')}")
             return
@@ -512,12 +512,11 @@ class Ledger:
             buy_value = buy_value + (next_deal_qty * deal_price)
             if buy_qty == qty:
                 break
-        # Withdraw value of old asset before conversion
+        # Withdraw value with old quantity of old asset before conversion
         self.appendTransaction(BookAccount.Assets, -buy_qty, -buy_value)
-        # Create value of new asset after conversion
+        # Create the same value with new quantity of new asset after conversion
         self.current[ASSET_ID] = self.current[COUPON_PEER]
-        self.current[AMOUNT_QTY] = self.current[PRICE_CATEGORY]
-        self.appendTransaction(BookAccount.Assets, buy_qty, buy_value)
+        self.appendTransaction(BookAccount.Assets, self.current[PRICE_CATEGORY], buy_value)
 
     # Spin-Off is equal to Buy operation with 0 price
     def processSpinOff(self):
