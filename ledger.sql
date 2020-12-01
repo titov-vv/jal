@@ -1023,11 +1023,6 @@ CREATE TRIGGER actions_after_delete
          AFTER DELETE
             ON actions
       FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
 BEGIN
     DELETE FROM action_details
           WHERE pid = OLD.id;
@@ -1045,11 +1040,6 @@ CREATE TRIGGER actions_after_insert
          AFTER INSERT
             ON actions
       FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= NEW.timestamp;
@@ -1067,11 +1057,6 @@ CREATE TRIGGER actions_after_update
                          peer_id
             ON actions
       FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= OLD.timestamp OR
@@ -1700,6 +1685,7 @@ CREATE TRIGGER update_to INSTEAD OF UPDATE OF to_timestamp, to_acc_id, to_amount
            type = 1; END;
 
 -- Trigger to keep predefinded categories from deletion
+DROP TRIGGER IF EXISTS keep_predefined_categories;
 CREATE TRIGGER keep_predefined_categories BEFORE DELETE ON categories FOR EACH ROW WHEN OLD.special = 1
 BEGIN
     SELECT RAISE(ABORT, "Can't delete predefinded category");
