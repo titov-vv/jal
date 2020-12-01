@@ -1425,11 +1425,6 @@ CREATE TRIGGER trades_after_delete
          AFTER DELETE
             ON trades
       FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= OLD.timestamp;
@@ -1445,11 +1440,6 @@ CREATE TRIGGER trades_after_insert
          AFTER INSERT
             ON trades
       FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= NEW.timestamp;
@@ -1471,11 +1461,6 @@ CREATE TRIGGER trades_after_update
                          fee
             ON trades
       FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= OLD.timestamp OR
