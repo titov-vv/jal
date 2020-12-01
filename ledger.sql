@@ -1531,11 +1531,6 @@ CREATE TRIGGER transfers_after_delete
          AFTER DELETE
             ON transfers
       FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= OLD.timestamp;
@@ -1551,11 +1546,6 @@ CREATE TRIGGER transfers_after_insert
          AFTER INSERT
             ON transfers
       FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= NEW.timestamp;
@@ -1574,11 +1564,6 @@ CREATE TRIGGER transfers_after_update
                          amount
             ON transfers
       FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= OLD.timestamp OR
