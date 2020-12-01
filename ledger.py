@@ -452,7 +452,72 @@ class Ledger:
         operationTransfer[self.current[TRANSACTION_SUBTYPE]]()
 
     def processAssetConversion(self):
-        print("AAAAAAAA")
+        seq_id = self.current_seq
+        account_id = self.current[ACCOUNT_ID]
+        asset_id = self.current[ASSET_ID]
+        qty = self.current[AMOUNT_QTY]
+        buy_qty = 0
+        buy_value = 0
+        if self.getAmount(BookAccount.Assets, asset_id) < (qty + Setup.CALC_TOLERANCE):
+            logging.fatal(g_tr('Ledger', "Conversion failed. Asset amount is not enogh. Date: ")
+                          + f"{datetime.fromtimestamp(self.current[TIMESTAMP]).strftime('%d/%m/%Y %H:%M:%S')}")
+            return
+        query = executeSQL(self.db,
+                           "SELECT d.open_sid AS open, ABS(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
+                           "LEFT JOIN sequence AS os ON os.type=3 AND os.id=d.open_sid "
+                           "JOIN trades AS o ON o.id = os.operation_id "
+                           "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
+                           "GROUP BY d.open_sid "
+                           "ORDER BY d.close_sid DESC, d.open_sid DESC LIMIT 1",
+                           [(":account_id", account_id), (":asset_id", asset_id)])
+        if query.next():  # sid of Buy trade from last deal and non-matched reminder of last Sell trade
+            last_sid, reminder = readSQLrecord(query)
+            if reminder > 0:  # Last Sell didn't fully match Buy Trade and we need to start from this partial Buy
+                query = executeSQL(self.db,
+                                   "SELECT s.id, t.qty, t.price FROM trades AS t "
+                                   "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
+                                   "WHERE t.qty > 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
+                                   "AND s.id < :sid AND s.id >= :last_sid",
+                                   [(":asset_id", asset_id), (":account_id", account_id),
+                                    (":sid", seq_id), (":last_sid", last_sid)])
+            else:  # Buy trade was fully matched by Sell in the last deal - we need to take next Buy Trade
+                query = executeSQL(self.db,
+                                   "SELECT s.id, t.qty, t.price FROM trades AS t "
+                                   "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
+                                   "WHERE t.qty > 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
+                                   "AND s.id < :sid AND s.id > :last_sid",
+                                   [(":asset_id", asset_id), (":account_id", account_id),
+                                    (":sid", seq_id), (":last_sid", last_sid)])
+        else:  # There were no deals -> Select all purchases
+            reminder = 0
+            query = executeSQL(self.db,
+                               "SELECT s.id, t.qty, t.price FROM trades AS t "
+                               "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
+                               "WHERE t.qty>0 AND t.asset_id=:asset_id AND t.account_id=:account_id AND s.id<:sid",
+                               [(":asset_id", asset_id), (":account_id", account_id), (":sid", seq_id)])
+        while query.next():
+            deal_sid, deal_qty, deal_price = readSQLrecord(query)  # deal_sid -> trade_sid
+            if reminder > 0:
+                next_deal_qty = reminder
+                reminder = 0
+            else:
+                next_deal_qty = deal_qty
+            if (buy_qty + next_deal_qty) >= qty:  # we are selling less or the same amount as was bought previously
+                next_deal_qty = qty - buy_qty
+            _ = executeSQL(self.db, "INSERT INTO deals(account_id, asset_id, open_sid, close_sid, qty) "
+                                    "VALUES(:account_id, :asset_id, :open_sid, :close_sid, :qty)",
+                           [(":account_id", account_id), (":asset_id", asset_id), (":open_sid", deal_sid),
+                            (":close_sid", seq_id), (":qty", next_deal_qty)])
+            buy_qty = buy_qty + next_deal_qty
+            buy_value = buy_value + (next_deal_qty * deal_price)
+            if buy_qty == qty:
+                break
+        # Withdraw value of old asset before conversion
+        self.appendTransaction(BookAccount.Assets, -buy_qty, -buy_value)
+        # Create value of new asset after conversion
+        self.current[ASSET_ID] = self.current[COUPON_PEER]
+        self.current[AMOUNT_QTY] = self.current[PRICE_CATEGORY]
+        self.appendTransaction(BookAccount.Assets, buy_qty, buy_value)
 
     # Spin-Off is equal to Buy operation with 0 price
     def processSpinOff(self):
