@@ -1104,11 +1104,6 @@ CREATE TRIGGER dividends_after_delete
          AFTER DELETE
             ON dividends
       FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= OLD.timestamp;
@@ -1124,11 +1119,6 @@ CREATE TRIGGER dividends_after_insert
          AFTER INSERT
             ON dividends
       FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= NEW.timestamp;
@@ -1148,11 +1138,6 @@ CREATE TRIGGER dividends_after_update
                          sum_tax
             ON dividends
       FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= OLD.timestamp OR
