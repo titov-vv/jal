@@ -374,49 +374,54 @@
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../ledger.py" line="92"/>
+        <location filename="../ledger.py" line="93"/>
         <source>Balance, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="109"/>
+        <location filename="../ledger.py" line="110"/>
         <source>Value, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="476"/>
+        <location filename="../ledger.py" line="565"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="476"/>
+        <location filename="../ledger.py" line="565"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="481"/>
+        <location filename="../ledger.py" line="570"/>
         <source>Re-build ledger from: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="514"/>
+        <location filename="../ledger.py" line="603"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="514"/>
+        <location filename="../ledger.py" line="603"/>
         <source>, new frontier: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="506"/>
+        <location filename="../ledger.py" line="595"/>
         <source>Processed </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="506"/>
+        <location filename="../ledger.py" line="595"/>
         <source>k records, current frontier: </source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../ledger.py" line="462"/>
+        <source>Conversion failed. Asset amount is not enogh. Date: </source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1045,7 +1050,7 @@ Application will be terminated now</source>
 <context>
     <name>OperationsDelegate</name>
     <message>
-        <location filename="../view_delegate.py" line="419"/>
+        <location filename="../view_delegate.py" line="422"/>
         <source>Tax: </source>
         <translation></translation>
     </message>
@@ -1067,6 +1072,11 @@ Application will be terminated now</source>
     <message>
         <location filename="../view_delegate.py" line="395"/>
         <source>Split {old} {before} into {after}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../view_delegate.py" line="419"/>
+        <source>Error. Zero rate</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

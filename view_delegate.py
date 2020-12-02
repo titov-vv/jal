@@ -409,11 +409,14 @@ class OperationsNotesDelegate(QStyledItemDelegate):
             currency2 = record.value("num_peer")
             rate = -record.value("price")           # TODO Fix negative rate values in database
             if currency1 != currency2:
-                if rate > 1:
-                    exchange_text = f" [1 {currency1} = {rate:.4f} {currency2}]"
+                if rate != 0:
+                    if rate > 1:
+                        exchange_text = f" [1 {currency1} = {rate:.4f} {currency2}]"
+                    else:
+                        rate = 1 / rate
+                        exchange_text = f" [{rate:.4f} {currency1} = 1 {currency2}]"
                 else:
-                    rate = 1 / rate     # TODO: fix division by zero
-                    exchange_text = f" [{rate:.4f} {currency1} = 1 {currency2}]"
+                    exchange_text = g_tr('OperationsDelegate', "Error. Zero rate")
             text = record.value(index.column()) + exchange_text
         elif transaction_type == TransactionType.Dividend:
             text = record.value(index.column()) + "\n" + g_tr('OperationsDelegate', "Tax: ") + record.value("note2")
