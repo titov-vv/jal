@@ -477,6 +477,23 @@ CREATE VIEW all_operations AS
                       countries AS c ON d.tax_country_id = c.id
                 GROUP BY d.id
                UNION ALL
+               SELECT 5 AS type,
+                      ca.id,
+                      ca.timestamp,
+                      ca.number AS num_peer,
+                      ca.account_id,
+                      ca.qty AS amount,
+                      ca.asset_id,
+                      ca.qty_new AS qty_trid,
+                      NULL AS price,
+                      ca.type AS fee_tax,
+                      NULL AS t_qty,
+                      a.name AS note,
+                      a.full_name AS note2,
+                      ca.id AS operation_id
+                 FROM corp_actions AS ca
+                      LEFT JOIN assets AS a ON ca.asset_id_new=a.id
+               UNION ALL
                SELECT 3 AS type,
                       t.id,
                       t.timestamp,
@@ -523,23 +540,6 @@ CREATE VIEW all_operations AS
                       accounts AS a ON a.id = tr.account_id
                       LEFT JOIN
                       assets AS c ON c.id = a.currency_id
-               UNION ALL
-               SELECT 5 AS type,
-                      ca.id,
-                      ca.timestamp,
-                      ca.number AS num_peer,
-                      ca.account_id,
-                      ca.qty AS amount,
-                      ca.asset_id,
-                      ca.qty_new AS qty_trid,
-                      NULL AS price,
-                      ca.type AS fee_tax,
-                      NULL AS t_qty,
-                      a.name AS note,
-                      a.full_name AS note2,
-                      ca.id AS operation_id
-                 FROM corp_actions AS ca
-                      LEFT JOIN assets AS a ON ca.asset_id_new=a.id
                ORDER BY timestamp
            )
            AS m
@@ -606,18 +606,6 @@ CREATE VIEW all_transactions AS
                       NULL AS fee_tax_tag
                  FROM transfers
                UNION ALL
-               SELECT 3 AS type,
-                      t.id,
-                      t.timestamp,
-                      iif(t.qty < 0, -1, 1) AS subtype,
-                      t.account_id AS account,
-                      t.asset_id AS asset,
-                      t.qty AS amount,
-                      t.price AS price_category,
-                      t.coupon AS coupon_peer,
-                      t.fee AS fee_tax_tag
-                 FROM trades AS t
-               UNION ALL
                SELECT 5 AS type,
                       a.id,
                       a.timestamp,
@@ -629,6 +617,18 @@ CREATE VIEW all_transactions AS
                       a.asset_id_new AS coupon_peer,
                       NULL AS fee_tax_tag
                   FROM corp_actions AS a
+               UNION ALL
+               SELECT 3 AS type,
+                      t.id,
+                      t.timestamp,
+                      iif(t.qty < 0, -1, 1) AS subtype,
+                      t.account_id AS account,
+                      t.asset_id AS asset,
+                      t.qty AS amount,
+                      t.price AS price_category,
+                      t.coupon AS coupon_peer,
+                      t.fee AS fee_tax_tag
+                 FROM trades AS t
                ORDER BY timestamp,
                         type,
                         subtype
