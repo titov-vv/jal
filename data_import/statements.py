@@ -29,6 +29,7 @@ class IBKR:
     }
     DummyExchange = "VALUE"
     SpinOffPattern = "^(.*)\(.* SPINOFF +(\d+) +FOR +(\d+) +\(.*$"
+    IssueChangePattern = "^(.*)\.OLD$"
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -427,9 +428,10 @@ class StatementLoader(QObject):
             number = IBCorpAction.transactionID
             qty_new = IBCorpAction.quantity
             note = IBCorpAction.description
-            paired_record = self.getPairedCorpActionRecord(int(number)-1)
+            # additional info is in previous dummy record where original symbol and quantity are present
+            paired_record = self.getPairedCorpActionRecord(int(number) - 1)
             if paired_record is None:
-                logging.error(g_tr('StatementLoader', "Can't find paied record for Merger corp.action"))
+                logging.error(g_tr('StatementLoader', "Can't find paired record for Merger corp.action"))
                 return
             asset_id_old = self.findAssetID(paired_record.symbol)
             qty_old = -paired_record.quantity
@@ -452,7 +454,24 @@ class StatementLoader(QObject):
             self.createCorpAction(account_id, CorporateAction.SpinOff, timestamp, number, asset_id_old,
                                   qty_old, asset_id_new, qty_new, note)
         elif IBCorpAction.type == Reorg.ISSUECHANGE:
-            pass
+            asset_id_new = self.findAssetID(IBCorpAction.symbol)
+            timestamp = int(IBCorpAction.dateTime.timestamp())
+            number = IBCorpAction.transactionID
+            qty_new = IBCorpAction.quantity
+            qty_old = qty_new
+            note = IBCorpAction.description
+            # additional info is in next dummy record where old symbol is changed to *.OLD
+            paired_record = self.getPairedCorpActionRecord(int(number) + 1)
+            if paired_record is None:
+                logging.error(g_tr('StatementLoader', "Can't find paired record for Issue Change corp.action"))
+                return
+            parts = re.match(IBKR.IssueChangePattern, paired_record.symbol)
+            if not parts:
+                logging.error(g_tr('StatementLoader', "Failed to parse old symbol for Issue Change corp.action"))
+                return
+            asset_id_old = self.findAssetID(parts.group(1))
+            self.createCorpAction(account_id, CorporateAction.SymbolChange, timestamp, number, asset_id_old,
+                                  qty_old, asset_id_new, qty_new, note)
         elif IBCorpAction.type == Reorg.FORWARDSPLIT:
             pass
         else:
