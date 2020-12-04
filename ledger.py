@@ -342,9 +342,11 @@ class Ledger:
         if self.getAmount(BookAccount.Assets, asset_id) > 0:    # Match deals if we have something bought before
             # Get information about last deal
             query = executeSQL(self.db,
-                               "SELECT d.open_sid AS open, ABS(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
-                               "LEFT JOIN sequence AS os ON os.type=3 AND os.id=d.open_sid "
-                               "JOIN trades AS o ON o.id = os.operation_id "
+                               "SELECT d.open_sid AS open, ABS(coalesce(o.qty, ca.qty_new))- SUM(d.qty) AS remainder "
+                               "FROM deals AS d "
+                               "LEFT JOIN sequence AS os ON os.id=d.open_sid "
+                               "LEFT JOIN trades AS o ON o.id = os.operation_id AND os.type = 3 "
+                               "LEFT JOIN corp_actions AS ca ON ca.id = os.operation_id AND os.type = 5 "
                                "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
                                "GROUP BY d.open_sid "
                                "ORDER BY d.close_sid DESC, d.open_sid DESC LIMIT 1",
@@ -453,9 +455,11 @@ class Ledger:
                           + f"{datetime.fromtimestamp(self.current[TIMESTAMP]).strftime('%d/%m/%Y %H:%M:%S')}")
             return
         query = executeSQL(self.db,
-                           "SELECT d.open_sid AS open, ABS(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
-                           "LEFT JOIN sequence AS os ON os.type=3 AND os.id=d.open_sid "
-                           "JOIN trades AS o ON o.id = os.operation_id "
+                           "SELECT d.open_sid AS open, ABS(coalesce(o.qty, ca.qty_new))- SUM(d.qty) AS remainder "
+                           "FROM deals AS d "
+                           "LEFT JOIN sequence AS os ON os.id=d.open_sid "
+                           "LEFT JOIN trades AS o ON o.id = os.operation_id AND os.type = 3 "
+                           "LEFT JOIN corp_actions AS ca ON ca.id = os.operation_id AND os.type = 5 "
                            "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
                            "GROUP BY d.open_sid "
                            "ORDER BY d.close_sid DESC, d.open_sid DESC LIMIT 1",

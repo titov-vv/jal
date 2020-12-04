@@ -633,12 +633,13 @@ class ReportsProfitDelegate(QStyledItemDelegate):
         model = index.model()
         record = model.record(index.row())
         amount = record.value(index.column())
+        text = "N/A"
         if amount:
             if amount >= 0:
                 painter.fillRect(option.rect, CustomColor.LightGreen)
             else:
                 painter.fillRect(option.rect, CustomColor.LightRed)
-        text = f"{amount:,.2f}"
+            text = f"{amount:,.2f}"
         painter.drawText(option.rect, Qt.AlignRight, text)
         painter.restore()
 
