@@ -131,6 +131,7 @@ class StatementLoader(QObject):
             AssetClass.STOCK: self.loadIBStockTrade,
             AssetClass.CASH: self.loadIBCurrencyTrade
         }
+        self.currentIBstatement = None
 
     # Displays file choose dialog and loads corresponding report if user have chosen a file
     def loadReport(self):
@@ -176,6 +177,7 @@ class StatementLoader(QObject):
             logging.error(g_tr('StatementLoader', "Failed to parse Interactive Brokers flex-report") + f": {e}")
             return False
         for statement in report.FlexStatements:
+            self.currentIBstatement = statement
             self.loadIBStatement(statement)
         return True
 
@@ -394,6 +396,12 @@ class StatementLoader(QObject):
         self.db.commit()
         logging.info(f"Corp.Action #{number} added for account {account_id} asset {asset_id_old} @{timestamp}")
 
+    def getPairedCorpActionRecord(self, transaction_id):
+        for corp_action in self.currentIBstatement.CorporateActions:
+            if corp_action.listingExchange == IBKR.DummyExchange and corp_action.transactionID==str(transaction_id):
+                return corp_action
+        return None
+
     def loadIBCorpAction(self, IBCorpAction):
         if IBCorpAction.listingExchange == IBKR.DummyExchange:   # Skip actions that we loaded as part of main action
             return
@@ -414,7 +422,19 @@ class StatementLoader(QObject):
                             + f"{IBCorpAction.assetCategory}")
             return
         if IBCorpAction.type == Reorg.MERGER:
-            pass
+            asset_id_new = self.findAssetID(IBCorpAction.symbol)
+            timestamp = int(IBCorpAction.dateTime.timestamp())
+            number = IBCorpAction.transactionID
+            qty_new = IBCorpAction.quantity
+            note = IBCorpAction.description
+            paired_record = self.getPairedCorpActionRecord(int(number)-1)
+            if paired_record is None:
+                logging.error(g_tr('StatementLoader', "Can't find paied record for Merger corp.action"))
+                return
+            asset_id_old = self.findAssetID(paired_record.symbol)
+            qty_old = -paired_record.quantity
+            self.createCorpAction(account_id, CorporateAction.Merger, timestamp, number, asset_id_old,
+                                  qty_old, asset_id_new, qty_new, note)
         elif IBCorpAction.type == Reorg.SPINOFF:
             asset_id_new = self.findAssetID(IBCorpAction.symbol)
             timestamp = int(IBCorpAction.dateTime.timestamp())
