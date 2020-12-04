@@ -30,6 +30,7 @@ class IBKR:
     DummyExchange = "VALUE"
     SpinOffPattern = "^(.*)\(.* SPINOFF +(\d+) +FOR +(\d+) +\(.*$"
     IssueChangePattern = "^(.*)\.OLD$"
+    SplitPattern = "^.* SPLIT +(\d+) +FOR +(\d+) +\(.*$"
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -443,7 +444,7 @@ class StatementLoader(QObject):
             number = IBCorpAction.transactionID
             qty_new = IBCorpAction.quantity
             note = IBCorpAction.description
-            parts = re.match(IBKR.SpinOffPattern, note)
+            parts = re.match(IBKR.SpinOffPattern, note, re.IGNORECASE)
             if not parts:
                 logging.error(g_tr('StatementLoader', "Failed to parse Spin-off data"))
                 return
@@ -473,7 +474,21 @@ class StatementLoader(QObject):
             self.createCorpAction(account_id, CorporateAction.SymbolChange, timestamp, number, asset_id_old,
                                   qty_old, asset_id_new, qty_new, note)
         elif IBCorpAction.type == Reorg.FORWARDSPLIT:
-            pass
+            asset_id_old = self.findAssetID(IBCorpAction.symbol)
+            asset_id_new = asset_id_old
+            timestamp = int(IBCorpAction.dateTime.timestamp())
+            number = IBCorpAction.transactionID
+            qty_old = IBCorpAction.quantity
+            note = IBCorpAction.description
+            parts = re.match(IBKR.SplitPattern, note, re.IGNORECASE)
+            if not parts:
+                logging.error(g_tr('StatementLoader', "Failed to parse corp.action Split data"))
+                return
+            mult_a = int(parts.group(1))
+            mult_b = int(parts.group(2))
+            qty_new = mult_a * qty_old / mult_b
+            self.createCorpAction(account_id, CorporateAction.Split, timestamp, number, asset_id_old,
+                                  qty_old, asset_id_new, qty_new, note)
         else:
             logging.warning(g_tr('StatementLoader', "Corporate action type is not supported: ")
                             + f"{IBCorpAction.type}")

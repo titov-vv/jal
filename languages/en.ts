@@ -3,17 +3,17 @@
 <context>
     <name></name>
     <message>
-        <location filename="../data_import/statements.py" line="77"/>
+        <location filename="../data_import/statements.py" line="78"/>
         <source>New asset with id </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="77"/>
+        <location filename="../data_import/statements.py" line="78"/>
         <source> was added: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="79"/>
+        <location filename="../data_import/statements.py" line="80"/>
         <source>Failed to add new asset: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1391,273 +1391,278 @@ Application will be terminated now</source>
 <context>
     <name>StatementLoader</name>
     <message>
-        <location filename="../data_import/statements.py" line="140"/>
+        <location filename="../data_import/statements.py" line="141"/>
         <source>Select statement file to import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="178"/>
+        <location filename="../data_import/statements.py" line="179"/>
         <source>Failed to parse Interactive Brokers flex-report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="186"/>
+        <location filename="../data_import/statements.py" line="187"/>
         <source>Load IB Flex-statement for account </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="186"/>
+        <location filename="../data_import/statements.py" line="187"/>
         <source>from </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="186"/>
+        <location filename="../data_import/statements.py" line="187"/>
         <source> to </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="198"/>
+        <location filename="../data_import/statements.py" line="199"/>
         <source>Load of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="198"/>
+        <location filename="../data_import/statements.py" line="199"/>
         <source> is not implemented. Skipping trade #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="226"/>
+        <location filename="../data_import/statements.py" line="227"/>
         <source>Asset type </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="226"/>
+        <location filename="../data_import/statements.py" line="227"/>
         <source> is not supported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="516"/>
+        <location filename="../data_import/statements.py" line="531"/>
         <source>Account </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="242"/>
+        <location filename="../data_import/statements.py" line="243"/>
         <source> not found. Skipping trade #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="257"/>
+        <location filename="../data_import/statements.py" line="258"/>
         <source>Trade type </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="257"/>
+        <location filename="../data_import/statements.py" line="258"/>
         <source> is not implemented. Skipped trade #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="268"/>
+        <location filename="../data_import/statements.py" line="269"/>
         <source>Trade #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="386"/>
+        <location filename="../data_import/statements.py" line="387"/>
         <source> already exists in ledger. Skipped</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="303"/>
+        <location filename="../data_import/statements.py" line="304"/>
         <source>Currency transaction of type </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="303"/>
+        <location filename="../data_import/statements.py" line="304"/>
         <source> is not implemented</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="311"/>
+        <location filename="../data_import/statements.py" line="312"/>
         <source>not found. Currency transaction #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="351"/>
+        <location filename="../data_import/statements.py" line="352"/>
         <source> skipped</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="345"/>
+        <location filename="../data_import/statements.py" line="346"/>
         <source>Currency exchange </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="345"/>
+        <location filename="../data_import/statements.py" line="346"/>
         <source> added</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="351"/>
+        <location filename="../data_import/statements.py" line="352"/>
         <source> not found. Tax #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="364"/>
+        <location filename="../data_import/statements.py" line="365"/>
         <source>Tax transaction #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="364"/>
+        <location filename="../data_import/statements.py" line="365"/>
         <source> already exists</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="376"/>
+        <location filename="../data_import/statements.py" line="377"/>
         <source>Transaction tax added: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="410"/>
+        <location filename="../data_import/statements.py" line="411"/>
         <source>*** MANUAL ACTION REQUIRED ***</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="483"/>
+        <location filename="../data_import/statements.py" line="498"/>
         <source>Dividend for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="499"/>
+        <location filename="../data_import/statements.py" line="514"/>
         <source> not implemented</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="488"/>
+        <location filename="../data_import/statements.py" line="503"/>
         <source> not found. Skipping dividend #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="499"/>
+        <location filename="../data_import/statements.py" line="514"/>
         <source>Withholding tax for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="504"/>
+        <location filename="../data_import/statements.py" line="519"/>
         <source> not found. Skipping tax #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="516"/>
+        <location filename="../data_import/statements.py" line="531"/>
         <source> not found. Skipping fee #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="530"/>
+        <location filename="../data_import/statements.py" line="545"/>
         <source>Fee added: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="554"/>
+        <location filename="../data_import/statements.py" line="569"/>
         <source>*** MANUAL ENTRY REQUIRED ***</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="542"/>
+        <location filename="../data_import/statements.py" line="557"/>
         <source>Dividend already exists: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="549"/>
+        <location filename="../data_import/statements.py" line="564"/>
         <source>Dividend added: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="555"/>
+        <location filename="../data_import/statements.py" line="570"/>
         <source>Unhandled tax pattern found: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="564"/>
+        <location filename="../data_import/statements.py" line="579"/>
         <source>New dummy country added with code </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="573"/>
+        <location filename="../data_import/statements.py" line="588"/>
         <source>Dividend not found for withholding tax: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="578"/>
+        <location filename="../data_import/statements.py" line="593"/>
         <source>Withholding tax added: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="586"/>
+        <location filename="../data_import/statements.py" line="601"/>
         <source>Can&apos;t read statement file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="595"/>
+        <location filename="../data_import/statements.py" line="610"/>
         <source>Can&apos;t get account number from the statement.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="598"/>
+        <location filename="../data_import/statements.py" line="613"/>
         <source>Account with number </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="598"/>
+        <location filename="../data_import/statements.py" line="613"/>
         <source> not found. Import cancelled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="610"/>
+        <location filename="../data_import/statements.py" line="625"/>
         <source>Unknown operation type </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="614"/>
+        <location filename="../data_import/statements.py" line="629"/>
         <source>Unknown asset </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="386"/>
+        <location filename="../data_import/statements.py" line="387"/>
         <source>Corp.Action #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="418"/>
+        <location filename="../data_import/statements.py" line="419"/>
         <source> not found. Skipping corp.action #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="422"/>
+        <location filename="../data_import/statements.py" line="423"/>
         <source>Corporate action not supported for asset class </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="448"/>
+        <location filename="../data_import/statements.py" line="449"/>
         <source>Failed to parse Spin-off data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="478"/>
+        <location filename="../data_import/statements.py" line="493"/>
         <source>Corporate action type is not supported: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="434"/>
+        <location filename="../data_import/statements.py" line="435"/>
         <source>Can&apos;t find paired record for Merger corp.action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="466"/>
+        <location filename="../data_import/statements.py" line="467"/>
         <source>Can&apos;t find paired record for Issue Change corp.action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="470"/>
+        <location filename="../data_import/statements.py" line="471"/>
         <source>Failed to parse old symbol for Issue Change corp.action</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statements.py" line="485"/>
+        <source>Failed to parse corp.action Split data</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
