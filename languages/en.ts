@@ -384,42 +384,42 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="565"/>
+        <location filename="../ledger.py" line="557"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="565"/>
+        <location filename="../ledger.py" line="557"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="570"/>
+        <location filename="../ledger.py" line="562"/>
         <source>Re-build ledger from: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="603"/>
+        <location filename="../ledger.py" line="595"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="603"/>
+        <location filename="../ledger.py" line="595"/>
         <source>, new frontier: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="595"/>
+        <location filename="../ledger.py" line="587"/>
         <source>Processed </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="595"/>
+        <location filename="../ledger.py" line="587"/>
         <source>k records, current frontier: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="462"/>
+        <location filename="../ledger.py" line="454"/>
         <source>Conversion failed. Asset amount is not enogh. Date: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1079,6 +1079,46 @@ Application will be terminated now</source>
         <source>Error. Zero rate</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../view_delegate.py" line="653"/>
+        <source>Symbol change</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../view_delegate.py" line="654"/>
+        <source>Split</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../view_delegate.py" line="655"/>
+        <source>Spin-off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../view_delegate.py" line="656"/>
+        <source>Merger</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../view_delegate.py" line="666"/>
+        <source> Opened with </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../view_delegate.py" line="668"/>
+        <source> Closed with </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../view_delegate.py" line="672"/>
+        <source> Long</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../view_delegate.py" line="674"/>
+        <source> Short</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>PandasLinesModel</name>
@@ -1230,42 +1270,42 @@ Application will be terminated now</source>
 <context>
     <name>Reports</name>
     <message>
-        <location filename="../reports/reports.py" line="222"/>
+        <location filename="../reports/reports.py" line="223"/>
         <source>TOTAL</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="143"/>
+        <location filename="../reports/reports.py" line="144"/>
         <source>Save report to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="152"/>
+        <location filename="../reports/reports.py" line="153"/>
         <source>Report</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="146"/>
+        <location filename="../reports/reports.py" line="147"/>
         <source>Excel files (*.xlsx)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="169"/>
+        <location filename="../reports/reports.py" line="170"/>
         <source>Can&apos;t save report into file </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="246"/>
+        <location filename="../reports/reports.py" line="247"/>
         <source>You should select account to create Deals report</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="270"/>
+        <location filename="../reports/reports.py" line="271"/>
         <source>You should select account to create Profit/Loss report</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="352"/>
+        <location filename="../reports/reports.py" line="353"/>
         <source>You should select category to create By Category report</source>
         <translation></translation>
     </message>

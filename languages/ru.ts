@@ -385,42 +385,42 @@
         <translation>Оценка, </translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="565"/>
+        <location filename="../ledger.py" line="557"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="565"/>
+        <location filename="../ledger.py" line="557"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation> операций требуют перерасчета. Вы ходите выполнить его прямо сейчас?</translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="570"/>
+        <location filename="../ledger.py" line="562"/>
         <source>Re-build ledger from: </source>
         <translation>Перерасчет итогов с: </translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="603"/>
+        <location filename="../ledger.py" line="595"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation>Итоги рассчитаны. Затраченное время: </translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="603"/>
+        <location filename="../ledger.py" line="595"/>
         <source>, new frontier: </source>
         <translation>, новая граница: </translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="595"/>
+        <location filename="../ledger.py" line="587"/>
         <source>Processed </source>
         <translation>Обработано </translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="595"/>
+        <location filename="../ledger.py" line="587"/>
         <source>k records, current frontier: </source>
         <translation>к записей, текущая граница: </translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="462"/>
+        <location filename="../ledger.py" line="454"/>
         <source>Conversion failed. Asset amount is not enogh. Date: </source>
         <translation>Ошибка конветации. Недостаточное количество актива для конвертации. Дата: </translation>
     </message>
@@ -1083,6 +1083,46 @@ Application will be terminated now</source>
         <source>Error. Zero rate</source>
         <translation>Ошибка. Нулевой курс</translation>
     </message>
+    <message>
+        <location filename="../view_delegate.py" line="653"/>
+        <source>Symbol change</source>
+        <translation>Смена символа</translation>
+    </message>
+    <message>
+        <location filename="../view_delegate.py" line="654"/>
+        <source>Split</source>
+        <translation>Сплит</translation>
+    </message>
+    <message>
+        <location filename="../view_delegate.py" line="655"/>
+        <source>Spin-off</source>
+        <translation>Выделение компании</translation>
+    </message>
+    <message>
+        <location filename="../view_delegate.py" line="656"/>
+        <source>Merger</source>
+        <translation>Объединение компании</translation>
+    </message>
+    <message>
+        <location filename="../view_delegate.py" line="666"/>
+        <source> Opened with </source>
+        <translation> Сделка открытия </translation>
+    </message>
+    <message>
+        <location filename="../view_delegate.py" line="668"/>
+        <source> Closed with </source>
+        <translation> Сделка закрытия </translation>
+    </message>
+    <message>
+        <location filename="../view_delegate.py" line="672"/>
+        <source> Long</source>
+        <translation> Длинная позиция</translation>
+    </message>
+    <message>
+        <location filename="../view_delegate.py" line="674"/>
+        <source> Short</source>
+        <translation> Короткая позиция</translation>
+    </message>
 </context>
 <context>
     <name>PandasLinesModel</name>
@@ -1234,42 +1274,42 @@ Application will be terminated now</source>
 <context>
     <name>Reports</name>
     <message>
-        <location filename="../reports/reports.py" line="222"/>
+        <location filename="../reports/reports.py" line="223"/>
         <source>TOTAL</source>
         <translation>ИТОГО</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="143"/>
+        <location filename="../reports/reports.py" line="144"/>
         <source>Save report to:</source>
         <translation>Сохранить отчет в:</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="152"/>
+        <location filename="../reports/reports.py" line="153"/>
         <source>Report</source>
         <translation>Отчет</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="146"/>
+        <location filename="../reports/reports.py" line="147"/>
         <source>Excel files (*.xlsx)</source>
         <translation>Файлы Excel (*.xslx)</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="169"/>
+        <location filename="../reports/reports.py" line="170"/>
         <source>Can&apos;t save report into file </source>
         <translation>Не удалось сохранить отчет в файл </translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="246"/>
+        <location filename="../reports/reports.py" line="247"/>
         <source>You should select account to create Deals report</source>
         <translation>Вы должны выбрать счет, чтобы создать отчет Сделки</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="270"/>
+        <location filename="../reports/reports.py" line="271"/>
         <source>You should select account to create Profit/Loss report</source>
         <translation>Вы должны выбрать счет, чтобы создать отчет Прибыли/Убытки</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="352"/>
+        <location filename="../reports/reports.py" line="353"/>
         <source>You should select category to create By Category report</source>
         <translation>Вы должны выбрать категорию, чтобы создать отчет По категории</translation>
     </message>

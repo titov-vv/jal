@@ -104,7 +104,8 @@ class Reports(QObject):
                                ("qty", "Qty", None, None, ReportsFloatDelegate),
                                ("fee", "Fee", None, None, ReportsFloat2Delegate),
                                ("profit", "P/L", None, None, ReportsProfitDelegate),
-                               ("rel_profit", "P/L, %", None, None, ReportsProfitDelegate)]),
+                               ("rel_profit", "P/L, %", None, None, ReportsProfitDelegate),
+                               ("corp_action", "Note", 200, None, ReportsCorpActionDelegate)]),
             ReportType.ByCategory: (self.prepareCategoryReport,
                                     self.showSqlQueryReport,
                                     [("timestamp", "Timestamp", ColumnWidth.FOR_DATETIME, None, ReportsTimestampDelegate),
@@ -260,7 +261,7 @@ class Reports(QObject):
                                [(":account_id", account_id), (":begin", begin), (":end", end)], forward_only=False)
         else:
             self.query = executeSQL(self.db, "SELECT asset, open_timestamp, close_timestamp, open_price, close_price, "
-                                        "qty, fee, profit, rel_profit FROM deals_ext "
+                                        "qty, fee, profit, rel_profit, corp_action FROM deals_ext "
                                         "WHERE account_id=:account_id AND close_timestamp>=:begin AND close_timestamp<=:end",
                                [(":account_id", account_id), (":begin", begin), (":end", end)], forward_only=False)
         return True

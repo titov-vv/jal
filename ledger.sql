@@ -910,23 +910,35 @@ CREATE VIEW deals_ext AS
            ac.name AS account,
            d.asset_id,
            at.name AS asset,
-           ot.timestamp AS open_timestamp,
-           ct.timestamp AS close_timestamp,
-           ot.price AS open_price,
-           ct.price AS close_price,
+           coalesce(ot.timestamp, oca.timestamp) AS open_timestamp,
+           coalesce(ct.timestamp, cca.timestamp) AS close_timestamp,
+           coalesce(ot.price, ol.value / oca.qty_new) AS open_price,
+           coalesce(ct.price, ot.price) AS close_price,
            d.qty AS qty,
-           ot.fee + ct.fee AS fee,
-           d.qty * (ct.price - ot.price) - (ot.fee + ct.fee) AS profit,
-           coalesce(100 * (d.qty * (ct.price - ot.price) - (ot.fee + ct.fee) ) / (d.qty * ot.price), 0) AS rel_profit
+           coalesce(ot.fee, 0) + coalesce(ct.fee, 0) AS fee,
+           d.qty * (coalesce(ct.price, ot.price) - coalesce(ot.price, ol.value / oca.qty_new) ) - (coalesce(ot.fee, 0) + coalesce(ct.fee, 0) ) AS profit,
+           coalesce(100 * (d.qty * (coalesce(ct.price, ot.price) - coalesce(ot.price, ol.value / oca.qty_new) ) - (coalesce(ot.fee, 0) + coalesce(ct.fee, 0) ) ) / (d.qty * coalesce(ot.price, ol.value / oca.qty_new) ), 0) AS rel_profit,
+           coalesce(oca.type, -cca.type) AS corp_action
       FROM deals AS d
            LEFT JOIN
            sequence AS os ON d.open_sid = os.id
            LEFT JOIN
-           trades AS ot ON ot.id = os.operation_id
+           trades AS ot ON ot.id = os.operation_id AND
+                           os.type = 3
+           LEFT JOIN
+           corp_actions AS oca ON oca.id = os.operation_id AND
+                                  os.type = 5
+           LEFT JOIN
+           ledger AS ol ON ol.sid = os.id AND
+                           ol.asset_id = oca.asset_id_new
            LEFT JOIN
            sequence AS cs ON d.close_sid = cs.id
            LEFT JOIN
-           trades AS ct ON ct.id = cs.operation_id
+           trades AS ct ON ct.id = cs.operation_id AND
+                           cs.type = 3
+           LEFT JOIN
+           corp_actions AS cca ON cca.id = cs.operation_id AND
+                                  cs.type = 5
            LEFT JOIN
            accounts AS ac ON d.account_id = ac.id
            LEFT JOIN

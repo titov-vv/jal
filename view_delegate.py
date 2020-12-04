@@ -644,6 +644,38 @@ class ReportsProfitDelegate(QStyledItemDelegate):
         painter.restore()
 
 
+class ReportsCorpActionDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        QStyledItemDelegate.__init__(self, parent)
+
+    def paint(self, painter, option, index):
+        CorpActionNames = {
+            CorporateAction.SymbolChange: g_tr('OperationsDelegate', "Symbol change"),
+            CorporateAction.Split: g_tr('OperationsDelegate', "Split"),
+            CorporateAction.SpinOff: g_tr('OperationsDelegate', "Spin-off"),
+            CorporateAction.Merger: g_tr('OperationsDelegate', "Merger")
+        }
+
+        painter.save()
+        model = index.model()
+        record = model.record(index.row())
+        type = record.value(index.column())
+        if type == '':
+            type = 0
+        if type > 0:
+            text = g_tr('OperationsDelegate', " Opened with ") + CorpActionNames[type]
+        elif type < 0:
+            text = g_tr('OperationsDelegate', " Closed with ") + CorpActionNames[-type]
+        else:
+            qty = record.value("qty")
+            if qty > 0:
+                text = g_tr('OperationsDelegate', " Long")
+            else:
+                text = g_tr('OperationsDelegate', " Short")
+        painter.drawText(option.rect, Qt.AlignLeft, text)
+        painter.restore()
+
+
 class ReportsTimestampDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         QStyledItemDelegate.__init__(self, parent)
