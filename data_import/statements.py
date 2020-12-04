@@ -8,7 +8,7 @@ from PySide2.QtCore import QObject, Signal
 from PySide2.QtSql import QSqlTableModel
 from PySide2.QtWidgets import QDialog, QFileDialog
 from ibflex import parser, AssetClass, BuySell, CashAction, Reorg, Code
-from constants import Setup, TransactionType, PredefinedAsset, PredefinedCategory
+from constants import Setup, TransactionType, PredefinedAsset, PredefinedCategory, CorporateAction
 from db.helpers import executeSQL, readSQL, get_country_by_code
 from ui_custom.helpers import g_tr
 from ui.ui_add_asset_dlg import Ui_AddAssetDialog
@@ -28,6 +28,7 @@ class IBKR:
         AssetClass.BOND: PredefinedAsset.Bond
     }
     DummyExchange = "VALUE"
+    SpinOffPattern = "^(.*)\(.* SPINOFF +(\d+) +FOR +(\d+) +\(.*$"
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -371,8 +372,30 @@ class StatementLoader(QObject):
         self.db.commit()
         logging.info(g_tr('StatementLoader', "Transaction tax added: ") + f"{note}, {amount}")
 
+    def createCorpAction(self, account_id, type, timestamp, number, asset_id_old, qty_old, asset_id_new, qty_new, note):
+        action_id = readSQL(self.db,
+                           "SELECT id FROM corp_actions "
+                           "WHERE timestamp=:timestamp AND type = :type AND account_id = :account AND number = :number "
+                           "AND asset_id = :asset AND asset_id_new = :asset_new",
+                           [(":timestamp", timestamp), (":type", type), (":account", account_id), (":number", number),
+                            (":asset", asset_id_old), (":asset_new", asset_id_new)])
+        if action_id:
+            logging.info(g_tr('StatementLoader', "Corp.Action #") + f"{number}" +
+                         g_tr('StatementLoader', " already exists in ledger. Skipped"))
+            return
+
+        _ = executeSQL(self.db,
+                       "INSERT INTO corp_actions (timestamp, number, account_id, type, "
+                       "asset_id, qty, asset_id_new, qty_new, note) "
+                       "VALUES (:timestamp, :number, :account, :type, :asset, :qty, :asset_new, :qty_new, :note)",
+                       [(":timestamp", timestamp), (":number", number), (":account", account_id), (":type", type),
+                        (":asset", asset_id_old), (":qty", float(qty_old)),
+                        (":asset_new", asset_id_new), (":qty_new", float(qty_new)), (":note", note)])
+        self.db.commit()
+        logging.info(f"Corp.Action #{number} added for account {account_id} asset {asset_id_old} @{timestamp}")
+
     def loadIBCorpAction(self, IBCorpAction):
-        if IBCorpAction.listingExchange == IBKR.DummyExchange:   # Skip artificial corporate actions
+        if IBCorpAction.listingExchange == IBKR.DummyExchange:   # Skip actions that we loaded as part of main action
             return
         if IBCorpAction.code == Code.CANCEL:
             logging.warning(g_tr('StatementLoader', "*** MANUAL ACTION REQUIRED ***"))
@@ -381,28 +404,40 @@ class StatementLoader(QObject):
             logging.warning(f"@{IBCorpAction.dateTime} for {IBCorpAction.symbol}: Qty {IBCorpAction.quantity}, "
                             f"Value {IBCorpAction.value}, Type {IBCorpAction.type}, Code {IBCorpAction.code}")
             return
-        if IBCorpAction.assetCategory == AssetClass.STOCK and (
-                IBCorpAction.type == Reorg.MERGER or IBCorpAction.type == Reorg.SPINOFF):
-            account_id = self.findAccountID(IBCorpAction.accountId, IBCorpAction.currency)
-            if account_id is None:
-                logging.error(g_tr('StatementLoader', "Account ") + f"{IBCorpAction.accountId} ({IBCorpAction.currency})" +
-                              g_tr('StatementLoader', " not found. Skipping trade #") + f"{IBCorpAction.transactionID}")
-                return
-            asset_id = self.findAssetID(IBCorpAction.symbol)
-            timestamp = int(IBCorpAction.dateTime.timestamp())
-            settlement = timestamp
-            if IBCorpAction.transactionID:
-                number = IBCorpAction.transactionID
-            else:
-                number = ""
-            qty = IBCorpAction.quantity
-            self.createTrade(account_id, asset_id, timestamp, settlement, number, qty, 0, 0)
+        account_id = self.findAccountID(IBCorpAction.accountId, IBCorpAction.currency)
+        if account_id is None:
+            logging.error(g_tr('StatementLoader', "Account ") + f"{IBCorpAction.accountId} ({IBCorpAction.currency})" +
+                          g_tr('StatementLoader', " not found. Skipping corp.action #") + f"{IBCorpAction.transactionID}")
             return
-        logging.warning(g_tr('StatementLoader', "*** MANUAL ACTION REQUIRED ***"))
-        logging.warning(f"Corporate action {IBCorpAction.type} for account "
-                        f"{IBCorpAction.accountId} ({IBCorpAction.currency}): {IBCorpAction.actionDescription}")
-        logging.warning(f"@{IBCorpAction.dateTime} for {IBCorpAction.symbol}: Qty {IBCorpAction.quantity}, "
-                        f"Value {IBCorpAction.value}, Type {IBCorpAction.type}, Code {IBCorpAction.code}")
+        if IBCorpAction.assetCategory != AssetClass.STOCK:
+            logging.warning(g_tr('StatementLoader', "Corporate action not supported for asset class ")
+                            + f"{IBCorpAction.assetCategory}")
+            return
+        if IBCorpAction.type == Reorg.MERGER:
+            pass
+        elif IBCorpAction.type == Reorg.SPINOFF:
+            asset_id_new = self.findAssetID(IBCorpAction.symbol)
+            timestamp = int(IBCorpAction.dateTime.timestamp())
+            number = IBCorpAction.transactionID
+            qty_new = IBCorpAction.quantity
+            note = IBCorpAction.description
+            parts = re.match(IBKR.SpinOffPattern, note)
+            if not parts:
+                logging.error(g_tr('StatementLoader', "Failed to parse Spin-off data"))
+                return
+            asset_id_old = self.findAssetID(parts.group(1))
+            mult_a = int(parts.group(2))
+            mult_b = int(parts.group(3))
+            qty_old = mult_b * qty_new / mult_a
+            self.createCorpAction(account_id, CorporateAction.SpinOff, timestamp, number, asset_id_old,
+                                  qty_old, asset_id_new, qty_new, note)
+        elif IBCorpAction.type == Reorg.ISSUECHANGE:
+            pass
+        elif IBCorpAction.type == Reorg.FORWARDSPLIT:
+            pass
+        else:
+            logging.warning(g_tr('StatementLoader', "Corporate action type is not supported: ")
+                            + f"{IBCorpAction.type}")
 
     def loadIBDividend(self, dividend):
         if dividend.assetCategory != AssetClass.STOCK:
