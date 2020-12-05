@@ -58,7 +58,20 @@ ledger использует следующие пакеты для своей р
 
 ### Скриншоты
 Основные скриншоты можно посмотреть на англоязычной версии данной страницы - они отличаются только языком.
-Функционал актуальный только для России - загрузка электронных чеков с сайта ФНС:
+Ниже представлены скриншоты функционала актуального только для России.
+
+##### *Отчет по операциям с иностранными ценными бумагами*
+
+Пример страницы с отчетом о дивидендах:  
+![rus_tax_dividends](https://github.com/titov-vv/ledger/blob/master/screenshots/tax_rus_dividends.png?raw=true)
+
+Пример страницы с отчетом о сделках с иностранными ЦБ:  
+![rus_tax_deals](https://github.com/titov-vv/ledger/blob/master/screenshots/tax_rus_deals.png?raw=true)
+
+Пример страницы с отчетом о комиссиях брокера:  
+![rus_tax_fees](https://github.com/titov-vv/ledger/blob/master/screenshots/tax_rus_fees.png?raw=true)
+
+##### *Загрузка электронных чеков с сайта ФНС*
 
 Диалог авторизации (выбрана страница с авторизацией через Госуслуги):  
 ![FSN authorization dialog](https://github.com/titov-vv/ledger/blob/master/screenshots/fns_auth_dialog.png?raw=true)
