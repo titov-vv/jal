@@ -62,7 +62,7 @@ ledger использует следующие пакеты для своей р
 
 #### *Отчет по операциям с иностранными ценными бумагами*
 
-Отчет в виде файла Excel доступен по [ссылке](https://github.com/titov-vv/ledger/tree/master/docs/tax_rus_example.xlsx).    
+Отчет в виде файла Excel доступен по [ссылке](https://github.com/titov-vv/ledger/raw/master/docs/tax_rus_example.xlsx).    
 Пример страницы с отчетом о дивидендах:  
 ![rus_tax_dividends](https://github.com/titov-vv/ledger/blob/master/screenshots/tax_rus_dividends.png?raw=true)
 
