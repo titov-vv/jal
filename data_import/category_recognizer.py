@@ -1,10 +1,5 @@
 import re
 import pandas as pd
-try:
-    import tensorflow as tf
-except ImportError:
-    pass   # We should not be in this module as dependencies have been checked in slips.py and calls are disabled
-
 from db.helpers import executeSQL, readSQLrecord
 
 #----------------------------------------------------------------------------------------------------------------------
@@ -28,6 +23,9 @@ def clean_text(text):
 
 
 def recognize_categories(db, purchases):
+    import tensorflow as tf
+    tf.getLogger().setLevel('ERROR')
+
     # Load only categories that were used for import
     query = executeSQL(db, "SELECT DISTINCT mapped_to AS category FROM map_category")
     table = []
