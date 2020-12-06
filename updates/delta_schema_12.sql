@@ -409,8 +409,7 @@ BEGIN
 END;
 --------------------------------------------------------------------------------
 -- UPDATE VIEWS
-DROP VIEW all_operations;
-
+DROP VIEW IF EXISTS all_operations;
 CREATE VIEW all_operations AS
     SELECT m.type,
            m.id,
@@ -561,8 +560,7 @@ CREATE VIEW all_operations AS
 
 
 --------------------------------------------------------------------------------
-DROP VIEW all_transactions;
-
+DROP VIEW IF EXISTS all_transactions;
 CREATE VIEW all_transactions AS
     SELECT at.*,
            a.currency_id AS currency
@@ -594,18 +592,6 @@ CREATE VIEW all_transactions AS
                       sum_tax AS fee_tax_tag
                  FROM dividends
                UNION ALL
-               SELECT 4 AS type,
-                      id,
-                      timestamp,
-                      type AS subtype,
-                      account_id AS account,
-                      NULL AS asset,
-                      amount,
-                      NULL AS price_category,
-                      NULL AS coupon_peer,
-                      NULL AS fee_tax_tag
-                 FROM transfers
-               UNION ALL
                SELECT 5 AS type,
                       a.id,
                       a.timestamp,
@@ -616,7 +602,7 @@ CREATE VIEW all_transactions AS
                       a.qty_new AS price_category,
                       a.asset_id_new AS coupon_peer,
                       NULL AS fee_tax_tag
-                  FROM corp_actions AS a
+                 FROM corp_actions AS a
                UNION ALL
                SELECT 3 AS type,
                       t.id,
@@ -629,17 +615,26 @@ CREATE VIEW all_transactions AS
                       t.coupon AS coupon_peer,
                       t.fee AS fee_tax_tag
                  FROM trades AS t
-               ORDER BY timestamp,
-                        type,
-                        subtype
+               UNION ALL
+               SELECT 4 AS type,
+                      id,
+                      timestamp,
+                      type AS subtype,
+                      account_id AS account,
+                      NULL AS asset,
+                      amount,
+                      NULL AS price_category,
+                      NULL AS coupon_peer,
+                      NULL AS fee_tax_tag
+                 FROM transfers
+                ORDER BY timestamp
            )
            AS at
            LEFT JOIN
            accounts AS a ON at.account = a.id;
 
 --------------------------------------------------------------------------------
-DROP VIEW deals_ext;
-
+DROP VIEW IF EXISTS deals_ext;
 CREATE VIEW deals_ext AS
     SELECT d.account_id,
            ac.name AS account,

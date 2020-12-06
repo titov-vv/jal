@@ -773,6 +773,30 @@ CREATE VIEW all_transactions AS
                       sum_tax AS fee_tax_tag
                  FROM dividends
                UNION ALL
+               SELECT 5 AS type,
+                      a.id,
+                      a.timestamp,
+                      a.type AS subtype,
+                      a.account_id AS account,
+                      a.asset_id AS asset,
+                      a.qty AS amount,
+                      a.qty_new AS price_category,
+                      a.asset_id_new AS coupon_peer,
+                      NULL AS fee_tax_tag
+                 FROM corp_actions AS a
+               UNION ALL
+               SELECT 3 AS type,
+                      t.id,
+                      t.timestamp,
+                      iif(t.qty < 0, -1, 1) AS subtype,
+                      t.account_id AS account,
+                      t.asset_id AS asset,
+                      t.qty AS amount,
+                      t.price AS price_category,
+                      t.coupon AS coupon_peer,
+                      t.fee AS fee_tax_tag
+                 FROM trades AS t
+               UNION ALL
                SELECT 4 AS type,
                       id,
                       timestamp,
@@ -784,33 +808,7 @@ CREATE VIEW all_transactions AS
                       NULL AS coupon_peer,
                       NULL AS fee_tax_tag
                  FROM transfers
-               UNION ALL
-               SELECT 5 AS type,
-                      a.id,
-                      a.timestamp,
-                      a.type AS subtype,
-                      a.account_id AS account,
-                      a.asset_id AS asset,
-                      a.qty AS amount,
-                      a.qty_new AS price_category,
-                      a.asset_id_new AS coupon_peer,
-                      NULL AS fee_tax_tag
-                  FROM corp_actions AS a
-               UNION ALL
-               SELECT 3 AS type,
-                      t.id,
-                      t.timestamp,
-                      iif(t.qty<0, -1, 1) AS subtype,
-                      t.account_id AS account,
-                      t.asset_id AS asset,
-                      t.qty AS amount,
-                      t.price AS price_category,
-                      t.coupon AS coupon_peer,
-                      t.fee AS fee_tax_tag
-                 FROM trades AS t
-               ORDER BY timestamp,
-                        type,
-                        subtype
+                ORDER BY timestamp
            )
            AS at
            LEFT JOIN
