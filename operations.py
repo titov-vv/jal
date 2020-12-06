@@ -66,6 +66,7 @@ LedgerInitValues = {
     TransactionType.CorporateAction: {
         'id': (False, INIT_NULL, None),
         'timestamp': (False, INIT_TIMESTAMP, None),
+        'number': (False, INIT_VALUE, ''),
         'account_id': (True, INIT_ACCOUNT, None),
         'type': (True, INIT_VALUE, 1),
         'asset_id': (True, INIT_VALUE, 0),
