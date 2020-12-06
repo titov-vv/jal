@@ -67,6 +67,11 @@ LedgerInitValues = {
         'id': (False, INIT_NULL, None),
         'timestamp': (False, INIT_TIMESTAMP, None),
         'account_id': (True, INIT_ACCOUNT, None),
+        'type': (True, INIT_VALUE, 1),
+        'asset_id': (True, INIT_VALUE, 0),
+        'qty': (True, INIT_VALUE, 0),
+        'asset_id_new': (True, INIT_VALUE, 0),
+        'qty_new': (True, INIT_VALUE, 0),
         'note': (True, INIT_VALUE, '')
     }
 }
