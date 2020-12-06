@@ -928,7 +928,7 @@ CREATE VIEW deals_ext AS
                                   os.type = 5
            LEFT JOIN
            ledger AS ol ON ol.sid = os.id AND
-                           ol.asset_id = oca.asset_id_new
+                           ol.asset_id = oca.asset_id_new AND ol.value > 0
            LEFT JOIN
            sequence AS cs ON d.close_sid = cs.id
            LEFT JOIN
@@ -941,6 +941,7 @@ CREATE VIEW deals_ext AS
            accounts AS ac ON d.account_id = ac.id
            LEFT JOIN
            assets AS at ON d.asset_id = at.id
+   WHERE NOT (os.type=5 AND cs.type=5)
      ORDER BY ct.timestamp,
               ot.timestamp;
 

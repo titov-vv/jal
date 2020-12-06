@@ -368,7 +368,7 @@ class Ledger:
                                "UNION ALL "
                                "SELECT s.id, c.qty_new, l.value/c.qty_new AS price FROM corp_actions AS c "
                                "LEFT JOIN sequence AS s ON s.type = 5 AND s.operation_id=c.id " 
-                               "LEFT JOIN ledger AS l ON s.id = l.sid AND l.asset_id=c.asset_id_new "
+                               "LEFT JOIN ledger AS l ON s.id = l.sid AND l.asset_id=c.asset_id_new AND l.value > 0 "
                                "WHERE c.qty_new > 0 AND c.asset_id_new = :asset_id AND c.account_id = :account_id "
                                "AND s.id < :sid AND s.id > :last_sid " 
                                ")ORDER BY id",
@@ -481,7 +481,7 @@ class Ledger:
                            "UNION ALL "
                            "SELECT s.id, c.qty_new, l.value/c.qty_new AS price FROM corp_actions AS c "
                            "LEFT JOIN sequence AS s ON s.type = 5 AND s.operation_id=c.id "
-                           "LEFT JOIN ledger AS l ON s.id = l.sid AND l.asset_id=c.asset_id_new "
+                           "LEFT JOIN ledger AS l ON s.id = l.sid AND l.asset_id=c.asset_id_new AND l.value > 0"
                            "WHERE c.qty_new > 0 AND c.asset_id_new = :asset_id AND c.account_id = :account_id "
                            "AND s.id < :sid AND s.id > :last_sid "
                            ")ORDER BY id",

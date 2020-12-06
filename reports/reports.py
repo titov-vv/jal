@@ -262,7 +262,8 @@ class Reports(QObject):
         else:
             self.query = executeSQL(self.db, "SELECT asset, open_timestamp, close_timestamp, open_price, close_price, "
                                         "qty, fee, profit, rel_profit, corp_action FROM deals_ext "
-                                        "WHERE account_id=:account_id AND close_timestamp>=:begin AND close_timestamp<=:end",
+                                        "WHERE account_id=:account_id AND close_timestamp>=:begin AND close_timestamp<=:end "
+                                        "ORDER BY close_timestamp, open_timestamp",
                                [(":account_id", account_id), (":begin", begin), (":end", end)], forward_only=False)
         return True
 
