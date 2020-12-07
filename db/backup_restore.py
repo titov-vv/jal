@@ -7,8 +7,9 @@ import logging
 from ui_custom.helpers import g_tr
 
 # ------------------------------------------------------------------------------
-backup_list = ["settings", "tags", "categories", "agents", "assets", "accounts", "corp_actions",
-               "dividends", "trades", "actions", "action_details", "transfers", "transfer_notes", "quotes"]
+backup_list = ["settings", "tags", "categories", "agents", "assets", "accounts", "countries", "corp_actions",
+               "dividends", "trades", "actions", "action_details", "transfers", "transfer_notes", "quotes",
+               "map_peer", "map_category"]
 
 
 # ------------------------------------------------------------------------------
