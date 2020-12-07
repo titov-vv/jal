@@ -24,7 +24,7 @@ def clean_text(text):
 
 def recognize_categories(db, purchases):
     import tensorflow as tf
-    tf.getLogger().setLevel('ERROR')
+    tf.get_logger().setLevel('WARNING')
 
     # Load only categories that were used for import
     query = executeSQL(db, "SELECT DISTINCT mapped_to AS category FROM map_category")
