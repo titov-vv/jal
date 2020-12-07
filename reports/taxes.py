@@ -397,7 +397,7 @@ class TaxesRus:
 
         # get list of all deals that were opened with corp.action and closed by normal trade
         query = executeSQL(self.db,
-                           "SELECT d.open_sid AS sid, s.name AS symbol, d.qty AS qty, "
+                           "SELECT d.open_sid AS o_sid, d.close_sid AS c_sid, s.name AS symbol, d.qty AS qty, "
                            "t.timestamp AS t_date, qt.quote AS t_rate, t.settlement AS s_date, qts.quote AS s_rate, "
                            "t.price AS price, t.fee AS fee "
                            "FROM deals AS d "
@@ -417,7 +417,7 @@ class TaxesRus:
         row = 9
         even_odd = 1
         while query.next():
-            prev_sid, symbol, qty, t_date, t_rate, s_date, s_rate, price, fee_usd = readSQLrecord(query)
+            o_sid, c_sid, symbol, qty, t_date, t_rate, s_date, s_rate, price, fee_usd = readSQLrecord(query)
             amount_usd = round(price * qty, 2)
             amount_rub = -1 #round(amount_usd * s_rate, 2)
             fee_rub = -1 #round(fee_usd * t_rate, 2)
@@ -438,8 +438,33 @@ class TaxesRus:
             })
             row = row + 1
 
-            row = self.proceed_corporate_action(prev_sid, 1, sheet, formats, row, even_odd)
+            indent = ' ' * 3
+            # get current corporate actions
+            actions_query = executeSQL(self.db,
+                                       "SELECT a.timestamp AS a_date, a.type, "
+                                       "s1.name AS symbol, a.qty AS qty, s2.name AS symbol_new, a.qty_new AS qty_new, a.note AS note "
+                                       "FROM deals AS d "
+                                       "JOIN sequence AS os ON os.id=d.open_sid AND os.type = 5 "
+                                       "LEFT JOIN corp_actions AS a ON os.operation_id=a.id "
+                                       "LEFT JOIN assets AS s1 ON a.asset_id=s1.id "
+                                       "LEFT JOIN assets AS s2 ON a.asset_id_new=s2.id "
+                                       "WHERE d.open_sid = :o_sid AND d.close_sid = :c_sid "
+                                       "ORDER BY a.timestamp DESC",
+                                       [(":o_sid", o_sid), (":c_sid", c_sid)])
+            while actions_query.next():
+                a_date, type, symbol, qty, symbol_new, qty_new, note = readSQLrecord(actions_query)
+
+                xlsxWriteRow(sheet, row, {
+                    0: (indent + "Корп. действие", formats.Text(even_odd)),
+                    1: (datetime.fromtimestamp(a_date).strftime('%d.%m.%Y'), formats.Text(even_odd)),
+                    2: (note, formats.Text(even_odd), 0, 9, 0)
+                })
+                row = row + 1
+
+            row = self.proceed_corporate_action(o_sid, 2, sheet, formats, row, even_odd)
+
             even_odd = even_odd + 1
+            row = row + 1
 
     def proceed_corporate_action(self, sid, level, sheet, formats, row, even_odd):
         indent = ' ' * level * 3
@@ -500,7 +525,7 @@ class TaxesRus:
             xlsxWriteRow(sheet, row, {
                 0: (indent + "Корп. действие", formats.Text(even_odd)),
                 1: (datetime.fromtimestamp(a_date).strftime('%d.%m.%Y'), formats.Text(even_odd)),
-                2: (note, formats.Text(even_odd))
+                2: (note, formats.Text(even_odd), 0, 9, 0)
             })
             row = row + 1
 
