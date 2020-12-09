@@ -1659,7 +1659,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 11);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 12);
 -- TODO Remove this value 'TriggersEnabled' from database
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
@@ -1721,9 +1721,14 @@ INSERT INTO assets (id, name, type_id, full_name, web_id, src_id) VALUES (2, 'US
 INSERT INTO assets (id, name, type_id, full_name, web_id, src_id) VALUES (3, 'EUR', 1, 'Евро', 'R01239', 0);
 
 -- Initialize some pre-defined countries
-INSERT INTO countries (id, name, code, tax_ageement) VALUES (1, 'N/A', 'xx', 0);
-INSERT INTO countries (id, name, code, tax_ageement) VALUES (1, 'Russia', 'ru', 0);
-INSERT INTO countries (id, name, code, tax_ageement) VALUES (2, 'United States', 'us', 1);
+INSERT INTO countries (id, name, code, tax_treaty) VALUES (0, 'N/A', 'xx', 0);
+INSERT INTO countries (id, name, code, tax_treaty) VALUES (1, 'Russia', 'ru', 0);
+INSERT INTO countries (id, name, code, tax_treaty) VALUES (2, 'United States', 'us', 1);
+INSERT INTO countries (id, name, code, tax_treaty) VALUES (3, 'Ireland', 'ie', 1);
+INSERT INTO countries (id, name, code, tax_treaty) VALUES (4, 'Switzerland', 'ch', 1);
+INSERT INTO countries (id, name, code, tax_treaty) VALUES (5, 'France', 'fr', 1);
+INSERT INTO countries (id, name, code, tax_treaty) VALUES (6, 'Canada', 'ca', 1);
+INSERT INTO countries (id, name, code, tax_treaty) VALUES (7, 'Sweden', 'se', 1);
 
 -- Initialize rate for base currency
 INSERT INTO quotes (id, timestamp, asset_id, quote) VALUES (1, 946684800, 1, 1.0);
