@@ -87,7 +87,10 @@ def init_and_check_db(db_path):
     tables = db.tables(QSql.Tables)
     if not tables:
         db.close()
+        connection_name = db.connectionName()
+        db = None
         loadDbFromSQL(get_dbfilename(db_path), db_path + Setup.INIT_SCRIPT_PATH)
+        QSqlDatabase.removeDatabase(connection_name)
         return None, LedgerInitError(LedgerInitError.EmptyDbInitialized)
 
     schema_version = readSQL(db, "SELECT value FROM settings WHERE name='SchemaVersion'")
