@@ -116,17 +116,8 @@ class Ui_ReferenceDataDialog(object):
 
         self.verticalLayout.addWidget(self.DataView)
 
-        self.buttonBox = QDialogButtonBox(ReferenceDataDialog)
-        self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
-
-        self.verticalLayout.addWidget(self.buttonBox)
-
 
         self.retranslateUi(ReferenceDataDialog)
-        self.buttonBox.accepted.connect(ReferenceDataDialog.accept)
-        self.buttonBox.rejected.connect(ReferenceDataDialog.reject)
 
         QMetaObject.connectSlotsByName(ReferenceDataDialog)
     # setupUi

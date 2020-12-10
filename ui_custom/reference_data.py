@@ -3,7 +3,7 @@ from datetime import datetime
 
 from PySide2.QtCore import Qt, Signal, Property, Slot, QEvent
 from PySide2.QtSql import QSqlRelationalDelegate
-from PySide2.QtWidgets import QDialog
+from PySide2.QtWidgets import QDialog, QMessageBox
 from PySide2.QtWidgets import QStyledItemDelegate
 
 from ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
@@ -98,6 +98,18 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
         self.Model.select()
         self.setFilter()
+
+    @Slot()
+    def closeEvent(self, event):
+        if self.CommitBtn.isEnabled():    # There are uncommited changed in a table
+            if QMessageBox().warning(None, g_tr('ReferenceDataDialog', "Confirmation"),
+                                     g_tr('ReferenceDataDialog', "You have uncommited changes. Do you want to close?"),
+                                     QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
+                event.ignore()
+                return
+            else:
+                self.Model.revertAll()
+        event.accept()
 
     # Overload ancestor method to activate/deactivate filters for table view
     def exec_(self):

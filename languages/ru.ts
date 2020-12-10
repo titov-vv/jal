@@ -4,22 +4,22 @@
 <context>
     <name></name>
     <message>
-        <location filename="../db/backup_restore.py" line="23"/>
+        <location filename="../db/backup_restore.py" line="24"/>
         <source>Backup saved in: </source>
         <translation>Бэкап сохранён в: </translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="39"/>
+        <location filename="../db/backup_restore.py" line="40"/>
         <source>DB cleanup was completed</source>
         <translation>Очистка данных завершена</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="52"/>
+        <location filename="../db/backup_restore.py" line="53"/>
         <source>Backup restored from: </source>
         <translation>Бэкап восставновлен из: </translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="52"/>
+        <location filename="../db/backup_restore.py" line="53"/>
         <source> into </source>
         <translation> в </translation>
     </message>
@@ -901,49 +901,49 @@
 <context>
     <name>LedgerOperationsView</name>
     <message>
-        <location filename="../operations.py" line="160"/>
+        <location filename="../operations.py" line="166"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../operations.py" line="160"/>
+        <location filename="../operations.py" line="166"/>
         <source>Are you sure to delete selected transacion?</source>
         <translation>Вы уверены, что хотите удалить выбранную операцию?</translation>
     </message>
     <message>
-        <location filename="../operations.py" line="219"/>
+        <location filename="../operations.py" line="225"/>
         <source>You have unsaved changes</source>
         <translation>Есть несохранённые изменения</translation>
     </message>
     <message>
-        <location filename="../operations.py" line="219"/>
+        <location filename="../operations.py" line="225"/>
         <source> has uncommitted changes,
 do you want to save it?</source>
         <translation> имеет несохранённые изменения,
 Вы хотите их сохранить?</translation>
     </message>
     <message>
-        <location filename="../operations.py" line="244"/>
+        <location filename="../operations.py" line="250"/>
         <source>Submit failed: </source>
         <translation>Ошибка сохранения: </translation>
     </message>
     <message>
-        <location filename="../operations.py" line="250"/>
+        <location filename="../operations.py" line="256"/>
         <source>Details submit failed: </source>
         <translation>Ошибка сохранения деталей операции: </translation>
     </message>
     <message>
-        <location filename="../operations.py" line="305"/>
+        <location filename="../operations.py" line="311"/>
         <source>Reconcile</source>
         <translation>Сверить</translation>
     </message>
     <message>
-        <location filename="../operations.py" line="307"/>
+        <location filename="../operations.py" line="313"/>
         <source>Copy</source>
         <translation>Скопировать</translation>
     </message>
     <message>
-        <location filename="../operations.py" line="309"/>
+        <location filename="../operations.py" line="315"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
@@ -1054,7 +1054,7 @@ Application will be terminated now</source>
 <context>
     <name>OperationsDelegate</name>
     <message>
-        <location filename="../view_delegate.py" line="422"/>
+        <location filename="../view_delegate.py" line="426"/>
         <source>Tax: </source>
         <translation>Налог: </translation>
     </message>
@@ -1079,47 +1079,47 @@ Application will be terminated now</source>
         <translation>Сплит акций {old} {before} в {after}</translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="419"/>
+        <location filename="../view_delegate.py" line="423"/>
         <source>Error. Zero rate</source>
         <translation>Ошибка. Нулевой курс</translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="653"/>
+        <location filename="../view_delegate.py" line="657"/>
         <source>Symbol change</source>
         <translation>Смена символа</translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="654"/>
+        <location filename="../view_delegate.py" line="658"/>
         <source>Split</source>
         <translation>Сплит</translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="655"/>
+        <location filename="../view_delegate.py" line="659"/>
         <source>Spin-off</source>
         <translation>Выделение компании</translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="656"/>
+        <location filename="../view_delegate.py" line="660"/>
         <source>Merger</source>
         <translation>Объединение компании</translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="666"/>
+        <location filename="../view_delegate.py" line="670"/>
         <source> Opened with </source>
         <translation> Сделка открытия </translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="668"/>
+        <location filename="../view_delegate.py" line="672"/>
         <source> Closed with </source>
         <translation> Сделка закрытия </translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="672"/>
+        <location filename="../view_delegate.py" line="676"/>
         <source> Long</source>
         <translation> Длинная позиция</translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="674"/>
+        <location filename="../view_delegate.py" line="678"/>
         <source> Short</source>
         <translation> Короткая позиция</translation>
     </message>
@@ -1216,59 +1216,69 @@ Application will be terminated now</source>
 <context>
     <name>ReferenceDataDialog</name>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="135"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="126"/>
         <source>Reference Data</source>
         <translation>Справочные данные</translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="136"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="127"/>
         <source>Account Type:</source>
         <translation>Тип счета:</translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="137"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="128"/>
         <source>Show inactive</source>
         <translation>Показывать неактивные</translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="138"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="129"/>
         <source>Up</source>
         <translation>Вверх</translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="139"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="130"/>
         <source>Add</source>
         <translation>Добавить</translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="140"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="131"/>
         <source>Del</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="141"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="132"/>
         <source>Commit</source>
         <translation>Сохранить</translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="142"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="133"/>
         <source>Revert</source>
         <translation>Отменить</translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="143"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="134"/>
         <source>Search:</source>
         <translation>Поиск:</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_data.py" line="113"/>
+        <location filename="../ui_custom/reference_data.py" line="125"/>
         <source>ANY</source>
         <translation>Любой</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_data.py" line="157"/>
+        <location filename="../ui_custom/reference_data.py" line="169"/>
         <source>Submit failed: </source>
         <translation>Ошибка сохранения: </translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/reference_data.py" line="105"/>
+        <source>Confirmation</source>
+        <translation>Подтверждение</translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/reference_data.py" line="105"/>
+        <source>You have uncommited changes. Do you want to close?</source>
+        <translation>У вас есть несохранённые данные. Всё равно закрыть?</translation>
     </message>
 </context>
 <context>
@@ -1304,12 +1314,12 @@ Application will be terminated now</source>
         <translation>Вы должны выбрать счет, чтобы создать отчет Сделки</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="271"/>
+        <location filename="../reports/reports.py" line="272"/>
         <source>You should select account to create Profit/Loss report</source>
         <translation>Вы должны выбрать счет, чтобы создать отчет Прибыли/Убытки</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="353"/>
+        <location filename="../reports/reports.py" line="354"/>
         <source>You should select category to create By Category report</source>
         <translation>Вы должны выбрать категорию, чтобы создать отчет По категории</translation>
     </message>
