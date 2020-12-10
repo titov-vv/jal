@@ -486,12 +486,18 @@ CREATE VIEW all_operations AS
                       ca.qty_new AS qty_trid,
                       NULL AS price,
                       ca.type AS fee_tax,
-                      NULL AS t_qty,
+                      l.sum_amount AS t_qty,
                       a.name AS note,
                       a.full_name AS note2,
                       ca.id AS operation_id
                  FROM corp_actions AS ca
                       LEFT JOIN assets AS a ON ca.asset_id_new=a.id
+                      LEFT JOIN
+                      sequence AS q ON q.type = 5 AND
+                                       ca.id = q.operation_id
+                      LEFT JOIN
+                      ledger_sums AS l ON l.sid = q.id AND
+                                          l.book_account = 4
                UNION ALL
                SELECT 3 AS type,
                       t.id,

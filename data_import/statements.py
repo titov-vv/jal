@@ -473,6 +473,14 @@ class StatementLoader(QObject):
             asset_id_old = self.findAssetID(parts.group(1))
             self.createCorpAction(account_id, CorporateAction.SymbolChange, timestamp, number, asset_id_old,
                                   qty_old, asset_id_new, qty_new, note)
+        elif IBCorpAction.type == Reorg.CHOICEDIVISSUE:
+            asset_id = self.findAssetID(IBCorpAction.symbol)
+            timestamp = int(IBCorpAction.dateTime.timestamp())
+            number = IBCorpAction.transactionID
+            qty_new = IBCorpAction.quantity
+            note = IBCorpAction.description
+            self.createCorpAction(account_id, CorporateAction.StockDividend, timestamp, number, asset_id, 0,
+                                  asset_id, qty_new, note)
         elif IBCorpAction.type == Reorg.FORWARDSPLIT:
             asset_id_old = self.findAssetID(IBCorpAction.symbol)
             asset_id_new = asset_id_old

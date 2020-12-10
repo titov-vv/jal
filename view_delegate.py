@@ -394,7 +394,8 @@ class OperationsNotesDelegate(QStyledItemDelegate):
             CorporateAction.SymbolChange: g_tr('OperationsDelegate', "Symbol change {old} -> {new}"),
             CorporateAction.Split: g_tr('OperationsDelegate', "Split {old} {before} into {after}"),
             CorporateAction.SpinOff: g_tr('OperationsDelegate', "Spin-off {after} {new} from {before} {old}"),
-            CorporateAction.Merger: g_tr('OperationsDelegate', "Merger {before} {old} into {after} {new}")
+            CorporateAction.Merger: g_tr('OperationsDelegate', "Merger {before} {old} into {after} {new}"),
+            CorporateAction.StockDividend: g_tr('OperationsDelegate', "Stock dividend: {after} {new}")
         }
 
         painter.save()
@@ -506,7 +507,7 @@ class OperationsAmountDelegate(QStyledItemDelegate):
             sub_type = record.value("fee_tax")
             qty_before = -record.value("amount")
             qty_after = record.value("qty_trid")
-            if sub_type == CorporateAction.SpinOff:
+            if sub_type == CorporateAction.SpinOff or sub_type == CorporateAction.StockDividend:
                 text = ""
             else:
                 text = f"{qty_before:+,.2f}"
@@ -520,7 +521,7 @@ class OperationsAmountDelegate(QStyledItemDelegate):
             painter.setPen(pen)
             painter.drawText(option.rect, Qt.AlignRight | Qt.AlignVCenter, text)
         else:
-            assert  False
+            assert False
         painter.restore()
 
 
@@ -546,12 +547,12 @@ class OperationsTotalsDelegate(QStyledItemDelegate):
             upper_part = f"{total_money:,.2f}"
         if transaction_type == TransactionType.CorporateAction:
             sub_type = record.value("fee_tax")
-            if sub_type == CorporateAction.SpinOff:
-                qty_before = record.value("amount")
+            qty_before = record.value("amount") if sub_type ==CorporateAction.SpinOff else 0
+            qty_after = record.value("t_qty") if sub_type == CorporateAction.StockDividend else record.value("qty_trid")
+            if sub_type == CorporateAction.StockDividend:
+                text = f"\n{qty_after:,.2f}"
             else:
-                qty_before = 0
-            qty_after = record.value("qty_trid")
-            text = f"{qty_before:,.2f}\n{qty_after:,.2f}"
+                text = f"{qty_before:,.2f}\n{qty_after:,.2f}"
         elif transaction_type == TransactionType.Action or transaction_type == TransactionType.Transfer:
             text = upper_part
         else:
@@ -575,7 +576,10 @@ class OperationsCurrencyDelegate(QStyledItemDelegate):
         record = model.record(index.row())
         transaction_type = record.value("type")
         if transaction_type == TransactionType.CorporateAction:
-            text = " " + record.value("asset") + "\n " + record.value("note")
+            sub_type = record.value("fee_tax")
+            asset_before = record.value("asset") if sub_type != CorporateAction.StockDividend else ""
+            asset_after = record.value("note")
+            text = f" {asset_before}\n {asset_after}"
         else:
             currency = record.value(index.column())
             asset_name = record.value("asset")
@@ -657,7 +661,8 @@ class ReportsCorpActionDelegate(QStyledItemDelegate):
             CorporateAction.SymbolChange: g_tr('OperationsDelegate', "Symbol change"),
             CorporateAction.Split: g_tr('OperationsDelegate', "Split"),
             CorporateAction.SpinOff: g_tr('OperationsDelegate', "Spin-off"),
-            CorporateAction.Merger: g_tr('OperationsDelegate', "Merger")
+            CorporateAction.Merger: g_tr('OperationsDelegate', "Merger"),
+            CorporateAction.StockDividend: g_tr('OperationsDelegate', "Stock dividend")
         }
 
         painter.save()

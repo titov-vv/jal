@@ -511,7 +511,7 @@ class Ledger:
         self.appendTransaction(BookAccount.Assets, self.current[PRICE_CATEGORY], buy_value)
 
     # Spin-Off is equal to Buy operation with 0 price
-    def processSpinOff(self):
+    def processAssetEmission(self):
         operation_details = self.current
         # Values for TIMESTAMP, ACCOUNT_ID remains the same
         self.current[ASSET_ID] = operation_details[COUPON_PEER]
@@ -526,7 +526,8 @@ class Ledger:
             CorporateAction.Merger: self.processAssetConversion,
             CorporateAction.Split: self.processAssetConversion,
             CorporateAction.SymbolChange: self.processAssetConversion,
-            CorporateAction.SpinOff: self.processSpinOff
+            CorporateAction.SpinOff: self.processAssetEmission,
+            CorporateAction.StockDividend: self.processAssetEmission
         }
         operationCorpAction[self.current[TRANSACTION_SUBTYPE]]()
 
