@@ -93,6 +93,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.CommitBtn.clicked.connect(self.OnCommit)
         self.RevertBtn.clicked.connect(self.OnRevert)
         self.DataView.clicked.connect(self.OnClicked)
+        self.DataView.doubleClicked.connect(self.OnDoubleClicked)
         self.DataView.selectionModel().selectionChanged.connect(self.OnRowSelected)
         self.Model.dataChanged.connect(self.OnDataChanged)
 
@@ -228,6 +229,10 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
                 self.SearchString.setText('')  # it will also call self.setFilter()
             else:
                 self.setFilter()
+
+    @Slot()
+    def OnDoubleClicked(self, index):
+        self.accept()
 
     @Slot()
     def OnUpClick(self):

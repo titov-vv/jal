@@ -107,7 +107,7 @@ class Ui_ReferenceDataDialog(object):
 
         self.DataView = QTableView(ReferenceDataDialog)
         self.DataView.setObjectName(u"DataView")
-        self.DataView.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.DoubleClicked|QAbstractItemView.EditKeyPressed)
+        self.DataView.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.EditKeyPressed|QAbstractItemView.SelectedClicked)
         self.DataView.setAlternatingRowColors(True)
         self.DataView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.DataView.verticalHeader().setVisible(True)
