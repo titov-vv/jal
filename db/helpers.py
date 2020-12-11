@@ -9,11 +9,13 @@ class LedgerInitError:
     EmptyDbInitialized = 1
     OutdatedDbSchema = 2
     NewerDbSchema = 3
+    DbDriverFailure = 4
     _messages = {
         0: "No error",
         1: "Database was initialized. You need to start application again.",
         2: "Database schema version is outdated. Please execute update script.",
-        3: "Unsupported database schema. Please update application"
+        3: "Unsupported database schema. Please update application",
+        4: "Sqlite driver initialization failed."
     }
 
     def __init__(self, code):
@@ -82,6 +84,8 @@ def readSQLrecord(query):
 # Returns: db hanlder, LedgerInitError(code = 0 if db initialzied successfully)
 def init_and_check_db(db_path):
     db = QSqlDatabase.addDatabase("QSQLITE")
+    if not db.isValid():
+        return None, LedgerInitError(LedgerInitError.DbDriverFailure)
     db.setDatabaseName(get_dbfilename(db_path))
     db.open()
     tables = db.tables(QSql.Tables)
