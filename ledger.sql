@@ -184,8 +184,9 @@ CREATE TABLE categories (
     special INTEGER
 );
 
-
 -- Create new table with list of countries
+DROP TABLE IF EXISTS countries;
+
 CREATE TABLE countries (
     id           INTEGER      PRIMARY KEY
                               UNIQUE
