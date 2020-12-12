@@ -20,6 +20,7 @@ def exception_logger(exctype, value, tb):
 #-----------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
     sys.excepthook = exception_logger
+    os.environ['QT_MAC_WANTS_LAYER'] = '1'    # Workaround for https://bugreports.qt.io/browse/QTBUG-87014
 
     own_path = os.path.dirname(os.path.realpath(__file__)) + os.sep
     db, error = init_and_check_db(own_path)
