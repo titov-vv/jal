@@ -67,6 +67,8 @@ class PredefinedAsset:
     Stock = 2
     Bond = 3
     ETF = 4
+    Commodity = 5
+    Derivative = 6
 
 
 class PredefinedPeer:

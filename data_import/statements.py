@@ -25,7 +25,9 @@ class IBKR:
     TaxNotePattern = "^(.*) - (..) TAX$"
     AssetType = {
         AssetClass.STOCK: PredefinedAsset.Stock,
-        AssetClass.BOND: PredefinedAsset.Bond
+        AssetClass.BOND: PredefinedAsset.Bond,
+        AssetClass.OPTION: PredefinedAsset.Derivative,
+        AssetClass.FUTURE: PredefinedAsset.Derivative
     }
     DummyExchange = "VALUE"
     SpinOffPattern = "^(.*)\(.* SPINOFF +(\d+) +FOR +(\d+) +\(.*$"
