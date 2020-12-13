@@ -309,7 +309,7 @@ class Ledger:
                 _ = executeSQL(self.db, "INSERT INTO deals(account_id, asset_id, open_sid, close_sid, qty) "
                                         "VALUES(:account_id, :asset_id, :open_sid, :close_sid, :qty)",
                                [(":account_id", account_id), (":asset_id", asset_id), (":open_sid", deal_sid),
-                                (":close_sid", seq_id), (":qty", next_deal_qty)])
+                                (":close_sid", seq_id), (":qty", -next_deal_qty)])
                 sell_qty = sell_qty + next_deal_qty
                 sell_value = sell_value + (next_deal_qty * deal_price)
                 if sell_qty == qty:

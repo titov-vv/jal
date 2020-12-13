@@ -265,18 +265,21 @@ class TaxesRus:
             symbol, qty, o_date, o_fee_rate, os_date, o_rate, o_price, o_fee_usd, \
                 c_date, c_fee_rate, cs_date, c_rate, c_price, c_fee_usd = readSQLrecord(query)
             row = start_row + (data_row * 2)
-            o_amount_usd = round(o_price * qty, 2)
+            o_deal_type = "Покупка" if qty>=0 else "Продажа"
+            c_deal_type = "Продажа" if qty >= 0 else "Покупка"
+            o_amount_usd = round(o_price * abs(qty), 2)
             o_amount_rub = round(o_amount_usd * o_rate, 2)
-            c_amount_usd = round(c_price * qty, 2)
+            c_amount_usd = round(c_price * abs(qty), 2)
             c_amount_rub = round(c_amount_usd * c_rate, 2)
             o_fee_rub = round(o_fee_usd * o_fee_rate, 2)
             c_fee_rub = round(c_fee_usd * c_fee_rate, 2)
-            income = c_amount_rub
-            spending = o_amount_rub + o_fee_rub + c_fee_rub
+            income = c_amount_rub if qty >= 0 else o_amount_rub
+            spending = o_amount_rub if qty >= 0 else c_amount_rub
+            spending = spending + o_fee_rub + c_fee_rub
             xlsxWriteRow(sheet, row, {
                 0: (symbol, formats.Text(data_row), 0, 0, 1),
-                1: (float(qty), formats.Number(data_row, 0, True), 0, 0, 1),
-                2: ("Покупка", formats.Text(data_row)),
+                1: (float(abs(qty)), formats.Number(data_row, 0, True), 0, 0, 1),
+                2: (o_deal_type, formats.Text(data_row)),
                 3: (datetime.fromtimestamp(o_date).strftime('%d.%m.%Y'), formats.Text(data_row)),
                 4: (o_fee_rate, formats.Number(data_row, 4)),
                 5: (datetime.fromtimestamp(os_date).strftime('%d.%m.%Y'), formats.Text(data_row)),
@@ -291,7 +294,7 @@ class TaxesRus:
                 14: (income - spending, formats.Number(data_row, 2), 0, 0, 1)
             })
             xlsxWriteRow(sheet, row + 1, {
-                2: ("Продажа", formats.Text(data_row)),
+                2: (c_deal_type, formats.Text(data_row)),
                 3: (datetime.fromtimestamp(c_date).strftime('%d.%m.%Y'), formats.Text(data_row)),
                 4: (c_fee_rate, formats.Number(data_row, 4)),
                 5: (datetime.fromtimestamp(cs_date).strftime('%d.%m.%Y'), formats.Text(data_row)),
