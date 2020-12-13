@@ -550,7 +550,7 @@ class OperationsTotalsDelegate(QStyledItemDelegate):
             qty_before = record.value("amount") if sub_type ==CorporateAction.SpinOff else 0
             qty_after = record.value("t_qty") if sub_type == CorporateAction.StockDividend else record.value("qty_trid")
             if sub_type == CorporateAction.StockDividend:
-                text = f"\n{qty_after:,.2f}"
+                text = f"\n{qty_after:,.2f}" if qty_after != '' else '\n<void>'
             else:
                 text = f"{qty_before:,.2f}\n{qty_after:,.2f}"
         elif transaction_type == TransactionType.Action or transaction_type == TransactionType.Transfer:
