@@ -131,6 +131,7 @@ class StatementLoader(QObject):
         }
         self.ib_trade_loaders = {
             AssetClass.STOCK: self.loadIBStockTrade,
+            AssetClass.OPTION: self.loadIBStockTrade,
             AssetClass.CASH: self.loadIBCurrencyTrade
         }
         self.currentIBstatement = None
@@ -249,7 +250,7 @@ class StatementLoader(QObject):
         if trade.settleDateTarget:
             settlement = int(datetime.combine(trade.settleDateTarget, datetime.min.time()).timestamp())
         number = trade.tradeID if trade.tradeID else ""
-        qty = trade.quantity
+        qty = trade.quantity * trade.multiplier
         price = trade.tradePrice
         fee = trade.ibCommission
         try:
