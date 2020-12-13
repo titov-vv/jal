@@ -84,6 +84,7 @@ class MarketDataFeed:
 
 
 class CustomColor:
+    Black = QColor(0, 0, 0)
     DarkGreen = QColor(0, 100, 0)
     DarkRed = QColor(139, 0, 0)
     DarkBlue = QColor(0, 0, 139)

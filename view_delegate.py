@@ -1,4 +1,5 @@
 from datetime import datetime
+from math import copysign
 
 from PySide2.QtWidgets import QStyledItemDelegate
 from PySide2.QtCore import Qt, QSize
@@ -261,6 +262,22 @@ class OperationsTypeDelegate(QStyledItemDelegate):
         QStyledItemDelegate.__init__(self, parent)
 
     def paint(self, painter, option, index):
+        OperationSign = {
+            (TransactionType.Action, -1): ('—', CustomColor.DarkRed),
+            (TransactionType.Action, +1): ('+', CustomColor.DarkGreen),
+            (TransactionType.Dividend, 0): ('Δ', CustomColor.DarkGreen),
+            (TransactionType.Trade, +1): ('S', CustomColor.DarkRed),  # sign of 'amount' is inverted for trade
+            (TransactionType.Trade, -1): ('B', CustomColor.DarkGreen),
+            (TransactionType.Transfer, TransferSubtype.Outgoing): ('<', CustomColor.DarkBlue),
+            (TransactionType.Transfer, TransferSubtype.Incoming): ('>', CustomColor.DarkBlue),
+            (TransactionType.Transfer, TransferSubtype.Fee): ('=', CustomColor.DarkRed),
+            (TransactionType.CorporateAction, CorporateAction.Merger): ('⭆', CustomColor.Black),
+            (TransactionType.CorporateAction, CorporateAction.SpinOff): ('⎇', CustomColor.DarkGreen),
+            (TransactionType.CorporateAction, CorporateAction.Split): ('ᗕ', CustomColor.Black),
+            (TransactionType.CorporateAction, CorporateAction.SymbolChange): ('⭮', CustomColor.Black),
+            (TransactionType.CorporateAction, CorporateAction.StockDividend): ('Δ\ns', CustomColor.DarkGreen)
+        }
+
         painter.save()
         font = painter.font()
         font.setBold(True)
@@ -269,44 +286,21 @@ class OperationsTypeDelegate(QStyledItemDelegate):
         model = index.model()
         record = model.record(index.row())
         transaction_type = record.value(index.column())
-        amount = record.value("amount")
-        if amount == '':
-            amount = 0
-        if transaction_type == TransactionType.Action:
-            if amount >= 0:
-                text = "+"
-                pen.setColor(CustomColor.DarkGreen)
-            else:
-                text = "—"
-                pen.setColor(CustomColor.DarkRed)
-        elif transaction_type == TransactionType.Dividend:
-            text = "Δ"
-            pen.setColor(CustomColor.DarkGreen)
-        elif transaction_type == TransactionType.Trade:
-            if amount <= 0:
-                text = "B"
-                pen.setColor(CustomColor.DarkGreen)
-            else:
-                text = "S"
-                pen.setColor(CustomColor.DarkRed)
+        if transaction_type == TransactionType.Action or transaction_type == TransactionType.Trade:
+            sub_type = copysign(1, record.value("amount"))
         elif transaction_type == TransactionType.Transfer:
-            transfer_subtype = record.value("qty_trid")
-            if transfer_subtype == TransferSubtype.Incoming:
-                text = ">"
-                pen.setColor(CustomColor.DarkBlue)
-            elif transfer_subtype == TransferSubtype.Outgoing:
-                text = "<"
-                pen.setColor(CustomColor.DarkBlue)
-            elif transfer_subtype == TransferSubtype.Fee:
-                text = "="
-                pen.setColor(CustomColor.DarkRed)
-            else:
-                assert False
+            sub_type = record.value("qty_trid")
         elif transaction_type == TransactionType.CorporateAction:
-            corp_action_type = record.value("fee_tax")
-            text = "⭮"  # TODO diffirenciate between corp.actions types
+            sub_type = record.value("fee_tax")
         else:
-            assert False
+            sub_type = 0
+
+        try:
+            text = OperationSign[transaction_type, sub_type][0]
+            pen.setColor(OperationSign[transaction_type, sub_type][1])
+        except:
+            text = '?'
+            pen.setColor(CustomColor.LightRed)
 
         painter.setFont(font)
         painter.setPen(pen)
