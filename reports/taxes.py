@@ -143,8 +143,8 @@ class TaxesRus:
         tax_ru_rub_sum = 0
         while query.next():
             payment_date, symbol, full_name, amount_usd, tax_usd, rate, country, tax_treaty = readSQLrecord(query)
-            amount_rub = round(amount_usd * rate, 2)
-            tax_us_rub = round(tax_usd * rate, 2)
+            amount_rub = round(amount_usd * rate, 2) if rate else 0
+            tax_us_rub = round(tax_usd * rate, 2) if rate else 0
             tax_ru_rub = round(0.13 * amount_rub, 2)
             if tax_treaty:
                 if tax_ru_rub > tax_us_rub:
@@ -268,11 +268,11 @@ class TaxesRus:
             o_deal_type = "Покупка" if qty>=0 else "Продажа"
             c_deal_type = "Продажа" if qty >= 0 else "Покупка"
             o_amount_usd = round(o_price * abs(qty), 2)
-            o_amount_rub = round(o_amount_usd * o_rate, 2)
+            o_amount_rub = round(o_amount_usd * o_rate, 2) if o_rate else 0
             c_amount_usd = round(c_price * abs(qty), 2)
-            c_amount_rub = round(c_amount_usd * c_rate, 2)
-            o_fee_rub = round(o_fee_usd * o_fee_rate, 2)
-            c_fee_rub = round(c_fee_usd * c_fee_rate, 2)
+            c_amount_rub = round(c_amount_usd * c_rate, 2) if c_rate else 0
+            o_fee_rub = round(o_fee_usd * o_fee_rate, 2) if o_fee_rate else 0
+            c_fee_rub = round(c_fee_usd * c_fee_rate, 2) if c_fee_rate else 0
             income = c_amount_rub if qty >= 0 else o_amount_rub
             spending = o_amount_rub if qty >= 0 else c_amount_rub
             spending = spending + o_fee_rub + c_fee_rub
@@ -361,7 +361,7 @@ class TaxesRus:
         amount_rub_sum = 0
         while query.next():
             payment_date, amount, note, rate = readSQLrecord(query)
-            amount_rub = round(-amount * rate, 2)
+            amount_rub = round(-amount * rate, 2) if rate else 0
             xlsxWriteRow(sheet, row, {
                 0: (note, formats.Text(row)),
                 1: (-amount, formats.Number(row, 2)),
@@ -422,8 +422,8 @@ class TaxesRus:
         while query.next():
             o_sid, c_sid, symbol, qty, t_date, t_rate, s_date, s_rate, price, fee_usd = readSQLrecord(query)
             amount_usd = round(price * qty, 2)
-            amount_rub = -1 #round(amount_usd * s_rate, 2)
-            fee_rub = -1 #round(fee_usd * t_rate, 2)
+            amount_rub = round(amount_usd * s_rate, 2) if s_rate else 0
+            fee_rub = round(fee_usd * t_rate, 2) if s_rate else 0
 
             xlsxWriteRow(sheet, row, {
                 0: ("Продажа", formats.Text(even_odd)),
@@ -491,8 +491,8 @@ class TaxesRus:
         while open_query.next():
             symbol, qty, t_date, t_rate, s_date, s_rate, price, fee_usd = readSQLrecord(open_query)
             amount_usd = round(price * qty, 2)
-            amount_rub = -1  # round(amount_usd * s_rate, 2)
-            fee_rub = -1  # round(fee_usd * t_rate, 2)
+            amount_rub = round(amount_usd * s_rate, 2) if s_rate else 0
+            fee_rub = round(fee_usd * t_rate, 2) if s_rate else 0
 
             xlsxWriteRow(sheet, row, {
                 0: (indent + "Покупка", formats.Text(even_odd)),
