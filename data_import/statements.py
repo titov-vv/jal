@@ -175,6 +175,21 @@ class StatementLoader(QObject):
             asset_id = dialog.asset_id
         return asset_id
 
+    # returns bank id assigned for the account or asks for assignment if field is empty
+    def getAccountBank(self, account_id):
+        bank_id = readSQL(self.db, "SELECT organization_id FROM accounts WHERE id=:account_id",
+                          [(":account_id", account_id)])
+        if bank_id != '':
+            return bank_id
+        bank_id = readSQL(self.db, "SELECT id FROM agents WHERE name='Interactive Brokers'")
+        if bank_id is not None:
+            return bank_id
+        query = executeSQL(self.db, "INSERT INTO agents (pid, name) VALUES (0, 'Interactive Brokers')")
+        bank_id =query.lastInsertId()
+        _ = executeSQL(self.db, "UPDATE accounts SET organization_id=:bank_id WHERE id=:account_id",
+                       [(":bank_id", bank_id), (":account_id", account_id)])
+        return bank_id
+
     def loadIBFlex(self, filename):
         try:
             report = parser.parse(filename)
@@ -351,6 +366,7 @@ class StatementLoader(QObject):
 
     def loadIBTransactionTax(self, IBtax):
         account_id = self.findAccountID(IBtax.accountId, IBtax.currency)
+        bank_id = self.getAccountBank(account_id)
         if account_id is None:
             logging.error(g_tr('StatementLoader', "Account ") + f"{IBtax.accountId} ({IBtax.currency})" +
                           g_tr('StatementLoader', " not found. Tax #") + f"{IBtax.tradeID}" +
@@ -368,10 +384,9 @@ class StatementLoader(QObject):
             logging.warning(g_tr('StatementLoader', "Tax transaction #") + f"{IBtax.tradeId}" +
                             g_tr('StatementLoader', " already exists"))
             return
-        query = executeSQL(self.db,
-                           "INSERT INTO actions (timestamp, account_id, peer_id) VALUES "
-                           "(:timestamp, :account_id, (SELECT organization_id FROM accounts WHERE id=:account_id))",
-                           [(":timestamp", timestamp), (":account_id", account_id)])
+        query = executeSQL(self.db, "INSERT INTO actions (timestamp, account_id, peer_id) "
+                                    "VALUES (:timestamp, :account_id, :bank_id)",
+                           [(":timestamp", timestamp), (":account_id", account_id), (":bank_id", bank_id)])
         pid = query.lastInsertId()
         _ = executeSQL(self.db, "INSERT INTO action_details (pid, category_id, sum, note) "
                                 "VALUES (:pid, :category_id, :sum, :note)",
@@ -532,12 +547,13 @@ class StatementLoader(QObject):
             return
         asset_id = self.findAssetID(tax.symbol)
         timestamp = int(tax.dateTime.timestamp())
-        amount = float(tax.amount)
+        amount = -float(tax.amount)
         note = tax.description
         self.addWithholdingTax(timestamp, account_id, asset_id, amount, note)
 
     def loadIBFee(self, fee):
         account_id = self.findAccountID(fee.accountId, fee.currency)
+        bank_id = self.getAccountBank(account_id)
         if account_id is None:
             logging.error(g_tr('StatementLoader', "Account ") + f"{fee.accountId} ({fee.currency})" +
                           g_tr('StatementLoader', " not found. Skipping fee #") + f"{fee.transactionID}")
@@ -545,9 +561,9 @@ class StatementLoader(QObject):
         timestamp = int(fee.dateTime.timestamp())
         amount = float(fee.amount)  # value may be both positive and negative
         note = fee.description
-        query = executeSQL(self.db,"INSERT INTO actions (timestamp, account_id, peer_id) VALUES "
-                               "(:timestamp, :account_id, (SELECT organization_id FROM accounts WHERE id=:account_id))",
-                       [(":timestamp", timestamp), (":account_id", account_id)])
+        query = executeSQL(self.db,"INSERT INTO actions (timestamp, account_id, peer_id) "
+                                   "VALUES (:timestamp, :account_id, :bank_id)",
+                           [(":timestamp", timestamp), (":account_id", account_id), (":bank_id", bank_id)])
         pid = query.lastInsertId()
         _ = executeSQL(self.db, "INSERT INTO action_details (pid, category_id, sum, note) "
                                 "VALUES (:pid, :category_id, :sum, :note)",

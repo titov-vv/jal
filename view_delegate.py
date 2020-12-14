@@ -271,10 +271,10 @@ class OperationsTypeDelegate(QStyledItemDelegate):
             (TransactionType.Transfer, TransferSubtype.Outgoing): ('<', CustomColor.DarkBlue),
             (TransactionType.Transfer, TransferSubtype.Incoming): ('>', CustomColor.DarkBlue),
             (TransactionType.Transfer, TransferSubtype.Fee): ('=', CustomColor.DarkRed),
-            (TransactionType.CorporateAction, CorporateAction.Merger): ('⭆', CustomColor.Black),
+            (TransactionType.CorporateAction, CorporateAction.Merger): ('⭃', CustomColor.Black),
             (TransactionType.CorporateAction, CorporateAction.SpinOff): ('⎇', CustomColor.DarkGreen),
             (TransactionType.CorporateAction, CorporateAction.Split): ('ᗕ', CustomColor.Black),
-            (TransactionType.CorporateAction, CorporateAction.SymbolChange): ('⭮', CustomColor.Black),
+            (TransactionType.CorporateAction, CorporateAction.SymbolChange): ('🡘', CustomColor.Black),
             (TransactionType.CorporateAction, CorporateAction.StockDividend): ('Δ\ns', CustomColor.DarkGreen)
         }
 
