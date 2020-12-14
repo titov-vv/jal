@@ -2,6 +2,7 @@ import time
 from datetime import datetime
 import xlsxwriter
 import logging
+from constants import CorporateAction
 from reports.helpers import xslxFormat, xlsxWriteRow
 from ui_custom.helpers import g_tr
 from db.helpers import executeSQL, readSQLrecord
@@ -50,6 +51,14 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
 
 #-----------------------------------------------------------------------------------------------------------------------
 class TaxesRus:
+    CorpActionText = {
+        CorporateAction.SymbolChange: "Смена символа {old} -> {new}",
+        CorporateAction.Split: "Сплит {old} {before} в {after}",
+        CorporateAction.SpinOff: "Выделение компании {after} {new} из {before} {old}",
+        CorporateAction.Merger: "Слияние компании {before} {old} с {after} {new}",
+        CorporateAction.StockDividend: "Допэмиссия акций: {after} {new}"
+    }
+
     def __init__(self, db):
         self.db = db
         self.reports = {
@@ -378,7 +387,7 @@ class TaxesRus:
     def prepare_corporate_actions(self, sheet, account_id, begin, end, formats):
         self.add_report_header(sheet, formats, "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде "
                                                "с предшествовавшими корпоративными событиями")
-        _ = executeSQL(self.db, "DELETE FROM t_last_dates")
+        _ = executeSQL(self.db, "DELETE FROM t_last_dates")   # TODO combine with the same code in trades report
         _ = executeSQL(self.db,
                        "INSERT INTO t_last_dates(ref_id, timestamp) "
                        "SELECT ref_id, MAX(q.timestamp) AS timestamp "
@@ -483,10 +492,12 @@ class TaxesRus:
             while actions_query.next():
                 a_date, type, symbol, qty, symbol_new, qty_new, note = readSQLrecord(actions_query)
 
+                description = self.CorpActionText[type].format(old=symbol, new=symbol_new, before=qty, after=qty_new)
+
                 xlsxWriteRow(sheet, row, {
                     0: (indent + "Корп. действие", formats.Text(even_odd)),
                     1: (datetime.fromtimestamp(a_date).strftime('%d.%m.%Y'), formats.Text(even_odd)),
-                    2: (note, formats.Text(even_odd), 0, 9, 0)
+                    2: (description, formats.Text(even_odd), 0, 9, 0)
                 })
                 row = row + 1
 
@@ -551,10 +562,12 @@ class TaxesRus:
         while actions_query.next():
             prev_sid, a_date, type, symbol, qty, symbol_new, qty_new, note = readSQLrecord(actions_query)
 
+            description = self.CorpActionText[type].format(old=symbol, new=symbol_new, before=qty, after=qty_new)
+
             xlsxWriteRow(sheet, row, {
                 0: (indent + "Корп. действие", formats.Text(even_odd)),
                 1: (datetime.fromtimestamp(a_date).strftime('%d.%m.%Y'), formats.Text(even_odd)),
-                2: (note, formats.Text(even_odd), 0, 9, 0)
+                2: (description, formats.Text(even_odd), 0, 9, 0)
             })
             row = row + 1
 
