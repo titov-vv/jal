@@ -206,7 +206,7 @@ class TaxesRus:
                        "LEFT JOIN accounts AS a ON a.id = :account_id "
                        "LEFT JOIN quotes AS q ON ref_id >= q.timestamp AND a.currency_id=q.asset_id "
                        "GROUP BY ref_id",
-                       [(":begin", begin), (":end", end), (":account_id", account_id)])
+                       [(":end", end), (":account_id", account_id)])
         self.db.commit()
 
         header_row = {
@@ -378,6 +378,32 @@ class TaxesRus:
     def prepare_corporate_actions(self, sheet, account_id, begin, end, formats):
         self.add_report_header(sheet, formats, "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде "
                                                "с предшествовавшими корпоративными событиями")
+        _ = executeSQL(self.db, "DELETE FROM t_last_dates")
+        _ = executeSQL(self.db,
+                       "INSERT INTO t_last_dates(ref_id, timestamp) "
+                       "SELECT ref_id, MAX(q.timestamp) AS timestamp "
+                       "FROM (SELECT t.timestamp AS ref_id "
+                       "FROM deals AS d "
+                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 3 "
+                       "LEFT JOIN trades AS t ON s.operation_id=t.id "
+                       "WHERE t.timestamp<:end AND d.account_id=:account_id "
+                       "UNION "
+                       "SELECT c.settlement AS ref_id "
+                       "FROM deals AS d "
+                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 3 "
+                       "LEFT JOIN trades AS c ON s.operation_id=c.id "
+                       "WHERE c.timestamp<:end AND d.account_id=:account_id "
+                       "UNION "
+                       "SELECT o.timestamp AS ref_id "
+                       "FROM deals AS d "
+                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 5 "
+                       "LEFT JOIN corp_actions AS o ON s.operation_id=o.id "
+                       "WHERE o.timestamp<:end AND d.account_id=:account_id) "
+                       "LEFT JOIN accounts AS a ON a.id = :account_id "
+                       "LEFT JOIN quotes AS q ON ref_id >= q.timestamp AND a.currency_id=q.asset_id "
+                       "GROUP BY ref_id",
+                       [(":end", end), (":account_id", account_id)])
+        self.db.commit()
 
         header_row = {
             0: ("Операция", formats.ColumnHeader(), 20, 0, 0),
