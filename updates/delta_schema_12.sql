@@ -1,5 +1,9 @@
 BEGIN TRANSACTION;
 --------------------------------------------------------------------------------
+-- Change sign of sum_tax field in dividends table (as it was negative and should be positive
+UPDATE dividends SET sum_tax=-sum_tax;
+
+--------------------------------------------------------------------------------
 -- Modify trades table to drop 'corp_action_id' column
 
 PRAGMA foreign_keys = 0;

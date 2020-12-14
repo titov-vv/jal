@@ -484,7 +484,7 @@ class OperationsAmountDelegate(QStyledItemDelegate):
             pen.setColor(CustomColor.DarkGreen)
             painter.setPen(pen)
             painter.drawText(rect, Qt.AlignRight, text)
-            text = f"{tax:,.2f}"
+            text = f"-{tax:,.2f}"    # Tax is always negative so sign is fixed here
             rect.moveTop(Y + H / 2)
             pen.setColor(CustomColor.DarkRed)
             painter.setPen(pen)

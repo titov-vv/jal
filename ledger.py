@@ -259,9 +259,9 @@ class Ledger:
         self.current[PRICE_CATEGORY] = PredefinedCategory.Dividends
         self.appendTransaction(BookAccount.Incomes, -dividend_amount)
         if tax_amount:
-            self.appendTransaction(BookAccount.Money, tax_amount)
+            self.appendTransaction(BookAccount.Money, -tax_amount)
             self.current[PRICE_CATEGORY] = PredefinedCategory.Taxes
-            self.appendTransaction(BookAccount.Costs, -tax_amount)
+            self.appendTransaction(BookAccount.Costs, tax_amount)
 
     def processBuy(self):
         seq_id = self.current_seq

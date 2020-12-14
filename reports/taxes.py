@@ -144,7 +144,7 @@ class TaxesRus:
         while query.next():
             payment_date, symbol, full_name, amount_usd, tax_usd, rate, country, tax_treaty = readSQLrecord(query)
             amount_rub = round(amount_usd * rate, 2)
-            tax_us_rub = round(-tax_usd * rate, 2)
+            tax_us_rub = round(tax_usd * rate, 2)
             tax_ru_rub = round(0.13 * amount_rub, 2)
             if tax_treaty:
                 if tax_ru_rub > tax_us_rub:
@@ -158,7 +158,7 @@ class TaxesRus:
                 3: (rate, formats.Number(row, 4)),
                 4: (amount_usd, formats.Number(row, 2)),
                 5: (amount_rub, formats.Number(row, 2)),
-                6: (-tax_usd, formats.Number(row, 2)),
+                6: (tax_usd, formats.Number(row, 2)),
                 7: (tax_us_rub, formats.Number(row, 2)),
                 8: (tax_ru_rub, formats.Number(row, 2)),
                 9: (country, formats.Text(row)),
@@ -166,7 +166,7 @@ class TaxesRus:
             })
             amount_usd_sum += amount_usd
             amount_rub_sum += amount_rub
-            tax_usd_sum += -tax_usd
+            tax_usd_sum += tax_usd
             tax_us_rub_sum += tax_us_rub
             tax_ru_rub_sum += tax_ru_rub
             row += 1
