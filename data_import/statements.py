@@ -76,9 +76,7 @@ def addNewAsset(db, symbol, name, asset_type, isin, data_source=-1):
                     (":isin", isin), (":data_src", data_source)])
     db.commit()
     asset_id = readSQL(db, "SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)])
-    if asset_id is not None:
-        logging.info(g_tr('', "New asset with id ") + f"{asset_id}" + g_tr('', " was added: ") + f"{symbol} - '{name}'")
-    else:
+    if asset_id is None:
         logging.error(g_tr('', "Failed to add new asset: "), + f"{symbol}")
     return asset_id
 
@@ -208,32 +206,56 @@ class StatementLoader(QObject):
 
         for asset in IBstatement.SecuritiesInfo:
             if self.storeIBAsset(asset) is None:
+                logging.error(g_tr('StatementLoader', "Asset load failed: ") + f"{asset}")
                 return False
 
         for trade in IBstatement.Trades:
             try:
-                self.ib_trade_loaders[trade.assetCategory](trade)
+                if not self.ib_trade_loaders[trade.assetCategory](trade):
+                    logging.error(g_tr('StatementLoader', "Trade load failed: ") + f"{trade}")
+                    return False
             except:
                 logging.error(g_tr('StatementLoader', "Load of ") + f"{trade.assetCategory}" +
-                              g_tr('StatementLoader', " is not implemented. Skipping trade #") + f"{trade.tradeID}")
+                              g_tr('StatementLoader', " is not implemented. Trade load failed: ") + f"{trade}")
+                return False
 
         for tax in IBstatement.TransactionTaxes:
-            self.loadIBTransactionTax(tax)
-            
+            if not self.loadIBTransactionTax(tax):
+                logging.error(g_tr('StatementLoader', "Trade load failed: ") + f"{tax}")
+                return False
+
         for corp_action in IBstatement.CorporateActions:
-            self.loadIBCorpAction(corp_action)
-            
+            if not self.loadIBCorpAction(corp_action):
+                logging.error(g_tr('StatementLoader', "Corporate action load failed: ") + f"{corp_action}")
+                return False
+
         # 1st loop to load all dividends separately - to allow tax match in 2nd loop
         for cash_transaction in IBstatement.CashTransactions:
             if cash_transaction.type == CashAction.DIVIDEND:
-                self.loadIBDividend(cash_transaction)
+                if not self.loadIBDividend(cash_transaction):
+                    logging.error(g_tr('StatementLoader', "Dividend load failed: ") + f"{cash_transaction}")
+                    return False
+
+        loadCashTransaction = {
+            CashAction.WHTAX: self.loadIBWithholdingTax,
+            CashAction.FEES: self.loadIBFee,
+            CashAction.DEPOSITWITHDRAW: self.loadIBDepositWithdraw,
+            CashAction.BROKERINTPAID: self.loadIBFee,
+            CashAction.BROKERINTRCVD: self.loadIBInterest
+        }
         for cash_transaction in IBstatement.CashTransactions:
-            if cash_transaction.type == CashAction.WHTAX:
-                self.loadIBWithholdingTax(cash_transaction)
-            elif cash_transaction.type == CashAction.FEES:
-                self.loadIBFee(cash_transaction)
-            elif cash_transaction.type == CashAction.DEPOSITWITHDRAW:
-                self.loadIBDepositWithdraw(cash_transaction)
+            try:
+                if not loadCashTransaction[cash_transaction.type](cash_transaction):
+                    logging.error(g_tr('StatementLoader', "Transaction load failed: ") + f"{cash_transaction}")
+                    return False
+            except:
+                logging.error(g_tr('StatementLoader', "Load of ") + f"{cash_transaction.type}" +
+                              g_tr('StatementLoader', " is not implemented. Transaction load failed: ") +
+                              f"{cash_transaction}")
+                return False
+
+        logging.info(g_tr('StatementLoader', "IB Flex-statement loaded successfully"))
+        return True
 
     def storeIBAsset(self, IBasset):
         asset_id = readSQL(self.db, "SELECT id FROM assets WHERE name=:symbol", [(":symbol", IBasset.symbol)])
@@ -258,9 +280,8 @@ class StatementLoader(QObject):
         }
         account_id = self.findAccountID(trade.accountId, trade.currency)
         if account_id is None:
-            logging.error(g_tr('StatementLoader', "Account ") + f"{trade.accountId} ({trade.currency})" +
-                          g_tr('StatementLoader', " not found. Skipping trade #") + f"{trade.tradeID}")
-            return
+            logging.error(g_tr('StatementLoader', "Account not found: ") + f"{trade.accountId} ({trade.currency})")
+            return False
         asset_id = self.findAssetID(trade.symbol)
         timestamp = int(trade.dateTime.timestamp())
         settlement = 0
@@ -272,9 +293,10 @@ class StatementLoader(QObject):
         fee = trade.ibCommission
         try:
             trade_action[trade.buySell](account_id, asset_id, timestamp, settlement, number, qty, price, fee)
+            return True
         except:
-            logging.error(g_tr('StatementLoader', "Trade type ") + f"{trade.buySell}" +
-                          g_tr('StatementLoader', " is not implemented. Skipped trade #") + f"{number}")
+            logging.error(g_tr('StatementLoader', "Trade type is not implemented: ") + f"{trade.buySell}")
+            return False
 
     def createTrade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee, coupon=0.0):
         trade_id = readSQL(self.db,
@@ -296,7 +318,6 @@ class StatementLoader(QObject):
                         (":account", account_id), (":asset", asset_id), (":qty", float(qty)),
                         (":price", float(price)), (":fee", -float(fee)), (":coupon", float(coupon))])
         self.db.commit()
-        logging.info(f"Trade #{number} added for account {account_id} asset {asset_id} @{timestamp}: {qty}x{price}")
 
     def deleteTrade(self, account_id, asset_id, timestamp, _settlement, number, qty, price, _fee):
         _ = executeSQL(self.db, "DELETE FROM trades "
@@ -305,7 +326,6 @@ class StatementLoader(QObject):
                        [(":timestamp", timestamp), (":asset", asset_id), (":account", account_id),
                         (":number", number), (":qty", -qty), (":price", price)])
         self.db.commit()
-        logging.info(f"Trade #{number} cancelled for account {account_id} asset {asset_id} @{timestamp}: {qty}x{price}")
 
     def loadIBCurrencyTrade(self, trade):
         if trade.buySell == BuySell.BUY:
@@ -319,22 +339,20 @@ class StatementLoader(QObject):
             from_amount = float(trade.quantity)  # already negative value
             to_amount = float(trade.proceeds)  # positive value
         else:
-            logging.error(g_tr('StatementLoader', "Currency transaction of type ") + f"{trade.buySell}" +
-                          g_tr('StatementLoader', " is not implemented"))
-            return
+            logging.error(g_tr('StatementLoader', "Currency transaction type isn't implemented: ") + f"{trade.buySell}")
+            return False
         currency = trade.symbol.split('.')
         to_account = self.findAccountID(trade.accountId, currency[to_idx])
         from_account = self.findAccountID(trade.accountId, currency[from_idx])
         fee_account = self.findAccountID(trade.accountId, trade.ibCommissionCurrency)
         if to_account is None or from_account is None or fee_account is None:
-            logging.error(g_tr('StatementLoader', "Account ") + f"{trade.accountId} ({currency[to_idx]})" +
-                          g_tr('StatementLoader', "not found. Currency transaction #") + f"{trade.tradeID}" +
-                          g_tr('StatementLoader', " skipped"))
-            return
+            logging.error(g_tr('StatementLoader', "Account not found: ") + f"{trade.accountId} ({currency[to_idx]})")
+            return False
         timestamp = int(trade.dateTime.timestamp())
         fee = float(trade.ibCommission)  # already negative value
         note = trade.exchange
         self.createTransfer(timestamp, from_account, from_amount, to_account, to_amount, fee_account, fee, note)
+        return True
 
     def createTransfer(self, timestamp, f_acc_id, f_amount, t_acc_id, t_amount, fee_acc_id, fee, note):
         transfer_id = readSQL(self.db,
@@ -361,17 +379,13 @@ class StatementLoader(QObject):
                            [(":timestamp", timestamp), (":f_acc_id", f_acc_id), (":t_acc_id", t_acc_id),
                             (":f_amount", f_amount), (":t_amount", t_amount), (":note", note)])
         self.db.commit()
-        logging.info(g_tr('StatementLoader', "Currency exchange ") + f"{f_amount}->{t_amount}" +
-                     g_tr('StatementLoader', " added"))
 
     def loadIBTransactionTax(self, IBtax):
         account_id = self.findAccountID(IBtax.accountId, IBtax.currency)
         bank_id = self.getAccountBank(account_id)
         if account_id is None:
-            logging.error(g_tr('StatementLoader', "Account ") + f"{IBtax.accountId} ({IBtax.currency})" +
-                          g_tr('StatementLoader', " not found. Tax #") + f"{IBtax.tradeID}" +
-                          g_tr('StatementLoader', " skipped"))
-            return
+            logging.error(g_tr('StatementLoader', "Account not found: ") + f"{IBtax.accountId} ({IBtax.currency})")
+            return False
         timestamp = int(datetime.combine(IBtax.date, datetime.min.time()).timestamp())
         amount = float(IBtax.taxAmount)  # value is negative already
         note = f"{IBtax.symbol} ({IBtax.description}) - {IBtax.taxDescription} (#{IBtax.tradeId})"
@@ -383,7 +397,7 @@ class StatementLoader(QObject):
         if id:
             logging.warning(g_tr('StatementLoader', "Tax transaction #") + f"{IBtax.tradeId}" +
                             g_tr('StatementLoader', " already exists"))
-            return
+            return True
         query = executeSQL(self.db, "INSERT INTO actions (timestamp, account_id, peer_id) "
                                     "VALUES (:timestamp, :account_id, :bank_id)",
                            [(":timestamp", timestamp), (":account_id", account_id), (":bank_id", bank_id)])
@@ -392,7 +406,7 @@ class StatementLoader(QObject):
                                 "VALUES (:pid, :category_id, :sum, :note)",
                        [(":pid", pid), (":category_id", PredefinedCategory.Taxes), (":sum", amount), (":note", note)])
         self.db.commit()
-        logging.info(g_tr('StatementLoader', "Transaction tax added: ") + f"{note}, {amount}")
+        return True
 
     def createCorpAction(self, account_id, type, timestamp, number, asset_id_old, qty_old, asset_id_new, qty_new, note):
         action_id = readSQL(self.db,
@@ -414,7 +428,6 @@ class StatementLoader(QObject):
                         (":asset", asset_id_old), (":qty", float(qty_old)),
                         (":asset_new", asset_id_new), (":qty_new", float(qty_new)), (":note", note)])
         self.db.commit()
-        logging.info(f"Corp.Action #{number} added for account {account_id} asset {asset_id_old} @{timestamp}")
 
     def getPairedCorpActionRecord(self, transaction_id):
         for corp_action in self.currentIBstatement.CorporateActions:
@@ -424,23 +437,20 @@ class StatementLoader(QObject):
 
     def loadIBCorpAction(self, IBCorpAction):
         if IBCorpAction.listingExchange == IBKR.DummyExchange:   # Skip actions that we loaded as part of main action
-            return
+            return True
         if IBCorpAction.code == Code.CANCEL:
             logging.warning(g_tr('StatementLoader', "*** MANUAL ACTION REQUIRED ***"))
-            logging.warning(f"Corporate action cancelled {IBCorpAction.type} for account "
-                            f"{IBCorpAction.accountId} ({IBCorpAction.currency}): {IBCorpAction.actionDescription}")
-            logging.warning(f"@{IBCorpAction.dateTime} for {IBCorpAction.symbol}: Qty {IBCorpAction.quantity}, "
-                            f"Value {IBCorpAction.value}, Type {IBCorpAction.type}, Code {IBCorpAction.code}")
-            return
+            logging.warning(g_tr('StatementLoader', "Corporate action cancelled: ") + f"{IBCorpAction}")
+            return True
         account_id = self.findAccountID(IBCorpAction.accountId, IBCorpAction.currency)
         if account_id is None:
-            logging.error(g_tr('StatementLoader', "Account ") + f"{IBCorpAction.accountId} ({IBCorpAction.currency})" +
-                          g_tr('StatementLoader', " not found. Skipping corp.action #") + f"{IBCorpAction.transactionID}")
-            return
+            logging.error(g_tr('StatementLoader', "Account not found: ") +
+                          f"{IBCorpAction.accountId} ({IBCorpAction.currency})")
+            return False
         if IBCorpAction.assetCategory != AssetClass.STOCK:
-            logging.warning(g_tr('StatementLoader', "Corporate action not supported for asset class ")
+            logging.warning(g_tr('StatementLoader', "Corporate action not supported for asset class: ")
                             + f"{IBCorpAction.assetCategory}")
-            return
+            return False
         if IBCorpAction.type == Reorg.MERGER:
             asset_id_new = self.findAssetID(IBCorpAction.symbol)
             timestamp = int(IBCorpAction.dateTime.timestamp())
@@ -516,48 +526,41 @@ class StatementLoader(QObject):
             self.createCorpAction(account_id, CorporateAction.Split, timestamp, number, asset_id_old,
                                   qty_old, asset_id_new, qty_new, note)
         else:
-            logging.warning(g_tr('StatementLoader', "Corporate action type is not supported: ")
+            logging.error(g_tr('StatementLoader', "Corporate action type is not supported: ")
                             + f"{IBCorpAction.type}")
+            return False
+        return True
 
     def loadIBDividend(self, dividend):
-        if dividend.assetCategory != AssetClass.STOCK:
-            logging.error(g_tr('StatementLoader', "Dividend for ") + f"{dividend.assetCategory}" +
-                          g_tr('StatementLoader', " not implemented"))
-            return
         account_id = self.findAccountID(dividend.accountId, dividend.currency)
         if account_id is None:
-            logging.error(g_tr('StatementLoader', "Account ") + f"{dividend.accountId} ({dividend.currency})" +
-                          g_tr('StatementLoader', " not found. Skipping dividend #") + f"{dividend.transactionID}")
-            return
+            logging.error(g_tr('StatementLoader', "Account not found: ") + f"{dividend.accountId} ({dividend.currency})")
+            return False
         asset_id = self.findAssetID(dividend.symbol)
         timestamp = int(dividend.dateTime.timestamp())
         amount = float(dividend.amount)
         note = dividend.description
         self.createDividend(timestamp, account_id, asset_id, amount, note)
+        return True
 
     def loadIBWithholdingTax(self, tax):
-        if tax.assetCategory != AssetClass.STOCK:
-            logging.error(g_tr('StatementLoader', "Withholding tax for ") + f"{tax.assetCategory}" +
-                          g_tr('StatementLoader', " not implemented"))
-            return
         account_id = self.findAccountID(tax.accountId, tax.currency)
         if account_id is None:
-            logging.error(g_tr('StatementLoader', "Account ") + f"{tax.accountId} ({tax.currency})" +
-                          g_tr('StatementLoader', " not found. Skipping tax #") + f"{tax.transactionID}")
-            return
+            logging.error(g_tr('StatementLoader', "Account not found: ") + f"{tax.accountId} ({tax.currency})")
+            return False
         asset_id = self.findAssetID(tax.symbol)
         timestamp = int(tax.dateTime.timestamp())
         amount = -float(tax.amount)
         note = tax.description
         self.addWithholdingTax(timestamp, account_id, asset_id, amount, note)
+        return True
 
     def loadIBFee(self, fee):
         account_id = self.findAccountID(fee.accountId, fee.currency)
         bank_id = self.getAccountBank(account_id)
         if account_id is None:
-            logging.error(g_tr('StatementLoader', "Account ") + f"{fee.accountId} ({fee.currency})" +
-                          g_tr('StatementLoader', " not found. Skipping fee #") + f"{fee.transactionID}")
-            return
+            logging.error(g_tr('StatementLoader', "Account not found: ") + f"{fee.accountId} ({fee.currency})")
+            return False
         timestamp = int(fee.dateTime.timestamp())
         amount = float(fee.amount)  # value may be both positive and negative
         note = fee.description
@@ -569,7 +572,24 @@ class StatementLoader(QObject):
                                 "VALUES (:pid, :category_id, :sum, :note)",
                        [(":pid", pid), (":category_id", PredefinedCategory.Fees), (":sum", amount), (":note", note)])
         self.db.commit()
-        logging.info(g_tr('StatementLoader', "Fee added: ") + f"{note}, {amount}")
+
+    def loadIBInterest(self, interest):
+        account_id = self.findAccountID(interest.accountId, interest.currency)
+        bank_id = self.getAccountBank(account_id)
+        if account_id is None:
+            logging.error(g_tr('StatementLoader', "Account not found: ") + f"{interest.accountId} ({interest.currency})")
+            return False
+        timestamp = int(interest.dateTime.timestamp())
+        amount = float(interest.amount)  # value may be both positive and negative
+        note = interest.description
+        query = executeSQL(self.db,"INSERT INTO actions (timestamp, account_id, peer_id) "
+                                   "VALUES (:timestamp, :account_id, :bank_id)",
+                           [(":timestamp", timestamp), (":account_id", account_id), (":bank_id", bank_id)])
+        pid = query.lastInsertId()
+        _ = executeSQL(self.db, "INSERT INTO action_details (pid, category_id, sum, note) "
+                                "VALUES (:pid, :category_id, :sum, :note)",
+                       [(":pid", pid), (":category_id", PredefinedCategory.Interest), (":sum", amount), (":note", note)])
+        self.db.commit()
 
     # noinspection PyMethodMayBeStatic
     def loadIBDepositWithdraw(self, cash):
@@ -588,7 +608,6 @@ class StatementLoader(QObject):
                        [(":timestamp", timestamp), (":account_id", account_id), (":asset_id", asset_id),
                         (":sum", amount), (":note", note)])
         self.db.commit()
-        logging.info(g_tr('StatementLoader', "Dividend added: ") + f"{note}")
 
     def addWithholdingTax(self, timestamp, account_id, asset_id, amount, note):
         parts = re.match(IBKR.TaxNotePattern, note)
@@ -617,7 +636,6 @@ class StatementLoader(QObject):
         _ = executeSQL(self.db, "UPDATE dividends SET sum_tax=:tax, tax_country_id=:country_id WHERE id=:dividend_id",
                        [(":dividend_id", dividend_id), (":tax", old_tax + amount), (":country_id", country_id)])
         self.db.commit()
-        logging.info(g_tr('StatementLoader', "Withholding tax added: ") + f"{note}")
 
     def loadQuikHtml(self, filename):
         try:
