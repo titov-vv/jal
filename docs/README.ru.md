@@ -44,10 +44,9 @@ ledger создавался как переносимое приложение -
 ledger использует следующие пакеты для своей работы:
 * [Qt for Python (PySide2)](https://wiki.qt.io/Qt_for_Python) *>=5.15* - графический интерфейс приложения (с версиями ниже 5.15 могут наблюдаться проблемы)
 * [pandas](https://pandas.pydata.org/) - различные операции с данными
-* [lxml](https://lxml.de/) - зависиомость pandas для метода read_html() (но почему-то не установилась автоматически под Windows)
+* [lxml](https://lxml.de/) - импорт из html/xml
 * [requests](https://requests.readthedocs.io/) - обновление котировок через интернет; загрузка электронных чеков
 * [xlsxwriter](https://xlsxwriter.readthedocs.io/) - эспорт отчетов в формате Excel
-* [ibflex](https://github.com/csingley/ibflex) *>=0.14* - импорт flex-отчетов Interactive Brokers
 * [pyzbar](https://github.com/NaturalHistoryMuseum/pyzbar/) <sup>1</sup> - распознавание QR-кодов электронных чеков
 * [Pillow](https://pillow.readthedocs.io/en/stable/) <sup>1</sup> - работа с изображениями
 * [tensorflow](https://www.tensorflow.org/) <sup>2</sup> - автоматическое распознавание категорий 
