@@ -105,7 +105,7 @@ class TaxesRus:
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")
         _ = executeSQL(self.db,
                        "INSERT INTO t_last_dates(ref_id, timestamp) "
-                       "SELECT d.id AS ref_id, MAX(q.timestamp) AS timestamp "
+                       "SELECT d.id AS ref_id, coalesce(MAX(q.timestamp), 0) AS timestamp "
                        "FROM dividends AS d "
                        "LEFT JOIN accounts AS a ON d.account_id=a.id "
                        "LEFT JOIN quotes AS q ON d.timestamp >= q.timestamp AND a.currency_id=q.asset_id "
@@ -194,7 +194,7 @@ class TaxesRus:
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")
         _ = executeSQL(self.db,
                        "INSERT INTO t_last_dates(ref_id, timestamp) "
-                       "SELECT ref_id, MAX(q.timestamp) AS timestamp "
+                       "SELECT ref_id, coalesce(MAX(q.timestamp), 0) AS timestamp "
                        "FROM (SELECT t.timestamp AS ref_id "
                        "FROM deals AS d "
                        "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 3 "
@@ -333,7 +333,7 @@ class TaxesRus:
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")
         _ = executeSQL(self.db,
                        "INSERT INTO t_last_dates(ref_id, timestamp) "
-                       "SELECT a.id AS ref_id, MAX(q.timestamp) AS timestamp "
+                       "SELECT a.id AS ref_id, coalesce(MAX(q.timestamp), 0) AS timestamp "
                        "FROM actions AS a "
                        "LEFT JOIN accounts AS c ON c.id = :account_id "
                        "LEFT JOIN quotes AS q ON a.timestamp >= q.timestamp AND c.currency_id=q.asset_id "
@@ -390,7 +390,7 @@ class TaxesRus:
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")   # TODO combine with the same code in trades report
         _ = executeSQL(self.db,
                        "INSERT INTO t_last_dates(ref_id, timestamp) "
-                       "SELECT ref_id, MAX(q.timestamp) AS timestamp "
+                       "SELECT ref_id, coalesce(MAX(q.timestamp), 0) AS timestamp "
                        "FROM (SELECT t.timestamp AS ref_id "
                        "FROM deals AS d "
                        "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 3 "
