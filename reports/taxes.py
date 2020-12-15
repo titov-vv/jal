@@ -103,7 +103,7 @@ class TaxesRus:
     def prepare_dividends(self, sheet, account_id, begin, end, formats):
         self.add_report_header(sheet, formats, "Отчет по дивидендам, полученным в отчетном периоде")
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")
-        _ = executeSQL(self.db,
+        _ = executeSQL(self.db,  # FIXME - below query will take any earlier currency rate - limitation is needed for 2-3 days scope
                        "INSERT INTO t_last_dates(ref_id, timestamp) "
                        "SELECT d.id AS ref_id, coalesce(MAX(q.timestamp), 0) AS timestamp "
                        "FROM dividends AS d "

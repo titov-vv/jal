@@ -189,6 +189,7 @@ class StatementLoader(QObject):
         section_loaders = {
             'SecuritiesInfo':   self.loadIBSecurities,    # Order of load is important - SecuritiesInfo is first
             'Trades':           self.loadIBTrades,
+            'OptionEAE':        self.loadIBOptions,
             'CorporateActions': self.loadIBCorporateActions,
             'CashTransactions': self.loadIBCashTransactions,
             'TransactionTaxes': self.loadIBTaxes
@@ -214,6 +215,7 @@ class StatementLoader(QObject):
         section_tags = {
             'CashTransactions': 'CashTransaction',
             'CorporateActions': 'CorporateAction',
+            'OptionEAE':        'OptionEAE',
             'SecuritiesInfo':   'SecurityInfo',
             'Trades':           'Trade',
             'TransactionTaxes': 'TransactionTax'
@@ -259,6 +261,23 @@ class StatementLoader(QObject):
             except KeyError:
                 logging.error(g_tr('StatementLoader', "Trade isn't implemented for type: ") + f"{trade['assetCategory']}")
         logging.info(g_tr('StatementLoader', "Trades loaded: ") + f"{cnt} ({len(trades)})")
+
+    def loadIBOptions(self, options):
+        ib_option_loaders = {
+            "Assignment": self.loadIBOptionEAE,
+            "Exercise":   self.loadIBOptionEAE,
+            "Expiration": self.loadIBOptionEAE,
+            "Buy":        self.loadIBStockTrade,
+            "Sell":       self.loadIBStockTrade,
+        }
+        cnt = 0
+        for option in options:
+            try:
+                cnt += ib_option_loaders[option['transactionType']](option)
+            except KeyError:
+                logging.error(
+                    g_tr('StatementLoader', "Option E&A&E action isn't implemented: ") + f"{option['transactionType']}")
+        logging.info(g_tr('StatementLoader', "Options E&A&E loaded: ") + f"{cnt} ({len(options)})")
 
     def loadIBCorporateActions(self, actions):
         cnt = 0
@@ -406,22 +425,34 @@ class StatementLoader(QObject):
     def loadIBStockTrade(self, trade):
         trade_action = {
             'BUY': self.createTrade,
+            'Buy': self.createTrade,
             'SELL': self.createTrade,
+            'Sell': self.createTrade,
             'BUY (Ca.)': self.deleteTrade,
             'SELL (Ca.)': self.deleteTrade
         }
         try:
+            if 'buySell' in trade:
+                type = trade['buySell']
+            else:
+                type = trade['transactionType']
             account_id = self.findAccountID(trade['accountId'], trade['currency'])
             asset_id = self.findAssetID(trade['symbol'])
-            timestamp = int(datetime.strptime(trade['dateTime'], "%Y%m%d;%H%M%S").timestamp())
-            if trade['settleDateTarget']:
-                settlement = int(datetime.strptime(trade['settleDateTarget'], "%Y%m%d").timestamp())
+            if 'dateTime' in trade:
+                timestamp = int(datetime.strptime(trade['dateTime'], "%Y%m%d;%H%M%S").timestamp())
             else:
-                settlement = timestamp
+                timestamp = int(datetime.strptime(trade['date'], "%Y%m%d").timestamp())
+            settlement = timestamp
+            if 'settleDateTarget' in trade:
+                if trade['settleDateTarget']:
+                    settlement = int(datetime.strptime(trade['settleDateTarget'], "%Y%m%d").timestamp())
             number = trade['tradeID']
             qty = float(trade['quantity']) * float(trade['multiplier'])
             price = float(trade['tradePrice'])
-            fee = float(trade['ibCommission'])
+            if 'ibCommission' in trade:
+                fee = float(trade['ibCommission'])
+            else:
+                fee = float(trade['commisionsAndTax'])
         except KeyError as e:
             logging.error(g_tr('StatementLoader', "Failed to get field: ") + f"{e} / {trade}")
             return 0
@@ -429,11 +460,29 @@ class StatementLoader(QObject):
             logging.error(g_tr('StatementLoader', "Import failure: ") + f"{e} / {trade}")
             return 0
         try:
-            trade_action[trade['buySell']](account_id, asset_id, timestamp, settlement, number, qty, price, fee)
+            trade_action[type](account_id, asset_id, timestamp, settlement, number, qty, price, fee)
             return 1
         except KeyError:
             logging.error(g_tr('StatementLoader', "Trade action isn't implemented: ") + f"{trade['buySell']}")
             return 0
+
+    def loadIBOptionEAE(self, option):
+        try:
+            account_id = self.findAccountID(option['accountId'], option['currency'])
+            asset_id = self.findAssetID(option['symbol'])
+            timestamp = int(datetime.strptime(option['date'], "%Y%m%d").timestamp())
+            number = option['tradeID']
+            qty = float(option['quantity']) * float(option['multiplier'])
+            price = float(option['tradePrice'])
+            fee = float(option['commisionsAndTax'])
+        except KeyError as e:
+            logging.error(g_tr('StatementLoader', "Failed to get field: ") + f"{e} / {option}")
+            return 0
+        except ValueError as e:
+            logging.error(g_tr('StatementLoader', "Import failure: ") + f"{e} / {option}")
+            return 0
+        self.createTrade(account_id, asset_id, timestamp, timestamp, number, qty, price, fee)
+        return 1
 
     def createTrade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee, coupon=0.0):
         trade_id = readSQL(self.db,
@@ -444,6 +493,7 @@ class StatementLoader(QObject):
                             (":number", number), (":qty", qty), (":price", price)])
         if trade_id:
             logging.info(g_tr('StatementLoader', "Trade already exists: #") + f"{number}")
+            return
 
         _ = executeSQL(self.db,
                        "INSERT INTO trades (timestamp, settlement, number, account_id, "

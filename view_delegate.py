@@ -266,8 +266,8 @@ class OperationsTypeDelegate(QStyledItemDelegate):
             (TransactionType.Action, -1): ('—', CustomColor.DarkRed),
             (TransactionType.Action, +1): ('+', CustomColor.DarkGreen),
             (TransactionType.Dividend, 0): ('Δ', CustomColor.DarkGreen),
-            (TransactionType.Trade, +1): ('S', CustomColor.DarkRed),  # sign of 'amount' is inverted for trade
-            (TransactionType.Trade, -1): ('B', CustomColor.DarkGreen),
+            (TransactionType.Trade, -1): ('S', CustomColor.DarkRed),
+            (TransactionType.Trade, +1): ('B', CustomColor.DarkGreen),
             (TransactionType.Transfer, TransferSubtype.Outgoing): ('<', CustomColor.DarkBlue),
             (TransactionType.Transfer, TransferSubtype.Incoming): ('>', CustomColor.DarkBlue),
             (TransactionType.Transfer, TransferSubtype.Fee): ('=', CustomColor.DarkRed),
@@ -286,8 +286,10 @@ class OperationsTypeDelegate(QStyledItemDelegate):
         model = index.model()
         record = model.record(index.row())
         transaction_type = record.value(index.column())
-        if transaction_type == TransactionType.Action or transaction_type == TransactionType.Trade:
+        if transaction_type == TransactionType.Action:
             sub_type = copysign(1, record.value("amount"))
+        elif transaction_type == TransactionType.Trade:
+            sub_type = copysign(1, record.value("qty_trid"))
         elif transaction_type == TransactionType.Transfer:
             sub_type = record.value("qty_trid")
         elif transaction_type == TransactionType.CorporateAction:
