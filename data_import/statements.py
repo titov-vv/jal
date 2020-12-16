@@ -258,11 +258,12 @@ class AddAssetDialog(QDialog, Ui_AddAssetDialog):
 
 #-----------------------------------------------------------------------------------------------------------------------
 class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
-    def __init__(self, parent, db, description):
+    def __init__(self, parent, db, description, current_account):
         QDialog.__init__(self)
         self.setupUi(self)
         self.db = db
         self.account_id = None
+        self.current_account = current_account
 
         self.DescriptionLbl.setText(description)
         self.AccountWidget.init_db(db)
@@ -279,7 +280,7 @@ class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
 
     @Slot()
     def closeEvent(self, event):
-        if self.AccountWidget.selected_id == 0:
+        if self.AccountWidget.selected_id == 0 or self.AccountWidget.selected_id == self.current_account:
             QMessageBox().warning(None, g_tr('ReferenceDataDialog', "No selection"),
                                   g_tr('ReferenceDataDialog', "Please select different account"),
                                   QMessageBox.Ok)
@@ -779,7 +780,7 @@ class StatementLoader(QObject):
             text = g_tr('StatementLoader', "Withdrawal of ") + f"{-cash['amount']} {cash['currency']}\n" + \
                    g_tr('StatementLoader', "Select account to deposit to:")
 
-        dialog = SelectAccountDialog(self.parent, self.db, text)
+        dialog = SelectAccountDialog(self.parent, self.db, text, cash['accountId'])
         if dialog.exec_() != QDialog.Accepted:
             return 0
 
