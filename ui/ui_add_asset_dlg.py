@@ -88,7 +88,6 @@ class Ui_AddAssetDialog(object):
 
         self.retranslateUi(AddAssetDialog)
         self.buttonBox.accepted.connect(AddAssetDialog.accept)
-        self.buttonBox.rejected.connect(AddAssetDialog.reject)
 
         QMetaObject.connectSlotsByName(AddAssetDialog)
     # setupUi

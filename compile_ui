@@ -6,6 +6,7 @@ uic -g python -o ./ui/ui_update_quotes_window.py ./ui/quotes_update.ui
 uic -g python -o ./ui/ui_reference_data_dlg.py ./ui/reference_data_dlg.ui
 uic -g python -o ./ui/ui_tax_export_dlg.py ./ui/tax_export_dlg.ui
 uic -g python -o ./ui/ui_add_asset_dlg.py ./ui/add_asset_dlg.ui
+uic -g python -o ./ui/ui_select_account_dlg.py ./ui/select_account_dlg.ui
 uic -g python -o ./ui/ui_slip_import_dlg.py ./ui/slip_import_dlg.ui
 uic -g python -o ./ui/ui_login_fns_dlg.py ./ui/login_fns_dlg.ui
 

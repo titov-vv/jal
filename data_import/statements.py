@@ -5,13 +5,14 @@ from datetime import datetime
 
 import pandas
 from lxml import etree
-from PySide2.QtCore import QObject, Signal
+from PySide2.QtCore import QObject, Signal, Slot
 from PySide2.QtSql import QSqlTableModel
-from PySide2.QtWidgets import QDialog, QFileDialog
+from PySide2.QtWidgets import QDialog, QFileDialog, QMessageBox
 from constants import Setup, TransactionType, PredefinedAsset, PredefinedCategory, CorporateAction
 from db.helpers import executeSQL, readSQL, get_country_by_code
 from ui_custom.helpers import g_tr
 from ui.ui_add_asset_dlg import Ui_AddAssetDialog
+from ui.ui_select_account_dlg import Ui_SelectAccountDlg
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -256,6 +257,37 @@ class AddAssetDialog(QDialog, Ui_AddAssetDialog):
 
 
 #-----------------------------------------------------------------------------------------------------------------------
+class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
+    def __init__(self, parent, db, description):
+        QDialog.__init__(self)
+        self.setupUi(self)
+        self.db = db
+        self.account_id = None
+
+        self.DescriptionLbl.setText(description)
+        self.AccountWidget.init_db(db)
+
+        # center dialog with respect to parent window
+        x = parent.x() + parent.width() / 2 - self.width() / 2
+        y = parent.y() + parent.height() / 2 - self.height() / 2
+        self.setGeometry(x, y, self.width(), self.height())
+
+    @Slot()
+    def accept(self):
+        self.account_id = self.AccountWidget.selected_id
+        super().accept()
+
+    @Slot()
+    def closeEvent(self, event):
+        if self.AccountWidget.selected_id == 0:
+            QMessageBox().warning(None, g_tr('ReferenceDataDialog', "No selection"),
+                                  g_tr('ReferenceDataDialog', "Please select different account"),
+                                  QMessageBox.Ok)
+            event.ignore()
+            return
+        event.accept()
+
+#-----------------------------------------------------------------------------------------------------------------------
 class StatementLoader(QObject):
     load_completed = Signal()
     load_failed = Signal()
@@ -357,6 +389,7 @@ class StatementLoader(QObject):
         section_descriptions = {
             'CashTransactions': {'tag': 'CashTransaction', 'values': [('type', IBKR.flCashOpType, None),
                                                                       ('accountId', IBKR.flAccount, None),
+                                                                      ('currency', IBKR.flString, ''),
                                                                       ('symbol', IBKR.flAsset, 0),
                                                                       ('dateTime', IBKR.flTimestamp, None),
                                                                       ('amount', IBKR.flNumber, None),
@@ -662,7 +695,7 @@ class StatementLoader(QObject):
                               "WHERE from_timestamp=:timestamp AND from_acc_id=:from_acc_id AND to_acc_id=:to_acc_id",
                               [(":timestamp", timestamp), (":from_acc_id", f_acc_id), (":to_acc_id", t_acc_id)])
         if transfer_id:
-            logging.info(g_tr('StatementLoader', "Currency exchange already exists: ") + f"{f_amount}->{t_amount}")
+            logging.info(g_tr('StatementLoader', "Transfer/Exchange already exists: ") + f"{f_amount}->{t_amount}")
             return
         if abs(fee) > Setup.CALC_TOLERANCE:
             _ = executeSQL(self.db,
@@ -739,8 +772,23 @@ class StatementLoader(QObject):
 
     # noinspection PyMethodMayBeStatic
     def loadIBDepositWithdraw(self, cash):
-        logging.warning(g_tr('StatementLoader', "*** MANUAL ENTRY REQUIRED ***"))
-        logging.warning(g_tr('StatementLoader', "Deposit / Withdrawal: ") + f"{cash}")
+        if cash['amount'] >= 0:     # Deposit
+            text = g_tr('StatementLoader', "Deposit of ") + f"{cash['amount']} {cash['currency']}\n" + \
+                   g_tr('StatementLoader', "Select account to withdraw from:")
+        else:                       # Withdrawal
+            text = g_tr('StatementLoader', "Withdrawal of ") + f"{-cash['amount']} {cash['currency']}\n" + \
+                   g_tr('StatementLoader', "Select account to deposit to:")
+
+        dialog = SelectAccountDialog(self.parent, self.db, text)
+        if dialog.exec_() != QDialog.Accepted:
+            return 0
+
+        if cash['amount'] >= 0:
+            self.createTransfer(cash['dateTime'], dialog.account_id, -cash['amount'],
+                                cash['accountId'], cash['amount'], 0, 0, cash['description'])
+        else:
+            self.createTransfer(cash['dateTime'], cash['accountId'], -cash['amount'],
+                                dialog.account_id, cash['amount'], 0, 0, cash['description'])
         return 1
 
     def createDividend(self, timestamp, account_id, asset_id, amount, note):
