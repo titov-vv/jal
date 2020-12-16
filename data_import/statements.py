@@ -482,10 +482,13 @@ class StatementLoader(QObject):
 
             if action['type'] == CorporateAction.Merger:
                 # additional info is in previous dummy record where original symbol and quantity are present
-                pair_id = str(int(action['transactionID']) - 1)
+                pair_idu = str(int(action['transactionID']) + 1)
+                pair_idl = str(int(action['transactionID']) - 1)
                 paired_records = list(filter(
-                    lambda pair: pair['transactionID'] == pair_id and pair['listingExchange'] == IBKR.DummyExchange,
-                    actions))
+                    lambda pair: (pair['transactionID'] == pair_idl or pair['transactionID'] == pair_idu)
+                                 and pair['listingExchange'] == IBKR.DummyExchange
+                                 and pair['type'] == action['type']
+                                 and pair['description'][:15] == action['description'][:15], actions))
                 if len(paired_records) != 1:
                     logging.error(g_tr('StatementLoader', "Can't find paired record for ") + f"{action}")
                     continue
@@ -506,10 +509,13 @@ class StatementLoader(QObject):
                 cnt += 1
             elif action['type'] == CorporateAction.SymbolChange:
                 # additional info is in next dummy record where old symbol is changed to *.OLD
-                pair_id = str(int(action['transactionID']) + 1)
+                pair_idu = str(int(action['transactionID']) + 1)
+                pair_idl = str(int(action['transactionID']) - 1)
                 paired_records = list(filter(
-                    lambda pair: pair['transactionID'] == pair_id and pair['listingExchange'] == IBKR.DummyExchange,
-                    actions))
+                    lambda pair: (pair['transactionID'] == pair_idl or pair['transactionID'] == pair_idu)
+                                 and pair['listingExchange'] == IBKR.DummyExchange
+                                 and pair['type'] == action['type']
+                                 and pair['description'][:15] == action['description'][:15], actions))
                 if len(paired_records) != 1:
                     logging.error(g_tr('StatementLoader', "Can't find paired record for: ") + f"{action}")
                     continue
@@ -519,6 +525,7 @@ class StatementLoader(QObject):
             elif action['type'] == CorporateAction.StockDividend:
                 self.createCorpAction(action['accountId'], CorporateAction.StockDividend, action['dateTime'], action['transactionID'], action['symbol'], 0,
                                       action['symbol'], action['quantity'], action['description'])
+                cnt += 1
             elif action['type'] == CorporateAction.Split:
                 parts = re.match(IBKR.SplitPattern, action['description'], re.IGNORECASE)
                 if not parts:
@@ -762,7 +769,8 @@ class StatementLoader(QObject):
             query = executeSQL(self.db, "INSERT INTO countries(name, code, tax_treaty) VALUES (:name, :code, 0)",
                                [(":name", "Country_" + country_code), (":code", country_code)])
             country_id = query.lastInsertId()
-            logging.warning(g_tr('StatementLoader', "New dummy country added with code ") + country_code)
+            logging.warning(g_tr('StatementLoader', "New country added (set Tax Treaty in Data->Countries menu): ")
+                            + f"'{country_code}'")
         try:
             dividend_id, old_tax = readSQL(self.db,
                                            "SELECT id, sum_tax FROM dividends "
