@@ -113,12 +113,13 @@ class IBKR:
     @staticmethod
     def flCashOpType(data, name, default_value, _caller):
         operations = {
-            'Dividends':                IBKRCashOp.Dividend,
-            'Withholding Tax':          IBKRCashOp.TaxWithhold,
-            'Deposits/Withdrawals':     IBKRCashOp.DepositWithdrawal,
-            'Other Fees':               IBKRCashOp.Fee,
-            'Broker Interest Paid':     IBKRCashOp.Fee,
-            'Broker Interest Received': IBKRCashOp.Interest
+            'Dividends':                    IBKRCashOp.Dividend,
+            'Payment In Lieu Of Dividends': IBKRCashOp.Dividend,
+            'Withholding Tax':              IBKRCashOp.TaxWithhold,
+            'Deposits/Withdrawals':         IBKRCashOp.DepositWithdrawal,
+            'Other Fees':                   IBKRCashOp.Fee,
+            'Broker Interest Paid':         IBKRCashOp.Fee,
+            'Broker Interest Received':     IBKRCashOp.Interest
         }
 
         if name not in data.attrib:
