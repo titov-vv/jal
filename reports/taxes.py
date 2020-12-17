@@ -572,7 +572,7 @@ class TaxesRus:
             })
             row = row + 1
 
-            row = self.proceed_corporate_action(prev_sid, level+1, sheet, formats, row, even_odd)
+            row = self.proceed_corporate_action(prev_sid, level+1, qty, sheet, formats, row, even_odd)
 
         return row
 #-----------------------------------------------------------------------------------------------------------------------
