@@ -476,15 +476,15 @@ class TaxesRus:
             })
             row = row + 1
 
-            row = self.proceed_corporate_action(o_sid, c_sid, 1, sheet, formats, row, even_odd)
+            row = self.proceed_corporate_action(o_sid, 1, sheet, formats, row, even_odd)
 
             even_odd = even_odd + 1
             row = row + 1
 
-    def proceed_corporate_action(self, o_sid, c_sid, level, sheet, formats, row, even_odd):
-        prev_qty = self.output_corp_action(o_sid, level, sheet, formats, row, even_odd)
+    def proceed_corporate_action(self, sid, level, sheet, formats, row, even_odd):
+        prev_qty = self.output_corp_action(sid, level, sheet, formats, row, even_odd)
         row = row + 1
-        row = self.next_corporate_action(o_sid, level+1, prev_qty, sheet, formats, row, even_odd)
+        row = self.next_corporate_action(sid, level + 1, prev_qty, sheet, formats, row, even_odd)
         return row
 
     def next_corporate_action(self, sid, level, proceed_qty, sheet, formats, row, even_odd):
@@ -501,12 +501,12 @@ class TaxesRus:
             if op_type == TransactionType.Trade:
                 row = self.otput_purchase(open_sid, proceed_qty, level, sheet, formats, row, even_odd)
             elif op_type == TransactionType.CorporateAction:
-                row = self.proceed_corporate_action(open_sid, sid, level, sheet, formats, row, even_odd)
+                row = self.proceed_corporate_action(open_sid, level, sheet, formats, row, even_odd)
             else:
                 assert False
         return row
 
-    def otput_purchase(self, open_sid, proceed_qty, level, sheet, formats, row, even_odd):
+    def otput_purchase(self, sid, proceed_qty, level, sheet, formats, row, even_odd):
         indent = ' ' * level * 3
         symbol, qty, t_date, t_rate, s_date, s_rate, price, fee = \
             readSQL(self.db,
@@ -522,7 +522,7 @@ class TaxesRus:
                     "LEFT JOIN t_last_dates AS ldts ON t.settlement=ldts.ref_id "
                     "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id "
                     "WHERE os.id = :open_sid",
-                    [(":open_sid", open_sid)])
+                    [(":open_sid", sid)])
 
         amount_usd = round(price * proceed_qty, 2)
         amount_rub = round(amount_usd * s_rate, 2) if s_rate else 0
@@ -545,7 +545,7 @@ class TaxesRus:
         })
         return row + 1
 
-    def output_corp_action(self, open_sid, level, sheet, formats, row, even_odd):
+    def output_corp_action(self, sid, level, sheet, formats, row, even_odd):
         indent = ' ' * level * 3
 
         a_date, type, symbol, qty, symbol_new, qty_new, note = \
@@ -557,7 +557,7 @@ class TaxesRus:
                              "LEFT JOIN assets AS s1 ON a.asset_id=s1.id "
                              "LEFT JOIN assets AS s2 ON a.asset_id_new=s2.id "
                              "WHERE os.id = :open_sid ",
-                    [(":open_sid", open_sid)])
+                    [(":open_sid", sid)])
 
         description = self.CorpActionText[type].format(old=symbol, new=symbol_new, before=qty, after=qty_new)
 
