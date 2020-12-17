@@ -118,6 +118,7 @@ class IBKR:
             'Withholding Tax':              IBKRCashOp.TaxWithhold,
             'Deposits/Withdrawals':         IBKRCashOp.DepositWithdrawal,
             'Other Fees':                   IBKRCashOp.Fee,
+            'Commission Adjustments':       IBKRCashOp.Fee,
             'Broker Interest Paid':         IBKRCashOp.Fee,
             'Broker Interest Received':     IBKRCashOp.Interest
         }
