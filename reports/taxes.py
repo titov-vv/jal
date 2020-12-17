@@ -482,7 +482,7 @@ class TaxesRus:
             row = row + 1
 
     def proceed_corporate_action(self, o_sid, c_sid, level, sheet, formats, row, even_odd):
-        prev_qty = self.output_corp_action(o_sid, c_sid, level, sheet, formats, row, even_odd)
+        prev_qty = self.output_corp_action(o_sid, level, sheet, formats, row, even_odd)
         row = row + 1
         row = self.next_corporate_action(o_sid, level+1, prev_qty, sheet, formats, row, even_odd)
         return row
@@ -499,21 +499,21 @@ class TaxesRus:
             open_sid, op_type = readSQLrecord(open_query)
 
             if op_type == TransactionType.Trade:
-                row = self.otput_purchase(open_sid, sid, proceed_qty, level, sheet, formats, row, even_odd)
+                row = self.otput_purchase(open_sid, proceed_qty, level, sheet, formats, row, even_odd)
             elif op_type == TransactionType.CorporateAction:
                 row = self.proceed_corporate_action(open_sid, sid, level, sheet, formats, row, even_odd)
             else:
                 assert False
         return row
 
-    def otput_purchase(self, open_sid, close_sid, proceed_qty, level, sheet, formats, row, even_odd):
+    def otput_purchase(self, open_sid, proceed_qty, level, sheet, formats, row, even_odd):
         indent = ' ' * level * 3
         symbol, qty, t_date, t_rate, s_date, s_rate, price, fee = \
             readSQL(self.db,
                     "SELECT s.name AS symbol, d.qty AS qty, t.timestamp AS t_date, qt.quote AS t_rate, "
                     "t.settlement AS s_date, qts.quote AS s_rate, t.price AS price, t.fee AS fee "
-                    "FROM deals AS d "
-                    "JOIN sequence AS os ON os.id=d.open_sid AND os.type = 3 "
+                    "FROM sequence AS os "
+                    "JOIN deals AS d ON os.id=d.open_sid AND os.type = 3 "
                     "LEFT JOIN trades AS t ON os.operation_id=t.id "
                     "LEFT JOIN assets AS s ON t.asset_id=s.id "
                     "LEFT JOIN accounts AS a ON a.id = t.account_id "
@@ -521,9 +521,8 @@ class TaxesRus:
                     "LEFT JOIN quotes AS qt ON ldt.timestamp=qt.timestamp AND a.currency_id=qt.asset_id "
                     "LEFT JOIN t_last_dates AS ldts ON t.settlement=ldts.ref_id "
                     "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id "
-                    "WHERE d.open_sid = :open_sid AND d.close_sid = :close_sid",
-                    [(":open_sid", open_sid),
-                     (":close_sid", close_sid)])
+                    "WHERE os.id = :open_sid",
+                    [(":open_sid", open_sid)])
 
         amount_usd = round(price * proceed_qty, 2)
         amount_rub = round(amount_usd * s_rate, 2) if s_rate else 0
@@ -546,20 +545,19 @@ class TaxesRus:
         })
         return row + 1
 
-    def output_corp_action(self, open_sid, close_sid, level, sheet, formats, row, even_odd):
+    def output_corp_action(self, open_sid, level, sheet, formats, row, even_odd):
         indent = ' ' * level * 3
 
         a_date, type, symbol, qty, symbol_new, qty_new, note = \
             readSQL(self.db, "SELECT a.timestamp AS a_date, a.type, s1.name AS symbol, a.qty*d.qty/a.qty_new AS qty, "
                              "s2.name AS symbol_new, d.qty AS qty_new, a.note AS note "
-                             "FROM deals AS d "
-                             "JOIN sequence AS os ON os.id=d.open_sid AND os.type = 5 "
+                             "FROM sequence AS os "
+                             "JOIN deals AS d ON os.id=d.open_sid AND os.type = 5 "
                              "LEFT JOIN corp_actions AS a ON os.operation_id=a.id "
                              "LEFT JOIN assets AS s1 ON a.asset_id=s1.id "
                              "LEFT JOIN assets AS s2 ON a.asset_id_new=s2.id "
-                             "WHERE d.open_sid = :open_sid AND d.close_sid = :close_sid",
-                    [(":open_sid", open_sid),
-                     (":close_sid", close_sid)])
+                             "WHERE os.id = :open_sid ",
+                    [(":open_sid", open_sid)])
 
         description = self.CorpActionText[type].format(old=symbol, new=symbol_new, before=qty, after=qty_new)
 
