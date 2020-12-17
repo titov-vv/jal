@@ -655,7 +655,7 @@ CREATE VIEW deals_ext AS
            coalesce(ot.price, ol.value / oca.qty_new) AS open_price,
            coalesce(ct.price, ot.price) AS close_price,
            d.qty AS qty,
-           coalesce(ot.fee, 0) + coalesce(ct.fee, 0) AS fee,
+           coalesce(ot.fee * abs(d.qty/ot.qty), 0) + coalesce(ct.fee * abs(d.qty/ct.qty), 0) AS fee,
            d.qty * (coalesce(ct.price, ot.price) - coalesce(ot.price, ol.value / oca.qty_new) ) - (coalesce(ot.fee, 0) + coalesce(ct.fee, 0) ) AS profit,
            coalesce(100 * (d.qty * (coalesce(ct.price, ot.price) - coalesce(ot.price, ol.value / oca.qty_new) ) - (coalesce(ot.fee, 0) + coalesce(ct.fee, 0) ) ) / (abs(d.qty) * coalesce(ot.price, ol.value / oca.qty_new) ), 0) AS rel_profit,
            coalesce(oca.type, -cca.type) AS corp_action

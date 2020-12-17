@@ -34,7 +34,6 @@ class IBKR:
     TaxNotePattern = "^(.*) - (..) TAX$"
     DummyExchange = "VALUE"
     SpinOffPattern = "^(.*)\(.* SPINOFF +(\d+) +FOR +(\d+) +\(.*$"
-    IssueChangePattern = "^(.*)\.OLD$"
     SplitPattern = "^.* SPLIT +(\d+) +FOR +(\d+) +\(.*$"
 
     AssetType = {
@@ -774,10 +773,10 @@ class StatementLoader(QObject):
     # noinspection PyMethodMayBeStatic
     def loadIBDepositWithdraw(self, cash):
         if cash['amount'] >= 0:     # Deposit
-            text = g_tr('StatementLoader', "Deposit of ") + f"{cash['amount']} {cash['currency']}\n" + \
+            text = g_tr('StatementLoader', "Deposit of ") + f"{cash['amount']:.2f} {cash['currency']}\n" + \
                    g_tr('StatementLoader', "Select account to withdraw from:")
         else:                       # Withdrawal
-            text = g_tr('StatementLoader', "Withdrawal of ") + f"{-cash['amount']} {cash['currency']}\n" + \
+            text = g_tr('StatementLoader', "Withdrawal of ") + f"{-cash['amount']:.2f} {cash['currency']}\n" + \
                    g_tr('StatementLoader', "Select account to deposit to:")
 
         dialog = SelectAccountDialog(self.parent, self.db, text, cash['accountId'])
