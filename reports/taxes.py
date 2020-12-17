@@ -55,7 +55,7 @@ class TaxesRus:
         CorporateAction.SymbolChange: "Смена символа {old} -> {new}",
         CorporateAction.Split: "Сплит {old} {before} в {after}",
         CorporateAction.SpinOff: "Выделение компании {after} {new} из {before} {old}",
-        CorporateAction.Merger: "Слияние компании {before} {old} с {after} {new}",
+        CorporateAction.Merger: "Слияние компании, конвертация {before} {old} в {after} {new}",
         CorporateAction.StockDividend: "Допэмиссия акций: {after} {new}"
     }
 
@@ -480,7 +480,7 @@ class TaxesRus:
             # get current corporate actions
             actions_query = executeSQL(self.db,
                                        "SELECT a.timestamp AS a_date, a.type, "
-                                       "s1.name AS symbol, a.qty AS qty, s2.name AS symbol_new, a.qty_new AS qty_new, a.note AS note "
+                                       "s1.name AS symbol, a.qty*d.qty/a.qty_new AS qty, s2.name AS symbol_new, d.qty AS qty_new, a.note AS note "
                                        "FROM deals AS d "
                                        "JOIN sequence AS os ON os.id=d.open_sid AND os.type = 5 "
                                        "LEFT JOIN corp_actions AS a ON os.operation_id=a.id "
@@ -490,9 +490,9 @@ class TaxesRus:
                                        "ORDER BY a.timestamp DESC",
                                        [(":o_sid", o_sid), (":c_sid", c_sid)])
             while actions_query.next():
-                a_date, type, symbol, qty, symbol_new, qty_new, note = readSQLrecord(actions_query)
+                a_date, type, symbol, qty_before, symbol_new, qty_after, note = readSQLrecord(actions_query)
 
-                description = self.CorpActionText[type].format(old=symbol, new=symbol_new, before=qty, after=qty_new)
+                description = self.CorpActionText[type].format(old=symbol, new=symbol_new, before=qty_before, after=qty_after)
 
                 xlsxWriteRow(sheet, row, {
                     0: (indent + "Корп. действие", formats.Text(even_odd)),
@@ -501,12 +501,12 @@ class TaxesRus:
                 })
                 row = row + 1
 
-            row = self.proceed_corporate_action(o_sid, 2, sheet, formats, row, even_odd)
+            row = self.proceed_corporate_action(o_sid, 2, qty_before, sheet, formats, row, even_odd)
 
             even_odd = even_odd + 1
             row = row + 1
 
-    def proceed_corporate_action(self, sid, level, sheet, formats, row, even_odd):
+    def proceed_corporate_action(self, sid, level, proceed_qty, sheet, formats, row, even_odd):
         indent = ' ' * level * 3
 
         # get list of deals that were closed as result of current corporate action
@@ -526,16 +526,17 @@ class TaxesRus:
                                 "ORDER BY t.timestamp DESC",
                                 [(":sid", sid)])
         while open_query.next():
-            symbol, qty, t_date, t_rate, s_date, s_rate, price, fee_usd = readSQLrecord(open_query)
-            amount_usd = round(price * qty, 2)
+            symbol, qty, t_date, t_rate, s_date, s_rate, price, fee = readSQLrecord(open_query)
+            amount_usd = round(price * proceed_qty, 2)
             amount_rub = round(amount_usd * s_rate, 2) if s_rate else 0
+            fee_usd = fee* proceed_qty / qty
             fee_rub = round(fee_usd * t_rate, 2) if s_rate else 0
 
             xlsxWriteRow(sheet, row, {
                 0: (indent + "Покупка", formats.Text(even_odd)),
                 1: (datetime.fromtimestamp(t_date).strftime('%d.%m.%Y'), formats.Text(even_odd)),
                 2: (symbol, formats.Text(even_odd)),
-                3: (qty, formats.Number(even_odd, 4)),
+                3: (proceed_qty, formats.Number(even_odd, 4)),
                 4: (t_rate, formats.Number(even_odd, 4)),
                 5: (datetime.fromtimestamp(s_date).strftime('%d.%m.%Y'), formats.Text(even_odd)),
                 6: (s_rate, formats.Number(even_odd, 4)),
