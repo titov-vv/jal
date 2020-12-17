@@ -476,13 +476,18 @@ class TaxesRus:
             })
             row = row + 1
 
-            row, _sid, prev_qty = self.output_corp_action(o_sid, c_sid, 1, sheet, formats, row, even_odd)
-            row = self.proceed_corporate_action(o_sid, 2, prev_qty, sheet, formats, row, even_odd)
+            row = self.proceed_corporate_action(o_sid, c_sid, 1, sheet, formats, row, even_odd)
 
             even_odd = even_odd + 1
             row = row + 1
 
-    def proceed_corporate_action(self, sid, level, proceed_qty, sheet, formats, row, even_odd):
+    def proceed_corporate_action(self, o_sid, c_sid, level, sheet, formats, row, even_odd):
+        prev_qty = self.output_corp_action(o_sid, c_sid, level, sheet, formats, row, even_odd)
+        row = row + 1
+        row = self.next_corporate_action(o_sid, level+1, prev_qty, sheet, formats, row, even_odd)
+        return row
+
+    def next_corporate_action(self, sid, level, proceed_qty, sheet, formats, row, even_odd):
         # get list of deals that were closed as result of current corporate action
         open_query = executeSQL(self.db, "SELECT d.open_sid AS open_sid, os.type AS op_type "
                                          "FROM deals AS d "
@@ -496,8 +501,7 @@ class TaxesRus:
             if op_type == TransactionType.Trade:
                 row = self.otput_purchase(open_sid, sid, proceed_qty, level, sheet, formats, row, even_odd)
             elif op_type == TransactionType.CorporateAction:
-                row, prev_sid, prev_qty = self.output_corp_action(open_sid, sid, level, sheet, formats, row, even_odd)
-                row = self.proceed_corporate_action(prev_sid, level + 1, prev_qty, sheet, formats, row, even_odd)
+                row = self.proceed_corporate_action(open_sid, sid, level, sheet, formats, row, even_odd)
             else:
                 assert False
         return row
@@ -545,9 +549,9 @@ class TaxesRus:
     def output_corp_action(self, open_sid, close_sid, level, sheet, formats, row, even_odd):
         indent = ' ' * level * 3
 
-        sid, a_date, type, symbol, qty, symbol_new, qty_new, note = \
-            readSQL(self.db, "SELECT d.open_sid, a.timestamp AS a_date, a.type, "
-                             "s1.name AS symbol, a.qty*d.qty/a.qty_new AS qty, s2.name AS symbol_new, d.qty AS qty_new, a.note AS note "
+        a_date, type, symbol, qty, symbol_new, qty_new, note = \
+            readSQL(self.db, "SELECT a.timestamp AS a_date, a.type, s1.name AS symbol, a.qty*d.qty/a.qty_new AS qty, "
+                             "s2.name AS symbol_new, d.qty AS qty_new, a.note AS note "
                              "FROM deals AS d "
                              "JOIN sequence AS os ON os.id=d.open_sid AND os.type = 5 "
                              "LEFT JOIN corp_actions AS a ON os.operation_id=a.id "
@@ -564,5 +568,5 @@ class TaxesRus:
             1: (datetime.fromtimestamp(a_date).strftime('%d.%m.%Y'), formats.Text(even_odd)),
             2: (description, formats.Text(even_odd), 0, 9, 0)
         })
-        return row + 1, sid, qty
+        return qty
 #-----------------------------------------------------------------------------------------------------------------------
