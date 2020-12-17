@@ -166,6 +166,7 @@ class IBKR:
         if data.attrib[name] == '':
             return default_value
         if data.tag == 'Trade' and IBKR.flAssetType(data, 'assetCategory', None, None) == PredefinedAsset.Money:
+            currency_asset = default_value
             for currency in data.attrib['symbol'].split('.'):
                 currency_asset = caller.findAssetID(currency)
             return currency_asset
@@ -773,10 +774,12 @@ class StatementLoader(QObject):
     # noinspection PyMethodMayBeStatic
     def loadIBDepositWithdraw(self, cash):
         if cash['amount'] >= 0:     # Deposit
-            text = g_tr('StatementLoader', "Deposit of ") + f"{cash['amount']:.2f} {cash['currency']}\n" + \
+            text = g_tr('StatementLoader', "Deposit of ") + f"{cash['amount']:.2f} {cash['currency']} " + \
+                   f"@{datetime.fromtimestamp(cash['dateTime']).strftime('%d.%m.%Y')}\n" + \
                    g_tr('StatementLoader', "Select account to withdraw from:")
         else:                       # Withdrawal
-            text = g_tr('StatementLoader', "Withdrawal of ") + f"{-cash['amount']:.2f} {cash['currency']}\n" + \
+            text = g_tr('StatementLoader', "Withdrawal of ") + f"{-cash['amount']:.2f} {cash['currency']} " + \
+                   f"@{datetime.fromtimestamp(cash['dateTime']).strftime('%d.%m.%Y')}\n" + \
                    g_tr('StatementLoader', "Select account to deposit to:")
 
         dialog = SelectAccountDialog(self.parent, self.db, text, cash['accountId'])
