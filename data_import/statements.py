@@ -791,8 +791,8 @@ class StatementLoader(QObject):
             self.createTransfer(cash['dateTime'], dialog.account_id, -cash['amount'],
                                 cash['accountId'], cash['amount'], 0, 0, cash['description'])
         else:
-            self.createTransfer(cash['dateTime'], cash['accountId'], -cash['amount'],
-                                dialog.account_id, cash['amount'], 0, 0, cash['description'])
+            self.createTransfer(cash['dateTime'], cash['accountId'], cash['amount'],
+                                dialog.account_id, -cash['amount'], 0, 0, cash['description'])
         return 1
 
     def createDividend(self, timestamp, account_id, asset_id, amount, note):
