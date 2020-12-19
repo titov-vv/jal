@@ -45,7 +45,7 @@ class Ui_SelectAccountDlg(object):
 
 
         self.retranslateUi(SelectAccountDlg)
-        self.buttonBox.accepted.connect(SelectAccountDlg.accept)
+        self.buttonBox.accepted.connect(SelectAccountDlg.close)
 
         QMetaObject.connectSlotsByName(SelectAccountDlg)
     # setupUi

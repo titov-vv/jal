@@ -63,7 +63,7 @@
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
    <receiver>SelectAccountDlg</receiver>
-   <slot>accept()</slot>
+   <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>199</x>

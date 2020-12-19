@@ -275,18 +275,22 @@ class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
         self.setGeometry(x, y, self.width(), self.height())
 
     @Slot()
-    def accept(self):
-        self.account_id = self.AccountWidget.selected_id
-        super().accept()
-
-    @Slot()
     def closeEvent(self, event):
-        if self.AccountWidget.selected_id == 0 or self.AccountWidget.selected_id == self.current_account:
+        self.account_id = self.AccountWidget.selected_id
+        if self.AccountWidget.selected_id == 0:
+            QMessageBox().warning(None, g_tr('ReferenceDataDialog', "No selection"),
+                                  g_tr('ReferenceDataDialog', "Invalid account selected"),
+                                  QMessageBox.Ok)
+            event.ignore()
+            return
+
+        if self.AccountWidget.selected_id == self.current_account:
             QMessageBox().warning(None, g_tr('ReferenceDataDialog', "No selection"),
                                   g_tr('ReferenceDataDialog', "Please select different account"),
                                   QMessageBox.Ok)
             event.ignore()
             return
+
         event.accept()
 
 #-----------------------------------------------------------------------------------------------------------------------
