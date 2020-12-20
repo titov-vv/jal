@@ -245,9 +245,9 @@ class TaxesRus:
         query = executeSQL(self.db,
                            "SELECT s.name AS symbol, d.qty AS qty, "
                            "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, "
-                           "qos.quote AS os_rate, o.price AS o_price, o.fee AS o_fee, "
+                           "qos.quote AS os_rate, o.price AS o_price, o.qty AS o_qty, o.fee AS o_fee, "
                            "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, "
-                           "qcs.quote AS cs_rate, c.price AS c_price, c.fee AS c_fee "
+                           "qcs.quote AS cs_rate, c.price AS c_price, c.qty AS c_qty, c.fee AS c_fee "
                            "FROM deals AS d "
                            "JOIN sequence AS os ON os.id=d.open_sid AND os.type = 3 "  
                            "LEFT JOIN trades AS o ON os.operation_id=o.id "
@@ -273,32 +273,33 @@ class TaxesRus:
         profit_sum = 0.0
         profit_sum_usd = 0.0
         while query.next():
-            symbol, qty, o_date, o_fee_rate, os_date, o_rate, o_price, o_fee_usd, \
-                c_date, c_fee_rate, cs_date, c_rate, c_price, c_fee_usd = readSQLrecord(query)
+            deal = readSQLrecord(query, named=True)
             row = start_row + (data_row * 2)
-            o_deal_type = "Покупка" if qty>=0 else "Продажа"
-            c_deal_type = "Продажа" if qty >= 0 else "Покупка"
-            o_amount_usd = round(o_price * abs(qty), 2)
-            o_amount_rub = round(o_amount_usd * o_rate, 2) if o_rate else 0
-            c_amount_usd = round(c_price * abs(qty), 2)
-            c_amount_rub = round(c_amount_usd * c_rate, 2) if c_rate else 0
-            o_fee_rub = round(o_fee_usd * o_fee_rate, 2) if o_fee_rate else 0
-            c_fee_rub = round(c_fee_usd * c_fee_rate, 2) if c_fee_rate else 0
-            income = c_amount_rub if qty >= 0 else o_amount_rub
-            income_usd = c_amount_usd if qty>=0 else o_amount_usd
-            spending = o_amount_rub if qty >= 0 else c_amount_rub
-            spending_usd = o_amount_usd if qty>=0 else c_amount_usd
+            o_deal_type = "Покупка" if deal['qty']>=0 else "Продажа"
+            c_deal_type = "Продажа" if deal['qty'] >= 0 else "Покупка"
+            o_amount_usd = round(deal['o_price'] * abs(deal['qty']), 2)
+            o_amount_rub = round(o_amount_usd * deal['o_rate'], 2) if deal['o_rate'] else 0
+            c_amount_usd = round(deal['c_price'] * abs(deal['qty']), 2)
+            c_amount_rub = round(c_amount_usd * deal['c_rate'], 2) if deal['c_rate'] else 0
+            o_fee_usd = deal['o_fee'] * abs(deal['qty']/deal['o_qty'])
+            c_fee_usd = deal['c_fee'] * abs(deal['qty'] / deal['c_qty'])
+            o_fee_rub = round(o_fee_usd * deal['os_rate'], 2) if deal['os_rate'] else 0
+            c_fee_rub = round(c_fee_usd * deal['cs_rate'], 2) if deal['cs_rate'] else 0
+            income = c_amount_rub if deal['qty'] >= 0 else o_amount_rub
+            income_usd = c_amount_usd if deal['qty']>=0 else o_amount_usd
+            spending = o_amount_rub if deal['qty'] >= 0 else c_amount_rub
+            spending_usd = o_amount_usd if deal['qty']>=0 else c_amount_usd
             spending = spending + o_fee_rub + c_fee_rub
             spending_usd = spending_usd + o_fee_usd + c_fee_usd
             xlsxWriteRow(sheet, row, {
-                0: (symbol, formats.Text(data_row), 0, 0, 1),
-                1: (float(abs(qty)), formats.Number(data_row, 0, True), 0, 0, 1),
+                0: (deal['symbol'], formats.Text(data_row), 0, 0, 1),
+                1: (float(abs(deal['qty'])), formats.Number(data_row, 0, True), 0, 0, 1),
                 2: (o_deal_type, formats.Text(data_row)),
-                3: (datetime.fromtimestamp(o_date).strftime('%d.%m.%Y'), formats.Text(data_row)),
-                4: (o_fee_rate, formats.Number(data_row, 4)),
-                5: (datetime.fromtimestamp(os_date).strftime('%d.%m.%Y'), formats.Text(data_row)),
-                6: (o_rate, formats.Number(data_row, 4)),
-                7: (o_price, formats.Number(data_row, 6)),
+                3: (datetime.fromtimestamp(deal['o_date']).strftime('%d.%m.%Y'), formats.Text(data_row)),
+                4: (deal['os_rate'], formats.Number(data_row, 4)),
+                5: (datetime.fromtimestamp(deal['os_date']).strftime('%d.%m.%Y'), formats.Text(data_row)),
+                6: (deal['o_rate'], formats.Number(data_row, 4)),
+                7: (deal['o_price'], formats.Number(data_row, 6)),
                 8: (o_amount_usd, formats.Number(data_row, 2)),
                 9: (o_amount_rub, formats.Number(data_row, 2)),
                 10: (o_fee_usd, formats.Number(data_row, 6)),
@@ -310,11 +311,11 @@ class TaxesRus:
             })
             xlsxWriteRow(sheet, row + 1, {
                 2: (c_deal_type, formats.Text(data_row)),
-                3: (datetime.fromtimestamp(c_date).strftime('%d.%m.%Y'), formats.Text(data_row)),
-                4: (c_fee_rate, formats.Number(data_row, 4)),
-                5: (datetime.fromtimestamp(cs_date).strftime('%d.%m.%Y'), formats.Text(data_row)),
-                6: (c_rate, formats.Number(data_row, 4)),
-                7: (c_price, formats.Number(data_row, 6)),
+                3: (datetime.fromtimestamp(deal['c_date']).strftime('%d.%m.%Y'), formats.Text(data_row)),
+                4: (deal['cs_rate'], formats.Number(data_row, 4)),
+                5: (datetime.fromtimestamp(deal['cs_date']).strftime('%d.%m.%Y'), formats.Text(data_row)),
+                6: (deal['c_rate'], formats.Number(data_row, 4)),
+                7: (deal['c_price'], formats.Number(data_row, 6)),
                 8: (c_amount_usd, formats.Number(data_row, 2)),
                 9: (c_amount_rub, formats.Number(data_row, 2)),
                 10: (c_fee_usd, formats.Number(data_row, 6)),
