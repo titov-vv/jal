@@ -32,9 +32,11 @@ CREATE TABLE accounts (
     currency_id     INTEGER   REFERENCES assets (id) ON DELETE RESTRICT
                                                       ON UPDATE CASCADE
                               NOT NULL,
-    active          INTEGER,
+    active          INTEGER   DEFAULT (1)
+                              NOT NULL ON CONFLICT REPLACE,
     number          TEXT (32),
-    reconciled_on   INTEGER   DEFAULT (0),
+    reconciled_on   INTEGER   DEFAULT (0)
+                              NOT NULL ON CONFLICT REPLACE,
     organization_id INTEGER   REFERENCES agents (id) ON DELETE SET NULL
                                                      ON UPDATE CASCADE
 );

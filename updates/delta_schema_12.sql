@@ -4,12 +4,58 @@ BEGIN TRANSACTION;
 UPDATE dividends SET sum_tax=-sum_tax;
 
 --------------------------------------------------------------------------------
--- Modify trades table to drop 'corp_action_id' column
-
 PRAGMA foreign_keys = 0;
 
-CREATE TABLE sqlitestudio_temp_table AS SELECT *
-                                          FROM trades;
+-- Modify accounts table to set 'active' and 'reconciled_on' default values and not NULL constraint
+CREATE TABLE sqlitestudio_temp_table AS SELECT * FROM accounts;
+
+DROP TABLE accounts;
+
+CREATE TABLE accounts (
+    id              INTEGER   PRIMARY KEY
+                              UNIQUE
+                              NOT NULL,
+    type_id         INTEGER   REFERENCES account_types (id) ON DELETE RESTRICT
+                                                            ON UPDATE CASCADE
+                              NOT NULL,
+    name            TEXT (64) NOT NULL
+                              UNIQUE,
+    currency_id     INTEGER   REFERENCES assets (id) ON DELETE RESTRICT
+                                                     ON UPDATE CASCADE
+                              NOT NULL,
+    active          INTEGER   DEFAULT (1)
+                              NOT NULL ON CONFLICT REPLACE,
+    number          TEXT (32),
+    reconciled_on   INTEGER   DEFAULT (0)
+                              NOT NULL ON CONFLICT REPLACE,
+    organization_id INTEGER   REFERENCES agents (id) ON DELETE SET NULL
+                                                     ON UPDATE CASCADE
+);
+
+INSERT INTO accounts (
+                         id,
+                         type_id,
+                         name,
+                         currency_id,
+                         active,
+                         number,
+                         reconciled_on,
+                         organization_id
+                     )
+                     SELECT id,
+                            type_id,
+                            name,
+                            currency_id,
+                            active,
+                            number,
+                            reconciled_on,
+                            organization_id
+                       FROM sqlitestudio_temp_table;
+
+DROP TABLE sqlitestudio_temp_table;
+
+-- Modify table 'trades' to adopt new corporate actions -  drop 'corp_action_id' column
+CREATE TABLE sqlitestudio_temp_table AS SELECT * FROM trades;
 
 DROP TABLE trades;
 
