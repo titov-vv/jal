@@ -233,7 +233,8 @@ class TaxesRus:
             11: ("Комиссия, RUB", formats.ColumnHeader(), 9, 0, 0),
             12: ("Доход, RUB", formats.ColumnHeader(), 12, 0, 0),
             13: ("Расход, RUB", formats.ColumnHeader(), 12, 0, 0),
-            14: ("Финансовый результат, RUB", formats.ColumnHeader(), 12, 0, 0)
+            14: ("Финансовый результат, RUB", formats.ColumnHeader(), 12, 0, 0),
+            15: ("Финансовый результат, USD", formats.ColumnHeader(), 12, 0, 0)
         }
         xlsxWriteRow(sheet, 7, header_row, 60)
         for column in range(len(header_row)):  # Put column numbers for reference
@@ -270,6 +271,7 @@ class TaxesRus:
         income_sum = 0.0
         spending_sum = 0.0
         profit_sum = 0.0
+        profit_sum_usd = 0.0
         while query.next():
             symbol, qty, o_date, o_fee_rate, os_date, o_rate, o_price, o_fee_usd, \
                 c_date, c_fee_rate, cs_date, c_rate, c_price, c_fee_usd = readSQLrecord(query)
@@ -283,8 +285,11 @@ class TaxesRus:
             o_fee_rub = round(o_fee_usd * o_fee_rate, 2) if o_fee_rate else 0
             c_fee_rub = round(c_fee_usd * c_fee_rate, 2) if c_fee_rate else 0
             income = c_amount_rub if qty >= 0 else o_amount_rub
+            income_usd = c_amount_usd if qty>=0 else o_amount_usd
             spending = o_amount_rub if qty >= 0 else c_amount_rub
+            spending_usd = o_amount_usd if qty>=0 else c_amount_usd
             spending = spending + o_fee_rub + c_fee_rub
+            spending_usd = spending_usd + o_fee_usd + c_fee_usd
             xlsxWriteRow(sheet, row, {
                 0: (symbol, formats.Text(data_row), 0, 0, 1),
                 1: (float(abs(qty)), formats.Number(data_row, 0, True), 0, 0, 1),
@@ -300,7 +305,8 @@ class TaxesRus:
                 11: (o_fee_rub, formats.Number(data_row, 2)),
                 12: (income, formats.Number(data_row, 2), 0, 0, 1),
                 13: (spending, formats.Number(data_row, 2), 0, 0, 1),
-                14: (income - spending, formats.Number(data_row, 2), 0, 0, 1)
+                14: (income - spending, formats.Number(data_row, 2), 0, 0, 1),
+                15: (income_usd - spending_usd, formats.Number(data_row, 2), 0, 0, 1)
             })
             xlsxWriteRow(sheet, row + 1, {
                 2: (c_deal_type, formats.Text(data_row)),
@@ -317,13 +323,15 @@ class TaxesRus:
             income_sum += income
             spending_sum += spending
             profit_sum += income - spending
+            profit_sum_usd += income_usd - spending_usd
             data_row = data_row + 1
         row = start_row + (data_row * 2)
         xlsxWriteRow(sheet, row, {
             11: ("ИТОГО", formats.ColumnFooter()),
             12: (income_sum, formats.ColumnFooter()),
             13: (spending_sum, formats.ColumnFooter()),
-            14: (profit_sum, formats.ColumnFooter())
+            14: (profit_sum, formats.ColumnFooter()),
+            15: (profit_sum_usd, formats.ColumnFooter())
         })
 
 # -----------------------------------------------------------------------------------------------------------------------
