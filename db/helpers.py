@@ -105,6 +105,8 @@ def init_and_check_db(db_path):
         db.close()
         return None, LedgerInitError(LedgerInitError.NewerDbSchema)
 
+    _ = executeSQL(db, "PRAGMA foreign_keys = ON")
+
     return db, LedgerInitError(LedgerInitError.DbInitSuccess)
 
 # -------------------------------------------------------------------------------------------------------------------
