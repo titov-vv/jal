@@ -1738,6 +1738,14 @@ INSERT INTO countries (id, name, code, tax_treaty) VALUES (4, 'Switzerland', 'ch
 INSERT INTO countries (id, name, code, tax_treaty) VALUES (5, 'France', 'fr', 1);
 INSERT INTO countries (id, name, code, tax_treaty) VALUES (6, 'Canada', 'ca', 1);
 INSERT INTO countries (id, name, code, tax_treaty) VALUES (7, 'Sweden', 'se', 1);
+INSERT INTO countries (id, name, code, tax_treaty) VALUES (8, 'Italy', 'it', 1);
+INSERT INTO countries (id, name, code, tax_treaty) VALUES (9, 'Spain', 'es', 1);
+INSERT INTO countries (id, name, code, tax_treaty) VALUES (10, 'Australia', 'au', 1);
+INSERT INTO countries (id, name, code, tax_treaty) VALUES (11, 'Austria', 'at', 1);
+INSERT INTO countries (id, name, code, tax_treaty) VALUES (12, 'Belgium', 'be', 1);
+INSERT INTO countries (id, name, code, tax_treaty) VALUES (13, 'Great Britain', 'gb', 1);
+INSERT INTO countries (id, name, code, tax_treaty) VALUES (14, 'Germany', 'de', 1);
+INSERT INTO countries (id, name, code, tax_treaty) VALUES (15, 'China', 'cn', 1);
 
 -- Initialize rate for base currency
 INSERT INTO quotes (id, timestamp, asset_id, quote) VALUES (1, 946684800, 1, 1.0);
