@@ -43,26 +43,12 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
 # TODO Check are there positive lines for Incomes
 # TODO Check are there negative lines for Costs
 # ===================================================================================================================
-# constants to use instead in indices in self.current which is a list
-# that contains details about currently processed operation
-TRANSACTION_TYPE = 0
-OPERATION_ID = 1
-TIMESTAMP = 2
-TRANSACTION_SUBTYPE = 3
-ACCOUNT_ID = 4
-CURRENCY_ID = 5
-ASSET_ID = 6
-AMOUNT_QTY = 7
-PRICE_CATEGORY = 8
-COUPON_PEER = 9
-FEE_TAX_TAG = 10
-
 class Ledger:
     SILENT_REBUILD_THRESHOLD = 50
 
     def __init__(self, db):
         self.db = db
-        self.current = []
+        self.current = {}
         self.current_seq = -1
         self.balances_view = None
         self.holdings_view = None
@@ -133,17 +119,17 @@ class Ledger:
     # Method uses Account, Asset,Peer, Category and Tag values from current transaction
     def appendTransaction(self, book, amount, value=None):
         seq_id = self.current_seq
-        timestamp = self.current[TIMESTAMP]
+        timestamp = self.current['timestamp']
         if book == BookAccount.Assets:
-            asset_id = self.current[ASSET_ID]
+            asset_id = self.current['asset']
         else:
-            asset_id = self.current[CURRENCY_ID]
-        account_id = self.current[ACCOUNT_ID]
+            asset_id = self.current['currency']
+        account_id = self.current['account']
         if book == BookAccount.Costs or book == BookAccount.Incomes:
-            peer_id = self.current[COUPON_PEER]
-            category_id = self.current[PRICE_CATEGORY]
-            tag_id = self.current[FEE_TAX_TAG]
-        else:  # TODO - check None for empty values (to put NULL in DB)
+            peer_id = self.current['peer']
+            category_id = self.current['category']
+            tag_id = None if self.current['tag'] == '' else self.current['tag']
+        else:
             peer_id = None
             category_id = None
             tag_id = None
@@ -195,14 +181,14 @@ class Ledger:
             amount = readSQL(self.db,
                                "SELECT sum_amount FROM ledger_sums WHERE book_account = :book AND "
                                "account_id = :account_id AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1",
-                               [(":book", book), (":account_id", self.current[ACCOUNT_ID]),
-                                (":timestamp", self.current[TIMESTAMP])])
+                               [(":book", book), (":account_id", self.current['account']),
+                                (":timestamp", self.current['timestamp'])])
         else:
             amount = readSQL(self.db, "SELECT sum_amount FROM ledger_sums WHERE book_account = :book "
                                         "AND account_id = :account_id AND asset_id = :asset_id "
                                         "AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1",
-                               [(":book", book), (":account_id", self.current[ACCOUNT_ID]),
-                                (":asset_id", asset_id), (":timestamp", self.current[TIMESTAMP])])
+                               [(":book", book), (":account_id", self.current['account']),
+                                (":asset_id", asset_id), (":timestamp", self.current['timestamp'])])
         amount = float(amount) if amount is not None else 0.0
         return amount
 
@@ -228,14 +214,14 @@ class Ledger:
 
     def processActionDetails(self):
         query = executeSQL(self.db, "SELECT sum as amount, category_id, tag_id FROM action_details AS d WHERE pid=:pid",
-                           [(":pid", self.current[OPERATION_ID])])
+                           [(":pid", self.current['id'])])
         while query.next():
-            amount, self.current[PRICE_CATEGORY], self.current[FEE_TAX_TAG] = readSQLrecord(query)
+            amount, self.current['category'], self.current['tag'] = readSQLrecord(query)
             book = BookAccount.Costs if amount < 0 else BookAccount.Incomes
             self.appendTransaction(book, -amount)
 
     def processAction(self):
-        action_amount = self.current[AMOUNT_QTY]
+        action_amount = self.current['amount']
         if action_amount < 0:
             credit_taken = self.takeCredit(-action_amount)
             self.appendTransaction(BookAccount.Money, -(-action_amount - credit_taken))
@@ -243,33 +229,35 @@ class Ledger:
             credit_returned = self.returnCredit(action_amount)
             if credit_returned < action_amount:
                 self.appendTransaction(BookAccount.Money, action_amount - credit_returned)
-        if self.current[TRANSACTION_SUBTYPE] == ActionSubtype.SingleIncome:
+        if self.current['subtype'] == ActionSubtype.SingleIncome:
             self.appendTransaction(BookAccount.Incomes, -action_amount)
-        elif self.current[TRANSACTION_SUBTYPE] == ActionSubtype.SingleSpending:
+        elif self.current['subtype'] == ActionSubtype.SingleSpending:
             self.appendTransaction(BookAccount.Costs, -action_amount)
         else:
             self.processActionDetails()
 
     def processDividend(self):
-        dividend_amount = self.current[AMOUNT_QTY]
-        tax_amount = self.current[FEE_TAX_TAG]
+        if self.current['peer'] == '':
+            logging.error(g_tr('Ledger', "Can't process dividend as bank isn't set for investment account"))
+            return
+        dividend_amount = self.current['amount']
+        tax_amount = self.current['fee_tax']
         credit_returned = self.returnCredit(dividend_amount - tax_amount)
         if credit_returned < dividend_amount:
             self.appendTransaction(BookAccount.Money, dividend_amount - credit_returned)
-        self.current[PRICE_CATEGORY] = PredefinedCategory.Dividends
         self.appendTransaction(BookAccount.Incomes, -dividend_amount)
         if tax_amount:
             self.appendTransaction(BookAccount.Money, -tax_amount)
-            self.current[PRICE_CATEGORY] = PredefinedCategory.Taxes
+            self.current['category'] = PredefinedCategory.Taxes
             self.appendTransaction(BookAccount.Costs, tax_amount)
 
     def processBuy(self):
         seq_id = self.current_seq
-        account_id = self.current[ACCOUNT_ID]
-        asset_id = self.current[ASSET_ID]
-        qty = self.current[AMOUNT_QTY]
-        price = self.current[PRICE_CATEGORY]
-        trade_value = round(price * qty, 2) + self.current[FEE_TAX_TAG] + self.current[COUPON_PEER]
+        account_id = self.current['account']
+        asset_id = self.current['asset']
+        qty = self.current['amount']
+        price = self.current['price']
+        trade_value = round(price * qty, 2) + self.current['fee_tax'] + self.current['coupon']
         sell_qty = 0
         sell_value = 0
         if self.getAmount(BookAccount.Assets, asset_id) < 0:        # Match deals if we have something sold before
@@ -319,24 +307,24 @@ class Ledger:
             self.appendTransaction(BookAccount.Money, -(trade_value - credit_taken))
         if sell_qty > 0:  # Add result of closed deals
             self.appendTransaction(BookAccount.Assets, sell_qty, sell_value)
-            self.current[PRICE_CATEGORY] = PredefinedCategory.Profit
+            self.current['category'] = PredefinedCategory.Profit
             self.appendTransaction(BookAccount.Incomes, ((price * sell_qty) - sell_value))
         if sell_qty < qty:  # Add new long position
             self.appendTransaction(BookAccount.Assets, (qty - sell_qty), (qty - sell_qty) * price)
-        if self.current[COUPON_PEER]:
-            self.current[PRICE_CATEGORY] = PredefinedCategory.Dividends
-            self.appendTransaction(BookAccount.Costs, self.current[COUPON_PEER])
-        if self.current[FEE_TAX_TAG]:
-            self.current[PRICE_CATEGORY] = PredefinedCategory.Fees
-            self.appendTransaction(BookAccount.Costs, self.current[FEE_TAX_TAG])
+        if self.current['coupon']:
+            self.current['category'] = PredefinedCategory.Dividends
+            self.appendTransaction(BookAccount.Costs, self.current['coupon'])
+        if self.current['fee_tax']:
+            self.current['category'] = PredefinedCategory.Fees
+            self.appendTransaction(BookAccount.Costs, self.current['fee_tax'])
 
     def processSell(self):
         seq_id = self.current_seq
-        account_id = self.current[ACCOUNT_ID]
-        asset_id = self.current[ASSET_ID]
-        qty = -self.current[AMOUNT_QTY]
-        price = self.current[PRICE_CATEGORY]
-        trade_value = round(price * qty, 2) - self.current[FEE_TAX_TAG] + self.current[COUPON_PEER]
+        account_id = self.current['account']
+        asset_id = self.current['asset']
+        qty = -self.current['amount']
+        price = self.current['price']
+        trade_value = round(price * qty, 2) - self.current['fee_tax'] + self.current['coupon']
         buy_qty = 0
         buy_value = 0
         if self.getAmount(BookAccount.Assets, asset_id) > 0:    # Match deals if we have something bought before
@@ -396,43 +384,46 @@ class Ledger:
             self.appendTransaction(BookAccount.Money, (trade_value - credit_returned))
         if buy_qty > 0:  # Add result of closed deals
             self.appendTransaction(BookAccount.Assets, -buy_qty, -buy_value)
-            self.current[PRICE_CATEGORY] = PredefinedCategory.Profit
+            self.current['category'] = PredefinedCategory.Profit
             self.appendTransaction(BookAccount.Incomes, (buy_value - (price * buy_qty)))
         if buy_qty < qty:  # Add new short position
             self.appendTransaction(BookAccount.Assets, (buy_qty - qty), (buy_qty - qty) * price)
-        if self.current[COUPON_PEER]:
-            self.current[PRICE_CATEGORY] = PredefinedCategory.Dividends
-            self.appendTransaction(BookAccount.Incomes, -self.current[COUPON_PEER])
-        if self.current[FEE_TAX_TAG]:
-            self.current[PRICE_CATEGORY] = PredefinedCategory.Fees
-            self.appendTransaction(BookAccount.Costs, self.current[FEE_TAX_TAG])
+        if self.current['coupon']:
+            self.current['category'] = PredefinedCategory.Dividends
+            self.appendTransaction(BookAccount.Incomes, -self.current['coupon'])
+        if self.current['fee_tax']:
+            self.current['category'] = PredefinedCategory.Fees
+            self.appendTransaction(BookAccount.Costs, self.current['fee_tax'])
 
     def processTrade(self):
+        if self.current['peer'] == '':
+            logging.error(g_tr('Ledger', "Can't process trade as bank isn't set for investment account"))
+            return
         operationTrade = {
             -1: self.processSell,
             1: self.processBuy
         }
-        operationTrade[self.current[TRANSACTION_SUBTYPE]]()
+        operationTrade[self.current['subtype']]()
 
     def processTransferOut(self):
-        amount = -self.current[AMOUNT_QTY]
+        amount = -self.current['amount']
         credit_taken = self.takeCredit(amount)
         self.appendTransaction(BookAccount.Money, -(amount - credit_taken))
         self.appendTransaction(BookAccount.Transfers, amount)
 
     def processTransferIn(self):
-        amount = self.current[AMOUNT_QTY]
+        amount = self.current['amount']
         credit_returned = self.returnCredit(amount)
         if credit_returned < amount:
             self.appendTransaction(BookAccount.Money, (amount - credit_returned))
         self.appendTransaction(BookAccount.Transfers, -amount)
 
     def processTransferFee(self):
-        fee = -self.current[AMOUNT_QTY]
+        fee = -self.current['amount']
         credit_taken = self.takeCredit(fee)
-        self.current[COUPON_PEER] = PredefinedPeer.Financial
+        self.current['peer'] = PredefinedPeer.Financial
         self.appendTransaction(BookAccount.Money, -(fee - credit_taken))
-        self.current[PRICE_CATEGORY] = PredefinedCategory.Fees
+        self.current['category'] = PredefinedCategory.Fees
         self.appendTransaction(BookAccount.Costs, fee)
 
     def processTransfer(self):
@@ -441,18 +432,18 @@ class Ledger:
             TransferSubtype.Fee: self.processTransferFee,
             TransferSubtype.Incoming: self.processTransferIn
         }
-        operationTransfer[self.current[TRANSACTION_SUBTYPE]]()
+        operationTransfer[self.current['subtype']]()
 
     def processAssetConversion(self):
         seq_id = self.current_seq
-        account_id = self.current[ACCOUNT_ID]
-        asset_id = self.current[ASSET_ID]
-        qty = self.current[AMOUNT_QTY]
+        account_id = self.current['account']
+        asset_id = self.current['asset']
+        qty = self.current['amount']
         buy_qty = 0
         buy_value = 0
         if self.getAmount(BookAccount.Assets, asset_id) < (qty - 2*Setup.CALC_TOLERANCE):
             logging.fatal(g_tr('Ledger', "Conversion failed. Asset amount is not enogh. Date: ")
-                          + f"{datetime.fromtimestamp(self.current[TIMESTAMP]).strftime('%d/%m/%Y %H:%M:%S')}")
+                          + f"{datetime.fromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
             return
         query = executeSQL(self.db,
                            "SELECT d.open_sid AS open, ABS(coalesce(o.qty, ca.qty_new))- SUM(d.qty) AS remainder "
@@ -507,18 +498,21 @@ class Ledger:
         # Withdraw value with old quantity of old asset before conversion
         self.appendTransaction(BookAccount.Assets, -buy_qty, -buy_value)
         # Create the same value with new quantity of new asset after conversion
-        self.current[ASSET_ID] = self.current[COUPON_PEER]
-        self.appendTransaction(BookAccount.Assets, self.current[PRICE_CATEGORY], buy_value)
+        self.current['asset'] = self.current['peer']
+        self.appendTransaction(BookAccount.Assets, self.current['price'], buy_value)
 
     # Spin-Off is equal to Buy operation with 0 price
     def processAssetEmission(self):
         operation_details = self.current
         # Values for TIMESTAMP, ACCOUNT_ID remains the same
-        self.current[ASSET_ID] = operation_details[COUPON_PEER]
-        self.current[AMOUNT_QTY] = operation_details[PRICE_CATEGORY]
-        self.current[PRICE_CATEGORY] = 0
-        self.current[COUPON_PEER] = 0
-        self.current[FEE_TAX_TAG] = 0
+        self.current['asset'] = operation_details['peer']
+        self.current['amount'] = operation_details['price']
+        self.current['price'] = 0
+        self.current['category'] = 0
+        self.current['coupon'] = 0
+        self.current['peer'] = None
+        self.current['fee_tax'] = 0
+        self.current['tag'] = 0
         self.processBuy()
 
     def processCorporateAction(self):
@@ -529,7 +523,7 @@ class Ledger:
             CorporateAction.SpinOff: self.processAssetEmission,
             CorporateAction.StockDividend: self.processAssetEmission
         }
-        operationCorpAction[self.current[TRANSACTION_SUBTYPE]]()
+        operationCorpAction[self.current['subtype']]()
 
     # Rebuild transaction sequence and recalculate all amounts
     # timestamp:
@@ -574,27 +568,27 @@ class Ledger:
         if fast_and_dirty:  # For 30k operations difference of execution time is - with 0:02:41 / without 0:11:44
             _ = executeSQL(self.db, "PRAGMA synchronous = OFF")
         query = executeSQL(self.db, "SELECT type, id, timestamp, subtype, account, currency, asset, amount, "
-                                    "price_category, coupon_peer, fee_tax_tag FROM all_transactions "
+                                    "category, price, fee_tax, coupon, peer, tag FROM all_transactions "
                                     "WHERE timestamp >= :frontier", [(":frontier", frontier)])
         while query.next():
-            self.current = readSQLrecord(query)
+            self.current = readSQLrecord(query, named=True)
             seq_query = executeSQL(self.db, "INSERT INTO sequence(timestamp, type, operation_id) "
                                             "VALUES(:timestamp, :type, :operation_id)",
-                                   [(":timestamp", self.current[TIMESTAMP]), (":type", self.current[TRANSACTION_TYPE]),
-                                    (":operation_id", self.current[OPERATION_ID])])
+                                   [(":timestamp", self.current['timestamp']), (":type", self.current['type']),
+                                    (":operation_id", self.current['id'])])
             self.current_seq = seq_query.lastInsertId()
-            operationProcess[self.current[TRANSACTION_TYPE]]()
+            operationProcess[self.current['type']]()
             if not silent and (query.at() % 1000) == 0:
                 logging.info(g_tr('Ledger', "Processed ") + f"{int(query.at()/1000)}" +
                              g_tr('Ledger', "k records, current frontier: ") +
-                             f"{datetime.fromtimestamp(self.current[TIMESTAMP]).strftime('%d/%m/%Y %H:%M:%S')}")
+                             f"{datetime.fromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
         if fast_and_dirty:
             _ = executeSQL(self.db, "PRAGMA synchronous = ON")
 
         end_time = datetime.now()
         if not silent:
             logging.info(g_tr('Ledger', "Ledger is complete. Elapsed time: ") + f"{end_time - start_time}" +
-                         g_tr('Ledger', ", new frontier: ") + f"{datetime.fromtimestamp(self.current[TIMESTAMP]).strftime('%d/%m/%Y %H:%M:%S')}")
+                         g_tr('Ledger', ", new frontier: ") + f"{datetime.fromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
         self.updateBalancesView()
         self.updateHoldingsView()
 

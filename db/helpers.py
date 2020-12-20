@@ -63,10 +63,16 @@ def readSQL(db, sql_text, params = []):
     else:
         return None
 
-def readSQLrecord(query):
-    values = []
+def readSQLrecord(query, named = False):
+    if named:
+        values = {}
+    else:
+        values = []
     for i in range(query.record().count()):
-        values.append(query.value(i))
+        if named:
+            values[query.record().fieldName(i)] = query.value(i)
+        else:
+            values.append(query.value(i))
     if values:
         if len(values) == 1:
             return values[0]
@@ -92,7 +98,6 @@ def init_and_check_db(db_path):
     if not tables:
         db.close()
         connection_name = db.connectionName()
-        db = None
         loadDbFromSQL(get_dbfilename(db_path), db_path + Setup.INIT_SCRIPT_PATH)
         QSqlDatabase.removeDatabase(connection_name)
         return None, LedgerInitError(LedgerInitError.EmptyDbInitialized)
