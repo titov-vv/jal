@@ -33,6 +33,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.selected_id = 0
         self.p_selected_name = ''
         self.dialog_visible = False
+        self.selection_enabled = False
         self.tree_view = tree_view
         self.parent = 0
         self.last_parent = 0
@@ -93,7 +94,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.CommitBtn.clicked.connect(self.OnCommit)
         self.RevertBtn.clicked.connect(self.OnRevert)
         self.DataView.clicked.connect(self.OnClicked)
-        self.DataView.doubleClicked.connect(self.accept)
+        self.DataView.doubleClicked.connect(self.OnDoubleClicked)
         self.DataView.selectionModel().selectionChanged.connect(self.OnRowSelected)
         self.Model.dataChanged.connect(self.OnDataChanged)
 
@@ -113,8 +114,9 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         event.accept()
 
     # Overload ancestor method to activate/deactivate filters for table view
-    def exec_(self):
+    def exec_(self, enable_selection=False):
         self.dialog_visible = True
+        self.selection_enabled = enable_selection
         self.setFilter()
         res = super().exec_()
         self.dialog_visible = False
@@ -229,6 +231,14 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
                 self.SearchString.setText('')  # it will also call self.setFilter()
             else:
                 self.setFilter()
+
+    @Slot()
+    def OnDoubleClicked(self, index):
+        self.selected_id = self.DataView.model().record(index.row()).value('id')
+        self.p_selected_name = self.DataView.model().record(index.row()).value('name')
+        if self.selection_enabled:
+            self.setResult(QDialog.Accepted)
+            self.close()
 
     @Slot()
     def OnUpClick(self):
