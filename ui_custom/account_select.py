@@ -64,7 +64,7 @@ class AccountButton(QPushButton):
         ref_point = self.mapToGlobal(self.geometry().bottomLeft())
         self.dialog.setGeometry(ref_point.x(), ref_point.y(), self.dialog.width(), self.dialog.height())
         self.dialog.setFilter()
-        res = self.dialog.exec_()
+        res = self.dialog.exec_(enable_selection=True)
         if res:
             self.account_id = self.dialog.selected_id
 
