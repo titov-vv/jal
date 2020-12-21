@@ -1,5 +1,5 @@
-# ledger
-ledger is a project for personal finance tracking.
+# JAL
+Just Another Ledger is a project for personal finance tracking.
 
 *[English](README.md), [Русский](README.ru.md)*
 

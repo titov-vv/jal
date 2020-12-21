@@ -1,5 +1,5 @@
-# ledger
-ledger - это проект для учета личных финансов
+# JAL
+Just Another Ledger - это проект для учета личных финансов
 
 *[English](README.md), [Русский](README.ru.md)*
 
