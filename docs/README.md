@@ -25,8 +25,8 @@ It was designed to keep records of personal incomes/spendings and investments wi
     2. Authorization via login/password to FNS personal account or ESIA/Gosuslugi (no passwords are stored in the progam, only SessionId is stored - you may check in source code)
 
 ### Installation
-ledger was created to be portable - it doesn't require specific installation instructions. All you need is to have Python 3.8.1 or higher and satisfy dependencies listed below.
-Then you may download/clone code from [the GitHub repository](https://github.com/titov-vv/ledger) and start the program by running: `main.py` on Windows or `./main.py` on Linux or you may simply double click the filename if your system is set to launch python interpreter this way.
+jal was created to be portable - it doesn't require specific installation instructions. All you need is to have Python 3.8.1 or higher and satisfy dependencies listed below.
+Then you may download/clone code from [the GitHub repository](https://github.com/titov-vv/jal) and start the program by running: `jal.py` on Windows or `./jal.py` on Linux or you may simply double click the filename if your system is set to launch python interpreter this way.
 Database will be initialized automatically with minimal required set of data and you will be able to start use of the program.
 
 ### Update to newer version
@@ -38,7 +38,7 @@ In this case you need to use script `update_db_schema.py` from updates folder. E
 This will apply required changes to your database file (as usual it's a good idea to backup your `ledger.sqlite` before any activity)
 
 ### Dependencies
-ledger depends on:
+jal depends on:
 * [Qt for Python (PySide2)](https://wiki.qt.io/Qt_for_Python) *>=5.15* - GUI library (versions below 5.15 may cause problems with `uic` at least)
 * [pandas](https://pandas.pydata.org/) - different data operations
 * [lxml](https://lxml.de/) - html/xml-files import
@@ -53,29 +53,29 @@ ledger depends on:
 
 ### Screenshots
 Qt have a better look on Linux out of the box. Here is main program window:  
-![Main Window on Linux](https://github.com/titov-vv/ledger/blob/master/docs/img/main_linux.png?raw=true)
+![Main Window on Linux](https://github.com/titov-vv/jal/blob/master/docs/img/main_linux.png?raw=true)
 
 The same window on Windows - the same functions with a bit different look:  
-![Main Window on Windows](https://github.com/titov-vv/ledger/blob/master/docs/img/main_windows.png?raw=true)
+![Main Window on Windows](https://github.com/titov-vv/jal/blob/master/docs/img/main_windows.png?raw=true)
 
 Accounts are be arranged in groups (Cash, Cards, Investments, etc), each account holds one currency.
 Below is a view of main window where one account is chosen ('Mastercard') and account select/edit window is opened on top:  
-![One Account](https://github.com/titov-vv/ledger/blob/master/docs/img/one_account_view.png?raw=true)
+![One Account](https://github.com/titov-vv/jal/blob/master/docs/img/one_account_view.png?raw=true)
 
 Example of investment account view with Buy, Sell and Dividend operations recorded (there is an asset select/edit window on top):  
-![Investment Account](https://github.com/titov-vv/ledger/blob/master/docs/img/stocks_and_investment_account.png?raw=true)
+![Investment Account](https://github.com/titov-vv/jal/blob/master/docs/img/stocks_and_investment_account.png?raw=true)
 
 'Holdings' tab contains portfolio overview (You display account and portfolio balances for any date).
 Holdings are grouped by currencies and then by accounts.  
-![Holdings](https://github.com/titov-vv/ledger/blob/master/docs/img/investment_portfolio_holdings.png?raw=true)
+![Holdings](https://github.com/titov-vv/jal/blob/master/docs/img/investment_portfolio_holdings.png?raw=true)
 
 Examples of reports are below:
 Monthly incomes/spendings *(categories hierarchy is supported with sub-totals calculation)*  
-![Income/Spending report](https://github.com/titov-vv/ledger/blob/master/docs/img/report_income_spending.png?raw=true)
+![Income/Spending report](https://github.com/titov-vv/jal/blob/master/docs/img/report_income_spending.png?raw=true)
 Profit/Loss for investment account *(Assets value to be fixed, Returns include dividends and other payments)*  
-![Profit/Loss report](https://github.com/titov-vv/ledger/blob/master/docs/img/report_profit_loss.png?raw=true)
+![Profit/Loss report](https://github.com/titov-vv/jal/blob/master/docs/img/report_profit_loss.png?raw=true)
 List of all closed deals for investment account  
-![Deals report](https://github.com/titov-vv/ledger/blob/master/docs/img/report_deals.png?raw=true)
+![Deals report](https://github.com/titov-vv/jal/blob/master/docs/img/report_deals.png?raw=true)
 
  ---
 
