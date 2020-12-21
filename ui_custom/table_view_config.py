@@ -5,8 +5,7 @@ from PySide2.QtCore import QObject, SIGNAL, Slot
 from functools import partial
 from mapper_delegate import MapperDelegate
 from ui_custom.helpers import g_tr, UseSqlTable, ConfigureTableView, ConfigureDataMappers
-from ui_custom.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, ReferenceBoolDelegate, \
-    ReferenceIntDelegate, ReferenceLookupDelegate, ReferenceTimestampDelegate
+import ui_custom.reference_data as ui               # Full import due to "cyclic" reference
 
 
 class TableViewConfig:
@@ -196,12 +195,12 @@ class TableViewConfig:
                             [("id", None, 0, None, None),
                              ("name", g_tr('TableViewConfig', "Name"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
                              ("type_id", None, 0, None, None),
-                             ("currency_id", g_tr('TableViewConfig', "Currency"), None, None, ReferenceLookupDelegate),
-                             ("active", g_tr('TableViewConfig', "Act."), 32, None, ReferenceBoolDelegate),
+                             ("currency_id", g_tr('TableViewConfig', "Currency"), None, None, ui.ReferenceLookupDelegate),
+                             ("active", g_tr('TableViewConfig', "Act."), 32, None, ui.ReferenceBoolDelegate),
                              ("number", g_tr('TableViewConfig', "Account #"), None, None, None),
                              ("reconciled_on", g_tr('TableViewConfig', "Reconciled @"), ColumnWidth.FOR_DATETIME,
-                              None, ReferenceTimestampDelegate),
-                             ("organization_id", g_tr('TableViewConfig', "Bank"), None, None, ReferenceLookupDelegate)],
+                              None, ui.ReferenceTimestampDelegate),
+                             ("organization_id", g_tr('TableViewConfig', "Bank"), None, None, ui.ReferencePeerDelegate)],
                             "name",
                             ("active", g_tr('TableViewConfig', "Show inactive")),
                             False,
@@ -217,7 +216,7 @@ class TableViewConfig:
                            ("full_name", g_tr('TableViewConfig', "Name"), ColumnWidth.STRETCH, None, None),
                            ("isin", g_tr('TableViewConfig', "ISIN"), None, None, None),
                            ("web_id", g_tr('TableViewConfig', "WebID"), None, None, None),
-                           ("src_id", g_tr('TableViewConfig', "Data source"), None, None, ReferenceLookupDelegate)],
+                           ("src_id", g_tr('TableViewConfig', "Data source"), None, None, ui.ReferenceLookupDelegate)],
                           "full_name",
                           None,
                           False,
@@ -226,11 +225,11 @@ class TableViewConfig:
             ),
             self.PEERS: ("agents_ext",
                           g_tr('TableViewConfig', "Peers"),
-                          [("id", " ", 16, None, ReferenceTreeDelegate),
+                          [("id", " ", 16, None, ui.ReferenceTreeDelegate),
                            ("pid", None, 0, None, None),
                            ("name", g_tr('TableViewConfig', "Name"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
                            ("location", g_tr('TableViewConfig', "Location"), None, None, None),
-                           ("actions_count", g_tr('TableViewConfig', "Docs count"), None, None, ReferenceIntDelegate),
+                           ("actions_count", g_tr('TableViewConfig', "Docs count"), None, None, ui.ReferenceIntDelegate),
                            ("children_count", None, None, None, None)],
                           "name",
                           None,
@@ -239,10 +238,10 @@ class TableViewConfig:
             ),
             self.CATEGORIES: ("categories_ext",
                               g_tr('TableViewConfig', "Categories"),
-                              [("id", " ", 16, None, ReferenceTreeDelegate),
+                              [("id", " ", 16, None, ui.ReferenceTreeDelegate),
                                ("pid", None, 0, None, None),
                                ("name", g_tr('TableViewConfig', "Name"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
-                               ("often", g_tr('TableViewConfig', "Often"), None, None, ReferenceBoolDelegate),
+                               ("often", g_tr('TableViewConfig', "Often"), None, None, ui.ReferenceBoolDelegate),
                                ("special", None, 0, None, None),
                                ("children_count", None, None, None, None)],
                               "name",
@@ -264,7 +263,7 @@ class TableViewConfig:
                              [("id", None, 0, None, None),
                               ("name", g_tr('TableViewConfig', "Country"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
                               ("code", g_tr('TableViewConfig', "Code"), 50, None, None),
-                              ("tax_treaty", g_tr('TableViewConfig', "Tax Treaty"), None, None, ReferenceBoolDelegate)],
+                              ("tax_treaty", g_tr('TableViewConfig', "Tax Treaty"), None, None, ui.ReferenceBoolDelegate)],
                              None,
                              None,
                              False,
@@ -331,12 +330,12 @@ class TableViewConfig:
 
     @Slot()
     def show_dialog(self, dlg_id):
-        ReferenceDataDialog(self.parent.db,
-                            self.dialogs[dlg_id][self.DLG_TABLE],
-                            self.dialogs[dlg_id][self.DLG_COLUMNS],
-                            title=self.dialogs[dlg_id][self.DLG_TITLE],
-                            search_field=self.dialogs[dlg_id][self.DLG_SEARCH],
-                            toggle=self.dialogs[dlg_id][self.DLG_TOGGLE],
-                            tree_view=self.dialogs[dlg_id][self.DLG_TREE],
-                            relations=self.dialogs[dlg_id][self.DLG_RELATIONS]
-                            ).exec_()
+        ui.ReferenceDataDialog(self.parent.db,
+                               self.dialogs[dlg_id][self.DLG_TABLE],
+                               self.dialogs[dlg_id][self.DLG_COLUMNS],
+                               title=self.dialogs[dlg_id][self.DLG_TITLE],
+                               search_field=self.dialogs[dlg_id][self.DLG_SEARCH],
+                               toggle=self.dialogs[dlg_id][self.DLG_TOGGLE],
+                               tree_view=self.dialogs[dlg_id][self.DLG_TREE],
+                               relations=self.dialogs[dlg_id][self.DLG_RELATIONS]
+                               ).exec_()

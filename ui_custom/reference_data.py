@@ -7,6 +7,7 @@ from PySide2.QtWidgets import QDialog, QMessageBox
 from PySide2.QtWidgets import QStyledItemDelegate
 
 from ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
+import ui_custom.reference_selector as ui     # Full import due to "cyclic" reference
 from ui_custom.helpers import g_tr, UseSqlTable, ConfigureTableView, rel_idx
 from db.helpers import readSQL
 
@@ -351,3 +352,17 @@ class ReferenceTimestampDelegate(QStyledItemDelegate):
 class ReferenceLookupDelegate(QSqlRelationalDelegate):
     def __init__(self, parent=None):
         QSqlRelationalDelegate.__init__(self, parent)
+
+# -----------------------------------------------------------------------------------------------------------------------
+# Delegate to display tag editor
+class ReferencePeerDelegate(QSqlRelationalDelegate):
+    def __init__(self, parent=None):
+        QSqlRelationalDelegate.__init__(self, parent)
+
+    def createEditor(self, aParent, option, index):
+        peer_selector = ui.PeerSelector(aParent)
+        peer_selector.init_db(index.model().database())
+        return peer_selector
+
+    def setModelData(self, editor, model, index):
+        model.setData(index, editor.selected_id)
