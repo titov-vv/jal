@@ -10,5 +10,5 @@ uic -g python -o ./ui/ui_select_account_dlg.py ./ui/select_account_dlg.ui
 uic -g python -o ./ui/ui_slip_import_dlg.py ./ui/slip_import_dlg.ui
 uic -g python -o ./ui/ui_login_fns_dlg.py ./ui/login_fns_dlg.ui
 
-pylupdate5 -noobsolete -translate-function g_tr ledger.pro
+pylupdate5 -noobsolete -translate-function g_tr jal.pro
 

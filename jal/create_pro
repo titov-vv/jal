@@ -1,0 +1,2 @@
+echo "SOURCES = "$(find . -type f -name "*.py") > jal.pro
+echo "TRANSLATIONS = languages/en.ts languages/ru.ts" >> jal.pro

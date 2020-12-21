@@ -1,2 +1,0 @@
-echo "SOURCES = "$(find . -type f -name "*.py") > ledger.pro
-echo "TRANSLATIONS = languages/en.ts languages/ru.ts" >> ledger.pro
