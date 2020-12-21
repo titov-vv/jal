@@ -680,7 +680,7 @@ CREATE VIEW all_operations AS
                       sequence AS q ON q.type = 5 AND
                                        ca.id = q.operation_id
                       LEFT JOIN
-                      ledger_sums AS l ON l.sid = q.id AND
+                      ledger_sums AS l ON l.sid = q.id AND l.asset_id=ca.asset_id_new AND
                                           l.book_account = 4
                UNION ALL
                SELECT 3 AS type,
