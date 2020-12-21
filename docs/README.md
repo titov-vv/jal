@@ -25,7 +25,7 @@ It was designed to keep records of personal incomes/spendings and investments wi
     2. Authorization via login/password to FNS personal account or ESIA/Gosuslugi (no passwords are stored in the progam, only SessionId is stored - you may check in source code)
 
 ### Installation
-jal was created to be portable - it doesn't require specific installation instructions. All you need is to have Python 3.8.1 or higher and satisfy dependencies listed below.
+*jal* was created to be portable - it doesn't require specific installation instructions. All you need is to have Python 3.8.1 or higher and satisfy dependencies listed below.
 Then you may download/clone code from [the GitHub repository](https://github.com/titov-vv/jal) and start the program by running: `jal.py` on Windows or `./jal.py` on Linux or you may simply double click the filename if your system is set to launch python interpreter this way.
 Database will be initialized automatically with minimal required set of data and you will be able to start use of the program.
 

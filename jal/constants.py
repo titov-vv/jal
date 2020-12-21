@@ -1,8 +1,8 @@
 from PySide2.QtGui import QColor
 
 class Setup:
-    DB_PATH = "ledger.sqlite"
-    INIT_SCRIPT_PATH = 'ledger.sql'
+    DB_PATH = "jal.sqlite"
+    INIT_SCRIPT_PATH = 'jal_init.sql'
     TARGET_SCHEMA = 12
     CALC_TOLERANCE = 1e-10
     DISP_TOLERANCE = 1e-4
