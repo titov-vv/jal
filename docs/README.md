@@ -53,29 +53,29 @@ ledger depends on:
 
 ### Screenshots
 Qt have a better look on Linux out of the box. Here is main program window:  
-![Main Window on Linux](https://github.com/titov-vv/ledger/blob/master/screenshots/main_linux.png?raw=true)
+![Main Window on Linux](https://github.com/titov-vv/ledger/blob/master/docs/img/main_linux.png?raw=true)
 
 The same window on Windows - the same functions with a bit different look:  
-![Main Window on Windows](https://github.com/titov-vv/ledger/blob/master/screenshots/main_windows.png?raw=true)
+![Main Window on Windows](https://github.com/titov-vv/ledger/blob/master/docs/img/main_windows.png?raw=true)
 
 Accounts are be arranged in groups (Cash, Cards, Investments, etc), each account holds one currency.
 Below is a view of main window where one account is chosen ('Mastercard') and account select/edit window is opened on top:  
-![One Account](https://github.com/titov-vv/ledger/blob/master/screenshots/one_account_view.png?raw=true)
+![One Account](https://github.com/titov-vv/ledger/blob/master/docs/img/one_account_view.png?raw=true)
 
 Example of investment account view with Buy, Sell and Dividend operations recorded (there is an asset select/edit window on top):  
-![Investment Account](https://github.com/titov-vv/ledger/blob/master/screenshots/stocks_and_investment_account.png?raw=true)
+![Investment Account](https://github.com/titov-vv/ledger/blob/master/docs/img/stocks_and_investment_account.png?raw=true)
 
 'Holdings' tab contains portfolio overview (You display account and portfolio balances for any date).
 Holdings are grouped by currencies and then by accounts.  
-![Holdings](https://github.com/titov-vv/ledger/blob/master/screenshots/investment_portfolio_holdings.png?raw=true)
+![Holdings](https://github.com/titov-vv/ledger/blob/master/docs/img/investment_portfolio_holdings.png?raw=true)
 
 Examples of reports are below:
 Monthly incomes/spendings *(categories hierarchy is supported with sub-totals calculation)*  
-![Income/Spending report](https://github.com/titov-vv/ledger/blob/master/screenshots/report_income_spending.png?raw=true)
+![Income/Spending report](https://github.com/titov-vv/ledger/blob/master/docs/img/report_income_spending.png?raw=true)
 Profit/Loss for investment account *(Assets value to be fixed, Returns include dividends and other payments)*  
-![Profit/Loss report](https://github.com/titov-vv/ledger/blob/master/screenshots/report_profit_loss.png?raw=true)
+![Profit/Loss report](https://github.com/titov-vv/ledger/blob/master/docs/img/report_profit_loss.png?raw=true)
 List of all closed deals for investment account  
-![Deals report](https://github.com/titov-vv/ledger/blob/master/screenshots/report_deals.png?raw=true)
+![Deals report](https://github.com/titov-vv/ledger/blob/master/docs/img/report_deals.png?raw=true)
 
  ---
 

@@ -63,19 +63,19 @@ ledger использует следующие пакеты для своей р
 
 Отчет в виде файла Excel доступен по [ссылке](https://github.com/titov-vv/ledger/raw/master/docs/tax_rus_example.xlsx).    
 Пример страницы с отчетом о дивидендах:  
-![rus_tax_dividends](https://github.com/titov-vv/ledger/blob/master/screenshots/tax_rus_dividends.png?raw=true)
+![rus_tax_dividends](https://github.com/titov-vv/ledger/blob/master/docs/img/tax_rus_dividends.png?raw=true)
 
 Пример страницы с отчетом о сделках с иностранными ЦБ:  
-![rus_tax_deals](https://github.com/titov-vv/ledger/blob/master/screenshots/tax_rus_deals.png?raw=true)
+![rus_tax_deals](https://github.com/titov-vv/ledger/blob/master/docs/img/tax_rus_deals.png?raw=true)
 
 Пример страницы с отчетом о комиссиях брокера:  
-![rus_tax_fees](https://github.com/titov-vv/ledger/blob/master/screenshots/tax_rus_fees.png?raw=true)
+![rus_tax_fees](https://github.com/titov-vv/ledger/blob/master/docs/img/tax_rus_fees.png?raw=true)
 
 #### *Загрузка электронных чеков с сайта ФНС*
 
 Диалог авторизации (выбрана страница с авторизацией через Госуслуги):  
-![FSN authorization dialog](https://github.com/titov-vv/ledger/blob/master/screenshots/fns_auth_dialog.png?raw=true)
+![FSN authorization dialog](https://github.com/titov-vv/ledger/blob/master/docs/img/fns_auth_dialog.png?raw=true)
 
 Диалог импорта чека:  
-![Electronic slip import dialog](https://github.com/titov-vv/ledger/blob/master/screenshots/slip_import.png?raw=true) 
+![Electronic slip import dialog](https://github.com/titov-vv/ledger/blob/master/docs/img/slip_import.png?raw=true) 
 
