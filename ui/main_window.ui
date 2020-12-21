@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Ledger</string>
+   <string>jal</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="maximumSize">
