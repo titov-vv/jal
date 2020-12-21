@@ -347,8 +347,7 @@ class TaxesRus:
                        "LEFT JOIN accounts AS c ON c.id = :account_id "
                        "LEFT JOIN quotes AS q ON a.timestamp >= q.timestamp AND c.currency_id=q.asset_id "
                        "LEFT JOIN action_details AS d ON d.pid=a.id "
-                       "WHERE a.timestamp>=:begin AND a.timestamp<:end "
-                       "AND a.account_id=:account_id AND d.note LIKE '%MONTHLY%' "
+                       "WHERE a.timestamp>=:begin AND a.timestamp<:end AND a.account_id=:account_id "
                        "GROUP BY a.id",
                        [(":begin", begin), (":end", end), (":account_id", account_id)])
         self.db.commit()
@@ -372,8 +371,7 @@ class TaxesRus:
                            "LEFT JOIN accounts AS c ON c.id = :account_id "
                            "LEFT JOIN t_last_dates AS ld ON a.id=ld.ref_id "
                            "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND c.currency_id=q.asset_id "
-                           "WHERE a.timestamp>=:begin AND a.timestamp<:end "
-                           "AND a.account_id=:account_id AND d.note LIKE '%MONTHLY%' ",
+                           "WHERE a.timestamp>=:begin AND a.timestamp<:end AND a.account_id=:account_id",
                            [(":begin", begin), (":end", end), (":account_id", account_id)])
         row = 9
         amount_rub_sum = 0
