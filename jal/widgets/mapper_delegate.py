@@ -4,9 +4,9 @@ from PySide2.QtSql import QSqlRelationalDelegate
 from PySide2.QtWidgets import QLineEdit
 from PySide2.QtGui import QDoubleValidator
 
-from constants import Setup
-from ui_custom.reference_selector import CategorySelector
-from ui_custom.reference_selector import TagSelector
+from jal.constants import Setup
+from jal.ui_custom.reference_selector import CategorySelector
+from jal.ui_custom.reference_selector import TagSelector
 
 
 # -----------------------------------------------------------------------------------------------------------------------

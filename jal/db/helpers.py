@@ -1,7 +1,7 @@
 import logging
-from constants import Setup
+from jal.constants import Setup
 from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery
-from db.backup_restore import loadDbFromSQL
+from jal.db.backup_restore import loadDbFromSQL
 
 # No translation of the file because these routines might be used before QApplication initialization
 class LedgerInitError:

@@ -364,62 +364,62 @@
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../ledger.py" line="79"/>
+        <location filename="../db/ledger.py" line="79"/>
         <source>Balance, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="96"/>
+        <location filename="../db/ledger.py" line="96"/>
         <source>Value, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="552"/>
+        <location filename="../db/ledger.py" line="552"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="552"/>
+        <location filename="../db/ledger.py" line="552"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="557"/>
+        <location filename="../db/ledger.py" line="557"/>
         <source>Re-build ledger from: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="590"/>
+        <location filename="../db/ledger.py" line="590"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="590"/>
+        <location filename="../db/ledger.py" line="590"/>
         <source>, new frontier: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="582"/>
+        <location filename="../db/ledger.py" line="582"/>
         <source>Processed </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="582"/>
+        <location filename="../db/ledger.py" line="582"/>
         <source>k records, current frontier: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="445"/>
+        <location filename="../db/ledger.py" line="445"/>
         <source>Conversion failed. Asset amount is not enogh. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="241"/>
+        <location filename="../db/ledger.py" line="241"/>
         <source>Can&apos;t process dividend as bank isn&apos;t set for investment account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ledger.py" line="400"/>
+        <location filename="../db/ledger.py" line="400"/>
         <source>Can&apos;t process trade as bank isn&apos;t set for investment account</source>
         <translation type="unfinished"></translation>
     </message>
@@ -900,48 +900,48 @@
 <context>
     <name>LedgerOperationsView</name>
     <message>
-        <location filename="../operations.py" line="166"/>
+        <location filename="../widgets/operations.py" line="166"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../operations.py" line="166"/>
+        <location filename="../widgets/operations.py" line="166"/>
         <source>Are you sure to delete selected transacion?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../operations.py" line="225"/>
+        <location filename="../widgets/operations.py" line="225"/>
         <source>You have unsaved changes</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../operations.py" line="225"/>
+        <location filename="../widgets/operations.py" line="225"/>
         <source> has uncommitted changes,
 do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../operations.py" line="250"/>
+        <location filename="../widgets/operations.py" line="250"/>
         <source>Submit failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../operations.py" line="256"/>
+        <location filename="../widgets/operations.py" line="256"/>
         <source>Details submit failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../operations.py" line="311"/>
+        <location filename="../widgets/operations.py" line="311"/>
         <source>Reconcile</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../operations.py" line="313"/>
+        <location filename="../widgets/operations.py" line="313"/>
         <source>Copy</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../operations.py" line="315"/>
+        <location filename="../widgets/operations.py" line="315"/>
         <source>Delete</source>
         <translation></translation>
     </message>
@@ -995,53 +995,53 @@ do you want to save it?</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../main_window.py" line="160"/>
+        <location filename="../widgets/main_window.py" line="160"/>
         <source>Select directory to save backup</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="170"/>
+        <location filename="../widgets/main_window.py" line="170"/>
         <source>Data restored</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="165"/>
+        <location filename="../widgets/main_window.py" line="165"/>
         <source>Select directory to restore from</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="258"/>
+        <location filename="../widgets/main_window.py" line="258"/>
         <source>Quotes download completed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="264"/>
+        <location filename="../widgets/main_window.py" line="264"/>
         <source>Statement load completed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="269"/>
+        <location filename="../widgets/main_window.py" line="269"/>
         <source>Statement load failed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="150"/>
+        <location filename="../widgets/main_window.py" line="150"/>
         <source>Restart required</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="150"/>
+        <location filename="../widgets/main_window.py" line="150"/>
         <source>Language was changed to </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="170"/>
+        <location filename="../widgets/main_window.py" line="170"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="170"/>
+        <location filename="../widgets/main_window.py" line="170"/>
         <source>Database was loaded from the backup.
 </source>
         <translation></translation>
@@ -1050,82 +1050,82 @@ Application will be terminated now</source>
 <context>
     <name>OperationsDelegate</name>
     <message>
-        <location filename="../view_delegate.py" line="423"/>
+        <location filename="../widgets/view_delegate.py" line="423"/>
         <source>Tax: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="390"/>
+        <location filename="../widgets/view_delegate.py" line="390"/>
         <source>Symbol change {old} -&gt; {new}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="392"/>
+        <location filename="../widgets/view_delegate.py" line="392"/>
         <source>Spin-off {after} {new} from {before} {old}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="393"/>
+        <location filename="../widgets/view_delegate.py" line="393"/>
         <source>Merger {before} {old} into {after} {new}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="391"/>
+        <location filename="../widgets/view_delegate.py" line="391"/>
         <source>Split {old} {before} into {after}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="420"/>
+        <location filename="../widgets/view_delegate.py" line="420"/>
         <source>Error. Zero rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="657"/>
+        <location filename="../widgets/view_delegate.py" line="657"/>
         <source>Symbol change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="658"/>
+        <location filename="../widgets/view_delegate.py" line="658"/>
         <source>Split</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="659"/>
+        <location filename="../widgets/view_delegate.py" line="659"/>
         <source>Spin-off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="660"/>
+        <location filename="../widgets/view_delegate.py" line="660"/>
         <source>Merger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="671"/>
+        <location filename="../widgets/view_delegate.py" line="671"/>
         <source> Opened with </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="673"/>
+        <location filename="../widgets/view_delegate.py" line="673"/>
         <source> Closed with </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="677"/>
+        <location filename="../widgets/view_delegate.py" line="677"/>
         <source> Long</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="679"/>
+        <location filename="../widgets/view_delegate.py" line="679"/>
         <source> Short</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="394"/>
+        <location filename="../widgets/view_delegate.py" line="394"/>
         <source>Stock dividend: {after} {new}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../view_delegate.py" line="661"/>
+        <location filename="../widgets/view_delegate.py" line="661"/>
         <source>Stock dividend</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1682,22 +1682,22 @@ Application will be terminated now</source>
 <context>
     <name>TableViewConfig</name>
     <message>
-        <location filename="../main_window.py" line="76"/>
+        <location filename="../widgets/main_window.py" line="76"/>
         <source>Income / Spending</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="79"/>
+        <location filename="../widgets/main_window.py" line="79"/>
         <source>Trade</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="82"/>
+        <location filename="../widgets/main_window.py" line="82"/>
         <source>Dividend</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="85"/>
+        <location filename="../widgets/main_window.py" line="85"/>
         <source>Transfer</source>
         <translation></translation>
     </message>
@@ -1937,7 +1937,7 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main_window.py" line="88"/>
+        <location filename="../widgets/main_window.py" line="88"/>
         <source>Corp. Action</source>
         <translation type="unfinished"></translation>
     </message>

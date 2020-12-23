@@ -2,13 +2,13 @@ import time
 from datetime import datetime
 import xlsxwriter
 import logging
-from constants import TransactionType, CorporateAction
-from reports.helpers import xslxFormat, xlsxWriteRow
-from ui_custom.helpers import g_tr
-from db.helpers import executeSQL, readSQLrecord, readSQL
+from jal.constants import TransactionType, CorporateAction
+from jal.reports.helpers import xslxFormat, xlsxWriteRow
+from jal.ui_custom.helpers import g_tr
+from jal.db.helpers import executeSQL, readSQLrecord, readSQL
 from PySide2.QtWidgets import QDialog, QFileDialog
 from PySide2.QtCore import Property, Slot
-from ui.ui_tax_export_dlg import Ui_TaxExportDlg
+from jal.ui.ui_tax_export_dlg import Ui_TaxExportDlg
 
 
 #-----------------------------------------------------------------------------------------------------------------------

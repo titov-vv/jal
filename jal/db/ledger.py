@@ -1,14 +1,14 @@
 import logging
 
 from datetime import datetime
-from constants import Setup, BookAccount, TransactionType, ActionSubtype, TransferSubtype, CorporateAction, \
+from jal.constants import Setup, BookAccount, TransactionType, ActionSubtype, TransferSubtype, CorporateAction, \
     PredefinedCategory, PredefinedPeer
 from PySide2.QtCore import Qt, QDate, QDateTime
 from PySide2.QtWidgets import QDialog, QMessageBox
-from db.helpers import executeSQL, readSQL, readSQLrecord
-from db.routines import calculateBalances, calculateHoldings
-from ui_custom.helpers import g_tr
-from ui.ui_rebuild_window import Ui_ReBuildDialog
+from jal.db.helpers import executeSQL, readSQL, readSQLrecord
+from jal.db.routines import calculateBalances, calculateHoldings
+from jal.ui_custom.helpers import g_tr
+from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
 
 
 class RebuildDialog(QDialog, Ui_ReBuildDialog):

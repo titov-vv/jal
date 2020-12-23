@@ -2,7 +2,7 @@ import os
 from shutil import copyfile
 
 from constants import Setup
-from db.helpers import init_and_check_db
+from jal.db.helpers import init_and_check_db
 
 def test_db_creation(tmp_path):
     # Prepare environment

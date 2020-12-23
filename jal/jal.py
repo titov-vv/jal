@@ -6,8 +6,9 @@ import logging
 import traceback
 from PySide2.QtCore import QTranslator
 from PySide2.QtWidgets import QApplication
-from main_window import MainWindow, AbortWindow
-from db.helpers import init_and_check_db, LedgerInitError, get_language
+from PySide2.QtSql import QSqlDatabase
+from jal.widgets.main_window import MainWindow, AbortWindow
+from jal.db.helpers import init_and_check_db, LedgerInitError, get_language
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -18,7 +19,7 @@ def exception_logger(exctype, value, tb):
 
 
 #-----------------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
+def main(args=None):
     sys.excepthook = exception_logger
     os.environ['QT_MAC_WANTS_LAYER'] = '1'    # Workaround for https://bugreports.qt.io/browse/QTBUG-87014
 
@@ -28,11 +29,11 @@ if __name__ == "__main__":
     if error.code == LedgerInitError.EmptyDbInitialized:
         db, error = init_and_check_db(own_path)
 
+    app = QApplication([])
     language = get_language(db)
-    translator = QTranslator()
+    translator = QTranslator(app)
     language_file = own_path + "languages" + os.sep + language + '.qm'
     translator.load(language_file)
-    app = QApplication([])
     app.installTranslator(translator)
 
     if db is None:
@@ -41,4 +42,13 @@ if __name__ == "__main__":
         window = MainWindow(db, own_path, language)
     window.show()
 
-    sys.exit(app.exec_())
+    app.exec_()
+    app.removeTranslator(translator)
+
+    db.close()
+    connection_name = db.connectionName()
+    QSqlDatabase.removeDatabase(connection_name)
+
+#-----------------------------------------------------------------------------------------------------------------------
+if __name__ == "__main__":
+    main()

@@ -11,16 +11,16 @@ except ImportError:
     pass   # We should not be in this module as dependencies have been checked in main_window.py and calls are disabled
 
 
-from PySide2.QtCore import Qt, Slot, Signal, QDateTime, QBuffer, QThread, QAbstractTableModel, QModelIndex
+from PySide2.QtCore import Qt, Slot, Signal, QDateTime, QBuffer, QThread, QAbstractTableModel
 from PySide2.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView
 # This QCamera staff ran good on Windows but didn't fly on Linux from the box until 'cheese' installation
 from PySide2.QtMultimedia import QCameraInfo, QCamera, QCameraImageCapture, QVideoFrame
-from ui_custom.helpers import g_tr, dependency_present
-from db.helpers import executeSQL, readSQL
-from data_import.slips_tax import SlipsTaxAPI
-from view_delegate import SlipLinesPandasDelegate
-from ui.ui_slip_import_dlg import Ui_ImportSlipDlg
-from data_import.category_recognizer import recognize_categories
+from jal.ui_custom.helpers import g_tr, dependency_present
+from jal.db.helpers import executeSQL, readSQL
+from jal.data_import.slips_tax import SlipsTaxAPI
+from jal.widgets.view_delegate import SlipLinesPandasDelegate
+from jal.ui.ui_slip_import_dlg import Ui_ImportSlipDlg
+from jal.data_import.category_recognizer import recognize_categories
 
 
 #-----------------------------------------------------------------------------------------------------------------------

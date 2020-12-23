@@ -6,10 +6,10 @@ from PySide2.QtSql import QSqlRelationalDelegate
 from PySide2.QtWidgets import QDialog, QMessageBox
 from PySide2.QtWidgets import QStyledItemDelegate
 
-from ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
-import ui_custom.reference_selector as ui     # Full import due to "cyclic" reference
-from ui_custom.helpers import g_tr, UseSqlTable, ConfigureTableView, rel_idx
-from db.helpers import readSQL
+from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
+import jal.ui_custom.reference_selector as ui     # Full import due to "cyclic" reference
+from jal.ui_custom.helpers import g_tr, UseSqlTable, ConfigureTableView, rel_idx
+from jal.db.helpers import readSQL
 
 
 # --------------------------------------------------------------------------------------------------------------

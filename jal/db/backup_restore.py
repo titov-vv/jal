@@ -1,10 +1,10 @@
-from constants import Setup
+from jal.constants import Setup
 import sqlite3
 import pandas as pd
 import math
 import logging
 
-from ui_custom.helpers import g_tr
+from jal.ui_custom.helpers import g_tr
 
 # ------------------------------------------------------------------------------
 backup_list = ["settings", "tags", "categories", "agents", "assets", "accounts", "countries", "corp_actions",

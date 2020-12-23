@@ -1,6 +1,6 @@
 import datetime
 
-from constants import ColumnWidth
+from jal.constants import ColumnWidth
 from PySide2.QtCore import QCoreApplication, Qt, QStringListModel, QByteArray
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtWidgets import QHeaderView, QDataWidgetMapper, QFrame, QDateTimeEdit

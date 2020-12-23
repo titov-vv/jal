@@ -1,10 +1,10 @@
 from PySide2.QtCore import Qt, Signal, Slot, Property
 from PySide2.QtWidgets import QPushButton, QComboBox, QMenu
 from PySide2.QtSql import QSqlTableModel
-from ui_custom.helpers import g_tr
-from db.helpers import  get_account_name, get_field_by_id_from_table
+from jal.ui_custom.helpers import g_tr
+from jal.db.helpers import  get_account_name, get_field_by_id_from_table
 
-from ui_custom.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
+from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
     ReferenceLookupDelegate, ReferenceTimestampDelegate
 
 

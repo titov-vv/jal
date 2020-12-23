@@ -5,10 +5,10 @@ from PySide2.QtWidgets import QStyledItemDelegate
 from PySide2.QtCore import Qt, QSize
 from PySide2.QtGui import QTextDocument, QFont
 
-from constants import TransactionType, TransferSubtype, CustomColor, CorporateAction
-from ui_custom.helpers import g_tr, formatFloatLong
-from ui_custom.reference_selector import CategorySelector, TagSelector
-from db.helpers import get_category_name
+from jal.constants import TransactionType, TransferSubtype, CustomColor, CorporateAction
+from jal.ui_custom.helpers import g_tr, formatFloatLong
+from jal.ui_custom.reference_selector import CategorySelector, TagSelector
+from jal.db.helpers import get_category_name
 
 
 class BalanceAccountDelegate(QStyledItemDelegate):

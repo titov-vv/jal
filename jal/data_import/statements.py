@@ -8,11 +8,11 @@ from lxml import etree
 from PySide2.QtCore import QObject, Signal, Slot
 from PySide2.QtSql import QSqlTableModel
 from PySide2.QtWidgets import QDialog, QFileDialog, QMessageBox
-from constants import Setup, TransactionType, PredefinedAsset, PredefinedCategory, CorporateAction
-from db.helpers import executeSQL, readSQL, get_country_by_code
-from ui_custom.helpers import g_tr
-from ui.ui_add_asset_dlg import Ui_AddAssetDialog
-from ui.ui_select_account_dlg import Ui_SelectAccountDlg
+from jal.constants import Setup, TransactionType, PredefinedAsset, PredefinedCategory, CorporateAction
+from jal.db.helpers import executeSQL, readSQL, get_country_by_code
+from jal.ui_custom.helpers import g_tr
+from jal.ui.ui_add_asset_dlg import Ui_AddAssetDialog
+from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
 
 
 #-----------------------------------------------------------------------------------------------------------------------

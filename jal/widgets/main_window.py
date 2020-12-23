@@ -6,20 +6,20 @@ from PySide2.QtCore import Slot, QDateTime, QDir, QLocale
 from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QMainWindow, QFileDialog, QMenu, QMessageBox, QLabel, QActionGroup, QAction
 
-from ui.ui_main_window import Ui_LedgerMainWindow
-from ui.ui_abort_window import Ui_AbortWindow
-from ui_custom.helpers import g_tr, VLine, ManipulateDate, dependency_present
-from ui_custom.table_view_config import TableViewConfig
-from constants import TransactionType
-from db.backup_restore import MakeBackup, RestoreBackup
-from db.helpers import get_dbfilename, get_account_id, get_base_currency, executeSQL
-from data_import.downloader import QuoteDownloader
-from ledger import Ledger
-from operations import LedgerOperationsView, LedgerInitValues
-from reports.reports import Reports, ReportType
-from data_import.statements import StatementLoader
-from reports.taxes import TaxesRus
-from data_import.slips import ImportSlipDialog
+from jal.ui.ui_main_window import Ui_LedgerMainWindow
+from jal.ui.ui_abort_window import Ui_AbortWindow
+from jal.ui_custom.helpers import g_tr, VLine, ManipulateDate, dependency_present
+from jal.ui_custom.table_view_config import TableViewConfig
+from jal.constants import TransactionType
+from jal.db.backup_restore import MakeBackup, RestoreBackup
+from jal.db.helpers import get_dbfilename, get_account_id, get_base_currency, executeSQL
+from jal.data_import.downloader import QuoteDownloader
+from jal.db.ledger import Ledger
+from jal.widgets.operations import LedgerOperationsView, LedgerInitValues
+from jal.reports.reports import Reports, ReportType
+from jal.data_import.statements import StatementLoader
+from jal.reports.taxes import TaxesRus
+from jal.data_import.slips import ImportSlipDialog
 
 
 #-----------------------------------------------------------------------------------------------------------------------

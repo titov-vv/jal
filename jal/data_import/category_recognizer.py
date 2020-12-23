@@ -1,6 +1,6 @@
 import re
 import pandas as pd
-from db.helpers import executeSQL, readSQLrecord
+from jal.db.helpers import executeSQL, readSQLrecord
 
 #----------------------------------------------------------------------------------------------------------------------
 

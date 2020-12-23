@@ -1,11 +1,11 @@
-from view_delegate import *
-from constants import ColumnWidth
+from jal.widgets.view_delegate import *
+from jal.constants import ColumnWidth
 from PySide2 import QtWidgets
 from PySide2.QtCore import QObject, SIGNAL, Slot
 from functools import partial
-from mapper_delegate import MapperDelegate
-from ui_custom.helpers import g_tr, UseSqlTable, ConfigureTableView, ConfigureDataMappers
-import ui_custom.reference_data as ui               # Full import due to "cyclic" reference
+from jal.widgets.mapper_delegate import MapperDelegate
+from jal.ui_custom.helpers import g_tr, UseSqlTable, ConfigureTableView, ConfigureDataMappers
+import jal.ui_custom.reference_data as ui               # Full import due to "cyclic" reference
 
 
 class TableViewConfig:

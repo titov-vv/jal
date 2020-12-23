@@ -12,14 +12,14 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
-from ui_custom.reference_selector import AccountSelector
-from ui_custom.reference_selector import AssetSelector
-from ui_custom.account_select import AccountButton
-from ui_custom.reference_selector import PeerSelector
-from ui_custom.log_viewer import LogViewer
-from ui_custom.account_select import ComboBoxDB
-from ui_custom.amount_editor import AmountEdit
-from ui_custom.reference_selector import CategorySelector
+from jal.ui_custom.reference_selector import AccountSelector
+from jal.ui_custom.reference_selector import AssetSelector
+from jal.ui_custom.account_select import AccountButton
+from jal.ui_custom.reference_selector import PeerSelector
+from jal.ui_custom.log_viewer import LogViewer
+from jal.ui_custom.account_select import ComboBoxDB
+from jal.ui_custom.amount_editor import AmountEdit
+from jal.ui_custom.reference_selector import CategorySelector
 
 
 class Ui_LedgerMainWindow(object):

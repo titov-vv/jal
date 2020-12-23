@@ -13,8 +13,8 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 from PySide2.QtMultimediaWidgets import QVideoWidget
-from ui_custom.reference_selector import AccountSelector
-from ui_custom.reference_selector import PeerSelector
+from jal.ui_custom.reference_selector import AccountSelector
+from jal.ui_custom.reference_selector import PeerSelector
 
 
 class Ui_ImportSlipDlg(object):

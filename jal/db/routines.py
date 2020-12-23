@@ -1,5 +1,5 @@
-from constants import Setup, BookAccount
-from db.helpers import executeSQL
+from jal.constants import Setup, BookAccount
+from jal.db.helpers import executeSQL
 
 
 # Populate table balances with data calculated for given parameters:
