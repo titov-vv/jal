@@ -42,7 +42,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.currentLanguage = language
 
         self.ledger = Ledger(self.db)
-        self.downloader = QuoteDownloader(self.db)
+        self.downloader = QuoteDownloader(self.db)  # TODO Get rid of 'QSqlDatabasePrivate::removeDatabase: connection 'qt_sql_default_connection' is still in use, all queries will cease to work.' that starts from this line
         self.downloader.download_completed.connect(self.onQuotesDownloadCompletion)
         self.taxes = TaxesRus(self.db)
         self.statements = StatementLoader(self, self.db)

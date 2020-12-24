@@ -6,7 +6,6 @@ import logging
 import traceback
 from PySide2.QtCore import QTranslator
 from PySide2.QtWidgets import QApplication
-from PySide2.QtSql import QSqlDatabase
 from jal.widgets.main_window import MainWindow, AbortWindow
 from jal.db.helpers import init_and_check_db, LedgerInitError, get_language
 
@@ -19,7 +18,7 @@ def exception_logger(exctype, value, tb):
 
 
 #-----------------------------------------------------------------------------------------------------------------------
-def main(args=None):
+def main():
     sys.excepthook = exception_logger
     os.environ['QT_MAC_WANTS_LAYER'] = '1'    # Workaround for https://bugreports.qt.io/browse/QTBUG-87014
 
@@ -45,9 +44,6 @@ def main(args=None):
     app.exec_()
     app.removeTranslator(translator)
 
-    db.close()
-    connection_name = db.connectionName()
-    QSqlDatabase.removeDatabase(connection_name)
 
 #-----------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
