@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import sys
 import os
 import logging
@@ -43,8 +41,3 @@ def main():
 
     app.exec_()
     app.removeTranslator(translator)
-
-
-#-----------------------------------------------------------------------------------------------------------------------
-if __name__ == "__main__":
-    main()

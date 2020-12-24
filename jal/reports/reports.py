@@ -120,7 +120,7 @@ class Reports(QObject):
             self.reports[report_type][SHOW_REPORT](report_type)
 
     def showSqlQueryReport(self, report_type):
-        self.model = UseSqlQuery(self.db, self.query, self.reports[report_type][REPORT_COLUMNS])
+        self.model = UseSqlQuery(self, self.query, self.reports[report_type][REPORT_COLUMNS])
         self.delegates = ConfigureTableView(self.table_view, self.model, self.reports[report_type][REPORT_COLUMNS])
         self.model.select()
 

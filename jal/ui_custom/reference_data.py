@@ -49,7 +49,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
         self.db = db
         self.table = table
-        self.Model = UseSqlTable(self.db, self.table, columns, relations)
+        self.Model = UseSqlTable(self, self.table, columns, relations)
         self.delegates = ConfigureTableView(self.DataView, self.Model, columns)
         # Storage of delegates inside class is required to keep ownership and prevent SIGSEGV as
         # https://doc.qt.io/qt-5/qabstractitemview.html#setItemDelegateForColumn says:

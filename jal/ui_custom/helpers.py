@@ -153,11 +153,11 @@ class ManipulateDate:
 # relations - list of tuples that define lookup relations to other tables in database:
 #             [(KEY_FEILD, LOOKUP_TABLE, FOREIGN_KEY, LOOKUP_FIELD), ...]
 # Returns QSqlTableModel/QSqlRelationalQueryModel
-def UseSqlTable(db, table_name, columns, relations):
+def UseSqlTable(parent, table_name, columns, relations):
     if relations:
-        model = QSqlRelationalTableModel(db=db)
+        model = QSqlRelationalTableModel(parent=parent, db=parent.db)
     else:
-        model = QSqlTableModel(db=db)
+        model = QSqlTableModel(parent=parent, db=parent.db)
     model.setTable(table_name)
     model.setEditStrategy(QSqlTableModel.OnManualSubmit)
     if relations:
@@ -181,8 +181,8 @@ def UseSqlTable(db, table_name, columns, relations):
 # sort order is ignored as it might be set by Query itself
 # delegate is a function for custom paint and editors
 # Returns : QSqlTableModel
-def UseSqlQuery(db, query, columns):
-    model = QSqlTableModel(db=db)
+def UseSqlQuery(parent, query, columns):
+    model = QSqlTableModel(parent=parent, db=parent.db)
     model.setQuery(query)
     for column in columns:
         if column[hcol_idx.DISPLAY_NAME]:

@@ -133,6 +133,7 @@ class TableViewConfig:
             self.TRANSFERS: None,
             self.CORP_ACTIONS: None
         }
+        self.models = {}
         self.mappers = {}           # Here mapper objects will be stored
         self.widget_mappers = {
             self.BALANCES: None,
@@ -310,17 +311,17 @@ class TableViewConfig:
         pass
 
     def configure(self, i):
-        model = UseSqlTable(self.parent.db, self.table_names[i], self.table_view_columns[i],
+        self.models[i] = UseSqlTable(self.parent, self.table_names[i], self.table_view_columns[i],
                             relations=self.table_relations[i])
         if self.views[i]:
-            delegates = ConfigureTableView(self.views[i], model, self.table_view_columns[i])
+            delegates = ConfigureTableView(self.views[i], self.models[i], self.table_view_columns[i])
             self.delegates_storage.append(delegates)
             self.views[i].show()
         if self.widget_mappers[i]:
-            self.mappers[i] = ConfigureDataMappers(model, self.widget_mappers[i], MapperDelegate)
+            self.mappers[i] = ConfigureDataMappers(self.models[i], self.widget_mappers[i], MapperDelegate)
         else:
             self.mappers[i] = None
-        model.select()
+        self.models[i].select()
 
     def configure_all(self):
         for table in self.table_names:
