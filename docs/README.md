@@ -1,5 +1,7 @@
-# JAL
+# JAL 
 Just Another Ledger is a project for personal finance tracking.
+
+[![image](http://img.shields.io/pypi/v/jal.svg)](https://pypi.python.org/pypi/jal/)
 
 *[English](README.md), [Русский](README.ru.md)*
 
