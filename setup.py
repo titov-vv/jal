@@ -6,6 +6,8 @@ setup(
     version="2020.12.1",
     author_email="jal@gmx.ru",
     description="Just Another Ledger - project to track personal financial records",
+    long_description="""Just Another Ledger is a project for personal finance tracking. 
+    It was designed to keep records of personal incomes/spendings and investments with up-to-date information about account's balances and portfolio value.""",
     packages=find_packages(),
     package_dir={'jal': 'jal'},
     python_requires=">=3.8.1",
