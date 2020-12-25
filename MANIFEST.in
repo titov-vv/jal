@@ -1,0 +1,2 @@
+include jal/languages/*.png jal/languages/*.qm
+include jal/*.sql jal/updates/*.sql
