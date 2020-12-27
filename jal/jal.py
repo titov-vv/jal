@@ -41,3 +41,6 @@ def main():
 
     app.exec_()
     app.removeTranslator(translator)
+
+if __name__ == "__main__":
+    main()
