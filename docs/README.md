@@ -48,7 +48,7 @@ This will apply required changes to your database file (as usual it's a good ide
 
 ### Dependencies
 jal depends on:
-* [Qt for Python (PySide2)](https://wiki.qt.io/Qt_for_Python) *>=5.15* - GUI library (versions below 5.15 may cause problems with `uic` at least)
+* [Qt for Python (PySide2)](https://wiki.qt.io/Qt_for_Python) *>=5.15.2* - GUI library
 * [pandas](https://pandas.pydata.org/) - different data operations
 * [lxml](https://lxml.de/) - html/xml-files import
 * [requests](https://requests.readthedocs.io/) - stock quotes update from the internet; electronic slip download
