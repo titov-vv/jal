@@ -3,7 +3,7 @@ Just Another Ledger is a project for personal finance tracking.
 
 [![image](http://img.shields.io/pypi/v/jal.svg)](https://pypi.python.org/pypi/jal/)
 
-*[English](README.md), [Русский](README.ru.md)*
+*[English](https://github.com/titov-vv/jal/blob/master/docs/README.md), [Русский](https://github.com/titov-vv/jal/blob/master/docs/README.ru.md)*
 
 It was designed to keep records of personal incomes/spendings and investments with up-to-date information about account's balances and portfolio value.
 
@@ -30,11 +30,13 @@ It was designed to keep records of personal incomes/spendings and investments wi
 *jal* was created to be portable and cross-platform. Thus you have several ways to install and run the program:
 - You may get file archive from [the GitHub repository](https://github.com/titov-vv/jal), unpack it into suitable directory on your PC and use `run.py` to start application.
 In order to succeed this way you need to have Python 3.8.1 and satisfy all dependencies listed below in *Dependencies* section.
-- You may use installation package with `pip install jal` command. It will take care about dependencies automatically and should install `jal` entry point somewhere around your home directory.
-So if everything went fine you should be able to run application with single `jal` command.
+- You may use installation package with `pip install jal` command. It will take care about dependencies automatically and will install `jal` entry point<sup>*</sup> to run the program.
+Alternatively you may use `python -m jal.jal` if you can't run application with `jal` entry point.
 - You may mix two methods together - download source files from github and then use `setup.py` for preferred way of installation.
 
 Database will be initialized automatically with minimal required set of data and you will be able to start use the program.
+
+<sup>*</sup> - entry point location is platform dependable. Eg. on Linux it might be in `~/.local/run`, on Windows - `Scripts` directory of your python installation.
 
 ### Update to newer version
 You may get message _"Database schema version is outdated. Please execute update script."_ after upgrade to newer version.
