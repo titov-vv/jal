@@ -122,7 +122,7 @@ class TaxesRus:
             5: ("Доход, RUB", formats.ColumnHeader(), 12, 0, 0),
             6: ("Налог упл., USD", formats.ColumnHeader(), 12, 0, 0),
             7: ("Налог упл., RUB", formats.ColumnHeader(), 12, 0, 0),
-            8: ("Налок к уплате, RUB", formats.ColumnHeader(), 12, 0, 0),
+            8: ("Налог к уплате, RUB", formats.ColumnHeader(), 12, 0, 0),
             9: ("Страна", formats.ColumnHeader(), 20, 0, 0),
             10: ("СОИДН", formats.ColumnHeader(), 7, 0, 0)
         }
