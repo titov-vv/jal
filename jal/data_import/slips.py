@@ -77,6 +77,9 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
     qr_data_validated = Signal()
     json_data_available = Signal()
 
+    OPERATION_PURCHASE = 1
+    OPERATION_RETURN = 2
+
     QR_pattern = "^t=(.*)&s=(.*)&fn=(.*)&i=(.*)&fp=(.*)&n=(.*)$"
     timestamp_patterns = ['yyyyMMddTHHmm', 'yyyyMMddTHHmmss', 'yyyy-MM-ddTHH:mm', 'yyyy-MM-ddTHH:mm:ss']
 
@@ -287,14 +290,21 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
                 if 'receipt' in sub:
                     slip = sub['receipt']
                 else:
-                    logging.error(g_tr('ImportSlipDialog', "Can't find 'receipt' tag  in json 'document'"))
+                    logging.error(g_tr('ImportSlipDialog', "Can't find 'receipt' tag in json 'document'"))
                     return
             else:
-                logging.error(g_tr('ImportSlipDialog', "Can't find 'document' tag  in json 'ticket'"))
+                logging.error(g_tr('ImportSlipDialog', "Can't find 'document' tag in json 'ticket'"))
                 return
         else:
             slip = self.slip_json
 
+        # Get operation type
+        operation = 0
+        if 'operationType' in slip:
+            operation = int(slip['operationType'])
+        else:
+            logging.error(g_tr('ImportSlipDialog', "Can't find 'operationType' tag in json 'ticket'"))
+            return
         # Get shop name
         shop_name = ''
         if 'user' in slip:
@@ -320,7 +330,13 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
 
         # Convert price to roubles
         self.slip_lines['price'] = self.slip_lines['price'] / 100
-        self.slip_lines['sum'] = -self.slip_lines['sum'] / 100
+        if operation == self.OPERATION_PURCHASE:
+            self.slip_lines['sum'] = -self.slip_lines['sum'] / 100
+        elif operation == self.OPERATION_RETURN:
+            self.slip_lines['sum'] = self.slip_lines['sum'] / 100
+        else:
+            logging.error(g_tr('ImportSlipDialog', "Unknown operation type ") + f"{operation}")
+            return
         # Use quantity if it differs from 1 unit value
         self.slip_lines.loc[self.slip_lines['quantity'] != 1, 'name'] = \
             self.slip_lines.agg('{0[name]} ({0[quantity]:g} x {0[price]:.2f})'.format, axis=1)
