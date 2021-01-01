@@ -373,8 +373,7 @@ class TaxesRus:
                            "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND c.currency_id=q.asset_id "
                            "WHERE a.timestamp>=:begin AND a.timestamp<:end AND a.account_id=:account_id",
                            [(":begin", begin), (":end", end), (":account_id", account_id)])
-        row = 9
-        amount_rub_sum = 0
+        row = start_row = 9
         while query.next():
             payment_date, amount, note, rate = readSQLrecord(query)
             amount_rub = round(-amount * rate, 2) if rate else 0
@@ -385,10 +384,9 @@ class TaxesRus:
                 3: (rate, formats.Number(row, 4)),
                 4: (amount_rub, formats.Number(row, 2))
             })
-            amount_rub_sum += amount_rub
             row += 1
         sheet.write(row, 3, "ИТОГО", formats.ColumnFooter())
-        sheet.write(row, 4, amount_rub_sum, formats.ColumnFooter())
+        sheet.write_formula(row, 4, f"SUM(E{start_row+1}:E{row})", formats.ColumnFooter())
 
 #-----------------------------------------------------------------------------------------------------------------------
     def prepare_corporate_actions(self, sheet, account_id, begin, end, formats):
