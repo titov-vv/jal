@@ -500,21 +500,21 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>AccountSelector</class>
+   <extends>QWidget</extends>
+   <header>jal/ui_custom/reference_selector.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>QVideoWidget</class>
    <extends>QWidget</extends>
    <header>PySide2/QtMultimediaWidgets.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>AccountSelector</class>
-   <extends>QWidget</extends>
-   <header>ui_custom/reference_selector.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>PeerSelector</class>
    <extends>QWidget</extends>
-   <header>ui_custom/reference_selector.h</header>
+   <header>jal/ui_custom/reference_selector.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

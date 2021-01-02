@@ -13,9 +13,9 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 from jal.ui_custom.reference_selector import AccountSelector
+from jal.ui_custom.reference_selector import PeerSelector
 from jal.ui_custom.reference_selector import AssetSelector
 from jal.ui_custom.account_select import AccountButton
-from jal.ui_custom.reference_selector import PeerSelector
 from jal.ui_custom.log_viewer import LogViewer
 from jal.ui_custom.account_select import ComboBoxDB
 from jal.ui_custom.amount_editor import AmountEdit
