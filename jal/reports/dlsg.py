@@ -98,12 +98,6 @@ class DLSGCurrencyIncome:
 
 class DLSGDeclForeign(DLSGsection):
     tag = 'DeclForeign'
-    currencies = {
-        'USD': ('840', 'Доллар США', 100),
-        'EUR': ('978', 'Евро', 100),
-        'GBP': ('826', 'Фунт стерлингов', 100),
-        'CNY': ('156', 'Юань', 1000),
-    }
 
     def __init__(self, records):
         self.count = int(records.pop(0))
@@ -121,11 +115,10 @@ class DLSGDeclForeign(DLSGsection):
         while (len(records) > 0) and (records[0][:1] != SECTION_PREFIX):
             self._tail_records.append(records.pop(0))
 
-    def add_dividend(self, description, timestamp, currency_code, amount, amount_rub, tax, tax_rub, rate):
-        currency = self.currencies[currency_code]
+    def add_dividend(self, description, timestamp, currency, amount, amount_rub, tax, tax_rub, rate):
         dividend = DLSGCurrencyIncome(self.count)
-        dividend.description = description
-        dividend.income_date = (timestamp - datetime.date(1899, 12, 30)).days
+        dividend.description = "Дивиденд от " + description
+        dividend.income_date = (datetime.datetime.fromtimestamp(timestamp).date() - datetime.date(1899, 12, 30)).days
         dividend.tax_payment_date = dividend.income_date
         dividend.currency_code = currency[0]
         dividend.currency_name = currency[1]
@@ -150,20 +143,30 @@ class DLSG:
     header_pattern = "DLSG            Decl(\d{4})0102FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
     header = "DLSG            Decl{:04d}0102FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
 
+    currencies = {
+        'USD': ('840', 'Доллар США', 100),
+        'EUR': ('978', 'Евро', 100),
+        'GBP': ('826', 'Фунт стерлингов', 100),
+        'CNY': ('156', 'Юань', 1000),
+    }
+
     def __init__(self):
         self._year = 0              # year of declaration
         self._records = []
         self._sections = {}
         self._footer_len = 0        # if file ends with _footer_len 0x00 bytes
 
-    def add_dividend(self, **kwargs):
+    def add_dividend(self, description, timestamp, currency_name, amount, amount_rub, tax, tax_rub, rate):
         foreign_section = self.get_section('DeclForeign')
         if foreign_section is None:
-            logging.error(f"Declaration has now 'DeclForeign' section")
+            logging.error(f"Declaration has now 'DeclForeign' section. Can't add dividend.")
             return
-        foreign_section.add_dividend(kwargs['description'], kwargs['timestamp'], kwargs['currency'],
-                                     kwargs['amount'], kwargs['amount_rub'],kwargs['tax'], kwargs['tax_rub'],
-                                     kwargs['tax_rate'])
+        try:
+            currency = self.currencies[currency_name]
+        except:
+            logging.error(f"Currency {currency_name} is not known. Can't add dividend.")
+            return
+        foreign_section.add_dividend(description, timestamp, currency, amount, amount_rub, tax, tax_rub, rate)
 
     def get_section(self, name):
         for section in self._sections:

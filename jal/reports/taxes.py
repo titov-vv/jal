@@ -116,6 +116,7 @@ class TaxesRus:
         workbook = xlsxwriter.Workbook(filename=taxes_file)
         formats = xslxFormat(workbook)
 
+        statement = None
         if dlsg_update:
             statement = DLSG()
             try:
@@ -126,7 +127,7 @@ class TaxesRus:
 
         for report in self.reports:
             sheet = workbook.add_worksheet(name=report)
-            self.reports[report](sheet, account_id, year_begin, year_end, formats)
+            self.reports[report](sheet, statement, account_id, year_begin, year_end, formats)
         try:
             workbook.close()
         except:
@@ -146,7 +147,7 @@ class TaxesRus:
         sheet.write(5, 0, "Номер счета:")
 
 # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_dividends(self, sheet, account_id, begin, end, formats):
+    def prepare_dividends(self, sheet, statement, account_id, begin, end, formats):
         self.add_report_header(sheet, formats, "Отчет по дивидендам, полученным в отчетном периоде")
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")
         _ = executeSQL(self.db,  # FIXME - below query will take any earlier currency rate - limitation is needed for 2-3 days scope
@@ -214,6 +215,8 @@ class TaxesRus:
                 9: (country, formats.Text(row)),
                 10: (self.bool_text[tax_treaty], formats.Text(row))
             })
+            statement.add_dividend(f"{symbol} ({full_name})", payment_date, 'USD',
+                                   amount_usd, amount_rub, tax_usd, tax_us_rub, rate)
             row += 1
         sheet.write(row, 3, "ИТОГО", formats.ColumnFooter())
         sheet.write_formula(row, 4, f"=SUM(E{start_row + 1}:E{row})", formats.ColumnFooter())
@@ -223,7 +226,7 @@ class TaxesRus:
         sheet.write_formula(row, 8, f"=SUM(I{start_row + 1}:I{row})", formats.ColumnFooter())
 
 # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_trades(self, sheet, account_id, begin, end, formats):
+    def prepare_trades(self, sheet, _statement, account_id, begin, end, formats):
         self.add_report_header(sheet, formats, "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде")
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")
         _ = executeSQL(self.db,
@@ -360,7 +363,7 @@ class TaxesRus:
         sheet.write_formula(row, 15, f"=SUM(P{start_row + 1}:P{row})", formats.ColumnFooter())
 
 # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_broker_fees(self, sheet, account_id, begin, end, formats):
+    def prepare_broker_fees(self, sheet, _statement, account_id, begin, end, formats):
         self.add_report_header(sheet, formats, "Отчет по комиссиям, уплаченным брокеру в отчетном периоде")
 
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")
@@ -413,7 +416,7 @@ class TaxesRus:
         sheet.write_formula(row, 4, f"=SUM(E{start_row+1}:E{row})", formats.ColumnFooter())
 
 #-----------------------------------------------------------------------------------------------------------------------
-    def prepare_corporate_actions(self, sheet, account_id, begin, end, formats):
+    def prepare_corporate_actions(self, sheet, _statement, account_id, begin, end, formats):
         self.add_report_header(sheet, formats, "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде "
                                                "с предшествовавшими корпоративными событиями")
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")   # TODO combine with the same code in trades report
