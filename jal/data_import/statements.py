@@ -291,6 +291,7 @@ class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
             event.ignore()
             return
 
+        self.setResult(QDialog.Accepted)
         event.accept()
 
 #-----------------------------------------------------------------------------------------------------------------------
