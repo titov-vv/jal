@@ -1,3 +1,4 @@
+from functools import partial
 import time
 from datetime import datetime
 import xlsxwriter
@@ -18,7 +19,9 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
         self.setupUi(self)
 
         self.AccountWidget.init_db(db)
-        self.FileSelectBtn.pressed.connect(self.OnFileBtn)
+        self.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, 'XLS-OUT'))
+        self.InitialSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG-IN'))
+        self.OutputSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG-OUT'))
 
         # center dialog with respect to parent window
         x = parent.x() + parent.width()/2 - self.width()/2
@@ -26,26 +29,36 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
         self.setGeometry(x, y, self.width(), self.height())
 
     @Slot()
-    def OnFileBtn(self):
-        filename = QFileDialog.getSaveFileName(self, g_tr('TaxExportDialog', "Save tax reports to:"),
-                                               ".", g_tr('TaxExportDialog', "Excel files (*.xlsx)"))
+    def OnFileBtn(self, type):
+        selector = {
+            'XLS-OUT': (g_tr('TaxExportDialog', "Save tax reports to:"),
+                        g_tr('TaxExportDialog', "Excel files (*.xlsx)"),
+                        '.xlsx', self.XlsFileName),
+            'DLSG-IN': (g_tr('TaxExportDialog', "Get tax form template from:"),
+                        g_tr('TaxExportDialog', "Tax form 2020 (*.dc0)"),
+                        '.dc0', self.DlsgInFileName),
+            'DLSG-OUT': (g_tr('TaxExportDialog', "Save tax form to:"),
+                        g_tr('TaxExportDialog', "Tax form 2020 (*.dc0)"),
+                        '.dc0', self.DlsgOutFileName),
+        }
+        filename = QFileDialog.getSaveFileName(self, selector[type][0], ".", selector[type][1])
         if filename[0]:
-            if filename[1] == g_tr('TaxExportDialog', "Excel files (*.xlsx)") and filename[0][-5:] != '.xlsx':
-                self.Filename.setText(filename[0] + '.xlsx')
+            if filename[1] == selector[type][1] and filename[0][-len(selector[type][2]):] != selector[type][2]:
+                selector[type][3].setText(filename[0] + selector[type][2])
             else:
-                self.Filename.setText(filename[0])
+                selector[type][3].setText(filename[0])
 
     def getYear(self):
         return self.Year.value()
 
-    def getFilename(self):
-        return self.Filename.text()
+    def getXlsFilename(self):
+        return self.XlsFileName.text()
 
     def getAccount(self):
         return self.AccountWidget.selected_id
 
     year = Property(int, fget=getYear)
-    filename = Property(int, fget=getFilename)
+    xls_filename = Property(int, fget=getXlsFilename)
     account = Property(int, fget=getAccount)
 
 
@@ -75,7 +88,7 @@ class TaxesRus:
     def showTaxesDialog(self, parent):
         dialog = TaxExportDialog(parent, self.db)
         if dialog.exec_():
-            self.save2file(dialog.filename, dialog.year, dialog.account)
+            self.save2file(dialog.xls_filename, dialog.year, dialog.account)
 
     def save2file(self, taxes_file, year, account_id):
         year_begin = int(time.mktime(datetime.strptime(f"{year}", "%Y").timetuple()))

@@ -163,48 +163,58 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="135"/>
+        <location filename="../data_import/slips.py" line="138"/>
         <source>Select file with QR code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="171"/>
+        <location filename="../data_import/slips.py" line="174"/>
         <source>There are no cameras available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="262"/>
+        <location filename="../data_import/slips.py" line="265"/>
         <source>Max retry count exceeded.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="274"/>
+        <location filename="../data_import/slips.py" line="277"/>
         <source>Select file with slip JSON data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="290"/>
-        <source>Can&apos;t find &apos;receipt&apos; tag  in json &apos;document&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips.py" line="293"/>
-        <source>Can&apos;t find &apos;document&apos; tag  in json &apos;ticket&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips.py" line="356"/>
+        <location filename="../data_import/slips.py" line="372"/>
         <source>Not possible to import slip: no account set for import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="359"/>
+        <location filename="../data_import/slips.py" line="375"/>
         <source>Not possible to import slip: can&apos;t import: no peer set for import</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="363"/>
+        <location filename="../data_import/slips.py" line="379"/>
         <source>Not possible to import slip: some categories are not set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/slips.py" line="293"/>
+        <source>Can&apos;t find &apos;receipt&apos; tag in json &apos;document&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/slips.py" line="296"/>
+        <source>Can&apos;t find &apos;document&apos; tag in json &apos;ticket&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/slips.py" line="306"/>
+        <source>Can&apos;t find &apos;operationType&apos; tag in json &apos;ticket&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/slips.py" line="338"/>
+        <source>Unknown operation type </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1782,7 +1792,7 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="193"/>
+        <location filename="../ui_custom/table_view_config.py" line="194"/>
         <source>Currency</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1792,7 +1802,7 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="252"/>
+        <location filename="../ui_custom/table_view_config.py" line="253"/>
         <source>Tag</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1807,132 +1817,132 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="184"/>
+        <location filename="../ui_custom/table_view_config.py" line="185"/>
         <source>Account Types</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="184"/>
+        <location filename="../ui_custom/table_view_config.py" line="185"/>
         <source>Account Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="193"/>
+        <location filename="../ui_custom/table_view_config.py" line="194"/>
         <source>Accounts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="239"/>
+        <location filename="../ui_custom/table_view_config.py" line="240"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="193"/>
+        <location filename="../ui_custom/table_view_config.py" line="194"/>
         <source>Act.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="193"/>
+        <location filename="../ui_custom/table_view_config.py" line="194"/>
         <source>Account #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="193"/>
+        <location filename="../ui_custom/table_view_config.py" line="194"/>
         <source>Reconciled @</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="193"/>
+        <location filename="../ui_custom/table_view_config.py" line="194"/>
         <source>Bank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="193"/>
+        <location filename="../ui_custom/table_view_config.py" line="194"/>
         <source>Show inactive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="193"/>
+        <location filename="../ui_custom/table_view_config.py" line="194"/>
         <source>Account type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="211"/>
+        <location filename="../ui_custom/table_view_config.py" line="212"/>
         <source>Assets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="211"/>
+        <location filename="../ui_custom/table_view_config.py" line="212"/>
         <source>Symbol</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="211"/>
+        <location filename="../ui_custom/table_view_config.py" line="212"/>
         <source>ISIN</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="211"/>
+        <location filename="../ui_custom/table_view_config.py" line="212"/>
         <source>WebID</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="211"/>
+        <location filename="../ui_custom/table_view_config.py" line="212"/>
         <source>Data source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="211"/>
+        <location filename="../ui_custom/table_view_config.py" line="212"/>
         <source>Asset type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="226"/>
+        <location filename="../ui_custom/table_view_config.py" line="227"/>
         <source>Peers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="226"/>
+        <location filename="../ui_custom/table_view_config.py" line="227"/>
         <source>Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="226"/>
+        <location filename="../ui_custom/table_view_config.py" line="227"/>
         <source>Docs count</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="239"/>
+        <location filename="../ui_custom/table_view_config.py" line="240"/>
         <source>Categories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="239"/>
+        <location filename="../ui_custom/table_view_config.py" line="240"/>
         <source>Often</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="252"/>
+        <location filename="../ui_custom/table_view_config.py" line="253"/>
         <source>Tags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="261"/>
+        <location filename="../ui_custom/table_view_config.py" line="262"/>
         <source>Countries</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="261"/>
+        <location filename="../ui_custom/table_view_config.py" line="262"/>
         <source>Country</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="261"/>
+        <location filename="../ui_custom/table_view_config.py" line="262"/>
         <source>Code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="261"/>
+        <location filename="../ui_custom/table_view_config.py" line="262"/>
         <source>Tax Treaty</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1945,48 +1955,113 @@ Application will be terminated now</source>
 <context>
     <name>TaxExportDialog</name>
     <message>
-        <location filename="../reports/taxes.py" line="30"/>
+        <location filename="../reports/taxes.py" line="34"/>
         <source>Save tax reports to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="33"/>
+        <location filename="../reports/taxes.py" line="34"/>
         <source>Excel files (*.xlsx)</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../reports/taxes.py" line="37"/>
+        <source>Get tax form template from:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/taxes.py" line="40"/>
+        <source>Tax form 2020 (*.dc0)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/taxes.py" line="40"/>
+        <source>Save tax form to:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>TaxExportDlg</name>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="84"/>
-        <source>Select parameters and filename for tax report</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="85"/>
-        <source>Filename</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="87"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="170"/>
         <source>Year:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="88"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="179"/>
         <source>Account:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="89"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="178"/>
         <source>...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_export_dlg.py" line="169"/>
+        <source>Excel file:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_export_dlg.py" line="188"/>
+        <source> ... </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_export_dlg.py" line="193"/>
+        <source>Initial file:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_export_dlg.py" line="189"/>
+        <source>Output file:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_export_dlg.py" line="180"/>
+        <source>Update file &quot;u0414u0435u043au043bu0430u0440u0430u0446u0438u044f&quot; (*.dc0)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_export_dlg.py" line="165"/>
+        <source>Select parameters and filex for tax report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_export_dlg.py" line="197"/>
+        <source>Below function is experimental - use it with care</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_export_dlg.py" line="167"/>
+        <source>File where to store tax report in Excel format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_export_dlg.py" line="173"/>
+        <source>Foreign account to prepare tax report for</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_export_dlg.py" line="186"/>
+        <source>Select file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_export_dlg.py" line="191"/>
+        <source>File to use as a template for russian tax form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_export_dlg.py" line="195"/>
+        <source>File where to store russian tax form</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>TaxesRus</name>
     <message>
-        <location filename="../reports/taxes.py" line="93"/>
+        <location filename="../reports/taxes.py" line="106"/>
         <source>Can&apos;t write tax report into file </source>
         <translation></translation>
     </message>
