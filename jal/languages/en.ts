@@ -1983,78 +1983,83 @@ Application will be terminated now</source>
 <context>
     <name>TaxExportDlg</name>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="170"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="194"/>
         <source>Year:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="179"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="198"/>
         <source>Account:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="178"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="175"/>
         <source>...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="169"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="199"/>
         <source>Excel file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="188"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="192"/>
         <source> ... </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="193"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="187"/>
         <source>Initial file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="189"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="188"/>
         <source>Output file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="180"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="176"/>
         <source>Update file &quot;u0414u0435u043au043bu0430u0440u0430u0446u0438u044f&quot; (*.dc0)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="165"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="170"/>
         <source>Select parameters and filex for tax report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="197"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="171"/>
         <source>Below function is experimental - use it with care</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="167"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="196"/>
         <source>File where to store tax report in Excel format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="173"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="202"/>
         <source>Foreign account to prepare tax report for</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="186"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="190"/>
         <source>Select file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="191"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="178"/>
         <source>File to use as a template for russian tax form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="195"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="185"/>
         <source>File where to store russian tax form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_export_dlg.py" line="193"/>
+        <source>Update only information about dividends</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

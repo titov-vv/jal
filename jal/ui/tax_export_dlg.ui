@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>601</width>
-    <height>246</height>
+    <height>257</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,23 +29,15 @@
    <property name="horizontalSpacing">
     <number>6</number>
    </property>
-   <item row="3" column="1">
-    <widget class="QLineEdit" name="XlsFileName">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+   <item row="5" column="0" colspan="4">
+    <widget class="QLabel" name="WarningLbl">
+     <property name="font">
+      <font>
+       <italic>true</italic>
+      </font>
      </property>
-     <property name="toolTip">
-      <string>File where to store tax report in Excel format</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="XlsFileLbl">
      <property name="text">
-      <string>Excel file:</string>
+      <string>Below function is experimental - use it with care</string>
      </property>
     </widget>
    </item>
@@ -59,10 +51,154 @@
      </property>
     </widget>
    </item>
+   <item row="3" column="2">
+    <widget class="QPushButton" name="XlsSelectBtn">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>Select file</string>
+     </property>
+     <property name="text">
+      <string>...</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0" colspan="4">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="title">
+      <string>Update file &quot;Декларация&quot; (*.dc0)</string>
+     </property>
+     <property name="flat">
+      <bool>false</bool>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <property name="leftMargin">
+       <number>6</number>
+      </property>
+      <property name="topMargin">
+       <number>6</number>
+      </property>
+      <property name="rightMargin">
+       <number>6</number>
+      </property>
+      <property name="bottomMargin">
+       <number>6</number>
+      </property>
+      <property name="spacing">
+       <number>2</number>
+      </property>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="DlsgInFileName">
+        <property name="toolTip">
+         <string>File to use as a template for russian tax form</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="OutputSelectBtn">
+        <property name="toolTip">
+         <string>Select file</string>
+        </property>
+        <property name="text">
+         <string> ... </string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="DlsgOutFileName">
+        <property name="toolTip">
+         <string>File where to store russian tax form</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="InitialFileLbl">
+        <property name="text">
+         <string>Initial file:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="OutputFileLbl">
+        <property name="text">
+         <string>Output file:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QPushButton" name="InitialSelectBtn">
+        <property name="toolTip">
+         <string>Select file</string>
+        </property>
+        <property name="text">
+         <string> ... </string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="3">
+       <widget class="QCheckBox" name="DividendsOnly">
+        <property name="text">
+         <string>Update only information about dividends</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
    <item row="1" column="0">
     <widget class="QLabel" name="YearLbl">
      <property name="text">
       <string>Year:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QLineEdit" name="XlsFileName">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>File where to store tax report in Excel format</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0" colspan="4">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="AccountLbl">
+     <property name="text">
+      <string>Account:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="XlsFileLbl">
+     <property name="text">
+      <string>Excel file:</string>
      </property>
     </widget>
    </item>
@@ -104,135 +240,6 @@
       </size>
      </property>
     </spacer>
-   </item>
-   <item row="3" column="2">
-    <widget class="QPushButton" name="XlsSelectBtn">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="toolTip">
-      <string>Select file</string>
-     </property>
-     <property name="text">
-      <string>...</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="AccountLbl">
-     <property name="text">
-      <string>Account:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="0" colspan="4">
-    <widget class="QGroupBox" name="groupBox">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="title">
-      <string>Update file &quot;Декларация&quot; (*.dc0)</string>
-     </property>
-     <property name="flat">
-      <bool>false</bool>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-     <property name="checked">
-      <bool>false</bool>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_2">
-      <property name="leftMargin">
-       <number>6</number>
-      </property>
-      <property name="topMargin">
-       <number>6</number>
-      </property>
-      <property name="rightMargin">
-       <number>6</number>
-      </property>
-      <property name="bottomMargin">
-       <number>6</number>
-      </property>
-      <property name="spacing">
-       <number>2</number>
-      </property>
-      <item row="0" column="2">
-       <widget class="QPushButton" name="InitialSelectBtn">
-        <property name="toolTip">
-         <string>Select file</string>
-        </property>
-        <property name="text">
-         <string> ... </string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QPushButton" name="OutputSelectBtn">
-        <property name="toolTip">
-         <string>Select file</string>
-        </property>
-        <property name="text">
-         <string> ... </string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="OutputFileLbl">
-        <property name="text">
-         <string>Output file:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="DlsgInFileName">
-        <property name="toolTip">
-         <string>File to use as a template for russian tax form</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="InitialFileLbl">
-        <property name="text">
-         <string>Initial file:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="DlsgOutFileName">
-        <property name="toolTip">
-         <string>File where to store russian tax form</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="4" column="0" colspan="4">
-    <widget class="Line" name="line">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0" colspan="4">
-    <widget class="QLabel" name="WarningLbl">
-     <property name="font">
-      <font>
-       <italic>true</italic>
-      </font>
-     </property>
-     <property name="text">
-      <string>Below function is experimental - use it with care</string>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>
