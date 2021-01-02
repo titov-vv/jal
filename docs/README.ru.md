@@ -70,7 +70,9 @@ jal использует следующие пакеты для своей ра�
 
 #### *Отчет по операциям с иностранными ценными бумагами*
 
-Отчет в виде файла Excel доступен по [ссылке](https://github.com/titov-vv/jal/raw/master/docs/tax_rus_example.xlsx).    
+[Пошаговая инструкция по подготовке данных для декларации 3-НДФЛ на основе отчет Interactive Brokers](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/taxes.md)
+
+Пример файла Excel доступен по [ссылке](https://github.com/titov-vv/jal/raw/master/docs/tax_rus_example.xlsx).    
 Пример страницы с отчетом о дивидендах:  
 ![rus_tax_dividends](https://github.com/titov-vv/jal/blob/master/docs/img/tax_rus_dividends.png?raw=true)
 
