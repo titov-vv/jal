@@ -64,7 +64,7 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
         return self.AccountWidget.selected_id
 
     def getDlsgState(self):
-        return self.DlsgGroup.isEnabled()
+        return self.DlsgGroup.isChecked()
 
     def getDslgInFilename(self):
         return self.DlsgInFileName.text()
@@ -72,12 +72,16 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
     def getDslgOutFilename(self):
         return self.DlsgOutFileName.text()
 
+    def getDividendsOnly(self):
+        return self.DividendsOnly.isChecked()
+
     year = Property(int, fget=getYear)
     xls_filename = Property(str, fget=getXlsFilename)
     account = Property(int, fget=getAccount)
     update_dlsg = Property(bool, fget=getDlsgState)
     dlsg_in_filename = Property(str, fget=getDslgInFilename)
     dlsg_out_filename = Property(str, fget=getDslgOutFilename)
+    dlsg_dividends_only = Property(bool, fget=getDividendsOnly)
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -109,9 +113,11 @@ class TaxesRus:
         dialog = TaxExportDialog(parent, self.db)
         if dialog.exec_():
             self.save2file(dialog.xls_filename, dialog.year, dialog.account, dlsg_update=dialog.update_dlsg,
-                           dlsg_in=dialog.dlsg_in_filename, dlsg_out=dialog.dlsg_out_filename)
+                           dlsg_in=dialog.dlsg_in_filename, dlsg_out=dialog.dlsg_out_filename,
+                           dlsg_dividends_only=dialog.dlsg_dividends_only)
 
-    def save2file(self, taxes_file, year, account_id, dlsg_update=False, dlsg_in=None, dlsg_out=None):
+    def save2file(self, taxes_file, year, account_id,
+                  dlsg_update=False, dlsg_in=None, dlsg_out=None, dlsg_dividends_only=False):
         self.account_currency = readSQL(self.db,
                                         "SELECT c.name FROM accounts AS a "
                                         "LEFT JOIN assets AS c ON a.currency_id = c.id WHERE a.id=:account",
@@ -128,7 +134,7 @@ class TaxesRus:
 
         statement = None
         if dlsg_update:
-            statement = DLSG()
+            statement = DLSG(only_dividends=dlsg_dividends_only)
             try:
                 statement.read_file(dlsg_in)
             except:
@@ -226,8 +232,9 @@ class TaxesRus:
                 10: (self.bool_text[tax_treaty], formats.Text(row))
             })
             code = 'us' if code == 'xx' else code   # TODO select right country code if it is absent
-            statement.add_dividend(code, f"{symbol} ({full_name})", payment_date, self.account_currency,
-                                   amount_usd, amount_rub, tax_usd, tax_us_rub, rate)
+            if statement is not None:
+                statement.add_dividend(code, f"{symbol} ({full_name})", payment_date, self.account_currency,
+                                       amount_usd, amount_rub, tax_usd, tax_us_rub, rate)
             row += 1
         sheet.write(row, 3, "ИТОГО", formats.ColumnFooter())
         sheet.write_formula(row, 4, f"=SUM(E{start_row + 1}:E{row})", formats.ColumnFooter())
@@ -365,9 +372,10 @@ class TaxesRus:
                 10: (c_fee_usd, formats.Number(data_row, 6)),
                 11: (c_fee_rub, formats.Number(data_row, 2))
             })
-            # # TODO replace 'us' with value depandable on broker account
-            statement.add_stock_profit('us', self.broker_name, deal['c_date'], self.account_currency,
-                                       income_usd, income, spending, deal['c_rate'])
+            # TODO replace 'us' with value depandable on broker account
+            if statement is not None:
+                statement.add_stock_profit('us', self.broker_name, deal['c_date'], self.account_currency,
+                                           income_usd, income, spending, deal['c_rate'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
         sheet.write(row, 11, "ИТОГО", formats.ColumnFooter())

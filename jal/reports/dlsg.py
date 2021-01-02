@@ -185,7 +185,8 @@ class DLSG:
         'fi': '246'
     }
 
-    def __init__(self):
+    def __init__(self, only_dividends=False):
+        self._only_dividends=only_dividends
         self._year = 0              # year of declaration
         self._records = []
         self._sections = {}
@@ -201,6 +202,8 @@ class DLSG:
                                    currency_code, amount, amount_rub, tax, tax_rub, rate)
 
     def add_stock_profit(self, country, source, timestamp, currency_name, amount, income_rub, spending_rub, rate):
+        if self._only_dividends:
+            return
         foreign_section = self.get_section('DeclForeign')
         if foreign_section is None:
             return
