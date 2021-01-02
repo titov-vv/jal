@@ -219,8 +219,8 @@ class TaxesRus:
             9: ("Сумма сделки, RUB", formats.ColumnHeader(), 12, 0, 0),
             10: ("Комиссия, USD", formats.ColumnHeader(), 12, 0, 0),
             11: ("Комиссия, RUB", formats.ColumnHeader(), 9, 0, 0),
-            12: ("Доход, RUB", formats.ColumnHeader(), 12, 0, 0),
-            13: ("Расход, RUB", formats.ColumnHeader(), 12, 0, 0),
+            12: ("Доход, RUB (код 1530)", formats.ColumnHeader(), 12, 0, 0),
+            13: ("Расход, RUB (код 201)", formats.ColumnHeader(), 12, 0, 0),
             14: ("Финансовый результат, RUB", formats.ColumnHeader(), 12, 0, 0),
             15: ("Финансовый результат, USD", formats.ColumnHeader(), 12, 0, 0)
         }
@@ -256,10 +256,6 @@ class TaxesRus:
                            [(":begin", begin), (":end", end), (":account_id", account_id)])
         start_row = 9
         data_row = 0
-        income_sum = 0.0
-        spending_sum = 0.0
-        profit_sum = 0.0
-        profit_sum_usd = 0.0
         while query.next():
             deal = readSQLrecord(query, named=True)
             row = start_row + (data_row * 2)
@@ -309,19 +305,13 @@ class TaxesRus:
                 10: (c_fee_usd, formats.Number(data_row, 6)),
                 11: (c_fee_rub, formats.Number(data_row, 2))
             })
-            income_sum += income
-            spending_sum += spending
-            profit_sum += income - spending
-            profit_sum_usd += income_usd - spending_usd
             data_row = data_row + 1
         row = start_row + (data_row * 2)
-        xlsxWriteRow(sheet, row, {
-            11: ("ИТОГО", formats.ColumnFooter()),
-            12: (income_sum, formats.ColumnFooter()),
-            13: (spending_sum, formats.ColumnFooter()),
-            14: (profit_sum, formats.ColumnFooter()),
-            15: (profit_sum_usd, formats.ColumnFooter())
-        })
+        sheet.write(row, 11, "ИТОГО", formats.ColumnFooter())
+        sheet.write_formula(row, 12, f"=SUM(M{start_row + 1}:M{row})", formats.ColumnFooter())
+        sheet.write_formula(row, 13, f"=SUM(N{start_row + 1}:N{row})", formats.ColumnFooter())
+        sheet.write_formula(row, 14, f"=SUM(O{start_row + 1}:O{row})", formats.ColumnFooter())
+        sheet.write_formula(row, 15, f"=SUM(P{start_row + 1}:P{row})", formats.ColumnFooter())
 
 # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_fees(self, sheet, account_id, begin, end, formats):
