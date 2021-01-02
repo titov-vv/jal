@@ -2066,7 +2066,7 @@ Application will be terminated now</source>
 <context>
     <name>TaxesRus</name>
     <message>
-        <location filename="../reports/taxes.py" line="106"/>
+        <location filename="../reports/taxes.py" line="110"/>
         <source>Can&apos;t write tax report into file </source>
         <translation></translation>
     </message>

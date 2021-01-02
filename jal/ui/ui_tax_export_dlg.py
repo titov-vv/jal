@@ -49,57 +49,57 @@ class Ui_TaxExportDlg(object):
 
         self.gridLayout.addWidget(self.XlsSelectBtn, 3, 2, 1, 1)
 
-        self.groupBox = QGroupBox(TaxExportDlg)
-        self.groupBox.setObjectName(u"groupBox")
+        self.DlsgGroup = QGroupBox(TaxExportDlg)
+        self.DlsgGroup.setObjectName(u"DlsgGroup")
         sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy1.setHorizontalStretch(0)
         sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.groupBox.sizePolicy().hasHeightForWidth())
-        self.groupBox.setSizePolicy(sizePolicy1)
-        self.groupBox.setFlat(False)
-        self.groupBox.setCheckable(True)
-        self.groupBox.setChecked(False)
-        self.gridLayout_2 = QGridLayout(self.groupBox)
+        sizePolicy1.setHeightForWidth(self.DlsgGroup.sizePolicy().hasHeightForWidth())
+        self.DlsgGroup.setSizePolicy(sizePolicy1)
+        self.DlsgGroup.setFlat(False)
+        self.DlsgGroup.setCheckable(True)
+        self.DlsgGroup.setChecked(False)
+        self.gridLayout_2 = QGridLayout(self.DlsgGroup)
         self.gridLayout_2.setSpacing(2)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.gridLayout_2.setContentsMargins(6, 6, 6, 6)
-        self.DlsgInFileName = QLineEdit(self.groupBox)
+        self.DlsgInFileName = QLineEdit(self.DlsgGroup)
         self.DlsgInFileName.setObjectName(u"DlsgInFileName")
 
         self.gridLayout_2.addWidget(self.DlsgInFileName, 0, 1, 1, 1)
 
-        self.OutputSelectBtn = QPushButton(self.groupBox)
+        self.OutputSelectBtn = QPushButton(self.DlsgGroup)
         self.OutputSelectBtn.setObjectName(u"OutputSelectBtn")
 
         self.gridLayout_2.addWidget(self.OutputSelectBtn, 1, 2, 1, 1)
 
-        self.DlsgOutFileName = QLineEdit(self.groupBox)
+        self.DlsgOutFileName = QLineEdit(self.DlsgGroup)
         self.DlsgOutFileName.setObjectName(u"DlsgOutFileName")
 
         self.gridLayout_2.addWidget(self.DlsgOutFileName, 1, 1, 1, 1)
 
-        self.InitialFileLbl = QLabel(self.groupBox)
+        self.InitialFileLbl = QLabel(self.DlsgGroup)
         self.InitialFileLbl.setObjectName(u"InitialFileLbl")
 
         self.gridLayout_2.addWidget(self.InitialFileLbl, 0, 0, 1, 1)
 
-        self.OutputFileLbl = QLabel(self.groupBox)
+        self.OutputFileLbl = QLabel(self.DlsgGroup)
         self.OutputFileLbl.setObjectName(u"OutputFileLbl")
 
         self.gridLayout_2.addWidget(self.OutputFileLbl, 1, 0, 1, 1)
 
-        self.InitialSelectBtn = QPushButton(self.groupBox)
+        self.InitialSelectBtn = QPushButton(self.DlsgGroup)
         self.InitialSelectBtn.setObjectName(u"InitialSelectBtn")
 
         self.gridLayout_2.addWidget(self.InitialSelectBtn, 0, 2, 1, 1)
 
-        self.DividendsOnly = QCheckBox(self.groupBox)
+        self.DividendsOnly = QCheckBox(self.DlsgGroup)
         self.DividendsOnly.setObjectName(u"DividendsOnly")
 
         self.gridLayout_2.addWidget(self.DividendsOnly, 2, 0, 1, 3)
 
 
-        self.gridLayout.addWidget(self.groupBox, 7, 0, 1, 4)
+        self.gridLayout.addWidget(self.DlsgGroup, 7, 0, 1, 4)
 
         self.YearLbl = QLabel(TaxExportDlg)
         self.YearLbl.setObjectName(u"YearLbl")
@@ -153,8 +153,8 @@ class Ui_TaxExportDlg(object):
 
         QWidget.setTabOrder(self.Year, self.XlsFileName)
         QWidget.setTabOrder(self.XlsFileName, self.XlsSelectBtn)
-        QWidget.setTabOrder(self.XlsSelectBtn, self.groupBox)
-        QWidget.setTabOrder(self.groupBox, self.DlsgInFileName)
+        QWidget.setTabOrder(self.XlsSelectBtn, self.DlsgGroup)
+        QWidget.setTabOrder(self.DlsgGroup, self.DlsgInFileName)
         QWidget.setTabOrder(self.DlsgInFileName, self.InitialSelectBtn)
         QWidget.setTabOrder(self.InitialSelectBtn, self.DlsgOutFileName)
         QWidget.setTabOrder(self.DlsgOutFileName, self.OutputSelectBtn)
@@ -173,7 +173,7 @@ class Ui_TaxExportDlg(object):
         self.XlsSelectBtn.setToolTip(QCoreApplication.translate("TaxExportDlg", u"Select file", None))
 #endif // QT_CONFIG(tooltip)
         self.XlsSelectBtn.setText(QCoreApplication.translate("TaxExportDlg", u"...", None))
-        self.groupBox.setTitle(QCoreApplication.translate("TaxExportDlg", u"Update file \"\u0414\u0435\u043a\u043b\u0430\u0440\u0430\u0446\u0438\u044f\" (*.dc0)", None))
+        self.DlsgGroup.setTitle(QCoreApplication.translate("TaxExportDlg", u"Update file \"\u0414\u0435\u043a\u043b\u0430\u0440\u0430\u0446\u0438\u044f\" (*.dc0)", None))
 #if QT_CONFIG(tooltip)
         self.DlsgInFileName.setToolTip(QCoreApplication.translate("TaxExportDlg", u"File to use as a template for russian tax form", None))
 #endif // QT_CONFIG(tooltip)

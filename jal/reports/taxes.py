@@ -5,6 +5,7 @@ import xlsxwriter
 import logging
 from jal.constants import TransactionType, CorporateAction
 from jal.reports.helpers import xslxFormat, xlsxWriteRow
+from jal.reports.dlsg import DLSG
 from jal.ui_custom.helpers import g_tr
 from jal.db.helpers import executeSQL, readSQLrecord, readSQL
 from PySide2.QtWidgets import QDialog, QFileDialog
@@ -41,7 +42,12 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
                         g_tr('TaxExportDialog', "Tax form 2020 (*.dc0)"),
                         '.dc0', self.DlsgOutFileName),
         }
-        filename = QFileDialog.getSaveFileName(self, selector[type][0], ".", selector[type][1])
+        if type[-3:] == '-IN':
+            filename = QFileDialog.getOpenFileName(self, selector[type][0], ".", selector[type][1])
+        elif type[-4:] == '-OUT':
+            filename = QFileDialog.getSaveFileName(self, selector[type][0], ".", selector[type][1])
+        else:
+            raise ValueError
         if filename[0]:
             if filename[1] == selector[type][1] and filename[0][-len(selector[type][2]):] != selector[type][2]:
                 selector[type][3].setText(filename[0] + selector[type][2])
@@ -57,9 +63,21 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
     def getAccount(self):
         return self.AccountWidget.selected_id
 
+    def getDlsgState(self):
+        return self.DlsgGroup.isEnabled()
+
+    def getDslgInFilename(self):
+        return self.DlsgInFileName.text()
+
+    def getDslgOutFilename(self):
+        return self.DlsgOutFileName.text()
+
     year = Property(int, fget=getYear)
-    xls_filename = Property(int, fget=getXlsFilename)
+    xls_filename = Property(str, fget=getXlsFilename)
     account = Property(int, fget=getAccount)
+    update_dlsg = Property(bool, fget=getDlsgState)
+    dlsg_in_filename = Property(str, fget=getDslgInFilename)
+    dlsg_out_filename = Property(str, fget=getDslgOutFilename)
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -88,14 +106,23 @@ class TaxesRus:
     def showTaxesDialog(self, parent):
         dialog = TaxExportDialog(parent, self.db)
         if dialog.exec_():
-            self.save2file(dialog.xls_filename, dialog.year, dialog.account)
+            self.save2file(dialog.xls_filename, dialog.year, dialog.account, dlsg_update=dialog.update_dlsg,
+                           dlsg_in=dialog.dlsg_in_filename, dlsg_out=dialog.dlsg_out_filename)
 
-    def save2file(self, taxes_file, year, account_id):
+    def save2file(self, taxes_file, year, account_id, dlsg_update=False, dlsg_in=None, dlsg_out=None):
         year_begin = int(time.mktime(datetime.strptime(f"{year}", "%Y").timetuple()))
         year_end = int(time.mktime(datetime.strptime(f"{year + 1}", "%Y").timetuple()))
 
         workbook = xlsxwriter.Workbook(filename=taxes_file)
         formats = xslxFormat(workbook)
+
+        if dlsg_update:
+            statement = DLSG()
+            try:
+                statement.read_file(dlsg_in)
+            except:
+                logging.error(g_tr('TaxesRus', "Can't open tax form file ") + f"'{dlsg_in}'")
+                return
 
         for report in self.reports:
             sheet = workbook.add_worksheet(name=report)
@@ -104,6 +131,12 @@ class TaxesRus:
             workbook.close()
         except:
             logging.error(g_tr('TaxesRus', "Can't write tax report into file ") + f"'{taxes_file}'")
+
+        if dlsg_update:
+            try:
+                statement.write_file(dlsg_out)
+            except:
+                logging.error(g_tr('TaxesRus', "Can't write tax form into file ") + f"'{dlsg_out}'")
 
     def add_report_header(self, sheet, formats, title):
         sheet.write(0, 0, title, formats.Bold())

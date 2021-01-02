@@ -68,7 +68,7 @@
     </widget>
    </item>
    <item row="7" column="0" colspan="4">
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="DlsgGroup">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
@@ -255,7 +255,7 @@
   <tabstop>Year</tabstop>
   <tabstop>XlsFileName</tabstop>
   <tabstop>XlsSelectBtn</tabstop>
-  <tabstop>groupBox</tabstop>
+  <tabstop>DlsgGroup</tabstop>
   <tabstop>DlsgInFileName</tabstop>
   <tabstop>InitialSelectBtn</tabstop>
   <tabstop>DlsgOutFileName</tabstop>
