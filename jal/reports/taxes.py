@@ -92,6 +92,8 @@ class TaxesRus:
 
     def __init__(self, db):
         self.db = db
+        self.account_currency = ''
+        self.broker_name = ''
         self.reports = {
             "Дивиденды": self.prepare_dividends,
             "Сделки": self.prepare_trades,
@@ -110,6 +112,14 @@ class TaxesRus:
                            dlsg_in=dialog.dlsg_in_filename, dlsg_out=dialog.dlsg_out_filename)
 
     def save2file(self, taxes_file, year, account_id, dlsg_update=False, dlsg_in=None, dlsg_out=None):
+        self.account_currency = readSQL(self.db,
+                                        "SELECT c.name FROM accounts AS a "
+                                        "LEFT JOIN assets AS c ON a.currency_id = c.id WHERE a.id=:account",
+                                        [(":account", account_id)])
+        self.broker_name = readSQL(self.db,
+                                   "SELECT b.name FROM accounts AS a "
+                                   "LEFT JOIN agents AS b ON a.organization_id = b.id WHERE a.id=:account",
+                                   [(":account", account_id)])
         year_begin = int(time.mktime(datetime.strptime(f"{year}", "%Y").timetuple()))
         year_end = int(time.mktime(datetime.strptime(f"{year + 1}", "%Y").timetuple()))
 
@@ -181,7 +191,7 @@ class TaxesRus:
         query = executeSQL(self.db,
                            "SELECT d.timestamp AS payment_date, s.name AS symbol, s.full_name AS full_name, "
                            "d.sum AS amount, d.sum_tax AS tax_amount, q.quote AS rate_cbr , "
-                           "c.name AS country, c.tax_treaty AS tax_treaty "
+                           "c.name AS country, c.code AS country_code, c.tax_treaty AS tax_treaty "
                            "FROM dividends AS d "
                            "LEFT JOIN assets AS s ON s.id = d.asset_id "
                            "LEFT JOIN accounts AS a ON d.account_id = a.id "
@@ -193,7 +203,7 @@ class TaxesRus:
                            [(":begin", begin), (":end", end), (":account_id", account_id)])
         row = start_row = 9
         while query.next():
-            payment_date, symbol, full_name, amount_usd, tax_usd, rate, country, tax_treaty = readSQLrecord(query)
+            payment_date, symbol, full_name, amount_usd, tax_usd, rate, country, code, tax_treaty = readSQLrecord(query)
             amount_rub = round(amount_usd * rate, 2) if rate else 0
             tax_us_rub = round(tax_usd * rate, 2) if rate else 0
             tax_ru_rub = round(0.13 * amount_rub, 2)
@@ -215,7 +225,8 @@ class TaxesRus:
                 9: (country, formats.Text(row)),
                 10: (self.bool_text[tax_treaty], formats.Text(row))
             })
-            statement.add_dividend(f"{symbol} ({full_name})", payment_date, 'USD',
+            code = 'us' if code == 'xx' else code   # TODO select right country code if it is absent
+            statement.add_dividend(code, f"{symbol} ({full_name})", payment_date, self.account_currency,
                                    amount_usd, amount_rub, tax_usd, tax_us_rub, rate)
             row += 1
         sheet.write(row, 3, "ИТОГО", formats.ColumnFooter())
@@ -226,7 +237,7 @@ class TaxesRus:
         sheet.write_formula(row, 8, f"=SUM(I{start_row + 1}:I{row})", formats.ColumnFooter())
 
 # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_trades(self, sheet, _statement, account_id, begin, end, formats):
+    def prepare_trades(self, sheet, statement, account_id, begin, end, formats):
         self.add_report_header(sheet, formats, "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде")
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")
         _ = executeSQL(self.db,
@@ -354,6 +365,9 @@ class TaxesRus:
                 10: (c_fee_usd, formats.Number(data_row, 6)),
                 11: (c_fee_rub, formats.Number(data_row, 2))
             })
+            # # TODO replace 'us' with value depandable on broker account
+            statement.add_stock_profit('us', self.broker_name, deal['c_date'], self.account_currency,
+                                       income_usd, income, spending, deal['c_rate'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
         sheet.write(row, 11, "ИТОГО", formats.ColumnFooter())
