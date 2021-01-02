@@ -119,7 +119,7 @@ class TaxesRus:
             2: ("Полное наименование", formats.ColumnHeader(), 50, 0, 0),
             3: ("Курс USD/RUB на дату выплаты", formats.ColumnHeader(), 16, 0, 0),
             4: ("Доход, USD", formats.ColumnHeader(), 12, 0, 0),
-            5: ("Доход, RUB", formats.ColumnHeader(), 12, 0, 0),
+            5: ("Доход, RUB (код 1010)", formats.ColumnHeader(), 12, 0, 0),
             6: ("Налог упл., USD", formats.ColumnHeader(), 12, 0, 0),
             7: ("Налог упл., RUB", formats.ColumnHeader(), 12, 0, 0),
             8: ("Налог к уплате, RUB", formats.ColumnHeader(), 12, 0, 0),
@@ -144,12 +144,7 @@ class TaxesRus:
                            "WHERE d.timestamp>=:begin AND d.timestamp<:end AND d.account_id=:account_id "
                            "ORDER BY d.timestamp",
                            [(":begin", begin), (":end", end), (":account_id", account_id)])
-        row = 9
-        amount_rub_sum = 0
-        amount_usd_sum = 0
-        tax_usd_sum = 0
-        tax_us_rub_sum = 0
-        tax_ru_rub_sum = 0
+        row = start_row = 9
         while query.next():
             payment_date, symbol, full_name, amount_usd, tax_usd, rate, country, tax_treaty = readSQLrecord(query)
             amount_rub = round(amount_usd * rate, 2) if rate else 0
@@ -173,20 +168,13 @@ class TaxesRus:
                 9: (country, formats.Text(row)),
                 10: (self.bool_text[tax_treaty], formats.Text(row))
             })
-            amount_usd_sum += amount_usd
-            amount_rub_sum += amount_rub
-            tax_usd_sum += tax_usd
-            tax_us_rub_sum += tax_us_rub
-            tax_ru_rub_sum += tax_ru_rub
             row += 1
-        xlsxWriteRow(sheet, row, {
-            3: ("ИТОГО", formats.ColumnFooter()),
-            4: (amount_usd_sum, formats.ColumnFooter()),
-            5: (amount_rub_sum, formats.ColumnFooter()),
-            6: (tax_usd_sum, formats.ColumnFooter()),
-            7: (tax_us_rub_sum, formats.ColumnFooter()),
-            8: (tax_ru_rub_sum, formats.ColumnFooter())
-        })
+        sheet.write(row, 3, "ИТОГО", formats.ColumnFooter())
+        sheet.write_formula(row, 4, f"=SUM(E{start_row + 1}:E{row})", formats.ColumnFooter())
+        sheet.write_formula(row, 5, f"=SUM(F{start_row + 1}:F{row})", formats.ColumnFooter())
+        sheet.write_formula(row, 6, f"=SUM(G{start_row + 1}:G{row})", formats.ColumnFooter())
+        sheet.write_formula(row, 7, f"=SUM(H{start_row + 1}:H{row})", formats.ColumnFooter())
+        sheet.write_formula(row, 8, f"=SUM(I{start_row + 1}:I{row})", formats.ColumnFooter())
 
 # -----------------------------------------------------------------------------------------------------------------------
     def prepare_trades(self, sheet, account_id, begin, end, formats):
@@ -386,7 +374,7 @@ class TaxesRus:
             })
             row += 1
         sheet.write(row, 3, "ИТОГО", formats.ColumnFooter())
-        sheet.write_formula(row, 4, f"SUM(E{start_row+1}:E{row})", formats.ColumnFooter())
+        sheet.write_formula(row, 4, f"=SUM(E{start_row+1}:E{row})", formats.ColumnFooter())
 
 #-----------------------------------------------------------------------------------------------------------------------
     def prepare_corporate_actions(self, sheet, account_id, begin, end, formats):
