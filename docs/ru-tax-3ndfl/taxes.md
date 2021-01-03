@@ -1,7 +1,9 @@
 ### Инструкция по подготовке данных для декларации 3-НДФЛ для Interactive Brokers
 
 *Данная инструкция представлена здесь в ознакомительных целях.  
-Данное програмное обеспечение было создано для использования в личных целях и я не могу гарантировать 100% корректность его работы, т.к. у меня недо дочтаточного количества примеров коротких продаж, операций с опционами, корпоративных событий и специфических комиссий Interactive Brokers.*
+Данное програмное обеспечение было создано для использования в личных целях и большая часть расчетов тестировалась с дивидендами и длинными позициями в долларах.  
+Другие валюта, а так же короткие продажи, операции с опционами, корпоративных событие и специфические комиссии Interactive Brokers поддерживаются, но могут иметь недочёты, т.к. у меня не было достаточного количества примеров, чтобы протестировать все варианты.*
+
 
 *Вы можете использовать его свободно, но с обязательной ссылкой на https://github.com/titov-vv/jal в случае публикации в сети Интернет   
 Информация об ошибках, замечания и пожелания приветствуются.*
@@ -66,11 +68,13 @@
 10. [Получившийся Excel-файл с расчётом](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/3ndfl_tax_report.xlsx) содержит 4 закладки:  
     - Расчёт дивидендов  
     ![Report Dividends](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/report_1.png?raw=true)
-    - Расчёт сделок  
+    - Расчёт сделок с ценными бумагами 
     ![Report Deals](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/report_2.png?raw=true)
+    - Расчёт сделок с производными финансовыми инструментами
+    ![Report Derivatives](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/report_3.png?raw=true)
     - Расчёт комиссий и прочих операций  
-    ![Report Fees](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/report_3.png?raw=true)
+    ![Report Fees](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/report_4.png?raw=true)
     - Расчёт по корпоративным событиям  
-    ![Report Corporate Actions](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/report_4.png?raw=true)
+    ![Report Corporate Actions](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/report_5.png?raw=true)
     
 

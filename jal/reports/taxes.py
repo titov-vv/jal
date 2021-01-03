@@ -100,7 +100,8 @@ class TaxesRus:
         self.broker_name = ''
         self.reports = {
             "Дивиденды": self.prepare_dividends,
-            "Сделки": self.prepare_trades,
+            "Сделки с ЦБ": self.prepare_trades,
+            "Сделки с ПФИ": self.prepare_derivatives,
             "Комиссии": self.prepare_broker_fees,
             "Корп.события": self.prepare_corporate_actions
         }
@@ -319,6 +320,7 @@ class TaxesRus:
                            "LEFT JOIN t_last_dates AS ldcs ON c.settlement=ldcs.ref_id "
                            "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
                            "WHERE c.timestamp>=:begin AND c.timestamp<:end AND d.account_id=:account_id "
+                           "AND s.type_id >= 2 AND s.type_id <= 4 "  # To select only stocks/bonds/ETFs
                            "ORDER BY o.timestamp, c.timestamp",
                            [(":begin", begin), (":end", end), (":account_id", account_id)])
         start_row = 9
@@ -383,6 +385,151 @@ class TaxesRus:
         sheet.write_formula(row, 13, f"=SUM(N{start_row + 1}:N{row})", formats.ColumnFooter())
         sheet.write_formula(row, 14, f"=SUM(O{start_row + 1}:O{row})", formats.ColumnFooter())
         sheet.write_formula(row, 15, f"=SUM(P{start_row + 1}:P{row})", formats.ColumnFooter())
+
+    # -----------------------------------------------------------------------------------------------------------------------
+    # TODO optimize common elemets of all prepare_* methods
+    def prepare_derivatives(self, sheet, statement, account_id, begin, end, formats):
+        self.add_report_header(sheet, formats,
+                               "Отчет по сделкам с производными финансовыми инструментами, завершённым в отчетном периоде")
+        _ = executeSQL(self.db, "DELETE FROM t_last_dates")
+        _ = executeSQL(self.db,
+                       "INSERT INTO t_last_dates(ref_id, timestamp) "
+                       "SELECT ref_id, coalesce(MAX(q.timestamp), 0) AS timestamp "
+                       "FROM (SELECT t.timestamp AS ref_id "
+                       "FROM deals AS d "
+                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 3 "
+                       "LEFT JOIN trades AS t ON s.operation_id=t.id "
+                       "WHERE t.timestamp<:end AND d.account_id=:account_id "
+                       "UNION "
+                       "SELECT c.settlement AS ref_id "
+                       "FROM deals AS d "
+                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 3 "
+                       "LEFT JOIN trades AS c ON s.operation_id=c.id "
+                       "WHERE c.timestamp<:end AND d.account_id=:account_id "
+                       "UNION "
+                       "SELECT o.timestamp AS ref_id "
+                       "FROM deals AS d "
+                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 5 "
+                       "LEFT JOIN corp_actions AS o ON s.operation_id=o.id "
+                       "WHERE o.timestamp<:end AND d.account_id=:account_id) "
+                       "LEFT JOIN accounts AS a ON a.id = :account_id "
+                       "LEFT JOIN quotes AS q ON ref_id >= q.timestamp AND a.currency_id=q.asset_id "
+                       "GROUP BY ref_id",
+                       [(":end", end), (":account_id", account_id)])
+        self.db.commit()
+
+        header_row = {
+            0: ("Ценная бумага", formats.ColumnHeader(), 22, 0, 0),
+            1: ("Кол-во", formats.ColumnHeader(), 8, 0, 0),
+            2: ("Тип сделки", formats.ColumnHeader(), 8, 0, 0),
+            3: ("Дата сделки", formats.ColumnHeader(), 10, 0, 0),
+            4: ("Курс USD/RUB на дату сделки", formats.ColumnHeader(), 9, 0, 0),
+            5: ("Дата поставки", formats.ColumnHeader(), 10, 0, 0),
+            6: ("Курс USD/RUB на дату поставки", formats.ColumnHeader(), 9, 0, 0),
+            7: ("Цена, USD", formats.ColumnHeader(), 12, 0, 0),
+            8: ("Сумма сделки, USD", formats.ColumnHeader(), 12, 0, 0),
+            9: ("Сумма сделки, RUB", formats.ColumnHeader(), 12, 0, 0),
+            10: ("Комиссия, USD", formats.ColumnHeader(), 12, 0, 0),
+            11: ("Комиссия, RUB", formats.ColumnHeader(), 9, 0, 0),
+            12: ("Доход, RUB (код 1532)", formats.ColumnHeader(), 12, 0, 0),
+            13: ("Расход, RUB (код 206)", formats.ColumnHeader(), 12, 0, 0),
+            14: ("Финансовый результат, RUB", formats.ColumnHeader(), 12, 0, 0),
+            15: ("Финансовый результат, USD", formats.ColumnHeader(), 12, 0, 0)
+        }
+        xlsxWriteRow(sheet, 7, header_row, 60)
+        for column in range(len(header_row)):  # Put column numbers for reference
+            header_row[column] = (f"({column + 1})", formats.ColumnHeader())
+        xlsxWriteRow(sheet, 8, header_row)
+
+        # Take all actions without conversion
+        query = executeSQL(self.db,
+                           "SELECT s.name AS symbol, d.qty AS qty, "
+                           "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, "
+                           "qos.quote AS os_rate, o.price AS o_price, o.qty AS o_qty, o.fee AS o_fee, "
+                           "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, "
+                           "qcs.quote AS cs_rate, c.price AS c_price, c.qty AS c_qty, c.fee AS c_fee "
+                           "FROM deals AS d "
+                           "JOIN sequence AS os ON os.id=d.open_sid AND os.type = 3 "
+                           "LEFT JOIN trades AS o ON os.operation_id=o.id "
+                           "JOIN sequence AS cs ON cs.id=d.close_sid AND cs.type = 3 "
+                           "LEFT JOIN trades AS c ON cs.operation_id=c.id "
+                           "LEFT JOIN assets AS s ON o.asset_id=s.id "
+                           "LEFT JOIN accounts AS a ON a.id = :account_id "
+                           "LEFT JOIN t_last_dates AS ldo ON o.timestamp=ldo.ref_id "
+                           "LEFT JOIN quotes AS qo ON ldo.timestamp=qo.timestamp AND a.currency_id=qo.asset_id "
+                           "LEFT JOIN t_last_dates AS ldos ON o.settlement=ldos.ref_id "
+                           "LEFT JOIN quotes AS qos ON ldos.timestamp=qos.timestamp AND a.currency_id=qos.asset_id "
+                           "LEFT JOIN t_last_dates AS ldc ON c.timestamp=ldc.ref_id "
+                           "LEFT JOIN quotes AS qc ON ldc.timestamp=qc.timestamp AND a.currency_id=qc.asset_id "
+                           "LEFT JOIN t_last_dates AS ldcs ON c.settlement=ldcs.ref_id "
+                           "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
+                           "WHERE c.timestamp>=:begin AND c.timestamp<:end AND d.account_id=:account_id "
+                           "AND s.type_id == 6 "  # To select only derivatives
+                           "ORDER BY o.timestamp, c.timestamp",
+                           [(":begin", begin), (":end", end), (":account_id", account_id)])
+        start_row = 9
+        data_row = 0
+        while query.next():
+            deal = readSQLrecord(query, named=True)
+            row = start_row + (data_row * 2)
+            o_deal_type = "Покупка" if deal['qty'] >= 0 else "Продажа"
+            c_deal_type = "Продажа" if deal['qty'] >= 0 else "Покупка"
+            o_amount_usd = round(deal['o_price'] * abs(deal['qty']), 2)
+            o_amount_rub = round(o_amount_usd * deal['o_rate'], 2) if deal['o_rate'] else 0
+            c_amount_usd = round(deal['c_price'] * abs(deal['qty']), 2)
+            c_amount_rub = round(c_amount_usd * deal['c_rate'], 2) if deal['c_rate'] else 0
+            o_fee_usd = deal['o_fee'] * abs(deal['qty'] / deal['o_qty'])
+            c_fee_usd = deal['c_fee'] * abs(deal['qty'] / deal['c_qty'])
+            o_fee_rub = round(o_fee_usd * deal['os_rate'], 2) if deal['os_rate'] else 0
+            c_fee_rub = round(c_fee_usd * deal['cs_rate'], 2) if deal['cs_rate'] else 0
+            income = c_amount_rub if deal['qty'] >= 0 else o_amount_rub
+            income_usd = c_amount_usd if deal['qty'] >= 0 else o_amount_usd
+            spending = o_amount_rub if deal['qty'] >= 0 else c_amount_rub
+            spending_usd = o_amount_usd if deal['qty'] >= 0 else c_amount_usd
+            spending = spending + o_fee_rub + c_fee_rub
+            spending_usd = spending_usd + o_fee_usd + c_fee_usd
+            xlsxWriteRow(sheet, row, {
+                0: (deal['symbol'], formats.Text(data_row), 0, 0, 1),
+                1: (float(abs(deal['qty'])), formats.Number(data_row, 0, True), 0, 0, 1),
+                2: (o_deal_type, formats.Text(data_row)),
+                3: (datetime.fromtimestamp(deal['o_date']).strftime('%d.%m.%Y'), formats.Text(data_row)),
+                4: (deal['os_rate'], formats.Number(data_row, 4)),
+                5: (datetime.fromtimestamp(deal['os_date']).strftime('%d.%m.%Y'), formats.Text(data_row)),
+                6: (deal['o_rate'], formats.Number(data_row, 4)),
+                7: (deal['o_price'], formats.Number(data_row, 6)),
+                8: (o_amount_usd, formats.Number(data_row, 2)),
+                9: (o_amount_rub, formats.Number(data_row, 2)),
+                10: (o_fee_usd, formats.Number(data_row, 6)),
+                11: (o_fee_rub, formats.Number(data_row, 2)),
+                12: (income, formats.Number(data_row, 2), 0, 0, 1),
+                13: (spending, formats.Number(data_row, 2), 0, 0, 1),
+                14: (income - spending, formats.Number(data_row, 2), 0, 0, 1),
+                15: (income_usd - spending_usd, formats.Number(data_row, 2), 0, 0, 1)
+            })
+            xlsxWriteRow(sheet, row + 1, {
+                2: (c_deal_type, formats.Text(data_row)),
+                3: (datetime.fromtimestamp(deal['c_date']).strftime('%d.%m.%Y'), formats.Text(data_row)),
+                4: (deal['cs_rate'], formats.Number(data_row, 4)),
+                5: (datetime.fromtimestamp(deal['cs_date']).strftime('%d.%m.%Y'), formats.Text(data_row)),
+                6: (deal['c_rate'], formats.Number(data_row, 4)),
+                7: (deal['c_price'], formats.Number(data_row, 6)),
+                8: (c_amount_usd, formats.Number(data_row, 2)),
+                9: (c_amount_rub, formats.Number(data_row, 2)),
+                10: (c_fee_usd, formats.Number(data_row, 6)),
+                11: (c_fee_rub, formats.Number(data_row, 2))
+            })
+            # TODO replace 'us' with value depandable on broker account
+            if statement is not None:
+                statement.add_derivative_profit('us', self.broker_name, deal['c_date'], self.account_currency,
+                                                income_usd, income, spending, deal['c_rate'])
+            data_row = data_row + 1
+        row = start_row + (data_row * 2)
+        sheet.write(row, 11, "ИТОГО", formats.ColumnFooter())
+        sheet.write_formula(row, 12, f"=SUM(M{start_row + 1}:M{row})", formats.ColumnFooter())
+        sheet.write_formula(row, 13, f"=SUM(N{start_row + 1}:N{row})", formats.ColumnFooter())
+        sheet.write_formula(row, 14, f"=SUM(O{start_row + 1}:O{row})", formats.ColumnFooter())
+        sheet.write_formula(row, 15, f"=SUM(P{start_row + 1}:P{row})", formats.ColumnFooter())
+
 
 # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_fees(self, sheet, _statement, account_id, begin, end, formats):

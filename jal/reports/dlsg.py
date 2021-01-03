@@ -196,7 +196,7 @@ class DLSG:
         foreign_section = self.get_section('DeclForeign')
         if foreign_section is None:
             return
-        country_code, currency_code =self.get_country_currency(country, currency_name)
+        country_code, currency_code = self.get_country_currency(country, currency_name)
         source = "Дивиденд от " + description
         foreign_section.add_income(self.codes['dividend'], country_code, source, timestamp,
                                    currency_code, amount, amount_rub, tax, tax_rub, rate)
@@ -207,8 +207,18 @@ class DLSG:
         foreign_section = self.get_section('DeclForeign')
         if foreign_section is None:
             return
-        country_code, currency_code =self.get_country_currency(country, currency_name)
+        country_code, currency_code = self.get_country_currency(country, currency_name)
         foreign_section.add_income(self.codes['stock'], country_code, source, timestamp,
+                                   currency_code, amount, income_rub, 0.0, 0.0, rate, deduction=spending_rub)
+
+    def add_derivative_profit(self, country, source, timestamp, currency_name, amount, income_rub, spending_rub, rate):
+        if self._only_dividends:
+            return
+        foreign_section = self.get_section('DeclForeign')
+        if foreign_section is None:
+            return
+        country_code, currency_code = self.get_country_currency(country, currency_name)
+        foreign_section.add_income(self.codes['derivative'], country_code, source, timestamp,
                                    currency_code, amount, income_rub, 0.0, 0.0, rate, deduction=spending_rub)
 
     def get_country_currency(self, country, currency_name):
