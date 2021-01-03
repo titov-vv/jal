@@ -1,6 +1,7 @@
 import re
 import logging
 import datetime
+from jal.ui_custom.helpers import g_tr
 
 # standard header is "DLSG            DeclYYYY0102FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", where YYYY is year of declaration
 HEADER_LENGTH = 60
@@ -115,7 +116,7 @@ class DLSGDeclForeign(DLSGsection):
             section_name = records.pop(0)
 
             if section_name != SECTION_PREFIX + DLSGCurrencyIncome.tag + f"{i:03d}":
-                logging.error(f"Invalid DeclForeign subsection: {section_name}")
+                logging.error(g_tr('DLSG', "Invalid DeclForeign subsection:") + f" {section_name}")
                 raise ValueError
             self.sections[i] = DLSGCurrencyIncome(i, records=records)
 
@@ -225,12 +226,12 @@ class DLSG:
         try:
             currency_code = self.currencies[currency_name]
         except:
-            logging.error(f"Currency {currency_name} is not known. Can't add dividend.")
+            logging.error(g_tr('DLSG', "Currency isn't known for tax form:") + f" {currency_name}")
             raise ValueError
         try:
             country_code = self.countries[country]
         except:
-            logging.error(f"Country {country} is not known. Can't add stock income.")
+            logging.error(g_tr('DLSG', "Country isn't known for tax form:") + f" {country}")
             raise ValueError
         return country_code, currency_code
 
@@ -238,7 +239,7 @@ class DLSG:
         for section in self._sections:
             if self._sections[section].tag == name:
                 return self._sections[section]
-        logging.error(f"Declaration has now 'DeclForeign' section. Can't add dividend.")
+        logging.error(g_tr('DLSG', "Declaration file has no 'DeclForeign' section."))
         return None
 
     # Method reads declaration form a file with given filename
@@ -253,10 +254,10 @@ class DLSG:
 
         parts = re.match(self.header_pattern, self.header)
         if not parts:
-            logging.error(f"Unexpected file header: {self.header}")
+            logging.error(g_tr('DLSG', "Unexpected declaration file header:") + f" {self.header}")
             raise ValueError
         self._year = int(parts.group(1))
-        logging.info(f"Declaration found for year: {self._year}")
+        logging.info(g_tr('DLSG', "Declaration file is for year:") + f" {self._year}")
 
         self.split_records(raw_data[HEADER_LENGTH:])
         self.split_sections()
@@ -275,13 +276,14 @@ class DLSG:
             try:
                 length = int(length_field)
             except Exception as e:
-                logging.error(f"Invalid record size at position {pos+HEADER_LENGTH}: '{length_field}'")
+                logging.error(g_tr('DLSG', "Invalid record size at position")
+                              + f" {pos+HEADER_LENGTH}: '{length_field}'")
                 raise ValueError
             pos += SIZE_LENGTH
             self._records.append(data[pos: pos + length])
             pos = pos + length
 
-        logging.debug(f"Declaration content: {self._records}")
+        logging.debug(g_tr('DLSG', "Declaration file content:") + f" {self._records}")
 
     def split_sections(self):
         i = 0
@@ -299,18 +301,19 @@ class DLSG:
             self._sections[i] = section
             i += 1
 
-        logging.debug(f"Sections loaded: {i}")
+        logging.debug(g_tr('DLSG', "Sections loaded:") + f" {i}")
         for j in range(i):
-            logging.debug(f"Section '{self._sections[j].tag}' loaded as " + str(type(self._sections[j])))
+            logging.debug(g_tr('DLSG', "Section ") + f" '{self._sections[j].tag}' "
+                          + g_tr('DLSG', "loaded as ") + str(type(self._sections[j])))
 
     def write_file(self, filename):
-        logging.info(f"Writing file: {filename}")
+        logging.info(g_tr('DLSG', "Writing file:") + f" {filename}")
 
         self._records = []
 
         for section in self._sections:
             self._sections[section].write(self._records)
-        logging.debug(f"Declaration to write: {self._records}")
+        logging.debug(g_tr('DLSG', "Declaration to write:") + f" {self._records}")
 
         raw_data = self.header.format(self._year)
         for record in self._records:
