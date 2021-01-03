@@ -645,9 +645,10 @@ class StatementLoader(QObject):
         return 1
 
     def loadIBOptionEAE(self, option):
-        qty = option['quantity'] * option['multiplier']
-        self.createTrade(option['accountId'], option['symbol'], option['date'], option['date'], option['tradeID'], qty,
-                         option['tradePrice'], option['commisionsAndTax'])
+        # Skip option assignment, expiration and exercise as there should be corresponding Book Trades
+        # qty = option['quantity'] * option['multiplier']
+        # self.createTrade(option['accountId'], option['symbol'], option['date'], option['date'], option['tradeID'], qty,
+        #                  option['tradePrice'], option['commisionsAndTax'])
         return 1
 
     def createTrade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee, coupon=0.0):
