@@ -1006,54 +1006,54 @@ do you want to save it?</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="160"/>
+        <location filename="../widgets/main_window.py" line="161"/>
         <source>Select directory to save backup</source>
         <translation>Выберите каталог для сохранения бэкапа</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="170"/>
+        <location filename="../widgets/main_window.py" line="171"/>
         <source>Data restored</source>
         <translation>Данные восстановлены</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="165"/>
+        <location filename="../widgets/main_window.py" line="166"/>
         <source>Select directory to restore from</source>
         <translation>Выберите каталог из которого восстановить</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="258"/>
+        <location filename="../widgets/main_window.py" line="259"/>
         <source>Quotes download completed</source>
         <translation>Загрузка котировок завершена</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="264"/>
+        <location filename="../widgets/main_window.py" line="265"/>
         <source>Statement load completed</source>
         <translation>Загрузка отчета завершена успешно</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="269"/>
+        <location filename="../widgets/main_window.py" line="270"/>
         <source>Statement load failed</source>
         <translation>Загрузка отчета неуспешна</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="150"/>
+        <location filename="../widgets/main_window.py" line="151"/>
         <source>Restart required</source>
         <translation>Требуется рестарт</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="150"/>
+        <location filename="../widgets/main_window.py" line="151"/>
         <source>Language was changed to </source>
         <translation>Язык был изменён на </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="170"/>
+        <location filename="../widgets/main_window.py" line="171"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation>Вы должны перезапустить приложение, чтобы применить изменения
 Приложение сейчас завершит свою работу</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="170"/>
+        <location filename="../widgets/main_window.py" line="171"/>
         <source>Database was loaded from the backup.
 </source>
         <translation>Данные были загружены из бэкапа.
@@ -1910,22 +1910,22 @@ Application will be terminated now</source>
         <translation>Частая</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="76"/>
+        <location filename="../widgets/main_window.py" line="77"/>
         <source>Income / Spending</source>
         <translation>Доход / Расход</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="79"/>
+        <location filename="../widgets/main_window.py" line="80"/>
         <source>Trade</source>
         <translation>Сделка</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="82"/>
+        <location filename="../widgets/main_window.py" line="83"/>
         <source>Dividend</source>
         <translation>Дивиденд</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="85"/>
+        <location filename="../widgets/main_window.py" line="86"/>
         <source>Transfer</source>
         <translation>Перевод</translation>
     </message>
@@ -1950,7 +1950,7 @@ Application will be terminated now</source>
         <translation>СОИДН</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="88"/>
+        <location filename="../widgets/main_window.py" line="89"/>
         <source>Corp. Action</source>
         <translation>Корп. Действие</translation>
     </message>
@@ -1986,100 +1986,105 @@ Application will be terminated now</source>
 <context>
     <name>TaxExportDlg</name>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="194"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="206"/>
         <source>Year:</source>
         <translation>Год:</translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="198"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="207"/>
         <source>Account:</source>
         <translation>Счет:</translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="175"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="179"/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="199"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="208"/>
         <source>Excel file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="192"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="197"/>
         <source> ... </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="187"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="192"/>
         <source>Initial file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="188"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="193"/>
         <source>Output file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="176"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="181"/>
         <source>Update file &quot;u0414u0435u043au043bu0430u0440u0430u0446u0438u044f&quot; (*.dc0)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="170"/>
-        <source>Select parameters and filex for tax report</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="171"/>
-        <source>Below function is experimental - use it with care</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="196"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="201"/>
         <source>File where to store tax report in Excel format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="202"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="204"/>
         <source>Foreign account to prepare tax report for</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="190"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="195"/>
         <source>Select file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="178"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="183"/>
         <source>File to use as a template for russian tax form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="185"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="190"/>
         <source>File where to store russian tax form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="193"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="198"/>
         <source>Update only information about dividends</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_export_dlg.py" line="175"/>
+        <source>Select parameters and files for tax report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_export_dlg.py" line="180"/>
+        <source>Below functions are experimental - use it with care</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_export_dlg.py" line="209"/>
+        <source>Do not use settlement date for currency rates</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>TaxesRus</name>
     <message>
-        <location filename="../reports/taxes.py" line="150"/>
+        <location filename="../reports/taxes.py" line="151"/>
         <source>Can&apos;t write tax report into file </source>
         <translation>Не удалось записать налоговый отчет в файл </translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="141"/>
+        <location filename="../reports/taxes.py" line="142"/>
         <source>Can&apos;t open tax form file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="156"/>
+        <location filename="../reports/taxes.py" line="157"/>
         <source>Can&apos;t write tax form into file </source>
         <translation type="unfinished"></translation>
     </message>

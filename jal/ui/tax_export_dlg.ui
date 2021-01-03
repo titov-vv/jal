@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>601</width>
-    <height>257</height>
+    <width>602</width>
+    <height>290</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Select parameters and filex for tax report</string>
+   <string>Select parameters and files for tax report</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
@@ -29,25 +29,10 @@
    <property name="horizontalSpacing">
     <number>6</number>
    </property>
-   <item row="5" column="0" colspan="4">
-    <widget class="QLabel" name="WarningLbl">
-     <property name="font">
-      <font>
-       <italic>true</italic>
-      </font>
-     </property>
-     <property name="text">
-      <string>Below function is experimental - use it with care</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="3" rowspan="3">
-    <widget class="QDialogButtonBox" name="buttonBox">
+   <item row="4" column="0" colspan="4">
+    <widget class="Line" name="line">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <enum>Qt::Horizontal</enum>
      </property>
     </widget>
    </item>
@@ -64,6 +49,18 @@
      </property>
      <property name="text">
       <string>...</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0" colspan="4">
+    <widget class="QLabel" name="WarningLbl">
+     <property name="font">
+      <font>
+       <italic>true</italic>
+      </font>
+     </property>
+     <property name="text">
+      <string>Below functions are experimental - use it with care</string>
      </property>
     </widget>
    </item>
@@ -161,47 +158,6 @@
      </layout>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="YearLbl">
-     <property name="text">
-      <string>Year:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QLineEdit" name="XlsFileName">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="toolTip">
-      <string>File where to store tax report in Excel format</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0" colspan="4">
-    <widget class="Line" name="line">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="AccountLbl">
-     <property name="text">
-      <string>Account:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="XlsFileLbl">
-     <property name="text">
-      <string>Excel file:</string>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="1" colspan="2">
     <widget class="QSpinBox" name="Year">
      <property name="alignment">
@@ -221,6 +177,19 @@
      </property>
     </widget>
    </item>
+   <item row="3" column="1">
+    <widget class="QLineEdit" name="XlsFileName">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>File where to store tax report in Excel format</string>
+     </property>
+    </widget>
+   </item>
    <item row="2" column="1" colspan="2">
     <widget class="AccountSelector" name="AccountWidget" native="true">
      <property name="toolTip">
@@ -228,7 +197,38 @@
      </property>
     </widget>
    </item>
-   <item row="8" column="0">
+   <item row="1" column="0">
+    <widget class="QLabel" name="YearLbl">
+     <property name="text">
+      <string>Year:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="3" rowspan="3">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="AccountLbl">
+     <property name="text">
+      <string>Account:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="XlsFileLbl">
+     <property name="text">
+      <string>Excel file:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -240,6 +240,13 @@
       </size>
      </property>
     </spacer>
+   </item>
+   <item row="8" column="0" colspan="4">
+    <widget class="QCheckBox" name="NoSettlement">
+     <property name="text">
+      <string>Do not use settlement date for currency rates</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

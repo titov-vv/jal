@@ -19,25 +19,17 @@ class Ui_TaxExportDlg(object):
     def setupUi(self, TaxExportDlg):
         if not TaxExportDlg.objectName():
             TaxExportDlg.setObjectName(u"TaxExportDlg")
-        TaxExportDlg.resize(601, 257)
+        TaxExportDlg.resize(602, 290)
         self.gridLayout = QGridLayout(TaxExportDlg)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setHorizontalSpacing(6)
         self.gridLayout.setContentsMargins(9, 9, 9, 9)
-        self.WarningLbl = QLabel(TaxExportDlg)
-        self.WarningLbl.setObjectName(u"WarningLbl")
-        font = QFont()
-        font.setItalic(True)
-        self.WarningLbl.setFont(font)
+        self.line = QFrame(TaxExportDlg)
+        self.line.setObjectName(u"line")
+        self.line.setFrameShape(QFrame.HLine)
+        self.line.setFrameShadow(QFrame.Sunken)
 
-        self.gridLayout.addWidget(self.WarningLbl, 5, 0, 1, 4)
-
-        self.buttonBox = QDialogButtonBox(TaxExportDlg)
-        self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setOrientation(Qt.Vertical)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
-
-        self.gridLayout.addWidget(self.buttonBox, 1, 3, 3, 1)
+        self.gridLayout.addWidget(self.line, 4, 0, 1, 4)
 
         self.XlsSelectBtn = QPushButton(TaxExportDlg)
         self.XlsSelectBtn.setObjectName(u"XlsSelectBtn")
@@ -48,6 +40,14 @@ class Ui_TaxExportDlg(object):
         self.XlsSelectBtn.setSizePolicy(sizePolicy)
 
         self.gridLayout.addWidget(self.XlsSelectBtn, 3, 2, 1, 1)
+
+        self.WarningLbl = QLabel(TaxExportDlg)
+        self.WarningLbl.setObjectName(u"WarningLbl")
+        font = QFont()
+        font.setItalic(True)
+        self.WarningLbl.setFont(font)
+
+        self.gridLayout.addWidget(self.WarningLbl, 5, 0, 1, 4)
 
         self.DlsgGroup = QGroupBox(TaxExportDlg)
         self.DlsgGroup.setObjectName(u"DlsgGroup")
@@ -101,10 +101,14 @@ class Ui_TaxExportDlg(object):
 
         self.gridLayout.addWidget(self.DlsgGroup, 7, 0, 1, 4)
 
-        self.YearLbl = QLabel(TaxExportDlg)
-        self.YearLbl.setObjectName(u"YearLbl")
+        self.Year = QSpinBox(TaxExportDlg)
+        self.Year.setObjectName(u"Year")
+        self.Year.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.Year.setMinimum(2010)
+        self.Year.setMaximum(2030)
+        self.Year.setValue(2020)
 
-        self.gridLayout.addWidget(self.YearLbl, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.Year, 1, 1, 1, 2)
 
         self.XlsFileName = QLineEdit(TaxExportDlg)
         self.XlsFileName.setObjectName(u"XlsFileName")
@@ -116,12 +120,22 @@ class Ui_TaxExportDlg(object):
 
         self.gridLayout.addWidget(self.XlsFileName, 3, 1, 1, 1)
 
-        self.line = QFrame(TaxExportDlg)
-        self.line.setObjectName(u"line")
-        self.line.setFrameShape(QFrame.HLine)
-        self.line.setFrameShadow(QFrame.Sunken)
+        self.AccountWidget = AccountSelector(TaxExportDlg)
+        self.AccountWidget.setObjectName(u"AccountWidget")
 
-        self.gridLayout.addWidget(self.line, 4, 0, 1, 4)
+        self.gridLayout.addWidget(self.AccountWidget, 2, 1, 1, 2)
+
+        self.YearLbl = QLabel(TaxExportDlg)
+        self.YearLbl.setObjectName(u"YearLbl")
+
+        self.gridLayout.addWidget(self.YearLbl, 1, 0, 1, 1)
+
+        self.buttonBox = QDialogButtonBox(TaxExportDlg)
+        self.buttonBox.setObjectName(u"buttonBox")
+        self.buttonBox.setOrientation(Qt.Vertical)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+
+        self.gridLayout.addWidget(self.buttonBox, 1, 3, 3, 1)
 
         self.AccountLbl = QLabel(TaxExportDlg)
         self.AccountLbl.setObjectName(u"AccountLbl")
@@ -133,23 +147,14 @@ class Ui_TaxExportDlg(object):
 
         self.gridLayout.addWidget(self.XlsFileLbl, 3, 0, 1, 1)
 
-        self.Year = QSpinBox(TaxExportDlg)
-        self.Year.setObjectName(u"Year")
-        self.Year.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-        self.Year.setMinimum(2010)
-        self.Year.setMaximum(2030)
-        self.Year.setValue(2020)
-
-        self.gridLayout.addWidget(self.Year, 1, 1, 1, 2)
-
-        self.AccountWidget = AccountSelector(TaxExportDlg)
-        self.AccountWidget.setObjectName(u"AccountWidget")
-
-        self.gridLayout.addWidget(self.AccountWidget, 2, 1, 1, 2)
-
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        self.gridLayout.addItem(self.verticalSpacer, 8, 0, 1, 1)
+        self.gridLayout.addItem(self.verticalSpacer, 9, 0, 1, 1)
+
+        self.NoSettlement = QCheckBox(TaxExportDlg)
+        self.NoSettlement.setObjectName(u"NoSettlement")
+
+        self.gridLayout.addWidget(self.NoSettlement, 8, 0, 1, 4)
 
         QWidget.setTabOrder(self.Year, self.XlsFileName)
         QWidget.setTabOrder(self.XlsFileName, self.XlsSelectBtn)
@@ -167,12 +172,12 @@ class Ui_TaxExportDlg(object):
     # setupUi
 
     def retranslateUi(self, TaxExportDlg):
-        TaxExportDlg.setWindowTitle(QCoreApplication.translate("TaxExportDlg", u"Select parameters and filex for tax report", None))
-        self.WarningLbl.setText(QCoreApplication.translate("TaxExportDlg", u"Below function is experimental - use it with care", None))
+        TaxExportDlg.setWindowTitle(QCoreApplication.translate("TaxExportDlg", u"Select parameters and files for tax report", None))
 #if QT_CONFIG(tooltip)
         self.XlsSelectBtn.setToolTip(QCoreApplication.translate("TaxExportDlg", u"Select file", None))
 #endif // QT_CONFIG(tooltip)
         self.XlsSelectBtn.setText(QCoreApplication.translate("TaxExportDlg", u"...", None))
+        self.WarningLbl.setText(QCoreApplication.translate("TaxExportDlg", u"Below functions are experimental - use it with care", None))
         self.DlsgGroup.setTitle(QCoreApplication.translate("TaxExportDlg", u"Update file \"\u0414\u0435\u043a\u043b\u0430\u0440\u0430\u0446\u0438\u044f\" (*.dc0)", None))
 #if QT_CONFIG(tooltip)
         self.DlsgInFileName.setToolTip(QCoreApplication.translate("TaxExportDlg", u"File to use as a template for russian tax form", None))
@@ -191,15 +196,16 @@ class Ui_TaxExportDlg(object):
 #endif // QT_CONFIG(tooltip)
         self.InitialSelectBtn.setText(QCoreApplication.translate("TaxExportDlg", u" ... ", None))
         self.DividendsOnly.setText(QCoreApplication.translate("TaxExportDlg", u"Update only information about dividends", None))
-        self.YearLbl.setText(QCoreApplication.translate("TaxExportDlg", u"Year:", None))
+        self.Year.setSuffix("")
 #if QT_CONFIG(tooltip)
         self.XlsFileName.setToolTip(QCoreApplication.translate("TaxExportDlg", u"File where to store tax report in Excel format", None))
 #endif // QT_CONFIG(tooltip)
-        self.AccountLbl.setText(QCoreApplication.translate("TaxExportDlg", u"Account:", None))
-        self.XlsFileLbl.setText(QCoreApplication.translate("TaxExportDlg", u"Excel file:", None))
-        self.Year.setSuffix("")
 #if QT_CONFIG(tooltip)
         self.AccountWidget.setToolTip(QCoreApplication.translate("TaxExportDlg", u"Foreign account to prepare tax report for", None))
 #endif // QT_CONFIG(tooltip)
+        self.YearLbl.setText(QCoreApplication.translate("TaxExportDlg", u"Year:", None))
+        self.AccountLbl.setText(QCoreApplication.translate("TaxExportDlg", u"Account:", None))
+        self.XlsFileLbl.setText(QCoreApplication.translate("TaxExportDlg", u"Excel file:", None))
+        self.NoSettlement.setText(QCoreApplication.translate("TaxExportDlg", u"Do not use settlement date for currency rates", None))
     # retranslateUi
 

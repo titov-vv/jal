@@ -75,6 +75,9 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
     def getDividendsOnly(self):
         return self.DividendsOnly.isChecked()
 
+    def getNoSettlement(self):
+        return self.NoSettlement.isChecked()
+
     year = Property(int, fget=getYear)
     xls_filename = Property(str, fget=getXlsFilename)
     account = Property(int, fget=getAccount)
@@ -82,6 +85,7 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
     dlsg_in_filename = Property(str, fget=getDslgInFilename)
     dlsg_out_filename = Property(str, fget=getDslgOutFilename)
     dlsg_dividends_only = Property(bool, fget=getDividendsOnly)
+    no_settelement = Property(bool, fget=getNoSettlement)
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -98,6 +102,7 @@ class TaxesRus:
         self.db = db
         self.account_currency = ''
         self.broker_name = ''
+        self.use_settlement = True
         self.reports = {
             "Дивиденды": self.prepare_dividends,
             "Сделки с ЦБ": self.prepare_trades,
@@ -113,6 +118,7 @@ class TaxesRus:
     def showTaxesDialog(self, parent):
         dialog = TaxExportDialog(parent, self.db)
         if dialog.exec_():
+            self.use_settlement = not dialog.no_settelement
             self.save2file(dialog.xls_filename, dialog.year, dialog.account, dlsg_update=dialog.update_dlsg,
                            dlsg_in=dialog.dlsg_in_filename, dlsg_out=dialog.dlsg_out_filename,
                            dlsg_dividends_only=dialog.dlsg_dividends_only)
@@ -328,6 +334,9 @@ class TaxesRus:
         while query.next():
             deal = readSQLrecord(query, named=True)
             row = start_row + (data_row * 2)
+            if not self.use_settlement:
+                deal['os_rate'] = deal['o_rate']
+                deal['cs_rate'] = deal['c_rate']
             o_deal_type = "Покупка" if deal['qty']>=0 else "Продажа"
             c_deal_type = "Продажа" if deal['qty'] >= 0 else "Покупка"
             o_amount_usd = round(deal['o_price'] * abs(deal['qty']), 2)
@@ -472,6 +481,9 @@ class TaxesRus:
         while query.next():
             deal = readSQLrecord(query, named=True)
             row = start_row + (data_row * 2)
+            if not self.use_settlement:
+                deal['os_rate'] = deal['o_rate']
+                deal['cs_rate'] = deal['c_rate']
             o_deal_type = "Покупка" if deal['qty'] >= 0 else "Продажа"
             c_deal_type = "Продажа" if deal['qty'] >= 0 else "Покупка"
             o_amount_usd = round(deal['o_price'] * abs(deal['qty']), 2)
