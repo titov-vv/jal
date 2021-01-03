@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="ru" sourcelanguage="en">
+<!DOCTYPE TS>
+<TS version="2.1" language="ru" sourcelanguage="en">
 <context>
     <name></name>
     <message>
@@ -156,6 +157,74 @@
     </message>
 </context>
 <context>
+    <name>DLSG</name>
+    <message>
+        <location filename="../reports/dlsg.py" line="119"/>
+        <source>Invalid DeclForeign subsection:</source>
+        <translation>Секция DeclForeign некорректна:</translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="229"/>
+        <source>Currency isn&apos;t known for tax form:</source>
+        <translation>Неизвестная валюта для 3-НДФЛ:</translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="234"/>
+        <source>Country isn&apos;t known for tax form:</source>
+        <translation>Неизвестная страна для 3-НДФЛ:</translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="242"/>
+        <source>Declaration file has no &apos;DeclForeign&apos; section.</source>
+        <translation>Секция &apos;DeclForeign&apos; отсутствует в файле декларации.</translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="257"/>
+        <source>Unexpected declaration file header:</source>
+        <translation>Неизвестный заголовок файла декларации:</translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="260"/>
+        <source>Declaration file is for year:</source>
+        <translation>Файл декларации для года:</translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="279"/>
+        <source>Invalid record size at position</source>
+        <translation>Некорректный размер записи в позиции</translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="286"/>
+        <source>Declaration file content:</source>
+        <translation>Содержимое файла декларации:</translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="304"/>
+        <source>Sections loaded:</source>
+        <translation>Загружено секций:</translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="306"/>
+        <source>Section </source>
+        <translation>Секция </translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="306"/>
+        <source>loaded as </source>
+        <translation>загружена как </translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="310"/>
+        <source>Writing file:</source>
+        <translation>Запись файла:</translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="316"/>
+        <source>Declaration to write:</source>
+        <translation>Декларация для записи:</translation>
+    </message>
+</context>
+<context>
     <name>ImportSlipDialog</name>
     <message>
         <location filename="../data_import/slips.py" line="138"/>
@@ -200,22 +269,22 @@
     <message>
         <location filename="../data_import/slips.py" line="293"/>
         <source>Can&apos;t find &apos;receipt&apos; tag in json &apos;document&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>JSON тэг &apos;receipt&apos; отсутствует внутри тэга &apos;document&apos;</translation>
     </message>
     <message>
         <location filename="../data_import/slips.py" line="296"/>
         <source>Can&apos;t find &apos;document&apos; tag in json &apos;ticket&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>JSON тэг &apos;document&apos; отсутствует внутри тэга &apos;ticket&apos;</translation>
     </message>
     <message>
         <location filename="../data_import/slips.py" line="306"/>
         <source>Can&apos;t find &apos;operationType&apos; tag in json &apos;ticket&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>JSON тэг &apos;operationType&apos; отсутствует внутри тэга &apos;ticket&apos;</translation>
     </message>
     <message>
         <location filename="../data_import/slips.py" line="338"/>
         <source>Unknown operation type </source>
-        <translation type="unfinished">Неизвестный тип операции </translation>
+        <translation>Неизвестный тип операции </translation>
     </message>
 </context>
 <context>
@@ -426,12 +495,12 @@
     <message>
         <location filename="../db/ledger.py" line="241"/>
         <source>Can&apos;t process dividend as bank isn&apos;t set for investment account</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно обработать дивиденд, т.к. не указан банк для инвестиционного счёта</translation>
     </message>
     <message>
         <location filename="../db/ledger.py" line="400"/>
         <source>Can&apos;t process trade as bank isn&apos;t set for investment account</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно обработать сделку, т.к. не указан банк для инвестиционного счёта</translation>
     </message>
 </context>
 <context>
@@ -904,7 +973,7 @@
     <message>
         <location filename="../ui/ui_main_window.py" line="1071"/>
         <source>jal</source>
-        <translation type="unfinished"></translation>
+        <translation>jal</translation>
     </message>
 </context>
 <context>
@@ -1302,17 +1371,17 @@ Application will be terminated now</source>
     <message>
         <location filename="../data_import/statements.py" line="288"/>
         <source>No selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Ничего не выбрано</translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="288"/>
         <source>Please select different account</source>
-        <translation type="unfinished"></translation>
+        <translation>Пожалуйста, выберите другой счёт</translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="281"/>
         <source>Invalid account selected</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбран некорректный счёт</translation>
     </message>
 </context>
 <context>
@@ -1363,12 +1432,12 @@ Application will be terminated now</source>
     <message>
         <location filename="../ui/ui_select_account_dlg.py" line="55"/>
         <source>TextLabel</source>
-        <translation type="unfinished">Соощение</translation>
+        <translation>Сообщение</translation>
     </message>
     <message>
         <location filename="../ui/ui_select_account_dlg.py" line="54"/>
         <source>Please select account</source>
-        <translation type="unfinished"></translation>
+        <translation>Пожалуйста выберите счёт</translation>
     </message>
 </context>
 <context>
@@ -1534,162 +1603,162 @@ Application will be terminated now</source>
     <message>
         <location filename="../data_import/statements.py" line="84"/>
         <source>Unsupported date/time format: </source>
-        <translation type="unfinished"></translation>
+        <translation>Неподдерживаемый формат даты/времени: </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="97"/>
         <source>Asset type isn&apos;t supported: </source>
-        <translation type="unfinished"></translation>
+        <translation>Тип ценной бумаги не поддерживается: </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="110"/>
         <source>Corporate action isn&apos;t supported: </source>
-        <translation type="unfinished"></translation>
+        <translation>Корпоративное действие не поддерживается: </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="134"/>
         <source>Cash transaction isn&apos;t supported: </source>
-        <translation type="unfinished"></translation>
+        <translation>Денежная транзакция не поддерживается: </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="143"/>
         <source>Can&apos;t get currencies for accounts: </source>
-        <translation type="unfinished"></translation>
+        <translation>Отсутствуют валюты для счетов: </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="146"/>
         <source>Can&apos;t get account currency for fee account: </source>
-        <translation type="unfinished"></translation>
+        <translation>Отсутствует валюта для счёта списания комиссии: </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="159"/>
         <source>Can&apos;t get account currency for account: </source>
-        <translation type="unfinished"></translation>
+        <translation>Отсутствует валюта для счёта: </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="337"/>
         <source>Account not found: </source>
-        <translation type="unfinished"></translation>
+        <translation>Счёт не найден: </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="392"/>
         <source>IB Flex-statement loaded successfully</source>
-        <translation type="unfinished"></translation>
+        <translation>Flex-отчёт IB загружен успешно</translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="462"/>
         <source>Failed to load attribute: </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно загрузить аттрибут: </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="476"/>
         <source>Securities loaded: </source>
-        <translation type="unfinished"></translation>
+        <translation>Ценные бумаги загружены: </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="488"/>
         <source>Trades loaded: </source>
-        <translation type="unfinished"></translation>
+        <translation>Сделки загружены: </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="506"/>
         <source>Option E&amp;A&amp;E action isn&apos;t implemented: </source>
-        <translation type="unfinished"></translation>
+        <translation>Действие (E&amp;A&amp;E) для опциона не реализовано: </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="508"/>
         <source>Options E&amp;A&amp;E loaded: </source>
-        <translation type="unfinished"></translation>
+        <translation>E&amp;A&amp;E для опционов загружены: </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="517"/>
         <source>Corporate action cancelled: </source>
-        <translation type="unfinished"></translation>
+        <translation>Корпоративное действие отменено: </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="520"/>
         <source>Corporate actions are supported for stocks only</source>
-        <translation type="unfinished"></translation>
+        <translation>Корпоративные действия поддерживаются только для акций</translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="533"/>
         <source>Can&apos;t find paired record for </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно найти парную запись для </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="541"/>
         <source>Failed to parse Spin-off data for </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно распоздать Spin-off данные для </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="560"/>
         <source>Can&apos;t find paired record for: </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно найти парную запись для: </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="584"/>
         <source>Corporate actions loaded: </source>
-        <translation type="unfinished"></translation>
+        <translation>Корпоративные действия загружены: </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="596"/>
         <source>Tax transaction already exists </source>
-        <translation type="unfinished"></translation>
+        <translation>Транзакция налога уже существует </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="608"/>
         <source>Taxes loaded: </source>
-        <translation type="unfinished"></translation>
+        <translation>Налоги загружены: </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="633"/>
         <source>Cash transactions loaded: </source>
-        <translation type="unfinished"></translation>
+        <translation>Денежные транзакции загружены: </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="662"/>
         <source>Trade already exists: #</source>
-        <translation type="unfinished"></translation>
+        <translation>Сделка уже существует: №</translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="694"/>
         <source>Zero quantity in cash trade: </source>
-        <translation type="unfinished"></translation>
+        <translation>Нулевое количество в денежной сделке: </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="734"/>
         <source>Corporate action already exists: #</source>
-        <translation type="unfinished"></translation>
+        <translation>Корпоративное действие уже существует: №</translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="830"/>
         <source>New country added (set Tax Treaty in Data-&gt;Countries menu): </source>
-        <translation type="unfinished"></translation>
+        <translation>Новая страна добавлена (установите СОИДН в меню Данные-&gt;Страны): </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="706"/>
         <source>Transfer/Exchange already exists: </source>
-        <translation type="unfinished"></translation>
+        <translation>Перевод/Обмен валюты уже существует: </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="784"/>
         <source>Deposit of </source>
-        <translation type="unfinished"></translation>
+        <translation>Депозит на сумму </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="786"/>
         <source>Select account to withdraw from:</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите счёт для списания с:</translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="788"/>
         <source>Withdrawal of </source>
-        <translation type="unfinished"></translation>
+        <translation>Списание на сумму </translation>
     </message>
     <message>
         <location filename="../data_import/statements.py" line="790"/>
         <source>Select account to deposit to:</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите счёт для зачисления на:</translation>
     </message>
 </context>
 <context>
@@ -1970,17 +2039,17 @@ Application will be terminated now</source>
     <message>
         <location filename="../reports/taxes.py" line="38"/>
         <source>Get tax form template from:</source>
-        <translation type="unfinished"></translation>
+        <translation>Взять шаблон 3-НДФЛ из:</translation>
     </message>
     <message>
         <location filename="../reports/taxes.py" line="41"/>
         <source>Tax form 2020 (*.dc0)</source>
-        <translation type="unfinished"></translation>
+        <translation>Декларация 2020 (*.dc0)</translation>
     </message>
     <message>
         <location filename="../reports/taxes.py" line="41"/>
         <source>Save tax form to:</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить 3-НДФЛ в:</translation>
     </message>
 </context>
 <context>
@@ -2003,90 +2072,90 @@ Application will be terminated now</source>
     <message>
         <location filename="../ui/ui_tax_export_dlg.py" line="208"/>
         <source>Excel file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл Excel:</translation>
     </message>
     <message>
         <location filename="../ui/ui_tax_export_dlg.py" line="197"/>
         <source> ... </source>
-        <translation type="unfinished"></translation>
+        <translation> ... </translation>
     </message>
     <message>
         <location filename="../ui/ui_tax_export_dlg.py" line="192"/>
         <source>Initial file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Исходный файл:</translation>
     </message>
     <message>
         <location filename="../ui/ui_tax_export_dlg.py" line="193"/>
         <source>Output file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл с результатом:</translation>
     </message>
     <message>
         <location filename="../ui/ui_tax_export_dlg.py" line="181"/>
         <source>Update file &quot;u0414u0435u043au043bu0430u0440u0430u0446u0438u044f&quot; (*.dc0)</source>
-        <translation type="unfinished"></translation>
+        <translation>Обновить файл &quot;Декларация&quot; (*.dc0)</translation>
     </message>
     <message>
         <location filename="../ui/ui_tax_export_dlg.py" line="201"/>
         <source>File where to store tax report in Excel format</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл для сохранения расчёта в формате Excel</translation>
     </message>
     <message>
         <location filename="../ui/ui_tax_export_dlg.py" line="204"/>
         <source>Foreign account to prepare tax report for</source>
-        <translation type="unfinished"></translation>
+        <translation>Зарубежный счёт для которого нужно подготовить отчёт</translation>
     </message>
     <message>
         <location filename="../ui/ui_tax_export_dlg.py" line="195"/>
         <source>Select file</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберит файл</translation>
     </message>
     <message>
         <location filename="../ui/ui_tax_export_dlg.py" line="183"/>
         <source>File to use as a template for russian tax form</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл, используемый как шаблон для декларации 3-НДФЛ</translation>
     </message>
     <message>
         <location filename="../ui/ui_tax_export_dlg.py" line="190"/>
         <source>File where to store russian tax form</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл для сохранения декларации 3-НДФЛ</translation>
     </message>
     <message>
         <location filename="../ui/ui_tax_export_dlg.py" line="198"/>
         <source>Update only information about dividends</source>
-        <translation type="unfinished"></translation>
+        <translation>Обновить только информацию о дивидендах</translation>
     </message>
     <message>
         <location filename="../ui/ui_tax_export_dlg.py" line="175"/>
         <source>Select parameters and files for tax report</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите параметры и файлы для налогового отчёта</translation>
     </message>
     <message>
         <location filename="../ui/ui_tax_export_dlg.py" line="180"/>
         <source>Below functions are experimental - use it with care</source>
-        <translation type="unfinished"></translation>
+        <translation>Ниже расположены экспериментальные функции - используйте с осторожностью</translation>
     </message>
     <message>
         <location filename="../ui/ui_tax_export_dlg.py" line="209"/>
         <source>Do not use settlement date for currency rates</source>
-        <translation type="unfinished"></translation>
+        <translation>Не использовать дату поставки для курсов валют</translation>
     </message>
 </context>
 <context>
     <name>TaxesRus</name>
     <message>
-        <location filename="../reports/taxes.py" line="151"/>
+        <location filename="../reports/taxes.py" line="157"/>
         <source>Can&apos;t write tax report into file </source>
         <translation>Не удалось записать налоговый отчет в файл </translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="142"/>
+        <location filename="../reports/taxes.py" line="148"/>
         <source>Can&apos;t open tax form file </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно открыть файл с декларацией 3-НДФЛ </translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="157"/>
+        <location filename="../reports/taxes.py" line="163"/>
         <source>Can&apos;t write tax form into file </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно записать декларацию 3-НДФЛ в файл </translation>
     </message>
 </context>
 <context>
