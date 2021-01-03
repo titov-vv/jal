@@ -26,4 +26,9 @@
 ![Select account](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/account_selection.png?raw=true)  
 В случае успешного импорта, вы увидите сообщение *IB Flex-statement loaded successfully* на закладке *Log messages* (в русской версии *Сообщения*)  
 ![Import success](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/import_log.png?raw=true)
-5. ... продолжение следует ...
+5. После загрузки вы можете выбрать полный интервал времени и нужный счёт, чтобы проверить корректность импорта данных:  
+![Main window](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/main_window.png?raw=true)
+6. При подготовке декларации все суммы нужно пересчитать в рубли - для этого необходимо загрузить курсы валют.
+Сделать это можно с помощью меню *Load->Load quotes...* (в русской версии *Загрузить->Загрузить Котировки...*) и указав необходимый диапазон дат:  
+![Quotes](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/update_quotes.png?raw=true)
+7. ... продолжение следует ...
