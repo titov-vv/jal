@@ -59,7 +59,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.Logs.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
         self.logger = logging.getLogger()
         self.logger.addHandler(self.Logs)
-        self.logger.setLevel(logging.INFO)
+        log_level = os.environ.get('LOGLEVEL', 'INFO').upper()
+        self.logger.setLevel(log_level)
 
         # Setup reports tab
         self.ReportAccountBtn.init_db(self.db)
