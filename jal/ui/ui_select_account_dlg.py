@@ -51,7 +51,7 @@ class Ui_SelectAccountDlg(object):
     # setupUi
 
     def retranslateUi(self, SelectAccountDlg):
-        SelectAccountDlg.setWindowTitle(QCoreApplication.translate("SelectAccountDlg", u"Dialog", None))
+        SelectAccountDlg.setWindowTitle(QCoreApplication.translate("SelectAccountDlg", u"Please select account", None))
         self.DescriptionLbl.setText(QCoreApplication.translate("SelectAccountDlg", u"TextLabel", None))
     # retranslateUi
 
