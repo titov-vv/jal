@@ -78,3 +78,4 @@
     ![Report Corporate Actions](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/report_5.png?raw=true)
     
 
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Ftitov-vv%2Fjal%2Fblob%2Fmaster%2Fdocs%2Fru-tax-3ndfl%2Ftaxes.md&count_bg=%23B981DD&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=tax&edge_flat=false)](https://hits.seeyoufarm.com)
