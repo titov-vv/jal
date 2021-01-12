@@ -1,2 +1,3 @@
 include jal/languages/*.png jal/languages/*.qm
 include jal/*.sql jal/updates/*.sql
+include jal/pipy_description.md
