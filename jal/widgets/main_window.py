@@ -4,14 +4,14 @@ from functools import partial
 
 from PySide2.QtCore import Slot, QDateTime, QDir, QLocale
 from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import QMainWindow, QFileDialog, QMenu, QMessageBox, QLabel, QActionGroup, QAction
+from PySide2.QtWidgets import QMainWindow, QMenu, QMessageBox, QLabel, QActionGroup, QAction
 
 from jal.ui.ui_main_window import Ui_LedgerMainWindow
 from jal.ui.ui_abort_window import Ui_AbortWindow
 from jal.ui_custom.helpers import g_tr, VLine, ManipulateDate, dependency_present
 from jal.ui_custom.table_view_config import TableViewConfig
 from jal.constants import TransactionType
-from jal.db.backup_restore import MakeBackup, RestoreBackup
+from jal.db.backup_restore import JalBackup
 from jal.db.helpers import get_dbfilename, get_account_id, get_base_currency, executeSQL
 from jal.data_import.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
@@ -48,6 +48,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.statements = StatementLoader(self, self.db)
         self.statements.load_completed.connect(self.onStatementLoaded)
         self.statements.load_failed.connect(self.onStatementLoadFailure)
+        self.backup = JalBackup(self, get_dbfilename(self.own_path))
 
         self.actionImportSlipRU.setEnabled(dependency_present(['pyzbar', 'PIL']))
 
@@ -151,25 +152,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             QMessageBox().information(self, g_tr('MainWindow', "Restart required"),
                                       g_tr('MainWindow', "Language was changed to ") +
                                       QLocale.languageToString(QLocale(language_code).language()) + "\n" +
-                                      g_tr('MainWindow', "You should restart application to apply changes\n"
-                                           "Application will be terminated now"),
-                                      QMessageBox.Ok)
-            self.close()
-
-
-    def Backup(self):
-        backup_directory = QFileDialog.getExistingDirectory(self, g_tr('MainWindow', "Select directory to save backup"))
-        if backup_directory:
-            MakeBackup(get_dbfilename(self.own_path), backup_directory)
-
-    def Restore(self):
-        restore_directory = QFileDialog.getExistingDirectory(self, g_tr('MainWindow',
-                                                                        "Select directory to restore from"))
-        if restore_directory:
-            self.db.close()
-            RestoreBackup(get_dbfilename(self.own_path), restore_directory)
-            QMessageBox().information(self, g_tr('MainWindow', "Data restored"),
-                                      g_tr('MainWindow', "Database was loaded from the backup.\n") +
                                       g_tr('MainWindow', "You should restart application to apply changes\n"
                                            "Application will be terminated now"),
                                       QMessageBox.Ok)
