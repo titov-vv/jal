@@ -3,12 +3,15 @@ import sqlite3
 import pandas as pd
 import math
 import logging
+from tempfile import TemporaryDirectory
+import tarfile
 
 from PySide2.QtWidgets import QFileDialog, QMessageBox
 from jal.ui_custom.helpers import g_tr
 
 # ------------------------------------------------------------------------------
 class JalBackup:
+    tmp_prefix = 'jal_'
     backup_list = ["settings", "tags", "categories", "agents", "assets", "accounts", "countries", "corp_actions",
                    "dividends", "trades", "actions", "action_details", "transfers", "transfer_notes", "quotes",
                    "map_peer", "map_category"]
@@ -35,19 +38,23 @@ class JalBackup:
         db.close()
 
     def create(self):
-        backup_directory = QFileDialog.getExistingDirectory(self.parent,
-                                                            g_tr('JalBackup', "Select directory to save backup"))
-        if not backup_directory:
+        filename, filter = QFileDialog.getSaveFileName(None, g_tr('JalBackup', "Save backup to:"),
+                                                       ".", g_tr('JalBackup', "Archives (*.tgz)"))
+        if filename:
+            if filter == g_tr('JalBackup', "Archives (*.tgz)") and filename[-4:] != '.tgz':
+                filename = filename + '.tgz'
+        else:
             return
 
         db = sqlite3.connect(self.file)
-
-        for table in JalBackup.backup_list:
-            data = pd.read_sql_query(f"SELECT * FROM {table}", db)
-            data.to_csv(f"{backup_directory}/{table}.csv", sep="|", header=True, index=False)
-
+        with TemporaryDirectory(prefix=self.tmp_prefix) as tmp_path:
+            for table in JalBackup.backup_list:
+                data = pd.read_sql_query(f"SELECT * FROM {table}", db)
+                data.to_csv(f"{tmp_path}/{table}.csv", sep="|", header=True, index=False)
+            with tarfile.open(filename, "w:gz") as tar:
+                tar.add(tmp_path, arcname='')
         db.close()
-        logging.info(g_tr('', "Backup saved in: ") + backup_directory)
+        logging.info(g_tr('', "Backup saved in: ") + filename)
 
     def restore(self):
         restore_directory = QFileDialog.getExistingDirectory(self.parent,
