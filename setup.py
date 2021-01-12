@@ -7,7 +7,7 @@ setup(
     author_email="jal@gmx.ru",
     description="Just Another Ledger - project to track personal financial records",
     long_description_content_type='text/markdown',
-    long_description=open('jal/pipy_description.md').read(),
+    long_description=open('jal/pypi_description.md').read(),
     packages=find_packages(),
     package_dir={'jal': 'jal'},
     python_requires=">=3.8.1",
@@ -28,6 +28,6 @@ setup(
     },
     include_package_data=True,
     package_data={
-        '': ['*.sql', 'languages/*.qm', 'languages/*.png', 'pipy_description.md']
+        '': ['*.sql', 'languages/*.qm', 'languages/*.png', 'pypi_description.md']
     }
 )
