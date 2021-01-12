@@ -17,6 +17,23 @@ class JalBackup:
         self.parent = parent
         self.file = db_file
 
+    def clean_db(self):
+        db = sqlite3.connect(self.file)
+        cursor = db.cursor()
+
+        cursor.executescript("DELETE FROM ledger;"
+                             "DELETE FROM ledger_sums;"
+                             "DELETE FROM sequence;")
+        db.commit()
+
+        cursor.execute("DROP TRIGGER IF EXISTS keep_predefined_categories")
+        for table in JalBackup.backup_list:
+            cursor.execute(f"DELETE FROM {table}")
+        db.commit()
+
+        logging.info(g_tr('', "DB cleanup was completed"))
+        db.close()
+
     def create(self):
         backup_directory = QFileDialog.getExistingDirectory(self.parent,
                                                             g_tr('JalBackup', "Select directory to save backup"))
@@ -35,49 +52,37 @@ class JalBackup:
     def restore(self):
         restore_directory = QFileDialog.getExistingDirectory(self.parent,
                                                              g_tr('JalBackup', "Select directory to restore from"))
-        if restore_directory:
-            self.parent.closeDatabase()
-            RestoreBackup(self.file, restore_directory)
-            QMessageBox().information(self.parent, g_tr('JalBackup', "Data restored"),
-                                      g_tr('JalBackup', "Database was loaded from the backup.\n") +
-                                      g_tr('JalBackup', "You should restart application to apply changes\n"
-                                                        "Application will be terminated now"),
-                                      QMessageBox.Ok)
-            self.parent.close()
+        if not restore_directory:
+            return
+        self.parent.closeDatabase()
+        self.clean_db()
+
+        db = sqlite3.connect(self.file)
+        cursor = db.cursor()
+        for table in JalBackup.backup_list:
+            data = pd.read_csv(f"{restore_directory}/{table}.csv", sep='|', keep_default_na=False)
+            for column in data:
+                if data[column].dtype == 'float64':  # Correct possible mistakes due to float data type
+                    if table == 'transfers' and column == 'rate':  # But rate is calculated value with arbitrary precision
+                        continue
+                    data[column] = data[column].round(int(-math.log10(Setup.CALC_TOLERANCE)))
+            data.to_sql(name=table, con=db, if_exists='append', index=False, chunksize=100)
+
+        cursor.execute("CREATE TRIGGER keep_predefined_categories "
+                       "BEFORE DELETE ON categories FOR EACH ROW WHEN OLD.special = 1 "
+                       "BEGIN SELECT RAISE(ABORT, \"Can't delete predefined category\"); END;")
+        db.commit()
+        db.close()
+        logging.info(g_tr('', "Backup restored from: ") + restore_directory + g_tr('', " into ") + self.file)
+
+        QMessageBox().information(self.parent, g_tr('JalBackup', "Data restored"),
+                                  g_tr('JalBackup', "Database was loaded from the backup.\n") +
+                                  g_tr('JalBackup', "You should restart application to apply changes\n"
+                                                    "Application will be terminated now"),
+                                  QMessageBox.Ok)
+        self.parent.close()
 
 # ------------------------------------------------------------------------------
-
-def RestoreBackup(db_file, restore_path):
-    db = sqlite3.connect(db_file)
-    cursor = db.cursor()
-
-    cursor.executescript("DELETE FROM ledger;"
-                         "DELETE FROM ledger_sums;"
-                         "DELETE FROM sequence;")
-    db.commit()
-
-    # Clean DB
-    cursor.execute("DROP TRIGGER IF EXISTS keep_predefined_categories")
-    for table in JalBackup.backup_list:
-        cursor.execute(f"DELETE FROM {table}")
-    db.commit()
-    logging.info(g_tr('', "DB cleanup was completed"))
-
-    for table in JalBackup.backup_list:
-        data = pd.read_csv(f"{restore_path}/{table}.csv", sep='|', keep_default_na=False)
-        for column in data:
-            if data[column].dtype == 'float64':  # Correct possible mistakes due to float data type
-                if table == 'transfers' and column == 'rate':  # But rate is calculated value with arbitrary precision
-                    continue
-                data[column] = data[column].round(int(-math.log10(Setup.CALC_TOLERANCE)))
-        data.to_sql(name=table, con=db, if_exists='append', index=False, chunksize=100)
-
-    cursor.execute("CREATE TRIGGER keep_predefined_categories "
-                   "BEFORE DELETE ON categories FOR EACH ROW WHEN OLD.special = 1 "
-                   "BEGIN SELECT RAISE(ABORT, \"Can't delete predefined category\"); END;")
-    db.commit()
-    db.close()
-    logging.info(g_tr('', "Backup restored from: ") + restore_path + g_tr('', " into ") + db_file)
 
 
 def loadDbFromSQL(db_file, sql_file):
