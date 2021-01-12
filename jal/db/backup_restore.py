@@ -20,8 +20,17 @@ class JalBackup:
     def create(self):
         backup_directory = QFileDialog.getExistingDirectory(self.parent,
                                                             g_tr('JalBackup', "Select directory to save backup"))
-        if backup_directory:
-            MakeBackup(self.file, backup_directory)
+        if not backup_directory:
+            return
+
+        db = sqlite3.connect(self.file)
+
+        for table in JalBackup.backup_list:
+            data = pd.read_sql_query(f"SELECT * FROM {table}", db)
+            data.to_csv(f"{backup_directory}/{table}.csv", sep="|", header=True, index=False)
+
+        db.close()
+        logging.info(g_tr('', "Backup saved in: ") + backup_directory)
 
     def restore(self):
         restore_directory = QFileDialog.getExistingDirectory(self.parent,
@@ -37,16 +46,6 @@ class JalBackup:
             self.parent.close()
 
 # ------------------------------------------------------------------------------
-def MakeBackup(db_file, backup_path):
-    db = sqlite3.connect(db_file)
-
-    for table in JalBackup.backup_list:
-        data = pd.read_sql_query(f"SELECT * FROM {table}", db)
-        data.to_csv(f"{backup_path}/{table}.csv", sep="|", header=True, index=False)
-
-    db.close()
-    logging.info(g_tr('', "Backup saved in: ") + backup_path)
-
 
 def RestoreBackup(db_file, restore_path):
     db = sqlite3.connect(db_file)
