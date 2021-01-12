@@ -82,14 +82,3 @@ class JalBackup:
                                   QMessageBox.Ok)
         self.parent.close()
 
-# ------------------------------------------------------------------------------
-
-
-def loadDbFromSQL(db_file, sql_file):
-    with open(sql_file, 'r', encoding='utf-8') as sql_file:
-        sql_text = sql_file.read()
-    db = sqlite3.connect(db_file)
-    cursor = db.cursor()
-    cursor.executescript(sql_text)
-    db.commit()
-    db.close()

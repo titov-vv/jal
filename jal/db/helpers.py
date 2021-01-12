@@ -1,7 +1,7 @@
 import logging
+import sqlite3
 from jal.constants import Setup
 from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery
-from jal.db.backup_restore import loadDbFromSQL
 
 # No translation of the file because these routines might be used before QApplication initialization
 class LedgerInitError:
@@ -98,7 +98,7 @@ def init_and_check_db(db_path):
     if not tables:
         db.close()
         connection_name = db.connectionName()
-        loadDbFromSQL(get_dbfilename(db_path), db_path + Setup.INIT_SCRIPT_PATH)
+        init_db_from_sql(get_dbfilename(db_path), db_path + Setup.INIT_SCRIPT_PATH)
         QSqlDatabase.removeDatabase(connection_name)
         return None, LedgerInitError(LedgerInitError.EmptyDbInitialized)
 
@@ -113,6 +113,16 @@ def init_and_check_db(db_path):
     _ = executeSQL(db, "PRAGMA foreign_keys = ON")
 
     return db, LedgerInitError(LedgerInitError.DbInitSuccess)
+
+# -------------------------------------------------------------------------------------------------------------------
+def init_db_from_sql(db_file, sql_file):
+    with open(sql_file, 'r', encoding='utf-8') as sql_file:
+        sql_text = sql_file.read()
+    db = sqlite3.connect(db_file)
+    cursor = db.cursor()
+    cursor.executescript(sql_text)
+    db.commit()
+    db.close()
 
 # -------------------------------------------------------------------------------------------------------------------
 def get_language(db):
