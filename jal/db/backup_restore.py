@@ -27,7 +27,7 @@ class JalBackup:
         restore_directory = QFileDialog.getExistingDirectory(self.parent,
                                                              g_tr('JalBackup', "Select directory to restore from"))
         if restore_directory:
-            self.parent.db.close()
+            self.parent.closeDatabase()
             RestoreBackup(self.file, restore_directory)
             QMessageBox().information(self.parent, g_tr('JalBackup', "Data restored"),
                                       g_tr('JalBackup', "Database was loaded from the backup.\n") +

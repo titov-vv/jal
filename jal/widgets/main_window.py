@@ -121,6 +121,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.selectRow(0)  # TODO find a way to select last row from self.operations
         self.OnOperationsRangeChange(0)
 
+    def closeDatabase(self):
+        self.db.close()
+
     @Slot()
     def closeEvent(self, event):
         self.logger.removeHandler(self.Logs)    # Removing handler (but it doesn't prevent exception at exit)
