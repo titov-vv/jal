@@ -263,7 +263,7 @@ class Ledger:
         if self.getAmount(BookAccount.Assets, asset_id) < 0:        # Match deals if we have something sold before
             # Get information about last deal
             query = executeSQL(self.db,
-                               "SELECT d.open_sid AS open, ABS(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
+                               "SELECT d.open_sid AS open, -ABS(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
                                "LEFT JOIN sequence AS os ON os.type=3 AND os.id=d.open_sid "
                                "JOIN trades AS o ON o.id = os.operation_id "
                                "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
@@ -288,7 +288,7 @@ class Ledger:
             while query.next():   # Perform match ("closure") of previous Sell trades
                 deal_sid, deal_qty, deal_price = readSQLrecord(query)
                 if reminder < 0:
-                    next_deal_qty = reminder
+                    next_deal_qty = -reminder
                     reminder = 0
                 else:
                     next_deal_qty = deal_qty
