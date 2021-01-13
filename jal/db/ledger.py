@@ -81,6 +81,8 @@ class Ledger:
             self.updateBalancesView()
 
     def updateBalancesView(self):
+        if self.balances_view is None:
+            return
         calculateBalances(self.db, self.balance_date, self.balance_currency, self.balance_active_only)
         self.balances_view.model().select()
 
@@ -98,6 +100,8 @@ class Ledger:
             self.updateHoldingsView()
 
     def updateHoldingsView(self):
+        if self.holdings_view is None:
+            return
         calculateHoldings(self.db, self.holdings_date, self.holdings_currency)
         holdings_model = self.holdings_view.model()
         holdings_model.select()
