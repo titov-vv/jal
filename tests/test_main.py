@@ -31,11 +31,16 @@ def test_backup_load(tmp_path, project_root):
     # Here backup is created without parent window - need to use with care
     db_file_name = get_dbfilename(str(tmp_path) + os.sep)
     backup = JalBackup(None, db_file_name)
-    backup.clean_db()
     backup.backup_name = project_root + os.sep + "tests" + os.sep + "test_data" + os.sep + "deals_set.tgz"
+
+    backup.validate_backup()
+    # Check validation
+    assert backup._backup_label_date == '2021/01/01 00:00:00'
+
+    backup.clean_db()
     backup.do_restore()
 
-    # Check
+    # Check restoration
     db = sqlite3.connect(db_file_name)
     cursor = db.cursor()
     cursor.execute("SELECT COUNT(*) FROM settings")
@@ -52,14 +57,14 @@ def test_fifo(tmp_path, project_root):
     ledger = Ledger(db)
     ledger.rebuild(from_timestamp=0)
 
-    # Check
+    # Check single deal
     db_file_name = get_dbfilename(str(tmp_path) + os.sep)
     db = sqlite3.connect(db_file_name)
     cursor = db.cursor()
-    cursor.execute("SELECT COUNT(*) FROM deals_ext")
+    cursor.execute("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4")
     assert cursor.fetchone()[0] == 1
-    cursor.execute("SELECT SUM(profit) FROM deals_ext")
-    assert cursor.fetchone()[0] == 0
-    cursor.execute("SELECT SUM(fee) FROM deals_ext")
-    assert cursor.fetchone()[0] == 0
+    cursor.execute("SELECT SUM(profit) FROM deals_ext WHERE asset_id=4")
+    assert cursor.fetchone()[0] == 994
+    cursor.execute("SELECT SUM(fee) FROM deals_ext WHERE asset_id=4")
+    assert cursor.fetchone()[0] == 6
     db.close()
