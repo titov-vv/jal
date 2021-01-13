@@ -733,7 +733,7 @@ CREATE VIEW deals_ext AS
                                   os.type = 5
            LEFT JOIN
            ledger AS ol ON ol.sid = os.id AND
-                           ol.asset_id = oca.asset_id_new AND ol.value > 0
+                           ol.asset_id = oca.asset_id_new AND ol.value >= 0
            LEFT JOIN
            sequence AS cs ON d.close_sid = cs.id
            LEFT JOIN

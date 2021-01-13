@@ -266,22 +266,26 @@ class Ledger:
         sell_value = 0
         if self.getAmount(BookAccount.Assets, asset_id) < 0:        # Match deals if we have something sold before
             # Get information about last deal
-            query = executeSQL(self.db,
-                               "SELECT d.open_sid AS open, -ABS(o.qty) - SUM(d.qty) AS remainder FROM deals AS d "
-                               "LEFT JOIN sequence AS os ON os.type=3 AND os.id=d.open_sid "
-                               "JOIN trades AS o ON o.id = os.operation_id "
-                               "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
-                               "GROUP BY d.open_sid "
-                               "ORDER BY d.close_sid DESC, d.open_sid DESC LIMIT 1",
-                               [(":account_id", account_id), (":asset_id", asset_id)])
-            last_sid = 0  # Take all Sell operations by default
-            reminder = 0
-            if query.next():
-                # Get sid of Sell trade from the last deal and non-matched reminder of last Sell trade
-                last_sid, reminder = readSQLrecord(query)
-                # if last Sell is fully matched (reminder>=0) we start from next trade, otherwise we need to shift by 1
-                if reminder < 0:
-                    last_sid = last_sid - 1
+            sids = readSQL(self.db, "SELECT "
+                                    "CASE WHEN qty<0 THEN open_sid ELSE close_sid END AS last_sid, "
+                                    "close_sid AS max_sid "
+                                    "FROM deals "
+                                    "WHERE account_id=:account_id AND asset_id=:asset_id "
+                                    "ORDER BY close_sid DESC, open_sid DESC LIMIT 1",
+                           [(":account_id", account_id), (":asset_id", asset_id)])
+            if sids:
+                last_sid = sids[0]
+                max_sid = sids[1]
+            else:
+                last_sid = max_sid = 0
+            reminder = readSQL(self.db, "SELECT SUM(qty) FROM trades AS t "
+                                        "LEFT JOIN sequence AS s ON t.id=s.operation_id and s.type=3 "
+                                        "WHERE account_id=:account_id AND asset_id=:asset_id AND s.id<=:last_sid",
+                               [(":account_id", account_id), (":asset_id", asset_id), (":last_sid", max_sid)])
+            reminder = 0 if reminder == '' else reminder
+            # if last Sell is fully matched (reminder>=0) we start from next trade, otherwise we need to shift by 1
+            if reminder < 0:
+                last_sid = last_sid - 1
             query = executeSQL(self.db,
                                "SELECT s.id, -t.qty, t.price FROM trades AS t "
                                "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
@@ -333,24 +337,27 @@ class Ledger:
         buy_value = 0
         if self.getAmount(BookAccount.Assets, asset_id) > 0:    # Match deals if we have something bought before
             # Get information about last deal
-            query = executeSQL(self.db,
-                               "SELECT d.open_sid AS open, ABS(coalesce(o.qty, ca.qty_new))- SUM(d.qty) AS remainder "
-                               "FROM deals AS d "
-                               "LEFT JOIN sequence AS os ON os.id=d.open_sid "
-                               "LEFT JOIN trades AS o ON o.id = os.operation_id AND os.type = 3 "
-                               "LEFT JOIN corp_actions AS ca ON ca.id = os.operation_id AND os.type = 5 "
-                               "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
-                               "GROUP BY d.open_sid "
-                               "ORDER BY d.close_sid DESC, d.open_sid DESC LIMIT 1",
-                               [(":account_id", account_id), (":asset_id", asset_id)])
-            last_sid = 0  # Take all Buy operations by default
-            reminder = 0
-            if query.next():     # Perform match ("closure") of previous Buy trades
-                # Get sid of Buy trade from the last deal and non-matched reminder of last Buy trade
-                last_sid, reminder = readSQLrecord(query)
-                # if last Buy is fully matched (reminder<=0) we start from next trade, otherwise we need to shift by 1
-                if reminder > 0:
-                    last_sid = last_sid - 1
+            sids = readSQL(self.db, "SELECT "
+                                    "CASE WHEN qty>0 THEN open_sid ELSE close_sid END AS last_sid, "
+                                    "close_sid AS max_sid "
+                                    "FROM deals "
+                                    "WHERE account_id=:account_id AND asset_id=:asset_id "
+                                    "ORDER BY close_sid DESC, open_sid DESC LIMIT 1",
+                           [(":account_id", account_id), (":asset_id", asset_id)])
+            if sids:
+                last_sid = sids[0]
+                max_sid = sids[1]
+            else:
+                last_sid = max_sid = 0
+            reminder = readSQL(self.db, "SELECT SUM(qty) FROM trades AS t "
+                                        "LEFT JOIN sequence AS s ON t.id=s.operation_id AND s.type=3 "
+                                        "WHERE account_id=:account_id AND asset_id=:asset_id AND s.id<=:last_sid",
+                               [(":account_id", account_id), (":asset_id", asset_id), (":last_sid", max_sid)])
+            reminder = 0 if reminder == '' else reminder
+            # if last Sell is fully matched (reminder>=0) we start from next trade, otherwise we need to shift by 1
+            if reminder > 0:
+                last_sid = last_sid - 1
+
             query = executeSQL(self.db,
                                "SELECT * FROM ("
                                "SELECT s.id, t.qty, t.price FROM trades AS t "
