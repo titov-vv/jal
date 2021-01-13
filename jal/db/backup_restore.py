@@ -3,15 +3,19 @@ import sqlite3
 import pandas as pd
 import math
 import logging
+import os
+from datetime import datetime
 from tempfile import TemporaryDirectory
 import tarfile
 
 from PySide2.QtWidgets import QFileDialog, QMessageBox
 from jal.ui_custom.helpers import g_tr
 
+
 # ------------------------------------------------------------------------------
 class JalBackup:
     tmp_prefix = 'jal_'
+    backup_label = 'JAL backup. Created: '
     backup_list = ["settings", "tags", "categories", "agents", "assets", "accounts", "countries", "corp_actions",
                    "dividends", "trades", "actions", "action_details", "transfers", "transfer_notes", "quotes",
                    "map_peer", "map_category"]
@@ -19,6 +23,8 @@ class JalBackup:
     def __init__(self, parent, db_file):
         self.parent = parent
         self.file = db_file
+        self.backup_name = None
+        self._backup_label_date = ''
 
     def clean_db(self):
         db = sqlite3.connect(self.file)
@@ -37,40 +43,35 @@ class JalBackup:
         logging.info(g_tr('', "DB cleanup was completed"))
         db.close()
 
-    def create(self):
-        filename, filter = QFileDialog.getSaveFileName(None, g_tr('JalBackup', "Save backup to:"),
-                                                       ".", g_tr('JalBackup', "Archives (*.tgz)"))
-        if filename:
-            if filter == g_tr('JalBackup', "Archives (*.tgz)") and filename[-4:] != '.tgz':
-                filename = filename + '.tgz'
-        else:
-            return
+    def validate_backup(self):
+        with tarfile.open(self.backup_name, "r:gz") as tar:
+            if 'label' in tar.getnames():
+                label_content = tar.extractfile('label').read().decode("utf-8")
+                logging.debug("Backup file label: " + label_content)
+                if label_content[:len(self.backup_label)] == self.backup_label:
+                    self._backup_label_date = label_content[len(self.backup_label):]
+                    return True
+                else:
+                    return False
 
+    def do_backup(self):
         db = sqlite3.connect(self.file)
         with TemporaryDirectory(prefix=self.tmp_prefix) as tmp_path:
+            with open(tmp_path + os.sep + 'label', 'w') as label:
+                label.write(f"{self.backup_label}{datetime.now().strftime('%Y/%m/%d %H:%M:%S')}")
             for table in JalBackup.backup_list:
                 data = pd.read_sql_query(f"SELECT * FROM {table}", db)
                 data.to_csv(f"{tmp_path}/{table}.csv", sep="|", header=True, index=False)
-            with tarfile.open(filename, "w:gz") as tar:
+            with tarfile.open(self.backup_name, "w:gz") as tar:
                 tar.add(tmp_path, arcname='')
         db.close()
-        logging.info(g_tr('', "Backup saved in: ") + filename)
 
-    def restore(self):
-        filename, _filter = QFileDialog.getOpenFileName(None, g_tr('JalBackup', "Select file with backup"),
-                                                        ".", g_tr('JalBackup', "Archives (*.tgz)"))
-        if not filename:
-            return
-
-        self.parent.closeDatabase()
-        self.clean_db()
-
+    def do_restore(self):
         db = sqlite3.connect(self.file)
         cursor = db.cursor()
 
         with TemporaryDirectory(prefix=self.tmp_prefix) as tmp_path:
-            # TODO: add verification that archive contains a backup
-            with tarfile.open(filename, "r:gz") as tar:
+            with tarfile.open(self.backup_name, "r:gz") as tar:
                 tar.extractall(tmp_path)
             for table in JalBackup.backup_list:
                 data = pd.read_csv(f"{tmp_path}/{table}.csv", sep='|', keep_default_na=False)
@@ -86,7 +87,42 @@ class JalBackup:
                        "BEGIN SELECT RAISE(ABORT, \"Can't delete predefined category\"); END;")
         db.commit()
         db.close()
-        logging.info(g_tr('', "Backup restored from: ") + filename + g_tr('', " into ") + self.file)
+
+    def get_filename(self, save=True):
+        self.backup_name = None
+        if save:
+            filename, filter = QFileDialog.getSaveFileName(None, g_tr('JalBackup', "Save backup to:"),
+                                                           ".", g_tr('JalBackup', "Archives (*.tgz)"))
+            if filename:
+                if filter == g_tr('JalBackup', "Archives (*.tgz)") and filename[-4:] != '.tgz':
+                    filename = filename + '.tgz'
+        else:
+            filename, _filter = QFileDialog.getOpenFileName(None, g_tr('JalBackup', "Select file with backup"),
+                                                            ".", g_tr('JalBackup', "Archives (*.tgz)"))
+        if filename:
+            self.backup_name = filename
+
+    def create(self):
+        self.get_filename(True)
+        if self.backup_name is None:
+            return
+        self.do_backup()
+        logging.info(g_tr('', "Backup saved in: ") + self.backup_name)
+
+    def restore(self):
+        self.get_filename(False)
+        if self.backup_name is None:
+            return
+        self.parent.closeDatabase()
+
+        if not self.validate_backup():
+            logging.error(g_tr('JalBackup', "Wrong format of backup file"))
+            return
+
+        self.clean_db()
+        self.do_restore()
+        logging.info(g_tr('JalBackup', "Backup restored from: ") + self.backup_name + self._backup_label_date
+                     + g_tr('JalBackup', " into ") + self.file)
 
         QMessageBox().information(self.parent, g_tr('JalBackup', "Data restored"),
                                   g_tr('JalBackup', "Database was loaded from the backup.\n") +
