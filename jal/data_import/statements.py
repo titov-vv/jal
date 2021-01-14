@@ -492,8 +492,8 @@ class StatementLoader(QObject):
             "Assignment": self.loadIBOptionEAE,
             "Exercise":   self.loadIBOptionEAE,
             "Expiration": self.loadIBOptionEAE,
-            "Buy":        self.loadIBStockTrade,
-            "Sell":       self.loadIBStockTrade,
+            "Buy":        None,     # There are separate Trade transaction for assigned and expired proceedign stocks
+            "Sell":       None,
         }
         cnt = 0
         for option in options:
@@ -501,7 +501,10 @@ class StatementLoader(QObject):
                 option['dateTime'] = option['date']
                 option['settleDateTarget'] = option['date']
                 option['ibCommission'] = option['commisionsAndTax']
-                cnt += ib_option_loaders[option['transactionType']](option)
+                if ib_option_loaders[option['transactionType']] is not None:
+                    cnt += ib_option_loaders[option['transactionType']](option)
+                else:
+                    cnt += 1
             except KeyError:
                 logging.error(
                     g_tr('StatementLoader', "Option E&A&E action isn't implemented: ") + f"{option['transactionType']}")
