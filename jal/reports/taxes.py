@@ -337,7 +337,7 @@ class TaxesRus:
             if not self.use_settlement:
                 deal['os_rate'] = deal['o_rate']
                 deal['cs_rate'] = deal['c_rate']
-            o_deal_type = "Покупка" if deal['qty']>=0 else "Продажа"
+            o_deal_type = "Покупка" if deal['qty'] >= 0 else "Продажа"
             c_deal_type = "Продажа" if deal['qty'] >= 0 else "Покупка"
             o_amount_usd = round(deal['o_price'] * abs(deal['qty']), 2)
             o_amount_rub = round(o_amount_usd * deal['o_rate'], 2) if deal['o_rate'] else 0

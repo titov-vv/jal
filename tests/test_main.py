@@ -152,21 +152,33 @@ def test_fifo(tmp_path, project_root):
     cursor.execute("SELECT profit FROM deals_ext WHERE asset_id=16 AND qty=1 AND corp_action IS NULL")
     assert cursor.fetchone()[0] == 0
 
+    # Order of buy/sell
+    cursor.execute("SELECT COUNT(*) FROM deals_ext WHERE asset_id=17")
+    assert cursor.fetchone()[0] == 2
+    cursor.execute("SELECT SUM(profit) FROM deals_ext WHERE asset_id=17")
+    assert cursor.fetchone()[0] == 140
+    cursor.execute("SELECT COUNT(*) FROM deals_ext WHERE asset_id=18")
+    assert cursor.fetchone()[0] == 4
+    cursor.execute("SELECT SUM(qty) FROM deals_ext WHERE asset_id=18")
+    assert cursor.fetchone()[0] == -2
+    cursor.execute("SELECT SUM(profit) FROM deals_ext WHERE asset_id=18")
+    assert cursor.fetchone()[0] == 200
+
     # totals
     cursor.execute("SELECT COUNT(*) FROM deals AS d "
                    "LEFT JOIN sequence as os ON os.id = d.open_sid "
                    "LEFT JOIN sequence as cs ON cs.id = d.close_sid")
-    assert cursor.fetchone()[0] == 34
+    assert cursor.fetchone()[0] == 40
     cursor.execute("SELECT COUNT(*) FROM deals AS d "
                    "LEFT JOIN sequence as os ON os.id = d.open_sid "
                    "LEFT JOIN sequence as cs ON cs.id = d.close_sid "
                    "WHERE os.type==3 AND cs.type==3")
-    assert cursor.fetchone()[0] == 23
+    assert cursor.fetchone()[0] == 29
     cursor.execute("SELECT COUNT(*) FROM deals AS d "
                    "LEFT JOIN sequence as os ON os.id = d.open_sid "
                    "LEFT JOIN sequence as cs ON cs.id = d.close_sid "
                    "WHERE os.type!=5 OR cs.type!=5")
-    assert cursor.fetchone()[0] == 31
+    assert cursor.fetchone()[0] == 37
     cursor.execute("SELECT COUNT(*) FROM deals AS d "
                    "LEFT JOIN sequence as os ON os.id = d.open_sid "
                    "LEFT JOIN sequence as cs ON cs.id = d.close_sid "
