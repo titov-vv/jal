@@ -218,7 +218,7 @@ def addNewAsset(db, symbol, name, asset_type, isin, data_source=-1):
     db.commit()
     asset_id = readSQL(db, "SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)])
     if asset_id is None:
-        logging.error(g_tr('', "Failed to add new asset: ") + f"{symbol}")
+        logging.error(g_tr('StatementLoader', "Failed to add new asset: ") + f"{symbol}")
     return asset_id
 
 

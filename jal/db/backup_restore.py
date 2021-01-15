@@ -40,7 +40,7 @@ class JalBackup:
             cursor.execute(f"DELETE FROM {table}")
         db.commit()
 
-        logging.info(g_tr('', "DB cleanup was completed"))
+        logging.info(g_tr('JalBackup', "DB cleanup was completed"))
         db.close()
 
     def validate_backup(self):
@@ -107,7 +107,7 @@ class JalBackup:
         if self.backup_name is None:
             return
         self.do_backup()
-        logging.info(g_tr('', "Backup saved in: ") + self.backup_name)
+        logging.info(g_tr('JalBackup', "Backup saved in: ") + self.backup_name)
 
     def restore(self):
         self.get_filename(False)
