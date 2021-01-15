@@ -29,7 +29,7 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
         self.details.setVisible(False)
         self.layout.addWidget(self.details)
         self.button = QPushButton("...")
-        self.button.setFixedWidth(self.button.fontMetrics().width(" ... "))
+        self.button.setFixedWidth(self.button.fontMetrics().width("XXXX"))
         self.layout.addWidget(self.button)
         self.setLayout(self.layout)
 
