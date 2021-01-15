@@ -367,7 +367,9 @@ class StatementLoader(QObject):
         section_loaders = {
             'SecuritiesInfo':   self.loadIBSecurities,    # Order of load is important - SecuritiesInfo is first
             'Trades':           self.loadIBTrades,
-            'OptionEAE':        self.loadIBOptions,
+            # Load of options Expirations, Assignments and Executions was disabled because data are present
+            # in 'Trades' section as 'BookTrade' operations and functions were dummy before
+            # 'OptionEAE':        self.loadIBOptions,
             'CorporateActions': self.loadIBCorporateActions,
             'CashTransactions': self.loadIBCashTransactions,
             'TransactionTaxes': self.loadIBTaxes
@@ -411,16 +413,6 @@ class StatementLoader(QObject):
                                                                       ('description', IBKR.flString, None),
                                                                       ('quantity', IBKR.flNumber, None),
                                                                       ('code', IBKR.flString, '')]},
-            'OptionEAE': {'tag': 'OptionEAE', 'values': [('transactionType', IBKR.flString, None),
-                                                         ('symbol', IBKR.flAsset, None),
-                                                         ('accountId', IBKR.flAccount, None),
-                                                         ('date', IBKR.flTimestamp, None),
-                                                         ('tradePrice', IBKR.flNumber, None),
-                                                         ('quantity', IBKR.flNumber, None),
-                                                         ('multiplier', IBKR.flNumber, None),
-                                                         ('commisionsAndTax', IBKR.flNumber, None),
-                                                         ('tradeID', IBKR.flString, ''),
-                                                         ('notes', IBKR.flString, '')]},
             'SecuritiesInfo': {'tag': 'SecurityInfo',
                                'values': [('symbol', IBKR.flString, None),
                                           ('assetCategory', IBKR.flAssetType, None),
@@ -486,29 +478,6 @@ class StatementLoader(QObject):
         for trade in trades:
             cnt += ib_trade_loaders[trade['assetCategory']](trade)
         logging.info(g_tr('StatementLoader', "Trades loaded: ") + f"{cnt} ({len(trades)})")
-
-    def loadIBOptions(self, options):
-        ib_option_loaders = {
-            "Assignment": self.loadIBOptionEAE,
-            "Exercise":   self.loadIBOptionEAE,
-            "Expiration": self.loadIBOptionEAE,
-            "Buy":        None,     # There are separate Trade transaction for assigned and expired proceedign stocks
-            "Sell":       None,
-        }
-        cnt = 0
-        for option in options:
-            try:
-                option['dateTime'] = option['date']
-                option['settleDateTarget'] = option['date']
-                option['ibCommission'] = option['commisionsAndTax']
-                if ib_option_loaders[option['transactionType']] is not None:
-                    cnt += ib_option_loaders[option['transactionType']](option)
-                else:
-                    cnt += 1
-            except KeyError:
-                logging.error(
-                    g_tr('StatementLoader', "Option E&A&E action isn't implemented: ") + f"{option['transactionType']}")
-        logging.info(g_tr('StatementLoader', "Options E&A&E loaded: ") + f"{cnt} ({len(options)})")
 
     def loadIBCorporateActions(self, actions):
         cnt = 0
@@ -645,13 +614,6 @@ class StatementLoader(QObject):
         else:
             self.createTrade(trade['accountId'], trade['symbol'], trade['dateTime'], trade['settleDateTarget'],
                              trade['tradeID'], qty, trade['tradePrice'], trade['ibCommission'])
-        return 1
-
-    def loadIBOptionEAE(self, option):
-        # Skip option assignment, expiration and exercise as there should be corresponding Book Trades
-        # qty = option['quantity'] * option['multiplier']
-        # self.createTrade(option['accountId'], option['symbol'], option['date'], option['date'], option['tradeID'], qty,
-        #                  option['tradePrice'], option['commisionsAndTax'])
         return 1
 
     def createTrade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee, coupon=0.0):
