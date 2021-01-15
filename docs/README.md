@@ -23,13 +23,15 @@ It was designed to keep records of personal incomes/spendings and investments wi
 - securities transactions import from Quik HTML-reports for russian brokers (KIT-Finance, Uralsib Broker) and from Interactive Brokers flex-queries
 - tax report preparation for foreign investments according to Russian Tax Law
 - *experimental* download russian electronic slips from russian tax authority:
-    1. QR code may be scanned from camera, clipboard image or image file on disk
+    1. QR code may be scanned from camera, clipboard image or image file on disk 
     2. Authorization via login/password to FNS personal account or ESIA/Gosuslugi (no passwords are stored in the progam, only SessionId is stored - you may check in source code)
+    (you will need to install additional dependencies to use these function - packages `pyzbar` and `Pillow`)
+- *experimental* category recognition for goods in slip with help of `tensorflow`
 
 ### Installation
 *jal* was created to be portable and cross-platform. Thus you have several ways to install and run the program:
 - You may get file archive from [the GitHub repository](https://github.com/titov-vv/jal), unpack it into suitable directory on your PC and use `run.py` to start application.
-In order to succeed this way you need to have Python 3.8.1 and satisfy all dependencies listed below in *Dependencies* section.
+In order to succeed this way you need to have Python 3.8.1 and satisfy all dependencies listed in `requirements.txt`.
 - You may use installation package with `pip install jal` command. It will take care about dependencies automatically and will install `jal` entry point<sup>*</sup> to run the program.
 Alternatively you may use `python -m jal.jal` if you can't run application with `jal` entry point.
 - You may mix two methods together - download source files from github and then use `setup.py` for preferred way of installation.
@@ -45,20 +47,6 @@ In this case you need to use script `update_db_schema.py` from updates folder. E
 `./update_db_schema.py ../ledger.sqlite`
 
 This will apply required changes to your database file (as usual it's a good idea to backup your `ledger.sqlite` before any activity)
-
-### Dependencies
-jal depends on:
-* [Qt for Python (PySide2)](https://wiki.qt.io/Qt_for_Python) *>=5.15.2* - GUI library
-* [pandas](https://pandas.pydata.org/) - different data operations
-* [lxml](https://lxml.de/) - html/xml-files import
-* [requests](https://requests.readthedocs.io/) - stock quotes update from the internet; electronic slip download
-* [xlsxwriter](https://xlsxwriter.readthedocs.io/) - reports export into XLS format
-* [pyzbar](https://github.com/NaturalHistoryMuseum/pyzbar/) <sup>1</sup> - electronic slip QR-code recognition
-* [Pillow](https://pillow.readthedocs.io/en/stable/) <sup>1</sup> - work with images
-* [tensorflow](https://www.tensorflow.org/) <sup>2</sup> - automatic category recognition 
-
-<sup>1</sup> - optional dependencies (electronic slip import will be disabled)  
-<sup>2</sup> - dependecy for experimental functionality (automatic category recognition will be disabled)
 
 ### Screenshots
 Qt have a better look on Linux out of the box. Here is main program window:  
