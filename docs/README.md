@@ -21,7 +21,7 @@ It was designed to keep records of personal incomes/spendings and investments wi
     3. closed deals report 
 - stock quotes updates for US (Yahoo), EU (Euronext) and RU (MOEX) exchanges traded stocks
 - securities transactions import from Quik HTML-reports for russian brokers (KIT-Finance, Uralsib Broker) and from Interactive Brokers flex-queries
-- tax report preparation for foreign investments according to Russian Tax Law
+- tax report preparation for foreign investments according to Russian Tax Code (![manual](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/taxes.md))
 - *experimental* download russian electronic slips from russian tax authority:
     1. QR code may be scanned from camera, clipboard image or image file on disk 
     2. Authorization via login/password to FNS personal account or ESIA/Gosuslugi (no passwords are stored in the progam, only SessionId is stored - you may check in source code)
