@@ -216,4 +216,15 @@ def test_fifo(tmp_path, project_root):
                    "WHERE os.type==5 AND cs.type==5")
     assert cursor.fetchone()[0] == 3
 
+    # validate final amounts
+    cursor.execute("SELECT MAX(sid), asset_id, sum_amount, sum_value FROM ledger_sums "
+                   "GROUP BY asset_id")
+    ledger_sums = cursor.fetchall()
+    for row in ledger_sums:
+        if row[1] == 1:    # Checking money amount
+            assert row[2] == 16760
+        else:
+            assert row[2] == 0
+        assert row[3] == 0
+
     db.close()
