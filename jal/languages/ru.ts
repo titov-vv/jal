@@ -415,63 +415,73 @@
 <context>
     <name>JalBackup</name>
     <message>
-        <location filename="../db/backup_restore.py" line="94"/>
+        <location filename="../db/backup_restore.py" line="117"/>
         <source>Save backup to:</source>
         <translation>Сохранить резервную копию в:</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="100"/>
+        <location filename="../db/backup_restore.py" line="123"/>
         <source>Archives (*.tgz)</source>
         <translation>Архивы (*.tgz)</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="100"/>
+        <location filename="../db/backup_restore.py" line="123"/>
         <source>Select file with backup</source>
         <translation>Выберите файл с резервной копией</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="119"/>
+        <location filename="../db/backup_restore.py" line="142"/>
         <source>Wrong format of backup file</source>
         <translation>Неверный формат файла резервной копии</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="124"/>
+        <location filename="../db/backup_restore.py" line="147"/>
         <source>Backup restored from: </source>
         <translation>Резервная копия восставновлена из: </translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="124"/>
+        <location filename="../db/backup_restore.py" line="147"/>
         <source> into </source>
         <translation> в </translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="127"/>
+        <location filename="../db/backup_restore.py" line="150"/>
         <source>Data restored</source>
         <translation>Данные восстановлены</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="127"/>
+        <location filename="../db/backup_restore.py" line="150"/>
         <source>Database was loaded from the backup.
 </source>
         <translation>Данные были загружены из бэкапа.
 </translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="127"/>
+        <location filename="../db/backup_restore.py" line="150"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation>Вы должны перезапустить приложение, чтобы применить изменения
 Приложение сейчас завершит свою работу</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="43"/>
+        <location filename="../db/backup_restore.py" line="44"/>
         <source>DB cleanup was completed</source>
         <translation>Очистка данных завершена</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="110"/>
+        <location filename="../db/backup_restore.py" line="133"/>
         <source>Backup saved in: </source>
         <translation>Резервная копия сохранёна в: </translation>
+    </message>
+    <message>
+        <location filename="../db/backup_restore.py" line="75"/>
+        <source>Backup schema version expected: </source>
+        <translation>Нужная версия формата резервной копии: </translation>
+    </message>
+    <message>
+        <location filename="../db/backup_restore.py" line="75"/>
+        <source>Backup schema version actual: </source>
+        <translation>Версия формата резервной копии: </translation>
     </message>
 </context>
 <context>

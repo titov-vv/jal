@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="en" sourcelanguage="en">
+<!DOCTYPE TS><TS version="2.0" language="en" sourcelanguage="en">
 <context>
     <name>AbortWindow</name>
     <message>
@@ -415,61 +414,71 @@
 <context>
     <name>JalBackup</name>
     <message>
-        <location filename="../db/backup_restore.py" line="94"/>
+        <location filename="../db/backup_restore.py" line="117"/>
         <source>Save backup to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="100"/>
+        <location filename="../db/backup_restore.py" line="123"/>
         <source>Archives (*.tgz)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="100"/>
+        <location filename="../db/backup_restore.py" line="123"/>
         <source>Select file with backup</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="119"/>
+        <location filename="../db/backup_restore.py" line="142"/>
         <source>Wrong format of backup file</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="124"/>
+        <location filename="../db/backup_restore.py" line="147"/>
         <source>Backup restored from: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="124"/>
+        <location filename="../db/backup_restore.py" line="147"/>
         <source> into </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="127"/>
+        <location filename="../db/backup_restore.py" line="150"/>
         <source>Data restored</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="127"/>
+        <location filename="../db/backup_restore.py" line="150"/>
         <source>Database was loaded from the backup.
 </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="127"/>
+        <location filename="../db/backup_restore.py" line="150"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="43"/>
+        <location filename="../db/backup_restore.py" line="44"/>
         <source>DB cleanup was completed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="110"/>
+        <location filename="../db/backup_restore.py" line="133"/>
         <source>Backup saved in: </source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../db/backup_restore.py" line="75"/>
+        <source>Backup schema version expected: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/backup_restore.py" line="75"/>
+        <source>Backup schema version actual: </source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

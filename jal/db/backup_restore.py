@@ -7,6 +7,7 @@ import os
 from datetime import datetime
 from tempfile import TemporaryDirectory
 import tarfile
+from io import StringIO
 
 from PySide2.QtWidgets import QFileDialog, QMessageBox
 from jal.ui_custom.helpers import g_tr
@@ -43,16 +44,38 @@ class JalBackup:
         logging.info(g_tr('JalBackup', "DB cleanup was completed"))
         db.close()
 
+    # Function returns True if all of following conditions are met (otherwise returns False):
+    # - backup contains all required filenames
+    # - backup contains file 'label' with valid content
+    # - backup contains file 'settings.csv' with valid schema version
     def validate_backup(self):
         with tarfile.open(self.backup_name, "r:gz") as tar:
-            if 'label' in tar.getnames():
-                label_content = tar.extractfile('label').read().decode("utf-8")
-                logging.debug("Backup file label: " + label_content)
-                if label_content[:len(self.backup_label)] == self.backup_label:
-                    self._backup_label_date = label_content[len(self.backup_label):]
-                    return True
-                else:
-                    return False
+            # Check backup file list
+            suffix = '.csv'
+            backup_file_list = [s + suffix for s in self.backup_list]  # create list of table filenames
+            backup_file_list.append('label')  # append filename for label file
+            if set(backup_file_list) != set(tar.getnames()):
+                logging.debug("Backup content expected: " + str(backup_file_list) +
+                              "\nBackup content actual: " + str(tar.getnames()))
+                return False
+
+            # Check correctness of backup label
+            label_content = tar.extractfile('label').read().decode("utf-8")
+            logging.debug("Backup file label: " + label_content)
+            if label_content[:len(self.backup_label)] == self.backup_label:
+                self._backup_label_date = label_content[len(self.backup_label):]
+            else:
+                return False
+
+            # Check db schema used for backup creation
+            settings_content = StringIO(tar.extractfile('settings.csv').read().decode("utf-8"))
+            data = pd.read_csv(settings_content, sep="|", header=0)
+            schema_version = int(data[data['name'] == 'SchemaVersion']['value'][0])
+            if schema_version != Setup.TARGET_SCHEMA:
+                logging.warning(g_tr('JalBackup', "Backup schema version expected: ") + str(Setup.TARGET_SCHEMA) +
+                                g_tr('JalBackup', "Backup schema version actual: ") + str(schema_version))
+                return False
+        return True
 
     def do_backup(self):
         db = sqlite3.connect(self.file)
