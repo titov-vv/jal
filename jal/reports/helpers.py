@@ -73,3 +73,8 @@ def xlsxWriteRow(wksheet, row, columns, height=None):
                 wksheet.merge_range(row, column, row+cd[ROW_SPAN_V], column+cd[ROW_SPAN_H],
                                     cd[ROW_DATA], cd[ROW_FORMAT])
         wksheet.write(row, column, cd[ROW_DATA], cd[ROW_FORMAT])
+
+def xlsxWriteZeros(wksheet, rows, columns, format):
+    for i in rows:
+        for j in columns:
+            wksheet.write(i, j, 0, format)

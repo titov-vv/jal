@@ -4,7 +4,7 @@ from datetime import datetime
 import xlsxwriter
 import logging
 from jal.constants import TransactionType, CorporateAction
-from jal.reports.helpers import xslxFormat, xlsxWriteRow
+from jal.reports.helpers import xslxFormat, xlsxWriteRow, xlsxWriteZeros
 from jal.reports.dlsg import DLSG
 from jal.ui_custom.helpers import g_tr
 from jal.db.helpers import executeSQL, readSQLrecord, readSQL
@@ -244,11 +244,14 @@ class TaxesRus:
                                        amount_usd, amount_rub, tax_usd, tax_us_rub, rate)
             row += 1
         sheet.write(row, 3, "ИТОГО", formats.ColumnFooter())
-        sheet.write_formula(row, 4, f"=SUM(E{start_row + 1}:E{row})", formats.ColumnFooter())
-        sheet.write_formula(row, 5, f"=SUM(F{start_row + 1}:F{row})", formats.ColumnFooter())
-        sheet.write_formula(row, 6, f"=SUM(G{start_row + 1}:G{row})", formats.ColumnFooter())
-        sheet.write_formula(row, 7, f"=SUM(H{start_row + 1}:H{row})", formats.ColumnFooter())
-        sheet.write_formula(row, 8, f"=SUM(I{start_row + 1}:I{row})", formats.ColumnFooter())
+        if row > (start_row + 1):  # Don't put formulas with pre-definded errors
+            sheet.write_formula(row, 4, f"=SUM(E{start_row + 1}:E{row})", formats.ColumnFooter())
+            sheet.write_formula(row, 5, f"=SUM(F{start_row + 1}:F{row})", formats.ColumnFooter())
+            sheet.write_formula(row, 6, f"=SUM(G{start_row + 1}:G{row})", formats.ColumnFooter())
+            sheet.write_formula(row, 7, f"=SUM(H{start_row + 1}:H{row})", formats.ColumnFooter())
+            sheet.write_formula(row, 8, f"=SUM(I{start_row + 1}:I{row})", formats.ColumnFooter())
+        else:
+            xlsxWriteZeros(sheet, [row], [4, 5, 6, 7, 8], formats.ColumnFooter())
 
 # -----------------------------------------------------------------------------------------------------------------------
     def prepare_trades(self, sheet, statement, account_id, begin, end, formats):
@@ -390,10 +393,13 @@ class TaxesRus:
             data_row = data_row + 1
         row = start_row + (data_row * 2)
         sheet.write(row, 11, "ИТОГО", formats.ColumnFooter())
-        sheet.write_formula(row, 12, f"=SUM(M{start_row + 1}:M{row})", formats.ColumnFooter())
-        sheet.write_formula(row, 13, f"=SUM(N{start_row + 1}:N{row})", formats.ColumnFooter())
-        sheet.write_formula(row, 14, f"=SUM(O{start_row + 1}:O{row})", formats.ColumnFooter())
-        sheet.write_formula(row, 15, f"=SUM(P{start_row + 1}:P{row})", formats.ColumnFooter())
+        if row > (start_row + 1):  # Don't put formulas with pre-definded errors
+            sheet.write_formula(row, 12, f"=SUM(M{start_row + 1}:M{row})", formats.ColumnFooter())
+            sheet.write_formula(row, 13, f"=SUM(N{start_row + 1}:N{row})", formats.ColumnFooter())
+            sheet.write_formula(row, 14, f"=SUM(O{start_row + 1}:O{row})", formats.ColumnFooter())
+            sheet.write_formula(row, 15, f"=SUM(P{start_row + 1}:P{row})", formats.ColumnFooter())
+        else:
+            xlsxWriteZeros(sheet, [row], [12, 13, 14, 15], formats.ColumnFooter())
 
     # -----------------------------------------------------------------------------------------------------------------------
     # TODO optimize common elemets of all prepare_* methods
@@ -537,10 +543,13 @@ class TaxesRus:
             data_row = data_row + 1
         row = start_row + (data_row * 2)
         sheet.write(row, 11, "ИТОГО", formats.ColumnFooter())
-        sheet.write_formula(row, 12, f"=SUM(M{start_row + 1}:M{row})", formats.ColumnFooter())
-        sheet.write_formula(row, 13, f"=SUM(N{start_row + 1}:N{row})", formats.ColumnFooter())
-        sheet.write_formula(row, 14, f"=SUM(O{start_row + 1}:O{row})", formats.ColumnFooter())
-        sheet.write_formula(row, 15, f"=SUM(P{start_row + 1}:P{row})", formats.ColumnFooter())
+        if row > (start_row + 1):  # Don't put formulas with pre-definded errors
+            sheet.write_formula(row, 12, f"=SUM(M{start_row + 1}:M{row})", formats.ColumnFooter())
+            sheet.write_formula(row, 13, f"=SUM(N{start_row + 1}:N{row})", formats.ColumnFooter())
+            sheet.write_formula(row, 14, f"=SUM(O{start_row + 1}:O{row})", formats.ColumnFooter())
+            sheet.write_formula(row, 15, f"=SUM(P{start_row + 1}:P{row})", formats.ColumnFooter())
+        else:
+            xlsxWriteZeros(sheet, [row], [12, 13, 14, 15], formats.ColumnFooter())
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -594,7 +603,10 @@ class TaxesRus:
             })
             row += 1
         sheet.write(row, 3, "ИТОГО", formats.ColumnFooter())
-        sheet.write_formula(row, 4, f"=SUM(E{start_row+1}:E{row})", formats.ColumnFooter())
+        if row > (start_row + 1):  # Don't put formulas with pre-definded errors
+            sheet.write_formula(row, 4, f"=SUM(E{start_row+1}:E{row})", formats.ColumnFooter())
+        else:
+            xlsxWriteZeros(sheet, [row], [4], formats.ColumnFooter())
 
 #-----------------------------------------------------------------------------------------------------------------------
     def prepare_corporate_actions(self, sheet, _statement, account_id, begin, end, formats):
