@@ -187,7 +187,14 @@ class TaxesRus:
                              "Дата оплаты": 10,
                              "Курс USD/RUB на дату оплаты": 10,
                              "Сумма, RUB": 10
-                         }),
+                         },
+                         ({
+                             0: ("note", "text"),
+                             1: ("amount", "number", 2),
+                             2: ("payment_date", "date"),
+                             3: ("rate", "number", 4),
+                             4: ("amount_rub", "number", 2)
+                         })),
             "Корп.события": (self.prepare_corporate_actions,
                              "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде "
                              "с предшествовавшими корпоративными событиями",
@@ -580,7 +587,7 @@ class TaxesRus:
         sheet = self.current_sheet
 
         query = executeSQL(self.db,
-                           "SELECT a.timestamp AS payment_date, d.sum AS amount, d.note AS note, q.quote AS rate_cbr "
+                           "SELECT a.timestamp AS payment_date, d.sum AS amount, d.note AS note, q.quote AS rate "
                            "FROM actions AS a "
                            "LEFT JOIN action_details AS d ON d.pid=a.id "
                            "LEFT JOIN accounts AS c ON c.id = :account_id "
@@ -590,15 +597,10 @@ class TaxesRus:
                            [(":begin", begin), (":end", end), (":account_id", account_id)])
         row = start_row = self.data_start_row
         while query.next():
-            payment_date, amount, note, rate = readSQLrecord(query)
-            amount_rub = round(-amount * rate, 2) if rate else 0
-            xlsxWriteRow(sheet, row, {
-                0: (note, xlsx.formats.Text(row)),
-                1: (-amount, xlsx.formats.Number(row, 2)),
-                2: (datetime.fromtimestamp(payment_date).strftime('%d.%m.%Y'), xlsx.formats.Text(row)),
-                3: (rate, xlsx.formats.Number(row, 4)),
-                4: (amount_rub, xlsx.formats.Number(row, 2))
-            })
+            fee = readSQLrecord(query, named=True)
+            fee['amount'] = -fee['amount']
+            fee['amount_rub'] = round(fee['amount'] * fee['rate'], 2) if fee['rate'] else 0
+            self.add_report_row(row, fee)
             row += 1
         xlsx.add_totals_footer(sheet, start_row, row, [3, 4])
 
