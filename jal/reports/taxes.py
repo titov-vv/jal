@@ -100,7 +100,7 @@ class TaxesRus:
     COL_FIELD = 2
 
     CorpActionText = {
-        CorporateAction.SymbolChange: "Смена символа {old} -> {new}",
+        CorporateAction.SymbolChange: "Смена символа {before} {old} -> {after} {new}",
         CorporateAction.Split: "Сплит {old} {before} в {after}",
         CorporateAction.SpinOff: "Выделение компании {after} {new} из {before} {old}",
         CorporateAction.Merger: "Слияние компании, конвертация {before} {old} в {after} {new}",
@@ -639,7 +639,6 @@ class TaxesRus:
         purchase['fee_rub'] = round(purchase['fee'] * purchase['t_rate'], 2) if purchase['t_rate'] else 0
 
         self.add_report_row(row, purchase, even_odd=even_odd)
-
         return row + 1, proceed_qty - purchase['qty']
 
     def output_corp_action(self, sid, proceed_qty, level, row, even_odd):
@@ -661,12 +660,6 @@ class TaxesRus:
         action['description'] = self.CorpActionText[action['type']].format(old=action['symbol'],
                                                                            new=action['symbol_new'],
                                                                            before=qty_before, after=qty_after)
-        if proceed_qty > action['qty_new']:
-            logging.error(
-                g_tr('TaxesRus', "Can't proceed more quantity than in corporate action: ") + action['description'])
-            raise ValueError
-
         self.add_report_row(row, action, even_odd=even_odd, alternative=1)
-
         return row + 1, qty_before
 #-----------------------------------------------------------------------------------------------------------------------
