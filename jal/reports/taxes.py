@@ -372,7 +372,7 @@ class TaxesRus:
             header_row[column] = (f"({column + 1})", self.reports_xls.formats.ColumnHeader())
         xlsxWriteRow(self.current_sheet, 8, header_row)
 
-    def add_report_row(self, row, data, detail=0):
+    def add_report_row(self, row, data, even_odd=1, detail=0):
         KEY_NAME = 0
         VALUE_FMT = 1
         FMT_DETAILS = 2
@@ -386,16 +386,16 @@ class TaxesRus:
             value = data[row_details[i][KEY_NAME]]
             format_as = row_details[i][VALUE_FMT]
             if format_as == "text":
-                fmt = self.reports_xls.formats.Text(row)
+                fmt = self.reports_xls.formats.Text(even_odd)
             elif format_as == "number":
                 precision = row_details[i][FMT_DETAILS]
-                fmt = self.reports_xls.formats.Number(row, precision)
+                fmt = self.reports_xls.formats.Number(even_odd, tolerance=precision)
             elif format_as == "date":
                 value = datetime.fromtimestamp(value).strftime('%d.%m.%Y')
-                fmt = self.reports_xls.formats.Text(row)
+                fmt = self.reports_xls.formats.Text(even_odd)
             elif format_as == "bool":
-                value = row_details[FMT_DETAILS][value]
-                fmt = self.reports_xls.formats.Text(row)
+                value = row_details[i][FMT_DETAILS][value]
+                fmt = self.reports_xls.formats.Text(even_odd)
             else:
                 raise ValueError
             if len(row_details[i]) == 5: # There are horizontal or vertical span defined
@@ -475,7 +475,7 @@ class TaxesRus:
                     dividend["tax2pay"] = dividend["tax2pay"] - dividend["tax_rub"]
                 else:
                     dividend["tax2pay"] = 0
-            self.add_report_row(row, dividend)
+            self.add_report_row(row, dividend, even_odd=row)
 
             dividend["country_code"] = 'us' if dividend["country_code"] == 'xx' else dividend["country_code"]   # TODO select right country code if it is absent
             if self.statement is not None:
@@ -544,8 +544,8 @@ class TaxesRus:
             deal['profit_rub'] = deal['income_rub'] - deal['spending_rub']
             deal['profit'] = deal['income'] - deal['spending']
 
-            self.add_report_row(row, deal, detail=0)
-            self.add_report_row(row+1, deal, detail=1)
+            self.add_report_row(row, deal, even_odd=data_row, detail=0)
+            self.add_report_row(row+1, deal, even_odd=data_row, detail=1)
 
             # TODO replace 'us' with value depandable on broker account
             if self.statement is not None:
@@ -613,8 +613,8 @@ class TaxesRus:
             deal['profit_rub'] = deal['income_rub'] - deal['spending_rub']
             deal['profit'] = deal['income'] - deal['spending']
 
-            self.add_report_row(row, deal, detail=0)
-            self.add_report_row(row + 1, deal, detail=1)
+            self.add_report_row(row, deal, even_odd=data_row, detail=0)
+            self.add_report_row(row + 1, deal, even_odd=data_row, detail=1)
 
             # TODO replace 'us' with value depandable on broker account
             if self.statement is not None:
@@ -645,7 +645,7 @@ class TaxesRus:
             fee = readSQLrecord(query, named=True)
             fee['amount'] = -fee['amount']
             fee['amount_rub'] = round(fee['amount'] * fee['rate'], 2) if fee['rate'] else 0
-            self.add_report_row(row, fee)
+            self.add_report_row(row, fee, even_odd=row)
             row += 1
         xlsx.add_totals_footer(sheet, start_row, row, [3, 4])
 
@@ -687,7 +687,7 @@ class TaxesRus:
             else:
                 sale['fee_rub'] = 0
 
-            self.add_report_row(row, sale)
+            self.add_report_row(row, sale, even_odd=even_odd)
             row = row + 1
 
             row, qty = self.proceed_corporate_action(sale['sid'], sale['qty'], 1, sheet, xlsx.formats, row, even_odd)
@@ -745,7 +745,7 @@ class TaxesRus:
         purchase['fee'] = purchase['fee'] * purchase['qty'] / deal_qty
         purchase['fee_rub'] = round(purchase['fee'] * purchase['t_rate'], 2) if purchase['t_rate'] else 0
 
-        self.add_report_row(row, purchase)
+        self.add_report_row(row, purchase, even_odd=even_odd)
 
         return row + 1, proceed_qty - purchase['qty']
 
@@ -773,7 +773,7 @@ class TaxesRus:
                 g_tr('TaxesRus', "Can't proceed more quantity than in corporate action: ") + action['description'])
             raise ValueError
 
-        self.add_report_row(row, action, detail=1)
+        self.add_report_row(row, action, even_odd=even_odd, detail=1)
 
         return row + 1, qty_before
 #-----------------------------------------------------------------------------------------------------------------------
