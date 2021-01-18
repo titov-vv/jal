@@ -160,6 +160,7 @@ class TaxesRus:
         for report in self.reports:
             self.current_report = report
             self.current_sheet = self.reports_xls.workbook.add_worksheet(report)
+            self.add_report_header()
             self.prepare_report(account_id, year_begin, year_end)
 
         self.reports_xls.save()
@@ -170,12 +171,13 @@ class TaxesRus:
             except:
                 logging.error(g_tr('TaxesRus', "Can't write tax form into file ") + f"'{dlsg_out}'")
 
-    def add_report_header(self, sheet, formats, title):
-        sheet.write(0, 0, title, formats.Bold())
-        sheet.write(2, 0, "Документ-основание:")
-        sheet.write(3, 0, "Период:")
-        sheet.write(4, 0, "ФИО:")
-        sheet.write(5, 0, "Номер счета:")  # TODO insert account number
+    def add_report_header(self):
+        report = self.reports[self.current_report]
+        self.current_sheet.write(0, 0, report[1], self.reports_xls.formats.Bold())
+        self.current_sheet.write(2, 0, "Документ-основание:")
+        self.current_sheet.write(3, 0, "Период:")
+        self.current_sheet.write(4, 0, "ФИО:")
+        self.current_sheet.write(5, 0, "Номер счета:")  # TODO insert account number
 
 # -----------------------------------------------------------------------------------------------------------------------
     def prepare_report(self, account_id, year_begin, year_end):
@@ -185,7 +187,6 @@ class TaxesRus:
 # -----------------------------------------------------------------------------------------------------------------------
     def prepare_dividends(self, xlsx, statement, account_id, begin, end):
         sheet = self.current_sheet
-        self.add_report_header(sheet, xlsx.formats, "Отчет по дивидендам, полученным в отчетном периоде")
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")
         _ = executeSQL(self.db,  # FIXME - below query will take any earlier currency rate - limitation is needed for 2-3 days scope
                        "INSERT INTO t_last_dates(ref_id, timestamp) "
@@ -270,7 +271,6 @@ class TaxesRus:
 # -----------------------------------------------------------------------------------------------------------------------
     def prepare_trades(self, xlsx, statement, account_id, begin, end):
         sheet = self.current_sheet
-        self.add_report_header(sheet, xlsx.formats, "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде")
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")
         _ = executeSQL(self.db,
                        "INSERT INTO t_last_dates(ref_id, timestamp) "
@@ -420,8 +420,6 @@ class TaxesRus:
     # TODO optimize common elemets of all prepare_* methods
     def prepare_derivatives(self, xlsx, statement, account_id, begin, end):
         sheet = self.current_sheet
-        self.add_report_header(sheet, xlsx.formats,
-                               "Отчет по сделкам с производными финансовыми инструментами, завершённым в отчетном периоде")
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")
         _ = executeSQL(self.db,
                        "INSERT INTO t_last_dates(ref_id, timestamp) "
@@ -571,7 +569,6 @@ class TaxesRus:
 # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_fees(self, xlsx, statement, account_id, begin, end):
         sheet = self.current_sheet
-        self.add_report_header(sheet, xlsx.formats, "Отчет по комиссиям, уплаченным брокеру в отчетном периоде")
 
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")
         _ = executeSQL(self.db,
@@ -628,8 +625,7 @@ class TaxesRus:
 #-----------------------------------------------------------------------------------------------------------------------
     def prepare_corporate_actions(self, xlsx, statement, account_id, begin, end):
         sheet = self.current_sheet
-        self.add_report_header(sheet, xlsx.formats, "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде "
-                                               "с предшествовавшими корпоративными событиями")
+
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")   # TODO combine with the same code in trades report
         _ = executeSQL(self.db,
                        "INSERT INTO t_last_dates(ref_id, timestamp) "
