@@ -90,6 +90,10 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
 
 #-----------------------------------------------------------------------------------------------------------------------
 class TaxesRus:
+    RPT_METHOD = 0
+    RPT_TITLE = 1
+    RPT_COLUMNS = 2
+
     CorpActionText = {
         CorporateAction.SymbolChange: "Смена символа {old} -> {new}",
         CorporateAction.Split: "Сплит {old} {before} в {after}",
@@ -106,17 +110,87 @@ class TaxesRus:
         self.current_report = None
         self.reports = {
             "Дивиденды": (self.prepare_dividends,
-                          "Отчет по дивидендам, полученным в отчетном периоде"),
+                          "Отчет по дивидендам, полученным в отчетном периоде",
+                          {
+                              "Дата выплаты": 10,
+                              "Ценная бумага": 8,
+                              "Полное наименование": 50,
+                              "Курс USD/RUB на дату выплаты": 16,
+                              "Доход, USD": 12,
+                              "Доход, RUB (код 1010)": 12,
+                              "Налог упл., USD": 12,
+                              "Налог упл., RUB": 12,
+                              "Налог к уплате, RUB": 12,
+                              "Страна": 20,
+                              "СОИДН": 7
+                          }),
             "Сделки с ЦБ": (self.prepare_trades,
-                            "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде"),
+                            "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде",
+                            {
+                                "Ценная бумага": 8,
+                                "Кол-во": 8,
+                                "Тип сделки": 8,
+                                "Дата сделки": 10,
+                                "Курс USD/RUB на дату сделки": 9,
+                                "Дата поставки": 10,
+                                "Курс USD/RUB на дату поставки": 9,
+                                "Цена, USD": 12,
+                                "Сумма сделки, USD": 12,
+                                "Сумма сделки, RUB": 12,
+                                "Комиссия, USD": 12,
+                                "Комиссия, RUB": 9,
+                                "Доход, RUB (код 1530)": 12,
+                                "Расход, RUB (код 201)": 12,
+                                "Финансовый результат, RUB": 12,
+                                "Финансовый результат, USD": 12
+                            }),
             "Сделки с ПФИ": (self.prepare_derivatives,
-                             "Отчет по сделкам с производными финансовыми инструментами, завершённым в отчетном периоде"),
+                             "Отчет по сделкам с производными финансовыми инструментами, завершённым в отчетном периоде",
+                             {
+                                 "Ценная бумага": 22,
+                                 "Кол-во": 8,
+                                 "Тип сделки": 8,
+                                 "Дата сделки": 10,
+                                 "Курс USD/RUB на дату сделки": 9,
+                                 "Дата поставки": 10,
+                                 "Курс USD/RUB на дату поставки": 9,
+                                 "Цена, USD": 12,
+                                 "Сумма сделки, USD": 12,
+                                 "Сумма сделки, RUB": 12,
+                                 "Комиссия, USD": 12,
+                                 "Комиссия, RUB": 9,
+                                 "Доход, RUB (код 1532)": 12,
+                                 "Расход, RUB (код 206)": 12,
+                                 "Финансовый результат, RUB": 12,
+                                 "Финансовый результат, USD": 12
+                             }),
             "Комиссии": (self.prepare_broker_fees,
-                         "Отчет по комиссиям, уплаченным брокеру в отчетном периоде"),
+                         "Отчет по комиссиям, уплаченным брокеру в отчетном периоде",
+                         {
+                             "Описание": 50,
+                             "Сумма, USD": 8,
+                             "Дата оплаты": 10,
+                             "Курс USD/RUB на дату оплаты": 10,
+                             "Сумма, RUB": 10
+                         }),
             "Корп.события": (self.prepare_corporate_actions,
                              "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде "
-                             "с предшествовавшими корпоративными событиями"
-                             )
+                             "с предшествовавшими корпоративными событиями",
+                             {
+                                 "Операция": 20,
+                                 "Дата сделки": 10,
+                                 "Ценная бумага": 8,
+                                 "Кол-во": 8,
+                                 "Курс USD/RUB на дату сделки": 9,
+                                 "Дата поставки": 10,
+                                 "Курс USD/RUB на дату поставки": 9,
+                                 "Цена, USD": 12,
+                                 "Сумма сделки, USD": 12,
+                                 "Сумма сделки, RUB": 12,
+                                 "Комиссия, USD": 12,
+                                 "Комиссия, RUB": 9,
+
+                             })
         }
         self.bool_text = {
             0: 'Нет',
@@ -177,11 +251,21 @@ class TaxesRus:
     # This method puts header on each report sheet
     def add_report_header(self):
         report = self.reports[self.current_report]
-        self.current_sheet.write(0, 0, report[1], self.reports_xls.formats.Bold())
+        self.current_sheet.write(0, 0, report[self.RPT_TITLE], self.reports_xls.formats.Bold())
         self.current_sheet.write(2, 0, "Документ-основание:")
         self.current_sheet.write(3, 0, "Период:")
         self.current_sheet.write(4, 0, "ФИО:")
         self.current_sheet.write(5, 0, "Номер счета:")  # TODO insert account number
+
+        header_row = {}
+        for i, column in enumerate(report[self.RPT_COLUMNS]):
+            # make tuple for each column i: ("Column_Title", xlsx.formats.ColumnHeader(), Column_Width, 0, 0)
+            header_row[i] = (column, self.reports_xls.formats.ColumnHeader(), report[self.RPT_COLUMNS][column], 0, 0)
+        xlsxWriteRow(self.current_sheet, 7, header_row, 60)
+
+        for column in range(len(header_row)):  # Put column numbers for reference
+            header_row[column] = (f"({column + 1})", self.reports_xls.formats.ColumnHeader())
+        xlsxWriteRow(self.current_sheet, 8, header_row)
 
     # Exchange rates are present in database not for every date (and not every possible timestamp)
     # As any action has exact timestamp it won't match rough timestamp of exchange rate most probably
@@ -224,29 +308,11 @@ class TaxesRus:
 # -----------------------------------------------------------------------------------------------------------------------
     def prepare_report(self, account_id, year_begin, year_end):
         report = self.reports[self.current_report]
-        report[0](self.reports_xls, self.statement, account_id, year_begin, year_end)
+        report[self.RPT_METHOD](self.reports_xls, self.statement, account_id, year_begin, year_end)
 
 # -----------------------------------------------------------------------------------------------------------------------
     def prepare_dividends(self, xlsx, statement, account_id, begin, end):
         sheet = self.current_sheet
-
-        header_row = {
-            0: ("Дата выплаты", xlsx.formats.ColumnHeader(), 10, 0, 0),
-            1: ("Ценная бумага", xlsx.formats.ColumnHeader(), 8, 0, 0),
-            2: ("Полное наименование", xlsx.formats.ColumnHeader(), 50, 0, 0),
-            3: ("Курс USD/RUB на дату выплаты", xlsx.formats.ColumnHeader(), 16, 0, 0),
-            4: ("Доход, USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            5: ("Доход, RUB (код 1010)", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            6: ("Налог упл., USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            7: ("Налог упл., RUB", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            8: ("Налог к уплате, RUB", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            9: ("Страна", xlsx.formats.ColumnHeader(), 20, 0, 0),
-            10: ("СОИДН", xlsx.formats.ColumnHeader(), 7, 0, 0)
-        }
-        xlsxWriteRow(sheet, 7, header_row, 30)
-        for column in range(len(header_row)):  # Put column numbers for reference
-            header_row[column] = (f"({column + 1})", xlsx.formats.ColumnHeader())
-        xlsxWriteRow(sheet, 8, header_row)
 
         query = executeSQL(self.db,
                            "SELECT d.timestamp AS payment_date, s.name AS symbol, s.full_name AS full_name, "
@@ -296,29 +362,6 @@ class TaxesRus:
 # -----------------------------------------------------------------------------------------------------------------------
     def prepare_trades(self, xlsx, statement, account_id, begin, end):
         sheet = self.current_sheet
-
-        header_row = {
-            0: ("Ценная бумага", xlsx.formats.ColumnHeader(), 8, 0, 0),
-            1: ("Кол-во", xlsx.formats.ColumnHeader(), 8, 0, 0),
-            2: ("Тип сделки", xlsx.formats.ColumnHeader(), 8, 0, 0),
-            3: ("Дата сделки", xlsx.formats.ColumnHeader(), 10, 0, 0),
-            4: ("Курс USD/RUB на дату сделки", xlsx.formats.ColumnHeader(), 9, 0, 0),
-            5: ("Дата поставки", xlsx.formats.ColumnHeader(), 10, 0, 0),
-            6: ("Курс USD/RUB на дату поставки", xlsx.formats.ColumnHeader(), 9, 0, 0),
-            7: ("Цена, USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            8: ("Сумма сделки, USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            9: ("Сумма сделки, RUB", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            10: ("Комиссия, USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            11: ("Комиссия, RUB", xlsx.formats.ColumnHeader(), 9, 0, 0),
-            12: ("Доход, RUB (код 1530)", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            13: ("Расход, RUB (код 201)", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            14: ("Финансовый результат, RUB", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            15: ("Финансовый результат, USD", xlsx.formats.ColumnHeader(), 12, 0, 0)
-        }
-        xlsxWriteRow(sheet, 7, header_row, 60)
-        for column in range(len(header_row)):  # Put column numbers for reference
-            header_row[column] = (f"({column + 1})", xlsx.formats.ColumnHeader())
-        xlsxWriteRow(sheet, 8, header_row)
 
         # Take all actions without conversion
         query = executeSQL(self.db,
@@ -409,33 +452,9 @@ class TaxesRus:
 
         xlsx.add_totals_footer(sheet, start_row, row, [11, 12, 13, 14, 15])
 
-    # -----------------------------------------------------------------------------------------------------------------------
-    # TODO optimize common elemets of all prepare_* methods
+# -----------------------------------------------------------------------------------------------------------------------
     def prepare_derivatives(self, xlsx, statement, account_id, begin, end):
         sheet = self.current_sheet
-
-        header_row = {
-            0: ("Ценная бумага", xlsx.formats.ColumnHeader(), 22, 0, 0),
-            1: ("Кол-во", xlsx.formats.ColumnHeader(), 8, 0, 0),
-            2: ("Тип сделки", xlsx.formats.ColumnHeader(), 8, 0, 0),
-            3: ("Дата сделки", xlsx.formats.ColumnHeader(), 10, 0, 0),
-            4: ("Курс USD/RUB на дату сделки", xlsx.formats.ColumnHeader(), 9, 0, 0),
-            5: ("Дата поставки", xlsx.formats.ColumnHeader(), 10, 0, 0),
-            6: ("Курс USD/RUB на дату поставки", xlsx.formats.ColumnHeader(), 9, 0, 0),
-            7: ("Цена, USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            8: ("Сумма сделки, USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            9: ("Сумма сделки, RUB", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            10: ("Комиссия, USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            11: ("Комиссия, RUB", xlsx.formats.ColumnHeader(), 9, 0, 0),
-            12: ("Доход, RUB (код 1532)", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            13: ("Расход, RUB (код 206)", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            14: ("Финансовый результат, RUB", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            15: ("Финансовый результат, USD", xlsx.formats.ColumnHeader(), 12, 0, 0)
-        }
-        xlsxWriteRow(sheet, 7, header_row, 60)
-        for column in range(len(header_row)):  # Put column numbers for reference
-            header_row[column] = (f"({column + 1})", xlsx.formats.ColumnHeader())
-        xlsxWriteRow(sheet, 8, header_row)
 
         # Take all actions without conversion
         query = executeSQL(self.db,
@@ -531,18 +550,6 @@ class TaxesRus:
     def prepare_broker_fees(self, xlsx, statement, account_id, begin, end):
         sheet = self.current_sheet
 
-        header_row = {
-            0: ("Описание", xlsx.formats.ColumnHeader(), 50, 0, 0),
-            1: ("Сумма, USD", xlsx.formats.ColumnHeader(), 8, 0, 0),
-            2: ("Дата оплаты", xlsx.formats.ColumnHeader(), 10, 0, 0),
-            3: ("Курс USD/RUB на дату оплаты", xlsx.formats.ColumnHeader(), 10, 0, 0),
-            4: ("Сумма, RUB", xlsx.formats.ColumnHeader(), 10, 0, 0)
-        }
-        xlsxWriteRow(sheet, 7, header_row, 60)
-        for column in range(len(header_row)):  # Put column numbers for reference
-            header_row[column] = (f"({column + 1})", xlsx.formats.ColumnHeader())
-        xlsxWriteRow(sheet, 8, header_row)
-
         query = executeSQL(self.db,
                            "SELECT a.timestamp AS payment_date, d.sum AS amount, d.note AS note, q.quote AS rate_cbr "
                            "FROM actions AS a "
@@ -569,25 +576,6 @@ class TaxesRus:
 #-----------------------------------------------------------------------------------------------------------------------
     def prepare_corporate_actions(self, xlsx, statement, account_id, begin, end):
         sheet = self.current_sheet
-
-        header_row = {
-            0: ("Операция", xlsx.formats.ColumnHeader(), 20, 0, 0),
-            1: ("Дата сделки", xlsx.formats.ColumnHeader(), 10, 0, 0),
-            2: ("Ценная бумага", xlsx.formats.ColumnHeader(), 8, 0, 0),
-            3: ("Кол-во", xlsx.formats.ColumnHeader(), 8, 0, 0),
-            4: ("Курс USD/RUB на дату сделки", xlsx.formats.ColumnHeader(), 9, 0, 0),
-            5: ("Дата поставки", xlsx.formats.ColumnHeader(), 10, 0, 0),
-            6: ("Курс USD/RUB на дату поставки", xlsx.formats.ColumnHeader(), 9, 0, 0),
-            7: ("Цена, USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            8: ("Сумма сделки, USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            9: ("Сумма сделки, RUB", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            10: ("Комиссия, USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
-            11: ("Комиссия, RUB", xlsx.formats.ColumnHeader(), 9, 0, 0),
-        }
-        xlsxWriteRow(sheet, 7, header_row, 60)
-        for column in range(len(header_row)):  # Put column numbers for reference
-            header_row[column] = (f"({column + 1})", xlsx.formats.ColumnHeader())
-        xlsxWriteRow(sheet, 8, header_row)
 
         # get list of all deals that were opened with corp.action and closed by normal trade
         query = executeSQL(self.db,
