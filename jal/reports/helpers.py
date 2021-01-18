@@ -1,4 +1,25 @@
+import xlsxwriter
+import logging
 
+from jal.ui_custom.helpers import g_tr
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Class to encapsulate all xlsxwriter-related activities - like formatting, formulas, etc
+class XLSX:
+    def __init__(self, xlsx_filename):
+        self.filename = xlsx_filename
+        self.workbook = xlsxwriter.Workbook(filename=xlsx_filename)
+        self.formats = xslxFormat(self.workbook)
+
+    def save(self):
+        try:
+            self.workbook.close()
+        except:
+            logging.error(g_tr('TaxesRus', "Can't write tax report into file ") + f"'{self.filename}'")
+
+
+#-----------------------------------------------------------------------------------------------------------------------
 class xslxFormat:
     def __init__(self, workbook):
         self.wbk = workbook
@@ -74,7 +95,10 @@ def xlsxWriteRow(wksheet, row, columns, height=None):
                                     cd[ROW_DATA], cd[ROW_FORMAT])
         wksheet.write(row, column, cd[ROW_DATA], cd[ROW_FORMAT])
 
+#-----------------------------------------------------------------------------------------------------------------------
 def xlsxWriteZeros(wksheet, rows, columns, format):
     for i in rows:
         for j in columns:
             wksheet.write(i, j, 0, format)
+
+#-----------------------------------------------------------------------------------------------------------------------

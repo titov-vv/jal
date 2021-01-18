@@ -1,10 +1,10 @@
 from functools import partial
 import time
 from datetime import datetime
-import xlsxwriter
 import logging
+
 from jal.constants import TransactionType, CorporateAction
-from jal.reports.helpers import xslxFormat, xlsxWriteRow, xlsxWriteZeros
+from jal.reports.helpers import XLSX, xslxFormat, xlsxWriteRow, xlsxWriteZeros
 from jal.reports.dlsg import DLSG
 from jal.ui_custom.helpers import g_tr
 from jal.db.helpers import executeSQL, readSQLrecord, readSQL
@@ -103,17 +103,28 @@ class TaxesRus:
         self.account_currency = ''
         self.broker_name = ''
         self.use_settlement = True
+        self.current_report = None
         self.reports = {
-            "Дивиденды": self.prepare_dividends,
-            "Сделки с ЦБ": self.prepare_trades,
-            "Сделки с ПФИ": self.prepare_derivatives,
-            "Комиссии": self.prepare_broker_fees,
-            "Корп.события": self.prepare_corporate_actions
+            "Дивиденды": (self.prepare_dividends,
+                          "Отчет по дивидендам, полученным в отчетном периоде"),
+            "Сделки с ЦБ": (self.prepare_trades,
+                            "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде"),
+            "Сделки с ПФИ": (self.prepare_derivatives,
+                             "Отчет по сделкам с производными финансовыми инструментами, завершённым в отчетном периоде"),
+            "Комиссии": (self.prepare_broker_fees,
+                         "Отчет по комиссиям, уплаченным брокеру в отчетном периоде"),
+            "Корп.события": (self.prepare_corporate_actions,
+                             "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде "
+                             "с предшествовавшими корпоративными событиями"
+                             )
         }
         self.bool_text = {
             0: 'Нет',
             1: 'Да'
         }
+        self.reports_xls = None
+        self.statement = None
+        self.current_sheet = None
 
     def showTaxesDialog(self, parent):
         dialog = TaxExportDialog(parent, self.db)
@@ -136,29 +147,26 @@ class TaxesRus:
         year_begin = int(time.mktime(datetime.strptime(f"{year}", "%Y").timetuple()))
         year_end = int(time.mktime(datetime.strptime(f"{year + 1}", "%Y").timetuple()))
 
-        workbook = xlsxwriter.Workbook(filename=taxes_file)
-        formats = xslxFormat(workbook)
+        self.reports_xls = XLSX(taxes_file)
 
-        statement = None
         if dlsg_update:
-            statement = DLSG(only_dividends=dlsg_dividends_only)
+            self.statement = DLSG(only_dividends=dlsg_dividends_only)
             try:
-                statement.read_file(dlsg_in)
+                self.statement.read_file(dlsg_in)
             except:
                 logging.error(g_tr('TaxesRus', "Can't open tax form file ") + f"'{dlsg_in}'")
                 return
 
         for report in self.reports:
-            sheet = workbook.add_worksheet(name=report)
-            self.reports[report](sheet, statement, account_id, year_begin, year_end, formats)
-        try:
-            workbook.close()
-        except:
-            logging.error(g_tr('TaxesRus', "Can't write tax report into file ") + f"'{taxes_file}'")
+            self.current_report = report
+            self.current_sheet = self.reports_xls.workbook.add_worksheet(report)
+            self.prepare_report(account_id, year_begin, year_end)
+
+        self.reports_xls.save()
 
         if dlsg_update:
             try:
-                statement.write_file(dlsg_out)
+                self.statement.write_file(dlsg_out)
             except:
                 logging.error(g_tr('TaxesRus', "Can't write tax form into file ") + f"'{dlsg_out}'")
 
@@ -167,11 +175,17 @@ class TaxesRus:
         sheet.write(2, 0, "Документ-основание:")
         sheet.write(3, 0, "Период:")
         sheet.write(4, 0, "ФИО:")
-        sheet.write(5, 0, "Номер счета:")
+        sheet.write(5, 0, "Номер счета:")  # TODO insert account number
 
 # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_dividends(self, sheet, statement, account_id, begin, end, formats):
-        self.add_report_header(sheet, formats, "Отчет по дивидендам, полученным в отчетном периоде")
+    def prepare_report(self, account_id, year_begin, year_end):
+        report = self.reports[self.current_report]
+        report[0](self.reports_xls, self.statement, account_id, year_begin, year_end)
+
+# -----------------------------------------------------------------------------------------------------------------------
+    def prepare_dividends(self, xlsx, statement, account_id, begin, end):
+        sheet = self.current_sheet
+        self.add_report_header(sheet, xlsx.formats, "Отчет по дивидендам, полученным в отчетном периоде")
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")
         _ = executeSQL(self.db,  # FIXME - below query will take any earlier currency rate - limitation is needed for 2-3 days scope
                        "INSERT INTO t_last_dates(ref_id, timestamp) "
@@ -184,21 +198,21 @@ class TaxesRus:
         self.db.commit()
 
         header_row = {
-            0: ("Дата выплаты", formats.ColumnHeader(), 10, 0, 0),
-            1: ("Ценная бумага", formats.ColumnHeader(), 8, 0, 0),
-            2: ("Полное наименование", formats.ColumnHeader(), 50, 0, 0),
-            3: ("Курс USD/RUB на дату выплаты", formats.ColumnHeader(), 16, 0, 0),
-            4: ("Доход, USD", formats.ColumnHeader(), 12, 0, 0),
-            5: ("Доход, RUB (код 1010)", formats.ColumnHeader(), 12, 0, 0),
-            6: ("Налог упл., USD", formats.ColumnHeader(), 12, 0, 0),
-            7: ("Налог упл., RUB", formats.ColumnHeader(), 12, 0, 0),
-            8: ("Налог к уплате, RUB", formats.ColumnHeader(), 12, 0, 0),
-            9: ("Страна", formats.ColumnHeader(), 20, 0, 0),
-            10: ("СОИДН", formats.ColumnHeader(), 7, 0, 0)
+            0: ("Дата выплаты", xlsx.formats.ColumnHeader(), 10, 0, 0),
+            1: ("Ценная бумага", xlsx.formats.ColumnHeader(), 8, 0, 0),
+            2: ("Полное наименование", xlsx.formats.ColumnHeader(), 50, 0, 0),
+            3: ("Курс USD/RUB на дату выплаты", xlsx.formats.ColumnHeader(), 16, 0, 0),
+            4: ("Доход, USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            5: ("Доход, RUB (код 1010)", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            6: ("Налог упл., USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            7: ("Налог упл., RUB", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            8: ("Налог к уплате, RUB", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            9: ("Страна", xlsx.formats.ColumnHeader(), 20, 0, 0),
+            10: ("СОИДН", xlsx.formats.ColumnHeader(), 7, 0, 0)
         }
         xlsxWriteRow(sheet, 7, header_row, 30)
         for column in range(len(header_row)):  # Put column numbers for reference
-            header_row[column] = (f"({column + 1})", formats.ColumnHeader())
+            header_row[column] = (f"({column + 1})", xlsx.formats.ColumnHeader())
         xlsxWriteRow(sheet, 8, header_row)
 
         query = executeSQL(self.db,
@@ -226,36 +240,37 @@ class TaxesRus:
                 else:
                     tax_ru_rub = 0
             xlsxWriteRow(sheet, row, {
-                0: (datetime.fromtimestamp(payment_date).strftime('%d.%m.%Y'), formats.Text(row)),
-                1: (symbol, formats.Text(row)),
-                2: (full_name, formats.Text(row)),
-                3: (rate, formats.Number(row, 4)),
-                4: (amount_usd, formats.Number(row, 2)),
-                5: (amount_rub, formats.Number(row, 2)),
-                6: (tax_usd, formats.Number(row, 2)),
-                7: (tax_us_rub, formats.Number(row, 2)),
-                8: (tax_ru_rub, formats.Number(row, 2)),
-                9: (country, formats.Text(row)),
-                10: (self.bool_text[tax_treaty], formats.Text(row))
+                0: (datetime.fromtimestamp(payment_date).strftime('%d.%m.%Y'), xlsx.formats.Text(row)),
+                1: (symbol, xlsx.formats.Text(row)),
+                2: (full_name, xlsx.formats.Text(row)),
+                3: (rate, xlsx.formats.Number(row, 4)),
+                4: (amount_usd, xlsx.formats.Number(row, 2)),
+                5: (amount_rub, xlsx.formats.Number(row, 2)),
+                6: (tax_usd, xlsx.formats.Number(row, 2)),
+                7: (tax_us_rub, xlsx.formats.Number(row, 2)),
+                8: (tax_ru_rub, xlsx.formats.Number(row, 2)),
+                9: (country, xlsx.formats.Text(row)),
+                10: (self.bool_text[tax_treaty], xlsx.formats.Text(row))
             })
             code = 'us' if code == 'xx' else code   # TODO select right country code if it is absent
             if statement is not None:
                 statement.add_dividend(code, f"{symbol} ({full_name})", payment_date, self.account_currency,
                                        amount_usd, amount_rub, tax_usd, tax_us_rub, rate)
             row += 1
-        sheet.write(row, 3, "ИТОГО", formats.ColumnFooter())
+        sheet.write(row, 3, "ИТОГО", xlsx.formats.ColumnFooter())
         if row > (start_row + 1):  # Don't put formulas with pre-definded errors
-            sheet.write_formula(row, 4, f"=SUM(E{start_row + 1}:E{row})", formats.ColumnFooter())
-            sheet.write_formula(row, 5, f"=SUM(F{start_row + 1}:F{row})", formats.ColumnFooter())
-            sheet.write_formula(row, 6, f"=SUM(G{start_row + 1}:G{row})", formats.ColumnFooter())
-            sheet.write_formula(row, 7, f"=SUM(H{start_row + 1}:H{row})", formats.ColumnFooter())
-            sheet.write_formula(row, 8, f"=SUM(I{start_row + 1}:I{row})", formats.ColumnFooter())
+            sheet.write_formula(row, 4, f"=SUM(E{start_row + 1}:E{row})", xlsx.formats.ColumnFooter())
+            sheet.write_formula(row, 5, f"=SUM(F{start_row + 1}:F{row})", xlsx.formats.ColumnFooter())
+            sheet.write_formula(row, 6, f"=SUM(G{start_row + 1}:G{row})", xlsx.formats.ColumnFooter())
+            sheet.write_formula(row, 7, f"=SUM(H{start_row + 1}:H{row})", xlsx.formats.ColumnFooter())
+            sheet.write_formula(row, 8, f"=SUM(I{start_row + 1}:I{row})", xlsx.formats.ColumnFooter())
         else:
-            xlsxWriteZeros(sheet, [row], [4, 5, 6, 7, 8], formats.ColumnFooter())
+            xlsxWriteZeros(sheet, [row], [4, 5, 6, 7, 8], xlsx.formats.ColumnFooter())
 
 # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_trades(self, sheet, statement, account_id, begin, end, formats):
-        self.add_report_header(sheet, formats, "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде")
+    def prepare_trades(self, xlsx, statement, account_id, begin, end):
+        sheet = self.current_sheet
+        self.add_report_header(sheet, xlsx.formats, "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде")
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")
         _ = executeSQL(self.db,
                        "INSERT INTO t_last_dates(ref_id, timestamp) "
@@ -284,26 +299,26 @@ class TaxesRus:
         self.db.commit()
 
         header_row = {
-            0: ("Ценная бумага", formats.ColumnHeader(), 8, 0, 0),
-            1: ("Кол-во", formats.ColumnHeader(), 8, 0, 0),
-            2: ("Тип сделки", formats.ColumnHeader(), 8, 0, 0),
-            3: ("Дата сделки", formats.ColumnHeader(), 10, 0, 0),
-            4: ("Курс USD/RUB на дату сделки", formats.ColumnHeader(), 9, 0, 0),
-            5: ("Дата поставки", formats.ColumnHeader(), 10, 0, 0),
-            6: ("Курс USD/RUB на дату поставки", formats.ColumnHeader(), 9, 0, 0),
-            7: ("Цена, USD", formats.ColumnHeader(), 12, 0, 0),
-            8: ("Сумма сделки, USD", formats.ColumnHeader(), 12, 0, 0),
-            9: ("Сумма сделки, RUB", formats.ColumnHeader(), 12, 0, 0),
-            10: ("Комиссия, USD", formats.ColumnHeader(), 12, 0, 0),
-            11: ("Комиссия, RUB", formats.ColumnHeader(), 9, 0, 0),
-            12: ("Доход, RUB (код 1530)", formats.ColumnHeader(), 12, 0, 0),
-            13: ("Расход, RUB (код 201)", formats.ColumnHeader(), 12, 0, 0),
-            14: ("Финансовый результат, RUB", formats.ColumnHeader(), 12, 0, 0),
-            15: ("Финансовый результат, USD", formats.ColumnHeader(), 12, 0, 0)
+            0: ("Ценная бумага", xlsx.formats.ColumnHeader(), 8, 0, 0),
+            1: ("Кол-во", xlsx.formats.ColumnHeader(), 8, 0, 0),
+            2: ("Тип сделки", xlsx.formats.ColumnHeader(), 8, 0, 0),
+            3: ("Дата сделки", xlsx.formats.ColumnHeader(), 10, 0, 0),
+            4: ("Курс USD/RUB на дату сделки", xlsx.formats.ColumnHeader(), 9, 0, 0),
+            5: ("Дата поставки", xlsx.formats.ColumnHeader(), 10, 0, 0),
+            6: ("Курс USD/RUB на дату поставки", xlsx.formats.ColumnHeader(), 9, 0, 0),
+            7: ("Цена, USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            8: ("Сумма сделки, USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            9: ("Сумма сделки, RUB", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            10: ("Комиссия, USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            11: ("Комиссия, RUB", xlsx.formats.ColumnHeader(), 9, 0, 0),
+            12: ("Доход, RUB (код 1530)", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            13: ("Расход, RUB (код 201)", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            14: ("Финансовый результат, RUB", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            15: ("Финансовый результат, USD", xlsx.formats.ColumnHeader(), 12, 0, 0)
         }
         xlsxWriteRow(sheet, 7, header_row, 60)
         for column in range(len(header_row)):  # Put column numbers for reference
-            header_row[column] = (f"({column + 1})", formats.ColumnHeader())
+            header_row[column] = (f"({column + 1})", xlsx.formats.ColumnHeader())
         xlsxWriteRow(sheet, 8, header_row)
 
         # Take all actions without conversion
@@ -357,34 +372,34 @@ class TaxesRus:
             spending = spending + o_fee_rub + c_fee_rub
             spending_usd = spending_usd + o_fee_usd + c_fee_usd
             xlsxWriteRow(sheet, row, {
-                0: (deal['symbol'], formats.Text(data_row), 0, 0, 1),
-                1: (float(abs(deal['qty'])), formats.Number(data_row, 0, True), 0, 0, 1),
-                2: (o_deal_type, formats.Text(data_row)),
-                3: (datetime.fromtimestamp(deal['o_date']).strftime('%d.%m.%Y'), formats.Text(data_row)),
-                4: (deal['os_rate'], formats.Number(data_row, 4)),
-                5: (datetime.fromtimestamp(deal['os_date']).strftime('%d.%m.%Y'), formats.Text(data_row)),
-                6: (deal['o_rate'], formats.Number(data_row, 4)),
-                7: (deal['o_price'], formats.Number(data_row, 6)),
-                8: (o_amount_usd, formats.Number(data_row, 2)),
-                9: (o_amount_rub, formats.Number(data_row, 2)),
-                10: (o_fee_usd, formats.Number(data_row, 6)),
-                11: (o_fee_rub, formats.Number(data_row, 2)),
-                12: (income, formats.Number(data_row, 2), 0, 0, 1),
-                13: (spending, formats.Number(data_row, 2), 0, 0, 1),
-                14: (income - spending, formats.Number(data_row, 2), 0, 0, 1),
-                15: (income_usd - spending_usd, formats.Number(data_row, 2), 0, 0, 1)
+                0: (deal['symbol'], xlsx.formats.Text(data_row), 0, 0, 1),
+                1: (float(abs(deal['qty'])), xlsx.formats.Number(data_row, 0, True), 0, 0, 1),
+                2: (o_deal_type, xlsx.formats.Text(data_row)),
+                3: (datetime.fromtimestamp(deal['o_date']).strftime('%d.%m.%Y'), xlsx.formats.Text(data_row)),
+                4: (deal['os_rate'], xlsx.formats.Number(data_row, 4)),
+                5: (datetime.fromtimestamp(deal['os_date']).strftime('%d.%m.%Y'), xlsx.formats.Text(data_row)),
+                6: (deal['o_rate'], xlsx.formats.Number(data_row, 4)),
+                7: (deal['o_price'], xlsx.formats.Number(data_row, 6)),
+                8: (o_amount_usd, xlsx.formats.Number(data_row, 2)),
+                9: (o_amount_rub, xlsx.formats.Number(data_row, 2)),
+                10: (o_fee_usd, xlsx.formats.Number(data_row, 6)),
+                11: (o_fee_rub, xlsx.formats.Number(data_row, 2)),
+                12: (income, xlsx.formats.Number(data_row, 2), 0, 0, 1),
+                13: (spending, xlsx.formats.Number(data_row, 2), 0, 0, 1),
+                14: (income - spending, xlsx.formats.Number(data_row, 2), 0, 0, 1),
+                15: (income_usd - spending_usd, xlsx.formats.Number(data_row, 2), 0, 0, 1)
             })
             xlsxWriteRow(sheet, row + 1, {
-                2: (c_deal_type, formats.Text(data_row)),
-                3: (datetime.fromtimestamp(deal['c_date']).strftime('%d.%m.%Y'), formats.Text(data_row)),
-                4: (deal['cs_rate'], formats.Number(data_row, 4)),
-                5: (datetime.fromtimestamp(deal['cs_date']).strftime('%d.%m.%Y'), formats.Text(data_row)),
-                6: (deal['c_rate'], formats.Number(data_row, 4)),
-                7: (deal['c_price'], formats.Number(data_row, 6)),
-                8: (c_amount_usd, formats.Number(data_row, 2)),
-                9: (c_amount_rub, formats.Number(data_row, 2)),
-                10: (c_fee_usd, formats.Number(data_row, 6)),
-                11: (c_fee_rub, formats.Number(data_row, 2))
+                2: (c_deal_type, xlsx.formats.Text(data_row)),
+                3: (datetime.fromtimestamp(deal['c_date']).strftime('%d.%m.%Y'), xlsx.formats.Text(data_row)),
+                4: (deal['cs_rate'], xlsx.formats.Number(data_row, 4)),
+                5: (datetime.fromtimestamp(deal['cs_date']).strftime('%d.%m.%Y'), xlsx.formats.Text(data_row)),
+                6: (deal['c_rate'], xlsx.formats.Number(data_row, 4)),
+                7: (deal['c_price'], xlsx.formats.Number(data_row, 6)),
+                8: (c_amount_usd, xlsx.formats.Number(data_row, 2)),
+                9: (c_amount_rub, xlsx.formats.Number(data_row, 2)),
+                10: (c_fee_usd, xlsx.formats.Number(data_row, 6)),
+                11: (c_fee_rub, xlsx.formats.Number(data_row, 2))
             })
             # TODO replace 'us' with value depandable on broker account
             if statement is not None:
@@ -392,19 +407,20 @@ class TaxesRus:
                                            income_usd, income, spending, deal['c_rate'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
-        sheet.write(row, 11, "ИТОГО", formats.ColumnFooter())
+        sheet.write(row, 11, "ИТОГО", xlsx.formats.ColumnFooter())
         if row > (start_row + 1):  # Don't put formulas with pre-definded errors
-            sheet.write_formula(row, 12, f"=SUM(M{start_row + 1}:M{row})", formats.ColumnFooter())
-            sheet.write_formula(row, 13, f"=SUM(N{start_row + 1}:N{row})", formats.ColumnFooter())
-            sheet.write_formula(row, 14, f"=SUM(O{start_row + 1}:O{row})", formats.ColumnFooter())
-            sheet.write_formula(row, 15, f"=SUM(P{start_row + 1}:P{row})", formats.ColumnFooter())
+            sheet.write_formula(row, 12, f"=SUM(M{start_row + 1}:M{row})", xlsx.formats.ColumnFooter())
+            sheet.write_formula(row, 13, f"=SUM(N{start_row + 1}:N{row})", xlsx.formats.ColumnFooter())
+            sheet.write_formula(row, 14, f"=SUM(O{start_row + 1}:O{row})", xlsx.formats.ColumnFooter())
+            sheet.write_formula(row, 15, f"=SUM(P{start_row + 1}:P{row})", xlsx.formats.ColumnFooter())
         else:
-            xlsxWriteZeros(sheet, [row], [12, 13, 14, 15], formats.ColumnFooter())
+            xlsxWriteZeros(sheet, [row], [12, 13, 14, 15], xlsx.formats.ColumnFooter())
 
     # -----------------------------------------------------------------------------------------------------------------------
     # TODO optimize common elemets of all prepare_* methods
-    def prepare_derivatives(self, sheet, statement, account_id, begin, end, formats):
-        self.add_report_header(sheet, formats,
+    def prepare_derivatives(self, xlsx, statement, account_id, begin, end):
+        sheet = self.current_sheet
+        self.add_report_header(sheet, xlsx.formats,
                                "Отчет по сделкам с производными финансовыми инструментами, завершённым в отчетном периоде")
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")
         _ = executeSQL(self.db,
@@ -434,26 +450,26 @@ class TaxesRus:
         self.db.commit()
 
         header_row = {
-            0: ("Ценная бумага", formats.ColumnHeader(), 22, 0, 0),
-            1: ("Кол-во", formats.ColumnHeader(), 8, 0, 0),
-            2: ("Тип сделки", formats.ColumnHeader(), 8, 0, 0),
-            3: ("Дата сделки", formats.ColumnHeader(), 10, 0, 0),
-            4: ("Курс USD/RUB на дату сделки", formats.ColumnHeader(), 9, 0, 0),
-            5: ("Дата поставки", formats.ColumnHeader(), 10, 0, 0),
-            6: ("Курс USD/RUB на дату поставки", formats.ColumnHeader(), 9, 0, 0),
-            7: ("Цена, USD", formats.ColumnHeader(), 12, 0, 0),
-            8: ("Сумма сделки, USD", formats.ColumnHeader(), 12, 0, 0),
-            9: ("Сумма сделки, RUB", formats.ColumnHeader(), 12, 0, 0),
-            10: ("Комиссия, USD", formats.ColumnHeader(), 12, 0, 0),
-            11: ("Комиссия, RUB", formats.ColumnHeader(), 9, 0, 0),
-            12: ("Доход, RUB (код 1532)", formats.ColumnHeader(), 12, 0, 0),
-            13: ("Расход, RUB (код 206)", formats.ColumnHeader(), 12, 0, 0),
-            14: ("Финансовый результат, RUB", formats.ColumnHeader(), 12, 0, 0),
-            15: ("Финансовый результат, USD", formats.ColumnHeader(), 12, 0, 0)
+            0: ("Ценная бумага", xlsx.formats.ColumnHeader(), 22, 0, 0),
+            1: ("Кол-во", xlsx.formats.ColumnHeader(), 8, 0, 0),
+            2: ("Тип сделки", xlsx.formats.ColumnHeader(), 8, 0, 0),
+            3: ("Дата сделки", xlsx.formats.ColumnHeader(), 10, 0, 0),
+            4: ("Курс USD/RUB на дату сделки", xlsx.formats.ColumnHeader(), 9, 0, 0),
+            5: ("Дата поставки", xlsx.formats.ColumnHeader(), 10, 0, 0),
+            6: ("Курс USD/RUB на дату поставки", xlsx.formats.ColumnHeader(), 9, 0, 0),
+            7: ("Цена, USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            8: ("Сумма сделки, USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            9: ("Сумма сделки, RUB", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            10: ("Комиссия, USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            11: ("Комиссия, RUB", xlsx.formats.ColumnHeader(), 9, 0, 0),
+            12: ("Доход, RUB (код 1532)", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            13: ("Расход, RUB (код 206)", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            14: ("Финансовый результат, RUB", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            15: ("Финансовый результат, USD", xlsx.formats.ColumnHeader(), 12, 0, 0)
         }
         xlsxWriteRow(sheet, 7, header_row, 60)
         for column in range(len(header_row)):  # Put column numbers for reference
-            header_row[column] = (f"({column + 1})", formats.ColumnHeader())
+            header_row[column] = (f"({column + 1})", xlsx.formats.ColumnHeader())
         xlsxWriteRow(sheet, 8, header_row)
 
         # Take all actions without conversion
@@ -507,34 +523,34 @@ class TaxesRus:
             spending = spending + o_fee_rub + c_fee_rub
             spending_usd = spending_usd + o_fee_usd + c_fee_usd
             xlsxWriteRow(sheet, row, {
-                0: (deal['symbol'], formats.Text(data_row), 0, 0, 1),
-                1: (float(abs(deal['qty'])), formats.Number(data_row, 0, True), 0, 0, 1),
-                2: (o_deal_type, formats.Text(data_row)),
-                3: (datetime.fromtimestamp(deal['o_date']).strftime('%d.%m.%Y'), formats.Text(data_row)),
-                4: (deal['os_rate'], formats.Number(data_row, 4)),
-                5: (datetime.fromtimestamp(deal['os_date']).strftime('%d.%m.%Y'), formats.Text(data_row)),
-                6: (deal['o_rate'], formats.Number(data_row, 4)),
-                7: (deal['o_price'], formats.Number(data_row, 6)),
-                8: (o_amount_usd, formats.Number(data_row, 2)),
-                9: (o_amount_rub, formats.Number(data_row, 2)),
-                10: (o_fee_usd, formats.Number(data_row, 6)),
-                11: (o_fee_rub, formats.Number(data_row, 2)),
-                12: (income, formats.Number(data_row, 2), 0, 0, 1),
-                13: (spending, formats.Number(data_row, 2), 0, 0, 1),
-                14: (income - spending, formats.Number(data_row, 2), 0, 0, 1),
-                15: (income_usd - spending_usd, formats.Number(data_row, 2), 0, 0, 1)
+                0: (deal['symbol'], xlsx.formats.Text(data_row), 0, 0, 1),
+                1: (float(abs(deal['qty'])), xlsx.formats.Number(data_row, 0, True), 0, 0, 1),
+                2: (o_deal_type, xlsx.formats.Text(data_row)),
+                3: (datetime.fromtimestamp(deal['o_date']).strftime('%d.%m.%Y'), xlsx.formats.Text(data_row)),
+                4: (deal['os_rate'], xlsx.formats.Number(data_row, 4)),
+                5: (datetime.fromtimestamp(deal['os_date']).strftime('%d.%m.%Y'), xlsx.formats.Text(data_row)),
+                6: (deal['o_rate'], xlsx.formats.Number(data_row, 4)),
+                7: (deal['o_price'], xlsx.formats.Number(data_row, 6)),
+                8: (o_amount_usd, xlsx.formats.Number(data_row, 2)),
+                9: (o_amount_rub, xlsx.formats.Number(data_row, 2)),
+                10: (o_fee_usd, xlsx.formats.Number(data_row, 6)),
+                11: (o_fee_rub, xlsx.formats.Number(data_row, 2)),
+                12: (income, xlsx.formats.Number(data_row, 2), 0, 0, 1),
+                13: (spending, xlsx.formats.Number(data_row, 2), 0, 0, 1),
+                14: (income - spending, xlsx.formats.Number(data_row, 2), 0, 0, 1),
+                15: (income_usd - spending_usd, xlsx.formats.Number(data_row, 2), 0, 0, 1)
             })
             xlsxWriteRow(sheet, row + 1, {
-                2: (c_deal_type, formats.Text(data_row)),
-                3: (datetime.fromtimestamp(deal['c_date']).strftime('%d.%m.%Y'), formats.Text(data_row)),
-                4: (deal['cs_rate'], formats.Number(data_row, 4)),
-                5: (datetime.fromtimestamp(deal['cs_date']).strftime('%d.%m.%Y'), formats.Text(data_row)),
-                6: (deal['c_rate'], formats.Number(data_row, 4)),
-                7: (deal['c_price'], formats.Number(data_row, 6)),
-                8: (c_amount_usd, formats.Number(data_row, 2)),
-                9: (c_amount_rub, formats.Number(data_row, 2)),
-                10: (c_fee_usd, formats.Number(data_row, 6)),
-                11: (c_fee_rub, formats.Number(data_row, 2))
+                2: (c_deal_type, xlsx.formats.Text(data_row)),
+                3: (datetime.fromtimestamp(deal['c_date']).strftime('%d.%m.%Y'), xlsx.formats.Text(data_row)),
+                4: (deal['cs_rate'], xlsx.formats.Number(data_row, 4)),
+                5: (datetime.fromtimestamp(deal['cs_date']).strftime('%d.%m.%Y'), xlsx.formats.Text(data_row)),
+                6: (deal['c_rate'], xlsx.formats.Number(data_row, 4)),
+                7: (deal['c_price'], xlsx.formats.Number(data_row, 6)),
+                8: (c_amount_usd, xlsx.formats.Number(data_row, 2)),
+                9: (c_amount_rub, xlsx.formats.Number(data_row, 2)),
+                10: (c_fee_usd, xlsx.formats.Number(data_row, 6)),
+                11: (c_fee_rub, xlsx.formats.Number(data_row, 2))
             })
             # TODO replace 'us' with value depandable on broker account
             if statement is not None:
@@ -542,19 +558,20 @@ class TaxesRus:
                                                 income_usd, income, spending, deal['c_rate'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
-        sheet.write(row, 11, "ИТОГО", formats.ColumnFooter())
+        sheet.write(row, 11, "ИТОГО", xlsx.formats.ColumnFooter())
         if row > (start_row + 1):  # Don't put formulas with pre-definded errors
-            sheet.write_formula(row, 12, f"=SUM(M{start_row + 1}:M{row})", formats.ColumnFooter())
-            sheet.write_formula(row, 13, f"=SUM(N{start_row + 1}:N{row})", formats.ColumnFooter())
-            sheet.write_formula(row, 14, f"=SUM(O{start_row + 1}:O{row})", formats.ColumnFooter())
-            sheet.write_formula(row, 15, f"=SUM(P{start_row + 1}:P{row})", formats.ColumnFooter())
+            sheet.write_formula(row, 12, f"=SUM(M{start_row + 1}:M{row})", xlsx.formats.ColumnFooter())
+            sheet.write_formula(row, 13, f"=SUM(N{start_row + 1}:N{row})", xlsx.formats.ColumnFooter())
+            sheet.write_formula(row, 14, f"=SUM(O{start_row + 1}:O{row})", xlsx.formats.ColumnFooter())
+            sheet.write_formula(row, 15, f"=SUM(P{start_row + 1}:P{row})", xlsx.formats.ColumnFooter())
         else:
-            xlsxWriteZeros(sheet, [row], [12, 13, 14, 15], formats.ColumnFooter())
+            xlsxWriteZeros(sheet, [row], [12, 13, 14, 15], xlsx.formats.ColumnFooter())
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_broker_fees(self, sheet, _statement, account_id, begin, end, formats):
-        self.add_report_header(sheet, formats, "Отчет по комиссиям, уплаченным брокеру в отчетном периоде")
+    def prepare_broker_fees(self, xlsx, statement, account_id, begin, end):
+        sheet = self.current_sheet
+        self.add_report_header(sheet, xlsx.formats, "Отчет по комиссиям, уплаченным брокеру в отчетном периоде")
 
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")
         _ = executeSQL(self.db,
@@ -570,15 +587,15 @@ class TaxesRus:
         self.db.commit()
 
         header_row = {
-            0: ("Описание", formats.ColumnHeader(), 50, 0, 0),
-            1: ("Сумма, USD", formats.ColumnHeader(), 8, 0, 0),
-            2: ("Дата оплаты", formats.ColumnHeader(), 10, 0, 0),
-            3: ("Курс USD/RUB на дату оплаты", formats.ColumnHeader(), 10, 0, 0),
-            4: ("Сумма, RUB", formats.ColumnHeader(), 10, 0, 0)
+            0: ("Описание", xlsx.formats.ColumnHeader(), 50, 0, 0),
+            1: ("Сумма, USD", xlsx.formats.ColumnHeader(), 8, 0, 0),
+            2: ("Дата оплаты", xlsx.formats.ColumnHeader(), 10, 0, 0),
+            3: ("Курс USD/RUB на дату оплаты", xlsx.formats.ColumnHeader(), 10, 0, 0),
+            4: ("Сумма, RUB", xlsx.formats.ColumnHeader(), 10, 0, 0)
         }
         xlsxWriteRow(sheet, 7, header_row, 60)
         for column in range(len(header_row)):  # Put column numbers for reference
-            header_row[column] = (f"({column + 1})", formats.ColumnHeader())
+            header_row[column] = (f"({column + 1})", xlsx.formats.ColumnHeader())
         xlsxWriteRow(sheet, 8, header_row)
 
         query = executeSQL(self.db,
@@ -595,22 +612,23 @@ class TaxesRus:
             payment_date, amount, note, rate = readSQLrecord(query)
             amount_rub = round(-amount * rate, 2) if rate else 0
             xlsxWriteRow(sheet, row, {
-                0: (note, formats.Text(row)),
-                1: (-amount, formats.Number(row, 2)),
-                2: (datetime.fromtimestamp(payment_date).strftime('%d.%m.%Y'), formats.Text(row)),
-                3: (rate, formats.Number(row, 4)),
-                4: (amount_rub, formats.Number(row, 2))
+                0: (note, xlsx.formats.Text(row)),
+                1: (-amount, xlsx.formats.Number(row, 2)),
+                2: (datetime.fromtimestamp(payment_date).strftime('%d.%m.%Y'), xlsx.formats.Text(row)),
+                3: (rate, xlsx.formats.Number(row, 4)),
+                4: (amount_rub, xlsx.formats.Number(row, 2))
             })
             row += 1
-        sheet.write(row, 3, "ИТОГО", formats.ColumnFooter())
+        sheet.write(row, 3, "ИТОГО", xlsx.formats.ColumnFooter())
         if row > (start_row + 1):  # Don't put formulas with pre-definded errors
-            sheet.write_formula(row, 4, f"=SUM(E{start_row+1}:E{row})", formats.ColumnFooter())
+            sheet.write_formula(row, 4, f"=SUM(E{start_row+1}:E{row})", xlsx.formats.ColumnFooter())
         else:
-            xlsxWriteZeros(sheet, [row], [4], formats.ColumnFooter())
+            xlsxWriteZeros(sheet, [row], [4], xlsx.formats.ColumnFooter())
 
 #-----------------------------------------------------------------------------------------------------------------------
-    def prepare_corporate_actions(self, sheet, _statement, account_id, begin, end, formats):
-        self.add_report_header(sheet, formats, "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде "
+    def prepare_corporate_actions(self, xlsx, statement, account_id, begin, end):
+        sheet = self.current_sheet
+        self.add_report_header(sheet, xlsx.formats, "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде "
                                                "с предшествовавшими корпоративными событиями")
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")   # TODO combine with the same code in trades report
         _ = executeSQL(self.db,
@@ -640,22 +658,22 @@ class TaxesRus:
         self.db.commit()
 
         header_row = {
-            0: ("Операция", formats.ColumnHeader(), 20, 0, 0),
-            1: ("Дата сделки", formats.ColumnHeader(), 10, 0, 0),
-            2: ("Ценная бумага", formats.ColumnHeader(), 8, 0, 0),
-            3: ("Кол-во", formats.ColumnHeader(), 8, 0, 0),
-            4: ("Курс USD/RUB на дату сделки", formats.ColumnHeader(), 9, 0, 0),
-            5: ("Дата поставки", formats.ColumnHeader(), 10, 0, 0),
-            6: ("Курс USD/RUB на дату поставки", formats.ColumnHeader(), 9, 0, 0),
-            7: ("Цена, USD", formats.ColumnHeader(), 12, 0, 0),
-            8: ("Сумма сделки, USD", formats.ColumnHeader(), 12, 0, 0),
-            9: ("Сумма сделки, RUB", formats.ColumnHeader(), 12, 0, 0),
-            10: ("Комиссия, USD", formats.ColumnHeader(), 12, 0, 0),
-            11: ("Комиссия, RUB", formats.ColumnHeader(), 9, 0, 0),
+            0: ("Операция", xlsx.formats.ColumnHeader(), 20, 0, 0),
+            1: ("Дата сделки", xlsx.formats.ColumnHeader(), 10, 0, 0),
+            2: ("Ценная бумага", xlsx.formats.ColumnHeader(), 8, 0, 0),
+            3: ("Кол-во", xlsx.formats.ColumnHeader(), 8, 0, 0),
+            4: ("Курс USD/RUB на дату сделки", xlsx.formats.ColumnHeader(), 9, 0, 0),
+            5: ("Дата поставки", xlsx.formats.ColumnHeader(), 10, 0, 0),
+            6: ("Курс USD/RUB на дату поставки", xlsx.formats.ColumnHeader(), 9, 0, 0),
+            7: ("Цена, USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            8: ("Сумма сделки, USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            9: ("Сумма сделки, RUB", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            10: ("Комиссия, USD", xlsx.formats.ColumnHeader(), 12, 0, 0),
+            11: ("Комиссия, RUB", xlsx.formats.ColumnHeader(), 9, 0, 0),
         }
         xlsxWriteRow(sheet, 7, header_row, 60)
         for column in range(len(header_row)):  # Put column numbers for reference
-            header_row[column] = (f"({column + 1})", formats.ColumnHeader())
+            header_row[column] = (f"({column + 1})", xlsx.formats.ColumnHeader())
         xlsxWriteRow(sheet, 8, header_row)
 
         # get list of all deals that were opened with corp.action and closed by normal trade
@@ -686,22 +704,22 @@ class TaxesRus:
             fee_rub = round(fee_usd * t_rate, 2) if s_rate else 0
 
             xlsxWriteRow(sheet, row, {
-                0: ("Продажа", formats.Text(even_odd)),
-                1: (datetime.fromtimestamp(t_date).strftime('%d.%m.%Y'), formats.Text(even_odd)),
-                2: (symbol, formats.Text(even_odd)),
-                3: (qty, formats.Number(even_odd, 4)),
-                4: (t_rate, formats.Number(even_odd, 4)),
-                5: (datetime.fromtimestamp(s_date).strftime('%d.%m.%Y'), formats.Text(even_odd)),
-                6: (s_rate, formats.Number(even_odd, 4)),
-                7: (price, formats.Number(even_odd, 6)),
-                8: (amount_usd, formats.Number(even_odd, 2)),
-                9: (amount_rub, formats.Number(even_odd, 2)),
-                10: (fee_usd, formats.Number(even_odd, 6)),
-                11: (fee_rub, formats.Number(even_odd, 2))
+                0: ("Продажа", xlsx.formats.Text(even_odd)),
+                1: (datetime.fromtimestamp(t_date).strftime('%d.%m.%Y'), xlsx.formats.Text(even_odd)),
+                2: (symbol, xlsx.formats.Text(even_odd)),
+                3: (qty, xlsx.formats.Number(even_odd, 4)),
+                4: (t_rate, xlsx.formats.Number(even_odd, 4)),
+                5: (datetime.fromtimestamp(s_date).strftime('%d.%m.%Y'), xlsx.formats.Text(even_odd)),
+                6: (s_rate, xlsx.formats.Number(even_odd, 4)),
+                7: (price, xlsx.formats.Number(even_odd, 6)),
+                8: (amount_usd, xlsx.formats.Number(even_odd, 2)),
+                9: (amount_rub, xlsx.formats.Number(even_odd, 2)),
+                10: (fee_usd, xlsx.formats.Number(even_odd, 6)),
+                11: (fee_rub, xlsx.formats.Number(even_odd, 2))
             })
             row = row + 1
 
-            row, qty = self.proceed_corporate_action(sid, qty, 1, sheet, formats, row, even_odd)
+            row, qty = self.proceed_corporate_action(sid, qty, 1, sheet, xlsx.formats, row, even_odd)
 
             even_odd = even_odd + 1
             row = row + 1
