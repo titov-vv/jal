@@ -13,7 +13,7 @@ from PySide2.QtCore import Property, Slot
 from jal.ui.ui_tax_export_dlg import Ui_TaxExportDlg
 
 
-#-----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------
 class TaxExportDialog(QDialog, Ui_TaxExportDlg):
     def __init__(self, parent, db):
         QDialog.__init__(self)
@@ -25,8 +25,8 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
         self.OutputSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG-OUT'))
 
         # center dialog with respect to parent window
-        x = parent.x() + parent.width()/2 - self.width()/2
-        y = parent.y() + parent.height()/2 - self.height()/2
+        x = parent.x() + parent.width() / 2 - self.width() / 2
+        y = parent.y() + parent.height() / 2 - self.height() / 2
         self.setGeometry(x, y, self.width(), self.height())
 
     @Slot()
@@ -88,7 +88,7 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
     no_settelement = Property(bool, fget=getNoSettlement)
 
 
-#-----------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------
 class TaxesRus:
     RPT_METHOD = 0
     RPT_TITLE = 1
@@ -218,10 +218,11 @@ class TaxesRus:
 
     def save2file(self, taxes_file, year, account_id,
                   dlsg_update=False, dlsg_in=None, dlsg_out=None, dlsg_dividends_only=False):
-        self.account_currency = readSQL(self.db,
-                                        "SELECT c.name FROM accounts AS a "
-                                        "LEFT JOIN assets AS c ON a.currency_id = c.id WHERE a.id=:account",
-                                        [(":account", account_id)])
+        self.account_number, self.account_currency = \
+            readSQL(self.db,
+                    "SELECT a.number, c.name FROM accounts AS a "
+                    "LEFT JOIN assets AS c ON a.currency_id = c.id WHERE a.id=:account",
+                    [(":account", account_id)])
         self.broker_name = readSQL(self.db,
                                    "SELECT b.name FROM accounts AS a "
                                    "LEFT JOIN agents AS b ON a.organization_id = b.id WHERE a.id=:account",
@@ -257,15 +258,15 @@ class TaxesRus:
             except:
                 logging.error(g_tr('TaxesRus', "Can't write tax form into file ") + f"'{dlsg_out}'")
 
-
     # This method puts header on each report sheet
     def add_report_header(self):
         report = self.reports[self.current_report]
         self.current_sheet.write(0, 0, report[self.RPT_TITLE], self.reports_xls.formats.Bold())
         self.current_sheet.write(2, 0, "Документ-основание:")
-        self.current_sheet.write(3, 0, "Период:")
+        self.current_sheet.write(3, 0, f"Период: {datetime.fromtimestamp(self.year_begin).strftime('%d.%m.%Y')}"
+                                       f" - {datetime.fromtimestamp(self.year_end - 1).strftime('%d.%m.%Y')}")
         self.current_sheet.write(4, 0, "ФИО:")
-        self.current_sheet.write(5, 0, "Номер счета:")  # TODO insert account number
+        self.current_sheet.write(5, 0, f"Номер счета: {self.account_number} ({self.account_currency})")
 
         header_row = {}
         numbers_row = {}  # Put column numbers for reference
@@ -306,7 +307,7 @@ class TaxesRus:
                     fmt = self.reports_xls.formats.Text(even_odd)
                 else:
                     raise ValueError
-                if len(field_dscr) == 5: # There are horizontal or vertical span defined
+                if len(field_dscr) == 5:  # There are horizontal or vertical span defined
                     data_row[column] = (value, fmt, 0, field_dscr[H_SPAN], field_dscr[V_SPAN])
                 else:
                     data_row[column] = (value, fmt)
@@ -351,7 +352,7 @@ class TaxesRus:
                        "GROUP BY ref_id", [(":account_id", self.account_id)])
         self.db.commit()
 
-# -----------------------------------------------------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------------
     def prepare_dividends(self):
         query = executeSQL(self.db,
                            "SELECT d.timestamp AS payment_date, s.name AS symbol, s.full_name AS full_name, "
@@ -379,7 +380,8 @@ class TaxesRus:
                     dividend["tax2pay"] = 0
             self.add_report_row(row, dividend, even_odd=row)
 
-            dividend["country_code"] = 'us' if dividend["country_code"] == 'xx' else dividend["country_code"]   # TODO select right country code if it is absent
+            dividend["country_code"] = 'us' if dividend["country_code"] == 'xx' else dividend[
+                "country_code"]  # TODO select right country code if it is absent
             if self.statement is not None:
                 self.statement.add_dividend(dividend["country_code"], f"{dividend['symbol']} ({dividend['full_name']})",
                                             dividend['payment_date'], self.account_currency, dividend['amount'],
@@ -389,7 +391,7 @@ class TaxesRus:
 
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [3, 4, 5, 6, 7, 8])
 
-# -----------------------------------------------------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------------
     def prepare_trades(self):
         # Take all actions without conversion
         query = executeSQL(self.db,
@@ -399,7 +401,7 @@ class TaxesRus:
                            "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, "
                            "qcs.quote AS cs_rate, c.price AS c_price, c.qty AS c_qty, c.fee AS c_fee "
                            "FROM deals AS d "
-                           "JOIN sequence AS os ON os.id=d.open_sid AND os.type = 3 "  
+                           "JOIN sequence AS os ON os.id=d.open_sid AND os.type = 3 "
                            "LEFT JOIN trades AS o ON os.operation_id=o.id "
                            "JOIN sequence AS cs ON cs.id=d.close_sid AND cs.type = 3 "
                            "LEFT JOIN trades AS c ON cs.operation_id=c.id "
@@ -445,18 +447,19 @@ class TaxesRus:
             deal['profit'] = deal['income'] - deal['spending']
 
             self.add_report_row(row, deal, even_odd=data_row)
-            self.add_report_row(row+1, deal, even_odd=data_row, alternative=1)
+            self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
 
             # TODO replace 'us' with value depandable on broker account
             if self.statement is not None:
                 self.statement.add_stock_profit('us', self.broker_name, deal['c_date'], self.account_currency,
-                                           deal['income'], deal['income_rub'], deal['spending_rub'], deal['c_rate'])
+                                                deal['income'], deal['income_rub'], deal['spending_rub'],
+                                                deal['c_rate'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
 
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [11, 12, 13, 14, 15])
 
-# -----------------------------------------------------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------------
     def prepare_derivatives(self):
         # Take all actions without conversion
         query = executeSQL(self.db,
@@ -524,7 +527,7 @@ class TaxesRus:
 
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [11, 12, 13, 14, 15])
 
-# -----------------------------------------------------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_fees(self):
         query = executeSQL(self.db,
                            "SELECT a.timestamp AS payment_date, d.sum AS amount, d.note AS note, q.quote AS rate "
@@ -544,7 +547,7 @@ class TaxesRus:
             row += 1
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [3, 4])
 
-#-----------------------------------------------------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------------
     def prepare_corporate_actions(self):
         # get list of all deals that were opened with corp.action and closed by normal trade
         query = executeSQL(self.db,
@@ -662,4 +665,3 @@ class TaxesRus:
                                                                            before=qty_before, after=qty_after)
         self.add_report_row(row, action, even_odd=even_odd, alternative=1)
         return row + 1, qty_before
-#-----------------------------------------------------------------------------------------------------------------------
