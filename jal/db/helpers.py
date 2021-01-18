@@ -44,10 +44,13 @@ def executeSQL(db, sql_text, params = [], forward_only = True):
         return None
     return query
 
+
 # -------------------------------------------------------------------------------------------------------------------
 # the same as executeSQL() but after query execution it takes first line of it
 # and packs all field values in a list to return
-def readSQL(db, sql_text, params = []):
+def readSQL(db, sql_text, params=None, named=False):
+    if params is None:
+        params = []
     query = QSqlQuery(db)
     query.setForwardOnly(True)
     if not query.prepare(sql_text):
@@ -59,11 +62,12 @@ def readSQL(db, sql_text, params = []):
         logging.error(f"SQL exec: '{query.lastError().text()}' for query '{sql_text}' with params '{params}'")
         return None
     if query.next():
-        return readSQLrecord(query)
+        return readSQLrecord(query, named=named)
     else:
         return None
 
-def readSQLrecord(query, named = False):
+
+def readSQLrecord(query, named=False):
     if named:
         values = {}
     else:

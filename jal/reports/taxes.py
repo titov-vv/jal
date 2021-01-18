@@ -127,18 +127,19 @@ class TaxesRus:
                               "СОИДН": 7
                           },
                           ({
-                              0: ("payment_date", "date"),
-                              1: ("symbol", "text"),
-                              2: ("full_name", "text"),
-                              3: ("rate", "number", 4),
-                              4: ("amount", "number", 2),
-                              5: ("amount_rub", "number", 2),
-                              6: ("tax", "number", 2),
-                              7: ("tax_rub", "number", 2),
-                              8: ("tax2pay", "number", 2),
-                              9: ("country", "text"),
-                              10: ("tax_treaty", "bool", ("Нет", "Да"))
-                          })),
+                               0: ("payment_date", "date"),
+                               1: ("symbol", "text"),
+                               2: ("full_name", "text"),
+                               3: ("rate", "number", 4),
+                               4: ("amount", "number", 2),
+                               5: ("amount_rub", "number", 2),
+                               6: ("tax", "number", 2),
+                               7: ("tax_rub", "number", 2),
+                               8: ("tax2pay", "number", 2),
+                               9: ("country", "text"),
+                               10: ("tax_treaty", "bool", ("Нет", "Да"))
+                           },
+                          )),
             "Сделки с ЦБ": (self.prepare_trades,
                             "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде",
                             {
@@ -189,12 +190,13 @@ class TaxesRus:
                              "Сумма, RUB": 10
                          },
                          ({
-                             0: ("note", "text"),
-                             1: ("amount", "number", 2),
-                             2: ("payment_date", "date"),
-                             3: ("rate", "number", 4),
-                             4: ("amount_rub", "number", 2)
-                         })),
+                              0: ("note", "text"),
+                              1: ("amount", "number", 2),
+                              2: ("payment_date", "date"),
+                              3: ("rate", "number", 4),
+                              4: ("amount_rub", "number", 2)
+                          },
+                         )),
             "Корп.события": (self.prepare_corporate_actions,
                              "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде "
                              "с предшествовавшими корпоративными событиями",
@@ -212,7 +214,27 @@ class TaxesRus:
                                  "Комиссия, USD": 12,
                                  "Комиссия, RUB": 9,
 
-                             })
+                             },
+                             ({
+                                  0: ("operation", "text"),
+                                  1: ("t_date", "date"),
+                                  2: ("symbol", "text"),
+                                  3: ("qty", "number", 4),
+                                  4: ("t_rate", "number", 4),
+                                  5: ("s_date", "date"),
+                                  6: ("s_rate", "number", 4),
+                                  7: ("price", "number", 6),
+                                  8: ("amount", "number", 2),
+                                  9: ("amount_rub", "number", 2),
+                                  10: ("fee", "number", 6),
+                                  11: ("fee_rub", "number", 2)
+                              },
+                              {
+                                  0: ("operation", "text"),
+                                  1: ("a_date", "date"),
+                                  2: ("description", "text", 0, 9, 0)
+                              })
+                             )
         }
         self.reports_xls = None
         self.statement = None
@@ -286,30 +308,36 @@ class TaxesRus:
             header_row[column] = (f"({column + 1})", self.reports_xls.formats.ColumnHeader())
         xlsxWriteRow(self.current_sheet, 8, header_row)
 
-    def add_report_row(self, row, data):
+    def add_report_row(self, row, data, detail=0):
         KEY_NAME = 0
         VALUE_FMT = 1
         FMT_DETAILS = 2
+        H_SPAN = 3
+        V_SPAN = 4
 
         report = self.reports[self.current_report]
         data_row = {}
-        for i in report[self.RPT_DATA_ROWS]:
-            value = data[report[self.RPT_DATA_ROWS][i][KEY_NAME]]
-            format_as = report[self.RPT_DATA_ROWS][i][VALUE_FMT]
+        row_details = report[self.RPT_DATA_ROWS][detail]
+        for i in row_details:
+            value = data[row_details[i][KEY_NAME]]
+            format_as = row_details[i][VALUE_FMT]
             if format_as == "text":
                 fmt = self.reports_xls.formats.Text(row)
             elif format_as == "number":
-                precision = report[self.RPT_DATA_ROWS][i][FMT_DETAILS]
+                precision = row_details[i][FMT_DETAILS]
                 fmt = self.reports_xls.formats.Number(row, precision)
             elif format_as == "date":
                 value = datetime.fromtimestamp(value).strftime('%d.%m.%Y')
                 fmt = self.reports_xls.formats.Text(row)
             elif format_as == "bool":
-                value = report[self.RPT_DATA_ROWS][i][FMT_DETAILS][value]
+                value = row_details[FMT_DETAILS][value]
                 fmt = self.reports_xls.formats.Text(row)
             else:
                 raise ValueError
-            data_row[i] = (value, fmt)
+            if len(row_details[i]) == 5: # There are horizontal or vertical span defined
+                data_row[i] = (value, fmt, 0, row_details[i][H_SPAN], row_details[i][V_SPAN])
+            else:
+                data_row[i] = (value, fmt)
         xlsxWriteRow(self.current_sheet, row, data_row)
 
     # Exchange rates are present in database not for every date (and not every possible timestamp)
@@ -610,7 +638,7 @@ class TaxesRus:
 
         # get list of all deals that were opened with corp.action and closed by normal trade
         query = executeSQL(self.db,
-                           "SELECT d.open_sid AS o_sid, s.name AS symbol, d.qty AS qty, "
+                           "SELECT d.open_sid AS sid, s.name AS symbol, d.qty AS qty, "
                            "t.timestamp AS t_date, qt.quote AS t_rate, t.settlement AS s_date, qts.quote AS s_rate, "
                            "t.price AS price, t.fee AS fee "
                            "FROM deals AS d "
@@ -630,28 +658,22 @@ class TaxesRus:
         row = self.data_start_row
         even_odd = 1
         while query.next():
-            sid, symbol, qty, t_date, t_rate, s_date, s_rate, price, fee_usd = readSQLrecord(query)
-            amount_usd = round(price * qty, 2)
-            amount_rub = round(amount_usd * s_rate, 2) if s_rate else 0
-            fee_rub = round(fee_usd * t_rate, 2) if s_rate else 0
+            sale = readSQLrecord(query, named=True)
+            sale['operation'] = "Продажа"
+            sale['amount'] = round(sale['price'] * sale['qty'], 2)
+            if sale['s_rate']:
+                sale['amount_rub'] = round(sale['amount'] * sale['s_rate'], 2)
+            else:
+                sale['amount_rub'] = 0
+            if sale['t_rate']:
+                sale['fee_rub'] = round(sale['fee'] * sale['t_rate'], 2)
+            else:
+                sale['fee_rub'] = 0
 
-            xlsxWriteRow(sheet, row, {
-                0: ("Продажа", xlsx.formats.Text(even_odd)),
-                1: (datetime.fromtimestamp(t_date).strftime('%d.%m.%Y'), xlsx.formats.Text(even_odd)),
-                2: (symbol, xlsx.formats.Text(even_odd)),
-                3: (qty, xlsx.formats.Number(even_odd, 4)),
-                4: (t_rate, xlsx.formats.Number(even_odd, 4)),
-                5: (datetime.fromtimestamp(s_date).strftime('%d.%m.%Y'), xlsx.formats.Text(even_odd)),
-                6: (s_rate, xlsx.formats.Number(even_odd, 4)),
-                7: (price, xlsx.formats.Number(even_odd, 6)),
-                8: (amount_usd, xlsx.formats.Number(even_odd, 2)),
-                9: (amount_rub, xlsx.formats.Number(even_odd, 2)),
-                10: (fee_usd, xlsx.formats.Number(even_odd, 6)),
-                11: (fee_rub, xlsx.formats.Number(even_odd, 2))
-            })
+            self.add_report_row(row, sale)
             row = row + 1
 
-            row, qty = self.proceed_corporate_action(sid, qty, 1, sheet, xlsx.formats, row, even_odd)
+            row, qty = self.proceed_corporate_action(sale['sid'], sale['qty'], 1, sheet, xlsx.formats, row, even_odd)
 
             even_odd = even_odd + 1
             row = row + 1
@@ -684,70 +706,57 @@ class TaxesRus:
         if proceed_qty <= 0:
             return row, proceed_qty
 
-        indent = ' ' * level * 3
-        symbol, deal_qty, t_date, t_rate, s_date, s_rate, price, fee = \
-            readSQL(self.db,
-                    "SELECT s.name AS symbol, d.qty AS qty, t.timestamp AS t_date, qt.quote AS t_rate, "
-                    "t.settlement AS s_date, qts.quote AS s_rate, t.price AS price, t.fee AS fee "
-                    "FROM sequence AS os "
-                    "JOIN deals AS d ON os.id=d.open_sid AND os.type = 3 "
-                    "LEFT JOIN trades AS t ON os.operation_id=t.id "
-                    "LEFT JOIN assets AS s ON t.asset_id=s.id "
-                    "LEFT JOIN accounts AS a ON a.id = t.account_id "
-                    "LEFT JOIN t_last_dates AS ldt ON t.timestamp=ldt.ref_id "
-                    "LEFT JOIN quotes AS qt ON ldt.timestamp=qt.timestamp AND a.currency_id=qt.asset_id "
-                    "LEFT JOIN t_last_dates AS ldts ON t.settlement=ldts.ref_id "
-                    "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id "
-                    "WHERE os.id = :sid",
-                    [(":sid", sid)])
+        purchase = readSQL(self.db,
+                           "SELECT s.name AS symbol, d.qty AS qty, t.timestamp AS t_date, qt.quote AS t_rate, "
+                           "t.settlement AS s_date, qts.quote AS s_rate, t.price AS price, t.fee AS fee "
+                           "FROM sequence AS os "
+                           "JOIN deals AS d ON os.id=d.open_sid AND os.type = 3 "
+                           "LEFT JOIN trades AS t ON os.operation_id=t.id "
+                           "LEFT JOIN assets AS s ON t.asset_id=s.id "
+                           "LEFT JOIN accounts AS a ON a.id = t.account_id "
+                           "LEFT JOIN t_last_dates AS ldt ON t.timestamp=ldt.ref_id "
+                           "LEFT JOIN quotes AS qt ON ldt.timestamp=qt.timestamp AND a.currency_id=qt.asset_id "
+                           "LEFT JOIN t_last_dates AS ldts ON t.settlement=ldts.ref_id "
+                           "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id "
+                           "WHERE os.id = :sid",
+                           [(":sid", sid)], named=True)
+        purchase['operation'] = ' ' * level * 3 + "Покупка"
+        deal_qty = purchase['qty']
+        purchase['qty'] = proceed_qty if proceed_qty < deal_qty else deal_qty
+        purchase['amount'] = round(purchase['price'] * purchase['qty'], 2)
+        purchase['amount_rub'] = round(purchase['amount'] * purchase['s_rate'], 2) if purchase['s_rate'] else 0
+        purchase['fee'] = purchase['fee'] * purchase['qty'] / deal_qty
+        purchase['fee_rub'] = round(purchase['fee'] * purchase['t_rate'], 2) if purchase['t_rate'] else 0
 
-        qty = proceed_qty if proceed_qty < deal_qty else deal_qty
-        amount_usd = round(price * qty, 2)
-        amount_rub = round(amount_usd * s_rate, 2) if s_rate else 0
-        fee_usd = fee * qty / deal_qty
-        fee_rub = round(fee_usd * t_rate, 2) if s_rate else 0
+        self.add_report_row(row, purchase)
 
-        xlsxWriteRow(sheet, row, {
-            0: (indent + "Покупка", formats.Text(even_odd)),
-            1: (datetime.fromtimestamp(t_date).strftime('%d.%m.%Y'), formats.Text(even_odd)),
-            2: (symbol, formats.Text(even_odd)),
-            3: (qty, formats.Number(even_odd, 4)),
-            4: (t_rate, formats.Number(even_odd, 4)),
-            5: (datetime.fromtimestamp(s_date).strftime('%d.%m.%Y'), formats.Text(even_odd)),
-            6: (s_rate, formats.Number(even_odd, 4)),
-            7: (price, formats.Number(even_odd, 6)),
-            8: (amount_usd, formats.Number(even_odd, 2)),
-            9: (amount_rub, formats.Number(even_odd, 2)),
-            10: (fee_usd, formats.Number(even_odd, 6)),
-            11: (fee_rub, formats.Number(even_odd, 2))
-        })
-        return row + 1, proceed_qty - qty
+        return row + 1, proceed_qty - purchase['qty']
 
     def output_corp_action(self, sid, proceed_qty, level, sheet, formats, row, even_odd):
         if proceed_qty <= 0:
             return row, proceed_qty
 
-        indent = ' ' * level * 3
-        a_date, type, symbol, qty, symbol_new, qty_new, note = \
-            readSQL(self.db, "SELECT a.timestamp AS a_date, a.type, s1.name AS symbol, a.qty AS qty, "
-                             "s2.name AS symbol_new, a.qty_new AS qty_new, a.note AS note "
-                             "FROM sequence AS os "
-                             "JOIN deals AS d ON os.id=d.open_sid AND os.type = 5 "
-                             "LEFT JOIN corp_actions AS a ON os.operation_id=a.id "
-                             "LEFT JOIN assets AS s1 ON a.asset_id=s1.id "
-                             "LEFT JOIN assets AS s2 ON a.asset_id_new=s2.id "
-                             "WHERE os.id = :open_sid ",
-                    [(":open_sid", sid)])
-
-        qty_before = qty * proceed_qty/qty_new
+        action = readSQL(self.db, "SELECT a.timestamp AS a_date, a.type, s1.name AS symbol, a.qty AS qty, "
+                                  "s2.name AS symbol_new, a.qty_new AS qty_new, a.note AS note "
+                                  "FROM sequence AS os "
+                                  "JOIN deals AS d ON os.id=d.open_sid AND os.type = 5 "
+                                  "LEFT JOIN corp_actions AS a ON os.operation_id=a.id "
+                                  "LEFT JOIN assets AS s1 ON a.asset_id=s1.id "
+                                  "LEFT JOIN assets AS s2 ON a.asset_id_new=s2.id "
+                                  "WHERE os.id = :open_sid ",
+                         [(":open_sid", sid)], named=True)
+        action['operation'] = ' ' * level * 3 + "Корп. действие"
+        qty_before = action['qty'] * proceed_qty / action['qty_new']
         qty_after = proceed_qty
-        description = self.CorpActionText[type].format(old=symbol, new=symbol_new, before=qty_before, after=qty_after)
+        action['description'] = self.CorpActionText[action['type']].format(old=action['symbol'],
+                                                                           new=action['symbol_new'],
+                                                                           before=qty_before, after=qty_after)
+        if proceed_qty > action['qty_new']:
+            logging.error(
+                g_tr('TaxesRus', "Can't proceed more quantity than in corporate action: ") + action['description'])
+            raise ValueError
 
-        xlsxWriteRow(sheet, row, {
-            0: (indent + "Корп. действие", formats.Text(even_odd)),
-            1: (datetime.fromtimestamp(a_date).strftime('%d.%m.%Y'), formats.Text(even_odd)),
-            2: (description, formats.Text(even_odd), 0, 9, 0)
-        })
-        row = row + 1
-        return row, qty_before
+        self.add_report_row(row, action, detail=1)
+
+        return row + 1, qty_before
 #-----------------------------------------------------------------------------------------------------------------------
