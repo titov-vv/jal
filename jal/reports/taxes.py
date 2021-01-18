@@ -4,7 +4,7 @@ from datetime import datetime
 import logging
 
 from jal.constants import TransactionType, CorporateAction
-from jal.reports.helpers import XLSX, xslxFormat, xlsxWriteRow, xlsxWriteZeros
+from jal.reports.helpers import XLSX, xlsxWriteRow
 from jal.reports.dlsg import DLSG
 from jal.ui_custom.helpers import g_tr
 from jal.db.helpers import executeSQL, readSQLrecord, readSQL
@@ -159,7 +159,39 @@ class TaxesRus:
                                 "Расход, RUB (код 201)": 12,
                                 "Финансовый результат, RUB": 12,
                                 "Финансовый результат, USD": 12
-                            }),
+                            },
+                            (
+                                {
+                                    0: ("symbol", "text", 0, 0, 1),
+                                    1: ("qty", "number", 0, 0, 1),
+                                    2: ("o_type", "text"),
+                                    3: ("o_date", "date"),
+                                    4: ("os_rate", "number", 4),
+                                    5: ("os_date", "date"),
+                                    6: ("o_rate", "number", 4),
+                                    7: ("o_price", "number", 6),
+                                    8: ("o_amount", "number", 2),
+                                    9: ("o_amount_rub", "number", 2),
+                                    10: ("o_fee", "number", 6),
+                                    11: ("o_fee_rub", "number", 2),
+                                    12: ("income_rub", "number", 2, 0, 1),
+                                    13: ("spending_rub", "number", 2, 0, 1),
+                                    14: ("profit_rub", "number", 2, 0, 1),
+                                    15: ("profit", "number", 2, 0, 1)
+                                },
+                                {
+                                    2: ("c_type", "text"),
+                                    3: ("c_date", "date"),
+                                    4: ("cs_rate", "number", 4),
+                                    5: ("cs_date", "date"),
+                                    6: ("c_rate", "number", 4),
+                                    7: ("c_price", "number", 6),
+                                    8: ("c_amount", "number", 2),
+                                    9: ("c_amount_rub", "number", 2),
+                                    10: ("c_fee", "number", 6),
+                                    11: ("c_fee_rub", "number", 2)
+                                })
+                            ),
             "Сделки с ПФИ": (self.prepare_derivatives,
                              "Отчет по сделкам с производными финансовыми инструментами, завершённым в отчетном периоде",
                              {
@@ -179,7 +211,39 @@ class TaxesRus:
                                  "Расход, RUB (код 206)": 12,
                                  "Финансовый результат, RUB": 12,
                                  "Финансовый результат, USD": 12
-                             }),
+                             },
+                             (
+                                 {
+                                     0: ("symbol", "text", 0, 0, 1),
+                                     1: ("qty", "number", 0, 0, 1),
+                                     2: ("o_type", "text"),
+                                     3: ("o_date", "date"),
+                                     4: ("os_rate", "number", 4),
+                                     5: ("os_date", "date"),
+                                     6: ("o_rate", "number", 4),
+                                     7: ("o_price", "number", 6),
+                                     8: ("o_amount", "number", 2),
+                                     9: ("o_amount_rub", "number", 2),
+                                     10: ("o_fee", "number", 6),
+                                     11: ("o_fee_rub", "number", 2),
+                                     12: ("income_rub", "number", 2, 0, 1),
+                                     13: ("spending_rub", "number", 2, 0, 1),
+                                     14: ("profit_rub", "number", 2, 0, 1),
+                                     15: ("profit", "number", 2, 0, 1)
+                                 },
+                                 {
+                                     2: ("c_type", "text"),
+                                     3: ("c_date", "date"),
+                                     4: ("cs_rate", "number", 4),
+                                     5: ("cs_date", "date"),
+                                     6: ("c_rate", "number", 4),
+                                     7: ("c_price", "number", 6),
+                                     8: ("c_amount", "number", 2),
+                                     9: ("c_amount_rub", "number", 2),
+                                     10: ("c_fee", "number", 6),
+                                     11: ("c_fee_rub", "number", 2)
+                                 })
+                             ),
             "Комиссии": (self.prepare_broker_fees,
                          "Отчет по комиссиям, уплаченным брокеру в отчетном периоде",
                          {
@@ -461,56 +525,32 @@ class TaxesRus:
             if not self.use_settlement:
                 deal['os_rate'] = deal['o_rate']
                 deal['cs_rate'] = deal['c_rate']
-            o_deal_type = "Покупка" if deal['qty'] >= 0 else "Продажа"
-            c_deal_type = "Продажа" if deal['qty'] >= 0 else "Покупка"
-            o_amount_usd = round(deal['o_price'] * abs(deal['qty']), 2)
-            o_amount_rub = round(o_amount_usd * deal['o_rate'], 2) if deal['o_rate'] else 0
-            c_amount_usd = round(deal['c_price'] * abs(deal['qty']), 2)
-            c_amount_rub = round(c_amount_usd * deal['c_rate'], 2) if deal['c_rate'] else 0
-            o_fee_usd = deal['o_fee'] * abs(deal['qty']/deal['o_qty'])
-            c_fee_usd = deal['c_fee'] * abs(deal['qty'] / deal['c_qty'])
-            o_fee_rub = round(o_fee_usd * deal['os_rate'], 2) if deal['os_rate'] else 0
-            c_fee_rub = round(c_fee_usd * deal['cs_rate'], 2) if deal['cs_rate'] else 0
-            income = c_amount_rub if deal['qty'] >= 0 else o_amount_rub
-            income_usd = c_amount_usd if deal['qty']>=0 else o_amount_usd
-            spending = o_amount_rub if deal['qty'] >= 0 else c_amount_rub
-            spending_usd = o_amount_usd if deal['qty']>=0 else c_amount_usd
-            spending = spending + o_fee_rub + c_fee_rub
-            spending_usd = spending_usd + o_fee_usd + c_fee_usd
-            xlsxWriteRow(sheet, row, {
-                0: (deal['symbol'], xlsx.formats.Text(data_row), 0, 0, 1),
-                1: (float(abs(deal['qty'])), xlsx.formats.Number(data_row, 0, True), 0, 0, 1),
-                2: (o_deal_type, xlsx.formats.Text(data_row)),
-                3: (datetime.fromtimestamp(deal['o_date']).strftime('%d.%m.%Y'), xlsx.formats.Text(data_row)),
-                4: (deal['os_rate'], xlsx.formats.Number(data_row, 4)),
-                5: (datetime.fromtimestamp(deal['os_date']).strftime('%d.%m.%Y'), xlsx.formats.Text(data_row)),
-                6: (deal['o_rate'], xlsx.formats.Number(data_row, 4)),
-                7: (deal['o_price'], xlsx.formats.Number(data_row, 6)),
-                8: (o_amount_usd, xlsx.formats.Number(data_row, 2)),
-                9: (o_amount_rub, xlsx.formats.Number(data_row, 2)),
-                10: (o_fee_usd, xlsx.formats.Number(data_row, 6)),
-                11: (o_fee_rub, xlsx.formats.Number(data_row, 2)),
-                12: (income, xlsx.formats.Number(data_row, 2), 0, 0, 1),
-                13: (spending, xlsx.formats.Number(data_row, 2), 0, 0, 1),
-                14: (income - spending, xlsx.formats.Number(data_row, 2), 0, 0, 1),
-                15: (income_usd - spending_usd, xlsx.formats.Number(data_row, 2), 0, 0, 1)
-            })
-            xlsxWriteRow(sheet, row + 1, {
-                2: (c_deal_type, xlsx.formats.Text(data_row)),
-                3: (datetime.fromtimestamp(deal['c_date']).strftime('%d.%m.%Y'), xlsx.formats.Text(data_row)),
-                4: (deal['cs_rate'], xlsx.formats.Number(data_row, 4)),
-                5: (datetime.fromtimestamp(deal['cs_date']).strftime('%d.%m.%Y'), xlsx.formats.Text(data_row)),
-                6: (deal['c_rate'], xlsx.formats.Number(data_row, 4)),
-                7: (deal['c_price'], xlsx.formats.Number(data_row, 6)),
-                8: (c_amount_usd, xlsx.formats.Number(data_row, 2)),
-                9: (c_amount_rub, xlsx.formats.Number(data_row, 2)),
-                10: (c_fee_usd, xlsx.formats.Number(data_row, 6)),
-                11: (c_fee_rub, xlsx.formats.Number(data_row, 2))
-            })
+            deal['o_type'] = "Покупка" if deal['qty'] >= 0 else "Продажа"
+            deal['c_type'] = "Продажа" if deal['qty'] >= 0 else "Покупка"
+            deal['o_amount'] = round(deal['o_price'] * abs(deal['qty']), 2)
+            deal['o_amount_rub'] = round(deal['o_amount'] * deal['o_rate'], 2) if deal['o_rate'] else 0
+            deal['c_amount'] = round(deal['c_price'] * abs(deal['qty']), 2)
+            deal['c_amount_rub'] = round(deal['c_amount'] * deal['c_rate'], 2) if deal['c_rate'] else 0
+            deal['o_fee'] = deal['o_fee'] * abs(deal['qty'] / deal['o_qty'])
+            deal['c_fee'] = deal['c_fee'] * abs(deal['qty'] / deal['c_qty'])
+            deal['o_fee_rub'] = round(deal['o_fee'] * deal['os_rate'], 2) if deal['os_rate'] else 0
+            deal['c_fee_rub'] = round(deal['c_fee'] * deal['cs_rate'], 2) if deal['cs_rate'] else 0
+            deal['income_rub'] = deal['c_amount_rub'] if deal['qty'] >= 0 else deal['o_amount_rub']
+            deal['income'] = deal['c_amount'] if deal['qty'] >= 0 else deal['o_amount']
+            deal['spending_rub'] = deal['o_amount_rub'] if deal['qty'] >= 0 else deal['c_amount_rub']
+            deal['spending_rub'] = deal['spending_rub'] + deal['o_fee_rub'] + deal['c_fee_rub']
+            deal['spending'] = deal['o_amount'] if deal['qty'] >= 0 else deal['c_amount']
+            deal['spending'] = deal['spending'] + deal['o_fee'] + deal['c_fee']
+            deal['profit_rub'] = deal['income_rub'] - deal['spending_rub']
+            deal['profit'] = deal['income'] - deal['spending']
+
+            self.add_report_row(row, deal, detail=0)
+            self.add_report_row(row+1, deal, detail=1)
+
             # TODO replace 'us' with value depandable on broker account
             if self.statement is not None:
                 self.statement.add_stock_profit('us', self.broker_name, deal['c_date'], self.account_currency,
-                                           income_usd, income, spending, deal['c_rate'])
+                                           deal['income'], deal['income_rub'], deal['spending_rub'], deal['c_rate'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
 
@@ -554,56 +594,33 @@ class TaxesRus:
             if not self.use_settlement:
                 deal['os_rate'] = deal['o_rate']
                 deal['cs_rate'] = deal['c_rate']
-            o_deal_type = "Покупка" if deal['qty'] >= 0 else "Продажа"
-            c_deal_type = "Продажа" if deal['qty'] >= 0 else "Покупка"
-            o_amount_usd = round(deal['o_price'] * abs(deal['qty']), 2)
-            o_amount_rub = round(o_amount_usd * deal['o_rate'], 2) if deal['o_rate'] else 0
-            c_amount_usd = round(deal['c_price'] * abs(deal['qty']), 2)
-            c_amount_rub = round(c_amount_usd * deal['c_rate'], 2) if deal['c_rate'] else 0
-            o_fee_usd = deal['o_fee'] * abs(deal['qty'] / deal['o_qty'])
-            c_fee_usd = deal['c_fee'] * abs(deal['qty'] / deal['c_qty'])
-            o_fee_rub = round(o_fee_usd * deal['os_rate'], 2) if deal['os_rate'] else 0
-            c_fee_rub = round(c_fee_usd * deal['cs_rate'], 2) if deal['cs_rate'] else 0
-            income = c_amount_rub if deal['qty'] >= 0 else o_amount_rub
-            income_usd = c_amount_usd if deal['qty'] >= 0 else o_amount_usd
-            spending = o_amount_rub if deal['qty'] >= 0 else c_amount_rub
-            spending_usd = o_amount_usd if deal['qty'] >= 0 else c_amount_usd
-            spending = spending + o_fee_rub + c_fee_rub
-            spending_usd = spending_usd + o_fee_usd + c_fee_usd
-            xlsxWriteRow(sheet, row, {
-                0: (deal['symbol'], xlsx.formats.Text(data_row), 0, 0, 1),
-                1: (float(abs(deal['qty'])), xlsx.formats.Number(data_row, 0, True), 0, 0, 1),
-                2: (o_deal_type, xlsx.formats.Text(data_row)),
-                3: (datetime.fromtimestamp(deal['o_date']).strftime('%d.%m.%Y'), xlsx.formats.Text(data_row)),
-                4: (deal['os_rate'], xlsx.formats.Number(data_row, 4)),
-                5: (datetime.fromtimestamp(deal['os_date']).strftime('%d.%m.%Y'), xlsx.formats.Text(data_row)),
-                6: (deal['o_rate'], xlsx.formats.Number(data_row, 4)),
-                7: (deal['o_price'], xlsx.formats.Number(data_row, 6)),
-                8: (o_amount_usd, xlsx.formats.Number(data_row, 2)),
-                9: (o_amount_rub, xlsx.formats.Number(data_row, 2)),
-                10: (o_fee_usd, xlsx.formats.Number(data_row, 6)),
-                11: (o_fee_rub, xlsx.formats.Number(data_row, 2)),
-                12: (income, xlsx.formats.Number(data_row, 2), 0, 0, 1),
-                13: (spending, xlsx.formats.Number(data_row, 2), 0, 0, 1),
-                14: (income - spending, xlsx.formats.Number(data_row, 2), 0, 0, 1),
-                15: (income_usd - spending_usd, xlsx.formats.Number(data_row, 2), 0, 0, 1)
-            })
-            xlsxWriteRow(sheet, row + 1, {
-                2: (c_deal_type, xlsx.formats.Text(data_row)),
-                3: (datetime.fromtimestamp(deal['c_date']).strftime('%d.%m.%Y'), xlsx.formats.Text(data_row)),
-                4: (deal['cs_rate'], xlsx.formats.Number(data_row, 4)),
-                5: (datetime.fromtimestamp(deal['cs_date']).strftime('%d.%m.%Y'), xlsx.formats.Text(data_row)),
-                6: (deal['c_rate'], xlsx.formats.Number(data_row, 4)),
-                7: (deal['c_price'], xlsx.formats.Number(data_row, 6)),
-                8: (c_amount_usd, xlsx.formats.Number(data_row, 2)),
-                9: (c_amount_rub, xlsx.formats.Number(data_row, 2)),
-                10: (c_fee_usd, xlsx.formats.Number(data_row, 6)),
-                11: (c_fee_rub, xlsx.formats.Number(data_row, 2))
-            })
+            deal['o_type'] = "Покупка" if deal['qty'] >= 0 else "Продажа"
+            deal['c_type'] = "Продажа" if deal['qty'] >= 0 else "Покупка"
+            deal['o_amount'] = round(deal['o_price'] * abs(deal['qty']), 2)
+            deal['o_amount_rub'] = round(deal['o_amount'] * deal['o_rate'], 2) if deal['o_rate'] else 0
+            deal['c_amount'] = round(deal['c_price'] * abs(deal['qty']), 2)
+            deal['c_amount_rub'] = round(deal['c_amount'] * deal['c_rate'], 2) if deal['c_rate'] else 0
+            deal['o_fee'] = deal['o_fee'] * abs(deal['qty'] / deal['o_qty'])
+            deal['c_fee'] = deal['c_fee'] * abs(deal['qty'] / deal['c_qty'])
+            deal['o_fee_rub'] = round(deal['o_fee'] * deal['os_rate'], 2) if deal['os_rate'] else 0
+            deal['c_fee_rub'] = round(deal['c_fee'] * deal['cs_rate'], 2) if deal['cs_rate'] else 0
+            deal['income_rub'] = deal['c_amount_rub'] if deal['qty'] >= 0 else deal['o_amount_rub']
+            deal['income'] = deal['c_amount'] if deal['qty'] >= 0 else deal['o_amount']
+            deal['spending_rub'] = deal['o_amount_rub'] if deal['qty'] >= 0 else deal['c_amount_rub']
+            deal['spending_rub'] = deal['spending_rub'] + deal['o_fee_rub'] + deal['c_fee_rub']
+            deal['spending'] = deal['o_amount'] if deal['qty'] >= 0 else deal['c_amount']
+            deal['spending'] = deal['spending'] + deal['o_fee'] + deal['c_fee']
+            deal['profit_rub'] = deal['income_rub'] - deal['spending_rub']
+            deal['profit'] = deal['income'] - deal['spending']
+
+            self.add_report_row(row, deal, detail=0)
+            self.add_report_row(row + 1, deal, detail=1)
+
             # TODO replace 'us' with value depandable on broker account
             if self.statement is not None:
                 self.statement.add_derivative_profit('us', self.broker_name, deal['c_date'], self.account_currency,
-                                                income_usd, income, spending, deal['c_rate'])
+                                                     deal['income'], deal['income_rub'], deal['spending_rub'],
+                                                     deal['c_rate'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
 
