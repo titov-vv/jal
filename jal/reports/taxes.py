@@ -39,8 +39,8 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
                         g_tr('TaxExportDialog', "Tax form 2020 (*.dc0)"),
                         '.dc0', self.DlsgInFileName),
             'DLSG-OUT': (g_tr('TaxExportDialog', "Save tax form to:"),
-                        g_tr('TaxExportDialog', "Tax form 2020 (*.dc0)"),
-                        '.dc0', self.DlsgOutFileName),
+                         g_tr('TaxExportDialog', "Tax form 2020 (*.dc0)"),
+                         '.dc0', self.DlsgOutFileName),
         }
         if type[-3:] == '-IN':
             filename = QFileDialog.getOpenFileName(self, selector[type][0], ".", selector[type][1])

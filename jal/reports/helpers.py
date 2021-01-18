@@ -38,7 +38,13 @@ class XLSX:
                 formula = f"=SUM({chr(ord('A')+i)}{start_row + 1}:{chr(ord('A')+i)}{footer_row})"
                 sheet.write_formula(footer_row, i, formula, self.formats.ColumnFooter())
         else:
-            xlsxWriteZeros(sheet, [footer_row], columns_list[1:], self.formats.ColumnFooter())
+            self.write_zeros(sheet, [footer_row], columns_list[1:], self.formats.ColumnFooter())
+
+    # Fills rectangular area defined by rows and columns with 0 values
+    def write_zeros(self, sheet, rows, columns, format):
+        for i in rows:
+            for j in columns:
+                sheet.write(i, j, 0, format)
 
 #-----------------------------------------------------------------------------------------------------------------------
 class xslxFormat:
@@ -115,11 +121,3 @@ def xlsxWriteRow(wksheet, row, columns, height=None):
                 wksheet.merge_range(row, column, row+cd[ROW_SPAN_V], column+cd[ROW_SPAN_H],
                                     cd[ROW_DATA], cd[ROW_FORMAT])
         wksheet.write(row, column, cd[ROW_DATA], cd[ROW_FORMAT])
-
-#-----------------------------------------------------------------------------------------------------------------------
-def xlsxWriteZeros(wksheet, rows, columns, format):
-    for i in rows:
-        for j in columns:
-            wksheet.write(i, j, 0, format)
-
-#-----------------------------------------------------------------------------------------------------------------------
