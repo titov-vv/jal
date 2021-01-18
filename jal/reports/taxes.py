@@ -290,15 +290,8 @@ class TaxesRus:
                 statement.add_dividend(code, f"{symbol} ({full_name})", payment_date, self.account_currency,
                                        amount_usd, amount_rub, tax_usd, tax_us_rub, rate)
             row += 1
-        sheet.write(row, 3, "ИТОГО", xlsx.formats.ColumnFooter())
-        if row > (start_row + 1):  # Don't put formulas with pre-definded errors
-            sheet.write_formula(row, 4, f"=SUM(E{start_row + 1}:E{row})", xlsx.formats.ColumnFooter())
-            sheet.write_formula(row, 5, f"=SUM(F{start_row + 1}:F{row})", xlsx.formats.ColumnFooter())
-            sheet.write_formula(row, 6, f"=SUM(G{start_row + 1}:G{row})", xlsx.formats.ColumnFooter())
-            sheet.write_formula(row, 7, f"=SUM(H{start_row + 1}:H{row})", xlsx.formats.ColumnFooter())
-            sheet.write_formula(row, 8, f"=SUM(I{start_row + 1}:I{row})", xlsx.formats.ColumnFooter())
-        else:
-            xlsxWriteZeros(sheet, [row], [4, 5, 6, 7, 8], xlsx.formats.ColumnFooter())
+
+        xlsx.add_totals_footer(sheet, start_row, row, [3, 4, 5, 6, 7, 8])
 
 # -----------------------------------------------------------------------------------------------------------------------
     def prepare_trades(self, xlsx, statement, account_id, begin, end):
@@ -413,14 +406,8 @@ class TaxesRus:
                                            income_usd, income, spending, deal['c_rate'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
-        sheet.write(row, 11, "ИТОГО", xlsx.formats.ColumnFooter())
-        if row > (start_row + 1):  # Don't put formulas with pre-definded errors
-            sheet.write_formula(row, 12, f"=SUM(M{start_row + 1}:M{row})", xlsx.formats.ColumnFooter())
-            sheet.write_formula(row, 13, f"=SUM(N{start_row + 1}:N{row})", xlsx.formats.ColumnFooter())
-            sheet.write_formula(row, 14, f"=SUM(O{start_row + 1}:O{row})", xlsx.formats.ColumnFooter())
-            sheet.write_formula(row, 15, f"=SUM(P{start_row + 1}:P{row})", xlsx.formats.ColumnFooter())
-        else:
-            xlsxWriteZeros(sheet, [row], [12, 13, 14, 15], xlsx.formats.ColumnFooter())
+
+        xlsx.add_totals_footer(sheet, start_row, row, [11, 12, 13, 14, 15])
 
     # -----------------------------------------------------------------------------------------------------------------------
     # TODO optimize common elemets of all prepare_* methods
@@ -536,14 +523,8 @@ class TaxesRus:
                                                 income_usd, income, spending, deal['c_rate'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
-        sheet.write(row, 11, "ИТОГО", xlsx.formats.ColumnFooter())
-        if row > (start_row + 1):  # Don't put formulas with pre-definded errors
-            sheet.write_formula(row, 12, f"=SUM(M{start_row + 1}:M{row})", xlsx.formats.ColumnFooter())
-            sheet.write_formula(row, 13, f"=SUM(N{start_row + 1}:N{row})", xlsx.formats.ColumnFooter())
-            sheet.write_formula(row, 14, f"=SUM(O{start_row + 1}:O{row})", xlsx.formats.ColumnFooter())
-            sheet.write_formula(row, 15, f"=SUM(P{start_row + 1}:P{row})", xlsx.formats.ColumnFooter())
-        else:
-            xlsxWriteZeros(sheet, [row], [12, 13, 14, 15], xlsx.formats.ColumnFooter())
+
+        xlsx.add_totals_footer(sheet, start_row, row, [11, 12, 13, 14, 15])
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -583,11 +564,7 @@ class TaxesRus:
                 4: (amount_rub, xlsx.formats.Number(row, 2))
             })
             row += 1
-        sheet.write(row, 3, "ИТОГО", xlsx.formats.ColumnFooter())
-        if row > (start_row + 1):  # Don't put formulas with pre-definded errors
-            sheet.write_formula(row, 4, f"=SUM(E{start_row+1}:E{row})", xlsx.formats.ColumnFooter())
-        else:
-            xlsxWriteZeros(sheet, [row], [4], xlsx.formats.ColumnFooter())
+        xlsx.add_totals_footer(sheet, start_row, row, [3, 4])
 
 #-----------------------------------------------------------------------------------------------------------------------
     def prepare_corporate_actions(self, xlsx, statement, account_id, begin, end):

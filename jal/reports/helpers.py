@@ -7,6 +7,8 @@ from jal.ui_custom.helpers import g_tr
 #-----------------------------------------------------------------------------------------------------------------------
 # Class to encapsulate all xlsxwriter-related activities - like formatting, formulas, etc
 class XLSX:
+    totals = g_tr('XLSL', "ИТОГО")
+
     def __init__(self, xlsx_filename):
         self.filename = xlsx_filename
         self.workbook = xlsxwriter.Workbook(filename=xlsx_filename)
@@ -21,6 +23,22 @@ class XLSX:
     def add_report_sheet(self, name):
         return self.workbook.add_worksheet(name)
 
+    # all parameters are zero-based integer indices
+    # Function does following:
+    # 1) puts self.totals caption into cell at (footer_row, columns_list[0]) if columns_list[0] is not None
+    # 2) puts formula =SUM(start_row+1, footer_row) into all other cells at (footer_row, columns_list[1:])
+    # 3) puts 0 instead of SUM if there are no data to make totals
+    def add_totals_footer(self, sheet, start_row, footer_row, columns_list):
+        if columns_list[0] is not None:
+            sheet.write(footer_row, columns_list[0], "ИТОГО", self.formats.ColumnFooter())
+        if footer_row > (start_row + 1):  # Don't put formulas with pre-definded errors
+            for i in columns_list[1:]:
+                if i > 25:
+                    raise ValueError
+                formula = f"=SUM({chr(ord('A')+i)}{start_row + 1}:{chr(ord('A')+i)}{footer_row})"
+                sheet.write_formula(footer_row, i, formula, self.formats.ColumnFooter())
+        else:
+            xlsxWriteZeros(sheet, [footer_row], columns_list[1:], self.formats.ColumnFooter())
 
 #-----------------------------------------------------------------------------------------------------------------------
 class xslxFormat:
