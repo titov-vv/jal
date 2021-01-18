@@ -93,6 +93,7 @@ class TaxesRus:
     RPT_METHOD = 0
     RPT_TITLE = 1
     RPT_COLUMNS = 2
+    RPT_DATA_ROWS = 3
 
     CorpActionText = {
         CorporateAction.SymbolChange: "Смена символа {old} -> {new}",
@@ -108,6 +109,7 @@ class TaxesRus:
         self.broker_name = ''
         self.use_settlement = True
         self.current_report = None
+        self.data_start_row = 9
         self.reports = {
             "Дивиденды": (self.prepare_dividends,
                           "Отчет по дивидендам, полученным в отчетном периоде",
@@ -123,7 +125,20 @@ class TaxesRus:
                               "Налог к уплате, RUB": 12,
                               "Страна": 20,
                               "СОИДН": 7
-                          }),
+                          },
+                          ({
+                              0: ("payment_date", "date"),
+                              1: ("symbol", "text"),
+                              2: ("full_name", "text"),
+                              3: ("rate", "number", 4),
+                              4: ("amount", "number", 2),
+                              5: ("amount_rub", "number", 2),
+                              6: ("tax", "number", 2),
+                              7: ("tax_rub", "number", 2),
+                              8: ("tax2pay", "number", 2),
+                              9: ("country", "text"),
+                              10: ("tax_treaty", "bool", ("Нет", "Да"))
+                          })),
             "Сделки с ЦБ": (self.prepare_trades,
                             "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде",
                             {
@@ -191,10 +206,6 @@ class TaxesRus:
                                  "Комиссия, RUB": 9,
 
                              })
-        }
-        self.bool_text = {
-            0: 'Нет',
-            1: 'Да'
         }
         self.reports_xls = None
         self.statement = None
@@ -268,6 +279,32 @@ class TaxesRus:
             header_row[column] = (f"({column + 1})", self.reports_xls.formats.ColumnHeader())
         xlsxWriteRow(self.current_sheet, 8, header_row)
 
+    def add_report_row(self, row, data):
+        KEY_NAME = 0
+        VALUE_FMT = 1
+        FMT_DETAILS = 2
+
+        report = self.reports[self.current_report]
+        data_row = {}
+        for i in report[self.RPT_DATA_ROWS]:
+            value = data[report[self.RPT_DATA_ROWS][i][KEY_NAME]]
+            format_as = report[self.RPT_DATA_ROWS][i][VALUE_FMT]
+            if format_as == "text":
+                fmt = self.reports_xls.formats.Text(row)
+            elif format_as == "number":
+                precision = report[self.RPT_DATA_ROWS][i][FMT_DETAILS]
+                fmt = self.reports_xls.formats.Number(row, precision)
+            elif format_as == "date":
+                value = datetime.fromtimestamp(value).strftime('%d.%m.%Y')
+                fmt = self.reports_xls.formats.Text(row)
+            elif format_as == "bool":
+                value = report[self.RPT_DATA_ROWS][i][FMT_DETAILS][value]
+                fmt = self.reports_xls.formats.Text(row)
+            else:
+                raise ValueError
+            data_row[i] = (value, fmt)
+        xlsxWriteRow(self.current_sheet, row, data_row)
+
     # Exchange rates are present in database not for every date (and not every possible timestamp)
     # As any action has exact timestamp it won't match rough timestamp of exchange rate most probably
     # Function fills 't_last_dates' table with correspondence between 'real' timestamp and nearest 'exchange' timestamp
@@ -317,7 +354,7 @@ class TaxesRus:
 
         query = executeSQL(self.db,
                            "SELECT d.timestamp AS payment_date, s.name AS symbol, s.full_name AS full_name, "
-                           "d.sum AS amount, d.sum_tax AS tax_amount, q.quote AS rate_cbr , "
+                           "d.sum AS amount, d.sum_tax AS tax, q.quote AS rate , "
                            "c.name AS country, c.code AS country_code, c.tax_treaty AS tax_treaty "
                            "FROM dividends AS d "
                            "LEFT JOIN assets AS s ON s.id = d.asset_id "
@@ -328,34 +365,25 @@ class TaxesRus:
                            "WHERE d.timestamp>=:begin AND d.timestamp<:end AND d.account_id=:account_id "
                            "ORDER BY d.timestamp",
                            [(":begin", begin), (":end", end), (":account_id", account_id)])
-        row = start_row = 9
+        row = start_row = self.data_start_row
         while query.next():
-            payment_date, symbol, full_name, amount_usd, tax_usd, rate, country, code, tax_treaty = readSQLrecord(query)
-            amount_rub = round(amount_usd * rate, 2) if rate else 0
-            tax_us_rub = round(tax_usd * rate, 2) if rate else 0
-            tax_ru_rub = round(0.13 * amount_rub, 2)
-            if tax_treaty:
-                if tax_ru_rub > tax_us_rub:
-                    tax_ru_rub = tax_ru_rub - tax_us_rub
+            dividend = readSQLrecord(query, named=True)
+            dividend["amount_rub"] = round(dividend["amount"] * dividend["rate"], 2) if dividend["rate"] else 0
+            dividend["tax_rub"] = round(dividend["tax"] * dividend["rate"], 2) if dividend["rate"] else 0
+            dividend["tax2pay"] = round(0.13 * dividend["amount_rub"], 2)
+            if dividend["tax_treaty"]:
+                if dividend["tax2pay"] > dividend["tax_rub"]:
+                    dividend["tax2pay"] = dividend["tax2pay"] - dividend["tax_rub"]
                 else:
-                    tax_ru_rub = 0
-            xlsxWriteRow(sheet, row, {
-                0: (datetime.fromtimestamp(payment_date).strftime('%d.%m.%Y'), xlsx.formats.Text(row)),
-                1: (symbol, xlsx.formats.Text(row)),
-                2: (full_name, xlsx.formats.Text(row)),
-                3: (rate, xlsx.formats.Number(row, 4)),
-                4: (amount_usd, xlsx.formats.Number(row, 2)),
-                5: (amount_rub, xlsx.formats.Number(row, 2)),
-                6: (tax_usd, xlsx.formats.Number(row, 2)),
-                7: (tax_us_rub, xlsx.formats.Number(row, 2)),
-                8: (tax_ru_rub, xlsx.formats.Number(row, 2)),
-                9: (country, xlsx.formats.Text(row)),
-                10: (self.bool_text[tax_treaty], xlsx.formats.Text(row))
-            })
-            code = 'us' if code == 'xx' else code   # TODO select right country code if it is absent
+                    dividend["tax2pay"] = 0
+            self.add_report_row(row, dividend)
+
+            dividend["country_code"] = 'us' if dividend["country_code"] == 'xx' else dividend["country_code"]   # TODO select right country code if it is absent
             if self.statement is not None:
-                self.statement.add_dividend(code, f"{symbol} ({full_name})", payment_date, self.account_currency,
-                                       amount_usd, amount_rub, tax_usd, tax_us_rub, rate)
+                self.statement.add_dividend(dividend["country_code"], f"{dividend['symbol']} ({dividend['full_name']})",
+                                            dividend['payment_date'], self.account_currency, dividend['amount'],
+                                            dividend['amount_rub'], dividend['tax'], dividend['tax_rub'],
+                                            dividend['rate'])
             row += 1
 
         xlsx.add_totals_footer(sheet, start_row, row, [3, 4, 5, 6, 7, 8])
@@ -390,7 +418,7 @@ class TaxesRus:
                            "AND s.type_id >= 2 AND s.type_id <= 4 "  # To select only stocks/bonds/ETFs
                            "ORDER BY o.timestamp, c.timestamp",
                            [(":begin", begin), (":end", end), (":account_id", account_id)])
-        start_row = 9
+        start_row = self.data_start_row
         data_row = 0
         while query.next():
             deal = readSQLrecord(query, named=True)
@@ -483,7 +511,7 @@ class TaxesRus:
                            "AND s.type_id == 6 "  # To select only derivatives
                            "ORDER BY o.timestamp, c.timestamp",
                            [(":begin", begin), (":end", end), (":account_id", account_id)])
-        start_row = 9
+        start_row = self.data_start_row
         data_row = 0
         while query.next():
             deal = readSQLrecord(query, named=True)
@@ -560,7 +588,7 @@ class TaxesRus:
                            "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND c.currency_id=q.asset_id "
                            "WHERE a.timestamp>=:begin AND a.timestamp<:end AND a.account_id=:account_id",
                            [(":begin", begin), (":end", end), (":account_id", account_id)])
-        row = start_row = 9
+        row = start_row = self.data_start_row
         while query.next():
             payment_date, amount, note, rate = readSQLrecord(query)
             amount_rub = round(-amount * rate, 2) if rate else 0
@@ -597,7 +625,7 @@ class TaxesRus:
                            "ORDER BY t.timestamp",
                            [(":begin", begin), (":end", end), (":account_id", account_id)])
 
-        row = 9
+        row = self.data_start_row
         even_odd = 1
         while query.next():
             sid, symbol, qty, t_date, t_rate, s_date, s_rate, price, fee_usd = readSQLrecord(query)
