@@ -109,11 +109,17 @@ class TaxesRus:
 
     def __init__(self, db):
         self.db = db
+        self.account_id = 0
+        self.year_begin = 0
+        self.year_end = 0
         self.account_currency = ''
         self.broker_name = ''
         self.use_settlement = True
         self.current_report = None
         self.data_start_row = 9
+        self.reports_xls = None
+        self.statement = None
+        self.current_sheet = None
         self.reports = {
             "Дивиденды": (self.prepare_dividends,
                           "Отчет по дивидендам, полученным в отчетном периоде",
@@ -202,11 +208,6 @@ class TaxesRus:
                              }
                              )
         }
-        self.reports_xls = None
-        self.statement = None
-        self.current_sheet = None
-        self.year_begin = 0
-        self.year_end = 0
 
     def showTaxesDialog(self, parent):
         dialog = TaxExportDialog(parent, self.db)
@@ -218,6 +219,7 @@ class TaxesRus:
 
     def save2file(self, taxes_file, year, account_id,
                   dlsg_update=False, dlsg_in=None, dlsg_out=None, dlsg_dividends_only=False):
+        self.account_id = account_id
         self.account_number, self.account_currency = \
             readSQL(self.db,
                     "SELECT a.number, c.name FROM accounts AS a "
@@ -241,7 +243,6 @@ class TaxesRus:
                 logging.error(g_tr('TaxesRus', "Can't open tax form file ") + f"'{dlsg_in}'")
                 return
 
-        self.account_id = account_id
         self.prepare_exchange_rate_dates()
         for report in self.reports:
             self.current_report = report
