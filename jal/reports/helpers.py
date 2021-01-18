@@ -18,6 +18,9 @@ class XLSX:
         except:
             logging.error(g_tr('TaxesRus', "Can't write tax report into file ") + f"'{self.filename}'")
 
+    def add_report_sheet(self, name):
+        return self.workbook.add_worksheet(name)
+
 
 #-----------------------------------------------------------------------------------------------------------------------
 class xslxFormat:

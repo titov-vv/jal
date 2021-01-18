@@ -157,9 +157,11 @@ class TaxesRus:
                 logging.error(g_tr('TaxesRus', "Can't open tax form file ") + f"'{dlsg_in}'")
                 return
 
+        self.account_id = account_id
+        self.prepare_exchange_rate_dates()
         for report in self.reports:
             self.current_report = report
-            self.current_sheet = self.reports_xls.workbook.add_worksheet(report)
+            self.current_sheet = self.reports_xls.add_report_sheet(report)
             self.add_report_header()
             self.prepare_report(account_id, year_begin, year_end)
 
@@ -171,6 +173,8 @@ class TaxesRus:
             except:
                 logging.error(g_tr('TaxesRus', "Can't write tax form into file ") + f"'{dlsg_out}'")
 
+
+    # This method puts header on each report sheet
     def add_report_header(self):
         report = self.reports[self.current_report]
         self.current_sheet.write(0, 0, report[1], self.reports_xls.formats.Bold())
@@ -179,6 +183,44 @@ class TaxesRus:
         self.current_sheet.write(4, 0, "ФИО:")
         self.current_sheet.write(5, 0, "Номер счета:")  # TODO insert account number
 
+    # Exchange rates are present in database not for every date (and not every possible timestamp)
+    # As any action has exact timestamp it won't match rough timestamp of exchange rate most probably
+    # Function fills 't_last_dates' table with correspondence between 'real' timestamp and nearest 'exchange' timestamp
+    def prepare_exchange_rate_dates(self):
+        _ = executeSQL(self.db, "DELETE FROM t_last_dates")
+        _ = executeSQL(self.db,
+                       "INSERT INTO t_last_dates(ref_id, timestamp) "
+                       "SELECT ref_id, coalesce(MAX(q.timestamp), 0) AS timestamp "
+                       "FROM (SELECT d.timestamp AS ref_id "
+                       "FROM dividends AS d "
+                       "WHERE d.account_id = :account_id "
+                       "UNION "
+                       "SELECT a.timestamp AS ref_id "
+                       "FROM actions AS a "
+                       "WHERE a.account_id = :account_id "
+                       "UNION "
+                       "SELECT t.timestamp AS ref_id "
+                       "FROM deals AS d "
+                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 3 "
+                       "LEFT JOIN trades AS t ON s.operation_id=t.id "
+                       "WHERE d.account_id = :account_id "
+                       "UNION "
+                       "SELECT c.settlement AS ref_id "
+                       "FROM deals AS d "
+                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 3 "
+                       "LEFT JOIN trades AS c ON s.operation_id=c.id "
+                       "WHERE d.account_id = :account_id "
+                       "UNION "
+                       "SELECT o.timestamp AS ref_id "
+                       "FROM deals AS d "
+                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 5 "
+                       "LEFT JOIN corp_actions AS o ON s.operation_id=o.id "
+                       "WHERE d.account_id = :account_id) "
+                       "LEFT JOIN accounts AS a ON a.id = :account_id "
+                       "LEFT JOIN quotes AS q ON ref_id >= q.timestamp AND a.currency_id=q.asset_id "
+                       "WHERE ref_id IS NOT NULL "
+                       "GROUP BY ref_id", [(":account_id", self.account_id)])
+        self.db.commit()
 # -----------------------------------------------------------------------------------------------------------------------
     def prepare_report(self, account_id, year_begin, year_end):
         report = self.reports[self.current_report]
@@ -187,16 +229,6 @@ class TaxesRus:
 # -----------------------------------------------------------------------------------------------------------------------
     def prepare_dividends(self, xlsx, statement, account_id, begin, end):
         sheet = self.current_sheet
-        _ = executeSQL(self.db, "DELETE FROM t_last_dates")
-        _ = executeSQL(self.db,  # FIXME - below query will take any earlier currency rate - limitation is needed for 2-3 days scope
-                       "INSERT INTO t_last_dates(ref_id, timestamp) "
-                       "SELECT d.id AS ref_id, coalesce(MAX(q.timestamp), 0) AS timestamp "
-                       "FROM dividends AS d "
-                       "LEFT JOIN accounts AS a ON d.account_id=a.id "
-                       "LEFT JOIN quotes AS q ON d.timestamp >= q.timestamp AND a.currency_id=q.asset_id "
-                       "WHERE d.timestamp>=:begin AND d.timestamp<:end AND d.account_id=:account_id "
-                       "GROUP BY d.id", [(":begin", begin), (":end", end), (":account_id", account_id)])
-        self.db.commit()
 
         header_row = {
             0: ("Дата выплаты", xlsx.formats.ColumnHeader(), 10, 0, 0),
@@ -224,7 +256,7 @@ class TaxesRus:
                            "LEFT JOIN assets AS s ON s.id = d.asset_id "
                            "LEFT JOIN accounts AS a ON d.account_id = a.id "
                            "LEFT JOIN countries AS c ON d.tax_country_id = c.id "
-                           "LEFT JOIN t_last_dates AS ld ON d.id=ld.ref_id "
+                           "LEFT JOIN t_last_dates AS ld ON d.timestamp=ld.ref_id "
                            "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND a.currency_id=q.asset_id "
                            "WHERE d.timestamp>=:begin AND d.timestamp<:end AND d.account_id=:account_id "
                            "ORDER BY d.timestamp",
@@ -271,32 +303,6 @@ class TaxesRus:
 # -----------------------------------------------------------------------------------------------------------------------
     def prepare_trades(self, xlsx, statement, account_id, begin, end):
         sheet = self.current_sheet
-        _ = executeSQL(self.db, "DELETE FROM t_last_dates")
-        _ = executeSQL(self.db,
-                       "INSERT INTO t_last_dates(ref_id, timestamp) "
-                       "SELECT ref_id, coalesce(MAX(q.timestamp), 0) AS timestamp "
-                       "FROM (SELECT t.timestamp AS ref_id "
-                       "FROM deals AS d "
-                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 3 "
-                       "LEFT JOIN trades AS t ON s.operation_id=t.id "
-                       "WHERE t.timestamp<:end AND d.account_id=:account_id "
-                       "UNION "
-                       "SELECT c.settlement AS ref_id "
-                       "FROM deals AS d "
-                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 3 "
-                       "LEFT JOIN trades AS c ON s.operation_id=c.id "
-                       "WHERE c.timestamp<:end AND d.account_id=:account_id "
-                       "UNION "
-                       "SELECT o.timestamp AS ref_id "
-                       "FROM deals AS d "
-                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 5 "
-                       "LEFT JOIN corp_actions AS o ON s.operation_id=o.id "
-                       "WHERE o.timestamp<:end AND d.account_id=:account_id) "
-                       "LEFT JOIN accounts AS a ON a.id = :account_id "
-                       "LEFT JOIN quotes AS q ON ref_id >= q.timestamp AND a.currency_id=q.asset_id "
-                       "GROUP BY ref_id",
-                       [(":end", end), (":account_id", account_id)])
-        self.db.commit()
 
         header_row = {
             0: ("Ценная бумага", xlsx.formats.ColumnHeader(), 8, 0, 0),
@@ -420,32 +426,6 @@ class TaxesRus:
     # TODO optimize common elemets of all prepare_* methods
     def prepare_derivatives(self, xlsx, statement, account_id, begin, end):
         sheet = self.current_sheet
-        _ = executeSQL(self.db, "DELETE FROM t_last_dates")
-        _ = executeSQL(self.db,
-                       "INSERT INTO t_last_dates(ref_id, timestamp) "
-                       "SELECT ref_id, coalesce(MAX(q.timestamp), 0) AS timestamp "
-                       "FROM (SELECT t.timestamp AS ref_id "
-                       "FROM deals AS d "
-                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 3 "
-                       "LEFT JOIN trades AS t ON s.operation_id=t.id "
-                       "WHERE t.timestamp<:end AND d.account_id=:account_id "
-                       "UNION "
-                       "SELECT c.settlement AS ref_id "
-                       "FROM deals AS d "
-                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 3 "
-                       "LEFT JOIN trades AS c ON s.operation_id=c.id "
-                       "WHERE c.timestamp<:end AND d.account_id=:account_id "
-                       "UNION "
-                       "SELECT o.timestamp AS ref_id "
-                       "FROM deals AS d "
-                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 5 "
-                       "LEFT JOIN corp_actions AS o ON s.operation_id=o.id "
-                       "WHERE o.timestamp<:end AND d.account_id=:account_id) "
-                       "LEFT JOIN accounts AS a ON a.id = :account_id "
-                       "LEFT JOIN quotes AS q ON ref_id >= q.timestamp AND a.currency_id=q.asset_id "
-                       "GROUP BY ref_id",
-                       [(":end", end), (":account_id", account_id)])
-        self.db.commit()
 
         header_row = {
             0: ("Ценная бумага", xlsx.formats.ColumnHeader(), 22, 0, 0),
@@ -570,19 +550,6 @@ class TaxesRus:
     def prepare_broker_fees(self, xlsx, statement, account_id, begin, end):
         sheet = self.current_sheet
 
-        _ = executeSQL(self.db, "DELETE FROM t_last_dates")
-        _ = executeSQL(self.db,
-                       "INSERT INTO t_last_dates(ref_id, timestamp) "
-                       "SELECT a.id AS ref_id, coalesce(MAX(q.timestamp), 0) AS timestamp "
-                       "FROM actions AS a "
-                       "LEFT JOIN accounts AS c ON c.id = :account_id "
-                       "LEFT JOIN quotes AS q ON a.timestamp >= q.timestamp AND c.currency_id=q.asset_id "
-                       "LEFT JOIN action_details AS d ON d.pid=a.id "
-                       "WHERE a.timestamp>=:begin AND a.timestamp<:end AND a.account_id=:account_id "
-                       "GROUP BY a.id",
-                       [(":begin", begin), (":end", end), (":account_id", account_id)])
-        self.db.commit()
-
         header_row = {
             0: ("Описание", xlsx.formats.ColumnHeader(), 50, 0, 0),
             1: ("Сумма, USD", xlsx.formats.ColumnHeader(), 8, 0, 0),
@@ -600,7 +567,7 @@ class TaxesRus:
                            "FROM actions AS a "
                            "LEFT JOIN action_details AS d ON d.pid=a.id "
                            "LEFT JOIN accounts AS c ON c.id = :account_id "
-                           "LEFT JOIN t_last_dates AS ld ON a.id=ld.ref_id "
+                           "LEFT JOIN t_last_dates AS ld ON a.timestamp=ld.ref_id "
                            "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND c.currency_id=q.asset_id "
                            "WHERE a.timestamp>=:begin AND a.timestamp<:end AND a.account_id=:account_id",
                            [(":begin", begin), (":end", end), (":account_id", account_id)])
@@ -625,33 +592,6 @@ class TaxesRus:
 #-----------------------------------------------------------------------------------------------------------------------
     def prepare_corporate_actions(self, xlsx, statement, account_id, begin, end):
         sheet = self.current_sheet
-
-        _ = executeSQL(self.db, "DELETE FROM t_last_dates")   # TODO combine with the same code in trades report
-        _ = executeSQL(self.db,
-                       "INSERT INTO t_last_dates(ref_id, timestamp) "
-                       "SELECT ref_id, coalesce(MAX(q.timestamp), 0) AS timestamp "
-                       "FROM (SELECT t.timestamp AS ref_id "
-                       "FROM deals AS d "
-                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 3 "
-                       "LEFT JOIN trades AS t ON s.operation_id=t.id "
-                       "WHERE t.timestamp<:end AND d.account_id=:account_id "
-                       "UNION "
-                       "SELECT c.settlement AS ref_id "
-                       "FROM deals AS d "
-                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 3 "
-                       "LEFT JOIN trades AS c ON s.operation_id=c.id "
-                       "WHERE c.timestamp<:end AND d.account_id=:account_id "
-                       "UNION "
-                       "SELECT o.timestamp AS ref_id "
-                       "FROM deals AS d "
-                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 5 "
-                       "LEFT JOIN corp_actions AS o ON s.operation_id=o.id "
-                       "WHERE o.timestamp<:end AND d.account_id=:account_id) "
-                       "LEFT JOIN accounts AS a ON a.id = :account_id "
-                       "LEFT JOIN quotes AS q ON ref_id >= q.timestamp AND a.currency_id=q.asset_id "
-                       "GROUP BY ref_id",
-                       [(":end", end), (":account_id", account_id)])
-        self.db.commit()
 
         header_row = {
             0: ("Операция", xlsx.formats.ColumnHeader(), 20, 0, 0),
