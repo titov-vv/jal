@@ -4,7 +4,7 @@ from datetime import datetime
 import logging
 
 from jal.constants import TransactionType, CorporateAction
-from jal.reports.helpers import XLSX, xlsxWriteRow
+from jal.reports.helpers import XLSX
 from jal.reports.dlsg import DLSG
 from jal.ui_custom.helpers import g_tr
 from jal.db.helpers import executeSQL, readSQLrecord, readSQL
@@ -272,8 +272,8 @@ class TaxesRus:
             width = report[self.RPT_COLUMNS][column][self.COL_WIDTH]
             header_row[column] = (title, self.reports_xls.formats.ColumnHeader(), width, 0, 0)
             numbers_row[column] = (f"({column + 1})", self.reports_xls.formats.ColumnHeader())
-        xlsxWriteRow(self.current_sheet, 7, header_row, 60)
-        xlsxWriteRow(self.current_sheet, 8, numbers_row)
+        self.reports_xls.write_row(self.current_sheet, 7, header_row, 60)
+        self.reports_xls.write_row(self.current_sheet, 8, numbers_row)
 
     def add_report_row(self, row, data, even_odd=1, alternative=0):
         KEY_NAME = 0
@@ -307,7 +307,7 @@ class TaxesRus:
                     data_row[column] = (value, fmt, 0, field_dscr[H_SPAN], field_dscr[V_SPAN])
                 else:
                     data_row[column] = (value, fmt)
-        xlsxWriteRow(self.current_sheet, row, data_row)
+        self.reports_xls.write_row(self.current_sheet, row, data_row)
 
     # Exchange rates are present in database not for every date (and not every possible timestamp)
     # As any action has exact timestamp it won't match rough timestamp of exchange rate most probably
@@ -350,12 +350,10 @@ class TaxesRus:
 # -----------------------------------------------------------------------------------------------------------------------
     def prepare_report(self, account_id, year_begin, year_end):
         report = self.reports[self.current_report]
-        report[self.RPT_METHOD](self.reports_xls, account_id, year_begin, year_end)
+        report[self.RPT_METHOD](account_id, year_begin, year_end)
 
 # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_dividends(self, xlsx, account_id, begin, end):
-        sheet = self.current_sheet
-
+    def prepare_dividends(self, account_id, begin, end):
         query = executeSQL(self.db,
                            "SELECT d.timestamp AS payment_date, s.name AS symbol, s.full_name AS full_name, "
                            "d.sum AS amount, d.sum_tax AS tax, q.quote AS rate , "
@@ -390,12 +388,10 @@ class TaxesRus:
                                             dividend['rate'])
             row += 1
 
-        xlsx.add_totals_footer(sheet, start_row, row, [3, 4, 5, 6, 7, 8])
+        self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [3, 4, 5, 6, 7, 8])
 
 # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_trades(self, xlsx, account_id, begin, end):
-        sheet = self.current_sheet
-
+    def prepare_trades(self, account_id, begin, end):
         # Take all actions without conversion
         query = executeSQL(self.db,
                            "SELECT s.name AS symbol, d.qty AS qty, "
@@ -459,12 +455,10 @@ class TaxesRus:
             data_row = data_row + 1
         row = start_row + (data_row * 2)
 
-        xlsx.add_totals_footer(sheet, start_row, row, [11, 12, 13, 14, 15])
+        self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [11, 12, 13, 14, 15])
 
 # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_derivatives(self, xlsx, account_id, begin, end):
-        sheet = self.current_sheet
-
+    def prepare_derivatives(self, account_id, begin, end):
         # Take all actions without conversion
         query = executeSQL(self.db,
                            "SELECT s.name AS symbol, d.qty AS qty, "
@@ -529,13 +523,10 @@ class TaxesRus:
             data_row = data_row + 1
         row = start_row + (data_row * 2)
 
-        xlsx.add_totals_footer(sheet, start_row, row, [11, 12, 13, 14, 15])
-
+        self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [11, 12, 13, 14, 15])
 
 # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_broker_fees(self, xlsx, account_id, begin, end):
-        sheet = self.current_sheet
-
+    def prepare_broker_fees(self, account_id, begin, end):
         query = executeSQL(self.db,
                            "SELECT a.timestamp AS payment_date, d.sum AS amount, d.note AS note, q.quote AS rate "
                            "FROM actions AS a "
@@ -552,10 +543,10 @@ class TaxesRus:
             fee['amount_rub'] = round(fee['amount'] * fee['rate'], 2) if fee['rate'] else 0
             self.add_report_row(row, fee, even_odd=row)
             row += 1
-        xlsx.add_totals_footer(sheet, start_row, row, [3, 4])
+        self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [3, 4])
 
 #-----------------------------------------------------------------------------------------------------------------------
-    def prepare_corporate_actions(self, xlsx, account_id, begin, end):
+    def prepare_corporate_actions(self, account_id, begin, end):
         sheet = self.current_sheet
 
         # get list of all deals that were opened with corp.action and closed by normal trade
@@ -595,7 +586,7 @@ class TaxesRus:
             self.add_report_row(row, sale, even_odd=even_odd)
             row = row + 1
 
-            row, qty = self.proceed_corporate_action(sale['sid'], sale['qty'], 1, sheet, xlsx.formats, row, even_odd)
+            row, qty = self.proceed_corporate_action(sale['sid'], sale['qty'], 1, sheet, self.reports_xls.formats, row, even_odd)
 
             even_odd = even_odd + 1
             row = row + 1

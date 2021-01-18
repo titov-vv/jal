@@ -7,6 +7,11 @@ from jal.ui_custom.helpers import g_tr
 #-----------------------------------------------------------------------------------------------------------------------
 # Class to encapsulate all xlsxwriter-related activities - like formatting, formulas, etc
 class XLSX:
+    ROW_DATA = 0
+    ROW_FORMAT = 1
+    ROW_WIDTH = 2
+    ROW_SPAN_H = 3
+    ROW_SPAN_V = 4
     totals = g_tr('XLSL', "ИТОГО")
 
     def __init__(self, xlsx_filename):
@@ -18,7 +23,7 @@ class XLSX:
         try:
             self.workbook.close()
         except:
-            logging.error(g_tr('TaxesRus', "Can't write tax report into file ") + f"'{self.filename}'")
+            logging.error(g_tr('XLSX', "Can't save report into file ") + f"'{self.filename}'")
 
     def add_report_sheet(self, name):
         return self.workbook.add_worksheet(name)
@@ -45,6 +50,19 @@ class XLSX:
         for i in rows:
             for j in columns:
                 sheet.write(i, j, 0, format)
+
+    def write_row(self, sheet, row, columns, height=None):
+        if height:
+            sheet.set_row(row, height)
+        for column in columns:
+            cd = columns[column]
+            if len(cd) != 2:
+                if cd[self.ROW_WIDTH]:
+                    sheet.set_column(column, column, cd[self.ROW_WIDTH])
+                if cd[self.ROW_SPAN_H] or cd[self.ROW_SPAN_V]:
+                    sheet.merge_range(row, column, row + cd[self.ROW_SPAN_V], column + cd[self.ROW_SPAN_H],
+                                        cd[self.ROW_DATA], cd[self.ROW_FORMAT])
+            sheet.write(row, column, cd[self.ROW_DATA], cd[self.ROW_FORMAT])
 
 #-----------------------------------------------------------------------------------------------------------------------
 class xslxFormat:
@@ -100,24 +118,3 @@ class xslxFormat:
                                     'align': align,
                                     'valign': 'vcenter',
                                     'bg_color': bg_color})
-
-#-----------------------------------------------------------------------------------------------------------------------
-ROW_DATA = 0
-ROW_FORMAT = 1
-ROW_WIDTH = 2
-ROW_SPAN_H = 3
-ROW_SPAN_V = 4
-
-
-def xlsxWriteRow(wksheet, row, columns, height=None):
-    if height:
-        wksheet.set_row(row, height)
-    for column in columns:
-        cd = columns[column]
-        if len(cd) != 2:
-            if cd[ROW_WIDTH]:
-                wksheet.set_column(column, column, cd[ROW_WIDTH])
-            if cd[ROW_SPAN_H] or cd[ROW_SPAN_V]:
-                wksheet.merge_range(row, column, row+cd[ROW_SPAN_V], column+cd[ROW_SPAN_H],
-                                    cd[ROW_DATA], cd[ROW_FORMAT])
-        wksheet.write(row, column, cd[ROW_DATA], cd[ROW_FORMAT])

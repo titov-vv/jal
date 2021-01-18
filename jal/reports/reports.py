@@ -1,12 +1,11 @@
 import datetime
 import logging
-import xlsxwriter
 import pandas as pd
 from jal.constants import BookAccount, PredefinedAsset, PredefinedCategory, ColumnWidth
 from jal.widgets.view_delegate import *
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.ui_custom.helpers import g_tr, UseSqlQuery, ConfigureTableView
-from jal.reports.helpers import xslxFormat, xlsxWriteRow
+from jal.reports.helpers import XLSX
 from PySide2.QtWidgets import QFileDialog
 from PySide2.QtCore import Qt, QObject, Signal, QAbstractTableModel
 
@@ -148,26 +147,23 @@ class Reports(QObject):
                 filename = filename + '.xlsx'
         else:
             return
-        workbook = xlsxwriter.Workbook(filename=filename)
-        formats = xslxFormat(workbook)
-        sheet = workbook.add_worksheet(name=g_tr('Reports', "Report"))
+
+        report = XLSX(filename)
+        sheet = report.add_report_sheet(g_tr('Reports', "Report"))
 
         model = self.table_view.model()
         headers = {}
         for col in range(model.columnCount()):
-            headers[col] = (model.headerData(col, Qt.Horizontal), formats.ColumnHeader())
-        xlsxWriteRow(sheet, 0, headers)
+            headers[col] = (model.headerData(col, Qt.Horizontal), report.formats.ColumnHeader())
+        report.write_row(sheet, 0, headers)
 
         for row in range(model.rowCount()):
             data_row = {}
             for col in range(model.columnCount()):
-                data_row[col] = (model.data(model.index(row, col)), formats.Text(row))
-            xlsxWriteRow(sheet, row+1, data_row)
+                data_row[col] = (model.data(model.index(row, col)), report.formats.Text(row))
+            report.write_row(sheet, row+1, data_row)
 
-        try:
-            workbook.close()
-        except:
-            logging.error(g_tr('Reports', "Can't save report into file ") + f"'{filename}'")
+        report.save()
 
     def prepareIncomeSpendingReport(self, begin, end, account_id, group_dates):
         _ = executeSQL(self.db, "DELETE FROM t_months")
