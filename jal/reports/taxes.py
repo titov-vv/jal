@@ -205,6 +205,8 @@ class TaxesRus:
         self.reports_xls = None
         self.statement = None
         self.current_sheet = None
+        self.year_begin = 0
+        self.year_end = 0
 
     def showTaxesDialog(self, parent):
         dialog = TaxExportDialog(parent, self.db)
@@ -224,8 +226,8 @@ class TaxesRus:
                                    "SELECT b.name FROM accounts AS a "
                                    "LEFT JOIN agents AS b ON a.organization_id = b.id WHERE a.id=:account",
                                    [(":account", account_id)])
-        year_begin = int(time.mktime(datetime.strptime(f"{year}", "%Y").timetuple()))
-        year_end = int(time.mktime(datetime.strptime(f"{year + 1}", "%Y").timetuple()))
+        self.year_begin = int(time.mktime(datetime.strptime(f"{year}", "%Y").timetuple()))
+        self.year_end = int(time.mktime(datetime.strptime(f"{year + 1}", "%Y").timetuple()))
 
         self.reports_xls = XLSX(taxes_file)
 
@@ -244,7 +246,8 @@ class TaxesRus:
             self.current_report = report
             self.current_sheet = self.reports_xls.add_report_sheet(report)
             self.add_report_header()
-            self.prepare_report(account_id, year_begin, year_end)
+            report_description = self.reports[self.current_report]
+            report_description[self.RPT_METHOD]()
 
         self.reports_xls.save()
 
@@ -347,13 +350,9 @@ class TaxesRus:
                        "WHERE ref_id IS NOT NULL "
                        "GROUP BY ref_id", [(":account_id", self.account_id)])
         self.db.commit()
-# -----------------------------------------------------------------------------------------------------------------------
-    def prepare_report(self, account_id, year_begin, year_end):
-        report = self.reports[self.current_report]
-        report[self.RPT_METHOD](account_id, year_begin, year_end)
 
 # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_dividends(self, account_id, begin, end):
+    def prepare_dividends(self):
         query = executeSQL(self.db,
                            "SELECT d.timestamp AS payment_date, s.name AS symbol, s.full_name AS full_name, "
                            "d.sum AS amount, d.sum_tax AS tax, q.quote AS rate , "
@@ -366,7 +365,7 @@ class TaxesRus:
                            "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND a.currency_id=q.asset_id "
                            "WHERE d.timestamp>=:begin AND d.timestamp<:end AND d.account_id=:account_id "
                            "ORDER BY d.timestamp",
-                           [(":begin", begin), (":end", end), (":account_id", account_id)])
+                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id)])
         row = start_row = self.data_start_row
         while query.next():
             dividend = readSQLrecord(query, named=True)
@@ -391,7 +390,7 @@ class TaxesRus:
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [3, 4, 5, 6, 7, 8])
 
 # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_trades(self, account_id, begin, end):
+    def prepare_trades(self):
         # Take all actions without conversion
         query = executeSQL(self.db,
                            "SELECT s.name AS symbol, d.qty AS qty, "
@@ -417,7 +416,7 @@ class TaxesRus:
                            "WHERE c.timestamp>=:begin AND c.timestamp<:end AND d.account_id=:account_id "
                            "AND s.type_id >= 2 AND s.type_id <= 4 "  # To select only stocks/bonds/ETFs
                            "ORDER BY o.timestamp, c.timestamp",
-                           [(":begin", begin), (":end", end), (":account_id", account_id)])
+                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id)])
         start_row = self.data_start_row
         data_row = 0
         while query.next():
@@ -458,7 +457,7 @@ class TaxesRus:
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [11, 12, 13, 14, 15])
 
 # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_derivatives(self, account_id, begin, end):
+    def prepare_derivatives(self):
         # Take all actions without conversion
         query = executeSQL(self.db,
                            "SELECT s.name AS symbol, d.qty AS qty, "
@@ -484,7 +483,7 @@ class TaxesRus:
                            "WHERE c.timestamp>=:begin AND c.timestamp<:end AND d.account_id=:account_id "
                            "AND s.type_id == 6 "  # To select only derivatives
                            "ORDER BY o.timestamp, c.timestamp",
-                           [(":begin", begin), (":end", end), (":account_id", account_id)])
+                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id)])
         start_row = self.data_start_row
         data_row = 0
         while query.next():
@@ -526,7 +525,7 @@ class TaxesRus:
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [11, 12, 13, 14, 15])
 
 # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_broker_fees(self, account_id, begin, end):
+    def prepare_broker_fees(self):
         query = executeSQL(self.db,
                            "SELECT a.timestamp AS payment_date, d.sum AS amount, d.note AS note, q.quote AS rate "
                            "FROM actions AS a "
@@ -535,7 +534,7 @@ class TaxesRus:
                            "LEFT JOIN t_last_dates AS ld ON a.timestamp=ld.ref_id "
                            "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND c.currency_id=q.asset_id "
                            "WHERE a.timestamp>=:begin AND a.timestamp<:end AND a.account_id=:account_id",
-                           [(":begin", begin), (":end", end), (":account_id", account_id)])
+                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id)])
         row = start_row = self.data_start_row
         while query.next():
             fee = readSQLrecord(query, named=True)
@@ -546,9 +545,7 @@ class TaxesRus:
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [3, 4])
 
 #-----------------------------------------------------------------------------------------------------------------------
-    def prepare_corporate_actions(self, account_id, begin, end):
-        sheet = self.current_sheet
-
+    def prepare_corporate_actions(self):
         # get list of all deals that were opened with corp.action and closed by normal trade
         query = executeSQL(self.db,
                            "SELECT d.open_sid AS sid, s.name AS symbol, d.qty AS qty, "
@@ -566,7 +563,7 @@ class TaxesRus:
                            "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id "
                            "WHERE t.timestamp>=:begin AND t.timestamp<:end AND d.account_id=:account_id "
                            "ORDER BY t.timestamp",
-                           [(":begin", begin), (":end", end), (":account_id", account_id)])
+                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id)])
 
         row = self.data_start_row
         even_odd = 1
@@ -586,17 +583,17 @@ class TaxesRus:
             self.add_report_row(row, sale, even_odd=even_odd)
             row = row + 1
 
-            row, qty = self.proceed_corporate_action(sale['sid'], sale['qty'], 1, sheet, self.reports_xls.formats, row, even_odd)
+            row, qty = self.proceed_corporate_action(sale['sid'], sale['qty'], 1, row, even_odd)
 
             even_odd = even_odd + 1
             row = row + 1
 
-    def proceed_corporate_action(self, sid, qty, level, sheet, formats, row, even_odd):
-        row, qty = self.output_corp_action(sid, qty, level, sheet, formats, row, even_odd)
-        row, qty = self.next_corporate_action(sid, qty, level + 1, sheet, formats, row, even_odd)
+    def proceed_corporate_action(self, sid, qty, level, row, even_odd):
+        row, qty = self.output_corp_action(sid, qty, level, row, even_odd)
+        row, qty = self.next_corporate_action(sid, qty, level + 1, row, even_odd)
         return row, qty
 
-    def next_corporate_action(self, sid, qty, level, sheet, formats, row, even_odd):
+    def next_corporate_action(self, sid, qty, level, row, even_odd):
         # get list of deals that were closed as result of current corporate action
         open_query = executeSQL(self.db, "SELECT d.open_sid AS open_sid, os.type AS op_type "
                                          "FROM deals AS d "
@@ -608,14 +605,14 @@ class TaxesRus:
             open_sid, op_type = readSQLrecord(open_query)
 
             if op_type == TransactionType.Trade:
-                row, qty = self.output_purchase(open_sid, qty, level, sheet, formats, row, even_odd)
+                row, qty = self.output_purchase(open_sid, qty, level, row, even_odd)
             elif op_type == TransactionType.CorporateAction:
-                row, qty = self.proceed_corporate_action(open_sid, qty, level, sheet, formats, row, even_odd)
+                row, qty = self.proceed_corporate_action(open_sid, qty, level, row, even_odd)
             else:
                 assert False
         return row, qty
 
-    def output_purchase(self, sid, proceed_qty, level, sheet, formats, row, even_odd):
+    def output_purchase(self, sid, proceed_qty, level, row, even_odd):
         if proceed_qty <= 0:
             return row, proceed_qty
 
@@ -645,7 +642,7 @@ class TaxesRus:
 
         return row + 1, proceed_qty - purchase['qty']
 
-    def output_corp_action(self, sid, proceed_qty, level, sheet, formats, row, even_odd):
+    def output_corp_action(self, sid, proceed_qty, level, row, even_odd):
         if proceed_qty <= 0:
             return row, proceed_qty
 
