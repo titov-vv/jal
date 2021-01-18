@@ -223,6 +223,7 @@ class TaxesRus:
 
         self.reports_xls = XLSX(taxes_file)
 
+        self.statement = None
         if dlsg_update:
             self.statement = DLSG(only_dividends=dlsg_dividends_only)
             try:
@@ -308,10 +309,10 @@ class TaxesRus:
 # -----------------------------------------------------------------------------------------------------------------------
     def prepare_report(self, account_id, year_begin, year_end):
         report = self.reports[self.current_report]
-        report[self.RPT_METHOD](self.reports_xls, self.statement, account_id, year_begin, year_end)
+        report[self.RPT_METHOD](self.reports_xls, account_id, year_begin, year_end)
 
 # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_dividends(self, xlsx, statement, account_id, begin, end):
+    def prepare_dividends(self, xlsx, account_id, begin, end):
         sheet = self.current_sheet
 
         query = executeSQL(self.db,
@@ -352,15 +353,15 @@ class TaxesRus:
                 10: (self.bool_text[tax_treaty], xlsx.formats.Text(row))
             })
             code = 'us' if code == 'xx' else code   # TODO select right country code if it is absent
-            if statement is not None:
-                statement.add_dividend(code, f"{symbol} ({full_name})", payment_date, self.account_currency,
+            if self.statement is not None:
+                self.statement.add_dividend(code, f"{symbol} ({full_name})", payment_date, self.account_currency,
                                        amount_usd, amount_rub, tax_usd, tax_us_rub, rate)
             row += 1
 
         xlsx.add_totals_footer(sheet, start_row, row, [3, 4, 5, 6, 7, 8])
 
 # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_trades(self, xlsx, statement, account_id, begin, end):
+    def prepare_trades(self, xlsx, account_id, begin, end):
         sheet = self.current_sheet
 
         # Take all actions without conversion
@@ -444,8 +445,8 @@ class TaxesRus:
                 11: (c_fee_rub, xlsx.formats.Number(data_row, 2))
             })
             # TODO replace 'us' with value depandable on broker account
-            if statement is not None:
-                statement.add_stock_profit('us', self.broker_name, deal['c_date'], self.account_currency,
+            if self.statement is not None:
+                self.statement.add_stock_profit('us', self.broker_name, deal['c_date'], self.account_currency,
                                            income_usd, income, spending, deal['c_rate'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
@@ -453,7 +454,7 @@ class TaxesRus:
         xlsx.add_totals_footer(sheet, start_row, row, [11, 12, 13, 14, 15])
 
 # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_derivatives(self, xlsx, statement, account_id, begin, end):
+    def prepare_derivatives(self, xlsx, account_id, begin, end):
         sheet = self.current_sheet
 
         # Take all actions without conversion
@@ -537,8 +538,8 @@ class TaxesRus:
                 11: (c_fee_rub, xlsx.formats.Number(data_row, 2))
             })
             # TODO replace 'us' with value depandable on broker account
-            if statement is not None:
-                statement.add_derivative_profit('us', self.broker_name, deal['c_date'], self.account_currency,
+            if self.statement is not None:
+                self.statement.add_derivative_profit('us', self.broker_name, deal['c_date'], self.account_currency,
                                                 income_usd, income, spending, deal['c_rate'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
@@ -547,7 +548,7 @@ class TaxesRus:
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_broker_fees(self, xlsx, statement, account_id, begin, end):
+    def prepare_broker_fees(self, xlsx, account_id, begin, end):
         sheet = self.current_sheet
 
         query = executeSQL(self.db,
@@ -574,7 +575,7 @@ class TaxesRus:
         xlsx.add_totals_footer(sheet, start_row, row, [3, 4])
 
 #-----------------------------------------------------------------------------------------------------------------------
-    def prepare_corporate_actions(self, xlsx, statement, account_id, begin, end):
+    def prepare_corporate_actions(self, xlsx, account_id, begin, end):
         sheet = self.current_sheet
 
         # get list of all deals that were opened with corp.action and closed by normal trade
