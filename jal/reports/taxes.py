@@ -95,6 +95,10 @@ class TaxesRus:
     RPT_COLUMNS = 2
     RPT_DATA_ROWS = 3
 
+    COL_TITLE = 0
+    COL_WIDTH = 1
+    COL_FIELD = 2
+
     CorpActionText = {
         CorporateAction.SymbolChange: "Смена символа {old} -> {new}",
         CorporateAction.Split: "Сплит {old} {before} в {after}",
@@ -114,190 +118,88 @@ class TaxesRus:
             "Дивиденды": (self.prepare_dividends,
                           "Отчет по дивидендам, полученным в отчетном периоде",
                           {
-                              "Дата выплаты": 10,
-                              "Ценная бумага": 8,
-                              "Полное наименование": 50,
-                              "Курс USD/RUB на дату выплаты": 16,
-                              "Доход, USD": 12,
-                              "Доход, RUB (код 1010)": 12,
-                              "Налог упл., USD": 12,
-                              "Налог упл., RUB": 12,
-                              "Налог к уплате, RUB": 12,
-                              "Страна": 20,
-                              "СОИДН": 7
-                          },
-                          ({
-                               0: ("payment_date", "date"),
-                               1: ("symbol", "text"),
-                               2: ("full_name", "text"),
-                               3: ("rate", "number", 4),
-                               4: ("amount", "number", 2),
-                               5: ("amount_rub", "number", 2),
-                               6: ("tax", "number", 2),
-                               7: ("tax_rub", "number", 2),
-                               8: ("tax2pay", "number", 2),
-                               9: ("country", "text"),
-                               10: ("tax_treaty", "bool", ("Нет", "Да"))
-                           },
-                          )),
+                              0: ("Дата выплаты", 10, ("payment_date", "date")),
+                              1: ("Ценная бумага", 8, ("symbol", "text")),
+                              2: ("Полное наименование", 50, ("full_name", "text")),
+                              3: ("Курс USD/RUB на дату выплаты", 16, ("rate", "number", 4)),
+                              4: ("Доход, USD", 12, ("amount", "number", 2)),
+                              5: ("Доход, RUB (код 1010)", 12, ("amount_rub", "number", 2)),
+                              6: ("Налог упл., USD", 12, ("tax", "number", 2)),
+                              7: ("Налог упл., RUB", 12, ("tax_rub", "number", 2)),
+                              8: ("Налог к уплате, RUB", 12, ("tax2pay", "number", 2)),
+                              9: ("Страна", 20, ("country", "text")),
+                              10: ("СОИДН", 7, ("tax_treaty", "bool", ("Нет", "Да")))
+                          }
+                          ),
             "Сделки с ЦБ": (self.prepare_trades,
                             "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде",
                             {
-                                "Ценная бумага": 8,
-                                "Кол-во": 8,
-                                "Тип сделки": 8,
-                                "Дата сделки": 10,
-                                "Курс USD/RUB на дату сделки": 9,
-                                "Дата поставки": 10,
-                                "Курс USD/RUB на дату поставки": 9,
-                                "Цена, USD": 12,
-                                "Сумма сделки, USD": 12,
-                                "Сумма сделки, RUB": 12,
-                                "Комиссия, USD": 12,
-                                "Комиссия, RUB": 9,
-                                "Доход, RUB (код 1530)": 12,
-                                "Расход, RUB (код 201)": 12,
-                                "Финансовый результат, RUB": 12,
-                                "Финансовый результат, USD": 12
-                            },
-                            (
-                                {
-                                    0: ("symbol", "text", 0, 0, 1),
-                                    1: ("qty", "number", 0, 0, 1),
-                                    2: ("o_type", "text"),
-                                    3: ("o_date", "date"),
-                                    4: ("os_rate", "number", 4),
-                                    5: ("os_date", "date"),
-                                    6: ("o_rate", "number", 4),
-                                    7: ("o_price", "number", 6),
-                                    8: ("o_amount", "number", 2),
-                                    9: ("o_amount_rub", "number", 2),
-                                    10: ("o_fee", "number", 6),
-                                    11: ("o_fee_rub", "number", 2),
-                                    12: ("income_rub", "number", 2, 0, 1),
-                                    13: ("spending_rub", "number", 2, 0, 1),
-                                    14: ("profit_rub", "number", 2, 0, 1),
-                                    15: ("profit", "number", 2, 0, 1)
-                                },
-                                {
-                                    2: ("c_type", "text"),
-                                    3: ("c_date", "date"),
-                                    4: ("cs_rate", "number", 4),
-                                    5: ("cs_date", "date"),
-                                    6: ("c_rate", "number", 4),
-                                    7: ("c_price", "number", 6),
-                                    8: ("c_amount", "number", 2),
-                                    9: ("c_amount_rub", "number", 2),
-                                    10: ("c_fee", "number", 6),
-                                    11: ("c_fee_rub", "number", 2)
-                                })
+                                0: ("Ценная бумага", 8, ("symbol", "text", 0, 0, 1), None),
+                                1: ("Кол-во", 8, ("qty", "number", 0, 0, 1), None),
+                                2: ("Тип сделки", 8, ("o_type", "text"), ("c_type", "text")),
+                                3: ("Дата сделки", 10, ("o_date", "date"), ("c_date", "date")),
+                                4: ("Курс USD/RUB на дату сделки", 9, ("os_rate", "number", 4), ("cs_rate", "number", 4)),
+                                5: ("Дата поставки", 10, ("os_date", "date"), ("cs_date", "date")),
+                                6: ("Курс USD/RUB на дату поставки", 9, ("o_rate", "number", 4), ("c_rate", "number", 4)),
+                                7: ("Цена, USD", 12, ("o_price", "number", 6), ("c_price", "number", 6)),
+                                8: ("Сумма сделки, USD", 12, ("o_amount", "number", 2), ("c_amount", "number", 2)),
+                                9: ("Сумма сделки, RUB", 12, ("o_amount_rub", "number", 2), ("c_amount_rub", "number", 2)),
+                                10: ("Комиссия, USD", 12, ("o_fee", "number", 6), ("c_fee", "number", 6)),
+                                11: ("Комиссия, RUB", 9, ("o_fee_rub", "number", 2), ("c_fee_rub", "number", 2)),
+                                12: ("Доход, RUB (код 1530)", 12, ("income_rub", "number", 2, 0, 1), None),
+                                13: ("Расход, RUB (код 201)", 12, ("spending_rub", "number", 2, 0, 1), None),
+                                14: ("Финансовый результат, RUB", 12, ("profit_rub", "number", 2, 0, 1), None),
+                                15: ("Финансовый результат, USD", 12, ("profit", "number", 2, 0, 1), None)
+                            }
                             ),
             "Сделки с ПФИ": (self.prepare_derivatives,
                              "Отчет по сделкам с производными финансовыми инструментами, завершённым в отчетном периоде",
                              {
-                                 "Ценная бумага": 22,
-                                 "Кол-во": 8,
-                                 "Тип сделки": 8,
-                                 "Дата сделки": 10,
-                                 "Курс USD/RUB на дату сделки": 9,
-                                 "Дата поставки": 10,
-                                 "Курс USD/RUB на дату поставки": 9,
-                                 "Цена, USD": 12,
-                                 "Сумма сделки, USD": 12,
-                                 "Сумма сделки, RUB": 12,
-                                 "Комиссия, USD": 12,
-                                 "Комиссия, RUB": 9,
-                                 "Доход, RUB (код 1532)": 12,
-                                 "Расход, RUB (код 206)": 12,
-                                 "Финансовый результат, RUB": 12,
-                                 "Финансовый результат, USD": 12
-                             },
-                             (
-                                 {
-                                     0: ("symbol", "text", 0, 0, 1),
-                                     1: ("qty", "number", 0, 0, 1),
-                                     2: ("o_type", "text"),
-                                     3: ("o_date", "date"),
-                                     4: ("os_rate", "number", 4),
-                                     5: ("os_date", "date"),
-                                     6: ("o_rate", "number", 4),
-                                     7: ("o_price", "number", 6),
-                                     8: ("o_amount", "number", 2),
-                                     9: ("o_amount_rub", "number", 2),
-                                     10: ("o_fee", "number", 6),
-                                     11: ("o_fee_rub", "number", 2),
-                                     12: ("income_rub", "number", 2, 0, 1),
-                                     13: ("spending_rub", "number", 2, 0, 1),
-                                     14: ("profit_rub", "number", 2, 0, 1),
-                                     15: ("profit", "number", 2, 0, 1)
-                                 },
-                                 {
-                                     2: ("c_type", "text"),
-                                     3: ("c_date", "date"),
-                                     4: ("cs_rate", "number", 4),
-                                     5: ("cs_date", "date"),
-                                     6: ("c_rate", "number", 4),
-                                     7: ("c_price", "number", 6),
-                                     8: ("c_amount", "number", 2),
-                                     9: ("c_amount_rub", "number", 2),
-                                     10: ("c_fee", "number", 6),
-                                     11: ("c_fee_rub", "number", 2)
-                                 })
+                                 0: ("Ценная бумага", 8, ("symbol", "text", 0, 0, 1), None),
+                                 1: ("Кол-во", 8, ("qty", "number", 0, 0, 1), None),
+                                 2: ("Тип сделки", 8, ("o_type", "text"), ("c_type", "text")),
+                                 3: ("Дата сделки", 10, ("o_date", "date"), ("c_date", "date")),
+                                 4: ("Курс USD/RUB на дату сделки", 9, ("os_rate", "number", 4), ("cs_rate", "number", 4)),
+                                 5: ("Дата поставки", 10, ("os_date", "date"), ("cs_date", "date")),
+                                 6: ("Курс USD/RUB на дату поставки", 9, ("o_rate", "number", 4), ("c_rate", "number", 4)),
+                                 7: ("Цена, USD", 12, ("o_price", "number", 6), ("c_price", "number", 6)),
+                                 8: ("Сумма сделки, USD", 12, ("o_amount", "number", 2), ("c_amount", "number", 2)),
+                                 9: ("Сумма сделки, RUB", 12, ("o_amount_rub", "number", 2), ("c_amount_rub", "number", 2)),
+                                 10: ("Комиссия, USD", 12, ("o_fee", "number", 6), ("c_fee", "number", 6)),
+                                 11: ("Комиссия, RUB", 9, ("o_fee_rub", "number", 2), ("c_fee_rub", "number", 2)),
+                                 12: ("Доход, RUB (код 1532)", 12, ("income_rub", "number", 2, 0, 1), None),
+                                 13: ("Расход, RUB (код 206)", 12, ("spending_rub", "number", 2, 0, 1), None),
+                                 14: ("Финансовый результат, RUB", 12, ("profit_rub", "number", 2, 0, 1), None),
+                                 15: ("Финансовый результат, USD", 12, ("profit", "number", 2, 0, 1), None)
+                             }
                              ),
             "Комиссии": (self.prepare_broker_fees,
                          "Отчет по комиссиям, уплаченным брокеру в отчетном периоде",
                          {
-                             "Описание": 50,
-                             "Сумма, USD": 8,
-                             "Дата оплаты": 10,
-                             "Курс USD/RUB на дату оплаты": 10,
-                             "Сумма, RUB": 10
-                         },
-                         ({
-                              0: ("note", "text"),
-                              1: ("amount", "number", 2),
-                              2: ("payment_date", "date"),
-                              3: ("rate", "number", 4),
-                              4: ("amount_rub", "number", 2)
-                          },
-                         )),
+                             0: ("Описание", 50, ("note", "text")),
+                             1: ("Сумма, USD", 8, ("amount", "number", 2)),
+                             2: ("Дата оплаты", 10, ("payment_date", "date")),
+                             3: ("Курс USD/RUB на дату оплаты", 10, ("rate", "number", 4)),
+                             4: ("Сумма, RUB", 10, ("amount_rub", "number", 2))
+                         }
+                         ),
             "Корп.события": (self.prepare_corporate_actions,
                              "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде "
                              "с предшествовавшими корпоративными событиями",
                              {
-                                 "Операция": 20,
-                                 "Дата сделки": 10,
-                                 "Ценная бумага": 8,
-                                 "Кол-во": 8,
-                                 "Курс USD/RUB на дату сделки": 9,
-                                 "Дата поставки": 10,
-                                 "Курс USD/RUB на дату поставки": 9,
-                                 "Цена, USD": 12,
-                                 "Сумма сделки, USD": 12,
-                                 "Сумма сделки, RUB": 12,
-                                 "Комиссия, USD": 12,
-                                 "Комиссия, RUB": 9,
-
-                             },
-                             ({
-                                  0: ("operation", "text"),
-                                  1: ("t_date", "date"),
-                                  2: ("symbol", "text"),
-                                  3: ("qty", "number", 4),
-                                  4: ("t_rate", "number", 4),
-                                  5: ("s_date", "date"),
-                                  6: ("s_rate", "number", 4),
-                                  7: ("price", "number", 6),
-                                  8: ("amount", "number", 2),
-                                  9: ("amount_rub", "number", 2),
-                                  10: ("fee", "number", 6),
-                                  11: ("fee_rub", "number", 2)
-                              },
-                              {
-                                  0: ("operation", "text"),
-                                  1: ("a_date", "date"),
-                                  2: ("description", "text", 0, 9, 0)
-                              })
+                                 0: ("Операция", 20, ("operation", "text"), ("operation", "text")),
+                                 1: ("Дата сделки", 10, ("t_date", "date"), ("a_date", "date")),
+                                 2: ("Ценная бумага", 8, ("symbol", "text"), ("description", "text", 0, 9, 0)),
+                                 3: ("Кол-во", 8, ("qty", "number", 4), None),
+                                 4: ("Курс USD/RUB на дату сделки", 9, ("t_rate", "number", 4), None),
+                                 5: ("Дата поставки", 10, ("s_date", "date"), None),
+                                 6: ("Курс USD/RUB на дату поставки", 9, ("s_rate", "number", 4), None),
+                                 7: ("Цена, USD", 12, ("price", "number", 6), None),
+                                 8: ("Сумма сделки, USD", 12, ("amount", "number", 2), None),
+                                 9: ("Сумма сделки, RUB", 12, ("amount_rub", "number", 2), None),
+                                 10: ("Комиссия, USD", 12, ("fee", "number", 6), None),
+                                 11: ("Комиссия, RUB", 9, ("fee_rub", "number", 2), None)
+                             }
                              )
         }
         self.reports_xls = None
@@ -363,16 +265,17 @@ class TaxesRus:
         self.current_sheet.write(5, 0, "Номер счета:")  # TODO insert account number
 
         header_row = {}
-        for i, column in enumerate(report[self.RPT_COLUMNS]):
+        numbers_row = {}  # Put column numbers for reference
+        for column in report[self.RPT_COLUMNS]:
             # make tuple for each column i: ("Column_Title", xlsx.formats.ColumnHeader(), Column_Width, 0, 0)
-            header_row[i] = (column, self.reports_xls.formats.ColumnHeader(), report[self.RPT_COLUMNS][column], 0, 0)
+            title = report[self.RPT_COLUMNS][column][self.COL_TITLE]
+            width = report[self.RPT_COLUMNS][column][self.COL_WIDTH]
+            header_row[column] = (title, self.reports_xls.formats.ColumnHeader(), width, 0, 0)
+            numbers_row[column] = (f"({column + 1})", self.reports_xls.formats.ColumnHeader())
         xlsxWriteRow(self.current_sheet, 7, header_row, 60)
+        xlsxWriteRow(self.current_sheet, 8, numbers_row)
 
-        for column in range(len(header_row)):  # Put column numbers for reference
-            header_row[column] = (f"({column + 1})", self.reports_xls.formats.ColumnHeader())
-        xlsxWriteRow(self.current_sheet, 8, header_row)
-
-    def add_report_row(self, row, data, even_odd=1, detail=0):
+    def add_report_row(self, row, data, even_odd=1, alternative=0):
         KEY_NAME = 0
         VALUE_FMT = 1
         FMT_DETAILS = 2
@@ -381,27 +284,29 @@ class TaxesRus:
 
         report = self.reports[self.current_report]
         data_row = {}
-        row_details = report[self.RPT_DATA_ROWS][detail]
-        for i in row_details:
-            value = data[row_details[i][KEY_NAME]]
-            format_as = row_details[i][VALUE_FMT]
-            if format_as == "text":
-                fmt = self.reports_xls.formats.Text(even_odd)
-            elif format_as == "number":
-                precision = row_details[i][FMT_DETAILS]
-                fmt = self.reports_xls.formats.Number(even_odd, tolerance=precision)
-            elif format_as == "date":
-                value = datetime.fromtimestamp(value).strftime('%d.%m.%Y')
-                fmt = self.reports_xls.formats.Text(even_odd)
-            elif format_as == "bool":
-                value = row_details[i][FMT_DETAILS][value]
-                fmt = self.reports_xls.formats.Text(even_odd)
-            else:
-                raise ValueError
-            if len(row_details[i]) == 5: # There are horizontal or vertical span defined
-                data_row[i] = (value, fmt, 0, row_details[i][H_SPAN], row_details[i][V_SPAN])
-            else:
-                data_row[i] = (value, fmt)
+        idx = self.COL_FIELD + alternative
+        for column in report[self.RPT_COLUMNS]:
+            field_dscr = report[self.RPT_COLUMNS][column][idx]
+            if field_dscr is not None:
+                value = data[field_dscr[KEY_NAME]]
+                format_as = field_dscr[VALUE_FMT]
+                if format_as == "text":
+                    fmt = self.reports_xls.formats.Text(even_odd)
+                elif format_as == "number":
+                    precision = field_dscr[FMT_DETAILS]
+                    fmt = self.reports_xls.formats.Number(even_odd, tolerance=precision)
+                elif format_as == "date":
+                    value = datetime.fromtimestamp(value).strftime('%d.%m.%Y')
+                    fmt = self.reports_xls.formats.Text(even_odd)
+                elif format_as == "bool":
+                    value = field_dscr[FMT_DETAILS][value]
+                    fmt = self.reports_xls.formats.Text(even_odd)
+                else:
+                    raise ValueError
+                if len(field_dscr) == 5: # There are horizontal or vertical span defined
+                    data_row[column] = (value, fmt, 0, field_dscr[H_SPAN], field_dscr[V_SPAN])
+                else:
+                    data_row[column] = (value, fmt)
         xlsxWriteRow(self.current_sheet, row, data_row)
 
     # Exchange rates are present in database not for every date (and not every possible timestamp)
@@ -544,8 +449,8 @@ class TaxesRus:
             deal['profit_rub'] = deal['income_rub'] - deal['spending_rub']
             deal['profit'] = deal['income'] - deal['spending']
 
-            self.add_report_row(row, deal, even_odd=data_row, detail=0)
-            self.add_report_row(row+1, deal, even_odd=data_row, detail=1)
+            self.add_report_row(row, deal, even_odd=data_row)
+            self.add_report_row(row+1, deal, even_odd=data_row, alternative=1)
 
             # TODO replace 'us' with value depandable on broker account
             if self.statement is not None:
@@ -613,8 +518,8 @@ class TaxesRus:
             deal['profit_rub'] = deal['income_rub'] - deal['spending_rub']
             deal['profit'] = deal['income'] - deal['spending']
 
-            self.add_report_row(row, deal, even_odd=data_row, detail=0)
-            self.add_report_row(row + 1, deal, even_odd=data_row, detail=1)
+            self.add_report_row(row, deal, even_odd=data_row)
+            self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
 
             # TODO replace 'us' with value depandable on broker account
             if self.statement is not None:
@@ -773,7 +678,7 @@ class TaxesRus:
                 g_tr('TaxesRus', "Can't proceed more quantity than in corporate action: ") + action['description'])
             raise ValueError
 
-        self.add_report_row(row, action, even_odd=even_odd, detail=1)
+        self.add_report_row(row, action, even_odd=even_odd, alternative=1)
 
         return row + 1, qty_before
 #-----------------------------------------------------------------------------------------------------------------------
