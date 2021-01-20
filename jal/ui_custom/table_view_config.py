@@ -25,6 +25,7 @@ class TableViewConfig:
     CATEGORIES = 13
     TAGS = 14
     COUNTRIES = 15
+    QUOTES =16
 
     ACTION_SRC = 0
     ACTION_SIGNAL = 1
@@ -269,6 +270,17 @@ class TableViewConfig:
                              None,
                              False,
                              None
+            ),
+            self.QUOTES: ("quotes",
+                          g_tr('TableViewConfig', "Quotes"),
+                          [("id", None, 0, None, None),
+                           ("timestamp", g_tr('TableViewConfig', "Date"), ColumnWidth.FOR_DATETIME, None, ui.ReferenceTimestampDelegate),
+                           ("asset_id", g_tr('TableViewConfig', "Asset"), None, None, ui.ReferenceLookupDelegate),
+                           ("quote", g_tr('TableViewConfig', "Quote"), 100, None, None)],
+                          "name",
+                          None,
+                          False,
+                          [("asset_id", "assets", "id", "name", None)]
             )
         }
         self.actions = [
@@ -286,6 +298,7 @@ class TableViewConfig:
             (parent.actionCategories,       "triggered()",              partial(self.show_dialog, self.CATEGORIES)),
             (parent.actionTags,             "triggered()",              partial(self.show_dialog, self.TAGS)),
             (parent.actionCountries,        "triggered()",              partial(self.show_dialog, self.COUNTRIES)),
+            (parent.actionQuotes,           "triggered()",              partial(self.show_dialog, self.QUOTES)),
             (parent.PrepareTaxForms,        "triggered()",              partial(parent.taxes.showTaxesDialog, parent)),
             (parent.BalanceDate,            "dateChanged(QDate)",       parent.onBalanceDateChange),
             (parent.HoldingsDate,           "dateChanged(QDate)",       parent.onHoldingsDateChange),

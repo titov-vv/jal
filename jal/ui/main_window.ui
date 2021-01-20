@@ -1800,6 +1800,7 @@
     <addaction name="actionCategories"/>
     <addaction name="actionTags"/>
     <addaction name="actionCountries"/>
+    <addaction name="actionQuotes"/>
     <addaction name="menuPredefined_data"/>
     <addaction name="separator"/>
     <addaction name="actionBackup"/>
@@ -1928,7 +1929,12 @@
   </action>
   <action name="actionCountries">
    <property name="text">
-    <string>Countries</string>
+    <string>C&amp;ountries</string>
+   </property>
+  </action>
+  <action name="actionQuotes">
+   <property name="text">
+    <string>&amp;Quotes</string>
    </property>
   </action>
  </widget>
