@@ -145,9 +145,9 @@ class TaxesRus:
                                 1: ("Кол-во", 8, ("qty", "number", 0, 0, 1), None, "Количество ЦБ в сделке"),
                                 2: ("Тип сделки", 8, ("o_type", "text"), ("c_type", "text"), "Направление сделки (полкупка или продажа)"),
                                 3: ("Дата сделки", 10, ("o_date", "date"), ("c_date", "date"), "Дата заключения сделки (и уплаты комиссии из столбца 11)"),
-                                4: ("Курс {currency}/RUB на дату сделки", 9, ("os_rate", "number", 4), ("cs_rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату заключения сделки"),
+                                4: ("Курс {currency}/RUB на дату сделки", 9, ("o_rate", "number", 4), ("c_rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату заключения сделки"),
                                 5: ("Дата поставки", 10, ("os_date", "date"), ("cs_date", "date"), "Дата рачетов по сделке / Дата поставки ценных бумаг"),
-                                6: ("Курс {currency}/RUB на дату поставки", 9, ("o_rate", "number", 4), ("c_rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату поставки / расчетов по сделке"),
+                                6: ("Курс {currency}/RUB на дату поставки", 9, ("os_rate", "number", 4), ("cs_rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату поставки / расчетов по сделке"),
                                 7: ("Цена, {currency}", 12, ("o_price", "number", 6), ("c_price", "number", 6), "Цена одной ценной бумаги в валюте счета"),
                                 8: ("Сумма сделки, {currency}", 12, ("o_amount", "number", 2), ("c_amount", "number", 2), "Сумма сделки в валюте счета (= Столбец 2 * Столбец 8)"),
                                 9: ("Сумма сделки, RUB", 12, ("o_amount_rub", "number", 2), ("c_amount_rub", "number", 2), "Сумма сделки в рублях (= Столбец 9 * Столбец 7)"),
@@ -166,9 +166,9 @@ class TaxesRus:
                                  1: ("Кол-во", 8, ("qty", "number", 0, 0, 1), None, "Количество ЦБ в сделке"),
                                  2: ("Тип сделки", 8, ("o_type", "text"), ("c_type", "text"), "Направление сделки (полкупка или продажа)"),
                                  3: ("Дата сделки", 10, ("o_date", "date"), ("c_date", "date"), "Дата заключения сделки (и уплаты комиссии из столбца 11)"),
-                                 4: ("Курс {currency}/RUB на дату сделки", 9, ("os_rate", "number", 4), ("cs_rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату заключения сделки"),
+                                 4: ("Курс {currency}/RUB на дату сделки", 9, ("o_rate", "number", 4), ("c_rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату заключения сделки"),
                                  5: ("Дата поставки", 10, ("os_date", "date"), ("cs_date", "date"), "Дата рачетов по сделке / Дата поставки ценных бумаг"),
-                                 6: ("Курс {currency}/RUB на дату поставки", 9, ("o_rate", "number", 4), ("c_rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату поставки / расчетов по сделке"),
+                                 6: ("Курс {currency}/RUB на дату поставки", 9, ("os_rate", "number", 4), ("cs_rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату поставки / расчетов по сделке"),
                                  7: ("Цена, {currency}", 12, ("o_price", "number", 6), ("c_price", "number", 6), "Цена одной ценной бумаги в валюте счета"),
                                  8: ("Сумма сделки, {currency}", 12, ("o_amount", "number", 2), ("c_amount", "number", 2), "Сумма сделки в валюте счета (= Столбец 2 * Столбец 8)"),
                                  9: ("Сумма сделки, RUB", 12, ("o_amount_rub", "number", 2), ("c_amount_rub", "number", 2), "Сумма сделки в рублях (= Столбец 9 * Столбец 7)"),
@@ -446,13 +446,13 @@ class TaxesRus:
             deal['o_type'] = "Покупка" if deal['qty'] >= 0 else "Продажа"
             deal['c_type'] = "Продажа" if deal['qty'] >= 0 else "Покупка"
             deal['o_amount'] = round(deal['o_price'] * abs(deal['qty']), 2)
-            deal['o_amount_rub'] = round(deal['o_amount'] * deal['o_rate'], 2) if deal['o_rate'] else 0
+            deal['o_amount_rub'] = round(deal['o_amount'] * deal['os_rate'], 2) if deal['os_rate'] else 0
             deal['c_amount'] = round(deal['c_price'] * abs(deal['qty']), 2)
-            deal['c_amount_rub'] = round(deal['c_amount'] * deal['c_rate'], 2) if deal['c_rate'] else 0
+            deal['c_amount_rub'] = round(deal['c_amount'] * deal['cs_rate'], 2) if deal['cs_rate'] else 0
             deal['o_fee'] = deal['o_fee'] * abs(deal['qty'] / deal['o_qty'])
             deal['c_fee'] = deal['c_fee'] * abs(deal['qty'] / deal['c_qty'])
-            deal['o_fee_rub'] = round(deal['o_fee'] * deal['os_rate'], 2) if deal['os_rate'] else 0
-            deal['c_fee_rub'] = round(deal['c_fee'] * deal['cs_rate'], 2) if deal['cs_rate'] else 0
+            deal['o_fee_rub'] = round(deal['o_fee'] * deal['o_rate'], 2) if deal['o_rate'] else 0
+            deal['c_fee_rub'] = round(deal['c_fee'] * deal['c_rate'], 2) if deal['c_rate'] else 0
             deal['income_rub'] = deal['c_amount_rub'] if deal['qty'] >= 0 else deal['o_amount_rub']
             deal['income'] = deal['c_amount'] if deal['qty'] >= 0 else deal['o_amount']
             deal['spending_rub'] = deal['o_amount_rub'] if deal['qty'] >= 0 else deal['c_amount_rub']
@@ -515,13 +515,13 @@ class TaxesRus:
             deal['o_type'] = "Покупка" if deal['qty'] >= 0 else "Продажа"
             deal['c_type'] = "Продажа" if deal['qty'] >= 0 else "Покупка"
             deal['o_amount'] = round(deal['o_price'] * abs(deal['qty']), 2)
-            deal['o_amount_rub'] = round(deal['o_amount'] * deal['o_rate'], 2) if deal['o_rate'] else 0
+            deal['o_amount_rub'] = round(deal['o_amount'] * deal['os_rate'], 2) if deal['os_rate'] else 0
             deal['c_amount'] = round(deal['c_price'] * abs(deal['qty']), 2)
-            deal['c_amount_rub'] = round(deal['c_amount'] * deal['c_rate'], 2) if deal['c_rate'] else 0
+            deal['c_amount_rub'] = round(deal['c_amount'] * deal['cs_rate'], 2) if deal['cs_rate'] else 0
             deal['o_fee'] = deal['o_fee'] * abs(deal['qty'] / deal['o_qty'])
             deal['c_fee'] = deal['c_fee'] * abs(deal['qty'] / deal['c_qty'])
-            deal['o_fee_rub'] = round(deal['o_fee'] * deal['os_rate'], 2) if deal['os_rate'] else 0
-            deal['c_fee_rub'] = round(deal['c_fee'] * deal['cs_rate'], 2) if deal['cs_rate'] else 0
+            deal['o_fee_rub'] = round(deal['o_fee'] * deal['o_rate'], 2) if deal['o_rate'] else 0
+            deal['c_fee_rub'] = round(deal['c_fee'] * deal['c_rate'], 2) if deal['c_rate'] else 0
             deal['income_rub'] = deal['c_amount_rub'] if deal['qty'] >= 0 else deal['o_amount_rub']
             deal['income'] = deal['c_amount'] if deal['qty'] >= 0 else deal['o_amount']
             deal['spending_rub'] = deal['o_amount_rub'] if deal['qty'] >= 0 else deal['c_amount_rub']
