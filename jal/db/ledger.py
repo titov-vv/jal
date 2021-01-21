@@ -539,9 +539,8 @@ class Ledger:
         if fast_and_dirty:
             _ = executeSQL(self.db, "PRAGMA synchronous = ON")
 
-        end_time = datetime.now()
         if not silent:
-            logging.info(g_tr('Ledger', "Ledger is complete. Elapsed time: ") + f"{end_time - start_time}" +
+            logging.info(g_tr('Ledger', "Ledger is complete. Elapsed time: ") + f"{datetime.now() - start_time}" +
                          g_tr('Ledger', ", new frontier: ") + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
         self.updateBalancesView()
         self.updateHoldingsView()
