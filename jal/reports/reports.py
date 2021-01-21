@@ -1,5 +1,3 @@
-import datetime
-import logging
 import pandas as pd
 from jal.constants import BookAccount, PredefinedAsset, PredefinedCategory, ColumnWidth
 from jal.widgets.view_delegate import *
