@@ -1,7 +1,7 @@
 import logging
 import math
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pandas
 from lxml import etree
@@ -75,9 +75,9 @@ class IBKR:
         time_str = data.attrib[name]
         try:
             if len(time_str) == 15:  # YYYYMMDD;HHMMSS
-                return int(datetime.strptime(time_str, "%Y%m%d;%H%M%S").timestamp())
+                return int(datetime.strptime(time_str, "%Y%m%d;%H%M%S").replace(tzinfo=timezone.utc).timestamp())
             elif len(time_str) == 8: # YYYYMMDD
-                return int(datetime.strptime(time_str, "%Y%m%d").timestamp())
+                return int(datetime.strptime(time_str, "%Y%m%d").replace(tzinfo=timezone.utc).timestamp())
             else:
                 return default_value
         except ValueError:
@@ -844,8 +844,8 @@ class StatementLoader(QObject):
             if asset_id is None:
                 logging.warning(g_tr('StatementLoader', "Unknown asset ") + f"'{row[Quik.Symbol]}'")
                 continue
-            timestamp = int(datetime.strptime(row[Quik.DateTime], "%d.%m.%Y %H:%M:%S").timestamp())
-            settlement = int(datetime.strptime(row[Quik.SettleDate], "%d.%m.%Y").timestamp())
+            timestamp = int(datetime.strptime(row[Quik.DateTime], "%d.%m.%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp())
+            settlement = int(datetime.strptime(row[Quik.SettleDate], "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
             number = row[Quik.TradeNumber]
             price = row[Quik.Price]
             amount = row[Quik.Amount]
