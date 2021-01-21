@@ -4,6 +4,7 @@ import pandas as pd
 import math
 import logging
 import os
+from dateutil import tz
 from datetime import datetime
 from tempfile import TemporaryDirectory
 import tarfile
@@ -81,7 +82,7 @@ class JalBackup:
         db = sqlite3.connect(self.file)
         with TemporaryDirectory(prefix=self.tmp_prefix) as tmp_path:
             with open(tmp_path + os.sep + 'label', 'w') as label:
-                label.write(f"{self.backup_label}{datetime.now().strftime('%Y/%m/%d %H:%M:%S')}")
+                label.write(f"{self.backup_label}{datetime.now().replace(tzinfo=tz.tzlocal()).strftime('%Y/%m/%d %H:%M:%S%z')}")
             for table in JalBackup.backup_list:
                 data = pd.read_sql_query(f"SELECT * FROM {table}", db)
                 data.to_csv(f"{tmp_path}/{table}.csv", sep="|", header=True, index=False)
