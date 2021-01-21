@@ -1,6 +1,5 @@
 from functools import partial
-import time
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 
 from jal.constants import TransactionType, CorporateAction
@@ -230,8 +229,8 @@ class TaxesRus:
                                    "SELECT b.name FROM accounts AS a "
                                    "LEFT JOIN agents AS b ON a.organization_id = b.id WHERE a.id=:account",
                                    [(":account", account_id)])
-        self.year_begin = int(time.mktime(datetime.strptime(f"{year}", "%Y").timetuple()))
-        self.year_end = int(time.mktime(datetime.strptime(f"{year + 1}", "%Y").timetuple()))
+        self.year_begin = int(datetime.strptime(f"{year}", "%Y").replace(tzinfo=timezone.utc).timestamp())
+        self.year_end = int(datetime.strptime(f"{year + 1}", "%Y").replace(tzinfo=timezone.utc).timestamp())
 
         self.reports_xls = XLSX(taxes_file)
 
