@@ -48,7 +48,7 @@ class TimestampDelegate(QSqlRelationalDelegate):
         if timestamp == '':
             QSqlRelationalDelegate.setEditorData(self, editor, index)
         else:
-            editor.setDateTime(datetime.fromtimestamp(timestamp))
+            editor.setDateTime(datetime.utcfromtimestamp(timestamp))
 
     def setModelData(self, editor, model, index):
         timestamp = editor.dateTime().toSecsSinceEpoch()

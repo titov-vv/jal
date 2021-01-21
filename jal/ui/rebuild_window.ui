@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>268</width>
-    <height>140</height>
+    <height>150</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -114,6 +114,9 @@
         </property>
         <property name="calendarPopup">
          <bool>true</bool>
+        </property>
+        <property name="timeSpec">
+         <enum>Qt::UTC</enum>
         </property>
        </widget>
       </item>

@@ -19,7 +19,7 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
 
         self.LastRadioButton.toggle()
         self.frontier = frontier
-        frontier_text = datetime.fromtimestamp(frontier).strftime('%d/%m/%Y')
+        frontier_text = datetime.utcfromtimestamp(frontier).strftime('%d/%m/%Y')
         self.FrontierDateLabel.setText(frontier_text)
         self.CustomDateEdit.setDate(QDate.currentDate())
 
@@ -397,7 +397,7 @@ class Ledger:
         buy_value = 0
         if self.getAmount(BookAccount.Assets, asset_id) < (qty - 2*Setup.CALC_TOLERANCE):
             logging.fatal(g_tr('Ledger', "Conversion failed. Asset amount is not enogh. Date: ")
-                          + f"{datetime.fromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
+                          + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
             return
         query = executeSQL(self.db,
                            "SELECT d.open_sid AS open, ABS(coalesce(o.qty, ca.qty_new))- SUM(d.qty) AS remainder "
@@ -509,7 +509,7 @@ class Ledger:
                     return
         if not silent:
             logging.info(g_tr('Ledger', "Re-build ledger from: ") +
-                         f"{datetime.fromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
+                         f"{datetime.utcfromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
         start_time = datetime.now()
         _ = executeSQL(self.db, "DELETE FROM deals WHERE close_sid >= "
                                 "(SELECT coalesce(MIN(id), 0) FROM sequence WHERE timestamp >= :frontier)",
@@ -535,14 +535,14 @@ class Ledger:
             if not silent and (query.at() % 1000) == 0:
                 logging.info(g_tr('Ledger', "Processed ") + f"{int(query.at()/1000)}" +
                              g_tr('Ledger', "k records, current frontier: ") +
-                             f"{datetime.fromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
+                             f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
         if fast_and_dirty:
             _ = executeSQL(self.db, "PRAGMA synchronous = ON")
 
         end_time = datetime.now()
         if not silent:
             logging.info(g_tr('Ledger', "Ledger is complete. Elapsed time: ") + f"{end_time - start_time}" +
-                         g_tr('Ledger', ", new frontier: ") + f"{datetime.fromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
+                         g_tr('Ledger', ", new frontier: ") + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
         self.updateBalancesView()
         self.updateHoldingsView()
 

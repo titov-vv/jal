@@ -29,6 +29,7 @@ class Ui_UpdateQuotesDlg(object):
         self.StartDateEdit = QDateEdit(UpdateQuotesDlg)
         self.StartDateEdit.setObjectName(u"StartDateEdit")
         self.StartDateEdit.setCalendarPopup(True)
+        self.StartDateEdit.setTimeSpec(Qt.UTC)
 
         self.gridLayout.addWidget(self.StartDateEdit, 0, 1, 1, 1)
 
@@ -47,6 +48,7 @@ class Ui_UpdateQuotesDlg(object):
         self.EndDateEdit = QDateEdit(UpdateQuotesDlg)
         self.EndDateEdit.setObjectName(u"EndDateEdit")
         self.EndDateEdit.setCalendarPopup(True)
+        self.EndDateEdit.setTimeSpec(Qt.UTC)
 
         self.gridLayout.addWidget(self.EndDateEdit, 1, 1, 1, 1)
 

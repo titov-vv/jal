@@ -129,7 +129,7 @@ class DLSGDeclForeign(DLSGsection):
         income = DLSGCurrencyIncome(self.count, code=code)
         income.country_code = country_code
         income.description = description
-        income.income_date = (datetime.datetime.fromtimestamp(timestamp).date() - datetime.date(1899, 12, 30)).days
+        income.income_date = (datetime.datetime.utcfromtimestamp(timestamp).date() - datetime.date(1899, 12, 30)).days
         income.tax_payment_date = income.income_date
         income.currency_code = currency[0]
         income.currency_name = currency[1]

@@ -329,7 +329,7 @@ class OperationsTimestampDelegate(QStyledItemDelegate):
         QStyledItemDelegate.__init__(self, parent)
 
     def displayText(self, value, locale):
-        return datetime.fromtimestamp(value).strftime('%d/%m/%Y %H:%M:%S')
+        return datetime.utcfromtimestamp(value).strftime('%d/%m/%Y %H:%M:%S')
 
     def paint(self, painter, option, index):
         painter.save()
@@ -338,7 +338,7 @@ class OperationsTimestampDelegate(QStyledItemDelegate):
         timestamp = record.value(index.column())
         transaction_type = record.value("type")
         number = record.value("num_peer")
-        text = datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')
+        text = datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')
         if (transaction_type == TransactionType.Trade) \
                 or (transaction_type == TransactionType.Dividend) \
                 or (transaction_type == TransactionType.CorporateAction):
@@ -687,9 +687,9 @@ class ReportsTimestampDelegate(QStyledItemDelegate):
 
     def displayText(self, value, locale):
         if isinstance(value, str):  # already SQL-preprocessed date
-            text = datetime.fromtimestamp(int(value)).strftime('%d/%m/%Y')
+            text = datetime.utcfromtimestamp(int(value)).strftime('%d/%m/%Y')
         else:
-            text = datetime.fromtimestamp(value).strftime('%d/%m/%Y %H:%M:%S')
+            text = datetime.utcfromtimestamp(value).strftime('%d/%m/%Y %H:%M:%S')
         return text
 
 
@@ -698,7 +698,7 @@ class ReportsYearMonthDelegate(QStyledItemDelegate):
         QStyledItemDelegate.__init__(self, parent)
 
     def displayText(self, value, locale):
-        text = datetime.fromtimestamp(value).strftime('%Y %B')
+        text = datetime.utcfromtimestamp(value).strftime('%Y %B')
         return text
 
 class ReportsPandasDelegate(QStyledItemDelegate):

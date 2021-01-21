@@ -139,8 +139,8 @@ class QuoteDownloader(QObject):
         return None
 
     def CBR_DataReader(self, currency_code, _isin, start_timestamp, end_timestamp):
-        date1 = datetime.fromtimestamp(start_timestamp).strftime('%d/%m/%Y')
-        date2 = datetime.fromtimestamp(end_timestamp + 86400).strftime('%d/%m/%Y')  # add 1 as CBR sets rate a day ahead
+        date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%d/%m/%Y')
+        date2 = datetime.utcfromtimestamp(end_timestamp + 86400).strftime('%d/%m/%Y')  # add 1 as CBR sets rate a day ahead
         code = str(self.CBR_codes.loc[self.CBR_codes["ISO_name"] == currency_code, "CBR_code"].values[0]).strip()
         url = f"http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1={date1}&date_req2={date2}&VAL_NM_RQ={code}"
         xml_root = xml_tree.fromstring(get_web_data(url))
@@ -179,8 +179,8 @@ class QuoteDownloader(QObject):
             logging.warning(f"Failed to find {asset_code} at {url}")
             return None
 
-        date1 = datetime.fromtimestamp(start_timestamp).strftime('%Y-%m-%d')
-        date2 = datetime.fromtimestamp(end_timestamp).strftime('%Y-%m-%d')
+        date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d')
+        date2 = datetime.utcfromtimestamp(end_timestamp).strftime('%Y-%m-%d')
         url = f"http://iss.moex.com/iss/history/engines/"\
               f"{engine}/markets/{market}/boards/{board_id}/securities/{asset_code}.xml?from={date1}&till={date2}"
         xml_root = xml_tree.fromstring(get_web_data(url))
@@ -246,4 +246,4 @@ class QuoteDownloader(QObject):
                        [(":timestamp", timestamp), (":asset_id", asset_id), (":quote", quote)])
         self.db.commit()
         logging.info(g_tr('QuotesUpdateDialog', "Quote loaded: ") +
-                     f"{asset_name} @ {datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")
+                     f"{asset_name} @ {datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")

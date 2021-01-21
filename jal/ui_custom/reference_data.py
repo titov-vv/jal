@@ -341,7 +341,7 @@ class ReferenceTimestampDelegate(QStyledItemDelegate):
         model = index.model()
         timestamp = model.data(index, Qt.DisplayRole)
         if timestamp:
-            text = datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')
+            text = datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')
         else:
             text = ""
         painter.drawText(option.rect, Qt.AlignLeft, text)

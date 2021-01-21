@@ -13,8 +13,8 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 from jal.ui_custom.reference_selector import AccountSelector
-from PySide2.QtMultimediaWidgets import QVideoWidget
 from jal.ui_custom.reference_selector import PeerSelector
+from PySide2.QtMultimediaWidgets import QVideoWidget
 
 
 class Ui_ImportSlipDlg(object):
@@ -92,6 +92,7 @@ class Ui_ImportSlipDlg(object):
 
         self.SlipTimstamp = QDateTimeEdit(self.SlipDataGroup)
         self.SlipTimstamp.setObjectName(u"SlipTimstamp")
+        self.SlipTimstamp.setTimeSpec(Qt.UTC)
 
         self.gridLayout_2.addWidget(self.SlipTimstamp, 0, 1, 1, 1)
 
@@ -219,6 +220,7 @@ class Ui_ImportSlipDlg(object):
         self.gridLayout.setContentsMargins(2, 2, 2, 2)
         self.SlipDateTime = QDateTimeEdit(self.SlipGroup)
         self.SlipDateTime.setObjectName(u"SlipDateTime")
+        self.SlipDateTime.setTimeSpec(Qt.UTC)
 
         self.gridLayout.addWidget(self.SlipDateTime, 2, 1, 1, 1)
 

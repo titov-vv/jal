@@ -145,11 +145,24 @@
                </property>
                <item>
                 <widget class="QDateEdit" name="BalanceDate">
+                 <property name="dateTime">
+                  <datetime>
+                   <hour>0</hour>
+                   <minute>0</minute>
+                   <second>0</second>
+                   <year>2021</year>
+                   <month>1</month>
+                   <day>1</day>
+                  </datetime>
+                 </property>
                  <property name="displayFormat">
                   <string>dd/MM/yyyy</string>
                  </property>
                  <property name="calendarPopup">
                   <bool>true</bool>
+                 </property>
+                 <property name="timeSpec">
+                  <enum>Qt::UTC</enum>
                  </property>
                 </widget>
                </item>
@@ -445,7 +458,7 @@
                 <item>
                  <widget class="QStackedWidget" name="OperationsTabs">
                   <property name="currentIndex">
-                   <number>5</number>
+                   <number>0</number>
                   </property>
                   <widget class="QWidget" name="NoOperationTab"/>
                   <widget class="QWidget" name="ActionDetailsTab">
@@ -603,6 +616,9 @@
                       <property name="calendarPopup">
                        <bool>true</bool>
                       </property>
+                      <property name="timeSpec">
+                       <enum>Qt::UTC</enum>
+                      </property>
                      </widget>
                     </item>
                     <item row="0" column="0">
@@ -674,9 +690,9 @@
                       </property>
                       <property name="minimumDate">
                        <date>
-                        <year>2000</year>
-                        <month>1</month>
-                        <day>1</day>
+                        <year>1999</year>
+                        <month>12</month>
+                        <day>31</day>
                        </date>
                       </property>
                       <property name="displayFormat">
@@ -684,6 +700,9 @@
                       </property>
                       <property name="calendarPopup">
                        <bool>true</bool>
+                      </property>
+                      <property name="timeSpec">
+                       <enum>Qt::UTC</enum>
                       </property>
                      </widget>
                     </item>
@@ -747,6 +766,9 @@
                       </property>
                       <property name="calendarPopup">
                        <bool>true</bool>
+                      </property>
+                      <property name="timeSpec">
+                       <enum>Qt::UTC</enum>
                       </property>
                      </widget>
                     </item>
@@ -851,6 +873,9 @@
                       </property>
                       <property name="calendarPopup">
                        <bool>true</bool>
+                      </property>
+                      <property name="timeSpec">
+                       <enum>Qt::UTC</enum>
                       </property>
                      </widget>
                     </item>
@@ -1056,6 +1081,9 @@
                       <property name="calendarPopup">
                        <bool>true</bool>
                       </property>
+                      <property name="timeSpec">
+                       <enum>Qt::UTC</enum>
+                      </property>
                      </widget>
                     </item>
                     <item row="4" column="2">
@@ -1105,9 +1133,9 @@
                       </property>
                       <property name="minimumDate">
                        <date>
-                        <year>2000</year>
-                        <month>1</month>
-                        <day>1</day>
+                        <year>1999</year>
+                        <month>12</month>
+                        <day>31</day>
                        </date>
                       </property>
                       <property name="displayFormat">
@@ -1115,6 +1143,9 @@
                       </property>
                       <property name="calendarPopup">
                        <bool>true</bool>
+                      </property>
+                      <property name="timeSpec">
+                       <enum>Qt::UTC</enum>
                       </property>
                      </widget>
                     </item>
@@ -1132,6 +1163,9 @@
                       </property>
                       <property name="calendarPopup">
                        <bool>true</bool>
+                      </property>
+                      <property name="timeSpec">
+                       <enum>Qt::UTC</enum>
                       </property>
                      </widget>
                     </item>
@@ -1267,6 +1301,9 @@
                       </property>
                       <property name="calendarPopup">
                        <bool>true</bool>
+                      </property>
+                      <property name="timeSpec">
+                       <enum>Qt::UTC</enum>
                       </property>
                      </widget>
                     </item>
@@ -1425,11 +1462,24 @@
            </property>
            <item>
             <widget class="QDateEdit" name="HoldingsDate">
+             <property name="dateTime">
+              <datetime>
+               <hour>0</hour>
+               <minute>0</minute>
+               <second>0</second>
+               <year>2021</year>
+               <month>1</month>
+               <day>1</day>
+              </datetime>
+             </property>
              <property name="displayFormat">
               <string>dd/MM/yyyy</string>
              </property>
              <property name="calendarPopup">
               <bool>true</bool>
+             </property>
+             <property name="timeSpec">
+              <enum>Qt::UTC</enum>
              </property>
             </widget>
            </item>
@@ -1560,11 +1610,24 @@
            </item>
            <item row="1" column="5">
             <widget class="QDateEdit" name="ReportToDate">
+             <property name="dateTime">
+              <datetime>
+               <hour>0</hour>
+               <minute>0</minute>
+               <second>0</second>
+               <year>2021</year>
+               <month>1</month>
+               <day>1</day>
+              </datetime>
+             </property>
              <property name="displayFormat">
               <string>dd/MM/yyyy</string>
              </property>
              <property name="calendarPopup">
               <bool>true</bool>
+             </property>
+             <property name="timeSpec">
+              <enum>Qt::UTC</enum>
              </property>
             </widget>
            </item>
@@ -1694,11 +1757,24 @@
            </item>
            <item row="0" column="5">
             <widget class="QDateEdit" name="ReportFromDate">
+             <property name="dateTime">
+              <datetime>
+               <hour>0</hour>
+               <minute>0</minute>
+               <second>0</second>
+               <year>2021</year>
+               <month>1</month>
+               <day>1</day>
+              </datetime>
+             </property>
              <property name="displayFormat">
               <string>dd/MM/yyyy</string>
              </property>
              <property name="calendarPopup">
               <bool>true</bool>
+             </property>
+             <property name="timeSpec">
+              <enum>Qt::UTC</enum>
              </property>
             </widget>
            </item>

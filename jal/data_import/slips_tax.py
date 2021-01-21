@@ -174,7 +174,7 @@ class SlipsTaxAPI:
             return SlipsTaxAPI.Failure
 
     def get_slip(self, timestamp, amount, fn, fd, fp, slip_type):
-        date_time = datetime.fromtimestamp(timestamp).strftime('%Y%m%dT%H%M%S')
+        date_time = datetime.utcfromtimestamp(timestamp).strftime('%Y%m%dT%H%M%S')
 
         session_id = self.get_ru_tax_session()
         if session_id == '':

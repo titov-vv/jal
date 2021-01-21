@@ -113,7 +113,9 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
         self.BalanceDate = QDateEdit(self.BalanceConfigFrame)
         self.BalanceDate.setObjectName(u"BalanceDate")
+        self.BalanceDate.setDateTime(QDateTime(QDate(2021, 1, 1), QTime(0, 0, 0)))
         self.BalanceDate.setCalendarPopup(True)
+        self.BalanceDate.setTimeSpec(Qt.UTC)
 
         self.horizontalLayout_2.addWidget(self.BalanceDate)
 
@@ -338,6 +340,7 @@ class Ui_LedgerMainWindow(object):
         self.ActionTimestampEdit = QDateTimeEdit(self.ActionDetailsTab)
         self.ActionTimestampEdit.setObjectName(u"ActionTimestampEdit")
         self.ActionTimestampEdit.setCalendarPopup(True)
+        self.ActionTimestampEdit.setTimeSpec(Qt.UTC)
 
         self.gridLayout_4.addWidget(self.ActionTimestampEdit, 1, 0, 1, 1)
 
@@ -374,8 +377,9 @@ class Ui_LedgerMainWindow(object):
 
         self.TradeSettlementEdit = QDateEdit(self.TradeDetailsTab)
         self.TradeSettlementEdit.setObjectName(u"TradeSettlementEdit")
-        self.TradeSettlementEdit.setMinimumDate(QDate(2000, 1, 1))
+        self.TradeSettlementEdit.setMinimumDate(QDate(1999, 12, 31))
         self.TradeSettlementEdit.setCalendarPopup(True)
+        self.TradeSettlementEdit.setTimeSpec(Qt.UTC)
 
         self.gridLayout_3.addWidget(self.TradeSettlementEdit, 5, 0, 1, 1)
 
@@ -413,6 +417,7 @@ class Ui_LedgerMainWindow(object):
         self.TradeTimestampEdit = QDateTimeEdit(self.TradeDetailsTab)
         self.TradeTimestampEdit.setObjectName(u"TradeTimestampEdit")
         self.TradeTimestampEdit.setCalendarPopup(True)
+        self.TradeTimestampEdit.setTimeSpec(Qt.UTC)
 
         self.gridLayout_3.addWidget(self.TradeTimestampEdit, 1, 0, 1, 1)
 
@@ -485,6 +490,7 @@ class Ui_LedgerMainWindow(object):
         self.DividendTimestampEdit = QDateTimeEdit(self.DividendDetailsTab)
         self.DividendTimestampEdit.setObjectName(u"DividendTimestampEdit")
         self.DividendTimestampEdit.setCalendarPopup(True)
+        self.DividendTimestampEdit.setTimeSpec(Qt.UTC)
 
         self.gridLayout_2.addWidget(self.DividendTimestampEdit, 2, 1, 1, 1)
 
@@ -597,6 +603,7 @@ class Ui_LedgerMainWindow(object):
         self.TransferFromTimestamp = QDateTimeEdit(self.TransferDetailsTab)
         self.TransferFromTimestamp.setObjectName(u"TransferFromTimestamp")
         self.TransferFromTimestamp.setCalendarPopup(True)
+        self.TransferFromTimestamp.setTimeSpec(Qt.UTC)
 
         self.gridLayout_5.addWidget(self.TransferFromTimestamp, 2, 0, 1, 1)
 
@@ -634,8 +641,9 @@ class Ui_LedgerMainWindow(object):
 
         self.TransferFeeTimestamp = QDateTimeEdit(self.TransferDetailsTab)
         self.TransferFeeTimestamp.setObjectName(u"TransferFeeTimestamp")
-        self.TransferFeeTimestamp.setMinimumDate(QDate(2000, 1, 1))
+        self.TransferFeeTimestamp.setMinimumDate(QDate(1999, 12, 31))
         self.TransferFeeTimestamp.setCalendarPopup(True)
+        self.TransferFeeTimestamp.setTimeSpec(Qt.UTC)
 
         self.gridLayout_5.addWidget(self.TransferFeeTimestamp, 4, 0, 1, 1)
 
@@ -647,6 +655,7 @@ class Ui_LedgerMainWindow(object):
         self.TransferToTimestamp = QDateTimeEdit(self.TransferDetailsTab)
         self.TransferToTimestamp.setObjectName(u"TransferToTimestamp")
         self.TransferToTimestamp.setCalendarPopup(True)
+        self.TransferToTimestamp.setTimeSpec(Qt.UTC)
 
         self.gridLayout_5.addWidget(self.TransferToTimestamp, 3, 0, 1, 1)
 
@@ -732,6 +741,7 @@ class Ui_LedgerMainWindow(object):
         self.CorpActionTimestampEdit = QDateTimeEdit(self.CorpActionDetailsTab)
         self.CorpActionTimestampEdit.setObjectName(u"CorpActionTimestampEdit")
         self.CorpActionTimestampEdit.setCalendarPopup(True)
+        self.CorpActionTimestampEdit.setTimeSpec(Qt.UTC)
 
         self.gridLayout_6.addWidget(self.CorpActionTimestampEdit, 1, 0, 1, 1)
 
@@ -828,7 +838,9 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_7.setContentsMargins(2, 2, 2, 2)
         self.HoldingsDate = QDateEdit(self.HoldingsParamsFrame)
         self.HoldingsDate.setObjectName(u"HoldingsDate")
+        self.HoldingsDate.setDateTime(QDateTime(QDate(2021, 1, 1), QTime(0, 0, 0)))
         self.HoldingsDate.setCalendarPopup(True)
+        self.HoldingsDate.setTimeSpec(Qt.UTC)
 
         self.horizontalLayout_7.addWidget(self.HoldingsDate)
 
@@ -896,7 +908,9 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportToDate = QDateEdit(self.ReportParamsFrame)
         self.ReportToDate.setObjectName(u"ReportToDate")
+        self.ReportToDate.setDateTime(QDateTime(QDate(2021, 1, 1), QTime(0, 0, 0)))
         self.ReportToDate.setCalendarPopup(True)
+        self.ReportToDate.setTimeSpec(Qt.UTC)
 
         self.gridLayout.addWidget(self.ReportToDate, 1, 5, 1, 1)
 
@@ -970,7 +984,9 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportFromDate = QDateEdit(self.ReportParamsFrame)
         self.ReportFromDate.setObjectName(u"ReportFromDate")
+        self.ReportFromDate.setDateTime(QDateTime(QDate(2021, 1, 1), QTime(0, 0, 0)))
         self.ReportFromDate.setCalendarPopup(True)
+        self.ReportFromDate.setTimeSpec(Qt.UTC)
 
         self.gridLayout.addWidget(self.ReportFromDate, 0, 5, 1, 1)
 
@@ -1064,7 +1080,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(5)
+        self.OperationsTabs.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)

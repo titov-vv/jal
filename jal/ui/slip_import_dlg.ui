@@ -169,6 +169,9 @@
            <property name="displayFormat">
             <string>dd/MM/yyyy hh:mm:ss</string>
            </property>
+           <property name="timeSpec">
+            <enum>Qt::UTC</enum>
+           </property>
           </widget>
          </item>
          <item row="0" column="0">
@@ -362,6 +365,9 @@
         <property name="displayFormat">
          <string>dd/MM/yyyy hh:mm:ss</string>
         </property>
+        <property name="timeSpec">
+         <enum>Qt::UTC</enum>
+        </property>
        </widget>
       </item>
       <item row="1" column="1">
@@ -506,15 +512,15 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>QVideoWidget</class>
-   <extends>QWidget</extends>
-   <header>PySide2/QtMultimediaWidgets.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>PeerSelector</class>
    <extends>QWidget</extends>
    <header>jal/ui_custom/reference_selector.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QVideoWidget</class>
+   <extends>QWidget</extends>
+   <header>PySide2/QtMultimediaWidgets.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -266,8 +266,8 @@ class TaxesRus:
         report = self.reports[self.current_report]
         self.current_sheet.write(0, 0, report[self.RPT_TITLE], self.reports_xls.formats.Bold())
         self.current_sheet.write(2, 0, "Документ-основание:")
-        self.current_sheet.write(3, 0, f"Период: {datetime.fromtimestamp(self.year_begin).strftime('%d.%m.%Y')}"
-                                       f" - {datetime.fromtimestamp(self.year_end - 1).strftime('%d.%m.%Y')}")
+        self.current_sheet.write(3, 0, f"Период: {datetime.utcfromtimestamp(self.year_begin).strftime('%d.%m.%Y')}"
+                                       f" - {datetime.utcfromtimestamp(self.year_end - 1).strftime('%d.%m.%Y')}")
         self.current_sheet.write(4, 0, "ФИО:")
         self.current_sheet.write(5, 0, f"Номер счета: {self.account_number} ({self.account_currency})")
 
@@ -303,7 +303,7 @@ class TaxesRus:
                     precision = field_dscr[FMT_DETAILS]
                     fmt = self.reports_xls.formats.Number(even_odd, tolerance=precision)
                 elif format_as == "date":
-                    value = datetime.fromtimestamp(value).strftime('%d.%m.%Y')
+                    value = datetime.utcfromtimestamp(value).strftime('%d.%m.%Y')
                     fmt = self.reports_xls.formats.Text(even_odd)
                 elif format_as == "bool":
                     value = field_dscr[FMT_DETAILS][value]

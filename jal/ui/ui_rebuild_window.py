@@ -18,7 +18,7 @@ class Ui_ReBuildDialog(object):
         if not ReBuildDialog.objectName():
             ReBuildDialog.setObjectName(u"ReBuildDialog")
         ReBuildDialog.setWindowModality(Qt.ApplicationModal)
-        ReBuildDialog.resize(268, 140)
+        ReBuildDialog.resize(268, 150)
         sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -68,6 +68,7 @@ class Ui_ReBuildDialog(object):
         self.CustomDateEdit = QDateEdit(self.TypeGroup)
         self.CustomDateEdit.setObjectName(u"CustomDateEdit")
         self.CustomDateEdit.setCalendarPopup(True)
+        self.CustomDateEdit.setTimeSpec(Qt.UTC)
 
         self.formLayout.setWidget(2, QFormLayout.FieldRole, self.CustomDateEdit)
 
