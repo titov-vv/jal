@@ -1,7 +1,6 @@
 import logging
 import xml.etree.ElementTree as xml_tree
-from dateutil import tz
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import StringIO
 
 import pandas as pd
@@ -140,7 +139,7 @@ class QuoteDownloader(QObject):
 
     def CBR_DataReader(self, currency_code, _isin, start_timestamp, end_timestamp):
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%d/%m/%Y')
-        date2 = datetime.utcfromtimestamp(end_timestamp + 86400).strftime('%d/%m/%Y')  # add 1 as CBR sets rate a day ahead
+        date2 = (datetime.utcfromtimestamp(end_timestamp) + timedelta(days=1)).strftime('%d/%m/%Y')  # add 1 as CBR sets rate a day ahead
         code = str(self.CBR_codes.loc[self.CBR_codes["ISO_name"] == currency_code, "CBR_code"].values[0]).strip()
         url = f"http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1={date1}&date_req2={date2}&VAL_NM_RQ={code}"
         xml_root = xml_tree.fromstring(get_web_data(url))
