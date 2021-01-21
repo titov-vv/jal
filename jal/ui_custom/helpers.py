@@ -1,4 +1,4 @@
-import datetime
+from datetime import time, datetime, timedelta, timezone
 
 from jal.constants import ColumnWidth
 from PySide2.QtCore import QCoreApplication, Qt, QStringListModel, QByteArray
@@ -73,27 +73,27 @@ class VLine(QFrame):
 class ManipulateDate:
     @staticmethod
     def toTimestamp(date_value):
-        time_value = datetime.time(0, 0, 0)
-        dt_value = datetime.datetime.combine(date_value, time_value)
-        return int(dt_value.timestamp())
+        time_value = time(0, 0, 0)
+        dt_value = datetime.combine(date_value, time_value)
+        return int(dt_value.replace(tzinfo=timezone.utc).timestamp())
 
     @staticmethod
     def startOfPreviousWeek():
-        prev_week = datetime.date.today() - datetime.timedelta(days = 7)
-        start_of_week = prev_week - datetime.timedelta(days = prev_week.weekday())
+        prev_week = datetime.today() - timedelta(days = 7)
+        start_of_week = prev_week - timedelta(days = prev_week.weekday())
         return ManipulateDate.toTimestamp(start_of_week)
 
     @staticmethod
     def startOfPreviousMonth():
-        day = datetime.date.today()
+        day = datetime.today()
         first_day_of_month = day.replace(day=1)
-        last_day_of_prev_month = first_day_of_month - datetime.timedelta(days=1)
+        last_day_of_prev_month = first_day_of_month - timedelta(days=1)
         first_day_of_prev_month = last_day_of_prev_month.replace(day=1)
         return ManipulateDate.toTimestamp(first_day_of_prev_month)
 
     @staticmethod
     def startOfPreviousQuarter():
-        day = datetime.date.today()
+        day = datetime.today()
         prev_quarter_month = day.month - day.month % 3 - 3
         if prev_quarter_month > 0:
             quarter_back = day.replace(month = prev_quarter_month)
@@ -104,16 +104,16 @@ class ManipulateDate:
 
     @staticmethod
     def startOfPreviousYear():
-        day = datetime.date.today()
+        day = datetime.today()
         first_day_of_year = day.replace(day=1, month=1)
-        last_day_of_prev_year = first_day_of_year - datetime.timedelta(days=1)
+        last_day_of_prev_year = first_day_of_year - timedelta(days=1)
         first_day_of_prev_year = last_day_of_prev_year.replace(day=1, month=1)
         return ManipulateDate.toTimestamp(first_day_of_prev_year)
 
     @staticmethod
     def Last3Months():
-        day = datetime.date.today()
-        end = day + datetime.timedelta(days=1)
+        day = datetime.today()
+        end = day + timedelta(days=1)
         begin_month = day.month - 3
         if begin_month > 0:
             begin = day.replace(month=begin_month)
@@ -124,21 +124,21 @@ class ManipulateDate:
 
     @staticmethod
     def RangeYTD():
-        day = datetime.date.today()
-        end = day + datetime.timedelta(days=1)
+        day = datetime.today()
+        end = day + timedelta(days=1)
         begin = day.replace(day=1, year=(day.year - 1))
         return (ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end))
 
     @staticmethod
     def RangeThisYear():
-        day = datetime.date.today()
-        end = day + datetime.timedelta(days=1)
+        day = datetime.today()
+        end = day + timedelta(days=1)
         begin = day.replace(day=1, month=1)
         return (ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end))
 
     @staticmethod
     def RangePreviousYear():
-        day = datetime.date.today()
+        day = datetime.today()
         end = day.replace(day=1, month=1)
         begin = end.replace(year=(day.year - 1))
         return (ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end))
