@@ -118,7 +118,7 @@ class QuoteDownloader(QObject):
                 logging.warning(g_tr('QuotesUpdateDialog', "No data were downloaded for ") + f"{asset}")
                 continue
             if data is not None:
-                for date, quote in data.iterrows():
+                for date, quote in data.iterrows():  # Date in pandas dataset is in UTC by default
                     self.SubmitQuote(asset_id, asset, int(date.timestamp()), float(quote[0]))
         logging.info(g_tr('QuotesUpdateDialog', "Download completed"))
 
@@ -150,7 +150,7 @@ class QuoteDownloader(QObject):
             s_val = node.find("Value").text if node is not None else None
             rows.append({"Date": s_date, "Rate": s_val})
         data = pd.DataFrame(rows, columns=["Date", "Rate"])
-        data['Date'] = pd.to_datetime(data['Date'], format="%d.%m.%Y").dt.tz_localize(tz.tzlocal())
+        data['Date'] = pd.to_datetime(data['Date'], format="%d.%m.%Y")
         data['Rate'] = [x.replace(',', '.') for x in data['Rate']]
         data['Rate'] = data['Rate'].astype(float)
         rates = data.set_index("Date")
@@ -200,7 +200,7 @@ class QuoteDownloader(QObject):
                                     else:
                                         rows.append({"Date": row.attrib['TRADEDATE'], "Close": row.attrib['CLOSE']})
         data = pd.DataFrame(rows, columns=["Date", "Close"])
-        data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d").dt.tz_localize(tz.tzlocal())
+        data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
         close = data.set_index("Date")
         return close
 
@@ -210,7 +210,7 @@ class QuoteDownloader(QObject):
               f"period1={start_timestamp}&period2={end_timestamp}&interval=1d&events=history"
         file = StringIO(get_web_data(url))
         data = pd.read_csv(file)
-        data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d").dt.tz_localize(tz.tzlocal())
+        data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
         data = data.drop(columns=['Open', 'High', 'Low', 'Adj Close', 'Volume'])
         close = data.set_index("Date")
         return close
@@ -224,7 +224,7 @@ class QuoteDownloader(QObject):
               f"namefile=Price_Data_Historical&from={start}&to={end}&adjusted=1&base=0"
         file = StringIO(get_web_data(url))
         data = pd.read_csv(file, header=3)
-        data['Date'] = pd.to_datetime(data['Date'], format="%d/%m/%Y").dt.tz_localize(tz.tzlocal())
+        data['Date'] = pd.to_datetime(data['Date'], format="%d/%m/%Y")
         data = data.drop(
             columns=['ISIN', 'MIC', 'Ouvert', 'Haut', 'Bas', 'Nombre de titres', 'Number of Trades', 'Capitaux',
                      'Devise'])
