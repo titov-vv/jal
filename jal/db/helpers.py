@@ -166,3 +166,10 @@ def get_country_by_code(db, country_code):
     if id is None:
         id = 0
     return id
+
+# -------------------------------------------------------------------------------------------------------------------
+def account_last_date(db, account_number):
+    last_timestamp = readSQL(db, "SELECT MAX(o.timestamp) FROM all_operations AS o "
+                                 "LEFT JOIN accounts AS a ON o.account_id=a.id WHERE a.number=:account_number",
+                             [(":account_number", account_number)])
+    return last_timestamp

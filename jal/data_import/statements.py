@@ -9,7 +9,7 @@ from PySide2.QtCore import QObject, Signal, Slot
 from PySide2.QtSql import QSqlTableModel
 from PySide2.QtWidgets import QDialog, QFileDialog, QMessageBox
 from jal.constants import Setup, TransactionType, PredefinedAsset, PredefinedCategory, CorporateAction
-from jal.db.helpers import executeSQL, readSQL, get_country_by_code
+from jal.db.helpers import executeSQL, readSQL, get_country_by_code, account_last_date
 from jal.ui_custom.helpers import g_tr
 from jal.ui.ui_add_asset_dlg import Ui_AddAssetDialog
 from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
@@ -379,6 +379,14 @@ class StatementLoader(QObject):
             for FlexStatements in xml_root.getroot():
                 for statement in FlexStatements:
                     attr = statement.attrib
+                    report_start = int(
+                        datetime.strptime(attr['fromDate'], "%Y%m%d").replace(tzinfo=timezone.utc).timestamp())
+                    if report_start < account_last_date(self.db, attr['accountId']):
+                        if QMessageBox().warning(None,
+                                                 g_tr('StatementLoader', "Confirmation"),
+                                                 g_tr('StatementLoader', "Statement period starts before last recorded operation for the account. Continue import?"),
+                                                 QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
+                            return False
                     logging.info(g_tr('StatementLoader', "Load IB Flex-statement for account ") +
                                  f"{attr['accountId']}: {attr['fromDate']} - {attr['toDate']}")
                     for section in section_loaders:
