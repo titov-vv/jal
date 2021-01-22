@@ -264,11 +264,13 @@ class TaxesRus:
     def add_report_header(self):
         report = self.reports[self.current_report]
         self.current_sheet.write(0, 0, report[self.RPT_TITLE], self.reports_xls.formats.Bold())
-        self.current_sheet.write(2, 0, "Документ-основание:")
+        self.current_sheet.write(2, 0, "Документ-основание:", self.reports_xls.formats.CommentText())
         self.current_sheet.write(3, 0, f"Период: {datetime.utcfromtimestamp(self.year_begin).strftime('%d.%m.%Y')}"
-                                       f" - {datetime.utcfromtimestamp(self.year_end - 1).strftime('%d.%m.%Y')}")
-        self.current_sheet.write(4, 0, "ФИО:")
-        self.current_sheet.write(5, 0, f"Номер счета: {self.account_number} ({self.account_currency})")
+                                       f" - {datetime.utcfromtimestamp(self.year_end - 1).strftime('%d.%m.%Y')}",
+                                 self.reports_xls.formats.CommentText())
+        self.current_sheet.write(4, 0, "ФИО:", self.reports_xls.formats.CommentText())
+        self.current_sheet.write(5, 0, f"Номер счета: {self.account_number} ({self.account_currency})",
+                                 self.reports_xls.formats.CommentText())
 
         header_row = {}
         numbers_row = {}  # Put column numbers for reference
@@ -317,15 +319,17 @@ class TaxesRus:
 
     def add_report_footer(self, row):
         row += 1 # Skip one row from previous table
-        self.current_sheet.write(row, 0, "Описание данных в стобцах таблицы")
+        self.current_sheet.write(row, 0, "Описание данных в стобцах таблицы",
+                                 self.reports_xls.formats.CommentText())
         row += 1
-        self.current_sheet.write(row, 0, "Номер столбца")
-        self.current_sheet.write(row, 2, "Описание")
+        self.current_sheet.write(row, 0, "Номер столбца", self.reports_xls.formats.CommentText())
+        self.current_sheet.write(row, 2, "Описание", self.reports_xls.formats.CommentText())
         report = self.reports[self.current_report]
         for column in report[self.RPT_COLUMNS]:
             row += 1
-            self.current_sheet.write(row, 0, column + 1)
-            self.current_sheet.write(row, 2, report[self.RPT_COLUMNS][column][self.COL_DESCR])
+            self.current_sheet.write(row, 0, column + 1, self.reports_xls.formats.CommentText())
+            self.current_sheet.write(row, 2, report[self.RPT_COLUMNS][column][self.COL_DESCR],
+                                     self.reports_xls.formats.CommentText())
 
     # Exchange rates are present in database not for every date (and not every possible timestamp)
     # As any action has exact timestamp it won't match rough timestamp of exchange rate most probably

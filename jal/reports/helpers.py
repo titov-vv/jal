@@ -70,12 +70,14 @@ class xslxFormat:
         self.wbk = workbook
         self.even_color_bg = '#C0C0C0'
         self.odd_color_bg = '#FFFFFF'
+        self.text_font_size = 9
 
     def Bold(self):
         return self.wbk.add_format({'bold': True})
 
     def ColumnHeader(self):
-        return self.wbk.add_format({'bold': True,
+        return self.wbk.add_format({'font_size': self.text_font_size,
+                                    'bold': True,
                                     'text_wrap': True,
                                     'align': 'center',
                                     'valign': 'vcenter',
@@ -84,7 +86,8 @@ class xslxFormat:
                                     'border': 1})
 
     def ColumnFooter(self):
-        return self.wbk.add_format({'bold': True,
+        return self.wbk.add_format({'font_size': self.text_font_size,
+                                    'bold': True,
                                     'num_format': '#,###,##0.00',
                                     'bg_color': '#808080',
                                     'font_color': '#FFFFFF',
@@ -95,9 +98,13 @@ class xslxFormat:
             bg_color = self.odd_color_bg
         else:
             bg_color = self.even_color_bg
-        return self.wbk.add_format({'border': 1,
+        return self.wbk.add_format({'font_size': self.text_font_size,
+                                    'border': 1,
                                     'valign': 'vcenter',
                                     'bg_color': bg_color})
+
+    def CommentText(self):
+        return self.wbk.add_format({'font_size': self.text_font_size, 'valign': 'vcenter'})
 
     def Number(self, even_odd_value=1, tolerance=2, center=False):
         if even_odd_value % 2:
@@ -113,7 +120,8 @@ class xslxFormat:
             align = 'center'
         else:
             align = 'right'
-        return self.wbk.add_format({'num_format': num_format,
+        return self.wbk.add_format({'font_size': self.text_font_size,
+                                    'num_format': num_format,
                                     'border': 1,
                                     'align': align,
                                     'valign': 'vcenter',
