@@ -14,7 +14,7 @@
 На появившейся странице *Reports* нужно выбрать закладку *Flex Queries*. В разделе *Activity Flex Query* нужно нажать *'+'* чтобы создать новый отчёт.
 Далее необходимо выполнить настройку отчета:
     - *Query name* - нужно указать уникальное имя отчёта
-    - *Sections* - нужно отменить необходимые секции отчета. Минимально необходимы: *Account Information, Cash Transactions, Corporate Actions, Option Exercises, Assignments and Expirations, Trades, Transactions Fees, Transfers*
+    - *Sections* - нужно отменить необходимые секции отчета. Минимально необходимы: *Account Information, Cash Transactions, Corporate Actions, Securities Info, Trades, Transactions Fees, Transfers*
     - *Format* - XML
     - *Date Format* - yyyyMMdd
     - *Time Format* - HHmmss
@@ -65,7 +65,7 @@
 Нажмите кнопку *OK* - в случае успешного выполнения на диске будут записаны соответствующие файлы
 9. Если вы выбирали обновление файла декларации, то вы можете теперь открыть его с помощью программы *"Декларация 2020"* и проверить, что информация была добавлена на закладку *Доходы за пределами РФ*  
 ![Declaration Updated](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/declaration_3.png?raw=true)
-10. [Получившийся Excel-файл с расчётом](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/3ndfl_tax_report.xlsx) содержит 4 закладки:  
+10. [Получившийся Excel-файл с расчётом](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/3ndfl_tax_report.xlsx) <sup>1</sup> содержит 4 закладки:  
     - Расчёт дивидендов  
     ![Report Dividends](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/report_1.png?raw=true)
     - Расчёт сделок с ценными бумагами 
@@ -76,6 +76,7 @@
     ![Report Fees](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/report_4.png?raw=true)
     - Расчёт по корпоративным событиям  
     ![Report Corporate Actions](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/report_5.png?raw=true)
-    
+
+<sup>1</sup> - при использовании *OpenOffice Calc* вы можете увидеть одни нули в строке *"ИТОГО"* - это известная особенность, *OpenOffice Calc* не пересчитывает формулы при открытии файла. Перерасчёт формул можно инициировать нажанием *F9* или изменением настроек в меню Tools -> Cell Contents -> AutoCalculate.     
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Ftitov-vv%2Fjal%2Fblob%2Fmaster%2Fdocs%2Fru-tax-3ndfl%2Ftaxes.md&count_bg=%23B981DD&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=tax&edge_flat=false)](https://hits.seeyoufarm.com)
