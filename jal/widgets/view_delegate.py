@@ -543,7 +543,7 @@ class OperationsTotalsDelegate(QStyledItemDelegate):
             upper_part = f"{total_money:,.2f}"
         if transaction_type == TransactionType.CorporateAction:
             sub_type = record.value("fee_tax")
-            qty_before = record.value("amount") if sub_type ==CorporateAction.SpinOff else 0
+            qty_before = record.value("amount") if sub_type == CorporateAction.SpinOff else 0
             qty_after = record.value("t_qty") if sub_type == CorporateAction.StockDividend else record.value("qty_trid")
             if sub_type == CorporateAction.StockDividend:
                 text = f"\n{qty_after:,.2f}" if qty_after != '' else '\n<void>'
@@ -767,5 +767,5 @@ class SlipLinesPandasDelegate(QStyledItemDelegate):
         if index.column() == 1:
             model.setData(index, editor.selected_id)
             model.setData(index.siblingAtColumn(2), 1) # set confidence level to 1
-        if index.column() ==3:
+        if index.column() == 3:
             model.setData(index, editor.selected_id)
