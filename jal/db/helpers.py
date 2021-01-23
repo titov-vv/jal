@@ -172,4 +172,5 @@ def account_last_date(db, account_number):
     last_timestamp = readSQL(db, "SELECT MAX(o.timestamp) FROM all_operations AS o "
                                  "LEFT JOIN accounts AS a ON o.account_id=a.id WHERE a.number=:account_number",
                              [(":account_number", account_number)])
+    last_timestamp = 0 if last_timestamp == '' else last_timestamp
     return last_timestamp
