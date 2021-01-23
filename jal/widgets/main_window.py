@@ -25,11 +25,14 @@ from jal.data_import.slips import ImportSlipDialog
 #-----------------------------------------------------------------------------------------------------------------------
 # This simly displays one message and OK button - to facilitate start-up error communication
 class AbortWindow(QMainWindow, Ui_AbortWindow):
-    def __init__(self, msg):
+    def __init__(self, error):
         QMainWindow.__init__(self, None)
         self.setupUi(self)
 
-        self.MessageLbl.setText(msg)
+        message = error.message
+        if error.details:
+            message = message + "\n" + error.details
+        self.MessageLbl.setText(message)
 
 #-----------------------------------------------------------------------------------------------------------------------
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):

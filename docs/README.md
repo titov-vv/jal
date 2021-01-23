@@ -40,14 +40,6 @@ Database will be initialized automatically with minimal required set of data and
 
 <sup>*</sup> - entry point location is platform dependable. Eg. on Linux it might be in `~/.local/run`, on Windows - `Scripts` directory of your python installation.
 
-### Update to newer version
-You may get message _"Database schema version is outdated. Please execute update script."_ after upgrade to newer version.
-In this case you need to use script `update_db_schema.py` from updates folder. Example of usage in Linux:
-
-`./update_db_schema.py ../ledger.sqlite`
-
-This will apply required changes to your database file (as usual it's a good idea to backup your `ledger.sqlite` before any activity)
-
 ### Screenshots
 Qt have a better look on Linux out of the box. Here is main program window:  
 ![Main Window on Linux](https://github.com/titov-vv/jal/blob/master/docs/img/main_linux.png?raw=true)

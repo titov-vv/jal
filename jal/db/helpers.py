@@ -1,26 +1,36 @@
+import os
 import logging
 import sqlite3
 from jal.constants import Setup
 from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery
+from jal.ui_custom.helpers import g_tr
+from PySide2.QtWidgets import QMessageBox
 
 # No translation of the file because these routines might be used before QApplication initialization
 class LedgerInitError:
     DbInitSuccess = 0
-    EmptyDbInitialized = 1
-    OutdatedDbSchema = 2
-    NewerDbSchema = 3
-    DbDriverFailure = 4
+    DbInitFailure = 1
+    EmptyDbInitialized = 2
+    OutdatedDbSchema = 3
+    NewerDbSchema = 4
+    DbDriverFailure = 5
+    NoDeltaFile = 6
+    SQLFailure = 7
     _messages = {
         0: "No error",
-        1: "Database was initialized. You need to start application again.",
-        2: "Database schema version is outdated. Please execute update script.",
-        3: "Unsupported database schema. Please update application",
-        4: "Sqlite driver initialization failed."
+        1: "Database initialization failure.",
+        2: "Database was initialized. You need to start application again.",
+        3: "Database schema version is outdated. Please update it or use older application version.",
+        4: "Unsupported database schema. Please update the application.",
+        5: "Sqlite driver initialization failed.",
+        6: "DB delta file not found.",
+        7: "SQL command was executed with error."
     }
 
-    def __init__(self, code):
+    def __init__(self, code, details=''):
         self.code = code
         self.message = self._messages[code]
+        self.details = details
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -118,6 +128,7 @@ def init_and_check_db(db_path):
 
     return db, LedgerInitError(LedgerInitError.DbInitSuccess)
 
+
 # -------------------------------------------------------------------------------------------------------------------
 def init_db_from_sql(db_file, sql_file):
     with open(sql_file, 'r', encoding='utf-8') as sql_file:
@@ -128,6 +139,37 @@ def init_db_from_sql(db_file, sql_file):
     db.commit()
     db.close()
 
+
+# -------------------------------------------------------------------------------------------------------------------
+def update_db_schema(db_path):
+    if QMessageBox().warning(None, g_tr('DB', "Database format is outdated"),
+                             g_tr('DB', "Do you agree to upgrade your data to newer format?"),
+                             QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
+        return LedgerInitError(LedgerInitError.OutdatedDbSchema)
+
+    db = sqlite3.connect(get_dbfilename(db_path))
+    cursor = db.cursor()
+    try:
+        cursor.execute("SELECT value FROM settings WHERE name='SchemaVersion'")
+    except:
+        return LedgerInitError(LedgerInitError.DbInitFailure)
+
+    schema_version = cursor.fetchone()[0]
+    for step in range(schema_version, Setup.TARGET_SCHEMA):
+        delta_file = db_path + Setup.UPDATES_PATH + os.sep + Setup.UPDATE_PREFIX + f"{step+1}.sql"
+        logging.info(f"Applying delta schema {step}->{step+1} from {delta_file}")
+        try:
+            with open(delta_file) as delta_sql:
+                try:
+                    cursor.executescript(delta_sql.read())
+                except sqlite3.OperationalError as e:
+                    return LedgerInitError(LedgerInitError.SQLFailure, e.args[0])
+        except FileNotFoundError:
+            return LedgerInitError(LedgerInitError.NoDeltaFile, delta_file)
+    db.close()
+    return LedgerInitError(LedgerInitError.DbInitSuccess)
+
+
 # -------------------------------------------------------------------------------------------------------------------
 def get_language(db):
     language = ''
@@ -136,6 +178,7 @@ def get_language(db):
                                "LEFT JOIN languages AS l ON s.value=l.id WHERE s.name='Language'")
     language = 'us' if language == '' else language
     return language
+
 
 # -------------------------------------------------------------------------------------------------------------------
 def get_base_currency(db):

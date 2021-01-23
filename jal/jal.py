@@ -5,7 +5,7 @@ import traceback
 from PySide2.QtCore import QTranslator
 from PySide2.QtWidgets import QApplication
 from jal.widgets.main_window import MainWindow, AbortWindow
-from jal.db.helpers import init_and_check_db, LedgerInitError, get_language
+from jal.db.helpers import init_and_check_db, LedgerInitError, get_language, update_db_schema
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -23,7 +23,7 @@ def main():
     own_path = os.path.dirname(os.path.realpath(__file__)) + os.sep
     db, error = init_and_check_db(own_path)
 
-    if error.code == LedgerInitError.EmptyDbInitialized:
+    if error.code == LedgerInitError.EmptyDbInitialized:  # If DB was just created from SQL - initialize it again
         db, error = init_and_check_db(own_path)
 
     app = QApplication([])
@@ -33,8 +33,13 @@ def main():
     translator.load(language_file)
     app.installTranslator(translator)
 
+    if error.code == LedgerInitError.OutdatedDbSchema:
+        error = update_db_schema(own_path)
+        if error.code == LedgerInitError.DbInitSuccess:
+            db, error = init_and_check_db(own_path)
+
     if db is None:
-        window = AbortWindow(error.message)
+        window = AbortWindow(error)
     else:
         window = MainWindow(db, own_path, language)
     window.show()
