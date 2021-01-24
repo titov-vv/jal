@@ -30,6 +30,8 @@
     ![IBRK account](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/ibkr_account.png?raw=true) 
     - ещё один счет любого типа - он будет необходим для учета транзакций ввода/вывода дережных средств. Например:  
     ![Bank account](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/bank_account.png?raw=true)  
+    - если вы производили операции в других валютах, то нужно добавить счета с таким же номером, но другой валютой (например, если для конвертации долларов из рублей мне бы понадобился счет U1234567, RUB)
+(При отсутствии нужного счёта вы получите ошибку *ERROR - Failed to load attribute: accountId* при импорте) 
 4. Непосредственно для загрузки отчёта вам необходимо выбрать пункт меню *Import->Broker statement...* (в русской версии *Импорт->Отчет брокера...*), после чего указать XML файл, который необходимо загрузить.
 Если ваш отчет содержит транзации ввода/вывода денежных средств, то вы *jal* попросит вас указать какой счет нужно использовать для списания/зачисленя этих средств, например:  
 ![Select account](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/account_selection.png?raw=true)  
