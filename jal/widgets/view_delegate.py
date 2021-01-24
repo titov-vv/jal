@@ -435,9 +435,10 @@ class OperationsNotesDelegate(QStyledItemDelegate):
             symbol_after = record.value("note")
             qty_before = record.value("amount")
             qty_after = record.value("qty_trid")
+            basis = record.value("price")
             text = CorpActionNames[sub_type].format(old=symbol_before, new=symbol_after,
                                                          before=qty_before, after=qty_after) \
-                   + "\n" + record.value("note2")
+                   + "\n" + record.value("note2") + g_tr('OperationsDelegate', " cost basis: ") + f"{basis:.2f}%"
         else:
             assert False
         painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
