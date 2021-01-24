@@ -269,6 +269,102 @@ CREATE VIEW all_operations AS
            ledger_sums AS debt ON debt.sid = q.id AND
                                   debt.book_account = 5;
 --------------------------------------------------------------------------------
+-- Include 'basis_ratio' in all_transactions view
+--------------------------------------------------------------------------------
+DROP VIEW all_transactions;
+
+CREATE VIEW all_transactions AS
+    SELECT at.*,
+           a.currency_id AS currency
+      FROM (
+               SELECT 1 AS type,
+                      a.id,
+                      a.timestamp,
+                      CASE WHEN SUM(d.sum) < 0 THEN COUNT(d.sum) ELSE -COUNT(d.sum) END AS subtype,
+                      a.account_id AS account,
+                      NULL AS asset,
+                      SUM(d.sum) AS amount,
+                      d.category_id AS category,
+                      NULL AS price,
+                      NULL AS fee_tax,
+                      NULL AS coupon,
+                      a.peer_id AS peer,
+                      d.tag_id AS tag
+                 FROM actions AS a
+                      LEFT JOIN
+                      action_details AS d ON a.id = d.pid
+                GROUP BY a.id
+               UNION ALL
+               SELECT 2 AS type,
+                      d.id,
+                      d.timestamp,
+                      0 AS subtype,
+                      d.account_id AS account,
+                      d.asset_id AS asset,
+                      d.sum AS amount,
+                      7 AS category,
+                      NULL AS price,
+                      d.sum_tax AS fee_tax,
+                      NULL AS coupon,
+                      a.organization_id AS peer,
+                      NULL AS tag
+                 FROM dividends AS d
+                      LEFT JOIN
+                      accounts AS a ON a.id = d.account_id
+               UNION ALL
+               SELECT 5 AS type,
+                      a.id,
+                      a.timestamp,
+                      a.type AS subtype,
+                      a.account_id AS account,
+                      a.asset_id AS asset,
+                      a.qty AS amount,
+                      NULL AS category,
+                      a.qty_new AS price,
+                      a.basis_ratio AS fee_tax,
+                      NULL AS coupon,
+                      a.asset_id_new AS peer,
+                      NULL AS tag
+                 FROM corp_actions AS a
+               UNION ALL
+               SELECT 3 AS type,
+                      t.id,
+                      t.timestamp,
+                      iif(t.qty < 0, -1, 1) AS subtype,
+                      t.account_id AS account,
+                      t.asset_id AS asset,
+                      t.qty AS amount,
+                      NULL AS category,
+                      t.price AS price,
+                      t.fee AS fee_tax,
+                      t.coupon AS coupon,
+                      a.organization_id AS peer,
+                      NULL AS tag
+                 FROM trades AS t
+                      LEFT JOIN
+                      accounts AS a ON a.id = t.account_id
+               UNION ALL
+               SELECT 4 AS type,
+                      id,
+                      timestamp,
+                      type AS subtype,
+                      account_id AS account,
+                      NULL AS asset,
+                      amount,
+                      NULL AS category,
+                      NULL AS price,
+                      NULL AS fee_tax,
+                      NULL AS coupon,
+                      NULL AS peer,
+                      NULL AS tag
+                 FROM transfers
+                ORDER BY timestamp
+           )
+           AS at
+           LEFT JOIN
+           accounts AS a ON at.account = a.id;
+--------------------------------------------------------------------------------
+
 -- Set new DB schema version
 UPDATE settings SET value=13 WHERE name='SchemaVersion';
 
