@@ -147,12 +147,12 @@
                 <widget class="QDateEdit" name="BalanceDate">
                  <property name="dateTime">
                   <datetime>
-                   <hour>0</hour>
+                   <hour>21</hour>
                    <minute>0</minute>
                    <second>0</second>
-                   <year>2021</year>
-                   <month>1</month>
-                   <day>1</day>
+                   <year>2020</year>
+                   <month>12</month>
+                   <day>31</day>
                   </datetime>
                  </property>
                  <property name="displayFormat">
@@ -458,7 +458,7 @@
                 <item>
                  <widget class="QStackedWidget" name="OperationsTabs">
                   <property name="currentIndex">
-                   <number>0</number>
+                   <number>5</number>
                   </property>
                   <widget class="QWidget" name="NoOperationTab"/>
                   <widget class="QWidget" name="ActionDetailsTab">
@@ -692,7 +692,7 @@
                        <date>
                         <year>1999</year>
                         <month>12</month>
-                        <day>31</day>
+                        <day>30</day>
                        </date>
                       </property>
                       <property name="displayFormat">
@@ -1135,7 +1135,7 @@
                        <date>
                         <year>1999</year>
                         <month>12</month>
-                        <day>31</day>
+                        <day>30</day>
                        </date>
                       </property>
                       <property name="displayFormat">
@@ -1204,9 +1204,6 @@
                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                       </property>
                      </widget>
-                    </item>
-                    <item row="1" column="2" colspan="2">
-                     <widget class="AccountSelector" name="CorpActionAccountWidget" native="true"/>
                     </item>
                     <item row="1" column="1">
                      <widget class="QLabel" name="CorpActionAccountLbl">
@@ -1322,6 +1319,22 @@
                     </item>
                     <item row="5" column="1" colspan="4">
                      <widget class="QLineEdit" name="CorpActionNodeEdit"/>
+                    </item>
+                    <item row="1" column="2" colspan="3">
+                     <widget class="AccountSelector" name="CorpActionAccountWidget" native="true"/>
+                    </item>
+                    <item row="4" column="1" colspan="3">
+                     <widget class="QLabel" name="CorpActionRatioLbl">
+                      <property name="text">
+                       <string>Basis Ratio, %:</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="4" column="4">
+                     <widget class="QLineEdit" name="CorpActionRatioEdit"/>
                     </item>
                    </layout>
                   </widget>
@@ -1464,12 +1477,12 @@
             <widget class="QDateEdit" name="HoldingsDate">
              <property name="dateTime">
               <datetime>
-               <hour>0</hour>
+               <hour>21</hour>
                <minute>0</minute>
                <second>0</second>
-               <year>2021</year>
-               <month>1</month>
-               <day>1</day>
+               <year>2020</year>
+               <month>12</month>
+               <day>31</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -1612,12 +1625,12 @@
             <widget class="QDateEdit" name="ReportToDate">
              <property name="dateTime">
               <datetime>
-               <hour>0</hour>
+               <hour>21</hour>
                <minute>0</minute>
                <second>0</second>
-               <year>2021</year>
-               <month>1</month>
-               <day>1</day>
+               <year>2020</year>
+               <month>12</month>
+               <day>31</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -1759,12 +1772,12 @@
             <widget class="QDateEdit" name="ReportFromDate">
              <property name="dateTime">
               <datetime>
-               <hour>0</hour>
+               <hour>21</hour>
                <minute>0</minute>
                <second>0</second>
-               <year>2021</year>
-               <month>1</month>
-               <day>1</day>
+               <year>2020</year>
+               <month>12</month>
+               <day>31</day>
               </datetime>
              </property>
              <property name="displayFormat">

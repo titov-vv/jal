@@ -113,7 +113,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
         self.BalanceDate = QDateEdit(self.BalanceConfigFrame)
         self.BalanceDate.setObjectName(u"BalanceDate")
-        self.BalanceDate.setDateTime(QDateTime(QDate(2021, 1, 1), QTime(0, 0, 0)))
+        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 31), QTime(21, 0, 0)))
         self.BalanceDate.setCalendarPopup(True)
         self.BalanceDate.setTimeSpec(Qt.UTC)
 
@@ -377,7 +377,7 @@ class Ui_LedgerMainWindow(object):
 
         self.TradeSettlementEdit = QDateEdit(self.TradeDetailsTab)
         self.TradeSettlementEdit.setObjectName(u"TradeSettlementEdit")
-        self.TradeSettlementEdit.setMinimumDate(QDate(1999, 12, 31))
+        self.TradeSettlementEdit.setMinimumDate(QDate(1999, 12, 30))
         self.TradeSettlementEdit.setCalendarPopup(True)
         self.TradeSettlementEdit.setTimeSpec(Qt.UTC)
 
@@ -641,7 +641,7 @@ class Ui_LedgerMainWindow(object):
 
         self.TransferFeeTimestamp = QDateTimeEdit(self.TransferDetailsTab)
         self.TransferFeeTimestamp.setObjectName(u"TransferFeeTimestamp")
-        self.TransferFeeTimestamp.setMinimumDate(QDate(1999, 12, 31))
+        self.TransferFeeTimestamp.setMinimumDate(QDate(1999, 12, 30))
         self.TransferFeeTimestamp.setCalendarPopup(True)
         self.TransferFeeTimestamp.setTimeSpec(Qt.UTC)
 
@@ -680,11 +680,6 @@ class Ui_LedgerMainWindow(object):
         self.CorpActionToLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
         self.gridLayout_6.addWidget(self.CorpActionToLbl, 3, 1, 1, 1)
-
-        self.CorpActionAccountWidget = AccountSelector(self.CorpActionDetailsTab)
-        self.CorpActionAccountWidget.setObjectName(u"CorpActionAccountWidget")
-
-        self.gridLayout_6.addWidget(self.CorpActionAccountWidget, 1, 2, 1, 2)
 
         self.CorpActionAccountLbl = QLabel(self.CorpActionDetailsTab)
         self.CorpActionAccountLbl.setObjectName(u"CorpActionAccountLbl")
@@ -760,6 +755,22 @@ class Ui_LedgerMainWindow(object):
         self.CorpActionNodeEdit.setObjectName(u"CorpActionNodeEdit")
 
         self.gridLayout_6.addWidget(self.CorpActionNodeEdit, 5, 1, 1, 4)
+
+        self.CorpActionAccountWidget = AccountSelector(self.CorpActionDetailsTab)
+        self.CorpActionAccountWidget.setObjectName(u"CorpActionAccountWidget")
+
+        self.gridLayout_6.addWidget(self.CorpActionAccountWidget, 1, 2, 1, 3)
+
+        self.CorpActionRatioLbl = QLabel(self.CorpActionDetailsTab)
+        self.CorpActionRatioLbl.setObjectName(u"CorpActionRatioLbl")
+        self.CorpActionRatioLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gridLayout_6.addWidget(self.CorpActionRatioLbl, 4, 1, 1, 3)
+
+        self.CorpActionRatioEdit = QLineEdit(self.CorpActionDetailsTab)
+        self.CorpActionRatioEdit.setObjectName(u"CorpActionRatioEdit")
+
+        self.gridLayout_6.addWidget(self.CorpActionRatioEdit, 4, 4, 1, 1)
 
         self.OperationsTabs.addWidget(self.CorpActionDetailsTab)
 
@@ -838,7 +849,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_7.setContentsMargins(2, 2, 2, 2)
         self.HoldingsDate = QDateEdit(self.HoldingsParamsFrame)
         self.HoldingsDate.setObjectName(u"HoldingsDate")
-        self.HoldingsDate.setDateTime(QDateTime(QDate(2021, 1, 1), QTime(0, 0, 0)))
+        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 31), QTime(21, 0, 0)))
         self.HoldingsDate.setCalendarPopup(True)
         self.HoldingsDate.setTimeSpec(Qt.UTC)
 
@@ -908,7 +919,7 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportToDate = QDateEdit(self.ReportParamsFrame)
         self.ReportToDate.setObjectName(u"ReportToDate")
-        self.ReportToDate.setDateTime(QDateTime(QDate(2021, 1, 1), QTime(0, 0, 0)))
+        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 31), QTime(21, 0, 0)))
         self.ReportToDate.setCalendarPopup(True)
         self.ReportToDate.setTimeSpec(Qt.UTC)
 
@@ -984,7 +995,7 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportFromDate = QDateEdit(self.ReportParamsFrame)
         self.ReportFromDate.setObjectName(u"ReportFromDate")
-        self.ReportFromDate.setDateTime(QDateTime(QDate(2021, 1, 1), QTime(0, 0, 0)))
+        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 31), QTime(21, 0, 0)))
         self.ReportFromDate.setCalendarPopup(True)
         self.ReportFromDate.setTimeSpec(Qt.UTC)
 
@@ -1080,7 +1091,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(0)
+        self.OperationsTabs.setCurrentIndex(5)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)
@@ -1181,6 +1192,7 @@ class Ui_LedgerMainWindow(object):
         self.CorpActionTypeCombo.setProperty("stringModelData", QCoreApplication.translate("LedgerMainWindow", u"N/A;Merger;Spin-Off;Symbol change;Split;Stock dividend", None))
         self.CorpActionTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.CorpActionTextLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Text:", None))
+        self.CorpActionRatioLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Basis Ratio, %:", None))
         self.NewOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"New", None))
         self.CopyOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Copy", None))
         self.DeleteOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Del", None))

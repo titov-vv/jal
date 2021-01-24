@@ -179,6 +179,7 @@ class TableViewConfig:
                                 ("asset_id_new", parent.CorpActionAssetAfter),
                                 ("qty", parent.CorpActionQtyBeforeEdit),
                                 ("qty_new", parent.CorpActionQtyAfterEdit),
+                                ("basis_ratio", parent.CorpActionRatioEdit),
                                 ("note", parent.CorpActionNodeEdit)]
         }
         self.dialogs = {
