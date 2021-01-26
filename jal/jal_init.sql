@@ -1685,7 +1685,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 12);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 13);
 -- TODO Remove this value 'TriggersEnabled' from database
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
