@@ -488,6 +488,8 @@ CREATE TABLE corp_actions (
                                                     ON UPDATE CASCADE
                              NOT NULL,
     qty_new      REAL        NOT NULL,
+    basis_ratio  REAL        NOT NULL
+                             DEFAULT (1),
     note         TEXT (1024)
 );
 
