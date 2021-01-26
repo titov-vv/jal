@@ -670,7 +670,7 @@ CREATE VIEW all_operations AS
                       ca.qty AS amount,
                       ca.asset_id,
                       ca.qty_new AS qty_trid,
-                      NULL AS price,
+                      ca.basis_ratio AS price,
                       ca.type AS fee_tax,
                       l.sum_amount AS t_qty,
                       a.name AS note,
@@ -800,7 +800,7 @@ CREATE VIEW all_transactions AS
                       a.qty AS amount,
                       NULL AS category,
                       a.qty_new AS price,
-                      NULL AS fee_tax,
+                      a.basis_ratio AS fee_tax,
                       NULL AS coupon,
                       a.asset_id_new AS peer,
                       NULL AS tag
