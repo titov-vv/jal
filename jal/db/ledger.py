@@ -276,31 +276,49 @@ class Ledger:
         # Get asset amount accumulated before current operation
         asset_amount = self.getAmount(BookAccount.Assets, asset_id)
         if ((-type) * asset_amount) > 0:  # Process deal match if we have asset that is opposite to operation
-            # Get information about last deal with quantity of opposite sign
-            last_sid = readSQL(self.db, "SELECT "
-                                        "CASE WHEN (:type)*qty<0 THEN open_sid ELSE close_sid END AS last_sid "
-                                        "FROM deals "
-                                        "WHERE account_id=:account_id AND asset_id=:asset_id "
-                                        "ORDER BY close_sid DESC, open_sid DESC LIMIT 1",
-                               [(":type", type), (":account_id", account_id), (":asset_id", asset_id)])
-            last_sid = 0 if last_sid is None else last_sid
-            # Next get information about abs trade quantity that was in this last deal
-            last_qty = readSQL(self.db, "SELECT coalesce(ABS(t.qty), 0)+coalesce(ABS(ca.qty_new) , 0) AS qty "
-                                        "FROM sequence AS s "
-                                        "LEFT JOIN trades AS t ON t.id=s.operation_id AND s.type=3 "
-                                        "LEFT JOIN corp_actions AS ca ON ca.id=s.operation_id AND s.type=5 "
-                                        "WHERE s.id=:last_sid", [(":last_sid", last_sid)])
-            last_qty = 0 if last_qty is None else last_qty
-            # Collect quantity of all deals where this last opposite trade participated (positive value)
-            deals_qty = readSQL(self.db, "SELECT coalesce(SUM(ABS(qty)), 0) "
-                                         "FROM deals AS d "
-                                         "WHERE account_id=:account_id AND asset_id=:asset_id "
-                                         "AND (open_sid=:last_sid OR close_sid=:last_sid)",
-                                [(":account_id", account_id), (":asset_id", asset_id), (":last_sid", last_sid)])
-            reminder = last_qty - deals_qty
-            # if last trade is fully matched (reminder<=0) we start from next trade, otherwise we need to shift by 1
-            if reminder > 0:
-                last_sid = last_sid - 1
+            last_type = readSQL(self.db, "SELECT s.type FROM deals AS d "
+                                         "LEFT JOIN sequence AS s ON d.close_sid=s.id "
+                                         "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
+                                         "ORDER BY d.close_sid DESC, d.open_sid DESC LIMIT 1",
+                                [(":account_id", account_id), (":asset_id", asset_id)])
+            if last_type is None or last_type == TransactionType.Trade:
+                # Get information about last deal with quantity of opposite sign
+                last_sid = readSQL(self.db, "SELECT "
+                                            "CASE WHEN (:type)*qty<0 THEN open_sid ELSE close_sid END AS last_sid "
+                                            "FROM deals "
+                                            "WHERE account_id=:account_id AND asset_id=:asset_id "
+                                            "ORDER BY close_sid DESC, open_sid DESC LIMIT 1",
+                                   [(":type", type), (":account_id", account_id), (":asset_id", asset_id)])
+                last_sid = 0 if last_sid is None else last_sid
+                # Next get information about abs trade quantity that was in this last deal
+                last_qty = readSQL(self.db, "SELECT coalesce(ABS(t.qty), 0)+coalesce(ABS(ca.qty_new) , 0) AS qty "
+                                            "FROM sequence AS s "
+                                            "LEFT JOIN trades AS t ON t.id=s.operation_id AND s.type=3 "
+                                            "LEFT JOIN corp_actions AS ca ON ca.id=s.operation_id AND s.type=5 "
+                                            "WHERE s.id=:last_sid", [(":last_sid", last_sid)])
+                last_qty = 0 if last_qty is None else last_qty
+                # Collect quantity of all deals where this last opposite trade participated (positive value)
+                deals_qty = readSQL(self.db, "SELECT coalesce(SUM(ABS(qty)), 0) "
+                                             "FROM deals AS d "
+                                             "WHERE account_id=:account_id AND asset_id=:asset_id "
+                                             "AND (open_sid=:last_sid OR close_sid=:last_sid)",
+                                    [(":account_id", account_id), (":asset_id", asset_id), (":last_sid", last_sid)])
+                reminder = last_qty - deals_qty
+                # if last trade is fully matched (reminder<=0) we start from next trade, otherwise we need to shift by 1
+                if reminder > 0:
+                    last_sid -= 1
+            elif last_type == TransactionType.CorporateAction:
+                last_sid, ca_type = readSQL(self.db,
+                                            "SELECT d.close_sid, c.type FROM deals AS d "
+                                            "LEFT JOIN sequence AS s ON d.close_sid=s.id "
+                                            "LEFT JOIN corp_actions AS c ON s.operation_id=c.id "
+                                            "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
+                                            "ORDER BY d.close_sid DESC, d.open_sid DESC LIMIT 1",
+                                            [(":account_id", account_id), (":asset_id", asset_id)])
+                if ca_type == CorporateAction.Split \
+                        or ca_type == CorporateAction.StockDividend or ca_type == CorporateAction.SpinOff:
+                    last_sid -= 1
+                reminder = 0
 
             # Get a list of all previous not matched trades or corporate actions of opposite direction (type parameter)
             query = executeSQL(self.db,
@@ -314,6 +332,12 @@ class Ledger:
                                "LEFT JOIN sequence AS s ON s.type = 5 AND s.operation_id=c.id "
                                "LEFT JOIN ledger AS l ON s.id = l.sid AND l.asset_id=c.asset_id_new AND l.value > 0 "
                                "WHERE (:type)*c.qty_new < 0 AND c.asset_id_new=:asset_id AND c.account_id=:account_id "
+                               "AND s.id < :sid AND s.id > :last_sid "
+                               "UNION ALL "
+                               "SELECT s.id, ABS(c.qty), coalesce(l.value/c.qty, 0) AS price FROM corp_actions AS c "
+                               "LEFT JOIN sequence AS s ON s.type = 5 AND s.operation_id=c.id "
+                               "LEFT JOIN ledger AS l ON s.id = l.sid AND l.asset_id=c.asset_id_new AND l.value > 0 "
+                               "WHERE (:type)*c.qty_new < 0 AND c.asset_id=:asset_id AND c.account_id=:account_id AND c.type=2 "
                                "AND s.id < :sid AND s.id > :last_sid "
                                ")ORDER BY id",
                                [(":type", type), (":asset_id", asset_id), (":account_id", account_id),
@@ -387,6 +411,107 @@ class Ledger:
             TransferSubtype.Incoming: self.processTransferIn
         }
         operationTransfer[self.current['subtype']]()
+
+    def processCA(self):
+        seq_id = self.current_seq
+        account_id = self.current['account']
+        asset_id = self.current['asset']
+        qty = self.current['amount']
+
+        processed_qty = 0
+        processed_value = 0
+        # Get asset amount accumulated before current operation
+        asset_amount = self.getAmount(BookAccount.Assets, asset_id)
+        if asset_amount < (qty - 2*Setup.CALC_TOLERANCE):
+            logging.fatal(g_tr('Ledger', "Asset amount is not enough for corporate action processing. Date: ")
+                          + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
+            return
+        # Get information about last deal
+        last_sid = readSQL(self.db, "SELECT "
+                                    "CASE WHEN qty>0 THEN open_sid ELSE close_sid END AS last_sid "
+                                    "FROM deals "
+                                    "WHERE account_id=:account_id AND asset_id=:asset_id "
+                                    "ORDER BY close_sid DESC, open_sid DESC LIMIT 1",
+                           [(":account_id", account_id), (":asset_id", asset_id)])
+        last_sid = 0 if last_sid is None else last_sid
+        # Next get information about abs trade quantity that was in this last deal
+        last_qty = readSQL(self.db, "SELECT coalesce(ABS(t.qty), 0)+coalesce(ABS(ca.qty_new) , 0) AS qty "
+                                    "FROM sequence AS s "
+                                    "LEFT JOIN trades AS t ON t.id=s.operation_id AND s.type=3 "
+                                    "LEFT JOIN corp_actions AS ca ON ca.id=s.operation_id AND s.type=5 "
+                                    "WHERE s.id=:last_sid", [(":last_sid", last_sid)])
+        last_qty = 0 if last_qty is None else last_qty
+        # Collect quantity of all deals where this last opposite trade participated (positive value)
+        deals_qty = readSQL(self.db, "SELECT coalesce(SUM(ABS(qty)), 0) "
+                                     "FROM deals AS d "
+                                     "WHERE account_id=:account_id AND asset_id=:asset_id "
+                                     "AND (open_sid=:last_sid OR close_sid=:last_sid)",
+                            [(":account_id", account_id), (":asset_id", asset_id), (":last_sid", last_sid)])
+        reminder = last_qty - deals_qty
+        # if last trade is fully matched (reminder<=0) we start from next trade, otherwise we need to shift by 1
+        if reminder > 0:
+            last_sid = last_sid - 1
+
+        # Get a list of all previous not matched trades or corporate actions of opposite direction (type parameter)
+        query = executeSQL(self.db,
+                           "SELECT * FROM ("
+                           "SELECT s.id, ABS(t.qty), t.price FROM trades AS t "
+                           "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
+                           "WHERE qty > 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
+                           "AND s.id < :sid AND s.id > :last_sid "
+                           "UNION ALL "
+                           "SELECT s.id, ABS(c.qty_new), coalesce(l.value/c.qty_new, 0) AS price FROM corp_actions AS c "
+                           "LEFT JOIN sequence AS s ON s.type = 5 AND s.operation_id=c.id "
+                           "LEFT JOIN ledger AS l ON s.id = l.sid AND l.asset_id=c.asset_id_new AND l.value > 0 "
+                           "WHERE c.qty_new > 0 AND c.asset_id_new=:asset_id AND c.account_id=:account_id "
+                           "AND s.id < :sid AND s.id > :last_sid "
+                           ")ORDER BY id",
+                           [(":asset_id", asset_id), (":account_id", account_id),
+                            (":sid", seq_id), (":last_sid", last_sid)])
+        while query.next():  # Perform match ("closure") of previous trades
+            deal_sid, deal_qty, deal_price = readSQLrecord(query)  # deal_sid -> trade_sid
+            if reminder > 0:
+                next_deal_qty = reminder
+                reminder = 0
+            else:
+                next_deal_qty = deal_qty
+            if (processed_qty + next_deal_qty) >= qty:  # We can't process more than qty of current trade
+                next_deal_qty = qty - processed_qty  # If it happens - just process the remainder of the trade
+            # Create a deal with relevant sign of quantity (-1 for short, +1 for long)
+            _ = executeSQL(self.db, "INSERT INTO deals(account_id, asset_id, open_sid, close_sid, qty) "
+                                    "VALUES(:account_id, :asset_id, :open_sid, :close_sid, :qty)",
+                           [(":account_id", account_id), (":asset_id", asset_id), (":open_sid", deal_sid),
+                            (":close_sid", seq_id), (":qty", next_deal_qty)])
+            processed_qty += next_deal_qty
+            processed_value += (next_deal_qty * deal_price)
+            if processed_qty == qty:
+                break
+        # Asset allocations for different corporate actions:
+        # +-----------------+-------+-----+------------+-----------+----------+---------------+
+        # |                 | Asset | Qty | cost basis | Asset new | Qty new  | cost basis    |
+        # +-----------------+-------+-----+------------+-----------+----------+---------------+
+        # | Symbol Change   |   A   |  N  |  100 %     |     B     |    N     |   100%        |
+        # | (R-)Split       |   A   |  N  |  100 %     |     A     |    M     |   100%        |
+        # | Merger          |   A   |  N  |  100 %     |     B     |    M     |   100%        |
+        # | Spin-Off        |   A   |  N  |  100 %     |   A & B   | AxN, BxM | X% & (100-X)% |
+        # | Stock Dividend  |   A   |  N  |  100 %     |     A     | Ax(N+M)  |   100% + 0%   |
+        # +-----------------+-------+-----+------------+-----------+----------+---------------+
+        # Withdraw value with old quantity of old asset as it common for all corporate action
+        self.appendTransaction(BookAccount.Assets, -processed_qty, -processed_value)
+
+        # Prepare details about new asset
+        new_asset = self.current['peer']
+        new_qty = self.current['price']
+        new_value = processed_value
+        if self.current['subtype'] == CorporateAction.SpinOff:
+            new_value = processed_value * self.current['fee_tax']
+            # Modify value for old asset
+            self.appendTransaction(BookAccount.Assets, self.current['amount'], processed_value - new_value)
+        if self.current['subtype'] == CorporateAction.StockDividend:
+            new_qty = self.current['amount'] + self.current['price']
+        # Create value for new asset
+        self.current['asset'] = new_asset
+        self.appendTransaction(BookAccount.Assets, new_qty, new_value)
 
     def processAssetConversion(self):
         seq_id = self.current_seq
@@ -470,14 +595,15 @@ class Ledger:
         self.processTrade()
 
     def processCorporateAction(self):
-        operationCorpAction = {
-            CorporateAction.Merger: self.processAssetConversion,
-            CorporateAction.Split: self.processAssetConversion,
-            CorporateAction.SymbolChange: self.processAssetConversion,
-            CorporateAction.SpinOff: self.processAssetEmission,
-            CorporateAction.StockDividend: self.processAssetEmission
-        }
-        operationCorpAction[self.current['subtype']]()
+        self.processCA()
+        # operationCorpAction = {
+        #     CorporateAction.Merger: self.processAssetConversion,
+        #     CorporateAction.Split: self.processAssetConversion,
+        #     CorporateAction.SymbolChange: self.processAssetConversion,
+        #     CorporateAction.SpinOff: self.processAssetEmission,
+        #     CorporateAction.StockDividend: self.processAssetEmission
+        # }
+        # operationCorpAction[self.current['subtype']]()
 
     # Rebuild transaction sequence and recalculate all amounts
     # timestamp:
