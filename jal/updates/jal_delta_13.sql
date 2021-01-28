@@ -364,6 +364,52 @@ CREATE VIEW all_transactions AS
            LEFT JOIN
            accounts AS a ON at.account = a.id;
 --------------------------------------------------------------------------------
+-- Modify 'deals_ext' view for correct profit calculation
+--------------------------------------------------------------------------------
+DROP VIEW IF EXISTS deals_ext;
+
+CREATE VIEW deals_ext AS
+    SELECT d.account_id,
+           ac.name AS account,
+           d.asset_id,
+           at.name AS asset,
+           coalesce(ot.timestamp, oca.timestamp) AS open_timestamp,
+           coalesce(ct.timestamp, cca.timestamp) AS close_timestamp,
+           coalesce(ot.price, ols.sum_value / ols.sum_amount) AS open_price,
+           coalesce(ct.price, ot.price) AS close_price,
+           d.qty AS qty,
+           coalesce(ot.fee * abs(d.qty / ot.qty), 0) + coalesce(ct.fee * abs(d.qty / ct.qty), 0) AS fee,
+           d.qty * (coalesce(ct.price, ot.price) - coalesce(ot.price, ols.sum_value / ols.sum_amount) ) - (coalesce(ot.fee * abs(d.qty / ot.qty), 0) + coalesce(ct.fee * abs(d.qty / ct.qty), 0) ) AS profit,
+           coalesce(100 * (d.qty * (coalesce(ct.price, ot.price) - coalesce(ot.price, ols.sum_value / ols.sum_amount) ) - (coalesce(ot.fee * abs(d.qty / ot.qty), 0) + coalesce(ct.fee * abs(d.qty / ct.qty), 0) ) ) / abs(d.qty * coalesce(ot.price, ols.sum_value / ols.sum_amount) ), 0) AS rel_profit,
+           coalesce(oca.type, -cca.type) AS corp_action
+      FROM deals AS d
+           LEFT JOIN
+           sequence AS os ON d.open_sid = os.id
+           LEFT JOIN
+           trades AS ot ON ot.id = os.operation_id AND
+                           os.type = 3
+           LEFT JOIN
+           corp_actions AS oca ON oca.id = os.operation_id AND
+                                  os.type = 5
+           LEFT JOIN
+           ledger_sums AS ols ON ols.sid = d.open_sid AND
+                                 ols.asset_id = d.asset_id
+           LEFT JOIN
+           sequence AS cs ON d.close_sid = cs.id
+           LEFT JOIN
+           trades AS ct ON ct.id = cs.operation_id AND
+                           cs.type = 3
+           LEFT JOIN
+           corp_actions AS cca ON cca.id = cs.operation_id AND
+                                  cs.type = 5
+           LEFT JOIN
+           accounts AS ac ON d.account_id = ac.id
+           LEFT JOIN
+           assets AS at ON d.asset_id = at.id
+     WHERE NOT (os.type = 5 AND
+                cs.type = 5)
+     ORDER BY close_timestamp,
+              open_timestamp;
 
 -- Set new DB schema version
 UPDATE settings SET value=13 WHERE name='SchemaVersion';

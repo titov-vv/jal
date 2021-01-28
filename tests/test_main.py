@@ -147,13 +147,13 @@ def test_fifo(tmp_path, project_root):
     cursor.execute("SELECT COUNT(*) FROM deals_ext WHERE asset_id=11")
     assert cursor.fetchone()[0] == 1
     cursor.execute("SELECT profit FROM deals_ext WHERE asset_id=11")
-    assert cursor.fetchone()[0] == 1000
+    assert cursor.fetchone()[0] == 1200
 
     # Spin-off
     cursor.execute("SELECT COUNT(*) FROM deals_ext WHERE asset_id=12")
     assert cursor.fetchone()[0] == 1
     cursor.execute("SELECT profit FROM deals_ext WHERE asset_id=12")
-    assert cursor.fetchone()[0] == 200
+    assert cursor.fetchone()[0] == 0
 
     # Multiple corp actions
     cursor.execute("SELECT COUNT(*) FROM deals_ext WHERE asset_id=13 AND corp_action IS NOT NULL")
