@@ -2,6 +2,8 @@ import os
 from shutil import copyfile
 import sqlite3
 
+from pytest import approx
+
 from tests.fixtures import project_root
 from constants import Setup
 from jal.db.helpers import init_and_check_db, get_dbfilename, LedgerInitError
@@ -177,11 +179,11 @@ def test_fifo(tmp_path, project_root):
     cursor.execute("SELECT COUNT(*) FROM deals_ext WHERE asset_id=16")
     assert cursor.fetchone()[0] == 3
     cursor.execute("SELECT SUM(profit) FROM deals_ext WHERE asset_id=16")
-    assert cursor.fetchone()[0] == 1500
-    cursor.execute("SELECT profit FROM deals_ext WHERE asset_id=16 AND corp_action IS NOT NULL")
-    assert cursor.fetchone()[0] == 1100
-    cursor.execute("SELECT profit FROM deals_ext WHERE asset_id=16 AND qty=1 AND corp_action IS NULL")
-    assert cursor.fetchone()[0] == 0
+    assert cursor.fetchone()[0] == approx(1500)
+    cursor.execute("SELECT profit FROM deals_ext WHERE asset_id=16 AND close_timestamp=1608454800")
+    assert cursor.fetchone()[0] == approx(166.666667)
+    cursor.execute("SELECT profit FROM deals_ext WHERE asset_id=16 AND close_timestamp=1608541200")
+    assert cursor.fetchone()[0] == approx(1333.333333)
 
     # Order of buy/sell
     cursor.execute("SELECT COUNT(*) FROM deals_ext WHERE asset_id=17")
@@ -199,12 +201,12 @@ def test_fifo(tmp_path, project_root):
     cursor.execute("SELECT COUNT(*) FROM deals AS d "
                    "LEFT JOIN sequence as os ON os.id = d.open_sid "
                    "LEFT JOIN sequence as cs ON cs.id = d.close_sid")
-    assert cursor.fetchone()[0] == 40
+    assert cursor.fetchone()[0] == 41
     cursor.execute("SELECT COUNT(*) FROM deals AS d "
                    "LEFT JOIN sequence as os ON os.id = d.open_sid "
                    "LEFT JOIN sequence as cs ON cs.id = d.close_sid "
                    "WHERE os.type==3 AND cs.type==3")
-    assert cursor.fetchone()[0] == 29
+    assert cursor.fetchone()[0] == 27
     cursor.execute("SELECT COUNT(*) FROM deals AS d "
                    "LEFT JOIN sequence as os ON os.id = d.open_sid "
                    "LEFT JOIN sequence as cs ON cs.id = d.close_sid "
@@ -214,7 +216,7 @@ def test_fifo(tmp_path, project_root):
                    "LEFT JOIN sequence as os ON os.id = d.open_sid "
                    "LEFT JOIN sequence as cs ON cs.id = d.close_sid "
                    "WHERE os.type==5 AND cs.type==5")
-    assert cursor.fetchone()[0] == 3
+    assert cursor.fetchone()[0] == 4
 
     # validate final amounts
     cursor.execute("SELECT MAX(sid), asset_id, sum_amount, sum_value FROM ledger_sums "

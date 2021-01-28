@@ -291,17 +291,32 @@ class Ledger:
                                    [(":type", type), (":account_id", account_id), (":asset_id", asset_id)])
                 last_sid = 0 if last_sid is None else last_sid
                 # Next get information about abs trade quantity that was in this last deal
-                last_qty = readSQL(self.db, "SELECT coalesce(ABS(t.qty), 0)+coalesce(ABS(ca.qty_new) , 0) AS qty "
-                                            "FROM sequence AS s "
-                                            "LEFT JOIN trades AS t ON t.id=s.operation_id AND s.type=3 "
-                                            "LEFT JOIN corp_actions AS ca ON ca.id=s.operation_id AND s.type=5 "
-                                            "WHERE s.id=:last_sid", [(":last_sid", last_sid)])
-                last_qty = 0 if last_qty is None else last_qty
+                # It may be a corporate action - its quantity calculation is a bit more complicated
+                last_qty = readSQL(self.db,
+                                              "SELECT coalesce(SUM(qty), 0) AS qty FROM ( "
+                                              "SELECT ABS(t.qty) AS qty "
+                                              "FROM sequence AS s "
+                                              "LEFT JOIN trades AS t ON t.id=s.operation_id AND s.type=3 "
+                                              "WHERE s.id=:last_sid "
+                                              "UNION ALL "
+                                              "SELECT "
+                                              "CASE "
+                                              "    WHEN ca.type = 5 THEN ca.qty+ca.qty_new "
+                                              "    WHEN ca.type = 2 AND ca.asset_id=:asset_id THEN ca.qty "
+                                              "    ELSE ca.qty_new "
+                                              "END AS qty "
+                                              "FROM sequence AS s "
+                                              "LEFT JOIN corp_actions AS ca ON ca.id=s.operation_id AND s.type=5 "
+                                              "WHERE s.id=:last_sid "
+                                              ")",
+                                              [(":asset_id", asset_id), (":last_sid", last_sid)])
                 # Collect quantity of all deals where this last opposite trade participated (positive value)
-                deals_qty = readSQL(self.db, "SELECT coalesce(SUM(ABS(qty)), 0) "
+                # If it was a corporate action we need to take only where it was an opening of the deal
+                deals_qty = readSQL(self.db, "SELECT coalesce(SUM(ABS(qty)), 0) "   
                                              "FROM deals AS d "
+                                             "LEFT JOIN sequence AS s ON s.id=d.close_sid "
                                              "WHERE account_id=:account_id AND asset_id=:asset_id "
-                                             "AND (open_sid=:last_sid OR close_sid=:last_sid)",
+                                             "AND (open_sid=:last_sid OR close_sid=:last_sid) AND s.type!=5",
                                     [(":account_id", account_id), (":asset_id", asset_id), (":last_sid", last_sid)])
                 reminder = last_qty - deals_qty
                 # if last trade is fully matched (reminder<=0) we start from next trade, otherwise we need to shift by 1
