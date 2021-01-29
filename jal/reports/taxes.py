@@ -627,6 +627,7 @@ class TaxesRus:
 
             even_odd = even_odd + 1
             row = row + 1  # to keep different lots separated
+            previous_symbol = sale['symbol']
         return row
 
     def proceed_corporate_action(self, sid, symbol, qty, basis, level, row, even_odd):
@@ -705,16 +706,23 @@ class TaxesRus:
                                   "WHERE os.id = :open_sid ",
                          [(":open_sid", sid)], named=True)
         action['operation'] = ' ' * level * 3 + "Корп. действие"
-        qty_before = action['qty'] * proceed_qty / action['qty_new']
-        qty_after = proceed_qty
         if action['type'] == CorporateAction.SpinOff:
+            action['description'] = self.CorpActionText[action['type']].format(old=action['symbol'],
+                                                                               new=action['symbol_new'],
+                                                                               before=action['qty'],
+                                                                               after=action['qty_new'],
+                                                                               ratio=100.0 * action['basis_ratio'])
             if symbol == action['symbol_new']:
                 basis = basis * action['basis_ratio']
+                qty_before = action['qty'] * proceed_qty / action['qty_new']
             else:
                 basis = basis * (1 - action['basis_ratio'])
-        action['description'] = self.CorpActionText[action['type']].format(old=action['symbol'],
-                                                                           new=action['symbol_new'],
-                                                                           before=qty_before, after=qty_after,
-                                                                           ratio=100.0 * basis)
+                qty_before = action['qty']
+        else:
+            qty_before = action['qty'] * proceed_qty / action['qty_new']
+            qty_after = proceed_qty
+            action['description'] = self.CorpActionText[action['type']].format(old=action['symbol'],
+                                                                               new=action['symbol_new'],
+                                                                               before=qty_before, after=qty_after)
         self.add_report_row(row, action, even_odd=even_odd, alternative=1)
         return row + 1, qty_before, action['symbol'], basis
