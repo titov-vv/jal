@@ -574,9 +574,6 @@ class TaxesRus:
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_corporate_actions(self):
-        # This table will be used to track processed assets for operations
-        _ = executeSQL(self.db, "DELETE FROM t_last_assets")
-
         # get list of all deals that were opened with corp.action and closed by normal trade
         query = executeSQL(self.db,
                            "SELECT d.open_sid AS sid, s.name AS symbol, d.qty AS qty, "
@@ -599,9 +596,13 @@ class TaxesRus:
         row = self.data_start_row
         even_odd = 1
         basis = 1
+        previous_symbol = ""
         while query.next():
             start_row = row
             sale = readSQLrecord(query, named=True)
+            if previous_symbol != sale['symbol']:
+                # Clean processed qty records if symbol have changed
+                _ = executeSQL(self.db, "DELETE FROM t_last_assets")
             sale['operation'] = "Продажа"
             sale['basis_ratio'] = 100.0 * basis
             sale['amount'] = round(sale['price'] * sale['qty'], 2)
@@ -619,7 +620,7 @@ class TaxesRus:
             self.add_report_row(row, sale, even_odd=even_odd)
             row = row + 1
 
-            row = self.proceed_corporate_action(sale['sid'], sale['qty'], basis, 1, row, even_odd)
+            row = self.proceed_corporate_action(sale['sid'], sale['symbol'], sale['qty'], basis, 1, row, even_odd)
 
             self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [12, 13, 14])
             row = row + 1
@@ -628,12 +629,12 @@ class TaxesRus:
             row = row + 1  # to keep different lots separated
         return row
 
-    def proceed_corporate_action(self, sid, qty, basis, level, row, even_odd):
-        row, qty, basis = self.output_corp_action(sid, qty, basis, level, row, even_odd)
-        row = self.next_corporate_action(sid, qty, basis, level + 1, row, even_odd)
+    def proceed_corporate_action(self, sid, symbol, qty, basis, level, row, even_odd):
+        row, qty, symbol, basis = self.output_corp_action(sid, symbol, qty, basis, level, row, even_odd)
+        row = self.next_corporate_action(sid, symbol, qty, basis, level + 1, row, even_odd)
         return row
 
-    def next_corporate_action(self, sid, qty, basis, level, row, even_odd):
+    def next_corporate_action(self, sid, symbol, qty, basis, level, row, even_odd):
         # get list of deals that were closed as result of current corporate action
         open_query = executeSQL(self.db, "SELECT d.open_sid AS open_sid, os.type AS op_type "
                                          "FROM deals AS d "
@@ -647,7 +648,7 @@ class TaxesRus:
             if op_type == TransactionType.Trade:
                 row, qty = self.output_purchase(open_sid, qty, basis, level, row, even_odd)
             elif op_type == TransactionType.CorporateAction:
-                row, qty = self.proceed_corporate_action(open_sid, qty, basis, level, row, even_odd)
+                row, qty = self.proceed_corporate_action(open_sid, symbol, qty, basis, level, row, even_odd)
             else:
                 assert False
         return row
@@ -691,7 +692,7 @@ class TaxesRus:
                        [(":trade_id", purchase['trade_id']), (":qty", purchase['qty'])])
         return row + 1, proceed_qty - purchase['qty']
 
-    def output_corp_action(self, sid, proceed_qty, basis, level, row, even_odd):
+    def output_corp_action(self, sid, symbol, proceed_qty, basis, level, row, even_odd):
         if proceed_qty <= 0:
             return row, proceed_qty
 
@@ -707,10 +708,13 @@ class TaxesRus:
         qty_before = action['qty'] * proceed_qty / action['qty_new']
         qty_after = proceed_qty
         if action['type'] == CorporateAction.SpinOff:
-            basis = basis * action['basis_ratio']
+            if symbol == action['symbol_new']:
+                basis = basis * action['basis_ratio']
+            else:
+                basis = basis * (1 - action['basis_ratio'])
         action['description'] = self.CorpActionText[action['type']].format(old=action['symbol'],
                                                                            new=action['symbol_new'],
                                                                            before=qty_before, after=qty_after,
                                                                            ratio=100.0 * basis)
         self.add_report_row(row, action, even_odd=even_odd, alternative=1)
-        return row + 1, qty_before, basis
+        return row + 1, qty_before, action['symbol'], basis
