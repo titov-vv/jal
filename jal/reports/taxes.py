@@ -195,19 +195,20 @@ class TaxesRus:
                              {
                                  0: ("Операция", 20, ("operation", "text"), ("operation", "text"), "Описание операции"),
                                  1: ("Дата операции", 10, ("t_date", "date"), ("a_date", "date"), "Дата совершения операции (и уплаты комиссии из столбца 11)"),
-                                 2: ("Ценная бумага", 8, ("symbol", "text"), ("description", "text", 0, 12, 0), "Краткое наименование ценной бумаги"),
-                                 3: ("Кол-во", 8, ("qty", "number", 4), None, "Количество ЦБ в сделке"),
-                                 4: ("Курс {currency}/RUB на дату сделки", 9, ("t_rate", "number", 4), None, "Официальный курс валюты,  установленный ЦБ РФ на дату операции"),
-                                 5: ("Дата поставки", 10, ("s_date", "date"), None, "Дата рачетов по сделке / Дата поставки ценных бумаг"),
-                                 6: ("Курс {currency}/RUB на дату поставки", 9, ("s_rate", "number", 4), None, "Официальный курс валюты,  установленный ЦБ РФ на дату расчетов по операции"),
-                                 7: ("Цена, {currency}", 12, ("price", "number", 6), None, "Цена одной ценной бумаги в валюте счета"),
-                                 8: ("Сумма сделки, {currency}", 12, ("amount", "number", 2), None, "Сумма сделки в валюте счета (= Столбец 2 * Столбец 8)"),
-                                 9: ("Сумма сделки, RUB", 12, ("amount_rub", "number", 2), None, "Сумма сделки в рублях (= Столбец 9 * Столбец 7)"),
-                                 10: ("Комиссия, {currency}", 12, ("fee", "number", 6), None, "Комиссия брокера за совершение сделки в валюте счета"),
-                                 11: ("Комиссия, RUB", 9, ("fee_rub", "number", 2), None, "Комиссия брокера за совершение сделки в рублях ( = Столбец 11 * Столбец 5)"),
-                                 12: ("Доля к учёту, %", 9, ("basis_ratio", "number", 2), None, "Доля затрат к учёту при корпоративном собыии"),
-                                 13: ("Доход, RUB (код 1530)", 12, ("income_rub", "number", 2), None, "Доход, полученных от продажи ценных бумаг"),
-                                 14: ("Расход, RUB (код 201)", 12, ("spending_rub", "number", 2), None, "Расходы, понесённые на покупку ценных бумаг и уплату комиссий"),
+                                 2: ("Ценная бумага", 8, ("symbol", "text"), ("description", "text", 0, 13, 0), "Краткое наименование ценной бумаги"),
+                                 3: ("Номер сделки", 10, ("trade_number", "text"), None, "Номер сделки"),
+                                 4: ("Кол-во", 8, ("qty", "number", 4), None, "Количество ЦБ в сделке"),
+                                 5: ("Курс {currency}/RUB на дату сделки", 9, ("t_rate", "number", 4), None, "Официальный курс валюты,  установленный ЦБ РФ на дату операции"),
+                                 6: ("Дата поставки", 10, ("s_date", "date"), None, "Дата рачетов по сделке / Дата поставки ценных бумаг"),
+                                 7: ("Курс {currency}/RUB на дату поставки", 9, ("s_rate", "number", 4), None, "Официальный курс валюты,  установленный ЦБ РФ на дату расчетов по операции"),
+                                 8: ("Цена, {currency}", 12, ("price", "number", 6), None, "Цена одной ценной бумаги в валюте счета"),
+                                 9: ("Сумма сделки, {currency}", 12, ("amount", "number", 2), None, "Сумма сделки в валюте счета (= Столбец 2 * Столбец 8)"),
+                                 10: ("Сумма сделки, RUB", 12, ("amount_rub", "number", 2), None, "Сумма сделки в рублях (= Столбец 9 * Столбец 7)"),
+                                 11: ("Комиссия, {currency}", 12, ("fee", "number", 6), None, "Комиссия брокера за совершение сделки в валюте счета"),
+                                 12: ("Комиссия, RUB", 9, ("fee_rub", "number", 2), None, "Комиссия брокера за совершение сделки в рублях ( = Столбец 11 * Столбец 5)"),
+                                 13: ("Доля к учёту, %", 9, ("basis_ratio", "number", 2), None, "Доля затрат к учёту при корпоративном собыии"),
+                                 14: ("Доход, RUB (код 1530)", 12, ("income_rub", "number", 2), None, "Доход, полученных от продажи ценных бумаг"),
+                                 15: ("Расход, RUB (код 201)", 12, ("spending_rub", "number", 2), None, "Расходы, понесённые на покупку ценных бумаг и уплату комиссий"),
                              }
                              )
         }
@@ -576,7 +577,7 @@ class TaxesRus:
     def prepare_corporate_actions(self):
         # get list of all deals that were opened with corp.action and closed by normal trade
         query = executeSQL(self.db,
-                           "SELECT d.open_sid AS sid, s.name AS symbol, d.qty AS qty, "
+                           "SELECT d.open_sid AS sid, s.name AS symbol, d.qty AS qty, t.number AS trade_number, "
                            "t.timestamp AS t_date, qt.quote AS t_rate, t.settlement AS s_date, qts.quote AS s_rate, "
                            "t.price AS price, t.fee AS fee "
                            "FROM deals AS d "
@@ -622,7 +623,7 @@ class TaxesRus:
 
             row = self.proceed_corporate_action(sale['sid'], sale['symbol'], sale['qty'], basis, 1, row, even_odd)
 
-            self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [12, 13, 14])
+            self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [13, 14, 15])
             row = row + 1
 
             even_odd = even_odd + 1
@@ -660,7 +661,7 @@ class TaxesRus:
 
         purchase = readSQL(self.db,
                            "SELECT t.id AS trade_id, s.name AS symbol, coalesce(d.qty-SUM(lq.total_value), d.qty) AS qty, "
-                           "t.timestamp AS t_date, qt.quote AS t_rate, "
+                           "t.timestamp AS t_date, qt.quote AS t_rate, t.number AS trade_number, "
                            "t.settlement AS s_date, qts.quote AS s_rate, t.price AS price, t.fee AS fee "
                            "FROM sequence AS os "
                            "JOIN deals AS d ON os.id=d.open_sid AND os.type = 3 "
