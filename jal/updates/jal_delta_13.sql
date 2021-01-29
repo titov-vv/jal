@@ -3,6 +3,16 @@ BEGIN TRANSACTION;
 PRAGMA foreign_keys = 0;
 
 --------------------------------------------------------------------------------
+-- Drop unique constraints from t_last_assets table
+--------------------------------------------------------------------------------
+DROP TABLE t_last_assets;
+
+CREATE TABLE t_last_assets (
+    id          INTEGER   NOT NULL,
+    name        TEXT (64) NOT NULL,
+    total_value REAL
+);
+--------------------------------------------------------------------------------
 -- Add field 'basis_ratio to corp_actions table
 --------------------------------------------------------------------------------
 CREATE TABLE sqlitestudio_temp_table AS SELECT * FROM corp_actions;

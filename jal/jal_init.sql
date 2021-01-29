@@ -408,11 +408,8 @@ CREATE TABLE settings (
 DROP TABLE IF EXISTS t_last_assets;
 
 CREATE TABLE t_last_assets (
-    id          INTEGER   PRIMARY KEY
-                          UNIQUE
-                          NOT NULL,
-    name        TEXT (64) UNIQUE
-                          NOT NULL,
+    id          INTEGER   NOT NULL,
+    name        TEXT (64) NOT NULL,
     total_value REAL
 );
 

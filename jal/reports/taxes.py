@@ -2,7 +2,7 @@ from functools import partial
 from datetime import datetime, timezone
 import logging
 
-from jal.constants import TransactionType, CorporateAction
+from jal.constants import Setup, TransactionType, CorporateAction
 from jal.reports.helpers import XLSX
 from jal.reports.dlsg import DLSG
 from jal.ui_custom.helpers import g_tr
@@ -102,7 +102,7 @@ class TaxesRus:
     CorpActionText = {
         CorporateAction.SymbolChange: "Смена символа {before} {old} -> {after} {new}",
         CorporateAction.Split: "Сплит {old} {before} в {after}",
-        CorporateAction.SpinOff: "Выделение компании {after} {new} из {before} {old}; доля выделяемого актива {ratio}%",
+        CorporateAction.SpinOff: "Выделение компании {after} {new} из {before:.6f} {old}; доля выделяемого актива {ratio:.2f}%",
         CorporateAction.Merger: "Слияние компании, конвертация {before} {old} в {after} {new}",
         CorporateAction.StockDividend: "Допэмиссия акций: {after} {new}"
     }
@@ -195,7 +195,7 @@ class TaxesRus:
                              {
                                  0: ("Операция", 20, ("operation", "text"), ("operation", "text"), "Описание операции"),
                                  1: ("Дата операции", 10, ("t_date", "date"), ("a_date", "date"), "Дата совершения операции (и уплаты комиссии из столбца 11)"),
-                                 2: ("Ценная бумага", 8, ("symbol", "text"), ("description", "text", 0, 9, 0), "Краткое наименование ценной бумаги"),
+                                 2: ("Ценная бумага", 8, ("symbol", "text"), ("description", "text", 0, 12, 0), "Краткое наименование ценной бумаги"),
                                  3: ("Кол-во", 8, ("qty", "number", 4), None, "Количество ЦБ в сделке"),
                                  4: ("Курс {currency}/RUB на дату сделки", 9, ("t_rate", "number", 4), None, "Официальный курс валюты,  установленный ЦБ РФ на дату операции"),
                                  5: ("Дата поставки", 10, ("s_date", "date"), None, "Дата рачетов по сделке / Дата поставки ценных бумаг"),
@@ -574,6 +574,9 @@ class TaxesRus:
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_corporate_actions(self):
+        # This table will be used to track processed assets for operations
+        _ = executeSQL(self.db, "DELETE FROM t_last_assets")
+
         # get list of all deals that were opened with corp.action and closed by normal trade
         query = executeSQL(self.db,
                            "SELECT d.open_sid AS sid, s.name AS symbol, d.qty AS qty, "
@@ -654,7 +657,8 @@ class TaxesRus:
             return row, proceed_qty
 
         purchase = readSQL(self.db,
-                           "SELECT s.name AS symbol, d.qty AS qty, t.timestamp AS t_date, qt.quote AS t_rate, "
+                           "SELECT t.id AS trade_id, s.name AS symbol, coalesce(d.qty-SUM(lq.total_value), d.qty) AS qty, "
+                           "t.timestamp AS t_date, qt.quote AS t_rate, "
                            "t.settlement AS s_date, qts.quote AS s_rate, t.price AS price, t.fee AS fee "
                            "FROM sequence AS os "
                            "JOIN deals AS d ON os.id=d.open_sid AND os.type = 3 "
@@ -665,8 +669,12 @@ class TaxesRus:
                            "LEFT JOIN quotes AS qt ON ldt.timestamp=qt.timestamp AND a.currency_id=qt.asset_id "
                            "LEFT JOIN t_last_dates AS ldts ON t.settlement=ldts.ref_id "
                            "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id "
+                           "LEFT JOIN t_last_assets AS lq ON lq.id = t.id "
                            "WHERE os.id = :sid",
                            [(":sid", sid)], named=True)
+        if purchase['qty'] <= (2 * Setup.CALC_TOLERANCE):
+            return row, proceed_qty  # This trade was fully mached before
+
         purchase['operation'] = ' ' * level * 3 + "Покупка"
         purchase['basis_ratio'] = 100.0 * basis
         deal_qty = purchase['qty']
@@ -679,6 +687,8 @@ class TaxesRus:
         purchase['spending_rub'] = round(basis*(purchase['amount_rub'] + purchase['fee_rub']), 2)
 
         self.add_report_row(row, purchase, even_odd=even_odd)
+        _ = executeSQL(self.db, "INSERT INTO t_last_assets (id, name, total_value) VALUES (:trade_id, '', :qty)",
+                       [(":trade_id", purchase['trade_id']), (":qty", purchase['qty'])])
         return row + 1, proceed_qty - purchase['qty']
 
     def output_corp_action(self, sid, proceed_qty, basis, level, row, even_odd):
@@ -688,7 +698,6 @@ class TaxesRus:
         action = readSQL(self.db, "SELECT a.timestamp AS a_date, a.type, s1.name AS symbol, a.qty AS qty, "
                                   "s2.name AS symbol_new, a.qty_new AS qty_new, a.note AS note, a.basis_ratio "
                                   "FROM sequence AS os "
-                                  "JOIN deals AS d ON os.id=d.open_sid AND os.type = 5 "
                                   "LEFT JOIN corp_actions AS a ON os.operation_id=a.id "
                                   "LEFT JOIN assets AS s1 ON a.asset_id=s1.id "
                                   "LEFT JOIN assets AS s2 ON a.asset_id_new=s2.id "
