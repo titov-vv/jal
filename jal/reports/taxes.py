@@ -153,7 +153,7 @@ class TaxesRus:
                                 10: ("Комиссия, {currency}", 12, ("o_fee", "number", 6), ("c_fee", "number", 6), "Комиссия брокера за совершение сделки в валюте счета"),
                                 11: ("Комиссия, RUB", 9, ("o_fee_rub", "number", 2), ("c_fee_rub", "number", 2), "Комиссия брокера за совершение сделки в рублях ( = Столбец 11 * Столбец 5)"),
                                 12: ("Доход, RUB (код 1530)", 12, ("income_rub", "number", 2, 0, 1), None, "Доход, полученных от продажи ценных бумаг (равен сумме сделки продажи из столбца 10)"),
-                                13: ("Расход, RUB (код 201)", 12, ("spending_rub", "number", 2, 0, 1), None, "Расход, понесённый на покупку ценных бумаг и уплату комиссий (равен сумме стелки покупки из столбца 10 + комиссии из столбца 12)"),
+                                13: ("Расход, RUB (код 201)", 12, ("spending_rub", "number", 2, 0, 1), None, "Расходы, понесённые на покупку ценных бумаг и уплату комиссий (равны сумме стелки покупки из столбца 10 + комиссии из столбца 12)"),
                                 14: ("Финансовый результат, RUB", 12, ("profit_rub", "number", 2, 0, 1), None, "Финансовый результат сделки в рублях (= Столбец 13 - Столбец 14)"),
                                 15: ("Финансовый результат, {currency}", 12, ("profit", "number", 2, 0, 1), None, "Финансовый результат сделки в валюте счета")
                             }
@@ -174,7 +174,7 @@ class TaxesRus:
                                  10: ("Комиссия, {currency}", 12, ("o_fee", "number", 6), ("c_fee", "number", 6), "Комиссия брокера за совершение сделки в валюте счета"),
                                  11: ("Комиссия, RUB", 9, ("o_fee_rub", "number", 2), ("c_fee_rub", "number", 2), "Комиссия брокера за совершение сделки в рублях ( = Столбец 11 * Столбец 5)"),
                                  12: ("Доход, RUB (код 1532)", 12, ("income_rub", "number", 2, 0, 1), None, "Доход, полученных от продажи ценных бумаг (равен сумме сделки продажи из столбца 10)"),
-                                 13: ("Расход, RUB (код 206)", 12, ("spending_rub", "number", 2, 0, 1), None, "Расход, понесённый на покупку ценных бумаг и уплату комиссий (равен сумме стелки покупки из столбца 10 + комиссии из столбца 12)"),
+                                 13: ("Расход, RUB (код 206)", 12, ("spending_rub", "number", 2, 0, 1), None, "Расходы, понесённые на покупку ценных бумаг и уплату комиссий (равны сумме стелки покупки из столбца 10 + комиссии из столбца 12)"),
                                  14: ("Финансовый результат, RUB", 12, ("profit_rub", "number", 2, 0, 1), None, "Финансовый результат сделки в рублях (= Столбец 13 - Столбец 14)"),
                                  15: ("Финансовый результат, {currency}", 12, ("profit", "number", 2, 0, 1), None, "Финансовый результат сделки в валюте счета")
                              }
@@ -205,7 +205,9 @@ class TaxesRus:
                                  9: ("Сумма сделки, RUB", 12, ("amount_rub", "number", 2), None, "Сумма сделки в рублях (= Столбец 9 * Столбец 7)"),
                                  10: ("Комиссия, {currency}", 12, ("fee", "number", 6), None, "Комиссия брокера за совершение сделки в валюте счета"),
                                  11: ("Комиссия, RUB", 9, ("fee_rub", "number", 2), None, "Комиссия брокера за совершение сделки в рублях ( = Столбец 11 * Столбец 5)"),
-                                 12: ("Доля к учёту, %", 9, ("basis_ratio", "number", 2), None, "Доля затрат к учёту при корпоративном собыии")
+                                 12: ("Доля к учёту, %", 9, ("basis_ratio", "number", 2), None, "Доля затрат к учёту при корпоративном собыии"),
+                                 13: ("Доход, RUB (код 1530)", 12, ("income_rub", "number", 2), None, "Доход, полученных от продажи ценных бумаг"),
+                                 14: ("Расход, RUB (код 201)", 12, ("spending_rub", "number", 2), None, "Расходы, понесённые на покупку ценных бумаг и уплату комиссий"),
                              }
                              )
         }
@@ -595,6 +597,7 @@ class TaxesRus:
         even_odd = 1
         basis = 1
         while query.next():
+            start_row = row
             sale = readSQLrecord(query, named=True)
             sale['operation'] = "Продажа"
             sale['basis_ratio'] = 100.0 * basis
@@ -607,14 +610,19 @@ class TaxesRus:
                 sale['fee_rub'] = round(sale['fee'] * sale['t_rate'], 2)
             else:
                 sale['fee_rub'] = 0
+            sale['income_rub'] = sale['amount_rub']
+            sale['spending_rub'] = sale['fee_rub']
 
             self.add_report_row(row, sale, even_odd=even_odd)
             row = row + 1
 
             row = self.proceed_corporate_action(sale['sid'], sale['qty'], basis, 1, row, even_odd)
 
-            even_odd = even_odd + 1
+            self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [12, 13, 14])
             row = row + 1
+
+            even_odd = even_odd + 1
+            row = row + 1  # to keep different lots separated
         return row
 
     def proceed_corporate_action(self, sid, qty, basis, level, row, even_odd):
@@ -667,6 +675,8 @@ class TaxesRus:
         purchase['amount_rub'] = round(purchase['amount'] * purchase['s_rate'], 2) if purchase['s_rate'] else 0
         purchase['fee'] = purchase['fee'] * purchase['qty'] / deal_qty
         purchase['fee_rub'] = round(purchase['fee'] * purchase['t_rate'], 2) if purchase['t_rate'] else 0
+        purchase['income_rub'] = 0
+        purchase['spending_rub'] = round(basis*(purchase['amount_rub'] + purchase['fee_rub']), 2)
 
         self.add_report_row(row, purchase, even_odd=even_odd)
         return row + 1, proceed_qty - purchase['qty']
