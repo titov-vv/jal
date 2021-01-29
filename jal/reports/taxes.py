@@ -102,7 +102,7 @@ class TaxesRus:
     CorpActionText = {
         CorporateAction.SymbolChange: "Смена символа {before} {old} -> {after} {new}",
         CorporateAction.Split: "Сплит {old} {before} в {after}",
-        CorporateAction.SpinOff: "Выделение компании {after} {new} из {before} {old}",
+        CorporateAction.SpinOff: "Выделение компании {after} {new} из {before} {old}; доля выделяемого актива {ratio}%",
         CorporateAction.Merger: "Слияние компании, конвертация {before} {old} в {after} {new}",
         CorporateAction.StockDividend: "Допэмиссия акций: {after} {new}"
     }
@@ -204,7 +204,8 @@ class TaxesRus:
                                  8: ("Сумма сделки, {currency}", 12, ("amount", "number", 2), None, "Сумма сделки в валюте счета (= Столбец 2 * Столбец 8)"),
                                  9: ("Сумма сделки, RUB", 12, ("amount_rub", "number", 2), None, "Сумма сделки в рублях (= Столбец 9 * Столбец 7)"),
                                  10: ("Комиссия, {currency}", 12, ("fee", "number", 6), None, "Комиссия брокера за совершение сделки в валюте счета"),
-                                 11: ("Комиссия, RUB", 9, ("fee_rub", "number", 2), None, "Комиссия брокера за совершение сделки в рублях ( = Столбец 11 * Столбец 5)")
+                                 11: ("Комиссия, RUB", 9, ("fee_rub", "number", 2), None, "Комиссия брокера за совершение сделки в рублях ( = Столбец 11 * Столбец 5)"),
+                                 12: ("Доля к учёту, %", 9, ("basis_ratio", "number", 2), None, "Доля затрат к учёту при корпоративном собыии")
                              }
                              )
         }
@@ -592,9 +593,11 @@ class TaxesRus:
 
         row = self.data_start_row
         even_odd = 1
+        basis = 1
         while query.next():
             sale = readSQLrecord(query, named=True)
             sale['operation'] = "Продажа"
+            sale['basis_ratio'] = 100.0 * basis
             sale['amount'] = round(sale['price'] * sale['qty'], 2)
             if sale['s_rate']:
                 sale['amount_rub'] = round(sale['amount'] * sale['s_rate'], 2)
@@ -608,18 +611,18 @@ class TaxesRus:
             self.add_report_row(row, sale, even_odd=even_odd)
             row = row + 1
 
-            row, qty = self.proceed_corporate_action(sale['sid'], sale['qty'], 1, row, even_odd)
+            row = self.proceed_corporate_action(sale['sid'], sale['qty'], basis, 1, row, even_odd)
 
             even_odd = even_odd + 1
             row = row + 1
         return row
 
-    def proceed_corporate_action(self, sid, qty, level, row, even_odd):
-        row, qty = self.output_corp_action(sid, qty, level, row, even_odd)
-        row, qty = self.next_corporate_action(sid, qty, level + 1, row, even_odd)
-        return row, qty
+    def proceed_corporate_action(self, sid, qty, basis, level, row, even_odd):
+        row, qty, basis = self.output_corp_action(sid, qty, basis, level, row, even_odd)
+        row = self.next_corporate_action(sid, qty, basis, level + 1, row, even_odd)
+        return row
 
-    def next_corporate_action(self, sid, qty, level, row, even_odd):
+    def next_corporate_action(self, sid, qty, basis, level, row, even_odd):
         # get list of deals that were closed as result of current corporate action
         open_query = executeSQL(self.db, "SELECT d.open_sid AS open_sid, os.type AS op_type "
                                          "FROM deals AS d "
@@ -631,14 +634,14 @@ class TaxesRus:
             open_sid, op_type = readSQLrecord(open_query)
 
             if op_type == TransactionType.Trade:
-                row, qty = self.output_purchase(open_sid, qty, level, row, even_odd)
+                row, qty = self.output_purchase(open_sid, qty, basis, level, row, even_odd)
             elif op_type == TransactionType.CorporateAction:
-                row, qty = self.proceed_corporate_action(open_sid, qty, level, row, even_odd)
+                row, qty = self.proceed_corporate_action(open_sid, qty, basis, level, row, even_odd)
             else:
                 assert False
-        return row, qty
+        return row
 
-    def output_purchase(self, sid, proceed_qty, level, row, even_odd):
+    def output_purchase(self, sid, proceed_qty, basis, level, row, even_odd):
         if proceed_qty <= 0:
             return row, proceed_qty
 
@@ -657,6 +660,7 @@ class TaxesRus:
                            "WHERE os.id = :sid",
                            [(":sid", sid)], named=True)
         purchase['operation'] = ' ' * level * 3 + "Покупка"
+        purchase['basis_ratio'] = 100.0 * basis
         deal_qty = purchase['qty']
         purchase['qty'] = proceed_qty if proceed_qty < deal_qty else deal_qty
         purchase['amount'] = round(purchase['price'] * purchase['qty'], 2)
@@ -667,12 +671,12 @@ class TaxesRus:
         self.add_report_row(row, purchase, even_odd=even_odd)
         return row + 1, proceed_qty - purchase['qty']
 
-    def output_corp_action(self, sid, proceed_qty, level, row, even_odd):
+    def output_corp_action(self, sid, proceed_qty, basis, level, row, even_odd):
         if proceed_qty <= 0:
             return row, proceed_qty
 
         action = readSQL(self.db, "SELECT a.timestamp AS a_date, a.type, s1.name AS symbol, a.qty AS qty, "
-                                  "s2.name AS symbol_new, a.qty_new AS qty_new, a.note AS note "
+                                  "s2.name AS symbol_new, a.qty_new AS qty_new, a.note AS note, a.basis_ratio "
                                   "FROM sequence AS os "
                                   "JOIN deals AS d ON os.id=d.open_sid AND os.type = 5 "
                                   "LEFT JOIN corp_actions AS a ON os.operation_id=a.id "
@@ -683,8 +687,11 @@ class TaxesRus:
         action['operation'] = ' ' * level * 3 + "Корп. действие"
         qty_before = action['qty'] * proceed_qty / action['qty_new']
         qty_after = proceed_qty
+        if action['type'] == CorporateAction.SpinOff:
+            basis = basis * action['basis_ratio']
         action['description'] = self.CorpActionText[action['type']].format(old=action['symbol'],
                                                                            new=action['symbol_new'],
-                                                                           before=qty_before, after=qty_after)
+                                                                           before=qty_before, after=qty_after,
+                                                                           ratio=100.0 * basis)
         self.add_report_row(row, action, even_odd=even_odd, alternative=1)
-        return row + 1, qty_before
+        return row + 1, qty_before, basis
