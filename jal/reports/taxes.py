@@ -194,9 +194,9 @@ class TaxesRus:
                              "с предшествовавшими корпоративными событиями",
                              {
                                  0: ("Операция", 20, ("operation", "text"), ("operation", "text"), "Описание операции"),
-                                 1: ("Дата операции", 10, ("t_date", "date"), ("a_date", "date"), "Дата совершения операции (и уплаты комиссии из столбца 11)"),
-                                 2: ("Ценная бумага", 8, ("symbol", "text"), ("description", "text", 0, 13, 0), "Краткое наименование ценной бумаги"),
-                                 3: ("Номер сделки", 10, ("trade_number", "text"), None, "Номер сделки"),
+                                 1: ("Дата операции", 10, ("t_date", "date"), ("action_date", "date"), "Дата совершения операции (и уплаты комиссии из столбца 11)"),
+                                 2: ("Номер сделки", 10, ("trade_number", "text"), ("action_number", "text"), "Номер сделки"),
+                                 3: ("Ценная бумага", 8, ("symbol", "text"), ("description", "text", 0, 12, 0), "Краткое наименование ценной бумаги"),
                                  4: ("Кол-во", 8, ("qty", "number", 4), None, "Количество ЦБ в сделке"),
                                  5: ("Курс {currency}/RUB на дату сделки", 9, ("t_rate", "number", 4), None, "Официальный курс валюты,  установленный ЦБ РФ на дату операции"),
                                  6: ("Дата поставки", 10, ("s_date", "date"), None, "Дата рачетов по сделке / Дата поставки ценных бумаг"),
@@ -703,7 +703,8 @@ class TaxesRus:
         if proceed_qty <= 0:
             return row, proceed_qty
 
-        action = readSQL(self.db, "SELECT a.timestamp AS a_date, a.type, s1.name AS symbol, a.qty AS qty, "
+        action = readSQL(self.db, "SELECT a.timestamp AS action_date, a.number AS action_number, a.type, "
+                                  "s1.name AS symbol, a.qty AS qty, "
                                   "s2.name AS symbol_new, a.qty_new AS qty_new, a.note AS note, a.basis_ratio "
                                   "FROM sequence AS os "
                                   "LEFT JOIN corp_actions AS a ON os.operation_id=a.id "
