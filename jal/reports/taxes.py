@@ -724,6 +724,11 @@ class TaxesRus:
             else:
                 basis = basis * (1 - action['basis_ratio'])
                 qty_before = action['qty']
+        elif action['type'] == CorporateAction.StockDividend:
+            qty_before = action['qty'] * proceed_qty / action['qty_new']
+            qty_after = proceed_qty - qty_before
+            action['description'] = self.CorpActionText[action['type']].format(new=action['symbol_new'],
+                                                                               after=qty_after)
         else:
             qty_before = action['qty'] * proceed_qty / action['qty_new']
             qty_after = proceed_qty

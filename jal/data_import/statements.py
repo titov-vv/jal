@@ -35,6 +35,7 @@ class IBKR:
     DummyExchange = "VALUE"
     SpinOffPattern = "^(.*)\(.* SPINOFF +(\d+) +FOR +(\d+) +\(.*$"
     SplitPattern = "^.* SPLIT +(\d+) +FOR +(\d+) +\(.*$"
+    StockDividendPattern = "^.* STOCK DIVIDEND .* (\d+) +FOR +(\d+) +\(.*$"
 
     AssetType = {
         'CASH': PredefinedAsset.Money,
@@ -543,7 +544,16 @@ class StatementLoader(QObject):
                                       action['quantity'], action['symbol'], action['quantity'], 1, action['description'])
                 cnt += 2
             elif action['type'] == CorporateAction.StockDividend:
-                self.createCorpAction(action['accountId'], CorporateAction.StockDividend, action['dateTime'], action['transactionID'], action['symbol'], 0,
+                parts = re.match(IBKR.StockDividendPattern, action['description'], re.IGNORECASE)
+                if not parts:
+                    logging.error(g_tr('StatementLoader', "Failed to parse corp.action Stock Dividend data"))
+                    return
+                mult_a = int(parts.group(1))
+                mult_b = int(parts.group(2))
+                qty_old = mult_b * action['quantity'] / mult_a
+                if abs(qty_old - round(qty_old)) < 0.00001:   # We got an approximation - take closest integer if it's close enough
+                    qty_old = round(qty_old)
+                self.createCorpAction(action['accountId'], CorporateAction.StockDividend, action['dateTime'], action['transactionID'], action['symbol'], qty_old,
                                       action['symbol'], action['quantity'], 1, action['description'])
                 cnt += 1
             elif action['type'] == CorporateAction.Split:

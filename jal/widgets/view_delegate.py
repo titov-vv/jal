@@ -436,9 +436,11 @@ class OperationsNotesDelegate(QStyledItemDelegate):
             qty_before = record.value("amount")
             qty_after = record.value("qty_trid")
             basis = 100.0 * record.value("price")
+            if sub_type == CorporateAction.StockDividend:
+                qty_after = qty_after - qty_before
             text = CorpActionNames[sub_type].format(old=symbol_before, new=symbol_after, before=qty_before,
                                                     after=qty_after)
-            if sub_type == CorporateAction.SpinOff or sub_type == CorporateAction.StockDividend:
+            if sub_type == CorporateAction.SpinOff:
                 text += f"; {basis:.2f}% " + g_tr('OperationsDelegate', " cost basis") + "\n" + record.value("note2")
         else:
             assert False
@@ -505,6 +507,8 @@ class OperationsAmountDelegate(QStyledItemDelegate):
             sub_type = record.value("fee_tax")
             qty_before = -record.value("amount")
             qty_after = record.value("qty_trid")
+            if sub_type == CorporateAction.StockDividend:
+                qty_after = qty_after + qty_before  # qty_before have been taken with '-' sign
             if sub_type == CorporateAction.SpinOff or sub_type == CorporateAction.StockDividend:
                 text = ""
             else:

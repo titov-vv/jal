@@ -301,7 +301,6 @@ class Ledger:
                                               "UNION ALL "
                                               "SELECT "
                                               "CASE "
-                                              "    WHEN ca.type = 5 THEN ca.qty+ca.qty_new "
                                               "    WHEN ca.type = 2 AND ca.asset_id=:asset_id THEN ca.qty "
                                               "    ELSE ca.qty_new "
                                               "END AS qty "
@@ -345,12 +344,10 @@ class Ledger:
                                "UNION ALL "
                                "SELECT s.id, "
                                "CASE "
-                               "    WHEN c.type = 5 THEN (c.qty+c.qty_new) "
                                "    WHEN c.type = 2 AND c.asset_id=:asset_id THEN c.qty "
                                "    ELSE c.qty_new "
                                "END AS qty, "
                                "CASE "
-                               "    WHEN c.type = 5 THEN coalesce(l.value/(c.qty+c.qty_new), 0) "
                                "    WHEN c.type = 2 AND c.asset_id=:asset_id THEN coalesce(l.value/c.qty, 0) "
                                "    ELSE coalesce(l.value/c.qty_new, 0) "
                                "END AS price "
@@ -507,15 +504,14 @@ class Ledger:
             if processed_qty == qty:
                 break
         # Asset allocations for different corporate actions:
-        # +-----------------+-------+-----+------------+-----------+----------+---------------+
-        # |                 | Asset | Qty | cost basis | Asset new | Qty new  | cost basis    |
-        # +-----------------+-------+-----+------------+-----------+----------+---------------+
-        # | Symbol Change   |   A   |  N  |  100 %     |     B     |    N     |   100%        |
-        # | (R-)Split       |   A   |  N  |  100 %     |     A     |    M     |   100%        |
-        # | Merger          |   A   |  N  |  100 %     |     B     |    M     |   100%        |
-        # | Spin-Off        |   A   |  N  |  100 %     |   A & B   | AxN, BxM | X% & (100-X)% |
-        # | Stock Dividend  |   A   |  N  |  100 %     |     A     | Ax(N+M)  |   100% + 0%   |
-        # +-----------------+-------+-----+------------+-----------+----------+---------------+
+        # +-----------------+-------+-----+------------+-----------+----------+---------------+--------------------+
+        # |                 | Asset | Qty | cost basis | Asset new | Qty new  | cost basis    | The same algo for: |
+        # +-----------------+-------+-----+------------+-----------+----------+---------------+--------------------+
+        # | Symbol Change   |   A   |  N  |  100 %     |     B     |    N     |   100%        |                    |
+        # | (R-)Split       |   A   |  N  |  100 %     |     A     |    M     |   100%        | Stock Dividend     |
+        # | Merger          |   A   |  N  |  100 %     |     B     |    M     |   100%        |                    |
+        # | Spin-Off        |   A   |  N  |  100 %     |   A & B   | AxN, BxM | X% & (100-X)% |                    |
+        # +-----------------+-------+-----+------------+-----------+----------+---------------+--------------------+
         # Withdraw value with old quantity of old asset as it common for all corporate action
         self.appendTransaction(BookAccount.Assets, -processed_qty, -processed_value)
 
@@ -527,8 +523,6 @@ class Ledger:
             new_value = processed_value * self.current['fee_tax']
             # Modify value for old asset
             self.appendTransaction(BookAccount.Assets, self.current['amount'], processed_value - new_value)
-        if self.current['subtype'] == CorporateAction.StockDividend:
-            new_qty = self.current['amount'] + self.current['price']
         # Create value for new asset
         self.current['asset'] = new_asset
         self.appendTransaction(BookAccount.Assets, new_qty, new_value)
