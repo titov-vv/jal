@@ -546,7 +546,8 @@ class StatementLoader(QObject):
             elif action['type'] == CorporateAction.StockDividend:
                 parts = re.match(IBKR.StockDividendPattern, action['description'], re.IGNORECASE)
                 if not parts:
-                    logging.error(g_tr('StatementLoader', "Failed to parse corp.action Stock Dividend data"))
+                    logging.error(
+                        g_tr('StatementLoader', "Failed to parse corp.action Stock Dividend data for ") + f"{action}")
                     return
                 mult_a = int(parts.group(1))
                 mult_b = int(parts.group(2))
@@ -559,7 +560,7 @@ class StatementLoader(QObject):
             elif action['type'] == CorporateAction.Split:
                 parts = re.match(IBKR.SplitPattern, action['description'], re.IGNORECASE)
                 if not parts:
-                    logging.error(g_tr('StatementLoader', "Failed to parse corp.action Split data"))
+                    logging.error(g_tr('StatementLoader', "Failed to parse corp.action Split data for ") + f"{action}")
                     return
                 mult_a = int(parts.group(1))
                 mult_b = int(parts.group(2))

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="en" sourcelanguage="en">
+<!DOCTYPE TS>
+<TS version="2.1" language="en" sourcelanguage="en">
 <context>
     <name>AbortWindow</name>
     <message>
@@ -132,12 +133,12 @@
     <message>
         <location filename="../db/helpers.py" line="145"/>
         <source>Database format is outdated</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../db/helpers.py" line="145"/>
         <source>Do you agree to upgrade your data to newer format?</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -486,12 +487,12 @@ Application will be terminated now</source>
     <message>
         <location filename="../db/backup_restore.py" line="76"/>
         <source>Backup schema version expected: </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../db/backup_restore.py" line="76"/>
         <source>Backup schema version actual: </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -507,43 +508,38 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="506"/>
+        <location filename="../db/ledger.py" line="554"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="506"/>
+        <location filename="../db/ledger.py" line="554"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="511"/>
+        <location filename="../db/ledger.py" line="559"/>
         <source>Re-build ledger from: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="543"/>
+        <location filename="../db/ledger.py" line="591"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="543"/>
+        <location filename="../db/ledger.py" line="591"/>
         <source>, new frontier: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="536"/>
+        <location filename="../db/ledger.py" line="584"/>
         <source>Processed </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="536"/>
+        <location filename="../db/ledger.py" line="584"/>
         <source>k records, current frontier: </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../db/ledger.py" line="399"/>
-        <source>Conversion failed. Asset amount is not enogh. Date: </source>
         <translation></translation>
     </message>
     <message>
@@ -554,6 +550,11 @@ Application will be terminated now</source>
     <message>
         <location filename="../db/ledger.py" line="262"/>
         <source>Can&apos;t process trade as bank isn&apos;t set for investment account</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../db/ledger.py" line="443"/>
+        <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation></translation>
     </message>
 </context>
@@ -1027,17 +1028,17 @@ Application will be terminated now</source>
     <message>
         <location filename="../ui/ui_main_window.py" line="1119"/>
         <source>C&amp;ountries</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../ui/ui_main_window.py" line="1120"/>
         <source>&amp;Quotes</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../ui/ui_main_window.py" line="1195"/>
         <source>Basis Ratio, %:</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -1202,42 +1203,42 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="657"/>
+        <location filename="../widgets/view_delegate.py" line="663"/>
         <source>Symbol change</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="658"/>
+        <location filename="../widgets/view_delegate.py" line="664"/>
         <source>Split</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="659"/>
+        <location filename="../widgets/view_delegate.py" line="665"/>
         <source>Spin-off</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="660"/>
+        <location filename="../widgets/view_delegate.py" line="666"/>
         <source>Merger</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="671"/>
+        <location filename="../widgets/view_delegate.py" line="677"/>
         <source> Opened with </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="673"/>
+        <location filename="../widgets/view_delegate.py" line="679"/>
         <source> Closed with </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="677"/>
+        <location filename="../widgets/view_delegate.py" line="683"/>
         <source> Long</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="679"/>
+        <location filename="../widgets/view_delegate.py" line="685"/>
         <source> Short</source>
         <translation></translation>
     </message>
@@ -1247,8 +1248,13 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="661"/>
+        <location filename="../widgets/view_delegate.py" line="667"/>
         <source>Stock dividend</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../widgets/view_delegate.py" line="444"/>
+        <source> cost basis</source>
         <translation></translation>
     </message>
 </context>
@@ -1409,17 +1415,17 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="288"/>
+        <location filename="../data_import/statements.py" line="289"/>
         <source>No selection</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="288"/>
+        <location filename="../data_import/statements.py" line="289"/>
         <source>Please select different account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="281"/>
+        <location filename="../data_import/statements.py" line="282"/>
         <source>Invalid account selected</source>
         <translation></translation>
     </message>
@@ -1556,249 +1562,254 @@ Application will be terminated now</source>
 <context>
     <name>StatementLoader</name>
     <message>
-        <location filename="../data_import/statements.py" line="315"/>
+        <location filename="../data_import/statements.py" line="316"/>
         <source>Select statement file to import</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="400"/>
+        <location filename="../data_import/statements.py" line="401"/>
         <source>Failed to parse Interactive Brokers flex-report</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="390"/>
+        <location filename="../data_import/statements.py" line="391"/>
         <source>Load IB Flex-statement for account </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="496"/>
+        <location filename="../data_import/statements.py" line="497"/>
         <source>*** MANUAL ACTION REQUIRED ***</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="793"/>
+        <location filename="../data_import/statements.py" line="806"/>
         <source>*** MANUAL ENTRY REQUIRED ***</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="782"/>
+        <location filename="../data_import/statements.py" line="795"/>
         <source>Dividend already exists: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="794"/>
+        <location filename="../data_import/statements.py" line="807"/>
         <source>Unhandled tax pattern found: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="813"/>
+        <location filename="../data_import/statements.py" line="826"/>
         <source>Dividend not found for withholding tax: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="825"/>
+        <location filename="../data_import/statements.py" line="838"/>
         <source>Can&apos;t read statement file</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="834"/>
+        <location filename="../data_import/statements.py" line="847"/>
         <source>Can&apos;t get account number from the statement.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="837"/>
+        <location filename="../data_import/statements.py" line="850"/>
         <source>Account with number </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="837"/>
+        <location filename="../data_import/statements.py" line="850"/>
         <source> not found. Import cancelled.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="849"/>
+        <location filename="../data_import/statements.py" line="862"/>
         <source>Unknown operation type </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="853"/>
+        <location filename="../data_import/statements.py" line="866"/>
         <source>Unknown asset </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="561"/>
+        <location filename="../data_import/statements.py" line="572"/>
         <source>Corporate action type is not supported: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="552"/>
-        <source>Failed to parse corp.action Split data</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../data_import/statements.py" line="84"/>
+        <location filename="../data_import/statements.py" line="85"/>
         <source>Unsupported date/time format: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="97"/>
+        <location filename="../data_import/statements.py" line="98"/>
         <source>Asset type isn&apos;t supported: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="110"/>
+        <location filename="../data_import/statements.py" line="111"/>
         <source>Corporate action isn&apos;t supported: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="134"/>
+        <location filename="../data_import/statements.py" line="135"/>
         <source>Cash transaction isn&apos;t supported: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="143"/>
+        <location filename="../data_import/statements.py" line="144"/>
         <source>Can&apos;t get currencies for accounts: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="146"/>
+        <location filename="../data_import/statements.py" line="147"/>
         <source>Can&apos;t get account currency for fee account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="159"/>
+        <location filename="../data_import/statements.py" line="160"/>
         <source>Can&apos;t get account currency for account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="337"/>
+        <location filename="../data_import/statements.py" line="338"/>
         <source>Account not found: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="402"/>
+        <location filename="../data_import/statements.py" line="403"/>
         <source>IB Flex-statement loaded successfully</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="462"/>
+        <location filename="../data_import/statements.py" line="463"/>
         <source>Failed to load attribute: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="476"/>
+        <location filename="../data_import/statements.py" line="477"/>
         <source>Securities loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="488"/>
+        <location filename="../data_import/statements.py" line="489"/>
         <source>Trades loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="497"/>
+        <location filename="../data_import/statements.py" line="498"/>
         <source>Corporate action cancelled: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="500"/>
+        <location filename="../data_import/statements.py" line="501"/>
         <source>Corporate actions are supported for stocks only</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="513"/>
+        <location filename="../data_import/statements.py" line="514"/>
         <source>Can&apos;t find paired record for </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="521"/>
+        <location filename="../data_import/statements.py" line="522"/>
         <source>Failed to parse Spin-off data for </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="540"/>
+        <location filename="../data_import/statements.py" line="541"/>
         <source>Can&apos;t find paired record for: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="564"/>
+        <location filename="../data_import/statements.py" line="575"/>
         <source>Corporate actions loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="576"/>
+        <location filename="../data_import/statements.py" line="587"/>
         <source>Tax transaction already exists </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="588"/>
+        <location filename="../data_import/statements.py" line="599"/>
         <source>Taxes loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="613"/>
+        <location filename="../data_import/statements.py" line="624"/>
         <source>Cash transactions loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="635"/>
+        <location filename="../data_import/statements.py" line="646"/>
         <source>Trade already exists: #</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="667"/>
+        <location filename="../data_import/statements.py" line="678"/>
         <source>Zero quantity in cash trade: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="707"/>
+        <location filename="../data_import/statements.py" line="719"/>
         <source>Corporate action already exists: #</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="803"/>
+        <location filename="../data_import/statements.py" line="816"/>
         <source>New country added (set Tax Treaty in Data-&gt;Countries menu): </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="679"/>
+        <location filename="../data_import/statements.py" line="690"/>
         <source>Transfer/Exchange already exists: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="757"/>
+        <location filename="../data_import/statements.py" line="770"/>
         <source>Deposit of </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="759"/>
+        <location filename="../data_import/statements.py" line="772"/>
         <source>Select account to withdraw from:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="761"/>
+        <location filename="../data_import/statements.py" line="774"/>
         <source>Withdrawal of </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="763"/>
+        <location filename="../data_import/statements.py" line="776"/>
         <source>Select account to deposit to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="221"/>
+        <location filename="../data_import/statements.py" line="222"/>
         <source>Failed to add new asset: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="385"/>
+        <location filename="../data_import/statements.py" line="386"/>
         <source>Confirmation</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="385"/>
+        <location filename="../data_import/statements.py" line="386"/>
         <source>Statement period starts before last recorded operation for the account. Continue import?</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statements.py" line="549"/>
+        <source>Failed to parse corp.action Stock Dividend data for </source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statements.py" line="563"/>
+        <source>Failed to parse corp.action Split data for </source>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -2066,17 +2077,17 @@ Application will be terminated now</source>
     <message>
         <location filename="../ui_custom/table_view_config.py" line="275"/>
         <source>Quotes</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../ui_custom/table_view_config.py" line="275"/>
         <source>Date</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../ui_custom/table_view_config.py" line="275"/>
         <source>Quote</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -2198,12 +2209,12 @@ Application will be terminated now</source>
 <context>
     <name>TaxesRus</name>
     <message>
-        <location filename="../reports/taxes.py" line="243"/>
+        <location filename="../reports/taxes.py" line="247"/>
         <source>Can&apos;t open tax form file </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="261"/>
+        <location filename="../reports/taxes.py" line="265"/>
         <source>Can&apos;t write tax form into file </source>
         <translation></translation>
     </message>
@@ -2231,12 +2242,12 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
 </context>
-<context encoding="UTF-8">
+<context>
     <name>XLSL</name>
-    <message encoding="UTF-8">
+    <message>
         <location filename="../reports/helpers.py" line="15"/>
         <source>ИТОГО</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -2244,7 +2255,7 @@ Application will be terminated now</source>
     <message>
         <location filename="../reports/helpers.py" line="26"/>
         <source>Can&apos;t save report into file </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 </TS>
