@@ -513,7 +513,7 @@ class StatementLoader(QObject):
                     logging.error(g_tr('StatementLoader', "Can't find paired record for ") + f"{action}")
                     continue
                 self.createCorpAction(action['accountId'], CorporateAction.Merger, action['dateTime'], action['transactionID'], paired_records[0]['symbol'],
-                                      -paired_records[0]['quantity'], action['symbol'], action['quantity'], action['description'])
+                                      -paired_records[0]['quantity'], action['symbol'], action['quantity'], 1, action['description'])
                 cnt += 2
             elif action['type'] == CorporateAction.SpinOff:
                 parts = re.match(IBKR.SpinOffPattern, action['description'], re.IGNORECASE)
@@ -525,7 +525,7 @@ class StatementLoader(QObject):
                 mult_b = int(parts.group(3))
                 qty_old = mult_b * action['quantity'] / mult_a
                 self.createCorpAction(action['accountId'], CorporateAction.SpinOff, action['dateTime'], action['transactionID'], asset_id_old,
-                                      qty_old, action['symbol'], action['quantity'], action['description'])
+                                      qty_old, action['symbol'], action['quantity'], 0, action['description'])
                 cnt += 1
             elif action['type'] == CorporateAction.SymbolChange:
                 # additional info is in next dummy record where old symbol is changed to *.OLD
@@ -540,11 +540,11 @@ class StatementLoader(QObject):
                     logging.error(g_tr('StatementLoader', "Can't find paired record for: ") + f"{action}")
                     continue
                 self.createCorpAction(action['accountId'], CorporateAction.SymbolChange, action['dateTime'], action['transactionID'], paired_records[0]['symbol'],
-                                      action['quantity'], action['symbol'], action['quantity'], action['description'])
+                                      action['quantity'], action['symbol'], action['quantity'], 1, action['description'])
                 cnt += 2
             elif action['type'] == CorporateAction.StockDividend:
                 self.createCorpAction(action['accountId'], CorporateAction.StockDividend, action['dateTime'], action['transactionID'], action['symbol'], 0,
-                                      action['symbol'], action['quantity'], action['description'])
+                                      action['symbol'], action['quantity'], 1, action['description'])
                 cnt += 1
             elif action['type'] == CorporateAction.Split:
                 parts = re.match(IBKR.SplitPattern, action['description'], re.IGNORECASE)
@@ -555,7 +555,7 @@ class StatementLoader(QObject):
                 mult_b = int(parts.group(2))
                 qty_new = mult_a * action['quantity'] / mult_b
                 self.createCorpAction(action['accountId'], CorporateAction.Split, action['dateTime'], action['transactionID'], action['symbol'],
-                                      action['quantity'], action['symbol'], qty_new, action['description'])
+                                      action['quantity'], action['symbol'], qty_new, 1, action['description'])
                 cnt += 1
             else:
                 logging.error(g_tr('StatementLoader', "Corporate action type is not supported: ")
@@ -696,7 +696,8 @@ class StatementLoader(QObject):
                             (":f_amount", f_amount), (":t_amount", t_amount), (":note", note)])
         self.db.commit()
 
-    def createCorpAction(self, account_id, type, timestamp, number, asset_id_old, qty_old, asset_id_new, qty_new, note):
+    def createCorpAction(self, account_id, type, timestamp, number, asset_id_old, qty_old, asset_id_new, qty_new,
+                         basis_ratio, note):
         action_id = readSQL(self.db,
                            "SELECT id FROM corp_actions "
                            "WHERE timestamp=:timestamp AND type = :type AND account_id = :account AND number = :number "
@@ -709,11 +710,12 @@ class StatementLoader(QObject):
 
         _ = executeSQL(self.db,
                        "INSERT INTO corp_actions (timestamp, number, account_id, type, "
-                       "asset_id, qty, asset_id_new, qty_new, note) "
-                       "VALUES (:timestamp, :number, :account, :type, :asset, :qty, :asset_new, :qty_new, :note)",
+                       "asset_id, qty, asset_id_new, qty_new, basis_ratio, note) "
+                       "VALUES (:timestamp, :number, :account, :type, "
+                       ":asset, :qty, :asset_new, :qty_new, :basis_ratio, :note)",
                        [(":timestamp", timestamp), (":number", number), (":account", account_id), (":type", type),
-                        (":asset", asset_id_old), (":qty", float(qty_old)),
-                        (":asset_new", asset_id_new), (":qty_new", float(qty_new)), (":note", note)])
+                        (":asset", asset_id_old), (":qty", float(qty_old)), (":asset_new", asset_id_new),
+                        (":qty_new", float(qty_new)), (":basis_ratio", basis_ratio), (":note", note)])
         self.db.commit()
 
     def loadIBDividend(self, dividend):
