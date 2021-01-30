@@ -590,10 +590,9 @@ class TaxesRus:
                            "LEFT JOIN quotes AS qt ON ldt.timestamp=qt.timestamp AND a.currency_id=qt.asset_id "
                            "LEFT JOIN t_last_dates AS ldts ON t.settlement=ldts.ref_id "
                            "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id "
-                           "WHERE t.timestamp>=:begin AND t.timestamp<:end AND d.account_id=:account_id "
-                           "ORDER BY t.timestamp",
-                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id)])
-
+                           "WHERE t.timestamp<:end AND d.account_id=:account_id "
+                           "ORDER BY s.name, t.timestamp",
+                           [(":end", self.year_end), (":account_id", self.account_id)])
         row = self.data_start_row
         even_odd = 1
         basis = 1
@@ -618,22 +617,23 @@ class TaxesRus:
             sale['income_rub'] = sale['amount_rub']
             sale['spending_rub'] = sale['fee_rub']
 
-            self.add_report_row(row, sale, even_odd=even_odd)
-            row = row + 1
-
-            row = self.proceed_corporate_action(sale['sid'], sale['symbol'], sale['qty'], basis, 1, row, even_odd)
-
-            self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [13, 14, 15])
-            row = row + 1
+            if sale["t_date"] < self.year_begin:    # Don't show deal that is before report year (level = -1)
+                row = self.proceed_corporate_action(sale['sid'], sale['symbol'], sale['qty'], basis, -1, row, even_odd)
+            else:
+                self.add_report_row(row, sale, even_odd=even_odd)
+                row = row + 1
+                row = self.proceed_corporate_action(sale['sid'], sale['symbol'], sale['qty'], basis, 1, row, even_odd)
+                self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [13, 14, 15])
+                row = row + 2
 
             even_odd = even_odd + 1
-            row = row + 1  # to keep different lots separated
             previous_symbol = sale['symbol']
         return row
 
     def proceed_corporate_action(self, sid, symbol, qty, basis, level, row, even_odd):
         row, qty, symbol, basis = self.output_corp_action(sid, symbol, qty, basis, level, row, even_odd)
-        row = self.next_corporate_action(sid, symbol, qty, basis, level + 1, row, even_odd)
+        next_level = -1 if level == -1 else (level + 1)
+        row = self.next_corporate_action(sid, symbol, qty, basis, next_level, row, even_odd)
         return row
 
     def next_corporate_action(self, sid, symbol, qty, basis, level, row, even_odd):
@@ -689,10 +689,12 @@ class TaxesRus:
         purchase['income_rub'] = 0
         purchase['spending_rub'] = round(basis*(purchase['amount_rub'] + purchase['fee_rub']), 2)
 
-        self.add_report_row(row, purchase, even_odd=even_odd)
         _ = executeSQL(self.db, "INSERT INTO t_last_assets (id, name, total_value) VALUES (:trade_id, '', :qty)",
                        [(":trade_id", purchase['trade_id']), (":qty", purchase['qty'])])
-        return row + 1, proceed_qty - purchase['qty']
+        if level >= 0:  # Don't output if level==-1, i.e. corp action is out of report scope
+            self.add_report_row(row, purchase, even_odd=even_odd)
+            row += 1
+        return row, proceed_qty - purchase['qty']
 
     def output_corp_action(self, sid, symbol, proceed_qty, basis, level, row, even_odd):
         if proceed_qty <= 0:
@@ -725,5 +727,7 @@ class TaxesRus:
             action['description'] = self.CorpActionText[action['type']].format(old=action['symbol'],
                                                                                new=action['symbol_new'],
                                                                                before=qty_before, after=qty_after)
-        self.add_report_row(row, action, even_odd=even_odd, alternative=1)
-        return row + 1, qty_before, action['symbol'], basis
+        if level >= 0:  # Don't output if level==-1, i.e. corp action is out of report scope
+            self.add_report_row(row, action, even_odd=even_odd, alternative=1)
+            row += 1
+        return row, qty_before, action['symbol'], basis
