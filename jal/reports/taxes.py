@@ -653,7 +653,7 @@ class TaxesRus:
             if op_type == TransactionType.Trade:
                 row, qty = self.output_purchase(open_sid, qty, basis, level, row, even_odd)
             elif op_type == TransactionType.CorporateAction:
-                row, qty = self.proceed_corporate_action(open_sid, symbol, qty, basis, level, row, even_odd)
+                row = self.proceed_corporate_action(open_sid, symbol, qty, basis, level, row, even_odd)
             else:
                 assert False
         return row
