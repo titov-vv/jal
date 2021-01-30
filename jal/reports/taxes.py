@@ -579,7 +579,7 @@ class TaxesRus:
         query = executeSQL(self.db,
                            "SELECT d.open_sid AS sid, s.name AS symbol, d.qty AS qty, t.number AS trade_number, "
                            "t.timestamp AS t_date, qt.quote AS t_rate, t.settlement AS s_date, qts.quote AS s_rate, "
-                           "t.price AS price, t.fee AS fee "
+                           "t.price AS price, t.fee AS fee, s.full_name AS full_name "
                            "FROM deals AS d "
                            "JOIN sequence AS os ON os.id=d.open_sid AND os.type = 5 "
                            "JOIN sequence AS cs ON cs.id=d.close_sid AND cs.type = 3 "
@@ -603,6 +603,10 @@ class TaxesRus:
             if previous_symbol != sale['symbol']:
                 # Clean processed qty records if symbol have changed
                 _ = executeSQL(self.db, "DELETE FROM t_last_assets")
+                self.current_sheet.write(row, 0, f"Сделки по бумаге: {sale['symbol']} - {sale['full_name']}",
+                                         self.reports_xls.formats.Bold())
+                previous_symbol = sale['symbol']
+                row += 1
             sale['operation'] = "Продажа"
             sale['basis_ratio'] = 100.0 * basis
             sale['amount'] = round(sale['price'] * sale['qty'], 2)
@@ -621,13 +625,12 @@ class TaxesRus:
                 row = self.proceed_corporate_action(sale['sid'], sale['symbol'], sale['qty'], basis, -1, row, even_odd)
             else:
                 self.add_report_row(row, sale, even_odd=even_odd)
-                row = row + 1
+                row += 1
                 row = self.proceed_corporate_action(sale['sid'], sale['symbol'], sale['qty'], basis, 1, row, even_odd)
                 self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [13, 14, 15])
-                row = row + 2
+                row += 1
 
             even_odd = even_odd + 1
-            previous_symbol = sale['symbol']
         return row
 
     def proceed_corporate_action(self, sid, symbol, qty, basis, level, row, even_odd):

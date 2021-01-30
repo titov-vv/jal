@@ -73,7 +73,8 @@ class xslxFormat:
         self.text_font_size = 9
 
     def Bold(self):
-        return self.wbk.add_format({'bold': True})
+        return self.wbk.add_format({'font_size': self.text_font_size,
+                                    'bold': True})
 
     def ColumnHeader(self):
         return self.wbk.add_format({'font_size': self.text_font_size,
