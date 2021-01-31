@@ -41,7 +41,7 @@
 ![Main window](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/main_window.png?raw=true)  
 Хорошим индикатором может служить совпадение конечного баланса счёта.  
 Возможны необольшие отклонения, у меня они составляют несколько центов. Они связаны с тем, что Interactive Brokers округляют налог в отчётах - чтобы исправить это вы можете проголосовать по [этой ссылке](https://interactivebrokers.com/en/general/poll/featuresPoll.php?sid=15422).
-6. Если ваш отчёт содержит корпоративные действия (особенно Spin-Off), то я рекомендую ознакомиться с *[логикой, которая используется *jal* для их обработки](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/corporate-actions.md)
+6. Если ваш отчёт содержит корпоративные действия (особенно Spin-Off), то я рекомендую ознакомиться с [логикой, которая используется *jal* для их обработки](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/corporate_actions.md)
 7. При подготовке декларации все суммы нужно пересчитать в рубли - для этого необходимо загрузить курсы валют.
 Сделать это можно с помощью меню *Load->Load quotes...* (в русской версии *Загрузить->Загрузить Котировки...*) и указав необходимый диапазон дат:  
 ![Quotes](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/update_quotes.png?raw=true)
