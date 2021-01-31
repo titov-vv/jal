@@ -2,7 +2,7 @@ from functools import partial
 from datetime import datetime, timezone
 import logging
 
-from jal.constants import Setup, TransactionType, CorporateAction
+from jal.constants import Setup, TransactionType, CorporateAction, PredefinedCategory
 from jal.reports.helpers import XLSX
 from jal.reports.dlsg import DLSG
 from jal.ui_custom.helpers import g_tr
@@ -179,16 +179,6 @@ class TaxesRus:
                                  15: ("Финансовый результат, {currency}", 12, ("profit", "number", 2, 0, 1), None, "Финансовый результат сделки в валюте счета")
                              }
                              ),
-            "Комиссии, Платежи": (self.prepare_broker_fees,
-                                 "Отчет по комиссиям и прочим платежам в отчетном периоде",
-                                 {
-                                     0: ("Описание", 50, ("note", "text"), "Описание платежа"),
-                                     1: ("Сумма, {currency}", 8, ("amount", "number", 2), "Сумма платежа в валюте счёта"),
-                                     2: ("Дата оплаты", 10, ("payment_date", "date"), "Дата платежа"),
-                                     3: ("Курс {currency}/RUB на дату оплаты", 10, ("rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату платежа"),
-                                     4: ("Сумма, RUB", 10, ("amount_rub", "number", 2), "Сумма платежа в рублях (= Столбец 2 * Столбец 4)")
-                                 }
-                                 ),
             "Корп.события": (self.prepare_corporate_actions,
                              "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде "
                              "с предшествовавшими корпоративными событиями",
@@ -210,7 +200,28 @@ class TaxesRus:
                                  14: ("Доход, RUB (код 1530)", 12, ("income_rub", "number", 2), None, "Доход, полученных от продажи ценных бумаг"),
                                  15: ("Расход, RUB (код 201)", 12, ("spending_rub", "number", 2), None, "Расходы, понесённые на покупку ценных бумаг и уплату комиссий"),
                              }
-                             )
+                             ),
+            "Комиссии": (self.prepare_broker_fees,
+                                  "Отчет по комиссиям и прочим платежам в отчетном периоде",
+                                  {
+                                      0: ("Описание", 50, ("note", "text"), "Описание платежа"),
+                                      1: ("Сумма, {currency}", 8, ("amount", "number", 2), "Сумма платежа в валюте счёта"),
+                                      2: ("Дата оплаты", 10, ("payment_date", "date"), "Дата платежа"),
+                                      3: ("Курс {currency}/RUB на дату оплаты", 10, ("rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату платежа"),
+                                      4: ("Сумма, RUB", 10, ("amount_rub", "number", 2), "Сумма платежа в рублях (= Столбец 2 * Столбец 4)")
+                                  }
+                                  ),
+            "Проценты": (self.prepare_broker_interest,
+                                  "Отчет по комиссиям и прочим платежам в отчетном периоде",
+                                  {
+                                      0: ("Описание", 50, ("note", "text"), "Описание платежа"),
+                                      1: ("Сумма, {currency}", 8, ("amount", "number", 2), "Сумма платежа в валюте счёта"),
+                                      2: ("Дата выплаты", 10, ("payment_date", "date"), "Дата платежа"),
+                                      3: ("Курс {currency}/RUB на дату выплаты", 10, ("rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату платежа"),
+                                      4: ("Доход, RUB (код 1011)", 10, ("amount_rub", "number", 2), "Сумма дохода в рублях (= Столбец 2 * Столбец 4)"),
+                                      5: ("Налог, RUB", 10, ("tax_rub", "number", 2), "Сумма налога к уплате (13% от столбца 5)")
+                                  }
+                                  )
         }
 
     def showTaxesDialog(self, parent):
@@ -561,8 +572,10 @@ class TaxesRus:
                            "LEFT JOIN accounts AS c ON c.id = :account_id "
                            "LEFT JOIN t_last_dates AS ld ON a.timestamp=ld.ref_id "
                            "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND c.currency_id=q.asset_id "
-                           "WHERE a.timestamp>=:begin AND a.timestamp<:end AND a.account_id=:account_id",
-                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id)])
+                           "WHERE a.timestamp>=:begin AND a.timestamp<:end "
+                           "AND a.account_id=:account_id AND d.category_id=:fee",
+                           [(":begin", self.year_begin), (":end", self.year_end),
+                            (":account_id", self.account_id), (":fee", PredefinedCategory.Fees)])
         row = start_row = self.data_start_row
         while query.next():
             fee = readSQLrecord(query, named=True)
@@ -571,6 +584,30 @@ class TaxesRus:
             self.add_report_row(row, fee, even_odd=row)
             row += 1
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [3, 4])
+        return row + 1
+
+    # -----------------------------------------------------------------------------------------------------------------------
+    def prepare_broker_interest(self):
+        query = executeSQL(self.db,
+                           "SELECT a.timestamp AS payment_date, d.sum AS amount, d.note AS note, q.quote AS rate "
+                           "FROM actions AS a "
+                           "LEFT JOIN action_details AS d ON d.pid=a.id "
+                           "LEFT JOIN accounts AS c ON c.id = :account_id "
+                           "LEFT JOIN t_last_dates AS ld ON a.timestamp=ld.ref_id "
+                           "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND c.currency_id=q.asset_id "
+                           "WHERE a.timestamp>=:begin AND a.timestamp<:end "
+                           "AND a.account_id=:account_id AND d.category_id=:fee",
+                           [(":begin", self.year_begin), (":end", self.year_end),
+                            (":account_id", self.account_id), (":fee", PredefinedCategory.Interest)])
+        row = start_row = self.data_start_row
+        while query.next():
+            interest = readSQLrecord(query, named=True)
+            interest['amount'] = interest['amount']
+            interest['amount_rub'] = round(interest['amount'] * interest['rate'], 2) if interest['rate'] else 0
+            interest['tax_rub'] = round(0.13 * interest['amount_rub'], 2)
+            self.add_report_row(row, interest, even_odd=row)
+            row += 1
+        self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [3, 4, 5])
         return row + 1
 
     # -----------------------------------------------------------------------------------------------------------------------

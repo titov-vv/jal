@@ -36,7 +36,7 @@ class XLSX:
     def add_totals_footer(self, sheet, start_row, footer_row, columns_list):
         if columns_list[0] is not None:
             sheet.write(footer_row, columns_list[0], "ИТОГО", self.formats.ColumnFooter())
-        if footer_row > (start_row + 1):  # Don't put formulas with pre-definded errors
+        if footer_row > start_row:  # Don't put formulas with pre-definded errors
             for i in columns_list[1:]:
                 if i > 25:
                     raise ValueError

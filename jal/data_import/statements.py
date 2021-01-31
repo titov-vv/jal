@@ -120,8 +120,8 @@ class IBKR:
             'Deposits/Withdrawals':         IBKRCashOp.DepositWithdrawal,
             'Other Fees':                   IBKRCashOp.Fee,
             'Commission Adjustments':       IBKRCashOp.Fee,
-            'Broker Interest Paid':         IBKRCashOp.Interest,
-            'Broker Interest Received':     IBKRCashOp.Fee
+            'Broker Interest Paid':         IBKRCashOp.Fee,
+            'Broker Interest Received':     IBKRCashOp.Interest
         }
 
         if name not in data.attrib:
