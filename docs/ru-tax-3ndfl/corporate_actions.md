@@ -5,13 +5,13 @@
 ![Corporate Actions](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/corporate_actions.png?raw=true)  
 
 При расчёте сумм доходов и расходов при корпоративных действиях для российского налогового отчёта я руководствовался следующим:  
-1. Split, Symbol Change и Stock Dividend:  
+**1. Split, Symbol Change и Stock Dividend**  
    п.13 ст. 214.1 НК РФ:  
    *В случае, если организацией-эмитентом был осуществлен обмен (конвертация) акций, при реализации акций, полученных налогоплательщиком в результате обмена (конвертации),
    в качестве документально подтвержденных расходов налогоплательщика признаются расходы по приобретению акций, которыми владел налогоплательщик до их обмена (конвертации).*
    Соотвественно 100% стоимости старых акций принимается в качестве суммарной стоимости акций после корпоративного действия.  
    
-2. Merger:  
+**2. Merger**  
    п.13 ст. 214.1 НК РФ:  
    *При реализации акций (долей, паев), полученных налогоплательщиком при реорганизации организаций, расходами на их приобретение признается стоимость, 
    определяемая в соответствии с пунктами 4 - 6 статьи 277 настоящего Кодекса*  
@@ -21,7 +21,7 @@
    признается равной стоимости конвертированных акций реорганизуемой организации по данным налогового учета акционера на дату завершения реорганизации*
    Соответственно стоимость новых акций компании B принимается равной стоимости исходных акций компании A.
 
-3. Spin-Off:  
+**3. Spin-Off**  
    п.13 ст. 214.1 НК РФ:  
    *При реализации акций (долей, паев), полученных налогоплательщиком при реорганизации организаций, расходами на их приобретение признается стоимость, 
    определяемая в соответствии с пунктами 4 - 6 статьи 277 настоящего Кодекса*  
@@ -41,7 +41,7 @@
    ![Form 8937, Report of Organizational Actions Affecting Basis of Securities](https://www.irs.gov/forms-pubs/about-form-8937), которая определяет пропорции стоимости активов в строке 16 
    *"Describe the calculation of the change in basis and the data that supports the calculation, such as the market values of securities and the valuation dates"* 
    
-Примеры известных мне Spin-Off:
+Примеры известных мне распределений стоимости для Spin-Off:
 
-2019/04/08 - Spin-Off of Alcon from Novartis. Alcon cost basis 12.2166% (![From 8937](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/cost_basis/20190416_Form8937-NVS_ALC_SpinOff.pdf))
-2020/11/17 - Spin-Off of Viatris from Pfizer. Viatris cost basis 5.20% (![Form 8937](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/cost_basis/20201130_Form8937_PFE_VTRS_SpinOff.pdf))
+2019/04/08 - Spin-Off of Alcon from Novartis. Alcon cost basis 12.2166% (![From 8937](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/cost_basis/20190416_Form8937-NVS_ALC_SpinOff.pdf))  
+2020/11/17 - Spin-Off of Viatris from Pfizer. Viatris cost basis 5.20% (![Form 8937](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/cost_basis/20201130_Form8937_PFE_VTRS_SpinOff.pdf))  
