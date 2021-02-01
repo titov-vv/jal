@@ -11,12 +11,12 @@ from PySide2.QtWidgets import QDialog
 
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from jal.constants import Setup, MarketDataFeed
-from jal.db.helpers import executeSQL
+from jal.db.helpers import executeSQL, readSQLrecord
 from jal.ui_custom.helpers import g_tr
 
 
 # ===================================================================================================================
-# Function downlaod URL and return it content as string or empty string if site returns error
+# Function download URL and return it content as string or empty string if site returns error
 # ===================================================================================================================
 def get_web_data(url):
     response = requests.get(url)
@@ -52,6 +52,7 @@ class QuotesUpdateDialog(QDialog, Ui_UpdateQuotesDlg):
 # ===================================================================================================================
 # Worker class
 # ===================================================================================================================
+# noinspection SpellCheckingInspection
 class QuoteDownloader(QObject):
     download_completed = Signal()
 
@@ -80,45 +81,49 @@ class QuoteDownloader(QObject):
 
         # Collect list of assets that are/were held on end date
         executeSQL(self.db,
-            "INSERT INTO holdings_aux(asset) "
-            "SELECT l.asset_id AS asset FROM ledger AS l "
-            "WHERE l.book_account = 4 AND l.timestamp <= :end_timestamp "
-            "GROUP BY l.asset_id "
-            "HAVING sum(l.amount) > :tolerance "
-            "UNION "
-            "SELECT DISTINCT l.asset_id AS asset FROM ledger AS l "
-            "WHERE l.book_account = 4 AND l.timestamp >= :start_timestamp AND l.timestamp <= :end_timestamp "
-            "UNION "
-            "SELECT DISTINCT a.currency_id AS asset FROM ledger AS l "
-            "LEFT JOIN accounts AS a ON a.id = l.account_id "
-            "WHERE (l.book_account = 3 OR l.book_account = 5) "
-            "AND l.timestamp >= :start_timestamp AND l.timestamp <= :end_timestamp",
+                   "INSERT INTO holdings_aux(asset) "
+                   "SELECT l.asset_id AS asset FROM ledger AS l "
+                   "WHERE l.book_account = 4 AND l.timestamp <= :end_timestamp "
+                   "GROUP BY l.asset_id "
+                   "HAVING sum(l.amount) > :tolerance "
+                   "UNION "
+                   "SELECT DISTINCT l.asset_id AS asset FROM ledger AS l "
+                   "WHERE l.book_account = 4 AND l.timestamp >= :start_timestamp AND l.timestamp <= :end_timestamp "
+                   "UNION "
+                   "SELECT DISTINCT a.currency_id AS asset FROM ledger AS l "
+                   "LEFT JOIN accounts AS a ON a.id = l.account_id "
+                   "WHERE (l.book_account = 3 OR l.book_account = 5) "
+                   "AND l.timestamp >= :start_timestamp AND l.timestamp <= :end_timestamp",
                    [(":start_timestamp", start_timestamp),
                     (":end_timestamp", end_timestamp),
                     (":tolerance", Setup.CALC_TOLERANCE)])
 
         # Get a list of symbols ordered by data source ID
-        query = executeSQL(self.db, "SELECT h.asset, a.name, a.src_id, a.isin, MAX(q.timestamp) AS last_timestamp "
+        query = executeSQL(self.db, "SELECT h.asset AS asset_id, a.name AS name, a.src_id AS feed_id, a.isin AS isin, "
+                                    "MIN(q.timestamp) AS first_timestamp, MAX(q.timestamp) AS last_timestamp "
                                     "FROM holdings_aux AS h "
                                     "LEFT JOIN assets AS a ON a.id=h.asset "
                                     "LEFT JOIN quotes AS q ON q.asset_id=h.asset "
                                     "GROUP BY h.asset "
                                     "ORDER BY a.src_id")
         while query.next():
-            asset_id = query.value(0)
-            asset = query.value(1)
-            feed_id = query.value(2)
-            isin = query.value(3)
-            last_timestamp = query.value(4) if query.value(4) != '' else 0
-            from_timestamp = last_timestamp if last_timestamp > start_timestamp else start_timestamp
+            asset = readSQLrecord(query, named=True)
+            first_timestamp = asset['first_timestamp'] if asset['first_timestamp'] != '' else 0
+            last_timestamp = asset['last_timestamp'] if asset['last_timestamp'] != '' else 0
+            if start_timestamp < first_timestamp:
+                from_timestamp = start_timestamp
+            else:
+                from_timestamp = last_timestamp if last_timestamp > start_timestamp else start_timestamp
+            if end_timestamp < from_timestamp:
+                continue
             try:
-                data = self.data_loaders[feed_id](asset, isin, from_timestamp, end_timestamp)
+                data = self.data_loaders[asset['feed_id']](asset['name'], asset['isin'], from_timestamp, end_timestamp)
             except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
                 logging.warning(g_tr('QuotesUpdateDialog', "No data were downloaded for ") + f"{asset}")
                 continue
             if data is not None:
                 for date, quote in data.iterrows():  # Date in pandas dataset is in UTC by default
-                    self.SubmitQuote(asset_id, asset, int(date.timestamp()), float(quote[0]))
+                    self.SubmitQuote(asset['asset_id'], asset['name'], int(date.timestamp()), float(quote[0]))
         logging.info(g_tr('QuotesUpdateDialog', "Download completed"))
 
     def PrepareRussianCBReader(self):
@@ -139,7 +144,8 @@ class QuoteDownloader(QObject):
 
     def CBR_DataReader(self, currency_code, _isin, start_timestamp, end_timestamp):
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%d/%m/%Y')
-        date2 = (datetime.utcfromtimestamp(end_timestamp) + timedelta(days=1)).strftime('%d/%m/%Y')  # add 1 as CBR sets rate a day ahead
+        # add 1 day to end_timestamp as CBR sets rate are a day ahead
+        date2 = (datetime.utcfromtimestamp(end_timestamp) + timedelta(days=1)).strftime('%d/%m/%Y')
         code = str(self.CBR_codes.loc[self.CBR_codes["ISO_name"] == currency_code, "CBR_code"].values[0]).strip()
         url = f"http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1={date1}&date_req2={date2}&VAL_NM_RQ={code}"
         xml_root = xml_tree.fromstring(get_web_data(url))
