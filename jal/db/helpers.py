@@ -200,6 +200,7 @@ def get_account_id(db, account_name):
         id = 0
     return id
 
+# -------------------------------------------------------------------------------------------------------------------
 def get_account_name(db, account_id):
     return readSQL(db, "SELECT name FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
 
@@ -217,3 +218,7 @@ def account_last_date(db, account_number):
                              [(":account_number", account_number)])
     last_timestamp = 0 if last_timestamp == '' else last_timestamp
     return last_timestamp
+
+# -------------------------------------------------------------------------------------------------------------------
+def get_asset_name(db, asset_id):
+    return readSQL(db, "SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])

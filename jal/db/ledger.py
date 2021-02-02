@@ -6,7 +6,7 @@ from jal.constants import Setup, BookAccount, TransactionType, ActionSubtype, Tr
     PredefinedCategory, PredefinedPeer
 from PySide2.QtCore import Qt, QDate, QDateTime
 from PySide2.QtWidgets import QDialog, QMessageBox
-from jal.db.helpers import executeSQL, readSQL, readSQLrecord
+from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_asset_name
 from jal.db.routines import calculateBalances, calculateHoldings
 from jal.ui_custom.helpers import g_tr
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
@@ -429,7 +429,34 @@ class Ledger:
         }
         operationTransfer[self.current['subtype']]()
 
+    def updateStockDividendAssets(self):
+        asset_amount = self.getAmount(BookAccount.Assets, self.current['asset'])
+        self.current['price'] = self.current['price'] + asset_amount
+        self.current['amount'] = asset_amount
+        asset = get_asset_name(self.db, self.current['asset'])
+        QMessageBox().information(None, g_tr('Ledger', "Confirmation"),
+                                  g_tr('Ledger', "Stock dividend for was updated for ") + asset +
+                                  f" @{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d.%m.%Y')}\n" +
+                                  g_tr('Ledger', "Please check that quantity is correct."),
+                                  QMessageBox.Ok)
+        _ = executeSQL(self.db, "DROP TRIGGER IF EXISTS corp_after_update")  # FIXME improve code with triggers
+        _ = executeSQL(self.db, "UPDATE corp_actions SET qty=:qty, qty_new=:qty_new WHERE id=:id",
+                       [(":id", self.current['id']),
+                        (":qty", self.current['amount']), (":qty_new", self.current['price'])])
+        _ = executeSQL(self.db, "CREATE TRIGGER corp_after_update "
+                                "AFTER UPDATE OF timestamp, account_id, type, asset_id, qty, asset_id_new, qty_new "
+                                "ON corp_actions FOR EACH ROW "
+                                "BEGIN "
+                                "DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; "
+                                "DELETE FROM sequence WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; "
+                                "DELETE FROM ledger_sums WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; "
+                                "END")
+
     def processCorporateAction(self):
+        # Stock dividends are imported without initial stock amounts -> correction happens here
+        if self.current['subtype'] == CorporateAction.StockDividend and self.current['amount'] < 0:
+            self.updateStockDividendAssets()
+
         seq_id = self.current_seq
         account_id = self.current['account']
         asset_id = self.current['asset']

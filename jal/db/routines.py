@@ -123,7 +123,7 @@ def calculateHoldings(db, timestamp, currency):
     _ = executeSQL(db,
                    "INSERT INTO holdings (level1, level2, currency, account, asset, asset_name, "
                    "qty, open, quote, share, profit_rel, profit, value, value_adj) "
-                   "SELECT * FROM ( """
+                   "SELECT * FROM ( "
                    "SELECT 0 AS level1, 0 AS level2, c.name AS currency, a.name AS account, "
                    "s.name AS asset, s.full_name AS asset_name, "
                    "h.qty, h.value/h.qty AS open, h.quote, 100*h.quote*h.qty/h.total AS share, "
