@@ -30,7 +30,7 @@ class PandasModel(QAbstractTableModel):
     def rowCount(self, parent=None):
         return self._data.shape[0]
 
-    def columnCount(self, parnet=None):
+    def columnCount(self, parent=None):
         return self._data.shape[1] + 1    # +1 as extra leftmost column serves as a category header
 
     def data(self, index, role=Qt.DisplayRole):
@@ -189,20 +189,20 @@ class Reports(QObject):
              (":begin", begin), (":end", end)])
         self.db.commit()
         self.query = executeSQL(self.db,
-                                "SELECT c.id, c.level, c.path, "
+                                "SELECT c.id AS id, c.level AS level, c.path AS category, "
                                 "strftime('%Y', datetime(p.row_key, 'unixepoch')) AS year, "
-                                "strftime('%m', datetime(p.row_key, 'unixepoch')) AS month, p.value "
+                                "strftime('%m', datetime(p.row_key, 'unixepoch')) AS month, p.value AS value"
                                 "FROM categories_tree AS c "
                                 "LEFT JOIN t_pivot AS p ON p.col_key=c.id "
                                 "ORDER BY c.path, year, month")
         table = []
         while self.query.next():
-            id, level, category, year, month, value = readSQLrecord(self.query)
-            turnover = value if value != '' else 0
+            record = readSQLrecord(self.query, named=True)
+            turnover = record['value'] if record['value'] != '' else 0
             table.append({
-                'category': category,
-                'Y': year,
-                'M': month,
+                'category': record['category'],
+                'Y': record['year'],
+                'M': record['month'],
                 'turnover': turnover
             })
         data = pd.DataFrame(table)
