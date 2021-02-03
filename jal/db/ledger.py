@@ -4,12 +4,13 @@ from datetime import datetime
 from math import copysign
 from jal.constants import Setup, BookAccount, TransactionType, ActionSubtype, TransferSubtype, CorporateAction, \
     PredefinedCategory, PredefinedPeer
-from PySide2.QtCore import Qt, QDate, QDateTime
-from PySide2.QtWidgets import QDialog, QMessageBox
-from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_asset_name
+from PySide2.QtCore import Qt, Slot, QDate, QDateTime
+from PySide2.QtWidgets import QDialog, QMessageBox, QMenu, QAction
+from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_asset_name, get_account_id, get_asset_id
 from jal.db.routines import calculateBalances, calculateHoldings
 from jal.ui_custom.helpers import g_tr
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
+from jal.db.tax_estimator import TaxEstimator
 
 
 class RebuildDialog(QDialog, Ui_ReBuildDialog):
@@ -58,10 +59,14 @@ class Ledger:
         self.balance_date = QDateTime.currentSecsSinceEpoch()
         self.holdings_date = QDateTime.currentSecsSinceEpoch()
         self.holdings_currency = None
+        self.holdings_index = None
+        self.estimator = None
 
     def setViews(self, balances, holdings):
         self.balances_view = balances
         self.holdings_view = holdings
+        self.holdings_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.holdings_view.customContextMenuRequested.connect(self.onHoldingsContextMenu)
 
     def setActiveBalancesOnly(self, active_only):
         if self.balance_active_only != active_only:
@@ -110,6 +115,15 @@ class Ledger:
             if holdings_model.data(holdings_model.index(row, 1)):
                 self.holdings_view.setSpan(row, 3, 1, 3)
         self.holdings_view.show()
+
+    @Slot()
+    def onHoldingsContextMenu(self, pos):
+        self.holdings_index = self.holdings_view.indexAt(pos)
+        contextMenu = QMenu(self.holdings_view)
+        actionEstimateTax = QAction(text=g_tr('Ledger', "Estimate Russian Tax"), parent=self.holdings_view)
+        actionEstimateTax.triggered.connect(self.estimateRussianTax)
+        contextMenu.addAction(actionEstimateTax)
+        contextMenu.popup(self.holdings_view.viewport().mapToGlobal(pos))
 
     # Returns timestamp of last operations that were calculated into ledger
     def getCurrentFrontier(self):
@@ -624,4 +638,13 @@ class Ledger:
         rebuild_dialog = RebuildDialog(parent, self.getCurrentFrontier())
         if rebuild_dialog.exec_():
             self.rebuild(from_timestamp=rebuild_dialog.getTimestamp(),
-                         fast_and_dirty=rebuild_dialog.isFastAndDirty(), silent=False)
+                         fast_and_dirty=rebuild_dialog.isFastAndDirt(), silent=False)
+
+    @Slot()
+    def estimateRussianTax(self):
+        model = self.holdings_index.model()
+        account_id = get_account_id(self.db, model.data(model.index(self.holdings_index.row(), 3), Qt.DisplayRole))
+        asset_id = get_asset_id(self.db, model.data(model.index(self.holdings_index.row(), 4), Qt.DisplayRole))
+        asset_qty = model.data(model.index(self.holdings_index.row(), 6), Qt.DisplayRole)
+        self.estimator = TaxEstimator(self.db, account_id, asset_id, asset_qty)
+        self.estimator.open()
