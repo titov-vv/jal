@@ -63,24 +63,29 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
         self.asset_name = get_asset_name(self.db, self.asset_id)
         self.asset_qty = asset_qty
         self.dataframe = None
+        self.ready = False
 
         self.setWindowTitle(g_tr('TaxEstimator', "Tax estimation for ") + self.asset_name)
         self.setWindowFlag(Qt.Tool)
         self.setGeometry(position.x(), position.y(), self.width(), self.height())
 
+        font = self.DealsView.horizontalHeader().font()
+        font.setBold(True)
+        self.DealsView.horizontalHeader().setFont(font)
+
         self.quote = 0
         self.rate = 1
         self.currency_name = ''
         self.prepare_tax()
+        if self.dataframe is None:
+            return
+
         self.QuoteLbl.setText(f"{self.quote:.4f}")
         self.RateLbl.setText(f"{self.rate:.4f} {self.currency_name}/RUB")
 
         self.model = TaxEstimatorModel(self.dataframe, self.currency_name)
         self.DealsView.setModel(self.model)
-
-        font = self.DealsView.horizontalHeader().font()
-        font.setBold(True)
-        self.DealsView.horizontalHeader().setFont(font)
+        self.ready = True
 
     def prepare_tax(self):
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")
@@ -110,19 +115,19 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
 
         self.quote = readSQL(self.db, "SELECT quote FROM t_last_quotes WHERE asset_id=:asset_id",
                              [(":asset_id", self.asset_id)])
-        if self.quote == '':
+        if self.quote is None:
             logging.error(g_tr('TaxEstimator', "Can't get current quote for ") + self.asset_name)
             return
         self.currency_name = readSQL(self.db, "SELECT s.name FROM accounts AS a "
                                               "LEFT JOIN assets AS s ON s.id=a.currency_id WHERE a.id=:account_id",
                                      [(":account_id", self.account_id)])
-        if self.currency_name == '':
+        if self.currency_name is None:
             logging.error(g_tr('TaxEstimator', "Can't get currency name for account"))
             return
         self.rate = readSQL(self.db, "SELECT quote FROM accounts AS a "
                                      "LEFT JOIN t_last_quotes AS q ON q.asset_id=a.currency_id WHERE id=:account_id",
                             [(":account_id", self.account_id)])
-        if self.rate == '':
+        if self.rate is None:
             logging.error(g_tr('TaxEstimator', "Can't get current rate for ") + self.currency_name)
             return
 

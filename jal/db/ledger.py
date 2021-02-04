@@ -649,4 +649,5 @@ class Ledger:
         asset_id = get_asset_id(self.db, model.data(model.index(self.holdings_index.row(), 4), Qt.DisplayRole))
         asset_qty = model.data(model.index(self.holdings_index.row(), 6), Qt.DisplayRole)
         self.estimator = TaxEstimator(self.db, account_id, asset_id, asset_qty, position)
-        self.estimator.open()
+        if self.estimator.ready:
+            self.estimator.open()
