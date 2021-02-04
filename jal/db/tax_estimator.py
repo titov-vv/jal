@@ -128,11 +128,11 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
         value = 0
         profit_rub = 0
         value_rub = 0
-        tax = 0
         while query.next():
             record = readSQLrecord(query, named=True)
-            record['qty'] = record['qty'] if record['qty'] >= remainder else remainder
+            record['qty'] = record['qty'] if record['qty'] <= remainder else remainder
             record['profit'] = record['qty'] * (self.quote - record['o_price'])
+            record['o_rate'] = 1 if record['o_rate'] == '' else record['o_rate']
             record['profit_rub'] = record['qty'] * (self.quote * self.rate - record['o_price'] * record['o_rate'])
             record['tax'] = 0.13 * record['profit_rub'] if record['profit_rub'] > 0 else 0
             table.append(record)
@@ -141,9 +141,9 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
             value += record['qty'] * record['o_price']
             profit_rub += record['profit_rub']
             value_rub += record['qty'] * record['o_price'] * record['o_rate']
-            tax += record['tax']
             if remainder <= 0:
                 break
+        tax = 0.13 * profit_rub if profit_rub > 0 else 0
         table.append(
             {'timestamp': g_tr("TaxEstimator", "TOTAL"), 'qty': self.asset_qty, 'o_price': value / self.asset_qty,
              'o_rate': value_rub / value,
