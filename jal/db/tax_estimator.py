@@ -132,7 +132,7 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
             record = readSQLrecord(query, named=True)
             record['qty'] = record['qty'] if record['qty'] <= remainder else remainder
             record['profit'] = record['qty'] * (self.quote - record['o_price'])
-            record['o_rate'] = 1 if record['o_rate'] == '' else record['o_rate']
+            record['o_rate'] = 1 if record['o_rate'] == '' else record['o_rate']  # FIXME calculate rate by timestamp if there is no settlement date
             record['profit_rub'] = record['qty'] * (self.quote * self.rate - record['o_price'] * record['o_rate'])
             record['tax'] = 0.13 * record['profit_rub'] if record['profit_rub'] > 0 else 0
             table.append(record)
