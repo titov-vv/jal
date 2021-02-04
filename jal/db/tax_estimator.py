@@ -1,3 +1,5 @@
+import logging
+
 import pandas as pd
 from PySide2.QtCore import Qt, QAbstractTableModel
 from PySide2.QtWidgets import QDialog
@@ -58,10 +60,11 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
         self.db = db
         self.account_id = account_id
         self.asset_id = asset_id
+        self.asset_name = get_asset_name(self.db, self.asset_id)
         self.asset_qty = asset_qty
         self.dataframe = None
 
-        self.setWindowTitle(g_tr('TaxEstimator', "Tax estimation for ") + get_asset_name(self.db, self.asset_id))
+        self.setWindowTitle(g_tr('TaxEstimator', "Tax estimation for ") + self.asset_name)
         self.setWindowFlag(Qt.Tool)
         self.setGeometry(position.x(), position.y(), self.width(), self.height())
 
@@ -87,12 +90,15 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
                        "INSERT INTO t_last_dates(ref_id, timestamp) "
                        "SELECT ref_id, coalesce(MAX(q.timestamp), 0) AS timestamp "
                        "FROM ("
+                       "SELECT t.timestamp AS ref_id FROM trades AS t "
+                       "WHERE t.account_id=:account_id AND t.asset_id=:asset_id "
+                       "UNION "
                        "SELECT t.settlement AS ref_id FROM trades AS t "
-                       "WHERE t.account_id=:account_id AND t.asset_id=:asset_id"
+                       "WHERE t.account_id=:account_id AND t.asset_id=:asset_id "
                        ") LEFT JOIN accounts AS a ON a.id = :account_id "
                        "LEFT JOIN quotes AS q ON ref_id >= q.timestamp AND a.currency_id=q.asset_id "
                        "WHERE ref_id IS NOT NULL "
-                       "GROUP BY ref_id",
+                       "GROUP BY ref_id ORDER BY ref_id",
                        [(":account_id", self.account_id), (":asset_id", self.asset_id)])
         _ = executeSQL(self.db,
                        "INSERT INTO t_last_quotes(timestamp, asset_id, quote) "
@@ -104,19 +110,28 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
 
         self.quote = readSQL(self.db, "SELECT quote FROM t_last_quotes WHERE asset_id=:asset_id",
                              [(":asset_id", self.asset_id)])
-        self.rate = readSQL(self.db, "SELECT quote FROM accounts AS a "
-                                     "LEFT JOIN t_last_quotes AS q ON q.asset_id=a.currency_id WHERE id=:account_id",
-                            [(":account_id", self.account_id)])
+        if self.quote == '':
+            logging.error(g_tr('TaxEstimator', "Can't get current quote for ") + self.asset_name)
+            return
         self.currency_name = readSQL(self.db, "SELECT s.name FROM accounts AS a "
                                               "LEFT JOIN assets AS s ON s.id=a.currency_id WHERE a.id=:account_id",
                                      [(":account_id", self.account_id)])
+        if self.currency_name == '':
+            logging.error(g_tr('TaxEstimator', "Can't get currency name for account"))
+            return
+        self.rate = readSQL(self.db, "SELECT quote FROM accounts AS a "
+                                     "LEFT JOIN t_last_quotes AS q ON q.asset_id=a.currency_id WHERE id=:account_id",
+                            [(":account_id", self.account_id)])
+        if self.rate == '':
+            logging.error(g_tr('TaxEstimator', "Can't get current rate for ") + self.currency_name)
+            return
 
         query = executeSQL(self.db,
                            "SELECT strftime('%d/%m/%Y', datetime(t.timestamp, 'unixepoch')) AS timestamp, "
                            "t.qty AS qty, t.price AS o_price, oq.quote AS o_rate FROM trades AS t "
                            "LEFT JOIN sequence AS s ON s.operation_id = t.id AND s.type = 3 "
                            "LEFT JOIN accounts AS ac ON ac.id = :account_id "
-                           "LEFT JOIN t_last_dates AS od ON od.ref_id = t.settlement "
+                           "LEFT JOIN t_last_dates AS od ON od.ref_id = IIF(t.settlement=0, t.timestamp, t.settlement) "
                            "LEFT JOIN quotes AS oq ON ac.currency_id=oq.asset_id AND oq.timestamp=od.timestamp "
                            "WHERE t.account_id=:account_id AND t.asset_id=:asset_id AND t.qty*(:total_qty)>0 "
                            "ORDER BY s.id DESC",
@@ -132,7 +147,7 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
             record = readSQLrecord(query, named=True)
             record['qty'] = record['qty'] if record['qty'] <= remainder else remainder
             record['profit'] = record['qty'] * (self.quote - record['o_price'])
-            record['o_rate'] = 1 if record['o_rate'] == '' else record['o_rate']  # FIXME calculate rate by timestamp if there is no settlement date
+            record['o_rate'] = 1 if record['o_rate'] == '' else record['o_rate']
             record['profit_rub'] = record['qty'] * (self.quote * self.rate - record['o_price'] * record['o_rate'])
             record['tax'] = 0.13 * record['profit_rub'] if record['profit_rub'] > 0 else 0
             table.append(record)
