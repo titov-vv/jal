@@ -3,6 +3,7 @@ from PySide2.QtCore import Qt, QAbstractTableModel
 from PySide2.QtWidgets import QDialog, QTableView, QVBoxLayout, QFrame
 from jal.db.helpers import executeSQL, readSQLrecord, get_asset_name
 from jal.ui_custom.helpers import g_tr
+from jal.ui.ui_tax_estimation import Ui_TaxEstimationDialog
 
 class TaxEstimatorModel(QAbstractTableModel):
     def __init__(self, data):
@@ -18,7 +19,7 @@ class TaxEstimatorModel(QAbstractTableModel):
     def data(self, index, role=Qt.DisplayRole):
         if index.isValid():
             if role == Qt.DisplayRole:
-                return self._data.iloc[index.row(), index.column()]
+                return str(self._data.iloc[index.row(), index.column()])
         return None
 
     def headerData(self, col, orientation, role=Qt.DisplayRole):
@@ -26,9 +27,11 @@ class TaxEstimatorModel(QAbstractTableModel):
             return str(self._data.columns[col])
         return None
 
-class TaxEstimator(QDialog):
+class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
     def __init__(self, db, account_id, asset_id, asset_qty, parent=None):
         super(TaxEstimator, self).__init__(parent)
+        self.setupUi(self)
+
         self.db = db
         self.account_id = account_id
         self.asset_id = asset_id
@@ -40,18 +43,8 @@ class TaxEstimator(QDialog):
 
         self.prepareTax()
 
-        # Create widgets
-        self.deals_view = QTableView(self)
-        self.deals_view.setFrameShape(QFrame.Panel)
         self.model = TaxEstimatorModel(self.dataframe)
-        self.deals_view.setModel(self.model)
-        # Create layout and add widgets
-        self.layout = QVBoxLayout()
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.addWidget(self.deals_view)
-        # Set dialog layout
-        self.setLayout(self.layout)
+        self.DealsView.setModel(self.model)
 
     def prepareTax(self):
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")
