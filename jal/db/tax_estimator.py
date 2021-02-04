@@ -1,7 +1,7 @@
 import pandas as pd
 from PySide2.QtCore import Qt, QAbstractTableModel
-from PySide2.QtWidgets import QDialog, QTableView, QVBoxLayout, QFrame
-from jal.db.helpers import executeSQL, readSQLrecord, get_asset_name
+from PySide2.QtWidgets import QDialog
+from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_asset_name
 from jal.ui_custom.helpers import g_tr
 from jal.ui.ui_tax_estimation import Ui_TaxEstimationDialog
 
@@ -41,12 +41,16 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
         self.setWindowTitle(g_tr('TaxEstimator', "Tax estimation for ") + get_asset_name(self.db, self.asset_id))
         self.setWindowFlag(Qt.Tool)
 
-        self.prepareTax()
+        self.quote = 0
+        self.rate = 1
+        self.prepare_tax()
+        self.QuoteLbl.setText(f"{self.quote:.4f}")
+        self.RateLbl.setText(f"{self.rate:.4f}")
 
         self.model = TaxEstimatorModel(self.dataframe)
         self.DealsView.setModel(self.model)
 
-    def prepareTax(self):
+    def prepare_tax(self):
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")
         _ = executeSQL(self.db, "DELETE FROM t_last_quotes")
 
@@ -69,24 +73,48 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
                        "GROUP BY asset_id",
                        [(":account_id", self.account_id), (":asset_id", self.asset_id)])
 
+        self.quote = readSQL(self.db, "SELECT quote FROM t_last_quotes WHERE asset_id=:asset_id",
+                             [(":asset_id", self.asset_id)])
+        self.rate = readSQL(self.db, "SELECT quote FROM accounts AS a "
+                                     "LEFT JOIN t_last_quotes AS q ON q.asset_id=a.currency_id WHERE id=:account_id",
+                            [(":account_id", self.account_id)])
+
         query = executeSQL(self.db,
                            "SELECT strftime('%d/%m/%Y', datetime(t.timestamp, 'unixepoch')) AS timestamp, "
-                           "t.qty AS qty, t.price AS o_price, oq.quote AS o_rate, "
-                           "lq.quote AS c_price, cq.quote AS c_rate FROM trades AS t "
+                           "t.qty AS qty, t.price AS o_price, oq.quote AS o_rate FROM trades AS t "
                            "LEFT JOIN sequence AS s ON s.operation_id = t.id AND s.type = 3 "
                            "LEFT JOIN accounts AS ac ON ac.id = :account_id "
                            "LEFT JOIN t_last_dates AS od ON od.ref_id = t.settlement "
                            "LEFT JOIN quotes AS oq ON ac.currency_id=oq.asset_id AND oq.timestamp=od.timestamp "
-                           "LEFT JOIN t_last_quotes AS lq ON lq.asset_id=:asset_id "
-                           "LEFT JOIN t_last_quotes AS cq ON cq.asset_id=ac.currency_id "
                            "WHERE t.account_id=:account_id AND t.asset_id=:asset_id AND t.qty*(:total_qty)>0 "
                            "ORDER BY s.id DESC",
                            [(":account_id", self.account_id), (":asset_id", self.asset_id),
                             (":total_qty", self.asset_qty)])
-
         table = []
+        remainder = self.asset_qty
+        profit = 0
+        value = 0
+        profit_rub = 0
+        value_rub = 0
+        tax = 0
         while query.next():
             record = readSQLrecord(query, named=True)
+            record['qty'] = record['qty'] if record['qty'] >= remainder else remainder
+            record['profit'] = record['qty'] * (self.quote - record['o_price'])
+            record['profit_rub'] = record['qty'] * (self.quote * self.rate - record['o_price'] * record['o_rate'])
+            record['tax'] = 0.13 * record['profit_rub']
             table.append(record)
+            remainder -= record['qty']
+            profit += record['profit']
+            value += record['qty'] * record['o_price']
+            profit_rub += record['profit_rub']
+            value_rub += record['qty'] * record['o_price'] * record['o_rate']
+            tax += record['tax']
+            if remainder <= 0:
+                break
+        table.append(
+            {'timestamp': g_tr("TaxEstimator", "TOTAL"), 'qty': self.asset_qty, 'o_price': value / self.asset_qty,
+             'o_rate': value_rub / value,
+             'profit': profit, 'profit_rub': profit_rub, 'tax': tax})
         data = pd.DataFrame(table)
         self.dataframe = data
