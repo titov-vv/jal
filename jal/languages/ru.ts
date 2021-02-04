@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="ru" sourcelanguage="en">
+<!DOCTYPE TS>
+<TS version="2.1" language="ru" sourcelanguage="en">
 <context>
     <name>AbortWindow</name>
     <message>
@@ -499,79 +500,79 @@ Application will be terminated now</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="85"/>
+        <location filename="../db/ledger.py" line="86"/>
         <source>Balance, </source>
         <translation>Баланс, </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="104"/>
+        <location filename="../db/ledger.py" line="105"/>
         <source>Value, </source>
         <translation>Оценка, </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="595"/>
+        <location filename="../db/ledger.py" line="597"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="595"/>
+        <location filename="../db/ledger.py" line="597"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation> операций требуют перерасчета. Вы ходите выполнить его прямо сейчас?</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="600"/>
+        <location filename="../db/ledger.py" line="602"/>
         <source>Re-build ledger from: </source>
         <translation>Перерасчет итогов с: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="632"/>
+        <location filename="../db/ledger.py" line="634"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation>Итоги рассчитаны. Затраченное время: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="632"/>
+        <location filename="../db/ledger.py" line="634"/>
         <source>, new frontier: </source>
         <translation>, новая граница: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="625"/>
+        <location filename="../db/ledger.py" line="627"/>
         <source>Processed </source>
         <translation>Обработано </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="625"/>
+        <location filename="../db/ledger.py" line="627"/>
         <source>k records, current frontier: </source>
         <translation>к записей, текущая граница: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="260"/>
+        <location filename="../db/ledger.py" line="262"/>
         <source>Can&apos;t process dividend as bank isn&apos;t set for investment account</source>
         <translation>Невозможно обработать дивиденд, т.к. не указан банк для инвестиционного счёта</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="276"/>
+        <location filename="../db/ledger.py" line="278"/>
         <source>Can&apos;t process trade as bank isn&apos;t set for investment account</source>
         <translation>Невозможно обработать сделку, т.к. не указан банк для инвестиционного счёта</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="484"/>
+        <location filename="../db/ledger.py" line="486"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation>Количество акций недостаточно для обработки корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="123"/>
+        <location filename="../db/ledger.py" line="124"/>
         <source>Estimate Russian Tax</source>
-        <translation type="unfinished"></translation>
+        <translation>Оценить налог для РФ</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="451"/>
+        <location filename="../db/ledger.py" line="453"/>
         <source>Stock dividend for was updated for </source>
-        <translation type="unfinished"></translation>
+        <translation>Дивиденд акциями был обновлён для </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="451"/>
+        <location filename="../db/ledger.py" line="453"/>
         <source>Please check that quantity is correct.</source>
-        <translation type="unfinished"></translation>
+        <translation>Пожалуйста проверьте корректность количества бумаг.</translation>
     </message>
 </context>
 <context>
@@ -2104,6 +2105,77 @@ Application will be terminated now</source>
     </message>
 </context>
 <context>
+    <name>TaxEstimationDialog</name>
+    <message>
+        <location filename="../ui/ui_tax_estimation.py" line="100"/>
+        <source>Tax Estimation</source>
+        <translation>Оценка налога</translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_estimation.py" line="101"/>
+        <source>Last quote:</source>
+        <translation>Последняя котировка:</translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_estimation.py" line="104"/>
+        <source>X.XX</source>
+        <translation>X.XX</translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_estimation.py" line="103"/>
+        <source>Current rate:</source>
+        <translation>Текущий курс:</translation>
+    </message>
+</context>
+<context>
+    <name>TaxEstimator</name>
+    <message>
+        <location filename="../db/tax_estimator.py" line="42"/>
+        <source>Date</source>
+        <translation>Дата</translation>
+    </message>
+    <message>
+        <location filename="../db/tax_estimator.py" line="64"/>
+        <source>Tax estimation for </source>
+        <translation>Оценка налога для </translation>
+    </message>
+    <message>
+        <location filename="../db/tax_estimator.py" line="147"/>
+        <source>TOTAL</source>
+        <translation>ИТОГО</translation>
+    </message>
+    <message>
+        <location filename="../db/tax_estimator.py" line="43"/>
+        <source>Qty</source>
+        <translation>Кол-во</translation>
+    </message>
+    <message>
+        <location filename="../db/tax_estimator.py" line="44"/>
+        <source>Open</source>
+        <translation>Цена откр.</translation>
+    </message>
+    <message>
+        <location filename="../db/tax_estimator.py" line="45"/>
+        <source>Rate, </source>
+        <translation>Курс, </translation>
+    </message>
+    <message>
+        <location filename="../db/tax_estimator.py" line="46"/>
+        <source>Profit, </source>
+        <translation>Прибыль, </translation>
+    </message>
+    <message>
+        <location filename="../db/tax_estimator.py" line="47"/>
+        <source>Profit, RUB</source>
+        <translation>Прибыль, RUB</translation>
+    </message>
+    <message>
+        <location filename="../db/tax_estimator.py" line="48"/>
+        <source>Tax, RUB</source>
+        <translation>Налог, RUB</translation>
+    </message>
+</context>
+<context>
     <name>TaxExportDialog</name>
     <message>
         <location filename="../reports/taxes.py" line="34"/>
@@ -2255,12 +2327,12 @@ Application will be terminated now</source>
         <translation>По</translation>
     </message>
 </context>
-<context encoding="UTF-8">
+<context>
     <name>XLSL</name>
-    <message encoding="UTF-8">
+    <message>
         <location filename="../reports/helpers.py" line="15"/>
         <source>ИТОГО</source>
-        <translation type="unfinished"></translation>
+        <translation>ИТОГО</translation>
     </message>
 </context>
 <context>

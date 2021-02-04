@@ -34,6 +34,10 @@ class Ui_TaxEstimationDialog(object):
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.LastQuoteLbl = QLabel(self.RateFrame)
         self.LastQuoteLbl.setObjectName(u"LastQuoteLbl")
+        font = QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.LastQuoteLbl.setFont(font)
 
         self.horizontalLayout_2.addWidget(self.LastQuoteLbl)
 
@@ -42,9 +46,9 @@ class Ui_TaxEstimationDialog(object):
 
         self.horizontalLayout_2.addWidget(self.QuoteLbl)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.RateSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.horizontalLayout_2.addItem(self.horizontalSpacer)
+        self.horizontalLayout_2.addItem(self.RateSpacer)
 
 
         self.horizontalLayout.addWidget(self.RateFrame)
@@ -58,6 +62,7 @@ class Ui_TaxEstimationDialog(object):
         self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.CurrentRateLbl = QLabel(self.QuoteFrame)
         self.CurrentRateLbl.setObjectName(u"CurrentRateLbl")
+        self.CurrentRateLbl.setFont(font)
 
         self.horizontalLayout_3.addWidget(self.CurrentRateLbl)
 
@@ -66,9 +71,9 @@ class Ui_TaxEstimationDialog(object):
 
         self.horizontalLayout_3.addWidget(self.RateLbl)
 
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.QuoteSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.horizontalLayout_3.addItem(self.horizontalSpacer_2)
+        self.horizontalLayout_3.addItem(self.QuoteSpacer)
 
 
         self.horizontalLayout.addWidget(self.QuoteFrame)
@@ -78,7 +83,10 @@ class Ui_TaxEstimationDialog(object):
 
         self.DealsView = QTableView(TaxEstimationDialog)
         self.DealsView.setObjectName(u"DealsView")
-        self.DealsView.verticalHeader().setDefaultSectionSize(21)
+        self.DealsView.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.DealsView.verticalHeader().setVisible(False)
+        self.DealsView.verticalHeader().setMinimumSectionSize(20)
+        self.DealsView.verticalHeader().setDefaultSectionSize(20)
 
         self.verticalLayout.addWidget(self.DealsView)
 

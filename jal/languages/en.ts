@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="en" sourcelanguage="en">
+<!DOCTYPE TS>
+<TS version="2.1" language="en" sourcelanguage="en">
 <context>
     <name>AbortWindow</name>
     <message>
@@ -497,79 +498,79 @@ Application will be terminated now</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="85"/>
+        <location filename="../db/ledger.py" line="86"/>
         <source>Balance, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="104"/>
+        <location filename="../db/ledger.py" line="105"/>
         <source>Value, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="595"/>
+        <location filename="../db/ledger.py" line="597"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="595"/>
+        <location filename="../db/ledger.py" line="597"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="600"/>
+        <location filename="../db/ledger.py" line="602"/>
         <source>Re-build ledger from: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="632"/>
+        <location filename="../db/ledger.py" line="634"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="632"/>
+        <location filename="../db/ledger.py" line="634"/>
         <source>, new frontier: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="625"/>
+        <location filename="../db/ledger.py" line="627"/>
         <source>Processed </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="625"/>
+        <location filename="../db/ledger.py" line="627"/>
         <source>k records, current frontier: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="260"/>
+        <location filename="../db/ledger.py" line="262"/>
         <source>Can&apos;t process dividend as bank isn&apos;t set for investment account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="276"/>
+        <location filename="../db/ledger.py" line="278"/>
         <source>Can&apos;t process trade as bank isn&apos;t set for investment account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="484"/>
+        <location filename="../db/ledger.py" line="486"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="123"/>
+        <location filename="../db/ledger.py" line="124"/>
         <source>Estimate Russian Tax</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="451"/>
+        <location filename="../db/ledger.py" line="453"/>
         <source>Stock dividend for was updated for </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="451"/>
+        <location filename="../db/ledger.py" line="453"/>
         <source>Please check that quantity is correct.</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -2100,6 +2101,77 @@ Application will be terminated now</source>
     </message>
 </context>
 <context>
+    <name>TaxEstimationDialog</name>
+    <message>
+        <location filename="../ui/ui_tax_estimation.py" line="100"/>
+        <source>Tax Estimation</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_estimation.py" line="101"/>
+        <source>Last quote:</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_estimation.py" line="104"/>
+        <source>X.XX</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_estimation.py" line="103"/>
+        <source>Current rate:</source>
+        <translation></translation>
+    </message>
+</context>
+<context>
+    <name>TaxEstimator</name>
+    <message>
+        <location filename="../db/tax_estimator.py" line="42"/>
+        <source>Date</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../db/tax_estimator.py" line="64"/>
+        <source>Tax estimation for </source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../db/tax_estimator.py" line="147"/>
+        <source>TOTAL</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../db/tax_estimator.py" line="43"/>
+        <source>Qty</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../db/tax_estimator.py" line="44"/>
+        <source>Open</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../db/tax_estimator.py" line="45"/>
+        <source>Rate, </source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../db/tax_estimator.py" line="46"/>
+        <source>Profit, </source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../db/tax_estimator.py" line="47"/>
+        <source>Profit, RUB</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../db/tax_estimator.py" line="48"/>
+        <source>Tax, RUB</source>
+        <translation></translation>
+    </message>
+</context>
+<context>
     <name>TaxExportDialog</name>
     <message>
         <location filename="../reports/taxes.py" line="34"/>
@@ -2251,12 +2323,12 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
 </context>
-<context encoding="UTF-8">
+<context>
     <name>XLSL</name>
-    <message encoding="UTF-8">
+    <message>
         <location filename="../reports/helpers.py" line="15"/>
         <source>ИТОГО</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>

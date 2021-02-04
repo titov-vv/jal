@@ -57,6 +57,12 @@
         </property>
         <item>
          <widget class="QLabel" name="LastQuoteLbl">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="text">
            <string>Last quote:</string>
           </property>
@@ -108,6 +114,12 @@
         </property>
         <item>
          <widget class="QLabel" name="CurrentRateLbl">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
           <property name="text">
            <string>Current rate:</string>
           </property>
@@ -140,8 +152,17 @@
    </item>
    <item>
     <widget class="QTableView" name="DealsView">
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+     <attribute name="verticalHeaderVisible">
+      <bool>false</bool>
+     </attribute>
+     <attribute name="verticalHeaderMinimumSectionSize">
+      <number>20</number>
+     </attribute>
      <attribute name="verticalHeaderDefaultSectionSize">
-      <number>21</number>
+      <number>20</number>
      </attribute>
     </widget>
    </item>

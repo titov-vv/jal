@@ -1,14 +1,16 @@
 import pandas as pd
 from PySide2.QtCore import Qt, QAbstractTableModel
 from PySide2.QtWidgets import QDialog
+from PySide2.QtGui import QFont
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_asset_name
 from jal.ui_custom.helpers import g_tr
 from jal.ui.ui_tax_estimation import Ui_TaxEstimationDialog
 
 class TaxEstimatorModel(QAbstractTableModel):
-    def __init__(self, data):
+    def __init__(self, data, currency):
         QAbstractTableModel.__init__(self)
         self._data = data
+        self._currency = currency
 
     def rowCount(self, parent=None):
         return self._data.shape[0]
@@ -19,16 +21,37 @@ class TaxEstimatorModel(QAbstractTableModel):
     def data(self, index, role=Qt.DisplayRole):
         if index.isValid():
             if role == Qt.DisplayRole:
-                return str(self._data.iloc[index.row(), index.column()])
+                if index.column() == 0:
+                    return self._data.iloc[index.row(), index.column()]
+                elif index.column() == 2 or index.column() == 3:
+                    return f"{self._data.iloc[index.row(), index.column()]:.4f}"
+                elif index.column() >= 4 or index.column() <= 6:
+                    return f"{self._data.iloc[index.row(), index.column()]:,.2f}"
+                else:
+                    return str(self._data.iloc[index.row(), index.column()])
+            elif role == Qt.TextAlignmentRole:
+                return Qt.AlignRight
+            elif role == Qt.FontRole:
+                if index.row() == (self._data.shape[0] - 1):
+                    bold = QFont()
+                    bold.setBold(True)
+                    return bold
         return None
 
     def headerData(self, col, orientation, role=Qt.DisplayRole):
-        if (orientation == Qt.Horizontal and role == Qt.DisplayRole):
-            return str(self._data.columns[col])
+        headers = [g_tr("TaxEstimator", "Date"),
+                   g_tr("TaxEstimator", "Qty"),
+                   g_tr("TaxEstimator", "Open"),
+                   g_tr("TaxEstimator", "Rate, ") + self._currency + "/RUB",
+                   g_tr("TaxEstimator", "Profit, ") + self._currency,
+                   g_tr("TaxEstimator", "Profit, RUB"),
+                   g_tr("TaxEstimator", "Tax, RUB")]
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return headers[col]
         return None
 
 class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
-    def __init__(self, db, account_id, asset_id, asset_qty, parent=None):
+    def __init__(self, db, account_id, asset_id, asset_qty, position, parent=None):
         super(TaxEstimator, self).__init__(parent)
         self.setupUi(self)
 
@@ -40,15 +63,21 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
 
         self.setWindowTitle(g_tr('TaxEstimator', "Tax estimation for ") + get_asset_name(self.db, self.asset_id))
         self.setWindowFlag(Qt.Tool)
+        self.setGeometry(position.x(), position.y(), self.width(), self.height())
 
         self.quote = 0
         self.rate = 1
+        self.currency_name = ''
         self.prepare_tax()
         self.QuoteLbl.setText(f"{self.quote:.4f}")
-        self.RateLbl.setText(f"{self.rate:.4f}")
+        self.RateLbl.setText(f"{self.rate:.4f} {self.currency_name}/RUB")
 
-        self.model = TaxEstimatorModel(self.dataframe)
+        self.model = TaxEstimatorModel(self.dataframe, self.currency_name)
         self.DealsView.setModel(self.model)
+
+        font = self.DealsView.horizontalHeader().font()
+        font.setBold(True)
+        self.DealsView.horizontalHeader().setFont(font)
 
     def prepare_tax(self):
         _ = executeSQL(self.db, "DELETE FROM t_last_dates")
@@ -78,6 +107,9 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
         self.rate = readSQL(self.db, "SELECT quote FROM accounts AS a "
                                      "LEFT JOIN t_last_quotes AS q ON q.asset_id=a.currency_id WHERE id=:account_id",
                             [(":account_id", self.account_id)])
+        self.currency_name = readSQL(self.db, "SELECT s.name FROM accounts AS a "
+                                              "LEFT JOIN assets AS s ON s.id=a.currency_id WHERE a.id=:account_id",
+                                     [(":account_id", self.account_id)])
 
         query = executeSQL(self.db,
                            "SELECT strftime('%d/%m/%Y', datetime(t.timestamp, 'unixepoch')) AS timestamp, "
@@ -102,7 +134,7 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
             record['qty'] = record['qty'] if record['qty'] >= remainder else remainder
             record['profit'] = record['qty'] * (self.quote - record['o_price'])
             record['profit_rub'] = record['qty'] * (self.quote * self.rate - record['o_price'] * record['o_rate'])
-            record['tax'] = 0.13 * record['profit_rub']
+            record['tax'] = 0.13 * record['profit_rub'] if record['profit_rub'] > 0 else 0
             table.append(record)
             remainder -= record['qty']
             profit += record['profit']

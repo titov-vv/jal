@@ -2,6 +2,7 @@ import logging
 
 from datetime import datetime
 from math import copysign
+from functools import partial
 from jal.constants import Setup, BookAccount, TransactionType, ActionSubtype, TransferSubtype, CorporateAction, \
     PredefinedCategory, PredefinedPeer
 from PySide2.QtCore import Qt, Slot, QDate, QDateTime
@@ -121,7 +122,8 @@ class Ledger:
         self.holdings_index = self.holdings_view.indexAt(pos)
         contextMenu = QMenu(self.holdings_view)
         actionEstimateTax = QAction(text=g_tr('Ledger', "Estimate Russian Tax"), parent=self.holdings_view)
-        actionEstimateTax.triggered.connect(self.estimateRussianTax)
+        actionEstimateTax.triggered.connect(
+            partial(self.estimateRussianTax, self.holdings_view.viewport().mapToGlobal(pos)))
         contextMenu.addAction(actionEstimateTax)
         contextMenu.popup(self.holdings_view.viewport().mapToGlobal(pos))
 
@@ -641,10 +643,10 @@ class Ledger:
                          fast_and_dirty=rebuild_dialog.isFastAndDirt(), silent=False)
 
     @Slot()
-    def estimateRussianTax(self):
+    def estimateRussianTax(self, position):
         model = self.holdings_index.model()
         account_id = get_account_id(self.db, model.data(model.index(self.holdings_index.row(), 3), Qt.DisplayRole))
         asset_id = get_asset_id(self.db, model.data(model.index(self.holdings_index.row(), 4), Qt.DisplayRole))
         asset_qty = model.data(model.index(self.holdings_index.row(), 6), Qt.DisplayRole)
-        self.estimator = TaxEstimator(self.db, account_id, asset_id, asset_qty)
+        self.estimator = TaxEstimator(self.db, account_id, asset_id, asset_qty, position)
         self.estimator.open()
