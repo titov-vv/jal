@@ -640,7 +640,7 @@ class Ledger:
         rebuild_dialog = RebuildDialog(parent, self.getCurrentFrontier())
         if rebuild_dialog.exec_():
             self.rebuild(from_timestamp=rebuild_dialog.getTimestamp(),
-                         fast_and_dirty=rebuild_dialog.isFastAndDirt(), silent=False)
+                         fast_and_dirty=rebuild_dialog.isFastAndDirty(), silent=False)
 
     @Slot()
     def estimateRussianTax(self, position):
