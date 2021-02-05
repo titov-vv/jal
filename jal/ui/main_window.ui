@@ -152,7 +152,7 @@
                    <second>0</second>
                    <year>2020</year>
                    <month>12</month>
-                   <day>31</day>
+                   <day>30</day>
                   </datetime>
                  </property>
                  <property name="displayFormat">
@@ -458,7 +458,7 @@
                 <item>
                  <widget class="QStackedWidget" name="OperationsTabs">
                   <property name="currentIndex">
-                   <number>5</number>
+                   <number>0</number>
                   </property>
                   <widget class="QWidget" name="NoOperationTab"/>
                   <widget class="QWidget" name="ActionDetailsTab">
@@ -653,10 +653,43 @@
                     <property name="bottomMargin">
                      <number>2</number>
                     </property>
-                    <item row="4" column="2">
-                     <widget class="AmountEdit" name="TradePriceEdit">
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                    <item row="2" column="5">
+                     <spacer name="horizontalSpacer_5">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="4" column="1">
+                     <widget class="QLabel" name="TradePriceLbl">
+                      <property name="text">
+                       <string>Price:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="0">
+                     <widget class="QLineEdit" name="TradeNumberEdit">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="toolTip">
+                       <string>Trade operation number</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="1">
+                     <widget class="QLabel" name="TradeAccountLbl">
+                      <property name="text">
+                       <string>Account:</string>
                       </property>
                      </widget>
                     </item>
@@ -664,6 +697,13 @@
                      <widget class="QLabel" name="TradeFeeLbl">
                       <property name="text">
                        <string>Fee broker:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="5" column="1">
+                     <widget class="QLabel" name="TradeCouponLbl">
+                      <property name="text">
+                       <string>Coupon:</string>
                       </property>
                      </widget>
                     </item>
@@ -680,62 +720,10 @@
                       </property>
                      </spacer>
                     </item>
-                    <item row="5" column="0">
-                     <widget class="QDateEdit" name="TradeSettlementEdit">
-                      <property name="toolTip">
-                       <string>Trade settlement date</string>
-                      </property>
-                      <property name="specialValueText">
-                       <string>N/A</string>
-                      </property>
-                      <property name="minimumDate">
-                       <date>
-                        <year>1999</year>
-                        <month>12</month>
-                        <day>30</day>
-                       </date>
-                      </property>
-                      <property name="displayFormat">
-                       <string>dd/MM/yyyy</string>
-                      </property>
-                      <property name="calendarPopup">
-                       <bool>true</bool>
-                      </property>
-                      <property name="timeSpec">
-                       <enum>Qt::UTC</enum>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="4" column="3">
-                     <widget class="QLabel" name="label">
-                      <property name="text">
-                       <string>Quantity</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="5">
-                     <spacer name="horizontalSpacer_5">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>40</width>
-                        <height>20</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                    <item row="2" column="0">
-                     <widget class="QLineEdit" name="TradeNumberEdit">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="toolTip">
-                       <string>Trade operation number</string>
+                    <item row="4" column="4">
+                     <widget class="AmountEdit" name="TradeQtyEdit">
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                       </property>
                      </widget>
                     </item>
@@ -752,10 +740,50 @@
                       </property>
                      </widget>
                     </item>
-                    <item row="5" column="4">
-                     <widget class="AmountEdit" name="TradeFeeEdit">
+                    <item row="2" column="1">
+                     <widget class="QLabel" name="TradeSymbolLbl">
+                      <property name="text">
+                       <string>Symbol:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="5" column="2">
+                     <widget class="AmountEdit" name="TradeCouponEdit">
                       <property name="alignment">
                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="4" column="3">
+                     <widget class="QLabel" name="label">
+                      <property name="text">
+                       <string>Quantity</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="5" column="0">
+                     <widget class="QDateEdit" name="TradeSettlementEdit">
+                      <property name="toolTip">
+                       <string>Trade settlement date</string>
+                      </property>
+                      <property name="specialValueText">
+                       <string>N/A</string>
+                      </property>
+                      <property name="minimumDate">
+                       <date>
+                        <year>1999</year>
+                        <month>12</month>
+                        <day>29</day>
+                       </date>
+                      </property>
+                      <property name="displayFormat">
+                       <string>dd/MM/yyyy</string>
+                      </property>
+                      <property name="calendarPopup">
+                       <bool>true</bool>
+                      </property>
+                      <property name="timeSpec">
+                       <enum>Qt::UTC</enum>
                       </property>
                      </widget>
                     </item>
@@ -772,53 +800,35 @@
                       </property>
                      </widget>
                     </item>
-                    <item row="4" column="1">
-                     <widget class="QLabel" name="TradePriceLbl">
-                      <property name="text">
-                       <string>Price:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="4" column="4">
-                     <widget class="AmountEdit" name="TradeQtyEdit">
+                    <item row="5" column="4">
+                     <widget class="AmountEdit" name="TradeFeeEdit">
                       <property name="alignment">
                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                       </property>
                      </widget>
-                    </item>
-                    <item row="1" column="2" colspan="3">
-                     <widget class="AccountSelector" name="TradeAccountWidget" native="true"/>
                     </item>
                     <item row="2" column="2" colspan="3">
                      <widget class="AssetSelector" name="TradeAssetWidget" native="true"/>
                     </item>
-                    <item row="1" column="1">
-                     <widget class="QLabel" name="TradeAccountLbl">
-                      <property name="text">
-                       <string>Account:</string>
-                      </property>
-                     </widget>
+                    <item row="1" column="2" colspan="3">
+                     <widget class="AccountSelector" name="TradeAccountWidget" native="true"/>
                     </item>
-                    <item row="2" column="1">
-                     <widget class="QLabel" name="TradeSymbolLbl">
-                      <property name="text">
-                       <string>Symbol:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="5" column="1">
-                     <widget class="QLabel" name="TradeCouponLbl">
-                      <property name="text">
-                       <string>Coupon:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="5" column="2">
-                     <widget class="AmountEdit" name="TradeCouponEdit">
+                    <item row="4" column="2">
+                     <widget class="AmountEdit" name="TradePriceEdit">
                       <property name="alignment">
                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                       </property>
                      </widget>
+                    </item>
+                    <item row="6" column="1">
+                     <widget class="QLabel" name="TradeNoteLbl">
+                      <property name="text">
+                       <string>Comment:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="6" column="2" colspan="3">
+                     <widget class="QLineEdit" name="TradeNoteEdit"/>
                     </item>
                    </layout>
                   </widget>
@@ -1135,7 +1145,7 @@
                        <date>
                         <year>1999</year>
                         <month>12</month>
-                        <day>30</day>
+                        <day>29</day>
                        </date>
                       </property>
                       <property name="displayFormat">
@@ -1482,7 +1492,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>31</day>
+               <day>30</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -1630,7 +1640,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>31</day>
+               <day>30</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -1777,7 +1787,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>31</day>
+               <day>30</day>
               </datetime>
              </property>
              <property name="displayFormat">

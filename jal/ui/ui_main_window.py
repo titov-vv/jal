@@ -113,7 +113,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
         self.BalanceDate = QDateEdit(self.BalanceConfigFrame)
         self.BalanceDate.setObjectName(u"BalanceDate")
-        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 31), QTime(21, 0, 0)))
+        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 30), QTime(21, 0, 0)))
         self.BalanceDate.setCalendarPopup(True)
         self.BalanceDate.setTimeSpec(Qt.UTC)
 
@@ -360,37 +360,14 @@ class Ui_LedgerMainWindow(object):
         self.gridLayout_3 = QGridLayout(self.TradeDetailsTab)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
         self.gridLayout_3.setContentsMargins(2, 2, 2, 2)
-        self.TradePriceEdit = AmountEdit(self.TradeDetailsTab)
-        self.TradePriceEdit.setObjectName(u"TradePriceEdit")
-        self.TradePriceEdit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gridLayout_3.addWidget(self.TradePriceEdit, 4, 2, 1, 1)
-
-        self.TradeFeeLbl = QLabel(self.TradeDetailsTab)
-        self.TradeFeeLbl.setObjectName(u"TradeFeeLbl")
-
-        self.gridLayout_3.addWidget(self.TradeFeeLbl, 5, 3, 1, 1)
-
-        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.gridLayout_3.addItem(self.verticalSpacer_2, 7, 0, 1, 1)
-
-        self.TradeSettlementEdit = QDateEdit(self.TradeDetailsTab)
-        self.TradeSettlementEdit.setObjectName(u"TradeSettlementEdit")
-        self.TradeSettlementEdit.setMinimumDate(QDate(1999, 12, 30))
-        self.TradeSettlementEdit.setCalendarPopup(True)
-        self.TradeSettlementEdit.setTimeSpec(Qt.UTC)
-
-        self.gridLayout_3.addWidget(self.TradeSettlementEdit, 5, 0, 1, 1)
-
-        self.label = QLabel(self.TradeDetailsTab)
-        self.label.setObjectName(u"label")
-
-        self.gridLayout_3.addWidget(self.label, 4, 3, 1, 1)
-
         self.horizontalSpacer_5 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.gridLayout_3.addItem(self.horizontalSpacer_5, 2, 5, 1, 1)
+
+        self.TradePriceLbl = QLabel(self.TradeDetailsTab)
+        self.TradePriceLbl.setObjectName(u"TradePriceLbl")
+
+        self.gridLayout_3.addWidget(self.TradePriceLbl, 4, 1, 1, 1)
 
         self.TradeNumberEdit = QLineEdit(self.TradeDetailsTab)
         self.TradeNumberEdit.setObjectName(u"TradeNumberEdit")
@@ -402,17 +379,60 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_3.addWidget(self.TradeNumberEdit, 2, 0, 1, 1)
 
+        self.TradeAccountLbl = QLabel(self.TradeDetailsTab)
+        self.TradeAccountLbl.setObjectName(u"TradeAccountLbl")
+
+        self.gridLayout_3.addWidget(self.TradeAccountLbl, 1, 1, 1, 1)
+
+        self.TradeFeeLbl = QLabel(self.TradeDetailsTab)
+        self.TradeFeeLbl.setObjectName(u"TradeFeeLbl")
+
+        self.gridLayout_3.addWidget(self.TradeFeeLbl, 5, 3, 1, 1)
+
+        self.TradeCouponLbl = QLabel(self.TradeDetailsTab)
+        self.TradeCouponLbl.setObjectName(u"TradeCouponLbl")
+
+        self.gridLayout_3.addWidget(self.TradeCouponLbl, 5, 1, 1, 1)
+
+        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_3.addItem(self.verticalSpacer_2, 7, 0, 1, 1)
+
+        self.TradeQtyEdit = AmountEdit(self.TradeDetailsTab)
+        self.TradeQtyEdit.setObjectName(u"TradeQtyEdit")
+        self.TradeQtyEdit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gridLayout_3.addWidget(self.TradeQtyEdit, 4, 4, 1, 1)
+
         self.TradeTabLbl = QLabel(self.TradeDetailsTab)
         self.TradeTabLbl.setObjectName(u"TradeTabLbl")
         self.TradeTabLbl.setFont(font)
 
         self.gridLayout_3.addWidget(self.TradeTabLbl, 0, 0, 1, 1)
 
-        self.TradeFeeEdit = AmountEdit(self.TradeDetailsTab)
-        self.TradeFeeEdit.setObjectName(u"TradeFeeEdit")
-        self.TradeFeeEdit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.TradeSymbolLbl = QLabel(self.TradeDetailsTab)
+        self.TradeSymbolLbl.setObjectName(u"TradeSymbolLbl")
 
-        self.gridLayout_3.addWidget(self.TradeFeeEdit, 5, 4, 1, 1)
+        self.gridLayout_3.addWidget(self.TradeSymbolLbl, 2, 1, 1, 1)
+
+        self.TradeCouponEdit = AmountEdit(self.TradeDetailsTab)
+        self.TradeCouponEdit.setObjectName(u"TradeCouponEdit")
+        self.TradeCouponEdit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gridLayout_3.addWidget(self.TradeCouponEdit, 5, 2, 1, 1)
+
+        self.label = QLabel(self.TradeDetailsTab)
+        self.label.setObjectName(u"label")
+
+        self.gridLayout_3.addWidget(self.label, 4, 3, 1, 1)
+
+        self.TradeSettlementEdit = QDateEdit(self.TradeDetailsTab)
+        self.TradeSettlementEdit.setObjectName(u"TradeSettlementEdit")
+        self.TradeSettlementEdit.setMinimumDate(QDate(1999, 12, 29))
+        self.TradeSettlementEdit.setCalendarPopup(True)
+        self.TradeSettlementEdit.setTimeSpec(Qt.UTC)
+
+        self.gridLayout_3.addWidget(self.TradeSettlementEdit, 5, 0, 1, 1)
 
         self.TradeTimestampEdit = QDateTimeEdit(self.TradeDetailsTab)
         self.TradeTimestampEdit.setObjectName(u"TradeTimestampEdit")
@@ -421,47 +441,37 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_3.addWidget(self.TradeTimestampEdit, 1, 0, 1, 1)
 
-        self.TradePriceLbl = QLabel(self.TradeDetailsTab)
-        self.TradePriceLbl.setObjectName(u"TradePriceLbl")
+        self.TradeFeeEdit = AmountEdit(self.TradeDetailsTab)
+        self.TradeFeeEdit.setObjectName(u"TradeFeeEdit")
+        self.TradeFeeEdit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
-        self.gridLayout_3.addWidget(self.TradePriceLbl, 4, 1, 1, 1)
-
-        self.TradeQtyEdit = AmountEdit(self.TradeDetailsTab)
-        self.TradeQtyEdit.setObjectName(u"TradeQtyEdit")
-        self.TradeQtyEdit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gridLayout_3.addWidget(self.TradeQtyEdit, 4, 4, 1, 1)
-
-        self.TradeAccountWidget = AccountSelector(self.TradeDetailsTab)
-        self.TradeAccountWidget.setObjectName(u"TradeAccountWidget")
-
-        self.gridLayout_3.addWidget(self.TradeAccountWidget, 1, 2, 1, 3)
+        self.gridLayout_3.addWidget(self.TradeFeeEdit, 5, 4, 1, 1)
 
         self.TradeAssetWidget = AssetSelector(self.TradeDetailsTab)
         self.TradeAssetWidget.setObjectName(u"TradeAssetWidget")
 
         self.gridLayout_3.addWidget(self.TradeAssetWidget, 2, 2, 1, 3)
 
-        self.TradeAccountLbl = QLabel(self.TradeDetailsTab)
-        self.TradeAccountLbl.setObjectName(u"TradeAccountLbl")
+        self.TradeAccountWidget = AccountSelector(self.TradeDetailsTab)
+        self.TradeAccountWidget.setObjectName(u"TradeAccountWidget")
 
-        self.gridLayout_3.addWidget(self.TradeAccountLbl, 1, 1, 1, 1)
+        self.gridLayout_3.addWidget(self.TradeAccountWidget, 1, 2, 1, 3)
 
-        self.TradeSymbolLbl = QLabel(self.TradeDetailsTab)
-        self.TradeSymbolLbl.setObjectName(u"TradeSymbolLbl")
+        self.TradePriceEdit = AmountEdit(self.TradeDetailsTab)
+        self.TradePriceEdit.setObjectName(u"TradePriceEdit")
+        self.TradePriceEdit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
-        self.gridLayout_3.addWidget(self.TradeSymbolLbl, 2, 1, 1, 1)
+        self.gridLayout_3.addWidget(self.TradePriceEdit, 4, 2, 1, 1)
 
-        self.TradeCouponLbl = QLabel(self.TradeDetailsTab)
-        self.TradeCouponLbl.setObjectName(u"TradeCouponLbl")
+        self.TradeNoteLbl = QLabel(self.TradeDetailsTab)
+        self.TradeNoteLbl.setObjectName(u"TradeNoteLbl")
 
-        self.gridLayout_3.addWidget(self.TradeCouponLbl, 5, 1, 1, 1)
+        self.gridLayout_3.addWidget(self.TradeNoteLbl, 6, 1, 1, 1)
 
-        self.TradeCouponEdit = AmountEdit(self.TradeDetailsTab)
-        self.TradeCouponEdit.setObjectName(u"TradeCouponEdit")
-        self.TradeCouponEdit.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.TradeNoteEdit = QLineEdit(self.TradeDetailsTab)
+        self.TradeNoteEdit.setObjectName(u"TradeNoteEdit")
 
-        self.gridLayout_3.addWidget(self.TradeCouponEdit, 5, 2, 1, 1)
+        self.gridLayout_3.addWidget(self.TradeNoteEdit, 6, 2, 1, 3)
 
         self.OperationsTabs.addWidget(self.TradeDetailsTab)
         self.DividendDetailsTab = QWidget()
@@ -641,7 +651,7 @@ class Ui_LedgerMainWindow(object):
 
         self.TransferFeeTimestamp = QDateTimeEdit(self.TransferDetailsTab)
         self.TransferFeeTimestamp.setObjectName(u"TransferFeeTimestamp")
-        self.TransferFeeTimestamp.setMinimumDate(QDate(1999, 12, 30))
+        self.TransferFeeTimestamp.setMinimumDate(QDate(1999, 12, 29))
         self.TransferFeeTimestamp.setCalendarPopup(True)
         self.TransferFeeTimestamp.setTimeSpec(Qt.UTC)
 
@@ -849,7 +859,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_7.setContentsMargins(2, 2, 2, 2)
         self.HoldingsDate = QDateEdit(self.HoldingsParamsFrame)
         self.HoldingsDate.setObjectName(u"HoldingsDate")
-        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 31), QTime(21, 0, 0)))
+        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 30), QTime(21, 0, 0)))
         self.HoldingsDate.setCalendarPopup(True)
         self.HoldingsDate.setTimeSpec(Qt.UTC)
 
@@ -919,7 +929,7 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportToDate = QDateEdit(self.ReportParamsFrame)
         self.ReportToDate.setObjectName(u"ReportToDate")
-        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 31), QTime(21, 0, 0)))
+        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 30), QTime(21, 0, 0)))
         self.ReportToDate.setCalendarPopup(True)
         self.ReportToDate.setTimeSpec(Qt.UTC)
 
@@ -995,7 +1005,7 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportFromDate = QDateEdit(self.ReportParamsFrame)
         self.ReportFromDate.setObjectName(u"ReportFromDate")
-        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 31), QTime(21, 0, 0)))
+        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 30), QTime(21, 0, 0)))
         self.ReportFromDate.setCalendarPopup(True)
         self.ReportFromDate.setTimeSpec(Qt.UTC)
 
@@ -1091,7 +1101,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(5)
+        self.OperationsTabs.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)
@@ -1140,22 +1150,23 @@ class Ui_LedgerMainWindow(object):
         self.ActionAccountLabel.setText(QCoreApplication.translate("LedgerMainWindow", u"Account:", None))
         self.ActionTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.ActionTabLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Income / Spending", None))
+        self.TradePriceLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Price:", None))
+#if QT_CONFIG(tooltip)
+        self.TradeNumberEdit.setToolTip(QCoreApplication.translate("LedgerMainWindow", u"Trade operation number", None))
+#endif // QT_CONFIG(tooltip)
+        self.TradeAccountLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Account:", None))
         self.TradeFeeLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Fee broker:", None))
+        self.TradeCouponLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Coupon:", None))
+        self.TradeTabLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Buy / Sell", None))
+        self.TradeSymbolLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Symbol:", None))
+        self.label.setText(QCoreApplication.translate("LedgerMainWindow", u"Quantity", None))
 #if QT_CONFIG(tooltip)
         self.TradeSettlementEdit.setToolTip(QCoreApplication.translate("LedgerMainWindow", u"Trade settlement date", None))
 #endif // QT_CONFIG(tooltip)
         self.TradeSettlementEdit.setSpecialValueText(QCoreApplication.translate("LedgerMainWindow", u"N/A", None))
         self.TradeSettlementEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy", None))
-        self.label.setText(QCoreApplication.translate("LedgerMainWindow", u"Quantity", None))
-#if QT_CONFIG(tooltip)
-        self.TradeNumberEdit.setToolTip(QCoreApplication.translate("LedgerMainWindow", u"Trade operation number", None))
-#endif // QT_CONFIG(tooltip)
-        self.TradeTabLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Buy / Sell", None))
         self.TradeTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
-        self.TradePriceLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Price:", None))
-        self.TradeAccountLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Account:", None))
-        self.TradeSymbolLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Symbol:", None))
-        self.TradeCouponLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Coupon:", None))
+        self.TradeNoteLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Comment:", None))
         self.DividendSymbolLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Symbol:", None))
 #if QT_CONFIG(tooltip)
         self.DividendTaxEdit.setToolTip(QCoreApplication.translate("LedgerMainWindow", u"Tax amount", None))

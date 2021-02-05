@@ -14,6 +14,8 @@ CREATE TABLE t_last_assets (
 
 
 --------------------------------------------------------------------------------
+-- Change 'category_id' FK settings
+--------------------------------------------------------------------------------
 CREATE TABLE sqlitestudio_temp_table AS SELECT *
                                           FROM action_details;
 
@@ -131,6 +133,9 @@ BEGIN
                              );
 END;
 
+--------------------------------------------------------------------------------
+-- Change 'mapped_to' FK settings
+--------------------------------------------------------------------------------
 
 CREATE TABLE sqlitestudio_temp_table AS SELECT *
                                           FROM map_category;
@@ -159,6 +164,110 @@ INSERT INTO map_category (
 
 DROP TABLE sqlitestudio_temp_table;
 
+--------------------------------------------------------------------------------
+-- Add 'note' field to 'trades' table
+--------------------------------------------------------------------------------
+CREATE TABLE sqlitestudio_temp_table AS SELECT *
+                                          FROM trades;
+
+DROP TABLE trades;
+
+CREATE TABLE trades (
+    id         INTEGER     PRIMARY KEY
+                           UNIQUE
+                           NOT NULL,
+    timestamp  INTEGER     NOT NULL,
+    settlement INTEGER     DEFAULT (0),
+    number     TEXT (32)   DEFAULT (''),
+    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
+                                                    ON UPDATE CASCADE
+                           NOT NULL,
+    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT
+                                                  ON UPDATE CASCADE
+                           NOT NULL,
+    qty        REAL        NOT NULL
+                           DEFAULT (0),
+    price      REAL        NOT NULL
+                           DEFAULT (0),
+    coupon     REAL        DEFAULT (0),
+    fee        REAL        DEFAULT (0),
+    note       TEXT (1024)
+);
+
+INSERT INTO trades (
+                       id,
+                       timestamp,
+                       settlement,
+                       number,
+                       account_id,
+                       asset_id,
+                       qty,
+                       price,
+                       coupon,
+                       fee
+                   )
+                   SELECT id,
+                          timestamp,
+                          settlement,
+                          number,
+                          account_id,
+                          asset_id,
+                          qty,
+                          price,
+                          coupon,
+                          fee
+                     FROM sqlitestudio_temp_table;
+
+DROP TABLE sqlitestudio_temp_table;
+
+CREATE TRIGGER trades_after_delete
+         AFTER DELETE
+            ON trades
+      FOR EACH ROW
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= OLD.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= OLD.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= OLD.timestamp;
+END;
+
+CREATE TRIGGER trades_after_insert
+         AFTER INSERT
+            ON trades
+      FOR EACH ROW
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= NEW.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= NEW.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= NEW.timestamp;
+END;
+
+CREATE TRIGGER trades_after_update
+         AFTER UPDATE OF timestamp,
+                         account_id,
+                         asset_id,
+                         qty,
+                         price,
+                         coupon,
+                         fee
+            ON trades
+      FOR EACH ROW
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= OLD.timestamp OR
+                timestamp >= NEW.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= OLD.timestamp OR
+                timestamp >= NEW.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= OLD.timestamp OR
+                timestamp >= NEW.timestamp;
+END;
+--------------------------------------------------------------------------------
 
 PRAGMA foreign_keys = 1;
 

@@ -509,7 +509,8 @@ CREATE TABLE trades (
     price        REAL      NOT NULL
                            DEFAULT (0),
     coupon       REAL      DEFAULT (0),
-    fee          REAL      DEFAULT (0)
+    fee          REAL      DEFAULT (0),
+    note         TEXT (1024)
 );
 
 
