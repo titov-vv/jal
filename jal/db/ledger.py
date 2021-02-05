@@ -242,6 +242,10 @@ class Ledger:
             self.appendTransaction(book, -amount)
 
     def processAction(self):
+        if self.current['amount'] == '':
+            logging.warning(g_tr('Ledger', "Can't process operation without details") +
+                            f" @{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d.%m.%Y %H:%M:%S')}")
+            return
         action_amount = self.current['amount']
         if action_amount < 0:
             credit_taken = self.takeCredit(-action_amount)
@@ -640,7 +644,7 @@ class Ledger:
         rebuild_dialog = RebuildDialog(parent, self.getCurrentFrontier())
         if rebuild_dialog.exec_():
             self.rebuild(from_timestamp=rebuild_dialog.getTimestamp(),
-                         fast_and_dirty=rebuild_dialog.isFastAndDirt(), silent=False)
+                         fast_and_dirty=rebuild_dialog.isFastAndDirty(), silent=False)
 
     @Slot()
     def estimateRussianTax(self, position):

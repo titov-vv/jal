@@ -287,7 +287,7 @@ class OperationsTypeDelegate(QStyledItemDelegate):
         record = model.record(index.row())
         transaction_type = record.value(index.column())
         if transaction_type == TransactionType.Action:
-            sub_type = copysign(1, record.value("amount"))
+            sub_type = 0 if record.value("amount") == '' else copysign(1, record.value("amount"))
         elif transaction_type == TransactionType.Trade:
             sub_type = copysign(1, record.value("qty_trid"))
         elif transaction_type == TransactionType.Transfer:

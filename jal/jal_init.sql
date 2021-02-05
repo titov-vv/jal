@@ -52,10 +52,9 @@ CREATE TABLE action_details (
     pid         INTEGER    REFERENCES actions (id) ON DELETE CASCADE
                                                    ON UPDATE CASCADE
                            NOT NULL,
-    category_id INTEGER    REFERENCES categories (id) ON DELETE SET DEFAULT
+    category_id INTEGER    REFERENCES categories (id) ON DELETE CASCADE
                                                       ON UPDATE CASCADE
-                           NOT NULL
-                           DEFAULT (0),
+                           NOT NULL,
     tag_id      INTEGER    REFERENCES tags (id) ON DELETE SET NULL
                                                 ON UPDATE CASCADE,
     sum         REAL       NOT NULL,
@@ -342,9 +341,8 @@ CREATE TABLE map_category (
                              NOT NULL,
     value     VARCHAR (1024) NOT NULL,
     mapped_to INTEGER        NOT NULL
-                             REFERENCES categories (id) ON DELETE SET DEFAULT
+                             REFERENCES categories (id) ON DELETE CASCADE
                                                         ON UPDATE CASCADE
-                             DEFAULT (0)
 );
 
 
@@ -1685,7 +1683,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 13);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 14);
 -- TODO Remove this value 'TriggersEnabled' from database
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
