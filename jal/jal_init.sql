@@ -407,7 +407,6 @@ DROP TABLE IF EXISTS t_last_assets;
 
 CREATE TABLE t_last_assets (
     id          INTEGER   NOT NULL,
-    name        TEXT (64) NOT NULL,
     total_value REAL
 );
 

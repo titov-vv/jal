@@ -731,7 +731,7 @@ class TaxesRus:
         purchase['income_rub'] = 0
         purchase['spending_rub'] = round(basis*(purchase['amount_rub'] + purchase['fee_rub']), 2)
 
-        _ = executeSQL(self.db, "INSERT INTO t_last_assets (id, name, total_value) VALUES (:trade_id, '', :qty)",
+        _ = executeSQL(self.db, "INSERT INTO t_last_assets (id, total_value) VALUES (:trade_id, :qty)",
                        [(":trade_id", purchase['trade_id']), (":qty", purchase['qty'])])
         if level >= 0:  # Don't output if level==-1, i.e. corp action is out of report scope
             self.add_report_row(row, purchase, even_odd=even_odd)

@@ -2,6 +2,18 @@ BEGIN TRANSACTION;
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 0;
 
+--------------------------------------------------------------------------------
+-- Drop unique constraints from t_last_assets table
+--------------------------------------------------------------------------------
+DROP TABLE t_last_assets;
+
+CREATE TABLE t_last_assets (
+    id          INTEGER NOT NULL,
+    total_value REAL
+);
+
+
+--------------------------------------------------------------------------------
 CREATE TABLE sqlitestudio_temp_table AS SELECT *
                                           FROM action_details;
 
