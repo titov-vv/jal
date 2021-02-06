@@ -322,6 +322,46 @@ INSERT INTO accounts (
 
 DROP TABLE sqlitestudio_temp_table;
 --------------------------------------------------------------------------------
+-- Drop 'web_id' column from 'assets' table
+--------------------------------------------------------------------------------
+CREATE TABLE sqlitestudio_temp_table AS SELECT *
+                                          FROM assets;
+
+DROP TABLE assets;
+
+CREATE TABLE assets (
+    id        INTEGER    PRIMARY KEY
+                         UNIQUE
+                         NOT NULL,
+    name      TEXT (32)  UNIQUE
+                         NOT NULL,
+    type_id   INTEGER    REFERENCES asset_types (id) ON DELETE RESTRICT
+                                                     ON UPDATE CASCADE
+                         NOT NULL,
+    full_name TEXT (128) NOT NULL,
+    isin      TEXT (12),
+    src_id    INTEGER    REFERENCES data_sources (id) ON DELETE SET NULL
+                                                      ON UPDATE CASCADE
+);
+
+INSERT INTO assets (
+                       id,
+                       name,
+                       type_id,
+                       full_name,
+                       isin,
+                       src_id
+                   )
+                   SELECT id,
+                          name,
+                          type_id,
+                          full_name,
+                          isin,
+                          src_id
+                     FROM sqlitestudio_temp_table;
+
+DROP TABLE sqlitestudio_temp_table;
+--------------------------------------------------------------------------------
 
 PRAGMA foreign_keys = 1;
 

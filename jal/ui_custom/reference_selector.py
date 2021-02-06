@@ -132,7 +132,6 @@ class AssetSelector(AbstractReferenceSelector):
                                            ("type_id", None, 0, None, None),
                                            ("full_name", "Name", -1, None, None),
                                            ("isin", "ISIN", None, None, None),
-                                           ("web_id", "WebID", None, None, None),
                                            ("src_id", "Data source", None, None, ReferenceLookupDelegate)],
                                           title="Assets", search_field="full_name",
                                           relations=[("type_id", "asset_types", "id", "name", "Asset type:"),

@@ -221,7 +221,6 @@ class TableViewConfig:
                            ("type_id", None, 0, None, None),
                            ("full_name", g_tr('TableViewConfig', "Name"), ColumnWidth.STRETCH, None, None),
                            ("isin", g_tr('TableViewConfig', "ISIN"), None, None, None),
-                           ("web_id", g_tr('TableViewConfig', "WebID"), None, None, None),
                            ("src_id", g_tr('TableViewConfig', "Data source"), None, None, ui.ReferenceLookupDelegate)],
                           "full_name",
                           None,
