@@ -12,7 +12,7 @@ class XLSX:
     ROW_WIDTH = 2
     ROW_SPAN_H = 3
     ROW_SPAN_V = 4
-    totals = g_tr('XLSL', "ИТОГО")
+    totals = g_tr('XLSX', "ИТОГО")
 
     def __init__(self, xlsx_filename):
         self.filename = xlsx_filename
@@ -35,7 +35,7 @@ class XLSX:
     # 3) puts 0 instead of SUM if there are no data to make totals
     def add_totals_footer(self, sheet, start_row, footer_row, columns_list):
         if columns_list[0] is not None:
-            sheet.write(footer_row, columns_list[0], "ИТОГО", self.formats.ColumnFooter())
+            sheet.write(footer_row, columns_list[0], self.totals, self.formats.ColumnFooter())
         if footer_row > start_row:  # Don't put formulas with pre-definded errors
             for i in columns_list[1:]:
                 if i > 25:

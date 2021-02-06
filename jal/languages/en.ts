@@ -1874,7 +1874,7 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="276"/>
+        <location filename="../ui_custom/table_view_config.py" line="278"/>
         <source>Asset</source>
         <translation></translation>
     </message>
@@ -1944,7 +1944,7 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="256"/>
+        <location filename="../ui_custom/table_view_config.py" line="258"/>
         <source>Tag</source>
         <translation></translation>
     </message>
@@ -1974,7 +1974,7 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="243"/>
+        <location filename="../ui_custom/table_view_config.py" line="245"/>
         <source>Name</source>
         <translation></translation>
     </message>
@@ -2009,82 +2009,82 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="215"/>
+        <location filename="../ui_custom/table_view_config.py" line="217"/>
         <source>Assets</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="215"/>
+        <location filename="../ui_custom/table_view_config.py" line="217"/>
         <source>Symbol</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="215"/>
+        <location filename="../ui_custom/table_view_config.py" line="217"/>
         <source>ISIN</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="215"/>
+        <location filename="../ui_custom/table_view_config.py" line="217"/>
         <source>WebID</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="215"/>
+        <location filename="../ui_custom/table_view_config.py" line="217"/>
         <source>Data source</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="215"/>
+        <location filename="../ui_custom/table_view_config.py" line="217"/>
         <source>Asset type:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="230"/>
+        <location filename="../ui_custom/table_view_config.py" line="232"/>
         <source>Peers</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="230"/>
+        <location filename="../ui_custom/table_view_config.py" line="232"/>
         <source>Location</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="230"/>
+        <location filename="../ui_custom/table_view_config.py" line="232"/>
         <source>Docs count</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="243"/>
+        <location filename="../ui_custom/table_view_config.py" line="245"/>
         <source>Categories</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="243"/>
+        <location filename="../ui_custom/table_view_config.py" line="245"/>
         <source>Often</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="256"/>
+        <location filename="../ui_custom/table_view_config.py" line="258"/>
         <source>Tags</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="265"/>
+        <location filename="../ui_custom/table_view_config.py" line="267"/>
         <source>Countries</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="265"/>
+        <location filename="../ui_custom/table_view_config.py" line="267"/>
         <source>Country</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="265"/>
+        <location filename="../ui_custom/table_view_config.py" line="267"/>
         <source>Code</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="265"/>
+        <location filename="../ui_custom/table_view_config.py" line="267"/>
         <source>Tax Treaty</source>
         <translation></translation>
     </message>
@@ -2094,19 +2094,24 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="276"/>
+        <location filename="../ui_custom/table_view_config.py" line="278"/>
         <source>Quotes</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="276"/>
+        <location filename="../ui_custom/table_view_config.py" line="278"/>
         <source>Date</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="276"/>
+        <location filename="../ui_custom/table_view_config.py" line="278"/>
         <source>Quote</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/table_view_config.py" line="197"/>
+        <source>CC</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2347,20 +2352,17 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
 </context>
-<context encoding="UTF-8">
-    <name>XLSL</name>
-    <message encoding="UTF-8">
-        <location filename="../reports/helpers.py" line="15"/>
-        <source>ИТОГО</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
 <context>
     <name>XLSX</name>
     <message>
         <location filename="../reports/helpers.py" line="26"/>
         <source>Can&apos;t save report into file </source>
         <translation></translation>
+    </message>
+    <message encoding="UTF-8">
+        <location filename="../reports/helpers.py" line="15"/>
+        <source>ИТОГО</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

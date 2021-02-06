@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="ru" sourcelanguage="en">
+<!DOCTYPE TS>
+<TS version="2.1" language="ru" sourcelanguage="en">
 <context>
     <name>AbortWindow</name>
     <message>
@@ -576,7 +577,7 @@ Application will be terminated now</source>
     <message>
         <location filename="../db/ledger.py" line="246"/>
         <source>Can&apos;t process operation without details</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно обработать операцию без детальной информации</translation>
     </message>
 </context>
 <context>
@@ -1064,7 +1065,7 @@ Application will be terminated now</source>
     <message>
         <location filename="../ui/ui_main_window.py" line="1169"/>
         <source>Comment:</source>
-        <translation type="unfinished"></translation>
+        <translation>Комментарий:</translation>
     </message>
 </context>
 <context>
@@ -1848,22 +1849,22 @@ Application will be terminated now</source>
         <translation>Счета</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="215"/>
+        <location filename="../ui_custom/table_view_config.py" line="217"/>
         <source>Assets</source>
         <translation>Ценные бумаги</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="230"/>
+        <location filename="../ui_custom/table_view_config.py" line="232"/>
         <source>Peers</source>
         <translation>Контрагенты</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="243"/>
+        <location filename="../ui_custom/table_view_config.py" line="245"/>
         <source>Categories</source>
         <translation>Категории</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="256"/>
+        <location filename="../ui_custom/table_view_config.py" line="258"/>
         <source>Tags</source>
         <translation>Тэги</translation>
     </message>
@@ -1873,7 +1874,7 @@ Application will be terminated now</source>
         <translation>Тип счета</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="243"/>
+        <location filename="../ui_custom/table_view_config.py" line="245"/>
         <source>Name</source>
         <translation>Наименование</translation>
     </message>
@@ -1933,7 +1934,7 @@ Application will be terminated now</source>
         <translation>В/С</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="276"/>
+        <location filename="../ui_custom/table_view_config.py" line="278"/>
         <source>Asset</source>
         <translation>ЦБ</translation>
     </message>
@@ -1998,7 +1999,7 @@ Application will be terminated now</source>
         <translation>Категория</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="256"/>
+        <location filename="../ui_custom/table_view_config.py" line="258"/>
         <source>Tag</source>
         <translation>Тэг</translation>
     </message>
@@ -2013,42 +2014,42 @@ Application will be terminated now</source>
         <translation>Описание</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="215"/>
+        <location filename="../ui_custom/table_view_config.py" line="217"/>
         <source>Symbol</source>
         <translation>Символ</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="215"/>
+        <location filename="../ui_custom/table_view_config.py" line="217"/>
         <source>ISIN</source>
         <translation>ISIN</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="215"/>
+        <location filename="../ui_custom/table_view_config.py" line="217"/>
         <source>WebID</source>
         <translation>WebID</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="215"/>
+        <location filename="../ui_custom/table_view_config.py" line="217"/>
         <source>Data source</source>
         <translation>Ист.котировок</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="215"/>
+        <location filename="../ui_custom/table_view_config.py" line="217"/>
         <source>Asset type:</source>
         <translation>Тип ЦБ:</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="230"/>
+        <location filename="../ui_custom/table_view_config.py" line="232"/>
         <source>Location</source>
         <translation>Адрес</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="230"/>
+        <location filename="../ui_custom/table_view_config.py" line="232"/>
         <source>Docs count</source>
         <translation>Кол-во док.</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="243"/>
+        <location filename="../ui_custom/table_view_config.py" line="245"/>
         <source>Often</source>
         <translation>Частая</translation>
     </message>
@@ -2073,22 +2074,22 @@ Application will be terminated now</source>
         <translation>Перевод</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="265"/>
+        <location filename="../ui_custom/table_view_config.py" line="267"/>
         <source>Countries</source>
         <translation>Страны</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="265"/>
+        <location filename="../ui_custom/table_view_config.py" line="267"/>
         <source>Country</source>
         <translation>Страна</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="265"/>
+        <location filename="../ui_custom/table_view_config.py" line="267"/>
         <source>Code</source>
         <translation>Код</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="265"/>
+        <location filename="../ui_custom/table_view_config.py" line="267"/>
         <source>Tax Treaty</source>
         <translation>СОИДН</translation>
     </message>
@@ -2098,19 +2099,24 @@ Application will be terminated now</source>
         <translation>Корп. Действие</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="276"/>
+        <location filename="../ui_custom/table_view_config.py" line="278"/>
         <source>Quotes</source>
         <translation>Котировки</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="276"/>
+        <location filename="../ui_custom/table_view_config.py" line="278"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="276"/>
+        <location filename="../ui_custom/table_view_config.py" line="278"/>
         <source>Quote</source>
         <translation>Котировка</translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/table_view_config.py" line="197"/>
+        <source>CC</source>
+        <translation>КС</translation>
     </message>
 </context>
 <context>
@@ -2186,17 +2192,17 @@ Application will be terminated now</source>
     <message>
         <location filename="../db/tax_estimator.py" line="119"/>
         <source>Can&apos;t get current quote for </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно получить котировку для </translation>
     </message>
     <message>
         <location filename="../db/tax_estimator.py" line="125"/>
         <source>Can&apos;t get currency name for account</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно получить валюту для счета</translation>
     </message>
     <message>
         <location filename="../db/tax_estimator.py" line="131"/>
         <source>Can&apos;t get current rate for </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно получить курс валюты для </translation>
     </message>
 </context>
 <context>
@@ -2351,20 +2357,17 @@ Application will be terminated now</source>
         <translation>По</translation>
     </message>
 </context>
-<context encoding="UTF-8">
-    <name>XLSL</name>
-    <message encoding="UTF-8">
-        <location filename="../reports/helpers.py" line="15"/>
-        <source>ИТОГО</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
 <context>
     <name>XLSX</name>
     <message>
         <location filename="../reports/helpers.py" line="26"/>
         <source>Can&apos;t save report into file </source>
         <translation>Не удалось сохранить отчет в файл </translation>
+    </message>
+    <message>
+        <location filename="../reports/helpers.py" line="15"/>
+        <source>ИТОГО</source>
+        <translation>ИТОГО</translation>
     </message>
 </context>
 </TS>
