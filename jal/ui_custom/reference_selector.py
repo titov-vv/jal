@@ -4,7 +4,7 @@ from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from PySide2.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QCompleter
 
 from jal.ui_custom.helpers import g_tr
-from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, \
+from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, ReferencePeerDelegate, \
     ReferenceIntDelegate, ReferenceBoolDelegate, ReferenceTimestampDelegate, ReferenceLookupDelegate
 
 
@@ -113,11 +113,13 @@ class AccountSelector(AbstractReferenceSelector):
                                            ("reconciled_on", "Reconciled @",
                                             self.fontMetrics().width("00/00/0000 00:00:00") * 1.1,
                                             None, ReferenceTimestampDelegate),
-                                           ("organization_id", "Bank", None, None, ReferenceLookupDelegate)],
+                                           ("organization_id", "Bank", None, None, ReferencePeerDelegate),
+                                           ("country_id", g_tr('TableViewConfig', "CC"), 50, None, ReferenceLookupDelegate)],
                                           title=g_tr('AccountSelector', "Accounts"), search_field="full_name", toggle=("active", "Show inactive"),
                                           relations=[("type_id", "account_types", "id", "name", "Account type:"),
                                                      ("currency_id", "currencies", "id", "name", None),
-                                                     ("organization_id", "agents", "id", "name", None)])
+                                                     ("organization_id", "agents", "id", "name", None),
+                                                     ("country_id", "countries", "id", "code", None)])
         super().init_db("accounts", "name")
 
 

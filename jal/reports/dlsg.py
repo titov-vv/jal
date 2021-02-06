@@ -231,7 +231,7 @@ class DLSG:
         try:
             country_code = self.countries[country]
         except:
-            logging.error(g_tr('DLSG', "Country isn't known for tax form:") + f" {country}")
+            logging.error(g_tr('DLSG', "Country isn't known for tax form (check account settings):") + f" {country}")
             raise ValueError
         return country_code, currency_code
 

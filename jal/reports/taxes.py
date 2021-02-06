@@ -431,7 +431,7 @@ class TaxesRus:
     def prepare_trades(self):
         # Take all actions without conversion
         query = executeSQL(self.db,
-                           "SELECT s.name AS symbol, d.qty AS qty, "
+                           "SELECT s.name AS symbol, d.qty AS qty, cc.code AS country_code, "
                            "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, o.number AS o_number, "
                            "qos.quote AS os_rate, o.price AS o_price, o.qty AS o_qty, o.fee AS o_fee, "
                            "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, c.number AS c_number, "
@@ -443,6 +443,7 @@ class TaxesRus:
                            "LEFT JOIN trades AS c ON cs.operation_id=c.id "
                            "LEFT JOIN assets AS s ON o.asset_id=s.id "
                            "LEFT JOIN accounts AS a ON a.id = :account_id "
+                           "LEFT JOIN countries AS cc ON cc.id = a.country_id "
                            "LEFT JOIN t_last_dates AS ldo ON o.timestamp=ldo.ref_id "
                            "LEFT JOIN quotes AS qo ON ldo.timestamp=qo.timestamp AND a.currency_id=qo.asset_id "
                            "LEFT JOIN t_last_dates AS ldos ON o.settlement=ldos.ref_id "
@@ -485,11 +486,10 @@ class TaxesRus:
             self.add_report_row(row, deal, even_odd=data_row)
             self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
 
-            # TODO replace 'us' with value depandable on broker account
             if self.statement is not None:
-                self.statement.add_stock_profit('us', self.broker_name, deal['c_date'], self.account_currency,
-                                                deal['income'], deal['income_rub'], deal['spending_rub'],
-                                                deal['c_rate'])
+                self.statement.add_stock_profit(deal['country_code'], self.broker_name, deal['c_date'],
+                                                self.account_currency, deal['income'], deal['income_rub'],
+                                                deal['spending_rub'], deal['c_rate'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
 
@@ -500,7 +500,7 @@ class TaxesRus:
     def prepare_derivatives(self):
         # Take all actions without conversion
         query = executeSQL(self.db,
-                           "SELECT s.name AS symbol, d.qty AS qty, "
+                           "SELECT s.name AS symbol, d.qty AS qty, cc.code AS country_code, "
                            "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, o.number AS o_number, "
                            "qos.quote AS os_rate, o.price AS o_price, o.qty AS o_qty, o.fee AS o_fee, "
                            "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, c.number AS c_number, "
@@ -512,6 +512,7 @@ class TaxesRus:
                            "LEFT JOIN trades AS c ON cs.operation_id=c.id "
                            "LEFT JOIN assets AS s ON o.asset_id=s.id "
                            "LEFT JOIN accounts AS a ON a.id = :account_id "
+                           "LEFT JOIN countries AS cc ON cc.id = a.country_id "
                            "LEFT JOIN t_last_dates AS ldo ON o.timestamp=ldo.ref_id "
                            "LEFT JOIN quotes AS qo ON ldo.timestamp=qo.timestamp AND a.currency_id=qo.asset_id "
                            "LEFT JOIN t_last_dates AS ldos ON o.settlement=ldos.ref_id "
@@ -554,11 +555,10 @@ class TaxesRus:
             self.add_report_row(row, deal, even_odd=data_row)
             self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
 
-            # TODO replace 'us' with value depandable on broker account
             if self.statement is not None:
-                self.statement.add_derivative_profit('us', self.broker_name, deal['c_date'], self.account_currency,
-                                                     deal['income'], deal['income_rub'], deal['spending_rub'],
-                                                     deal['c_rate'])
+                self.statement.add_derivative_profit(deal['country_code'], self.broker_name, deal['c_date'],
+                                                     self.account_currency, deal['income'], deal['income_rub'],
+                                                     deal['spending_rub'], deal['c_rate'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
 

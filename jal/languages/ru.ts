@@ -154,11 +154,6 @@
         <translation>Неизвестная валюта для 3-НДФЛ:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="234"/>
-        <source>Country isn&apos;t known for tax form:</source>
-        <translation>Неизвестная страна для 3-НДФЛ:</translation>
-    </message>
-    <message>
         <location filename="../reports/dlsg.py" line="242"/>
         <source>Declaration file has no &apos;DeclForeign&apos; section.</source>
         <translation>Секция &apos;DeclForeign&apos; отсутствует в файле декларации.</translation>
@@ -207,6 +202,11 @@
         <location filename="../reports/dlsg.py" line="316"/>
         <source>Declaration to write:</source>
         <translation>Декларация для записи:</translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="234"/>
+        <source>Country isn&apos;t known for tax form (check account settings):</source>
+        <translation>Неизвестная страна для 3-НДФЛ (проверьте настройки счёта):</translation>
     </message>
 </context>
 <context>
@@ -1854,17 +1854,17 @@ Application will be terminated now</source>
         <translation>Ценные бумаги</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="232"/>
+        <location filename="../ui_custom/table_view_config.py" line="231"/>
         <source>Peers</source>
         <translation>Контрагенты</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="245"/>
+        <location filename="../ui_custom/table_view_config.py" line="244"/>
         <source>Categories</source>
         <translation>Категории</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="258"/>
+        <location filename="../ui_custom/table_view_config.py" line="257"/>
         <source>Tags</source>
         <translation>Тэги</translation>
     </message>
@@ -1874,7 +1874,7 @@ Application will be terminated now</source>
         <translation>Тип счета</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="245"/>
+        <location filename="../ui_custom/table_view_config.py" line="244"/>
         <source>Name</source>
         <translation>Наименование</translation>
     </message>
@@ -1934,7 +1934,7 @@ Application will be terminated now</source>
         <translation>В/С</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="278"/>
+        <location filename="../ui_custom/table_view_config.py" line="277"/>
         <source>Asset</source>
         <translation>ЦБ</translation>
     </message>
@@ -1999,7 +1999,7 @@ Application will be terminated now</source>
         <translation>Категория</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="258"/>
+        <location filename="../ui_custom/table_view_config.py" line="257"/>
         <source>Tag</source>
         <translation>Тэг</translation>
     </message>
@@ -2025,11 +2025,6 @@ Application will be terminated now</source>
     </message>
     <message>
         <location filename="../ui_custom/table_view_config.py" line="217"/>
-        <source>WebID</source>
-        <translation>WebID</translation>
-    </message>
-    <message>
-        <location filename="../ui_custom/table_view_config.py" line="217"/>
         <source>Data source</source>
         <translation>Ист.котировок</translation>
     </message>
@@ -2039,17 +2034,17 @@ Application will be terminated now</source>
         <translation>Тип ЦБ:</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="232"/>
+        <location filename="../ui_custom/table_view_config.py" line="231"/>
         <source>Location</source>
         <translation>Адрес</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="232"/>
+        <location filename="../ui_custom/table_view_config.py" line="231"/>
         <source>Docs count</source>
         <translation>Кол-во док.</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="245"/>
+        <location filename="../ui_custom/table_view_config.py" line="244"/>
         <source>Often</source>
         <translation>Частая</translation>
     </message>
@@ -2074,22 +2069,22 @@ Application will be terminated now</source>
         <translation>Перевод</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="267"/>
+        <location filename="../ui_custom/table_view_config.py" line="266"/>
         <source>Countries</source>
         <translation>Страны</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="267"/>
+        <location filename="../ui_custom/table_view_config.py" line="266"/>
         <source>Country</source>
         <translation>Страна</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="267"/>
+        <location filename="../ui_custom/table_view_config.py" line="266"/>
         <source>Code</source>
         <translation>Код</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="267"/>
+        <location filename="../ui_custom/table_view_config.py" line="266"/>
         <source>Tax Treaty</source>
         <translation>СОИДН</translation>
     </message>
@@ -2099,22 +2094,22 @@ Application will be terminated now</source>
         <translation>Корп. Действие</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="278"/>
+        <location filename="../ui_custom/table_view_config.py" line="277"/>
         <source>Quotes</source>
         <translation>Котировки</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="278"/>
+        <location filename="../ui_custom/table_view_config.py" line="277"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="278"/>
+        <location filename="../ui_custom/table_view_config.py" line="277"/>
         <source>Quote</source>
         <translation>Котировка</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="197"/>
+        <location filename="../ui_custom/reference_selector.py" line="106"/>
         <source>CC</source>
         <translation>КС</translation>
     </message>
