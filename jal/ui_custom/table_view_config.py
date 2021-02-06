@@ -204,13 +204,15 @@ class TableViewConfig:
                              ("number", g_tr('TableViewConfig', "Account #"), None, None, None),
                              ("reconciled_on", g_tr('TableViewConfig', "Reconciled @"), ColumnWidth.FOR_DATETIME,
                               None, ui.ReferenceTimestampDelegate),
-                             ("organization_id", g_tr('TableViewConfig', "Bank"), None, None, ui.ReferencePeerDelegate)],
+                             ("organization_id", g_tr('TableViewConfig', "Bank"), None, None, ui.ReferencePeerDelegate),
+                             ("country_id", g_tr('TableViewConfig', "CC"), 50, None, ui.ReferenceLookupDelegate)],
                             "name",
                             ("active", g_tr('TableViewConfig', "Show inactive")),
                             False,
                             [("type_id", "account_types", "id", "name", g_tr('TableViewConfig', "Account type:")),
                              ("currency_id", "currencies", "id", "name", None),
-                             ("organization_id", "agents", "id", "name", None)]
+                             ("organization_id", "agents", "id", "name", None),
+                             ("country_id", "countries", "id", "code", None)]
                             ),
             self.ASSETS: ("assets",
                           g_tr('TableViewConfig', "Assets"),

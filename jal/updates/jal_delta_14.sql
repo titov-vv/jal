@@ -268,6 +268,60 @@ BEGIN
                 timestamp >= NEW.timestamp;
 END;
 --------------------------------------------------------------------------------
+-- Add field 'country_id' to 'accounts' table
+--------------------------------------------------------------------------------
+CREATE TABLE sqlitestudio_temp_table AS SELECT *
+                                          FROM accounts;
+
+DROP TABLE accounts;
+
+CREATE TABLE accounts (
+    id              INTEGER   PRIMARY KEY
+                              UNIQUE
+                              NOT NULL,
+    type_id         INTEGER   REFERENCES account_types (id) ON DELETE RESTRICT
+                                                            ON UPDATE CASCADE
+                              NOT NULL,
+    name            TEXT (64) NOT NULL
+                              UNIQUE,
+    currency_id     INTEGER   REFERENCES assets (id) ON DELETE RESTRICT
+                                                     ON UPDATE CASCADE
+                              NOT NULL,
+    active          INTEGER   DEFAULT (1)
+                              NOT NULL ON CONFLICT REPLACE,
+    number          TEXT (32),
+    reconciled_on   INTEGER   DEFAULT (0)
+                              NOT NULL ON CONFLICT REPLACE,
+    organization_id INTEGER   REFERENCES agents (id) ON DELETE SET NULL
+                                                     ON UPDATE CASCADE,
+    country_id      INTEGER   REFERENCES countries (id) ON DELETE CASCADE
+                                                        ON UPDATE CASCADE
+                              DEFAULT (0)
+                              NOT NULL
+);
+
+INSERT INTO accounts (
+                         id,
+                         type_id,
+                         name,
+                         currency_id,
+                         active,
+                         number,
+                         reconciled_on,
+                         organization_id
+                     )
+                     SELECT id,
+                            type_id,
+                            name,
+                            currency_id,
+                            active,
+                            number,
+                            reconciled_on,
+                            organization_id
+                       FROM sqlitestudio_temp_table;
+
+DROP TABLE sqlitestudio_temp_table;
+--------------------------------------------------------------------------------
 
 PRAGMA foreign_keys = 1;
 

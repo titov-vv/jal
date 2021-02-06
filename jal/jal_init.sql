@@ -38,7 +38,11 @@ CREATE TABLE accounts (
     reconciled_on   INTEGER   DEFAULT (0)
                               NOT NULL ON CONFLICT REPLACE,
     organization_id INTEGER   REFERENCES agents (id) ON DELETE SET NULL
-                                                     ON UPDATE CASCADE
+                                                     ON UPDATE CASCADE,
+    country_id      INTEGER   REFERENCES countries (id) ON DELETE CASCADE
+                                                        ON UPDATE CASCADE
+                              DEFAULT (0)
+                              NOT NULL
 );
 
 

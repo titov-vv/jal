@@ -78,7 +78,6 @@ def calculateHoldings(db, timestamp, currency):
                             "FROM quotes "
                             "WHERE timestamp <= :balances_timestamp "
                             "GROUP BY asset_id", [(":balances_timestamp", timestamp)])
-    # TODO Is account name really required in this temporary table?
     _ = executeSQL(db, "INSERT INTO t_last_assets (id, total_value) "
                             "SELECT a.id, "
                             "SUM(CASE WHEN a.currency_id = l.asset_id THEN l.amount "
