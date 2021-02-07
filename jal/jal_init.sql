@@ -533,34 +533,29 @@ CREATE TABLE deals (
 );
 
 
--- Table: transfer_notes
-DROP TABLE IF EXISTS transfer_notes;
-
-CREATE TABLE transfer_notes (
-    id   INTEGER     PRIMARY KEY
-                     UNIQUE
-                     NOT NULL,
-    tid  INTEGER     NOT NULL
-                     UNIQUE,
-    note TEXT (1024) NOT NULL
-);
-
-
 -- Table: transfers
 DROP TABLE IF EXISTS transfers;
 
 CREATE TABLE transfers (
-    id         INTEGER PRIMARY KEY
-                       UNIQUE
-                       NOT NULL,
-    tid        INTEGER NOT NULL,
-    timestamp  INTEGER NOT NULL,
-    type       INTEGER NOT NULL,
-    account_id INTEGER NOT NULL
-                       REFERENCES accounts (id) ON DELETE CASCADE
-                                                ON UPDATE CASCADE,
-    amount     REAL,
-    rate       REAL
+    id                   INTEGER     PRIMARY KEY
+                                     UNIQUE
+                                     NOT NULL,
+    withdrawal_timestamp INTEGER     NOT NULL,
+    withdrawal_account   INTEGER     NOT NULL
+                                     REFERENCES accounts (id) ON DELETE CASCADE
+                                                              ON UPDATE CASCADE,
+    withdrawal           REAL        NOT NULL,
+    deposit_timestamp    INTEGER     NOT NULL,
+    deposit_account      INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
+                                                              ON UPDATE CASCADE
+                                     NOT NULL,
+    deposit              REAL        NOT NULL,
+    fee_account          INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
+                                                              ON UPDATE CASCADE,
+    fee                  REAL,
+    asset                INTEGER     REFERENCES assets (id) ON DELETE CASCADE
+                                                            ON UPDATE CASCADE,
+    note                 TEXT (1024)
 );
 
 
@@ -678,12 +673,14 @@ CREATE VIEW all_operations AS
                       a.full_name AS note2,
                       ca.id AS operation_id
                  FROM corp_actions AS ca
-                      LEFT JOIN assets AS a ON ca.asset_id_new=a.id
+                      LEFT JOIN
+                      assets AS a ON ca.asset_id_new = a.id
                       LEFT JOIN
                       sequence AS q ON q.type = 5 AND
                                        ca.id = q.operation_id
                       LEFT JOIN
-                      ledger_sums AS l ON l.sid = q.id AND l.asset_id=ca.asset_id_new AND
+                      ledger_sums AS l ON l.sid = q.id AND
+                                          l.asset_id = ca.asset_id_new AND
                                           l.book_account = 4
                UNION ALL
                SELECT 3 AS type,
@@ -691,7 +688,7 @@ CREATE VIEW all_operations AS
                       t.timestamp,
                       t.number AS num_peer,
                       t.account_id,
-                      -(t.price * t.qty) AS amount,
+-                     (t.price * t.qty) AS amount,
                       t.asset_id,
                       t.qty AS qty_trid,
                       t.price AS price,
@@ -709,30 +706,61 @@ CREATE VIEW all_operations AS
                                           l.book_account = 4
                UNION ALL
                SELECT 4 AS type,
-                      r.tid,
-                      r.timestamp,
+                      t.id,
+                      t.timestamp,
                       c.name AS num_peer,
-                      r.account_id,
-                      r.amount,
+                      t.account_id,
+                      t.amount,
                       NULL AS asset_id,
-                      r.type AS qty_trid,
-                      r.rate AS price,
+                      t.subtype AS qty_trid,
+                      1 AS price,
                       NULL AS fee_tax,
                       NULL AS t_qty,
-                      n.note,
+                      t.note,
                       a.name AS note2,
-                      r.id AS operation_id
-                 FROM transfers AS r
+                      t.id AS operation_id
+                 FROM (
+                         SELECT 4 AS type,
+                                 id,
+                                 withdrawal_timestamp AS timestamp,
+                                 withdrawal_account AS account_id,
+                                 deposit_account AS account2_id,
+                                 withdrawal AS amount,
+                                 deposit/withdrawal AS rate,
+-                                -1 AS subtype,
+                                 note
+                            FROM transfers
+                          UNION ALL
+                          SELECT 4 AS type,
+                                 id,
+                                 deposit_timestamp AS timestamp,
+                                 deposit_account AS account_id,
+                                 withdrawal_account AS account2_id,
+                                 deposit AS amount,
+                                 withdrawal/deposit AS rate,
+                                 1 AS subtype,
+                                 note
+                            FROM transfers
+                          UNION ALL
+                          SELECT 4 AS type,
+                                 id,
+                                 withdrawal_timestamp AS timestamp,
+                                 fee_account AS account_id,
+                                 NULL AS account2_id,
+                                 fee AS amount,
+                                 1 AS rate,
+                                 0 AS subtype,
+                                 note
+                            FROM transfers
+                           WHERE NOT fee IS NULL
+                           ORDER BY id
+                      )
+                      AS t
                       LEFT JOIN
-                      transfer_notes AS n ON r.tid = n.tid
-                      LEFT JOIN
-                      transfers AS tr ON r.tid = tr.tid AND
-                                         r.type = -tr.type
-                      LEFT JOIN
-                      accounts AS a ON a.id = tr.account_id
+                      accounts AS a ON a.id = t.account2_id
                       LEFT JOIN
                       assets AS c ON c.id = a.currency_id
-               ORDER BY timestamp
+                ORDER BY timestamp
            )
            AS m
            LEFT JOIN
@@ -745,10 +773,10 @@ CREATE VIEW all_operations AS
            sequence AS q ON m.type = q.type AND
                             m.operation_id = q.operation_id
            LEFT JOIN
-           ledger_sums AS money ON money.sid = q.id AND
+           ledger_sums AS money ON money.sid = q.id  AND money.account_id = m.account_id AND
                                    money.book_account = 3
            LEFT JOIN
-           ledger_sums AS debt ON debt.sid = q.id AND
+           ledger_sums AS debt ON debt.sid = q.id AND debt.account_id = m.account_id  AND
                                   debt.book_account = 5;
 
 
@@ -790,7 +818,8 @@ CREATE VIEW all_transactions AS
                       a.organization_id AS peer,
                       NULL AS tag
                  FROM dividends AS d
-                 LEFT JOIN accounts AS a ON a.id = d.account_id
+                      LEFT JOIN
+                      accounts AS a ON a.id = d.account_id
                UNION ALL
                SELECT 5 AS type,
                       a.id,
@@ -821,22 +850,23 @@ CREATE VIEW all_transactions AS
                       a.organization_id AS peer,
                       NULL AS tag
                  FROM trades AS t
-                 LEFT JOIN accounts AS a ON a.id = t.account_id
+                      LEFT JOIN
+                      accounts AS a ON a.id = t.account_id
                UNION ALL
                SELECT 4 AS type,
-                      id,
-                      timestamp,
-                      type AS subtype,
-                      account_id AS account,
-                      NULL AS asset,
-                      amount,
-                      NULL AS category,
-                      NULL AS price,
-                      NULL AS fee_tax,
+                      t.id,
+                      withdrawal_timestamp AS timestamp,
+                      asset AS subtype,
+                      withdrawal_account AS account,
+                      deposit_timestamp AS asset,
+                      withdrawal AS amount,
+                      deposit_account AS category,
+                      deposit AS price,
+                      fee AS fee_tax,
                       NULL AS coupon,
-                      NULL AS peer,
+                      fee_account AS peer,
                       NULL AS tag
-                 FROM transfers
+                 FROM transfers AS t
                 ORDER BY timestamp
            )
            AS at
@@ -901,34 +931,6 @@ CREATE VIEW frontier AS
     SELECT MAX(sequence.timestamp) AS ledger_frontier
       FROM sequence;
 
-
--- View: transfers_combined
-DROP VIEW IF EXISTS transfers_combined;
-CREATE VIEW transfers_combined AS
-    SELECT f.tid AS id,
-           f.id AS from_id,
-           f.timestamp AS from_timestamp,
-           f.account_id AS from_acc_id,
-           t.id AS to_id,
-           t.timestamp AS to_timestamp,
-           t.account_id AS to_acc_id,
-           fee.id AS fee_id,
-           fee.timestamp AS fee_timestamp,
-           fee.account_id AS fee_acc_id,
-           f.amount AS from_amount,
-           t.amount AS to_amount,
-           fee.amount AS fee_amount,
-           n.note
-      FROM transfers AS f
-           INNER JOIN
-           transfers AS t ON f.tid = t.tid AND 
-                             t.type = 1
-           LEFT JOIN
-           transfers AS fee ON f.tid = fee.tid AND 
-                               fee.type = 0
-           LEFT JOIN
-           transfer_notes AS n ON f.tid = n.tid
-     WHERE f.type = -1;
 
 -- View: deals_ext
 DROP VIEW IF EXISTS deals_ext;

@@ -88,7 +88,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 g_tr('TableViewConfig', "Dividend"), self.ui_config.mappers[self.ui_config.DIVIDENDS], 'dividends', None, None,
                 LedgerInitValues[TransactionType.Dividend]),
             TransactionType.Transfer: (
-                g_tr('TableViewConfig', "Transfer"), self.ui_config.mappers[self.ui_config.TRANSFERS], 'transfers_combined', None, None,
+                g_tr('TableViewConfig', "Transfer"), self.ui_config.mappers[self.ui_config.TRANSFERS], 'transfers', None, None,
                 LedgerInitValues[TransactionType.Transfer]),
             TransactionType.CorporateAction: (
                 g_tr('TableViewConfig', "Corp. Action"), self.ui_config.mappers[self.ui_config.CORP_ACTIONS], 'corp_actions', None, None,

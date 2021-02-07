@@ -468,10 +468,111 @@ BEGIN
                 timestamp >= NEW.timestamp;
 END;
 
+--------------------------------------------------------------------------------
+-- Refactor 'trasfers' table
+
+CREATE TABLE sqlitestudio_temp_table AS SELECT * FROM transfers_combined;
+
+DROP TABLE transfer_notes;
+DROP TABLE transfers;
+DROP VIEW transfers_combined;
+
+CREATE TABLE transfers (
+    id                   INTEGER     PRIMARY KEY
+                                     UNIQUE
+                                     NOT NULL,
+    withdrawal_timestamp INTEGER     NOT NULL,
+    withdrawal_account   INTEGER     NOT NULL
+                                     REFERENCES accounts (id) ON DELETE CASCADE
+                                                              ON UPDATE CASCADE,
+    withdrawal           REAL        NOT NULL,
+    deposit_timestamp    INTEGER     NOT NULL,
+    deposit_account      INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
+                                                              ON UPDATE CASCADE
+                                     NOT NULL,
+    deposit              REAL        NOT NULL,
+    fee_account          INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
+                                                              ON UPDATE CASCADE,
+    fee                  REAL,
+    asset                INTEGER     REFERENCES assets (id) ON DELETE CASCADE
+                                                            ON UPDATE CASCADE,
+    note                 TEXT (1024)
+);
+
+INSERT INTO transfers (
+                          id,
+                          withdrawal_timestamp,
+                          withdrawal_account,
+                          withdrawal,
+                          deposit_timestamp,
+                          deposit_account,
+                          deposit,
+                          fee_account,
+                          fee,
+                          note
+                      )
+                      SELECT id,
+                             from_timestamp,
+                             from_acc_id,
+                             -from_amount,
+                             to_timestamp,
+                             to_acc_id,
+                             to_amount,
+                             fee_acc_id,
+                             -fee_amount,
+                             note
+                        FROM sqlitestudio_temp_table;
+
+DROP TABLE sqlitestudio_temp_table;
+
+CREATE TRIGGER transfers_after_delete
+         AFTER DELETE
+            ON transfers
+      FOR EACH ROW
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= OLD.deposit_timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= OLD.deposit_timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= OLD.deposit_timestamp;
+END;
+
+CREATE TRIGGER transfers_after_insert
+         AFTER INSERT
+            ON transfers
+      FOR EACH ROW
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= NEW.deposit_timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= NEW.deposit_timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= NEW.deposit_timestamp;
+END;
+
+CREATE TRIGGER transfers_after_update
+         AFTER UPDATE OF deposit_timestamp,
+                         withdrawal_account,
+                         withdrawal
+            ON transfers
+      FOR EACH ROW
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= OLD.deposit_timestamp OR
+                timestamp >= NEW.deposit_timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= OLD.deposit_timestamp OR
+                timestamp >= NEW.deposit_timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= OLD.deposit_timestamp OR
+                timestamp >= NEW.deposit_timestamp;
+END;
 
 --------------------------------------------------------------------------------
 -- Update view 'all_operations':
 -- replace tax_country_id from dividends by country_id from asset
+-- use new 'transfers' table
 --------------------------------------------------------------------------------
 DROP VIEW all_operations;
 
@@ -591,27 +692,58 @@ CREATE VIEW all_operations AS
                                           l.book_account = 4
                UNION ALL
                SELECT 4 AS type,
-                      r.tid,
-                      r.timestamp,
+                      t.id,
+                      t.timestamp,
                       c.name AS num_peer,
-                      r.account_id,
-                      r.amount,
+                      t.account_id,
+                      t.amount,
                       NULL AS asset_id,
-                      r.type AS qty_trid,
-                      r.rate AS price,
+                      t.subtype AS qty_trid,
+                      t.rate AS price,
                       NULL AS fee_tax,
                       NULL AS t_qty,
-                      n.note,
+                      t.note,
                       a.name AS note2,
-                      r.id AS operation_id
-                 FROM transfers AS r
+                      t.id AS operation_id
+                 FROM (
+                          SELECT 4 AS type,
+                                 id,
+                                 withdrawal_timestamp AS timestamp,
+                                 withdrawal_account AS account_id,
+                                 deposit_account AS account2_id,
+                                 withdrawal AS amount,
+                                 deposit/withdrawal AS rate,
+-                                -1 AS subtype,
+                                 note
+                            FROM transfers
+                          UNION ALL
+                          SELECT 4 AS type,
+                                 id,
+                                 deposit_timestamp AS timestamp,
+                                 deposit_account AS account_id,
+                                 withdrawal_account AS account2_id,
+                                 deposit AS amount,
+                                 withdrawal/deposit AS rate,
+                                 1 AS subtype,
+                                 note
+                            FROM transfers
+                          UNION ALL
+                          SELECT 4 AS type,
+                                 id,
+                                 withdrawal_timestamp AS timestamp,
+                                 fee_account AS account_id,
+                                 NULL AS account2_id,
+                                 fee AS amount,
+                                 1 AS rate,
+                                 0 AS subtype,
+                                 note
+                            FROM transfers
+                           WHERE NOT fee IS NULL
+                           ORDER BY id
+                      )
+                      AS t
                       LEFT JOIN
-                      transfer_notes AS n ON r.tid = n.tid
-                      LEFT JOIN
-                      transfers AS tr ON r.tid = tr.tid AND
-                                         r.type = -tr.type
-                      LEFT JOIN
-                      accounts AS a ON a.id = tr.account_id
+                      accounts AS a ON a.id = t.account2_id
                       LEFT JOIN
                       assets AS c ON c.id = a.currency_id
                 ORDER BY timestamp
@@ -627,11 +759,108 @@ CREATE VIEW all_operations AS
            sequence AS q ON m.type = q.type AND
                             m.operation_id = q.operation_id
            LEFT JOIN
-           ledger_sums AS money ON money.sid = q.id AND
+           ledger_sums AS money ON money.sid = q.id  AND money.account_id = m.account_id AND
                                    money.book_account = 3
            LEFT JOIN
-           ledger_sums AS debt ON debt.sid = q.id AND
+           ledger_sums AS debt ON debt.sid = q.id AND debt.account_id = m.account_id  AND
                                   debt.book_account = 5;
+
+--------------------------------------------------------------------------------
+-- Update 'all_transactions' view - use new 'transfers' table
+--------------------------------------------------------------------------------
+DROP VIEW all_transactions;
+
+CREATE VIEW all_transactions AS
+    SELECT at.*,
+           a.currency_id AS currency
+      FROM (
+               SELECT 1 AS type,
+                      a.id,
+                      a.timestamp,
+                      CASE WHEN SUM(d.sum) < 0 THEN COUNT(d.sum) ELSE -COUNT(d.sum) END AS subtype,
+                      a.account_id AS account,
+                      NULL AS asset,
+                      SUM(d.sum) AS amount,
+                      d.category_id AS category,
+                      NULL AS price,
+                      NULL AS fee_tax,
+                      NULL AS coupon,
+                      a.peer_id AS peer,
+                      d.tag_id AS tag
+                 FROM actions AS a
+                      LEFT JOIN
+                      action_details AS d ON a.id = d.pid
+                GROUP BY a.id
+               UNION ALL
+               SELECT 2 AS type,
+                      d.id,
+                      d.timestamp,
+                      0 AS subtype,
+                      d.account_id AS account,
+                      d.asset_id AS asset,
+                      d.sum AS amount,
+                      7 AS category,
+                      NULL AS price,
+                      d.sum_tax AS fee_tax,
+                      NULL AS coupon,
+                      a.organization_id AS peer,
+                      NULL AS tag
+                 FROM dividends AS d
+                      LEFT JOIN
+                      accounts AS a ON a.id = d.account_id
+               UNION ALL
+               SELECT 5 AS type,
+                      a.id,
+                      a.timestamp,
+                      a.type AS subtype,
+                      a.account_id AS account,
+                      a.asset_id AS asset,
+                      a.qty AS amount,
+                      NULL AS category,
+                      a.qty_new AS price,
+                      a.basis_ratio AS fee_tax,
+                      NULL AS coupon,
+                      a.asset_id_new AS peer,
+                      NULL AS tag
+                 FROM corp_actions AS a
+               UNION ALL
+               SELECT 3 AS type,
+                      t.id,
+                      t.timestamp,
+                      iif(t.qty < 0, -1, 1) AS subtype,
+                      t.account_id AS account,
+                      t.asset_id AS asset,
+                      t.qty AS amount,
+                      NULL AS category,
+                      t.price AS price,
+                      t.fee AS fee_tax,
+                      t.coupon AS coupon,
+                      a.organization_id AS peer,
+                      NULL AS tag
+                 FROM trades AS t
+                      LEFT JOIN
+                      accounts AS a ON a.id = t.account_id
+               UNION ALL
+               SELECT 4 AS type,
+                      t.id,
+                      withdrawal_timestamp AS timestamp,
+                      asset AS subtype,
+                      withdrawal_account AS account,
+                      deposit_timestamp AS asset,
+                      withdrawal AS amount,
+                      deposit_account AS category,
+                      deposit AS price,
+                      fee AS fee_tax,
+                      NULL AS coupon,
+                      fee_account AS peer,
+                      NULL AS tag
+                 FROM transfers AS t
+                 LEFT JOIN accounts AS a ON deposit_account=a.id
+                ORDER BY timestamp
+           )
+           AS at
+           LEFT JOIN
+           accounts AS a ON at.account = a.id;
 --------------------------------------------------------------------------------
 
 PRAGMA foreign_keys = 1;

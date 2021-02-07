@@ -672,25 +672,25 @@ class StatementLoader(QObject):
 
     def createTransfer(self, timestamp, f_acc_id, f_amount, t_acc_id, t_amount, fee_acc_id, fee, note):
         transfer_id = readSQL(self.db,
-                              "SELECT id FROM transfers_combined "
-                              "WHERE from_timestamp=:timestamp AND from_acc_id=:from_acc_id AND to_acc_id=:to_acc_id",
+                              "SELECT id FROM transfers WHERE withdrawal_timestamp=:timestamp "
+                              "AND withdrawal_account=:from_acc_id AND deposit_account=:to_acc_id",
                               [(":timestamp", timestamp), (":from_acc_id", f_acc_id), (":to_acc_id", t_acc_id)])
         if transfer_id:
             logging.info(g_tr('StatementLoader', "Transfer/Exchange already exists: ") + f"{f_amount}->{t_amount}")
             return
         if abs(fee) > Setup.CALC_TOLERANCE:
             _ = executeSQL(self.db,
-                           "INSERT INTO transfers_combined (from_timestamp, from_acc_id, from_amount, "
-                           "to_timestamp, to_acc_id, to_amount, fee_timestamp, fee_acc_id, fee_amount, note) "
+                           "INSERT INTO transfers (withdrawal_timestamp, withdrawal_account, withdrawal, "
+                           "deposit_timestamp, deposit_account, deposit, fee_account, fee, note) "
                            "VALUES (:timestamp, :f_acc_id, :f_amount, :timestamp, :t_acc_id, :t_amount, "
-                           ":timestamp, :fee_acc_id, :fee_amount, :note)",
+                           ":fee_acc_id, :fee_amount, :note)",
                            [(":timestamp", timestamp), (":f_acc_id", f_acc_id), (":t_acc_id", t_acc_id),
                             (":f_amount", f_amount), (":t_amount", t_amount), (":fee_acc_id", fee_acc_id),
                             (":fee_amount", fee), (":note", note)])
         else:
             _ = executeSQL(self.db,
-                           "INSERT INTO transfers_combined (from_timestamp, from_acc_id, from_amount, "
-                           "to_timestamp, to_acc_id, to_amount, note) "
+                           "INSERT INTO transfers (withdrawal_timestamp, withdrawal_account, withdrawal, "
+                           "deposit_timestamp, deposit_account, deposit, note) "
                            "VALUES (:timestamp, :f_acc_id, :f_amount, :timestamp, :t_acc_id, :t_amount, :note)",
                            [(":timestamp", timestamp), (":f_acc_id", f_acc_id), (":t_acc_id", t_acc_id),
                             (":f_amount", f_amount), (":t_amount", t_amount), (":note", note)])

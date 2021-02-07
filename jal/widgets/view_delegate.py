@@ -404,11 +404,7 @@ class OperationsNotesDelegate(QStyledItemDelegate):
             exchange_text = ''
             currency1 = record.value("currency")
             currency2 = record.value("num_peer")
-            rate_text = record.value("price")
-            if rate_text == '':
-                rate = 0
-            else:
-                rate = -rate_text           # TODO Fix negative rate values in database
+            rate = 0 if record.value("price") == '' else record.value("price")
             if currency1 != currency2:
                 if rate != 0:
                     if rate > 1:

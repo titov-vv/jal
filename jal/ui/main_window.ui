@@ -152,7 +152,7 @@
                    <second>0</second>
                    <year>2020</year>
                    <month>12</month>
-                   <day>29</day>
+                   <day>28</day>
                   </datetime>
                  </property>
                  <property name="displayFormat">
@@ -773,7 +773,7 @@
                        <date>
                         <year>1999</year>
                         <month>12</month>
-                        <day>28</day>
+                        <day>27</day>
                        </date>
                       </property>
                       <property name="displayFormat">
@@ -1017,89 +1017,7 @@
                     <property name="bottomMargin">
                      <number>2</number>
                     </property>
-                    <item row="5" column="1" colspan="4">
-                     <widget class="QLineEdit" name="TransferNote"/>
-                    </item>
-                    <item row="2" column="3">
-                     <widget class="AmountEdit" name="TransferFromAmount">
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="4">
-                     <spacer name="horizontalSpacer_4">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>40</width>
-                        <height>20</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
                     <item row="4" column="3">
-                     <widget class="AmountEdit" name="TransferFeeAmount">
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="6" column="2">
-                     <spacer name="verticalSpacer_5">
-                      <property name="orientation">
-                       <enum>Qt::Vertical</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>20</width>
-                        <height>40</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                    <item row="5" column="0">
-                     <widget class="QLabel" name="TransferTextLbl">
-                      <property name="text">
-                       <string>Text:</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="2">
-                     <widget class="AccountSelector" name="TransferFromAccountWidget" native="true"/>
-                    </item>
-                    <item row="2" column="0">
-                     <widget class="QDateTimeEdit" name="TransferFromTimestamp">
-                      <property name="displayFormat">
-                       <string>dd/MM/yyyy hh:mm:ss</string>
-                      </property>
-                      <property name="calendarPopup">
-                       <bool>true</bool>
-                      </property>
-                      <property name="timeSpec">
-                       <enum>Qt::UTC</enum>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="4" column="2">
-                     <widget class="AccountSelector" name="TransferFeeAccountWidget" native="true"/>
-                    </item>
-                    <item row="2" column="1">
-                     <widget class="QLabel" name="TransferFromLbl">
-                      <property name="text">
-                       <string>From:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="2">
-                     <widget class="AccountSelector" name="TransferToAccountWidget" native="true"/>
-                    </item>
-                    <item row="3" column="3">
                      <widget class="AmountEdit" name="TransferToAmount">
                       <property name="alignment">
                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1120,43 +1038,32 @@
                      </widget>
                     </item>
                     <item row="4" column="1">
-                     <widget class="QLabel" name="TransferFeeLbl">
-                      <property name="text">
-                       <string>Fee:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="4" column="0">
-                     <widget class="QDateTimeEdit" name="TransferFeeTimestamp">
-                      <property name="specialValueText">
-                       <string>N/A</string>
-                      </property>
-                      <property name="minimumDate">
-                       <date>
-                        <year>1999</year>
-                        <month>12</month>
-                        <day>28</day>
-                       </date>
-                      </property>
-                      <property name="displayFormat">
-                       <string>dd/MM/yyyy hh:mm:ss</string>
-                      </property>
-                      <property name="calendarPopup">
-                       <bool>true</bool>
-                      </property>
-                      <property name="timeSpec">
-                       <enum>Qt::UTC</enum>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="1">
                      <widget class="QLabel" name="TransferToLbl">
                       <property name="text">
                        <string>To:</string>
                       </property>
                      </widget>
                     </item>
-                    <item row="3" column="0">
+                    <item row="6" column="1" colspan="4">
+                     <widget class="QLineEdit" name="TransferNote"/>
+                    </item>
+                    <item row="4" column="4">
+                     <spacer name="horizontalSpacer_4">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="2" column="2">
+                     <widget class="AccountSelector" name="TransferFromAccountWidget" native="true"/>
+                    </item>
+                    <item row="4" column="0">
                      <widget class="QDateTimeEdit" name="TransferToTimestamp">
                       <property name="displayFormat">
                        <string>dd/MM/yyyy hh:mm:ss</string>
@@ -1168,6 +1075,76 @@
                        <enum>Qt::UTC</enum>
                       </property>
                      </widget>
+                    </item>
+                    <item row="7" column="2">
+                     <spacer name="verticalSpacer_5">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>20</width>
+                        <height>40</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item row="6" column="0">
+                     <widget class="QLabel" name="TransferTextLbl">
+                      <property name="text">
+                       <string>Text:</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="0">
+                     <widget class="QDateTimeEdit" name="TransferFromTimestamp">
+                      <property name="displayFormat">
+                       <string>dd/MM/yyyy hh:mm:ss</string>
+                      </property>
+                      <property name="calendarPopup">
+                       <bool>true</bool>
+                      </property>
+                      <property name="timeSpec">
+                       <enum>Qt::UTC</enum>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="1">
+                     <widget class="QLabel" name="TransferFromLbl">
+                      <property name="text">
+                       <string>From:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="3">
+                     <widget class="AmountEdit" name="TransferFromAmount">
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="4" column="2">
+                     <widget class="AccountSelector" name="TransferToAccountWidget" native="true"/>
+                    </item>
+                    <item row="3" column="1">
+                     <widget class="QLabel" name="TransferFeeLbl">
+                      <property name="text">
+                       <string>Fee:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="3">
+                     <widget class="AmountEdit" name="TransferFeeAmount">
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="2">
+                     <widget class="AccountSelector" name="TransferFeeAccountWidget" native="true"/>
                     </item>
                    </layout>
                   </widget>
@@ -1482,7 +1459,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>29</day>
+               <day>28</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -1630,7 +1607,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>29</day>
+               <day>28</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -1777,7 +1754,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>29</day>
+               <day>28</day>
               </datetime>
              </property>
              <property name="displayFormat">

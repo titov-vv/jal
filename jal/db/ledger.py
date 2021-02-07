@@ -3,11 +3,12 @@ import logging
 from datetime import datetime
 from math import copysign
 from functools import partial
-from jal.constants import Setup, BookAccount, TransactionType, ActionSubtype, TransferSubtype, CorporateAction, \
+from jal.constants import Setup, BookAccount, TransactionType, ActionSubtype, CorporateAction, \
     PredefinedCategory, PredefinedPeer
 from PySide2.QtCore import Qt, Slot, QDate, QDateTime
 from PySide2.QtWidgets import QDialog, QMessageBox, QMenu, QAction
-from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_asset_name, get_account_id, get_asset_id
+from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_asset_name, get_account_id, get_account_currency, \
+    get_asset_id
 from jal.db.routines import calculateBalances, calculateHoldings
 from jal.ui_custom.helpers import g_tr
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
@@ -420,34 +421,40 @@ class Ledger:
             self.current['category'] = PredefinedCategory.Fees
             self.appendTransaction(BookAccount.Costs, self.current['fee_tax'])
 
-    def processTransferOut(self):
-        amount = -self.current['amount']
-        credit_taken = self.takeCredit(amount)
-        self.appendTransaction(BookAccount.Money, -(amount - credit_taken))
-        self.appendTransaction(BookAccount.Transfers, amount)
-
-    def processTransferIn(self):
-        amount = self.current['amount']
-        credit_returned = self.returnCredit(amount)
-        if credit_returned < amount:
-            self.appendTransaction(BookAccount.Money, (amount - credit_returned))
-        self.appendTransaction(BookAccount.Transfers, -amount)
-
-    def processTransferFee(self):
-        fee = -self.current['amount']
-        credit_taken = self.takeCredit(fee)
-        self.current['peer'] = PredefinedPeer.Financial
-        self.appendTransaction(BookAccount.Money, -(fee - credit_taken))
-        self.current['category'] = PredefinedCategory.Fees
-        self.appendTransaction(BookAccount.Costs, fee)
-
     def processTransfer(self):
-        operationTransfer = {
-            TransferSubtype.Outgoing: self.processTransferOut,
-            TransferSubtype.Fee: self.processTransferFee,
-            TransferSubtype.Incoming: self.processTransferIn
-        }
-        operationTransfer[self.current['subtype']]()
+        if self.current['subtype'] != '':   # TODO implement assets transfer
+            logging.error(g_tr('Ledger', "Unexpected data in transfer transaction"))
+            return
+        withdrawal_timestamp = self.current['timestamp']
+        withdrawal_account = self.current['account']
+        withdrawal = self.current['amount']
+        deposit_timestamp = self.current['asset']
+        deposit_account = self.current['category']
+        deposit = self.current['price']
+        fee_account = self.current['peer']
+        fee = self.current['fee_tax']
+        # process transfer out
+        self.current['currency'] = get_account_currency(self.db, withdrawal_account)
+        credit_taken = self.takeCredit(withdrawal)
+        self.appendTransaction(BookAccount.Money, -(withdrawal - credit_taken))
+        self.appendTransaction(BookAccount.Transfers, withdrawal)
+        # process transfer in
+        self.current['timestamp'] = deposit_timestamp
+        self.current['account'] = deposit_account
+        self.current['currency'] = get_account_currency(self.db, deposit_account)
+        credit_returned = self.returnCredit(deposit)
+        if credit_returned < deposit:
+            self.appendTransaction(BookAccount.Money, (deposit - credit_returned))
+        self.appendTransaction(BookAccount.Transfers, -deposit)
+        if fee_account:    # process fee
+            self.current['timestamp'] = withdrawal_timestamp
+            self.current['account'] = fee_account
+            self.current['currency'] = get_account_currency(self.db, fee_account)
+            credit_taken = self.takeCredit(fee)
+            self.current['peer'] = PredefinedPeer.Financial
+            self.appendTransaction(BookAccount.Money, -(fee - credit_taken))
+            self.current['category'] = PredefinedCategory.Fees
+            self.appendTransaction(BookAccount.Costs, fee)
 
     def updateStockDividendAssets(self):
         asset_amount = self.getAmount(BookAccount.Assets, self.current['asset'])

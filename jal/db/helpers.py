@@ -203,6 +203,8 @@ def get_account_id(db, account_name):
 def get_account_name(db, account_id):
     return readSQL(db, "SELECT name FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
 
+def get_account_currency(db, account_id):
+    return readSQL(db, "SELECT currency_id FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
 # -------------------------------------------------------------------------------------------------------------------
 def get_country_by_code(db, country_code):
     id = readSQL(db, "SELECT id FROM countries WHERE code=:code", [(":code", country_code)])

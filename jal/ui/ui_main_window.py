@@ -113,7 +113,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
         self.BalanceDate = QDateEdit(self.BalanceConfigFrame)
         self.BalanceDate.setObjectName(u"BalanceDate")
-        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 29), QTime(21, 0, 0)))
+        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 28), QTime(21, 0, 0)))
         self.BalanceDate.setCalendarPopup(True)
         self.BalanceDate.setTimeSpec(Qt.UTC)
 
@@ -428,7 +428,7 @@ class Ui_LedgerMainWindow(object):
 
         self.TradeSettlementEdit = QDateEdit(self.TradeDetailsTab)
         self.TradeSettlementEdit.setObjectName(u"TradeSettlementEdit")
-        self.TradeSettlementEdit.setMinimumDate(QDate(1999, 12, 28))
+        self.TradeSettlementEdit.setMinimumDate(QDate(1999, 12, 27))
         self.TradeSettlementEdit.setCalendarPopup(True)
         self.TradeSettlementEdit.setTimeSpec(Qt.UTC)
 
@@ -567,41 +567,53 @@ class Ui_LedgerMainWindow(object):
         self.gridLayout_5 = QGridLayout(self.TransferDetailsTab)
         self.gridLayout_5.setObjectName(u"gridLayout_5")
         self.gridLayout_5.setContentsMargins(2, 2, 2, 2)
+        self.TransferToAmount = AmountEdit(self.TransferDetailsTab)
+        self.TransferToAmount.setObjectName(u"TransferToAmount")
+        self.TransferToAmount.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gridLayout_5.addWidget(self.TransferToAmount, 4, 3, 1, 1)
+
+        self.TransferTabLbl = QLabel(self.TransferDetailsTab)
+        self.TransferTabLbl.setObjectName(u"TransferTabLbl")
+        self.TransferTabLbl.setFont(font)
+
+        self.gridLayout_5.addWidget(self.TransferTabLbl, 0, 0, 1, 1)
+
+        self.TransferToLbl = QLabel(self.TransferDetailsTab)
+        self.TransferToLbl.setObjectName(u"TransferToLbl")
+
+        self.gridLayout_5.addWidget(self.TransferToLbl, 4, 1, 1, 1)
+
         self.TransferNote = QLineEdit(self.TransferDetailsTab)
         self.TransferNote.setObjectName(u"TransferNote")
 
-        self.gridLayout_5.addWidget(self.TransferNote, 5, 1, 1, 4)
-
-        self.TransferFromAmount = AmountEdit(self.TransferDetailsTab)
-        self.TransferFromAmount.setObjectName(u"TransferFromAmount")
-        self.TransferFromAmount.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gridLayout_5.addWidget(self.TransferFromAmount, 2, 3, 1, 1)
+        self.gridLayout_5.addWidget(self.TransferNote, 6, 1, 1, 4)
 
         self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.gridLayout_5.addItem(self.horizontalSpacer_4, 3, 4, 1, 1)
-
-        self.TransferFeeAmount = AmountEdit(self.TransferDetailsTab)
-        self.TransferFeeAmount.setObjectName(u"TransferFeeAmount")
-        self.TransferFeeAmount.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gridLayout_5.addWidget(self.TransferFeeAmount, 4, 3, 1, 1)
-
-        self.verticalSpacer_5 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.gridLayout_5.addItem(self.verticalSpacer_5, 6, 2, 1, 1)
-
-        self.TransferTextLbl = QLabel(self.TransferDetailsTab)
-        self.TransferTextLbl.setObjectName(u"TransferTextLbl")
-        self.TransferTextLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gridLayout_5.addWidget(self.TransferTextLbl, 5, 0, 1, 1)
+        self.gridLayout_5.addItem(self.horizontalSpacer_4, 4, 4, 1, 1)
 
         self.TransferFromAccountWidget = AccountSelector(self.TransferDetailsTab)
         self.TransferFromAccountWidget.setObjectName(u"TransferFromAccountWidget")
 
         self.gridLayout_5.addWidget(self.TransferFromAccountWidget, 2, 2, 1, 1)
+
+        self.TransferToTimestamp = QDateTimeEdit(self.TransferDetailsTab)
+        self.TransferToTimestamp.setObjectName(u"TransferToTimestamp")
+        self.TransferToTimestamp.setCalendarPopup(True)
+        self.TransferToTimestamp.setTimeSpec(Qt.UTC)
+
+        self.gridLayout_5.addWidget(self.TransferToTimestamp, 4, 0, 1, 1)
+
+        self.verticalSpacer_5 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_5.addItem(self.verticalSpacer_5, 7, 2, 1, 1)
+
+        self.TransferTextLbl = QLabel(self.TransferDetailsTab)
+        self.TransferTextLbl.setObjectName(u"TransferTextLbl")
+        self.TransferTextLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gridLayout_5.addWidget(self.TransferTextLbl, 6, 0, 1, 1)
 
         self.TransferFromTimestamp = QDateTimeEdit(self.TransferDetailsTab)
         self.TransferFromTimestamp.setObjectName(u"TransferFromTimestamp")
@@ -610,57 +622,37 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_5.addWidget(self.TransferFromTimestamp, 2, 0, 1, 1)
 
-        self.TransferFeeAccountWidget = AccountSelector(self.TransferDetailsTab)
-        self.TransferFeeAccountWidget.setObjectName(u"TransferFeeAccountWidget")
-
-        self.gridLayout_5.addWidget(self.TransferFeeAccountWidget, 4, 2, 1, 1)
-
         self.TransferFromLbl = QLabel(self.TransferDetailsTab)
         self.TransferFromLbl.setObjectName(u"TransferFromLbl")
 
         self.gridLayout_5.addWidget(self.TransferFromLbl, 2, 1, 1, 1)
 
+        self.TransferFromAmount = AmountEdit(self.TransferDetailsTab)
+        self.TransferFromAmount.setObjectName(u"TransferFromAmount")
+        self.TransferFromAmount.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+
+        self.gridLayout_5.addWidget(self.TransferFromAmount, 2, 3, 1, 1)
+
         self.TransferToAccountWidget = AccountSelector(self.TransferDetailsTab)
         self.TransferToAccountWidget.setObjectName(u"TransferToAccountWidget")
 
-        self.gridLayout_5.addWidget(self.TransferToAccountWidget, 3, 2, 1, 1)
-
-        self.TransferToAmount = AmountEdit(self.TransferDetailsTab)
-        self.TransferToAmount.setObjectName(u"TransferToAmount")
-        self.TransferToAmount.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gridLayout_5.addWidget(self.TransferToAmount, 3, 3, 1, 1)
-
-        self.TransferTabLbl = QLabel(self.TransferDetailsTab)
-        self.TransferTabLbl.setObjectName(u"TransferTabLbl")
-        self.TransferTabLbl.setFont(font)
-
-        self.gridLayout_5.addWidget(self.TransferTabLbl, 0, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.TransferToAccountWidget, 4, 2, 1, 1)
 
         self.TransferFeeLbl = QLabel(self.TransferDetailsTab)
         self.TransferFeeLbl.setObjectName(u"TransferFeeLbl")
 
-        self.gridLayout_5.addWidget(self.TransferFeeLbl, 4, 1, 1, 1)
+        self.gridLayout_5.addWidget(self.TransferFeeLbl, 3, 1, 1, 1)
 
-        self.TransferFeeTimestamp = QDateTimeEdit(self.TransferDetailsTab)
-        self.TransferFeeTimestamp.setObjectName(u"TransferFeeTimestamp")
-        self.TransferFeeTimestamp.setMinimumDate(QDate(1999, 12, 28))
-        self.TransferFeeTimestamp.setCalendarPopup(True)
-        self.TransferFeeTimestamp.setTimeSpec(Qt.UTC)
+        self.TransferFeeAmount = AmountEdit(self.TransferDetailsTab)
+        self.TransferFeeAmount.setObjectName(u"TransferFeeAmount")
+        self.TransferFeeAmount.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
-        self.gridLayout_5.addWidget(self.TransferFeeTimestamp, 4, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.TransferFeeAmount, 3, 3, 1, 1)
 
-        self.TransferToLbl = QLabel(self.TransferDetailsTab)
-        self.TransferToLbl.setObjectName(u"TransferToLbl")
+        self.TransferFeeAccountWidget = AccountSelector(self.TransferDetailsTab)
+        self.TransferFeeAccountWidget.setObjectName(u"TransferFeeAccountWidget")
 
-        self.gridLayout_5.addWidget(self.TransferToLbl, 3, 1, 1, 1)
-
-        self.TransferToTimestamp = QDateTimeEdit(self.TransferDetailsTab)
-        self.TransferToTimestamp.setObjectName(u"TransferToTimestamp")
-        self.TransferToTimestamp.setCalendarPopup(True)
-        self.TransferToTimestamp.setTimeSpec(Qt.UTC)
-
-        self.gridLayout_5.addWidget(self.TransferToTimestamp, 3, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.TransferFeeAccountWidget, 3, 2, 1, 1)
 
         self.OperationsTabs.addWidget(self.TransferDetailsTab)
         self.CorpActionDetailsTab = QWidget()
@@ -852,7 +844,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_7.setContentsMargins(2, 2, 2, 2)
         self.HoldingsDate = QDateEdit(self.HoldingsParamsFrame)
         self.HoldingsDate.setObjectName(u"HoldingsDate")
-        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 29), QTime(21, 0, 0)))
+        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 28), QTime(21, 0, 0)))
         self.HoldingsDate.setCalendarPopup(True)
         self.HoldingsDate.setTimeSpec(Qt.UTC)
 
@@ -922,7 +914,7 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportToDate = QDateEdit(self.ReportParamsFrame)
         self.ReportToDate.setObjectName(u"ReportToDate")
-        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 29), QTime(21, 0, 0)))
+        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 28), QTime(21, 0, 0)))
         self.ReportToDate.setCalendarPopup(True)
         self.ReportToDate.setTimeSpec(Qt.UTC)
 
@@ -998,7 +990,7 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportFromDate = QDateEdit(self.ReportParamsFrame)
         self.ReportFromDate.setObjectName(u"ReportFromDate")
-        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 29), QTime(21, 0, 0)))
+        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 28), QTime(21, 0, 0)))
         self.ReportFromDate.setCalendarPopup(True)
         self.ReportFromDate.setTimeSpec(Qt.UTC)
 
@@ -1178,15 +1170,13 @@ class Ui_LedgerMainWindow(object):
 #if QT_CONFIG(tooltip)
         self.DividendSumDescription.setToolTip(QCoreApplication.translate("LedgerMainWindow", u"Dividend description", None))
 #endif // QT_CONFIG(tooltip)
+        self.TransferTabLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Transfer", None))
+        self.TransferToLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"To:", None))
+        self.TransferToTimestamp.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.TransferTextLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Text:", None))
         self.TransferFromTimestamp.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.TransferFromLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"From:", None))
-        self.TransferTabLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Transfer", None))
         self.TransferFeeLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Fee:", None))
-        self.TransferFeeTimestamp.setSpecialValueText(QCoreApplication.translate("LedgerMainWindow", u"N/A", None))
-        self.TransferFeeTimestamp.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
-        self.TransferToLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"To:", None))
-        self.TransferToTimestamp.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.CorpActionQtyAfterLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Qty:", None))
         self.CorpActionToLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"After:", None))
         self.CorpActionAccountLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Account:", None))
