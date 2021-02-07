@@ -415,8 +415,13 @@ class TaxesRus:
                     dividend["tax2pay"] = 0
             self.add_report_row(row, dividend, even_odd=row)
 
-            dividend["country_code"] = 'us' if dividend["country_code"] == 'xx' else dividend[
-                "country_code"]  # TODO select right country code if it is absent
+            if dividend["country_code"] == 'xx':
+                dividend["country_code"] = readSQL(self.db, "SELECT code FROM accounts AS a LEFT JOIN countries AS c "
+                                                   "ON c.id = a.country_id WHERE a.id=:account_id",
+                                          [(":account_id", self.account_id)])
+                logging.warning(g_tr('TaxesRus',
+                                     "Account country will be used for 3-NDFL update as country is not set for asset ")
+                                + f"'{dividend['symbol']}'")
             if self.statement is not None:
                 self.statement.add_dividend(dividend["country_code"], f"{dividend['symbol']} ({dividend['full_name']})",
                                             dividend['payment_date'], self.account_currency, dividend['amount'],

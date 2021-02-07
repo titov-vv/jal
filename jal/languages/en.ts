@@ -2328,6 +2328,11 @@ Application will be terminated now</source>
         <source>Can&apos;t write tax form into file </source>
         <translation></translation>
     </message>
+    <message>
+        <location filename="../reports/taxes.py" line="422"/>
+        <source>Account country will be used for 3-NDFL update as country is not set for asset </source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>UpdateQuotesDlg</name>

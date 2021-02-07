@@ -2333,6 +2333,11 @@ Application will be terminated now</source>
         <source>Can&apos;t write tax form into file </source>
         <translation>Невозможно записать декларацию 3-НДФЛ в файл </translation>
     </message>
+    <message>
+        <location filename="../reports/taxes.py" line="422"/>
+        <source>Account country will be used for 3-NDFL update as country is not set for asset </source>
+        <translation>Страна счёта будет использована для файла 3-НДФЛ, т.к. страна не укзана для ЦБ </translation>
+    </message>
 </context>
 <context>
     <name>UpdateQuotesDlg</name>
