@@ -26,7 +26,7 @@
 Формат нужно оставить XML. В качестве периодна максимум можно выбрать год - поэтому нужно выполнить отчет несколько раз, чтобы последовательно получить операции за всё время существования счёта.
 В результате у вас будет один или несколько XML файлов с отчетами. В качестве примера для дальнейших действий я буду использовать [IBKR_flex_sample.xml](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/IBKR_flex_sample.xml)
 3. В *jal* все транзакции привязаны к тому или иному счету. Поэтому для успешной загрузки отчёта вам нужно заранее создать как минимум пару счетов через меню *Data->Accounts* (в русской версии *Данные->Счета*):
-    - счет типа *Investment*, у которого номер и валюта будут совпадать с номером и валютой счета Interactive Brokers. В моём примере я использую U1234567 и USD:  
+    - счет типа *Investment*, у которого номер и валюта будут совпадать с номером и валютой счета Interactive Brokers. Если вы хотите сохранить данные в файл программы 'Декларация', то нужно также указать страну счёта. В моём примере я использую U1234567 и USD:  
     ![IBRK account](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/ibkr_account.png?raw=true) 
     - ещё один счет любого типа - он будет необходим для учета транзакций ввода/вывода дережных средств. Например:  
     ![Bank account](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/bank_account.png?raw=true)  
@@ -70,7 +70,9 @@
 ![Declaration Updated](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/declaration_3.png?raw=true)
 11. [Получившийся Excel-файл с расчётом](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/3ndfl_tax_report.xlsx) <sup>1</sup> содержит 4 закладки:  
     - Расчёт дивидендов  
-    ![Report Dividends](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/report_1.png?raw=true)
+    ![Report Dividends](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/report_1.png?raw=true)  
+      Если вы видите N/A в столбце 'Страна' (столбец 10). то это значит страна не была указана для данной бумаги. Это не влияет на расчёт если уплаченный налог (столбец 7) равен нулю, т.к. СОИДН не имеет значения. 
+      В противном случае вам нужно указать странну для ценной бумаги через меню Данные-> Ценные бумаги.
     - Расчёт сделок с ценными бумагами 
     ![Report Deals](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/report_2.png?raw=true)
     - Расчёт сделок с производными финансовыми инструментами
