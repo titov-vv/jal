@@ -101,20 +101,24 @@ CREATE TABLE asset_types (
 DROP TABLE IF EXISTS assets;
 
 CREATE TABLE assets (
-    id        INTEGER    PRIMARY KEY
-                         UNIQUE
-                         NOT NULL,
-    name      TEXT (32)  UNIQUE
-                         NOT NULL,
-    type_id   INTEGER    REFERENCES asset_types (id) ON DELETE RESTRICT
+    id         INTEGER    PRIMARY KEY
+                          UNIQUE
+                          NOT NULL,
+    name       TEXT (32)  UNIQUE
+                          NOT NULL,
+    type_id    INTEGER    REFERENCES asset_types (id) ON DELETE RESTRICT
                                                       ON UPDATE CASCADE
-                         NOT NULL,
-    full_name TEXT (128) NOT NULL,
-    isin      TEXT (12),
-    src_id    INTEGER    REFERENCES data_sources (id) ON DELETE SET NULL
-                                                      ON UPDATE CASCADE
-                         NOT NULL
-                         DEFAULT ( -1)
+                          NOT NULL,
+    full_name  TEXT (128) NOT NULL,
+    isin       TEXT (12),
+    country_id INTEGER    REFERENCES countries (id) ON DELETE CASCADE
+                                                    ON UPDATE CASCADE
+                          NOT NULL
+                          DEFAULT (0),
+    src_id     INTEGER    REFERENCES data_sources (id) ON DELETE SET NULL
+                                                       ON UPDATE CASCADE
+                          NOT NULL
+                          DEFAULT ( -1)
 );
 
 
@@ -233,10 +237,7 @@ CREATE TABLE dividends (
     sum        REAL        NOT NULL
                            DEFAULT (0),
     sum_tax    REAL        DEFAULT (0),
-    note       TEXT (1014),
-    tax_country_id INTEGER     REFERENCES countries (id) ON DELETE CASCADE
-                                                         ON UPDATE CASCADE
-                               DEFAULT (0)
+    note       TEXT (1014)
 );
 
 
@@ -657,7 +658,9 @@ CREATE VIEW all_operations AS
                                      l.book_account = 4 AND
                                      l.timestamp <= d.timestamp
                       LEFT JOIN
-                      countries AS c ON d.tax_country_id = c.id
+                      assets AS a ON d.asset_id = a.id
+                      LEFT JOIN
+                      countries AS c ON a.country_id = c.id
                 GROUP BY d.id
                UNION ALL
                SELECT 5 AS type,

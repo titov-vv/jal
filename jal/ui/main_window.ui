@@ -152,7 +152,7 @@
                    <second>0</second>
                    <year>2020</year>
                    <month>12</month>
-                   <day>30</day>
+                   <day>29</day>
                   </datetime>
                  </property>
                  <property name="displayFormat">
@@ -773,7 +773,7 @@
                        <date>
                         <year>1999</year>
                         <month>12</month>
-                        <day>29</day>
+                        <day>28</day>
                        </date>
                       </property>
                       <property name="displayFormat">
@@ -892,7 +892,7 @@
                     <item row="8" column="1">
                      <widget class="QLabel" name="DividendTaxLbl">
                       <property name="text">
-                       <string>Tax amount / country:</string>
+                       <string>Tax amount:</string>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1000,16 +1000,6 @@
                        </size>
                       </property>
                      </spacer>
-                    </item>
-                    <item row="8" column="3">
-                     <widget class="ComboBoxDB" name="DividendTaxCountry">
-                      <property name="table_name" stdset="0">
-                       <string notr="true">countries</string>
-                      </property>
-                      <property name="field_name" stdset="0">
-                       <string notr="true">name</string>
-                      </property>
-                     </widget>
                     </item>
                    </layout>
                   </widget>
@@ -1145,7 +1135,7 @@
                        <date>
                         <year>1999</year>
                         <month>12</month>
-                        <day>29</day>
+                        <day>28</day>
                        </date>
                       </property>
                       <property name="displayFormat">
@@ -1492,7 +1482,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>30</day>
+               <day>29</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -1640,7 +1630,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>30</day>
+               <day>29</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -1787,7 +1777,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>30</day>
+               <day>29</day>
               </datetime>
              </property>
              <property name="displayFormat">

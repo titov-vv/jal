@@ -206,8 +206,31 @@ def get_account_name(db, account_id):
 # -------------------------------------------------------------------------------------------------------------------
 def get_country_by_code(db, country_code):
     id = readSQL(db, "SELECT id FROM countries WHERE code=:code", [(":code", country_code)])
-    id = 0 if id is None else id
+
+    if id is None:
+        query = executeSQL(db, "INSERT INTO countries(name, code, tax_treaty) VALUES (:name, :code, 0)",
+                           [(":name", "Country_" + country_code), (":code", country_code)])
+        id = query.lastInsertId()
+        logging.warning(g_tr('DB', "New country added (set Tax Treaty in Data->Countries menu): ")
+                        + f"'{country_code}'")
     return id
+
+# -------------------------------------------------------------------------------------------------------------------
+# Function sets asset country if asset.country_id is 0
+# Shows warning and sets new asset country if asset.country_id was different before
+# Does nothing if asset country had already the same value
+def update_asset_country(db, asset_id, country_id):
+    id = readSQL(db, "SELECT country_id FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
+    if id == country_id:
+        return
+    _ = executeSQL(db, "UPDATE assets SET country_id=:country_id WHERE id=:asset_id",
+                   [(":asset_id", asset_id), (":country_id", country_id)])
+    if id == 0:
+        return
+    old_country = readSQL(db, "SELECT name FROM countries WHERE id=:country_id", [(":country_id", id)])
+    new_country = readSQL(db, "SELECT name FROM countries WHERE id=:country_id", [(":country_id", country_id)])
+    asset_name = readSQL(db, "SELECT name FROM assets WHERE id=:asset_id", [(":country_id", asset_id)])
+    logging.warning(g_tr('DB', "Country was changed for asset ")+ f"{asset_name}: f{old_country} -> {new_country}")
 
 # -------------------------------------------------------------------------------------------------------------------
 def account_last_date(db, account_number):

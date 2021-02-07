@@ -396,7 +396,7 @@ class TaxesRus:
                            "FROM dividends AS d "
                            "LEFT JOIN assets AS s ON s.id = d.asset_id "
                            "LEFT JOIN accounts AS a ON d.account_id = a.id "
-                           "LEFT JOIN countries AS c ON d.tax_country_id = c.id "
+                           "LEFT JOIN countries AS c ON s.country_id = c.id "
                            "LEFT JOIN t_last_dates AS ld ON d.timestamp=ld.ref_id "
                            "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND a.currency_id=q.asset_id "
                            "WHERE d.timestamp>=:begin AND d.timestamp<:end AND d.account_id=:account_id "

@@ -113,7 +113,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
         self.BalanceDate = QDateEdit(self.BalanceConfigFrame)
         self.BalanceDate.setObjectName(u"BalanceDate")
-        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 30), QTime(21, 0, 0)))
+        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 29), QTime(21, 0, 0)))
         self.BalanceDate.setCalendarPopup(True)
         self.BalanceDate.setTimeSpec(Qt.UTC)
 
@@ -428,7 +428,7 @@ class Ui_LedgerMainWindow(object):
 
         self.TradeSettlementEdit = QDateEdit(self.TradeDetailsTab)
         self.TradeSettlementEdit.setObjectName(u"TradeSettlementEdit")
-        self.TradeSettlementEdit.setMinimumDate(QDate(1999, 12, 29))
+        self.TradeSettlementEdit.setMinimumDate(QDate(1999, 12, 28))
         self.TradeSettlementEdit.setCalendarPopup(True)
         self.TradeSettlementEdit.setTimeSpec(Qt.UTC)
 
@@ -561,13 +561,6 @@ class Ui_LedgerMainWindow(object):
 
         self.gridLayout_2.addItem(self.horizontalSpacer_6, 2, 4, 1, 1)
 
-        self.DividendTaxCountry = ComboBoxDB(self.DividendDetailsTab)
-        self.DividendTaxCountry.setObjectName(u"DividendTaxCountry")
-        self.DividendTaxCountry.setProperty("table_name", u"countries")
-        self.DividendTaxCountry.setProperty("field_name", u"name")
-
-        self.gridLayout_2.addWidget(self.DividendTaxCountry, 8, 3, 1, 1)
-
         self.OperationsTabs.addWidget(self.DividendDetailsTab)
         self.TransferDetailsTab = QWidget()
         self.TransferDetailsTab.setObjectName(u"TransferDetailsTab")
@@ -651,7 +644,7 @@ class Ui_LedgerMainWindow(object):
 
         self.TransferFeeTimestamp = QDateTimeEdit(self.TransferDetailsTab)
         self.TransferFeeTimestamp.setObjectName(u"TransferFeeTimestamp")
-        self.TransferFeeTimestamp.setMinimumDate(QDate(1999, 12, 29))
+        self.TransferFeeTimestamp.setMinimumDate(QDate(1999, 12, 28))
         self.TransferFeeTimestamp.setCalendarPopup(True)
         self.TransferFeeTimestamp.setTimeSpec(Qt.UTC)
 
@@ -859,7 +852,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_7.setContentsMargins(2, 2, 2, 2)
         self.HoldingsDate = QDateEdit(self.HoldingsParamsFrame)
         self.HoldingsDate.setObjectName(u"HoldingsDate")
-        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 30), QTime(21, 0, 0)))
+        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 29), QTime(21, 0, 0)))
         self.HoldingsDate.setCalendarPopup(True)
         self.HoldingsDate.setTimeSpec(Qt.UTC)
 
@@ -929,7 +922,7 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportToDate = QDateEdit(self.ReportParamsFrame)
         self.ReportToDate.setObjectName(u"ReportToDate")
-        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 30), QTime(21, 0, 0)))
+        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 29), QTime(21, 0, 0)))
         self.ReportToDate.setCalendarPopup(True)
         self.ReportToDate.setTimeSpec(Qt.UTC)
 
@@ -1005,7 +998,7 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportFromDate = QDateEdit(self.ReportParamsFrame)
         self.ReportFromDate.setObjectName(u"ReportFromDate")
-        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 30), QTime(21, 0, 0)))
+        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 29), QTime(21, 0, 0)))
         self.ReportFromDate.setCalendarPopup(True)
         self.ReportFromDate.setTimeSpec(Qt.UTC)
 
@@ -1172,7 +1165,7 @@ class Ui_LedgerMainWindow(object):
         self.DividendTaxEdit.setToolTip(QCoreApplication.translate("LedgerMainWindow", u"Tax amount", None))
 #endif // QT_CONFIG(tooltip)
         self.DividendTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
-        self.DividendTaxLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Tax amount / country:", None))
+        self.DividendTaxLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Tax amount:", None))
 #if QT_CONFIG(tooltip)
         self.DividendSumEdit.setToolTip(QCoreApplication.translate("LedgerMainWindow", u"Dividend amount", None))
 #endif // QT_CONFIG(tooltip)
