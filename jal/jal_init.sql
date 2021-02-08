@@ -618,8 +618,7 @@ CREATE VIEW all_operations AS
                       NULL AS fee_tax,
                       NULL AS t_qty,
                       NULL AS note,
-                      NULL AS note2,
-                      o.id AS operation_id
+                      NULL AS note2
                  FROM actions AS o
                       LEFT JOIN
                       agents AS p ON o.peer_id = p.id
@@ -639,8 +638,7 @@ CREATE VIEW all_operations AS
                       d.sum_tax AS fee_tax,
                       NULL AS t_qty,
                       d.note AS note,
-                      c.name AS note2,
-                      d.id AS operation_id
+                      c.name AS note2
                  FROM dividends AS d
                       LEFT JOIN
                       ledger AS l ON d.asset_id = l.asset_id AND
@@ -665,8 +663,7 @@ CREATE VIEW all_operations AS
                       ca.type AS fee_tax,
                       l.sum_amount AS t_qty,
                       a.name AS note,
-                      a.full_name AS note2,
-                      ca.id AS operation_id
+                      a.full_name AS note2
                  FROM corp_actions AS ca
                       LEFT JOIN
                       assets AS a ON ca.asset_id_new = a.id
@@ -690,8 +687,7 @@ CREATE VIEW all_operations AS
                       t.fee AS fee_tax,
                       l.sum_amount AS t_qty,
                       NULL AS note,
-                      NULL AS note2,
-                      t.id AS operation_id
+                      NULL AS note2
                  FROM trades AS t
                       LEFT JOIN
                       sequence AS q ON q.type = 3 AND
@@ -708,37 +704,33 @@ CREATE VIEW all_operations AS
                       t.amount,
                       NULL AS asset_id,
                       t.subtype AS qty_trid,
-                      1 AS price,
+                      t.rate AS price,
                       NULL AS fee_tax,
                       NULL AS t_qty,
                       t.note,
-                      a.name AS note2,
-                      t.id AS operation_id
+                      a.name AS note2
                  FROM (
-                         SELECT 4 AS type,
-                                 id,
+                          SELECT id,
                                  withdrawal_timestamp AS timestamp,
                                  withdrawal_account AS account_id,
                                  deposit_account AS account2_id,
                                  withdrawal AS amount,
-                                 deposit/withdrawal AS rate,
+                                 deposit / withdrawal AS rate,
 -                                -1 AS subtype,
                                  note
                             FROM transfers
                           UNION ALL
-                          SELECT 4 AS type,
-                                 id,
+                          SELECT id,
                                  deposit_timestamp AS timestamp,
                                  deposit_account AS account_id,
                                  withdrawal_account AS account2_id,
                                  deposit AS amount,
-                                 withdrawal/deposit AS rate,
+                                 withdrawal / deposit AS rate,
                                  1 AS subtype,
                                  note
                             FROM transfers
                           UNION ALL
-                          SELECT 4 AS type,
-                                 id,
+                          SELECT id,
                                  withdrawal_timestamp AS timestamp,
                                  fee_account AS account_id,
                                  NULL AS account2_id,
@@ -766,12 +758,14 @@ CREATE VIEW all_operations AS
            assets AS c ON a.currency_id = c.id
            LEFT JOIN
            sequence AS q ON m.type = q.type AND
-                            m.operation_id = q.operation_id
+                            m.id = q.operation_id
            LEFT JOIN
-           ledger_sums AS money ON money.sid = q.id  AND money.account_id = m.account_id AND
+           ledger_sums AS money ON money.sid = q.id AND
+                                   money.account_id = m.account_id AND
                                    money.book_account = 3
            LEFT JOIN
-           ledger_sums AS debt ON debt.sid = q.id AND debt.account_id = m.account_id  AND
+           ledger_sums AS debt ON debt.sid = q.id AND
+                                  debt.account_id = m.account_id AND
                                   debt.book_account = 5;
 
 
