@@ -422,39 +422,30 @@ class Ledger:
             self.appendTransaction(BookAccount.Costs, self.current['fee_tax'])
 
     def processTransfer(self):
-        if self.current['subtype'] != '':   # TODO implement assets transfer
+        if self.current['subtype'] == -1:  # process transfer out and fee if present
+            fee_account = self.current['peer']
+            fee = self.current['fee_tax']
+            fee_currency = self.current['category']
+
+            credit_taken = self.takeCredit(self.current['amount'])
+            self.appendTransaction(BookAccount.Money, -(self.current['amount'] - credit_taken))
+            self.appendTransaction(BookAccount.Transfers, self.current['amount'])
+            if fee_account:  # process fee
+                self.current['account'] = fee_account
+                self.current['currency'] = fee_currency
+                credit_taken = self.takeCredit(fee)
+                self.current['peer'] = PredefinedPeer.Financial
+                self.appendTransaction(BookAccount.Money, -(fee - credit_taken))
+                self.current['category'] = PredefinedCategory.Fees
+                self.appendTransaction(BookAccount.Costs, fee)
+        elif self.current['subtype'] == 1:  # process transfer in
+            credit_returned = self.returnCredit(self.current['amount'])
+            if credit_returned < self.current['amount']:
+                self.appendTransaction(BookAccount.Money, (self.current['amount'] - credit_returned))
+            self.appendTransaction(BookAccount.Transfers, -self.current['amount'])
+        else:   # TODO implement assets transfer
             logging.error(g_tr('Ledger', "Unexpected data in transfer transaction"))
             return
-        withdrawal_timestamp = self.current['timestamp']
-        withdrawal_account = self.current['account']
-        withdrawal = self.current['amount']
-        deposit_timestamp = self.current['asset']
-        deposit_account = self.current['category']
-        deposit = self.current['price']
-        fee_account = self.current['peer']
-        fee = self.current['fee_tax']
-        # process transfer out
-        self.current['currency'] = get_account_currency(self.db, withdrawal_account)
-        credit_taken = self.takeCredit(withdrawal)
-        self.appendTransaction(BookAccount.Money, -(withdrawal - credit_taken))
-        self.appendTransaction(BookAccount.Transfers, withdrawal)
-        # process transfer in
-        self.current['timestamp'] = deposit_timestamp
-        self.current['account'] = deposit_account
-        self.current['currency'] = get_account_currency(self.db, deposit_account)
-        credit_returned = self.returnCredit(deposit)
-        if credit_returned < deposit:
-            self.appendTransaction(BookAccount.Money, (deposit - credit_returned))
-        self.appendTransaction(BookAccount.Transfers, -deposit)
-        if fee_account:    # process fee
-            self.current['timestamp'] = withdrawal_timestamp
-            self.current['account'] = fee_account
-            self.current['currency'] = get_account_currency(self.db, fee_account)
-            credit_taken = self.takeCredit(fee)
-            self.current['peer'] = PredefinedPeer.Financial
-            self.appendTransaction(BookAccount.Money, -(fee - credit_taken))
-            self.current['category'] = PredefinedCategory.Fees
-            self.appendTransaction(BookAccount.Costs, fee)
 
     def updateStockDividendAssets(self):
         asset_amount = self.getAmount(BookAccount.Assets, self.current['asset'])

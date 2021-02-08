@@ -847,19 +847,38 @@ CREATE VIEW all_transactions AS
                SELECT 4 AS type,
                       t.id,
                       withdrawal_timestamp AS timestamp,
-                      asset AS subtype,
+-                     1 AS subtype,
                       withdrawal_account AS account,
-                      deposit_timestamp AS asset,
+                      asset AS asset,
                       withdrawal AS amount,
-                      deposit_account AS category,
-                      deposit AS price,
+                      a.currency_id AS category,
+                      NULL AS price,
                       fee AS fee_tax,
                       NULL AS coupon,
                       fee_account AS peer,
                       NULL AS tag
                  FROM transfers AS t
-                 LEFT JOIN accounts AS a ON deposit_account=a.id
-                ORDER BY timestamp
+                      LEFT JOIN
+                      accounts AS a ON fee_account = a.id
+               UNION ALL
+               SELECT 4 AS type,
+                      t.id,
+                      deposit_timestamp AS timestamp,
+                      1 AS subtype,
+                      deposit_account AS account,
+                      asset AS asset,
+                      deposit AS amount,
+                      NULL AS category,
+                      NULL AS price,
+                      NULL AS fee_tax,
+                      NULL AS coupon,
+                      NULL AS peer,
+                      NULL AS tag
+                 FROM transfers AS t
+                ORDER BY timestamp,
+                         type,
+                         subtype,
+                         id
            )
            AS at
            LEFT JOIN
