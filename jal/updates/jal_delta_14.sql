@@ -552,9 +552,15 @@ BEGIN
 END;
 
 CREATE TRIGGER transfers_after_update
-         AFTER UPDATE OF deposit_timestamp,
+         AFTER UPDATE OF withdrawal_timestamp,
+                         deposit_timestamp,
                          withdrawal_account,
-                         withdrawal
+                         deposit_account,
+                         fee_account,
+                         withdrawal,
+                         deposit,
+                         fee,
+                         asset
             ON transfers
       FOR EACH ROW
 BEGIN

@@ -569,11 +569,6 @@ DROP INDEX IF EXISTS by_sid;
 CREATE INDEX by_sid ON ledger_sums (sid);
 
 
--- Index: tid_type_unique
-DROP INDEX IF EXISTS tid_type_unique;
-CREATE UNIQUE INDEX tid_type_unique ON transfers (tid, type);
-
-
     -- View: agents_ext
 DROP VIEW IF EXISTS agents_ext;
 CREATE VIEW agents_ext AS
@@ -1134,13 +1129,6 @@ BEGIN
           WHERE id = OLD.id;
 END;
 
--- Trigger: delete_transfers
-DROP TRIGGER IF EXISTS delete_transfers;
-CREATE TRIGGER delete_transfers INSTEAD OF DELETE ON transfers_combined FOR EACH ROW BEGIN DELETE FROM transfer_notes
-          WHERE tid = OLD.id;
-DELETE FROM transfers
-          WHERE tid = OLD.id; END;
-
 -- Trigger: dividends_after_delete
 DROP TRIGGER IF EXISTS dividends_after_delete;
 CREATE TRIGGER dividends_after_delete
@@ -1236,231 +1224,6 @@ BEGIN
                                NEW.special
                            );
 END;
-
--- Trigger: insert_transfers_w_none_w_fee
-DROP TRIGGER IF EXISTS insert_transfers_w_none_w_fee;
-CREATE TRIGGER insert_transfers_w_none_w_fee INSTEAD OF INSERT ON transfers_combined FOR EACH ROW WHEN NEW.fee_acc_id IS NOT NULL AND NEW.note IS NOT NULL   BEGIN INSERT INTO transfers (
-                              tid,
-                              type,
-                              timestamp,
-                              account_id,
-                              amount,
-                              rate
-                          )
-                          VALUES (
-                              (
-                                  SELECT COALESCE(MAX(tid), 0) + 1
-                                    FROM transfers
-                              ),
--                             1,
-                              NEW.from_timestamp,
-                              NEW.from_acc_id,
-                              NEW.from_amount,
-                              NEW.to_amount / NEW.from_amount
-                          );
-INSERT INTO transfers (
-                              tid,
-                              type,
-                              timestamp,
-                              account_id,
-                              amount,
-                              rate
-                          )
-                          VALUES (
-                              (
-                                  SELECT MAX(tid)
-                                    FROM transfers
-                              ),
-                              1,
-                              NEW.to_timestamp,
-                              NEW.to_acc_id,
-                              NEW.to_amount,
-                              NEW.from_amount / NEW.to_amount
-                          );
-INSERT INTO transfers (
-                              tid,
-                              type,
-                              timestamp,
-                              account_id,
-                              amount,
-                              rate
-                          )
-                          VALUES (
-                              (
-                                  SELECT MAX(tid)
-                                    FROM transfers
-                              ),
-                              0,
-                              NEW.fee_timestamp,
-                              NEW.fee_acc_id,
-                              NEW.fee_amount,
-                              0
-                          );
-INSERT INTO transfer_notes (
-                                   tid,
-                                   note
-                               )
-                               VALUES (
-                                   (
-                                       SELECT MAX(tid)
-                                         FROM transfers
-                                   ),
-                                   NEW.note
-                               ); END;
-
--- Trigger: insert_transfers_w_note_wo_fee
-DROP TRIGGER IF EXISTS insert_transfers_w_note_wo_fee;
-CREATE TRIGGER insert_transfers_w_note_wo_fee INSTEAD OF INSERT ON transfers_combined FOR EACH ROW WHEN NEW.fee_acc_id IS NULL AND NEW.note IS NOT NULL
-    BEGIN INSERT INTO transfers (
-                              tid,
-                              type,
-                              timestamp,
-                              account_id,
-                              amount,
-                              rate
-                          )
-                          VALUES (
-                              (
-                                  SELECT COALESCE(MAX(tid), 0) + 1
-                                    FROM transfers
-                              ),
--                             1,
-                              NEW.from_timestamp,
-                              NEW.from_acc_id,
-                              NEW.from_amount,
-                              NEW.to_amount / NEW.from_amount
-                          );
-INSERT INTO transfers (
-                              tid,
-                              type,
-                              timestamp,
-                              account_id,
-                              amount,
-                              rate
-                          )
-                          VALUES (
-                              (
-                                  SELECT MAX(tid)
-                                    FROM transfers
-                              ),
-                              1,
-                              NEW.to_timestamp,
-                              NEW.to_acc_id,
-                              NEW.to_amount,
-                              NEW.from_amount / NEW.to_amount
-                          );
-INSERT INTO transfer_notes (
-                                   tid,
-                                   note
-                               )
-                               VALUES (
-                                   (
-                                       SELECT MAX(tid)
-                                         FROM transfers
-                                   ),
-                                   NEW.note
-                               ); END;
-
--- Trigger: insert_transfers_wo_note_w_fee
-DROP TRIGGER IF EXISTS insert_transfers_wo_note_w_fee;
-CREATE TRIGGER insert_transfers_wo_note_w_fee INSTEAD OF INSERT ON transfers_combined FOR EACH ROW WHEN NEW.fee_acc_id IS NOT NULL AND NEW.note IS NULL BEGIN INSERT INTO transfers (
-                              tid,
-                              type,
-                              timestamp,
-                              account_id,
-                              amount,
-                              rate
-                          )
-                          VALUES (
-                              (
-                                  SELECT COALESCE(MAX(tid), 0) + 1
-                                    FROM transfers
-                              ),
--                             1,
-                              NEW.from_timestamp,
-                              NEW.from_acc_id,
-                              NEW.from_amount,
-                              NEW.to_amount / NEW.from_amount
-                          );
-INSERT INTO transfers (
-                              tid,
-                              type,
-                              timestamp,
-                              account_id,
-                              amount,
-                              rate
-                          )
-                          VALUES (
-                              (
-                                  SELECT MAX(tid)
-                                    FROM transfers
-                              ),
-                              1,
-                              NEW.to_timestamp,
-                              NEW.to_acc_id,
-                              NEW.to_amount,
-                              NEW.from_amount / NEW.to_amount
-                          );
-INSERT INTO transfers (
-                              tid,
-                              type,
-                              timestamp,
-                              account_id,
-                              amount,
-                              rate
-                          )
-                          VALUES (
-                              (
-                                  SELECT MAX(tid)
-                                    FROM transfers
-                              ),
-                              0,
-                              NEW.fee_timestamp,
-                              NEW.fee_acc_id,
-                              NEW.fee_amount,
-                              0
-                          ); END;
-
--- Trigger: insert_transfers_wo_note_wo_fee
-DROP TRIGGER IF EXISTS insert_transfers_wo_note_wo_fee;
-CREATE TRIGGER insert_transfers_wo_note_wo_fee INSTEAD OF INSERT ON transfers_combined FOR EACH ROW WHEN NEW.fee_acc_id IS NULL AND NEW.note IS NULL BEGIN INSERT INTO transfers (
-                              tid,
-                              type,
-                              timestamp,
-                              account_id,
-                              amount,
-                              rate
-                          )
-                          VALUES (
-                              (
-                                  SELECT COALESCE(MAX(tid), 0) + 1
-                                    FROM transfers
-                              ),
--                             1,
-                              NEW.from_timestamp,
-                              NEW.from_acc_id,
-                              NEW.from_amount,
-                              NEW.to_amount / NEW.from_amount
-                          );
-INSERT INTO transfers (
-                              tid,
-                              type,
-                              timestamp,
-                              account_id,
-                              amount,
-                              rate
-                          )
-                          VALUES (
-                              (
-                                  SELECT MAX(tid)
-                                    FROM transfers
-                              ),
-                              1,
-                              NEW.to_timestamp,
-                              NEW.to_acc_id,
-                              NEW.to_amount,
-                              NEW.from_amount / NEW.to_amount
-                          ); END;
 
 -- Trigger: trades_after_delete
 DROP TRIGGER IF EXISTS trades_after_delete;
@@ -1599,24 +1362,28 @@ BEGIN
 END;
 
 -- Trigger: transfers_after_update
-DROP TRIGGER IF EXISTS transfers_after_update;
 CREATE TRIGGER transfers_after_update
-         AFTER UPDATE OF timestamp,
-                         type,
-                         account_id,
-                         amount
+         AFTER UPDATE OF withdrawal_timestamp,
+                         deposit_timestamp,
+                         withdrawal_account,
+                         deposit_account,
+                         fee_account,
+                         withdrawal,
+                         deposit,
+                         fee,
+                         asset
             ON transfers
       FOR EACH ROW
 BEGIN
     DELETE FROM ledger
-          WHERE timestamp >= OLD.timestamp OR
-                timestamp >= NEW.timestamp;
+          WHERE timestamp >= OLD.deposit_timestamp OR
+                timestamp >= NEW.deposit_timestamp;
     DELETE FROM sequence
-          WHERE timestamp >= OLD.timestamp OR
-                timestamp >= NEW.timestamp;
+          WHERE timestamp >= OLD.deposit_timestamp OR
+                timestamp >= NEW.deposit_timestamp;
     DELETE FROM ledger_sums
-          WHERE timestamp >= OLD.timestamp OR
-                timestamp >= NEW.timestamp;
+          WHERE timestamp >= OLD.deposit_timestamp OR
+                timestamp >= NEW.deposit_timestamp;
 END;
 
 -- Trigger: update_agent
@@ -1650,37 +1417,6 @@ BEGIN
      WHERE id = OLD.id;
 END;
 
--- Trigger: update_fee
-DROP TRIGGER IF EXISTS update_fee;
-CREATE TRIGGER update_fee INSTEAD OF UPDATE OF fee_timestamp, fee_acc_id, fee_amount ON transfers_combined FOR EACH ROW WHEN NEW.fee_acc_id IS NOT NULL AND NEW.fee_acc_id!=0   BEGIN INSERT OR IGNORE INTO transfers(tid, type, timestamp, account_id, timestamp) VALUES (OLD.id, 0, NEW.fee_timestamp, NEW.fee_acc_id, NEW.fee_amount);
-UPDATE transfers SET account_id = NEW.fee_acc_id, timestamp = NEW.fee_timestamp, amount = NEW.fee_amount WHERE tid = OLD.id AND type = 0; END;
-
--- Trigger: update_fee_empty
-DROP TRIGGER IF EXISTS update_fee_empty;
-CREATE TRIGGER update_fee_empty INSTEAD OF UPDATE OF fee_timestamp, fee_acc_id, fee_amount ON transfers_combined FOR EACH ROW WHEN NEW.fee_acc_id IS NULL OR NEW.fee_acc_id=0      BEGIN DELETE FROM transfers WHERE tid = OLD.id AND type = 0; END;
-
--- Trigger: update_from
-DROP TRIGGER IF EXISTS update_from;
-CREATE TRIGGER update_from INSTEAD OF UPDATE OF from_timestamp, from_acc_id, from_amount ON transfers_combined FOR EACH ROW BEGIN UPDATE transfers
-       SET account_id = NEW.from_acc_id, timestamp = NEW.from_timestamp, amount = NEW.from_amount
-     WHERE tid = OLD.id AND
-           type = -1; END;
-
--- Trigger: update_note
-DROP TRIGGER IF EXISTS update_note;
-CREATE TRIGGER update_note INSTEAD OF UPDATE OF note ON transfers_combined FOR EACH ROW WHEN NEW.note IS NOT NULL  BEGIN INSERT OR IGNORE INTO transfer_notes(tid, note) VALUES (OLD.id, NEW.note);
-UPDATE transfer_notes SET note = NEW.note WHERE tid = OLD.id; END;
-
--- Trigger: update_note_empty
-DROP TRIGGER IF EXISTS update_note_empty;
-CREATE TRIGGER update_note_empty INSTEAD OF UPDATE OF note ON transfers_combined FOR EACH ROW WHEN NEW.note IS NULL BEGIN DELETE FROM transfer_notes WHERE tid = OLD.id; END;
-
--- Trigger: update_to
-DROP TRIGGER IF EXISTS update_to;
-CREATE TRIGGER update_to INSTEAD OF UPDATE OF to_timestamp, to_acc_id, to_amount ON transfers_combined FOR EACH ROW BEGIN UPDATE transfers
-       SET account_id = NEW.to_acc_id, timestamp = NEW.to_timestamp, amount = NEW.to_amount
-     WHERE tid = OLD.id AND
-           type = 1; END;
 
 -- Trigger to keep predefinded categories from deletion
 DROP TRIGGER IF EXISTS keep_predefined_categories;

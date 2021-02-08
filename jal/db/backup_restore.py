@@ -101,8 +101,6 @@ class JalBackup:
                 data = pd.read_csv(f"{tmp_path}/{table}.csv", sep='|', keep_default_na=False)
                 for column in data:
                     if data[column].dtype == 'float64':  # Correct possible mistakes due to float data type
-                        if table == 'transfers' and column == 'rate':  # But rate is calculated value with arbitrary precision
-                            continue
                         data[column] = data[column].round(int(-math.log10(Setup.CALC_TOLERANCE)))
                 data.to_sql(name=table, con=db, if_exists='append', index=False, chunksize=100)
 
