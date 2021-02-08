@@ -19,8 +19,8 @@ class JalBackup:
     tmp_prefix = 'jal_'
     backup_label = 'JAL backup. Created: '
     backup_list = ["settings", "tags", "categories", "agents", "assets", "accounts", "countries", "corp_actions",
-                   "dividends", "trades", "actions", "action_details", "transfers", "transfer_notes", "quotes",
-                   "map_peer", "map_category"]
+                   "dividends", "trades", "actions", "action_details", "transfers", "quotes", "map_peer",
+                   "map_category"]
 
     def __init__(self, parent, db_file):
         self.parent = parent

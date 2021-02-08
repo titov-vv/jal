@@ -525,32 +525,35 @@ INSERT INTO transfers (
 
 DROP TABLE sqlitestudio_temp_table;
 
+-- Trigger: transfers_after_delete
 CREATE TRIGGER transfers_after_delete
          AFTER DELETE
             ON transfers
       FOR EACH ROW
 BEGIN
     DELETE FROM ledger
-          WHERE timestamp >= OLD.deposit_timestamp;
+          WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp;
     DELETE FROM sequence
-          WHERE timestamp >= OLD.deposit_timestamp;
+          WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp;
     DELETE FROM ledger_sums
-          WHERE timestamp >= OLD.deposit_timestamp;
+          WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp;
 END;
 
+-- Trigger: transfers_after_insert
 CREATE TRIGGER transfers_after_insert
          AFTER INSERT
             ON transfers
       FOR EACH ROW
 BEGIN
     DELETE FROM ledger
-          WHERE timestamp >= NEW.deposit_timestamp;
+          WHERE timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
     DELETE FROM sequence
-          WHERE timestamp >= NEW.deposit_timestamp;
+          WHERE timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
     DELETE FROM ledger_sums
-          WHERE timestamp >= NEW.deposit_timestamp;
+          WHERE timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
 END;
 
+-- Trigger: transfers_after_update
 CREATE TRIGGER transfers_after_update
          AFTER UPDATE OF withdrawal_timestamp,
                          deposit_timestamp,
@@ -565,14 +568,14 @@ CREATE TRIGGER transfers_after_update
       FOR EACH ROW
 BEGIN
     DELETE FROM ledger
-          WHERE timestamp >= OLD.deposit_timestamp OR
-                timestamp >= NEW.deposit_timestamp;
+          WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp OR
+                timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
     DELETE FROM sequence
-          WHERE timestamp >= OLD.deposit_timestamp OR
-                timestamp >= NEW.deposit_timestamp;
+          WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp OR
+                timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
     DELETE FROM ledger_sums
-          WHERE timestamp >= OLD.deposit_timestamp OR
-                timestamp >= NEW.deposit_timestamp;
+          WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp OR
+                timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
 END;
 
 --------------------------------------------------------------------------------
