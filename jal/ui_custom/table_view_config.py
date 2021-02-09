@@ -9,7 +9,6 @@ import jal.ui_custom.reference_data as ui               # Full import due to "cy
 
 
 class TableViewConfig:
-    BALANCES = 0
     HOLDINGS = 1
     OPERATIONS = 2
     ACTIONS = 3
@@ -40,7 +39,6 @@ class TableViewConfig:
     DLG_RELATIONS = 6
 
     table_names = {
-        BALANCES: 'balances',
         HOLDINGS: 'holdings',
         OPERATIONS: 'all_operations',
         ACTIONS: 'actions',
@@ -52,7 +50,6 @@ class TableViewConfig:
     }
 
     table_relations = {
-        BALANCES: None,
         HOLDINGS: None,
         OPERATIONS: None,
         ACTIONS: None,
@@ -65,14 +62,6 @@ class TableViewConfig:
     }
 
     table_view_columns = {
-        BALANCES: [("level1", None, None, None, None),
-                   ("level2", None, None, None, None),
-                   ("account_name", g_tr('TableViewConfig', "Account"), ColumnWidth.STRETCH, None, BalanceAccountDelegate),
-                   ("balance", g_tr('TableViewConfig', "Balance"), 100, None, BalanceAmountDelegate),
-                   ("currency_name", " ", 35, None, BalanceCurrencyDelegate),
-                   ("balance_adj", g_tr('TableViewConfig', "Balance, RUB"), 110, None, BalanceAmountAdjustedDelegate),
-                   ("days_unreconciled", None, None, None, None),
-                   ("active", None, None, None, None)],
         HOLDINGS: [("level1", None, None, None, None),
                    ("level2", None, None, None, None),
                    ("currency", None, None, None, None),
@@ -124,7 +113,6 @@ class TableViewConfig:
         self.parent = parent
         self.delegates_storage = []   #  Keep references to all created delegates here
         self.views = {
-            self.BALANCES: parent.BalancesTableView,
             self.HOLDINGS: parent.HoldingsTableView,
             self.OPERATIONS: parent.OperationsTableView,
             self.ACTIONS: None,
@@ -137,7 +125,6 @@ class TableViewConfig:
         self.models = {}
         self.mappers = {}           # Here mapper objects will be stored
         self.widget_mappers = {
-            self.BALANCES: None,
             self.HOLDINGS: None,
             self.OPERATIONS: None,
             self.ACTIONS: [("timestamp", parent.ActionTimestampEdit),
@@ -303,15 +290,15 @@ class TableViewConfig:
             (parent.actionCountries,        "triggered()",              partial(self.show_dialog, self.COUNTRIES)),
             (parent.actionQuotes,           "triggered()",              partial(self.show_dialog, self.QUOTES)),
             (parent.PrepareTaxForms,        "triggered()",              partial(parent.taxes.showTaxesDialog, parent)),
-            (parent.BalanceDate,            "dateChanged(QDate)",       parent.onBalanceDateChange),
+            (parent.BalanceDate,            "dateChanged(QDate)",       parent.BalancesTableView.model().setDate),
             (parent.HoldingsDate,           "dateChanged(QDate)",       parent.onHoldingsDateChange),
-            (parent.BalancesCurrencyCombo,  "changed(int)",             parent.OnBalanceCurrencyChange),
+            (parent.BalancesCurrencyCombo,  "changed(int)",             parent.BalancesTableView.model().setCurrency),
             (parent.BalancesTableView,      "doubleClicked(QModelIndex)", parent.OnBalanceDoubleClick),
             (parent.HoldingsCurrencyCombo,  "changed(int)",             parent.OnHoldingsCurrencyChange),
             (parent.ReportRangeCombo,       "currentIndexChanged(int)", parent.onReportRangeChange),
             (parent.RunReportBtn,           "clicked()",                parent.onRunReport),
             (parent.SaveReportBtn,          "clicked()",                parent.reports.saveReport),
-            (parent.ShowInactiveCheckBox,   "stateChanged(int)",        parent.OnBalanceInactiveChange),
+            (parent.ShowInactiveCheckBox,   "stateChanged(int)",        parent.BalancesTableView.model().toggleActive),
             (parent.DateRangeCombo,         "currentIndexChanged(int)", parent.OnOperationsRangeChange),
             (parent.ChooseAccountBtn,       "changed(int)",             parent.operations.setAccountId),
             (parent.SearchString,           "textChanged(QString)",     parent.OnSearchTextChange),

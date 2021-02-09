@@ -9,7 +9,7 @@ from PySide2.QtCore import Qt, Slot, QDate, QDateTime
 from PySide2.QtWidgets import QDialog, QMessageBox, QMenu, QAction
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_asset_name, get_account_id, get_account_currency, \
     get_asset_id
-from jal.db.routines import calculateBalances, calculateHoldings
+from jal.db.routines import calculateHoldings
 from jal.ui_custom.helpers import g_tr
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
 from jal.db.tax_estimator import TaxEstimator
@@ -54,45 +54,23 @@ class Ledger:
         self.db = db
         self.current = {}
         self.current_seq = -1
-        self.balances_view = None
         self.holdings_view = None
-        self.balance_active_only = 1
-        self.balance_currency = None
-        self.balance_date = QDateTime.currentSecsSinceEpoch()
         self.holdings_date = QDateTime.currentSecsSinceEpoch()
         self.holdings_currency = None
         self.holdings_index = None
         self.estimator = None
 
     def setViews(self, balances, holdings):
-        self.balances_view = balances
         self.holdings_view = holdings
         self.holdings_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.holdings_view.customContextMenuRequested.connect(self.onHoldingsContextMenu)
 
-    def setActiveBalancesOnly(self, active_only):
-        if self.balance_active_only != active_only:
-            self.balance_active_only = active_only
-            self.updateBalancesView()
-
-    def setBalancesDate(self, balance_date):
-        if self.balance_date != balance_date:
-            self.balance_date = balance_date
-            self.updateBalancesView()
-
-    def setBalancesCurrency(self, currency_id, currency_name):
-        if self.balance_currency != currency_id:
-            self.balance_currency = currency_id
-            balances_model = self.balances_view.model()
-            balances_model.setHeaderData(balances_model.fieldIndex("balance_adj"), Qt.Horizontal,
-                                         g_tr('Ledger', "Balance, ") + currency_name)
-            self.updateBalancesView()
-
     def updateBalancesView(self):
-        if self.balances_view is None:
-            return
-        calculateBalances(self.db, self.balance_date, self.balance_currency, self.balance_active_only)
-        self.balances_view.model().select()
+        pass
+        # if self.balances_view is None:
+        #     return
+        # calculateBalances(self.db, self.balance_date, self.balance_currency, self.balance_active_only)
+        # self.balances_view.model().select()
 
     def setHoldingsDate(self, holdings_date):
         if self.holdings_date != holdings_date:

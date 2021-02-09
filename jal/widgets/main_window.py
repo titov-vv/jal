@@ -15,6 +15,7 @@ from jal.db.backup_restore import JalBackup
 from jal.db.helpers import get_dbfilename, get_account_id, get_base_currency, executeSQL
 from jal.data_import.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
+from db.balances_model import BalancesModel
 from jal.widgets.operations import LedgerOperationsView, LedgerInitValues
 from jal.reports.reports import Reports, ReportType
 from jal.data_import.statements import StatementLoader
@@ -73,6 +74,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.reports.report_failure.connect(self.onReportFailure)
 
         # Customize UI configuration
+        self.BalancesTableView.setModel(BalancesModel(self, self.db))
+        self.BalancesTableView.model().configureHeader(self.BalancesTableView)
         self.operations = LedgerOperationsView(self.OperationsTableView)
         self.ui_config = TableViewConfig(self)
 
@@ -164,29 +167,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             self.close()
 
     @Slot()
-    def onBalanceDateChange(self, _new_date):
-        self.ledger.setBalancesDate(self.BalanceDate.dateTime().toSecsSinceEpoch())
-
-    @Slot()
     def onHoldingsDateChange(self, _new_date):
         self.ledger.setHoldingsDate(self.HoldingsDate.dateTime().toSecsSinceEpoch())
-
-    @Slot()
-    def OnBalanceCurrencyChange(self, _currency_index):
-        self.ledger.setBalancesCurrency(self.BalancesCurrencyCombo.selected_id,
-                                        self.BalancesCurrencyCombo.selected_name)
 
     @Slot()
     def OnHoldingsCurrencyChange(self, _currency_index):
         self.ledger.setHoldingsCurrency(self.HoldingsCurrencyCombo.selected_id,
                                         self.HoldingsCurrencyCombo.selected_name)
-
-    @Slot()
-    def OnBalanceInactiveChange(self, state):
-        if state == 0:
-            self.ledger.setActiveBalancesOnly(1)
-        else:
-            self.ledger.setActiveBalancesOnly(0)
 
     @Slot()
     def OnBalanceDoubleClick(self, index):
