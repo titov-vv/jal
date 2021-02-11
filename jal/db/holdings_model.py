@@ -2,7 +2,7 @@ from PySide2.QtCore import Qt, Slot, QAbstractTableModel, QDate
 from PySide2.QtGui import QBrush, QFont
 from PySide2.QtWidgets import QHeaderView
 from jal.constants import Setup, CustomColor
-from jal.db.helpers import executeSQL, readSQL, get_asset_name
+from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_asset_name
 from jal.ui_custom.helpers import g_tr
 
 
@@ -61,7 +61,7 @@ class HoldingsModel(QAbstractTableModel):
     def data_text(self, column, data):
         if column == 0:
             if data['level1']:
-                return data['currency'] + " / "  + data['asset_name']
+                return data['currency'] + " / " + data['asset_name']
             elif data['level2']:
                 return data['account']
             else:
@@ -220,3 +220,10 @@ class HoldingsModel(QAbstractTableModel):
                        "LEFT JOIN assets AS c ON h.currency = c.id "
                        "GROUP BY currency "
                        ") ORDER BY currency, level1 DESC, account, level2 DESC")
+        self._db.commit()
+        self.modelReset.emit()
+        query = executeSQL(self._db, "SELECT ROWID FROM holdings WHERE level2=1")
+        while query.next():
+            rowid = readSQLrecord(query)
+            self._view.setSpan(rowid - 1, 0, 1, 3)
+        self._view.show()

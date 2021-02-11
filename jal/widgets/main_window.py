@@ -76,10 +76,12 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.reports.report_failure.connect(self.onReportFailure)
 
         # Customize UI configuration
-        self.BalancesTableView.setModel(BalancesModel(self.BalancesTableView, self.db))
-        self.BalancesTableView.model().configureView()
-        self.HoldingsTableView.setModel(HoldingsModel(self.HoldingsTableView, self.db))
-        self.HoldingsTableView.model().configureView()
+        self.balances_model = BalancesModel(self.BalancesTableView, self.db)
+        self.BalancesTableView.setModel(self.balances_model)
+        self.balances_model.configureView()
+        self.holdings_model = HoldingsModel(self.HoldingsTableView, self.db)
+        self.HoldingsTableView.setModel(self.holdings_model)
+        self.holdings_model.configureView()
         self.OperationsTableView.setModel(OperationsModel(self.OperationsTableView, self.db))
         self.OperationsTableView.model().configureView()
 

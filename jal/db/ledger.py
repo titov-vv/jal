@@ -63,18 +63,6 @@ class Ledger:
         self.holdings_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.holdings_view.customContextMenuRequested.connect(self.onHoldingsContextMenu)
 
-
-    def updateHoldingsView(self):    # TODO remove after transition to Holdings TreeView
-        if self.holdings_view is None:
-            return
-        calculateHoldings(self.db, self.holdings_date, self.holdings_currency)
-        holdings_model = self.holdings_view.model()
-        holdings_model.select()
-        for row in range(holdings_model.rowCount()):
-            if holdings_model.data(holdings_model.index(row, 1)):
-                self.holdings_view.setSpan(row, 3, 1, 3)
-        self.holdings_view.show()
-
     @Slot()
     def onHoldingsContextMenu(self, pos):
         self.holdings_index = self.holdings_view.indexAt(pos)
