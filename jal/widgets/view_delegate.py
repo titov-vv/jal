@@ -9,11 +9,6 @@ from jal.ui_custom.reference_selector import CategorySelector, TagSelector
 from jal.db.helpers import get_category_name
 
 
-class HoldingsProfitDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
-
-
 class ReportsFloatDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         QStyledItemDelegate.__init__(self, parent)

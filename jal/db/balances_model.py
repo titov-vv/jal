@@ -1,4 +1,4 @@
-from PySide2.QtCore import Qt, Slot, QAbstractTableModel, QDateTime
+from PySide2.QtCore import Qt, Slot, QAbstractTableModel, QDate
 from PySide2.QtGui import QBrush, QFont
 from PySide2.QtWidgets import QHeaderView
 from jal.constants import CustomColor, BookAccount
@@ -20,7 +20,7 @@ class BalancesModel(QAbstractTableModel):
         self._currency = 0
         self._currency_name = ''
         self._active_only = 1
-        self._date = QDateTime.currentSecsSinceEpoch()
+        self._date = QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch()
 
     def rowCount(self, parent=None):
         return readSQL(self._db, f"SELECT COUNT(*) FROM {self._table_name}")
