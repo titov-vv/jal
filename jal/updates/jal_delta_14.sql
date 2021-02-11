@@ -587,6 +587,7 @@ DROP VIEW all_operations;
 
 CREATE VIEW all_operations AS
     SELECT m.type,
+           m.subtype,
            m.id,
            m.timestamp,
            m.account_id,
@@ -607,6 +608,7 @@ CREATE VIEW all_operations AS
            CASE WHEN m.timestamp <= a.reconciled_on THEN 1 ELSE 0 END AS reconciled
       FROM (
                SELECT 1 AS type,
+                      iif(SUM(d.sum) < 0, -1, 1) AS subtype,
                       o.id,
                       timestamp,
                       p.name AS num_peer,
@@ -627,6 +629,7 @@ CREATE VIEW all_operations AS
                 GROUP BY o.id
                UNION ALL
                SELECT 2 AS type,
+                      0 AS subtype,
                       d.id,
                       d.timestamp,
                       d.number AS num_peer,
@@ -652,6 +655,7 @@ CREATE VIEW all_operations AS
                 GROUP BY d.id
                UNION ALL
                SELECT 5 AS type,
+                      ca.type AS subtype,
                       ca.id,
                       ca.timestamp,
                       ca.number AS num_peer,
@@ -676,6 +680,7 @@ CREATE VIEW all_operations AS
                                           l.book_account = 4
                UNION ALL
                SELECT 3 AS type,
+                      iif(t.qty < 0, -1, 1) AS subtype,
                       t.id,
                       t.timestamp,
                       t.number AS num_peer,
@@ -697,13 +702,14 @@ CREATE VIEW all_operations AS
                                           l.book_account = 4
                UNION ALL
                SELECT 4 AS type,
+                      t.subtype,
                       t.id,
                       t.timestamp,
                       c.name AS num_peer,
                       t.account_id,
                       t.amount,
                       NULL AS asset_id,
-                      t.subtype AS qty_trid,
+                      NULL AS qty_trid,
                       t.rate AS price,
                       NULL AS fee_tax,
                       NULL AS t_qty,
@@ -716,7 +722,7 @@ CREATE VIEW all_operations AS
                                  deposit_account AS account2_id,
                                  withdrawal AS amount,
                                  deposit / withdrawal AS rate,
--                                -1 AS subtype,
+                                 -1 AS subtype,
                                  note
                             FROM transfers
                           UNION ALL
@@ -847,7 +853,7 @@ CREATE VIEW all_transactions AS
                SELECT 4 AS type,
                       t.id,
                       withdrawal_timestamp AS timestamp,
--                     1 AS subtype,
+                      -1 AS subtype,
                       withdrawal_account AS account,
                       asset AS asset,
                       withdrawal AS amount,

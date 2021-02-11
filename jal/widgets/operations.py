@@ -98,7 +98,6 @@ class LedgerOperationsView(QObject):
 
         self.table_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.table_view.customContextMenuRequested.connect(self.onOperationContextMenu)
-        self.table_view.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)  # forces usage of sizeHint() from delegate
 
     def setOperationsDetails(self, operations_details):
         self.operations = operations_details
@@ -109,41 +108,6 @@ class LedgerOperationsView(QObject):
                 self.operations[operation_type][self.OP_CHILD_VIEW].model().dataChanged.connect(self.onDataEdit)
         self.table_view.selectionModel().selectionChanged.connect(self.OnOperationChange)
 
-    def setOperationsFilter(self):
-        operations_filter = ""
-        if self.start_date_of_view > 0:
-            operations_filter = "all_operations.timestamp >= {}".format(self.start_date_of_view)
-
-        if self.p_account_id != 0:
-            self.p_account_id = self.p_account_id
-            if operations_filter == "":
-                operations_filter = "all_operations.account_id = {}".format(self.p_account_id)
-            else:
-                operations_filter = operations_filter + " AND all_operations.account_id = {}".format(
-                    self.p_account_id)
-
-        if self.p_search_text:
-            operations_filter = operations_filter + " AND (num_peer LIKE '%{}%' OR asset LIKE '%{}%')".format(
-                self.p_search_text, self.p_search_text)
-
-        self.table_view.model().setFilter(operations_filter)
-
-    def setAccountId(self, account_id):
-        if self.p_account_id == account_id:
-            return
-        self.p_account_id = account_id
-        self.setOperationsFilter()
-
-    def setSearchText(self, search_text):
-        if self.p_search_text == search_text:
-            return
-        self.p_search_text = search_text
-        self.setOperationsFilter()
-
-    def setOperationsRange(self, start_date_of_view):
-        self.start_date_of_view = start_date_of_view
-        self.setOperationsFilter()
-        
     def addNewOperation(self, operation_type):
         self.checkForUncommittedChanges()
         self.activateOperationView.emit(operation_type)
@@ -330,9 +294,7 @@ class LedgerOperationsView(QObject):
         idx = selected.indexes()
         if idx:
             selected_row = idx[0].row()
-            operations_model = self.table_view.model()
-            operation_type = operations_model.record(selected_row).value("type")
-            operation_id = operations_model.record(selected_row).value("id")
+            operation_type, operation_id = self.table_view.model().get_operation(selected_row)
             self.activateOperationView.emit(operation_type)
 
             if self.operations[operation_type][self.OP_MAPPER]:  # if mapper defined for operation type

@@ -1,5 +1,5 @@
 from jal.widgets.view_delegate import *
-from jal.constants import ColumnWidth
+from jal.constants import ColumnWidth, TransactionType
 from PySide2 import QtWidgets
 from PySide2.QtCore import QObject, SIGNAL, Slot
 from functools import partial
@@ -10,7 +10,6 @@ import jal.ui_custom.reference_data as ui               # Full import due to "cy
 
 class TableViewConfig:
     HOLDINGS = 1
-    OPERATIONS = 2
     ACTIONS = 3
     ACTION_DETAILS = 4
     TRADES = 5
@@ -40,7 +39,6 @@ class TableViewConfig:
 
     table_names = {
         HOLDINGS: 'holdings',
-        OPERATIONS: 'all_operations',
         ACTIONS: 'actions',
         ACTION_DETAILS: 'action_details',
         TRADES: 'trades',
@@ -51,7 +49,6 @@ class TableViewConfig:
 
     table_relations = {
         HOLDINGS: None,
-        OPERATIONS: None,
         ACTIONS: None,
         ACTION_DETAILS: [("category_id", "categories", "id", "name", None),
                          ("tag_id", "tags", "id", "tag", None)],
@@ -76,25 +73,6 @@ class TableViewConfig:
                    ("profit", g_tr('TableViewConfig', "P/L"), None, None, HoldingsProfitDelegate),
                    ("value", g_tr('TableViewConfig', "Value"), None, None, HoldingsFloat2Delegate),
                    ("value_adj", g_tr('TableViewConfig', "Value, RUB"), None, None, HoldingsFloat2Delegate)],
-        OPERATIONS: [("type", " ", 10, None, OperationsTypeDelegate),
-                     ("id", None, None, None, None),
-                     ("timestamp", g_tr('TableViewConfig', "Timestamp"), 150, None, OperationsTimestampDelegate),
-                     ("account_id", None, None, None, None),
-                     ("account", g_tr('TableViewConfig', "Account"), 300, None, OperationsAccountDelegate),
-                     ("num_peer", None, None, None, None),
-                     ("asset_id", None, None, None, None),
-                     ("asset", None, None, None, None),
-                     ("asset_name", None, None, None, None),
-                     ("note", g_tr('TableViewConfig', "Notes"), ColumnWidth.STRETCH, None, OperationsNotesDelegate),
-                     ("note2", None, None, None, None),
-                     ("amount", g_tr('TableViewConfig', "Amount"), None, None, OperationsAmountDelegate),
-                     ("qty_trid", None, None, None, None),
-                     ("price", None, None, None, None),
-                     ("fee_tax", None, None, None, None),
-                     ("t_amount", g_tr('TableViewConfig', "Balance"), None, None, OperationsTotalsDelegate),
-                     ("t_qty", None, None, None, None),
-                     ("currency", g_tr('TableViewConfig', "Currency"), None, None, OperationsCurrencyDelegate),
-                     ("reconciled", None, None, None, None)],
         ACTIONS: [],
         ACTION_DETAILS: [("id", None, None, None, None),
                          ("pid", None, None, None, None),
@@ -114,7 +92,6 @@ class TableViewConfig:
         self.delegates_storage = []   #  Keep references to all created delegates here
         self.views = {
             self.HOLDINGS: parent.HoldingsTableView,
-            self.OPERATIONS: parent.OperationsTableView,
             self.ACTIONS: None,
             self.ACTION_DETAILS: parent.ActionDetailsTableView,
             self.TRADES: None,
@@ -126,7 +103,6 @@ class TableViewConfig:
         self.mappers = {}           # Here mapper objects will be stored
         self.widget_mappers = {
             self.HOLDINGS: None,
-            self.OPERATIONS: None,
             self.ACTIONS: [("timestamp", parent.ActionTimestampEdit),
                            ("account_id", parent.ActionAccountWidget),
                            ("peer_id", parent.ActionPeerWidget)],
@@ -300,8 +276,8 @@ class TableViewConfig:
             (parent.SaveReportBtn,          "clicked()",                parent.reports.saveReport),
             (parent.ShowInactiveCheckBox,   "stateChanged(int)",        parent.BalancesTableView.model().toggleActive),
             (parent.DateRangeCombo,         "currentIndexChanged(int)", parent.OnOperationsRangeChange),
-            (parent.ChooseAccountBtn,       "changed(int)",             parent.operations.setAccountId),
-            (parent.SearchString,           "textChanged(QString)",     parent.OnSearchTextChange),
+            (parent.ChooseAccountBtn,       "changed(int)",             parent.OperationsTableView.model().setAccount),
+            (parent.SearchString,           "textChanged(QString)",     parent.OperationsTableView.model().filterText),
             (parent.AddActionDetail,        "clicked()",                partial(parent.operations.addOperationChild, TransactionType.Action)),
             (parent.RemoveActionDetail,     "clicked()",                partial(parent.operations.deleteOperationChild, TransactionType.Action)),
             (parent.DeleteOperationBtn,     "clicked()",                parent.operations.deleteOperation),

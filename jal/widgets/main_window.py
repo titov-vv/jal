@@ -16,6 +16,7 @@ from jal.db.helpers import get_dbfilename, get_account_id, get_base_currency, ex
 from jal.data_import.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
 from db.balances_model import BalancesModel
+from db.operations_model import OperationsModel
 from jal.widgets.operations import LedgerOperationsView, LedgerInitValues
 from jal.reports.reports import Reports, ReportType
 from jal.data_import.statements import StatementLoader
@@ -74,8 +75,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.reports.report_failure.connect(self.onReportFailure)
 
         # Customize UI configuration
-        self.BalancesTableView.setModel(BalancesModel(self, self.db))
-        self.BalancesTableView.model().configureHeader(self.BalancesTableView)
+        self.BalancesTableView.setModel(BalancesModel(self.BalancesTableView, self.db))
+        self.BalancesTableView.model().configureView()
+        self.OperationsTableView.setModel(OperationsModel(self.OperationsTableView, self.db))
+        self.OperationsTableView.model().configureView()
+
         self.operations = LedgerOperationsView(self.OperationsTableView)
         self.ui_config = TableViewConfig(self)
 
@@ -215,10 +219,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.StatusBar.showMessage(error_msg, timeout=30000)
 
     @Slot()
-    def OnSearchTextChange(self):
-        self.operations.setSearchText(self.SearchString.text())
-
-    @Slot()
     def OnOperationsRangeChange(self, range_index):
         view_ranges = {
             0: ManipulateDate.startOfPreviousWeek,
@@ -227,7 +227,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             3: ManipulateDate.startOfPreviousYear,
             4: lambda: 0
         }
-        self.operations.setOperationsRange(view_ranges[range_index]())
+        self.OperationsTableView.model().setDateRange(view_ranges[range_index]())
 
     @Slot()
     def onQuotesDownloadCompletion(self):

@@ -12,9 +12,9 @@ class BalancesModel(QAbstractTableModel):
                 " ",
                 g_tr('BalancesModel', "Balance, ")]
 
-    def __init__(self, parent, db):
-        super().__init__(parent)
-        self._parent = parent
+    def __init__(self, parent_view, db):
+        super().__init__(parent_view)
+        self._view = parent_view
         self._db = db
         self._table_name = 'balances'
         self._currency = 0
@@ -81,13 +81,13 @@ class BalancesModel(QAbstractTableModel):
             if data['days_unreconciled'] > 7:
                 return QBrush(CustomColor.LightYellow)
 
-    def configureHeader(self, view):
-        view.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
+    def configureView(self):
+        self._view.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         for i in range(len(self._columns))[1:]:
-            view.horizontalHeader().setSectionResizeMode(i, QHeaderView.ResizeToContents)
-        font = view.horizontalHeader().font()
+            self._view.horizontalHeader().setSectionResizeMode(i, QHeaderView.ResizeToContents)
+        font = self._view.horizontalHeader().font()
         font.setBold(True)
-        view.horizontalHeader().setFont(font)
+        self._view.horizontalHeader().setFont(font)
 
     @Slot()
     def setCurrency(self, currency_id):
