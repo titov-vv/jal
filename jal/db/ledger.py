@@ -7,9 +7,7 @@ from jal.constants import Setup, BookAccount, TransactionType, ActionSubtype, Co
     PredefinedCategory, PredefinedPeer
 from PySide2.QtCore import Qt, Slot, QDate, QDateTime
 from PySide2.QtWidgets import QDialog, QMessageBox, QMenu, QAction
-from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_asset_name, get_account_id, get_account_currency, \
-    get_asset_id
-from jal.db.routines import calculateHoldings
+from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_asset_name, get_account_id, get_asset_id
 from jal.ui_custom.helpers import g_tr
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
 from jal.db.tax_estimator import TaxEstimator
@@ -60,32 +58,13 @@ class Ledger:
         self.holdings_index = None
         self.estimator = None
 
-    def setViews(self, balances, holdings):
+    def setViews(self, balances, holdings):   # TODO setup context menu in different place
         self.holdings_view = holdings
         self.holdings_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.holdings_view.customContextMenuRequested.connect(self.onHoldingsContextMenu)
 
-    def updateBalancesView(self):
-        pass
-        # if self.balances_view is None:
-        #     return
-        # calculateBalances(self.db, self.balance_date, self.balance_currency, self.balance_active_only)
-        # self.balances_view.model().select()
 
-    def setHoldingsDate(self, holdings_date):
-        if self.holdings_date != holdings_date:
-            self.holdings_date = holdings_date
-            self.updateHoldingsView()
-
-    def setHoldingsCurrency(self, currency_id, currency_name):
-        if self.holdings_currency != currency_id:
-            self.holdings_currency = currency_id
-            holidings_model = self.holdings_view.model()
-            holidings_model.setHeaderData(holidings_model.fieldIndex("value_adj"), Qt.Horizontal,
-                                          g_tr('Ledger', "Value, ") + currency_name)
-            self.updateHoldingsView()
-
-    def updateHoldingsView(self):
+    def updateHoldingsView(self):    # TODO remove after transition to Holdings TreeView
         if self.holdings_view is None:
             return
         calculateHoldings(self.db, self.holdings_date, self.holdings_currency)
@@ -613,8 +592,6 @@ class Ledger:
         if not silent:
             logging.info(g_tr('Ledger', "Ledger is complete. Elapsed time: ") + f"{datetime.now() - start_time}" +
                          g_tr('Ledger', ", new frontier: ") + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
-        self.updateBalancesView()
-        self.updateHoldingsView()
 
     def showRebuildDialog(self, parent):
         rebuild_dialog = RebuildDialog(parent, self.getCurrentFrontier())

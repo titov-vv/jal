@@ -9,7 +9,6 @@ import jal.ui_custom.reference_data as ui               # Full import due to "cy
 
 
 class TableViewConfig:
-    HOLDINGS = 1
     ACTIONS = 3
     ACTION_DETAILS = 4
     TRADES = 5
@@ -38,7 +37,6 @@ class TableViewConfig:
     DLG_RELATIONS = 6
 
     table_names = {
-        HOLDINGS: 'holdings',
         ACTIONS: 'actions',
         ACTION_DETAILS: 'action_details',
         TRADES: 'trades',
@@ -48,7 +46,6 @@ class TableViewConfig:
     }
 
     table_relations = {
-        HOLDINGS: None,
         ACTIONS: None,
         ACTION_DETAILS: [("category_id", "categories", "id", "name", None),
                          ("tag_id", "tags", "id", "tag", None)],
@@ -59,20 +56,6 @@ class TableViewConfig:
     }
 
     table_view_columns = {
-        HOLDINGS: [("level1", None, None, None, None),
-                   ("level2", None, None, None, None),
-                   ("currency", None, None, None, None),
-                   ("account", g_tr('TableViewConfig', "C/A"), 32, None, HoldingsAccountDelegate),
-                   ("asset", " ", None, None, None),
-                   ("asset_name", g_tr('TableViewConfig', "Asset"), ColumnWidth.STRETCH, None, None),
-                   ("qty", g_tr('TableViewConfig', "Qty"), None, None, HoldingsFloatDelegate),
-                   ("open", g_tr('TableViewConfig', "Open"), None, None, HoldingsFloat4Delegate),
-                   ("quote", g_tr('TableViewConfig', "Last"), None, None, HoldingsFloat4Delegate),
-                   ("share", g_tr('TableViewConfig', "Share, %"), None, None, HoldingsFloat2Delegate),
-                   ("profit_rel", g_tr('TableViewConfig', "P/L, %"), None, None, HoldingsProfitDelegate),
-                   ("profit", g_tr('TableViewConfig', "P/L"), None, None, HoldingsProfitDelegate),
-                   ("value", g_tr('TableViewConfig', "Value"), None, None, HoldingsFloat2Delegate),
-                   ("value_adj", g_tr('TableViewConfig', "Value, RUB"), None, None, HoldingsFloat2Delegate)],
         ACTIONS: [],
         ACTION_DETAILS: [("id", None, None, None, None),
                          ("pid", None, None, None, None),
@@ -91,7 +74,6 @@ class TableViewConfig:
         self.parent = parent
         self.delegates_storage = []   #  Keep references to all created delegates here
         self.views = {
-            self.HOLDINGS: parent.HoldingsTableView,
             self.ACTIONS: None,
             self.ACTION_DETAILS: parent.ActionDetailsTableView,
             self.TRADES: None,
@@ -102,7 +84,6 @@ class TableViewConfig:
         self.models = {}
         self.mappers = {}           # Here mapper objects will be stored
         self.widget_mappers = {
-            self.HOLDINGS: None,
             self.ACTIONS: [("timestamp", parent.ActionTimestampEdit),
                            ("account_id", parent.ActionAccountWidget),
                            ("peer_id", parent.ActionPeerWidget)],
@@ -267,10 +248,10 @@ class TableViewConfig:
             (parent.actionQuotes,           "triggered()",              partial(self.show_dialog, self.QUOTES)),
             (parent.PrepareTaxForms,        "triggered()",              partial(parent.taxes.showTaxesDialog, parent)),
             (parent.BalanceDate,            "dateChanged(QDate)",       parent.BalancesTableView.model().setDate),
-            (parent.HoldingsDate,           "dateChanged(QDate)",       parent.onHoldingsDateChange),
+            (parent.HoldingsDate,           "dateChanged(QDate)",       parent.HoldingsTableView.model().setDate),
             (parent.BalancesCurrencyCombo,  "changed(int)",             parent.BalancesTableView.model().setCurrency),
             (parent.BalancesTableView,      "doubleClicked(QModelIndex)", parent.OnBalanceDoubleClick),
-            (parent.HoldingsCurrencyCombo,  "changed(int)",             parent.OnHoldingsCurrencyChange),
+            (parent.HoldingsCurrencyCombo,  "changed(int)",             parent.HoldingsTableView.model().setCurrency),
             (parent.ReportRangeCombo,       "currentIndexChanged(int)", parent.onReportRangeChange),
             (parent.RunReportBtn,           "clicked()",                parent.onRunReport),
             (parent.SaveReportBtn,          "clicked()",                parent.reports.saveReport),

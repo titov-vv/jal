@@ -16,6 +16,7 @@ from jal.db.helpers import get_dbfilename, get_account_id, get_base_currency, ex
 from jal.data_import.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
 from db.balances_model import BalancesModel
+from db.holdings_model import HoldingsModel
 from db.operations_model import OperationsModel
 from jal.widgets.operations import LedgerOperationsView, LedgerInitValues
 from jal.reports.reports import Reports, ReportType
@@ -77,6 +78,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         # Customize UI configuration
         self.BalancesTableView.setModel(BalancesModel(self.BalancesTableView, self.db))
         self.BalancesTableView.model().configureView()
+        self.HoldingsTableView.setModel(HoldingsModel(self.HoldingsTableView, self.db))
+        self.HoldingsTableView.model().configureView()
         self.OperationsTableView.setModel(OperationsModel(self.OperationsTableView, self.db))
         self.OperationsTableView.model().configureView()
 
@@ -106,8 +109,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.operations.stateIsCommitted.connect(self.showCommitted)
         self.operations.stateIsModified.connect(self.showModified)
 
-        # Setup balance and holdings tables
-        self.ledger.setViews(self.BalancesTableView, self.HoldingsTableView)
+        # Setup balance and holdings parameters
         self.BalanceDate.setDateTime(QDateTime.currentDateTime())
         self.BalancesCurrencyCombo.init_db(self.db, get_base_currency(db))
         self.HoldingsDate.setDateTime(QDateTime.currentDateTime())
@@ -169,15 +171,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                                            "Application will be terminated now"),
                                       QMessageBox.Ok)
             self.close()
-
-    @Slot()
-    def onHoldingsDateChange(self, _new_date):
-        self.ledger.setHoldingsDate(self.HoldingsDate.dateTime().toSecsSinceEpoch())
-
-    @Slot()
-    def OnHoldingsCurrencyChange(self, _currency_index):
-        self.ledger.setHoldingsCurrency(self.HoldingsCurrencyCombo.selected_id,
-                                        self.HoldingsCurrencyCombo.selected_name)
 
     @Slot()
     def OnBalanceDoubleClick(self, index):

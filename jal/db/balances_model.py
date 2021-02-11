@@ -39,7 +39,8 @@ class BalancesModel(QAbstractTableModel):
         if not index.isValid():
             return None
 
-        row = readSQL(self._db, "SELECT * FROM balances WHERE ROWID=:row", [(":row", index.row()+1)], named=True)
+        row = readSQL(self._db, f"SELECT * FROM {self._table_name} WHERE ROWID=:row",
+                      [(":row", index.row()+1)], named=True)
         if role == Qt.DisplayRole:
             return self.data_text(index.column(), row)
         if role == Qt.FontRole:
