@@ -137,35 +137,6 @@ CREATE TABLE agents (
 );
 
 
--- Table: balances
-DROP TABLE IF EXISTS balances;
-
-CREATE TABLE balances (
-    level1            INTEGER,
-    level2            INTEGER,
-    account_name      TEXT    NOT NULL,
-    balance           REAL,
-    currency_name     TEXT,
-    balance_adj       REAL,
-    days_unreconciled INTEGER,
-    active            INTEGER
-);
-
-
--- Table: balances_aux
-DROP TABLE IF EXISTS balances_aux;
-
-CREATE TABLE balances_aux (
-    account_type      INTEGER NOT NULL,
-    account           INTEGER NOT NULL,
-    currency          INTEGER NOT NULL,
-    balance           REAL,
-    balance_adj       REAL,
-    unreconciled_days INTEGER,
-    active            INTEGER
-);
-
-
 -- Table: books
 DROP TABLE IF EXISTS books;
 

@@ -3,6 +3,10 @@ BEGIN TRANSACTION;
 PRAGMA foreign_keys = 0;
 
 --------------------------------------------------------------------------------
+-- Drop outdated tables
+DROP TABLE IF EXISTS balances;
+DROP TABLE IF EXISTS balances_aux;
+--------------------------------------------------------------------------------
 -- Drop unique constraints from t_last_assets table
 --------------------------------------------------------------------------------
 DROP TABLE t_last_assets;
