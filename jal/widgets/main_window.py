@@ -2,7 +2,7 @@ import os
 import logging
 from functools import partial
 
-from PySide2.QtCore import Slot, QDateTime, QDir, QLocale
+from PySide2.QtCore import Qt, Slot, QDateTime, QDir, QLocale
 from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QMainWindow, QMenu, QMessageBox, QLabel, QActionGroup, QAction
 
@@ -12,7 +12,7 @@ from jal.ui_custom.helpers import g_tr, VLine, ManipulateDate, dependency_presen
 from jal.ui_custom.table_view_config import TableViewConfig
 from jal.constants import TransactionType
 from jal.db.backup_restore import JalBackup
-from jal.db.helpers import get_dbfilename, get_account_id, get_base_currency, executeSQL
+from jal.db.helpers import get_dbfilename, get_account_id, get_base_currency, executeSQL, get_asset_id
 from jal.data_import.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
 from db.balances_model import BalancesModel
@@ -23,6 +23,7 @@ from jal.reports.reports import Reports, ReportType
 from jal.data_import.statements import StatementLoader
 from jal.reports.taxes import TaxesRus
 from jal.data_import.slips import ImportSlipDialog
+from jal.db.tax_estimator import TaxEstimator
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -55,6 +56,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.statements.load_completed.connect(self.onStatementLoaded)
         self.statements.load_failed.connect(self.onStatementLoadFailure)
         self.backup = JalBackup(self, get_dbfilename(self.own_path))
+        self.estimator = None
 
         self.actionImportSlipRU.setEnabled(dependency_present(['pyzbar', 'PIL']))
 
@@ -82,6 +84,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.holdings_model = HoldingsModel(self.HoldingsTableView, self.db)
         self.HoldingsTableView.setModel(self.holdings_model)
         self.holdings_model.configureView()
+        self.HoldingsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.OperationsTableView.setModel(OperationsModel(self.OperationsTableView, self.db))
         self.OperationsTableView.model().configureView()
 
@@ -266,3 +269,23 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def importSlip(self):
         dialog = ImportSlipDialog(self, self.db)
         dialog.show()
+
+    @Slot()
+    def onHoldingsContextMenu(self, pos):
+        index = self.HoldingsTableView.indexAt(pos)
+        contextMenu = QMenu(self.HoldingsTableView)
+        actionEstimateTax = QAction(text=g_tr('Ledger', "Estimate Russian Tax"), parent=self.HoldingsTableView)
+        actionEstimateTax.triggered.connect(
+            partial(self.estimateRussianTax, self.HoldingsTableView.viewport().mapToGlobal(pos), index))
+        contextMenu.addAction(actionEstimateTax)
+        contextMenu.popup(self.HoldingsTableView.viewport().mapToGlobal(pos))
+
+    @Slot()
+    def estimateRussianTax(self, position, index):
+        model = index.model()
+        account, asset, asset_qty = model.get_data_for_tax(index.row())
+        account_id = get_account_id(self.db, account)
+        asset_id = get_asset_id(self.db, asset)
+        self.estimator = TaxEstimator(self.db, account_id, asset_id, asset_qty, position)
+        if self.estimator.ready:
+            self.estimator.open()

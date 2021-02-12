@@ -264,7 +264,8 @@ class TableViewConfig:
             (parent.DeleteOperationBtn,     "clicked()",                parent.operations.deleteOperation),
             (parent.CopyOperationBtn,       "clicked()",                parent.operations.copyOperation),
             (parent.SaveOperationBtn,       "clicked()",                parent.operations.commitOperation),
-            (parent.RevertOperationBtn,     "clicked()",                parent.operations.revertOperation)
+            (parent.RevertOperationBtn,     "clicked()",                parent.operations.revertOperation),
+            (parent.HoldingsTableView,      "customContextMenuRequested(QPoint)", parent.onHoldingsContextMenu)
         ]
 
     def tr(self, name):

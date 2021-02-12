@@ -134,6 +134,10 @@ class HoldingsModel(QAbstractTableModel):
             self._date = new_date.endOfDay(Qt.UTC).toSecsSinceEpoch()
             self.calculateHoldings()
 
+    def get_data_for_tax(self, row):
+        return readSQL(self._db, f"SELECT account, asset, qty FROM {self._table_name} WHERE ROWID=:row",
+                       [(":row", row+1)])
+
     # Populate table 'holdings' with data calculated for given parameters of model: _currency, _date,
     def calculateHoldings(self):
         _ = executeSQL(self._db, "DELETE FROM t_last_quotes")
