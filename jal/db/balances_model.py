@@ -3,27 +3,39 @@ from PySide2.QtGui import QBrush, QFont
 from PySide2.QtWidgets import QHeaderView
 from jal.constants import CustomColor, BookAccount
 from jal.ui_custom.helpers import g_tr
-from jal.db.helpers import executeSQL, readSQL, get_asset_name
+from jal.db.helpers import executeSQL, get_asset_name
 
 
 class BalancesModel(QAbstractTableModel):
-    _columns = [g_tr('BalancesModel', "Account"),
-                g_tr('BalancesModel', "Balance"),
-                " ",
-                g_tr('BalancesModel', "Balance, ")]
+    DATA_COL = 10
+    COL_LEVEL = 0
+    COL_TYPE = 1
+    COL_TYPE_NAME = 2
+    COL_ACCOUNT = 3
+    COL_ACCOUNT_NAME = 4
+    COL_CURRENCY = 5
+    COL_CURRENCY_NAME = 6
+    COL_AMOUNT = 7
+    COL_AMOUNT_A = 8
+    COL_UNRECONCILED = 9
+    COL_ACTIVE = 10
 
     def __init__(self, parent_view, db):
         super().__init__(parent_view)
         self._view = parent_view
         self._db = db
-        self._table_name = 'balances'
+        self._data = []
         self._currency = 0
         self._currency_name = ''
-        self._active_only = 1
+        self._active_only = True
         self._date = QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch()
+        self._columns = [g_tr('BalancesModel', "Account"),
+                         g_tr('BalancesModel', "Balance"),
+                         " ",
+                         g_tr('BalancesModel', "Balance, ")]
 
     def rowCount(self, parent=None):
-        return readSQL(self._db, f"SELECT COUNT(*) FROM {self._table_name}")
+        return len(self._data)
 
     def columnCount(self, parent=None):
         return len(self._columns)
@@ -39,47 +51,48 @@ class BalancesModel(QAbstractTableModel):
         if not index.isValid():
             return None
 
-        row = readSQL(self._db, f"SELECT * FROM {self._table_name} WHERE ROWID=:row",
-                      [(":row", index.row()+1)], named=True)
         if role == Qt.DisplayRole:
-            return self.data_text(index.column(), row)
+            return self.data_text(index.column(), index.row())
         if role == Qt.FontRole:
-            return self.data_font(index.column(), row)
+            return self.data_font(index.column(), index.row())
         if role == Qt.BackgroundRole:
-            return self.data_background(index.column(), row)
+            return self.data_background(index.column(), index.row())
         if role == Qt.TextAlignmentRole:
             if index.column() == 0 or index.column() == 2:
                 return Qt.AlignLeft
             else:
                 return Qt.AlignRight
 
-    def data_text(self, column, data):
+    def data_text(self, column, row):
         if column == 0:
-            return data['account_name']
+            if self._data[row][self.COL_LEVEL] == 0:
+                return self._data[row][self.COL_ACCOUNT_NAME]
+            else:
+                return self._data[row][self.COL_TYPE_NAME]
         elif column == 1:
-            return f"{data['balance']:,.2f}" if data['balance'] != 0 else ''
+            return f"{self._data[row][self.COL_AMOUNT]:,.2f}" if self._data[row][self.COL_AMOUNT] != 0 else ''
         elif column == 2:
-            return data['currency_name'] if data['balance'] != 0 else ''
+            return self._data[row][self.COL_CURRENCY_NAME] if self._data[row][self.COL_AMOUNT] != 0 else ''
         elif column == 3:
-            return f"{data['balance_adj']:,.2f}" if data['balance_adj'] != 0 else ''
+            return f"{self._data[row][self.COL_AMOUNT_A]:,.2f}" if self._data[row][self.COL_AMOUNT_A] != 0 else ''
         else:
             assert False
 
-    def data_font(self, column, data):
-        if (column == 0 or column == 3) and data['balance'] == 0:
+    def data_font(self, column, row):
+        if self._data[row][self.COL_LEVEL] > 0:
             font = QFont()
             font.setBold(True)
             return font
-        if column == 0 and not data['active']:
+        if column == 0 and not self._data[row][self.COL_ACTIVE]:
             font = QFont()
             font.setItalic(True)
             return font
 
-    def data_background(self, column, data):
+    def data_background(self, column, row):
         if column == 3:
-            if data['days_unreconciled'] > 15:
+            if self._data[row][self.COL_UNRECONCILED] > 15:
                 return QBrush(CustomColor.LightRed)
-            if data['days_unreconciled'] > 7:
+            if self._data[row][self.COL_UNRECONCILED] > 7:
                 return QBrush(CustomColor.LightYellow)
 
     def configureView(self):
@@ -106,72 +119,59 @@ class BalancesModel(QAbstractTableModel):
     @Slot()
     def toggleActive(self, state):
         if state == 0:
-            self._active_only = 1
+            self._active_only = True
         else:
-            self._active_only = 0
+            self._active_only = False
         self.calculateBalances()
 
     # Populate table balances with data calculated for given parameters of model: _currency, _date, _active_only
     def calculateBalances(self):
-        _ = executeSQL(self._db, "DELETE FROM t_last_quotes")
-        _ = executeSQL(self._db, "DELETE FROM t_last_dates")
-        _ = executeSQL(self._db, "DELETE FROM balances_aux")
-        _ = executeSQL(self._db, "DELETE FROM balances")
-        _ = executeSQL(self._db, "INSERT INTO t_last_quotes(timestamp, asset_id, quote) "
-                           "SELECT MAX(timestamp) AS timestamp, asset_id, quote "
-                           "FROM quotes "
-                           "WHERE timestamp <= :balances_timestamp "
-                           "GROUP BY asset_id", [(":balances_timestamp", self._date)])
-        _ = executeSQL(self._db, "INSERT INTO t_last_dates(ref_id, timestamp) "
-                           "SELECT account_id AS ref_id, MAX(timestamp) AS timestamp "
-                           "FROM ledger "
-                           "WHERE timestamp <= :balances_timestamp "
-                           "GROUP BY ref_id", [(":balances_timestamp", self._date)])
-        _ = executeSQL(self._db,
-                       "INSERT INTO balances_aux(account_type, account, currency, balance, "
-                       "balance_adj, unreconciled_days, active) "
-                       "SELECT a.type_id AS account_type, l.account_id AS account, a.currency_id AS currency, "
-                       "SUM(CASE WHEN l.book_account=4 THEN l.amount*act_q.quote ELSE l.amount END) AS balance, "
-                       "SUM(CASE WHEN l.book_account=4 THEN l.amount*coalesce(act_q.quote*cur_q.quote/cur_adj_q.quote, 0) "
-                       "ELSE l.amount*coalesce(cur_q.quote/cur_adj_q.quote, 0) END) AS balance_adj, "
-                       "(d.timestamp - coalesce(a.reconciled_on, 0))/86400 AS unreconciled_days, "
-                       "a.active AS active "
-                       "FROM ledger AS l "
-                       "LEFT JOIN accounts AS a ON l.account_id = a.id "
-                       "LEFT JOIN t_last_quotes AS act_q ON l.asset_id = act_q.asset_id "
-                       "LEFT JOIN t_last_quotes AS cur_q ON a.currency_id = cur_q.asset_id "
-                       "LEFT JOIN t_last_quotes AS cur_adj_q ON cur_adj_q.asset_id = :base_currency "
-                       "LEFT JOIN t_last_dates AS d ON l.account_id = d.ref_id "
-                       "WHERE (book_account = :money_book OR book_account = :assets_book OR book_account = :liabilities_book) "
-                       "AND l.timestamp <= :balances_timestamp "
-                       "GROUP BY l.account_id "
-                       "HAVING ABS(balance)>0.0001",
-                       [(":base_currency", self._currency), (":money_book", BookAccount.Money),
-                        (":assets_book", BookAccount.Assets), (":liabilities_book", BookAccount.Liabilities),
-                        (":balances_timestamp", self._date)])
-        _ = executeSQL(self._db,
-                       "INSERT INTO balances(level1, level2, account_name, currency_name, "
-                       "balance, balance_adj, days_unreconciled, active) "
-                       "SELECT  level1, level2, account, currency, balance, balance_adj, unreconciled_days, active "
-                       "FROM ( "
-                       "SELECT 0 AS level1, 0 AS level2, account_type, a.name AS account, c.name AS currency, "
-                       "balance, balance_adj, unreconciled_days, b.active "
-                       "FROM balances_aux AS b LEFT JOIN accounts AS a ON b.account = a.id "
-                       "LEFT JOIN assets AS c ON b.currency = c.id "
-                       "WHERE b.active >= :active_only "
-                       "UNION "
-                       "SELECT 0 AS level1, 1 AS level2, account_type, t.name AS account, c.name AS currency, "
-                       "0 AS balance, SUM(balance_adj) AS balance_adj, 0 AS unreconciled_days, 1 AS active "
-                       "FROM balances_aux AS b LEFT JOIN account_types AS t ON b.account_type = t.id "
-                       "LEFT JOIN assets AS c ON c.id = :base_currency "
-                       "WHERE active >= :active_only "
-                       "GROUP BY account_type "
-                       "UNION "
-                       "SELECT 1 AS level1, 0 AS level2, -1 AS account_type, 'Total' AS account, c.name AS currency, "
-                       "0 AS balance, SUM(balance_adj) AS balance_adj, 0 AS unreconciled_days, 1 AS active "
-                       "FROM balances_aux LEFT JOIN assets AS c ON c.id = :base_currency "
-                       "WHERE active >= :active_only "
-                       ") ORDER BY level1, account_type, level2",
-                       [(":base_currency", self._currency), (":active_only", self._active_only)])
-        self._db.commit()
+        query = executeSQL(
+            self._db,
+            "WITH "
+            "_last_quotes AS (SELECT MAX(timestamp) AS timestamp, asset_id, quote "
+            "FROM quotes WHERE timestamp <= :balances_timestamp GROUP BY asset_id), "
+            "_last_dates AS (SELECT account_id AS ref_id, MAX(timestamp) AS timestamp "
+            "FROM ledger WHERE timestamp <= :balances_timestamp GROUP BY ref_id) "
+            "SELECT a.type_id AS account_type, t.name AS type_name, l.account_id AS account, "
+            "a.name AS account_name, a.currency_id AS currency, c.name AS currency_name, "
+            "SUM(CASE WHEN l.book_account=4 THEN l.amount*act_q.quote ELSE l.amount END) AS balance, "
+            "SUM(CASE WHEN l.book_account=4 THEN l.amount*coalesce(act_q.quote*cur_q.quote/cur_adj_q.quote, 0) "
+            "ELSE l.amount*coalesce(cur_q.quote/cur_adj_q.quote, 0) END) AS balance_adj, "
+            "(d.timestamp - coalesce(a.reconciled_on, 0))/86400 AS unreconciled_days, "
+            "a.active AS active "
+            "FROM ledger AS l "
+            "LEFT JOIN accounts AS a ON l.account_id = a.id "
+            "LEFT JOIN assets AS c ON c.id = a.currency_id "
+            "LEFT JOIN account_types AS t ON a.type_id = t.id "
+            "LEFT JOIN _last_quotes AS act_q ON l.asset_id = act_q.asset_id "
+            "LEFT JOIN _last_quotes AS cur_q ON a.currency_id = cur_q.asset_id "
+            "LEFT JOIN _last_quotes AS cur_adj_q ON cur_adj_q.asset_id = :base_currency "
+            "LEFT JOIN _last_dates AS d ON l.account_id = d.ref_id "
+            "WHERE (book_account=:money_book OR book_account=:assets_book OR book_account=:liabilities_book) "
+            "AND l.timestamp <= :balances_timestamp "
+            "GROUP BY l.account_id "
+            "HAVING ABS(balance)>0.0001 "
+            "ORDER BY account_type",
+            [(":base_currency", self._currency), (":money_book", BookAccount.Money),
+             (":assets_book", BookAccount.Assets), (":liabilities_book", BookAccount.Liabilities),
+             (":balances_timestamp", self._date)])
+        self._data = []
+        current_type = 0
+        current_type_name = ''
+        while query.next():
+            values = [0]
+            [values.append(query.value(i)) for i in range(self.DATA_COL)]
+            if self._active_only and values[self.COL_ACTIVE] == 0:
+                continue
+            self._data.append(values)
+            if values[self.COL_TYPE] != current_type:
+                if current_type != 0:
+                    sub_total = sum([row[self.COL_AMOUNT_A] for row in self._data if row[self.COL_TYPE] == current_type])
+                    self._data.append([1, current_type, current_type_name, 0, '', 0, '', 0, sub_total, 0, 1])
+                current_type = values[self.COL_TYPE]
+                current_type_name = values[self.COL_TYPE_NAME]
+        total_sum = sum([row[self.COL_AMOUNT_A] for row in self._data if row[self.COL_LEVEL] == 0])
+        self._data.append([2, 0, g_tr("BalancesModel", "Total"), 0, '', 0, '', 0, total_sum, 0, 1])
         self.modelReset.emit()
+

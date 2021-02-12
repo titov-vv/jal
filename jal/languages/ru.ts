@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="ru" sourcelanguage="en">
+<!DOCTYPE TS>
+<TS version="2.1" language="ru" sourcelanguage="en">
 <context>
     <name>AbortWindow</name>
     <message>
@@ -130,19 +131,24 @@
 <context>
     <name>BalancesModel</name>
     <message>
-        <location filename="../db/balances_model.py" line="10"/>
+        <location filename="../db/balances_model.py" line="23"/>
         <source>Account</source>
-        <translation type="unfinished">Счет</translation>
+        <translation>Счет</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="11"/>
+        <location filename="../db/balances_model.py" line="24"/>
         <source>Balance</source>
-        <translation type="unfinished">Баланс</translation>
+        <translation>Баланс</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="13"/>
+        <location filename="../db/balances_model.py" line="26"/>
         <source>Balance, </source>
-        <translation type="unfinished">Баланс, </translation>
+        <translation>Баланс, </translation>
+    </message>
+    <message>
+        <location filename="../db/balances_model.py" line="174"/>
+        <source>Total</source>
+        <translation>Итого</translation>
     </message>
 </context>
 <context>
@@ -585,77 +591,77 @@ Application will be terminated now</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="556"/>
+        <location filename="../db/ledger.py" line="526"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="556"/>
+        <location filename="../db/ledger.py" line="526"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation> операций требуют перерасчета. Вы ходите выполнить его прямо сейчас?</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="561"/>
+        <location filename="../db/ledger.py" line="531"/>
         <source>Re-build ledger from: </source>
         <translation>Перерасчет итогов с: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="593"/>
+        <location filename="../db/ledger.py" line="563"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation>Итоги рассчитаны. Затраченное время: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="593"/>
+        <location filename="../db/ledger.py" line="563"/>
         <source>, new frontier: </source>
         <translation>, новая граница: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="586"/>
+        <location filename="../db/ledger.py" line="556"/>
         <source>Processed </source>
         <translation>Обработано </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="586"/>
+        <location filename="../db/ledger.py" line="556"/>
         <source>k records, current frontier: </source>
         <translation>к записей, текущая граница: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="224"/>
+        <location filename="../db/ledger.py" line="194"/>
         <source>Can&apos;t process dividend as bank isn&apos;t set for investment account</source>
         <translation>Невозможно обработать дивиденд, т.к. не указан банк для инвестиционного счёта</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="240"/>
+        <location filename="../db/ledger.py" line="210"/>
         <source>Can&apos;t process trade as bank isn&apos;t set for investment account</source>
         <translation>Невозможно обработать сделку, т.к. не указан банк для инвестиционного счёта</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="445"/>
+        <location filename="../db/ledger.py" line="415"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation>Количество акций недостаточно для обработки корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="82"/>
+        <location filename="../widgets/main_window.py" line="277"/>
         <source>Estimate Russian Tax</source>
         <translation>Оценить налог для РФ</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="412"/>
+        <location filename="../db/ledger.py" line="382"/>
         <source>Stock dividend for was updated for </source>
         <translation>Дивиденд акциями был обновлён для </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="412"/>
+        <location filename="../db/ledger.py" line="382"/>
         <source>Please check that quantity is correct.</source>
         <translation>Пожалуйста проверьте корректность количества бумаг.</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="204"/>
+        <location filename="../db/ledger.py" line="174"/>
         <source>Can&apos;t process operation without details</source>
         <translation>Невозможно обработать операцию без детальной информации</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="404"/>
+        <location filename="../db/ledger.py" line="374"/>
         <source>Unexpected data in transfer transaction</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1247,32 +1253,32 @@ do you want to save it?</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="227"/>
+        <location filename="../widgets/main_window.py" line="232"/>
         <source>Quotes download completed</source>
         <translation>Загрузка котировок завершена</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="233"/>
+        <location filename="../widgets/main_window.py" line="238"/>
         <source>Statement load completed</source>
         <translation>Загрузка отчета завершена успешно</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="238"/>
+        <location filename="../widgets/main_window.py" line="243"/>
         <source>Statement load failed</source>
         <translation>Загрузка отчета неуспешна</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="167"/>
+        <location filename="../widgets/main_window.py" line="172"/>
         <source>Restart required</source>
         <translation>Требуется рестарт</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="167"/>
+        <location filename="../widgets/main_window.py" line="172"/>
         <source>Language was changed to </source>
         <translation>Язык был изменён на </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="167"/>
+        <location filename="../widgets/main_window.py" line="172"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation>Вы должны перезапустить приложение, чтобы применить изменения
@@ -1282,47 +1288,47 @@ Application will be terminated now</source>
 <context>
     <name>OperationsDelegate</name>
     <message>
-        <location filename="../widgets/view_delegate.py" line="85"/>
+        <location filename="../widgets/view_delegate.py" line="80"/>
         <source>Symbol change</source>
         <translation>Смена символа</translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="86"/>
+        <location filename="../widgets/view_delegate.py" line="81"/>
         <source>Split</source>
         <translation>Сплит</translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="87"/>
+        <location filename="../widgets/view_delegate.py" line="82"/>
         <source>Spin-off</source>
         <translation>Выделение компании</translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="88"/>
+        <location filename="../widgets/view_delegate.py" line="83"/>
         <source>Merger</source>
         <translation>Объединение компании</translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="99"/>
+        <location filename="../widgets/view_delegate.py" line="94"/>
         <source> Opened with </source>
         <translation> Сделка открытия </translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="101"/>
+        <location filename="../widgets/view_delegate.py" line="96"/>
         <source> Closed with </source>
         <translation> Сделка закрытия </translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="105"/>
+        <location filename="../widgets/view_delegate.py" line="100"/>
         <source> Long</source>
         <translation> Длинная позиция</translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="107"/>
+        <location filename="../widgets/view_delegate.py" line="102"/>
         <source> Short</source>
         <translation> Короткая позиция</translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="89"/>
+        <location filename="../widgets/view_delegate.py" line="84"/>
         <source>Stock dividend</source>
         <translation>Дивиденд акциями</translation>
     </message>
@@ -2092,22 +2098,22 @@ Application will be terminated now</source>
         <translation>Частая</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="91"/>
+        <location filename="../widgets/main_window.py" line="96"/>
         <source>Income / Spending</source>
         <translation>Доход / Расход</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="94"/>
+        <location filename="../widgets/main_window.py" line="99"/>
         <source>Trade</source>
         <translation>Сделка</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="97"/>
+        <location filename="../widgets/main_window.py" line="102"/>
         <source>Dividend</source>
         <translation>Дивиденд</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="100"/>
+        <location filename="../widgets/main_window.py" line="105"/>
         <source>Transfer</source>
         <translation>Перевод</translation>
     </message>
@@ -2132,7 +2138,7 @@ Application will be terminated now</source>
         <translation>СОИДН</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="103"/>
+        <location filename="../widgets/main_window.py" line="108"/>
         <source>Corp. Action</source>
         <translation>Корп. Действие</translation>
     </message>
@@ -2407,7 +2413,7 @@ Application will be terminated now</source>
         <source>Can&apos;t save report into file </source>
         <translation>Не удалось сохранить отчет в файл </translation>
     </message>
-    <message encoding="UTF-8">
+    <message>
         <location filename="../reports/helpers.py" line="15"/>
         <source>ИТОГО</source>
         <translation type="unfinished"></translation>

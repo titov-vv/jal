@@ -130,18 +130,23 @@
 <context>
     <name>BalancesModel</name>
     <message>
-        <location filename="../db/balances_model.py" line="10"/>
+        <location filename="../db/balances_model.py" line="23"/>
         <source>Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="11"/>
+        <location filename="../db/balances_model.py" line="24"/>
         <source>Balance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="13"/>
+        <location filename="../db/balances_model.py" line="26"/>
         <source>Balance, </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/balances_model.py" line="174"/>
+        <source>Total</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -583,77 +588,77 @@ Application will be terminated now</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="556"/>
+        <location filename="../db/ledger.py" line="526"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="556"/>
+        <location filename="../db/ledger.py" line="526"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="561"/>
+        <location filename="../db/ledger.py" line="531"/>
         <source>Re-build ledger from: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="593"/>
+        <location filename="../db/ledger.py" line="563"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="593"/>
+        <location filename="../db/ledger.py" line="563"/>
         <source>, new frontier: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="586"/>
+        <location filename="../db/ledger.py" line="556"/>
         <source>Processed </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="586"/>
+        <location filename="../db/ledger.py" line="556"/>
         <source>k records, current frontier: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="224"/>
+        <location filename="../db/ledger.py" line="194"/>
         <source>Can&apos;t process dividend as bank isn&apos;t set for investment account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="240"/>
+        <location filename="../db/ledger.py" line="210"/>
         <source>Can&apos;t process trade as bank isn&apos;t set for investment account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="445"/>
+        <location filename="../db/ledger.py" line="415"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="82"/>
+        <location filename="../widgets/main_window.py" line="277"/>
         <source>Estimate Russian Tax</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="412"/>
+        <location filename="../db/ledger.py" line="382"/>
         <source>Stock dividend for was updated for </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="412"/>
+        <location filename="../db/ledger.py" line="382"/>
         <source>Please check that quantity is correct.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="204"/>
+        <location filename="../db/ledger.py" line="174"/>
         <source>Can&apos;t process operation without details</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="404"/>
+        <location filename="../db/ledger.py" line="374"/>
         <source>Unexpected data in transfer transaction</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1244,32 +1249,32 @@ do you want to save it?</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="227"/>
+        <location filename="../widgets/main_window.py" line="232"/>
         <source>Quotes download completed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="233"/>
+        <location filename="../widgets/main_window.py" line="238"/>
         <source>Statement load completed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="238"/>
+        <location filename="../widgets/main_window.py" line="243"/>
         <source>Statement load failed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="167"/>
+        <location filename="../widgets/main_window.py" line="172"/>
         <source>Restart required</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="167"/>
+        <location filename="../widgets/main_window.py" line="172"/>
         <source>Language was changed to </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="167"/>
+        <location filename="../widgets/main_window.py" line="172"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation></translation>
@@ -1278,47 +1283,47 @@ Application will be terminated now</source>
 <context>
     <name>OperationsDelegate</name>
     <message>
-        <location filename="../widgets/view_delegate.py" line="85"/>
+        <location filename="../widgets/view_delegate.py" line="80"/>
         <source>Symbol change</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="86"/>
+        <location filename="../widgets/view_delegate.py" line="81"/>
         <source>Split</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="87"/>
+        <location filename="../widgets/view_delegate.py" line="82"/>
         <source>Spin-off</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="88"/>
+        <location filename="../widgets/view_delegate.py" line="83"/>
         <source>Merger</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="99"/>
+        <location filename="../widgets/view_delegate.py" line="94"/>
         <source> Opened with </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="101"/>
+        <location filename="../widgets/view_delegate.py" line="96"/>
         <source> Closed with </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="105"/>
+        <location filename="../widgets/view_delegate.py" line="100"/>
         <source> Long</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="107"/>
+        <location filename="../widgets/view_delegate.py" line="102"/>
         <source> Short</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="89"/>
+        <location filename="../widgets/view_delegate.py" line="84"/>
         <source>Stock dividend</source>
         <translation></translation>
     </message>
@@ -1948,22 +1953,22 @@ Application will be terminated now</source>
 <context>
     <name>TableViewConfig</name>
     <message>
-        <location filename="../widgets/main_window.py" line="91"/>
+        <location filename="../widgets/main_window.py" line="96"/>
         <source>Income / Spending</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="94"/>
+        <location filename="../widgets/main_window.py" line="99"/>
         <source>Trade</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="97"/>
+        <location filename="../widgets/main_window.py" line="102"/>
         <source>Dividend</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="100"/>
+        <location filename="../widgets/main_window.py" line="105"/>
         <source>Transfer</source>
         <translation></translation>
     </message>
@@ -2128,7 +2133,7 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="103"/>
+        <location filename="../widgets/main_window.py" line="108"/>
         <source>Corp. Action</source>
         <translation></translation>
     </message>
