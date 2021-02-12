@@ -2,7 +2,7 @@ import logging
 
 from jal.constants import Setup, TransactionType
 from PySide2.QtCore import Qt, QObject, Signal, Slot, QDateTime
-from PySide2.QtWidgets import QMessageBox, QMenu, QAction, QHeaderView
+from PySide2.QtWidgets import QMessageBox, QMenu, QAction
 from jal.db.helpers import executeSQL
 from jal.ui_custom.helpers import g_tr
 

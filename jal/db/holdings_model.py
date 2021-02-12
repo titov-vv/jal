@@ -150,16 +150,19 @@ class HoldingsModel(QAbstractTableModel):
                            "WHERE timestamp <= :balances_timestamp "
                            "GROUP BY asset_id", [(":balances_timestamp", self._date)])
         _ = executeSQL(self._db, "INSERT INTO t_last_assets (id, total_value) "
-                           "SELECT a.id, "
-                           "SUM(CASE WHEN a.currency_id = l.asset_id THEN l.amount "
-                           "ELSE (l.amount*q.quote) END) AS total_value "
-                           "FROM ledger AS l "
-                           "LEFT JOIN accounts AS a ON l.account_id = a.id "
-                           "LEFT JOIN t_last_quotes AS q ON l.asset_id = q.asset_id "
-                           "WHERE (l.book_account = 3 OR l.book_account = 4 OR l.book_account = 5) "
-                           "AND a.type_id = 4 AND l.timestamp <= :holdings_timestamp "
-                           "GROUP BY a.id "
-                           "HAVING ABS(total_value) > :tolerance",
+                           "SELECT id, SUM(t_value) AS total_value FROM ("
+                                 "SELECT a.id, SUM(l.amount) AS t_value "
+                                 "FROM ledger AS l LEFT JOIN accounts AS a ON l.account_id = a.id "
+                                 "WHERE (l.book_account == 3 OR l.book_account == 5) "
+                                 "AND a.type_id = 4 AND l.timestamp <= :holdings_timestamp "
+                                 "GROUP BY a.id "
+                                 "UNION ALL "
+                                 "SELECT a.id, SUM(l.amount*q.quote) AS t_value "
+                                 "FROM ledger AS l LEFT JOIN accounts AS a ON l.account_id = a.id "
+                                 "LEFT JOIN t_last_quotes AS q ON l.asset_id = q.asset_id "
+                                 "WHERE l.book_account == 4 AND a.type_id = 4 AND l.timestamp <= :holdings_timestamp "
+                                 "GROUP BY a.id "
+                                 ") GROUP BY id HAVING ABS(total_value) > :tolerance",
                        [(":holdings_timestamp", self._date), (":tolerance", Setup.DISP_TOLERANCE)])
         _ = executeSQL(self._db,
                        "INSERT INTO holdings_aux (currency, account, asset, qty, value, quote, quote_adj, total, total_adj) "
