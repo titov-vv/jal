@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from PySide2.QtCore import Qt, Slot, QAbstractTableModel, QDateTime
+from PySide2.QtCore import Qt, Slot, QAbstractTableModel, QDate
 from PySide2.QtSql import QSqlQuery
 from PySide2.QtGui import QBrush, QFont
 from PySide2.QtWidgets import QStyledItemDelegate, QHeaderView
@@ -52,7 +52,7 @@ class OperationsModel(QAbstractTableModel):
         self._table_name = 'all_operations'
         self._query = QSqlQuery(self._db)
         self._begin = 0
-        self._end = QDateTime.currentSecsSinceEpoch()
+        self._end = 0
         self._account = 0
 
         self.prepareData()
@@ -248,7 +248,7 @@ class OperationsModel(QAbstractTableModel):
         if end:
             self._end = end
         else:
-            self._end = QDateTime.currentSecsSinceEpoch()
+            self._end = QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch()
         self.prepareData()
 
     @Slot()
@@ -256,15 +256,18 @@ class OperationsModel(QAbstractTableModel):
         pass  # TODO add free text search
 
     def prepareData(self):
-        count_pfx = "SELECT COUNT(*) "
-        query_pfx = "SELECT * "
-        query_suffix = f"FROM {self._table_name} AS o WHERE o.timestamp>={self._begin} AND o.timestamp<={self._end}"
-        if self._account:
-            query_suffix = query_suffix + f" AND o.account_id = {self._account}"
-        self._row_count = readSQL(self._db, count_pfx + query_suffix)
-        self._current_size = self.PAGE_SIZE if self.PAGE_SIZE < self._row_count else self._row_count
-        self._query.prepare(query_pfx + query_suffix)
-        self._query.exec_()
+        if self._begin == 0 and self._end == 0:
+            self._row_count = self._current_size = 0
+        else:
+            count_pfx = "SELECT COUNT(*) "
+            query_pfx = "SELECT * "
+            query_suffix = f"FROM {self._table_name} AS o WHERE o.timestamp>={self._begin} AND o.timestamp<={self._end}"
+            if self._account:
+                query_suffix = query_suffix + f" AND o.account_id = {self._account}"
+            self._row_count = readSQL(self._db, count_pfx + query_suffix)
+            self._current_size = self.PAGE_SIZE if self.PAGE_SIZE < self._row_count else self._row_count
+            self._query.prepare(query_pfx + query_suffix)
+            self._query.exec_()
         self.modelReset.emit()
 
 
