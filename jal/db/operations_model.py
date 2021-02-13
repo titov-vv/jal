@@ -175,7 +175,7 @@ class OperationsModel(QAbstractTableModel):
             if data['type'] == TransactionType.Trade:
                 return [data['amount'], data['qty_trid']]
             elif data['type'] == TransactionType.Dividend:
-                return [TransactionType.Dividend, data['amount'], -data['fee_tax']]
+                return [data['amount'], -data['fee_tax']]
             elif data['type'] == TransactionType.Action or data['type'] == TransactionType.Transfer:
                 return [data['amount']]
             elif data['type'] == TransactionType.CorporateAction:
