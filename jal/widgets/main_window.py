@@ -229,8 +229,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def onQuotesDownloadCompletion(self):
         self.StatusBar.showMessage(g_tr('MainWindow', "Quotes download completed"), timeout=60000)
-        self.ledger.updateBalancesView()
-        self.ledger.updateBalancesView()
+        self.balances_model.update()
 
     @Slot()
     def onStatementLoaded(self):

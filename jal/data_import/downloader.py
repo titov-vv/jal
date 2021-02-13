@@ -10,7 +10,7 @@ from PySide2.QtCore import QObject, Signal
 from PySide2.QtWidgets import QDialog
 
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
-from jal.constants import Setup, MarketDataFeed
+from jal.constants import Setup, MarketDataFeed, BookAccount
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.ui_custom.helpers import g_tr
 
@@ -77,35 +77,32 @@ class QuoteDownloader(QObject):
     def UpdateQuotes(self, start_timestamp, end_timestamp):
         self.PrepareRussianCBReader()
 
-        executeSQL(self.db, "DELETE FROM holdings_aux")
-
-        # Collect list of assets that are/were held on end date
-        executeSQL(self.db,
-                   "INSERT INTO holdings_aux(asset) "
-                   "SELECT l.asset_id AS asset FROM ledger AS l "
-                   "WHERE l.book_account = 4 AND l.timestamp <= :end_timestamp "
-                   "GROUP BY l.asset_id "
-                   "HAVING sum(l.amount) > :tolerance "
-                   "UNION "
-                   "SELECT DISTINCT l.asset_id AS asset FROM ledger AS l "
-                   "WHERE l.book_account = 4 AND l.timestamp >= :start_timestamp AND l.timestamp <= :end_timestamp "
-                   "UNION "
-                   "SELECT DISTINCT a.currency_id AS asset FROM ledger AS l "
-                   "LEFT JOIN accounts AS a ON a.id = l.account_id "
-                   "WHERE (l.book_account = 3 OR l.book_account = 5) "
-                   "AND l.timestamp >= :start_timestamp AND l.timestamp <= :end_timestamp",
-                   [(":start_timestamp", start_timestamp),
-                    (":end_timestamp", end_timestamp),
-                    (":tolerance", Setup.CALC_TOLERANCE)])
-
-        # Get a list of symbols ordered by data source ID
-        query = executeSQL(self.db, "SELECT h.asset AS asset_id, a.name AS name, a.src_id AS feed_id, a.isin AS isin, "
-                                    "MIN(q.timestamp) AS first_timestamp, MAX(q.timestamp) AS last_timestamp "
-                                    "FROM holdings_aux AS h "
-                                    "LEFT JOIN assets AS a ON a.id=h.asset "
-                                    "LEFT JOIN quotes AS q ON q.asset_id=h.asset "
-                                    "GROUP BY h.asset "
-                                    "ORDER BY a.src_id")
+        query = executeSQL(self.db,
+                       "WITH _holdings AS ( "
+                       "SELECT l.asset_id AS asset FROM ledger AS l "
+                       "WHERE l.book_account = 4 AND l.timestamp <= :end_timestamp "
+                       "GROUP BY l.asset_id "
+                       "HAVING SUM(l.amount) > :tolerance "
+                       "UNION "
+                       "SELECT DISTINCT l.asset_id AS asset FROM ledger AS l "
+                       "WHERE l.book_account = :assets_book AND l.timestamp >= :start_timestamp "
+                       "AND l.timestamp <= :end_timestamp "
+                       "UNION "
+                       "SELECT DISTINCT a.currency_id AS asset FROM ledger AS l "
+                       "LEFT JOIN accounts AS a ON a.id = l.account_id "
+                       "WHERE (l.book_account = :money_book OR l.book_account = :liabilities_book) "
+                       "AND l.timestamp >= :start_timestamp AND l.timestamp <= :end_timestamp "
+                       ") "
+                       "SELECT h.asset AS asset_id, a.name AS name, a.src_id AS feed_id, a.isin AS isin, "
+                       "MIN(q.timestamp) AS first_timestamp, MAX(q.timestamp) AS last_timestamp "
+                       "FROM _holdings AS h "
+                       "LEFT JOIN assets AS a ON a.id=h.asset "
+                       "LEFT JOIN quotes AS q ON q.asset_id=h.asset "
+                       "GROUP BY h.asset "
+                       "ORDER BY a.src_id",
+                       [(":start_timestamp", start_timestamp), (":end_timestamp", end_timestamp),
+                        (":assets_book", BookAccount.Assets), (":money_book", BookAccount.Money),
+                        (":liabilities_book", BookAccount.Liabilities), (":tolerance", Setup.CALC_TOLERANCE)])
         while query.next():
             asset = readSQLrecord(query, named=True)
             first_timestamp = asset['first_timestamp'] if asset['first_timestamp'] != '' else 0
