@@ -4,6 +4,10 @@ import time
 import json
 import logging
 import pandas as pd
+from PySide2.QtWidgets import QStyledItemDelegate
+from jal.ui_custom.reference_selector import CategorySelector, TagSelector
+from jal.constants import CustomColor
+from jal.db.helpers import get_category_name
 try:
     from pyzbar import pyzbar
     from PIL import Image
@@ -18,7 +22,6 @@ from PySide2.QtMultimedia import QCameraInfo, QCamera, QCameraImageCapture, QVid
 from jal.ui_custom.helpers import g_tr, dependency_present
 from jal.db.helpers import executeSQL, readSQL
 from jal.data_import.slips_tax import SlipsTaxAPI
-from jal.widgets.view_delegate import SlipLinesPandasDelegate
 from jal.ui.ui_slip_import_dlg import Ui_ImportSlipDlg
 from jal.data_import.category_recognizer import recognize_categories
 
@@ -69,6 +72,55 @@ class PandasLinesModel(QAbstractTableModel):
             if col == 4:
                 return g_tr('PandasLinesModel', "Amount")
         return None
+
+
+class SlipLinesDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        QStyledItemDelegate.__init__(self, parent)
+
+    def paint(self, painter, option, index):
+        painter.save()
+        pen = painter.pen()
+        model = index.model()
+        if index.column() == 0:
+            text = model.data(index, Qt.DisplayRole)
+            painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
+        if index.column() == 1:
+            text = get_category_name(index.model().database(), int(model.data(index, Qt.DisplayRole)))
+            confidence = model.data(index.siblingAtColumn(2), Qt.DisplayRole)
+            if confidence > 0.75:
+                painter.fillRect(option.rect, CustomColor.LightGreen)
+            elif confidence > 0.5:
+                painter.fillRect(option.rect, CustomColor.LightYellow)
+            else:
+                painter.fillRect(option.rect, CustomColor.LightRed)
+            painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
+        elif index.column() == 4:
+            amount = model.data(index, Qt.DisplayRole)
+            if amount == 2:
+                pen.setColor(CustomColor.Grey)
+                painter.setPen(pen)
+            text = f"{amount:,.2f}"
+            painter.drawText(option.rect, Qt.AlignRight | Qt.AlignVCenter, text)
+        painter.setPen(pen)
+        painter.restore()
+
+    def createEditor(self, aParent, option, index):
+        if index.column() == 1:
+            category_selector = CategorySelector(aParent)
+            category_selector.init_db(index.model().database())
+            return category_selector
+        if index.column() == 3:
+            tag_selector = TagSelector(aParent)
+            tag_selector.init_db(index.model().database())
+            return tag_selector
+
+    def setModelData(self, editor, model, index):
+        if index.column() == 1:
+            model.setData(index, editor.selected_id)
+            model.setData(index.siblingAtColumn(2), 1) # set confidence level to 1
+        if index.column() == 3:
+            model.setData(index, editor.selected_id)
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -350,7 +402,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.model = PandasLinesModel(self.slip_lines, self.db)
         self.LinesTableView.setModel(self.model)
 
-        self.delegates = []
+        self.delegates = []    # FIXME - we don't need to keep a list, we may create one delegate and assign it to every column
         for column in range(self.model.columnCount()):
             if column == 0:
                 self.LinesTableView.horizontalHeader().setSectionResizeMode(column, QHeaderView.Stretch)
@@ -360,7 +412,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
                 self.LinesTableView.setColumnHidden(column, True)
             else:
                 self.LinesTableView.setColumnWidth(column, 100)
-            self.delegates.append(SlipLinesPandasDelegate(self.LinesTableView))
+            self.delegates.append(SlipLinesDelegate(self.LinesTableView))
             self.LinesTableView.setItemDelegateForColumn(column, self.delegates[-1])
         font = self.LinesTableView.horizontalHeader().font()
         font.setBold(True)

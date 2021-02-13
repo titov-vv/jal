@@ -5,8 +5,6 @@ from PySide2.QtCore import Qt
 
 from jal.constants import CustomColor, CorporateAction
 from jal.ui_custom.helpers import g_tr, formatFloatLong
-from jal.ui_custom.reference_selector import CategorySelector, TagSelector
-from jal.db.helpers import get_category_name
 
 
 class ReportsFloatDelegate(QStyledItemDelegate):
@@ -144,51 +142,3 @@ class ReportsPandasDelegate(QStyledItemDelegate):
             painter.drawText(option.rect, Qt.AlignRight, text)
         painter.setPen(pen)
         painter.restore()
-
-class SlipLinesPandasDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
-
-    def paint(self, painter, option, index):
-        painter.save()
-        pen = painter.pen()
-        model = index.model()
-        if index.column() == 0:
-            text = model.data(index, Qt.DisplayRole)
-            painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
-        if index.column() == 1:
-            text = get_category_name(index.model().database(), int(model.data(index, Qt.DisplayRole)))
-            confidence = model.data(index.siblingAtColumn(2), Qt.DisplayRole)
-            if confidence > 0.75:
-                painter.fillRect(option.rect, CustomColor.LightGreen)
-            elif confidence > 0.5:
-                painter.fillRect(option.rect, CustomColor.LightYellow)
-            else:
-                painter.fillRect(option.rect, CustomColor.LightRed)
-            painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
-        elif index.column() == 4:
-            amount = model.data(index, Qt.DisplayRole)
-            if amount == 2:
-                pen.setColor(CustomColor.Grey)
-                painter.setPen(pen)
-            text = f"{amount:,.2f}"
-            painter.drawText(option.rect, Qt.AlignRight | Qt.AlignVCenter, text)
-        painter.setPen(pen)
-        painter.restore()
-
-    def createEditor(self, aParent, option, index):
-        if index.column() == 1:
-            category_selector = CategorySelector(aParent)
-            category_selector.init_db(index.model().database())
-            return category_selector
-        if index.column() == 3:
-            tag_selector = TagSelector(aParent)
-            tag_selector.init_db(index.model().database())
-            return tag_selector
-
-    def setModelData(self, editor, model, index):
-        if index.column() == 1:
-            model.setData(index, editor.selected_id)
-            model.setData(index.siblingAtColumn(2), 1) # set confidence level to 1
-        if index.column() == 3:
-            model.setData(index, editor.selected_id)
