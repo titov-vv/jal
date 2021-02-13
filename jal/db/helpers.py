@@ -194,12 +194,6 @@ def get_category_name(db, category_id):
     return readSQL(db, "SELECT c.name FROM categories AS c WHERE c.id=:category_id", [(":category_id", category_id)])
 
 # -------------------------------------------------------------------------------------------------------------------
-def get_account_id(db, account_name):
-    id = readSQL(db, "SELECT id FROM accounts WHERE name=:account_name", [(":account_name", account_name)])
-    if id is None:
-        id = 0
-    return id
-
 def get_account_name(db, account_id):
     return readSQL(db, "SELECT name FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
 
@@ -243,10 +237,5 @@ def account_last_date(db, account_number):
     return last_timestamp
 
 # -------------------------------------------------------------------------------------------------------------------
-def get_asset_id(db, asset_name):
-    id = readSQL(db, "SELECT id FROM assets WHERE name=:asset_name", [(":asset_name", asset_name)])
-    id = 0 if id is None else id
-    return id
-
 def get_asset_name(db, asset_id):
     return readSQL(db, "SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])

@@ -124,6 +124,9 @@ class BalancesModel(QAbstractTableModel):
             self._active_only = False
         self.calculateBalances()
 
+    def getAccountId(self, row):
+        return self._data[row][self.COL_ACCOUNT]
+
     # Populate table balances with data calculated for given parameters of model: _currency, _date, _active_only
     def calculateBalances(self):
         query = executeSQL(

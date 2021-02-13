@@ -12,7 +12,7 @@ from jal.ui_custom.helpers import g_tr, VLine, ManipulateDate, dependency_presen
 from jal.ui_custom.table_view_config import TableViewConfig
 from jal.constants import TransactionType
 from jal.db.backup_restore import JalBackup
-from jal.db.helpers import get_dbfilename, get_account_id, get_base_currency, executeSQL, get_asset_id
+from jal.db.helpers import get_dbfilename, get_base_currency, executeSQL
 from jal.data_import.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
 from db.balances_model import BalancesModel
@@ -179,8 +179,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def OnBalanceDoubleClick(self, index):
-        id = get_account_id(self.db, index.model().record(index.row()).value("account_name"))
-        self.ChooseAccountBtn.account_id = id
+        self.ChooseAccountBtn.account_id = index.model().getAccountId(index.row())
 
     @Slot()
     def onReportRangeChange(self, range_index):
