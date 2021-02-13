@@ -34,8 +34,8 @@ class TransactionType:   # PREDEFINED TRANSACTION TYPES
 
 
 class ActionSubtype:
-    SingleIncome = -1
-    SingleSpending = 1
+    SingleIncome = 1
+    SingleSpending = -1
 
 
 class TransferSubtype:   # TRANSFER SUB-TYPES

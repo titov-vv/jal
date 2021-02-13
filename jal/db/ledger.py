@@ -546,10 +546,14 @@ class Ledger:
                                     "WHERE timestamp >= :frontier", [(":frontier", frontier)])
         while query.next():
             self.current = readSQLrecord(query, named=True)
-            seq_query = executeSQL(self.db, "INSERT INTO sequence(timestamp, type, operation_id) "
-                                            "VALUES(:timestamp, :type, :operation_id)",
+            if self.current['type'] == TransactionType.Action:
+                subtype = copysign(1, self.current['subtype'])
+            else:
+                subtype = self.current['subtype']
+            seq_query = executeSQL(self.db, "INSERT INTO sequence(timestamp, type, subtype, operation_id) "
+                                            "VALUES(:timestamp, :type, :subtype, :operation_id)",
                                    [(":timestamp", self.current['timestamp']), (":type", self.current['type']),
-                                    (":operation_id", self.current['id'])])
+                                    (":subtype", subtype), (":operation_id", self.current['id'])])
             self.current_seq = seq_query.lastInsertId()
             operationProcess[self.current['type']]()
             if not silent and (query.at() % 1000) == 0:

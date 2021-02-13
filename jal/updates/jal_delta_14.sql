@@ -11,11 +11,24 @@ DROP TABLE IF EXISTS holdings_aux;
 --------------------------------------------------------------------------------
 -- Drop unique constraints from t_last_assets table
 --------------------------------------------------------------------------------
-DROP TABLE t_last_assets;
-
+DROP TABLE IF EXISTS t_last_assets;
 CREATE TABLE t_last_assets (
     id          INTEGER NOT NULL,
     total_value REAL
+);
+
+--------------------------------------------------------------------------------
+-- Add 'subtype' field to table 'sequence'
+--------------------------------------------------------------------------------
+DROP TABLE IF EXISTS sequence;
+CREATE TABLE sequence (
+    id           INTEGER PRIMARY KEY
+                         NOT NULL
+                         UNIQUE,
+    timestamp    INTEGER NOT NULL,
+    type         INTEGER NOT NULL,
+    subtype      INTEGER NOT NULL,
+    operation_id INTEGER NOT NULL
 );
 
 
@@ -770,6 +783,7 @@ CREATE VIEW all_operations AS
            assets AS c ON a.currency_id = c.id
            LEFT JOIN
            sequence AS q ON m.type = q.type AND
+                            m.subtype = q.subtype AND
                             m.id = q.operation_id
            LEFT JOIN
            ledger_sums AS money ON money.sid = q.id AND
@@ -792,7 +806,7 @@ CREATE VIEW all_transactions AS
                SELECT 1 AS type,
                       a.id,
                       a.timestamp,
-                      CASE WHEN SUM(d.sum) < 0 THEN COUNT(d.sum) ELSE -COUNT(d.sum) END AS subtype,
+                      CASE WHEN SUM(d.sum) < 0 THEN -COUNT(d.sum) ELSE COUNT(d.sum) END AS subtype,
                       a.account_id AS account,
                       NULL AS asset,
                       SUM(d.sum) AS amount,
