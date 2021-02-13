@@ -1,7 +1,7 @@
 from PySide2.QtCore import Qt, Slot, QAbstractTableModel, QDate
 from PySide2.QtGui import QBrush, QFont
 from PySide2.QtWidgets import QHeaderView
-from jal.constants import CustomColor, BookAccount
+from jal.constants import Setup, CustomColor, BookAccount
 from jal.ui_custom.helpers import g_tr
 from jal.db.helpers import executeSQL, get_asset_name
 
@@ -50,20 +50,20 @@ class BalancesModel(QAbstractTableModel):
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return None
-
         if role == Qt.DisplayRole:
-            return self.data_text(index.column(), index.row())
+            return self.data_text(index.row(), index.column())
         if role == Qt.FontRole:
-            return self.data_font(index.column(), index.row())
+            return self.data_font(index.row(), index.column())
         if role == Qt.BackgroundRole:
-            return self.data_background(index.column(), index.row())
+            return self.data_background(index.row(), index.column())
         if role == Qt.TextAlignmentRole:
             if index.column() == 0 or index.column() == 2:
                 return Qt.AlignLeft
             else:
                 return Qt.AlignRight
+        return None
 
-    def data_text(self, column, row):
+    def data_text(self, row, column):
         if column == 0:
             if self._data[row][self.COL_LEVEL] == 0:
                 return self._data[row][self.COL_ACCOUNT_NAME]
@@ -78,7 +78,7 @@ class BalancesModel(QAbstractTableModel):
         else:
             assert False
 
-    def data_font(self, column, row):
+    def data_font(self, row, column):
         if self._data[row][self.COL_LEVEL] > 0:
             font = QFont()
             font.setBold(True)
@@ -88,7 +88,7 @@ class BalancesModel(QAbstractTableModel):
             font.setItalic(True)
             return font
 
-    def data_background(self, column, row):
+    def data_background(self, row, column):
         if column == 3:
             if self._data[row][self.COL_UNRECONCILED] > 15:
                 return QBrush(CustomColor.LightRed)
@@ -135,8 +135,8 @@ class BalancesModel(QAbstractTableModel):
             "FROM ledger WHERE timestamp <= :balances_timestamp GROUP BY ref_id) "
             "SELECT a.type_id AS account_type, t.name AS type_name, l.account_id AS account, "
             "a.name AS account_name, a.currency_id AS currency, c.name AS currency_name, "
-            "SUM(CASE WHEN l.book_account=4 THEN l.amount*act_q.quote ELSE l.amount END) AS balance, "
-            "SUM(CASE WHEN l.book_account=4 THEN l.amount*coalesce(act_q.quote*cur_q.quote/cur_adj_q.quote, 0) "
+            "SUM(CASE WHEN l.book_account=:assets_book THEN l.amount*act_q.quote ELSE l.amount END) AS balance, "
+            "SUM(CASE WHEN l.book_account=:assets_book THEN l.amount*coalesce(act_q.quote*cur_q.quote/cur_adj_q.quote, 0) "
             "ELSE l.amount*coalesce(cur_q.quote/cur_adj_q.quote, 0) END) AS balance_adj, "
             "(d.timestamp - coalesce(a.reconciled_on, 0))/86400 AS unreconciled_days, "
             "a.active AS active "
@@ -151,11 +151,11 @@ class BalancesModel(QAbstractTableModel):
             "WHERE (book_account=:money_book OR book_account=:assets_book OR book_account=:liabilities_book) "
             "AND l.timestamp <= :balances_timestamp "
             "GROUP BY l.account_id "
-            "HAVING ABS(balance)>0.0001 "
+            "HAVING ABS(balance)>:tolerance "
             "ORDER BY account_type",
             [(":base_currency", self._currency), (":money_book", BookAccount.Money),
              (":assets_book", BookAccount.Assets), (":liabilities_book", BookAccount.Liabilities),
-             (":balances_timestamp", self._date)])
+             (":balances_timestamp", self._date), (":tolerance", Setup.DISP_TOLERANCE)])
         self._data = []
         current_type = 0
         current_type_name = ''

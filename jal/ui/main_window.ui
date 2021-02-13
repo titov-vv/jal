@@ -152,7 +152,7 @@
                    <second>0</second>
                    <year>2020</year>
                    <month>12</month>
-                   <day>28</day>
+                   <day>25</day>
                   </datetime>
                  </property>
                  <property name="displayFormat">
@@ -773,7 +773,7 @@
                        <date>
                         <year>1999</year>
                         <month>12</month>
-                        <day>27</day>
+                        <day>24</day>
                        </date>
                       </property>
                       <property name="displayFormat">
@@ -1459,7 +1459,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>28</day>
+               <day>25</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -1507,22 +1507,19 @@
          </widget>
         </item>
         <item>
-         <widget class="QTableView" name="HoldingsTableView">
+         <widget class="QTreeView" name="HoldingsTableView">
           <property name="frameShape">
            <enum>QFrame::Panel</enum>
           </property>
           <property name="alternatingRowColors">
            <bool>true</bool>
           </property>
-          <attribute name="verticalHeaderVisible">
-           <bool>false</bool>
-          </attribute>
-          <attribute name="verticalHeaderMinimumSectionSize">
-           <number>20</number>
-          </attribute>
-          <attribute name="verticalHeaderDefaultSectionSize">
-           <number>20</number>
-          </attribute>
+          <property name="animated">
+           <bool>true</bool>
+          </property>
+          <property name="allColumnsShowFocus">
+           <bool>true</bool>
+          </property>
          </widget>
         </item>
        </layout>
@@ -1607,7 +1604,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>28</day>
+               <day>25</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -1754,7 +1751,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>28</day>
+               <day>25</day>
               </datetime>
              </property>
              <property name="displayFormat">

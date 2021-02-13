@@ -6,6 +6,8 @@ PRAGMA foreign_keys = 0;
 -- Drop outdated tables
 DROP TABLE IF EXISTS balances;
 DROP TABLE IF EXISTS balances_aux;
+DROP TABLE IF EXISTS holdings;
+DROP TABLE IF EXISTS holdings_aux;
 --------------------------------------------------------------------------------
 -- Drop unique constraints from t_last_assets table
 --------------------------------------------------------------------------------

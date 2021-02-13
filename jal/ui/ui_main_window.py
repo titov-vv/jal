@@ -113,7 +113,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
         self.BalanceDate = QDateEdit(self.BalanceConfigFrame)
         self.BalanceDate.setObjectName(u"BalanceDate")
-        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 28), QTime(21, 0, 0)))
+        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 25), QTime(21, 0, 0)))
         self.BalanceDate.setCalendarPopup(True)
         self.BalanceDate.setTimeSpec(Qt.UTC)
 
@@ -428,7 +428,7 @@ class Ui_LedgerMainWindow(object):
 
         self.TradeSettlementEdit = QDateEdit(self.TradeDetailsTab)
         self.TradeSettlementEdit.setObjectName(u"TradeSettlementEdit")
-        self.TradeSettlementEdit.setMinimumDate(QDate(1999, 12, 27))
+        self.TradeSettlementEdit.setMinimumDate(QDate(1999, 12, 24))
         self.TradeSettlementEdit.setCalendarPopup(True)
         self.TradeSettlementEdit.setTimeSpec(Qt.UTC)
 
@@ -844,7 +844,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_7.setContentsMargins(2, 2, 2, 2)
         self.HoldingsDate = QDateEdit(self.HoldingsParamsFrame)
         self.HoldingsDate.setObjectName(u"HoldingsDate")
-        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 28), QTime(21, 0, 0)))
+        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 25), QTime(21, 0, 0)))
         self.HoldingsDate.setCalendarPopup(True)
         self.HoldingsDate.setTimeSpec(Qt.UTC)
 
@@ -869,13 +869,12 @@ class Ui_LedgerMainWindow(object):
 
         self.verticalLayout_4.addWidget(self.HoldingsParamsFrame)
 
-        self.HoldingsTableView = QTableView(self.HoldingsTab)
+        self.HoldingsTableView = QTreeView(self.HoldingsTab)
         self.HoldingsTableView.setObjectName(u"HoldingsTableView")
         self.HoldingsTableView.setFrameShape(QFrame.Panel)
         self.HoldingsTableView.setAlternatingRowColors(True)
-        self.HoldingsTableView.verticalHeader().setVisible(False)
-        self.HoldingsTableView.verticalHeader().setMinimumSectionSize(20)
-        self.HoldingsTableView.verticalHeader().setDefaultSectionSize(20)
+        self.HoldingsTableView.setAnimated(True)
+        self.HoldingsTableView.setAllColumnsShowFocus(True)
 
         self.verticalLayout_4.addWidget(self.HoldingsTableView)
 
@@ -914,7 +913,7 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportToDate = QDateEdit(self.ReportParamsFrame)
         self.ReportToDate.setObjectName(u"ReportToDate")
-        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 28), QTime(21, 0, 0)))
+        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 25), QTime(21, 0, 0)))
         self.ReportToDate.setCalendarPopup(True)
         self.ReportToDate.setTimeSpec(Qt.UTC)
 
@@ -990,7 +989,7 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportFromDate = QDateEdit(self.ReportParamsFrame)
         self.ReportFromDate.setObjectName(u"ReportFromDate")
-        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 28), QTime(21, 0, 0)))
+        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 25), QTime(21, 0, 0)))
         self.ReportFromDate.setCalendarPopup(True)
         self.ReportFromDate.setTimeSpec(Qt.UTC)
 
