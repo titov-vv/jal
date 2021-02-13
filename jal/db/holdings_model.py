@@ -209,9 +209,11 @@ class HoldingsModel(QAbstractItemModel):
             self._date = new_date.endOfDay(Qt.UTC).toSecsSinceEpoch()
             self.calculateHoldings()
 
-    def get_data_for_tax(self, row):
-        return readSQL(self._db, f"SELECT account, asset, qty FROM {self._table_name} WHERE ROWID=:row",
-                       [(":row", row + 1)])
+    def get_data_for_tax(self, index):
+        if not index.isValid():
+            return None
+        item = index.internalPointer()
+        return item.data[self.COL_ACCOUNT], item.data[self.COL_ASSET], item.data[self.COL_QTY]
 
     # Populate table 'holdings' with data calculated for given parameters of model: _currency, _date,
     def calculateHoldings(self):

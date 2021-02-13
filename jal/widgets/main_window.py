@@ -283,9 +283,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def estimateRussianTax(self, position, index):
         model = index.model()
-        account, asset, asset_qty = model.get_data_for_tax(index.row())
-        account_id = get_account_id(self.db, account)
-        asset_id = get_asset_id(self.db, asset)
-        self.estimator = TaxEstimator(self.db, account_id, asset_id, asset_qty, position)
+        account, asset, asset_qty = model.get_data_for_tax(index)
+        self.estimator = TaxEstimator(self.db, account, asset, asset_qty, position)
         if self.estimator.ready:
             self.estimator.open()
