@@ -536,7 +536,7 @@ CREATE VIEW all_operations AS
            m.qty_trid,
            m.price,
            m.fee_tax,
-           coalesce(money.sum_amount, 0) + coalesce(debt.sum_amount, 0) AS t_amount,
+           iif(money.sum_amount IS NULL, debt.sum_amount, money.sum_amount) AS t_amount,
            m.t_qty,
            c.name AS currency,
            CASE WHEN m.timestamp <= a.reconciled_on THEN 1 ELSE 0 END AS reconciled

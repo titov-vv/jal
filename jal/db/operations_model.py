@@ -186,13 +186,13 @@ class OperationsModel(QAbstractTableModel):
             else:
                 assert False
         elif column == 5:
-            upper_part = f"{data['t_amount']:,.2f}" if data['t_amount'] != '' else "<void>"
+            upper_part = f"{data['t_amount']:,.2f}" if data['t_amount'] != '' else "-.--"
             lower_part = f"{data['t_qty']:,.2f}" if data['t_qty'] != '' else ''
             if data['type'] == TransactionType.CorporateAction:
                 qty_before = data['amount'] if data['subtype'] == CorporateAction.SpinOff else 0
                 qty_after = data['t_qty'] if data['subtype'] == CorporateAction.StockDividend else data['qty_trid']
                 if data['subtype'] == CorporateAction.StockDividend:
-                    text = f"\n{qty_after:,.2f}" if qty_after != '' else '\n<void>'
+                    text = f"\n{qty_after:,.2f}" if qty_after != '' else "\n-.--"
                 else:
                     text = f"{qty_before:,.2f}\n{qty_after:,.2f}"
                 return text
