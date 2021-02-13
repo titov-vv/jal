@@ -6,7 +6,7 @@ from PySide2.QtGui import QBrush, QFont
 from PySide2.QtWidgets import QStyledItemDelegate, QHeaderView
 from jal.constants import CustomColor, TransactionType, TransferSubtype, CorporateAction
 from jal.ui_custom.helpers import g_tr
-from jal.db.helpers import readSQL, readSQLrecord
+from jal.db.helpers import readSQL, readSQLrecord, executeSQL
 
 
 class OperationsModel(QAbstractTableModel):
@@ -254,6 +254,24 @@ class OperationsModel(QAbstractTableModel):
     @Slot()
     def filterText(self, filter):
         pass  # TODO add free text search
+
+    def update(self):
+        self.prepareData()
+
+    def get_operation_type(self, row):
+        if self._query.seek(row):
+            data = readSQLrecord(self._query, named=True)
+            return data['type']
+        return 0
+
+    def reconcile_operation(self, row):
+        if self._query.seek(row):
+            data = readSQLrecord(self._query, named=True)
+            timestamp = data['timestamp']
+            account_id = data['account_id']
+            _ = executeSQL(self._db, "UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
+                           [(":timestamp", timestamp), (":account_id", account_id)])
+            self.prepareData()
 
     def prepareData(self):
         if self._begin == 0 and self._end == 0:

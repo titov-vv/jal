@@ -128,19 +128,19 @@ class LedgerOperationsView(QObject):
             return
         index = self.table_view.currentIndex()
         operations_model = self.table_view.model()
-        operation_type = operations_model.data(operations_model.index(index.row(), 0))
+        operation_type = operations_model.get_operation_type(index.row())
         mapper = self.operations[operation_type][self.OP_MAPPER]
         mapper.model().removeRow(0)
         mapper.model().submitAll()
         self.stateIsCommitted.emit()
-        operations_model.select()
+        operations_model.update()
 
     @Slot()
     def copyOperation(self):
         self.checkForUncommittedChanges()
         index = self.table_view.currentIndex()
         operations_model = self.table_view.model()
-        operation_type = operations_model.data(operations_model.index(index.row(), 0))
+        operation_type = operations_model.get_operation_type(index.row())
         mapper = self.operations[operation_type][self.OP_MAPPER]
         row = mapper.currentIndex()
         old_id = mapper.model().record(row).value(mapper.model().fieldIndex("id"))
@@ -218,7 +218,7 @@ class LedgerOperationsView(QObject):
                     return
             self.modified_operation_type = None
             self.stateIsCommitted.emit()
-            self.table_view.model().select()
+            self.table_view.model().update()
         
     def beforeMapperCommit(self, operation_type):
         if operation_type == TransactionType.Transfer:
@@ -282,11 +282,7 @@ class LedgerOperationsView(QObject):
     @Slot()
     def reconcileAtCurrentOperation(self):
         model = self.current_index.model()
-        timestamp = model.data(model.index(self.current_index.row(), 2), Qt.DisplayRole)
-        account_id = model.data(model.index(self.current_index.row(), 3), Qt.DisplayRole)
-        _ = executeSQL(model.database(), "UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
-                       [(":timestamp", timestamp), (":account_id", account_id)])
-        model.select()
+        model.reconcile_operation(self.current_index.row())
 
     @Slot()
     def OnOperationChange(self, selected, _deselected):
