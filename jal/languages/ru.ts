@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="ru" sourcelanguage="en">
+<!DOCTYPE TS>
+<TS version="2.1" language="ru" sourcelanguage="en">
 <context>
     <name>AbortWindow</name>
     <message>
@@ -244,54 +245,54 @@
 <context>
     <name>HoldingsModel</name>
     <message>
-        <location filename="../db/holdings_model.py" line="59"/>
-        <source>C/A</source>
-        <translation type="unfinished">В/С</translation>
-    </message>
-    <message>
-        <location filename="../db/holdings_model.py" line="60"/>
-        <source>Asset</source>
-        <translation type="unfinished">ЦБ</translation>
-    </message>
-    <message>
-        <location filename="../db/holdings_model.py" line="61"/>
-        <source>Qty</source>
-        <translation type="unfinished">Кол-во</translation>
-    </message>
-    <message>
-        <location filename="../db/holdings_model.py" line="62"/>
-        <source>Open</source>
-        <translation type="unfinished">Цена откр.</translation>
-    </message>
-    <message>
-        <location filename="../db/holdings_model.py" line="63"/>
-        <source>Last</source>
-        <translation type="unfinished">Цена закр.</translation>
-    </message>
-    <message>
-        <location filename="../db/holdings_model.py" line="64"/>
-        <source>Share, %</source>
-        <translation type="unfinished">Доля, %</translation>
-    </message>
-    <message>
-        <location filename="../db/holdings_model.py" line="65"/>
-        <source>P/L, %</source>
-        <translation type="unfinished">Приб/уб, %</translation>
-    </message>
-    <message>
-        <location filename="../db/holdings_model.py" line="66"/>
-        <source>P/L</source>
-        <translation type="unfinished">Приб/уб</translation>
-    </message>
-    <message>
         <location filename="../db/holdings_model.py" line="67"/>
-        <source>Value</source>
-        <translation type="unfinished">Оценка</translation>
+        <source>Qty</source>
+        <translation>Кол-во</translation>
     </message>
     <message>
         <location filename="../db/holdings_model.py" line="68"/>
+        <source>Open</source>
+        <translation>Цена откр.</translation>
+    </message>
+    <message>
+        <location filename="../db/holdings_model.py" line="69"/>
+        <source>Last</source>
+        <translation>Цена закр.</translation>
+    </message>
+    <message>
+        <location filename="../db/holdings_model.py" line="70"/>
+        <source>Share, %</source>
+        <translation>Доля, %</translation>
+    </message>
+    <message>
+        <location filename="../db/holdings_model.py" line="71"/>
+        <source>P/L, %</source>
+        <translation>ПиУ, %</translation>
+    </message>
+    <message>
+        <location filename="../db/holdings_model.py" line="72"/>
+        <source>P/L</source>
+        <translation>ПиУ</translation>
+    </message>
+    <message>
+        <location filename="../db/holdings_model.py" line="73"/>
+        <source>Value</source>
+        <translation>Оценка</translation>
+    </message>
+    <message>
+        <location filename="../db/holdings_model.py" line="74"/>
         <source>Value, </source>
-        <translation type="unfinished">Оценка, </translation>
+        <translation>Оценка, </translation>
+    </message>
+    <message>
+        <location filename="../db/holdings_model.py" line="65"/>
+        <source>Currency/Account/Asset</source>
+        <translation>Валюта/Счёт/ЦБ</translation>
+    </message>
+    <message>
+        <location filename="../db/holdings_model.py" line="66"/>
+        <source>Asset Name</source>
+        <translation>Ценна бумага</translation>
     </message>
 </context>
 <context>
@@ -657,7 +658,7 @@ Application will be terminated now</source>
     <message>
         <location filename="../db/ledger.py" line="374"/>
         <source>Unexpected data in transfer transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно обработать трансфер</translation>
     </message>
 </context>
 <context>
@@ -1332,77 +1333,77 @@ Application will be terminated now</source>
     <message>
         <location filename="../db/operations_model.py" line="15"/>
         <source>Timestamp</source>
-        <translation type="unfinished">Дата/Время</translation>
+        <translation>Дата/Время</translation>
     </message>
     <message>
         <location filename="../db/operations_model.py" line="16"/>
         <source>Account</source>
-        <translation type="unfinished">Счет</translation>
+        <translation>Счет</translation>
     </message>
     <message>
         <location filename="../db/operations_model.py" line="17"/>
         <source>Notes</source>
-        <translation type="unfinished">Описание</translation>
+        <translation>Описание</translation>
     </message>
     <message>
         <location filename="../db/operations_model.py" line="18"/>
         <source>Amount</source>
-        <translation type="unfinished">Сумма</translation>
+        <translation>Сумма</translation>
     </message>
     <message>
         <location filename="../db/operations_model.py" line="19"/>
         <source>Balance</source>
-        <translation type="unfinished">Баланс</translation>
+        <translation>Баланс</translation>
     </message>
     <message>
         <location filename="../db/operations_model.py" line="20"/>
         <source>Currency</source>
-        <translation type="unfinished">Валюта</translation>
+        <translation>Валюта</translation>
     </message>
     <message>
         <location filename="../db/operations_model.py" line="38"/>
         <source>Symbol change {old} -&gt; {new}</source>
-        <translation type="unfinished">Смена символа {old} -&gt; {new}</translation>
+        <translation>Смена символа {old} -&gt; {new}</translation>
     </message>
     <message>
         <location filename="../db/operations_model.py" line="39"/>
         <source>Split {old} {before} into {after}</source>
-        <translation type="unfinished">Сплит акций {old} {before} в {after}</translation>
+        <translation>Сплит акций {old} {before} в {after}</translation>
     </message>
     <message>
         <location filename="../db/operations_model.py" line="40"/>
         <source>Spin-off {after} {new} from {before} {old}</source>
-        <translation type="unfinished">Выделение компании {after} {new} из {before} {old}</translation>
+        <translation>Выделение компании {after} {new} из {before} {old}</translation>
     </message>
     <message>
         <location filename="../db/operations_model.py" line="41"/>
         <source>Merger {before} {old} into {after} {new}</source>
-        <translation type="unfinished">Объединение компании {before} {old} с {after} {new}</translation>
+        <translation>Объединение компании {before} {old} с {after} {new}</translation>
     </message>
     <message>
         <location filename="../db/operations_model.py" line="42"/>
         <source>Stock dividend: {after} {new}</source>
-        <translation type="unfinished">Дивиденд акциями: {after} {new}</translation>
+        <translation>Дивиденд акциями: {after} {new}</translation>
     </message>
     <message>
         <location filename="../db/operations_model.py" line="94"/>
         <source>Can&apos;t fetch operation data for row </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно получить данные операции для строки </translation>
     </message>
     <message>
         <location filename="../db/operations_model.py" line="153"/>
         <source>Error. Zero rate</source>
-        <translation type="unfinished">Ошибка. Нулевой курс</translation>
+        <translation>Ошибка. Нулевой курс</translation>
     </message>
     <message>
         <location filename="../db/operations_model.py" line="155"/>
         <source>Tax: </source>
-        <translation type="unfinished">Налог: </translation>
+        <translation>Налог: </translation>
     </message>
     <message>
         <location filename="../db/operations_model.py" line="170"/>
         <source> cost basis</source>
-        <translation type="unfinished"> от базового актива</translation>
+        <translation> от базового актива</translation>
     </message>
 </context>
 <context>
@@ -2407,10 +2408,10 @@ Application will be terminated now</source>
         <source>Can&apos;t save report into file </source>
         <translation>Не удалось сохранить отчет в файл </translation>
     </message>
-    <message encoding="UTF-8">
+    <message>
         <location filename="../reports/helpers.py" line="15"/>
         <source>ИТОГО</source>
-        <translation type="unfinished"></translation>
+        <translation>ИТОГО</translation>
     </message>
 </context>
 </TS>

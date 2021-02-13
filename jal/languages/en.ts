@@ -244,53 +244,53 @@
 <context>
     <name>HoldingsModel</name>
     <message>
-        <location filename="../db/holdings_model.py" line="59"/>
-        <source>C/A</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../db/holdings_model.py" line="60"/>
-        <source>Asset</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../db/holdings_model.py" line="61"/>
+        <location filename="../db/holdings_model.py" line="67"/>
         <source>Qty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="62"/>
+        <location filename="../db/holdings_model.py" line="68"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="63"/>
+        <location filename="../db/holdings_model.py" line="69"/>
         <source>Last</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="64"/>
+        <location filename="../db/holdings_model.py" line="70"/>
         <source>Share, %</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="65"/>
+        <location filename="../db/holdings_model.py" line="71"/>
         <source>P/L, %</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="66"/>
+        <location filename="../db/holdings_model.py" line="72"/>
         <source>P/L</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="67"/>
+        <location filename="../db/holdings_model.py" line="73"/>
         <source>Value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="68"/>
+        <location filename="../db/holdings_model.py" line="74"/>
         <source>Value, </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/holdings_model.py" line="65"/>
+        <source>Currency/Account/Asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/holdings_model.py" line="66"/>
+        <source>Asset Name</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
