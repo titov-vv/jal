@@ -1,6 +1,6 @@
 from PySide2.QtCore import Qt, Slot, QAbstractItemModel, QDate, QModelIndex
 from PySide2.QtGui import QBrush, QFont
-from PySide2.QtWidgets import QHeaderView
+from PySide2.QtWidgets import QStyledItemDelegate, QHeaderView
 from jal.constants import Setup, CustomColor, BookAccount
 from jal.db.helpers import executeSQL, readSQL, get_asset_name
 from jal.ui_custom.helpers import g_tr
@@ -56,6 +56,7 @@ class HoldingsModel(QAbstractItemModel):
     def __init__(self, parent_view, db):
         super().__init__(parent_view)
         self._view = parent_view
+        self._grid_delegate = None
         self._db = db
         self._root = None
         self._currency = 0
@@ -188,6 +189,9 @@ class HoldingsModel(QAbstractItemModel):
         self._view.header().setSectionResizeMode(1, QHeaderView.Stretch)
         for i in range(len(self._columns))[2:]:
             self._view.header().setSectionResizeMode(i, QHeaderView.ResizeToContents)
+        self._grid_delegate = GridLinesDelegate(self._view)
+        for i in range(len(self._columns)):
+            self._view.setItemDelegateForColumn(i, self._grid_delegate)
         font = self._view.header().font()
         font.setBold(True)
         self._view.header().setFont(font)
@@ -323,3 +327,18 @@ class HoldingsModel(QAbstractItemModel):
             profit_relative = 0
         node.data += [profit, profit_relative, value, value_adjusted]
 
+
+class GridLinesDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        QStyledItemDelegate.__init__(self, parent)
+
+    def paint(self, painter, option, index):
+        painter.save()
+        pen = painter.pen()
+        pen.setWidth(1)
+        pen.setStyle(Qt.DotLine)
+        pen.setColor(Qt.GlobalColor.lightGray)
+        painter.setPen(pen)
+        painter.drawRect(option.rect)
+        painter.restore()
+        super().paint(painter, option, index)
