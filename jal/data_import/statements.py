@@ -657,17 +657,18 @@ class StatementLoader(QObject):
             from_idx = 1
             to_idx = 0
             to_amount = trade['quantity']  # positive value
-            from_amount = trade['proceeds']  # already negative value
+            from_amount = -trade['proceeds']  # we use positive value in DB while it is negative in report
         elif trade['quantity'] < 0:
             from_idx = 0
             to_idx = 1
-            from_amount = trade['quantity']  # already negative value
+            from_amount = -trade['quantity']  # we use positive value in DB while it is negative in report
             to_amount = trade['proceeds']  # positive value
         else:
             logging.error(g_tr('StatementLoader', "Zero quantity in cash trade: ") + f"{trade}")
             return 0
         self.createTransfer(trade['dateTime'], trade['accountId'][from_idx], from_amount,
-                            trade['accountId'][to_idx], to_amount, trade['accountId'][2], trade['ibCommission'], trade['exchange'])
+                            trade['accountId'][to_idx], to_amount, trade['accountId'][2],
+                            trade['ibCommission'], trade['exchange'])
         return 1
 
     def createTransfer(self, timestamp, f_acc_id, f_amount, t_acc_id, t_amount, fee_acc_id, fee, note):
@@ -769,11 +770,11 @@ class StatementLoader(QObject):
             return 0
 
         if cash['amount'] >= 0:
-            self.createTransfer(cash['dateTime'], dialog.account_id, -cash['amount'],
+            self.createTransfer(cash['dateTime'], dialog.account_id, cash['amount'],
                                 cash['accountId'], cash['amount'], 0, 0, cash['description'])
         else:
             self.createTransfer(cash['dateTime'], cash['accountId'], cash['amount'],
-                                dialog.account_id, -cash['amount'], 0, 0, cash['description'])
+                                dialog.account_id, cash['amount'], 0, 0, cash['description'])
         return 1
 
     def createDividend(self, timestamp, account_id, asset_id, amount, note):
