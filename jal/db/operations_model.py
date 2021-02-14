@@ -157,9 +157,11 @@ class OperationsModel(QAbstractTableModel):
                 return data['note'] + "\n" + g_tr('OperationsModel', "Tax: ") + data['note2']
             elif data['type'] == TransactionType.Trade:
                 if data['fee_tax'] != 0:
-                    return f"{data['qty_trid']:+.2f} @ {data['price']:.2f}\n({data['fee_tax']:.2f})"
+                    text = f"{data['qty_trid']:+.2f} @ {data['price']:.2f}\n({data['fee_tax']:.2f}) "
                 else:
-                    return f"{data['qty_trid']:+.2f} @ {data['price']:.2f}"
+                    text = f"{data['qty_trid']:+.2f} @ {data['price']:.2f}\n"
+                text = text + data['note'] if data['note'] else text
+                return text
             elif data['type'] == TransactionType.CorporateAction:
                 basis = 100.0 * data['price']
                 if data['subtype'] == CorporateAction.StockDividend:

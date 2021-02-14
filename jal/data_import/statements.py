@@ -367,9 +367,7 @@ class StatementLoader(QObject):
         section_loaders = {
             'SecuritiesInfo':   self.loadIBSecurities,    # Order of load is important - SecuritiesInfo is first
             'Trades':           self.loadIBTrades,
-            # Load of options Expirations, Assignments and Executions was disabled because data are present
-            # in 'Trades' section as 'BookTrade' operations and functions were dummy before
-            # 'OptionEAE':        self.loadIBOptions,
+            'OptionEAE':        self.loadIBOptions,
             'CorporateActions': self.loadIBCorporateActions,
             'CashTransactions': self.loadIBCashTransactions,
             'TransactionTaxes': self.loadIBTaxes
@@ -421,6 +419,16 @@ class StatementLoader(QObject):
                                                                       ('description', IBKR.flString, None),
                                                                       ('quantity', IBKR.flNumber, None),
                                                                       ('code', IBKR.flString, '')]},
+            'OptionEAE': {'tag': 'OptionEAE', 'values': [('transactionType', IBKR.flString, None),
+                                                         ('symbol', IBKR.flAsset, None),
+                                                         ('accountId', IBKR.flAccount, None),
+                                                         ('date', IBKR.flTimestamp, None),
+                                                         ('tradePrice', IBKR.flNumber, None),
+                                                         ('quantity', IBKR.flNumber, None),
+                                                         ('multiplier', IBKR.flNumber, None),
+                                                         ('commisionsAndTax', IBKR.flNumber, None),
+                                                         ('tradeID', IBKR.flString, ''),
+                                                         ('notes', IBKR.flString, '')]},
             'SecuritiesInfo': {'tag': 'SecurityInfo',
                                'values': [('symbol', IBKR.flString, None),
                                           ('assetCategory', IBKR.flAssetType, None),
@@ -586,6 +594,31 @@ class StatementLoader(QObject):
             self.db.commit()
             cnt += 1
         logging.info(g_tr('StatementLoader', "Taxes loaded: ") + f"{cnt} ({len(taxes)})")
+
+    def loadIBOptions(self, options):
+        transaction_desctiption = {
+            "Assignment": g_tr('StatementLoader', "Option assignment"),
+            "Exercise": g_tr('StatementLoader', "Option exercise"),
+            "Expiration": g_tr('StatementLoader', "Option expiration"),
+            "Buy": '',
+            "Sell": '',
+        }
+        cnt = 0
+        for option in options:
+            try:
+                description = transaction_desctiption[option['transactionType']]
+                if description:
+                    _ = executeSQL(self.db,
+                                   "UPDATE trades SET note=:description WHERE "
+                                   "account_id=:account_id AND asset_id=:asset_id AND number=:trade_id",
+                                   [(":description", description), (":account_id", option['accountId']),
+                                    (":asset_id", option['symbol']), (":trade_id", option['tradeID'])])
+                    self.db.commit()
+                    cnt += 1
+            except KeyError:
+                logging.error(
+                    g_tr('StatementLoader', "Option E&A&E action isn't implemented: ") + f"{option['transactionType']}")
+        logging.info(g_tr('StatementLoader', "Options E&A&E loaded: ") + f"{cnt} ({len(options)})")
 
     def loadIBCashTransactions(self, cash):
         cnt = 0

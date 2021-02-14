@@ -710,7 +710,7 @@ CREATE VIEW all_operations AS
                       t.price AS price,
                       t.fee AS fee_tax,
                       l.sum_amount AS t_qty,
-                      NULL AS note,
+                      t.note AS note,
                       NULL AS note2
                  FROM trades AS t
                       LEFT JOIN
