@@ -151,6 +151,8 @@ class OperationsModel(QAbstractTableModel):
                             return data['note']
                     else:
                         return g_tr('OperationsModel', "Error. Zero rate")
+                else:
+                    return data['note']
             elif data['type'] == TransactionType.Dividend:
                 return data['note'] + "\n" + g_tr('OperationsModel', "Tax: ") + data['note2']
             elif data['type'] == TransactionType.Trade:
