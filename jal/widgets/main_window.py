@@ -235,6 +235,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def onStatementLoaded(self):
         self.StatusBar.showMessage(g_tr('MainWindow', "Statement load completed"), timeout=60000)
         self.ledger.rebuild()
+        self.balances_model.update()  # FIXME this should be better linked to some signal emitted by ledger after rebuild completion
 
     @Slot()
     def onStatementLoadFailure(self):
@@ -255,6 +256,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     @Slot()
     def showCommitted(self):
         self.ledger.rebuild()
+        self.balances_model.update()   # FIXME this should be better linked to some signal emitted by ledger after rebuild completion
         self.SaveOperationBtn.setEnabled(False)
         self.RevertOperationBtn.setEnabled(False)
 
