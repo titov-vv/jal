@@ -476,6 +476,11 @@ class StatementLoader(QObject):
     def loadIBSecurities(self, assets):
         cnt = 0
         for asset in assets:
+            if asset['symbol'].endswith('.OLD'):
+                original_symbol = asset['symbol'][:-len('.OLD')]  # Check that original symbol also present in db
+                if readSQL(self.db, "SELECT id FROM assets WHERE name=:symbol", [(":symbol", original_symbol)]) is None:
+                    asset_type = PredefinedAsset.ETF if asset['subCategory'] == "ETF" else asset['assetCategory']
+                    addNewAsset(self.db, original_symbol, asset['description'], asset_type, asset['isin'])
             if readSQL(self.db, "SELECT id FROM assets WHERE name=:symbol", [(":symbol", asset['symbol'])]):
                 continue
             asset_type = PredefinedAsset.ETF if asset['subCategory'] == "ETF" else asset['assetCategory']
