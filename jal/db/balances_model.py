@@ -168,15 +168,18 @@ class BalancesModel(QAbstractTableModel):
         while query.next():
             values = [0]
             [values.append(query.value(i)) for i in range(self.DATA_COL)]
-            if self._active_only and values[self.COL_ACTIVE] == 0:
+            if self._active_only and (values[self.COL_ACTIVE] == 0):
                 continue
-            self._data.append(values)
             if values[self.COL_TYPE] != current_type:
                 if current_type != 0:
                     sub_total = sum([row[self.COL_AMOUNT_A] for row in self._data if row[self.COL_TYPE] == current_type])
                     self._data.append([1, current_type, current_type_name, 0, '', 0, '', 0, sub_total, 0, 1])
                 current_type = values[self.COL_TYPE]
                 current_type_name = values[self.COL_TYPE_NAME]
+            self._data.append(values)
+        if current_type != 0:
+            sub_total = sum([row[self.COL_AMOUNT_A] for row in self._data if row[self.COL_TYPE] == current_type])
+            self._data.append([1, current_type, current_type_name, 0, '', 0, '', 0, sub_total, 0, 1])
         total_sum = sum([row[self.COL_AMOUNT_A] for row in self._data if row[self.COL_LEVEL] == 0])
         self._data.append([2, 0, g_tr("BalancesModel", "Total"), 0, '', 0, '', 0, total_sum, 0, 1])
         self.modelReset.emit()
