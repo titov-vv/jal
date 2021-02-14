@@ -600,8 +600,8 @@ class StatementLoader(QObject):
             "Assignment": g_tr('StatementLoader', "Option assignment"),
             "Exercise": g_tr('StatementLoader', "Option exercise"),
             "Expiration": g_tr('StatementLoader', "Option expiration"),
-            "Buy": '',
-            "Sell": '',
+            "Buy": g_tr('StatementLoader', "Option assignment/exercise"),
+            "Sell": g_tr('StatementLoader', "Option assignment/exercise"),
         }
         cnt = 0
         for option in options:
