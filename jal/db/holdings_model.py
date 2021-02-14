@@ -149,8 +149,10 @@ class HoldingsModel(QAbstractItemModel):
         elif column == 4:
             return f"{data[self.COL_QUOTE]:,.4f}" if data[self.COL_QUOTE] and data[self.COL_QTY] != 0 else ''
         elif column == 5:
-            share = 100.0 * data[self.COL_QUOTE] * data[self.COL_QTY] / data[self.COL_TOTAL]
-            return f"{share:,.2f}" if data[self.COL_QTY] != 0 else ''
+            if data[self.COL_QUOTE] and data[self.COL_QTY] != 0:
+                return f"{100.0 * data[self.COL_QUOTE] * data[self.COL_QTY] / data[self.COL_TOTAL]:,.2f}"
+            else:
+                return ''
         elif column == 6:
             return f"{100.0 * data[self.COL_PROFIT_R]:,.2f}" if data[self.COL_PROFIT_R] else ''
         elif column == 7:
@@ -296,17 +298,20 @@ class HoldingsModel(QAbstractItemModel):
                 a_node.data[self.COL_ASSET_FULLNAME] = ''
                 a_node.data[self.COL_QTY] = 0
                 c_node.appendChild(a_node)
-            if values[self.COL_ASSET_IS_CURRENCY]:
-                profit = 0
+            if values[self.COL_QUOTE]:
+                if values[self.COL_ASSET_IS_CURRENCY]:
+                    profit = 0
+                else:
+                    profit = values[self.COL_QUOTE] * values[self.COL_QTY] - values[self.COL_VALUE_I]
+                if values[self.COL_VALUE_I] != 0:
+                    profit_relative = values[self.COL_QUOTE] * values[self.COL_QTY] / values[self.COL_VALUE_I] - 1
+                else:
+                    profit_relative = 0
+                value = values[self.COL_QUOTE] * values[self.COL_QTY]
+                value_adjusted = values[self.COL_QUOTE_A] * values[self.COL_QTY]
+                values += [profit, profit_relative, value, value_adjusted]
             else:
-                profit = values[self.COL_QUOTE] * values[self.COL_QTY] - values[self.COL_VALUE_I]
-            if values[self.COL_VALUE_I] != 0:
-                profit_relative = values[self.COL_QUOTE] * values[self.COL_QTY] / values[self.COL_VALUE_I] - 1
-            else:
-                profit_relative = 0
-            value = values[self.COL_QUOTE] * values[self.COL_QTY]
-            value_adjusted = values[self.COL_QUOTE_A] * values[self.COL_QTY]
-            values += [profit, profit_relative, value, value_adjusted]
+                values += [0, 0, 0, 0]
             node = TreeItem(values, a_node)
             a_node.appendChild(node)
 
