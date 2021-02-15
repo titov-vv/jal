@@ -2,7 +2,7 @@ import logging
 
 from datetime import datetime
 from math import copysign
-from jal.constants import Setup, BookAccount, TransactionType, ActionSubtype, CorporateAction, \
+from jal.constants import Setup, BookAccount, TransactionType, TransferSubtype, ActionSubtype, CorporateAction, \
     PredefinedCategory, PredefinedPeer
 from PySide2.QtCore import QDate, QDateTime
 from PySide2.QtWidgets import QDialog, QMessageBox
@@ -349,23 +349,18 @@ class Ledger:
             self.appendTransaction(BookAccount.Costs, self.current['fee_tax'])
 
     def processTransfer(self):
-        if self.current['subtype'] == -1:  # process transfer out and fee if present
-            fee_account = self.current['peer']
-            fee = self.current['fee_tax']
-            fee_currency = self.current['category']
-
+        if self.current['subtype'] == TransferSubtype.Outgoing:
             credit_taken = self.takeCredit(self.current['amount'])
             self.appendTransaction(BookAccount.Money, -(self.current['amount'] - credit_taken))
             self.appendTransaction(BookAccount.Transfers, self.current['amount'])
-            if fee_account:  # process fee
-                self.current['account'] = fee_account
-                self.current['currency'] = fee_currency
-                credit_taken = self.takeCredit(fee)
-                self.current['peer'] = PredefinedPeer.Financial
-                self.appendTransaction(BookAccount.Money, -(fee - credit_taken))
-                self.current['category'] = PredefinedCategory.Fees
-                self.appendTransaction(BookAccount.Costs, fee)
-        elif self.current['subtype'] == 1:  # process transfer in
+        elif self.current['subtype'] == TransferSubtype.Fee:
+            credit_taken = self.takeCredit(self.current['amount'])
+            self.current['peer'] = PredefinedPeer.Financial
+            self.current['category'] = PredefinedCategory.Fees
+            self.appendTransaction(BookAccount.Money, -(self.current['amount'] - credit_taken))
+            self.appendTransaction(BookAccount.Costs, self.current['amount'])
+            self.appendTransaction(BookAccount.Transfers, self.current['amount'])
+        elif self.current['subtype'] == TransferSubtype.Incoming:
             credit_returned = self.returnCredit(self.current['amount'])
             if credit_returned < self.current['amount']:
                 self.appendTransaction(BookAccount.Money, (self.current['amount'] - credit_returned))

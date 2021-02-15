@@ -739,7 +739,7 @@ CREATE VIEW all_operations AS
                                  withdrawal_timestamp AS timestamp,
                                  withdrawal_account AS account_id,
                                  deposit_account AS account2_id,
-                                 withdrawal AS amount,
+                                 -withdrawal AS amount,
                                  deposit / withdrawal AS rate,
                                  -1 AS subtype,
                                  note
@@ -759,7 +759,7 @@ CREATE VIEW all_operations AS
                                  withdrawal_timestamp AS timestamp,
                                  fee_account AS account_id,
                                  NULL AS account2_id,
-                                 fee AS amount,
+                                 -fee AS amount,
                                  1 AS rate,
                                  0 AS subtype,
                                  note
@@ -871,24 +871,38 @@ CREATE VIEW all_transactions AS
                       accounts AS a ON a.id = t.account_id
                UNION ALL
                SELECT 4 AS type,
-                      t.id,
+                      id,
                       withdrawal_timestamp AS timestamp,
                       -1 AS subtype,
                       withdrawal_account AS account,
                       asset AS asset,
                       withdrawal AS amount,
-                      a.currency_id AS category,
+                      NULL AS category,
                       NULL AS price,
-                      fee AS fee_tax,
+                      NULL AS fee_tax,
                       NULL AS coupon,
-                      fee_account AS peer,
+                      NULL AS peer,
                       NULL AS tag
                  FROM transfers AS t
-                      LEFT JOIN
-                      accounts AS a ON fee_account = a.id
                UNION ALL
                SELECT 4 AS type,
-                      t.id,
+                      id,
+                      withdrawal_timestamp AS timestamp,
+                      0 AS subtype,
+                      fee_account AS account,
+                      asset AS asset,
+                      fee AS amount,
+                      NULL AS category,
+                      NULL AS price,
+                      NULL AS fee_tax,
+                      NULL AS coupon,
+                      NULL AS peer,
+                      NULL AS tag
+                 FROM transfers AS t
+                 WHERE NOT fee_account IS NULL
+               UNION ALL
+               SELECT 4 AS type,
+                      id,
                       deposit_timestamp AS timestamp,
                       1 AS subtype,
                       deposit_account AS account,
