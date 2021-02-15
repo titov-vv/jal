@@ -259,15 +259,17 @@ class AddAssetDialog(QDialog, Ui_AddAssetDialog):
 
 #-----------------------------------------------------------------------------------------------------------------------
 class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
-    def __init__(self, parent, db, description, current_account):
+    def __init__(self, parent, db, description, current_account, recent_account=None):
         QDialog.__init__(self)
         self.setupUi(self)
         self.db = db
-        self.account_id = None
+        self.account_id = recent_account
         self.current_account = current_account
 
         self.DescriptionLbl.setText(description)
         self.AccountWidget.init_db(db)
+        if self.account_id:
+            self.AccountWidget.selected_id = self.account_id
 
         # center dialog with respect to parent window
         x = parent.x() + parent.width() / 2 - self.width() / 2
@@ -308,6 +310,7 @@ class StatementLoader(QObject):
             ReportType.Quik: self.loadQuikHtml
         }
         self.currentIBstatement = None
+        self.last_selected_account = None
 
     # Displays file choose dialog and loads corresponding report if user have chosen a file
     def loadReport(self):
@@ -704,9 +707,11 @@ class StatementLoader(QObject):
         else:
             logging.error(g_tr('StatementLoader', "Zero quantity in cash trade: ") + f"{trade}")
             return 0
+        fee_idx = 2
+        fee_amount = -trade['ibCommission']  # Fee is negative in IB report but we store positive value in database
         self.createTransfer(trade['dateTime'], trade['accountId'][from_idx], from_amount,
-                            trade['accountId'][to_idx], to_amount, trade['accountId'][2],
-                            trade['ibCommission'], trade['exchange'])
+                            trade['accountId'][to_idx], to_amount, trade['accountId'][fee_idx],
+                            fee_amount, trade['exchange'])
         return 1
 
     def createTransfer(self, timestamp, f_acc_id, f_amount, t_acc_id, t_amount, fee_acc_id, fee, note):
@@ -803,16 +808,17 @@ class StatementLoader(QObject):
                    f"@{datetime.utcfromtimestamp(cash['dateTime']).strftime('%d.%m.%Y')}\n" + \
                    g_tr('StatementLoader', "Select account to deposit to:")
 
-        dialog = SelectAccountDialog(self.parent, self.db, text, cash['accountId'])
+        dialog = SelectAccountDialog(self.parent, self.db, text, cash['accountId'],
+                                     recent_account=self.last_selected_account)
         if dialog.exec_() != QDialog.Accepted:
             return 0
-
+        self.last_selected_account = dialog.account_id
         if cash['amount'] >= 0:
             self.createTransfer(cash['dateTime'], dialog.account_id, cash['amount'],
                                 cash['accountId'], cash['amount'], 0, 0, cash['description'])
         else:
-            self.createTransfer(cash['dateTime'], cash['accountId'], cash['amount'],
-                                dialog.account_id, cash['amount'], 0, 0, cash['description'])
+            self.createTransfer(cash['dateTime'], cash['accountId'], -cash['amount'],
+                                dialog.account_id, -cash['amount'], 0, 0, cash['description'])
         return 1
 
     def createDividend(self, timestamp, account_id, asset_id, amount, note):
