@@ -662,16 +662,6 @@ CREATE VIEW all_operations AS
                             FROM transfers
                           UNION ALL
                           SELECT id,
-                                 deposit_timestamp AS timestamp,
-                                 deposit_account AS account_id,
-                                 withdrawal_account AS account2_id,
-                                 deposit AS amount,
-                                 withdrawal / deposit AS rate,
-                                 1 AS subtype,
-                                 note
-                            FROM transfers
-                          UNION ALL
-                          SELECT id,
                                  withdrawal_timestamp AS timestamp,
                                  fee_account AS account_id,
                                  NULL AS account2_id,
@@ -681,6 +671,16 @@ CREATE VIEW all_operations AS
                                  note
                             FROM transfers
                            WHERE NOT fee IS NULL
+                          UNION ALL
+                          SELECT id,
+                                 deposit_timestamp AS timestamp,
+                                 deposit_account AS account_id,
+                                 withdrawal_account AS account2_id,
+                                 deposit AS amount,
+                                 withdrawal / deposit AS rate,
+                                 1 AS subtype,
+                                 note
+                            FROM transfers
                            ORDER BY id
                       )
                       AS t
