@@ -15,9 +15,9 @@ from jal.db.backup_restore import JalBackup
 from jal.db.helpers import get_dbfilename, get_base_currency, executeSQL
 from jal.data_import.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
-from db.balances_model import BalancesModel
-from db.holdings_model import HoldingsModel
-from db.operations_model import OperationsModel
+from jal.db.balances_model import BalancesModel
+from jal.db.holdings_model import HoldingsModel
+from jal.db.operations_model import OperationsModel
 from jal.widgets.operations import LedgerOperationsView, LedgerInitValues
 from jal.reports.reports import Reports, ReportType
 from jal.data_import.statements import StatementLoader
