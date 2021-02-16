@@ -358,7 +358,7 @@ class StatementLoader(QObject):
         if bank_id != '':
             return bank_id
         bank_id = readSQL(self.db, "SELECT id FROM agents WHERE name='Interactive Brokers'")
-        if bank_id is not None:
+        if bank_id is not None:   # FIXME Better to check that every investment accunt has bank assigned at creation
             return bank_id
         query = executeSQL(self.db, "INSERT INTO agents (pid, name) VALUES (0, 'Interactive Brokers')")
         bank_id =query.lastInsertId()
@@ -500,6 +500,8 @@ class StatementLoader(QObject):
 
         cnt = 0
         for trade in trades:
+            _ = self.getAccountBank(trade['accountId'])  # This line simply checks that bank is present for IB account (in order to process fees)
+
             cnt += ib_trade_loaders[trade['assetCategory']](trade)
         logging.info(g_tr('StatementLoader', "Trades loaded: ") + f"{cnt} ({len(trades)})")
 
