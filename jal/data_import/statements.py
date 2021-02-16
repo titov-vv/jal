@@ -171,10 +171,11 @@ class IBKR:
             for currency in data.attrib['symbol'].split('.'):
                 currency_asset = caller.findAssetID(currency)
             return currency_asset
-        if data.tag == 'CorporateAction' and IBKR.flString(data, 'listingExchange', None, None) == IBKR.DummyExchange:
-            if data.attrib[name].endswith('.OLD'):
-                return caller.findAssetID(data.attrib[name][:-len('.OLD')])
-        return caller.findAssetID(data.attrib[name])
+
+        isin = data.attrib['isin'] if 'isin' in data.attrib else ''
+        if data.tag == 'CorporateAction' and data.attrib[name].endswith('.OLD'):
+            return caller.findAssetID(data.attrib[name][:-len('.OLD')], isin=isin)
+        return caller.findAssetID(data.attrib[name], isin=isin)
 
 #-----------------------------------------------------------------------------------------------------------------------
 class Quik:
@@ -340,10 +341,23 @@ class StatementLoader(QObject):
             logging.error(g_tr('StatementLoader', "Account not found: ") + f"{accountNumber} ({accountCurrency})")
         return account_id
 
-    # Searches for asset_id in database and returns it.
-    # If asset is not found - shows dialog for new asset creation.
+    # Searches for asset_id in database and returns its ID
+    # 1. if ISIN is give tries to find by ISIN.
+    # 2. If found by ISIN - checks symbol and updates it if function is called with another symbol
+    # 3. If not found by ISIN or ISIN is not given - tries to find by symbol only
+    # 4. If asset is not found - shows dialog for new asset creation.
     # Returns: asset_id or None if new asset creation failed
-    def findAssetID(self, symbol):
+    def findAssetID(self, symbol, isin=''):
+        if isin:
+            asset_id = readSQL(self.db, "SELECT id FROM assets WHERE isin=:isin", [(":isin", isin)])
+            if asset_id is not None:
+                db_symbol = readSQL(self.db, "SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
+                if db_symbol != symbol:
+                    _ = executeSQL(self.db, "UPDATE assets SET name=:symbol WHERE id=:asset_id",
+                                   [(":symbol", symbol), (":asset_id", asset_id)])
+                    logging.warning(
+                        g_tr('StatementLoader', "Symbol updated for ISIN ") + f"{isin}: {db_symbol} -> {symbol}")
+                return asset_id
         asset_id = readSQL(self.db, "SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)])
         if asset_id is None:
             dialog = AddAssetDialog(self.parent, self.db, symbol)
