@@ -275,15 +275,16 @@ class HoldingsModel(QAbstractItemModel):
             [(":base_currency", self._currency), (":money_book", BookAccount.Money),
              (":assets_book", BookAccount.Assets), (":liabilities_book", BookAccount.Liabilities),
              (":holdings_timestamp", self._date), (":tolerance", Setup.DISP_TOLERANCE)])
-        # Load data from SQL to list
+        query.setForwardOnly(True)
+        # Load data from SQL to tree
         self._root = TreeItem([])
         currency = 0
         c_node = None
         account = 0
         a_node = None
+        indexes = range(query.record().count())
         while query.next():
-            values = [2]
-            [values.append(query.value(i)) for i in range(self.DATA_COL)]
+            values = [2] + list(map(query.value, indexes))
             if values[self.COL_CURRENCY] != currency:
                 currency = values[self.COL_CURRENCY]
                 c_node = TreeItem(values, self._root)
@@ -308,7 +309,7 @@ class HoldingsModel(QAbstractItemModel):
                 else:
                     profit_relative = 0
                 value = values[self.COL_QUOTE] * values[self.COL_QTY]
-                value_adjusted = values[self.COL_QUOTE_A] * values[self.COL_QTY]
+                value_adjusted = values[self.COL_QUOTE_A] * values[self.COL_QTY] if values[self.COL_QUOTE_A] else 0
                 values += [profit, profit_relative, value, value_adjusted]
             else:
                 values += [0, 0, 0, 0]

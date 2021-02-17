@@ -7,7 +7,6 @@ from jal.db.helpers import executeSQL, get_asset_name
 
 
 class BalancesModel(QAbstractTableModel):
-    DATA_COL = 10
     COL_LEVEL = 0
     COL_TYPE = 1
     COL_TYPE_NAME = 2
@@ -162,12 +161,13 @@ class BalancesModel(QAbstractTableModel):
             [(":base_currency", self._currency), (":money_book", BookAccount.Money),
              (":assets_book", BookAccount.Assets), (":liabilities_book", BookAccount.Liabilities),
              (":balances_timestamp", self._date), (":tolerance", Setup.DISP_TOLERANCE)])
+        query.setForwardOnly(True)
         self._data = []
         current_type = 0
         current_type_name = ''
+        indexes = range(query.record().count())
         while query.next():
-            values = [0]
-            [values.append(query.value(i)) for i in range(self.DATA_COL)]
+            values = [0] + list(map(query.value, indexes))
             if self._active_only and (values[self.COL_ACTIVE] == 0):
                 continue
             if values[self.COL_TYPE] != current_type:
