@@ -315,6 +315,8 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
         painter.restore()
 
     def draw_value(self, rect, painter, value):
+        if value is None:
+            return
         pen = painter.pen()
         if value >= 0:
             pen.setColor(CustomColor.DarkGreen)

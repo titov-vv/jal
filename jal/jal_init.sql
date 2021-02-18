@@ -104,8 +104,7 @@ CREATE TABLE assets (
     id         INTEGER    PRIMARY KEY
                           UNIQUE
                           NOT NULL,
-    name       TEXT (32)  UNIQUE
-                          NOT NULL,
+    name       TEXT (32)  NOT NULL,
     type_id    INTEGER    REFERENCES asset_types (id) ON DELETE RESTRICT
                                                       ON UPDATE CASCADE
                           NOT NULL,
@@ -119,6 +118,12 @@ CREATE TABLE assets (
                                                        ON UPDATE CASCADE
                           NOT NULL
                           DEFAULT ( -1)
+);
+
+
+CREATE UNIQUE INDEX asset_name_isin_idx ON assets (
+    name ASC,
+    isin ASC
 );
 
 
@@ -1398,7 +1403,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 14);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 15);
 -- TODO Remove this value 'TriggersEnabled' from database
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
