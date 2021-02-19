@@ -1,14 +1,12 @@
 from jal.constants import Setup
 import sqlite3
-import pandas as pd
-import math
 import logging
 import os
+import shutil
 from dateutil import tz
 from datetime import datetime
 from tempfile import TemporaryDirectory
 import tarfile
-from io import StringIO
 
 from PySide2.QtWidgets import QFileDialog, QMessageBox
 from jal.ui_custom.helpers import g_tr
@@ -17,33 +15,14 @@ from jal.ui_custom.helpers import g_tr
 # ------------------------------------------------------------------------------
 class JalBackup:
     tmp_prefix = 'jal_'
-    backup_label = 'JAL backup. Created: '
-    backup_list = ["settings", "tags", "categories", "agents", "assets", "accounts", "countries", "corp_actions",
-                   "dividends", "trades", "actions", "action_details", "transfers", "quotes", "map_peer",
-                   "map_category"]
+    backup_label = 'JAL SQLITE backup. Created: '
+    date_fmt = '%Y/%m/%d %H:%M:%S%z'
 
     def __init__(self, parent, db_file):
         self.parent = parent
         self.file = db_file
         self.backup_name = None
         self._backup_label_date = ''
-
-    def clean_db(self):
-        db = sqlite3.connect(self.file)
-        cursor = db.cursor()
-
-        cursor.executescript("DELETE FROM ledger;"
-                             "DELETE FROM ledger_sums;"
-                             "DELETE FROM sequence;")
-        db.commit()
-
-        cursor.execute("DROP TRIGGER IF EXISTS keep_predefined_categories")
-        for table in JalBackup.backup_list:
-            cursor.execute(f"DELETE FROM {table}")
-        db.commit()
-
-        logging.info(g_tr('JalBackup', "DB cleanup was completed"))
-        db.close()
 
     # Function returns True if all of following conditions are met (otherwise returns False):
     # - backup contains all required filenames
@@ -52,9 +31,7 @@ class JalBackup:
     def validate_backup(self):
         with tarfile.open(self.backup_name, "r:gz") as tar:
             # Check backup file list
-            suffix = '.csv'
-            backup_file_list = [s + suffix for s in self.backup_list]  # create list of table filenames
-            backup_file_list.append('label')  # append filename for label file
+            backup_file_list = ['', Setup.DB_PATH, 'label']
             if set(backup_file_list) != set(tar.getnames()):
                 logging.debug("Backup content expected: " + str(backup_file_list) +
                               "\nBackup content actual: " + str(tar.getnames()))
@@ -66,49 +43,36 @@ class JalBackup:
             if label_content[:len(self.backup_label)] == self.backup_label:
                 self._backup_label_date = label_content[len(self.backup_label):]
             else:
+                logging.warning(g_tr('JalBackup', "Backup label not recognized"))
                 return False
-
-            # Check db schema used for backup creation
-            settings_content = StringIO(tar.extractfile('settings.csv').read().decode("utf-8"))
-            data = pd.read_csv(settings_content, sep="|", header=0)
-            schema_version = int(data[data['name'] == 'SchemaVersion']['value'][0])
-            if schema_version != Setup.TARGET_SCHEMA:
-                logging.warning(g_tr('JalBackup', "Backup schema version expected: ") + str(Setup.TARGET_SCHEMA) +
-                                g_tr('JalBackup', "Backup schema version actual: ") + str(schema_version))
+            try:
+                _ = datetime.strptime(self._backup_label_date, self.date_fmt)
+            except ValueError:
+                logging.warning(g_tr('JalBackup', "Can't validate backup date"))
                 return False
         return True
 
     def do_backup(self):
-        db = sqlite3.connect(self.file)
+        db_con = sqlite3.connect(self.file)
         with TemporaryDirectory(prefix=self.tmp_prefix) as tmp_path:
             with open(tmp_path + os.sep + 'label', 'w') as label:
-                label.write(f"{self.backup_label}{datetime.now().replace(tzinfo=tz.tzlocal()).strftime('%Y/%m/%d %H:%M:%S%z')}")
-            for table in JalBackup.backup_list:
-                data = pd.read_sql_query(f"SELECT * FROM {table}", db)
-                data.to_csv(f"{tmp_path}/{table}.csv", sep="|", header=True, index=False)
+                label.write(f"{self.backup_label}{datetime.now().replace(tzinfo=tz.tzlocal()).strftime(self.date_fmt)}")
+            backup_con = sqlite3.connect(tmp_path + os.sep + Setup.DB_PATH)
+            db_con.backup(backup_con)
             with tarfile.open(self.backup_name, "w:gz") as tar:
                 tar.add(tmp_path, arcname='')
-        db.close()
+        db_con.close()
 
     def do_restore(self):
-        db = sqlite3.connect(self.file)
-        cursor = db.cursor()
-
         with TemporaryDirectory(prefix=self.tmp_prefix) as tmp_path:
             with tarfile.open(self.backup_name, "r:gz") as tar:
                 tar.extractall(tmp_path)
-            for table in JalBackup.backup_list:
-                data = pd.read_csv(f"{tmp_path}/{table}.csv", sep='|', keep_default_na=False)
-                for column in data:
-                    if data[column].dtype == 'float64':  # Correct possible mistakes due to float data type
-                        data[column] = data[column].round(int(-math.log10(Setup.CALC_TOLERANCE)))
-                data.to_sql(name=table, con=db, if_exists='append', index=False, chunksize=100)
-
-        cursor.execute("CREATE TRIGGER keep_predefined_categories "
-                       "BEFORE DELETE ON categories FOR EACH ROW WHEN OLD.special = 1 "
-                       "BEGIN SELECT RAISE(ABORT, \"Can't delete predefined category\"); END;")
-        db.commit()
-        db.close()
+            try:
+                shutil.move(tmp_path + os.sep + Setup.DB_PATH, self.file)
+            except:
+                logging.warning(g_tr('JalBackup', "Failed to restore backup file"))
+                return False
+        return True
 
     def get_filename(self, save=True):
         self.backup_name = None
@@ -141,8 +105,8 @@ class JalBackup:
             logging.error(g_tr('JalBackup', "Wrong format of backup file"))
             return
 
-        self.clean_db()
-        self.do_restore()
+        if not self.do_restore():
+            return
         logging.info(g_tr('JalBackup', "Backup restored from: ") + self.backup_name + self._backup_label_date
                      + g_tr('JalBackup', " into ") + self.file)
 

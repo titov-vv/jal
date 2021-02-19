@@ -514,149 +514,149 @@
 <context>
     <name>JalBackup</name>
     <message>
-        <location filename="../db/backup_restore.py" line="116"/>
+        <location filename="../db/backup_restore.py" line="80"/>
         <source>Save backup to:</source>
         <translation>Сохранить резервную копию в:</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="122"/>
+        <location filename="../db/backup_restore.py" line="86"/>
         <source>Archives (*.tgz)</source>
         <translation>Архивы (*.tgz)</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="122"/>
+        <location filename="../db/backup_restore.py" line="86"/>
         <source>Select file with backup</source>
         <translation>Выберите файл с резервной копией</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="141"/>
+        <location filename="../db/backup_restore.py" line="105"/>
         <source>Wrong format of backup file</source>
         <translation>Неверный формат файла резервной копии</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="146"/>
+        <location filename="../db/backup_restore.py" line="110"/>
         <source>Backup restored from: </source>
         <translation>Резервная копия восставновлена из: </translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="146"/>
+        <location filename="../db/backup_restore.py" line="110"/>
         <source> into </source>
         <translation> в </translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="149"/>
+        <location filename="../db/backup_restore.py" line="113"/>
         <source>Data restored</source>
         <translation>Данные восстановлены</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="149"/>
+        <location filename="../db/backup_restore.py" line="113"/>
         <source>Database was loaded from the backup.
 </source>
         <translation>Данные были загружены из бэкапа.
 </translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="149"/>
+        <location filename="../db/backup_restore.py" line="113"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation>Вы должны перезапустить приложение, чтобы применить изменения
 Приложение сейчас завершит свою работу</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="45"/>
-        <source>DB cleanup was completed</source>
-        <translation>Очистка данных завершена</translation>
-    </message>
-    <message>
-        <location filename="../db/backup_restore.py" line="132"/>
+        <location filename="../db/backup_restore.py" line="96"/>
         <source>Backup saved in: </source>
         <translation>Резервная копия сохранёна в: </translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="76"/>
-        <source>Backup schema version expected: </source>
-        <translation>Нужная версия формата резервной копии: </translation>
+        <location filename="../db/backup_restore.py" line="46"/>
+        <source>Backup label not recognized</source>
+        <translation>Не распознана метка резервной копии</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="76"/>
-        <source>Backup schema version actual: </source>
-        <translation>Версия формата резервной копии: </translation>
+        <location filename="../db/backup_restore.py" line="51"/>
+        <source>Can&apos;t validate backup date</source>
+        <translation>Невозможно проверить дату резервной копии</translation>
+    </message>
+    <message>
+        <location filename="../db/backup_restore.py" line="73"/>
+        <source>Failed to restore backup file</source>
+        <translation>Не удалось восстановить резервную копию</translation>
     </message>
 </context>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="521"/>
+        <location filename="../db/ledger.py" line="517"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="521"/>
+        <location filename="../db/ledger.py" line="517"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation> операций требуют перерасчета. Вы ходите выполнить его прямо сейчас?</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="526"/>
+        <location filename="../db/ledger.py" line="522"/>
         <source>Re-build ledger from: </source>
         <translation>Перерасчет итогов с: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="562"/>
+        <location filename="../db/ledger.py" line="558"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation>Итоги рассчитаны. Затраченное время: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="562"/>
+        <location filename="../db/ledger.py" line="558"/>
         <source>, new frontier: </source>
         <translation>, новая граница: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="555"/>
+        <location filename="../db/ledger.py" line="551"/>
         <source>Processed </source>
         <translation>Обработано </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="555"/>
+        <location filename="../db/ledger.py" line="551"/>
         <source>k records, current frontier: </source>
         <translation>к записей, текущая граница: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="194"/>
+        <location filename="../db/ledger.py" line="190"/>
         <source>Can&apos;t process dividend as bank isn&apos;t set for investment account</source>
         <translation>Невозможно обработать дивиденд, т.к. не указан банк для инвестиционного счёта</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="210"/>
+        <location filename="../db/ledger.py" line="206"/>
         <source>Can&apos;t process trade as bank isn&apos;t set for investment account</source>
         <translation>Невозможно обработать сделку, т.к. не указан банк для инвестиционного счёта</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="410"/>
+        <location filename="../db/ledger.py" line="406"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation>Количество акций недостаточно для обработки корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="277"/>
+        <location filename="../widgets/main_window.py" line="276"/>
         <source>Estimate Russian Tax</source>
         <translation>Оценить налог для РФ</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="377"/>
+        <location filename="../db/ledger.py" line="373"/>
         <source>Stock dividend for was updated for </source>
         <translation>Дивиденд акциями был обновлён для </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="377"/>
+        <location filename="../db/ledger.py" line="373"/>
         <source>Please check that quantity is correct.</source>
         <translation>Пожалуйста проверьте корректность количества бумаг.</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="174"/>
+        <location filename="../db/ledger.py" line="170"/>
         <source>Can&apos;t process operation without details</source>
         <translation>Невозможно обработать операцию без детальной информации</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="369"/>
+        <location filename="../db/ledger.py" line="365"/>
         <source>Unexpected data in transfer transaction</source>
         <translation>Невозможно обработать трансфер</translation>
     </message>
@@ -1152,59 +1152,51 @@ Application will be terminated now</source>
 <context>
     <name>LedgerOperationsView</name>
     <message>
-        <location filename="../widgets/operations.py" line="125"/>
+        <location filename="../widgets/operations.py" line="128"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../widgets/operations.py" line="125"/>
+        <location filename="../widgets/operations.py" line="128"/>
         <source>Are you sure to delete selected transacion?</source>
         <translation>Вы уверены, что хотите удалить выбранную операцию?</translation>
     </message>
     <message>
-        <location filename="../widgets/operations.py" line="184"/>
+        <location filename="../widgets/operations.py" line="187"/>
         <source>You have unsaved changes</source>
         <translation>Есть несохранённые изменения</translation>
     </message>
     <message>
-        <location filename="../widgets/operations.py" line="184"/>
+        <location filename="../widgets/operations.py" line="187"/>
         <source> has uncommitted changes,
 do you want to save it?</source>
         <translation> имеет несохранённые изменения,
 Вы хотите их сохранить?</translation>
     </message>
     <message>
-        <location filename="../widgets/operations.py" line="209"/>
+        <location filename="../widgets/operations.py" line="212"/>
         <source>Submit failed: </source>
         <translation>Ошибка сохранения: </translation>
     </message>
     <message>
-        <location filename="../widgets/operations.py" line="215"/>
+        <location filename="../widgets/operations.py" line="218"/>
         <source>Details submit failed: </source>
         <translation>Ошибка сохранения деталей операции: </translation>
     </message>
     <message>
-        <location filename="../widgets/operations.py" line="270"/>
+        <location filename="../widgets/operations.py" line="274"/>
         <source>Reconcile</source>
         <translation>Сверить</translation>
     </message>
     <message>
-        <location filename="../widgets/operations.py" line="272"/>
+        <location filename="../widgets/operations.py" line="276"/>
         <source>Copy</source>
         <translation>Скопировать</translation>
     </message>
     <message>
-        <location filename="../widgets/operations.py" line="274"/>
+        <location filename="../widgets/operations.py" line="278"/>
         <source>Delete</source>
         <translation>Удалить</translation>
-    </message>
-</context>
-<context>
-    <name>LogViewer</name>
-    <message>
-        <location filename="../ui_custom/log_viewer.py" line="45"/>
-        <source>LOG</source>
-        <translation>СБЩ</translation>
     </message>
 </context>
 <context>
@@ -1248,32 +1240,32 @@ do you want to save it?</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="231"/>
+        <location filename="../widgets/main_window.py" line="230"/>
         <source>Quotes download completed</source>
         <translation>Загрузка котировок завершена</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="236"/>
+        <location filename="../widgets/main_window.py" line="235"/>
         <source>Statement load completed</source>
         <translation>Загрузка отчета завершена успешно</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="242"/>
+        <location filename="../widgets/main_window.py" line="241"/>
         <source>Statement load failed</source>
         <translation>Загрузка отчета неуспешна</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="172"/>
+        <location filename="../widgets/main_window.py" line="171"/>
         <source>Restart required</source>
         <translation>Требуется рестарт</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="172"/>
+        <location filename="../widgets/main_window.py" line="171"/>
         <source>Language was changed to </source>
         <translation>Язык был изменён на </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="172"/>
+        <location filename="../widgets/main_window.py" line="171"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation>Вы должны перезапустить приложение, чтобы применить изменения
@@ -1715,67 +1707,67 @@ Application will be terminated now</source>
         <translation>Выберите файл отчета для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="426"/>
+        <location filename="../data_import/statements.py" line="429"/>
         <source>Failed to parse Interactive Brokers flex-report</source>
         <translation>Невозможно загрузить flex-report Interactive Brokers</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="416"/>
+        <location filename="../data_import/statements.py" line="419"/>
         <source>Load IB Flex-statement for account </source>
         <translation>Загрузка IB Flex-отчёта для счета </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="935"/>
+        <location filename="../data_import/statements.py" line="944"/>
         <source>*** MANUAL ENTRY REQUIRED ***</source>
         <translation>*** ТРЕБУЕТСЯ РУЧНОЙ ВВОД ***</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="924"/>
+        <location filename="../data_import/statements.py" line="933"/>
         <source>Dividend already exists: </source>
         <translation>Дивиденд уже существует: </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="936"/>
+        <location filename="../data_import/statements.py" line="945"/>
         <source>Unhandled tax pattern found: </source>
         <translation>Обнаружено неподдерживаемое описание налога: </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="950"/>
+        <location filename="../data_import/statements.py" line="959"/>
         <source>Dividend not found for withholding tax: </source>
         <translation>Дивиденд не найден для удержания налога: </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="962"/>
+        <location filename="../data_import/statements.py" line="971"/>
         <source>Can&apos;t read statement file</source>
         <translation>Невозможно загрузить файл отчета</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="971"/>
+        <location filename="../data_import/statements.py" line="980"/>
         <source>Can&apos;t get account number from the statement.</source>
         <translation>Невозможно определить номер счета из отчета.</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="974"/>
+        <location filename="../data_import/statements.py" line="983"/>
         <source>Account with number </source>
         <translation>Счет с номером </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="974"/>
+        <location filename="../data_import/statements.py" line="983"/>
         <source> not found. Import cancelled.</source>
         <translation> не найден. Импорт прерван.</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="986"/>
+        <location filename="../data_import/statements.py" line="995"/>
         <source>Unknown operation type </source>
         <translation>Неизвестный тип операции </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="990"/>
+        <location filename="../data_import/statements.py" line="999"/>
         <source>Unknown asset </source>
         <translation>Неизвестная ценная бумага </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="671"/>
+        <location filename="../data_import/statements.py" line="680"/>
         <source>Corporate action type is not supported: </source>
         <translation>Корпоративное действие не поддерживается: </translation>
     </message>
@@ -1820,92 +1812,92 @@ Application will be terminated now</source>
         <translation>Счёт не найден: </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="428"/>
+        <location filename="../data_import/statements.py" line="431"/>
         <source>IB Flex-statement loaded successfully</source>
         <translation>Flex-отчёт IB загружен успешно</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="499"/>
+        <location filename="../data_import/statements.py" line="502"/>
         <source>Failed to load attribute: </source>
         <translation>Невозможно загрузить аттрибут: </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="515"/>
+        <location filename="../data_import/statements.py" line="518"/>
         <source>Securities loaded: </source>
         <translation>Ценные бумаги загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="530"/>
+        <location filename="../data_import/statements.py" line="533"/>
         <source>Trades loaded: </source>
         <translation>Сделки загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="578"/>
+        <location filename="../data_import/statements.py" line="585"/>
         <source>Can&apos;t find paired record for </source>
         <translation>Невозможно найти парную запись для </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="663"/>
+        <location filename="../data_import/statements.py" line="671"/>
         <source>Can&apos;t find paired record for: </source>
         <translation>Невозможно найти парную запись для: </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="674"/>
+        <location filename="../data_import/statements.py" line="683"/>
         <source>Corporate actions loaded: </source>
         <translation>Корпоративные действия загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="686"/>
+        <location filename="../data_import/statements.py" line="695"/>
         <source>Tax transaction already exists </source>
         <translation>Транзакция налога уже существует </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="698"/>
+        <location filename="../data_import/statements.py" line="707"/>
         <source>Taxes loaded: </source>
         <translation>Налоги загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="748"/>
+        <location filename="../data_import/statements.py" line="757"/>
         <source>Cash transactions loaded: </source>
         <translation>Денежные транзакции загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="770"/>
+        <location filename="../data_import/statements.py" line="779"/>
         <source>Trade already exists: #</source>
         <translation>Сделка уже существует: №</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="802"/>
+        <location filename="../data_import/statements.py" line="811"/>
         <source>Zero quantity in cash trade: </source>
         <translation>Нулевое количество в денежной сделке: </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="846"/>
+        <location filename="../data_import/statements.py" line="855"/>
         <source>Corporate action already exists: #</source>
         <translation>Корпоративное действие уже существует: №</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="817"/>
+        <location filename="../data_import/statements.py" line="826"/>
         <source>Transfer/Exchange already exists: </source>
         <translation>Перевод/Обмен валюты уже существует: </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="898"/>
+        <location filename="../data_import/statements.py" line="907"/>
         <source>Deposit of </source>
         <translation>Депозит на сумму </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="900"/>
+        <location filename="../data_import/statements.py" line="909"/>
         <source>Select account to withdraw from:</source>
         <translation>Выберите счёт для списания с:</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="902"/>
+        <location filename="../data_import/statements.py" line="911"/>
         <source>Withdrawal of </source>
         <translation>Списание на сумму </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="904"/>
+        <location filename="../data_import/statements.py" line="913"/>
         <source>Select account to deposit to:</source>
         <translation>Выберите счёт для зачисления на:</translation>
     </message>
@@ -1915,92 +1907,92 @@ Application will be terminated now</source>
         <translation>Невозможно добавить новую ЦБ: </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="410"/>
+        <location filename="../data_import/statements.py" line="413"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="410"/>
+        <location filename="../data_import/statements.py" line="413"/>
         <source>Statement period starts before last recorded operation for the account. Continue import?</source>
         <translation>Период отчёта начинается ранее последней операции для счёта (повторный импорт?). Продолжить импорт?</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="702"/>
+        <location filename="../data_import/statements.py" line="711"/>
         <source>Option assignment</source>
         <translation>Исполнение проданного опциона</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="703"/>
+        <location filename="../data_import/statements.py" line="712"/>
         <source>Option exercise</source>
         <translation>Исполнение купленного опциона</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="704"/>
+        <location filename="../data_import/statements.py" line="713"/>
         <source>Option expiration</source>
         <translation>Экспирация опциона</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="706"/>
+        <location filename="../data_import/statements.py" line="715"/>
         <source>Option assignment/exercise</source>
         <translation>Исполнение опциона</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="721"/>
+        <location filename="../data_import/statements.py" line="730"/>
         <source>Option E&amp;A&amp;E action isn&apos;t implemented: </source>
         <translation>Действие для опциона не реализовано:</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="723"/>
+        <location filename="../data_import/statements.py" line="732"/>
         <source>Options E&amp;A&amp;E loaded: </source>
         <translation>Действия с опционами загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="366"/>
+        <location filename="../data_import/statements.py" line="369"/>
         <source>Symbol updated for ISIN </source>
         <translation>Символ обновлён для ISIN </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="536"/>
+        <location filename="../data_import/statements.py" line="539"/>
         <source>Statement contains cancelled corporate actions. They were skipped.</source>
         <translation>Отчёт содержит отменённые корпоративные действия. Они пропущены при импорте.</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="540"/>
+        <location filename="../data_import/statements.py" line="543"/>
         <source>Corporate actions are supported for stocks only. Actions for other asset types were skipped</source>
         <translation>Корпоративные действия поддерживаются только для акций. Действия для других типов активов пропущены</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="563"/>
+        <location filename="../data_import/statements.py" line="570"/>
         <source>Can&apos;t parse Merger description </source>
         <translation>Невозможно разобрать описание Слияния компаний </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="567"/>
+        <location filename="../data_import/statements.py" line="574"/>
         <source>Merger description miss some data </source>
         <translation>Недостаточно данных для обработки Слияния компаний </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="589"/>
+        <location filename="../data_import/statements.py" line="596"/>
         <source>Can&apos;t parse Spin-off description </source>
         <translation>Невозможно разобрать описание выделения компании </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="608"/>
+        <location filename="../data_import/statements.py" line="615"/>
         <source>Spin-off description miss some data </source>
         <translation>Недостаточно данных для обработки Выделения компании </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="604"/>
+        <location filename="../data_import/statements.py" line="611"/>
         <source>Can&apos;t parse Symbol Change description </source>
         <translation>Невозможно разобрать описание Смены символа </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="634"/>
+        <location filename="../data_import/statements.py" line="642"/>
         <source>Can&apos;t parse Split description </source>
         <translation>Невозможно разобрать описание Сплита акций </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="638"/>
+        <location filename="../data_import/statements.py" line="646"/>
         <source>Split description miss some data </source>
         <translation>Недостаточно данных для обработки Сплита акций </translation>
     </message>
@@ -2148,22 +2140,22 @@ Application will be terminated now</source>
         <translation>Частая</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="96"/>
+        <location filename="../widgets/main_window.py" line="95"/>
         <source>Income / Spending</source>
         <translation>Доход / Расход</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="99"/>
+        <location filename="../widgets/main_window.py" line="98"/>
         <source>Trade</source>
         <translation>Сделка</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="102"/>
+        <location filename="../widgets/main_window.py" line="101"/>
         <source>Dividend</source>
         <translation>Дивиденд</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="105"/>
+        <location filename="../widgets/main_window.py" line="104"/>
         <source>Transfer</source>
         <translation>Перевод</translation>
     </message>
@@ -2188,7 +2180,7 @@ Application will be terminated now</source>
         <translation>СОИДН</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="108"/>
+        <location filename="../widgets/main_window.py" line="107"/>
         <source>Corp. Action</source>
         <translation>Корп. Действие</translation>
     </message>
