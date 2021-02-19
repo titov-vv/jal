@@ -13,26 +13,23 @@ class LogViewer(QPlainTextEdit, logging.Handler):
         self.setReadOnly(True)
         self.notification = None  # Here is QLabel element to display LOG update status
         self.clear_color = None   # Variable to store initial "clear" background color
-        self.last_level = 0       # Max last log level
 
     def emit(self, record, **kwargs):
         # Store message in log window
         msg = self.format(record)
         self.appendPlainText(msg)
 
-        # Raise flag if status bar is set
+        # Show in status bar
         if self.notification:
-            if self.last_level < record.levelno:
-                palette = self.notification.palette()
-                if record.levelno <= logging.INFO:
-                    palette.setColor(self.notification.backgroundRole(), CustomColor.LightBlue)
-                elif record.levelno <= logging.WARNING:
-                    palette.setColor(self.notification.backgroundRole(), CustomColor.LightYellow)
-                else:
-                    palette.setColor(self.notification.backgroundRole(), CustomColor.LightRed)
-                self.notification.setPalette(palette)
-                self.notification.setText(g_tr('LogViewer', "LOG"))
-                self.last_level = record.levelno
+            palette = self.notification.palette()
+            if record.levelno <= logging.INFO:
+                palette.setColor(self.notification.backgroundRole(), self.clear_color)
+            elif record.levelno <= logging.WARNING:
+                palette.setColor(self.notification.backgroundRole(), CustomColor.LightYellow)
+            else:
+                palette.setColor(self.notification.backgroundRole(), CustomColor.LightRed)
+            self.notification.setPalette(palette)
+            self.notification.setText(msg)
 
         self.app.processEvents()
 
@@ -42,7 +39,6 @@ class LogViewer(QPlainTextEdit, logging.Handler):
 
     def setNotificationLabel(self, label):
         self.notification = label
-        self.notification.setFixedWidth(self.notification.fontMetrics().width(g_tr('LogViewer', "LOG")))
         self.notification.setAutoFillBackground(True)
         self.clear_color = self.notification.palette().color(self.notification.backgroundRole())
 

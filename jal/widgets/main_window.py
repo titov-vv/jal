@@ -62,8 +62,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         # Customize Status bar and logs
         self.NewLogEventLbl = QLabel(self)
-        self.StatusBar.addPermanentWidget(VLine())
-        self.StatusBar.addPermanentWidget(self.NewLogEventLbl)
+        self.StatusBar.addWidget(self.NewLogEventLbl)
         self.Logs.setNotificationLabel(self.NewLogEventLbl)
         self.Logs.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
         self.logger = logging.getLogger()
