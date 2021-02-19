@@ -56,8 +56,9 @@ LedgerInitValues = {
         'deposit_timestamp': (False, INIT_TIMESTAMP, None),
         'deposit_account': (True, INIT_ACCOUNT, None),
         'deposit': (True, INIT_VALUE, 0),
-        'fee_account': (True, INIT_VALUE, 0),
+        'fee_account': (True, INIT_NULL, None),
         'fee': (True, INIT_VALUE, 0),
+        'asset': (True, INIT_NULL, None),
         'note': (True, INIT_VALUE, '')
     },
     TransactionType.CorporateAction: {
@@ -229,11 +230,12 @@ class LedgerOperationsView(QObject):
             note = record.value(transfer_mapper.model().fieldIndex("note"))
             if not note:  # If we don't have note - set it to NULL value to fire DB trigger
                 transfer_mapper.model().setData(transfer_mapper.model().index(0, transfer_mapper.model().fieldIndex("note")), None)
-            fee_amount = record.value(transfer_mapper.model().fieldIndex("fee_amount"))
+            fee_amount = record.value(transfer_mapper.model().fieldIndex("fee"))
             if not fee_amount:
                 fee_amount = 0
             if abs(float(fee_amount)) < Setup.CALC_TOLERANCE:  # If we don't have fee - set Fee Account to NULL to fire DB trigger
-                transfer_mapper.model().setData(transfer_mapper.model().index(0, transfer_mapper.model().fieldIndex("fee_acc_id")), None)
+                transfer_mapper.model().setData(transfer_mapper.model().index(0, transfer_mapper.model().fieldIndex("fee_account")), None)
+                transfer_mapper.model().setData(transfer_mapper.model().index(0, transfer_mapper.model().fieldIndex("fee")), None)
 
     def beforeChildViewCommit(self, operation_type):
         if operation_type == TransactionType.Action:
