@@ -50,10 +50,6 @@ class Ledger:
         self.db = db
         self.current = {}
         self.current_seq = -1
-        self.holdings_view = None
-        self.holdings_date = QDateTime.currentSecsSinceEpoch()
-        self.holdings_currency = None
-        self.holdings_index = None
 
     # Returns timestamp of last operations that were calculated into ledger
     def getCurrentFrontier(self):

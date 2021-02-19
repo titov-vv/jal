@@ -1,7 +1,9 @@
 import logging
+from datetime import datetime
+from dateutil import tz
 
 from jal.constants import Setup, TransactionType
-from PySide2.QtCore import Qt, QObject, Signal, Slot, QDateTime
+from PySide2.QtCore import Qt, QObject, Signal, Slot
 from PySide2.QtWidgets import QMessageBox, QMenu, QAction
 from jal.db.helpers import executeSQL
 from jal.ui_custom.helpers import g_tr
@@ -256,8 +258,8 @@ class LedgerOperationsView(QObject):
             if init_values[field][IV_TYPE] == INIT_NULL:
                 new_operation_record.setNull(field)
             if init_values[field][IV_TYPE] == INIT_TIMESTAMP:
-                new_operation_record.setValue(field, QDateTime.currentSecsSinceEpoch())
-            if  init_values[field][IV_TYPE] == INIT_ACCOUNT:
+                new_operation_record.setValue(field, int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+            if init_values[field][IV_TYPE] == INIT_ACCOUNT:
                 new_operation_record.setValue(field, self.p_account_id)
             if init_values[field][IV_TYPE] == INIT_VALUE:
                 new_operation_record.setValue(field, init_values[field][IV_VALUE])
