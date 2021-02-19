@@ -363,8 +363,11 @@ class StatementLoader(QObject):
                 if db_symbol != symbol:
                     _ = executeSQL(self.db, "UPDATE assets SET name=:symbol WHERE id=:asset_id",
                                    [(":symbol", symbol), (":asset_id", asset_id)])
-                    logging.warning(
-                        g_tr('StatementLoader', "Symbol updated for ISIN ") + f"{isin}: {db_symbol} -> {symbol}")
+                    # Show warning if symbol was changed not due known bankruptcy or new issue pattern
+                    if (db_symbol != symbol + 'D') and (db_symbol + 'D' != symbol) \
+                            and (db_symbol != symbol + 'Q') and (db_symbol + 'Q' != symbol):
+                        logging.warning(
+                            g_tr('StatementLoader', "Symbol updated for ISIN ") + f"{isin}: {db_symbol} -> {symbol}")
                 return asset_id
         asset_id = readSQL(self.db, "SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)])
         if not dialog_new:
