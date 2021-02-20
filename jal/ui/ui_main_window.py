@@ -22,6 +22,7 @@ from jal.ui_custom.amount_editor import AmountEdit
 from jal.ui_custom.reference_selector import CategorySelector
 from jal.ui_custom.dividend_widget import DividendWidget
 from jal.ui_custom.trade_widget import TradeWidget
+from jal.ui_custom.transfer_widget import TransferWidget
 
 
 class Ui_LedgerMainWindow(object):
@@ -287,6 +288,18 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_8.addWidget(self.Trade)
 
         self.OperationsTabs.addWidget(self.TradePage)
+        self.TransferPage = QWidget()
+        self.TransferPage.setObjectName(u"TransferPage")
+        self.horizontalLayout_9 = QHBoxLayout(self.TransferPage)
+        self.horizontalLayout_9.setSpacing(0)
+        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
+        self.horizontalLayout_9.setContentsMargins(0, 0, 0, 0)
+        self.Transfer = TransferWidget(self.TransferPage)
+        self.Transfer.setObjectName(u"Transfer")
+
+        self.horizontalLayout_9.addWidget(self.Transfer)
+
+        self.OperationsTabs.addWidget(self.TransferPage)
         self.ActionDetailsTab = QWidget()
         self.ActionDetailsTab.setObjectName(u"ActionDetailsTab")
         self.gridLayout_4 = QGridLayout(self.ActionDetailsTab)
@@ -1111,7 +1124,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(2)
+        self.OperationsTabs.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)

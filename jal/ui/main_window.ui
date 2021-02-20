@@ -458,7 +458,7 @@
                 <item>
                  <widget class="QStackedWidget" name="OperationsTabs">
                   <property name="currentIndex">
-                   <number>2</number>
+                   <number>0</number>
                   </property>
                   <widget class="QWidget" name="NoOperationTab"/>
                   <widget class="QWidget" name="DividendPage">
@@ -502,6 +502,28 @@
                     </property>
                     <item>
                      <widget class="TradeWidget" name="Trade" native="true"/>
+                    </item>
+                   </layout>
+                  </widget>
+                  <widget class="QWidget" name="TransferPage">
+                   <layout class="QHBoxLayout" name="horizontalLayout_9">
+                    <property name="spacing">
+                     <number>0</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                    <item>
+                     <widget class="TransferWidget" name="Transfer" native="true"/>
                     </item>
                    </layout>
                   </widget>
@@ -2100,6 +2122,12 @@
    <class>TradeWidget</class>
    <extends>QWidget</extends>
    <header>jal/ui_custom/trade_widget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>TransferWidget</class>
+   <extends>QWidget</extends>
+   <header>jal/ui_custom/transfer_widget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -1,0 +1,112 @@
+from PySide2.QtCore import Qt
+from PySide2.QtWidgets import QLabel, QDateTimeEdit, QLineEdit
+from jal.ui_custom.helpers import g_tr
+from jal.ui_custom.abstract_operation_details import AbstractOperationDetails
+from jal.ui_custom.reference_selector import AccountSelector
+from jal.ui_custom.amount_editor import AmountEdit
+from jal.widgets.mapper_delegate import MapperDelegate
+
+class TransferWidget(AbstractOperationDetails):
+    def __init__(self, parent=None):
+        AbstractOperationDetails.__init__(self, parent)
+
+        self.from_date_label = QLabel(self)
+        self.from_account_label = QLabel(self)
+        self.from_amount_label = QLabel(self)
+        self.to_date_label = QLabel(self)
+        self.to_account_label = QLabel(self)
+        self.to_amount_label = QLabel(self)
+        self.fee_account_label = QLabel(self)
+        self.fee_amount_label = QLabel(self)
+        self.comment_label = QLabel(self)
+        self.arrow_account = QLabel(self)
+        self.arrow_amount = QLabel(self)
+
+        self.main_label.setText(g_tr("TransferWidget", "Transfer"))
+        self.from_date_label.setText(g_tr("TransferWidget", "Date/Time"))
+        self.from_account_label.setText(g_tr("TransferWidget", "From"))
+        self.from_amount_label.setText(g_tr("TransferWidget", "Amount"))
+        self.to_date_label.setText(g_tr("TransferWidget", "Date/Time"))
+        self.to_account_label.setText(g_tr("TransferWidget", "To"))
+        self.to_amount_label.setText(g_tr("TransferWidget", "Amount"))
+        self.fee_account_label.setText(g_tr("TransferWidget", "Fee from"))
+        self.fee_amount_label.setText(g_tr("TransferWidget", "Fee amount"))
+        self.comment_label.setText(g_tr("TransferWidget", "Note"))
+        self.arrow_account.setText(" ➜ ")
+        self.arrow_amount.setText(" ➜ ")
+
+        self.withdrawal_timestamp = QDateTimeEdit(self)
+        self.withdrawal_timestamp.setCalendarPopup(True)
+        self.withdrawal_timestamp.setTimeSpec(Qt.UTC)
+        self.withdrawal_timestamp.setFixedWidth(self.withdrawal_timestamp.fontMetrics().width("00/00/0000 00:00:00") * 1.25)
+        self.withdrawal_timestamp.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
+        self.deposit_timestamp = QDateTimeEdit(self)
+        self.deposit_timestamp.setCalendarPopup(True)
+        self.deposit_timestamp.setTimeSpec(Qt.UTC)
+        self.deposit_timestamp.setFixedWidth(self.deposit_timestamp.fontMetrics().width("00/00/0000 00:00:00") * 1.25)
+        self.deposit_timestamp.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
+        self.from_account_widget = AccountSelector(self)
+        self.to_account_widget = AccountSelector(self)
+        self.fee_account_widget = AccountSelector(self)
+        self.withdrawal = AmountEdit(self)
+        self.withdrawal.setAlignment(Qt.AlignRight)
+        self.deposit = AmountEdit(self)
+        self.deposit.setAlignment(Qt.AlignRight)
+        self.fee = AmountEdit(self)
+        self.fee.setAlignment(Qt.AlignRight)
+        self.comment = QLineEdit(self)
+
+        self.layout.addWidget(self.from_date_label, 1, 0, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.from_account_label, 2, 0, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.from_amount_label, 3, 0, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.comment_label, 5, 0, 1, 1, Qt.AlignLeft)
+        
+        self.layout.addWidget(self.withdrawal_timestamp, 1, 1, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.from_account_widget, 2, 1, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.withdrawal, 3, 1, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.comment, 5, 1, 1, 1, Qt.AlignLeft)
+
+        self.layout.addWidget(self.arrow_account, 2, 2, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.arrow_amount, 3, 2, 1, 1, Qt.AlignLeft)
+
+        self.layout.addWidget(self.to_date_label, 1, 3, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.to_account_label, 2, 3, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.to_amount_label, 3, 3, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.fee_account_label, 4, 3, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.fee_amount_label, 5, 3, 1, 1, Qt.AlignLeft)
+
+        self.layout.addWidget(self.deposit_timestamp, 1, 4, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.to_account_widget, 2, 4, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.deposit, 3, 4, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.fee_account_widget, 4, 4, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.fee, 5, 4, 1, 1, Qt.AlignLeft)
+
+        self.layout.addWidget(self.commit_button, 0, 6, 1, 1)
+        self.layout.addWidget(self.revert_button, 0, 7, 1, 1)
+
+        self.layout.addItem(self.verticalSpacer, 6, 0, 1, 1)
+        self.layout.addItem(self.horizontalSpacer, 1, 5, 1, 1)
+
+    def init_db(self, db):
+        super().init_db(db, "transfers")
+        self.mapper.setItemDelegate(MapperDelegate(self.mapper))
+
+        self.from_account_widget.init_db(db)
+        self.to_account_widget.init_db(db)
+        self.fee_account_widget.init_db(db)
+        self.from_account_widget.changed.connect(self.mapper.submit)
+        self.to_account_widget.changed.connect(self.mapper.submit)
+        self.fee_account_widget.changed.connect(self.mapper.submit)
+
+        self.mapper.addMapping(self.withdrawal_timestamp, self.model.fieldIndex("withdrawal_timestamp"))
+        self.mapper.addMapping(self.from_account_widget, self.model.fieldIndex("withdrawal_account"))
+        self.mapper.addMapping(self.withdrawal, self.model.fieldIndex("withdrawal"))
+        self.mapper.addMapping(self.deposit_timestamp, self.model.fieldIndex("deposit_timestamp"))
+        self.mapper.addMapping(self.to_account_widget, self.model.fieldIndex("deposit_account"))
+        self.mapper.addMapping(self.deposit, self.model.fieldIndex("deposit"))
+        self.mapper.addMapping(self.fee_account_widget, self.model.fieldIndex("fee_account"))
+        self.mapper.addMapping(self.fee, self.model.fieldIndex("fee"))
+        self.mapper.addMapping(self.comment, self.model.fieldIndex("note"))
+
+        self.model.select()
+
