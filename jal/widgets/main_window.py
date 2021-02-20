@@ -115,6 +115,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.Dividend.init_db(self.db)
         self.Dividend.dbUpdated.connect(self.showCommitted)
+        self.Trade.init_db(self.db)
+        self.Trade.dbUpdated.connect(self.showCommitted)
 
         # Setup balance and holdings parameters
         self.BalanceDate.setDateTime(QDateTime.currentDateTime())
@@ -247,9 +249,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def ShowOperationTab(self, operation_type):
         tab_list = {
             TransactionType.NA: 0,
-            TransactionType.Action: 2,
-            TransactionType.Transfer: 3,
-            TransactionType.Trade: 4,
+            TransactionType.Action: 3,
+            TransactionType.Transfer: 4,
+            TransactionType.Trade: 2,
             TransactionType.Dividend: 1,
             TransactionType.CorporateAction: 5
         }

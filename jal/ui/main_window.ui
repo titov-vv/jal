@@ -458,7 +458,7 @@
                 <item>
                  <widget class="QStackedWidget" name="OperationsTabs">
                   <property name="currentIndex">
-                   <number>4</number>
+                   <number>2</number>
                   </property>
                   <widget class="QWidget" name="NoOperationTab"/>
                   <widget class="QWidget" name="DividendPage">
@@ -480,6 +480,28 @@
                     </property>
                     <item>
                      <widget class="DividendWidget" name="Dividend" native="true"/>
+                    </item>
+                   </layout>
+                  </widget>
+                  <widget class="QWidget" name="TradePage">
+                   <layout class="QHBoxLayout" name="horizontalLayout_8">
+                    <property name="spacing">
+                     <number>0</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                    <item>
+                     <widget class="TradeWidget" name="Trade" native="true"/>
                     </item>
                    </layout>
                   </widget>
@@ -2072,6 +2094,12 @@
    <class>DividendWidget</class>
    <extends>QWidget</extends>
    <header>jal/ui_custom/dividend_widget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>TradeWidget</class>
+   <extends>QWidget</extends>
+   <header>jal/ui_custom/trade_widget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

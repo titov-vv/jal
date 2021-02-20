@@ -307,6 +307,8 @@ class LedgerOperationsView(QObject):
                 view.model().setFilter(f"{self.operations[operation_type][self.OP_CHILD_TABLE]}.pid = {operation_id}")
             if operation_type == TransactionType.Dividend:
                 self.main_window.Dividend.setId(operation_id)
+            if operation_type == TransactionType.Trade:
+                self.main_window.Trade.setId(operation_id)
 
     @Slot()
     def onDataEdit(self, index_start, _index_stop, _role):
