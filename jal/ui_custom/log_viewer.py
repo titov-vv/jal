@@ -1,8 +1,8 @@
 import logging
 from jal.constants import CustomColor
+from PySide2.QtCore import Qt
 from PySide2 import QtWidgets
 from PySide2.QtWidgets import QPlainTextEdit
-from jal.ui_custom.helpers import g_tr
 
 
 class LogViewer(QPlainTextEdit, logging.Handler):
@@ -29,7 +29,10 @@ class LogViewer(QPlainTextEdit, logging.Handler):
             else:
                 palette.setColor(self.notification.backgroundRole(), CustomColor.LightRed)
             self.notification.setPalette(palette)
-            self.notification.setText(msg)
+
+            available_width = self.notification.parent().width() - 64
+            elided_text = self.notification.fontMetrics().elidedText(msg, Qt.ElideRight, available_width)
+            self.notification.setText(elided_text)
 
         self.app.processEvents()
 
