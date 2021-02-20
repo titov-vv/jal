@@ -4,8 +4,7 @@ from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from PySide2.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QCompleter
 
 from jal.ui_custom.helpers import g_tr
-from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceTreeDelegate, ReferencePeerDelegate, \
-    ReferenceIntDelegate, ReferenceBoolDelegate, ReferenceTimestampDelegate, ReferenceLookupDelegate
+import jal.ui_custom.reference_data as ui               # Full import due to "cyclic" reference
 
 
 # To solve metaclass conflict
@@ -103,18 +102,18 @@ class AccountSelector(AbstractReferenceSelector):
         AbstractReferenceSelector.__init__(self, parent)
 
     def init_db(self, db):
-        self.dialog = ReferenceDataDialog(db, "accounts",
+        self.dialog = ui.ReferenceDataDialog(db, "accounts",
                                           [("id", None, 0, None, None),
                                            ("name", g_tr('AccountSelector', "Name"), -1, Qt.AscendingOrder, None),
                                            ("type_id", None, 0, None, None),
-                                           ("currency_id", "Currency", None, None, ReferenceLookupDelegate),
-                                           ("active", "Act", 32, None, ReferenceBoolDelegate),
+                                           ("currency_id", "Currency", None, None, ui.ReferenceLookupDelegate),
+                                           ("active", "Act", 32, None, ui.ReferenceBoolDelegate),
                                            ("number", "Account #", None, None, None),
                                            ("reconciled_on", "Reconciled @",
                                             self.fontMetrics().width("00/00/0000 00:00:00") * 1.1,
-                                            None, ReferenceTimestampDelegate),
-                                           ("organization_id", "Bank", None, None, ReferencePeerDelegate),
-                                           ("country_id", g_tr('TableViewConfig', "CC"), 50, None, ReferenceLookupDelegate)],
+                                            None, ui.ReferenceTimestampDelegate),
+                                           ("organization_id", "Bank", None, None, ui.ReferencePeerDelegate),
+                                           ("country_id", g_tr('TableViewConfig', "CC"), 50, None, ui.ReferenceLookupDelegate)],
                                           title=g_tr('AccountSelector', "Accounts"), search_field="full_name", toggle=("active", "Show inactive"),
                                           relations=[("type_id", "account_types", "id", "name", "Account type:"),
                                                      ("currency_id", "currencies", "id", "name", None),
@@ -128,14 +127,14 @@ class AssetSelector(AbstractReferenceSelector):
         AbstractReferenceSelector.__init__(self, parent)
 
     def init_db(self, db):
-        self.dialog = ReferenceDataDialog(db, "assets",
+        self.dialog = ui.ReferenceDataDialog(db, "assets",
                                           [("id", None, 0, None, None),
                                            ("name", "Symbol", None, Qt.AscendingOrder, None),
                                            ("type_id", None, 0, None, None),
                                            ("full_name", "Name", -1, None, None),
                                            ("isin", "ISIN", None, None, None),
-                                           ("country_id", g_tr('TableViewConfig', "Country"), None, None, ReferenceLookupDelegate),
-                                           ("src_id", "Data source", None, None, ReferenceLookupDelegate)],
+                                           ("country_id", g_tr('TableViewConfig', "Country"), None, None, ui.ReferenceLookupDelegate),
+                                           ("src_id", "Data source", None, None, ui.ReferenceLookupDelegate)],
                                           title="Assets", search_field="full_name",
                                           relations=[("type_id", "asset_types", "id", "name", "Asset type:"),
                                                      ("country_id", "countries", "id", "name", None),
@@ -148,12 +147,12 @@ class PeerSelector(AbstractReferenceSelector):
         AbstractReferenceSelector.__init__(self, parent)
 
     def init_db(self, db):
-        self.dialog = ReferenceDataDialog(db, "agents_ext",
-                                          [("id", " ", 16, None, ReferenceTreeDelegate),
+        self.dialog = ui.ReferenceDataDialog(db, "agents_ext",
+                                          [("id", " ", 16, None, ui.ReferenceTreeDelegate),
                                            ("pid", None, 0, None, None),
                                            ("name", "Name", -1, Qt.AscendingOrder, None),
                                            ("location", "Location", None, None, None),
-                                           ("actions_count", "Docs count", None, None, ReferenceIntDelegate),
+                                           ("actions_count", "Docs count", None, None, ui.ReferenceIntDelegate),
                                            ("children_count", None, None, None, None)],
                                           title="Choose peer", search_field="name", tree_view=True)
         super().init_db("agents_ext", "name")
@@ -164,14 +163,14 @@ class CategorySelector(AbstractReferenceSelector):
         AbstractReferenceSelector.__init__(self, parent)
 
     def init_db(self, db):
-        self.dialog = ReferenceDataDialog(db, "categories_ext",
-                                          [("id", " ", 16, None, ReferenceTreeDelegate),
-                                           ("pid", None, 0, None, None),
-                                           ("name", "Name", -1, Qt.AscendingOrder, None),
-                                           ("often", "Often", None, None, ReferenceBoolDelegate),
-                                           ("special", None, 0, None, None),
-                                           ("children_count", None, None, None, None)],
-                                          title="Choose category", search_field="name", tree_view=True)
+        self.dialog = ui.ReferenceDataDialog(db, "categories_ext",
+                                             [("id", " ", 16, None, ui.ReferenceTreeDelegate),
+                                              ("pid", None, 0, None, None),
+                                              ("name", "Name", -1, Qt.AscendingOrder, None),
+                                              ("often", "Often", None, None, ui.ReferenceBoolDelegate),
+                                              ("special", None, 0, None, None),
+                                              ("children_count", None, None, None, None)],
+                                             title="Choose category", search_field="name", tree_view=True)
         super().init_db("categories_ext", "name")
 
 
@@ -180,8 +179,8 @@ class TagSelector(AbstractReferenceSelector):
         AbstractReferenceSelector.__init__(self, parent)
 
     def init_db(self, db):
-        self.dialog = ReferenceDataDialog(db, "tags",
-                                          [("id", None, 0, None, None),
-                                           ("tag", "Tag", -1, Qt.AscendingOrder, None)],
-                                          title="Choose tag", search_field="tag")
+        self.dialog = ui.ReferenceDataDialog(db, "tags",
+                                             [("id", None, 0, None, None),
+                                              ("tag", "Tag", -1, Qt.AscendingOrder, None)],
+                                             title="Choose tag", search_field="tag")
         super().init_db("tags", "tag")

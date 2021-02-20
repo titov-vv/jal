@@ -12,8 +12,6 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
-from jal.ui_custom.reference_selector import AccountSelector
-from jal.ui_custom.reference_selector import PeerSelector
 from jal.ui_custom.account_select import AccountButton
 from jal.ui_custom.log_viewer import LogViewer
 from jal.ui_custom.account_select import ComboBoxDB
@@ -324,99 +322,6 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_10.addWidget(self.CorporateAction)
 
         self.OperationsTabs.addWidget(self.CorporateActionPage)
-        self.ActionDetailsTab = QWidget()
-        self.ActionDetailsTab.setObjectName(u"ActionDetailsTab")
-        self.gridLayout_4 = QGridLayout(self.ActionDetailsTab)
-        self.gridLayout_4.setObjectName(u"gridLayout_4")
-        self.gridLayout_4.setContentsMargins(2, 2, 2, 2)
-        self.ActionAccountWidget = AccountSelector(self.ActionDetailsTab)
-        self.ActionAccountWidget.setObjectName(u"ActionAccountWidget")
-
-        self.gridLayout_4.addWidget(self.ActionAccountWidget, 1, 2, 1, 1)
-
-        self.ActionDetailsTableView = QTableView(self.ActionDetailsTab)
-        self.ActionDetailsTableView.setObjectName(u"ActionDetailsTableView")
-        self.ActionDetailsTableView.setAlternatingRowColors(True)
-        self.ActionDetailsTableView.verticalHeader().setVisible(False)
-        self.ActionDetailsTableView.verticalHeader().setMinimumSectionSize(20)
-        self.ActionDetailsTableView.verticalHeader().setDefaultSectionSize(20)
-
-        self.gridLayout_4.addWidget(self.ActionDetailsTableView, 3, 0, 1, 6)
-
-        self.PeerLbl = QLabel(self.ActionDetailsTab)
-        self.PeerLbl.setObjectName(u"PeerLbl")
-
-        self.gridLayout_4.addWidget(self.PeerLbl, 2, 1, 1, 1)
-
-        self.ActionDetailBtnFrame = QFrame(self.ActionDetailsTab)
-        self.ActionDetailBtnFrame.setObjectName(u"ActionDetailBtnFrame")
-        self.ActionDetailBtnFrame.setFrameShape(QFrame.NoFrame)
-        self.ActionDetailBtnFrame.setFrameShadow(QFrame.Plain)
-        self.horizontalLayout_6 = QHBoxLayout(self.ActionDetailBtnFrame)
-        self.horizontalLayout_6.setSpacing(8)
-        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
-        self.horizontalLayout_6.setContentsMargins(0, 0, 0, 0)
-        self.AddActionDetail = QPushButton(self.ActionDetailBtnFrame)
-        self.AddActionDetail.setObjectName(u"AddActionDetail")
-        sizePolicy5 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
-        sizePolicy5.setHorizontalStretch(0)
-        sizePolicy5.setVerticalStretch(0)
-        sizePolicy5.setHeightForWidth(self.AddActionDetail.sizePolicy().hasHeightForWidth())
-        self.AddActionDetail.setSizePolicy(sizePolicy5)
-        self.AddActionDetail.setMaximumSize(QSize(16777215, 16777215))
-
-        self.horizontalLayout_6.addWidget(self.AddActionDetail)
-
-        self.CopyActionDetail = QPushButton(self.ActionDetailBtnFrame)
-        self.CopyActionDetail.setObjectName(u"CopyActionDetail")
-        sizePolicy5.setHeightForWidth(self.CopyActionDetail.sizePolicy().hasHeightForWidth())
-        self.CopyActionDetail.setSizePolicy(sizePolicy5)
-        self.CopyActionDetail.setMaximumSize(QSize(16777215, 16777215))
-
-        self.horizontalLayout_6.addWidget(self.CopyActionDetail)
-
-        self.RemoveActionDetail = QPushButton(self.ActionDetailBtnFrame)
-        self.RemoveActionDetail.setObjectName(u"RemoveActionDetail")
-        sizePolicy5.setHeightForWidth(self.RemoveActionDetail.sizePolicy().hasHeightForWidth())
-        self.RemoveActionDetail.setSizePolicy(sizePolicy5)
-        self.RemoveActionDetail.setMaximumSize(QSize(16777215, 16777215))
-
-        self.horizontalLayout_6.addWidget(self.RemoveActionDetail)
-
-
-        self.gridLayout_4.addWidget(self.ActionDetailBtnFrame, 2, 0, 1, 1)
-
-        self.ActionPeerWidget = PeerSelector(self.ActionDetailsTab)
-        self.ActionPeerWidget.setObjectName(u"ActionPeerWidget")
-
-        self.gridLayout_4.addWidget(self.ActionPeerWidget, 2, 2, 1, 1)
-
-        self.ActionDetailsSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.gridLayout_4.addItem(self.ActionDetailsSpacer, 1, 3, 1, 1)
-
-        self.ActionAccountLabel = QLabel(self.ActionDetailsTab)
-        self.ActionAccountLabel.setObjectName(u"ActionAccountLabel")
-
-        self.gridLayout_4.addWidget(self.ActionAccountLabel, 1, 1, 1, 1)
-
-        self.ActionTimestampEdit = QDateTimeEdit(self.ActionDetailsTab)
-        self.ActionTimestampEdit.setObjectName(u"ActionTimestampEdit")
-        self.ActionTimestampEdit.setCalendarPopup(True)
-        self.ActionTimestampEdit.setTimeSpec(Qt.UTC)
-
-        self.gridLayout_4.addWidget(self.ActionTimestampEdit, 1, 0, 1, 1)
-
-        self.ActionTabLbl = QLabel(self.ActionDetailsTab)
-        self.ActionTabLbl.setObjectName(u"ActionTabLbl")
-        font = QFont()
-        font.setBold(True)
-        font.setWeight(75)
-        self.ActionTabLbl.setFont(font)
-
-        self.gridLayout_4.addWidget(self.ActionTabLbl, 0, 0, 1, 1)
-
-        self.OperationsTabs.addWidget(self.ActionDetailsTab)
 
         self.horizontalLayout_4.addWidget(self.OperationsTabs)
 
@@ -575,11 +480,11 @@ class Ui_LedgerMainWindow(object):
 
         self.line_2 = QFrame(self.ReportParamsFrame)
         self.line_2.setObjectName(u"line_2")
-        sizePolicy6 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
-        sizePolicy6.setHorizontalStretch(0)
-        sizePolicy6.setVerticalStretch(0)
-        sizePolicy6.setHeightForWidth(self.line_2.sizePolicy().hasHeightForWidth())
-        self.line_2.setSizePolicy(sizePolicy6)
+        sizePolicy5 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        sizePolicy5.setHorizontalStretch(0)
+        sizePolicy5.setVerticalStretch(0)
+        sizePolicy5.setHeightForWidth(self.line_2.sizePolicy().hasHeightForWidth())
+        self.line_2.setSizePolicy(sizePolicy5)
         self.line_2.setFrameShadow(QFrame.Sunken)
         self.line_2.setFrameShape(QFrame.VLine)
 
@@ -776,13 +681,6 @@ class Ui_LedgerMainWindow(object):
         self.AccountLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Account:", None))
         self.ChooseAccountBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"All", None))
         self.SearchLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Search:", None))
-        self.PeerLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Peer:", None))
-        self.AddActionDetail.setText(QCoreApplication.translate("LedgerMainWindow", u" + ", None))
-        self.CopyActionDetail.setText(QCoreApplication.translate("LedgerMainWindow", u">>", None))
-        self.RemoveActionDetail.setText(QCoreApplication.translate("LedgerMainWindow", u" \u2014 ", None))
-        self.ActionAccountLabel.setText(QCoreApplication.translate("LedgerMainWindow", u"Account:", None))
-        self.ActionTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
-        self.ActionTabLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Income / Spending", None))
         self.NewOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"New", None))
         self.CopyOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Copy", None))
         self.DeleteOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Del", None))

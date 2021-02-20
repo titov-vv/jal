@@ -18,7 +18,7 @@ from jal.db.ledger import Ledger
 from jal.db.balances_model import BalancesModel
 from jal.db.holdings_model import HoldingsModel
 from jal.db.operations_model import OperationsModel
-from jal.widgets.operations import LedgerOperationsView, LedgerInitValues
+from jal.widgets.operations import LedgerOperationsView
 from jal.reports.reports import Reports, ReportType
 from jal.data_import.statements import StatementLoader
 from jal.reports.taxes import TaxesRus

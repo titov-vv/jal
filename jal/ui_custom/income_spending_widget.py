@@ -1,4 +1,4 @@
-from PySide2.QtCore import Qt
+from PySide2.QtCore import Qt, Slot
 from PySide2.QtWidgets import QLabel, QDateTimeEdit, QPushButton, QTableView
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 from jal.ui_custom.helpers import g_tr
@@ -68,6 +68,9 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.layout.addWidget(self.details_table, 4, 0, 1, 10)
         self.layout.addItem(self.horizontalSpacer, 1, 7, 1, 1)
 
+        self.add_button.clicked.connect(self.addChild)
+        self.del_button.clicked.connect(self.delChild)
+
     def init_db(self, db):
         super().init_db(db, "actions")
         self.mapper.setItemDelegate(MapperDelegate(self.mapper))
@@ -97,3 +100,15 @@ class IncomeSpendingWidget(AbstractOperationDetails):
     def setId(self, id):
         super().setId(id)
         self.details_model.setFilter(f"action_details.pid = {id}")
+
+    @Slot()
+    def addChild(self):
+        new_record = self.details_model.record()
+        self.details_model.insertRecord(-1, new_record)
+
+    @Slot()
+    def delChild(self):
+        idx = self.details_table.selectionModel().selection().indexes()
+        selected_row = idx[0].row()
+        self.details_model.removeRow(selected_row)
+        self.details_table.setRowHidden(selected_row, True)

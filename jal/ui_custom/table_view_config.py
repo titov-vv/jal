@@ -166,8 +166,6 @@ class TableViewConfig:
             (parent.DateRangeCombo,         "currentIndexChanged(int)", parent.OnOperationsRangeChange),
             (parent.ChooseAccountBtn,       "changed(int)",             parent.OperationsTableView.model().setAccount),
             (parent.SearchString,           "textChanged(QString)",     parent.OperationsTableView.model().filterText),
-            (parent.AddActionDetail,        "clicked()",                partial(parent.operations.addOperationChild, TransactionType.Action)),
-            (parent.RemoveActionDetail,     "clicked()",                partial(parent.operations.deleteOperationChild, TransactionType.Action)),
             (parent.DeleteOperationBtn,     "clicked()",                parent.operations.deleteOperation),
             (parent.CopyOperationBtn,       "clicked()",                parent.operations.copyOperation),
             (parent.SaveOperationBtn,       "clicked()",                parent.operations.commitOperation),
