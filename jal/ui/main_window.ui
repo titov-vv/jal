@@ -152,7 +152,7 @@
                    <second>0</second>
                    <year>2020</year>
                    <month>12</month>
-                   <day>25</day>
+                   <day>24</day>
                   </datetime>
                  </property>
                  <property name="displayFormat">
@@ -458,9 +458,31 @@
                 <item>
                  <widget class="QStackedWidget" name="OperationsTabs">
                   <property name="currentIndex">
-                   <number>0</number>
+                   <number>4</number>
                   </property>
                   <widget class="QWidget" name="NoOperationTab"/>
+                  <widget class="QWidget" name="DividendPage">
+                   <layout class="QHBoxLayout" name="horizontalLayout_5">
+                    <property name="spacing">
+                     <number>0</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                    <item>
+                     <widget class="DividendWidget" name="Dividend" native="true"/>
+                    </item>
+                   </layout>
+                  </widget>
                   <widget class="QWidget" name="ActionDetailsTab">
                    <layout class="QGridLayout" name="gridLayout_4">
                     <property name="leftMargin">
@@ -773,7 +795,7 @@
                        <date>
                         <year>1999</year>
                         <month>12</month>
-                        <day>24</day>
+                        <day>23</day>
                        </date>
                       </property>
                       <property name="displayFormat">
@@ -1459,7 +1481,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>25</day>
+               <day>24</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -1604,7 +1626,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>25</day>
+               <day>24</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -1751,7 +1773,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>25</day>
+               <day>24</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -2044,6 +2066,12 @@
    <class>CategorySelector</class>
    <extends>QWidget</extends>
    <header>jal/ui_custom/reference_selector.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DividendWidget</class>
+   <extends>QWidget</extends>
+   <header>jal/ui_custom/dividend_widget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

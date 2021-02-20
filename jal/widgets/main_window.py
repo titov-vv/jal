@@ -8,7 +8,7 @@ from PySide2.QtWidgets import QMainWindow, QMenu, QMessageBox, QLabel, QActionGr
 
 from jal.ui.ui_main_window import Ui_LedgerMainWindow
 from jal.ui.ui_abort_window import Ui_AbortWindow
-from jal.ui_custom.helpers import g_tr, VLine, ManipulateDate, dependency_present
+from jal.ui_custom.helpers import g_tr, ManipulateDate, dependency_present
 from jal.ui_custom.table_view_config import TableViewConfig
 from jal.constants import TransactionType
 from jal.db.backup_restore import JalBackup
@@ -87,7 +87,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.setModel(OperationsModel(self.OperationsTableView, self.db))
         self.OperationsTableView.model().configureView()
 
-        self.operations = LedgerOperationsView(self.OperationsTableView)
+        self.operations = LedgerOperationsView(self.OperationsTableView, self)
         self.ui_config = TableViewConfig(self)
 
         self.ui_config.configure_all()
@@ -112,6 +112,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.operations.activateOperationView.connect(self.ShowOperationTab)
         self.operations.stateIsCommitted.connect(self.showCommitted)
         self.operations.stateIsModified.connect(self.showModified)
+
+        self.Dividend.init_db(self.db)
+        self.Dividend.dbUpdated.connect(self.showCommitted)
 
         # Setup balance and holdings parameters
         self.BalanceDate.setDateTime(QDateTime.currentDateTime())
@@ -244,10 +247,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def ShowOperationTab(self, operation_type):
         tab_list = {
             TransactionType.NA: 0,
-            TransactionType.Action: 1,
-            TransactionType.Transfer: 4,
-            TransactionType.Trade: 2,
-            TransactionType.Dividend: 3,
+            TransactionType.Action: 2,
+            TransactionType.Transfer: 3,
+            TransactionType.Trade: 4,
+            TransactionType.Dividend: 1,
             TransactionType.CorporateAction: 5
         }
         self.OperationsTabs.setCurrentIndex(tab_list[operation_type])

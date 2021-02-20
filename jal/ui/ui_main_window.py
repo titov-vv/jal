@@ -20,6 +20,7 @@ from jal.ui_custom.log_viewer import LogViewer
 from jal.ui_custom.account_select import ComboBoxDB
 from jal.ui_custom.amount_editor import AmountEdit
 from jal.ui_custom.reference_selector import CategorySelector
+from jal.ui_custom.dividend_widget import DividendWidget
 
 
 class Ui_LedgerMainWindow(object):
@@ -113,7 +114,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
         self.BalanceDate = QDateEdit(self.BalanceConfigFrame)
         self.BalanceDate.setObjectName(u"BalanceDate")
-        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 25), QTime(21, 0, 0)))
+        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 24), QTime(21, 0, 0)))
         self.BalanceDate.setCalendarPopup(True)
         self.BalanceDate.setTimeSpec(Qt.UTC)
 
@@ -261,6 +262,18 @@ class Ui_LedgerMainWindow(object):
         self.NoOperationTab = QWidget()
         self.NoOperationTab.setObjectName(u"NoOperationTab")
         self.OperationsTabs.addWidget(self.NoOperationTab)
+        self.DividendPage = QWidget()
+        self.DividendPage.setObjectName(u"DividendPage")
+        self.horizontalLayout_5 = QHBoxLayout(self.DividendPage)
+        self.horizontalLayout_5.setSpacing(0)
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
+        self.Dividend = DividendWidget(self.DividendPage)
+        self.Dividend.setObjectName(u"Dividend")
+
+        self.horizontalLayout_5.addWidget(self.Dividend)
+
+        self.OperationsTabs.addWidget(self.DividendPage)
         self.ActionDetailsTab = QWidget()
         self.ActionDetailsTab.setObjectName(u"ActionDetailsTab")
         self.gridLayout_4 = QGridLayout(self.ActionDetailsTab)
@@ -428,7 +441,7 @@ class Ui_LedgerMainWindow(object):
 
         self.TradeSettlementEdit = QDateEdit(self.TradeDetailsTab)
         self.TradeSettlementEdit.setObjectName(u"TradeSettlementEdit")
-        self.TradeSettlementEdit.setMinimumDate(QDate(1999, 12, 24))
+        self.TradeSettlementEdit.setMinimumDate(QDate(1999, 12, 23))
         self.TradeSettlementEdit.setCalendarPopup(True)
         self.TradeSettlementEdit.setTimeSpec(Qt.UTC)
 
@@ -844,7 +857,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_7.setContentsMargins(2, 2, 2, 2)
         self.HoldingsDate = QDateEdit(self.HoldingsParamsFrame)
         self.HoldingsDate.setObjectName(u"HoldingsDate")
-        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 25), QTime(21, 0, 0)))
+        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 24), QTime(21, 0, 0)))
         self.HoldingsDate.setCalendarPopup(True)
         self.HoldingsDate.setTimeSpec(Qt.UTC)
 
@@ -913,7 +926,7 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportToDate = QDateEdit(self.ReportParamsFrame)
         self.ReportToDate.setObjectName(u"ReportToDate")
-        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 25), QTime(21, 0, 0)))
+        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 24), QTime(21, 0, 0)))
         self.ReportToDate.setCalendarPopup(True)
         self.ReportToDate.setTimeSpec(Qt.UTC)
 
@@ -989,7 +1002,7 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportFromDate = QDateEdit(self.ReportParamsFrame)
         self.ReportFromDate.setObjectName(u"ReportFromDate")
-        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 25), QTime(21, 0, 0)))
+        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 24), QTime(21, 0, 0)))
         self.ReportFromDate.setCalendarPopup(True)
         self.ReportFromDate.setTimeSpec(Qt.UTC)
 
@@ -1085,7 +1098,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(0)
+        self.OperationsTabs.setCurrentIndex(4)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)

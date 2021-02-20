@@ -88,12 +88,13 @@ class LedgerOperationsView(QObject):
     OP_CHILD_TABLE = 4
     OP_INIT = 5
     
-    def __init__(self, operations_table_view):
+    def __init__(self, operations_table_view, main_window):
         super().__init__()
 
         self.p_account_id = 0
         self.p_search_text = ''
         self.start_date_of_view = 0
+        self.main_window = main_window
         self.table_view = operations_table_view
         self.operations = None
         self.modified_operation_type = None
@@ -304,6 +305,8 @@ class LedgerOperationsView(QObject):
             if self.operations[operation_type][self.OP_CHILD_VIEW]:  # if child view defined for operation type
                 view = self.operations[operation_type][self.OP_CHILD_VIEW]
                 view.model().setFilter(f"{self.operations[operation_type][self.OP_CHILD_TABLE]}.pid = {operation_id}")
+            if operation_type == TransactionType.Dividend:
+                self.main_window.Dividend.setId(operation_id)
 
     @Slot()
     def onDataEdit(self, index_start, _index_stop, _role):
