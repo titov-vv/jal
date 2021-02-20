@@ -1,5 +1,5 @@
 from jal.widgets.view_delegate import *
-from jal.constants import ColumnWidth, TransactionType
+from jal.constants import ColumnWidth
 from PySide2 import QtWidgets
 from PySide2.QtCore import QObject, SIGNAL, Slot
 from functools import partial
@@ -31,7 +31,6 @@ class TableViewConfig:
 
     def __init__(self, parent):
         self.parent = parent
-        self.delegates_storage = []   #  Keep references to all created delegates here
         self.dialogs = {
             # see DLG_ constants for reference
             self.ACCOUNT_TYPES: ('account_types',

@@ -189,34 +189,6 @@ def UseSqlQuery(parent, query, columns):
             model.setHeaderData(model.fieldIndex(column[hcol_idx.DB_NAME]), Qt.Horizontal, column[hcol_idx.DISPLAY_NAME])
     return model
 
-# -------------------------------------------------------------------------------------------------------------------
-# Use mappings to link between DB fields and GUI widgets with help of delegate
-# mapping is a list of tuples [(FIELD_NAME, GUI_WIDGET)]
-# If widget is a custom one:
-#    - initialize database connection for it
-#    - connect "changed" signal to "submit" slot of QDataWidgetMapper (to reflect data changes in UI)
-def ConfigureDataMappers(model, mappings, delegate):
-    mapper = QDataWidgetMapper(model)
-    mapper.setModel(model)
-    mapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
-    mapper.setItemDelegate(delegate(mapper))
-    for mapping in mappings:
-        if hasattr(mapping[map_idx.WIDGET], "isCustom"):
-            mapping[map_idx.WIDGET].init_db(model.database())
-            mapping[map_idx.WIDGET].changed.connect(mapper.submit)
-        if mapping[map_idx.WIDGET].property("stringModelData") is not None:
-            # Load lookup values from dynamic property into combo-box model
-            comboModel = QStringListModel(mapping[map_idx.WIDGET].property("stringModelData").split(';'))
-            mapping[map_idx.WIDGET].setModel(comboModel)
-            mapper.addMapping(mapping[map_idx.WIDGET], model.fieldIndex(mapping[map_idx.DB_NAME]),
-                              QByteArray().setRawData("currentIndex", 12))
-        else:  # ComboBox has no USER property so we use QByteArray above, and simple mapping for others below
-            mapper.addMapping(mapping[map_idx.WIDGET], model.fieldIndex(mapping[map_idx.DB_NAME]))
-        # adjust width of QDateTimeEdits to show full date-time string
-        if isinstance(mapping[map_idx.WIDGET], QDateTimeEdit):
-            mapping[map_idx.WIDGET].setFixedWidth(
-                mapping[map_idx.WIDGET].fontMetrics().width("00/00/0000 00:00:00") * 1.25)
-    return mapper
 
 # -------------------------------------------------------------------------------------------------------------------
 # Return value is a list of delegates because storage of delegates
