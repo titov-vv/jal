@@ -1,9 +1,9 @@
 from datetime import time, datetime, timedelta, timezone
 
 from jal.constants import ColumnWidth
-from PySide2.QtCore import QCoreApplication, Qt, QStringListModel, QByteArray
+from PySide2.QtCore import QCoreApplication, Qt
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
-from PySide2.QtWidgets import QHeaderView, QDataWidgetMapper, QFrame, QDateTimeEdit
+from PySide2.QtWidgets import QHeaderView
 
 class hcol_idx:
     DB_NAME = 0
@@ -57,15 +57,6 @@ def formatFloatLong(value):
     else:
         text = f"{value:.8f}"
     return text
-
-
-# -----------------------------------------------------------------------------------------------------------------------
-# a simple VLine, like the one from Qt Designer to use in Status Bar for example
-class VLine(QFrame):
-    def __init__(self):
-        super(VLine, self).__init__()
-        self.setFrameShape(QFrame.VLine)
-        self.setFrameShadow(QFrame.Sunken)
 
 
 # -----------------------------------------------------------------------------------------------------------------------
