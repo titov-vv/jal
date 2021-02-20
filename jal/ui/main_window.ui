@@ -458,9 +458,31 @@
                 <item>
                  <widget class="QStackedWidget" name="OperationsTabs">
                   <property name="currentIndex">
-                   <number>4</number>
+                   <number>0</number>
                   </property>
                   <widget class="QWidget" name="NoOperationTab"/>
+                  <widget class="QWidget" name="IncomeSpendingPage">
+                   <layout class="QHBoxLayout" name="horizontalLayout_11">
+                    <property name="spacing">
+                     <number>0</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                    <item>
+                     <widget class="IncomeSpendingWidget" name="IncomeSpending" native="true"/>
+                    </item>
+                   </layout>
+                  </widget>
                   <widget class="QWidget" name="DividendPage">
                    <layout class="QHBoxLayout" name="horizontalLayout_5">
                     <property name="spacing">
@@ -721,173 +743,6 @@
                        <string>Income / Spending</string>
                       </property>
                      </widget>
-                    </item>
-                   </layout>
-                  </widget>
-                  <widget class="QWidget" name="CorpActionDetailsTab">
-                   <layout class="QGridLayout" name="gridLayout_6">
-                    <property name="leftMargin">
-                     <number>2</number>
-                    </property>
-                    <property name="topMargin">
-                     <number>2</number>
-                    </property>
-                    <property name="rightMargin">
-                     <number>2</number>
-                    </property>
-                    <property name="bottomMargin">
-                     <number>2</number>
-                    </property>
-                    <item row="3" column="3">
-                     <widget class="QLabel" name="CorpActionQtyAfterLbl">
-                      <property name="text">
-                       <string>Qty:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="4">
-                     <widget class="QLineEdit" name="CorpActionQtyBeforeEdit"/>
-                    </item>
-                    <item row="3" column="1">
-                     <widget class="QLabel" name="CorpActionToLbl">
-                      <property name="text">
-                       <string>After:</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="1">
-                     <widget class="QLabel" name="CorpActionAccountLbl">
-                      <property name="text">
-                       <string>Account:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="4">
-                     <widget class="QLineEdit" name="CorpActionQtyAfterEdit"/>
-                    </item>
-                    <item row="6" column="0">
-                     <spacer name="verticalSpacer_3">
-                      <property name="orientation">
-                       <enum>Qt::Vertical</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>20</width>
-                        <height>40</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                    <item row="2" column="2">
-                     <widget class="AssetSelector" name="CorpActionAssetBefore" native="true"/>
-                    </item>
-                    <item row="0" column="0">
-                     <widget class="QLabel" name="CorpActionTabLbl">
-                      <property name="font">
-                       <font>
-                        <weight>75</weight>
-                        <bold>true</bold>
-                       </font>
-                      </property>
-                      <property name="text">
-                       <string>Corporate Action</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="3">
-                     <widget class="QLabel" name="CorpActionQtyBeforeLbl">
-                      <property name="text">
-                       <string>Qty:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="1">
-                     <widget class="QLabel" name="CorpActionFromLbl">
-                      <property name="text">
-                       <string>Before:</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="6">
-                     <spacer name="horizontalSpacer_7">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>40</width>
-                        <height>20</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                    <item row="2" column="0">
-                     <widget class="QLineEdit" name="CorpActionNumberEdit">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="0">
-                     <widget class="QComboBox" name="CorpActionTypeCombo">
-                      <property name="stringModelData" stdset="0">
-                       <string>N/A;Merger;Spin-Off;Symbol change;Split;Stock dividend</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="0">
-                     <widget class="QDateTimeEdit" name="CorpActionTimestampEdit">
-                      <property name="displayFormat">
-                       <string>dd/MM/yyyy hh:mm:ss</string>
-                      </property>
-                      <property name="calendarPopup">
-                       <bool>true</bool>
-                      </property>
-                      <property name="timeSpec">
-                       <enum>Qt::UTC</enum>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="2">
-                     <widget class="AssetSelector" name="CorpActionAssetAfter" native="true"/>
-                    </item>
-                    <item row="5" column="0">
-                     <widget class="QLabel" name="CorpActionTextLbl">
-                      <property name="text">
-                       <string>Text:</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="5" column="1" colspan="4">
-                     <widget class="QLineEdit" name="CorpActionNodeEdit"/>
-                    </item>
-                    <item row="1" column="2" colspan="3">
-                     <widget class="AccountSelector" name="CorpActionAccountWidget" native="true"/>
-                    </item>
-                    <item row="4" column="1" colspan="3">
-                     <widget class="QLabel" name="CorpActionRatioLbl">
-                      <property name="text">
-                       <string>Basis Ratio, %:</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="4" column="4">
-                     <widget class="QLineEdit" name="CorpActionRatioEdit"/>
                     </item>
                    </layout>
                   </widget>
@@ -1591,12 +1446,6 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>AssetSelector</class>
-   <extends>QWidget</extends>
-   <header>jal/ui_custom/reference_selector.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>AccountButton</class>
    <extends>QPushButton</extends>
    <header>jal/ui_custom/account_select.h</header>
@@ -1639,6 +1488,12 @@
    <class>CorporateActionWidget</class>
    <extends>QWidget</extends>
    <header>jal/ui_custom/corporate_action_widget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>IncomeSpendingWidget</class>
+   <extends>QWidget</extends>
+   <header>jal/ui_custom/income_spending_widget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

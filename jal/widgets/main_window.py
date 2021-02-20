@@ -113,6 +113,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.operations.stateIsCommitted.connect(self.showCommitted)
         self.operations.stateIsModified.connect(self.showModified)
 
+        self.IncomeSpending.init_db(self.db)
+        self.IncomeSpending.dbUpdated.connect(self.showCommitted)
         self.Dividend.init_db(self.db)
         self.Dividend.dbUpdated.connect(self.showCommitted)
         self.Trade.init_db(self.db)
@@ -253,11 +255,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def ShowOperationTab(self, operation_type):
         tab_list = {
             TransactionType.NA: 0,
-            TransactionType.Action: 5,
-            TransactionType.Transfer: 3,
-            TransactionType.Trade: 2,
-            TransactionType.Dividend: 1,
-            TransactionType.CorporateAction: 4
+            TransactionType.Action: 1,
+            TransactionType.Transfer: 4,
+            TransactionType.Trade: 3,
+            TransactionType.Dividend: 2,
+            TransactionType.CorporateAction: 5
         }
         self.OperationsTabs.setCurrentIndex(tab_list[operation_type])
 

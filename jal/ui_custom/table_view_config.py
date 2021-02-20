@@ -84,9 +84,7 @@ class TableViewConfig:
         self.models = {}
         self.mappers = {}           # Here mapper objects will be stored
         self.widget_mappers = {
-            self.ACTIONS: [("timestamp", parent.ActionTimestampEdit),
-                           ("account_id", parent.ActionAccountWidget),
-                           ("peer_id", parent.ActionPeerWidget)],
+            self.ACTIONS: [],
             self.ACTION_DETAILS: None,
             self.TRADES: [],
             self.DIVIDENDS: [],

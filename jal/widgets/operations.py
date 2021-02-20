@@ -305,6 +305,8 @@ class LedgerOperationsView(QObject):
             if self.operations[operation_type][self.OP_CHILD_VIEW]:  # if child view defined for operation type
                 view = self.operations[operation_type][self.OP_CHILD_VIEW]
                 view.model().setFilter(f"{self.operations[operation_type][self.OP_CHILD_TABLE]}.pid = {operation_id}")
+            if operation_type == TransactionType.Action:
+                self.main_window.IncomeSpending.setId(operation_id)
             if operation_type == TransactionType.Dividend:
                 self.main_window.Dividend.setId(operation_id)
             if operation_type == TransactionType.Trade:

@@ -14,7 +14,6 @@ from PySide2.QtWidgets import *
 
 from jal.ui_custom.reference_selector import AccountSelector
 from jal.ui_custom.reference_selector import PeerSelector
-from jal.ui_custom.reference_selector import AssetSelector
 from jal.ui_custom.account_select import AccountButton
 from jal.ui_custom.log_viewer import LogViewer
 from jal.ui_custom.account_select import ComboBoxDB
@@ -23,6 +22,7 @@ from jal.ui_custom.dividend_widget import DividendWidget
 from jal.ui_custom.trade_widget import TradeWidget
 from jal.ui_custom.transfer_widget import TransferWidget
 from jal.ui_custom.corporate_action_widget import CorporateActionWidget
+from jal.ui_custom.income_spending_widget import IncomeSpendingWidget
 
 
 class Ui_LedgerMainWindow(object):
@@ -264,6 +264,18 @@ class Ui_LedgerMainWindow(object):
         self.NoOperationTab = QWidget()
         self.NoOperationTab.setObjectName(u"NoOperationTab")
         self.OperationsTabs.addWidget(self.NoOperationTab)
+        self.IncomeSpendingPage = QWidget()
+        self.IncomeSpendingPage.setObjectName(u"IncomeSpendingPage")
+        self.horizontalLayout_11 = QHBoxLayout(self.IncomeSpendingPage)
+        self.horizontalLayout_11.setSpacing(0)
+        self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
+        self.horizontalLayout_11.setContentsMargins(0, 0, 0, 0)
+        self.IncomeSpending = IncomeSpendingWidget(self.IncomeSpendingPage)
+        self.IncomeSpending.setObjectName(u"IncomeSpending")
+
+        self.horizontalLayout_11.addWidget(self.IncomeSpending)
+
+        self.OperationsTabs.addWidget(self.IncomeSpendingPage)
         self.DividendPage = QWidget()
         self.DividendPage.setObjectName(u"DividendPage")
         self.horizontalLayout_5 = QHBoxLayout(self.DividendPage)
@@ -405,122 +417,6 @@ class Ui_LedgerMainWindow(object):
         self.gridLayout_4.addWidget(self.ActionTabLbl, 0, 0, 1, 1)
 
         self.OperationsTabs.addWidget(self.ActionDetailsTab)
-        self.CorpActionDetailsTab = QWidget()
-        self.CorpActionDetailsTab.setObjectName(u"CorpActionDetailsTab")
-        self.gridLayout_6 = QGridLayout(self.CorpActionDetailsTab)
-        self.gridLayout_6.setObjectName(u"gridLayout_6")
-        self.gridLayout_6.setContentsMargins(2, 2, 2, 2)
-        self.CorpActionQtyAfterLbl = QLabel(self.CorpActionDetailsTab)
-        self.CorpActionQtyAfterLbl.setObjectName(u"CorpActionQtyAfterLbl")
-
-        self.gridLayout_6.addWidget(self.CorpActionQtyAfterLbl, 3, 3, 1, 1)
-
-        self.CorpActionQtyBeforeEdit = QLineEdit(self.CorpActionDetailsTab)
-        self.CorpActionQtyBeforeEdit.setObjectName(u"CorpActionQtyBeforeEdit")
-
-        self.gridLayout_6.addWidget(self.CorpActionQtyBeforeEdit, 2, 4, 1, 1)
-
-        self.CorpActionToLbl = QLabel(self.CorpActionDetailsTab)
-        self.CorpActionToLbl.setObjectName(u"CorpActionToLbl")
-        self.CorpActionToLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gridLayout_6.addWidget(self.CorpActionToLbl, 3, 1, 1, 1)
-
-        self.CorpActionAccountLbl = QLabel(self.CorpActionDetailsTab)
-        self.CorpActionAccountLbl.setObjectName(u"CorpActionAccountLbl")
-
-        self.gridLayout_6.addWidget(self.CorpActionAccountLbl, 1, 1, 1, 1)
-
-        self.CorpActionQtyAfterEdit = QLineEdit(self.CorpActionDetailsTab)
-        self.CorpActionQtyAfterEdit.setObjectName(u"CorpActionQtyAfterEdit")
-
-        self.gridLayout_6.addWidget(self.CorpActionQtyAfterEdit, 3, 4, 1, 1)
-
-        self.verticalSpacer_3 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.gridLayout_6.addItem(self.verticalSpacer_3, 6, 0, 1, 1)
-
-        self.CorpActionAssetBefore = AssetSelector(self.CorpActionDetailsTab)
-        self.CorpActionAssetBefore.setObjectName(u"CorpActionAssetBefore")
-
-        self.gridLayout_6.addWidget(self.CorpActionAssetBefore, 2, 2, 1, 1)
-
-        self.CorpActionTabLbl = QLabel(self.CorpActionDetailsTab)
-        self.CorpActionTabLbl.setObjectName(u"CorpActionTabLbl")
-        self.CorpActionTabLbl.setFont(font)
-
-        self.gridLayout_6.addWidget(self.CorpActionTabLbl, 0, 0, 1, 1)
-
-        self.CorpActionQtyBeforeLbl = QLabel(self.CorpActionDetailsTab)
-        self.CorpActionQtyBeforeLbl.setObjectName(u"CorpActionQtyBeforeLbl")
-
-        self.gridLayout_6.addWidget(self.CorpActionQtyBeforeLbl, 2, 3, 1, 1)
-
-        self.CorpActionFromLbl = QLabel(self.CorpActionDetailsTab)
-        self.CorpActionFromLbl.setObjectName(u"CorpActionFromLbl")
-        self.CorpActionFromLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gridLayout_6.addWidget(self.CorpActionFromLbl, 2, 1, 1, 1)
-
-        self.horizontalSpacer_7 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.gridLayout_6.addItem(self.horizontalSpacer_7, 2, 6, 1, 1)
-
-        self.CorpActionNumberEdit = QLineEdit(self.CorpActionDetailsTab)
-        self.CorpActionNumberEdit.setObjectName(u"CorpActionNumberEdit")
-        sizePolicy6 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-        sizePolicy6.setHorizontalStretch(0)
-        sizePolicy6.setVerticalStretch(0)
-        sizePolicy6.setHeightForWidth(self.CorpActionNumberEdit.sizePolicy().hasHeightForWidth())
-        self.CorpActionNumberEdit.setSizePolicy(sizePolicy6)
-
-        self.gridLayout_6.addWidget(self.CorpActionNumberEdit, 2, 0, 1, 1)
-
-        self.CorpActionTypeCombo = QComboBox(self.CorpActionDetailsTab)
-        self.CorpActionTypeCombo.setObjectName(u"CorpActionTypeCombo")
-
-        self.gridLayout_6.addWidget(self.CorpActionTypeCombo, 3, 0, 1, 1)
-
-        self.CorpActionTimestampEdit = QDateTimeEdit(self.CorpActionDetailsTab)
-        self.CorpActionTimestampEdit.setObjectName(u"CorpActionTimestampEdit")
-        self.CorpActionTimestampEdit.setCalendarPopup(True)
-        self.CorpActionTimestampEdit.setTimeSpec(Qt.UTC)
-
-        self.gridLayout_6.addWidget(self.CorpActionTimestampEdit, 1, 0, 1, 1)
-
-        self.CorpActionAssetAfter = AssetSelector(self.CorpActionDetailsTab)
-        self.CorpActionAssetAfter.setObjectName(u"CorpActionAssetAfter")
-
-        self.gridLayout_6.addWidget(self.CorpActionAssetAfter, 3, 2, 1, 1)
-
-        self.CorpActionTextLbl = QLabel(self.CorpActionDetailsTab)
-        self.CorpActionTextLbl.setObjectName(u"CorpActionTextLbl")
-        self.CorpActionTextLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gridLayout_6.addWidget(self.CorpActionTextLbl, 5, 0, 1, 1)
-
-        self.CorpActionNodeEdit = QLineEdit(self.CorpActionDetailsTab)
-        self.CorpActionNodeEdit.setObjectName(u"CorpActionNodeEdit")
-
-        self.gridLayout_6.addWidget(self.CorpActionNodeEdit, 5, 1, 1, 4)
-
-        self.CorpActionAccountWidget = AccountSelector(self.CorpActionDetailsTab)
-        self.CorpActionAccountWidget.setObjectName(u"CorpActionAccountWidget")
-
-        self.gridLayout_6.addWidget(self.CorpActionAccountWidget, 1, 2, 1, 3)
-
-        self.CorpActionRatioLbl = QLabel(self.CorpActionDetailsTab)
-        self.CorpActionRatioLbl.setObjectName(u"CorpActionRatioLbl")
-        self.CorpActionRatioLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gridLayout_6.addWidget(self.CorpActionRatioLbl, 4, 1, 1, 3)
-
-        self.CorpActionRatioEdit = QLineEdit(self.CorpActionDetailsTab)
-        self.CorpActionRatioEdit.setObjectName(u"CorpActionRatioEdit")
-
-        self.gridLayout_6.addWidget(self.CorpActionRatioEdit, 4, 4, 1, 1)
-
-        self.OperationsTabs.addWidget(self.CorpActionDetailsTab)
 
         self.horizontalLayout_4.addWidget(self.OperationsTabs)
 
@@ -679,11 +575,11 @@ class Ui_LedgerMainWindow(object):
 
         self.line_2 = QFrame(self.ReportParamsFrame)
         self.line_2.setObjectName(u"line_2")
-        sizePolicy7 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
-        sizePolicy7.setHorizontalStretch(0)
-        sizePolicy7.setVerticalStretch(0)
-        sizePolicy7.setHeightForWidth(self.line_2.sizePolicy().hasHeightForWidth())
-        self.line_2.setSizePolicy(sizePolicy7)
+        sizePolicy6 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        sizePolicy6.setHorizontalStretch(0)
+        sizePolicy6.setVerticalStretch(0)
+        sizePolicy6.setHeightForWidth(self.line_2.sizePolicy().hasHeightForWidth())
+        self.line_2.setSizePolicy(sizePolicy6)
         self.line_2.setFrameShadow(QFrame.Sunken)
         self.line_2.setFrameShape(QFrame.VLine)
 
@@ -838,7 +734,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(4)
+        self.OperationsTabs.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)
@@ -887,16 +783,6 @@ class Ui_LedgerMainWindow(object):
         self.ActionAccountLabel.setText(QCoreApplication.translate("LedgerMainWindow", u"Account:", None))
         self.ActionTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
         self.ActionTabLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Income / Spending", None))
-        self.CorpActionQtyAfterLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Qty:", None))
-        self.CorpActionToLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"After:", None))
-        self.CorpActionAccountLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Account:", None))
-        self.CorpActionTabLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Corporate Action", None))
-        self.CorpActionQtyBeforeLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Qty:", None))
-        self.CorpActionFromLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Before:", None))
-        self.CorpActionTypeCombo.setProperty("stringModelData", QCoreApplication.translate("LedgerMainWindow", u"N/A;Merger;Spin-Off;Symbol change;Split;Stock dividend", None))
-        self.CorpActionTimestampEdit.setDisplayFormat(QCoreApplication.translate("LedgerMainWindow", u"dd/MM/yyyy hh:mm:ss", None))
-        self.CorpActionTextLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Text:", None))
-        self.CorpActionRatioLbl.setText(QCoreApplication.translate("LedgerMainWindow", u"Basis Ratio, %:", None))
         self.NewOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"New", None))
         self.CopyOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Copy", None))
         self.DeleteOperationBtn.setText(QCoreApplication.translate("LedgerMainWindow", u"Del", None))
