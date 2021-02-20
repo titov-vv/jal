@@ -152,7 +152,7 @@
                    <second>0</second>
                    <year>2020</year>
                    <month>12</month>
-                   <day>24</day>
+                   <day>23</day>
                   </datetime>
                  </property>
                  <property name="displayFormat">
@@ -458,7 +458,7 @@
                 <item>
                  <widget class="QStackedWidget" name="OperationsTabs">
                   <property name="currentIndex">
-                   <number>0</number>
+                   <number>4</number>
                   </property>
                   <widget class="QWidget" name="NoOperationTab"/>
                   <widget class="QWidget" name="DividendPage">
@@ -524,6 +524,28 @@
                     </property>
                     <item>
                      <widget class="TransferWidget" name="Transfer" native="true"/>
+                    </item>
+                   </layout>
+                  </widget>
+                  <widget class="QWidget" name="CorporateActionPage">
+                   <layout class="QHBoxLayout" name="horizontalLayout_10">
+                    <property name="spacing">
+                     <number>0</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                    <item>
+                     <widget class="CorporateActionWidget" name="CorporateAction" native="true"/>
                     </item>
                    </layout>
                   </widget>
@@ -699,518 +721,6 @@
                        <string>Income / Spending</string>
                       </property>
                      </widget>
-                    </item>
-                   </layout>
-                  </widget>
-                  <widget class="QWidget" name="TradeDetailsTab">
-                   <property name="enabled">
-                    <bool>true</bool>
-                   </property>
-                   <layout class="QGridLayout" name="gridLayout_3">
-                    <property name="leftMargin">
-                     <number>2</number>
-                    </property>
-                    <property name="topMargin">
-                     <number>2</number>
-                    </property>
-                    <property name="rightMargin">
-                     <number>2</number>
-                    </property>
-                    <property name="bottomMargin">
-                     <number>2</number>
-                    </property>
-                    <item row="2" column="5">
-                     <spacer name="horizontalSpacer_5">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>40</width>
-                        <height>20</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                    <item row="4" column="1">
-                     <widget class="QLabel" name="TradePriceLbl">
-                      <property name="text">
-                       <string>Price:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="0">
-                     <widget class="QLineEdit" name="TradeNumberEdit">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="toolTip">
-                       <string>Trade operation number</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="1">
-                     <widget class="QLabel" name="TradeAccountLbl">
-                      <property name="text">
-                       <string>Account:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="5" column="3">
-                     <widget class="QLabel" name="TradeFeeLbl">
-                      <property name="text">
-                       <string>Fee broker:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="5" column="1">
-                     <widget class="QLabel" name="TradeCouponLbl">
-                      <property name="text">
-                       <string>Coupon:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="7" column="0">
-                     <spacer name="verticalSpacer_2">
-                      <property name="orientation">
-                       <enum>Qt::Vertical</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>20</width>
-                        <height>40</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                    <item row="4" column="4">
-                     <widget class="AmountEdit" name="TradeQtyEdit">
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="0">
-                     <widget class="QLabel" name="TradeTabLbl">
-                      <property name="font">
-                       <font>
-                        <weight>75</weight>
-                        <bold>true</bold>
-                       </font>
-                      </property>
-                      <property name="text">
-                       <string>Buy / Sell</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="1">
-                     <widget class="QLabel" name="TradeSymbolLbl">
-                      <property name="text">
-                       <string>Symbol:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="5" column="2">
-                     <widget class="AmountEdit" name="TradeCouponEdit">
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="4" column="3">
-                     <widget class="QLabel" name="label">
-                      <property name="text">
-                       <string>Quantity</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="5" column="0">
-                     <widget class="QDateEdit" name="TradeSettlementEdit">
-                      <property name="toolTip">
-                       <string>Trade settlement date</string>
-                      </property>
-                      <property name="specialValueText">
-                       <string>N/A</string>
-                      </property>
-                      <property name="minimumDate">
-                       <date>
-                        <year>1999</year>
-                        <month>12</month>
-                        <day>23</day>
-                       </date>
-                      </property>
-                      <property name="displayFormat">
-                       <string>dd/MM/yyyy</string>
-                      </property>
-                      <property name="calendarPopup">
-                       <bool>true</bool>
-                      </property>
-                      <property name="timeSpec">
-                       <enum>Qt::UTC</enum>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="1" column="0">
-                     <widget class="QDateTimeEdit" name="TradeTimestampEdit">
-                      <property name="displayFormat">
-                       <string>dd/MM/yyyy hh:mm:ss</string>
-                      </property>
-                      <property name="calendarPopup">
-                       <bool>true</bool>
-                      </property>
-                      <property name="timeSpec">
-                       <enum>Qt::UTC</enum>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="5" column="4">
-                     <widget class="AmountEdit" name="TradeFeeEdit">
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="2" colspan="3">
-                     <widget class="AssetSelector" name="TradeAssetWidget" native="true"/>
-                    </item>
-                    <item row="1" column="2" colspan="3">
-                     <widget class="AccountSelector" name="TradeAccountWidget" native="true"/>
-                    </item>
-                    <item row="4" column="2">
-                     <widget class="AmountEdit" name="TradePriceEdit">
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="6" column="1">
-                     <widget class="QLabel" name="TradeNoteLbl">
-                      <property name="text">
-                       <string>Comment:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="6" column="2" colspan="3">
-                     <widget class="QLineEdit" name="TradeNoteEdit"/>
-                    </item>
-                   </layout>
-                  </widget>
-                  <widget class="QWidget" name="DividendDetailsTab">
-                   <layout class="QGridLayout" name="gridLayout_2">
-                    <property name="leftMargin">
-                     <number>2</number>
-                    </property>
-                    <property name="topMargin">
-                     <number>2</number>
-                    </property>
-                    <property name="rightMargin">
-                     <number>2</number>
-                    </property>
-                    <property name="bottomMargin">
-                     <number>2</number>
-                    </property>
-                    <item row="6" column="2">
-                     <widget class="QLabel" name="DividendSymbolLbl">
-                      <property name="text">
-                       <string>Symbol:</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="8" column="2">
-                     <widget class="AmountEdit" name="DividendTaxEdit">
-                      <property name="toolTip">
-                       <string>Tax amount</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="3">
-                     <widget class="AccountSelector" name="DividendAccountWidget" native="true">
-                      <property name="minimumSize">
-                       <size>
-                        <width>32</width>
-                        <height>0</height>
-                       </size>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="1">
-                     <widget class="QDateTimeEdit" name="DividendTimestampEdit">
-                      <property name="displayFormat">
-                       <string>dd/MM/yyyy hh:mm:ss</string>
-                      </property>
-                      <property name="calendarPopup">
-                       <bool>true</bool>
-                      </property>
-                      <property name="timeSpec">
-                       <enum>Qt::UTC</enum>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="8" column="1">
-                     <widget class="QLabel" name="DividendTaxLbl">
-                      <property name="text">
-                       <string>Tax amount:</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="7" column="2">
-                     <widget class="AmountEdit" name="DividendSumEdit">
-                      <property name="toolTip">
-                       <string>Dividend amount</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="6" column="1">
-                     <widget class="QLineEdit" name="DividendNumberEdit">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="toolTip">
-                       <string>Dividend operation number</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="9" column="1">
-                     <spacer name="verticalSpacer">
-                      <property name="orientation">
-                       <enum>Qt::Vertical</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>20</width>
-                        <height>40</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                    <item row="0" column="1">
-                     <widget class="QLabel" name="DividendTabLbl">
-                      <property name="font">
-                       <font>
-                        <weight>75</weight>
-                        <bold>true</bold>
-                       </font>
-                      </property>
-                      <property name="text">
-                       <string>Dividend</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="2">
-                     <widget class="QLabel" name="DividendAccountLbl">
-                      <property name="text">
-                       <string>Account:</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="7" column="1">
-                     <widget class="QLabel" name="DividendSumLbl">
-                      <property name="text">
-                       <string>Dividend amount:</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="6" column="3">
-                     <widget class="AssetSelector" name="DividendAssetWidget" native="true">
-                      <property name="minimumSize">
-                       <size>
-                        <width>32</width>
-                        <height>0</height>
-                       </size>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="7" column="3" colspan="2">
-                     <widget class="QLineEdit" name="DividendSumDescription">
-                      <property name="toolTip">
-                       <string>Dividend description</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="4">
-                     <spacer name="horizontalSpacer_6">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>40</width>
-                        <height>20</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                   </layout>
-                  </widget>
-                  <widget class="QWidget" name="TransferDetailsTab">
-                   <layout class="QGridLayout" name="gridLayout_5">
-                    <property name="leftMargin">
-                     <number>2</number>
-                    </property>
-                    <property name="topMargin">
-                     <number>2</number>
-                    </property>
-                    <property name="rightMargin">
-                     <number>2</number>
-                    </property>
-                    <property name="bottomMargin">
-                     <number>2</number>
-                    </property>
-                    <item row="4" column="3">
-                     <widget class="AmountEdit" name="TransferToAmount">
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="0" column="0">
-                     <widget class="QLabel" name="TransferTabLbl">
-                      <property name="font">
-                       <font>
-                        <weight>75</weight>
-                        <bold>true</bold>
-                       </font>
-                      </property>
-                      <property name="text">
-                       <string>Transfer</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="4" column="1">
-                     <widget class="QLabel" name="TransferToLbl">
-                      <property name="text">
-                       <string>To:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="6" column="1" colspan="4">
-                     <widget class="QLineEdit" name="TransferNote"/>
-                    </item>
-                    <item row="4" column="4">
-                     <spacer name="horizontalSpacer_4">
-                      <property name="orientation">
-                       <enum>Qt::Horizontal</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>40</width>
-                        <height>20</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                    <item row="2" column="2">
-                     <widget class="AccountSelector" name="TransferFromAccountWidget" native="true"/>
-                    </item>
-                    <item row="4" column="0">
-                     <widget class="QDateTimeEdit" name="TransferToTimestamp">
-                      <property name="displayFormat">
-                       <string>dd/MM/yyyy hh:mm:ss</string>
-                      </property>
-                      <property name="calendarPopup">
-                       <bool>true</bool>
-                      </property>
-                      <property name="timeSpec">
-                       <enum>Qt::UTC</enum>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="7" column="2">
-                     <spacer name="verticalSpacer_5">
-                      <property name="orientation">
-                       <enum>Qt::Vertical</enum>
-                      </property>
-                      <property name="sizeHint" stdset="0">
-                       <size>
-                        <width>20</width>
-                        <height>40</height>
-                       </size>
-                      </property>
-                     </spacer>
-                    </item>
-                    <item row="6" column="0">
-                     <widget class="QLabel" name="TransferTextLbl">
-                      <property name="text">
-                       <string>Text:</string>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="0">
-                     <widget class="QDateTimeEdit" name="TransferFromTimestamp">
-                      <property name="displayFormat">
-                       <string>dd/MM/yyyy hh:mm:ss</string>
-                      </property>
-                      <property name="calendarPopup">
-                       <bool>true</bool>
-                      </property>
-                      <property name="timeSpec">
-                       <enum>Qt::UTC</enum>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="1">
-                     <widget class="QLabel" name="TransferFromLbl">
-                      <property name="text">
-                       <string>From:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="3">
-                     <widget class="AmountEdit" name="TransferFromAmount">
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="4" column="2">
-                     <widget class="AccountSelector" name="TransferToAccountWidget" native="true"/>
-                    </item>
-                    <item row="3" column="1">
-                     <widget class="QLabel" name="TransferFeeLbl">
-                      <property name="text">
-                       <string>Fee:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="3">
-                     <widget class="AmountEdit" name="TransferFeeAmount">
-                      <property name="alignment">
-                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="3" column="2">
-                     <widget class="AccountSelector" name="TransferFeeAccountWidget" native="true"/>
                     </item>
                    </layout>
                   </widget>
@@ -1525,7 +1035,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>24</day>
+               <day>23</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -1670,7 +1180,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>24</day>
+               <day>23</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -1817,7 +1327,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>24</day>
+               <day>23</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -2102,11 +1612,6 @@
    <header>jal/ui_custom/account_select.h</header>
   </customwidget>
   <customwidget>
-   <class>AmountEdit</class>
-   <extends>QLineEdit</extends>
-   <header>jal/ui_custom/amount_editor.h</header>
-  </customwidget>
-  <customwidget>
    <class>CategorySelector</class>
    <extends>QWidget</extends>
    <header>jal/ui_custom/reference_selector.h</header>
@@ -2128,6 +1633,12 @@
    <class>TransferWidget</class>
    <extends>QWidget</extends>
    <header>jal/ui_custom/transfer_widget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CorporateActionWidget</class>
+   <extends>QWidget</extends>
+   <header>jal/ui_custom/corporate_action_widget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

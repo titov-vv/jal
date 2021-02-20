@@ -311,6 +311,8 @@ class LedgerOperationsView(QObject):
                 self.main_window.Trade.setId(operation_id)
             if operation_type == TransactionType.Transfer:
                 self.main_window.Transfer.setId(operation_id)
+            if operation_type == TransactionType.CorporateAction:
+                self.main_window.CorporateAction.setId(operation_id)
 
     @Slot()
     def onDataEdit(self, index_start, _index_stop, _role):
