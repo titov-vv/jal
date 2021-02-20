@@ -31,7 +31,7 @@ class JalBackup:
     def validate_backup(self):
         with tarfile.open(self.backup_name, "r:gz") as tar:
             # Check backup file list
-            backup_file_list = ['', Setup.DB_PATH, 'label']
+            backup_file_list = [Setup.DB_PATH, 'label']
             if set(backup_file_list) != set(tar.getnames()):
                 logging.debug("Backup content expected: " + str(backup_file_list) +
                               "\nBackup content actual: " + str(tar.getnames()))
@@ -60,7 +60,8 @@ class JalBackup:
             backup_con = sqlite3.connect(tmp_path + os.sep + Setup.DB_PATH)
             db_con.backup(backup_con)
             with tarfile.open(self.backup_name, "w:gz") as tar:
-                tar.add(tmp_path, arcname='')
+                tar.add(tmp_path + os.sep + 'label', arcname='label')
+                tar.add(tmp_path + os.sep + Setup.DB_PATH, arcname=Setup.DB_PATH)
         db_con.close()
 
     def do_restore(self):

@@ -40,9 +40,6 @@ def test_invalid_backup(tmp_path, project_root):
     invalid_backup.backup_name = project_root + os.sep + "tests" + os.sep + "test_data" + os.sep + "invalid_backup.tgz"
     assert not invalid_backup.validate_backup()
 
-    outdated_backup = JalBackup(None, db_file_name)
-    outdated_backup.backup_name = project_root + os.sep + "tests" + os.sep + "test_data" + os.sep + "outdated_backup.tgz"
-    assert not outdated_backup.validate_backup()
 
 def test_backup_load(tmp_path, project_root):
     # Prepare environment
@@ -58,9 +55,8 @@ def test_backup_load(tmp_path, project_root):
 
     assert backup.validate_backup()
     # Check validation
-    assert backup._backup_label_date == '2021/01/01 00:00:00'
+    assert backup._backup_label_date == '2021/01/01 00:00:00+0300'
 
-    backup.clean_db()
     backup.do_restore()
 
     # Check restoration
@@ -80,7 +76,6 @@ def test_fifo(tmp_path, project_root):
     db_file_name = get_dbfilename(str(tmp_path) + os.sep)
     backup = JalBackup(None, db_file_name)
     backup.backup_name = project_root + os.sep + "tests" + os.sep + "test_data" + os.sep + "deals_set.tgz"
-    backup.clean_db()
     backup.do_restore()
 
     db, error = init_and_check_db(str(tmp_path) + os.sep)
