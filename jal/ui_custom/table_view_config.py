@@ -3,18 +3,11 @@ from jal.constants import ColumnWidth, TransactionType
 from PySide2 import QtWidgets
 from PySide2.QtCore import QObject, SIGNAL, Slot
 from functools import partial
-from jal.widgets.mapper_delegate import MapperDelegate
-from jal.ui_custom.helpers import g_tr, UseSqlTable, ConfigureTableView, ConfigureDataMappers
+from jal.ui_custom.helpers import g_tr
 import jal.ui_custom.reference_data as ui               # Full import due to "cyclic" reference
 
 
 class TableViewConfig:
-    ACTIONS = 3
-    ACTION_DETAILS = 4
-    TRADES = 5
-    DIVIDENDS = 6
-    TRANSFERS = 7
-    CORP_ACTIONS = 8
     ACCOUNT_TYPES = 9
     ACCOUNTS = 10
     ASSETS = 11
@@ -36,61 +29,9 @@ class TableViewConfig:
     DLG_TREE = 5
     DLG_RELATIONS = 6
 
-    table_names = {
-        ACTIONS: 'actions',
-        ACTION_DETAILS: 'action_details',
-        TRADES: 'trades',
-        DIVIDENDS: 'dividends',
-        TRANSFERS: 'transfers',
-        CORP_ACTIONS: 'corp_actions'
-    }
-
-    table_relations = {
-        ACTIONS: None,
-        ACTION_DETAILS: [("category_id", "categories", "id", "name", None),
-                         ("tag_id", "tags", "id", "tag", None)],
-        TRADES: None,
-        DIVIDENDS: None,
-        TRANSFERS: None,
-        CORP_ACTIONS: None
-    }
-
-    table_view_columns = {
-        ACTIONS: [],
-        ACTION_DETAILS: [("id", None, None, None, None),
-                         ("pid", None, None, None, None),
-                         ("category_id", g_tr('TableViewConfig', "Category"), 200, None, MapperDelegate),
-                         ("tag_id", g_tr('TableViewConfig', "Tag"), 200, None, MapperDelegate),
-                         ("sum", g_tr('TableViewConfig', "Amount"), 100, None, MapperDelegate),
-                         ("alt_sum", g_tr('TableViewConfig', "Amount *"), 100, None, MapperDelegate),
-                         ("note", g_tr('TableViewConfig', "Note"), ColumnWidth.STRETCH, None, None)],
-        TRADES: [],
-        DIVIDENDS: [],
-        TRANSFERS: [],
-        CORP_ACTIONS: []
-    }
-
     def __init__(self, parent):
         self.parent = parent
         self.delegates_storage = []   #  Keep references to all created delegates here
-        self.views = {
-            self.ACTIONS: None,
-            self.ACTION_DETAILS: parent.ActionDetailsTableView,
-            self.TRADES: None,
-            self.DIVIDENDS: None,
-            self.TRANSFERS: None,
-            self.CORP_ACTIONS: None
-        }
-        self.models = {}
-        self.mappers = {}           # Here mapper objects will be stored
-        self.widget_mappers = {
-            self.ACTIONS: [],
-            self.ACTION_DETAILS: None,
-            self.TRADES: [],
-            self.DIVIDENDS: [],
-            self.TRANSFERS: [],
-            self.CORP_ACTIONS: []
-        }
         self.dialogs = {
             # see DLG_ constants for reference
             self.ACCOUNT_TYPES: ('account_types',
@@ -237,22 +178,7 @@ class TableViewConfig:
     def tr(self, name):
         pass
 
-    def configure(self, i):
-        self.models[i] = UseSqlTable(self.parent, self.table_names[i], self.table_view_columns[i],
-                            relations=self.table_relations[i])
-        if self.views[i]:
-            delegates = ConfigureTableView(self.views[i], self.models[i], self.table_view_columns[i])
-            self.delegates_storage.append(delegates)
-            self.views[i].show()
-        if self.widget_mappers[i]:
-            self.mappers[i] = ConfigureDataMappers(self.models[i], self.widget_mappers[i], MapperDelegate)
-        else:
-            self.mappers[i] = None
-        self.models[i].select()
-
-    def configure_all(self):
-        for table in self.table_names:
-            self.configure(table)
+    def connect_signals_and_slots(self):
         for action in self.actions:
             QObject.connect(action[self.ACTION_SRC], SIGNAL(action[self.ACTION_SIGNAL]), action[self.ACTION_SLOT])
 

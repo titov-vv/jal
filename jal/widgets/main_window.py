@@ -90,23 +90,23 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.operations = LedgerOperationsView(self.OperationsTableView, self)
         self.ui_config = TableViewConfig(self)
 
-        self.ui_config.configure_all()
+        self.ui_config.connect_signals_and_slots()
         self.operation_details = {
-            TransactionType.Action: (
-                g_tr('TableViewConfig', "Income / Spending"), self.ui_config.mappers[self.ui_config.ACTIONS], 'actions',
-                self.ActionDetailsTableView, 'action_details', LedgerInitValues[TransactionType.Action]),
-            TransactionType.Trade: (
-                g_tr('TableViewConfig', "Trade"), self.ui_config.mappers[self.ui_config.TRADES], 'trades', None, None,
-                LedgerInitValues[TransactionType.Trade]),
-            TransactionType.Dividend: (
-                g_tr('TableViewConfig', "Dividend"), self.ui_config.mappers[self.ui_config.DIVIDENDS], 'dividends', None, None,
-                LedgerInitValues[TransactionType.Dividend]),
-            TransactionType.Transfer: (
-                g_tr('TableViewConfig', "Transfer"), self.ui_config.mappers[self.ui_config.TRANSFERS], 'transfers', None, None,
-                LedgerInitValues[TransactionType.Transfer]),
-            TransactionType.CorporateAction: (
-                g_tr('TableViewConfig', "Corp. Action"), self.ui_config.mappers[self.ui_config.CORP_ACTIONS], 'corp_actions', None, None,
-                LedgerInitValues[TransactionType.CorporateAction])
+            # TransactionType.Action: (
+            #     g_tr('TableViewConfig', "Income / Spending"), self.ui_config.mappers[self.ui_config.ACTIONS], 'actions',
+            #     self.ActionDetailsTableView, 'action_details', LedgerInitValues[TransactionType.Action]),
+            # TransactionType.Trade: (
+            #     g_tr('TableViewConfig', "Trade"), self.ui_config.mappers[self.ui_config.TRADES], 'trades', None, None,
+            #     LedgerInitValues[TransactionType.Trade]),
+            # TransactionType.Dividend: (
+            #     g_tr('TableViewConfig', "Dividend"), self.ui_config.mappers[self.ui_config.DIVIDENDS], 'dividends', None, None,
+            #     LedgerInitValues[TransactionType.Dividend]),
+            # TransactionType.Transfer: (
+            #     g_tr('TableViewConfig', "Transfer"), self.ui_config.mappers[self.ui_config.TRANSFERS], 'transfers', None, None,
+            #     LedgerInitValues[TransactionType.Transfer]),
+            # TransactionType.CorporateAction: (
+            #     g_tr('TableViewConfig', "Corp. Action"), self.ui_config.mappers[self.ui_config.CORP_ACTIONS], 'corp_actions', None, None,
+            #     LedgerInitValues[TransactionType.CorporateAction])
         }
         self.operations.setOperationsDetails(self.operation_details)
         self.operations.activateOperationView.connect(self.ShowOperationTab)
@@ -138,8 +138,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                                             partial(self.operations.addNewOperation, operation))
         self.NewOperationBtn.setMenu(self.NewOperationMenu)
 
-        self.ActionDetailsTableView.horizontalHeader().moveSection(self.ActionDetailsTableView.model().fieldIndex("note"),
-                                                                   self.ActionDetailsTableView.model().fieldIndex("name"))
+        # self.ActionDetailsTableView.horizontalHeader().moveSection(self.ActionDetailsTableView.model().fieldIndex("note"),
+        #                                                            self.ActionDetailsTableView.model().fieldIndex("name"))
 
         self.langGroup = QActionGroup(self.menuLanguage)
         self.createLanguageMenu()

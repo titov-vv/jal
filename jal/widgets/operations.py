@@ -298,13 +298,13 @@ class LedgerOperationsView(QObject):
             operation_type, operation_id = self.table_view.model().get_operation(selected_row)
             self.activateOperationView.emit(operation_type)
 
-            if self.operations[operation_type][self.OP_MAPPER]:  # if mapper defined for operation type
-                mapper = self.operations[operation_type][self.OP_MAPPER]
-                mapper.model().setFilter(f"{self.operations[operation_type][self.OP_MAPPER_TABLE]}.id = {operation_id}")
-                mapper.setCurrentModelIndex(mapper.model().index(0, 0))
-            if self.operations[operation_type][self.OP_CHILD_VIEW]:  # if child view defined for operation type
-                view = self.operations[operation_type][self.OP_CHILD_VIEW]
-                view.model().setFilter(f"{self.operations[operation_type][self.OP_CHILD_TABLE]}.pid = {operation_id}")
+            # if self.operations[operation_type][self.OP_MAPPER]:  # if mapper defined for operation type
+            #     mapper = self.operations[operation_type][self.OP_MAPPER]
+            #     mapper.model().setFilter(f"{self.operations[operation_type][self.OP_MAPPER_TABLE]}.id = {operation_id}")
+            #     mapper.setCurrentModelIndex(mapper.model().index(0, 0))
+            # if self.operations[operation_type][self.OP_CHILD_VIEW]:  # if child view defined for operation type
+            #     view = self.operations[operation_type][self.OP_CHILD_VIEW]
+            #     view.model().setFilter(f"{self.operations[operation_type][self.OP_CHILD_TABLE]}.pid = {operation_id}")
             if operation_type == TransactionType.Action:
                 self.main_window.IncomeSpending.setId(operation_id)
             if operation_type == TransactionType.Dividend:
