@@ -5,7 +5,7 @@ from jal.ui_custom.helpers import g_tr
 import jal.ui_custom.reference_data as ui               # Full import due to "cyclic" reference
 
 
-class TableViewConfig:
+class ReferenceDialogs:
     ACTION_SRC = 0
     ACTION_SIGNAL = 1
     ACTION_SLOT = 2
@@ -129,7 +129,7 @@ class TableViewConfig:
         pass
 
     @Slot()
-    def show_dialog(self, table_name):
+    def show(self, table_name):
         ui.ReferenceDataDialog(self.parent.db,
                                table_name,
                                self.dialogs[table_name][self.DLG_COLUMNS],

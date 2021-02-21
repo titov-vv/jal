@@ -19,6 +19,14 @@
     </message>
 </context>
 <context>
+    <name>AbstractOperationDetails</name>
+    <message>
+        <location filename="../ui_custom/abstract_operation_details.py" line="74"/>
+        <source>Operation submit failed: </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>AccountButton</name>
     <message>
         <location filename="../ui_custom/account_select.py" line="38"/>
@@ -151,6 +159,84 @@
     </message>
 </context>
 <context>
+    <name>CorpActionWidget</name>
+    <message>
+        <location filename="../ui_custom/corporate_action_widget.py" line="29"/>
+        <source>Corporate Action</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/corporate_action_widget.py" line="30"/>
+        <source>Date/Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/corporate_action_widget.py" line="31"/>
+        <source>Account</source>
+        <translation type="unfinished">Счет</translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/corporate_action_widget.py" line="32"/>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/corporate_action_widget.py" line="33"/>
+        <source>#</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/corporate_action_widget.py" line="36"/>
+        <source>Asset</source>
+        <translation type="unfinished">ЦБ</translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/corporate_action_widget.py" line="37"/>
+        <source>Qty</source>
+        <translation type="unfinished">Кол-во</translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/corporate_action_widget.py" line="38"/>
+        <source>% of basis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/corporate_action_widget.py" line="39"/>
+        <source>Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/corporate_action_widget.py" line="95"/>
+        <source>N/A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/corporate_action_widget.py" line="95"/>
+        <source>Merger</source>
+        <translation type="unfinished">Объединение компании</translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/corporate_action_widget.py" line="95"/>
+        <source>Spin-Off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/corporate_action_widget.py" line="95"/>
+        <source>Symbol change</source>
+        <translation type="unfinished">Смена символа</translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/corporate_action_widget.py" line="95"/>
+        <source>Split</source>
+        <translation type="unfinished">Сплит</translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/corporate_action_widget.py" line="95"/>
+        <source>Stock dividend</source>
+        <translation type="unfinished">Дивиденд акциями</translation>
+    </message>
+</context>
+<context>
     <name>DB</name>
     <message>
         <location filename="../db/helpers.py" line="145"/>
@@ -239,6 +325,72 @@
         <location filename="../reports/dlsg.py" line="234"/>
         <source>Country isn&apos;t known for tax form (check account settings):</source>
         <translation>Неизвестная страна для 3-НДФЛ (проверьте настройки счёта):</translation>
+    </message>
+</context>
+<context>
+    <name>DetailsModel</name>
+    <message>
+        <location filename="../ui_custom/income_spending_widget.py" line="131"/>
+        <source>Category</source>
+        <translation type="unfinished">Категория</translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/income_spending_widget.py" line="132"/>
+        <source>Tag</source>
+        <translation type="unfinished">Тэг</translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/income_spending_widget.py" line="133"/>
+        <source>Amount</source>
+        <translation type="unfinished">Сумма</translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/income_spending_widget.py" line="134"/>
+        <source>Amount *</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/income_spending_widget.py" line="135"/>
+        <source>Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DividendWidget</name>
+    <message>
+        <location filename="../ui_custom/dividend_widget.py" line="26"/>
+        <source>Dividend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/dividend_widget.py" line="22"/>
+        <source>Date/Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/dividend_widget.py" line="23"/>
+        <source>#</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/dividend_widget.py" line="24"/>
+        <source>Account</source>
+        <translation type="unfinished">Счет</translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/dividend_widget.py" line="25"/>
+        <source>Asset</source>
+        <translation type="unfinished">ЦБ</translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/dividend_widget.py" line="27"/>
+        <source>Tax</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/dividend_widget.py" line="28"/>
+        <source>Note</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -511,6 +663,34 @@
     </message>
 </context>
 <context>
+    <name>IncomeSpendingWidget</name>
+    <message>
+        <location filename="../ui_custom/income_spending_widget.py" line="23"/>
+        <source>Income / Spending</source>
+        <translation type="unfinished">Доход / Расход</translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/income_spending_widget.py" line="24"/>
+        <source>Date/Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/income_spending_widget.py" line="25"/>
+        <source>Details</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/income_spending_widget.py" line="26"/>
+        <source>Account</source>
+        <translation type="unfinished">Счет</translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/income_spending_widget.py" line="27"/>
+        <source>Peer</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>JalBackup</name>
     <message>
         <location filename="../db/backup_restore.py" line="81"/>
@@ -635,7 +815,7 @@ Application will be terminated now</source>
         <translation>Количество акций недостаточно для обработки корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="287"/>
+        <location filename="../widgets/main_window.py" line="314"/>
         <source>Estimate Russian Tax</source>
         <translation>Оценить налог для РФ</translation>
     </message>
@@ -1006,39 +1186,39 @@ Application will be terminated now</source>
         <translation>Вы уверены, что хотите удалить выбранную операцию?</translation>
     </message>
     <message>
-        <location filename="../widgets/operations.py" line="188"/>
+        <location filename="../widgets/operations.py" line="173"/>
         <source>You have unsaved changes</source>
         <translation>Есть несохранённые изменения</translation>
     </message>
     <message>
-        <location filename="../widgets/operations.py" line="188"/>
+        <location filename="../widgets/operations.py" line="173"/>
         <source> has uncommitted changes,
 do you want to save it?</source>
         <translation> имеет несохранённые изменения,
 Вы хотите их сохранить?</translation>
     </message>
     <message>
-        <location filename="../widgets/operations.py" line="213"/>
+        <location filename="../widgets/operations.py" line="198"/>
         <source>Submit failed: </source>
         <translation>Ошибка сохранения: </translation>
     </message>
     <message>
-        <location filename="../widgets/operations.py" line="219"/>
+        <location filename="../widgets/operations.py" line="204"/>
         <source>Details submit failed: </source>
         <translation>Ошибка сохранения деталей операции: </translation>
     </message>
     <message>
-        <location filename="../widgets/operations.py" line="275"/>
+        <location filename="../widgets/operations.py" line="260"/>
         <source>Reconcile</source>
         <translation>Сверить</translation>
     </message>
     <message>
-        <location filename="../widgets/operations.py" line="277"/>
+        <location filename="../widgets/operations.py" line="262"/>
         <source>Copy</source>
         <translation>Скопировать</translation>
     </message>
     <message>
-        <location filename="../widgets/operations.py" line="279"/>
+        <location filename="../widgets/operations.py" line="264"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
@@ -1084,32 +1264,32 @@ do you want to save it?</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="241"/>
+        <location filename="../widgets/main_window.py" line="268"/>
         <source>Quotes download completed</source>
         <translation>Загрузка котировок завершена</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="246"/>
+        <location filename="../widgets/main_window.py" line="273"/>
         <source>Statement load completed</source>
         <translation>Загрузка отчета завершена успешно</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="252"/>
+        <location filename="../widgets/main_window.py" line="279"/>
         <source>Statement load failed</source>
         <translation>Загрузка отчета неуспешна</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="182"/>
+        <location filename="../widgets/main_window.py" line="209"/>
         <source>Restart required</source>
         <translation>Требуется рестарт</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="182"/>
+        <location filename="../widgets/main_window.py" line="209"/>
         <source>Language was changed to </source>
         <translation>Язык был изменён на </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="182"/>
+        <location filename="../widgets/main_window.py" line="209"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation>Вы должны перезапустить приложение, чтобы применить изменения
@@ -1844,127 +2024,127 @@ Application will be terminated now</source>
 <context>
     <name>TableViewConfig</name>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="37"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="23"/>
         <source>Account Types</source>
         <translation>Типы счетов</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="46"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="32"/>
         <source>Accounts</source>
         <translation>Счета</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="66"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="52"/>
         <source>Assets</source>
         <translation>Ценные бумаги</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="82"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="68"/>
         <source>Peers</source>
         <translation>Контрагенты</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="95"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="81"/>
         <source>Categories</source>
         <translation>Категории</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="108"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="94"/>
         <source>Tags</source>
         <translation>Тэги</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="37"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="23"/>
         <source>Account Type</source>
         <translation>Тип счета</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="95"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="81"/>
         <source>Name</source>
         <translation>Наименование</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="46"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="32"/>
         <source>Currency</source>
         <translation>Валюта</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="46"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="32"/>
         <source>Act.</source>
         <translation>Акт.</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="46"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="32"/>
         <source>Account #</source>
         <translation>№ счета</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="46"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="32"/>
         <source>Reconciled @</source>
         <translation>Сверен @</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="46"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="32"/>
         <source>Bank</source>
         <translation>Банк</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="46"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="32"/>
         <source>Show inactive</source>
         <translation>Показывать неактивные</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="46"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="32"/>
         <source>Account type:</source>
         <translation>Тип счета:</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="128"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="114"/>
         <source>Asset</source>
         <translation>ЦБ</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="108"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="94"/>
         <source>Tag</source>
         <translation>Тэг</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="66"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="52"/>
         <source>Symbol</source>
         <translation>Символ</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="66"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="52"/>
         <source>ISIN</source>
         <translation>ISIN</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="66"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="52"/>
         <source>Data source</source>
         <translation>Ист.котировок</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="66"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="52"/>
         <source>Asset type:</source>
         <translation>Тип ЦБ:</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="82"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="68"/>
         <source>Location</source>
         <translation>Адрес</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="82"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="68"/>
         <source>Docs count</source>
         <translation>Кол-во док.</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="95"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="81"/>
         <source>Often</source>
         <translation>Частая</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="117"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="103"/>
         <source>Countries</source>
         <translation>Страны</translation>
     </message>
@@ -1974,27 +2154,27 @@ Application will be terminated now</source>
         <translation>Страна</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="117"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="103"/>
         <source>Code</source>
         <translation>Код</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="117"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="103"/>
         <source>Tax Treaty</source>
         <translation>СОИДН</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="128"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="114"/>
         <source>Quotes</source>
         <translation>Котировки</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="128"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="114"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../ui_custom/table_view_config.py" line="128"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="114"/>
         <source>Quote</source>
         <translation>Котировка</translation>
     </message>
@@ -2002,6 +2182,31 @@ Application will be terminated now</source>
         <location filename="../ui_custom/reference_selector.py" line="105"/>
         <source>CC</source>
         <translation>КС</translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="95"/>
+        <source>Income / Spending</source>
+        <translation type="unfinished">Доход / Расход</translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="97"/>
+        <source>Trade</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="99"/>
+        <source>Dividend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="101"/>
+        <source>Transfer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="103"/>
+        <source>Corp. Action</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2222,6 +2427,107 @@ Application will be terminated now</source>
         <location filename="../reports/taxes.py" line="422"/>
         <source>Account country will be used for 3-NDFL update as country is not set for asset </source>
         <translation>Страна счёта будет использована для файла 3-НДФЛ, т.к. страна не укзана для ЦБ </translation>
+    </message>
+</context>
+<context>
+    <name>TradeWidget</name>
+    <message>
+        <location filename="../ui_custom/trade_widget.py" line="24"/>
+        <source>Buy / Sell</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/trade_widget.py" line="25"/>
+        <source>Date/Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/trade_widget.py" line="26"/>
+        <source>Settlement</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/trade_widget.py" line="27"/>
+        <source>#</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/trade_widget.py" line="28"/>
+        <source>Account</source>
+        <translation type="unfinished">Счет</translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/trade_widget.py" line="29"/>
+        <source>Asset</source>
+        <translation type="unfinished">ЦБ</translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/trade_widget.py" line="30"/>
+        <source>Qty</source>
+        <translation type="unfinished">Кол-во</translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/trade_widget.py" line="31"/>
+        <source>Price</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/trade_widget.py" line="32"/>
+        <source>Fee</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/trade_widget.py" line="33"/>
+        <source>Coupon</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/trade_widget.py" line="34"/>
+        <source>Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TransferWidget</name>
+    <message>
+        <location filename="../ui_custom/transfer_widget.py" line="25"/>
+        <source>Transfer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/transfer_widget.py" line="29"/>
+        <source>Date/Time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/transfer_widget.py" line="27"/>
+        <source>From</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/transfer_widget.py" line="31"/>
+        <source>Amount</source>
+        <translation type="unfinished">Сумма</translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/transfer_widget.py" line="30"/>
+        <source>To</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/transfer_widget.py" line="32"/>
+        <source>Fee from</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/transfer_widget.py" line="33"/>
+        <source>Fee amount</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/transfer_widget.py" line="34"/>
+        <source>Note</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

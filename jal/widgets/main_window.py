@@ -2,14 +2,14 @@ import os
 import logging
 from functools import partial
 
-from PySide2.QtCore import Qt, Slot, QDateTime, QDate, QDir, QLocale
+from PySide2.QtCore import Qt, Slot, QDateTime, QDir, QLocale
 from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox, QLabel, QActionGroup, QAction
 
 from jal.ui.ui_main_window import Ui_LedgerMainWindow
 from jal.ui.ui_abort_window import Ui_AbortWindow
 from jal.ui_custom.helpers import g_tr, ManipulateDate, dependency_present
-from jal.ui_custom.table_view_config import TableViewConfig
+from jal.ui_custom.reference_dialogs import ReferenceDialogs
 from jal.constants import TransactionType
 from jal.db.backup_restore import JalBackup
 from jal.db.helpers import get_dbfilename, get_base_currency, executeSQL
@@ -88,7 +88,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.model().configureView()
 
         self.operations = LedgerOperationsView(self.OperationsTableView, self)
-        self.ui_config = TableViewConfig(self)
+        self.reference_dialogs = ReferenceDialogs(self)
         self.connect_signals_and_slots()
 
         self.operation_details = {
@@ -148,14 +148,14 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.actionBackup.triggered.connect(self.backup.create)
         self.actionRestore.triggered.connect(self.backup.restore)
         self.action_Re_build_Ledger.triggered.connect(partial(self.ledger.showRebuildDialog, self))
-        self.actionAccountTypes.triggered.connect(partial(self.ui_config.show_dialog, "account_types"))
-        self.actionAccounts.triggered.connect(partial(self.ui_config.show_dialog, "accounts"))
-        self.actionAssets.triggered.connect(partial(self.ui_config.show_dialog, "assets"))
-        self.actionPeers.triggered.connect(partial(self.ui_config.show_dialog, "agents_ext"))
-        self.actionCategories.triggered.connect(partial(self.ui_config.show_dialog, "categories_ext"))
-        self.actionTags.triggered.connect(partial(self.ui_config.show_dialog, "tags"))
-        self.actionCountries.triggered.connect(partial(self.ui_config.show_dialog, "countries"))
-        self.actionQuotes.triggered.connect(partial(self.ui_config.show_dialog, "quotes"))
+        self.actionAccountTypes.triggered.connect(partial(self.reference_dialogs.show, "account_types"))
+        self.actionAccounts.triggered.connect(partial(self.reference_dialogs.show, "accounts"))
+        self.actionAssets.triggered.connect(partial(self.reference_dialogs.show, "assets"))
+        self.actionPeers.triggered.connect(partial(self.reference_dialogs.show, "agents_ext"))
+        self.actionCategories.triggered.connect(partial(self.reference_dialogs.show, "categories_ext"))
+        self.actionTags.triggered.connect(partial(self.reference_dialogs.show, "tags"))
+        self.actionCountries.triggered.connect(partial(self.reference_dialogs.show, "countries"))
+        self.actionQuotes.triggered.connect(partial(self.reference_dialogs.show, "quotes"))
         self.PrepareTaxForms.triggered.connect(partial(self.taxes.showTaxesDialog, self))
         self.BalanceDate.dateChanged.connect(self.BalancesTableView.model().setDate)
         self.HoldingsDate.dateChanged.connect(self.HoldingsTableView.model().setDate)
