@@ -2,9 +2,9 @@ import os
 import logging
 from functools import partial
 
-from PySide2.QtCore import Qt, Slot, QDateTime, QDir, QLocale
+from PySide2.QtCore import Qt, Slot, QDateTime, QDate, QDir, QLocale
 from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import QMainWindow, QMenu, QMessageBox, QLabel, QActionGroup, QAction
+from PySide2.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox, QLabel, QActionGroup, QAction
 
 from jal.ui.ui_main_window import Ui_LedgerMainWindow
 from jal.ui.ui_abort_window import Ui_AbortWindow
@@ -89,8 +89,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.operations = LedgerOperationsView(self.OperationsTableView, self)
         self.ui_config = TableViewConfig(self)
+        self.connect_signals_and_slots()
 
-        self.ui_config.connect_signals_and_slots()
         self.operation_details = {
             TransactionType.Action: (
                 g_tr('TableViewConfig', "Income / Spending"), None, None, None, None, None),
@@ -139,6 +139,41 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.OperationsTableView.selectRow(0)  # TODO find a way to select last row from self.operations
         self.OnOperationsRangeChange(0)
+
+    def connect_signals_and_slots(self):
+        self.actionExit.triggered.connect(QApplication.instance().quit)
+        self.action_Load_quotes.triggered.connect(partial(self.downloader.showQuoteDownloadDialog, self))
+        self.actionImportStatement.triggered.connect(self.statements.loadReport)
+        self.actionImportSlipRU.triggered.connect(self.importSlip)
+        self.actionBackup.triggered.connect(self.backup.create)
+        self.actionRestore.triggered.connect(self.backup.restore)
+        self.action_Re_build_Ledger.triggered.connect(partial(self.ledger.showRebuildDialog, self))
+        self.actionAccountTypes.triggered.connect(partial(self.ui_config.show_dialog, "account_types"))
+        self.actionAccounts.triggered.connect(partial(self.ui_config.show_dialog, "accounts"))
+        self.actionAssets.triggered.connect(partial(self.ui_config.show_dialog, "assets"))
+        self.actionPeers.triggered.connect(partial(self.ui_config.show_dialog, "agents_ext"))
+        self.actionCategories.triggered.connect(partial(self.ui_config.show_dialog, "categories_ext"))
+        self.actionTags.triggered.connect(partial(self.ui_config.show_dialog, "tags"))
+        self.actionCountries.triggered.connect(partial(self.ui_config.show_dialog, "countries"))
+        self.actionQuotes.triggered.connect(partial(self.ui_config.show_dialog, "quotes"))
+        self.PrepareTaxForms.triggered.connect(partial(self.taxes.showTaxesDialog, self))
+        self.BalanceDate.dateChanged.connect(self.BalancesTableView.model().setDate)
+        self.HoldingsDate.dateChanged.connect(self.HoldingsTableView.model().setDate)
+        self.BalancesCurrencyCombo.changed.connect(self.BalancesTableView.model().setCurrency)
+        self.BalancesTableView.doubleClicked.connect(self.OnBalanceDoubleClick)
+        self.HoldingsCurrencyCombo.changed.connect(self.HoldingsTableView.model().setCurrency)
+        self.ReportRangeCombo.currentIndexChanged.connect(self.onReportRangeChange)
+        self.RunReportBtn.clicked.connect(self.onRunReport)
+        self.SaveReportBtn.clicked.connect(self.reports.saveReport)
+        self.ShowInactiveCheckBox.stateChanged.connect(self.BalancesTableView.model().toggleActive)
+        self.DateRangeCombo.currentIndexChanged.connect(self.OnOperationsRangeChange)
+        self.ChooseAccountBtn.changed.connect(self.OperationsTableView.model().setAccount)
+        self.SearchString.textChanged.connect(self.OperationsTableView.model().filterText)
+        self.DeleteOperationBtn.clicked.connect(self.operations.deleteOperation)
+        self.CopyOperationBtn.clicked.connect(self.operations.copyOperation)
+        self.SaveOperationBtn.clicked.connect(self.operations.commitOperation)
+        self.RevertOperationBtn.clicked.connect(self.operations.revertOperation)
+        self.HoldingsTableView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
 
     def closeDatabase(self):
         self.db.close()

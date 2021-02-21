@@ -1,8 +1,6 @@
 from jal.widgets.view_delegate import *
 from jal.constants import ColumnWidth
-from PySide2 import QtWidgets
-from PySide2.QtCore import QObject, SIGNAL, Slot
-from functools import partial
+from PySide2.QtCore import Slot
 from jal.ui_custom.helpers import g_tr
 import jal.ui_custom.reference_data as ui               # Full import due to "cyclic" reference
 
@@ -22,7 +20,6 @@ class TableViewConfig:
     def __init__(self, parent):
         self.parent = parent
         self.dialogs = {
-            # see DLG_ constants for reference
             "account_types": (
                 g_tr('TableViewConfig', g_tr('TableViewConfig', "Account Types")),
                 [("id", None, 0, None, None),
@@ -127,48 +124,9 @@ class TableViewConfig:
                 [("asset_id", "assets", "id", "name", None)]
             )
         }
-        self.actions = [
-            (parent.actionExit,             "triggered()",              QtWidgets.QApplication.instance().quit),
-            (parent.action_Load_quotes,     "triggered()",              partial(parent.downloader.showQuoteDownloadDialog, parent)),
-            (parent.actionImportStatement,  "triggered()",              parent.statements.loadReport),
-            (parent.actionImportSlipRU,     "triggered()",              parent.importSlip),
-            (parent.actionBackup,           "triggered()",              parent.backup.create),
-            (parent.actionRestore,          "triggered()",              parent.backup.restore),
-            (parent.action_Re_build_Ledger, "triggered()",              partial(parent.ledger.showRebuildDialog, parent)),
-            (parent.actionAccountTypes,     "triggered()",              partial(self.show_dialog, "account_types")),
-            (parent.actionAccounts,         "triggered()",              partial(self.show_dialog, "accounts")),
-            (parent.actionAssets,           "triggered()",              partial(self.show_dialog, "assets")),
-            (parent.actionPeers,            "triggered()",              partial(self.show_dialog, "agents_ext")),
-            (parent.actionCategories,       "triggered()",              partial(self.show_dialog, "categories_ext")),
-            (parent.actionTags,             "triggered()",              partial(self.show_dialog, "tags")),
-            (parent.actionCountries,        "triggered()",              partial(self.show_dialog, "countries")),
-            (parent.actionQuotes,           "triggered()",              partial(self.show_dialog, "quotes")),
-            (parent.PrepareTaxForms,        "triggered()",              partial(parent.taxes.showTaxesDialog, parent)),
-            (parent.BalanceDate,            "dateChanged(QDate)",       parent.BalancesTableView.model().setDate),
-            (parent.HoldingsDate,           "dateChanged(QDate)",       parent.HoldingsTableView.model().setDate),
-            (parent.BalancesCurrencyCombo,  "changed(int)",             parent.BalancesTableView.model().setCurrency),
-            (parent.BalancesTableView,      "doubleClicked(QModelIndex)", parent.OnBalanceDoubleClick),
-            (parent.HoldingsCurrencyCombo,  "changed(int)",             parent.HoldingsTableView.model().setCurrency),
-            (parent.ReportRangeCombo,       "currentIndexChanged(int)", parent.onReportRangeChange),
-            (parent.RunReportBtn,           "clicked()",                parent.onRunReport),
-            (parent.SaveReportBtn,          "clicked()",                parent.reports.saveReport),
-            (parent.ShowInactiveCheckBox,   "stateChanged(int)",        parent.BalancesTableView.model().toggleActive),
-            (parent.DateRangeCombo,         "currentIndexChanged(int)", parent.OnOperationsRangeChange),
-            (parent.ChooseAccountBtn,       "changed(int)",             parent.OperationsTableView.model().setAccount),
-            (parent.SearchString,           "textChanged(QString)",     parent.OperationsTableView.model().filterText),
-            (parent.DeleteOperationBtn,     "clicked()",                parent.operations.deleteOperation),
-            (parent.CopyOperationBtn,       "clicked()",                parent.operations.copyOperation),
-            (parent.SaveOperationBtn,       "clicked()",                parent.operations.commitOperation),
-            (parent.RevertOperationBtn,     "clicked()",                parent.operations.revertOperation),
-            (parent.HoldingsTableView,      "customContextMenuRequested(QPoint)", parent.onHoldingsContextMenu)
-        ]
 
     def tr(self, name):
         pass
-
-    def connect_signals_and_slots(self):
-        for action in self.actions:
-            QObject.connect(action[self.ACTION_SRC], SIGNAL(action[self.ACTION_SIGNAL]), action[self.ACTION_SLOT])
 
     @Slot()
     def show_dialog(self, table_name):
