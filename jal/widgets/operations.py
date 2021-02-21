@@ -1,7 +1,7 @@
 from datetime import datetime
 from dateutil import tz
 
-from jal.constants import Setup, TransactionType
+from jal.constants import TransactionType
 from PySide2.QtCore import Qt, QObject, Signal, Slot
 from PySide2.QtWidgets import QMessageBox, QMenu, QAction
 from jal.db.helpers import executeSQL
@@ -102,13 +102,9 @@ class LedgerOperationsView(QObject):
         self.table_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.table_view.customContextMenuRequested.connect(self.onOperationContextMenu)
 
-    def setOperationsDetails(self, operations_details):
-        self.operations = operations_details
-        self.table_view.selectionModel().selectionChanged.connect(self.OnOperationChange)
-
     def addNewOperation(self, operation_type):
         self.checkForUncommittedChanges()
-        self.activateOperationView.emit(operation_type)
+        self.activateOperationView.emit(operation_type)   # self.ShowOperationTab in Main_Window
         mapper = self.operations[operation_type][self.OP_MAPPER]
         mapper.submit()
         mapper.model().setFilter(f"{self.operations[operation_type][self.OP_MAPPER_TABLE]}.id = 0")
@@ -214,30 +210,5 @@ class LedgerOperationsView(QObject):
         model = self.current_index.model()
         model.reconcile_operation(self.current_index.row())
 
-    @Slot()
-    def OnOperationChange(self, selected, _deselected):
-        self.checkForUncommittedChanges()
-        idx = selected.indexes()
-        if idx:
-            selected_row = idx[0].row()
-            operation_type, operation_id = self.table_view.model().get_operation(selected_row)
-            self.activateOperationView.emit(operation_type)
 
-            # if self.operations[operation_type][self.OP_MAPPER]:  # if mapper defined for operation type
-            #     mapper = self.operations[operation_type][self.OP_MAPPER]
-            #     mapper.model().setFilter(f"{self.operations[operation_type][self.OP_MAPPER_TABLE]}.id = {operation_id}")
-            #     mapper.setCurrentModelIndex(mapper.model().index(0, 0))
-            # if self.operations[operation_type][self.OP_CHILD_VIEW]:  # if child view defined for operation type
-            #     view = self.operations[operation_type][self.OP_CHILD_VIEW]
-            #     view.model().setFilter(f"{self.operations[operation_type][self.OP_CHILD_TABLE]}.pid = {operation_id}")
-            if operation_type == TransactionType.Action:
-                self.main_window.IncomeSpending.setId(operation_id)
-            if operation_type == TransactionType.Dividend:
-                self.main_window.Dividend.setId(operation_id)
-            if operation_type == TransactionType.Trade:
-                self.main_window.Trade.setId(operation_id)
-            if operation_type == TransactionType.Transfer:
-                self.main_window.Transfer.setId(operation_id)
-            if operation_type == TransactionType.CorporateAction:
-                self.main_window.CorporateAction.setId(operation_id)
 

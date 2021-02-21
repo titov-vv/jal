@@ -152,7 +152,7 @@
                    <second>0</second>
                    <year>2020</year>
                    <month>12</month>
-                   <day>22</day>
+                   <day>21</day>
                   </datetime>
                  </property>
                  <property name="displayFormat">
@@ -396,7 +396,7 @@
                 <bool>true</bool>
                </property>
                <property name="selectionMode">
-                <enum>QAbstractItemView::SingleSelection</enum>
+                <enum>QAbstractItemView::ExtendedSelection</enum>
                </property>
                <property name="selectionBehavior">
                 <enum>QAbstractItemView::SelectRows</enum>
@@ -688,7 +688,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>22</day>
+               <day>21</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -833,7 +833,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>22</day>
+               <day>21</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -980,7 +980,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>22</day>
+               <day>21</day>
               </datetime>
              </property>
              <property name="displayFormat">

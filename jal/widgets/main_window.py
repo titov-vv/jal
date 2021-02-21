@@ -18,7 +18,6 @@ from jal.db.ledger import Ledger
 from jal.db.balances_model import BalancesModel
 from jal.db.holdings_model import HoldingsModel
 from jal.db.operations_model import OperationsModel
-from jal.widgets.operations import LedgerOperationsView
 from jal.reports.reports import Reports, ReportType
 from jal.data_import.statements import StatementLoader
 from jal.reports.taxes import TaxesRus
@@ -40,6 +39,9 @@ class AbortWindow(QMainWindow, Ui_AbortWindow):
 
 #-----------------------------------------------------------------------------------------------------------------------
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):
+    OP_TAB = 0
+    OP_WIDGET = 1
+
     def __init__(self, db, own_path, language):
         QMainWindow.__init__(self, None)
         self.setupUi(self)
@@ -70,6 +72,16 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         log_level = os.environ.get('LOGLEVEL', 'INFO').upper()
         self.logger.setLevel(log_level)
 
+        # put all operation details pages into one dictionary
+        self.operations = {   # (tab_id, widget)
+            TransactionType.NA: (0, None),
+            TransactionType.Action: (1, self.IncomeSpending),
+            TransactionType.Transfer: (4, self.Transfer),
+            TransactionType.Trade: (3, self.Trade),
+            TransactionType.Dividend: (2, self.Dividend),
+            TransactionType.CorporateAction: (5, self.CorporateAction)
+        }
+
         # Setup reports tab
         self.ReportAccountBtn.init_db(self.db)
         self.ReportCategoryEdit.init_db(self.db)
@@ -87,35 +99,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.setModel(OperationsModel(self.OperationsTableView, self.db))
         self.OperationsTableView.model().configureView()
 
-        self.operations = LedgerOperationsView(self.OperationsTableView, self)
         self.reference_dialogs = ReferenceDialogs(self)
         self.connect_signals_and_slots()
 
-        self.operation_details = {
-            TransactionType.Action: (
-                g_tr('TableViewConfig', "Income / Spending"), None, None, None, None, None),
-            TransactionType.Trade: (
-                g_tr('TableViewConfig', "Trade"), None, None, None, None, None),
-            TransactionType.Dividend: (
-                g_tr('TableViewConfig', "Dividend"), None, None, None, None, None),
-            TransactionType.Transfer: (
-                g_tr('TableViewConfig', "Transfer"), None, None, None, None, None),
-            TransactionType.CorporateAction: (
-                g_tr('TableViewConfig', "Corp. Action"), None, None, None, None, None)
-        }
-        self.operations.setOperationsDetails(self.operation_details)
-        self.operations.activateOperationView.connect(self.ShowOperationTab)
-
-        self.IncomeSpending.init_db(self.db)
-        self.IncomeSpending.dbUpdated.connect(self.showCommitted)
-        self.Dividend.init_db(self.db)
-        self.Dividend.dbUpdated.connect(self.showCommitted)
-        self.Trade.init_db(self.db)
-        self.Trade.dbUpdated.connect(self.showCommitted)
-        self.Transfer.init_db(self.db)
-        self.Transfer.dbUpdated.connect(self.showCommitted)
-        self.CorporateAction.init_db(self.db)
-        self.CorporateAction.dbUpdated.connect(self.showCommitted)
+        for id in self.operations:
+            if self.operations[id][self.OP_WIDGET]:
+                self.operations[id][self.OP_WIDGET].init_db(self.db)
+                self.operations[id][self.OP_WIDGET].dbUpdated.connect(self.showCommitted)
 
         # Setup balance and holdings parameters
         self.BalanceDate.setDateTime(QDateTime.currentDateTime())
@@ -125,10 +115,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         # Create menu for different operations
         self.ChooseAccountBtn.init_db(self.db)
+
         self.NewOperationMenu = QMenu()
-        for operation in self.operation_details:
-            self.NewOperationMenu.addAction(self.operation_details[operation][LedgerOperationsView.OP_NAME],
-                                            partial(self.operations.addNewOperation, operation))
+        self.NewOperationMenu.addAction("TEST", self.showCommitted)
         self.NewOperationBtn.setMenu(self.NewOperationMenu)
 
         self.langGroup = QActionGroup(self.menuLanguage)
@@ -167,9 +156,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DateRangeCombo.currentIndexChanged.connect(self.OnOperationsRangeChange)
         self.ChooseAccountBtn.changed.connect(self.OperationsTableView.model().setAccount)
         self.SearchString.textChanged.connect(self.OperationsTableView.model().filterText)
-        self.DeleteOperationBtn.clicked.connect(self.operations.deleteOperation)
-        self.CopyOperationBtn.clicked.connect(self.operations.copyOperation)
         self.HoldingsTableView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
+        self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
 
     def closeDatabase(self):
         self.db.close()
@@ -275,18 +263,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.StatusBar.showMessage(g_tr('MainWindow', "Statement load failed"), timeout=60000)
 
     @Slot()
-    def ShowOperationTab(self, operation_type):
-        tab_list = {
-            TransactionType.NA: 0,
-            TransactionType.Action: 1,
-            TransactionType.Transfer: 4,
-            TransactionType.Trade: 3,
-            TransactionType.Dividend: 2,
-            TransactionType.CorporateAction: 5
-        }
-        self.OperationsTabs.setCurrentIndex(tab_list[operation_type])
-
-    @Slot()
     def showCommitted(self):
         self.ledger.rebuild()
         self.balances_model.update()   # FIXME this should be better linked to some signal emitted by ledger after rebuild completion
@@ -313,3 +289,18 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.estimator = TaxEstimator(self.db, account, asset, asset_qty, position)
         if self.estimator.ready:
             self.estimator.open()
+
+    @Slot()
+    def OnOperationChange(self, selected, _deselected):
+        # self.checkForUncommittedChanges()
+
+        operation_type = TransactionType.NA
+        if len(self.OperationsTableView.selectionModel().selectedRows()) != 1:
+            self.OperationsTabs.setCurrentIndex(self.operations[operation_type][self.OP_TAB])
+        else:
+            idx = selected.indexes()
+            if idx:
+                selected_row = idx[0].row()
+                operation_type, operation_id = self.OperationsTableView.model().get_operation(selected_row)
+                self.OperationsTabs.setCurrentIndex(self.operations[operation_type][self.OP_TAB])
+                self.operations[operation_type][self.OP_WIDGET].setId(operation_id)
