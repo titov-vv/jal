@@ -133,9 +133,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                                             partial(self.operations.addNewOperation, operation))
         self.NewOperationBtn.setMenu(self.NewOperationMenu)
 
-        # self.ActionDetailsTableView.horizontalHeader().moveSection(self.ActionDetailsTableView.model().fieldIndex("note"),
-        #                                                            self.ActionDetailsTableView.model().fieldIndex("name"))
-
         self.langGroup = QActionGroup(self.menuLanguage)
         self.createLanguageMenu()
         self.langGroup.triggered.connect(self.onLanguageChanged)

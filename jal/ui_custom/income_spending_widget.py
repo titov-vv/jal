@@ -1,9 +1,11 @@
 from PySide2.QtCore import Qt, Slot
-from PySide2.QtWidgets import QLabel, QDateTimeEdit, QPushButton, QTableView
-from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
+from PySide2.QtWidgets import QLabel, QDateTimeEdit, QPushButton, QTableView, QLineEdit, QHeaderView
+from PySide2.QtGui import QDoubleValidator
+from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate
+from jal.constants import Setup
 from jal.ui_custom.helpers import g_tr
 from jal.ui_custom.abstract_operation_details import AbstractOperationDetails
-from jal.ui_custom.reference_selector import AccountSelector, PeerSelector
+from jal.ui_custom.reference_selector import AccountSelector, PeerSelector, CategorySelector, TagSelector
 from jal.widgets.mapper_delegate import MapperDelegate
 
 
@@ -11,6 +13,9 @@ class IncomeSpendingWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
         self.details_model = None
+        self.category_delegate = CategoryDelegate()
+        self.tag_delegate = TagDelegate()
+        self.float_delegate = FloatDelegate()
 
         self.date_label = QLabel(self)
         self.details_label = QLabel(self)
@@ -43,6 +48,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.copy_button.setFont(self.bold_font)
         self.copy_button.setFixedWidth(self.copy_button.fontMetrics().width("XXX"))
         self.details_table = QTableView(self)
+        self.details_table.horizontalHeader().setFont(self.bold_font)
         self.details_table.setAlternatingRowColors(True)
         self.details_table.verticalHeader().setVisible(False)
         self.details_table.verticalHeader().setMinimumSectionSize(20)
@@ -75,7 +81,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         super().init_db(db, "actions")
         self.mapper.setItemDelegate(MapperDelegate(self.mapper))
 
-        self.details_model = QSqlRelationalTableModel(parent=self, db=db)
+        self.details_model = DetailsModel(self.details_table, db)
         self.details_model.setTable("action_details")
         self.details_model.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.details_model.setJoinMode(QSqlRelationalTableModel.LeftJoin)  # to work correctly with NULL values
@@ -94,8 +100,14 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.account_widget, self.model.fieldIndex("account_id"))
         self.mapper.addMapping(self.peer_widget, self.model.fieldIndex("peer_id"))
 
+        self.details_table.setItemDelegateForColumn(2, self.category_delegate)
+        self.details_table.setItemDelegateForColumn(3, self.tag_delegate)
+        self.details_table.setItemDelegateForColumn(4, self.float_delegate)
+        self.details_table.setItemDelegateForColumn(5, self.float_delegate)
+
         self.model.select()
         self.details_model.select()
+        self.details_model.configureView()
 
     def setId(self, id):
         super().setId(id)
@@ -112,3 +124,95 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         selected_row = idx[0].row()
         self.details_model.removeRow(selected_row)
         self.details_table.setRowHidden(selected_row, True)
+
+
+class DetailsModel(QSqlRelationalTableModel):
+    def __init__(self, parent_view, db):
+        self._columns = ["id",
+                         "pid",
+                         g_tr('DetailsModel', "Category"),
+                         g_tr('DetailsModel', "Tag"),
+                         g_tr('DetailsModel', "Amount"),
+                         g_tr('DetailsModel', "Amount *"),
+                         g_tr('DetailsModel', "Note")]
+        super().__init__(parent=parent_view, db=db)
+        self._view = parent_view
+
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return self._columns[section]
+        return None
+
+    def configureView(self):
+        self._view.setColumnHidden(0, True)
+        self._view.setColumnHidden(1, True)
+        self._view.setColumnWidth(2, 200)
+        self._view.setColumnWidth(3, 200)
+        self._view.setColumnWidth(4, 100)
+        self._view.setColumnWidth(5, 100)
+        self._view.horizontalHeader().setSectionResizeMode(6, QHeaderView.Stretch)
+        self._view.horizontalHeader().moveSection(6, 0)
+
+# -----------------------------------------------------------------------------------------------------------------------
+# Delegate to display category editor
+class CategoryDelegate(QSqlRelationalDelegate):
+    def __init__(self, parent=None):
+        QSqlRelationalDelegate.__init__(self, parent)
+
+    def createEditor(self, aParent, option, index):
+        category_selector = CategorySelector(aParent)
+        category_selector.init_db(index.model().database())
+        return category_selector
+
+    def setModelData(self, editor, model, index):
+        model.setData(index, editor.selected_id)
+
+# -----------------------------------------------------------------------------------------------------------------------
+# Delegate to display tag editor
+class TagDelegate(QSqlRelationalDelegate):
+    def __init__(self, parent=None):
+        QSqlRelationalDelegate.__init__(self, parent)
+
+    def createEditor(self, aParent, option, index):
+        tag_selector = TagSelector(aParent)
+        tag_selector.init_db(index.model().database())
+        return tag_selector
+
+    def setModelData(self, editor, model, index):
+        model.setData(index, editor.selected_id)
+
+
+# -----------------------------------------------------------------------------------------------------------------------
+# Delegate for nice float numbers formatting
+class FloatDelegate(QSqlRelationalDelegate):
+    def __init__(self, parent=None):
+        QSqlRelationalDelegate.__init__(self, parent)
+
+    def formatFloatLong(self, value):
+        if abs(value - round(value, 2)) >= Setup.CALC_TOLERANCE:
+            text = str(value)
+        else:
+            text = f"{value:.2f}"
+        return text
+
+    # this is required when edit operation is called from QTableView
+    def createEditor(self, aParent, option, index):
+        float_editor = QLineEdit(aParent)
+        float_editor.setValidator(QDoubleValidator(decimals=2))
+        return float_editor
+
+    def setEditorData(self, editor, index):
+        amount = index.model().data(index, Qt.EditRole)
+        if amount:
+            editor.setText(self.formatFloatLong(float(amount)))
+        else:
+            QSqlRelationalDelegate.setEditorData(self, editor, index)
+
+    def paint(self, painter, option, index):
+        painter.save()
+        amount = index.model().data(index, Qt.DisplayRole)
+        text = ""
+        if amount:
+            text = self.formatFloatLong(float(amount))
+        painter.drawText(option.rect, Qt.AlignRight, text)
+        painter.restore()

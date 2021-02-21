@@ -3,39 +3,8 @@ from PySide2.QtCore import Qt
 from PySide2.QtSql import QSqlRelationalDelegate
 from PySide2.QtWidgets import QLineEdit
 from PySide2.QtGui import QDoubleValidator
-
 from jal.constants import Setup
-from jal.ui_custom.reference_selector import CategorySelector
-from jal.ui_custom.reference_selector import TagSelector
 
-
-# -----------------------------------------------------------------------------------------------------------------------
-# Delegate to display category editor
-class CategoryDelegate(QSqlRelationalDelegate):
-    def __init__(self, parent=None):
-        QSqlRelationalDelegate.__init__(self, parent)
-
-    def createEditor(self, aParent, option, index):
-        category_selector = CategorySelector(aParent)
-        category_selector.init_db(index.model().database())
-        return category_selector
-
-    def setModelData(self, editor, model, index):
-        model.setData(index, editor.selected_id)
-
-# -----------------------------------------------------------------------------------------------------------------------
-# Delegate to display tag editor
-class TagDelegate(QSqlRelationalDelegate):
-    def __init__(self, parent=None):
-        QSqlRelationalDelegate.__init__(self, parent)
-
-    def createEditor(self, aParent, option, index):
-        tag_selector = TagSelector(aParent)
-        tag_selector.init_db(index.model().database())
-        return tag_selector
-
-    def setModelData(self, editor, model, index):
-        model.setData(index, editor.selected_id)
 
 # -----------------------------------------------------------------------------------------------------------------------
 # Delegate to convert timestamp from unix-time to QDateTime
@@ -96,16 +65,10 @@ class MapperDelegate(QSqlRelationalDelegate):
         QSqlRelationalDelegate.__init__(self, parent)
 
         self.timestamp_delegate = TimestampDelegate()
-        self.category_delegate = CategoryDelegate()
-        self.tag_delegate = TagDelegate()
         self.float_delegate = FloatDelegate()
 
         self.delegates = {
             'actions': {1: self.timestamp_delegate},
-            'action_details': {2: self.category_delegate,
-                               3: self.tag_delegate,
-                               4: self.float_delegate,
-                               5: self.float_delegate},
             'dividends': {1: self.timestamp_delegate,
                           5: self.float_delegate,
                           6: self.float_delegate},
