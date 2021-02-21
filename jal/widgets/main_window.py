@@ -105,8 +105,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         }
         self.operations.setOperationsDetails(self.operation_details)
         self.operations.activateOperationView.connect(self.ShowOperationTab)
-        self.operations.stateIsCommitted.connect(self.showCommitted)
-        self.operations.stateIsModified.connect(self.showModified)
 
         self.IncomeSpending.init_db(self.db)
         self.IncomeSpending.dbUpdated.connect(self.showCommitted)
@@ -171,8 +169,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.SearchString.textChanged.connect(self.OperationsTableView.model().filterText)
         self.DeleteOperationBtn.clicked.connect(self.operations.deleteOperation)
         self.CopyOperationBtn.clicked.connect(self.operations.copyOperation)
-        self.SaveOperationBtn.clicked.connect(self.operations.commitOperation)
-        self.RevertOperationBtn.clicked.connect(self.operations.revertOperation)
         self.HoldingsTableView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
 
     def closeDatabase(self):
@@ -294,13 +290,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def showCommitted(self):
         self.ledger.rebuild()
         self.balances_model.update()   # FIXME this should be better linked to some signal emitted by ledger after rebuild completion
-        self.SaveOperationBtn.setEnabled(False)
-        self.RevertOperationBtn.setEnabled(False)
-
-    @Slot()
-    def showModified(self):
-        self.SaveOperationBtn.setEnabled(True)
-        self.RevertOperationBtn.setEnabled(True)
 
     @Slot()
     def importSlip(self):

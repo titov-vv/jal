@@ -1,5 +1,6 @@
-from PySide2.QtCore import Qt
+from PySide2.QtCore import Qt, Slot
 from PySide2.QtWidgets import QLabel, QDateTimeEdit, QLineEdit
+from jal.constants import Setup
 from jal.ui_custom.helpers import g_tr
 from jal.ui_custom.abstract_operation_details import AbstractOperationDetails
 from jal.ui_custom.reference_selector import AccountSelector
@@ -110,3 +111,17 @@ class TransferWidget(AbstractOperationDetails):
 
         self.model.select()
 
+    @Slot()
+    def saveChanges(self):
+        record = self.model.record(0)
+        note = record.value(self.model.fieldIndex("note"))
+        if not note:  # If we don't have note - set it to NULL value  # TODO - is it really needed?
+            self.model.setData(self.model.index(0, self.model.fieldIndex("note")), None)
+        # Set related fields NULL if we don't have fee. This is required for correct transfer processing
+        fee_amount = record.value(self.model.fieldIndex("fee"))
+        if not fee_amount:
+            fee_amount = 0
+        if abs(float(fee_amount)) < Setup.CALC_TOLERANCE:
+            self.model.setData(self.model.index(0, self.model.fieldIndex("fee_account")), None)
+            self.model.setData(self.model.index(0, self.model.fieldIndex("fee")), None)
+        super().saveChanges()

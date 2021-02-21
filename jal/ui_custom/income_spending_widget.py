@@ -1,3 +1,4 @@
+import logging
 from PySide2.QtCore import Qt, Slot
 from PySide2.QtWidgets import QLabel, QDateTimeEdit, QPushButton, QTableView, QLineEdit, QHeaderView
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate
@@ -88,6 +89,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.details_model.setRelation(self.details_model.fieldIndex("tag_id"),
                                        QSqlRelation("tags", "id", "tag"))
         self.details_table.setModel(self.details_model)
+        self.details_model.dataChanged.connect(self.onDataChange)
 
         self.account_widget.init_db(db)
         self.peer_widget.init_db(db)
@@ -122,6 +124,27 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         selected_row = idx[0].row()
         self.details_model.removeRow(selected_row)
         self.details_table.setRowHidden(selected_row, True)
+
+    @Slot()
+    def saveChanges(self):
+        if not self.model.submitAll():
+            logging.fatal(
+                g_tr('AbstractOperationDetails', "Operation submit failed: ") + self.model.lastError().text())
+            return
+        pid = self.model.data(self.model.index(0, self.model.fieldIndex("id")))
+        if pid is None:  # we just have saved new action record and need last insterted id
+            pid = self.model.query().lastInsertId()
+        for row in range(self.details_model.rowCount()):
+            self.details_model.setData(self.details_model.index(row, self.details_model.fieldIndex("pid")), pid)
+        if not self.details_model.submitAll():
+            logging.fatal(
+                g_tr('AbstractOperationDetails', "Operation details submit failed: ") + self.model.lastError().text())
+            return
+        self.modified = False
+        self.commit_button.setEnabled(False)
+        self.revert_button.setEnabled(False)
+        self.dbUpdated.emit()
+        return
 
 
 class DetailsModel(QSqlRelationalTableModel):

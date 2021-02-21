@@ -152,7 +152,7 @@
                    <second>0</second>
                    <year>2020</year>
                    <month>12</month>
-                   <day>23</day>
+                   <day>22</day>
                   </datetime>
                  </property>
                  <property name="displayFormat">
@@ -610,33 +610,6 @@
                     </widget>
                    </item>
                    <item>
-                    <widget class="Line" name="line">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="SaveOperationBtn">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="text">
-                      <string>Save</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="RevertOperationBtn">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="text">
-                      <string>Revert</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
                     <spacer name="verticalSpacer_4">
                      <property name="orientation">
                       <enum>Qt::Vertical</enum>
@@ -715,7 +688,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>23</day>
+               <day>22</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -860,7 +833,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>23</day>
+               <day>22</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -1007,7 +980,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>23</day>
+               <day>22</day>
               </datetime>
              </property>
              <property name="displayFormat">

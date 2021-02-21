@@ -5,11 +5,8 @@ from jal.ui_custom.helpers import g_tr
 import jal.ui_custom.reference_data as ui               # Full import due to "cyclic" reference
 
 
+# TODO Probably better idea is to subclass ReferenceDataDialog for each table instead of self.dialogs dictionary
 class ReferenceDialogs:
-    ACTION_SRC = 0
-    ACTION_SIGNAL = 1
-    ACTION_SLOT = 2
-
     DLG_TITLE = 0
     DLG_COLUMNS = 1
     DLG_SEARCH = 2

@@ -73,11 +73,12 @@ class AbstractOperationDetails(QWidget):
         if not self.model.submitAll():
             logging.fatal(
                 g_tr('AbstractOperationDetails', "Operation submit failed: ") + self.model.lastError().text())
-            return
+            return False
         self.modified = False
         self.commit_button.setEnabled(False)
         self.revert_button.setEnabled(False)
         self.dbUpdated.emit()
+        return True
 
     @Slot()
     def revertCanges(self):

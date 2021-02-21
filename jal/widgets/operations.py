@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime
 from dateutil import tz
 
@@ -105,11 +104,6 @@ class LedgerOperationsView(QObject):
 
     def setOperationsDetails(self, operations_details):
         self.operations = operations_details
-        for operation_type in self.operations:
-            if self.operations[operation_type][self.OP_MAPPER]:  # if mapper defined for operation type
-                self.operations[operation_type][self.OP_MAPPER].model().dataChanged.connect(self.onDataEdit)
-            if self.operations[operation_type][self.OP_CHILD_VIEW]:  # if view defined for operation type
-                self.operations[operation_type][self.OP_CHILD_VIEW].model().dataChanged.connect(self.onDataEdit)
         self.table_view.selectionModel().selectionChanged.connect(self.OnOperationChange)
 
     def addNewOperation(self, operation_type):
@@ -178,60 +172,6 @@ class LedgerOperationsView(QObject):
                 self.commitOperation()
             else:
                 self.revertOperation()
-
-    @Slot()
-    def revertOperation(self):
-        if self.modified_operation_type:
-            if self.operations[self.modified_operation_type][self.OP_MAPPER]:  # if mapper defined for operation type
-                self.operations[self.modified_operation_type][self.OP_MAPPER].model().revertAll()
-            if self.operations[self.modified_operation_type][self.OP_CHILD_VIEW]:  # if child view defined for operation type
-                self.operations[self.modified_operation_type][self.OP_CHILD_VIEW].model().revertAll()
-            self.modified_operation_type = None
-            self.stateIsCommitted.emit()
-
-    @Slot()
-    def commitOperation(self):
-        if self.modified_operation_type:
-            self.beforeMapperCommit(self.modified_operation_type)
-            if self.operations[self.modified_operation_type][self.OP_MAPPER]:  # if mapper defined for operation type
-                if not self.operations[self.modified_operation_type][self.OP_MAPPER].model().submitAll():
-                    logging.fatal(
-                        g_tr('LedgerOperationsView', "Submit failed: ") + self.operations[self.modified_operation_type][self.OP_MAPPER].model().lastError().text())
-                    return
-            self.beforeChildViewCommit(self.modified_operation_type)
-            if self.operations[self.modified_operation_type][self.OP_CHILD_VIEW]:  # if child view defined for operation type
-                if not self.operations[self.modified_operation_type][self.OP_CHILD_VIEW].model().submitAll():
-                    logging.fatal(
-                        g_tr('LedgerOperationsView', "Details submit failed: ") + self.operations[self.modified_operation_type][
-                            self.OP_CHILD_VIEW].model().lastError().text())
-                    return
-            self.modified_operation_type = None
-            self.stateIsCommitted.emit()
-            self.table_view.model().update()
-        
-    def beforeMapperCommit(self, operation_type):
-        if operation_type == TransactionType.Transfer:
-            transfer_mapper = self.operations[operation_type][self.OP_MAPPER]
-            record = transfer_mapper.model().record(0)
-            note = record.value(transfer_mapper.model().fieldIndex("note"))
-            if not note:  # If we don't have note - set it to NULL value to fire DB trigger
-                transfer_mapper.model().setData(transfer_mapper.model().index(0, transfer_mapper.model().fieldIndex("note")), None)
-            fee_amount = record.value(transfer_mapper.model().fieldIndex("fee"))
-            if not fee_amount:
-                fee_amount = 0
-            if abs(float(fee_amount)) < Setup.CALC_TOLERANCE:  # If we don't have fee - set Fee Account to NULL to fire DB trigger
-                transfer_mapper.model().setData(transfer_mapper.model().index(0, transfer_mapper.model().fieldIndex("fee_account")), None)
-                transfer_mapper.model().setData(transfer_mapper.model().index(0, transfer_mapper.model().fieldIndex("fee")), None)
-
-    def beforeChildViewCommit(self, operation_type):
-        if operation_type == TransactionType.Action:
-            actions_mapper = self.operations[operation_type][self.OP_MAPPER]
-            pid = actions_mapper.model().data(actions_mapper.model().index(0, actions_mapper.model().fieldIndex("id")))
-            if pid is None:  # we just have saved new action record (mapper submitAll() is called before this signal)
-                pid = actions_mapper.model().query().lastInsertId()
-            action_details_view = self.operations[operation_type][self.OP_CHILD_VIEW]
-            for row in range(action_details_view.model().rowCount()):
-                action_details_view.model().setData(action_details_view.model().index(row, 1), pid)
                 
     def initChildDetails(self, operation_type):
         view = self.operations[operation_type][self.OP_CHILD_VIEW]
@@ -301,15 +241,3 @@ class LedgerOperationsView(QObject):
             if operation_type == TransactionType.CorporateAction:
                 self.main_window.CorporateAction.setId(operation_id)
 
-    @Slot()
-    def onDataEdit(self, index_start, _index_stop, _role):
-        for operation_type in self.operations:
-            if self.operations[operation_type][self.OP_MAPPER]:   # if mapper defined for operation type
-                if self.operations[operation_type][self.OP_MAPPER].model().isDirty():
-                    self.modified_operation_type = operation_type
-                    break
-            if self.operations[operation_type][self.OP_CHILD_VIEW]:     # if view defined for operation type
-                if self.operations[operation_type][self.OP_CHILD_VIEW].model().isDirty():
-                    self.modified_operation_type = operation_type
-                    break
-        self.stateIsModified.emit()
