@@ -1,12 +1,10 @@
 from PySide2.QtCore import Qt, Slot
 from PySide2.QtWidgets import QLabel, QDateTimeEdit, QPushButton, QTableView, QLineEdit, QHeaderView
-from PySide2.QtGui import QDoubleValidator
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate
-from jal.constants import Setup
 from jal.ui_custom.helpers import g_tr
 from jal.ui_custom.abstract_operation_details import AbstractOperationDetails
 from jal.ui_custom.reference_selector import AccountSelector, PeerSelector, CategorySelector, TagSelector
-from jal.widgets.mapper_delegate import MapperDelegate
+from jal.widgets.mapper_delegate import MapperDelegate, FloatDelegate
 
 
 class IncomeSpendingWidget(AbstractOperationDetails):
@@ -180,39 +178,3 @@ class TagDelegate(QSqlRelationalDelegate):
 
     def setModelData(self, editor, model, index):
         model.setData(index, editor.selected_id)
-
-
-# -----------------------------------------------------------------------------------------------------------------------
-# Delegate for nice float numbers formatting
-class FloatDelegate(QSqlRelationalDelegate):
-    def __init__(self, parent=None):
-        QSqlRelationalDelegate.__init__(self, parent)
-
-    def formatFloatLong(self, value):
-        if abs(value - round(value, 2)) >= Setup.CALC_TOLERANCE:
-            text = str(value)
-        else:
-            text = f"{value:.2f}"
-        return text
-
-    # this is required when edit operation is called from QTableView
-    def createEditor(self, aParent, option, index):
-        float_editor = QLineEdit(aParent)
-        float_editor.setValidator(QDoubleValidator(decimals=2))
-        return float_editor
-
-    def setEditorData(self, editor, index):
-        amount = index.model().data(index, Qt.EditRole)
-        if amount:
-            editor.setText(self.formatFloatLong(float(amount)))
-        else:
-            QSqlRelationalDelegate.setEditorData(self, editor, index)
-
-    def paint(self, painter, option, index):
-        painter.save()
-        amount = index.model().data(index, Qt.DisplayRole)
-        text = ""
-        if amount:
-            text = self.formatFloatLong(float(amount))
-        painter.drawText(option.rect, Qt.AlignRight, text)
-        painter.restore()
