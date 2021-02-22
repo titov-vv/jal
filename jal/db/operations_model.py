@@ -253,6 +253,9 @@ class OperationsModel(QAbstractTableModel):
             self._account = account_id
             self.prepareData()
 
+    def getAccount(self):
+        return self._account
+
     @Slot()
     def setDateRange(self, start, end=0):
         self._begin = start

@@ -97,10 +97,14 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.reference_dialogs = ReferenceDialogs(self)
         self.connect_signals_and_slots()
 
-        for id in range(self.OperationsTabs.count()):
-            if hasattr(self.OperationsTabs.widget(id), "isCustom"):
-                self.OperationsTabs.widget(id).init_db(self.db)
-                self.OperationsTabs.widget(id).dbUpdated.connect(self.showCommitted)
+        self.NewOperationMenu = QMenu()
+        for i in range(self.OperationsTabs.count()):
+            if hasattr(self.OperationsTabs.widget(i), "isCustom"):
+                self.OperationsTabs.widget(i).init_db(self.db)
+                self.OperationsTabs.widget(i).dbUpdated.connect(self.showCommitted)
+                self.NewOperationMenu.addAction(self.OperationsTabs.widget(i).name,
+                                                partial(self.createOperation, i))
+        self.NewOperationBtn.setMenu(self.NewOperationMenu)
 
         # Setup balance and holdings parameters
         self.BalanceDate.setDateTime(QDateTime.currentDateTime())
@@ -110,10 +114,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         # Create menu for different operations
         self.ChooseAccountBtn.init_db(self.db)
-
-        self.NewOperationMenu = QMenu()
-        self.NewOperationMenu.addAction("TEST", self.showCommitted)
-        self.NewOperationBtn.setMenu(self.NewOperationMenu)
 
         # Operations view context menu
         self.contextMenu = QMenu(self.OperationsTableView)
@@ -343,10 +343,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.operations_model.reconcile_operation(self.current_index.row())
 
     @Slot()
-    def copyOperation(self):
-        pass
-
-    @Slot()
     def deleteOperation(self):
         if QMessageBox().warning(None, g_tr('MainWindow', "Confirmation"),
                                  g_tr('MainWindow', "Are you sure to delete selected transacion(s)?"),
@@ -358,3 +354,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.operations_model.deleteRows(rows)
         self.ledger.rebuild()
         self.balances_model.update()  # FIXME this should be better linked to some signal emitted by ledger after rebuild completion
+
+    @Slot()
+    def createOperation(self, type):
+        self.checkForUncommittedChanges()
+        self.OperationsTabs.widget(type).createNew(account_id=self.operations_model.getAccount())
+        self.OperationsTabs.setCurrentIndex(type)
+
+    @Slot()
+    def copyOperation(self):
+        pass

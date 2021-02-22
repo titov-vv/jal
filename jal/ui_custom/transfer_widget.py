@@ -1,3 +1,6 @@
+from datetime import datetime
+from dateutil import tz
+
 from PySide2.QtCore import Qt, Slot
 from PySide2.QtWidgets import QLabel, QDateTimeEdit, QLineEdit
 from jal.constants import Setup
@@ -126,3 +129,18 @@ class TransferWidget(AbstractOperationDetails):
             self.model.setData(self.model.index(0, self.model.fieldIndex("fee_account")), None)
             self.model.setData(self.model.index(0, self.model.fieldIndex("fee")), None)
         super().saveChanges()
+
+    def prepareNew(self, account_id):
+        new_record = self.model.record()
+        new_record.setNull("id")
+        new_record.setValue("withdrawal_timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("withdrawal_account", account_id)
+        new_record.setValue("withdrawal", 0)
+        new_record.setValue("deposit_timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("deposit_account", 0)
+        new_record.setValue("deposit", 0)
+        new_record.setValue("fee_account", 0)
+        new_record.setValue("fee", 0)
+        new_record.setValue("asset", 0)
+        new_record.setValue("note", None)
+        return new_record

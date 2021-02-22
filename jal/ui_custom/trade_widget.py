@@ -1,3 +1,6 @@
+from datetime import datetime
+from dateutil import tz
+
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QLabel, QDateTimeEdit, QDateEdit, QLineEdit
 from jal.ui_custom.helpers import g_tr
@@ -109,3 +112,18 @@ class TradeWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.comment, self.model.fieldIndex("note"))
 
         self.model.select()
+
+    def prepareNew(self, account_id):
+        new_record = self.model.record()
+        new_record.setNull("id")
+        new_record.setValue("timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("settlement", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("number", '')
+        new_record.setValue("account_id", account_id)
+        new_record.setValue("asset_id", 0)
+        new_record.setValue("qty", 0)
+        new_record.setValue("price", 0)
+        new_record.setValue("coupon", 0)
+        new_record.setValue("fee", 0)
+        new_record.setValue("note", None)
+        return new_record

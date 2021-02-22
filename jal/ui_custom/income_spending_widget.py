@@ -1,4 +1,7 @@
 import logging
+from datetime import datetime
+from dateutil import tz
+
 from PySide2.QtCore import Qt, Slot
 from PySide2.QtWidgets import QLabel, QDateTimeEdit, QPushButton, QTableView, QLineEdit, QHeaderView
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate
@@ -147,6 +150,19 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.revert_button.setEnabled(False)
         self.dbUpdated.emit()
         return
+
+    def createNew(self, account_id=0):
+        super().createNew(account_id)
+        self.details_model.setFilter(f"pid = 0")
+
+    def prepareNew(self, account_id):
+        new_record = self.model.record()
+        new_record.setNull("id")
+        new_record.setValue("timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("account_id", account_id)
+        new_record.setValue("peer_id", 0)
+        new_record.setValue("alt_currency_id", None)
+        return new_record
 
 
 class DetailsModel(QSqlRelationalTableModel):

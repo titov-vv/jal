@@ -87,3 +87,15 @@ class AbstractOperationDetails(QWidget):
         self.modified = False
         self.commit_button.setEnabled(False)
         self.revert_button.setEnabled(False)
+
+    def createNew(self, account_id=0):
+        self.mapper.submit()
+        self.model.setFilter(f"{self.table_name}.id = 0")
+        new_record = self.prepareNew(account_id)
+        assert self.model.insertRows(0, 1)
+        self.model.setRecord(0, new_record)
+        self.mapper.toLast()
+
+    def prepareNew(self, account_id):
+        new_record = self.model.record()
+        return new_record

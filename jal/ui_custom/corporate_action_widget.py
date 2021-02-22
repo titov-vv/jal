@@ -1,3 +1,6 @@
+from datetime import datetime
+from dateutil import tz
+
 from PySide2.QtCore import Qt, QStringListModel, QByteArray
 from PySide2.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QComboBox
 from jal.ui_custom.helpers import g_tr
@@ -122,3 +125,17 @@ class CorporateActionWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.type, self.model.fieldIndex("type"), QByteArray().setRawData("currentIndex", 12))
 
         self.model.select()
+
+    def prepareNew(self, account_id):
+        new_record = self.model.record()
+        new_record.setNull("id")
+        new_record.setValue("timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("number", '')
+        new_record.setValue("account_id", account_id)
+        new_record.setValue("type", 0)
+        new_record.setValue("asset_id", 0)
+        new_record.setValue("qty", 0)
+        new_record.setValue("asset_id_new", 0)
+        new_record.setValue("qty_new", 0)
+        new_record.setValue("note", None)
+        return new_record
