@@ -71,11 +71,9 @@ class Ui_LedgerMainWindow(object):
         self.centralwidget = QWidget(LedgerMainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setMaximumSize(QSize(16777215, 16777215))
-        self.verticalLayout_6 = QVBoxLayout(self.centralwidget)
-        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
-        self.verticalLayout_6.setContentsMargins(0, 0, 0, 0)
         self.MainTabs = QTabWidget(self.centralwidget)
         self.MainTabs.setObjectName(u"MainTabs")
+        self.MainTabs.setGeometry(QRect(0, 0, 1700, 856))
         self.MainTabs.setTabPosition(QTabWidget.West)
         self.MainTabs.setTabShape(QTabWidget.Triangular)
         self.BalanceTransactionTab = QWidget()
@@ -114,7 +112,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
         self.BalanceDate = QDateEdit(self.BalanceConfigFrame)
         self.BalanceDate.setObjectName(u"BalanceDate")
-        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 21), QTime(21, 0, 0)))
+        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 18), QTime(21, 0, 0)))
         self.BalanceDate.setCalendarPopup(True)
         self.BalanceDate.setTimeSpec(Qt.UTC)
 
@@ -259,69 +257,24 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.OperationsTabs = QStackedWidget(self.OperationDetails)
         self.OperationsTabs.setObjectName(u"OperationsTabs")
-        self.NoOperationTab = QWidget()
-        self.NoOperationTab.setObjectName(u"NoOperationTab")
-        self.OperationsTabs.addWidget(self.NoOperationTab)
-        self.IncomeSpendingPage = QWidget()
-        self.IncomeSpendingPage.setObjectName(u"IncomeSpendingPage")
-        self.horizontalLayout_11 = QHBoxLayout(self.IncomeSpendingPage)
-        self.horizontalLayout_11.setSpacing(0)
-        self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
-        self.horizontalLayout_11.setContentsMargins(0, 0, 0, 0)
-        self.IncomeSpending = IncomeSpendingWidget(self.IncomeSpendingPage)
+        self.NoOperation = QWidget()
+        self.NoOperation.setObjectName(u"NoOperation")
+        self.OperationsTabs.addWidget(self.NoOperation)
+        self.IncomeSpending = IncomeSpendingWidget()
         self.IncomeSpending.setObjectName(u"IncomeSpending")
-
-        self.horizontalLayout_11.addWidget(self.IncomeSpending)
-
-        self.OperationsTabs.addWidget(self.IncomeSpendingPage)
-        self.DividendPage = QWidget()
-        self.DividendPage.setObjectName(u"DividendPage")
-        self.horizontalLayout_5 = QHBoxLayout(self.DividendPage)
-        self.horizontalLayout_5.setSpacing(0)
-        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
-        self.Dividend = DividendWidget(self.DividendPage)
+        self.OperationsTabs.addWidget(self.IncomeSpending)
+        self.Dividend = DividendWidget()
         self.Dividend.setObjectName(u"Dividend")
-
-        self.horizontalLayout_5.addWidget(self.Dividend)
-
-        self.OperationsTabs.addWidget(self.DividendPage)
-        self.TradePage = QWidget()
-        self.TradePage.setObjectName(u"TradePage")
-        self.horizontalLayout_8 = QHBoxLayout(self.TradePage)
-        self.horizontalLayout_8.setSpacing(0)
-        self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
-        self.horizontalLayout_8.setContentsMargins(0, 0, 0, 0)
-        self.Trade = TradeWidget(self.TradePage)
+        self.OperationsTabs.addWidget(self.Dividend)
+        self.Trade = TradeWidget()
         self.Trade.setObjectName(u"Trade")
-
-        self.horizontalLayout_8.addWidget(self.Trade)
-
-        self.OperationsTabs.addWidget(self.TradePage)
-        self.TransferPage = QWidget()
-        self.TransferPage.setObjectName(u"TransferPage")
-        self.horizontalLayout_9 = QHBoxLayout(self.TransferPage)
-        self.horizontalLayout_9.setSpacing(0)
-        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
-        self.horizontalLayout_9.setContentsMargins(0, 0, 0, 0)
-        self.Transfer = TransferWidget(self.TransferPage)
+        self.OperationsTabs.addWidget(self.Trade)
+        self.Transfer = TransferWidget()
         self.Transfer.setObjectName(u"Transfer")
-
-        self.horizontalLayout_9.addWidget(self.Transfer)
-
-        self.OperationsTabs.addWidget(self.TransferPage)
-        self.CorporateActionPage = QWidget()
-        self.CorporateActionPage.setObjectName(u"CorporateActionPage")
-        self.horizontalLayout_10 = QHBoxLayout(self.CorporateActionPage)
-        self.horizontalLayout_10.setSpacing(0)
-        self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
-        self.horizontalLayout_10.setContentsMargins(0, 0, 0, 0)
-        self.CorporateAction = CorporateActionWidget(self.CorporateActionPage)
+        self.OperationsTabs.addWidget(self.Transfer)
+        self.CorporateAction = CorporateActionWidget()
         self.CorporateAction.setObjectName(u"CorporateAction")
-
-        self.horizontalLayout_10.addWidget(self.CorporateAction)
-
-        self.OperationsTabs.addWidget(self.CorporateActionPage)
+        self.OperationsTabs.addWidget(self.CorporateAction)
 
         self.horizontalLayout_4.addWidget(self.OperationsTabs)
 
@@ -379,7 +332,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_7.setContentsMargins(2, 2, 2, 2)
         self.HoldingsDate = QDateEdit(self.HoldingsParamsFrame)
         self.HoldingsDate.setObjectName(u"HoldingsDate")
-        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 21), QTime(21, 0, 0)))
+        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 18), QTime(21, 0, 0)))
         self.HoldingsDate.setCalendarPopup(True)
         self.HoldingsDate.setTimeSpec(Qt.UTC)
 
@@ -448,7 +401,7 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportToDate = QDateEdit(self.ReportParamsFrame)
         self.ReportToDate.setObjectName(u"ReportToDate")
-        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 21), QTime(21, 0, 0)))
+        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 18), QTime(21, 0, 0)))
         self.ReportToDate.setCalendarPopup(True)
         self.ReportToDate.setTimeSpec(Qt.UTC)
 
@@ -524,7 +477,7 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportFromDate = QDateEdit(self.ReportParamsFrame)
         self.ReportFromDate.setObjectName(u"ReportFromDate")
-        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 21), QTime(21, 0, 0)))
+        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 18), QTime(21, 0, 0)))
         self.ReportFromDate.setCalendarPopup(True)
         self.ReportFromDate.setTimeSpec(Qt.UTC)
 
@@ -565,9 +518,6 @@ class Ui_LedgerMainWindow(object):
         self.verticalLayout_5.addWidget(self.Logs)
 
         self.MainTabs.addTab(self.LoggingTab, "")
-
-        self.verticalLayout_6.addWidget(self.MainTabs)
-
         LedgerMainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(LedgerMainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -620,7 +570,7 @@ class Ui_LedgerMainWindow(object):
         self.retranslateUi(LedgerMainWindow)
 
         self.MainTabs.setCurrentIndex(0)
-        self.OperationsTabs.setCurrentIndex(0)
+        self.OperationsTabs.setCurrentIndex(5)
 
 
         QMetaObject.connectSlotsByName(LedgerMainWindow)

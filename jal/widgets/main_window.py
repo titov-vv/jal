@@ -72,16 +72,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         log_level = os.environ.get('LOGLEVEL', 'INFO').upper()
         self.logger.setLevel(log_level)
 
-        # put all operation details pages into one dictionary
-        self.operations = {   # (tab_id, widget)
-            TransactionType.NA: (0, None),
-            TransactionType.Action: (1, self.IncomeSpending),
-            TransactionType.Transfer: (4, self.Transfer),
-            TransactionType.Trade: (3, self.Trade),
-            TransactionType.Dividend: (2, self.Dividend),
-            TransactionType.CorporateAction: (5, self.CorporateAction)
-        }
-
         # Setup reports tab
         self.ReportAccountBtn.init_db(self.db)
         self.ReportCategoryEdit.init_db(self.db)
@@ -102,10 +92,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.reference_dialogs = ReferenceDialogs(self)
         self.connect_signals_and_slots()
 
-        for id in self.operations:
-            if self.operations[id][self.OP_WIDGET]:
-                self.operations[id][self.OP_WIDGET].init_db(self.db)
-                self.operations[id][self.OP_WIDGET].dbUpdated.connect(self.showCommitted)
+        for id in range(self.OperationsTabs.count()):
+            if hasattr(self.OperationsTabs.widget(id), "isCustom"):
+                self.OperationsTabs.widget(id).init_db(self.db)
+                self.OperationsTabs.widget(id).dbUpdated.connect(self.showCommitted)
 
         # Setup balance and holdings parameters
         self.BalanceDate.setDateTime(QDateTime.currentDateTime())
@@ -296,11 +286,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         operation_type = TransactionType.NA
         if len(self.OperationsTableView.selectionModel().selectedRows()) != 1:
-            self.OperationsTabs.setCurrentIndex(self.operations[operation_type][self.OP_TAB])
+            self.OperationsTabs.setCurrentIndex(TransactionType.NA)
         else:
             idx = selected.indexes()
             if idx:
                 selected_row = idx[0].row()
                 operation_type, operation_id = self.OperationsTableView.model().get_operation(selected_row)
-                self.OperationsTabs.setCurrentIndex(self.operations[operation_type][self.OP_TAB])
-                self.operations[operation_type][self.OP_WIDGET].setId(operation_id)
+                self.OperationsTabs.setCurrentIndex(operation_type)
+                self.OperationsTabs.widget(operation_type).setId(operation_id)
