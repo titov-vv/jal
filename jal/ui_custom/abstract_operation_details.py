@@ -11,6 +11,7 @@ class AbstractOperationDetails(QWidget):
 
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
+        self._db = None
         self.model = None
         self.table_name = ''
         self.mapper = None
@@ -43,6 +44,7 @@ class AbstractOperationDetails(QWidget):
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
     def init_db(self, db, table_name):
+        self._db = db
         self.table_name = table_name
         self.model = QSqlTableModel(parent=self, db=db)
         self.model.setTable(table_name)
@@ -89,7 +91,7 @@ class AbstractOperationDetails(QWidget):
         self.revert_button.setEnabled(False)
 
     def createNew(self, account_id=0):
-        self.mapper.submit()
+        self.mapper.submit()           # FIXME there is check for uncommited call before - do we need submit() here?
         self.model.setFilter(f"{self.table_name}.id = 0")
         new_record = self.prepareNew(account_id)
         assert self.model.insertRows(0, 1)
@@ -99,3 +101,16 @@ class AbstractOperationDetails(QWidget):
     def prepareNew(self, account_id):
         new_record = self.model.record()
         return new_record
+
+    def copyNew(self):
+        row = self.mapper.currentIndex()
+        new_record = self.copyToNew(row)
+        self.model.setFilter(f"{self.table_name}.id = 0")
+        assert self.model.insertRows(0, 1)
+        self.model.setRecord(0, new_record)
+        self.mapper.toLast()
+
+    def copyToNew(self, row):
+        new_record = self.model.record(row)
+        return new_record
+

@@ -9,6 +9,7 @@ from jal.ui_custom.helpers import g_tr
 from jal.ui_custom.abstract_operation_details import AbstractOperationDetails
 from jal.ui_custom.reference_selector import AccountSelector, PeerSelector, CategorySelector, TagSelector
 from jal.widgets.mapper_delegate import MapperDelegate, FloatDelegate
+from jal.db.helpers import executeSQL
 
 
 class IncomeSpendingWidget(AbstractOperationDetails):
@@ -162,6 +163,25 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         new_record.setValue("account_id", account_id)
         new_record.setValue("peer_id", 0)
         new_record.setValue("alt_currency_id", None)
+        return new_record
+
+    def copyNew(self):
+        old_id = self.model.record(self.mapper.currentIndex()).value(0)
+        super().copyNew()
+        self.details_model.setFilter(f"pid = 0")
+        query = executeSQL(self._db, "SELECT * FROM action_details WHERE pid = :pid ORDER BY id DESC",
+                           [(":pid", old_id)])
+        while query.next():
+            new_record = query.record()
+            new_record.setNull("id")
+            new_record.setNull("pid")
+            assert self.details_model.insertRows(0, 1)
+            self.details_model.setRecord(0, new_record)
+
+    def copyToNew(self, row):
+        new_record = self.model.record(row)
+        new_record.setNull("id")
+        new_record.setValue("timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
         return new_record
 
 

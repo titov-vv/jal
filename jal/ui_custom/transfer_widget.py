@@ -144,3 +144,10 @@ class TransferWidget(AbstractOperationDetails):
         new_record.setValue("asset", 0)
         new_record.setValue("note", None)
         return new_record
+
+    def copyToNew(self, row):
+        new_record = self.model.record(row)
+        new_record.setNull("id")
+        new_record.setValue("withdrawal_timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("deposit_timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        return new_record

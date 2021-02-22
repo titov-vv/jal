@@ -169,6 +169,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
         self.OperationsTableView.customContextMenuRequested.connect(self.onOperationContextMenu)
         self.DeleteOperationBtn.clicked.connect(self.deleteOperation)
+        self.CopyOperationBtn.clicked.connect(self.copyOperation)
 
     def closeDatabase(self):
         self.db.close()
@@ -334,8 +335,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.current_index = self.OperationsTableView.indexAt(pos)
         if len(self.OperationsTableView.selectionModel().selectedRows()) != 1:
             self.actionReconcile.setEnabled(False)
+            self.actionCopy.setEnabled(False)
         else:
             self.actionReconcile.setEnabled(True)
+            self.actionCopy.setEnabled(True)
         self.contextMenu.popup(self.OperationsTableView.viewport().mapToGlobal(pos))
 
     @Slot()
@@ -356,11 +359,15 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.balances_model.update()  # FIXME this should be better linked to some signal emitted by ledger after rebuild completion
 
     @Slot()
-    def createOperation(self, type):
+    def createOperation(self, operation_type):
         self.checkForUncommittedChanges()
-        self.OperationsTabs.widget(type).createNew(account_id=self.operations_model.getAccount())
-        self.OperationsTabs.setCurrentIndex(type)
+        self.OperationsTabs.widget(operation_type).createNew(account_id=self.operations_model.getAccount())
+        self.OperationsTabs.setCurrentIndex(operation_type)
 
     @Slot()
     def copyOperation(self):
-        pass
+        operation_type = self.OperationsTabs.currentIndex()
+        if operation_type == TransactionType.NA:
+            return
+        self.checkForUncommittedChanges()
+        self.OperationsTabs.widget(operation_type).copyNew()

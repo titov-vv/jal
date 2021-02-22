@@ -139,3 +139,10 @@ class CorporateActionWidget(AbstractOperationDetails):
         new_record.setValue("qty_new", 0)
         new_record.setValue("note", None)
         return new_record
+
+    def copyToNew(self, row):
+        new_record = self.model.record(row)
+        new_record.setNull("id")
+        new_record.setValue("timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("number", '')
+        return new_record
