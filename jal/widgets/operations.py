@@ -3,9 +3,7 @@ from dateutil import tz
 
 from jal.constants import TransactionType
 from PySide2.QtCore import Qt, QObject, Signal, Slot
-from PySide2.QtWidgets import QMessageBox, QMenu, QAction
 from jal.db.helpers import executeSQL
-from jal.ui_custom.helpers import g_tr
 
 INIT_NULL = 0
 INIT_VALUE = 1
@@ -110,20 +108,6 @@ class LedgerOperationsView(QObject):
         mapper.model().setRecord(0, new_record)
         mapper.toLast()
         self.initChildDetails(operation_type)
-
-    def deleteOperation(self):
-        if QMessageBox().warning(None, g_tr('LedgerOperationsView', "Confirmation"),
-                                 g_tr('LedgerOperationsView', "Are you sure to delete selected transacion?"),
-                                 QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
-            return
-        index = self.table_view.currentIndex()
-        operations_model = self.table_view.model()
-        operation_type = operations_model.get_operation_type(index.row())
-        mapper = self.operations[operation_type][self.OP_MAPPER]
-        mapper.model().removeRow(0)
-        mapper.model().submitAll()
-        self.stateIsCommitted.emit()
-        operations_model.update()
 
     @Slot()
     def copyOperation(self):

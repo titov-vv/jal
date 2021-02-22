@@ -168,6 +168,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.HoldingsTableView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
         self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
         self.OperationsTableView.customContextMenuRequested.connect(self.onOperationContextMenu)
+        self.DeleteOperationBtn.clicked.connect(self.deleteOperation)
 
     def closeDatabase(self):
         self.db.close()
@@ -347,4 +348,13 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def deleteOperation(self):
-        pass
+        if QMessageBox().warning(None, g_tr('MainWindow', "Confirmation"),
+                                 g_tr('MainWindow', "Are you sure to delete selected transacion(s)?"),
+                                 QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
+            return
+        rows = []
+        for index in self.OperationsTableView.selectionModel().selectedRows():
+            rows.append(index.row())
+        self.operations_model.deleteRows(rows)
+        self.ledger.rebuild()
+        self.balances_model.update()  # FIXME this should be better linked to some signal emitted by ledger after rebuild completion
