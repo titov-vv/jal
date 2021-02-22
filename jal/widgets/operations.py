@@ -97,10 +97,6 @@ class LedgerOperationsView(QObject):
         self.table_view = operations_table_view
         self.operations = None
         self.modified_operation_type = None
-        self.current_index = None   # this variable is used for reconciliation only
-
-        self.table_view.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.table_view.customContextMenuRequested.connect(self.onOperationContextMenu)
 
     def addNewOperation(self, operation_type):
         self.checkForUncommittedChanges()
@@ -178,26 +174,7 @@ class LedgerOperationsView(QObject):
                 new_operation_record.setValue(field, init_values[field][IV_VALUE])
         return new_operation_record
 
-    @Slot()
-    def onOperationContextMenu(self, pos):
-        self.current_index = self.table_view.indexAt(pos)
-        contextMenu = QMenu(self.table_view)
-        actionReconcile = QAction(text=g_tr('LedgerOperationsView', "Reconcile"), parent=self)
-        actionReconcile.triggered.connect(self.reconcileAtCurrentOperation)
-        actionCopy = QAction(text=g_tr('LedgerOperationsView', "Copy"), parent=self)
-        actionCopy.triggered.connect(self.copyOperation)
-        actionDelete = QAction(text=g_tr('LedgerOperationsView', "Delete"), parent=self)
-        actionDelete.triggered.connect(self.deleteOperation)
-        contextMenu.addAction(actionReconcile)
-        contextMenu.addSeparator()
-        contextMenu.addAction(actionCopy)
-        contextMenu.addAction(actionDelete)
-        contextMenu.popup(self.table_view.viewport().mapToGlobal(pos))
 
-    @Slot()
-    def reconcileAtCurrentOperation(self):
-        model = self.current_index.model()
-        model.reconcile_operation(self.current_index.row())
 
 
 

@@ -49,6 +49,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.db = db
         self.own_path = own_path
         self.currentLanguage = language
+        self.current_index = None  # this is used in onOperationContextMenu() to track item for menu
 
         self.ledger = Ledger(self.db)
         self.downloader = QuoteDownloader(self.db)  # TODO Get rid of 'QSqlDatabasePrivate::removeDatabase: connection 'qt_sql_default_connection' is still in use, all queries will cease to work.' that starts from this line
@@ -82,12 +83,16 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.balances_model = BalancesModel(self.BalancesTableView, self.db)
         self.BalancesTableView.setModel(self.balances_model)
         self.balances_model.configureView()
+
         self.holdings_model = HoldingsModel(self.HoldingsTableView, self.db)
         self.HoldingsTableView.setModel(self.holdings_model)
         self.holdings_model.configureView()
         self.HoldingsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.OperationsTableView.setModel(OperationsModel(self.OperationsTableView, self.db))
-        self.OperationsTableView.model().configureView()
+
+        self.operations_model = OperationsModel(self.OperationsTableView, self.db)
+        self.OperationsTableView.setModel(self.operations_model)
+        self.operations_model.configureView()
+        self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.reference_dialogs = ReferenceDialogs(self)
         self.connect_signals_and_slots()
@@ -109,6 +114,19 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.NewOperationMenu = QMenu()
         self.NewOperationMenu.addAction("TEST", self.showCommitted)
         self.NewOperationBtn.setMenu(self.NewOperationMenu)
+
+        # Operations view context menu
+        self.contextMenu = QMenu(self.OperationsTableView)
+        self.actionReconcile = QAction(text=g_tr('MainWindow', "Reconcile"), parent=self)
+        self.actionReconcile.triggered.connect(self.reconcileAtCurrentOperation)
+        self.actionCopy = QAction(text=g_tr('MainWindow', "Copy"), parent=self)
+        self.actionCopy.triggered.connect(self.copyOperation)
+        self.actionDelete = QAction(text=g_tr('MainWindow', "Delete"), parent=self)
+        self.actionDelete.triggered.connect(self.deleteOperation)
+        self.contextMenu.addAction(self.actionReconcile)
+        self.contextMenu.addSeparator()
+        self.contextMenu.addAction(self.actionCopy)
+        self.contextMenu.addAction(self.actionDelete)
 
         self.langGroup = QActionGroup(self.menuLanguage)
         self.createLanguageMenu()
@@ -149,6 +167,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.SearchString.textChanged.connect(self.OperationsTableView.model().filterText)
         self.HoldingsTableView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
         self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
+        self.OperationsTableView.customContextMenuRequested.connect(self.onOperationContextMenu)
 
     def closeDatabase(self):
         self.db.close()
@@ -308,3 +327,24 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                     self.OperationsTabs.widget(i).saveChanges()
                 else:
                     self.OperationsTabs.widget(i).revertChanges()
+
+    @Slot()
+    def onOperationContextMenu(self, pos):
+        self.current_index = self.OperationsTableView.indexAt(pos)
+        if len(self.OperationsTableView.selectionModel().selectedRows()) != 1:
+            self.actionReconcile.setEnabled(False)
+        else:
+            self.actionReconcile.setEnabled(True)
+        self.contextMenu.popup(self.OperationsTableView.viewport().mapToGlobal(pos))
+
+    @Slot()
+    def reconcileAtCurrentOperation(self):
+        self.operations_model.reconcile_operation(self.current_index.row())
+
+    @Slot()
+    def copyOperation(self):
+        pass
+
+    @Slot()
+    def deleteOperation(self):
+        pass
