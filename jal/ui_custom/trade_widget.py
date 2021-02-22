@@ -9,6 +9,7 @@ from jal.widgets.mapper_delegate import MapperDelegate
 class TradeWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
+        self.name = "Trade"
 
         self.date_label = QLabel(self)
         self.settlement_label = QLabel()

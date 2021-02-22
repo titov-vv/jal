@@ -10,6 +10,7 @@ from jal.widgets.mapper_delegate import MapperDelegate
 class TransferWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
+        self.name = "Transfer"
 
         self.from_date_label = QLabel(self)
         self.from_account_label = QLabel(self)

@@ -9,6 +9,7 @@ from jal.widgets.mapper_delegate import MapperDelegate
 class CorporateActionWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
+        self.name = "Corporate action"
         self.combo_model = None
 
         self.date_label = QLabel(self)

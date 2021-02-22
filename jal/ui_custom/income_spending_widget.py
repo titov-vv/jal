@@ -11,6 +11,8 @@ from jal.widgets.mapper_delegate import MapperDelegate, FloatDelegate
 class IncomeSpendingWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
+        self.name = "Income/Spending"
+
         self.details_model = None
         self.category_delegate = CategoryDelegate()
         self.tag_delegate = TagDelegate()

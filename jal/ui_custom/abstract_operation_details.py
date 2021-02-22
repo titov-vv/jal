@@ -15,6 +15,7 @@ class AbstractOperationDetails(QWidget):
         self.table_name = ''
         self.mapper = None
         self.modified = False
+        self.name = "N/A"
 
         self.layout = QGridLayout(self)
         self.layout.setContentsMargins(2, 2, 2, 2)
@@ -53,7 +54,7 @@ class AbstractOperationDetails(QWidget):
 
         self.model.dataChanged.connect(self.onDataChange)
         self.commit_button.clicked.connect(self.saveChanges)
-        self.revert_button.clicked.connect(self.revertCanges)
+        self.revert_button.clicked.connect(self.revertChanges)
 
     def isCustom(self):
         return True
@@ -81,7 +82,7 @@ class AbstractOperationDetails(QWidget):
         return True
 
     @Slot()
-    def revertCanges(self):
+    def revertChanges(self):
         self.model.revertAll()
         self.modified = False
         self.commit_button.setEnabled(False)

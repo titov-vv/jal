@@ -157,17 +157,6 @@ class LedgerOperationsView(QObject):
                 new_record.setNull("pid")
                 assert child_view.model().insertRows(0, 1)
                 child_view.model().setRecord(0, new_record)
-
-    def checkForUncommittedChanges(self):
-        if self.modified_operation_type:
-            reply = QMessageBox().warning(None, g_tr('LedgerOperationsView', "You have unsaved changes"),
-                                          self.operations[self.modified_operation_type][self.OP_NAME] +
-                                          g_tr('LedgerOperationsView', " has uncommitted changes,\ndo you want to save it?"),
-                                          QMessageBox.Yes, QMessageBox.No)
-            if reply == QMessageBox.Yes:
-                self.commitOperation()
-            else:
-                self.revertOperation()
                 
     def initChildDetails(self, operation_type):
         view = self.operations[operation_type][self.OP_CHILD_VIEW]

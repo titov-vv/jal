@@ -9,6 +9,7 @@ from jal.widgets.mapper_delegate import MapperDelegate
 class DividendWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
+        self.name = "Dividend"
 
         self.date_label = QLabel(self)
         self.number_label = QLabel(self)
@@ -84,6 +85,3 @@ class DividendWidget(AbstractOperationDetails):
 
         self.model.select()
 
-        self.model.dataChanged.connect(self.onDataChange)
-        self.commit_button.clicked.connect(self.saveChanges)
-        self.revert_button.clicked.connect(self.revertCanges)

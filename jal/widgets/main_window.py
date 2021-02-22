@@ -114,7 +114,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.createLanguageMenu()
         self.langGroup.triggered.connect(self.onLanguageChanged)
 
-        self.OperationsTableView.selectRow(0)  # TODO find a way to select last row from self.operations
+        self.OperationsTabs.setCurrentIndex(TransactionType.NA)
+        self.OperationsTableView.selectRow(0)
         self.OnOperationsRangeChange(0)
 
     def connect_signals_and_slots(self):
@@ -282,9 +283,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def OnOperationChange(self, selected, _deselected):
-        # self.checkForUncommittedChanges()
+        self.checkForUncommittedChanges()
 
-        operation_type = TransactionType.NA
         if len(self.OperationsTableView.selectionModel().selectedRows()) != 1:
             self.OperationsTabs.setCurrentIndex(TransactionType.NA)
         else:
@@ -294,3 +294,17 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                 operation_type, operation_id = self.OperationsTableView.model().get_operation(selected_row)
                 self.OperationsTabs.setCurrentIndex(operation_type)
                 self.OperationsTabs.widget(operation_type).setId(operation_id)
+
+    @Slot()
+    def checkForUncommittedChanges(self):
+        for i in range(self.OperationsTabs.count()):
+            if hasattr(self.OperationsTabs.widget(i), "isCustom") and self.OperationsTabs.widget(i).modified:
+                reply = QMessageBox().warning(None,
+                                              g_tr('MainWindow', "You have unsaved changes"),
+                                              self.OperationsTabs.widget(i).name +
+                                              g_tr('MainWindow', " has uncommitted changes,\ndo you want to save it?"),
+                                              QMessageBox.Yes, QMessageBox.No)
+                if reply == QMessageBox.Yes:
+                    self.OperationsTabs.widget(i).saveChanges()
+                else:
+                    self.OperationsTabs.widget(i).revertChanges()
