@@ -33,6 +33,10 @@ def main():
     translator.load(language_file)
     app.installTranslator(translator)
 
+    app.setOrganizationName("titov-vv")
+    app.setOrganizationDomain("titov-vv.jal.github.com")
+    app.setApplicationName("JAL")
+
     if error.code == LedgerInitError.OutdatedDbSchema:
         error = update_db_schema(own_path)
         if error.code == LedgerInitError.DbInitSuccess:

@@ -1,12 +1,13 @@
 import logging
 import math
 import re
+import os
 from datetime import datetime, timezone
 from itertools import groupby
 
 import pandas
 from lxml import etree
-from PySide2.QtCore import QObject, Signal, Slot
+from PySide2.QtCore import QObject, Signal, Slot, QSettings
 from PySide2.QtSql import QSqlTableModel
 from PySide2.QtWidgets import QDialog, QFileDialog, QMessageBox
 from jal.constants import Setup, TransactionType, PredefinedAsset, PredefinedCategory, CorporateAction
@@ -42,7 +43,7 @@ class IBKR:
     AssetType = {
         'CASH': PredefinedAsset.Money,
         'STK': PredefinedAsset.Stock,
-        # 'BOND': PredefinedAsset.Bond,
+        'BOND': PredefinedAsset.Bond,
         'OPT': PredefinedAsset.Derivative,
         'FUT': PredefinedAsset.Derivative
     }
@@ -124,7 +125,9 @@ class IBKR:
             'Other Fees':                   IBKRCashOp.Fee,
             'Commission Adjustments':       IBKRCashOp.Fee,
             'Broker Interest Paid':         IBKRCashOp.Fee,
-            'Broker Interest Received':     IBKRCashOp.Interest
+            'Broker Interest Received':     IBKRCashOp.Interest,
+            'Bond Interest Paid':           IBKRCashOp.Dividend,
+            'Bond Interest Received':       IBKRCashOp.Dividend,
         }
 
         if name not in data.attrib:
@@ -323,11 +326,17 @@ class StatementLoader(QObject):
 
     # Displays file choose dialog and loads corresponding report if user have chosen a file
     def loadReport(self):
-        report_file, active_filter = \
-            QFileDialog.getOpenFileName(None, g_tr('StatementLoader', "Select statement file to import"),
-                                        ".", f"{ReportType.IBKR};;{ReportType.Quik}")
-        if report_file:
-            result = self.loaders[active_filter](report_file)
+        lastdir = QSettings().value("LastReportDir", ".")
+        report_files, active_filter = \
+            QFileDialog.getOpenFileNames(None, g_tr('StatementLoader', "Select statement file to import"),
+                                         lastdir, f"{ReportType.IBKR};;{ReportType.Quik}")
+
+        if report_files:
+            QSettings().setValue("LastReportDir", os.path.dirname(report_files[0]))
+            for report_file in report_files:
+                result = self.loaders[active_filter](report_file)
+                if not result:
+                    break
             if result:
                 self.load_completed.emit()
             else:
@@ -521,6 +530,7 @@ class StatementLoader(QObject):
         ib_trade_loaders = {
             PredefinedAsset.Stock: self.loadIBStockTrade,
             PredefinedAsset.Derivative: self.loadIBStockTrade,
+            PredefinedAsset.Bond: self.loadIBStockTrade,
             PredefinedAsset.Money: self.loadIBCurrencyTrade
         }
 
