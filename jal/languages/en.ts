@@ -97,12 +97,12 @@
 <context>
     <name>AccountSelector</name>
     <message>
-        <location filename="../ui_custom/reference_selector.py" line="103"/>
+        <location filename="../ui_custom/reference_selector.py" line="104"/>
         <source>Name</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_selector.py" line="103"/>
+        <location filename="../ui_custom/reference_selector.py" line="104"/>
         <source>Accounts</source>
         <translation></translation>
     </message>
@@ -2132,7 +2132,7 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_selector.py" line="128"/>
+        <location filename="../ui_custom/reference_selector.py" line="129"/>
         <source>Country</source>
         <translation></translation>
     </message>
@@ -2162,7 +2162,7 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_selector.py" line="103"/>
+        <location filename="../ui_custom/reference_selector.py" line="104"/>
         <source>CC</source>
         <translation></translation>
     </message>
