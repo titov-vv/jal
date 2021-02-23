@@ -13,6 +13,8 @@ class SelectorMeta(type(ABC), type(QWidget)):
 
 
 class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
+    changed = Signal()
+
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self.completer = None
@@ -57,10 +59,6 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
             self.details.setText(details)
         self.dialog.Model.setFilter("")
         self.changed.emit()
-
-    @Signal
-    def changed(self):
-        pass
 
     selected_id = Property(int, getId, setId, notify=changed, user=True)
 

@@ -62,7 +62,7 @@ class AbstractOperationDetails(QWidget):
         return True
 
     def setId(self, id):
-        self.model.setFilter(f"{self.table_name}.id={id}")
+        self.model.setFilter(f"id={id}")
         self.mapper.setCurrentModelIndex(self.model.index(0, 0))
 
     @Slot()
