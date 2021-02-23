@@ -58,7 +58,6 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
             details = self.dialog.Model.record(row_idx).value(self.dialog.Model.fieldIndex(self.details_field))
             self.details.setText(details)
         self.dialog.Model.setFilter("")
-        self.changed.emit()
 
     selected_id = Property(int, getId, setId, notify=changed, user=True)
 
@@ -68,6 +67,7 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
         res = self.dialog.exec_(enable_selection=True)
         if res:
             self.selected_id = self.dialog.selected_id
+            self.changed.emit()
 
     @abstractmethod
     def init_db(self, db):
@@ -90,6 +90,7 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
     def on_completion(self, index):
         model = index.model()
         self.selected_id = model.data(model.index(index.row(), 0), Qt.DisplayRole)
+        self.changed.emit()
 
     def isCustom(self):
         return True
