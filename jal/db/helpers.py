@@ -1,10 +1,12 @@
 import os
 import logging
 import sqlite3
-from jal.constants import Setup
 from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery
-from jal.ui_custom.helpers import g_tr
 from PySide2.QtWidgets import QMessageBox
+from jal.constants import Setup
+from jal.db.settings import JalSettings
+from jal.ui_custom.helpers import g_tr
+
 
 # No translation of the file because these routines might be used before QApplication initialization
 class LedgerInitError:
@@ -103,7 +105,7 @@ def readSQLrecord(query, named=False):
 #    if schema version is invalid it will close DB
 # Returns: db hanlder, LedgerInitError(code = 0 if db initialzied successfully)
 def init_and_check_db(db_path):
-    db = QSqlDatabase.addDatabase("QSQLITE")
+    db = QSqlDatabase.addDatabase("QSQLITE", Setup.DB_CONNECTION)
     if not db.isValid():
         return None, LedgerInitError(LedgerInitError.DbDriverFailure)
     db.setDatabaseName(get_dbfilename(db_path))
@@ -116,7 +118,7 @@ def init_and_check_db(db_path):
         QSqlDatabase.removeDatabase(connection_name)
         return None, LedgerInitError(LedgerInitError.EmptyDbInitialized)
 
-    schema_version = readSQL(db, "SELECT value FROM settings WHERE name='SchemaVersion'")
+    schema_version = JalSettings().getValue('SchemaVersion')
     if schema_version < Setup.TARGET_SCHEMA:
         db.close()
         return None, LedgerInitError(LedgerInitError.OutdatedDbSchema)
@@ -171,18 +173,13 @@ def update_db_schema(db_path):
 
 
 # -------------------------------------------------------------------------------------------------------------------
-def get_language(db):
+def get_language(db):   # TODO Change to make it via JalSettings instead of readSQL
     language = ''
     if db:
         language = readSQL(db, "SELECT l.language FROM settings AS s "
                                "LEFT JOIN languages AS l ON s.value=l.id WHERE s.name='Language'")
     language = 'us' if language == '' else language
     return language
-
-
-# -------------------------------------------------------------------------------------------------------------------
-def get_base_currency(db):
-    return readSQL(db, "SELECT value FROM settings WHERE name='BaseCurrency'")
 
 # -------------------------------------------------------------------------------------------------------------------
 def get_field_by_id_from_table(db, table_name, field_name, id):

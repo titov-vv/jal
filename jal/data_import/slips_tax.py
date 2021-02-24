@@ -9,7 +9,7 @@ from PySide2.QtCore import Signal, Slot, QUrl
 from PySide2.QtWidgets import QDialog
 from PySide2.QtWebEngineWidgets import QWebEngineProfile, QWebEnginePage
 from PySide2.QtWebEngineCore import QWebEngineUrlRequestInterceptor
-from jal.db.helpers import readSQL, executeSQL
+from jal.db.settings import JalSettings
 from jal.ui_custom.helpers import g_tr
 from jal.ui.ui_login_fns_dlg import Ui_LoginFNSDialog
 
@@ -58,7 +58,7 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
             self.login_esia()
 
     def login_fns(self):
-        client_secret = readSQL(self.db, "SELECT value FROM settings WHERE name='RuTaxClientSecret'")
+        client_secret = JalSettings().getValue('RuTaxClientSecret')
         inn = self.InnEdit.text()
         password = self.PasswordEdit.text()
 
@@ -78,10 +78,9 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
         json_content = json.loads(response.text)
         new_session_id = json_content['sessionId']
         new_refresh_token = json_content['refresh_token']
-        _ = executeSQL(self.db, "UPDATE settings SET value=:new_session WHERE name='RuTaxSessionId'",
-                       [(":new_session", new_session_id)])
-        _ = executeSQL(self.db, "UPDATE settings SET value=:new_refresh_token WHERE name='RuTaxRefreshToken'",
-                       [(":new_refresh_token", new_refresh_token)])
+        settings = JalSettings()
+        settings.setValue('RuTaxSessionId', new_session_id)
+        settings.setValue('RuTaxRefreshToken', new_refresh_token)
         self.db.commit()
         self.accept()
 
@@ -102,7 +101,7 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
 
     @Slot()
     def response_esia(self, auth_code, state):
-        client_secret = readSQL(self.db, "SELECT value FROM settings WHERE name='RuTaxClientSecret'")
+        client_secret = JalSettings().getValue('RuTaxClientSecret')
         payload = '{' + f'"authorization_code": "{auth_code}", "client_secret": "{client_secret}", "state": "{state}"' \
                   + '}'
         response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/mobile/users/esia/auth', data=payload)
@@ -113,10 +112,9 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
         json_content = json.loads(response.text)
         new_session_id = json_content['sessionId']
         new_refresh_token = json_content['refresh_token']
-        _ = executeSQL(self.db, "UPDATE settings SET value=:new_session WHERE name='RuTaxSessionId'",
-                       [(":new_session", new_session_id)])
-        _ = executeSQL(self.db, "UPDATE settings SET value=:new_refresh_token WHERE name='RuTaxRefreshToken'",
-                       [(":new_refresh_token", new_refresh_token)])
+        settings = JalSettings()
+        settings.setValue('RuTaxSessionId', new_session_id)
+        settings.setValue('RuTaxRefreshToken', new_refresh_token)
         self.db.commit()
         self.accept()
 
@@ -132,13 +130,13 @@ class SlipsTaxAPI:
         self.slip_json = None
 
     def get_ru_tax_session(self):
-        stored_id = readSQL(self.db, "SELECT value FROM settings WHERE name='RuTaxSessionId'")
+        stored_id = JalSettings().getValue('RuTaxSessionId')
         if stored_id != '':
             return stored_id
 
         login_dialog = LoginFNS(self.db)
         if login_dialog.exec_() == QDialog.Accepted:
-            stored_id = readSQL(self.db, "SELECT value FROM settings WHERE name='RuTaxSessionId'")
+            stored_id = JalSettings().getValue('RuTaxSessionId')
             if stored_id is not None:
                 return stored_id
 
@@ -147,8 +145,8 @@ class SlipsTaxAPI:
 
     def refresh_session(self):
         session_id = self.get_ru_tax_session()
-        client_secret = readSQL(self.db, "SELECT value FROM settings WHERE name='RuTaxClientSecret'")
-        refresh_token = readSQL(self.db, "SELECT value FROM settings WHERE name='RuTaxRefreshToken'")
+        client_secret = JalSettings().getValue('RuTaxClientSecret')
+        refresh_token = JalSettings().getValue('RuTaxRefreshToken')
         s = requests.Session()
         s.headers['ClientVersion'] = '2.9.0'
         s.headers['Device-Id'] = str(uuid.uuid1())
@@ -164,10 +162,9 @@ class SlipsTaxAPI:
             json_content = json.loads(response.text)
             new_session_id = json_content['sessionId']
             new_refresh_token = json_content['refresh_token']
-            _ = executeSQL(self.db, "UPDATE settings SET value=:new_session WHERE name='RuTaxSessionId'",
-                           [(":new_session", new_session_id)])
-            _ = executeSQL(self.db, "UPDATE settings SET value=:new_refresh_token WHERE name='RuTaxRefreshToken'",
-                           [(":new_refresh_token", new_refresh_token)])
+            settings = JalSettings()
+            settings.setValue('RuTaxSessionId', new_session_id)
+            settings.setValue('RuTaxRefreshToken', new_refresh_token)
             return SlipsTaxAPI.Pending   # not Success as it is sent transparently to upper callers
         else:
             logging.error(g_tr('SlipsTaxAPI', "Can't refresh session, response: ") + f"{response}/{response.text}")

@@ -12,7 +12,8 @@ from jal.ui_custom.helpers import g_tr, ManipulateDate, dependency_present
 from jal.ui_custom.reference_dialogs import ReferenceDialogs
 from jal.constants import TransactionType
 from jal.db.backup_restore import JalBackup
-from jal.db.helpers import get_dbfilename, get_base_currency, executeSQL
+from jal.db.helpers import get_dbfilename, executeSQL
+from jal.db.settings import JalSettings
 from jal.data_import.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
 from jal.db.balances_model import BalancesModel
@@ -108,9 +109,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         # Setup balance and holdings parameters
         self.BalanceDate.setDateTime(QDateTime.currentDateTime())
-        self.BalancesCurrencyCombo.init_db(self.db, get_base_currency(db))
+        self.BalancesCurrencyCombo.init_db(self.db, JalSettings().getValue('BaseCurrency'))
         self.HoldingsDate.setDateTime(QDateTime.currentDateTime())
-        self.HoldingsCurrencyCombo.init_db(self.db, get_base_currency(db))
+        self.HoldingsCurrencyCombo.init_db(self.db, JalSettings().getValue('BaseCurrency'))
 
         # Create menu for different operations
         self.ChooseAccountBtn.init_db(self.db)
