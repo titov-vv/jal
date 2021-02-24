@@ -122,7 +122,10 @@ class IncomeSpendingWidget(AbstractOperationDetails):
     @Slot()
     def addChild(self):
         new_record = self.details_model.record()
-        self.details_model.insertRecord(-1, new_record)
+        if not self.details_model.insertRecord(-1, new_record):
+            logging.fatal(
+                g_tr('AbstractOperationDetails', "Failed to add new record: ") + self.details_model.lastError().text())
+            return
 
     @Slot()
     def delChild(self):
@@ -143,8 +146,8 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         for row in range(self.details_model.rowCount()):
             self.details_model.setData(self.details_model.index(row, self.details_model.fieldIndex("pid")), pid)
         if not self.details_model.submitAll():
-            logging.fatal(
-                g_tr('AbstractOperationDetails', "Operation details submit failed: ") + self.model.lastError().text())
+            logging.fatal(g_tr('AbstractOperationDetails', "Operation details submit failed: ")
+                          + self.details_model.lastError().text())
             return
         self.modified = False
         self.commit_button.setEnabled(False)
@@ -154,7 +157,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
 
     def createNew(self, account_id=0):
         super().createNew(account_id)
-        self.details_model.setFilter(f"pid = 0")
+        self.details_model.setFilter(f"action_details.pid = 0")
 
     def prepareNew(self, account_id):
         new_record = self.model.record()
@@ -168,7 +171,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
     def copyNew(self):
         old_id = self.model.record(self.mapper.currentIndex()).value(0)
         super().copyNew()
-        self.details_model.setFilter(f"pid = 0")
+        self.details_model.setFilter(f"action_details.pid = 0")
         query = executeSQL(self._db, "SELECT * FROM action_details WHERE pid = :pid ORDER BY id DESC",
                            [(":pid", old_id)])
         while query.next():
