@@ -14,39 +14,49 @@
 На появившейся странице *Reports* нужно выбрать закладку *Flex Queries*. В разделе *Activity Flex Query* нужно нажать *'+'* чтобы создать новый отчёт.
 Далее необходимо выполнить настройку отчета:
     - *Query name* - нужно указать уникальное имя отчёта
-    - *Sections* - нужно отменить необходимые секции отчета. Минимально необходимы: *Account Information, Cash Transactions, Corporate Actions, Securities Info, Trades, Transactions Fees, Transfers* (*Option Exercises, Assignments and Expirations* - если торгуете опционами)
+    - *Sections* - нужно отменить необходимые секции отчета. Минимально необходимы: *Account Information, Cash Transactions, Corporate Actions, Financial Instrument Information, Trades, Transactions Fees, Transfers* (*Option Exercises, Assignments and Expirations* - если торгуете опционами)
     - *Format* - XML
     - *Date Format* - yyyyMMdd
     - *Time Format* - HHmmss
     - *Date/Time separator* - ;(semi-colon)
     - *Profit and Loss* - Default
     - на вопросы *Include Canceled Trades?, Include Currency Rates?, Display Account Alias in Place of Account ID?, Breakout by Day?* ответить No.  
-    После этого нажать *Continue* и затем *Create*  
+    После этого нажать *Continue* и затем *Create*
+При выборе секций будет появляться окно для более детальной настройки - я рекомендую оставлять верхнюю часть *"Options"* без изменений, а в нижней выбирать *"Select All"*, чтобы включить все галочки (пример на скриншоте ниже).  
+![IBRK account](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/ibkr_selection_example.png?raw=true)  
+      
 2. Вновь созданный flex-отчет появится в списке *Activity Flex Query*. Его нужно запустить по нажатию на стрелку вправо (команда *Run*).
 Формат нужно оставить XML. В качестве периодна максимум можно выбрать год - поэтому нужно выполнить отчет несколько раз, чтобы последовательно получить операции за всё время существования счёта.
 В результате у вас будет один или несколько XML файлов с отчетами. В качестве примера для дальнейших действий я буду использовать [IBKR_flex_sample.xml](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/IBKR_flex_sample.xml)
+   
 3. В *jal* все транзакции привязаны к тому или иному счету. Поэтому для успешной загрузки отчёта вам нужно заранее создать как минимум пару счетов через меню *Data->Accounts* (в русской версии *Данные->Счета*):
     - счет типа *Investment*, у которого номер и валюта будут совпадать с номером и валютой счета Interactive Brokers. Если вы хотите сохранить данные в файл программы 'Декларация', то нужно также указать страну счёта. В моём примере я использую U1234567 и USD:  
     ![IBRK account](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/ibkr_account.png?raw=true) 
     - ещё один счет любого типа - он будет необходим для учета транзакций ввода/вывода дережных средств. Например:  
     ![Bank account](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/bank_account.png?raw=true)  
     - если вы производили операции в других валютах, то нужно добавить счета с таким же номером, но другой валютой (например, если для конвертации долларов из рублей мне бы понадобился счет U1234567, RUB)
-(При отсутствии нужного счёта вы получите ошибку *ERROR - Failed to load attribute: accountId* при импорте)  
+(При отсутствии нужного счёта вы получите ошибку *ERROR - Failed to load attribute: accountId* при импорте)
+      
 4. После инициализации база *jal* содержит 3 валюты - RUB, USD и EUR.  
 Если ваш отчет содержит больше валют, то вам необходимо их добавить самостоятельно через меню *Data->Assets* (*Данные->Ценные бумаги*), выбрав тип *Money*. Вам нужно добавить код валюты (например, HKD) и указать источник для загрузки курсов - *Bank of Russia*.
+   
 5. Непосредственно для загрузки отчёта вам необходимо выбрать пункт меню *Import->Broker statement...* (в русской версии *Импорт->Отчет брокера...*), после чего указать XML файл, который необходимо загрузить.
 Если ваш отчет содержит транзации ввода/вывода денежных средств, то вы *jal* попросит вас указать какой счет нужно использовать для списания/зачисленя этих средств, например:  
 ![Select account](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/account_selection.png?raw=true)  
 В случае успешного импорта, вы увидите сообщение *IB Flex-statement loaded successfully* на закладке *Log messages* (в русской версии *Сообщения*)  
 ![Import success](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/import_log.png?raw=true)
+   
 6. После загрузки вы можете выбрать полный интервал времени и нужный счёт, чтобы проверить корректность импорта данных:  
 ![Main window](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/main_window.png?raw=true)  
 Хорошим индикатором может служить совпадение конечного баланса счёта.  
 Возможны необольшие отклонения, у меня они составляют несколько центов. Они связаны с тем, что Interactive Brokers округляют налог в отчётах - чтобы исправить это вы можете проголосовать по [этой ссылке](https://interactivebrokers.com/en/general/poll/featuresPoll.php?sid=15422).
+   
 7. Если ваш отчёт содержит корпоративные действия (особенно Spin-Off), то я рекомендую ознакомиться с [логикой, которая используется *jal* для их обработки](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/corporate_actions.md)
+   
 8. При подготовке декларации все суммы нужно пересчитать в рубли - для этого необходимо загрузить курсы валют.
 Сделать это можно с помощью меню *Load->Load quotes...* (в русской версии *Загрузить->Загрузить Котировки...*) и указав необходимый диапазон дат:  
 ![Quotes](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/update_quotes.png?raw=true)
+   
 9. С помощью *jal* вы можете подготовить как просто расчёт в виде файла Excel, так и автоматически занести данные в файл программы *"Декларация 2020"*. 
 Все шаги, связанные с программой *"Декларация 2020"* и файлами *.dc0* являются необязательными и вы можете их пропустить.
 Формат файла программы *"Декларация"* не является открытым и меняется каждый год, поэтому сначала вам нужно создать пустой файл.
@@ -56,6 +66,7 @@
     - *Сведения о декларанте* - нужно указать ФИО, дату/место рождения и сведения о документе, удостоверящем личность
     ![Declaration Person](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/declaration_2.png?raw=true)   
 После этого вы сможете сохранить результат в файл (я назвал его *declaration_empty.dc0*)
+      
 10. Для выполнения расчёта вам необходимо выбрать пункт меню *Reports->Tax Report \[RU]* (в русской версии *Отчёты->Налоговый отчёт \[RU]*) и заполнить параметры в появившемся диалоговом окне:  
 ![Report parameters](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/report_params.png?raw=true)  
 Вам необходимо задать:
@@ -68,9 +79,11 @@
     - *Update only information about dividends* - существуют разные практики занесения информации о сделках в декларацию. 
     Поэтому если вы не хотите, чтобы каждая сделка добавлялась отдельным листом - поставьте эту галочку и в файл будет добавлена лишь информация о дивидендах.
 Нажмите кнопку *OK* - в случае успешного выполнения на диске будут записаны соответствующие файлы
+      
 11. Если вы выбирали обновление файла декларации, то вы можете теперь открыть его с помощью программы *"Декларация 2020"* и проверить, что информация была добавлена на закладку *Доходы за пределами РФ*  
 ![Declaration Updated](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/declaration_3.png?raw=true)
-11. [Получившийся Excel-файл с расчётом](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/3ndfl_tax_report.xlsx) <sup>1</sup> содержит 4 закладки:  
+    
+12. [Получившийся Excel-файл с расчётом](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/3ndfl_tax_report.xlsx) <sup>1</sup> содержит 4 закладки:  
     - Расчёт дивидендов  
     ![Report Dividends](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/report_1.png?raw=true)  
       Если вы видите N/A в столбце 'Страна' (столбец 10). то это значит страна не была указана для данной бумаги. Это не влияет на расчёт если уплаченный налог (столбец 7) равен нулю, т.к. СОИДН не имеет значения. 

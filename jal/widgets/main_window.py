@@ -40,20 +40,17 @@ class AbortWindow(QMainWindow, Ui_AbortWindow):
 
 #-----------------------------------------------------------------------------------------------------------------------
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):
-    OP_TAB = 0
-    OP_WIDGET = 1
-
     def __init__(self, db, own_path, language):
         QMainWindow.__init__(self, None)
         self.setupUi(self)
 
-        self.db = db
+        self.db = db  # TODO Get rid of any connection storage as we may get it anytime (example is in JalSettings)
         self.own_path = own_path
         self.currentLanguage = language
         self.current_index = None  # this is used in onOperationContextMenu() to track item for menu
 
         self.ledger = Ledger(self.db)
-        self.downloader = QuoteDownloader(self.db)  # TODO Get rid of 'QSqlDatabasePrivate::removeDatabase: connection 'qt_sql_default_connection' is still in use, all queries will cease to work.' that starts from this line
+        self.downloader = QuoteDownloader(self.db)
         self.downloader.download_completed.connect(self.onQuotesDownloadCompletion)
         self.taxes = TaxesRus(self.db)
         self.statements = StatementLoader(self, self.db)
