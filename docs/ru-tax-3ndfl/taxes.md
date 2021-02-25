@@ -21,7 +21,7 @@
     - *Date/Time separator* - ;(semi-colon)
     - *Profit and Loss* - Default
     - на вопросы *Include Canceled Trades?, Include Currency Rates?, Display Account Alias in Place of Account ID?, Breakout by Day?* ответить No.  
-    После этого нажать *Continue* и затем *Create*
+    После этого нажать *Continue* и затем *Create*  
 При выборе секций будет появляться окно для более детальной настройки - я рекомендую оставлять верхнюю часть *"Options"* без изменений, а в нижней выбирать *"Select All"*, чтобы включить все галочки (пример на скриншоте ниже).  
 ![IBRK account](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/ibkr_selection_example.png?raw=true)  
       
