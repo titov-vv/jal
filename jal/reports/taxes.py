@@ -2,7 +2,7 @@ from functools import partial
 from datetime import datetime, timezone
 import logging
 
-from jal.constants import Setup, TransactionType, CorporateAction, PredefinedCategory
+from jal.constants import Setup, TransactionType, CorporateAction, PredefinedCategory, DividendSubtype
 from jal.reports.helpers import XLSX
 from jal.reports.dlsg import DLSG
 from jal.ui_custom.helpers import g_tr
@@ -126,15 +126,16 @@ class TaxesRus:
                           {
                               0: ("Дата выплаты", 10, ("payment_date", "date"), "Дата, в которую дивиденд был зачислен на счет согласно отчету брокера"),
                               1: ("Ценная бумага", 8, ("symbol", "text"), "Краткое наименование ценной бумаги"),
-                              2: ("Полное наименование", 50, ("full_name", "text"), "Полное наименование ценной бумаги"),
-                              3: ("Курс {currency}/RUB на дату выплаты", 16, ("rate", "number", 4), "Официальный курс валюты выплаты, установленный ЦБ РФ на дату выплаты дивиденда"),
-                              4: ("Доход, {currency}", 12, ("amount", "number", 2), "Сумма выплаченного дивиденда в валюте счета"),
-                              5: ("Доход, RUB (код 1010)", 12, ("amount_rub", "number", 2), "Сумма выплаченного дивиденда в рублях по курсу ЦБ РФ на дату выплаты (= Столбец 4 x Столбец 5)"),
-                              6: ("Налог упл., {currency}", 12, ("tax", "number", 2), "Сумма налога, удержанная эмитентом, в валюте счета"),
-                              7: ("Налог упл., RUB", 12, ("tax_rub", "number", 2), "Сумма налога, удержанная эмитентом, в рублях по курсу ЦБ РФ на дату удержания (= Столбец 4 x Столбец 7)"),
-                              8: ("Налог к уплате, RUB", 12, ("tax2pay", "number", 2), "Сумма налога, подлежащая уплате в РФ (= 13% от Столбца 6 - Столбец 8)"),
-                              9: ("Страна", 20, ("country", "text"), "Страна регистрации эмитента ценной бумаги "),
-                              10: ("СОИДН", 7, ("tax_treaty", "bool", ("Нет", "Да")), "Наличие у Российской Федерации договора об избежании двойного налогообложения со страной эмитента")
+                              2: ("ISIN", 11, ("isin", "text"), "Международный идентификационный код ценной бумаги"),
+                              3: ("Полное наименование", 40, ("full_name", "text"), "Полное наименование ценной бумаги"),
+                              4: ("Курс {currency}/RUB на дату выплаты", 16, ("rate", "number", 4), "Официальный курс валюты выплаты, установленный ЦБ РФ на дату выплаты дивиденда"),
+                              5: ("Доход, {currency}", 12, ("amount", "number", 2), "Сумма выплаченного дивиденда в валюте счета"),
+                              6: ("Доход, RUB (код 1010)", 12, ("amount_rub", "number", 2), "Сумма выплаченного дивиденда в рублях по курсу ЦБ РФ на дату выплаты (= Столбец 4 x Столбец 5)"),
+                              7: ("Налог упл., {currency}", 12, ("tax", "number", 2), "Сумма налога, удержанная эмитентом, в валюте счета"),
+                              8: ("Налог упл., RUB", 12, ("tax_rub", "number", 2), "Сумма налога, удержанная эмитентом, в рублях по курсу ЦБ РФ на дату удержания (= Столбец 4 x Столбец 7)"),
+                              9: ("Налог к уплате, RUB", 12, ("tax2pay", "number", 2), "Сумма налога, подлежащая уплате в РФ (= 13% от Столбца 6 - Столбец 8)"),
+                              10: ("Страна", 20, ("country", "text"), "Страна регистрации эмитента ценной бумаги "),
+                              11: ("СОИДН", 7, ("tax_treaty", "bool", ("Нет", "Да")), "Наличие у Российской Федерации договора об избежании двойного налогообложения со страной эмитента")
                           }
                           ),
             "Сделки с ЦБ": (self.prepare_trades,
@@ -277,6 +278,8 @@ class TaxesRus:
             except:
                 logging.error(g_tr('TaxesRus', "Can't write tax form into file ") + f"'{dlsg_out}'")
 
+        logging.info(g_tr('TaxesRus', "Tax report saved to file ") + f"'{taxes_file}'")
+
     # This method puts header on each report sheet
     def add_report_header(self):
         report = self.reports[self.current_report]
@@ -391,7 +394,7 @@ class TaxesRus:
     def prepare_dividends(self):
         query = executeSQL(self.db,
                            "SELECT d.timestamp AS payment_date, s.name AS symbol, s.full_name AS full_name, "
-                           "d.amount AS amount, d.tax AS tax, q.quote AS rate , "
+                           "s.isin AS isin, d.amount AS amount, d.tax AS tax, q.quote AS rate , "
                            "c.name AS country, c.code AS country_code, c.tax_treaty AS tax_treaty "
                            "FROM dividends AS d "
                            "LEFT JOIN assets AS s ON s.id = d.asset_id "
@@ -400,8 +403,9 @@ class TaxesRus:
                            "LEFT JOIN t_last_dates AS ld ON d.timestamp=ld.ref_id "
                            "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND a.currency_id=q.asset_id "
                            "WHERE d.timestamp>=:begin AND d.timestamp<:end AND d.account_id=:account_id "
-                           "ORDER BY d.timestamp",
-                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id)])
+                           " AND d.type=:type_dividend ORDER BY d.timestamp",
+                           [(":begin", self.year_begin), (":end", self.year_end),
+                            (":account_id", self.account_id), (":type_dividend", DividendSubtype.Dividend)])
         row = start_row = self.data_start_row
         while query.next():
             dividend = readSQLrecord(query, named=True)
