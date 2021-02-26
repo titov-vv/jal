@@ -1,8 +1,8 @@
 from datetime import datetime
 from dateutil import tz
 
-from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QLabel, QDateTimeEdit, QLineEdit
+from PySide2.QtCore import Qt, QStringListModel, QByteArray
+from PySide2.QtWidgets import QLabel, QDateTimeEdit, QDateEdit, QLineEdit, QComboBox
 from jal.ui_custom.helpers import g_tr
 from jal.ui_custom.abstract_operation_details import AbstractOperationDetails
 from jal.ui_custom.reference_selector import AccountSelector, AssetSelector
@@ -13,9 +13,12 @@ class DividendWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
         self.name = "Dividend"
+        self.combo_model = None
 
         self.date_label = QLabel(self)
+        self.ex_date_label = QLabel(self)
         self.number_label = QLabel(self)
+        self.type_label = QLabel(self)
         self.account_label = QLabel(self)
         self.symbol_label = QLabel(self)
         self.amount_label = QLabel(self)
@@ -24,6 +27,8 @@ class DividendWidget(AbstractOperationDetails):
 
         self.main_label.setText(g_tr("DividendWidget", "Dividend"))
         self.date_label.setText(g_tr("DividendWidget", "Date/Time"))
+        self.ex_date_label.setText(g_tr("DividendWidget", "Ex-Date"))
+        self.type_label.setText(g_tr("DividendWidget", "Type"))
         self.number_label.setText(g_tr("DividendWidget", "#"))
         self.account_label.setText(g_tr("DividendWidget", "Account"))
         self.symbol_label.setText(g_tr("DividendWidget", "Asset"))
@@ -36,6 +41,12 @@ class DividendWidget(AbstractOperationDetails):
         self.timestamp_editor.setTimeSpec(Qt.UTC)
         self.timestamp_editor.setFixedWidth(self.timestamp_editor.fontMetrics().width("00/00/0000 00:00:00") * 1.25)
         self.timestamp_editor.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
+        self.ex_date_editor = QDateEdit(self)
+        self.ex_date_editor.setCalendarPopup(True)
+        self.ex_date_editor.setTimeSpec(Qt.UTC)
+        self.ex_date_editor.setFixedWidth(self.ex_date_editor.fontMetrics().width("00/00/0000") * 1.5)
+        self.ex_date_editor.setDisplayFormat("dd/MM/yyyy")
+        self.type = QComboBox(self)
         self.account_widget = AccountSelector(self)
         self.asset_widget = AssetSelector(self)
         self.dividend_edit = AmountEdit(self)
@@ -55,22 +66,33 @@ class DividendWidget(AbstractOperationDetails):
         self.layout.addWidget(self.asset_widget, 3, 1, 1, 4)
         self.layout.addWidget(self.comment, 4, 1, 1, 8)
 
-        self.layout.addWidget(self.number_label, 1, 5, 1, 1, Qt.AlignRight)
+        self.layout.addWidget(self.ex_date_label, 1, 2, 1, 1, Qt.AlignRight)
+        self.layout.addWidget(self.ex_date_editor, 1, 3, 1, 1, Qt.AlignLeft)
+
+        self.layout.addWidget(self.type_label, 1, 5, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.amount_label, 2, 5, 1, 1, Qt.AlignRight)
         self.layout.addWidget(self.tax_label, 3, 5, 1, 1, Qt.AlignRight)
 
-        self.layout.addWidget(self.number, 1, 6, 1, 1)
+        self.layout.addWidget(self.type, 1, 6, 1, 1)
         self.layout.addWidget(self.dividend_edit, 2, 6, 1, 1)
         self.layout.addWidget(self.tax_edit, 3, 6, 1, 1)
 
-        self.layout.addWidget(self.commit_button, 0, 7, 1, 1)
-        self.layout.addWidget(self.revert_button, 0, 8, 1, 1)
+        self.layout.addWidget(self.number_label, 1, 7, 1, 1, Qt.AlignRight)
+        self.layout.addWidget(self.number, 1, 8, 1, 1)
+
+        self.layout.addWidget(self.commit_button, 0, 9, 1, 1)
+        self.layout.addWidget(self.revert_button, 0, 10, 1, 1)
 
         self.layout.addItem(self.verticalSpacer, 5, 0, 1, 1)
-        self.layout.addItem(self.horizontalSpacer, 1, 6, 1, 1)
+        self.layout.addItem(self.horizontalSpacer, 1, 8, 1, 1)
 
     def init_db(self, db):
         super().init_db(db, "dividends")
+        self.combo_model = QStringListModel([g_tr("DividendWidget", "N/A"),
+                                             g_tr("DividendWidget", "Dividend"),
+                                             g_tr("DividendWidget", "Bond Interest")])
+        self.type.setModel(self.combo_model)
+
         self.mapper.setItemDelegate(MapperDelegate(self.mapper))
 
         self.account_widget.init_db(db)
@@ -79,8 +101,10 @@ class DividendWidget(AbstractOperationDetails):
         self.asset_widget.changed.connect(self.mapper.submit)
 
         self.mapper.addMapping(self.timestamp_editor, self.model.fieldIndex("timestamp"))
+        self.mapper.addMapping(self.ex_date_editor, self.model.fieldIndex("ex_date"))
         self.mapper.addMapping(self.account_widget, self.model.fieldIndex("account_id"))
         self.mapper.addMapping(self.asset_widget, self.model.fieldIndex("asset_id"))
+        self.mapper.addMapping(self.type, self.model.fieldIndex("type"), QByteArray().setRawData("currentIndex", 12))
         self.mapper.addMapping(self.number, self.model.fieldIndex("number"))
         self.mapper.addMapping(self.dividend_edit, self.model.fieldIndex("sum"))
         self.mapper.addMapping(self.tax_edit, self.model.fieldIndex("sum_tax"))

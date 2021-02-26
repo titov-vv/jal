@@ -45,7 +45,7 @@ class TradeWidget(AbstractOperationDetails):
         self.settlement_editor = QDateEdit(self)
         self.settlement_editor.setCalendarPopup(True)
         self.settlement_editor.setTimeSpec(Qt.UTC)
-        self.settlement_editor.setFixedWidth(self.settlement_editor.fontMetrics().width("00/00/0000") * 1.25)
+        self.settlement_editor.setFixedWidth(self.settlement_editor.fontMetrics().width("00/00/0000") * 1.5)
         self.settlement_editor.setDisplayFormat("dd/MM/yyyy")
         self.account_widget = AccountSelector(self)
         self.asset_widget = AssetSelector(self)

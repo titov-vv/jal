@@ -70,8 +70,9 @@ class MapperDelegate(QSqlRelationalDelegate):
         self.delegates = {
             'actions': {1: self.timestamp_delegate},
             'dividends': {1: self.timestamp_delegate,
-                          5: self.float_delegate,
-                          6: self.float_delegate},
+                          2: self.timestamp_delegate,
+                          7: self.float_delegate,
+                          8: self.float_delegate},
             'trades': {1: self.timestamp_delegate,
                        2: self.timestamp_delegate,
                        6: self.float_delegate,

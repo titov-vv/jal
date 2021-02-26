@@ -203,7 +203,9 @@ CREATE TABLE dividends (
                            UNIQUE
                            NOT NULL,
     timestamp  INTEGER     NOT NULL,
+    ex_date    INTEGER,
     number     TEXT (32)   DEFAULT (''),
+    type       INTEGER     NOT NULL,
     account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
                                                     ON UPDATE CASCADE
                            NOT NULL,
