@@ -4,7 +4,7 @@ from PySide2.QtCore import Qt, Slot, QAbstractTableModel, QDate
 from PySide2.QtSql import QSqlQuery
 from PySide2.QtGui import QBrush, QFont
 from PySide2.QtWidgets import QStyledItemDelegate, QHeaderView
-from jal.constants import CustomColor, TransactionType, TransferSubtype, CorporateAction
+from jal.constants import CustomColor, TransactionType, TransferSubtype, DividendSubtype, CorporateAction
 from jal.ui_custom.helpers import g_tr
 from jal.db.helpers import readSQL, readSQLrecord, executeSQL
 
@@ -29,7 +29,8 @@ class OperationsModel(QAbstractTableModel):
     OperationSign = {
         (TransactionType.Action, -1): ('—', CustomColor.DarkRed),
         (TransactionType.Action, +1): ('+', CustomColor.DarkGreen),
-        (TransactionType.Dividend, 0): ('Δ', CustomColor.DarkGreen),
+        (TransactionType.Dividend, DividendSubtype.Dividend): ('Δ', CustomColor.DarkGreen),
+        (TransactionType.Dividend, DividendSubtype.BondInterest): ('%', CustomColor.DarkGreen),
         (TransactionType.Trade, -1): ('S', CustomColor.DarkRed),
         (TransactionType.Trade, +1): ('B', CustomColor.DarkGreen),
         (TransactionType.Transfer, TransferSubtype.Outgoing): ('<', CustomColor.DarkBlue),

@@ -785,7 +785,7 @@ class StatementLoader(QObject):
                              trade['tradeID'], qty, trade['tradePrice'], trade['ibCommission'])
         return 1
 
-    def createTrade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee, coupon=0.0):
+    def createTrade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee):
         trade_id = readSQL(self.db,
                            "SELECT id FROM trades "
                            "WHERE timestamp=:timestamp AND asset_id = :asset "
@@ -797,12 +797,11 @@ class StatementLoader(QObject):
             return
 
         _ = executeSQL(self.db,
-                       "INSERT INTO trades (timestamp, settlement, number, account_id, "
-                       "asset_id, qty, price, fee, coupon) "
-                       "VALUES (:timestamp, :settlement, :number, :account, :asset, :qty, :price, :fee, :coupon)",
+                       "INSERT INTO trades (timestamp, settlement, number, account_id, asset_id, qty, price, fee) "
+                       "VALUES (:timestamp, :settlement, :number, :account, :asset, :qty, :price, :fee)",
                        [(":timestamp", timestamp), (":settlement", settlement), (":number", number),
                         (":account", account_id), (":asset", asset_id), (":qty", float(qty)),
-                        (":price", float(price)), (":fee", -float(fee)), (":coupon", float(coupon))])
+                        (":price", float(price)), (":fee", -float(fee))])
         self.db.commit()
 
     def deleteTrade(self, account_id, asset_id, timestamp, _settlement, number, qty, price, _fee):
@@ -1029,6 +1028,7 @@ class StatementLoader(QObject):
                 fee = fee + float(row[Quik.FeeEx])
             else:
                 fee = fee + float(row[Quik.FeeEx1]) + float(row[Quik.FeeEx2]) + float(row[Quik.FeeEx3])
-            coupon = float(row[Quik.Coupon])
-            self.createTrade(account_id, asset_id, timestamp, settlement, number, qty, price, -fee, coupon)
+            # FIXME paid/received bond interest should be recorded as separate transaction in table 'dividends'
+            bond_interest = float(row[Quik.Coupon])
+            self.createTrade(account_id, asset_id, timestamp, settlement, number, qty, price, -fee)
         return True

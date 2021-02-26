@@ -454,7 +454,6 @@ CREATE TABLE trades (
                            DEFAULT (0),
     price        REAL      NOT NULL
                            DEFAULT (0),
-    coupon       REAL      DEFAULT (0),
     fee          REAL      DEFAULT (0),
     note         TEXT (1024)
 );
@@ -571,7 +570,7 @@ CREATE VIEW all_operations AS
                 GROUP BY o.id
                UNION ALL
                SELECT 2 AS type,
-                      0 AS subtype,
+                      d.type AS subtype,
                       d.id,
                       d.timestamp,
                       d.number AS num_peer,
@@ -734,7 +733,6 @@ CREATE VIEW all_transactions AS
                       d.category_id AS category,
                       NULL AS price,
                       NULL AS fee_tax,
-                      NULL AS coupon,
                       a.peer_id AS peer,
                       d.tag_id AS tag
                  FROM actions AS a
@@ -745,14 +743,13 @@ CREATE VIEW all_transactions AS
                SELECT 2 AS type,
                       d.id,
                       d.timestamp,
-                      0 AS subtype,
+                      d.type AS subtype,
                       d.account_id AS account,
                       d.asset_id AS asset,
                       d.sum AS amount,
-                      7 AS category,
+                      NULL AS category,
                       NULL AS price,
                       d.sum_tax AS fee_tax,
-                      NULL AS coupon,
                       a.organization_id AS peer,
                       NULL AS tag
                  FROM dividends AS d
@@ -769,7 +766,6 @@ CREATE VIEW all_transactions AS
                       NULL AS category,
                       a.qty_new AS price,
                       a.basis_ratio AS fee_tax,
-                      NULL AS coupon,
                       a.asset_id_new AS peer,
                       NULL AS tag
                  FROM corp_actions AS a
@@ -784,7 +780,6 @@ CREATE VIEW all_transactions AS
                       NULL AS category,
                       t.price AS price,
                       t.fee AS fee_tax,
-                      t.coupon AS coupon,
                       a.organization_id AS peer,
                       NULL AS tag
                  FROM trades AS t
@@ -801,7 +796,6 @@ CREATE VIEW all_transactions AS
                       NULL AS category,
                       NULL AS price,
                       NULL AS fee_tax,
-                      NULL AS coupon,
                       NULL AS peer,
                       NULL AS tag
                  FROM transfers AS t
@@ -816,7 +810,6 @@ CREATE VIEW all_transactions AS
                       NULL AS category,
                       NULL AS price,
                       NULL AS fee_tax,
-                      NULL AS coupon,
                       NULL AS peer,
                       NULL AS tag
                  FROM transfers AS t
@@ -832,7 +825,6 @@ CREATE VIEW all_transactions AS
                       NULL AS category,
                       NULL AS price,
                       NULL AS fee_tax,
-                      NULL AS coupon,
                       NULL AS peer,
                       NULL AS tag
                  FROM transfers AS t

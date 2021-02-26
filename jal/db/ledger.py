@@ -2,9 +2,9 @@ import logging
 
 from datetime import datetime
 from math import copysign
-from jal.constants import Setup, BookAccount, TransactionType, TransferSubtype, ActionSubtype, CorporateAction, \
-    PredefinedCategory, PredefinedPeer
-from PySide2.QtCore import QDate, QDateTime
+from jal.constants import Setup, BookAccount, TransactionType, TransferSubtype, ActionSubtype, DividendSubtype, \
+    CorporateAction, PredefinedCategory, PredefinedPeer
+from PySide2.QtCore import QDate
 from PySide2.QtWidgets import QDialog, QMessageBox
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_asset_name
 from jal.ui_custom.helpers import g_tr
@@ -186,15 +186,28 @@ class Ledger:
             self.processActionDetails()
 
     def processDividend(self):
+        if self.current['subtype'] == DividendSubtype.Dividend:
+            self.current['category'] = PredefinedCategory.Dividends
+        elif self.current['subtype'] == DividendSubtype.BondInterest:
+            self.current['category'] = PredefinedCategory.Interest
+        else:
+            logging.error(g_tr('Ledger', "Can't process dividend with N/A type"))
+            return
         if self.current['peer'] == '':
             logging.error(g_tr('Ledger', "Can't process dividend as bank isn't set for investment account"))
             return
         dividend_amount = self.current['amount']
         tax_amount = self.current['fee_tax']
-        credit_returned = self.returnCredit(dividend_amount - tax_amount)
-        if credit_returned < dividend_amount:
-            self.appendTransaction(BookAccount.Money, dividend_amount - credit_returned)
-        self.appendTransaction(BookAccount.Incomes, -dividend_amount)
+        if dividend_amount > 0:
+            credit_returned = self.returnCredit(dividend_amount - tax_amount)
+            if credit_returned < (dividend_amount - tax_amount):
+                self.appendTransaction(BookAccount.Money, dividend_amount - credit_returned)
+            self.appendTransaction(BookAccount.Incomes, -dividend_amount)
+        else:
+            credit_taken = self.takeCredit(-dividend_amount - tax_amount)  # tax always positive
+            if credit_taken < -dividend_amount:
+                self.appendTransaction(BookAccount.Money, dividend_amount + credit_taken)
+            self.appendTransaction(BookAccount.Costs, -dividend_amount)
         if tax_amount:
             self.appendTransaction(BookAccount.Money, -tax_amount)
             self.current['category'] = PredefinedCategory.Taxes
@@ -213,7 +226,7 @@ class Ledger:
         qty = type * self.current['amount']
         price = self.current['price']
 
-        trade_value = round(price * qty, 2) + type * self.current['fee_tax'] + self.current['coupon']
+        trade_value = round(price * qty, 2) + type * self.current['fee_tax']
 
         processed_qty = 0
         processed_value = 0
@@ -334,12 +347,6 @@ class Ledger:
             self.appendTransaction(BookAccount.Incomes, type * ((price * processed_qty) - processed_value))
         if processed_qty < qty:  # We have reminder that opens a new position
             self.appendTransaction(BookAccount.Assets, type*(qty - processed_qty), type*(qty - processed_qty) * price)
-        if self.current['coupon']:
-            self.current['category'] = PredefinedCategory.Dividends
-            if type> 0:
-                self.appendTransaction(BookAccount.Costs, self.current['coupon'])
-            else:
-                self.appendTransaction(BookAccount.Incomes, type*self.current['coupon'])
         if self.current['fee_tax']:
             self.current['category'] = PredefinedCategory.Fees
             self.appendTransaction(BookAccount.Costs, self.current['fee_tax'])
@@ -533,7 +540,7 @@ class Ledger:
         if fast_and_dirty:  # For 30k operations difference of execution time is - with 0:02:41 / without 0:11:44
             _ = executeSQL(self.db, "PRAGMA synchronous = OFF")
         query = executeSQL(self.db, "SELECT type, id, timestamp, subtype, account, currency, asset, amount, "
-                                    "category, price, fee_tax, coupon, peer, tag FROM all_transactions "
+                                    "category, price, fee_tax, peer, tag FROM all_transactions "
                                     "WHERE timestamp >= :frontier", [(":frontier", frontier)])
         while query.next():
             self.current = readSQLrecord(query, named=True)

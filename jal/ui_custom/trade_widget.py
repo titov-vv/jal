@@ -22,7 +22,6 @@ class TradeWidget(AbstractOperationDetails):
         self.qty_label = QLabel(self)
         self.price_label = QLabel(self)
         self.fee_label = QLabel(self)
-        self.coupon_label = QLabel(self)
         self.comment_label = QLabel(self)
 
         self.main_label.setText(g_tr("TradeWidget", "Buy / Sell"))
@@ -34,7 +33,6 @@ class TradeWidget(AbstractOperationDetails):
         self.qty_label.setText(g_tr("TradeWidget", "Qty"))
         self.price_label.setText(g_tr("TradeWidget", "Price"))
         self.fee_label.setText(g_tr("TradeWidget", "Fee"))
-        self.coupon_label.setText(g_tr("TradeWidget", "Coupon"))
         self.comment_label.setText(g_tr("TradeWidget", "Note"))
 
         self.timestamp_editor = QDateTimeEdit(self)
@@ -55,8 +53,6 @@ class TradeWidget(AbstractOperationDetails):
         self.price_edit.setAlignment(Qt.AlignRight)
         self.fee_edit = AmountEdit(self)
         self.fee_edit.setAlignment(Qt.AlignRight)
-        self.coupon_edit = AmountEdit(self)
-        self.coupon_edit.setAlignment(Qt.AlignRight)
         self.number = QLineEdit(self)
         self.comment = QLineEdit(self)
 
@@ -77,19 +73,17 @@ class TradeWidget(AbstractOperationDetails):
         self.layout.addWidget(self.qty_label, 2, 5, 1, 1, Qt.AlignRight)
         self.layout.addWidget(self.price_label, 3, 5, 1, 1, Qt.AlignRight)
         self.layout.addWidget(self.fee_label, 4, 5, 1, 1, Qt.AlignRight)
-        self.layout.addWidget(self.coupon_label, 5, 5, 1, 1, Qt.AlignRight)
 
         self.layout.addWidget(self.number, 1, 6, 1, 1)
         self.layout.addWidget(self.qty_edit, 2, 6, 1, 1)
         self.layout.addWidget(self.price_edit, 3, 6, 1, 1)
         self.layout.addWidget(self.fee_edit, 4, 6, 1, 1)
-        self.layout.addWidget(self.coupon_edit, 5, 6, 1, 1)
 
         self.layout.addWidget(self.commit_button, 0, 8, 1, 1)
         self.layout.addWidget(self.revert_button, 0, 9, 1, 1)
 
         self.layout.addItem(self.verticalSpacer, 6, 6, 1, 1)
-        self.layout.addItem(self.horizontalSpacer, 1, 7, 1, 1)
+        self.layout.addItem(self.horizontalSpacer, 1, 6, 1, 1)
 
     def init_db(self, db):
         super().init_db(db, "trades")
@@ -108,7 +102,6 @@ class TradeWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.qty_edit, self.model.fieldIndex("qty"))
         self.mapper.addMapping(self.price_edit, self.model.fieldIndex("price"))
         self.mapper.addMapping(self.fee_edit, self.model.fieldIndex("fee"))
-        self.mapper.addMapping(self.coupon_edit, self.model.fieldIndex("coupon"))
         self.mapper.addMapping(self.comment, self.model.fieldIndex("note"))
 
         self.model.select()
@@ -123,7 +116,6 @@ class TradeWidget(AbstractOperationDetails):
         new_record.setValue("asset_id", 0)
         new_record.setValue("qty", 0)
         new_record.setValue("price", 0)
-        new_record.setValue("coupon", 0)
         new_record.setValue("fee", 0)
         new_record.setValue("note", None)
         return new_record

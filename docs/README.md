@@ -13,7 +13,7 @@ It was designed to keep records of personal incomes/spendings and investments wi
     1. Generic income/spending operations that may be splitted into several categories
     2. Transfers of money between different accounts and currencies
     3. Buy/Sell operation for securities (future plan is to support merges and splits)
-    4. Dividends for stocks (Bond coupons may be recorded the same way)
+    4. Dividend for stocks and Interest for bonds
     5. Corporate actions for stocks (Split, Symbol change, Merger, Spin-Off, Stock dividend)
 - basic reports:
     1. monthly incomes/spendings splitted by category

@@ -116,6 +116,8 @@ class DividendWidget(AbstractOperationDetails):
         new_record = self.model.record()
         new_record.setNull("id")
         new_record.setValue("timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("ex_date", 0)
+        new_record.setValue("type", 0)
         new_record.setValue("number", '')
         new_record.setValue("account_id", account_id)
         new_record.setValue("asset_id", 0)
@@ -128,5 +130,6 @@ class DividendWidget(AbstractOperationDetails):
         new_record = self.model.record(row)
         new_record.setNull("id")
         new_record.setValue("timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
+        new_record.setValue("ex_date", 0)
         new_record.setValue("number", '')
         return new_record
