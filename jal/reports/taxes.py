@@ -391,7 +391,7 @@ class TaxesRus:
     def prepare_dividends(self):
         query = executeSQL(self.db,
                            "SELECT d.timestamp AS payment_date, s.name AS symbol, s.full_name AS full_name, "
-                           "d.sum AS amount, d.sum_tax AS tax, q.quote AS rate , "
+                           "d.amount AS amount, d.tax AS tax, q.quote AS rate , "
                            "c.name AS country, c.code AS country_code, c.tax_treaty AS tax_treaty "
                            "FROM dividends AS d "
                            "LEFT JOIN assets AS s ON s.id = d.asset_id "

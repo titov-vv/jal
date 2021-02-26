@@ -106,8 +106,8 @@ class DividendWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.asset_widget, self.model.fieldIndex("asset_id"))
         self.mapper.addMapping(self.type, self.model.fieldIndex("type"), QByteArray().setRawData("currentIndex", 12))
         self.mapper.addMapping(self.number, self.model.fieldIndex("number"))
-        self.mapper.addMapping(self.dividend_edit, self.model.fieldIndex("sum"))
-        self.mapper.addMapping(self.tax_edit, self.model.fieldIndex("sum_tax"))
+        self.mapper.addMapping(self.dividend_edit, self.model.fieldIndex("amount"))
+        self.mapper.addMapping(self.tax_edit, self.model.fieldIndex("tax"))
         self.mapper.addMapping(self.comment, self.model.fieldIndex("note"))
 
         self.model.select()
@@ -121,8 +121,8 @@ class DividendWidget(AbstractOperationDetails):
         new_record.setValue("number", '')
         new_record.setValue("account_id", account_id)
         new_record.setValue("asset_id", 0)
-        new_record.setValue("sum", 0)
-        new_record.setValue("sum_tax", 0)
+        new_record.setValue("amount", 0)
+        new_record.setValue("tax", 0)
         new_record.setValue("note", None)
         return new_record
 

@@ -39,6 +39,108 @@ INSERT INTO dividends (
                         FROM trades
                        WHERE coupon != 0;
 
+
+--------------------------------------------------------------------------------
+-- Rename fields in 'dividends' table: 'sum'->'amount', 'sum_tax'->'tax
+--------------------------------------------------------------------------------
+CREATE TABLE sqlitestudio_temp_table AS SELECT *
+                                          FROM dividends;
+
+DROP TABLE dividends;
+
+CREATE TABLE dividends (
+    id         INTEGER     PRIMARY KEY
+                           UNIQUE
+                           NOT NULL,
+    timestamp  INTEGER     NOT NULL,
+    ex_date    INTEGER,
+    number     TEXT (32)   DEFAULT (''),
+    type       INTEGER     NOT NULL,
+    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
+                                                    ON UPDATE CASCADE
+                           NOT NULL,
+    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT
+                                                  ON UPDATE CASCADE
+                           NOT NULL,
+    amount     REAL        NOT NULL
+                           DEFAULT (0),
+    tax        REAL        DEFAULT (0),
+    note       TEXT (1014)
+);
+
+INSERT INTO dividends (
+                          id,
+                          timestamp,
+                          ex_date,
+                          number,
+                          type,
+                          account_id,
+                          asset_id,
+                          amount,
+                          tax,
+                          note
+                      )
+                      SELECT id,
+                             timestamp,
+                             ex_date,
+                             number,
+                             type,
+                             account_id,
+                             asset_id,
+                             sum,
+                             sum_tax,
+                             note
+                        FROM sqlitestudio_temp_table;
+
+DROP TABLE sqlitestudio_temp_table;
+
+CREATE TRIGGER dividends_after_delete
+         AFTER DELETE
+            ON dividends
+      FOR EACH ROW
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= OLD.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= OLD.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= OLD.timestamp;
+END;
+
+CREATE TRIGGER dividends_after_insert
+         AFTER INSERT
+            ON dividends
+      FOR EACH ROW
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= NEW.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= NEW.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= NEW.timestamp;
+END;
+
+CREATE TRIGGER dividends_after_update
+         AFTER UPDATE OF timestamp,
+                         account_id,
+                         asset_id,
+                         amount,
+                         tax
+            ON dividends
+      FOR EACH ROW
+BEGIN
+    DELETE FROM ledger
+          WHERE timestamp >= OLD.timestamp OR
+                timestamp >= NEW.timestamp;
+    DELETE FROM sequence
+          WHERE timestamp >= OLD.timestamp OR
+                timestamp >= NEW.timestamp;
+    DELETE FROM ledger_sums
+          WHERE timestamp >= OLD.timestamp OR
+                timestamp >= NEW.timestamp;
+END;
+
+
 --------------------------------------------------------------------------------
 -- Drop field 'coupon' from 'trades' table
 --------------------------------------------------------------------------------
@@ -173,10 +275,10 @@ CREATE VIEW all_transactions AS
                       d.type AS subtype,
                       d.account_id AS account,
                       d.asset_id AS asset,
-                      d.sum AS amount,
+                      d.amount AS amount,
                       NULL AS category,
                       NULL AS price,
-                      d.sum_tax AS fee_tax,
+                      d.tax AS fee_tax,
                       a.organization_id AS peer,
                       NULL AS tag
                  FROM dividends AS d
@@ -317,11 +419,11 @@ CREATE VIEW all_operations AS
                       d.timestamp,
                       d.number AS num_peer,
                       d.account_id,
-                      d.sum AS amount,
+                      d.amount AS amount,
                       d.asset_id,
                       SUM(coalesce(l.amount, 0) ) AS qty_trid,
                       NULL AS price,
-                      d.sum_tax AS fee_tax,
+                      d.tax AS fee_tax,
                       NULL AS t_qty,
                       d.note AS note,
                       c.name AS note2

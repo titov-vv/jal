@@ -212,9 +212,9 @@ CREATE TABLE dividends (
     asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT
                                                     ON UPDATE CASCADE
                            NOT NULL,
-    sum        REAL        NOT NULL
+    amount     REAL        NOT NULL
                            DEFAULT (0),
-    sum_tax    REAL        DEFAULT (0),
+    tax        REAL        DEFAULT (0),
     note       TEXT (1014)
 );
 
@@ -575,11 +575,11 @@ CREATE VIEW all_operations AS
                       d.timestamp,
                       d.number AS num_peer,
                       d.account_id,
-                      d.sum AS amount,
+                      d.amount AS amount,
                       d.asset_id,
                       SUM(coalesce(l.amount, 0) ) AS qty_trid,
                       NULL AS price,
-                      d.sum_tax AS fee_tax,
+                      d.tax AS fee_tax,
                       NULL AS t_qty,
                       d.note AS note,
                       c.name AS note2
@@ -746,10 +746,10 @@ CREATE VIEW all_transactions AS
                       d.type AS subtype,
                       d.account_id AS account,
                       d.asset_id AS asset,
-                      d.sum AS amount,
+                      d.amount AS amount,
                       NULL AS category,
                       NULL AS price,
-                      d.sum_tax AS fee_tax,
+                      d.tax AS fee_tax,
                       a.organization_id AS peer,
                       NULL AS tag
                  FROM dividends AS d

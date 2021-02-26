@@ -948,10 +948,10 @@ class StatementLoader(QObject):
         if id:
             logging.info(g_tr('StatementLoader', "Dividend already exists: ") + f"{note}")
             return
-        _ = executeSQL(self.db, "INSERT INTO dividends (timestamp, account_id, asset_id, sum, note) "
-                                "VALUES (:timestamp, :account_id, :asset_id, :sum, :note)",
+        _ = executeSQL(self.db, "INSERT INTO dividends (timestamp, account_id, asset_id, amount, note) "
+                                "VALUES (:timestamp, :account_id, :asset_id, :amount, :note)",
                        [(":timestamp", timestamp), (":account_id", account_id), (":asset_id", asset_id),
-                        (":sum", amount), (":note", note)])
+                        (":amount", amount), (":note", note)])
         self.db.commit()
 
     def addWithholdingTax(self, timestamp, account_id, asset_id, amount, note):
@@ -966,7 +966,7 @@ class StatementLoader(QObject):
         update_asset_country(self.db, asset_id, country_id)
         try:
             dividend_id, old_tax = readSQL(self.db,
-                                           "SELECT id, sum_tax FROM dividends "
+                                           "SELECT id, tax FROM dividends "
                                            "WHERE timestamp=:timestamp AND account_id=:account_id "
                                            "AND asset_id=:asset_id AND note LIKE :dividend_description",
                                            [(":timestamp", timestamp), (":account_id", account_id),
@@ -974,7 +974,7 @@ class StatementLoader(QObject):
         except:
             logging.warning(g_tr('StatementLoader', "Dividend not found for withholding tax: ") + f"{note}")
             return
-        _ = executeSQL(self.db, "UPDATE dividends SET sum_tax=:tax WHERE id=:dividend_id",
+        _ = executeSQL(self.db, "UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
                        [(":dividend_id", dividend_id), (":tax", old_tax + amount)])
         self.db.commit()
 
