@@ -1134,8 +1134,8 @@ CREATE TRIGGER dividends_after_update
          AFTER UPDATE OF timestamp,
                          account_id,
                          asset_id,
-                         sum,
-                         sum_tax
+                         amount,
+                         tax
             ON dividends
       FOR EACH ROW
 BEGIN
@@ -1232,7 +1232,6 @@ CREATE TRIGGER trades_after_update
                          asset_id,
                          qty,
                          price,
-                         coupon,
                          fee
             ON trades
       FOR EACH ROW
@@ -1397,7 +1396,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 15);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 17);
 -- TODO Remove this value 'TriggersEnabled' from database
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
