@@ -9,7 +9,7 @@ from lxml import etree
 from PySide2.QtCore import QObject, Signal, Slot
 from PySide2.QtSql import QSqlTableModel
 from PySide2.QtWidgets import QDialog, QFileDialog, QMessageBox
-from jal.constants import Setup, TransactionType, PredefinedAsset, PredefinedCategory, CorporateAction
+from jal.constants import Setup, TransactionType, PredefinedAsset, PredefinedCategory, CorporateAction, DividendSubtype
 from jal.db.helpers import executeSQL, readSQL, get_country_by_code, account_last_date, update_asset_country
 from jal.ui_custom.helpers import g_tr
 from jal.ui.ui_add_asset_dlg import Ui_AddAssetDialog
@@ -28,6 +28,7 @@ class IBKRCashOp:
     DepositWithdrawal = 2
     Fee = 3
     Interest = 4
+    BondInterest = 5
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -120,6 +121,8 @@ class IBKR:
         operations = {
             'Dividends':                    IBKRCashOp.Dividend,
             'Payment In Lieu Of Dividends': IBKRCashOp.Dividend,
+            'Bond Interest Paid':           IBKRCashOp.BondInterest,
+            'Bond Interest Received':       IBKRCashOp.BondInterest,
             'Withholding Tax':              IBKRCashOp.TaxWithhold,
             'Deposits/Withdrawals':         IBKRCashOp.DepositWithdrawal,
             'Other Fees':                   IBKRCashOp.Fee,
@@ -489,6 +492,7 @@ class StatementLoader(QObject):
                                             ('symbol', IBKR.flAsset, 0),
                                             ('dateTime', IBKR.flTimestamp, None),
                                             ('amount', IBKR.flNumber, None),
+                                            ('tradeID', IBKR.flString, ''),
                                             ('description', IBKR.flString, None)]},
             'TransactionTaxes': {'tag': 'TransactionTax',
                                  'level': '',
@@ -755,6 +759,10 @@ class StatementLoader(QObject):
         for dividend in dividends:
             cnt += self.loadIBDividend(dividend)
 
+        bond_interests = list(filter(lambda tr: tr['type'] == IBKRCashOp.BondInterest, cash))
+        for bond_interest in bond_interests:
+            cnt += self.loadIBBondInterest(bond_interest)
+
         taxes = list(filter(lambda tr: tr['type'] == IBKRCashOp.TaxWithhold, cash))
         for tax in taxes:
             cnt += self.loadIBWithholdingTax(tax)
@@ -895,8 +903,13 @@ class StatementLoader(QObject):
         self.db.commit()
 
     def loadIBDividend(self, dividend):
-        self.createDividend(dividend['dateTime'], dividend['accountId'], dividend['symbol'], dividend['amount'],
-                            dividend['description'])
+        self.createDividend(DividendSubtype.Dividend, dividend['dateTime'], dividend['accountId'], dividend['symbol'],
+                            dividend['amount'], dividend['description'])
+        return 1
+
+    def loadIBBondInterest(self, interest):
+        self.createDividend(DividendSubtype.BondInterest, interest['dateTime'], interest['accountId'], interest['symbol'],
+                            interest['amount'], interest['description'], interest['tradeID'])
         return 1
 
     def loadIBWithholdingTax(self, tax):
@@ -954,17 +967,17 @@ class StatementLoader(QObject):
                                 dialog.account_id, -cash['amount'], 0, 0, cash['description'])
         return 1
 
-    def createDividend(self, timestamp, account_id, asset_id, amount, note):
+    def createDividend(self, subtype, timestamp, account_id, asset_id, amount, note, trade_number=''):
         id = readSQL(self.db, "SELECT id FROM dividends WHERE timestamp=:timestamp "
                               "AND account_id=:account_id AND asset_id=:asset_id AND note=:note",
                      [(":timestamp", timestamp), (":account_id", account_id), (":asset_id", asset_id), (":note", note)])
         if id:
             logging.info(g_tr('StatementLoader', "Dividend already exists: ") + f"{note}")
             return
-        _ = executeSQL(self.db, "INSERT INTO dividends (timestamp, account_id, asset_id, amount, note) "
-                                "VALUES (:timestamp, :account_id, :asset_id, :amount, :note)",
-                       [(":timestamp", timestamp), (":account_id", account_id), (":asset_id", asset_id),
-                        (":amount", amount), (":note", note)])
+        _ = executeSQL(self.db, "INSERT INTO dividends (timestamp, number, type, account_id, asset_id, amount, note) "
+                                "VALUES (:timestamp, :number, :subtype, :account_id, :asset_id, :amount, :note)",
+                       [(":timestamp", timestamp), (":number", trade_number), (":subtype", subtype),
+                        (":account_id", account_id), (":asset_id", asset_id), (":amount", amount), (":note", note)])
         self.db.commit()
 
     def addWithholdingTax(self, timestamp, account_id, asset_id, amount, note):
