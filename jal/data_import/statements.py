@@ -32,6 +32,7 @@ class IBKRCashOp:
 
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKR:
+    BondPricipal = 1000
     CancelledFlag = 'Ca'
     TaxNotePattern = "^(.*) - (..) TAX$"
     MergerPattern = "^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +MERGED\(\w+\) +WITH +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
@@ -42,7 +43,7 @@ class IBKR:
     AssetType = {
         'CASH': PredefinedAsset.Money,
         'STK': PredefinedAsset.Stock,
-        # 'BOND': PredefinedAsset.Bond,
+        'BOND': PredefinedAsset.Bond,
         'OPT': PredefinedAsset.Derivative,
         'FUT': PredefinedAsset.Derivative
     }
@@ -454,8 +455,7 @@ class StatementLoader(QObject):
                                   ('ibCommission', IBKR.flNumber, None),
                                   ('tradeID', IBKR.flString, ''),
                                   ('exchange', IBKR.flString, ''),
-                                  ('notes', IBKR.flString, ''),
-                                  ('levelOfDetail', IBKR.flString, '')]},
+                                  ('notes', IBKR.flString, '')]},
             'OptionEAE': {'tag': 'OptionEAE',
                           'level': '',
                           'values': [('transactionType', IBKR.flString, None),
@@ -480,8 +480,7 @@ class StatementLoader(QObject):
                                             ('transactionID', IBKR.flString, ''),
                                             ('description', IBKR.flString, None),
                                             ('quantity', IBKR.flNumber, None),
-                                            ('code', IBKR.flString, ''),
-                                            ('levelOfDetail', IBKR.flString, '')]},
+                                            ('code', IBKR.flString, '')]},
             'CashTransactions': {'tag': 'CashTransaction',
                                  'level': 'DETAIL',
                                  'values': [('type', IBKR.flCashOpType, None),
@@ -490,8 +489,7 @@ class StatementLoader(QObject):
                                             ('symbol', IBKR.flAsset, 0),
                                             ('dateTime', IBKR.flTimestamp, None),
                                             ('amount', IBKR.flNumber, None),
-                                            ('description', IBKR.flString, None),
-                                            ('levelOfDetail', IBKR.flString, '')]},
+                                            ('description', IBKR.flString, None)]},
             'TransactionTaxes': {'tag': 'TransactionTax',
                                  'level': '',
                                  'values': [('accountId', IBKR.flAccount, None),
@@ -510,6 +508,9 @@ class StatementLoader(QObject):
         data = []
         for sample in section.xpath(tag):
             tag_dictionary = {}
+            if section_descriptions[section.tag]['level']:  # Skip extra lines (SUMMARY, etc)
+                if IBKR.flString(sample, 'levelOfDetail', '', self) != section_descriptions[section.tag]['level']:
+                    continue
             for attr_name, attr_loader, attr_default in section_descriptions[section.tag]['values']:
                 attr_value = attr_loader(sample, attr_name, attr_default, self)
                 if attr_value is None:
@@ -517,9 +518,6 @@ class StatementLoader(QObject):
                         g_tr('StatementLoader', "Failed to load attribute: ") + f"{attr_name} / {sample.attrib}")
                     return None
                 tag_dictionary[attr_name] = attr_value
-            if section_descriptions[section.tag]['level']:  # Skip extra lines (SUMMARY, etc)
-                if tag_dictionary['levelOfDetail'] != section_descriptions[section.tag]['level']:
-                    continue
             data.append(tag_dictionary)
         return data
 
@@ -537,16 +535,18 @@ class StatementLoader(QObject):
     def loadIBTrades(self, trades):
         ib_trade_loaders = {
             PredefinedAsset.Stock: self.loadIBStockTrade,
+            PredefinedAsset.Bond: self.loadIBBondTrade,
             PredefinedAsset.Derivative: self.loadIBStockTrade,
             PredefinedAsset.Money: self.loadIBCurrencyTrade
         }
 
         cnt = 0
         for trade in trades:
-            _ = self.getAccountBank(trade[
-                                        'accountId'])  # This line simply checks that bank is present for IB account (in order to process fees)
-
-            cnt += ib_trade_loaders[trade['assetCategory']](trade)
+            _ = self.getAccountBank(trade['accountId'])  # Checks that bank is present (in order to process fees)
+            try:
+                cnt += ib_trade_loaders[trade['assetCategory']](trade)
+            except KeyError:
+                logging.error(g_tr('StatementLoader', "Asset type isn't supported for trade: ") + f"{trade})")
         logging.info(g_tr('StatementLoader', "Trades loaded: ") + f"{cnt} ({len(trades)})")
 
     def loadIBCorporateActions(self, actions):
@@ -783,6 +783,19 @@ class StatementLoader(QObject):
         else:
             self.createTrade(trade['accountId'], trade['symbol'], trade['dateTime'], trade['settleDateTarget'],
                              trade['tradeID'], qty, trade['tradePrice'], trade['ibCommission'])
+        return 1
+
+    def loadIBBondTrade(self, trade):
+        qty = trade['quantity'] / IBKR.BondPricipal
+        price = trade['tradePrice'] * IBKR.BondPricipal / 100.0   # Bonds are priced in percents of principal
+        if trade['settleDateTarget'] == 0:
+            trade['settleDateTarget'] = trade['dateTime']
+        if trade['notes'] == IBKR.CancelledFlag:
+            self.deleteTrade(trade['accountId'], trade['symbol'], trade['dateTime'], trade['settleDateTarget'],
+                             trade['tradeID'], qty, price, trade['ibCommission'])
+        else:
+            self.createTrade(trade['accountId'], trade['symbol'], trade['dateTime'], trade['settleDateTarget'],
+                             trade['tradeID'], qty, price, trade['ibCommission'])
         return 1
 
     def createTrade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee):
