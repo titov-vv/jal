@@ -12,7 +12,7 @@ class XLSX:
     ROW_WIDTH = 2
     ROW_SPAN_H = 3
     ROW_SPAN_V = 4
-    totals = g_tr('XLSX', "ИТОГО")
+    totals = "ИТОГО"
 
     def __init__(self, xlsx_filename):
         self.filename = xlsx_filename

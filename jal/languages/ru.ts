@@ -2412,19 +2412,24 @@ do you want to save it?</source>
 <context>
     <name>TaxesRus</name>
     <message>
-        <location filename="../reports/taxes.py" line="260"/>
+        <location filename="../reports/taxes.py" line="290"/>
         <source>Can&apos;t open tax form file </source>
         <translation>Невозможно открыть файл с декларацией 3-НДФЛ </translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="278"/>
+        <location filename="../reports/taxes.py" line="308"/>
         <source>Can&apos;t write tax form into file </source>
         <translation>Невозможно записать декларацию 3-НДФЛ в файл </translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="422"/>
+        <location filename="../reports/taxes.py" line="455"/>
         <source>Account country will be used for 3-NDFL update as country is not set for asset </source>
         <translation>Страна счёта будет использована для файла 3-НДФЛ, т.к. страна не укзана для ЦБ </translation>
+    </message>
+    <message>
+        <location filename="../reports/taxes.py" line="310"/>
+        <source>Tax report saved to file </source>
+        <translation>Налоговый отчет сохранён в файл </translation>
     </message>
 </context>
 <context>
@@ -2552,11 +2557,6 @@ do you want to save it?</source>
         <location filename="../reports/helpers.py" line="26"/>
         <source>Can&apos;t save report into file </source>
         <translation>Не удалось сохранить отчет в файл </translation>
-    </message>
-    <message>
-        <location filename="../reports/helpers.py" line="15"/>
-        <source>ИТОГО</source>
-        <translation>ИТОГО</translation>
     </message>
 </context>
 </TS>

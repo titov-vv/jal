@@ -2407,19 +2407,24 @@ do you want to save it?</source>
 <context>
     <name>TaxesRus</name>
     <message>
-        <location filename="../reports/taxes.py" line="260"/>
+        <location filename="../reports/taxes.py" line="290"/>
         <source>Can&apos;t open tax form file </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="278"/>
+        <location filename="../reports/taxes.py" line="308"/>
         <source>Can&apos;t write tax form into file </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="422"/>
+        <location filename="../reports/taxes.py" line="455"/>
         <source>Account country will be used for 3-NDFL update as country is not set for asset </source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../reports/taxes.py" line="310"/>
+        <source>Tax report saved to file </source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2547,11 +2552,6 @@ do you want to save it?</source>
         <location filename="../reports/helpers.py" line="26"/>
         <source>Can&apos;t save report into file </source>
         <translation></translation>
-    </message>
-    <message encoding="UTF-8">
-        <location filename="../reports/helpers.py" line="15"/>
-        <source>ИТОГО</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>
