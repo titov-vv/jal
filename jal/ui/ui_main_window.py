@@ -71,9 +71,11 @@ class Ui_LedgerMainWindow(object):
         self.centralwidget = QWidget(LedgerMainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setMaximumSize(QSize(16777215, 16777215))
+        self.verticalLayout_6 = QVBoxLayout(self.centralwidget)
+        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
+        self.verticalLayout_6.setContentsMargins(0, 0, 0, 0)
         self.MainTabs = QTabWidget(self.centralwidget)
         self.MainTabs.setObjectName(u"MainTabs")
-        self.MainTabs.setGeometry(QRect(0, 0, 1700, 856))
         self.MainTabs.setTabPosition(QTabWidget.West)
         self.MainTabs.setTabShape(QTabWidget.Triangular)
         self.BalanceTransactionTab = QWidget()
@@ -112,7 +114,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
         self.BalanceDate = QDateEdit(self.BalanceConfigFrame)
         self.BalanceDate.setObjectName(u"BalanceDate")
-        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 18), QTime(21, 0, 0)))
+        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 17), QTime(21, 0, 0)))
         self.BalanceDate.setCalendarPopup(True)
         self.BalanceDate.setTimeSpec(Qt.UTC)
 
@@ -332,7 +334,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_7.setContentsMargins(2, 2, 2, 2)
         self.HoldingsDate = QDateEdit(self.HoldingsParamsFrame)
         self.HoldingsDate.setObjectName(u"HoldingsDate")
-        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 18), QTime(21, 0, 0)))
+        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 17), QTime(21, 0, 0)))
         self.HoldingsDate.setCalendarPopup(True)
         self.HoldingsDate.setTimeSpec(Qt.UTC)
 
@@ -401,7 +403,7 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportToDate = QDateEdit(self.ReportParamsFrame)
         self.ReportToDate.setObjectName(u"ReportToDate")
-        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 18), QTime(21, 0, 0)))
+        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 17), QTime(21, 0, 0)))
         self.ReportToDate.setCalendarPopup(True)
         self.ReportToDate.setTimeSpec(Qt.UTC)
 
@@ -477,7 +479,7 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportFromDate = QDateEdit(self.ReportParamsFrame)
         self.ReportFromDate.setObjectName(u"ReportFromDate")
-        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 18), QTime(21, 0, 0)))
+        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 17), QTime(21, 0, 0)))
         self.ReportFromDate.setCalendarPopup(True)
         self.ReportFromDate.setTimeSpec(Qt.UTC)
 
@@ -518,6 +520,9 @@ class Ui_LedgerMainWindow(object):
         self.verticalLayout_5.addWidget(self.Logs)
 
         self.MainTabs.addTab(self.LoggingTab, "")
+
+        self.verticalLayout_6.addWidget(self.MainTabs)
+
         LedgerMainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(LedgerMainWindow)
         self.menubar.setObjectName(u"menubar")

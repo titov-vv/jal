@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="ru" sourcelanguage="en">
+<!DOCTYPE TS><TS version="2.0" language="ru" sourcelanguage="en">
 <context>
     <name>AbortWindow</name>
     <message>
@@ -879,327 +878,327 @@ Application will be terminated now</source>
 <context>
     <name>LedgerMainWindow</name>
     <message>
-        <location filename="../ui/ui_main_window.py" line="581"/>
+        <location filename="../ui/ui_main_window.py" line="586"/>
         <source>&amp;Exit</source>
         <translation>&amp;Выход</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="582"/>
+        <location filename="../ui/ui_main_window.py" line="587"/>
         <source>Re-build &amp;Ledger...</source>
         <translation>Пересчитать &amp;итоги...</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="583"/>
+        <location filename="../ui/ui_main_window.py" line="588"/>
         <source>Load &amp;Quotes...</source>
         <translation>Загрузить &amp;Котировки...</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="585"/>
+        <location filename="../ui/ui_main_window.py" line="590"/>
         <source>Account &amp;Types</source>
         <translation>&amp;Типы счетов</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="586"/>
+        <location filename="../ui/ui_main_window.py" line="591"/>
         <source>&amp;Accounts</source>
         <translation>&amp;Счета</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="587"/>
+        <location filename="../ui/ui_main_window.py" line="592"/>
         <source>A&amp;ssets</source>
         <translation>&amp;Ценные бумаги</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="588"/>
+        <location filename="../ui/ui_main_window.py" line="593"/>
         <source>&amp;Peers</source>
         <translation>К&amp;онтрагенты</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="589"/>
+        <location filename="../ui/ui_main_window.py" line="594"/>
         <source>&amp;Categories</source>
         <translation>&amp;Категории</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="590"/>
+        <location filename="../ui/ui_main_window.py" line="595"/>
         <source>&amp;Backup...</source>
         <translation>&amp;Бэкап...</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="591"/>
+        <location filename="../ui/ui_main_window.py" line="596"/>
         <source>&amp;Restore...</source>
         <translation>&amp;Восстановление...</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="592"/>
+        <location filename="../ui/ui_main_window.py" line="597"/>
         <source>&amp;Tax report [RU]</source>
         <translation>&amp;Налоговый отчет [RU]</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="593"/>
+        <location filename="../ui/ui_main_window.py" line="598"/>
         <source>&amp;Deals report</source>
         <translation>Отчет &amp;Сделки</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="594"/>
+        <location filename="../ui/ui_main_window.py" line="599"/>
         <source>&amp;Tags</source>
         <translation>&amp;Тэги</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="595"/>
+        <location filename="../ui/ui_main_window.py" line="600"/>
         <source>&amp;Profit/Loss report</source>
         <translation>Отчет &amp;Прибыли/Убытки</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="596"/>
+        <location filename="../ui/ui_main_window.py" line="601"/>
         <source>&amp;Income/Spending report</source>
         <translation>Отчет &amp;Доходы/Расходы</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="600"/>
+        <location filename="../ui/ui_main_window.py" line="605"/>
         <source>Balances</source>
         <translation>Балансы счетов</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="643"/>
+        <location filename="../ui/ui_main_window.py" line="648"/>
         <source>dd/MM/yyyy</source>
         <translation>dd/MM/yyyy</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="602"/>
+        <location filename="../ui/ui_main_window.py" line="607"/>
         <source>Sum Currency:</source>
         <translation>Валюта итого:</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="603"/>
+        <location filename="../ui/ui_main_window.py" line="608"/>
         <source>Show &amp;Inactive</source>
         <translation>Показывать &amp;неактивные</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="604"/>
+        <location filename="../ui/ui_main_window.py" line="609"/>
         <source>Operations</source>
         <translation>Операции</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="605"/>
+        <location filename="../ui/ui_main_window.py" line="610"/>
         <source>Time range:</source>
         <translation>Диапазон дат:</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="606"/>
+        <location filename="../ui/ui_main_window.py" line="611"/>
         <source>Week</source>
         <translation>Неделя</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="607"/>
+        <location filename="../ui/ui_main_window.py" line="612"/>
         <source>Month</source>
         <translation>Месяц</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="608"/>
+        <location filename="../ui/ui_main_window.py" line="613"/>
         <source>Quarter</source>
         <translation>Квартал</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="609"/>
+        <location filename="../ui/ui_main_window.py" line="614"/>
         <source>Year</source>
         <translation>Год</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="613"/>
+        <location filename="../ui/ui_main_window.py" line="618"/>
         <source>All</source>
         <translation>Все</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="625"/>
+        <location filename="../ui/ui_main_window.py" line="630"/>
         <source>Account:</source>
         <translation>Счет:</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="614"/>
+        <location filename="../ui/ui_main_window.py" line="619"/>
         <source>Search:</source>
         <translation>Поиск:</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="629"/>
+        <location filename="../ui/ui_main_window.py" line="634"/>
         <source>Income / Spending</source>
         <translation>Доход / Расход</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="627"/>
+        <location filename="../ui/ui_main_window.py" line="632"/>
         <source>From:</source>
         <translation>Со счета:</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="626"/>
+        <location filename="../ui/ui_main_window.py" line="631"/>
         <source>To:</source>
         <translation>На счет:</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="615"/>
+        <location filename="../ui/ui_main_window.py" line="620"/>
         <source>New</source>
         <translation>Новый</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="616"/>
+        <location filename="../ui/ui_main_window.py" line="621"/>
         <source>Copy</source>
         <translation>Копировать</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="617"/>
+        <location filename="../ui/ui_main_window.py" line="622"/>
         <source>Del</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="634"/>
+        <location filename="../ui/ui_main_window.py" line="639"/>
         <source>Save</source>
         <translation>Сохранить</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="618"/>
+        <location filename="../ui/ui_main_window.py" line="623"/>
         <source>Balance &amp;&amp; Operations</source>
         <translation>Балансы &amp;&amp; Операции</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="620"/>
+        <location filename="../ui/ui_main_window.py" line="625"/>
         <source>Common currency:</source>
         <translation>Общая валюта:</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="621"/>
+        <location filename="../ui/ui_main_window.py" line="626"/>
         <source>Holdings</source>
         <translation>Портфель ЦБ</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="623"/>
+        <location filename="../ui/ui_main_window.py" line="628"/>
         <source>Report:</source>
         <translation>Отчет:</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="622"/>
+        <location filename="../ui/ui_main_window.py" line="627"/>
         <source>PushButton</source>
         <translation>Кнопка</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="637"/>
+        <location filename="../ui/ui_main_window.py" line="642"/>
         <source>Custom range</source>
         <translation>Произвольный интервал</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="638"/>
+        <location filename="../ui/ui_main_window.py" line="643"/>
         <source>Quarter to date</source>
         <translation>Квартал по сегодня</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="639"/>
+        <location filename="../ui/ui_main_window.py" line="644"/>
         <source>Year to date</source>
         <translation>Год до сегодня</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="640"/>
+        <location filename="../ui/ui_main_window.py" line="645"/>
         <source>This year</source>
         <translation>Этот год</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="641"/>
+        <location filename="../ui/ui_main_window.py" line="646"/>
         <source>Previous year</source>
         <translation>Предыдущий год</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="628"/>
+        <location filename="../ui/ui_main_window.py" line="633"/>
         <source>Group dates</source>
         <translation>Группировать даты</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="630"/>
+        <location filename="../ui/ui_main_window.py" line="635"/>
         <source>Profit / Loss</source>
         <translation>Прибыли / Убытки</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="631"/>
+        <location filename="../ui/ui_main_window.py" line="636"/>
         <source>Deals</source>
         <translation>Сделки</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="635"/>
+        <location filename="../ui/ui_main_window.py" line="640"/>
         <source>Run</source>
         <translation>Выполнить</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="644"/>
+        <location filename="../ui/ui_main_window.py" line="649"/>
         <source>Reports</source>
         <translation>Отчеты</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="645"/>
+        <location filename="../ui/ui_main_window.py" line="650"/>
         <source>Log messages</source>
         <translation>Сообщения</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="646"/>
+        <location filename="../ui/ui_main_window.py" line="651"/>
         <source>&amp;File</source>
         <translation>&amp;Файл</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="647"/>
+        <location filename="../ui/ui_main_window.py" line="652"/>
         <source>&amp;Data</source>
         <translation>&amp;Данные</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="648"/>
+        <location filename="../ui/ui_main_window.py" line="653"/>
         <source>Predefined data</source>
         <translation>Предопределенные</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="649"/>
+        <location filename="../ui/ui_main_window.py" line="654"/>
         <source>&amp;Load</source>
         <translation>&amp;Загрузить</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="650"/>
+        <location filename="../ui/ui_main_window.py" line="655"/>
         <source>&amp;Reports</source>
         <translation>&amp;Отчеты</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="651"/>
+        <location filename="../ui/ui_main_window.py" line="656"/>
         <source>L&amp;anguage</source>
         <translation>&amp;Язык</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="597"/>
+        <location filename="../ui/ui_main_window.py" line="602"/>
         <source>Slip [RU]...</source>
         <translation>Чек [RU]...</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="652"/>
+        <location filename="../ui/ui_main_window.py" line="657"/>
         <source>&amp;Import</source>
         <translation>&amp;Импорт</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="584"/>
+        <location filename="../ui/ui_main_window.py" line="589"/>
         <source>&amp;Broker statement...</source>
         <translation>&amp;Брокерский отчет...</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="632"/>
+        <location filename="../ui/ui_main_window.py" line="637"/>
         <source>By Category</source>
         <translation>По Категории</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="636"/>
+        <location filename="../ui/ui_main_window.py" line="641"/>
         <source>Category:</source>
         <translation>Категория:</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="580"/>
+        <location filename="../ui/ui_main_window.py" line="585"/>
         <source>jal</source>
         <translation>jal</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="598"/>
+        <location filename="../ui/ui_main_window.py" line="603"/>
         <source>C&amp;ountries</source>
         <translation>&amp;Страны</translation>
     </message>
     <message>
-        <location filename="../ui/ui_main_window.py" line="599"/>
+        <location filename="../ui/ui_main_window.py" line="604"/>
         <source>&amp;Quotes</source>
         <translation>&amp;Котировки</translation>
     </message>
@@ -2488,42 +2487,42 @@ do you want to save it?</source>
 <context>
     <name>TransferWidget</name>
     <message>
-        <location filename="../ui_custom/transfer_widget.py" line="30"/>
+        <location filename="../ui_custom/transfer_widget.py" line="31"/>
         <source>Transfer</source>
         <translation>Перевод</translation>
     </message>
     <message>
-        <location filename="../ui_custom/transfer_widget.py" line="34"/>
+        <location filename="../ui_custom/transfer_widget.py" line="35"/>
         <source>Date/Time</source>
         <translation>Дата/Время</translation>
     </message>
     <message>
-        <location filename="../ui_custom/transfer_widget.py" line="32"/>
+        <location filename="../ui_custom/transfer_widget.py" line="33"/>
         <source>From</source>
         <translation>С</translation>
     </message>
     <message>
-        <location filename="../ui_custom/transfer_widget.py" line="36"/>
+        <location filename="../ui_custom/transfer_widget.py" line="37"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../ui_custom/transfer_widget.py" line="35"/>
+        <location filename="../ui_custom/transfer_widget.py" line="36"/>
         <source>To</source>
         <translation>На</translation>
     </message>
     <message>
-        <location filename="../ui_custom/transfer_widget.py" line="37"/>
+        <location filename="../ui_custom/transfer_widget.py" line="38"/>
         <source>Fee from</source>
         <translation>Коммиссия с</translation>
     </message>
     <message>
-        <location filename="../ui_custom/transfer_widget.py" line="38"/>
+        <location filename="../ui_custom/transfer_widget.py" line="39"/>
         <source>Fee amount</source>
         <translation>Размер комиссии</translation>
     </message>
     <message>
-        <location filename="../ui_custom/transfer_widget.py" line="39"/>
+        <location filename="../ui_custom/transfer_widget.py" line="40"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
