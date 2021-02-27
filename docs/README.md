@@ -12,14 +12,14 @@ It was designed to keep records of personal incomes/spendings and investments wi
 - 5 types of transactions: 
     1. Generic income/spending operations that may be splitted into several categories
     2. Transfers of money between different accounts and currencies
-    3. Buy/Sell operation for securities (future plan is to support merges and splits)
-    4. Dividend for stocks and Interest for bonds
+    3. Buy/Sell operation for securities (jal supports stocks, ETFs, options, partial support of bonds and futures)
+    4. Dividend for stocks and Interest payments for bonds
     5. Corporate actions for stocks (Split, Symbol change, Merger, Spin-Off, Stock dividend)
 - basic reports:
     1. monthly incomes/spendings splitted by category
     2. profit/loss report for investments accounts
     3. closed deals report 
-- stock quotes updates for US (Yahoo), EU (Euronext) and RU (MOEX) exchanges traded stocks
+- stock/ETF quotes updates for US (Yahoo), EU (Euronext) and RU (MOEX) exchanges traded stocks
 - securities transactions import from Quik HTML-reports for russian brokers (KIT-Finance, Uralsib Broker) and from Interactive Brokers flex-queries
 - tax report preparation for foreign investments according to Russian Tax Code (![manual](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/taxes.md))
 - *experimental* download russian electronic slips from russian tax authority:
