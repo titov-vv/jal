@@ -2,7 +2,7 @@ from datetime import datetime
 from dateutil import tz
 
 from PySide2.QtCore import Qt, Slot
-from PySide2.QtWidgets import QLabel, QDateTimeEdit, QLineEdit
+from PySide2.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QPushButton
 from jal.constants import Setup
 from jal.ui_custom.helpers import g_tr
 from jal.ui_custom.abstract_operation_details import AbstractOperationDetails
@@ -25,7 +25,8 @@ class TransferWidget(AbstractOperationDetails):
         self.fee_amount_label = QLabel(self)
         self.comment_label = QLabel(self)
         self.arrow_account = QLabel(self)
-        self.arrow_amount = QLabel(self)
+        self.copy_date_btn = QPushButton(self)
+        self.copy_amount_btn = QPushButton(self)
 
         self.main_label.setText(g_tr("TransferWidget", "Transfer"))
         self.from_date_label.setText(g_tr("TransferWidget", "Date/Time"))
@@ -38,7 +39,10 @@ class TransferWidget(AbstractOperationDetails):
         self.fee_amount_label.setText(g_tr("TransferWidget", "Fee amount"))
         self.comment_label.setText(g_tr("TransferWidget", "Note"))
         self.arrow_account.setText(" ➜ ")
-        self.arrow_amount.setText(" ➜ ")
+        self.copy_date_btn.setText("➜")
+        self.copy_date_btn.setFixedWidth(self.copy_date_btn.fontMetrics().width("XXXX"))
+        self.copy_amount_btn.setText("➜")
+        self.copy_amount_btn.setFixedWidth(self.copy_amount_btn.fontMetrics().width("XXXX"))
 
         self.withdrawal_timestamp = QDateTimeEdit(self)
         self.withdrawal_timestamp.setCalendarPopup(True)
@@ -71,8 +75,9 @@ class TransferWidget(AbstractOperationDetails):
         self.layout.addWidget(self.withdrawal, 3, 1, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.comment, 5, 1, 1, 1, Qt.AlignLeft)
 
-        self.layout.addWidget(self.arrow_account, 2, 2, 1, 1, Qt.AlignLeft)
-        self.layout.addWidget(self.arrow_amount, 3, 2, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.copy_date_btn, 1, 2, 1, 1)
+        self.layout.addWidget(self.arrow_account, 2, 2, 1, 1, Qt.AlignCenter)
+        self.layout.addWidget(self.copy_amount_btn, 3, 2, 1, 1)
 
         self.layout.addWidget(self.to_date_label, 1, 3, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.to_account_label, 2, 3, 1, 1, Qt.AlignLeft)
@@ -91,6 +96,9 @@ class TransferWidget(AbstractOperationDetails):
 
         self.layout.addItem(self.verticalSpacer, 6, 0, 1, 1)
         self.layout.addItem(self.horizontalSpacer, 1, 5, 1, 1)
+
+        self.copy_date_btn.clicked.connect(self.onCopyDate)
+        self.copy_amount_btn.clicked.connect(self.onCopyAmount)
 
     def init_db(self, db):
         super().init_db(db, "transfers")
@@ -141,7 +149,7 @@ class TransferWidget(AbstractOperationDetails):
         new_record.setValue("deposit", 0)
         new_record.setValue("fee_account", 0)
         new_record.setValue("fee", 0)
-        new_record.setValue("asset", 0)
+        new_record.setValue("asset", None)
         new_record.setValue("note", None)
         return new_record
 
@@ -151,3 +159,11 @@ class TransferWidget(AbstractOperationDetails):
         new_record.setValue("withdrawal_timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
         new_record.setValue("deposit_timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
         return new_record
+
+    @Slot()
+    def onCopyDate(self):
+        self.deposit_timestamp.setDateTime(self.withdrawal_timestamp.dateTime())
+
+    @Slot()
+    def onCopyAmount(self):
+        self.deposit.setText(self.withdrawal.text())
