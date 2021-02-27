@@ -2,7 +2,7 @@ from functools import partial
 from datetime import datetime, timezone
 import logging
 
-from jal.constants import Setup, TransactionType, CorporateAction, PredefinedCategory, DividendSubtype
+from jal.constants import Setup, TransactionType, CorporateAction, PredefinedAsset, PredefinedCategory, DividendSubtype
 from jal.reports.helpers import XLSX
 from jal.reports.dlsg import DLSG
 from jal.ui_custom.helpers import g_tr
@@ -89,6 +89,8 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
 
 # -----------------------------------------------------------------------------------------------------------------------
 class TaxesRus:
+    BOND_PRINCIPAL = 1000 # TODO We may keep bond principal in 'assets' table or somewhere in database
+
     RPT_METHOD = 0
     RPT_TITLE = 1
     RPT_COLUMNS = 2
@@ -138,53 +140,77 @@ class TaxesRus:
                               11: ("СОИДН", 7, ("tax_treaty", "bool", ("Нет", "Да")), "Наличие у Российской Федерации договора об избежании двойного налогообложения со страной эмитента")
                           }
                           ),
-            "Сделки с ЦБ": (self.prepare_trades,
-                            "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде",
-                            {
-                                0: ("Ценная бумага", 8, ("symbol", "text", 0, 0, 1), None, "Краткое наименование ценной бумаги"),
-                                1: ("ISIN", 11, ("isin", "text", 0, 0, 1), None, "Международный идентификационный код ценной бумаги"),
-                                2: ("Кол-во", 8, ("qty", "number", 0, 0, 1), None, "Количество ЦБ в сделке"),
-                                3: ("Тип операции", 8, ("o_type", "text"), ("c_type", "text"), "Направление сделки (покупка или продажа)"),
-                                4: ("Дата операции", 10, ("o_date", "date"), ("c_date", "date"), "Дата заключения сделки (и уплаты комиссии из столбца 11)"),
-                                5: ("Номер операции", 10, ("o_number", "text"), ("c_number", "text"), "Номер операции в торговой системе"),
-                                6: ("Курс {currency}/RUB на дату операции", 9, ("o_rate", "number", 4), ("c_rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату заключения сделки"),
-                                7: ("Дата расчётов", 10, ("os_date", "date"), ("cs_date", "date"), "Дата рачетов по сделке / Дата поставки ценных бумаг"),
-                                8: ("Курс {currency}/RUB на дату расчётов", 9, ("os_rate", "number", 4), ("cs_rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату поставки ЦБ / расчётов по сделке"),
-                                9: ("Цена, {currency}", 12, ("o_price", "number", 6), ("c_price", "number", 6), "Цена одной ценной бумаги в валюте счета"),
-                                10: ("Сумма сделки, {currency}", 12, ("o_amount", "number", 2), ("c_amount", "number", 2), "Сумма сделки в валюте счета (= Столбец 2 * Столбец 8)"),
-                                11: ("Сумма сделки, RUB", 12, ("o_amount_rub", "number", 2), ("c_amount_rub", "number", 2), "Сумма сделки в рублях (= Столбец 9 * Столбец 7)"),
-                                12: ("Комиссия, {currency}", 12, ("o_fee", "number", 6), ("c_fee", "number", 6), "Комиссия брокера за совершение сделки в валюте счета"),
-                                13: ("Комиссия, RUB", 9, ("o_fee_rub", "number", 2), ("c_fee_rub", "number", 2), "Комиссия брокера за совершение сделки в рублях ( = Столбец 11 * Столбец 5)"),
-                                14: ("НКД, {currency}", 8, ("o_int", "number", 2), ("c_int", "number", 2), "Накопленный купонный доход в валюте счета"),
-                                15: ("НКД, RUB", 8, ("o_int_rub", "number", 2), ("c_int_rub", "number", 2), "Накопленный купонный доход в рублях ( = Столбец 13 * Столбец 5)"),
-                                16: ("Доход, RUB (код 1530)", 12, ("income_rub", "number", 2, 0, 1), None, "Доход, полученных от продажи ценных бумаг (равен сумме сделки продажи из столбца 10 + НКД из столбца 14)"),
-                                17: ("Расход, RUB (код 201)", 12, ("spending_rub", "number", 2, 0, 1), None, "Расходы, понесённые на покупку ценных бумаг и уплату комиссий (равны сумме сделки покупки из столбца 10 + комиссии из столбца 12 + НКД из столбца 14)"),
-                                18: ("Финансовый результат, RUB", 12, ("profit_rub", "number", 2, 0, 1), None, "Финансовый результат сделки в рублях (= Столбец 15 - Столбец 16)"),
-                                19: ("Финансовый результат, {currency}", 12, ("profit", "number", 2, 0, 1), None, "Финансовый результат сделки в валюте счета")
-                            }
-                            ),
-            "Сделки с ПФИ": (self.prepare_derivatives,
-                             "Отчет по сделкам с производными финансовыми инструментами, завершённым в отчетном периоде",
-                             {
-                                 0: ("Ценная бумага", 8, ("symbol", "text", 0, 0, 1), None, "Краткое наименование контракта"),
-                                 1: ("Кол-во", 8, ("qty", "number", 0, 0, 1), None, "Количество ЦБ в сделке"),
-                                 2: ("Тип операции", 8, ("o_type", "text"), ("c_type", "text"), "Направление сделки (покупка или продажа)"),
-                                 3: ("Дата операции", 10, ("o_date", "date"), ("c_date", "date"), "Дата заключения сделки (и уплаты комиссии из столбца 11)"),
-                                 4: ("Номер операции", 10, ("o_number", "text"), ("c_number", "text"), "Номер операции в торговой системе"),
-                                 5: ("Курс {currency}/RUB на дату операции", 9, ("o_rate", "number", 4), ("c_rate", "number", 4), "Официальный курс валюты, установленный ЦБ РФ на дату заключения сделки"),
-                                 6: ("Дата расчётов", 10, ("os_date", "date"), ("cs_date", "date"), "Дата рачетов по сделке"),
-                                 7: ("Курс {currency}/RUB на дату расчётов", 9, ("os_rate", "number", 4), ("cs_rate", "number", 4), "Официальный курс валюты, установленный ЦБ РФ на дату расчётов по сделке"),
-                                 8: ("Цена, {currency}", 12, ("o_price", "number", 6), ("c_price", "number", 6), "Цена одной ценной бумаги в валюте счета"),
-                                 9: ("Сумма сделки, {currency}", 12, ("o_amount", "number", 2), ("c_amount", "number", 2), "Сумма сделки в валюте счета (= Столбец 2 * Столбец 8)"),
-                                 10: ("Сумма сделки, RUB", 12, ("o_amount_rub", "number", 2), ("c_amount_rub", "number", 2), "Сумма сделки в рублях (= Столбец 9 * Столбец 7)"),
-                                 11: ("Комиссия, {currency}", 12, ("o_fee", "number", 6), ("c_fee", "number", 6), "Комиссия брокера за совершение сделки в валюте счета"),
-                                 12: ("Комиссия, RUB", 9, ("o_fee_rub", "number", 2), ("c_fee_rub", "number", 2), "Комиссия брокера за совершение сделки в рублях ( = Столбец 11 * Столбец 5)"),
-                                 13: ("Доход, RUB (код 1532)", 12, ("income_rub", "number", 2, 0, 1), None, "Доход, полученных от продажи ценных бумаг (равен сумме сделки продажи из столбца 10)"),
-                                 14: ("Расход, RUB (код 206)", 12, ("spending_rub", "number", 2, 0, 1), None, "Расходы, понесённые на покупку ценных бумаг и уплату комиссий (равны сумме стелки покупки из столбца 10 + комиссии из столбца 12)"),
-                                 15: ("Финансовый результат, RUB", 12, ("profit_rub", "number", 2, 0, 1), None, "Финансовый результат сделки в рублях (= Столбец 13 - Столбец 14)"),
-                                 16: ("Финансовый результат, {currency}", 12, ("profit", "number", 2, 0, 1), None, "Финансовый результат сделки в валюте счета")
-                             }
-                             ),
+            "Акции": (self.prepare_stocks_and_etf,
+                      "Отчет по сделкам с акциями и паями, завершённым в отчетном периоде",
+                      {
+                          0: ("Ценная бумага", 8, ("symbol", "text", 0, 0, 1), None, "Краткое наименование ценной бумаги"),
+                          1: ("ISIN", 11, ("isin", "text", 0, 0, 1), None, "Международный идентификационный код ценной бумаги"),
+                          2: ("Кол-во", 8, ("qty", "number", 0, 0, 1), None, "Количество ЦБ в сделке"),
+                          3: ("Тип операции", 8, ("o_type", "text"), ("c_type", "text"), "Направление сделки (покупка или продажа)"),
+                          4: ("Дата операции", 10, ("o_date", "date"), ("c_date", "date"), "Дата заключения сделки (и уплаты комиссии из столбца 11)"),
+                          5: ("Номер операции", 10, ("o_number", "text"), ("c_number", "text"), "Номер операции в торговой системе"),
+                          6: ("Курс {currency}/RUB на дату операции", 9, ("o_rate", "number", 4), ("c_rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату заключения сделки"),
+                          7: ("Дата расчётов", 10, ("os_date", "date"), ("cs_date", "date"), "Дата рачетов по сделке / Дата поставки ценных бумаг"),
+                          8: ("Курс {currency}/RUB на дату расчётов", 9, ("os_rate", "number", 4), ("cs_rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату поставки ЦБ / расчётов по сделке"),
+                          9: ("Цена, {currency}", 12, ("o_price", "number", 6), ("c_price", "number", 6), "Цена одной ценной бумаги в валюте счета"),
+                          10: ("Сумма сделки, {currency}", 12, ("o_amount", "number", 2), ("c_amount", "number", 2), "Сумма сделки в валюте счета (= Столбец 2 * Столбец 8)"),
+                          11: ("Сумма сделки, RUB", 12, ("o_amount_rub", "number", 2), ("c_amount_rub", "number", 2), "Сумма сделки в рублях (= Столбец 9 * Столбец 7)"),
+                          12: ("Комиссия, {currency}", 12, ("o_fee", "number", 6), ("c_fee", "number", 6), "Комиссия брокера за совершение сделки в валюте счета"),
+                          13: ("Комиссия, RUB", 9, ("o_fee_rub", "number", 2), ("c_fee_rub", "number", 2), "Комиссия брокера за совершение сделки в рублях ( = Столбец 11 * Столбец 5)"),
+                          14: ("Доход, RUB (код 1530)", 12, ("income_rub", "number", 2, 0, 1), None, "Доход, полученных от продажи ценных бумаг (равен сумме сделки продажи из столбца 10)"),
+                          15: ("Расход, RUB (код 201)", 12, ("spending_rub", "number", 2, 0, 1), None, "Расходы, понесённые на покупку ценных бумаг и уплату комиссий (равны сумме сделки покупки из столбца 10 + комиссии из столбца 12)"),
+                          16: ("Финансовый результат, RUB", 12, ("profit_rub", "number", 2, 0, 1), None, "Финансовый результат сделки в рублях (= Столбец 13 - Столбец 14)"),
+                          17: ("Финансовый результат, {currency}", 12, ("profit", "number", 2, 0, 1), None, "Финансовый результат сделки в валюте счета")
+                      }
+                      ),
+            "Облигации": (self.prepare_bonds,
+                          "Отчет по сделкам с облигациями, завершённым в отчетном периоде, и полученным купонам",
+                          {
+                              0: ("Ценная бумага", 8, ("symbol", "text", 0, 0, 1), None, "Краткое наименование ценной бумаги"),
+                              1: ("ISIN", 11, ("isin", "text", 0, 0, 1), None, "Международный идентификационный код ценной бумаги"),
+                              2: ("Кол-во", 8, ("qty", "number", 0, 0, 1), None, "Количество ЦБ в сделке"),
+                              3: ("Номинал, {currency}", 7, ("principal", "number", 0, 0, 1), None, "Номинал облигации"),
+                              4: ("Тип операции", 8, ("o_type", "text"), ("c_type", "text"), "Направление сделки (покупка или продажа)"),
+                              5: ("Дата операции", 10, ("o_date", "date"), ("c_date", "date"), "Дата заключения сделки, уплаты комиссии(11) и НКД(13)"),
+                              6: ("Номер операции", 10, ("o_number", "text"), ("c_number", "text"), "Номер операции в торговой системе"),
+                              7: ("Курс {currency}/RUB на дату операции", 9, ("o_rate", "number", 4), ("c_rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату заключения сделки"),
+                              8: ("Дата расчётов", 10, ("os_date", "date"), ("cs_date", "date"), "Дата рачетов по сделке / Дата поставки ценных бумаг"),
+                              9: ("Курс {currency}/RUB на дату расчётов", 9, ("os_rate", "number", 4), ("cs_rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату поставки ЦБ / расчётов по сделке"),
+                              10: ("Цена, %", 12, ("o_price", "number", 6), ("c_price", "number", 6), "Цена одной облигации в процентах от номинала"),
+                              11: ("Сумма сделки, {currency}", 12, ("o_amount", "number", 2), ("c_amount", "number", 2), "Сумма сделки в валюте счета (= Столбец 2 * Столбец 8)"),
+                              12: ("Сумма сделки, RUB", 12, ("o_amount_rub", "number", 2), ("c_amount_rub", "number", 2),"Сумма сделки в рублях (= Столбец 9 * Столбец 7)"),
+                              13: ("НКД, {currency}", 8, ("o_int", "number", 2), ("c_int", "number", 2), "Накопленный купонный доход в валюте счета"),
+                              14: ("НКД, RUB", 8, ("o_int_rub", "number", 2), ("c_int_rub", "number", 2), "Накопленный купонный доход в рублях ( = Столбец 13 * Столбец 5)"),
+                              15: ("Комиссия, {currency}", 12, ("o_fee", "number", 6), ("c_fee", "number", 6), "Комиссия брокера за совершение сделки в валюте счета"),
+                              16: ("Комиссия, RUB", 9, ("o_fee_rub", "number", 2), ("c_fee_rub", "number", 2), "Комиссия брокера за совершение сделки в рублях ( = Столбец 11 * Столбец 5)"),
+                              17: ("Доход, RUB (код 1530)", 12, ("income_rub", "number", 2, 0, 1), None, "Доход, полученных от продажи ценных бумаг (равен сумме сделки продажи из столбца 10 + НКД из столбца 14)"),
+                              18: ("Расход, RUB (код 201)", 12, ("spending_rub", "number", 2, 0, 1), None, "Расходы, понесённые на покупку ценных бумаг и уплату комиссий (равны сумме сделки покупки из столбца 10 + комиссии из столбца 12 + НКД из столбца 14)"),
+                              19: ("Финансовый результат, RUB", 12, ("profit_rub", "number", 2, 0, 1), None, "Финансовый результат сделки в рублях (= Столбец 15 - Столбец 16)"),
+                              20: ("Финансовый результат, {currency}", 12, ("profit", "number", 2, 0, 1), None, "Финансовый результат сделки в валюте счета")
+                          }
+                          ),
+            "ПФИ": (self.prepare_derivatives,
+                    "Отчет по сделкам с производными финансовыми инструментами, завершённым в отчетном периоде",
+                    {
+                        0: ("Ценная бумага", 8, ("symbol", "text", 0, 0, 1), None, "Краткое наименование контракта"),
+                        1: ("Кол-во", 8, ("qty", "number", 0, 0, 1), None, "Количество ЦБ в сделке"),
+                        2: ("Тип операции", 8, ("o_type", "text"), ("c_type", "text"), "Направление сделки (покупка или продажа)"),
+                        3: ("Дата операции", 10, ("o_date", "date"), ("c_date", "date"), "Дата заключения сделки (и уплаты комиссии из столбца 11)"),
+                        4: ("Номер операции", 10, ("o_number", "text"), ("c_number", "text"), "Номер операции в торговой системе"),
+                        5: ("Курс {currency}/RUB на дату операции", 9, ("o_rate", "number", 4), ("c_rate", "number", 4), "Официальный курс валюты, установленный ЦБ РФ на дату заключения сделки"),
+                        6: ("Дата расчётов", 10, ("os_date", "date"), ("cs_date", "date"), "Дата рачетов по сделке"),
+                        7: ("Курс {currency}/RUB на дату расчётов", 9, ("os_rate", "number", 4), ("cs_rate", "number", 4), "Официальный курс валюты, установленный ЦБ РФ на дату расчётов по сделке"),
+                        8: ("Цена, {currency}", 12, ("o_price", "number", 6), ("c_price", "number", 6), "Цена одной ценной бумаги в валюте счета"),
+                        9: ("Сумма сделки, {currency}", 12, ("o_amount", "number", 2), ("c_amount", "number", 2), "Сумма сделки в валюте счета (= Столбец 2 * Столбец 8)"),
+                        10: ("Сумма сделки, RUB", 12, ("o_amount_rub", "number", 2), ("c_amount_rub", "number", 2), "Сумма сделки в рублях (= Столбец 9 * Столбец 7)"),
+                        11: ("Комиссия, {currency}", 12, ("o_fee", "number", 6), ("c_fee", "number", 6), "Комиссия брокера за совершение сделки в валюте счета"),
+                        12: ("Комиссия, RUB", 9, ("o_fee_rub", "number", 2), ("c_fee_rub", "number", 2), "Комиссия брокера за совершение сделки в рублях ( = Столбец 11 * Столбец 5)"),
+                        13: ("Доход, RUB (код 1532)", 12, ("income_rub", "number", 2, 0, 1), None, "Доход, полученных от продажи ценных бумаг (равен сумме сделки продажи из столбца 10)"),
+                        14: ("Расход, RUB (код 206)", 12, ("spending_rub", "number", 2, 0, 1), None, "Расходы, понесённые на покупку ценных бумаг и уплату комиссий (равны сумме стелки покупки из столбца 10 + комиссии из столбца 12)"),
+                        15: ("Финансовый результат, RUB", 12, ("profit_rub", "number", 2, 0, 1), None, "Финансовый результат сделки в рублях (= Столбец 13 - Столбец 14)"),
+                        16: ("Финансовый результат, {currency}", 12, ("profit", "number", 2, 0, 1), None, "Финансовый результат сделки в валюте счета")
+                    }
+                    ),
             "Корп.события": (self.prepare_corporate_actions,
                              "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде "
                              "с предшествовавшими корпоративными событиями",
@@ -440,7 +466,77 @@ class TaxesRus:
         return row+1
 
     # -----------------------------------------------------------------------------------------------------------------------
-    def prepare_trades(self):
+    def prepare_stocks_and_etf(self):
+        # Take all actions without conversion
+        query = executeSQL(self.db,
+                           "SELECT s.name AS symbol, s.isin AS isin, d.qty AS qty, cc.code AS country_code, "
+                           "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, o.number AS o_number, "
+                           "qos.quote AS os_rate, o.price AS o_price, o.qty AS o_qty, o.fee AS o_fee, "
+                           "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, c.number AS c_number, "
+                           "qcs.quote AS cs_rate, c.price AS c_price, c.qty AS c_qty, c.fee AS c_fee "
+                           "FROM deals AS d "
+                           "JOIN sequence AS os ON os.id=d.open_sid AND os.type = 3 "
+                           "LEFT JOIN trades AS o ON os.operation_id=o.id "
+                           "JOIN sequence AS cs ON cs.id=d.close_sid AND cs.type = 3 "
+                           "LEFT JOIN trades AS c ON cs.operation_id=c.id "
+                           "LEFT JOIN assets AS s ON o.asset_id=s.id "
+                           "LEFT JOIN accounts AS a ON a.id = :account_id "
+                           "LEFT JOIN countries AS cc ON cc.id = a.country_id "
+                           "LEFT JOIN t_last_dates AS ldo ON o.timestamp=ldo.ref_id "
+                           "LEFT JOIN quotes AS qo ON ldo.timestamp=qo.timestamp AND a.currency_id=qo.asset_id "
+                           "LEFT JOIN t_last_dates AS ldos ON o.settlement=ldos.ref_id "
+                           "LEFT JOIN quotes AS qos ON ldos.timestamp=qos.timestamp AND a.currency_id=qos.asset_id "
+                           "LEFT JOIN t_last_dates AS ldc ON c.timestamp=ldc.ref_id "
+                           "LEFT JOIN quotes AS qc ON ldc.timestamp=qc.timestamp AND a.currency_id=qc.asset_id "
+                           "LEFT JOIN t_last_dates AS ldcs ON c.settlement=ldcs.ref_id "
+                           "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
+                           "WHERE c.timestamp>=:begin AND c.timestamp<:end AND d.account_id=:account_id "
+                           "AND s.type_id = :stock OR s.type_id = :fund "
+                           "ORDER BY o.timestamp, c.timestamp",
+                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
+                            (":stock", PredefinedAsset.Stock), (":fund", PredefinedAsset.ETF)])
+        start_row = self.data_start_row
+        data_row = 0
+        while query.next():
+            deal = readSQLrecord(query, named=True)
+            row = start_row + (data_row * 2)
+            if not self.use_settlement:
+                deal['os_rate'] = deal['o_rate']
+                deal['cs_rate'] = deal['c_rate']
+            deal['o_type'] = "Покупка" if deal['qty'] >= 0 else "Продажа"
+            deal['c_type'] = "Продажа" if deal['qty'] >= 0 else "Покупка"
+            deal['o_amount'] = round(deal['o_price'] * abs(deal['qty']), 2)
+            deal['o_amount_rub'] = round(deal['o_amount'] * deal['os_rate'], 2) if deal['os_rate'] else 0
+            deal['c_amount'] = round(deal['c_price'] * abs(deal['qty']), 2)
+            deal['c_amount_rub'] = round(deal['c_amount'] * deal['cs_rate'], 2) if deal['cs_rate'] else 0
+            deal['o_fee'] = deal['o_fee'] * abs(deal['qty'] / deal['o_qty'])
+            deal['c_fee'] = deal['c_fee'] * abs(deal['qty'] / deal['c_qty'])
+            deal['o_fee_rub'] = round(deal['o_fee'] * deal['o_rate'], 2) if deal['o_rate'] else 0
+            deal['c_fee_rub'] = round(deal['c_fee'] * deal['c_rate'], 2) if deal['c_rate'] else 0
+            deal['income_rub'] = deal['c_amount_rub'] if deal['qty'] >= 0 else deal['o_amount_rub']
+            deal['income'] = deal['c_amount'] if deal['qty'] >= 0 else deal['o_amount']
+            deal['spending_rub'] = deal['o_amount_rub'] if deal['qty'] >= 0 else deal['c_amount_rub']
+            deal['spending_rub'] = deal['spending_rub'] + deal['o_fee_rub'] + deal['c_fee_rub']
+            deal['spending'] = deal['o_amount'] if deal['qty'] >= 0 else deal['c_amount']
+            deal['spending'] = deal['spending'] + deal['o_fee'] + deal['c_fee']
+            deal['profit_rub'] = deal['income_rub'] - deal['spending_rub']
+            deal['profit'] = deal['income'] - deal['spending']
+
+            self.add_report_row(row, deal, even_odd=data_row)
+            self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
+
+            if self.statement is not None:
+                self.statement.add_stock_profit(deal['country_code'], self.broker_name, deal['c_date'],
+                                                self.account_currency, deal['income'], deal['income_rub'],
+                                                deal['spending_rub'], deal['c_rate'])
+            data_row = data_row + 1
+        row = start_row + (data_row * 2)
+
+        self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [13, 14, 15, 16, 17])
+        return row + 1
+
+    # -----------------------------------------------------------------------------------------------------------------------
+    def prepare_bonds(self):
         # Take all actions without conversion
         query = executeSQL(self.db,
                            "SELECT s.name AS symbol, s.isin AS isin, d.qty AS qty, cc.code AS country_code, "
@@ -467,14 +563,16 @@ class TaxesRus:
                            "LEFT JOIN t_last_dates AS ldcs ON c.settlement=ldcs.ref_id "
                            "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
                            "WHERE c.timestamp>=:begin AND c.timestamp<:end AND d.account_id=:account_id "
-                           "AND s.type_id >= 2 AND s.type_id <= 4 "  # To select only stocks/bonds/ETFs
+                           "AND s.type_id = :bond "
                            "ORDER BY o.timestamp, c.timestamp",
-                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id)])
+                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
+                            (":bond", PredefinedAsset.Bond)])
         start_row = self.data_start_row
         data_row = 0
         while query.next():
             deal = readSQLrecord(query, named=True)
             row = start_row + (data_row * 2)
+            deal['principal'] = self.BOND_PRINCIPAL
             if not self.use_settlement:
                 deal['os_rate'] = deal['o_rate']
                 deal['cs_rate'] = deal['c_rate']
@@ -484,6 +582,10 @@ class TaxesRus:
             deal['o_amount_rub'] = round(deal['o_amount'] * deal['os_rate'], 2) if deal['os_rate'] else 0
             deal['c_amount'] = round(deal['c_price'] * abs(deal['qty']), 2)
             deal['c_amount_rub'] = round(deal['c_amount'] * deal['cs_rate'], 2) if deal['cs_rate'] else 0
+            # Convert price from currency to % of principal
+            deal['o_price'] = 100.0 * deal['o_price'] / deal['principal']
+            deal['c_price'] = 100.0 * deal['c_price'] / deal['principal']
+
             deal['o_fee'] = deal['o_fee'] * abs(deal['qty'] / deal['o_qty'])
             deal['c_fee'] = deal['c_fee'] * abs(deal['qty'] / deal['c_qty'])
             deal['o_fee_rub'] = round(deal['o_fee'] * deal['o_rate'], 2) if deal['o_rate'] else 0
@@ -510,7 +612,7 @@ class TaxesRus:
             data_row = data_row + 1
         row = start_row + (data_row * 2)
 
-        self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [15, 16, 17, 18, 19])
+        self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [16, 17, 18, 19, 20])
         return row + 1
 
     # -----------------------------------------------------------------------------------------------------------------------
