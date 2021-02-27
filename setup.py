@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="jal",
-    version="2021.01.4",
+    version="2021.02.1",
     author_email="jal@gmx.ru",
     description="Just Another Ledger - project to track personal financial records",
     long_description_content_type='text/markdown',
