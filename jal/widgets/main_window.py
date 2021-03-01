@@ -8,7 +8,6 @@ from PySide2.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox, QLa
 
 from jal import __version__
 from jal.ui.ui_main_window import Ui_LedgerMainWindow
-from jal.ui.ui_abort_window import Ui_AbortWindow
 from jal.ui_custom.helpers import g_tr, ManipulateDate, dependency_present
 from jal.ui_custom.reference_dialogs import ReferenceDialogs
 from jal.constants import TransactionType
@@ -26,18 +25,6 @@ from jal.reports.taxes import TaxesRus
 from jal.data_import.slips import ImportSlipDialog
 from jal.db.tax_estimator import TaxEstimator
 
-
-#-----------------------------------------------------------------------------------------------------------------------
-# This simly displays one message and OK button - to facilitate start-up error communication
-class AbortWindow(QMainWindow, Ui_AbortWindow):
-    def __init__(self, error):
-        QMainWindow.__init__(self, None)
-        self.setupUi(self)
-
-        message = error.message
-        if error.details:
-            message = message + "\n" + error.details
-        self.MessageLbl.setText(message)
 
 #-----------------------------------------------------------------------------------------------------------------------
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):

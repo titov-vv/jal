@@ -2,9 +2,9 @@ import sys
 import os
 import logging
 import traceback
-from PySide2.QtCore import QTranslator
-from PySide2.QtWidgets import QApplication
-from jal.widgets.main_window import MainWindow, AbortWindow
+from PySide2.QtCore import Qt, QTranslator
+from PySide2.QtWidgets import QApplication, QMessageBox
+from jal.widgets.main_window import MainWindow
 from jal.db.helpers import init_and_check_db, LedgerInitError, get_language, update_db_schema
 
 
@@ -39,7 +39,12 @@ def main():
             db, error = init_and_check_db(own_path)
 
     if db is None:
-        window = AbortWindow(error)
+        window = QMessageBox()
+        window.setAttribute(Qt.WA_DeleteOnClose)
+        window.setWindowTitle("JAL: Start-up aborted")
+        window.setIcon(QMessageBox.Critical)
+        window.setText(error.message)
+        window.setInformativeText(error.details)
     else:
         window = MainWindow(db, own_path, language)
     window.show()

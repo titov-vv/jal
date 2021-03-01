@@ -1,6 +1,5 @@
 #!/usr/bin/bash
 uic -g python -o ./ui/ui_main_window.py ./ui/main_window.ui
-uic -g python -o ./ui/ui_abort_window.py ./ui/abort_window.ui
 uic -g python -o ./ui/ui_rebuild_window.py ./ui/rebuild_window.ui
 uic -g python -o ./ui/ui_update_quotes_window.py ./ui/quotes_update.ui
 uic -g python -o ./ui/ui_reference_data_dlg.py ./ui/reference_data_dlg.ui
