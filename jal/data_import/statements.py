@@ -1014,7 +1014,7 @@ class StatementLoader(QObject):
                      [(":div", DividendSubtype.Dividend), (":start_range", range_start), (":account_id", account_id),
                       (":asset_id", asset_id), (":dividend_description", note)])
         if count > 1:
-            logging.warning(g_tr('StatementLoader', "Multimple dividends match withholding tax"))
+            logging.warning(g_tr('StatementLoader', "Multiple dividends match withholding tax"))
             return None
         id = readSQL(self.db, "SELECT id FROM dividends WHERE type=:div AND timestamp>=:start_range "
                               "AND account_id=:account_id AND asset_id=:asset_id AND note LIKE :dividend_description",

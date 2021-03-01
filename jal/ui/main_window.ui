@@ -152,7 +152,7 @@
                    <second>0</second>
                    <year>2020</year>
                    <month>12</month>
-                   <day>17</day>
+                   <day>14</day>
                   </datetime>
                  </property>
                  <property name="displayFormat">
@@ -583,7 +583,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>17</day>
+               <day>14</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -728,7 +728,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>17</day>
+               <day>14</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -875,7 +875,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>17</day>
+               <day>14</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -955,7 +955,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar">
+  <widget class="QMenuBar" name="MainMenu">
    <property name="geometry">
     <rect>
      <x>0</x>

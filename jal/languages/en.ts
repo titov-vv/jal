@@ -843,7 +843,7 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="289"/>
+        <location filename="../widgets/main_window.py" line="307"/>
         <source>Estimate Russian Tax</source>
         <translation></translation>
     </message>
@@ -1242,70 +1242,85 @@ Application will be terminated now</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="262"/>
+        <location filename="../widgets/main_window.py" line="280"/>
         <source>Quotes download completed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="267"/>
+        <location filename="../widgets/main_window.py" line="285"/>
         <source>Statement load completed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="273"/>
+        <location filename="../widgets/main_window.py" line="291"/>
         <source>Statement load failed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="203"/>
+        <location filename="../widgets/main_window.py" line="208"/>
         <source>Restart required</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="203"/>
+        <location filename="../widgets/main_window.py" line="208"/>
         <source>Language was changed to </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="203"/>
+        <location filename="../widgets/main_window.py" line="208"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="118"/>
+        <location filename="../widgets/main_window.py" line="119"/>
         <source>Reconcile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="120"/>
+        <location filename="../widgets/main_window.py" line="121"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="122"/>
+        <location filename="../widgets/main_window.py" line="123"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="321"/>
+        <location filename="../widgets/main_window.py" line="339"/>
         <source>You have unsaved changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="321"/>
+        <location filename="../widgets/main_window.py" line="339"/>
         <source> has uncommitted changes,
 do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="348"/>
+        <location filename="../widgets/main_window.py" line="366"/>
         <source>Confirmation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="348"/>
+        <location filename="../widgets/main_window.py" line="366"/>
         <source>Are you sure to delete selected transacion(s)?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="130"/>
+        <source>Abou&amp;t</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="220"/>
+        <source>About</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="224"/>
+        <source>&lt;p&gt;Please visit &lt;a href=&quot;https://github.com/titov-vv/jal&quot;&gt;Github home page&lt;/a&gt; for more information&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1769,37 +1784,37 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="1001"/>
+        <location filename="../data_import/statements.py" line="995"/>
         <source>Dividend not found for withholding tax: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="1013"/>
+        <location filename="../data_import/statements.py" line="1031"/>
         <source>Can&apos;t read statement file</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="1022"/>
+        <location filename="../data_import/statements.py" line="1040"/>
         <source>Can&apos;t get account number from the statement.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="1025"/>
+        <location filename="../data_import/statements.py" line="1043"/>
         <source>Account with number </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="1025"/>
+        <location filename="../data_import/statements.py" line="1043"/>
         <source> not found. Import cancelled.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="1037"/>
+        <location filename="../data_import/statements.py" line="1055"/>
         <source>Unknown operation type </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="1041"/>
+        <location filename="../data_import/statements.py" line="1059"/>
         <source>Unknown asset </source>
         <translation></translation>
     </message>
@@ -2036,6 +2051,11 @@ do you want to save it?</source>
     <message>
         <location filename="../data_import/statements.py" line="553"/>
         <source>Asset type isn&apos;t supported for trade: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statements.py" line="1017"/>
+        <source>Multiple dividends match withholding tax</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -6,6 +6,7 @@ from PySide2.QtCore import Qt, Slot, QDateTime, QDir, QLocale
 from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox, QLabel, QActionGroup, QAction
 
+from jal import __version__
 from jal.ui.ui_main_window import Ui_LedgerMainWindow
 from jal.ui.ui_abort_window import Ui_AbortWindow
 from jal.ui_custom.helpers import g_tr, ManipulateDate, dependency_present
@@ -126,6 +127,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.contextMenu.addAction(self.actionCopy)
         self.contextMenu.addAction(self.actionDelete)
 
+        self.actionAbout = QAction(text=g_tr('MainWindow', "Abou&t"), parent=self)
+        self.MainMenu.addAction(self.actionAbout)
+        self.actionAbout.triggered.connect(self.showAboutWindow)
+
         self.langGroup = QActionGroup(self.menuLanguage)
         self.createLanguageMenu()
         self.langGroup.triggered.connect(self.onLanguageChanged)
@@ -207,6 +212,19 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                                            "Application will be terminated now"),
                                       QMessageBox.Ok)
             self.close()
+
+    @Slot()
+    def showAboutWindow(self):
+        about_box = QMessageBox(self)
+        about_box.setAttribute(Qt.WA_DeleteOnClose)
+        about_box.setWindowTitle(g_tr('MainWindow', "About"))
+        title = g_tr('MainWindow',
+                     "<h3>JAL</h3><p>Just Another Ledger, version {version}</p>".format(version=__version__))
+        about_box.setText(title)
+        about = g_tr('MainWindow', "<p>Please visit <a href=\"https://github.com/titov-vv/jal\">"
+                                   "Github home page</a> for more information</p>")
+        about_box.setInformativeText(about)
+        about_box.show()
 
     @Slot()
     def OnBalanceDoubleClick(self, index):
