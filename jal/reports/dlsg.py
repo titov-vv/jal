@@ -183,7 +183,8 @@ class DLSG:
         'gb': '826',
         'de': '276',
         'cn': '156',
-        'fi': '246'
+        'fi': '246',
+        'nl': '528'
     }
 
     def __init__(self, only_dividends=False):
