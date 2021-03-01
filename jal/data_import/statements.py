@@ -374,9 +374,16 @@ class StatementLoader(QObject):
                             g_tr('StatementLoader', "Symbol updated for ISIN ") + f"{isin}: {db_symbol} -> {symbol}")
                 return asset_id
         asset_id = readSQL(self.db, "SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)])
-        if not dialog_new:
-            return asset_id
-        if asset_id is None:
+        if asset_id is not None:
+            # Check why symbol was not found by ISIN
+            db_isin = readSQL(self.db, "SELECT isin FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
+            if db_isin == '':  # Update ISIN if it was absent in DB
+                _ = executeSQL(self.db, "UPDATE assets SET isin=:isin WHERE id=:asset_id",
+                               [(":isin", isin), (":asset_id", asset_id)])
+                logging.info(g_tr('StatementLoader', "ISIN updated for ") + f"{symbol}: {isin}")
+            else:
+                logging.warning(g_tr('StatementLoader', "ISIN mismatch for ") + f"{symbol}: {isin} != {db_isin}")
+        elif dialog_new:
             dialog = AddAssetDialog(self.parent, self.db, symbol)
             dialog.exec_()
             asset_id = dialog.asset_id
