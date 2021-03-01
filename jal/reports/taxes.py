@@ -491,7 +491,7 @@ class TaxesRus:
                            "LEFT JOIN t_last_dates AS ldcs ON c.settlement=ldcs.ref_id "
                            "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
                            "WHERE c.timestamp>=:begin AND c.timestamp<:end AND d.account_id=:account_id "
-                           "AND s.type_id = :stock OR s.type_id = :fund "
+                           "AND (s.type_id = :stock OR s.type_id = :fund) "
                            "ORDER BY o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
                             (":stock", PredefinedAsset.Stock), (":fund", PredefinedAsset.ETF)])
