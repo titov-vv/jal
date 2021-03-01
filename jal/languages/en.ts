@@ -1,24 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS><TS version="2.0" language="en" sourcelanguage="en">
 <context>
-    <name>AbortWindow</name>
-    <message>
-        <location filename="../ui/ui_abort_window.py" line="58"/>
-        <source>Ledger: Start-up aborted</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/ui_abort_window.py" line="59"/>
-        <source>TextLabel</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/ui_abort_window.py" line="60"/>
-        <source>Close</source>
-        <translation></translation>
-    </message>
-</context>
-<context>
     <name>AbstractOperationDetails</name>
     <message>
         <location filename="../ui_custom/abstract_operation_details.py" line="77"/>
@@ -843,7 +825,7 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="307"/>
+        <location filename="../widgets/main_window.py" line="294"/>
         <source>Estimate Russian Tax</source>
         <translation></translation>
     </message>
@@ -1242,84 +1224,84 @@ Application will be terminated now</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="280"/>
+        <location filename="../widgets/main_window.py" line="267"/>
         <source>Quotes download completed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="285"/>
+        <location filename="../widgets/main_window.py" line="272"/>
         <source>Statement load completed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="291"/>
+        <location filename="../widgets/main_window.py" line="278"/>
         <source>Statement load failed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="208"/>
+        <location filename="../widgets/main_window.py" line="195"/>
         <source>Restart required</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="208"/>
+        <location filename="../widgets/main_window.py" line="195"/>
         <source>Language was changed to </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="208"/>
+        <location filename="../widgets/main_window.py" line="195"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="119"/>
+        <location filename="../widgets/main_window.py" line="106"/>
         <source>Reconcile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="121"/>
+        <location filename="../widgets/main_window.py" line="108"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="123"/>
+        <location filename="../widgets/main_window.py" line="110"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="339"/>
+        <location filename="../widgets/main_window.py" line="326"/>
         <source>You have unsaved changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="339"/>
+        <location filename="../widgets/main_window.py" line="326"/>
         <source> has uncommitted changes,
 do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="366"/>
+        <location filename="../widgets/main_window.py" line="353"/>
         <source>Confirmation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="366"/>
+        <location filename="../widgets/main_window.py" line="353"/>
         <source>Are you sure to delete selected transacion(s)?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="130"/>
+        <location filename="../widgets/main_window.py" line="117"/>
         <source>Abou&amp;t</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="220"/>
+        <location filename="../widgets/main_window.py" line="207"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="224"/>
+        <location filename="../widgets/main_window.py" line="211"/>
         <source>&lt;p&gt;Please visit &lt;a href=&quot;https://github.com/titov-vv/jal&quot;&gt;Github home page&lt;/a&gt; for more information&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>

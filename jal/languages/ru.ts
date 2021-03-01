@@ -2,24 +2,6 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="ru" sourcelanguage="en">
 <context>
-    <name>AbortWindow</name>
-    <message>
-        <location filename="../ui/ui_abort_window.py" line="58"/>
-        <source>Ledger: Start-up aborted</source>
-        <translation>Ledger: Запуск прерван</translation>
-    </message>
-    <message>
-        <location filename="../ui/ui_abort_window.py" line="59"/>
-        <source>TextLabel</source>
-        <translation>Соощение</translation>
-    </message>
-    <message>
-        <location filename="../ui/ui_abort_window.py" line="60"/>
-        <source>Close</source>
-        <translation>Закрыть</translation>
-    </message>
-</context>
-<context>
     <name>AbstractOperationDetails</name>
     <message>
         <location filename="../ui_custom/abstract_operation_details.py" line="77"/>
@@ -846,7 +828,7 @@ Application will be terminated now</source>
         <translation>Количество акций недостаточно для обработки корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="307"/>
+        <location filename="../widgets/main_window.py" line="294"/>
         <source>Estimate Russian Tax</source>
         <translation>Оценить налог для РФ</translation>
     </message>
@@ -1245,86 +1227,86 @@ Application will be terminated now</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="280"/>
+        <location filename="../widgets/main_window.py" line="267"/>
         <source>Quotes download completed</source>
         <translation>Загрузка котировок завершена</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="285"/>
+        <location filename="../widgets/main_window.py" line="272"/>
         <source>Statement load completed</source>
         <translation>Загрузка отчета завершена успешно</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="291"/>
+        <location filename="../widgets/main_window.py" line="278"/>
         <source>Statement load failed</source>
         <translation>Загрузка отчета неуспешна</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="208"/>
+        <location filename="../widgets/main_window.py" line="195"/>
         <source>Restart required</source>
         <translation>Требуется рестарт</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="208"/>
+        <location filename="../widgets/main_window.py" line="195"/>
         <source>Language was changed to </source>
         <translation>Язык был изменён на </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="208"/>
+        <location filename="../widgets/main_window.py" line="195"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation>Вы должны перезапустить приложение, чтобы применить изменения
 Приложение сейчас завершит свою работу</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="119"/>
+        <location filename="../widgets/main_window.py" line="106"/>
         <source>Reconcile</source>
         <translation>Сверить</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="121"/>
+        <location filename="../widgets/main_window.py" line="108"/>
         <source>Copy</source>
         <translation>Копировать</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="123"/>
+        <location filename="../widgets/main_window.py" line="110"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="339"/>
+        <location filename="../widgets/main_window.py" line="326"/>
         <source>You have unsaved changes</source>
         <translation>Есть несохранённые изменения</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="339"/>
+        <location filename="../widgets/main_window.py" line="326"/>
         <source> has uncommitted changes,
 do you want to save it?</source>
         <translation> имеет несохранённые изменения,
 Вы хотите их сохранить?</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="366"/>
+        <location filename="../widgets/main_window.py" line="353"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="366"/>
+        <location filename="../widgets/main_window.py" line="353"/>
         <source>Are you sure to delete selected transacion(s)?</source>
         <translation>Вы уверены что ходите удалить выбранную(-ые) транзацию(-и)?</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="130"/>
+        <location filename="../widgets/main_window.py" line="117"/>
         <source>Abou&amp;t</source>
         <translation>&amp;О программе</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="220"/>
+        <location filename="../widgets/main_window.py" line="207"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="224"/>
+        <location filename="../widgets/main_window.py" line="211"/>
         <source>&lt;p&gt;Please visit &lt;a href=&quot;https://github.com/titov-vv/jal&quot;&gt;Github home page&lt;/a&gt; for more information&lt;/p&gt;</source>
         <translation>&lt;p&gt;Посетите &lt;a href=\&quot;https://github.com/titov_vv/jal\&quot;&gt;домашнюю страницу на Github&lt;/a&gt; если вам нужно больше информации&lt;/p&gt;</translation>
     </message>
