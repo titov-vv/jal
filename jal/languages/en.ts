@@ -2419,22 +2419,22 @@ do you want to save it?</source>
 <context>
     <name>TaxesRus</name>
     <message>
-        <location filename="../reports/taxes.py" line="290"/>
+        <location filename="../reports/taxes.py" line="291"/>
         <source>Can&apos;t open tax form file </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="308"/>
+        <location filename="../reports/taxes.py" line="309"/>
         <source>Can&apos;t write tax form into file </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="455"/>
+        <location filename="../reports/taxes.py" line="456"/>
         <source>Account country will be used for 3-NDFL update as country is not set for asset </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="310"/>
+        <location filename="../reports/taxes.py" line="311"/>
         <source>Tax report saved to file </source>
         <translation type="unfinished"></translation>
     </message>

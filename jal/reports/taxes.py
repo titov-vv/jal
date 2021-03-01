@@ -147,7 +147,7 @@ class TaxesRus:
                           1: ("ISIN", 11, ("isin", "text", 0, 0, 1), None, "Международный идентификационный код ценной бумаги"),
                           2: ("Кол-во", 8, ("qty", "number", 0, 0, 1), None, "Количество ЦБ в сделке"),
                           3: ("Тип операции", 8, ("o_type", "text"), ("c_type", "text"), "Направление сделки (покупка или продажа)"),
-                          4: ("Дата операции", 10, ("o_date", "date"), ("c_date", "date"), "Дата заключения сделки (и уплаты комиссии из столбца 11)"),
+                          4: ("Дата операции", 10, ("o_date", "date"), ("c_date", "date"), "Дата заключения сделки (и уплаты комиссии из столбца 13)"),
                           5: ("Номер операции", 10, ("o_number", "text"), ("c_number", "text"), "Номер операции в торговой системе"),
                           6: ("Курс {currency}/RUB на дату операции", 9, ("o_rate", "number", 4), ("c_rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату заключения сделки"),
                           7: ("Дата расчётов", 10, ("os_date", "date"), ("cs_date", "date"), "Дата рачетов по сделке / Дата поставки ценных бумаг"),
@@ -171,7 +171,7 @@ class TaxesRus:
                               2: ("Кол-во", 8, ("qty", "number", 0, 0, 1), None, ("empty", "text"), "Количество ЦБ в сделке"),
                               3: ("Номинал, {currency}", 7, ("principal", "number", 0, 0, 1), None, ("empty", "text"), "Номинал облигации"),
                               4: ("Тип операции", 8, ("o_type", "text"), ("c_type", "text"), ("type", "text"), "Направление сделки (покупка или продажа)"),
-                              5: ("Дата операции", 10, ("o_date", "date"), ("c_date", "date"), ("o_date", "date"), "Дата заключения сделки, уплаты комиссии(11) и НКД(13)"),
+                              5: ("Дата операции", 10, ("o_date", "date"), ("c_date", "date"), ("o_date", "date"), "Дата заключения сделки, уплаты комиссии(столбец 16) и НКД(столбец 14)"),
                               6: ("Номер операции", 10, ("o_number", "text"), ("c_number", "text"), ("number", "text"), "Номер операции в торговой системе"),
                               7: ("Курс {currency}/RUB на дату операции", 9, ("o_rate", "number", 4), ("c_rate", "number", 4), ("rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату заключения сделки"),
                               8: ("Дата расчётов", 10, ("os_date", "date"), ("cs_date", "date"), ("empty", "text"), "Дата рачетов по сделке / Дата поставки ценных бумаг"),
@@ -195,7 +195,7 @@ class TaxesRus:
                         0: ("Ценная бумага", 8, ("symbol", "text", 0, 0, 1), None, "Краткое наименование контракта"),
                         1: ("Кол-во", 8, ("qty", "number", 0, 0, 1), None, "Количество ЦБ в сделке"),
                         2: ("Тип операции", 8, ("o_type", "text"), ("c_type", "text"), "Направление сделки (покупка или продажа)"),
-                        3: ("Дата операции", 10, ("o_date", "date"), ("c_date", "date"), "Дата заключения сделки (и уплаты комиссии из столбца 11)"),
+                        3: ("Дата операции", 10, ("o_date", "date"), ("c_date", "date"), "Дата заключения сделки (и уплаты комиссии из столбца 12)"),
                         4: ("Номер операции", 10, ("o_number", "text"), ("c_number", "text"), "Номер операции в торговой системе"),
                         5: ("Курс {currency}/RUB на дату операции", 9, ("o_rate", "number", 4), ("c_rate", "number", 4), "Официальный курс валюты, установленный ЦБ РФ на дату заключения сделки"),
                         6: ("Дата расчётов", 10, ("os_date", "date"), ("cs_date", "date"), "Дата рачетов по сделке"),
@@ -216,21 +216,22 @@ class TaxesRus:
                              "с предшествовавшими корпоративными событиями",
                              {
                                  0: ("Тип операции", 20, ("operation", "text"), ("operation", "text"), "Описание типа операции"),
-                                 1: ("Дата операции", 10, ("t_date", "date"), ("action_date", "date"), "Дата совершения операции (и уплаты комиссии из столбца 11)"),
+                                 1: ("Дата операции", 10, ("t_date", "date"), ("action_date", "date"), "Дата совершения операции (и уплаты комиссии из столбца 13)"),
                                  2: ("Номер операции", 10, ("trade_number", "text"), ("action_number", "text"), "Номер операции в торговой системе"),
-                                 3: ("Ценная бумага", 8, ("symbol", "text"), ("description", "text", 0, 12, 0), "Краткое наименование ценной бумаги"),
-                                 4: ("Кол-во", 8, ("qty", "number", 4), None, "Количество ЦБ в сделке"),
-                                 5: ("Курс {currency}/RUB на дату операции", 9, ("t_rate", "number", 4), None, "Официальный курс валюты, установленный ЦБ РФ на дату операции"),
-                                 6: ("Дата расчётов", 10, ("s_date", "date"), None, "Дата рачетов по сделке / Дата поставки ценных бумаг"),
-                                 7: ("Курс {currency}/RUB на дату расчётов", 9, ("s_rate", "number", 4), None, "Официальный курс валюты, установленный ЦБ РФ на дату расчётов по операции"),
-                                 8: ("Цена, {currency}", 12, ("price", "number", 6), None, "Цена одной ценной бумаги в валюте счета"),
-                                 9: ("Сумма сделки, {currency}", 12, ("amount", "number", 2), None, "Сумма сделки в валюте счета (= Столбец 5 * Столбец 9)"),
-                                 10: ("Сумма сделки, RUB", 12, ("amount_rub", "number", 2), None, "Сумма сделки в рублях (= Столбец 10 * Столбец 7)"),
-                                 11: ("Комиссия, {currency}", 12, ("fee", "number", 6), None, "Комиссия брокера за совершение сделки в валюте счета"),
-                                 12: ("Комиссия, RUB", 9, ("fee_rub", "number", 2), None, "Комиссия брокера за совершение сделки в рублях ( = Столбец 12 * Столбец 6)"),
-                                 13: ("Доля к учёту, %", 9, ("basis_ratio", "number", 2), None, "Доля затрат к учёту при корпоративном собыии"),
-                                 14: ("Доход, RUB (код 1530)", 12, ("income_rub", "number", 2), None, "Доход, полученных от продажи ценных бумаг"),
-                                 15: ("Расход, RUB (код 201)", 12, ("spending_rub", "number", 2), None, "Расходы, понесённые на покупку ценных бумаг и уплату комиссий"),
+                                 3: ("Ценная бумага", 8, ("symbol", "text"), ("description", "text", 0, 13, 0), "Краткое наименование ценной бумаги"),
+                                 4: ("ISIN", 11, ("isin", "text"), None, "Международный идентификационный код ценной бумаги"),
+                                 5: ("Кол-во", 8, ("qty", "number", 4), None, "Количество ЦБ в сделке"),
+                                 6: ("Курс {currency}/RUB на дату операции", 9, ("t_rate", "number", 4), None, "Официальный курс валюты, установленный ЦБ РФ на дату операции"),
+                                 7: ("Дата расчётов", 10, ("s_date", "date"), None, "Дата рачетов по сделке / Дата поставки ценных бумаг"),
+                                 8: ("Курс {currency}/RUB на дату расчётов", 9, ("s_rate", "number", 4), None, "Официальный курс валюты, установленный ЦБ РФ на дату расчётов по операции"),
+                                 9: ("Цена, {currency}", 12, ("price", "number", 6), None, "Цена одной ценной бумаги в валюте счета"),
+                                 10: ("Сумма сделки, {currency}", 12, ("amount", "number", 2), None, "Сумма сделки в валюте счета (= Столбец 6 * Столбец 10)"),
+                                 11: ("Сумма сделки, RUB", 12, ("amount_rub", "number", 2), None, "Сумма сделки в рублях (= Столбец 11 * Столбец 8)"),
+                                 12: ("Комиссия, {currency}", 12, ("fee", "number", 6), None, "Комиссия брокера за совершение сделки в валюте счета"),
+                                 13: ("Комиссия, RUB", 9, ("fee_rub", "number", 2), None, "Комиссия брокера за совершение сделки в рублях ( = Столбец 13 * Столбец 7)"),
+                                 14: ("Доля к учёту, %", 9, ("basis_ratio", "number", 2), None, "Доля затрат к учёту при корпоративном собыии"),
+                                 15: ("Доход, RUB (код 1530)", 12, ("income_rub", "number", 2), None, "Доход, полученных от продажи ценных бумаг"),
+                                 16: ("Расход, RUB (код 201)", 12, ("spending_rub", "number", 2), None, "Расходы, понесённые на покупку ценных бумаг и уплату комиссий"),
                              }
                              ),
             "Комиссии": (self.prepare_broker_fees,
@@ -769,7 +770,7 @@ class TaxesRus:
         query = executeSQL(self.db,
                            "SELECT d.open_sid AS sid, s.name AS symbol, d.qty AS qty, t.number AS trade_number, "
                            "t.timestamp AS t_date, qt.quote AS t_rate, t.settlement AS s_date, qts.quote AS s_rate, "
-                           "t.price AS price, t.fee AS fee, s.full_name AS full_name "
+                           "t.price AS price, t.fee AS fee, s.full_name AS full_name, s.isin AS isin "
                            "FROM deals AS d "
                            "JOIN sequence AS os ON os.id=d.open_sid AND os.type = 5 "
                            "JOIN sequence AS cs ON cs.id=d.close_sid AND cs.type = 3 "
@@ -793,10 +794,11 @@ class TaxesRus:
             if previous_symbol != sale['symbol']:
                 # Clean processed qty records if symbol have changed
                 _ = executeSQL(self.db, "DELETE FROM t_last_assets")
-                self.current_sheet.write(row, 0, f"Сделки по бумаге: {sale['symbol']} - {sale['full_name']}",
-                                         self.reports_xls.formats.Bold())
-                previous_symbol = sale['symbol']
-                row += 1
+                if sale["t_date"] >= self.year_begin:  # Don't put sub-header of operation is out of scope
+                    self.current_sheet.write(row, 0, f"Сделки по бумаге: {sale['symbol']} - {sale['full_name']}",
+                                             self.reports_xls.formats.Bold())
+                    previous_symbol = sale['symbol']
+                    row += 1
             sale['operation'] = "Продажа"
             sale['basis_ratio'] = 100.0 * basis
             sale['amount'] = round(sale['price'] * sale['qty'], 2)
@@ -817,7 +819,7 @@ class TaxesRus:
                 self.add_report_row(row, sale, even_odd=even_odd)
                 row += 1
                 row = self.proceed_corporate_action(sale['sid'], sale['symbol'], sale['qty'], basis, 1, row, even_odd)
-                self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [13, 14, 15])
+                self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [14, 15, 16])
                 row += 1
 
             even_odd = even_odd + 1
@@ -853,7 +855,8 @@ class TaxesRus:
             return row, proceed_qty
 
         purchase = readSQL(self.db,
-                           "SELECT t.id AS trade_id, s.name AS symbol, coalesce(d.qty-SUM(lq.total_value), d.qty) AS qty, "
+                           "SELECT t.id AS trade_id, s.name AS symbol, s.isin AS isin, "
+                           "coalesce(d.qty-SUM(lq.total_value), d.qty) AS qty, "
                            "t.timestamp AS t_date, qt.quote AS t_rate, t.number AS trade_number, "
                            "t.settlement AS s_date, qts.quote AS s_rate, t.price AS price, t.fee AS fee "
                            "FROM sequence AS os "
@@ -894,8 +897,9 @@ class TaxesRus:
             return row, proceed_qty
 
         action = readSQL(self.db, "SELECT a.timestamp AS action_date, a.number AS action_number, a.type, "
-                                  "s1.name AS symbol, a.qty AS qty, "
-                                  "s2.name AS symbol_new, a.qty_new AS qty_new, a.note AS note, a.basis_ratio "
+                                  "s1.name AS symbol, s1.isin AS isin, a.qty AS qty, "
+                                  "s2.name AS symbol_new, s2.isin AS isin_new, a.qty_new AS qty_new, "
+                                  "a.note AS note, a.basis_ratio "
                                   "FROM sequence AS os "
                                   "LEFT JOIN corp_actions AS a ON os.operation_id=a.id "
                                   "LEFT JOIN assets AS s1 ON a.asset_id=s1.id "
@@ -903,9 +907,10 @@ class TaxesRus:
                                   "WHERE os.id = :open_sid ",
                          [(":open_sid", sid)], named=True)
         action['operation'] = ' ' * level * 3 + "Корп. действие"
+        old_asset = f"{action['symbol']} ({action['isin']})"
+        new_asset = f"{action['symbol_new']} ({action['isin_new']})"
         if action['type'] == CorporateAction.SpinOff:
-            action['description'] = self.CorpActionText[action['type']].format(old=action['symbol'],
-                                                                               new=action['symbol_new'],
+            action['description'] = self.CorpActionText[action['type']].format(old=old_asset, new=new_asset,
                                                                                before=action['qty'],
                                                                                after=action['qty_new'],
                                                                                ratio=100.0 * action['basis_ratio'])
@@ -918,13 +923,11 @@ class TaxesRus:
         elif action['type'] == CorporateAction.StockDividend:
             qty_before = action['qty'] * proceed_qty / action['qty_new']
             qty_after = proceed_qty - qty_before
-            action['description'] = self.CorpActionText[action['type']].format(new=action['symbol_new'],
-                                                                               after=qty_after)
+            action['description'] = self.CorpActionText[action['type']].format(new=new_asset, after=qty_after)
         else:
             qty_before = action['qty'] * proceed_qty / action['qty_new']
             qty_after = proceed_qty
-            action['description'] = self.CorpActionText[action['type']].format(old=action['symbol'],
-                                                                               new=action['symbol_new'],
+            action['description'] = self.CorpActionText[action['type']].format(old=old_asset, new=new_asset,
                                                                                before=qty_before, after=qty_after)
         if level >= 0:  # Don't output if level==-1, i.e. corp action is out of report scope
             self.add_report_row(row, action, even_odd=even_odd, alternative=1)

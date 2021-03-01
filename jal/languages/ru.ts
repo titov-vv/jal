@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="ru" sourcelanguage="en">
+<!DOCTYPE TS><TS version="2.0" language="ru" sourcelanguage="en">
 <context>
     <name>AbstractOperationDetails</name>
     <message>
@@ -2424,22 +2423,22 @@ do you want to save it?</source>
 <context>
     <name>TaxesRus</name>
     <message>
-        <location filename="../reports/taxes.py" line="290"/>
+        <location filename="../reports/taxes.py" line="291"/>
         <source>Can&apos;t open tax form file </source>
         <translation>Невозможно открыть файл с декларацией 3-НДФЛ </translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="308"/>
+        <location filename="../reports/taxes.py" line="309"/>
         <source>Can&apos;t write tax form into file </source>
         <translation>Невозможно записать декларацию 3-НДФЛ в файл </translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="455"/>
+        <location filename="../reports/taxes.py" line="456"/>
         <source>Account country will be used for 3-NDFL update as country is not set for asset </source>
         <translation>Страна счёта будет использована для файла 3-НДФЛ, т.к. страна не укзана для ЦБ </translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="310"/>
+        <location filename="../reports/taxes.py" line="311"/>
         <source>Tax report saved to file </source>
         <translation>Налоговый отчет сохранён в файл </translation>
     </message>
