@@ -210,7 +210,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         about_box.setText(title)
         about = g_tr('MainWindow', "<p>More information, manuals and problem reports are at "
                                    "<a href=https://github.com/titov-vv/jal>github home page</a></p>"
-                                   "<p>Questions, comments, donations: <a href=mailto:jal@gmx.com>jal@gmx.ru</a></p>")
+                                   "<p>Questions, comments, donations: <a href=mailto:jal@gmx.ru>jal@gmx.ru</a></p>")
         about_box.setInformativeText(about)
         about_box.show()
 

@@ -1476,6 +1476,7 @@ INSERT INTO countries (id, name, code, tax_treaty) VALUES (14, 'Germany', 'de', 
 INSERT INTO countries (id, name, code, tax_treaty) VALUES (15, 'China', 'cn', 1);
 INSERT INTO countries (id, name, code, tax_treaty) VALUES (16, 'Netherlands', 'nl', 1);
 INSERT INTO countries (id, name, code, tax_treaty) VALUES (17, 'Greece', 'gr', 1);
+INSERT INTO countries (id, name, code, tax_treaty) VALUES (18, 'Bermuda', 'bm', 0);
 
 -- Initialize rate for base currency
 INSERT INTO quotes (id, timestamp, asset_id, quote) VALUES (1, 946684800, 1, 1.0);
