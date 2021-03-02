@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="ru" sourcelanguage="en">
+<!DOCTYPE TS>
+<TS version="2.1" language="ru" sourcelanguage="en">
 <context>
     <name>AbstractOperationDetails</name>
     <message>
@@ -259,62 +260,62 @@
         <translation>Секция DeclForeign некорректна:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="231"/>
+        <location filename="../reports/dlsg.py" line="232"/>
         <source>Currency isn&apos;t known for tax form:</source>
         <translation>Неизвестная валюта для 3-НДФЛ:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="244"/>
+        <location filename="../reports/dlsg.py" line="245"/>
         <source>Declaration file has no &apos;DeclForeign&apos; section.</source>
         <translation>Секция &apos;DeclForeign&apos; отсутствует в файле декларации.</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="259"/>
+        <location filename="../reports/dlsg.py" line="260"/>
         <source>Unexpected declaration file header:</source>
         <translation>Неизвестный заголовок файла декларации:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="262"/>
+        <location filename="../reports/dlsg.py" line="263"/>
         <source>Declaration file is for year:</source>
         <translation>Файл декларации для года:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="281"/>
+        <location filename="../reports/dlsg.py" line="282"/>
         <source>Invalid record size at position</source>
         <translation>Некорректный размер записи в позиции</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="288"/>
+        <location filename="../reports/dlsg.py" line="289"/>
         <source>Declaration file content:</source>
         <translation>Содержимое файла декларации:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="306"/>
+        <location filename="../reports/dlsg.py" line="307"/>
         <source>Sections loaded:</source>
         <translation>Загружено секций:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="308"/>
+        <location filename="../reports/dlsg.py" line="309"/>
         <source>Section </source>
         <translation>Секция </translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="308"/>
+        <location filename="../reports/dlsg.py" line="309"/>
         <source>loaded as </source>
         <translation>загружена как </translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="312"/>
+        <location filename="../reports/dlsg.py" line="313"/>
         <source>Writing file:</source>
         <translation>Запись файла:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="318"/>
+        <location filename="../reports/dlsg.py" line="319"/>
         <source>Declaration to write:</source>
         <translation>Декларация для записи:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="236"/>
+        <location filename="../reports/dlsg.py" line="237"/>
         <source>Country isn&apos;t known for tax form (check account settings):</source>
         <translation>Неизвестная страна для 3-НДФЛ (проверьте настройки счёта):</translation>
     </message>
@@ -827,7 +828,7 @@ Application will be terminated now</source>
         <translation>Количество акций недостаточно для обработки корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="294"/>
+        <location filename="../widgets/main_window.py" line="295"/>
         <source>Estimate Russian Tax</source>
         <translation>Оценить налог для РФ</translation>
     </message>
@@ -1226,17 +1227,17 @@ Application will be terminated now</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="267"/>
+        <location filename="../widgets/main_window.py" line="268"/>
         <source>Quotes download completed</source>
         <translation>Загрузка котировок завершена</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="272"/>
+        <location filename="../widgets/main_window.py" line="273"/>
         <source>Statement load completed</source>
         <translation>Загрузка отчета завершена успешно</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="278"/>
+        <location filename="../widgets/main_window.py" line="279"/>
         <source>Statement load failed</source>
         <translation>Загрузка отчета неуспешна</translation>
     </message>
@@ -1273,31 +1274,26 @@ Application will be terminated now</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="326"/>
+        <location filename="../widgets/main_window.py" line="327"/>
         <source>You have unsaved changes</source>
         <translation>Есть несохранённые изменения</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="326"/>
+        <location filename="../widgets/main_window.py" line="327"/>
         <source> has uncommitted changes,
 do you want to save it?</source>
         <translation> имеет несохранённые изменения,
 Вы хотите их сохранить?</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="353"/>
+        <location filename="../widgets/main_window.py" line="354"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="353"/>
+        <location filename="../widgets/main_window.py" line="354"/>
         <source>Are you sure to delete selected transacion(s)?</source>
         <translation>Вы уверены что ходите удалить выбранную(-ые) транзацию(-и)?</translation>
-    </message>
-    <message>
-        <location filename="../widgets/main_window.py" line="117"/>
-        <source>Abou&amp;t</source>
-        <translation>&amp;О программе</translation>
     </message>
     <message>
         <location filename="../widgets/main_window.py" line="207"/>
@@ -1306,8 +1302,8 @@ do you want to save it?</source>
     </message>
     <message>
         <location filename="../widgets/main_window.py" line="211"/>
-        <source>&lt;p&gt;Please visit &lt;a href=&quot;https://github.com/titov-vv/jal&quot;&gt;Github home page&lt;/a&gt; for more information&lt;/p&gt;</source>
-        <translation>&lt;p&gt;Посетите &lt;a href=\&quot;https://github.com/titov_vv/jal\&quot;&gt;домашнюю страницу на Github&lt;/a&gt; если вам нужно больше информации&lt;/p&gt;</translation>
+        <source>&lt;p&gt;More information, manuals and problem reports are at &lt;a href=https://github.com/titov-vv/jal&gt;github home page&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Questions, comments, donations: &lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;</source>
+        <translation>&lt;p&gt;Дополнительная информация, инструкции, сообщения о проблемах доступны на &lt;a href=https://github.com/titov-vv/jal&gt;домашней странице проекта на github&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Вопросы, пожелания, донаты: &lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
 </context>
 <context>

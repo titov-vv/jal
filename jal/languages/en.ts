@@ -259,62 +259,62 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="231"/>
+        <location filename="../reports/dlsg.py" line="232"/>
         <source>Currency isn&apos;t known for tax form:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="244"/>
+        <location filename="../reports/dlsg.py" line="245"/>
         <source>Declaration file has no &apos;DeclForeign&apos; section.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="259"/>
+        <location filename="../reports/dlsg.py" line="260"/>
         <source>Unexpected declaration file header:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="262"/>
+        <location filename="../reports/dlsg.py" line="263"/>
         <source>Declaration file is for year:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="281"/>
+        <location filename="../reports/dlsg.py" line="282"/>
         <source>Invalid record size at position</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="288"/>
+        <location filename="../reports/dlsg.py" line="289"/>
         <source>Declaration file content:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="306"/>
+        <location filename="../reports/dlsg.py" line="307"/>
         <source>Sections loaded:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="308"/>
+        <location filename="../reports/dlsg.py" line="309"/>
         <source>Section </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="308"/>
+        <location filename="../reports/dlsg.py" line="309"/>
         <source>loaded as </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="312"/>
+        <location filename="../reports/dlsg.py" line="313"/>
         <source>Writing file:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="318"/>
+        <location filename="../reports/dlsg.py" line="319"/>
         <source>Declaration to write:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="236"/>
+        <location filename="../reports/dlsg.py" line="237"/>
         <source>Country isn&apos;t known for tax form (check account settings):</source>
         <translation></translation>
     </message>
@@ -825,7 +825,7 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="294"/>
+        <location filename="../widgets/main_window.py" line="295"/>
         <source>Estimate Russian Tax</source>
         <translation></translation>
     </message>
@@ -1224,17 +1224,17 @@ Application will be terminated now</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="267"/>
+        <location filename="../widgets/main_window.py" line="268"/>
         <source>Quotes download completed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="272"/>
+        <location filename="../widgets/main_window.py" line="273"/>
         <source>Statement load completed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="278"/>
+        <location filename="../widgets/main_window.py" line="279"/>
         <source>Statement load failed</source>
         <translation></translation>
     </message>
@@ -1270,29 +1270,24 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="326"/>
+        <location filename="../widgets/main_window.py" line="327"/>
         <source>You have unsaved changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="326"/>
+        <location filename="../widgets/main_window.py" line="327"/>
         <source> has uncommitted changes,
 do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="353"/>
+        <location filename="../widgets/main_window.py" line="354"/>
         <source>Confirmation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="353"/>
+        <location filename="../widgets/main_window.py" line="354"/>
         <source>Are you sure to delete selected transacion(s)?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/main_window.py" line="117"/>
-        <source>Abou&amp;t</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1302,7 +1297,7 @@ do you want to save it?</source>
     </message>
     <message>
         <location filename="../widgets/main_window.py" line="211"/>
-        <source>&lt;p&gt;Please visit &lt;a href=&quot;https://github.com/titov-vv/jal&quot;&gt;Github home page&lt;/a&gt; for more information&lt;/p&gt;</source>
+        <source>&lt;p&gt;More information, manuals and problem reports are at &lt;a href=https://github.com/titov-vv/jal&gt;github home page&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Questions, comments, donations: &lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
