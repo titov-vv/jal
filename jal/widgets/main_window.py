@@ -114,7 +114,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.contextMenu.addAction(self.actionCopy)
         self.contextMenu.addAction(self.actionDelete)
 
-        self.actionAbout = QAction(text=g_tr('MainWindow', "Abou&t"), parent=self)
+        self.actionAbout = QAction(text=g_tr('MainWindow', "About"), parent=self)
         self.MainMenu.addAction(self.actionAbout)
         self.actionAbout.triggered.connect(self.showAboutWindow)
 
@@ -208,8 +208,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         title = g_tr('MainWindow',
                      "<h3>JAL</h3><p>Just Another Ledger, version {version}</p>".format(version=__version__))
         about_box.setText(title)
-        about = g_tr('MainWindow', "<p>Please visit <a href=\"https://github.com/titov-vv/jal\">"
-                                   "Github home page</a> for more information</p>")
+        about = g_tr('MainWindow', "<p>More information, manuals and problem reports are at "
+                                   "<a href=https://github.com/titov-vv/jal>github home page</a></p>"
+                                   "<p>Questions, comments, donations: <a href=mailto:jal@gmx.com>jal@gmx.ru</a></p>")
         about_box.setInformativeText(about)
         about_box.show()
 
