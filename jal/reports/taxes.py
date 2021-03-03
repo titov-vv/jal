@@ -493,7 +493,7 @@ class TaxesRus:
                            "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
                            "WHERE c.timestamp>=:begin AND c.timestamp<:end AND d.account_id=:account_id "
                            "AND (s.type_id = :stock OR s.type_id = :fund) "
-                           "ORDER BY o.timestamp, c.timestamp",
+                           "ORDER BY s.name, o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
                             (":stock", PredefinedAsset.Stock), (":fund", PredefinedAsset.ETF)])
         start_row = self.data_start_row
@@ -565,7 +565,7 @@ class TaxesRus:
                            "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
                            "WHERE c.timestamp>=:begin AND c.timestamp<:end AND d.account_id=:account_id "
                            "AND s.type_id = :bond "
-                           "ORDER BY o.timestamp, c.timestamp",
+                           "ORDER BY s.name, o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
                             (":bond", PredefinedAsset.Bond)])
         start_row = self.data_start_row
@@ -675,7 +675,7 @@ class TaxesRus:
                            "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
                            "WHERE c.timestamp>=:begin AND c.timestamp<:end AND d.account_id=:account_id "
                            "AND s.type_id == 6 "  # To select only derivatives
-                           "ORDER BY o.timestamp, c.timestamp",
+                           "ORDER BY s.name, o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id)])
         start_row = self.data_start_row
         data_row = 0
@@ -737,7 +737,7 @@ class TaxesRus:
             fee['amount_rub'] = round(fee['amount'] * fee['rate'], 2) if fee['rate'] else 0
             self.add_report_row(row, fee, even_odd=row)
             row += 1
-        self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [3, 4])
+        self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [0, 1, 4])
         return row + 1
 
     # -----------------------------------------------------------------------------------------------------------------------
@@ -761,7 +761,7 @@ class TaxesRus:
             interest['tax_rub'] = round(0.13 * interest['amount_rub'], 2)
             self.add_report_row(row, interest, even_odd=row)
             row += 1
-        self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [3, 4, 5])
+        self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [0, 1, 4, 5])
         return row + 1
 
     # -----------------------------------------------------------------------------------------------------------------------
