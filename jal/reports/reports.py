@@ -187,7 +187,7 @@ class Reports(QObject):
              (":begin", begin), (":end", end)], commit=True)
         self.query = executeSQL("SELECT c.id AS id, c.level AS level, c.path AS category, "
                                 "strftime('%Y', datetime(p.row_key, 'unixepoch')) AS year, "
-                                "strftime('%m', datetime(p.row_key, 'unixepoch')) AS month, p.value AS value"
+                                "strftime('%m', datetime(p.row_key, 'unixepoch')) AS month, p.value AS value "
                                 "FROM categories_tree AS c "
                                 "LEFT JOIN t_pivot AS p ON p.col_key=c.id "
                                 "ORDER BY c.path, year, month")
