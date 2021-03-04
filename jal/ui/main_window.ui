@@ -152,7 +152,7 @@
                    <second>0</second>
                    <year>2020</year>
                    <month>12</month>
-                   <day>14</day>
+                   <day>13</day>
                   </datetime>
                  </property>
                  <property name="displayFormat">
@@ -180,14 +180,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="ComboBoxDB" name="BalancesCurrencyCombo">
-                 <property name="table_name" stdset="0">
-                  <string notr="true">currencies</string>
-                 </property>
-                 <property name="field_name" stdset="0">
-                  <string notr="true">name</string>
-                 </property>
-                </widget>
+                <widget class="CurrencyComboBox" name="BalancesCurrencyCombo"/>
                </item>
                <item>
                 <widget class="QCheckBox" name="ShowInactiveCheckBox">
@@ -583,7 +576,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>14</day>
+               <day>13</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -605,14 +598,7 @@
             </widget>
            </item>
            <item>
-            <widget class="ComboBoxDB" name="HoldingsCurrencyCombo">
-             <property name="table_name" stdset="0">
-              <string notr="true">currencies</string>
-             </property>
-             <property name="field_name" stdset="0">
-              <string notr="true">name</string>
-             </property>
-            </widget>
+            <widget class="CurrencyComboBox" name="HoldingsCurrencyCombo"/>
            </item>
            <item>
             <spacer name="horizontalSpacer_3">
@@ -728,7 +714,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>14</day>
+               <day>13</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -875,7 +861,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>14</day>
+               <day>13</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -1137,7 +1123,7 @@
    <header>jal/ui_custom/log_viewer.h</header>
   </customwidget>
   <customwidget>
-   <class>ComboBoxDB</class>
+   <class>CurrencyComboBox</class>
    <extends>QComboBox</extends>
    <header>jal/ui_custom/account_select.h</header>
   </customwidget>

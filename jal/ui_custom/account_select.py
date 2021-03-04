@@ -2,8 +2,7 @@ from PySide2.QtCore import Qt, Signal, Slot, Property
 from PySide2.QtWidgets import QPushButton, QComboBox, QMenu
 from PySide2.QtSql import QSqlTableModel
 from jal.ui_custom.helpers import g_tr
-from jal.db.helpers import  get_account_name, get_field_by_id_from_table
-
+from jal.db.helpers import db_connection, get_account_name, get_field_by_id_from_table
 from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
     ReferenceLookupDelegate, ReferenceTimestampDelegate
 
@@ -72,16 +71,22 @@ class AccountButton(QPushButton):
         self.account_id = 0
 
 
-class ComboBoxDB(QComboBox):
+class CurrencyComboBox(QComboBox):
     changed = Signal(int)
 
     def __init__(self, parent):
         QComboBox.__init__(self, parent)
         self.p_selected_id = 0
         self.model = None
-        self.table_name = ''
-        self.field_name = ''
+        self.table_name = 'currencies'
+        self.field_name = 'name'
         self.activated.connect(self.OnUserSelection)
+
+        self.model = QSqlTableModel(db=db_connection())
+        self.model.setTable(self.table_name)
+        self.model.select()
+        self.setModel(self.model)
+        self.setModelColumn(self.model.fieldIndex(self.field_name))
 
     def isCustom(self):
         return True
@@ -100,23 +105,9 @@ class ComboBoxDB(QComboBox):
 
     selected_id = Property(int, getId, setId, notify=changed, user=True)
 
-    def getName(self):
-        return self.model.record(self.currentIndex()).value(self.field_name)
-
-    selected_name = Property(str, getName, None)
-
-    def init_db(self, db, default_id=None):
-        self.table_name =  self.property('table_name')
-        self.field_name = self.property('field_name')
-
-        self.model = QSqlTableModel(db=db)
-        self.model.setTable(self.table_name)
-        self.model.select()
-        self.setModel(self.model)
-        self.setModelColumn(self.model.fieldIndex(self.field_name))
-
-        if default_id is not None:
-            self.selected_id = default_id
+    def setIndex(self, index):
+        if index is not None:
+            self.selected_id = index
             self.changed.emit(self.selected_id)
 
     @Slot()

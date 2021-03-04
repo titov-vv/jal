@@ -14,7 +14,7 @@ from PySide2.QtWidgets import *
 
 from jal.ui_custom.account_select import AccountButton
 from jal.ui_custom.log_viewer import LogViewer
-from jal.ui_custom.account_select import ComboBoxDB
+from jal.ui_custom.account_select import CurrencyComboBox
 from jal.ui_custom.reference_selector import CategorySelector
 from jal.ui_custom.dividend_widget import DividendWidget
 from jal.ui_custom.trade_widget import TradeWidget
@@ -114,7 +114,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
         self.BalanceDate = QDateEdit(self.BalanceConfigFrame)
         self.BalanceDate.setObjectName(u"BalanceDate")
-        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 14), QTime(21, 0, 0)))
+        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 13), QTime(21, 0, 0)))
         self.BalanceDate.setCalendarPopup(True)
         self.BalanceDate.setTimeSpec(Qt.UTC)
 
@@ -127,10 +127,8 @@ class Ui_LedgerMainWindow(object):
 
         self.horizontalLayout_2.addWidget(self.CurrencyLbl)
 
-        self.BalancesCurrencyCombo = ComboBoxDB(self.BalanceConfigFrame)
+        self.BalancesCurrencyCombo = CurrencyComboBox(self.BalanceConfigFrame)
         self.BalancesCurrencyCombo.setObjectName(u"BalancesCurrencyCombo")
-        self.BalancesCurrencyCombo.setProperty("table_name", u"currencies")
-        self.BalancesCurrencyCombo.setProperty("field_name", u"name")
 
         self.horizontalLayout_2.addWidget(self.BalancesCurrencyCombo)
 
@@ -334,7 +332,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_7.setContentsMargins(2, 2, 2, 2)
         self.HoldingsDate = QDateEdit(self.HoldingsParamsFrame)
         self.HoldingsDate.setObjectName(u"HoldingsDate")
-        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 14), QTime(21, 0, 0)))
+        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 13), QTime(21, 0, 0)))
         self.HoldingsDate.setCalendarPopup(True)
         self.HoldingsDate.setTimeSpec(Qt.UTC)
 
@@ -345,10 +343,8 @@ class Ui_LedgerMainWindow(object):
 
         self.horizontalLayout_7.addWidget(self.HoldingsCurrencyLbl)
 
-        self.HoldingsCurrencyCombo = ComboBoxDB(self.HoldingsParamsFrame)
+        self.HoldingsCurrencyCombo = CurrencyComboBox(self.HoldingsParamsFrame)
         self.HoldingsCurrencyCombo.setObjectName(u"HoldingsCurrencyCombo")
-        self.HoldingsCurrencyCombo.setProperty("table_name", u"currencies")
-        self.HoldingsCurrencyCombo.setProperty("field_name", u"name")
 
         self.horizontalLayout_7.addWidget(self.HoldingsCurrencyCombo)
 
@@ -403,7 +399,7 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportToDate = QDateEdit(self.ReportParamsFrame)
         self.ReportToDate.setObjectName(u"ReportToDate")
-        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 14), QTime(21, 0, 0)))
+        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 13), QTime(21, 0, 0)))
         self.ReportToDate.setCalendarPopup(True)
         self.ReportToDate.setTimeSpec(Qt.UTC)
 
@@ -479,7 +475,7 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportFromDate = QDateEdit(self.ReportParamsFrame)
         self.ReportFromDate.setObjectName(u"ReportFromDate")
-        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 14), QTime(21, 0, 0)))
+        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 13), QTime(21, 0, 0)))
         self.ReportFromDate.setCalendarPopup(True)
         self.ReportFromDate.setTimeSpec(Qt.UTC)
 

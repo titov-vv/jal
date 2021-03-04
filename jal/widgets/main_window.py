@@ -94,9 +94,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         # Setup balance and holdings parameters
         self.BalanceDate.setDateTime(QDateTime.currentDateTime())
-        self.BalancesCurrencyCombo.init_db(self.db, JalSettings().getValue('BaseCurrency'))
+        self.BalancesCurrencyCombo.setIndex(JalSettings().getValue('BaseCurrency'))
         self.HoldingsDate.setDateTime(QDateTime.currentDateTime())
-        self.HoldingsCurrencyCombo.init_db(self.db, JalSettings().getValue('BaseCurrency'))
+        self.HoldingsCurrencyCombo.setIndex(JalSettings().getValue('BaseCurrency'))
 
         # Create menu for different operations
         self.ChooseAccountBtn.init_db(self.db)
