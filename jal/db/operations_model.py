@@ -5,7 +5,7 @@ from PySide2.QtGui import QBrush, QFont
 from PySide2.QtWidgets import QStyledItemDelegate, QHeaderView
 from jal.constants import CustomColor, TransactionType, TransferSubtype, DividendSubtype, CorporateAction
 from jal.ui_custom.helpers import g_tr
-from jal.db.helpers import readSQL, executeSQL
+from jal.db.helpers import db_connection, readSQL, executeSQL
 
 
 class OperationsModel(QAbstractTableModel):
@@ -70,15 +70,14 @@ class OperationsModel(QAbstractTableModel):
         CorporateAction.StockDividend: g_tr('OperationsModel', "Stock dividend: {after} {new}")
     }
 
-    def __init__(self, parent_view, db):
+    def __init__(self, parent_view):
         super().__init__(parent_view)
         self._view = parent_view
         self._amount_delegate = None
-        self._db = db
         self._data = []
         self._row_count = 0
         self._table_name = 'all_operations'
-        self._query = QSqlQuery(self._db)
+        self._query = QSqlQuery(db_connection())
         self._begin = 0
         self._end = 0
         self._account = 0

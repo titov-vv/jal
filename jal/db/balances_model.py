@@ -19,10 +19,9 @@ class BalancesModel(QAbstractTableModel):
     COL_UNRECONCILED = 9
     COL_ACTIVE = 10
 
-    def __init__(self, parent_view, db):
+    def __init__(self, parent_view):
         super().__init__(parent_view)
         self._view = parent_view
-        self._db = db
         self._data = []
         self._currency = 0
         self._currency_name = ''

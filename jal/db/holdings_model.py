@@ -53,11 +53,10 @@ class HoldingsModel(QAbstractItemModel):
     COL_VALUE = 17
     COL_VALUE_A = 18
 
-    def __init__(self, parent_view, db):
+    def __init__(self, parent_view):
         super().__init__(parent_view)
         self._view = parent_view
         self._grid_delegate = None
-        self._db = db
         self._root = None
         self._currency = 0
         self._currency_name = ''
