@@ -39,14 +39,28 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
         self.ledger = Ledger()
         self.downloader = QuoteDownloader()
-        self.downloader.download_completed.connect(self.onQuotesDownloadCompletion)
         self.taxes = TaxesRus()
         self.statements = StatementLoader(self)
-        self.statements.load_completed.connect(self.onStatementLoaded)
         self.backup = JalBackup(self, get_dbfilename(self.own_path))
         self.estimator = None
 
         self.actionImportSlipRU.setEnabled(dependency_present(['pyzbar', 'PIL']))
+
+        self.actionAbout = QAction(text=g_tr('MainWindow', "About"), parent=self)
+        self.MainMenu.addAction(self.actionAbout)
+
+        self.langGroup = QActionGroup(self.menuLanguage)
+        self.createLanguageMenu()
+
+        # Operations view context menu
+        self.contextMenu = QMenu(self.OperationsTableView)
+        self.actionReconcile = QAction(text=g_tr('MainWindow', "Reconcile"), parent=self)
+        self.actionCopy = QAction(text=g_tr('MainWindow', "Copy"), parent=self)
+        self.actionDelete = QAction(text=g_tr('MainWindow', "Delete"), parent=self)
+        self.contextMenu.addAction(self.actionReconcile)
+        self.contextMenu.addSeparator()
+        self.contextMenu.addAction(self.actionCopy)
+        self.contextMenu.addAction(self.actionDelete)
 
         # Customize Status bar and logs
         self.NewLogEventLbl = QLabel(self)
@@ -94,33 +108,15 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.HoldingsDate.setDateTime(QDateTime.currentDateTime())
         self.HoldingsCurrencyCombo.setIndex(JalSettings().getValue('BaseCurrency'))
 
-        # Operations view context menu
-        self.contextMenu = QMenu(self.OperationsTableView)
-        self.actionReconcile = QAction(text=g_tr('MainWindow', "Reconcile"), parent=self)
-        self.actionReconcile.triggered.connect(self.reconcileAtCurrentOperation)
-        self.actionCopy = QAction(text=g_tr('MainWindow', "Copy"), parent=self)
-        self.actionCopy.triggered.connect(self.copyOperation)
-        self.actionDelete = QAction(text=g_tr('MainWindow', "Delete"), parent=self)
-        self.actionDelete.triggered.connect(self.deleteOperation)
-        self.contextMenu.addAction(self.actionReconcile)
-        self.contextMenu.addSeparator()
-        self.contextMenu.addAction(self.actionCopy)
-        self.contextMenu.addAction(self.actionDelete)
-
-        self.actionAbout = QAction(text=g_tr('MainWindow', "About"), parent=self)
-        self.MainMenu.addAction(self.actionAbout)
-        self.actionAbout.triggered.connect(self.showAboutWindow)
-
-        self.langGroup = QActionGroup(self.menuLanguage)
-        self.createLanguageMenu()
-        self.langGroup.triggered.connect(self.onLanguageChanged)
-
         self.OperationsTabs.setCurrentIndex(TransactionType.NA)
         self.OperationsTableView.selectRow(0)
         self.OnOperationsRangeChange(0)
 
     def connect_signals_and_slots(self):
         self.actionExit.triggered.connect(QApplication.instance().quit)
+        self.actionAbout.triggered.connect(self.showAboutWindow)
+        self.langGroup.triggered.connect(self.onLanguageChanged)
+        self.actionReconcile.triggered.connect(self.reconcileAtCurrentOperation)
         self.action_Load_quotes.triggered.connect(partial(self.downloader.showQuoteDownloadDialog, self))
         self.actionImportStatement.triggered.connect(self.statements.loadReport)
         self.actionImportSlipRU.triggered.connect(self.importSlip)
@@ -152,7 +148,11 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
         self.OperationsTableView.customContextMenuRequested.connect(self.onOperationContextMenu)
         self.DeleteOperationBtn.clicked.connect(self.deleteOperation)
+        self.actionDelete.triggered.connect(self.deleteOperation)
         self.CopyOperationBtn.clicked.connect(self.copyOperation)
+        self.actionCopy.triggered.connect(self.copyOperation)
+        self.downloader.download_completed.connect(self.onQuotesDownloadCompletion)
+        self.statements.load_completed.connect(self.onStatementLoaded)
 
     @Slot()
     def closeEvent(self, event):
