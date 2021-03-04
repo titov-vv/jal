@@ -37,6 +37,23 @@ class AccountsListDialog(ReferenceDataDialog):
                                                 ("currency_id", "currencies", "id", "name", None),
                                                 ("organization_id", "agents", "id", "name", None)])
 
+# ----------------------------------------------------------------------------------------------------------------------
+class AssetListDialog(ReferenceDataDialog):
+    def __init__(self):
+        ReferenceDataDialog.__init__(self, "assets",
+                                          [("id", None, 0, None, None),
+                                           ("name", g_tr('TableViewConfig', "Symbol"), None, Qt.AscendingOrder, None),
+                                           ("type_id", None, 0, None, None),
+                                           ("full_name", g_tr('TableViewConfig', "Name"), ColumnWidth.STRETCH, None, None),
+                                           ("isin", g_tr('TableViewConfig', "ISIN"), None, None, None),
+                                           ("country_id", g_tr('TableViewConfig', "Country"), None, None, ui.ReferenceLookupDelegate),
+                                           ("src_id", g_tr('TableViewConfig', "Data source"), None, None, ui.ReferenceLookupDelegate)],
+                                          title="Assets",
+                                     search_field="full_name",
+                                          relations=[("type_id", "asset_types", "id", "name", g_tr('TableViewConfig', "Asset type:")),
+                                                     ("country_id", "countries", "id", "name", None),
+                                                     ("src_id", "data_sources", "id", "name", None)])
+
 # TODO Probably better idea is to subclass ReferenceDataDialog for each table instead of self.dialogs dictionary
 class ReferenceDialogs:
     DLG_TITLE = 0
@@ -49,22 +66,6 @@ class ReferenceDialogs:
     def __init__(self, parent):
         self.parent = parent
         self.dialogs = {
-            "assets": (
-                g_tr('TableViewConfig', "Assets"),
-                [("id", None, 0, None, None),
-                 ("name", g_tr('TableViewConfig', "Symbol"), None, Qt.AscendingOrder, None),
-                 ("type_id", None, 0, None, None),
-                 ("full_name", g_tr('TableViewConfig', "Name"), ColumnWidth.STRETCH, None, None),
-                 ("isin", g_tr('TableViewConfig', "ISIN"), None, None, None),
-                 ("country_id", g_tr('TableViewConfig', "Country"), None, None, ui.ReferenceLookupDelegate),
-                 ("src_id", g_tr('TableViewConfig', "Data source"), None, None, ui.ReferenceLookupDelegate)],
-                "full_name",
-                None,
-                False,
-                [("type_id", "asset_types", "id", "name", g_tr('TableViewConfig', "Asset type:")),
-                 ("country_id", "countries", "id", "name", None),
-                 ("src_id", "data_sources", "id", "name", None)]
-            ),
             "agents_ext": (
                 g_tr('TableViewConfig', "Peers"),
                 [("id", " ", 16, None, ui.ReferenceTreeDelegate),
@@ -134,6 +135,8 @@ class ReferenceDialogs:
             AccountTypeListDialog().exec_()
         elif table_name == "accounts":
             AccountsListDialog().exec_()
+        elif table_name == "assets":
+            AssetListDialog().exec_()
         else:
             ui.ReferenceDataDialog(table_name,
                                    self.dialogs[table_name][self.DLG_COLUMNS],

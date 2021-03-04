@@ -109,20 +109,9 @@ class AccountSelector(AbstractReferenceSelector):
 class AssetSelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
         AbstractReferenceSelector.__init__(self, parent)
+        self.dialog = ui_dialogs.AssetListDialog()
 
     def init_db(self, db):
-        self.dialog = ui.ReferenceDataDialog("assets",
-                                          [("id", None, 0, None, None),
-                                           ("name", "Symbol", None, Qt.AscendingOrder, None),
-                                           ("type_id", None, 0, None, None),
-                                           ("full_name", "Name", -1, None, None),
-                                           ("isin", "ISIN", None, None, None),
-                                           ("country_id", g_tr('TableViewConfig', "Country"), None, None, ui.ReferenceLookupDelegate),
-                                           ("src_id", "Data source", None, None, ui.ReferenceLookupDelegate)],
-                                          title="Assets", search_field="full_name",
-                                          relations=[("type_id", "asset_types", "id", "name", "Asset type:"),
-                                                     ("country_id", "countries", "id", "name", None),
-                                                     ("src_id", "data_sources", "id", "name", None)])
         super().init_db("assets", "name", "full_name")
 
 
