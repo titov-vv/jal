@@ -9,6 +9,15 @@ from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceBoolDeleg
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+class AccountTypeListDialog(ReferenceDataDialog):
+    def __init__(self):
+        ReferenceDataDialog.__init__(self, "account_types",
+                                     [("id", None, 0, None, None),
+                                      ("name", g_tr('TableViewConfig', "Account Type"), ColumnWidth.STRETCH,
+                                       Qt.AscendingOrder, None)],
+                                     title=g_tr('TableViewConfig', g_tr('TableViewConfig', "Account Types")))
+
+# ----------------------------------------------------------------------------------------------------------------------
 class AccountsListDialog(ReferenceDataDialog):
     def __init__(self):
         ReferenceDataDialog.__init__(self, "accounts",
@@ -40,15 +49,6 @@ class ReferenceDialogs:
     def __init__(self, parent):
         self.parent = parent
         self.dialogs = {
-            "account_types": (
-                g_tr('TableViewConfig', g_tr('TableViewConfig', "Account Types")),
-                [("id", None, 0, None, None),
-                 ("name", g_tr('TableViewConfig', "Account Type"), ColumnWidth.STRETCH, Qt.AscendingOrder, None)],
-                None,
-                None,
-                False,
-                None
-            ),
             "assets": (
                 g_tr('TableViewConfig', "Assets"),
                 [("id", None, 0, None, None),
@@ -130,7 +130,9 @@ class ReferenceDialogs:
 
     @Slot()
     def show(self, table_name):
-        if table_name == "accounts":
+        if table_name == "account_types":
+            AccountTypeListDialog().exec_()
+        elif table_name == "accounts":
             AccountsListDialog().exec_()
         else:
             ui.ReferenceDataDialog(table_name,
