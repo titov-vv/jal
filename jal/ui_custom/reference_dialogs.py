@@ -1,6 +1,5 @@
 from jal.widgets.view_delegate import *
 from jal.constants import ColumnWidth
-from PySide2.QtCore import Slot
 from jal.ui_custom.helpers import g_tr
 import jal.ui_custom.reference_data as ui               # Full import due to "cyclic" reference
 from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
@@ -109,30 +108,4 @@ class QuotesListDialog(ReferenceDataDialog):
                                      )
 
 # ----------------------------------------------------------------------------------------------------------------------
-class ReferenceDialogs:
-    def __init__(self, parent):
-        self.parent = parent
 
-    def tr(self, name):
-        pass
-
-    @Slot()
-    def show(self, table_name):
-        if table_name == "account_types":
-            AccountTypeListDialog().exec_()
-        elif table_name == "accounts":
-            AccountsListDialog().exec_()
-        elif table_name == "assets":
-            AssetListDialog().exec_()
-        elif table_name == "agents_ext":
-            PeerListDialog().exec_()
-        elif table_name == "categories_ext":
-            CategoryListDialog().exec_()
-        elif table_name == "tags":
-            TagsListDialog().exec_()
-        elif table_name == "countries":
-            CountryListDialog().exec_()
-        elif table_name == "quotes":
-            QuotesListDialog().exec_()
-        else:
-            assert False

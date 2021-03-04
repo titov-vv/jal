@@ -9,7 +9,8 @@ from PySide2.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox, QLa
 from jal import __version__
 from jal.ui.ui_main_window import Ui_LedgerMainWindow
 from jal.ui_custom.helpers import g_tr, ManipulateDate, dependency_present
-from jal.ui_custom.reference_dialogs import ReferenceDialogs
+from jal.ui_custom.reference_dialogs import AccountTypeListDialog, AccountsListDialog, AssetListDialog, TagsListDialog,\
+    CategoryListDialog, CountryListDialog, QuotesListDialog, PeerListDialog
 from jal.constants import TransactionType
 from jal.db.backup_restore import JalBackup
 from jal.db.helpers import get_dbfilename, db_connection, executeSQL
@@ -77,7 +78,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.operations_model.configureView()
         self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
 
-        self.reference_dialogs = ReferenceDialogs(self)
         self.connect_signals_and_slots()
 
         self.NewOperationMenu = QMenu()
@@ -127,14 +127,14 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.actionBackup.triggered.connect(self.backup.create)
         self.actionRestore.triggered.connect(self.backup.restore)
         self.action_Re_build_Ledger.triggered.connect(partial(self.ledger.showRebuildDialog, self))
-        self.actionAccountTypes.triggered.connect(partial(self.reference_dialogs.show, "account_types"))
-        self.actionAccounts.triggered.connect(partial(self.reference_dialogs.show, "accounts"))
-        self.actionAssets.triggered.connect(partial(self.reference_dialogs.show, "assets"))
-        self.actionPeers.triggered.connect(partial(self.reference_dialogs.show, "agents_ext"))
-        self.actionCategories.triggered.connect(partial(self.reference_dialogs.show, "categories_ext"))
-        self.actionTags.triggered.connect(partial(self.reference_dialogs.show, "tags"))
-        self.actionCountries.triggered.connect(partial(self.reference_dialogs.show, "countries"))
-        self.actionQuotes.triggered.connect(partial(self.reference_dialogs.show, "quotes"))
+        self.actionAccountTypes.triggered.connect(partial(self.onDataDialog, "account_types"))
+        self.actionAccounts.triggered.connect(partial(self.onDataDialog, "accounts"))
+        self.actionAssets.triggered.connect(partial(self.onDataDialog, "assets"))
+        self.actionPeers.triggered.connect(partial(self.onDataDialog, "agents_ext"))
+        self.actionCategories.triggered.connect(partial(self.onDataDialog, "categories_ext"))
+        self.actionTags.triggered.connect(partial(self.onDataDialog, "tags"))
+        self.actionCountries.triggered.connect(partial(self.onDataDialog, "countries"))
+        self.actionQuotes.triggered.connect(partial(self.onDataDialog, "quotes"))
         self.PrepareTaxForms.triggered.connect(partial(self.taxes.showTaxesDialog, self))
         self.BalanceDate.dateChanged.connect(self.BalancesTableView.model().setDate)
         self.HoldingsDate.dateChanged.connect(self.HoldingsTableView.model().setDate)
@@ -357,3 +357,24 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             return
         self.checkForUncommittedChanges()
         self.OperationsTabs.widget(operation_type).copyNew()
+
+    @Slot()
+    def onDataDialog(self, dlg_type):
+        if dlg_type == "account_types":
+            AccountTypeListDialog().exec_()
+        elif dlg_type == "accounts":
+            AccountsListDialog().exec_()
+        elif dlg_type == "assets":
+            AssetListDialog().exec_()
+        elif dlg_type == "agents_ext":
+            PeerListDialog().exec_()
+        elif dlg_type == "categories_ext":
+            CategoryListDialog().exec_()
+        elif dlg_type == "tags":
+            TagsListDialog().exec_()
+        elif dlg_type == "countries":
+            CountryListDialog().exec_()
+        elif dlg_type == "quotes":
+            QuotesListDialog().exec_()
+        else:
+            assert False

@@ -2,17 +2,14 @@ from abc import ABC, abstractmethod
 
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from PySide2.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QCompleter
-
-from jal.ui_custom.helpers import g_tr
-import jal.ui_custom.reference_data as ui               # Full import due to "cyclic" reference
 import jal.ui_custom.reference_dialogs as ui_dialogs
 
-
+#-----------------------------------------------------------------------------------------------------------------------
 # To solve metaclass conflict
 class SelectorMeta(type(ABC), type(QWidget)):
     pass
 
-
+#-----------------------------------------------------------------------------------------------------------------------
 class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
     changed = Signal()
 
