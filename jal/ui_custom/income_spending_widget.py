@@ -9,7 +9,7 @@ from jal.ui_custom.helpers import g_tr
 from jal.ui_custom.abstract_operation_details import AbstractOperationDetails
 from jal.ui_custom.reference_selector import AccountSelector, PeerSelector, CategorySelector, TagSelector
 from jal.widgets.mapper_delegate import MapperDelegate, FloatDelegate
-from jal.db.helpers import executeSQL
+from jal.db.helpers import db_connection, executeSQL
 
 
 class IncomeSpendingWidget(AbstractOperationDetails):
@@ -82,11 +82,10 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.add_button.clicked.connect(self.addChild)
         self.del_button.clicked.connect(self.delChild)
 
-    def init_db(self, db):
-        super().init_db(db, "actions")
+        super()._init_db("actions")
         self.mapper.setItemDelegate(MapperDelegate(self.mapper))
 
-        self.details_model = DetailsModel(self.details_table, db)
+        self.details_model = DetailsModel(self.details_table, db_connection())
         self.details_model.setTable("action_details")
         self.details_model.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.details_model.setJoinMode(QSqlRelationalTableModel.LeftJoin)  # to work correctly with NULL values
@@ -97,8 +96,8 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.details_table.setModel(self.details_model)
         self.details_model.dataChanged.connect(self.onDataChange)
 
-        self.account_widget.init_db(db)
-        self.peer_widget.init_db(db)
+        self.account_widget.init_db(db_connection())
+        self.peer_widget.init_db(db_connection())
         self.account_widget.changed.connect(self.mapper.submit)
         self.peer_widget.changed.connect(self.mapper.submit)
 

@@ -4,6 +4,7 @@ from PySide2.QtGui import QFont
 from PySide2.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QSpacerItem, QSizePolicy, QDataWidgetMapper
 from PySide2.QtSql import QSqlTableModel
 from jal.ui_custom.helpers import g_tr
+from jal.db.helpers import db_connection
 
 
 class AbstractOperationDetails(QWidget):
@@ -11,7 +12,6 @@ class AbstractOperationDetails(QWidget):
 
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
-        self._db = None
         self.model = None
         self.table_name = ''
         self.mapper = None
@@ -43,10 +43,9 @@ class AbstractOperationDetails(QWidget):
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-    def init_db(self, db, table_name):
-        self._db = db
+    def _init_db(self, table_name):
         self.table_name = table_name
-        self.model = QSqlTableModel(parent=self, db=db)
+        self.model = QSqlTableModel(parent=self, db=db_connection())
         self.model.setTable(table_name)
         self.model.setEditStrategy(QSqlTableModel.OnManualSubmit)
 

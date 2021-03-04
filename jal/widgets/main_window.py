@@ -84,7 +84,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.NewOperationMenu = QMenu()
         for i in range(self.OperationsTabs.count()):
             if hasattr(self.OperationsTabs.widget(i), "isCustom"):
-                self.OperationsTabs.widget(i).init_db(self.db)
                 self.OperationsTabs.widget(i).dbUpdated.connect(self.showCommitted)
                 self.NewOperationMenu.addAction(self.OperationsTabs.widget(i).name,
                                                 partial(self.createOperation, i))

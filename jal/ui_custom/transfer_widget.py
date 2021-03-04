@@ -9,6 +9,7 @@ from jal.ui_custom.abstract_operation_details import AbstractOperationDetails
 from jal.ui_custom.reference_selector import AccountSelector
 from jal.ui_custom.amount_editor import AmountEdit
 from jal.widgets.mapper_delegate import MapperDelegate
+from jal.db.helpers import db_connection
 
 class TransferWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
@@ -100,13 +101,12 @@ class TransferWidget(AbstractOperationDetails):
         self.copy_date_btn.clicked.connect(self.onCopyDate)
         self.copy_amount_btn.clicked.connect(self.onCopyAmount)
 
-    def init_db(self, db):
-        super().init_db(db, "transfers")
+        super()._init_db("transfers")
         self.mapper.setItemDelegate(MapperDelegate(self.mapper))
 
-        self.from_account_widget.init_db(db)
-        self.to_account_widget.init_db(db)
-        self.fee_account_widget.init_db(db)
+        self.from_account_widget.init_db(db_connection())
+        self.to_account_widget.init_db(db_connection())
+        self.fee_account_widget.init_db(db_connection())
         self.from_account_widget.changed.connect(self.mapper.submit)
         self.to_account_widget.changed.connect(self.mapper.submit)
         self.fee_account_widget.changed.connect(self.mapper.submit)
