@@ -9,7 +9,7 @@ from PySide2.QtWidgets import QStyledItemDelegate
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
 import jal.ui_custom.reference_selector as ui     # Full import due to "cyclic" reference
 from jal.ui_custom.helpers import g_tr, UseSqlTable, ConfigureTableView, rel_idx
-from jal.db.helpers import readSQL
+from jal.db.helpers import db_connection, readSQL
 
 
 # --------------------------------------------------------------------------------------------------------------
@@ -18,7 +18,6 @@ from jal.db.helpers import readSQL
 class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     # ----------------------------------------------------------------------------------------------------------
     # Params:
-    # db - QSqlDatabase object for DB operations
     # table - name of the table to display/edit
     # columns - list of tuples - see helpers.py for details
     # title - title of dialog window
@@ -26,7 +25,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     # tree_view - table will be displayed as hierarchical tree with help of 3 columns: 'id', 'pid' and 'children_count'
     #  ('pid' will identify parent row for current row, and '+' will be displayed for row with 'children_count'>0
     # relations - list of tuples that define lookup relations to other tables in database:
-    def __init__(self, db, table, columns, title='',
+    def __init__(self, table, columns, title='',
                  search_field=None, toggle=None, tree_view=False, relations=None):
         QDialog.__init__(self)
         self.setupUi(self)
@@ -47,7 +46,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.search_text = ""
         self.search_field = search_field
 
-        self.db = db
+        self.db = db_connection()
         self.table = table
         self.Model = UseSqlTable(self, self.table, columns, relations)
         self.delegates = ConfigureTableView(self.DataView, self.Model, columns)

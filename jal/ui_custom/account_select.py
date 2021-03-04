@@ -23,7 +23,7 @@ class AccountButton(QPushButton):
         self.Menu.addAction(g_tr('AccountButton', "Any account"), self.ClearAccount)
         self.setMenu(self.Menu)
 
-        self.dialog = ReferenceDataDialog(db_connection(), "accounts",
+        self.dialog = ReferenceDataDialog("accounts",
                                           [("id", None, 0, None, None),
                                            ("name", g_tr('AccountButton', "Name"), -1, Qt.AscendingOrder, None),
                                            ("type_id", None, 0, None, None),

@@ -101,7 +101,7 @@ class AccountSelector(AbstractReferenceSelector):
         AbstractReferenceSelector.__init__(self, parent)
 
     def init_db(self, db):
-        self.dialog = ui.ReferenceDataDialog(db, "accounts",
+        self.dialog = ui.ReferenceDataDialog("accounts",
                                           [("id", None, 0, None, None),
                                            ("name", g_tr('AccountSelector', "Name"), -1, Qt.AscendingOrder, None),
                                            ("type_id", None, 0, None, None),
@@ -126,7 +126,7 @@ class AssetSelector(AbstractReferenceSelector):
         AbstractReferenceSelector.__init__(self, parent)
 
     def init_db(self, db):
-        self.dialog = ui.ReferenceDataDialog(db, "assets",
+        self.dialog = ui.ReferenceDataDialog("assets",
                                           [("id", None, 0, None, None),
                                            ("name", "Symbol", None, Qt.AscendingOrder, None),
                                            ("type_id", None, 0, None, None),
@@ -146,7 +146,7 @@ class PeerSelector(AbstractReferenceSelector):
         AbstractReferenceSelector.__init__(self, parent)
 
     def init_db(self, db):
-        self.dialog = ui.ReferenceDataDialog(db, "agents_ext",
+        self.dialog = ui.ReferenceDataDialog("agents_ext",
                                           [("id", " ", 16, None, ui.ReferenceTreeDelegate),
                                            ("pid", None, 0, None, None),
                                            ("name", "Name", -1, Qt.AscendingOrder, None),
@@ -162,7 +162,7 @@ class CategorySelector(AbstractReferenceSelector):
         AbstractReferenceSelector.__init__(self, parent)
 
     def init_db(self, db):
-        self.dialog = ui.ReferenceDataDialog(db, "categories_ext",
+        self.dialog = ui.ReferenceDataDialog("categories_ext",
                                              [("id", " ", 16, None, ui.ReferenceTreeDelegate),
                                               ("pid", None, 0, None, None),
                                               ("name", "Name", -1, Qt.AscendingOrder, None),
@@ -178,7 +178,7 @@ class TagSelector(AbstractReferenceSelector):
         AbstractReferenceSelector.__init__(self, parent)
 
     def init_db(self, db):
-        self.dialog = ui.ReferenceDataDialog(db, "tags",
+        self.dialog = ui.ReferenceDataDialog("tags",
                                              [("id", None, 0, None, None),
                                               ("tag", "Tag", -1, Qt.AscendingOrder, None)],
                                              title="Choose tag", search_field="tag")

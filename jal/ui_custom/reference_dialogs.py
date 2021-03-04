@@ -127,8 +127,7 @@ class ReferenceDialogs:
 
     @Slot()
     def show(self, table_name):
-        ui.ReferenceDataDialog(self.parent.db,
-                               table_name,
+        ui.ReferenceDataDialog(table_name,
                                self.dialogs[table_name][self.DLG_COLUMNS],
                                title=self.dialogs[table_name][self.DLG_TITLE],
                                search_field=self.dialogs[table_name][self.DLG_SEARCH],
