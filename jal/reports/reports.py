@@ -67,10 +67,9 @@ REPORT_COLUMNS = 2
 class Reports(QObject):
     report_failure = Signal(str)
 
-    def __init__(self, db, report_table_view):
+    def __init__(self, report_table_view):
         super().__init__()
 
-        self.db = db
         self.table_view = report_table_view
         self.delegates = []
         self.current_report = None

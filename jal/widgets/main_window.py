@@ -62,7 +62,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         # Setup reports tab
         self.ReportAccountBtn.init_db(self.db)
         self.ReportCategoryEdit.init_db(self.db)
-        self.reports = Reports(self.db, self.ReportTableView)
+        self.reports = Reports(self.ReportTableView)
         self.reports.report_failure.connect(self.onReportFailure)
 
         # Customize UI configuration
