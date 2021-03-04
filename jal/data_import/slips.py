@@ -20,7 +20,7 @@ from PySide2.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView
 # This QCamera staff ran good on Windows but didn't fly on Linux from the box until 'cheese' installation
 from PySide2.QtMultimedia import QCameraInfo, QCamera, QCameraImageCapture, QVideoFrame
 from jal.ui_custom.helpers import g_tr, dependency_present
-from jal.db.helpers import executeSQL, readSQL
+from jal.db.helpers import db_connection, executeSQL, readSQL
 from jal.data_import.slips_tax import SlipsTaxAPI
 from jal.ui.ui_slip_import_dlg import Ui_ImportSlipDlg
 from jal.data_import.category_recognizer import recognize_categories
@@ -29,18 +29,14 @@ from jal.data_import.category_recognizer import recognize_categories
 #-----------------------------------------------------------------------------------------------------------------------
 # Custom model to display and edit slip lines
 class PandasLinesModel(QAbstractTableModel):
-    def __init__(self, data, db):
+    def __init__(self, data):
         QAbstractTableModel.__init__(self)
         self._data = data
-        self._db = db
 
     def flags(self, index):
         if not index.isValid():
             return Qt.ItemIsEnabled
         return super().flags(index) | Qt.ItemIsEditable
-
-    def database(self):
-        return self._db
 
     def rowCount(self, parent=None):
         return self._data.shape[0]
@@ -108,11 +104,11 @@ class SlipLinesDelegate(QStyledItemDelegate):
     def createEditor(self, aParent, option, index):
         if index.column() == 1:
             category_selector = CategorySelector(aParent)
-            category_selector.init_db(index.model().database())
+            category_selector.init_db(db_connection())
             return category_selector
         if index.column() == 3:
             tag_selector = TagSelector(aParent)
-            tag_selector.init_db(index.model().database())
+            tag_selector.init_db(db_connection())
             return tag_selector
 
     def setModelData(self, editor, model, index):
@@ -135,11 +131,10 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
     QR_pattern = "^t=(.*)&s=(.*)&fn=(.*)&i=(.*)&fp=(.*)&n=(.*)$"
     timestamp_patterns = ['yyyyMMddTHHmm', 'yyyyMMddTHHmmss', 'yyyy-MM-ddTHH:mm', 'yyyy-MM-ddTHH:mm:ss']
 
-    def __init__(self, parent, db):
+    def __init__(self, parent):
         QDialog.__init__(self, parent=parent)
         self.setupUi(self)
         self.initUi()
-        self.db=db
         self.model = None
         self.delegates = []
 
@@ -152,9 +147,9 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.slip_json = None
         self.slip_lines = None
 
-        self.slipsAPI = SlipsTaxAPI(self.db)
-        self.AccountEdit.init_db(self.db)
-        self.PeerEdit.init_db(self.db)
+        self.slipsAPI = SlipsTaxAPI()
+        self.AccountEdit.init_db(db_connection())
+        self.PeerEdit.init_db(db_connection())
 
         self.qr_data_available.connect(self.parseQRdata)
         self.LoadQRfromFileBtn.clicked.connect(self.loadFileQR)
@@ -399,7 +394,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.slip_lines['tag'] = None
         self.slip_lines = self.slip_lines[['name', 'category', 'confidence', 'tag', 'sum']]
 
-        self.model = PandasLinesModel(self.slip_lines, self.db)
+        self.model = PandasLinesModel(self.slip_lines)
         self.LinesTableView.setModel(self.model)
 
         self.delegates = []    # FIXME - we don't need to keep a list, we may create one delegate and assign it to every column
