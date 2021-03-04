@@ -3,7 +3,6 @@ from jal.constants import ColumnWidth
 from PySide2.QtCore import Slot
 from jal.ui_custom.helpers import g_tr
 import jal.ui_custom.reference_data as ui               # Full import due to "cyclic" reference
-
 from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
     ReferenceLookupDelegate, ReferenceTimestampDelegate
 
@@ -48,7 +47,7 @@ class AssetListDialog(ReferenceDataDialog):
                                            ("isin", g_tr('TableViewConfig', "ISIN"), None, None, None),
                                            ("country_id", g_tr('TableViewConfig', "Country"), None, None, ui.ReferenceLookupDelegate),
                                            ("src_id", g_tr('TableViewConfig', "Data source"), None, None, ui.ReferenceLookupDelegate)],
-                                          title="Assets",
+                                          title=g_tr('TableViewConfig', "Assets"),
                                           search_field="full_name",
                                           relations=[("type_id", "asset_types", "id", "name", g_tr('TableViewConfig', "Asset type:")),
                                                      ("country_id", "countries", "id", "name", None),
@@ -86,42 +85,33 @@ class TagsListDialog(ReferenceDataDialog):
                                               ("tag", g_tr('TableViewConfig', "Tag"), ColumnWidth.STRETCH, Qt.AscendingOrder, None)],
                                              title=g_tr('TableViewConfig', "Tags"), search_field="tag")
 
-# TODO Probably better idea is to subclass ReferenceDataDialog for each table instead of self.dialogs dictionary
-class ReferenceDialogs:
-    DLG_TITLE = 0
-    DLG_COLUMNS = 1
-    DLG_SEARCH = 2
-    DLG_TOGGLE = 3
-    DLG_TREE = 4
-    DLG_RELATIONS = 5
+# ----------------------------------------------------------------------------------------------------------------------
+class CountryListDialog(ReferenceDataDialog):
+    def __init__(self):
+        ReferenceDataDialog.__init__(self, "countries",
+                                     [("id", None, 0, None, None),
+                                      ("name", g_tr('TableViewConfig', "Country"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
+                                      ("code", g_tr('TableViewConfig', "Code"), 50, None, None),
+                                      ("tax_treaty", g_tr('TableViewConfig', "Tax Treaty"), None, None,
+                                       ui.ReferenceBoolDelegate)],
+                                     title=g_tr('TableViewConfig', "Countries"), search_field="name")
 
+# ----------------------------------------------------------------------------------------------------------------------
+class QuotesListDialog(ReferenceDataDialog):
+    def __init__(self):
+        ReferenceDataDialog.__init__(self, "quotes",
+                                     [("id", None, 0, None, None),
+                                      ("timestamp", g_tr('TableViewConfig', "Date"), ColumnWidth.FOR_DATETIME, None, ui.ReferenceTimestampDelegate),
+                                      ("asset_id", g_tr('TableViewConfig', "Asset"), None, None, ui.ReferenceLookupDelegate),
+                                      ("quote", g_tr('TableViewConfig', "Quote"), 100, None, None)],
+                                     title=g_tr('TableViewConfig', "Quotes"), search_field="name",
+                                     relations=[("asset_id", "assets", "id", "name", None)]
+                                     )
+
+# ----------------------------------------------------------------------------------------------------------------------
+class ReferenceDialogs:
     def __init__(self, parent):
         self.parent = parent
-        self.dialogs = {
-            "countries": (
-                g_tr('TableViewConfig', "Countries"),
-                [("id", None, 0, None, None),
-                 ("name", g_tr('TableViewConfig', "Country"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
-                 ("code", g_tr('TableViewConfig', "Code"), 50, None, None),
-                 ("tax_treaty", g_tr('TableViewConfig', "Tax Treaty"), None, None, ui.ReferenceBoolDelegate)],
-                None,
-                None,
-                False,
-                None
-            ),
-            "quotes": (
-                g_tr('TableViewConfig', "Quotes"),
-                [("id", None, 0, None, None),
-                 ("timestamp", g_tr('TableViewConfig', "Date"), ColumnWidth.FOR_DATETIME, None,
-                  ui.ReferenceTimestampDelegate),
-                 ("asset_id", g_tr('TableViewConfig', "Asset"), None, None, ui.ReferenceLookupDelegate),
-                 ("quote", g_tr('TableViewConfig', "Quote"), 100, None, None)],
-                "name",
-                None,
-                False,
-                [("asset_id", "assets", "id", "name", None)]
-            )
-        }
 
     def tr(self, name):
         pass
@@ -140,12 +130,9 @@ class ReferenceDialogs:
             CategoryListDialog().exec_()
         elif table_name == "tags":
             TagsListDialog().exec_()
+        elif table_name == "countries":
+            CountryListDialog().exec_()
+        elif table_name == "quotes":
+            QuotesListDialog().exec_()
         else:
-            ui.ReferenceDataDialog(table_name,
-                                   self.dialogs[table_name][self.DLG_COLUMNS],
-                                   title=self.dialogs[table_name][self.DLG_TITLE],
-                                   search_field=self.dialogs[table_name][self.DLG_SEARCH],
-                                   toggle=self.dialogs[table_name][self.DLG_TOGGLE],
-                                   tree_view=self.dialogs[table_name][self.DLG_TREE],
-                                   relations=self.dialogs[table_name][self.DLG_RELATIONS]
-                                   ).exec_()
+            assert False
