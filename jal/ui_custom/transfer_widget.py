@@ -9,7 +9,6 @@ from jal.ui_custom.abstract_operation_details import AbstractOperationDetails
 from jal.ui_custom.reference_selector import AccountSelector
 from jal.ui_custom.amount_editor import AmountEdit
 from jal.widgets.mapper_delegate import MapperDelegate
-from jal.db.helpers import db_connection
 
 class TransferWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
@@ -104,9 +103,6 @@ class TransferWidget(AbstractOperationDetails):
         super()._init_db("transfers")
         self.mapper.setItemDelegate(MapperDelegate(self.mapper))
 
-        self.from_account_widget.init_db(db_connection())
-        self.to_account_widget.init_db(db_connection())
-        self.fee_account_widget.init_db(db_connection())
         self.from_account_widget.changed.connect(self.mapper.submit)
         self.to_account_widget.changed.connect(self.mapper.submit)
         self.fee_account_widget.changed.connect(self.mapper.submit)

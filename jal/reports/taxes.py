@@ -6,7 +6,7 @@ from jal.constants import Setup, TransactionType, CorporateAction, PredefinedAss
 from jal.reports.helpers import XLSX
 from jal.reports.dlsg import DLSG
 from jal.ui_custom.helpers import g_tr
-from jal.db.helpers import db_connection, executeSQL, readSQLrecord, readSQL
+from jal.db.helpers import executeSQL, readSQLrecord, readSQL
 from PySide2.QtWidgets import QDialog, QFileDialog
 from PySide2.QtCore import Property, Slot
 from jal.ui.ui_tax_export_dlg import Ui_TaxExportDlg
@@ -18,7 +18,6 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
         QDialog.__init__(self)
         self.setupUi(self)
 
-        self.AccountWidget.init_db(db_connection())
         self.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, 'XLS-OUT'))
         self.InitialSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG-IN'))
         self.OutputSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG-OUT'))

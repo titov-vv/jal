@@ -359,7 +359,6 @@ class ReferencePeerDelegate(QSqlRelationalDelegate):
 
     def createEditor(self, aParent, option, index):
         peer_selector = ui.PeerSelector(aParent)
-        peer_selector.init_db(index.model().database())
         return peer_selector
 
     def setModelData(self, editor, model, index):

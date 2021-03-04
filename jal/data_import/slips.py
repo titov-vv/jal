@@ -20,7 +20,7 @@ from PySide2.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView
 # This QCamera staff ran good on Windows but didn't fly on Linux from the box until 'cheese' installation
 from PySide2.QtMultimedia import QCameraInfo, QCamera, QCameraImageCapture, QVideoFrame
 from jal.ui_custom.helpers import g_tr, dependency_present
-from jal.db.helpers import db_connection, executeSQL, readSQL
+from jal.db.helpers import executeSQL, readSQL
 from jal.data_import.slips_tax import SlipsTaxAPI
 from jal.ui.ui_slip_import_dlg import Ui_ImportSlipDlg
 from jal.data_import.category_recognizer import recognize_categories
@@ -104,11 +104,9 @@ class SlipLinesDelegate(QStyledItemDelegate):
     def createEditor(self, aParent, option, index):
         if index.column() == 1:
             category_selector = CategorySelector(aParent)
-            category_selector.init_db(db_connection())
             return category_selector
         if index.column() == 3:
             tag_selector = TagSelector(aParent)
-            tag_selector.init_db(db_connection())
             return tag_selector
 
     def setModelData(self, editor, model, index):
@@ -148,8 +146,6 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.slip_lines = None
 
         self.slipsAPI = SlipsTaxAPI()
-        self.AccountEdit.init_db(db_connection())
-        self.PeerEdit.init_db(db_connection())
 
         self.qr_data_available.connect(self.parseQRdata)
         self.LoadQRfromFileBtn.clicked.connect(self.loadFileQR)

@@ -277,7 +277,6 @@ class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
         self.current_account = current_account
 
         self.DescriptionLbl.setText(description)
-        self.AccountWidget.init_db(db_connection())
         if self.account_id:
             self.AccountWidget.selected_id = self.account_id
 

@@ -8,7 +8,6 @@ from jal.ui_custom.abstract_operation_details import AbstractOperationDetails
 from jal.ui_custom.reference_selector import AccountSelector, AssetSelector
 from jal.ui_custom.amount_editor import AmountEdit
 from jal.widgets.mapper_delegate import MapperDelegate
-from jal.db.helpers import db_connection
 
 class TradeWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
@@ -89,8 +88,6 @@ class TradeWidget(AbstractOperationDetails):
         super()._init_db("trades")
         self.mapper.setItemDelegate(MapperDelegate(self.mapper))
 
-        self.account_widget.init_db(db_connection())
-        self.asset_widget.init_db(db_connection())
         self.account_widget.changed.connect(self.mapper.submit)
         self.asset_widget.changed.connect(self.mapper.submit)
 

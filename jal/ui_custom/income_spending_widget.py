@@ -96,8 +96,6 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.details_table.setModel(self.details_model)
         self.details_model.dataChanged.connect(self.onDataChange)
 
-        self.account_widget.init_db(db_connection())
-        self.peer_widget.init_db(db_connection())
         self.account_widget.changed.connect(self.mapper.submit)
         self.peer_widget.changed.connect(self.mapper.submit)
 
@@ -224,7 +222,6 @@ class CategoryDelegate(QSqlRelationalDelegate):
 
     def createEditor(self, aParent, option, index):
         category_selector = CategorySelector(aParent)
-        category_selector.init_db(index.model().database())
         return category_selector
 
     def setModelData(self, editor, model, index):
@@ -238,7 +235,6 @@ class TagDelegate(QSqlRelationalDelegate):
 
     def createEditor(self, aParent, option, index):
         tag_selector = TagSelector(aParent)
-        tag_selector.init_db(index.model().database())
         return tag_selector
 
     def setModelData(self, editor, model, index):

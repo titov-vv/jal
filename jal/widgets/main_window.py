@@ -13,7 +13,7 @@ from jal.ui_custom.reference_dialogs import AccountTypeListDialog, AccountsListD
     CategoryListDialog, CountryListDialog, QuotesListDialog, PeerListDialog
 from jal.constants import TransactionType
 from jal.db.backup_restore import JalBackup
-from jal.db.helpers import get_dbfilename, db_connection, executeSQL
+from jal.db.helpers import get_dbfilename, executeSQL
 from jal.db.settings import JalSettings
 from jal.data_import.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
@@ -73,7 +73,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.logger.setLevel(log_level)
 
         # Setup reports tab
-        self.ReportCategoryEdit.init_db(db_connection())
         self.reports = Reports(self.ReportTableView)
         self.reports.report_failure.connect(self.onReportFailure)
 

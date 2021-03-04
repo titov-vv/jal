@@ -36,10 +36,14 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
 
         self.button.clicked.connect(self.on_button_clicked)
 
-        self.table = None
-        self.selector_field = None
-        self.details_field = None
-        self.dialog = None
+        if self.details_field:
+            self.name.setFixedWidth(self.name.fontMetrics().width("X") * 15)
+            self.details.setVisible(True)
+        self.completer = QCompleter(self.dialog.Model)
+        self.completer.setCompletionColumn(self.dialog.Model.fieldIndex(self.selector_field))
+        self.completer.setCaseSensitivity(Qt.CaseInsensitive)
+        self.name.setCompleter(self.completer)
+        self.completer.activated[QModelIndex].connect(self.on_completion)
 
     def getId(self):
         return self.p_selected_id
@@ -67,23 +71,6 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
             self.selected_id = self.dialog.selected_id
             self.changed.emit()
 
-    @abstractmethod
-    def init_db(self, db):
-        pass
-
-    def init_db(self, table, selector_field, details_field=None):
-        self.table = table
-        self.selector_field = selector_field
-        if details_field:
-            self.name.setFixedWidth(self.name.fontMetrics().width("X") * 15)
-            self.details_field = details_field
-            self.details.setVisible(True)
-        self.completer = QCompleter(self.dialog.Model)
-        self.completer.setCompletionColumn(self.dialog.Model.fieldIndex(self.selector_field))
-        self.completer.setCaseSensitivity(Qt.CaseInsensitive)
-        self.name.setCompleter(self.completer)
-        self.completer.activated[QModelIndex].connect(self.on_completion)
-
     @Slot(QModelIndex)
     def on_completion(self, index):
         model = index.model()
@@ -96,44 +83,40 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountSelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
-        AbstractReferenceSelector.__init__(self, parent)
+        self.table = "accounts"
+        self.selector_field = "name"
+        self.details_field = None
         self.dialog = ui_dialogs.AccountsListDialog()
-
-    def init_db(self, db):
-        super().init_db("accounts", "name")
-
+        AbstractReferenceSelector.__init__(self, parent)
 
 class AssetSelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
-        AbstractReferenceSelector.__init__(self, parent)
+        self.table = "assets"
+        self.selector_field = "name"
+        self.details_field = "full_name"
         self.dialog = ui_dialogs.AssetListDialog()
-
-    def init_db(self, db):
-        super().init_db("assets", "name", "full_name")
-
+        AbstractReferenceSelector.__init__(self, parent)
 
 class PeerSelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
-        AbstractReferenceSelector.__init__(self, parent)
+        self.table = "agents_ext"
+        self.selector_field = "name"
+        self.details_field = None
         self.dialog = ui_dialogs.PeerListDialog()
-
-    def init_db(self, db):
-        super().init_db("agents_ext", "name")
-
+        AbstractReferenceSelector.__init__(self, parent)
 
 class CategorySelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
-        AbstractReferenceSelector.__init__(self, parent)
+        self.table = "categories_ext"
+        self.selector_field = "name"
+        self.details_field = None
         self.dialog = ui_dialogs.CategoryListDialog()
-
-    def init_db(self, db):
-        super().init_db("categories_ext", "name")
-
+        AbstractReferenceSelector.__init__(self, parent)
 
 class TagSelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
-        AbstractReferenceSelector.__init__(self, parent)
+        self.table = "tags"
+        self.selector_field = "tag"
+        self.details_field = None
         self.dialog = ui_dialogs.TagsListDialog()
-
-    def init_db(self, db):
-        super().init_db("tags", "tag")
+        AbstractReferenceSelector.__init__(self, parent)
