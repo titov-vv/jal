@@ -12,7 +12,7 @@ from jal.ui_custom.helpers import g_tr, ManipulateDate, dependency_present
 from jal.ui_custom.reference_dialogs import ReferenceDialogs
 from jal.constants import TransactionType
 from jal.db.backup_restore import JalBackup
-from jal.db.helpers import get_dbfilename, executeSQL
+from jal.db.helpers import get_dbfilename, db_connection, executeSQL
 from jal.db.settings import JalSettings
 from jal.data_import.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
@@ -28,11 +28,10 @@ from jal.db.tax_estimator import TaxEstimator
 
 #-----------------------------------------------------------------------------------------------------------------------
 class MainWindow(QMainWindow, Ui_LedgerMainWindow):
-    def __init__(self, db, own_path, language):
+    def __init__(self, own_path, language):
         QMainWindow.__init__(self, None)
         self.setupUi(self)
 
-        self.db = db  # TODO Get rid of any connection storage as we may get it anytime (example is in JalSettings)
         self.own_path = own_path
         self.currentLanguage = language
         self.current_index = None  # this is used in onOperationContextMenu() to track item for menu
@@ -59,7 +58,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.logger.setLevel(log_level)
 
         # Setup reports tab
-        self.ReportCategoryEdit.init_db(self.db)
+        self.ReportCategoryEdit.init_db(db_connection())
         self.reports = Reports(self.ReportTableView)
         self.reports.report_failure.connect(self.onReportFailure)
 
@@ -155,14 +154,10 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.DeleteOperationBtn.clicked.connect(self.deleteOperation)
         self.CopyOperationBtn.clicked.connect(self.copyOperation)
 
-    def closeDatabase(self):
-        self.db.close()
-
     @Slot()
     def closeEvent(self, event):
         self.logger.removeHandler(self.Logs)    # Removing handler (but it doesn't prevent exception at exit)
         logging.raiseExceptions = False         # Silencing logging module exceptions
-        self.db.close()                         # Closing database file
 
     def createLanguageMenu(self):
         langPath = self.own_path + "languages" + os.sep

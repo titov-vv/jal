@@ -120,11 +120,11 @@ def readSQLrecord(query, named=False):
 #    if not - it will initialize DB with help of SQL-script
 # 2) checks that DB looks like a valid one:
 #    if schema version is invalid it will close DB
-# Returns: db hanlder, LedgerInitError(code = 0 if db initialzied successfully)
+# Returns: LedgerInitError(code = 0 if db was initialized successfully)
 def init_and_check_db(db_path):
     db = QSqlDatabase.addDatabase("QSQLITE", Setup.DB_CONNECTION)
     if not db.isValid():
-        return None, LedgerInitError(LedgerInitError.DbDriverFailure)
+        return LedgerInitError(LedgerInitError.DbDriverFailure)
     db.setDatabaseName(get_dbfilename(db_path))
     db.open()
     tables = db.tables(QSql.Tables)
@@ -133,19 +133,19 @@ def init_and_check_db(db_path):
         connection_name = db.connectionName()
         init_db_from_sql(get_dbfilename(db_path), db_path + Setup.INIT_SCRIPT_PATH)
         QSqlDatabase.removeDatabase(connection_name)
-        return None, LedgerInitError(LedgerInitError.EmptyDbInitialized)
+        return LedgerInitError(LedgerInitError.EmptyDbInitialized)
 
     schema_version = JalSettings().getValue('SchemaVersion')
     if schema_version < Setup.TARGET_SCHEMA:
         db.close()
-        return None, LedgerInitError(LedgerInitError.OutdatedDbSchema)
+        return LedgerInitError(LedgerInitError.OutdatedDbSchema)
     elif schema_version > Setup.TARGET_SCHEMA:
         db.close()
-        return None, LedgerInitError(LedgerInitError.NewerDbSchema)
+        return LedgerInitError(LedgerInitError.NewerDbSchema)
 
     _ = executeSQL("PRAGMA foreign_keys = ON")
 
-    return db, LedgerInitError(LedgerInitError.DbInitSuccess)
+    return LedgerInitError(LedgerInitError.DbInitSuccess)
 
 
 # -------------------------------------------------------------------------------------------------------------------

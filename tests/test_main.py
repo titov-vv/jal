@@ -17,7 +17,7 @@ def test_db_creation(tmp_path, project_root):
     target_path = str(tmp_path) + os.sep + Setup.INIT_SCRIPT_PATH
     copyfile(src_path, target_path)
 
-    _db, error = init_and_check_db(str(tmp_path) + os.sep)
+    error = init_and_check_db(str(tmp_path) + os.sep)
 
     # Check that sqlite db file was created
     result_path = str(tmp_path) + os.sep + Setup.DB_PATH
@@ -78,7 +78,7 @@ def test_fifo(tmp_path, project_root):
     backup.backup_name = project_root + os.sep + "tests" + os.sep + "test_data" + os.sep + "deals_set.tgz"
     backup.do_restore()
 
-    db, error = init_and_check_db(str(tmp_path) + os.sep)
+    error = init_and_check_db(str(tmp_path) + os.sep)
 
     assert error.code == LedgerInitError.DbInitSuccess
 

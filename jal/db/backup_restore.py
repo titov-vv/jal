@@ -10,6 +10,7 @@ import tarfile
 
 from PySide2.QtWidgets import QFileDialog, QMessageBox
 from jal.ui_custom.helpers import g_tr
+from jal.db.helpers import db_connection
 
 
 # ------------------------------------------------------------------------------
@@ -100,7 +101,7 @@ class JalBackup:
         self.get_filename(False)
         if self.backup_name is None:
             return
-        self.parent.closeDatabase()
+        db_connection().close()
 
         if not self.validate_backup():
             logging.error(g_tr('JalBackup', "Wrong format of backup file"))
