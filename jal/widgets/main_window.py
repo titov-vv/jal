@@ -43,7 +43,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.taxes = TaxesRus(self.db)
         self.statements = StatementLoader(self, self.db)
         self.statements.load_completed.connect(self.onStatementLoaded)
-        self.statements.load_failed.connect(self.onStatementLoadFailure)
         self.backup = JalBackup(self, get_dbfilename(self.own_path))
         self.estimator = None
 
@@ -260,18 +259,12 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
 
     @Slot()
     def onQuotesDownloadCompletion(self):
-        self.StatusBar.showMessage(g_tr('MainWindow', "Quotes download completed"), timeout=60000)
         self.balances_model.update()
 
     @Slot()
     def onStatementLoaded(self):
-        self.StatusBar.showMessage(g_tr('MainWindow', "Statement load completed"), timeout=60000)
         self.ledger.rebuild()
         self.balances_model.update()  # FIXME this should be better linked to some signal emitted by ledger after rebuild completion
-
-    @Slot()
-    def onStatementLoadFailure(self):
-        self.StatusBar.showMessage(g_tr('MainWindow', "Statement load failed"), timeout=60000)
 
     @Slot()
     def showCommitted(self):
