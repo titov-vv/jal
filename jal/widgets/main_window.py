@@ -41,7 +41,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.downloader = QuoteDownloader()
         self.downloader.download_completed.connect(self.onQuotesDownloadCompletion)
         self.taxes = TaxesRus()
-        self.statements = StatementLoader(self, self.db)
+        self.statements = StatementLoader(self)
         self.statements.load_completed.connect(self.onStatementLoaded)
         self.backup = JalBackup(self, get_dbfilename(self.own_path))
         self.estimator = None

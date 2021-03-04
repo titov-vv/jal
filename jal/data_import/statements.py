@@ -10,7 +10,8 @@ from PySide2.QtCore import QObject, Signal, Slot
 from PySide2.QtSql import QSqlTableModel
 from PySide2.QtWidgets import QDialog, QFileDialog, QMessageBox
 from jal.constants import Setup, TransactionType, PredefinedAsset, PredefinedCategory, CorporateAction, DividendSubtype
-from jal.db.helpers import executeSQL, readSQL, get_country_by_code, account_last_date, update_asset_country
+from jal.db.helpers import db_connection, executeSQL, readSQL, get_country_by_code, account_last_date, \
+    update_asset_country
 from jal.ui_custom.helpers import g_tr, ManipulateDate
 from jal.ui.ui_add_asset_dlg import Ui_AddAssetDialog
 from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
@@ -220,7 +221,7 @@ def convert_amount(val):
     return res
 
 
-def addNewAsset(db, symbol, name, asset_type, isin, data_source=-1):
+def addNewAsset(symbol, name, asset_type, isin, data_source=-1):
     if symbol.endswith('.OLD'):
         symbol = symbol[:-len('.OLD')]
     _ = executeSQL("INSERT INTO assets(name, type_id, full_name, isin, src_id) "
@@ -235,21 +236,20 @@ def addNewAsset(db, symbol, name, asset_type, isin, data_source=-1):
 
 # -----------------------------------------------------------------------------------------------------------------------
 class AddAssetDialog(QDialog, Ui_AddAssetDialog):
-    def __init__(self, parent, db, symbol):
+    def __init__(self, parent, symbol):
         QDialog.__init__(self)
         self.setupUi(self)
-        self.db = db
         self.asset_id = None
 
         self.SymbolEdit.setText(symbol)
 
-        self.type_model = QSqlTableModel(db=db)
+        self.type_model = QSqlTableModel(db=db_connection())
         self.type_model.setTable('asset_types')
         self.type_model.select()
         self.TypeCombo.setModel(self.type_model)
         self.TypeCombo.setModelColumn(1)
 
-        self.data_src_model = QSqlTableModel(db=db)
+        self.data_src_model = QSqlTableModel(db=db_connection())
         self.data_src_model.setTable('data_sources')
         self.data_src_model.select()
         self.DataSrcCombo.setModel(self.data_src_model)
@@ -261,7 +261,7 @@ class AddAssetDialog(QDialog, Ui_AddAssetDialog):
         self.setGeometry(x, y, self.width(), self.height())
 
     def accept(self):
-        self.asset_id = addNewAsset(self.db, self.SymbolEdit.text(), self.NameEdit.text(),
+        self.asset_id = addNewAsset(self.SymbolEdit.text(), self.NameEdit.text(),
                                     self.type_model.record(self.TypeCombo.currentIndex()).value("id"),
                                     self.isinEdit.text(),
                                     self.data_src_model.record(self.DataSrcCombo.currentIndex()).value("id"))
@@ -270,15 +270,14 @@ class AddAssetDialog(QDialog, Ui_AddAssetDialog):
 
 # -----------------------------------------------------------------------------------------------------------------------
 class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
-    def __init__(self, parent, db, description, current_account, recent_account=None):
+    def __init__(self, parent, description, current_account, recent_account=None):
         QDialog.__init__(self)
         self.setupUi(self)
-        self.db = db
         self.account_id = recent_account
         self.current_account = current_account
 
         self.DescriptionLbl.setText(description)
-        self.AccountWidget.init_db(db)
+        self.AccountWidget.init_db(db_connection())
         if self.account_id:
             self.AccountWidget.selected_id = self.account_id
 
@@ -313,10 +312,9 @@ class StatementLoader(QObject):
     load_completed = Signal()
     load_failed = Signal()
 
-    def __init__(self, parent, db):
+    def __init__(self, parent):
         super().__init__()
         self.parent = parent
-        self.db = db
         self.loaders = {
             ReportType.IBKR: self.loadIBFlex,
             ReportType.Quik: self.loadQuikHtml
@@ -383,7 +381,7 @@ class StatementLoader(QObject):
             else:
                 logging.warning(g_tr('StatementLoader', "ISIN mismatch for ") + f"{symbol}: {isin} != {db_isin}")
         elif dialog_new:
-            dialog = AddAssetDialog(self.parent, self.db, symbol)
+            dialog = AddAssetDialog(self.parent, symbol)
             dialog.exec_()
             asset_id = dialog.asset_id
         return asset_id
@@ -538,7 +536,7 @@ class StatementLoader(QObject):
             if asset_id is not None:
                 continue
             asset_type = PredefinedAsset.ETF if asset['subCategory'] == "ETF" else asset['assetCategory']
-            addNewAsset(self.db, asset['symbol'], asset['description'], asset_type, asset['isin'])
+            addNewAsset(asset['symbol'], asset['description'], asset_type, asset['isin'])
             cnt += 1
         logging.info(g_tr('StatementLoader', "Securities loaded: ") + f"{cnt} ({len(assets)})")
 
@@ -944,8 +942,7 @@ class StatementLoader(QObject):
                    f"@{datetime.utcfromtimestamp(cash['dateTime']).strftime('%d.%m.%Y')}\n" + \
                    g_tr('StatementLoader', "Select account to deposit to:")
 
-        dialog = SelectAccountDialog(self.parent, self.db, text, cash['accountId'],
-                                     recent_account=self.last_selected_account)
+        dialog = SelectAccountDialog(self.parent, text, cash['accountId'], recent_account=self.last_selected_account)
         if dialog.exec_() != QDialog.Accepted:
             return 0
         self.last_selected_account = dialog.account_id
