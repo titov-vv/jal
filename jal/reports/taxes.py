@@ -6,7 +6,7 @@ from jal.constants import Setup, TransactionType, CorporateAction, PredefinedAss
 from jal.reports.helpers import XLSX
 from jal.reports.dlsg import DLSG
 from jal.ui_custom.helpers import g_tr
-from jal.db.helpers import executeSQL, readSQLrecord, readSQL
+from jal.db.helpers import db_connection, executeSQL, readSQLrecord, readSQL
 from PySide2.QtWidgets import QDialog, QFileDialog
 from PySide2.QtCore import Property, Slot
 from jal.ui.ui_tax_export_dlg import Ui_TaxExportDlg
@@ -14,11 +14,11 @@ from jal.ui.ui_tax_export_dlg import Ui_TaxExportDlg
 
 # -----------------------------------------------------------------------------------------------------------------------
 class TaxExportDialog(QDialog, Ui_TaxExportDlg):
-    def __init__(self, parent, db):
+    def __init__(self, parent):
         QDialog.__init__(self)
         self.setupUi(self)
 
-        self.AccountWidget.init_db(db)
+        self.AccountWidget.init_db(db_connection())
         self.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, 'XLS-OUT'))
         self.InitialSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG-IN'))
         self.OutputSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG-OUT'))
@@ -109,8 +109,7 @@ class TaxesRus:
         CorporateAction.StockDividend: "Допэмиссия акций: {after} {new}"
     }
 
-    def __init__(self, db):
-        self.db = db
+    def __init__(self):
         self.account_id = 0
         self.year_begin = 0
         self.year_end = 0
@@ -258,7 +257,7 @@ class TaxesRus:
         }
 
     def showTaxesDialog(self, parent):
-        dialog = TaxExportDialog(parent, self.db)
+        dialog = TaxExportDialog(parent)
         if dialog.exec_():
             self.use_settlement = not dialog.no_settelement
             self.save2file(dialog.xls_filename, dialog.year, dialog.account, dlsg_update=dialog.update_dlsg,

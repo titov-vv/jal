@@ -40,7 +40,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.ledger = Ledger()
         self.downloader = QuoteDownloader()
         self.downloader.download_completed.connect(self.onQuotesDownloadCompletion)
-        self.taxes = TaxesRus(self.db)
+        self.taxes = TaxesRus()
         self.statements = StatementLoader(self, self.db)
         self.statements.load_completed.connect(self.onStatementLoaded)
         self.backup = JalBackup(self, get_dbfilename(self.own_path))
