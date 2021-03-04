@@ -39,12 +39,24 @@ class LedgerInitError:
 def get_dbfilename(app_path):
     return app_path + Setup.DB_PATH
 
+
+# -------------------------------------------------------------------------------------------------------------------
+# This function returns SQLite connection used by JAL or fails with RuntimeError exception
+def db_connection():
+    db = QSqlDatabase.database(Setup.DB_CONNECTION)
+    if not db.isValid():
+        raise RuntimeError(f"DB connection '{Setup.DB_CONNECTION}' is invalid")
+    if not db.isOpen():
+        logging.fatal(f"DB connection '{Setup.DB_CONNECTION}' is not open")
+    return db
+
+
 # -------------------------------------------------------------------------------------------------------------------
 # prepares SQL query from given sql_text
 # params_list is a list of tuples (":param", value) which are used to prepare SQL query
 # return value - QSqlQuery object (to allow iteration through result)
-def executeSQL(db, sql_text, params = [], forward_only = True):
-    query = QSqlQuery(db)
+def executeSQL(sql_text, params=[], forward_only = True):
+    query = QSqlQuery(db_connection())
     query.setForwardOnly(forward_only)
     if not query.prepare(sql_text):
         logging.error(f"SQL prep: '{query.lastError().text()}' for query '{sql_text}' with params '{params}'")
@@ -60,10 +72,10 @@ def executeSQL(db, sql_text, params = [], forward_only = True):
 # -------------------------------------------------------------------------------------------------------------------
 # the same as executeSQL() but after query execution it takes first line of it
 # and packs all field values in a list to return
-def readSQL(db, sql_text, params=None, named=False):
+def readSQL(sql_text, params=None, named=False):
     if params is None:
         params = []
-    query = QSqlQuery(db)
+    query = QSqlQuery(db_connection())
     query.setForwardOnly(True)
     if not query.prepare(sql_text):
         logging.error(f"SQL prep: '{query.lastError().text()}' for query '{sql_text}' with params '{params}'")
@@ -126,7 +138,7 @@ def init_and_check_db(db_path):
         db.close()
         return None, LedgerInitError(LedgerInitError.NewerDbSchema)
 
-    _ = executeSQL(db, "PRAGMA foreign_keys = ON")
+    _ = executeSQL("PRAGMA foreign_keys = ON")
 
     return db, LedgerInitError(LedgerInitError.DbInitSuccess)
 
@@ -173,35 +185,31 @@ def update_db_schema(db_path):
 
 
 # -------------------------------------------------------------------------------------------------------------------
-def get_language(db):   # TODO Change to make it via JalSettings instead of readSQL
-    language = ''
-    if db:
-        language = readSQL(db, "SELECT l.language FROM settings AS s "
-                               "LEFT JOIN languages AS l ON s.value=l.id WHERE s.name='Language'")
+def get_language():   # TODO Change to make it via JalSettings instead of readSQL
+    language = readSQL("SELECT l.language FROM settings AS s "
+                       "LEFT JOIN languages AS l ON s.value=l.id WHERE s.name='Language'")
     language = 'us' if language == '' else language
     return language
 
 # -------------------------------------------------------------------------------------------------------------------
-def get_field_by_id_from_table(db, table_name, field_name, id):
+def get_field_by_id_from_table(table_name, field_name, id):
     SQL = f"SELECT t.{field_name} FROM {table_name} AS t WHERE t.id = :id"
-    return readSQL(db, SQL, [(":id", id)])
+    return readSQL(SQL, [(":id", id)])
 
 # -------------------------------------------------------------------------------------------------------------------
-def get_category_name(db, category_id):
-    return readSQL(db, "SELECT c.name FROM categories AS c WHERE c.id=:category_id", [(":category_id", category_id)])
+def get_category_name(category_id):
+    return readSQL("SELECT c.name FROM categories AS c WHERE c.id=:category_id", [(":category_id", category_id)])
 
 # -------------------------------------------------------------------------------------------------------------------
-def get_account_name(db, account_id):
-    return readSQL(db, "SELECT name FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
+def get_account_name(account_id):
+    return readSQL("SELECT name FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
 
-def get_account_currency(db, account_id):
-    return readSQL(db, "SELECT currency_id FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
 # -------------------------------------------------------------------------------------------------------------------
-def get_country_by_code(db, country_code):
-    id = readSQL(db, "SELECT id FROM countries WHERE code=:code", [(":code", country_code)])
+def get_country_by_code(country_code):
+    id = readSQL("SELECT id FROM countries WHERE code=:code", [(":code", country_code)])
 
     if id is None:
-        query = executeSQL(db, "INSERT INTO countries(name, code, tax_treaty) VALUES (:name, :code, 0)",
+        query = executeSQL("INSERT INTO countries(name, code, tax_treaty) VALUES (:name, :code, 0)",
                            [(":name", "Country_" + country_code), (":code", country_code)])
         id = query.lastInsertId()
         logging.warning(g_tr('DB', "New country added (set Tax Treaty in Data->Countries menu): ")
@@ -212,27 +220,27 @@ def get_country_by_code(db, country_code):
 # Function sets asset country if asset.country_id is 0
 # Shows warning and sets new asset country if asset.country_id was different before
 # Does nothing if asset country had already the same value
-def update_asset_country(db, asset_id, country_id):
-    id = readSQL(db, "SELECT country_id FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
+def update_asset_country(asset_id, country_id):
+    id = readSQL("SELECT country_id FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
     if id == country_id:
         return
-    _ = executeSQL(db, "UPDATE assets SET country_id=:country_id WHERE id=:asset_id",
+    _ = executeSQL("UPDATE assets SET country_id=:country_id WHERE id=:asset_id",
                    [(":asset_id", asset_id), (":country_id", country_id)])
     if id == 0:
         return
-    old_country = readSQL(db, "SELECT name FROM countries WHERE id=:country_id", [(":country_id", id)])
-    new_country = readSQL(db, "SELECT name FROM countries WHERE id=:country_id", [(":country_id", country_id)])
-    asset_name = readSQL(db, "SELECT name FROM assets WHERE id=:asset_id", [(":country_id", asset_id)])
+    old_country = readSQL("SELECT name FROM countries WHERE id=:country_id", [(":country_id", id)])
+    new_country = readSQL("SELECT name FROM countries WHERE id=:country_id", [(":country_id", country_id)])
+    asset_name = readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":country_id", asset_id)])
     logging.warning(g_tr('DB', "Country was changed for asset ")+ f"{asset_name}: f{old_country} -> {new_country}")
 
 # -------------------------------------------------------------------------------------------------------------------
-def account_last_date(db, account_number):
-    last_timestamp = readSQL(db, "SELECT MAX(o.timestamp) FROM all_operations AS o "
-                                 "LEFT JOIN accounts AS a ON o.account_id=a.id WHERE a.number=:account_number",
+def account_last_date(account_number):
+    last_timestamp = readSQL("SELECT MAX(o.timestamp) FROM all_operations AS o "
+                             "LEFT JOIN accounts AS a ON o.account_id=a.id WHERE a.number=:account_number",
                              [(":account_number", account_number)])
     last_timestamp = 0 if last_timestamp == '' else last_timestamp
     return last_timestamp
 
 # -------------------------------------------------------------------------------------------------------------------
-def get_asset_name(db, asset_id):
-    return readSQL(db, "SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
+def get_asset_name(asset_id):
+    return readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])

@@ -77,32 +77,31 @@ class QuoteDownloader(QObject):
     def UpdateQuotes(self, start_timestamp, end_timestamp):
         self.PrepareRussianCBReader()
 
-        query = executeSQL(self.db,
-                       "WITH _holdings AS ( "
-                       "SELECT l.asset_id AS asset FROM ledger AS l "
-                       "WHERE l.book_account = 4 AND l.timestamp <= :end_timestamp "
-                       "GROUP BY l.asset_id "
-                       "HAVING SUM(l.amount) > :tolerance "
-                       "UNION "
-                       "SELECT DISTINCT l.asset_id AS asset FROM ledger AS l "
-                       "WHERE l.book_account = :assets_book AND l.timestamp >= :start_timestamp "
-                       "AND l.timestamp <= :end_timestamp "
-                       "UNION "
-                       "SELECT DISTINCT a.currency_id AS asset FROM ledger AS l "
-                       "LEFT JOIN accounts AS a ON a.id = l.account_id "
-                       "WHERE (l.book_account = :money_book OR l.book_account = :liabilities_book) "
-                       "AND l.timestamp >= :start_timestamp AND l.timestamp <= :end_timestamp "
-                       ") "
-                       "SELECT h.asset AS asset_id, a.name AS name, a.src_id AS feed_id, a.isin AS isin, "
-                       "MIN(q.timestamp) AS first_timestamp, MAX(q.timestamp) AS last_timestamp "
-                       "FROM _holdings AS h "
-                       "LEFT JOIN assets AS a ON a.id=h.asset "
-                       "LEFT JOIN quotes AS q ON q.asset_id=h.asset "
-                       "GROUP BY h.asset "
-                       "ORDER BY a.src_id",
-                       [(":start_timestamp", start_timestamp), (":end_timestamp", end_timestamp),
-                        (":assets_book", BookAccount.Assets), (":money_book", BookAccount.Money),
-                        (":liabilities_book", BookAccount.Liabilities), (":tolerance", Setup.CALC_TOLERANCE)])
+        query = executeSQL("WITH _holdings AS ( "
+                           "SELECT l.asset_id AS asset FROM ledger AS l "
+                           "WHERE l.book_account = 4 AND l.timestamp <= :end_timestamp "
+                           "GROUP BY l.asset_id "
+                           "HAVING SUM(l.amount) > :tolerance "
+                           "UNION "
+                           "SELECT DISTINCT l.asset_id AS asset FROM ledger AS l "
+                           "WHERE l.book_account = :assets_book AND l.timestamp >= :start_timestamp "
+                           "AND l.timestamp <= :end_timestamp "
+                           "UNION "
+                           "SELECT DISTINCT a.currency_id AS asset FROM ledger AS l "
+                           "LEFT JOIN accounts AS a ON a.id = l.account_id "
+                           "WHERE (l.book_account = :money_book OR l.book_account = :liabilities_book) "
+                           "AND l.timestamp >= :start_timestamp AND l.timestamp <= :end_timestamp "
+                           ") "
+                           "SELECT h.asset AS asset_id, a.name AS name, a.src_id AS feed_id, a.isin AS isin, "
+                           "MIN(q.timestamp) AS first_timestamp, MAX(q.timestamp) AS last_timestamp "
+                           "FROM _holdings AS h "
+                           "LEFT JOIN assets AS a ON a.id=h.asset "
+                           "LEFT JOIN quotes AS q ON q.asset_id=h.asset "
+                           "GROUP BY h.asset "
+                           "ORDER BY a.src_id",
+                           [(":start_timestamp", start_timestamp), (":end_timestamp", end_timestamp),
+                            (":assets_book", BookAccount.Assets), (":money_book", BookAccount.Money),
+                            (":liabilities_book", BookAccount.Liabilities), (":tolerance", Setup.CALC_TOLERANCE)])
         while query.next():
             asset = readSQLrecord(query, named=True)
             first_timestamp = asset['first_timestamp'] if asset['first_timestamp'] != '' else 0
@@ -235,16 +234,15 @@ class QuoteDownloader(QObject):
 
     def SubmitQuote(self, asset_id, asset_name, timestamp, quote):
         old_id = 0
-        query = executeSQL(self.db,
-                           "SELECT id FROM quotes WHERE asset_id = :asset_id AND timestamp = :timestamp",
+        query = executeSQL("SELECT id FROM quotes WHERE asset_id = :asset_id AND timestamp = :timestamp",
                            [(":asset_id", asset_id), (":timestamp", timestamp)])
         if query.next():
             old_id = query.value(0)
         if old_id:
-            executeSQL(self.db, "UPDATE quotes SET quote=:quote WHERE id=:old_id",
+            executeSQL("UPDATE quotes SET quote=:quote WHERE id=:old_id",
                        [(":quote", quote), (":old_id", old_id), ])
         else:
-            executeSQL(self.db, "INSERT INTO quotes(timestamp, asset_id, quote) VALUES (:timestamp, :asset_id, :quote)",
+            executeSQL("INSERT INTO quotes(timestamp, asset_id, quote) VALUES (:timestamp, :asset_id, :quote)",
                        [(":timestamp", timestamp), (":asset_id", asset_id), (":quote", quote)])
         self.db.commit()
         logging.info(g_tr('QuotesUpdateDialog', "Quote loaded: ") +

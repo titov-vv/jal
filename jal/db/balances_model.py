@@ -106,7 +106,7 @@ class BalancesModel(QAbstractTableModel):
     def setCurrency(self, currency_id):
         if self._currency != currency_id:
             self._currency = currency_id
-            self._currency_name = get_asset_name(self._db, currency_id)
+            self._currency_name = get_asset_name(currency_id)
             self.calculateBalances()
 
     @Slot()
@@ -132,7 +132,6 @@ class BalancesModel(QAbstractTableModel):
     # Populate table balances with data calculated for given parameters of model: _currency, _date, _active_only
     def calculateBalances(self):
         query = executeSQL(
-            self._db,
             "WITH "
             "_last_quotes AS (SELECT MAX(timestamp) AS timestamp, asset_id, quote "
             "FROM quotes WHERE timestamp <= :balances_timestamp GROUP BY asset_id), "

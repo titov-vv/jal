@@ -53,7 +53,7 @@ class Ledger:
 
     # Returns timestamp of last operations that were calculated into ledger
     def getCurrentFrontier(self):
-        current_frontier = readSQL(self.db, "SELECT ledger_frontier FROM frontier")
+        current_frontier = readSQL("SELECT ledger_frontier FROM frontier")
         if current_frontier == '':
             current_frontier = 0
         return current_frontier
@@ -79,7 +79,7 @@ class Ledger:
             category_id = None
             tag_id = None
         try:
-            old_sid, old_amount, old_value = readSQL(self.db,
+            old_sid, old_amount, old_value = readSQL(
                 "SELECT sid, sum_amount, sum_value FROM ledger_sums "
                 "WHERE book_account = :book AND asset_id = :asset_id "
                 "AND account_id = :account_id AND sid <= :seq_id "
@@ -97,24 +97,24 @@ class Ledger:
         if (abs(new_amount - old_amount) + abs(new_value - old_value)) <= (2 * Setup.CALC_TOLERANCE):
             return  # we have zero amount - no reason to put it into ledger
 
-        _ = executeSQL(self.db, "INSERT INTO ledger (timestamp, sid, book_account, asset_id, account_id, "
-                                "amount, value, peer_id, category_id, tag_id) "
-                                "VALUES(:timestamp, :sid, :book, :asset_id, :account_id, "
-                                ":amount, :value, :peer_id, :category_id, :tag_id)",
+        _ = executeSQL("INSERT INTO ledger (timestamp, sid, book_account, asset_id, account_id, "
+                       "amount, value, peer_id, category_id, tag_id) "
+                       "VALUES(:timestamp, :sid, :book, :asset_id, :account_id, "
+                       ":amount, :value, :peer_id, :category_id, :tag_id)",
                        [(":timestamp", timestamp), (":sid", seq_id), (":book", book), (":asset_id", asset_id),
                         (":account_id", account_id), (":amount", amount), (":value", value),
                         (":peer_id", peer_id), (":category_id", category_id), (":tag_id", tag_id)])
         if seq_id == old_sid:
-            _ = executeSQL(self.db, "UPDATE ledger_sums SET sum_amount = :new_amount, sum_value = :new_value"
-                                    " WHERE sid = :sid AND book_account = :book"
-                                    " AND asset_id = :asset_id AND account_id = :account_id",
+            _ = executeSQL("UPDATE ledger_sums SET sum_amount = :new_amount, sum_value = :new_value"
+                           " WHERE sid = :sid AND book_account = :book"
+                           " AND asset_id = :asset_id AND account_id = :account_id",
                            [(":new_amount", new_amount), (":new_value", new_value), (":sid", seq_id),
                             (":book", book), (":asset_id", asset_id), (":account_id", account_id)])
         else:
-            _ = executeSQL(self.db, "INSERT INTO ledger_sums(sid, timestamp, book_account, "
-                                    "asset_id, account_id, sum_amount, sum_value) "
-                                    "VALUES(:sid, :timestamp, :book, :asset_id, "
-                                    ":account_id, :new_amount, :new_value)",
+            _ = executeSQL("INSERT INTO ledger_sums(sid, timestamp, book_account, "
+                           "asset_id, account_id, sum_amount, sum_value) "
+                           "VALUES(:sid, :timestamp, :book, :asset_id, "
+                           ":account_id, :new_amount, :new_value)",
                            [(":sid", seq_id), (":timestamp", timestamp), (":book", book), (":asset_id", asset_id),
                             (":account_id", account_id), (":new_amount", new_amount), (":new_value", new_value)])
         self.db.commit()
@@ -123,17 +123,16 @@ class Ledger:
     # Returns Amount measured in current account currency or asset_id that 'book' has at current ledger frontier
     def getAmount(self, book, asset_id=None):
         if asset_id is None:
-            amount = readSQL(self.db,
-                               "SELECT sum_amount FROM ledger_sums WHERE book_account = :book AND "
-                               "account_id = :account_id AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1",
-                               [(":book", book), (":account_id", self.current['account']),
-                                (":timestamp", self.current['timestamp'])])
+            amount = readSQL("SELECT sum_amount FROM ledger_sums WHERE book_account = :book AND "
+                             "account_id = :account_id AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1",
+                             [(":book", book), (":account_id", self.current['account']),
+                              (":timestamp", self.current['timestamp'])])
         else:
-            amount = readSQL(self.db, "SELECT sum_amount FROM ledger_sums WHERE book_account = :book "
-                                        "AND account_id = :account_id AND asset_id = :asset_id "
-                                        "AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1",
-                               [(":book", book), (":account_id", self.current['account']),
-                                (":asset_id", asset_id), (":timestamp", self.current['timestamp'])])
+            amount = readSQL("SELECT sum_amount FROM ledger_sums WHERE book_account = :book "
+                             "AND account_id = :account_id AND asset_id = :asset_id "
+                             "AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1",
+                             [(":book", book), (":account_id", self.current['account']),
+                              (":asset_id", asset_id), (":timestamp", self.current['timestamp'])])
         amount = float(amount) if amount is not None else 0.0
         return amount
 
@@ -158,7 +157,7 @@ class Ledger:
         return debit
 
     def processActionDetails(self):
-        query = executeSQL(self.db, "SELECT sum as amount, category_id, tag_id FROM action_details AS d WHERE pid=:pid",
+        query = executeSQL("SELECT sum as amount, category_id, tag_id FROM action_details AS d WHERE pid=:pid",
                            [(":pid", self.current['id'])])
         while query.next():
             amount, self.current['category'], self.current['tag'] = readSQLrecord(query)
@@ -233,54 +232,52 @@ class Ledger:
         # Get asset amount accumulated before current operation
         asset_amount = self.getAmount(BookAccount.Assets, asset_id)
         if ((-type) * asset_amount) > 0:  # Process deal match if we have asset that is opposite to operation
-            last_type = readSQL(self.db, "SELECT s.type FROM deals AS d "
-                                         "LEFT JOIN sequence AS s ON d.close_sid=s.id "
-                                         "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
-                                         "ORDER BY d.close_sid DESC, d.open_sid DESC LIMIT 1",
+            last_type = readSQL("SELECT s.type FROM deals AS d "
+                                "LEFT JOIN sequence AS s ON d.close_sid=s.id "
+                                "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
+                                "ORDER BY d.close_sid DESC, d.open_sid DESC LIMIT 1",
                                 [(":account_id", account_id), (":asset_id", asset_id)])
             if last_type is None or last_type == TransactionType.Trade:
                 # Get information about last deal with quantity of opposite sign
-                last_sid = readSQL(self.db, "SELECT "
-                                            "CASE WHEN (:type)*qty<0 THEN open_sid ELSE close_sid END AS last_sid "
-                                            "FROM deals "
-                                            "WHERE account_id=:account_id AND asset_id=:asset_id "
-                                            "ORDER BY close_sid DESC, open_sid DESC LIMIT 1",
+                last_sid = readSQL("SELECT "
+                                   "CASE WHEN (:type)*qty<0 THEN open_sid ELSE close_sid END AS last_sid "
+                                   "FROM deals "
+                                   "WHERE account_id=:account_id AND asset_id=:asset_id "
+                                   "ORDER BY close_sid DESC, open_sid DESC LIMIT 1",
                                    [(":type", type), (":account_id", account_id), (":asset_id", asset_id)])
                 last_sid = 0 if last_sid is None else last_sid
                 # Next get information about abs trade quantity that was in this last deal
                 # It may be a corporate action - its quantity calculation is a bit more complicated
-                last_qty = readSQL(self.db,
-                                              "SELECT coalesce(SUM(qty), 0) AS qty FROM ( "
-                                              "SELECT ABS(t.qty) AS qty "
-                                              "FROM sequence AS s "
-                                              "LEFT JOIN trades AS t ON t.id=s.operation_id AND s.type=3 "
-                                              "WHERE s.id=:last_sid "
-                                              "UNION ALL "
-                                              "SELECT "
-                                              "CASE "
-                                              "    WHEN ca.type = 2 AND ca.asset_id=:asset_id THEN ca.qty "
-                                              "    ELSE ca.qty_new "
-                                              "END AS qty "
-                                              "FROM sequence AS s "
-                                              "LEFT JOIN corp_actions AS ca ON ca.id=s.operation_id AND s.type=5 "
-                                              "WHERE s.id=:last_sid "
-                                              ")",
-                                              [(":asset_id", asset_id), (":last_sid", last_sid)])
+                last_qty = readSQL("SELECT coalesce(SUM(qty), 0) AS qty FROM ( "
+                                   "SELECT ABS(t.qty) AS qty "
+                                   "FROM sequence AS s "
+                                   "LEFT JOIN trades AS t ON t.id=s.operation_id AND s.type=3 "
+                                   "WHERE s.id=:last_sid "
+                                   "UNION ALL "
+                                   "SELECT "
+                                   "CASE "
+                                   "    WHEN ca.type = 2 AND ca.asset_id=:asset_id THEN ca.qty "
+                                   "    ELSE ca.qty_new "
+                                   "END AS qty "
+                                   "FROM sequence AS s "
+                                   "LEFT JOIN corp_actions AS ca ON ca.id=s.operation_id AND s.type=5 "
+                                   "WHERE s.id=:last_sid "
+                                   ")",
+                                   [(":asset_id", asset_id), (":last_sid", last_sid)])
                 # Collect quantity of all deals where this last opposite trade participated (positive value)
                 # If it was a corporate action we need to take only where it was an opening of the deal
-                deals_qty = readSQL(self.db, "SELECT coalesce(SUM(ABS(qty)), 0) "   
-                                             "FROM deals AS d "
-                                             "LEFT JOIN sequence AS s ON s.id=d.close_sid "
-                                             "WHERE account_id=:account_id AND asset_id=:asset_id "
-                                             "AND (open_sid=:last_sid OR close_sid=:last_sid) AND s.type!=5",
+                deals_qty = readSQL("SELECT coalesce(SUM(ABS(qty)), 0) "   
+                                    "FROM deals AS d "
+                                    "LEFT JOIN sequence AS s ON s.id=d.close_sid "
+                                    "WHERE account_id=:account_id AND asset_id=:asset_id "
+                                    "AND (open_sid=:last_sid OR close_sid=:last_sid) AND s.type!=5",
                                     [(":account_id", account_id), (":asset_id", asset_id), (":last_sid", last_sid)])
                 reminder = last_qty - deals_qty
                 # if last trade is fully matched (reminder<=0) we start from next trade, otherwise we need to shift by 1
                 if reminder > 0:
                     last_sid -= 1
             elif last_type == TransactionType.CorporateAction:
-                last_sid, ca_type = readSQL(self.db,
-                                            "SELECT d.close_sid, c.type FROM deals AS d "
+                last_sid, ca_type = readSQL("SELECT d.close_sid, c.type FROM deals AS d "
                                             "LEFT JOIN sequence AS s ON d.close_sid=s.id "
                                             "LEFT JOIN corp_actions AS c ON s.operation_id=c.id "
                                             "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
@@ -292,8 +289,7 @@ class Ledger:
                 reminder = 0
 
             # Get a list of all previous not matched trades or corporate actions of opposite direction (type parameter)
-            query = executeSQL(self.db,
-                               "SELECT * FROM ("
+            query = executeSQL("SELECT * FROM ("
                                "SELECT s.id, ABS(t.qty), t.price FROM trades AS t "
                                "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
                                "WHERE (:type)*qty < 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
@@ -326,8 +322,8 @@ class Ledger:
                 if (processed_qty + next_deal_qty) >= qty:  # We can't process more than qty of current trade
                     next_deal_qty = qty - processed_qty     # If it happens - just process the remainder of the trade
                 # Create a deal with relevant sign of quantity (-1 for short, +1 for long)
-                _ = executeSQL(self.db, "INSERT INTO deals(account_id, asset_id, open_sid, close_sid, qty) "
-                                        "VALUES(:account_id, :asset_id, :open_sid, :close_sid, :qty)",
+                _ = executeSQL("INSERT INTO deals(account_id, asset_id, open_sid, close_sid, qty) "
+                               "VALUES(:account_id, :asset_id, :open_sid, :close_sid, :qty)",
                                [(":account_id", account_id), (":asset_id", asset_id), (":open_sid", deal_sid),
                                 (":close_sid", seq_id), (":qty", (-type)*next_deal_qty)])
                 processed_qty += next_deal_qty
@@ -376,24 +372,24 @@ class Ledger:
         asset_amount = self.getAmount(BookAccount.Assets, self.current['asset'])
         self.current['price'] = self.current['price'] + asset_amount
         self.current['amount'] = asset_amount
-        asset = get_asset_name(self.db, self.current['asset'])
+        asset = get_asset_name(self.current['asset'])
         QMessageBox().information(None, g_tr('Ledger', "Confirmation"),
                                   g_tr('Ledger', "Stock dividend for was updated for ") + asset +
                                   f" @{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d.%m.%Y')}\n" +
                                   g_tr('Ledger', "Please check that quantity is correct."),
                                   QMessageBox.Ok)
-        _ = executeSQL(self.db, "DROP TRIGGER IF EXISTS corp_after_update")  # FIXME improve code with triggers
-        _ = executeSQL(self.db, "UPDATE corp_actions SET qty=:qty, qty_new=:qty_new WHERE id=:id",
+        _ = executeSQL("DROP TRIGGER IF EXISTS corp_after_update")  # FIXME improve code with triggers
+        _ = executeSQL("UPDATE corp_actions SET qty=:qty, qty_new=:qty_new WHERE id=:id",
                        [(":id", self.current['id']),
                         (":qty", self.current['amount']), (":qty_new", self.current['price'])])
-        _ = executeSQL(self.db, "CREATE TRIGGER corp_after_update "
-                                "AFTER UPDATE OF timestamp, account_id, type, asset_id, qty, asset_id_new, qty_new "
-                                "ON corp_actions FOR EACH ROW "
-                                "BEGIN "
-                                "DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; "
-                                "DELETE FROM sequence WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; "
-                                "DELETE FROM ledger_sums WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; "
-                                "END")
+        _ = executeSQL("CREATE TRIGGER corp_after_update "
+                       "AFTER UPDATE OF timestamp, account_id, type, asset_id, qty, asset_id_new, qty_new "
+                       "ON corp_actions FOR EACH ROW "
+                       "BEGIN "
+                       "DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; "
+                       "DELETE FROM sequence WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; "
+                       "DELETE FROM ledger_sums WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; "
+                       "END")
 
     def processCorporateAction(self):
         # Stock dividends are imported without initial stock amounts -> correction happens here
@@ -414,25 +410,25 @@ class Ledger:
                           + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
             return
         # Get information about last deal
-        last_sid = readSQL(self.db, "SELECT "
-                                    "CASE WHEN qty>0 THEN open_sid ELSE close_sid END AS last_sid "
-                                    "FROM deals "
-                                    "WHERE account_id=:account_id AND asset_id=:asset_id "
-                                    "ORDER BY close_sid DESC, open_sid DESC LIMIT 1",
+        last_sid = readSQL("SELECT "
+                           "CASE WHEN qty>0 THEN open_sid ELSE close_sid END AS last_sid "
+                           "FROM deals "
+                           "WHERE account_id=:account_id AND asset_id=:asset_id "
+                           "ORDER BY close_sid DESC, open_sid DESC LIMIT 1",
                            [(":account_id", account_id), (":asset_id", asset_id)])
         last_sid = 0 if last_sid is None else last_sid
         # Next get information about abs trade quantity that was in this last deal
-        last_qty = readSQL(self.db, "SELECT coalesce(ABS(t.qty), 0)+coalesce(ABS(ca.qty_new) , 0) AS qty "
-                                    "FROM sequence AS s "
-                                    "LEFT JOIN trades AS t ON t.id=s.operation_id AND s.type=3 "
-                                    "LEFT JOIN corp_actions AS ca ON ca.id=s.operation_id AND s.type=5 "
-                                    "WHERE s.id=:last_sid", [(":last_sid", last_sid)])
+        last_qty = readSQL("SELECT coalesce(ABS(t.qty), 0)+coalesce(ABS(ca.qty_new) , 0) AS qty "
+                           "FROM sequence AS s "
+                           "LEFT JOIN trades AS t ON t.id=s.operation_id AND s.type=3 "
+                           "LEFT JOIN corp_actions AS ca ON ca.id=s.operation_id AND s.type=5 "
+                           "WHERE s.id=:last_sid", [(":last_sid", last_sid)])
         last_qty = 0 if last_qty is None else last_qty
         # Collect quantity of all deals where this last opposite trade participated (positive value)
-        deals_qty = readSQL(self.db, "SELECT coalesce(SUM(ABS(qty)), 0) "
-                                     "FROM deals AS d "
-                                     "WHERE account_id=:account_id AND asset_id=:asset_id "
-                                     "AND (open_sid=:last_sid OR close_sid=:last_sid)",
+        deals_qty = readSQL("SELECT coalesce(SUM(ABS(qty)), 0) "
+                            "FROM deals AS d "
+                            "WHERE account_id=:account_id AND asset_id=:asset_id "
+                            "AND (open_sid=:last_sid OR close_sid=:last_sid)",
                             [(":account_id", account_id), (":asset_id", asset_id), (":last_sid", last_sid)])
         reminder = last_qty - deals_qty
         # if last trade is fully matched (reminder<=0) we start from next trade, otherwise we need to shift by 1
@@ -440,8 +436,7 @@ class Ledger:
             last_sid = last_sid - 1
 
         # Get a list of all previous not matched trades or corporate actions of opposite direction (type parameter)
-        query = executeSQL(self.db,
-                           "SELECT * FROM ("
+        query = executeSQL("SELECT * FROM ("
                            "SELECT s.id, ABS(t.qty), t.price FROM trades AS t "
                            "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
                            "WHERE qty > 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
@@ -465,8 +460,8 @@ class Ledger:
             if (processed_qty + next_deal_qty) >= qty:  # We can't process more than qty of current trade
                 next_deal_qty = qty - processed_qty  # If it happens - just process the remainder of the trade
             # Create a deal with relevant sign of quantity (-1 for short, +1 for long)
-            _ = executeSQL(self.db, "INSERT INTO deals(account_id, asset_id, open_sid, close_sid, qty) "
-                                    "VALUES(:account_id, :asset_id, :open_sid, :close_sid, :qty)",
+            _ = executeSQL("INSERT INTO deals(account_id, asset_id, open_sid, close_sid, qty) "
+                           "VALUES(:account_id, :asset_id, :open_sid, :close_sid, :qty)",
                            [(":account_id", account_id), (":asset_id", asset_id), (":open_sid", deal_sid),
                             (":close_sid", seq_id), (":qty", next_deal_qty)])
             processed_qty += next_deal_qty
@@ -517,8 +512,8 @@ class Ledger:
             silent = False
         else:
             frontier = self.getCurrentFrontier()
-            operations_count = readSQL(self.db, "SELECT COUNT(id) FROM all_transactions WHERE timestamp >= :frontier",
-                               [(":frontier", frontier)])
+            operations_count = readSQL("SELECT COUNT(id) FROM all_transactions WHERE timestamp >= :frontier",
+                                       [(":frontier", frontier)])
             if operations_count > self.SILENT_REBUILD_THRESHOLD:
                 silent = False
                 if QMessageBox().warning(None, g_tr('Ledger', "Confirmation"), f"{operations_count}" +
@@ -529,27 +524,27 @@ class Ledger:
             logging.info(g_tr('Ledger', "Re-build ledger from: ") +
                          f"{datetime.utcfromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
         start_time = datetime.now()
-        _ = executeSQL(self.db, "DELETE FROM deals WHERE close_sid >= "
-                                "(SELECT coalesce(MIN(id), 0) FROM sequence WHERE timestamp >= :frontier)",
+        _ = executeSQL("DELETE FROM deals WHERE close_sid >= "
+                       "(SELECT coalesce(MIN(id), 0) FROM sequence WHERE timestamp >= :frontier)",
                        [(":frontier", frontier)])
-        _ = executeSQL(self.db, "DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
-        _ = executeSQL(self.db, "DELETE FROM sequence WHERE timestamp >= :frontier", [(":frontier", frontier)])
-        _ = executeSQL(self.db, "DELETE FROM ledger_sums WHERE timestamp >= :frontier", [(":frontier", frontier)])
+        _ = executeSQL("DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
+        _ = executeSQL("DELETE FROM sequence WHERE timestamp >= :frontier", [(":frontier", frontier)])
+        _ = executeSQL("DELETE FROM ledger_sums WHERE timestamp >= :frontier", [(":frontier", frontier)])
         self.db.commit()
 
         if fast_and_dirty:  # For 30k operations difference of execution time is - with 0:02:41 / without 0:11:44
-            _ = executeSQL(self.db, "PRAGMA synchronous = OFF")
-        query = executeSQL(self.db, "SELECT type, id, timestamp, subtype, account, currency, asset, amount, "
-                                    "category, price, fee_tax, peer, tag FROM all_transactions "
-                                    "WHERE timestamp >= :frontier", [(":frontier", frontier)])
+            _ = executeSQL("PRAGMA synchronous = OFF")
+        query = executeSQL("SELECT type, id, timestamp, subtype, account, currency, asset, amount, "
+                           "category, price, fee_tax, peer, tag FROM all_transactions "
+                           "WHERE timestamp >= :frontier", [(":frontier", frontier)])
         while query.next():
             self.current = readSQLrecord(query, named=True)
             if self.current['type'] == TransactionType.Action:
                 subtype = copysign(1, self.current['subtype'])
             else:
                 subtype = self.current['subtype']
-            seq_query = executeSQL(self.db, "INSERT INTO sequence(timestamp, type, subtype, operation_id) "
-                                            "VALUES(:timestamp, :type, :subtype, :operation_id)",
+            seq_query = executeSQL("INSERT INTO sequence(timestamp, type, subtype, operation_id) "
+                                   "VALUES(:timestamp, :type, :subtype, :operation_id)",
                                    [(":timestamp", self.current['timestamp']), (":type", self.current['type']),
                                     (":subtype", subtype), (":operation_id", self.current['id'])])
             self.current_seq = seq_query.lastInsertId()
@@ -559,7 +554,7 @@ class Ledger:
                              g_tr('Ledger', "k records, current frontier: ") +
                              f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
         if fast_and_dirty:
-            _ = executeSQL(self.db, "PRAGMA synchronous = ON")
+            _ = executeSQL("PRAGMA synchronous = ON")
 
         if not silent:
             logging.info(g_tr('Ledger', "Ledger is complete. Elapsed time: ") + f"{datetime.now() - start_time}" +

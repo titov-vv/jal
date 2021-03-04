@@ -27,7 +27,7 @@ def main():
         db, error = init_and_check_db(own_path)
 
     app = QApplication([])
-    language = get_language(db)
+    language = get_language()
     translator = QTranslator(app)
     language_file = own_path + "languages" + os.sep + language + '.qm'
     translator.load(language_file)

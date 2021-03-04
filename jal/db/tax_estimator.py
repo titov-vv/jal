@@ -60,7 +60,7 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
         self.db = db
         self.account_id = account_id
         self.asset_id = asset_id
-        self.asset_name = get_asset_name(self.db, self.asset_id)
+        self.asset_name = get_asset_name(self.asset_id)
         self.asset_qty = asset_qty
         self.dataframe = None
         self.ready = False
@@ -88,11 +88,10 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
         self.ready = True
 
     def prepare_tax(self):
-        _ = executeSQL(self.db, "DELETE FROM t_last_dates")
-        _ = executeSQL(self.db, "DELETE FROM t_last_quotes")
+        _ = executeSQL("DELETE FROM t_last_dates")
+        _ = executeSQL("DELETE FROM t_last_quotes")
 
-        _ = executeSQL(self.db,
-                       "INSERT INTO t_last_dates(ref_id, timestamp) "
+        _ = executeSQL("INSERT INTO t_last_dates(ref_id, timestamp) "
                        "SELECT ref_id, coalesce(MAX(q.timestamp), 0) AS timestamp "
                        "FROM ("
                        "SELECT t.timestamp AS ref_id FROM trades AS t "
@@ -105,34 +104,32 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
                        "WHERE ref_id IS NOT NULL "
                        "GROUP BY ref_id ORDER BY ref_id",
                        [(":account_id", self.account_id), (":asset_id", self.asset_id)])
-        _ = executeSQL(self.db,
-                       "INSERT INTO t_last_quotes(timestamp, asset_id, quote) "
+        _ = executeSQL("INSERT INTO t_last_quotes(timestamp, asset_id, quote) "
                        "SELECT MAX(timestamp) AS timestamp, asset_id, quote "
                        "FROM quotes AS q LEFT JOIN accounts AS a ON a.id = :account_id "
                        "WHERE q.asset_id = :asset_id OR q.asset_id = a.currency_id "
                        "GROUP BY asset_id",
                        [(":account_id", self.account_id), (":asset_id", self.asset_id)])
 
-        self.quote = readSQL(self.db, "SELECT quote FROM t_last_quotes WHERE asset_id=:asset_id",
+        self.quote = readSQL("SELECT quote FROM t_last_quotes WHERE asset_id=:asset_id",
                              [(":asset_id", self.asset_id)])
         if self.quote is None:
             logging.error(g_tr('TaxEstimator', "Can't get current quote for ") + self.asset_name)
             return
-        self.currency_name = readSQL(self.db, "SELECT s.name FROM accounts AS a "
-                                              "LEFT JOIN assets AS s ON s.id=a.currency_id WHERE a.id=:account_id",
+        self.currency_name = readSQL("SELECT s.name FROM accounts AS a "
+                                     "LEFT JOIN assets AS s ON s.id=a.currency_id WHERE a.id=:account_id",
                                      [(":account_id", self.account_id)])
         if self.currency_name is None:
             logging.error(g_tr('TaxEstimator', "Can't get currency name for account"))
             return
-        self.rate = readSQL(self.db, "SELECT quote FROM accounts AS a "
-                                     "LEFT JOIN t_last_quotes AS q ON q.asset_id=a.currency_id WHERE id=:account_id",
+        self.rate = readSQL("SELECT quote FROM accounts AS a "
+                            "LEFT JOIN t_last_quotes AS q ON q.asset_id=a.currency_id WHERE id=:account_id",
                             [(":account_id", self.account_id)])
         if self.rate is None:
             logging.error(g_tr('TaxEstimator', "Can't get current rate for ") + self.currency_name)
             return
 
-        query = executeSQL(self.db,
-                           "SELECT strftime('%d/%m/%Y', datetime(t.timestamp, 'unixepoch')) AS timestamp, "
+        query = executeSQL("SELECT strftime('%d/%m/%Y', datetime(t.timestamp, 'unixepoch')) AS timestamp, "
                            "t.qty AS qty, t.price AS o_price, oq.quote AS o_rate FROM trades AS t "
                            "LEFT JOIN sequence AS s ON s.operation_id = t.id AND s.type = 3 "
                            "LEFT JOIN accounts AS ac ON ac.id = :account_id "

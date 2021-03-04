@@ -301,7 +301,7 @@ class OperationsModel(QAbstractTableModel):
         if (row >= 0) and (row < len(self._data)):
             timestamp = self._data[row][self.COL_TIMESTAMP]
             account_id = self._data[row][self.COL_ACCOUNT_ID]
-            _ = executeSQL(self._db, "UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
+            _ = executeSQL("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
                            [(":timestamp", timestamp), (":account_id", account_id)])
             self.prepareData()
 
@@ -315,7 +315,7 @@ class OperationsModel(QAbstractTableModel):
             query_suffix = f"FROM {self._table_name} AS o WHERE o.timestamp>={self._begin} AND o.timestamp<={self._end}"
             if self._account:
                 query_suffix = query_suffix + f" AND o.account_id = {self._account}"
-            self._row_count = readSQL(self._db, count_pfx + query_suffix)
+            self._row_count = readSQL(count_pfx + query_suffix)
             self._query.prepare(query_pfx + query_suffix)
             self._query.setForwardOnly(True)
             self._query.exec_()
@@ -327,7 +327,7 @@ class OperationsModel(QAbstractTableModel):
             if (row >= 0) and (row < len(self._data)):
                 table_name = self._tables[self._data[row][self.COL_TYPE]]
                 query = f"DELETE FROM {table_name} WHERE id={self._data[row][self.COL_ID]}"
-                _ = executeSQL(self._db, query)
+                _ = executeSQL(query)
         self.prepareData()
 
 

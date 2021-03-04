@@ -174,7 +174,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         old_id = self.model.record(self.mapper.currentIndex()).value(0)
         super().copyNew()
         self.details_model.setFilter(f"action_details.pid = 0")
-        query = executeSQL(self._db, "SELECT * FROM action_details WHERE pid = :pid ORDER BY id DESC",
+        query = executeSQL("SELECT * FROM action_details WHERE pid = :pid ORDER BY id DESC",
                            [(":pid", old_id)])
         while query.next():
             new_record = query.record()

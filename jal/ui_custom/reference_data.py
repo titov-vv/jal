@@ -249,8 +249,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         if current_id is None:
             pid = self.last_parent
         else:
-            pid = readSQL(self.db,
-                          f"SELECT c2.pid FROM {self.table} AS c1 LEFT JOIN {self.table} AS c2 ON c1.pid=c2.id "\
+            pid = readSQL(f"SELECT c2.pid FROM {self.table} AS c1 LEFT JOIN {self.table} AS c2 ON c1.pid=c2.id "\
                           f"WHERE c1.id = :current_id", [(":current_id", current_id)])
             if pid == '':
                 pid = 0

@@ -33,7 +33,7 @@ class AccountButton(QPushButton):
     def setId(self, account_id):
         self.p_account_id = account_id
         if self.p_account_id:
-            self.setText(get_account_name(self.db, account_id))
+            self.setText(get_account_name(account_id))
         else:
             self.setText(g_tr('AccountButton', "ANY"))
         self.changed.emit(self.p_account_id)
@@ -93,7 +93,7 @@ class ComboBoxDB(QComboBox):
         if self.p_selected_id == new_id:
             return
         self.p_selected_id = new_id
-        name = get_field_by_id_from_table(self.model.database(),self.table_name, self.field_name, self.p_selected_id)
+        name = get_field_by_id_from_table(self.table_name, self.field_name, self.p_selected_id)
         if self.currentIndex() == self.findText(name):
             return
         self.setCurrentIndex(self.findText(name))

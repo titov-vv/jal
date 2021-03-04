@@ -188,8 +188,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def onLanguageChanged(self, action):
         language_code = action.data()
         if language_code != self.currentLanguage:
-            executeSQL(self.db,
-                       "UPDATE settings "
+            executeSQL("UPDATE settings "
                        "SET value=(SELECT id FROM languages WHERE language = :new_language) WHERE name ='Language'",
                        [(':new_language', language_code)])
             QMessageBox().information(self, g_tr('MainWindow', "Restart required"),

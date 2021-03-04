@@ -164,18 +164,17 @@ class Reports(QObject):
         report.save()
 
     def prepareIncomeSpendingReport(self, begin, end, account_id, group_dates):
-        _ = executeSQL(self.db, "DELETE FROM t_months")
-        _ = executeSQL(self.db, "DELETE FROM t_pivot")
-        _ = executeSQL(self.db,
-                       "INSERT INTO t_months (month, asset_id, last_timestamp) "
-                      "SELECT strftime('%s', datetime(timestamp, 'unixepoch', 'start of month') ) "
-                      "AS month, asset_id, MAX(timestamp) AS last_timestamp "
-                      "FROM quotes AS q "
-                      "LEFT JOIN assets AS a ON q.asset_id=a.id "
-                      "WHERE a.type_id=:asset_money "
-                      "GROUP BY month, asset_id",
+        _ = executeSQL("DELETE FROM t_months")
+        _ = executeSQL("DELETE FROM t_pivot")
+        _ = executeSQL("INSERT INTO t_months (month, asset_id, last_timestamp) "
+                       "SELECT strftime('%s', datetime(timestamp, 'unixepoch', 'start of month') ) "
+                       "AS month, asset_id, MAX(timestamp) AS last_timestamp "
+                       "FROM quotes AS q "
+                       "LEFT JOIN assets AS a ON q.asset_id=a.id "
+                       "WHERE a.type_id=:asset_money "
+                       "GROUP BY month, asset_id",
                        [(":asset_money", PredefinedAsset.Money)])
-        _ = executeSQL(self.db,
+        _ = executeSQL(
             "INSERT INTO t_pivot (row_key, col_key, value) "
             "SELECT strftime('%s', datetime(t.timestamp, 'unixepoch', 'start of month') ) AS row_key, "
             "t.category_id AS col_key, sum(-t.amount * coalesce(q.quote, 1)) AS value "
@@ -188,8 +187,7 @@ class Reports(QObject):
             [(":book_costs", BookAccount.Costs), (":book_incomes", BookAccount.Incomes),
              (":begin", begin), (":end", end)])
         self.db.commit()
-        self.query = executeSQL(self.db,
-                                "SELECT c.id AS id, c.level AS level, c.path AS category, "
+        self.query = executeSQL("SELECT c.id AS id, c.level AS level, c.path AS category, "
                                 "strftime('%Y', datetime(p.row_key, 'unixepoch')) AS year, "
                                 "strftime('%m', datetime(p.row_key, 'unixepoch')) AS month, p.value AS value"
                                 "FROM categories_tree AS c "
@@ -241,7 +239,7 @@ class Reports(QObject):
             self.report_failure.emit(g_tr('Reports', "You should select account to create Deals report"))
             return False
         if group_dates == 1:
-            self.query = executeSQL(self.db,
+            self.query = executeSQL(
                                "SELECT asset, "
                                "strftime('%s', datetime(open_timestamp, 'unixepoch', 'start of day')) as open_timestamp, "
                                "strftime('%s', datetime(close_timestamp, 'unixepoch', 'start of day')) as close_timestamp, "
@@ -254,38 +252,38 @@ class Reports(QObject):
                                "ORDER BY close_timestamp, open_timestamp",
                                [(":account_id", account_id), (":begin", begin), (":end", end)], forward_only=False)
         else:
-            self.query = executeSQL(self.db, "SELECT asset, open_timestamp, close_timestamp, open_price, close_price, "
-                                        "qty, fee, profit, rel_profit, corp_action FROM deals_ext "
-                                        "WHERE account_id=:account_id AND close_timestamp>=:begin AND close_timestamp<=:end "
-                                        "ORDER BY close_timestamp, open_timestamp",
-                               [(":account_id", account_id), (":begin", begin), (":end", end)], forward_only=False)
+            self.query = executeSQL("SELECT asset, open_timestamp, close_timestamp, open_price, close_price, "
+                                    "qty, fee, profit, rel_profit, corp_action FROM deals_ext "
+                                    "WHERE account_id=:account_id AND close_timestamp>=:begin AND close_timestamp<=:end "
+                                    "ORDER BY close_timestamp, open_timestamp",
+                                    [(":account_id", account_id), (":begin", begin), (":end", end)], forward_only=False)
         return True
 
     def prepareProfitLossReport(self, begin, end, account_id, group_dates):
         if account_id == 0:
             self.report_failure.emit(g_tr('Reports', "You should select account to create Profit/Loss report"))
             return False
-        _ = executeSQL(self.db, "DELETE FROM t_months")
-        _ = executeSQL(self.db, "INSERT INTO t_months(asset_id, month, last_timestamp) "
-                                "SELECT DISTINCT(l.asset_id) AS asset_id, m.m_start, MAX(q.timestamp) AS last_timestamp "
-                                "FROM ledger AS l "
-                                "LEFT JOIN "
-                                "(WITH RECURSIVE months(m_start) AS "
-                                "( "
-                                "  VALUES(CAST(strftime('%s', date(:begin, 'unixepoch', 'start of month')) AS INTEGER)) "
-                                "  UNION ALL "
-                                "  SELECT CAST(strftime('%s', date(m_start, 'unixepoch', '+1 month')) AS INTEGER) "
-                                "  FROM months "
-                                "  WHERE m_start < :end "
-                                ") "
-                                "SELECT m_start FROM months) AS m "
-                                "LEFT JOIN quotes AS q ON q.timestamp<=m.m_start AND q.asset_id=l.asset_id "
-                                "WHERE l.timestamp>=:begin AND l.timestamp<=:end AND l.account_id=:account_id "
-                                "GROUP BY m.m_start, l.asset_id "
-                                "ORDER BY m.m_start, l.asset_id",
+        _ = executeSQL("DELETE FROM t_months")
+        _ = executeSQL("INSERT INTO t_months(asset_id, month, last_timestamp) "
+                       "SELECT DISTINCT(l.asset_id) AS asset_id, m.m_start, MAX(q.timestamp) AS last_timestamp "
+                       "FROM ledger AS l "
+                       "LEFT JOIN "
+                       "(WITH RECURSIVE months(m_start) AS "
+                       "( "
+                       "  VALUES(CAST(strftime('%s', date(:begin, 'unixepoch', 'start of month')) AS INTEGER)) "
+                       "  UNION ALL "
+                       "  SELECT CAST(strftime('%s', date(m_start, 'unixepoch', '+1 month')) AS INTEGER) "
+                       "  FROM months "
+                       "  WHERE m_start < :end "
+                       ") "
+                       "SELECT m_start FROM months) AS m "
+                       "LEFT JOIN quotes AS q ON q.timestamp<=m.m_start AND q.asset_id=l.asset_id "
+                       "WHERE l.timestamp>=:begin AND l.timestamp<=:end AND l.account_id=:account_id "
+                       "GROUP BY m.m_start, l.asset_id "
+                       "ORDER BY m.m_start, l.asset_id",
                        [(":account_id", account_id), (":begin", begin), (":end", end)])
         self.db.commit()
-        self.query = executeSQL(self.db,
+        self.query = executeSQL(
             "SELECT DISTINCT(m.month) AS period, coalesce(t.transfer, 0) AS transfer, coalesce(a.assets, 0) AS assets, "
             "coalesce(p.result, 0) AS result, coalesce(o.profit, 0) AS profit, coalesce(d.dividend, 0) AS dividend, "
             "coalesce(f.tax_fee, 0) AS tax_fee "
@@ -347,12 +345,12 @@ class Reports(QObject):
         if category_id == 0:
             self.report_failure.emit(g_tr('Reports', "You should select category to create By Category report"))
             return False
-        self.query = executeSQL(self.db, "SELECT a.timestamp, ac.name AS account, p.name, d.sum, d.note "
-                                         "FROM actions AS a "
-                                         "LEFT JOIN action_details AS d ON d.pid=a.id "
-                                         "LEFT JOIN agents AS p ON p.id=a.peer_id "
-                                         "LEFT JOIN accounts AS ac ON ac.id=a.account_id "
-                                         "WHERE a.timestamp>=:begin AND a.timestamp<=:end "
-                                         "AND d.category_id=:category_id",
+        self.query = executeSQL("SELECT a.timestamp, ac.name AS account, p.name, d.sum, d.note "
+                                "FROM actions AS a "
+                                "LEFT JOIN action_details AS d ON d.pid=a.id "
+                                "LEFT JOIN agents AS p ON p.id=a.peer_id "
+                                "LEFT JOIN accounts AS ac ON ac.id=a.account_id "
+                                "WHERE a.timestamp>=:begin AND a.timestamp<=:end "
+                                "AND d.category_id=:category_id",
                                 [(":category_id", category_id), (":begin", begin), (":end", end)], forward_only=False)
         return True

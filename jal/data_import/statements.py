@@ -223,12 +223,12 @@ def convert_amount(val):
 def addNewAsset(db, symbol, name, asset_type, isin, data_source=-1):
     if symbol.endswith('.OLD'):
         symbol = symbol[:-len('.OLD')]
-    _ = executeSQL(db, "INSERT INTO assets(name, type_id, full_name, isin, src_id) "
-                       "VALUES(:symbol, :type, :full_name, :isin, :data_src)",
+    _ = executeSQL("INSERT INTO assets(name, type_id, full_name, isin, src_id) "
+                   "VALUES(:symbol, :type, :full_name, :isin, :data_src)",
                    [(":symbol", symbol), (":type", asset_type), (":full_name", name),
                     (":isin", isin), (":data_src", data_source)])
     db.commit()
-    asset_id = readSQL(db, "SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)])
+    asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)])
     if asset_id is None:
         logging.error(g_tr('StatementLoader', "Failed to add new asset: ") + f"{symbol}")
     return asset_id
@@ -341,14 +341,14 @@ class StatementLoader(QObject):
     # Returns: account_id or None if no account was found
     def findAccountID(self, accountNumber, accountCurrency=''):
         if accountCurrency:
-            account_id = readSQL(self.db, "SELECT a.id FROM accounts AS a "
-                                          "LEFT JOIN assets AS c ON c.id=a.currency_id "
-                                          "WHERE a.number=:account_number AND c.name=:currency_name",
+            account_id = readSQL("SELECT a.id FROM accounts AS a "
+                                 "LEFT JOIN assets AS c ON c.id=a.currency_id "
+                                 "WHERE a.number=:account_number AND c.name=:currency_name",
                                  [(":account_number", accountNumber), (":currency_name", accountCurrency)])
         else:
-            account_id = readSQL(self.db, "SELECT a.id FROM accounts AS a "
-                                          "LEFT JOIN assets AS c ON c.id=a.currency_id "
-                                          "WHERE a.number=:account_number", [(":account_number", accountNumber)])
+            account_id = readSQL("SELECT a.id FROM accounts AS a "
+                                 "LEFT JOIN assets AS c ON c.id=a.currency_id "
+                                 "WHERE a.number=:account_number", [(":account_number", accountNumber)])
         if account_id is None:
             logging.error(g_tr('StatementLoader', "Account not found: ") + f"{accountNumber} ({accountCurrency})")
         return account_id
@@ -361,11 +361,11 @@ class StatementLoader(QObject):
     # Returns: asset_id or None if new asset creation failed
     def findAssetID(self, symbol, isin='', dialog_new=True):
         if isin:
-            asset_id = readSQL(self.db, "SELECT id FROM assets WHERE isin=:isin", [(":isin", isin)])
+            asset_id = readSQL("SELECT id FROM assets WHERE isin=:isin", [(":isin", isin)])
             if asset_id is not None:
-                db_symbol = readSQL(self.db, "SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
+                db_symbol = readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
                 if db_symbol != symbol:
-                    _ = executeSQL(self.db, "UPDATE assets SET name=:symbol WHERE id=:asset_id",
+                    _ = executeSQL("UPDATE assets SET name=:symbol WHERE id=:asset_id",
                                    [(":symbol", symbol), (":asset_id", asset_id)])
                     # Show warning if symbol was changed not due known bankruptcy or new issue pattern
                     if (db_symbol != symbol + 'D') and (db_symbol + 'D' != symbol) \
@@ -373,12 +373,12 @@ class StatementLoader(QObject):
                         logging.warning(
                             g_tr('StatementLoader', "Symbol updated for ISIN ") + f"{isin}: {db_symbol} -> {symbol}")
                 return asset_id
-        asset_id = readSQL(self.db, "SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)])
+        asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)])
         if asset_id is not None:
             # Check why symbol was not found by ISIN
-            db_isin = readSQL(self.db, "SELECT isin FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
+            db_isin = readSQL("SELECT isin FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
             if db_isin == '':  # Update ISIN if it was absent in DB
-                _ = executeSQL(self.db, "UPDATE assets SET isin=:isin WHERE id=:asset_id",
+                _ = executeSQL("UPDATE assets SET isin=:isin WHERE id=:asset_id",
                                [(":isin", isin), (":asset_id", asset_id)])
                 logging.info(g_tr('StatementLoader', "ISIN updated for ") + f"{symbol}: {isin}")
             else:
@@ -391,16 +391,16 @@ class StatementLoader(QObject):
 
     # returns bank id assigned for the account or asks for assignment if field is empty
     def getAccountBank(self, account_id):
-        bank_id = readSQL(self.db, "SELECT organization_id FROM accounts WHERE id=:account_id",
+        bank_id = readSQL("SELECT organization_id FROM accounts WHERE id=:account_id",
                           [(":account_id", account_id)])
         if bank_id != '':
             return bank_id
-        bank_id = readSQL(self.db, "SELECT id FROM agents WHERE name='Interactive Brokers'")
+        bank_id = readSQL("SELECT id FROM agents WHERE name='Interactive Brokers'")
         if bank_id is not None:  # FIXME Better to check that every investment accunt has bank assigned at creation
             return bank_id
-        query = executeSQL(self.db, "INSERT INTO agents (pid, name) VALUES (0, 'Interactive Brokers')")
+        query = executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'Interactive Brokers')")
         bank_id = query.lastInsertId()
-        _ = executeSQL(self.db, "UPDATE accounts SET organization_id=:bank_id WHERE id=:account_id",
+        _ = executeSQL("UPDATE accounts SET organization_id=:bank_id WHERE id=:account_id",
                        [(":bank_id", bank_id), (":account_id", account_id)])
         return bank_id
 
@@ -420,7 +420,7 @@ class StatementLoader(QObject):
                     attr = statement.attrib
                     report_start = int(
                         datetime.strptime(attr['fromDate'], "%Y%m%d").replace(tzinfo=timezone.utc).timestamp())
-                    if report_start < account_last_date(self.db, attr['accountId']):
+                    if report_start < account_last_date(attr['accountId']):
                         if QMessageBox().warning(None,
                                                  g_tr('StatementLoader', "Confirmation"),
                                                  g_tr('StatementLoader',
@@ -715,18 +715,18 @@ class StatementLoader(QObject):
         for tax in taxes:
             bank_id = self.getAccountBank(tax['accountId'])
             note = f"{tax['symbol']} ({tax['description']}) - {tax['taxDescription']}"
-            id = readSQL(self.db, "SELECT id FROM all_operations WHERE type = :type "
-                                  "AND timestamp=:timestamp AND account_id=:account_id AND amount=:amount",
+            id = readSQL("SELECT id FROM all_operations WHERE type = :type "
+                         "AND timestamp=:timestamp AND account_id=:account_id AND amount=:amount",
                          [(":timestamp", tax['date']), (":type", TransactionType.Action),
                           (":account_id", tax['accountId']), (":amount", tax['taxAmount'])])
             if id:
                 logging.warning(g_tr('StatementLoader', "Tax transaction already exists ") + f"{tax}")
                 continue
-            query = executeSQL(self.db, "INSERT INTO actions (timestamp, account_id, peer_id) "
+            query = executeSQL("INSERT INTO actions (timestamp, account_id, peer_id) "
                                         "VALUES (:timestamp, :account_id, :bank_id)",
                                [(":timestamp", tax['date']), (":account_id", tax['accountId']), (":bank_id", bank_id)])
             pid = query.lastInsertId()
-            _ = executeSQL(self.db, "INSERT INTO action_details (pid, category_id, sum, note) "
+            _ = executeSQL("INSERT INTO action_details (pid, category_id, sum, note) "
                                     "VALUES (:pid, :category_id, :sum, :note)",
                            [(":pid", pid), (":category_id", PredefinedCategory.Taxes),
                             (":sum", tax['taxAmount']), (":note", note)])
@@ -747,8 +747,7 @@ class StatementLoader(QObject):
             try:
                 description = transaction_desctiption[option['transactionType']]
                 if description:
-                    _ = executeSQL(self.db,
-                                   "UPDATE trades SET note=:description WHERE "
+                    _ = executeSQL("UPDATE trades SET note=:description WHERE "
                                    "account_id=:account_id AND asset_id=:asset_id AND number=:trade_id",
                                    [(":description", description), (":account_id", option['accountId']),
                                     (":asset_id", option['symbol']), (":trade_id", option['tradeID'])])
@@ -814,8 +813,7 @@ class StatementLoader(QObject):
         return 1
 
     def createTrade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee):
-        trade_id = readSQL(self.db,
-                           "SELECT id FROM trades "
+        trade_id = readSQL("SELECT id FROM trades "
                            "WHERE timestamp=:timestamp AND asset_id = :asset "
                            "AND account_id = :account AND number = :number AND qty = :qty AND price = :price",
                            [(":timestamp", timestamp), (":asset", asset_id), (":account", account_id),
@@ -824,8 +822,7 @@ class StatementLoader(QObject):
             logging.info(g_tr('StatementLoader', "Trade already exists: #") + f"{number}")
             return
 
-        _ = executeSQL(self.db,
-                       "INSERT INTO trades (timestamp, settlement, number, account_id, asset_id, qty, price, fee) "
+        _ = executeSQL("INSERT INTO trades (timestamp, settlement, number, account_id, asset_id, qty, price, fee) "
                        "VALUES (:timestamp, :settlement, :number, :account, :asset, :qty, :price, :fee)",
                        [(":timestamp", timestamp), (":settlement", settlement), (":number", number),
                         (":account", account_id), (":asset", asset_id), (":qty", float(qty)),
@@ -833,9 +830,9 @@ class StatementLoader(QObject):
         self.db.commit()
 
     def deleteTrade(self, account_id, asset_id, timestamp, _settlement, number, qty, price, _fee):
-        _ = executeSQL(self.db, "DELETE FROM trades "
-                                "WHERE timestamp=:timestamp AND asset_id=:asset "
-                                "AND account_id=:account AND number=:number AND qty=:qty AND price=:price",
+        _ = executeSQL("DELETE FROM trades "
+                       "WHERE timestamp=:timestamp AND asset_id=:asset "
+                       "AND account_id=:account AND number=:number AND qty=:qty AND price=:price",
                        [(":timestamp", timestamp), (":asset", asset_id), (":account", account_id),
                         (":number", number), (":qty", -qty), (":price", price)])
         self.db.commit()
@@ -862,16 +859,14 @@ class StatementLoader(QObject):
         return 1
 
     def createTransfer(self, timestamp, f_acc_id, f_amount, t_acc_id, t_amount, fee_acc_id, fee, note):
-        transfer_id = readSQL(self.db,
-                              "SELECT id FROM transfers WHERE withdrawal_timestamp=:timestamp "
+        transfer_id = readSQL("SELECT id FROM transfers WHERE withdrawal_timestamp=:timestamp "
                               "AND withdrawal_account=:from_acc_id AND deposit_account=:to_acc_id",
                               [(":timestamp", timestamp), (":from_acc_id", f_acc_id), (":to_acc_id", t_acc_id)])
         if transfer_id:
             logging.info(g_tr('StatementLoader', "Transfer/Exchange already exists: ") + f"{f_amount}->{t_amount}")
             return
         if abs(fee) > Setup.CALC_TOLERANCE:
-            _ = executeSQL(self.db,
-                           "INSERT INTO transfers (withdrawal_timestamp, withdrawal_account, withdrawal, "
+            _ = executeSQL("INSERT INTO transfers (withdrawal_timestamp, withdrawal_account, withdrawal, "
                            "deposit_timestamp, deposit_account, deposit, fee_account, fee, note) "
                            "VALUES (:timestamp, :f_acc_id, :f_amount, :timestamp, :t_acc_id, :t_amount, "
                            ":fee_acc_id, :fee_amount, :note)",
@@ -879,8 +874,7 @@ class StatementLoader(QObject):
                             (":f_amount", f_amount), (":t_amount", t_amount), (":fee_acc_id", fee_acc_id),
                             (":fee_amount", fee), (":note", note)])
         else:
-            _ = executeSQL(self.db,
-                           "INSERT INTO transfers (withdrawal_timestamp, withdrawal_account, withdrawal, "
+            _ = executeSQL("INSERT INTO transfers (withdrawal_timestamp, withdrawal_account, withdrawal, "
                            "deposit_timestamp, deposit_account, deposit, note) "
                            "VALUES (:timestamp, :f_acc_id, :f_amount, :timestamp, :t_acc_id, :t_amount, :note)",
                            [(":timestamp", timestamp), (":f_acc_id", f_acc_id), (":t_acc_id", t_acc_id),
@@ -889,8 +883,7 @@ class StatementLoader(QObject):
 
     def createCorpAction(self, account_id, type, timestamp, number, asset_id_old, qty_old, asset_id_new, qty_new,
                          basis_ratio, note):
-        action_id = readSQL(self.db,
-                            "SELECT id FROM corp_actions "
+        action_id = readSQL("SELECT id FROM corp_actions "
                             "WHERE timestamp=:timestamp AND type = :type AND account_id = :account AND number = :number "
                             "AND asset_id = :asset AND asset_id_new = :asset_new",
                             [(":timestamp", timestamp), (":type", type), (":account", account_id), (":number", number),
@@ -899,8 +892,7 @@ class StatementLoader(QObject):
             logging.info(g_tr('StatementLoader', "Corporate action already exists: #") + f"{number}")
             return
 
-        _ = executeSQL(self.db,
-                       "INSERT INTO corp_actions (timestamp, number, account_id, type, "
+        _ = executeSQL("INSERT INTO corp_actions (timestamp, number, account_id, type, "
                        "asset_id, qty, asset_id_new, qty_new, basis_ratio, note) "
                        "VALUES (:timestamp, :number, :account, :type, "
                        ":asset, :qty, :asset_new, :qty_new, :basis_ratio, :note)",
@@ -925,12 +917,12 @@ class StatementLoader(QObject):
 
     def loadIBFee(self, fee):
         bank_id = self.getAccountBank(fee['accountId'])
-        query = executeSQL(self.db, "INSERT INTO actions (timestamp, account_id, peer_id) "
-                                    "VALUES (:timestamp, :account_id, :bank_id)",
+        query = executeSQL("INSERT INTO actions (timestamp, account_id, peer_id) "
+                           "VALUES (:timestamp, :account_id, :bank_id)",
                            [(":timestamp", fee['dateTime']), (":account_id", fee['accountId']), (":bank_id", bank_id)])
         pid = query.lastInsertId()
-        _ = executeSQL(self.db, "INSERT INTO action_details (pid, category_id, sum, note) "
-                                "VALUES (:pid, :category_id, :sum, :note)",
+        _ = executeSQL("INSERT INTO action_details (pid, category_id, sum, note) "
+                       "VALUES (:pid, :category_id, :sum, :note)",
                        [(":pid", pid), (":category_id", PredefinedCategory.Fees), (":sum", fee['amount']),
                         (":note", fee['description'])])
         self.db.commit()
@@ -938,13 +930,13 @@ class StatementLoader(QObject):
 
     def loadIBInterest(self, interest):
         bank_id = self.getAccountBank(interest['accountId'])
-        query = executeSQL(self.db, "INSERT INTO actions (timestamp, account_id, peer_id) "
-                                    "VALUES (:timestamp, :account_id, :bank_id)",
+        query = executeSQL("INSERT INTO actions (timestamp, account_id, peer_id) "
+                           "VALUES (:timestamp, :account_id, :bank_id)",
                            [(":timestamp", interest['dateTime']), (":account_id", interest['accountId']),
                             (":bank_id", bank_id)])
         pid = query.lastInsertId()
-        _ = executeSQL(self.db, "INSERT INTO action_details (pid, category_id, sum, note) "
-                                "VALUES (:pid, :category_id, :sum, :note)",
+        _ = executeSQL("INSERT INTO action_details (pid, category_id, sum, note) "
+                       "VALUES (:pid, :category_id, :sum, :note)",
                        [(":pid", pid), (":category_id", PredefinedCategory.Interest), (":sum", interest['amount']),
                         (":note", interest['description'])])
         self.db.commit()
@@ -975,14 +967,14 @@ class StatementLoader(QObject):
         return 1
 
     def createDividend(self, subtype, timestamp, account_id, asset_id, amount, note, trade_number=''):
-        id = readSQL(self.db, "SELECT id FROM dividends WHERE timestamp=:timestamp "
-                              "AND account_id=:account_id AND asset_id=:asset_id AND note=:note",
+        id = readSQL("SELECT id FROM dividends WHERE timestamp=:timestamp "
+                     "AND account_id=:account_id AND asset_id=:asset_id AND note=:note",
                      [(":timestamp", timestamp), (":account_id", account_id), (":asset_id", asset_id), (":note", note)])
         if id:
             logging.info(g_tr('StatementLoader', "Dividend already exists: ") + f"{note}")
             return
-        _ = executeSQL(self.db, "INSERT INTO dividends (timestamp, number, type, account_id, asset_id, amount, note) "
-                                "VALUES (:timestamp, :number, :subtype, :account_id, :asset_id, :amount, :note)",
+        _ = executeSQL("INSERT INTO dividends (timestamp, number, type, account_id, asset_id, amount, note) "
+                       "VALUES (:timestamp, :number, :subtype, :account_id, :asset_id, :amount, :note)",
                        [(":timestamp", timestamp), (":number", trade_number), (":subtype", subtype),
                         (":account_id", account_id), (":asset_id", asset_id), (":amount", amount), (":note", note)])
         self.db.commit()
@@ -995,36 +987,36 @@ class StatementLoader(QObject):
             return
         dividend_note = parts.group(1) + '%'
         country_code = parts.group(2).lower()
-        country_id = get_country_by_code(self.db, country_code)
-        update_asset_country(self.db, asset_id, country_id)
+        country_id = get_country_by_code(country_code)
+        update_asset_country(asset_id, country_id)
         dividend_id = self.findDividend4Tax(timestamp, account_id, asset_id, dividend_note)
         if dividend_id is None:
             logging.warning(g_tr('StatementLoader', "Dividend not found for withholding tax: ") + f"{note}")
             return
-        old_tax = readSQL(self.db, "SELECT tax FROM dividends WHERE id=:id", [(":id", dividend_id)])
-        _ = executeSQL(self.db, "UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
+        old_tax = readSQL("SELECT tax FROM dividends WHERE id=:id", [(":id", dividend_id)])
+        _ = executeSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
                        [(":dividend_id", dividend_id), (":tax", old_tax + amount)])
         self.db.commit()
 
     def findDividend4Tax(self, timestamp, account_id, asset_id, note):
         # Check strong match
-        id = readSQL(self.db, "SELECT id FROM dividends WHERE type=:div AND timestamp=:timestamp "
-                              "AND account_id=:account_id AND asset_id=:asset_id AND note LIKE :dividend_description",
+        id = readSQL("SELECT id FROM dividends WHERE type=:div AND timestamp=:timestamp "
+                     "AND account_id=:account_id AND asset_id=:asset_id AND note LIKE :dividend_description",
                      [(":div", DividendSubtype.Dividend), (":timestamp", timestamp), (":account_id", account_id),
                       (":asset_id", asset_id), (":dividend_description", note)])
         if id is not None:
             return id
         # Check weak match
         range_start = ManipulateDate.startOfPreviousYear(day=datetime.utcfromtimestamp(timestamp))
-        count = readSQL(self.db, "SELECT COUNT(id) FROM dividends WHERE type=:div AND timestamp>=:start_range "
-                              "AND account_id=:account_id AND asset_id=:asset_id AND note LIKE :dividend_description",
-                     [(":div", DividendSubtype.Dividend), (":start_range", range_start), (":account_id", account_id),
-                      (":asset_id", asset_id), (":dividend_description", note)])
+        count = readSQL("SELECT COUNT(id) FROM dividends WHERE type=:div AND timestamp>=:start_range "
+                        "AND account_id=:account_id AND asset_id=:asset_id AND note LIKE :dividend_description",
+                        [(":div", DividendSubtype.Dividend), (":start_range", range_start), (":account_id", account_id),
+                         (":asset_id", asset_id), (":dividend_description", note)])
         if count > 1:
             logging.warning(g_tr('StatementLoader', "Multiple dividends match withholding tax"))
             return None
-        id = readSQL(self.db, "SELECT id FROM dividends WHERE type=:div AND timestamp>=:start_range "
-                              "AND account_id=:account_id AND asset_id=:asset_id AND note LIKE :dividend_description",
+        id = readSQL("SELECT id FROM dividends WHERE type=:div AND timestamp>=:start_range "
+                     "AND account_id=:account_id AND asset_id=:asset_id AND note LIKE :dividend_description",
                      [(":div", DividendSubtype.Dividend), (":start_range", range_start), (":account_id", account_id),
                       (":asset_id", asset_id), (":dividend_description", note)])
         return id

@@ -86,7 +86,7 @@ class SlipLinesDelegate(QStyledItemDelegate):
             text = model.data(index, Qt.DisplayRole)
             painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
         if index.column() == 1:
-            text = get_category_name(index.model().database(), int(model.data(index, Qt.DisplayRole)))
+            text = get_category_name(int(model.data(index, Qt.DisplayRole)))
             confidence = model.data(index.siblingAtColumn(2), Qt.DisplayRole)
             if confidence > 0.75:
                 painter.fillRect(option.rect, CustomColor.LightGreen)
@@ -431,23 +431,23 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             logging.warning(g_tr('ImportSlipDialog', "Not possible to import slip: some categories are not set"))
             return
 
-        query = executeSQL(self.db, "INSERT INTO actions (timestamp, account_id, peer_id) "
-                                     "VALUES (:timestamp, :account_id, :peer_id)",
-                            [(":timestamp", self.SlipDateTime.dateTime().toSecsSinceEpoch()),
-                             (":account_id", self.AccountEdit.selected_id),
-                             (":peer_id", self.PeerEdit.selected_id)])
+        query = executeSQL("INSERT INTO actions (timestamp, account_id, peer_id) "
+                           "VALUES (:timestamp, :account_id, :peer_id)",
+                           [(":timestamp", self.SlipDateTime.dateTime().toSecsSinceEpoch()),
+                            (":account_id", self.AccountEdit.selected_id),
+                            (":peer_id", self.PeerEdit.selected_id)])
         pid = query.lastInsertId()
         # update mappings
-        _ = executeSQL(self.db, "INSERT INTO map_peer (value, mapped_to) VALUES (:peer_name, :peer_id)",
+        _ = executeSQL("INSERT INTO map_peer (value, mapped_to) VALUES (:peer_name, :peer_id)",
                        [(":peer_name", self.SlipShopName.text()), (":peer_id", self.PeerEdit.selected_id)])
 
         for index, row in self.slip_lines.iterrows():
-            _ = executeSQL(self.db, "INSERT INTO action_details (pid, category_id, tag_id, sum, note) "
-                                    "VALUES (:pid, :category_id, :tag_id, :amount, :note)",
+            _ = executeSQL("INSERT INTO action_details (pid, category_id, tag_id, sum, note) "
+                           "VALUES (:pid, :category_id, :tag_id, :amount, :note)",
                            [(":pid", pid), (":category_id", row['category']), (":tag_id", row['tag']),
                             (":amount", row['sum']), (":note", row['name'])])
             # update mappings
-            _ = executeSQL(self.db, "INSERT INTO map_category (value, mapped_to) VALUES (:item_name, :category_id)",
+            _ = executeSQL("INSERT INTO map_category (value, mapped_to) VALUES (:item_name, :category_id)",
                            [(":item_name", row['name']), (":category_id", row['category'])])
         self.db.commit()
         self.clearSlipData()
@@ -461,11 +461,11 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.initUi()
 
     def match_shop_name(self, shop_name):
-        return readSQL(self.db, "SELECT mapped_to FROM map_peer WHERE value=:shop_name",
+        return readSQL("SELECT mapped_to FROM map_peer WHERE value=:shop_name",
                        [(":shop_name", shop_name)])
 
     @Slot()
     def recognizeCategories(self):
         self.slip_lines['category'], self.slip_lines['confidence'] = \
-            recognize_categories(self.db, self.slip_lines['name'].tolist())
+            recognize_categories(self.slip_lines['name'].tolist())
         self.model.dataChanged.emit(None, None)  # refresh full view

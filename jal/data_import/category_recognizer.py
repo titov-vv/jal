@@ -22,12 +22,12 @@ def clean_text(text):
 #----------------------------------------------------------------------------------------------------------------------
 
 
-def recognize_categories(db, purchases):
+def recognize_categories(purchases):
     import tensorflow as tf
     tf.get_logger().setLevel('WARNING')
 
     # Load only categories that were used for import
-    query = executeSQL(db, "SELECT DISTINCT mapped_to AS category FROM map_category")
+    query = executeSQL("SELECT DISTINCT mapped_to AS category FROM map_category")
     table = []
     classes_number = 0
     while query.next():
@@ -40,7 +40,7 @@ def recognize_categories(db, purchases):
     categories = pd.DataFrame(table)
 
     # Load data from DB into pandas dataframe
-    query = executeSQL(db, "SELECT value, mapped_to FROM map_category")
+    query = executeSQL("SELECT value, mapped_to FROM map_category")
     table = []
     while query.next():
         value, mapped_to = readSQLrecord(query)
