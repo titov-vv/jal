@@ -60,7 +60,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.logger.setLevel(log_level)
 
         # Setup reports tab
-        self.ReportAccountBtn.init_db(self.db)
         self.ReportCategoryEdit.init_db(self.db)
         self.reports = Reports(self.ReportTableView)
         self.reports.report_failure.connect(self.onReportFailure)
@@ -97,9 +96,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.BalancesCurrencyCombo.setIndex(JalSettings().getValue('BaseCurrency'))
         self.HoldingsDate.setDateTime(QDateTime.currentDateTime())
         self.HoldingsCurrencyCombo.setIndex(JalSettings().getValue('BaseCurrency'))
-
-        # Create menu for different operations
-        self.ChooseAccountBtn.init_db(self.db)
 
         # Operations view context menu
         self.contextMenu = QMenu(self.OperationsTableView)
