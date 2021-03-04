@@ -5,6 +5,7 @@ from PySide2.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButt
 
 from jal.ui_custom.helpers import g_tr
 import jal.ui_custom.reference_data as ui               # Full import due to "cyclic" reference
+import jal.ui_custom.reference_dialogs as ui_dialogs
 
 
 # To solve metaclass conflict
@@ -94,6 +95,15 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
 
     def isCustom(self):
         return True
+
+# ----------------------------------------------------------------------------------------------------------------------
+class AccountSelector(AbstractReferenceSelector):
+    def __init__(self, parent=None):
+        AbstractReferenceSelector.__init__(self, parent)
+        self.dialog = ui_dialogs.AccountsListDialog()
+
+    def init_db(self, db):
+        super().init_db("accounts", "name")
 
 
 class AssetSelector(AbstractReferenceSelector):

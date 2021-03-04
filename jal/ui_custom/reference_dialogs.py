@@ -4,6 +4,29 @@ from PySide2.QtCore import Slot
 from jal.ui_custom.helpers import g_tr
 import jal.ui_custom.reference_data as ui               # Full import due to "cyclic" reference
 
+from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
+    ReferenceLookupDelegate, ReferenceTimestampDelegate
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+class AccountsListDialog(ReferenceDataDialog):
+    def __init__(self):
+        ReferenceDataDialog.__init__(self, "accounts",
+                                     [("id", None, 0, None, None),
+                                      ("name", g_tr('AccountButton', "Name"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
+                                      ("type_id", None, 0, None, None),
+                                      ("currency_id", g_tr('AccountButton', "Currency"), None, None, ReferenceLookupDelegate),
+                                      ("active", g_tr('AccountButton', "Act."), 32, None, ReferenceBoolDelegate),
+                                      ("number", g_tr('AccountButton', "Account #"), None, None, None),
+                                      ("reconciled_on", g_tr('AccountButton', "Reconciled @"), ColumnWidth.FOR_DATETIME, None, ReferenceTimestampDelegate),
+                                      ("organization_id", g_tr('AccountButton', "Bank"), None, None, ReferenceLookupDelegate)],
+                                     title=g_tr('AccountsListDialog', "Accounts"),
+                                     search_field="full_name",
+                                     toggle=("active", g_tr('AccountButton', "Show inactive")),
+                                     relations=[("type_id", "account_types", "id", "name",
+                                                 g_tr('AccountButton', "Account type:")),
+                                                ("currency_id", "currencies", "id", "name", None),
+                                                ("organization_id", "agents", "id", "name", None)])
 
 # TODO Probably better idea is to subclass ReferenceDataDialog for each table instead of self.dialogs dictionary
 class ReferenceDialogs:
@@ -25,26 +48,6 @@ class ReferenceDialogs:
                 None,
                 False,
                 None
-            ),
-            "accounts": (
-                g_tr('TableViewConfig', "Accounts"),
-                [("id", None, 0, None, None),
-                 ("name", g_tr('TableViewConfig', "Name"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
-                 ("type_id", None, 0, None, None),
-                 ("currency_id", g_tr('TableViewConfig', "Currency"), None, None, ui.ReferenceLookupDelegate),
-                 ("active", g_tr('TableViewConfig', "Act."), 32, None, ui.ReferenceBoolDelegate),
-                 ("number", g_tr('TableViewConfig', "Account #"), None, None, None),
-                 ("reconciled_on", g_tr('TableViewConfig', "Reconciled @"), ColumnWidth.FOR_DATETIME,
-                  None, ui.ReferenceTimestampDelegate),
-                 ("organization_id", g_tr('TableViewConfig', "Bank"), None, None, ui.ReferencePeerDelegate),
-                 ("country_id", g_tr('TableViewConfig', "CC"), 50, None, ui.ReferenceLookupDelegate)],
-                "name",
-                ("active", g_tr('TableViewConfig', "Show inactive")),
-                False,
-                [("type_id", "account_types", "id", "name", g_tr('TableViewConfig', "Account type:")),
-                 ("currency_id", "currencies", "id", "name", None),
-                 ("organization_id", "agents", "id", "name", None),
-                 ("country_id", "countries", "id", "code", None)]
             ),
             "assets": (
                 g_tr('TableViewConfig', "Assets"),
@@ -127,11 +130,14 @@ class ReferenceDialogs:
 
     @Slot()
     def show(self, table_name):
-        ui.ReferenceDataDialog(table_name,
-                               self.dialogs[table_name][self.DLG_COLUMNS],
-                               title=self.dialogs[table_name][self.DLG_TITLE],
-                               search_field=self.dialogs[table_name][self.DLG_SEARCH],
-                               toggle=self.dialogs[table_name][self.DLG_TOGGLE],
-                               tree_view=self.dialogs[table_name][self.DLG_TREE],
-                               relations=self.dialogs[table_name][self.DLG_RELATIONS]
-                               ).exec_()
+        if table_name == "accounts":
+            AccountsListDialog().exec_()
+        else:
+            ui.ReferenceDataDialog(table_name,
+                                   self.dialogs[table_name][self.DLG_COLUMNS],
+                                   title=self.dialogs[table_name][self.DLG_TITLE],
+                                   search_field=self.dialogs[table_name][self.DLG_SEARCH],
+                                   toggle=self.dialogs[table_name][self.DLG_TOGGLE],
+                                   tree_view=self.dialogs[table_name][self.DLG_TREE],
+                                   relations=self.dialogs[table_name][self.DLG_RELATIONS]
+                                   ).exec_()

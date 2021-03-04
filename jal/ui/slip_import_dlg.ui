@@ -508,7 +508,7 @@
   <customwidget>
    <class>AccountSelector</class>
    <extends>QWidget</extends>
-   <header>jal/ui_custom/account_select.h</header>
+   <header>jal/ui_custom/reference_selector.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
