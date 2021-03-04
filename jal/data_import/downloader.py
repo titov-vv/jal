@@ -56,9 +56,8 @@ class QuotesUpdateDialog(QDialog, Ui_UpdateQuotesDlg):
 class QuoteDownloader(QObject):
     download_completed = Signal()
 
-    def __init__(self, db):
+    def __init__(self):
         super().__init__()
-        self.db = db
         self.CBR_codes = None
         self.data_loaders = {
             MarketDataFeed.NA: self.Dummy_DataReader,
