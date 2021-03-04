@@ -37,7 +37,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.currentLanguage = language
         self.current_index = None  # this is used in onOperationContextMenu() to track item for menu
 
-        self.ledger = Ledger(self.db)
+        self.ledger = Ledger()
         self.downloader = QuoteDownloader()
         self.downloader.download_completed.connect(self.onQuotesDownloadCompletion)
         self.taxes = TaxesRus(self.db)

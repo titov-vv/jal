@@ -82,7 +82,7 @@ def test_fifo(tmp_path, project_root):
 
     assert error.code == LedgerInitError.DbInitSuccess
 
-    ledger = Ledger(db)
+    ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
     # Check single deal

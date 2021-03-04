@@ -46,8 +46,7 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
 class Ledger:
     SILENT_REBUILD_THRESHOLD = 50
 
-    def __init__(self, db):
-        self.db = db
+    def __init__(self):
         self.current = {}
         self.current_seq = -1
 
