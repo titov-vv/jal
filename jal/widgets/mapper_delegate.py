@@ -52,10 +52,10 @@ class FloatDelegate(QSqlRelationalDelegate):
     def paint(self, painter, option, index):
         painter.save()
         try:
-            amount = index.model().data(index, Qt.DisplayRole)
+            amount = float(index.model().data(index, Qt.DisplayRole))
         except ValueError:
             amount = 0.0
-        text = self.formatFloatLong(float(amount))
+        text = self.formatFloatLong(amount)
         painter.drawText(option.rect, Qt.AlignRight, text)
         painter.restore()
 
