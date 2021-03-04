@@ -136,10 +136,7 @@ class CategorySelector(AbstractReferenceSelector):
 class TagSelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
         AbstractReferenceSelector.__init__(self, parent)
+        self.dialog = ui_dialogs.TagsListDialog()
 
     def init_db(self, db):
-        self.dialog = ui.ReferenceDataDialog("tags",
-                                             [("id", None, 0, None, None),
-                                              ("tag", "Tag", -1, Qt.AscendingOrder, None)],
-                                             title="Choose tag", search_field="tag")
         super().init_db("tags", "tag")

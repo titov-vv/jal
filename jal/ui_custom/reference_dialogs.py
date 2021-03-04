@@ -78,6 +78,13 @@ class CategoryListDialog(ReferenceDataDialog):
                                               ("children_count", None, None, None, None)],
                                              title=g_tr('TableViewConfig', "Categories"), search_field="name", tree_view=True)
 
+# ----------------------------------------------------------------------------------------------------------------------
+class TagsListDialog(ReferenceDataDialog):
+    def __init__(self):
+        ReferenceDataDialog.__init__(self, "tags",
+                                             [("id", None, 0, None, None),
+                                              ("tag", g_tr('TableViewConfig', "Tag"), ColumnWidth.STRETCH, Qt.AscendingOrder, None)],
+                                             title=g_tr('TableViewConfig', "Tags"), search_field="tag")
 
 # TODO Probably better idea is to subclass ReferenceDataDialog for each table instead of self.dialogs dictionary
 class ReferenceDialogs:
@@ -91,15 +98,6 @@ class ReferenceDialogs:
     def __init__(self, parent):
         self.parent = parent
         self.dialogs = {
-            "tags": (
-                g_tr('TableViewConfig', "Tags"),
-                [("id", None, 0, None, None),
-                 ("tag", g_tr('TableViewConfig', "Tag"), ColumnWidth.STRETCH, Qt.AscendingOrder, None)],
-                "tag",
-                None,
-                False,
-                None
-            ),
             "countries": (
                 g_tr('TableViewConfig', "Countries"),
                 [("id", None, 0, None, None),
@@ -140,6 +138,8 @@ class ReferenceDialogs:
             PeerListDialog().exec_()
         elif table_name == "categories_ext":
             CategoryListDialog().exec_()
+        elif table_name == "tags":
+            TagsListDialog().exec_()
         else:
             ui.ReferenceDataDialog(table_name,
                                    self.dialogs[table_name][self.DLG_COLUMNS],
