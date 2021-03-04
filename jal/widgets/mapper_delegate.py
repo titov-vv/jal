@@ -43,18 +43,19 @@ class FloatDelegate(QSqlRelationalDelegate):
         return float_editor
 
     def setEditorData(self, editor, index):
-        amount = index.model().data(index, Qt.EditRole)
-        if amount:
-            editor.setText(self.formatFloatLong(float(amount)))
-        else:
-            QSqlRelationalDelegate.setEditorData(self, editor, index)
+        try:
+            amount = float(index.model().data(index, Qt.EditRole))
+        except ValueError:
+            amount = 0.0
+        editor.setText(self.formatFloatLong(float(amount)))
 
     def paint(self, painter, option, index):
         painter.save()
-        amount = index.model().data(index, Qt.DisplayRole)
-        text = ""
-        if amount:
-            text = self.formatFloatLong(float(amount))
+        try:
+            amount = index.model().data(index, Qt.DisplayRole)
+        except ValueError:
+            amount = 0.0
+        text = self.formatFloatLong(float(amount))
         painter.drawText(option.rect, Qt.AlignRight, text)
         painter.restore()
 

@@ -3,7 +3,7 @@ from datetime import datetime
 from dateutil import tz
 
 from PySide2.QtCore import Qt, Slot
-from PySide2.QtWidgets import QLabel, QDateTimeEdit, QPushButton, QTableView, QLineEdit, QHeaderView
+from PySide2.QtWidgets import QLabel, QDateTimeEdit, QPushButton, QTableView, QHeaderView
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate
 from jal.ui_custom.helpers import g_tr
 from jal.ui_custom.abstract_operation_details import AbstractOperationDetails
@@ -122,6 +122,8 @@ class IncomeSpendingWidget(AbstractOperationDetails):
     @Slot()
     def addChild(self):
         new_record = self.details_model.record()
+        new_record.setNull("tag_id")
+        new_record.setValue("sum", 0)
         if not self.details_model.insertRecord(-1, new_record):
             logging.fatal(
                 g_tr('AbstractOperationDetails', "Failed to add new record: ") + self.details_model.lastError().text())
