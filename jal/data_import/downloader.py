@@ -240,10 +240,9 @@ class QuoteDownloader(QObject):
             old_id = query.value(0)
         if old_id:
             executeSQL("UPDATE quotes SET quote=:quote WHERE id=:old_id",
-                       [(":quote", quote), (":old_id", old_id), ])
+                       [(":quote", quote), (":old_id", old_id), ], commit=True)
         else:
             executeSQL("INSERT INTO quotes(timestamp, asset_id, quote) VALUES (:timestamp, :asset_id, :quote)",
-                       [(":timestamp", timestamp), (":asset_id", asset_id), (":quote", quote)])
-        self.db.commit()
+                       [(":timestamp", timestamp), (":asset_id", asset_id), (":quote", quote)], commit=True)
         logging.info(g_tr('QuotesUpdateDialog', "Quote loaded: ") +
                      f"{asset_name} @ {datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")

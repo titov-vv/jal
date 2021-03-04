@@ -448,8 +448,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
                             (":amount", row['sum']), (":note", row['name'])])
             # update mappings
             _ = executeSQL("INSERT INTO map_category (value, mapped_to) VALUES (:item_name, :category_id)",
-                           [(":item_name", row['name']), (":category_id", row['category'])])
-        self.db.commit()
+                           [(":item_name", row['name']), (":category_id", row['category'])], commit=True)
         self.clearSlipData()
 
     def clearSlipData(self):

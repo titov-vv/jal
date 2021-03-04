@@ -37,3 +37,4 @@ class JalSettings:
         set_query.bindValue(":value", value)
         if not set_query.exec_():
             logging.fatal(f"Failed to set settings key='{key}' to value='{value}'")
+        self.db.commit()

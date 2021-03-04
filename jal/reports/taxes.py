@@ -414,8 +414,7 @@ class TaxesRus:
                        "LEFT JOIN accounts AS a ON a.id = :account_id "
                        "LEFT JOIN quotes AS q ON ref_id >= q.timestamp AND a.currency_id=q.asset_id "
                        "WHERE ref_id IS NOT NULL "
-                       "GROUP BY ref_id", [(":account_id", self.account_id)])
-        self.db.commit()
+                       "GROUP BY ref_id", [(":account_id", self.account_id)], commit=True)
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_dividends(self):

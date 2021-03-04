@@ -185,8 +185,7 @@ class Reports(QObject):
             "AND t.timestamp>=:begin AND t.timestamp<=:end "
             "GROUP BY row_key, col_key",
             [(":book_costs", BookAccount.Costs), (":book_incomes", BookAccount.Incomes),
-             (":begin", begin), (":end", end)])
-        self.db.commit()
+             (":begin", begin), (":end", end)], commit=True)
         self.query = executeSQL("SELECT c.id AS id, c.level AS level, c.path AS category, "
                                 "strftime('%Y', datetime(p.row_key, 'unixepoch')) AS year, "
                                 "strftime('%m', datetime(p.row_key, 'unixepoch')) AS month, p.value AS value"
@@ -281,8 +280,7 @@ class Reports(QObject):
                        "WHERE l.timestamp>=:begin AND l.timestamp<=:end AND l.account_id=:account_id "
                        "GROUP BY m.m_start, l.asset_id "
                        "ORDER BY m.m_start, l.asset_id",
-                       [(":account_id", account_id), (":begin", begin), (":end", end)])
-        self.db.commit()
+                       [(":account_id", account_id), (":begin", begin), (":end", end)], commit=True)
         self.query = executeSQL(
             "SELECT DISTINCT(m.month) AS period, coalesce(t.transfer, 0) AS transfer, coalesce(a.assets, 0) AS assets, "
             "coalesce(p.result, 0) AS result, coalesce(o.profit, 0) AS profit, coalesce(d.dividend, 0) AS dividend, "

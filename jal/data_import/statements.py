@@ -226,8 +226,7 @@ def addNewAsset(db, symbol, name, asset_type, isin, data_source=-1):
     _ = executeSQL("INSERT INTO assets(name, type_id, full_name, isin, src_id) "
                    "VALUES(:symbol, :type, :full_name, :isin, :data_src)",
                    [(":symbol", symbol), (":type", asset_type), (":full_name", name),
-                    (":isin", isin), (":data_src", data_source)])
-    db.commit()
+                    (":isin", isin), (":data_src", data_source)], commit=True)
     asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)])
     if asset_id is None:
         logging.error(g_tr('StatementLoader', "Failed to add new asset: ") + f"{symbol}")
@@ -729,8 +728,7 @@ class StatementLoader(QObject):
             _ = executeSQL("INSERT INTO action_details (pid, category_id, sum, note) "
                                     "VALUES (:pid, :category_id, :sum, :note)",
                            [(":pid", pid), (":category_id", PredefinedCategory.Taxes),
-                            (":sum", tax['taxAmount']), (":note", note)])
-            self.db.commit()
+                            (":sum", tax['taxAmount']), (":note", note)], commit=True)
             cnt += 1
         logging.info(g_tr('StatementLoader', "Taxes loaded: ") + f"{cnt} ({len(taxes)})")
 
@@ -750,8 +748,7 @@ class StatementLoader(QObject):
                     _ = executeSQL("UPDATE trades SET note=:description WHERE "
                                    "account_id=:account_id AND asset_id=:asset_id AND number=:trade_id",
                                    [(":description", description), (":account_id", option['accountId']),
-                                    (":asset_id", option['symbol']), (":trade_id", option['tradeID'])])
-                    self.db.commit()
+                                    (":asset_id", option['symbol']), (":trade_id", option['tradeID'])], commit=True)
                     cnt += 1
             except KeyError:
                 logging.error(
@@ -826,16 +823,14 @@ class StatementLoader(QObject):
                        "VALUES (:timestamp, :settlement, :number, :account, :asset, :qty, :price, :fee)",
                        [(":timestamp", timestamp), (":settlement", settlement), (":number", number),
                         (":account", account_id), (":asset", asset_id), (":qty", float(qty)),
-                        (":price", float(price)), (":fee", -float(fee))])
-        self.db.commit()
+                        (":price", float(price)), (":fee", -float(fee))], commit=True)
 
     def deleteTrade(self, account_id, asset_id, timestamp, _settlement, number, qty, price, _fee):
         _ = executeSQL("DELETE FROM trades "
                        "WHERE timestamp=:timestamp AND asset_id=:asset "
                        "AND account_id=:account AND number=:number AND qty=:qty AND price=:price",
                        [(":timestamp", timestamp), (":asset", asset_id), (":account", account_id),
-                        (":number", number), (":qty", -qty), (":price", price)])
-        self.db.commit()
+                        (":number", number), (":qty", -qty), (":price", price)], commit=True)
 
     def loadIBCurrencyTrade(self, trade):
         if trade['quantity'] > 0:
@@ -872,14 +867,13 @@ class StatementLoader(QObject):
                            ":fee_acc_id, :fee_amount, :note)",
                            [(":timestamp", timestamp), (":f_acc_id", f_acc_id), (":t_acc_id", t_acc_id),
                             (":f_amount", f_amount), (":t_amount", t_amount), (":fee_acc_id", fee_acc_id),
-                            (":fee_amount", fee), (":note", note)])
+                            (":fee_amount", fee), (":note", note)], commit=True)
         else:
             _ = executeSQL("INSERT INTO transfers (withdrawal_timestamp, withdrawal_account, withdrawal, "
                            "deposit_timestamp, deposit_account, deposit, note) "
                            "VALUES (:timestamp, :f_acc_id, :f_amount, :timestamp, :t_acc_id, :t_amount, :note)",
                            [(":timestamp", timestamp), (":f_acc_id", f_acc_id), (":t_acc_id", t_acc_id),
-                            (":f_amount", f_amount), (":t_amount", t_amount), (":note", note)])
-        self.db.commit()
+                            (":f_amount", f_amount), (":t_amount", t_amount), (":note", note)], commit=True)
 
     def createCorpAction(self, account_id, type, timestamp, number, asset_id_old, qty_old, asset_id_new, qty_new,
                          basis_ratio, note):
@@ -898,8 +892,7 @@ class StatementLoader(QObject):
                        ":asset, :qty, :asset_new, :qty_new, :basis_ratio, :note)",
                        [(":timestamp", timestamp), (":number", number), (":account", account_id), (":type", type),
                         (":asset", asset_id_old), (":qty", float(qty_old)), (":asset_new", asset_id_new),
-                        (":qty_new", float(qty_new)), (":basis_ratio", basis_ratio), (":note", note)])
-        self.db.commit()
+                        (":qty_new", float(qty_new)), (":basis_ratio", basis_ratio), (":note", note)], commit=True)
 
     def loadIBDividend(self, dividend):
         self.createDividend(DividendSubtype.Dividend, dividend['dateTime'], dividend['accountId'], dividend['symbol'],
@@ -924,8 +917,7 @@ class StatementLoader(QObject):
         _ = executeSQL("INSERT INTO action_details (pid, category_id, sum, note) "
                        "VALUES (:pid, :category_id, :sum, :note)",
                        [(":pid", pid), (":category_id", PredefinedCategory.Fees), (":sum", fee['amount']),
-                        (":note", fee['description'])])
-        self.db.commit()
+                        (":note", fee['description'])], commit=True)
         return 1
 
     def loadIBInterest(self, interest):
@@ -938,8 +930,7 @@ class StatementLoader(QObject):
         _ = executeSQL("INSERT INTO action_details (pid, category_id, sum, note) "
                        "VALUES (:pid, :category_id, :sum, :note)",
                        [(":pid", pid), (":category_id", PredefinedCategory.Interest), (":sum", interest['amount']),
-                        (":note", interest['description'])])
-        self.db.commit()
+                        (":note", interest['description'])], commit=True)
         return 1
 
     # noinspection PyMethodMayBeStatic
@@ -976,8 +967,8 @@ class StatementLoader(QObject):
         _ = executeSQL("INSERT INTO dividends (timestamp, number, type, account_id, asset_id, amount, note) "
                        "VALUES (:timestamp, :number, :subtype, :account_id, :asset_id, :amount, :note)",
                        [(":timestamp", timestamp), (":number", trade_number), (":subtype", subtype),
-                        (":account_id", account_id), (":asset_id", asset_id), (":amount", amount), (":note", note)])
-        self.db.commit()
+                        (":account_id", account_id), (":asset_id", asset_id), (":amount", amount), (":note", note)],
+                       commit=True)
 
     def addWithholdingTax(self, timestamp, account_id, asset_id, amount, note):
         parts = re.match(IBKR.TaxNotePattern, note)
@@ -995,8 +986,7 @@ class StatementLoader(QObject):
             return
         old_tax = readSQL("SELECT tax FROM dividends WHERE id=:id", [(":id", dividend_id)])
         _ = executeSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
-                       [(":dividend_id", dividend_id), (":tax", old_tax + amount)])
-        self.db.commit()
+                       [(":dividend_id", dividend_id), (":tax", old_tax + amount)], commit=True)
 
     def findDividend4Tax(self, timestamp, account_id, asset_id, note):
         # Check strong match

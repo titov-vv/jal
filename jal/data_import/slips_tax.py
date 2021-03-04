@@ -81,7 +81,6 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
         settings = JalSettings()
         settings.setValue('RuTaxSessionId', new_session_id)
         settings.setValue('RuTaxRefreshToken', new_refresh_token)
-        self.db.commit()
         self.accept()
 
     def login_esia(self):
@@ -115,7 +114,6 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
         settings = JalSettings()
         settings.setValue('RuTaxSessionId', new_session_id)
         settings.setValue('RuTaxRefreshToken', new_refresh_token)
-        self.db.commit()
         self.accept()
 
 #-----------------------------------------------------------------------------------------------------------------------

@@ -109,15 +109,15 @@ class Ledger:
                            " WHERE sid = :sid AND book_account = :book"
                            " AND asset_id = :asset_id AND account_id = :account_id",
                            [(":new_amount", new_amount), (":new_value", new_value), (":sid", seq_id),
-                            (":book", book), (":asset_id", asset_id), (":account_id", account_id)])
+                            (":book", book), (":asset_id", asset_id), (":account_id", account_id)], commit=True)
         else:
             _ = executeSQL("INSERT INTO ledger_sums(sid, timestamp, book_account, "
                            "asset_id, account_id, sum_amount, sum_value) "
                            "VALUES(:sid, :timestamp, :book, :asset_id, "
                            ":account_id, :new_amount, :new_value)",
                            [(":sid", seq_id), (":timestamp", timestamp), (":book", book), (":asset_id", asset_id),
-                            (":account_id", account_id), (":new_amount", new_amount), (":new_value", new_value)])
-        self.db.commit()
+                            (":account_id", account_id), (":new_amount", new_amount), (":new_value", new_value)],
+                           commit=True)
 
     # TODO check that condition <= is really correct for timestamp in this function
     # Returns Amount measured in current account currency or asset_id that 'book' has at current ledger frontier
@@ -529,8 +529,7 @@ class Ledger:
                        [(":frontier", frontier)])
         _ = executeSQL("DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
         _ = executeSQL("DELETE FROM sequence WHERE timestamp >= :frontier", [(":frontier", frontier)])
-        _ = executeSQL("DELETE FROM ledger_sums WHERE timestamp >= :frontier", [(":frontier", frontier)])
-        self.db.commit()
+        _ = executeSQL("DELETE FROM ledger_sums WHERE timestamp >= :frontier", [(":frontier", frontier)], commit=True)
 
         if fast_and_dirty:  # For 30k operations difference of execution time is - with 0:02:41 / without 0:11:44
             _ = executeSQL("PRAGMA synchronous = OFF")
