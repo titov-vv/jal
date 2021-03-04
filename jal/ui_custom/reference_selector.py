@@ -118,16 +118,9 @@ class AssetSelector(AbstractReferenceSelector):
 class PeerSelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
         AbstractReferenceSelector.__init__(self, parent)
+        self.dialog = ui_dialogs.PeerListDialog()
 
     def init_db(self, db):
-        self.dialog = ui.ReferenceDataDialog("agents_ext",
-                                          [("id", " ", 16, None, ui.ReferenceTreeDelegate),
-                                           ("pid", None, 0, None, None),
-                                           ("name", "Name", -1, Qt.AscendingOrder, None),
-                                           ("location", "Location", None, None, None),
-                                           ("actions_count", "Docs count", None, None, ui.ReferenceIntDelegate),
-                                           ("children_count", None, None, None, None)],
-                                          title="Choose peer", search_field="name", tree_view=True)
         super().init_db("agents_ext", "name")
 
 

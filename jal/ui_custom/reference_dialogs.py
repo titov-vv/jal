@@ -49,10 +49,23 @@ class AssetListDialog(ReferenceDataDialog):
                                            ("country_id", g_tr('TableViewConfig', "Country"), None, None, ui.ReferenceLookupDelegate),
                                            ("src_id", g_tr('TableViewConfig', "Data source"), None, None, ui.ReferenceLookupDelegate)],
                                           title="Assets",
-                                     search_field="full_name",
+                                          search_field="full_name",
                                           relations=[("type_id", "asset_types", "id", "name", g_tr('TableViewConfig', "Asset type:")),
                                                      ("country_id", "countries", "id", "name", None),
                                                      ("src_id", "data_sources", "id", "name", None)])
+
+# ----------------------------------------------------------------------------------------------------------------------
+class PeerListDialog(ReferenceDataDialog):
+    def __init__(self):
+        ReferenceDataDialog.__init__(self, "agents_ext",
+                                          [("id", " ", 16, None, ui.ReferenceTreeDelegate),
+                                           ("pid", None, 0, None, None),
+                                           ("name", g_tr('TableViewConfig', "Name"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
+                                           ("location", g_tr('TableViewConfig', "Location"), None, None, None),
+                                           ("actions_count", g_tr('TableViewConfig', "Docs count"), None, None, ui.ReferenceIntDelegate),
+                                           ("children_count", None, None, None, None)],
+                                          title="Choose peer", search_field="name", tree_view=True)
+
 
 # TODO Probably better idea is to subclass ReferenceDataDialog for each table instead of self.dialogs dictionary
 class ReferenceDialogs:
@@ -66,19 +79,6 @@ class ReferenceDialogs:
     def __init__(self, parent):
         self.parent = parent
         self.dialogs = {
-            "agents_ext": (
-                g_tr('TableViewConfig', "Peers"),
-                [("id", " ", 16, None, ui.ReferenceTreeDelegate),
-                 ("pid", None, 0, None, None),
-                 ("name", g_tr('TableViewConfig', "Name"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
-                 ("location", g_tr('TableViewConfig', "Location"), None, None, None),
-                 ("actions_count", g_tr('TableViewConfig', "Docs count"), None, None, ui.ReferenceIntDelegate),
-                 ("children_count", None, None, None, None)],
-                "name",
-                None,
-                True,
-                None
-            ),
             "categories_ext": (
                 g_tr('TableViewConfig', "Categories"),
                 [("id", " ", 16, None, ui.ReferenceTreeDelegate),
@@ -137,6 +137,8 @@ class ReferenceDialogs:
             AccountsListDialog().exec_()
         elif table_name == "assets":
             AssetListDialog().exec_()
+        elif table_name == "agents_ext":
+            PeerListDialog().exec_()
         else:
             ui.ReferenceDataDialog(table_name,
                                    self.dialogs[table_name][self.DLG_COLUMNS],
