@@ -96,31 +96,6 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
         return True
 
 
-class AccountSelector(AbstractReferenceSelector):
-    def __init__(self, parent=None):
-        AbstractReferenceSelector.__init__(self, parent)
-
-    def init_db(self, db):
-        self.dialog = ui.ReferenceDataDialog("accounts",
-                                          [("id", None, 0, None, None),
-                                           ("name", g_tr('AccountSelector', "Name"), -1, Qt.AscendingOrder, None),
-                                           ("type_id", None, 0, None, None),
-                                           ("currency_id", "Currency", None, None, ui.ReferenceLookupDelegate),
-                                           ("active", "Act", 32, None, ui.ReferenceBoolDelegate),
-                                           ("number", "Account #", None, None, None),
-                                           ("reconciled_on", "Reconciled @",
-                                            self.fontMetrics().width("00/00/0000 00:00:00") * 1.1,
-                                            None, ui.ReferenceTimestampDelegate),
-                                           ("organization_id", "Bank", None, None, ui.ReferencePeerDelegate),
-                                           ("country_id", g_tr('TableViewConfig', "CC"), 50, None, ui.ReferenceLookupDelegate)],
-                                          title=g_tr('AccountSelector', "Accounts"), search_field="full_name", toggle=("active", "Show inactive"),
-                                          relations=[("type_id", "account_types", "id", "name", "Account type:"),
-                                                     ("currency_id", "currencies", "id", "name", None),
-                                                     ("organization_id", "agents", "id", "name", None),
-                                                     ("country_id", "countries", "id", "code", None)])
-        super().init_db("accounts", "name")
-
-
 class AssetSelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
         AbstractReferenceSelector.__init__(self, parent)

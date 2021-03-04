@@ -7,7 +7,8 @@ from PySide2.QtWidgets import QLabel, QDateTimeEdit, QPushButton, QTableView, QH
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate
 from jal.ui_custom.helpers import g_tr
 from jal.ui_custom.abstract_operation_details import AbstractOperationDetails
-from jal.ui_custom.reference_selector import AccountSelector, PeerSelector, CategorySelector, TagSelector
+from jal.ui_custom.reference_selector import PeerSelector, CategorySelector, TagSelector
+from jal.ui_custom.account_select import AccountSelector
 from jal.widgets.mapper_delegate import MapperDelegate, FloatDelegate
 from jal.db.helpers import db_connection, executeSQL
 

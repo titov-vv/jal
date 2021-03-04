@@ -6,7 +6,7 @@ from PySide2.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QPushButton
 from jal.constants import Setup
 from jal.ui_custom.helpers import g_tr
 from jal.ui_custom.abstract_operation_details import AbstractOperationDetails
-from jal.ui_custom.reference_selector import AccountSelector
+from jal.ui_custom.account_select import AccountSelector
 from jal.ui_custom.amount_editor import AmountEdit
 from jal.widgets.mapper_delegate import MapperDelegate
 from jal.db.helpers import db_connection
