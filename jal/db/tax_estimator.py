@@ -53,11 +53,10 @@ class TaxEstimatorModel(QAbstractTableModel):
         return None
 
 class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
-    def __init__(self, db, account_id, asset_id, asset_qty, position, parent=None):
+    def __init__(self, account_id, asset_id, asset_qty, position, parent=None):
         super(TaxEstimator, self).__init__(parent)
         self.setupUi(self)
 
-        self.db = db
         self.account_id = account_id
         self.asset_id = asset_id
         self.asset_name = get_asset_name(self.asset_id)

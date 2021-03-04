@@ -301,7 +301,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def estimateRussianTax(self, position, index):
         model = index.model()
         account, asset, asset_qty = model.get_data_for_tax(index)
-        self.estimator = TaxEstimator(self.db, account, asset, asset_qty, position)
+        self.estimator = TaxEstimator(account, asset, asset_qty, position)
         if self.estimator.ready:
             self.estimator.open()
 
