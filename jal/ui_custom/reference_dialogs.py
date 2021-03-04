@@ -64,7 +64,19 @@ class PeerListDialog(ReferenceDataDialog):
                                            ("location", g_tr('TableViewConfig', "Location"), None, None, None),
                                            ("actions_count", g_tr('TableViewConfig', "Docs count"), None, None, ui.ReferenceIntDelegate),
                                            ("children_count", None, None, None, None)],
-                                          title="Choose peer", search_field="name", tree_view=True)
+                                          title=g_tr('TableViewConfig', "Peers"), search_field="name", tree_view=True)
+
+# ----------------------------------------------------------------------------------------------------------------------
+class CategoryListDialog(ReferenceDataDialog):
+    def __init__(self):
+        ReferenceDataDialog.__init__(self, "categories_ext",
+                                             [("id", " ", 16, None, ui.ReferenceTreeDelegate),
+                                              ("pid", None, 0, None, None),
+                                              ("name", g_tr('TableViewConfig', "Name"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
+                                              ("often", g_tr('TableViewConfig', "Often"), None, None, ui.ReferenceBoolDelegate),
+                                              ("special", None, 0, None, None),
+                                              ("children_count", None, None, None, None)],
+                                             title=g_tr('TableViewConfig', "Categories"), search_field="name", tree_view=True)
 
 
 # TODO Probably better idea is to subclass ReferenceDataDialog for each table instead of self.dialogs dictionary
@@ -79,19 +91,6 @@ class ReferenceDialogs:
     def __init__(self, parent):
         self.parent = parent
         self.dialogs = {
-            "categories_ext": (
-                g_tr('TableViewConfig', "Categories"),
-                [("id", " ", 16, None, ui.ReferenceTreeDelegate),
-                 ("pid", None, 0, None, None),
-                 ("name", g_tr('TableViewConfig', "Name"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
-                 ("often", g_tr('TableViewConfig', "Often"), None, None, ui.ReferenceBoolDelegate),
-                 ("special", None, 0, None, None),
-                 ("children_count", None, None, None, None)],
-                "name",
-                None,
-                True,
-                None
-            ),
             "tags": (
                 g_tr('TableViewConfig', "Tags"),
                 [("id", None, 0, None, None),
@@ -139,6 +138,8 @@ class ReferenceDialogs:
             AssetListDialog().exec_()
         elif table_name == "agents_ext":
             PeerListDialog().exec_()
+        elif table_name == "categories_ext":
+            CategoryListDialog().exec_()
         else:
             ui.ReferenceDataDialog(table_name,
                                    self.dialogs[table_name][self.DLG_COLUMNS],

@@ -127,16 +127,9 @@ class PeerSelector(AbstractReferenceSelector):
 class CategorySelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
         AbstractReferenceSelector.__init__(self, parent)
+        self.dialog = ui_dialogs.CategoryListDialog()
 
     def init_db(self, db):
-        self.dialog = ui.ReferenceDataDialog("categories_ext",
-                                             [("id", " ", 16, None, ui.ReferenceTreeDelegate),
-                                              ("pid", None, 0, None, None),
-                                              ("name", "Name", -1, Qt.AscendingOrder, None),
-                                              ("often", "Often", None, None, ui.ReferenceBoolDelegate),
-                                              ("special", None, 0, None, None),
-                                              ("children_count", None, None, None, None)],
-                                             title="Choose category", search_field="name", tree_view=True)
         super().init_db("categories_ext", "name")
 
 
