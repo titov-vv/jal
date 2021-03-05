@@ -37,20 +37,12 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.search_text = ""
         self.tree_view = False
 
-        self.db = db_connection()
-        self.model = None
-        self.delegates = None
-
-    def setup_ui(self):
         self.GroupLbl.setVisible(False)
         self.GroupCombo.setVisible(False)
+        self.SearchFrame.setVisible(False)
+        self.UpBtn.setVisible(False)
 
-        if self.search_field is not None:
-            self.SearchFrame.setVisible(True)
-        else:
-            self.SearchFrame.setVisible(False)
-        self.UpBtn.setVisible(self.tree_view)
-
+    def setup_ui(self):
         self.SearchString.textChanged.connect(self.OnSearchChange)
         self.UpBtn.clicked.connect(self.OnUpClick)
         self.GroupCombo.currentIndexChanged.connect(self.OnGroupChange)

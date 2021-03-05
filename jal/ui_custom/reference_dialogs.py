@@ -67,8 +67,6 @@ class AccountTypeListDialog(ReferenceDataDialog):
         self.DataView.setModel(self.model)
         self.model.configureView()
 
-        self.search_field = None
-        self.tree_view = False
         self.setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Account Types"))
         self.Toggle.setVisible(False)
@@ -130,6 +128,7 @@ class AccountListDialog(ReferenceDataDialog):
         self.search_field = "accounts.name"
         super().setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Accounts"))
+        self.SearchFrame.setVisible(True)
         self.Toggle.setVisible(True)
         self.toggle_field = "active"
         self.Toggle.setText(g_tr('ReferenceDataDialog', "Show inactive"))
@@ -184,6 +183,7 @@ class AssetListDialog(ReferenceDataDialog):
         self.search_field = "assets.full_name"
         super().setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Assets"))
+        self.SearchFrame.setVisible(True)
         self.Toggle.setVisible(False)
 
         self.GroupLbl.setVisible(True)
@@ -236,6 +236,8 @@ class PeerListDialog(ReferenceDataDialog):
         self.search_field = "name"
         self.tree_view = True
         super().setup_ui()
+        self.SearchFrame.setVisible(True)
+        self.UpBtn.setVisible(True)
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Peers"))
         self.Toggle.setVisible(False)
 
@@ -277,6 +279,8 @@ class CategoryListDialog(ReferenceDataDialog):
         self.search_field = "name"
         self.tree_view = True
         super().setup_ui()
+        self.SearchFrame.setVisible(True)
+        self.UpBtn.setVisible(True)
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Categories"))
         self.Toggle.setVisible(False)
 
@@ -303,9 +307,9 @@ class TagsListDialog(ReferenceDataDialog):
 
     def setup_ui(self):
         self.search_field = "tag"
-        self.tree_view = False
         super().setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Tags"))
+        self.SearchFrame.setVisible(True)
         self.Toggle.setVisible(False)
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -341,8 +345,8 @@ class CountryListDialog(ReferenceDataDialog):
 
     def setup_ui(self):
         self.search_field = "name"
-        self.tree_view = False
         super().setup_ui()
+        self.SearchFrame.setVisible(True)
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Countries"))
         self.Toggle.setVisible(False)
 
@@ -383,8 +387,8 @@ class QuotesListDialog(ReferenceDataDialog):
 
     def setup_ui(self):
         self.search_field = "name"
-        self.tree_view = False
         super().setup_ui()
+        self.SearchFrame.setVisible(True)
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Quotes"))
         self.Toggle.setVisible(False)
 
