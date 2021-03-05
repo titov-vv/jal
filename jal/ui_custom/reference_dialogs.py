@@ -67,12 +67,10 @@ class AccountTypeListDialog(ReferenceDataDialog):
         self.DataView.setModel(self.model)
         self.model.configureView()
 
-        self.setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Account Types"))
         self.Toggle.setVisible(False)
 
-        self.model.select()
-        self.setFilter()
+        super()._init_completed()
 
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountListModel(AbstractReferenceListModel):
@@ -121,12 +119,10 @@ class AccountListDialog(ReferenceDataDialog):
         self.model.configureView()
         self.setup_ui()
 
-        self.model.select()
-        self.setFilter()
+        super()._init_completed()
 
     def setup_ui(self):
         self.search_field = "accounts.name"
-        super().setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Accounts"))
         self.SearchFrame.setVisible(True)
         self.Toggle.setVisible(True)
@@ -176,12 +172,10 @@ class AssetListDialog(ReferenceDataDialog):
         self.model.configureView()
         self.setup_ui()
 
-        self.model.select()
-        self.setFilter()
+        super()._init_completed()
 
     def setup_ui(self):
         self.search_field = "assets.full_name"
-        super().setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Assets"))
         self.SearchFrame.setVisible(True)
         self.Toggle.setVisible(False)
@@ -229,13 +223,11 @@ class PeerListDialog(ReferenceDataDialog):
         self.model.configureView()
         self.setup_ui()
 
-        self.model.select()
-        self.setFilter()
+        super()._init_completed()
 
     def setup_ui(self):
         self.search_field = "name"
         self.tree_view = True
-        super().setup_ui()
         self.SearchFrame.setVisible(True)
         self.UpBtn.setVisible(True)
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Peers"))
@@ -272,13 +264,11 @@ class CategoryListDialog(ReferenceDataDialog):
         self.model.configureView()
         self.setup_ui()
 
-        self.model.select()
-        self.setFilter()
+        super()._init_completed()
 
     def setup_ui(self):
         self.search_field = "name"
         self.tree_view = True
-        super().setup_ui()
         self.SearchFrame.setVisible(True)
         self.UpBtn.setVisible(True)
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Categories"))
@@ -302,12 +292,10 @@ class TagsListDialog(ReferenceDataDialog):
         self.model.configureView()
         self.setup_ui()
 
-        self.model.select()
-        self.setFilter()
+        super()._init_completed()
 
     def setup_ui(self):
         self.search_field = "tag"
-        super().setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Tags"))
         self.SearchFrame.setVisible(True)
         self.Toggle.setVisible(False)
@@ -340,12 +328,10 @@ class CountryListDialog(ReferenceDataDialog):
         self.model.configureView()
         self.setup_ui()
 
-        self.model.select()
-        self.setFilter()
+        super()._init_completed()
 
     def setup_ui(self):
         self.search_field = "name"
-        super().setup_ui()
         self.SearchFrame.setVisible(True)
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Countries"))
         self.Toggle.setVisible(False)
@@ -382,12 +368,10 @@ class QuotesListDialog(ReferenceDataDialog):
         self.model.configureView()
         self.setup_ui()
 
-        self.model.select()
-        self.setFilter()
+        super()._init_completed()
 
     def setup_ui(self):
         self.search_field = "name"
-        super().setup_ui()
         self.SearchFrame.setVisible(True)
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Quotes"))
         self.Toggle.setVisible(False)

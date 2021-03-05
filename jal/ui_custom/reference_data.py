@@ -42,7 +42,6 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.SearchFrame.setVisible(False)
         self.UpBtn.setVisible(False)
 
-    def setup_ui(self):
         self.SearchString.textChanged.connect(self.OnSearchChange)
         self.UpBtn.clicked.connect(self.OnUpClick)
         self.GroupCombo.currentIndexChanged.connect(self.OnGroupChange)
@@ -53,8 +52,13 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.RevertBtn.clicked.connect(self.OnRevert)
         self.DataView.clicked.connect(self.OnClicked)
         self.DataView.doubleClicked.connect(self.OnDoubleClicked)
+
+    def _init_completed(self):
         self.DataView.selectionModel().selectionChanged.connect(self.OnRowSelected)
         self.model.dataChanged.connect(self.OnDataChanged)
+
+        self.model.select()
+        self.setFilter()
 
     @Slot()
     def closeEvent(self, event):
