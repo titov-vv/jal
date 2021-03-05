@@ -21,6 +21,11 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         font.setBold(True)
         self._view.horizontalHeader().setFont(font)
 
+    # columns_list is a list of column names that should be hidden from self._view
+    def hideColumns(self, columns_list):
+        for column_name in columns_list:
+            self._view.setColumnHidden(self.fieldIndex(column_name), True)
+
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountTypeListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
@@ -30,7 +35,7 @@ class AccountTypeListModel(AbstractReferenceListModel):
 
     def configureView(self):
         super().configureView()
-        self._view.setColumnHidden(self.fieldIndex("id"), True)
+        self.hideColumns(["id"])
         self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("name"), QHeaderView.Stretch)
 
 class AccountTypeListDialog(ReferenceDataDialog):
@@ -74,8 +79,7 @@ class AccountListModel(AbstractReferenceListModel):
 
     def configureView(self):
         super().configureView()
-        self._view.setColumnHidden(self.fieldIndex("id"), True)
-        self._view.setColumnHidden(self.fieldIndex("type_id"), True)
+        self.hideColumns(["id", "type_id"])
         self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("name"), QHeaderView.Stretch)
         self._view.setColumnWidth(self.fieldIndex("active"), 32)
         self._view.setColumnWidth(self.fieldIndex("reconciled_on"),
@@ -122,7 +126,6 @@ class AccountListDialog(ReferenceDataDialog):
         self.GroupCombo.setModelColumn(relation_model.fieldIndex("name"))
         self.group_id = relation_model.data(relation_model.index(0, relation_model.fieldIndex(self.group_fkey_field)))
 
-
 # ----------------------------------------------------------------------------------------------------------------------
 class AssetListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
@@ -140,8 +143,7 @@ class AssetListModel(AbstractReferenceListModel):
 
     def configureView(self):
         super().configureView()
-        self._view.setColumnHidden(self.fieldIndex("id"), True)
-        self._view.setColumnHidden(self.fieldIndex("type_id"), True)
+        self.hideColumns(["id", "type_id"])
         self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("full_name"), QHeaderView.Stretch)
 
         self._lookup_delegate = ReferenceLookupDelegate(self._view)
@@ -191,8 +193,7 @@ class PeerListModel(AbstractReferenceListModel):
 
     def configureView(self):
         super().configureView()
-        self._view.setColumnHidden(self.fieldIndex("pid"), True)
-        self._view.setColumnHidden(self.fieldIndex("children_count"), True)
+        self.hideColumns(["pid", "children_count"])
         self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("name"), QHeaderView.Stretch)
         self._view.setColumnWidth(self.fieldIndex("id"), 16)
 
@@ -233,9 +234,7 @@ class CategoryListModel(AbstractReferenceListModel):
 
     def configureView(self):
         super().configureView()
-        self._view.setColumnHidden(self.fieldIndex("pid"), True)
-        self._view.setColumnHidden(self.fieldIndex("special"), True)
-        self._view.setColumnHidden(self.fieldIndex("children_count"), True)
+        self.hideColumns(["pid", "special", "children_count"])
         self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("name"), QHeaderView.Stretch)
         self._view.setColumnWidth(self.fieldIndex("id"), 16)
 
@@ -272,7 +271,7 @@ class TagListModel(AbstractReferenceListModel):
 
     def configureView(self):
         super().configureView()
-        self._view.setColumnHidden(self.fieldIndex("id"), True)
+        self.hideColumns(["id"])
         self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("tag"), QHeaderView.Stretch)
 
 class TagsListDialog(ReferenceDataDialog):
@@ -306,7 +305,7 @@ class CountryListModel(AbstractReferenceListModel):
 
     def configureView(self):
         super().configureView()
-        self._view.setColumnHidden(self.fieldIndex("id"), True)
+        self.hideColumns(["id"])
         self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("name"), QHeaderView.Stretch)
         self._view.setColumnWidth(self.fieldIndex("code"), 50)
 
@@ -345,7 +344,7 @@ class QuotesListModel(AbstractReferenceListModel):
 
     def configureView(self):
         super().configureView()
-        self._view.setColumnHidden(self.fieldIndex("id"), True)
+        self.hideColumns(["id"])
         self._view.setColumnWidth(self.fieldIndex("timestamp"),
                                   self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
         self._view.setColumnWidth(self.fieldIndex("quote"), 100)
