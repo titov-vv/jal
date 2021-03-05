@@ -3,7 +3,7 @@ from datetime import datetime
 
 from PySide2.QtCore import Qt, Signal, Property, Slot, QEvent
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelationalDelegate
-from PySide2.QtWidgets import QDialog, QMessageBox, QHeaderView, QStyledItemDelegate
+from PySide2.QtWidgets import QDialog, QMessageBox, QStyledItemDelegate
 
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
 import jal.ui_custom.reference_selector as ui     # Full import due to "cyclic" reference
@@ -47,14 +47,13 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
             self.model = QSqlTableModel(parent=self.DataView, db=db_connection())
         self.model.setTable(self.table)
         self.model.setEditStrategy(QSqlTableModel.OnManualSubmit)
-
-    def setup_ui(self):
         self.delegates = ConfigureTableView(self.DataView, self.model, self.columns)
         # Storage of delegates inside class is required to keep ownership and prevent SIGSEGV as
         # https://doc.qt.io/qt-5/qabstractitemview.html#setItemDelegateForColumn says:
         # Any existing column delegate for column will be removed, but not deleted.
         # QAbstractItemView does not take ownership of delegate.
 
+    def setup_ui(self):
         self.GroupLbl.setVisible(False)
         self.GroupCombo.setVisible(False)
         if self.relations is not None:

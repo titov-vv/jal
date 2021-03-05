@@ -1,4 +1,6 @@
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
+from PySide2.QtWidgets import QHeaderView
+from jal.db.helpers import db_connection
 from jal.widgets.view_delegate import *
 from jal.constants import ColumnWidth
 from jal.ui_custom.helpers import g_tr
@@ -7,17 +9,35 @@ from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceBoolDeleg
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+class AccountTypeListModel(QSqlTableModel):
+    def __init__(self, parent_view):
+        self._columns = [g_tr('ReferenceDataDialog', "Account Type")]
+
+        self._view = parent_view
+        QSqlTableModel.__init__(self, parent=parent_view, db=db_connection())
+        self.setTable("account_types")
+        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.setSort(self.fieldIndex("name"), Qt.AscendingOrder)
+        self.setHeaderData(self.fieldIndex("name"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Account Type"))
+
+    def configureView(self):
+        self._view.setColumnHidden(self.fieldIndex("id"), True)
+        self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("name"), QHeaderView.Stretch)
+        font = self._view.horizontalHeader().font()
+        font.setBold(True)
+        self._view.horizontalHeader().setFont(font)
+
 class AccountTypeListDialog(ReferenceDataDialog):
     def __init__(self):
-        self.columns = [("id", None, 0, None, None),
-                        ("name", g_tr('ReferenceDataDialog', "Account Type"), ColumnWidth.STRETCH,
-                         Qt.AscendingOrder, None)]
         self.relations = None
 
         ReferenceDataDialog.__init__(self)
-        self.table = "account_types"
-        self.setup_db_model()
+        self.model = AccountTypeListModel(self.DataView)
+        self.DataView.setModel(self.model)
+        self.model.configureView()
+
         self.search_field = None
+        self.tree_view = False
         self.setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Account Types"))
         self.Toggle.setVisible(False)
