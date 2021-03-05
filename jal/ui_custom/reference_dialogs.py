@@ -2,19 +2,24 @@ from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection
 from jal.widgets.view_delegate import *
-from jal.constants import ColumnWidth
 from jal.ui_custom.helpers import g_tr
 from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
     ReferenceLookupDelegate, ReferenceTimestampDelegate, ReferenceTreeDelegate, ReferenceIntDelegate
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class AccountTypeListModel(QSqlTableModel):
+class AbstractReferenceListModel(QSqlRelationalTableModel):
     def __init__(self, table, parent_view):
         self._view = parent_view
-        QSqlTableModel.__init__(self, parent=parent_view, db=db_connection())
+        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=db_connection())
+        self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
         self.setTable(table)
         self.setEditStrategy(QSqlTableModel.OnManualSubmit)
+
+# ----------------------------------------------------------------------------------------------------------------------
+class AccountTypeListModel(AbstractReferenceListModel):
+    def __init__(self, table, parent_view):
+        AbstractReferenceListModel.__init__(self, table, parent_view)
         self.setSort(self.fieldIndex("name"), Qt.AscendingOrder)
         self.setHeaderData(self.fieldIndex("name"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Account Type"))
 
@@ -45,20 +50,16 @@ class AccountTypeListDialog(ReferenceDataDialog):
         self.setFilter()
 
 # ----------------------------------------------------------------------------------------------------------------------
-class AccountListModel(QSqlRelationalTableModel):
+class AccountListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
-        self._view = parent_view
+        AbstractReferenceListModel.__init__(self, table, parent_view)
         self._lookup_delegate = None
         self._timestamp_delegate = None
         self._bool_delegate = None
-        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=db_connection())
-        self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
-        self.setTable(table)
         self.setRelation(self.fieldIndex("type_id"), QSqlRelation("account_types", "id", "name"))
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "name"))
         self.setRelation(self.fieldIndex("organization_id"), QSqlRelation("agents", "id", "name"))
         self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "code"))
-        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.setSort(self.fieldIndex("name"), Qt.AscendingOrder)
         self.setHeaderData(self.fieldIndex("name"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Name"))
         self.setHeaderData(self.fieldIndex("currency_id"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Currency"))
@@ -122,17 +123,13 @@ class AccountListDialog(ReferenceDataDialog):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class AssetListModel(QSqlRelationalTableModel):
+class AssetListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
-        self._view = parent_view
+        AbstractReferenceListModel.__init__(self, table, parent_view)
         self._lookup_delegate = None
-        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=db_connection())
-        self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
-        self.setTable(table)
         self.setRelation(self.fieldIndex("type_id"), QSqlRelation("asset_types", "id", "name"))
         self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "name"))
         self.setRelation(self.fieldIndex("src_id"), QSqlRelation("data_sources", "id", "name"))
-        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.setSort(self.fieldIndex("name"), Qt.AscendingOrder)
         self.setHeaderData(self.fieldIndex("name"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Symbol"))
         self.setHeaderData(self.fieldIndex("full_name"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Name"))
@@ -182,15 +179,11 @@ class AssetListDialog(ReferenceDataDialog):
         self.group_id = relation_model.data(relation_model.index(0, relation_model.fieldIndex(self.group_fkey_field)))
 
 # ----------------------------------------------------------------------------------------------------------------------
-class PeerListModel(QSqlRelationalTableModel):
+class PeerListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
-        self._view = parent_view
+        AbstractReferenceListModel.__init__(self, table, parent_view)
         self._tree_delegate = None
         self._int_delegate = None
-        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=db_connection())
-        self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
-        self.setTable(table)
-        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.setSort(self.fieldIndex("name"), Qt.AscendingOrder)
         self.setHeaderData(self.fieldIndex("id"), Qt.Horizontal, " ")
         self.setHeaderData(self.fieldIndex("name"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Name"))
@@ -231,15 +224,11 @@ class PeerListDialog(ReferenceDataDialog):
         self.Toggle.setVisible(False)
 
 # ----------------------------------------------------------------------------------------------------------------------
-class CategoryListModel(QSqlRelationalTableModel):
+class CategoryListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
-        self._view = parent_view
+        AbstractReferenceListModel.__init__(self, table, parent_view)
         self._tree_delegate = None
         self._bool_delegate = None
-        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=db_connection())
-        self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
-        self.setTable(table)
-        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.setSort(self.fieldIndex("name"), Qt.AscendingOrder)
         self.setHeaderData(self.fieldIndex("id"), Qt.Horizontal, " ")
         self.setHeaderData(self.fieldIndex("name"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Name"))
@@ -280,13 +269,9 @@ class CategoryListDialog(ReferenceDataDialog):
         self.Toggle.setVisible(False)
 
 # ----------------------------------------------------------------------------------------------------------------------
-class TagListModel(QSqlRelationalTableModel):
+class TagListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
-        self._view = parent_view
-        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=db_connection())
-        self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
-        self.setTable(table)
-        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        AbstractReferenceListModel.__init__(self, table, parent_view)
         self.setSort(self.fieldIndex("tag"), Qt.AscendingOrder)
         self.setHeaderData(self.fieldIndex("tag"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Tag"))
 
@@ -317,14 +302,10 @@ class TagsListDialog(ReferenceDataDialog):
         self.Toggle.setVisible(False)
 
 # ----------------------------------------------------------------------------------------------------------------------
-class CountryListModel(QSqlRelationalTableModel):
+class CountryListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
-        self._view = parent_view
+        AbstractReferenceListModel.__init__(self, table, parent_view)
         self._bool_delegate = None
-        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=db_connection())
-        self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
-        self.setTable(table)
-        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.setSort(self.fieldIndex("name"), Qt.AscendingOrder)
         self.setHeaderData(self.fieldIndex("name"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Country"))
         self.setHeaderData(self.fieldIndex("code"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Code"))
@@ -361,16 +342,12 @@ class CountryListDialog(ReferenceDataDialog):
         self.Toggle.setVisible(False)
 
 # ----------------------------------------------------------------------------------------------------------------------
-class QuotesListModel(QSqlRelationalTableModel):
+class QuotesListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
-        self._view = parent_view
+        AbstractReferenceListModel.__init__(self, table, parent_view)
         self._lookup_delegate = None
         self._timestamp_delegate = None
-        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=db_connection())
-        self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
-        self.setTable(table)
         self.setRelation(self.fieldIndex("asset_id"), QSqlRelation("assets", "id", "name"))
-        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.setHeaderData(self.fieldIndex("timestamp"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Date"))
         self.setHeaderData(self.fieldIndex("asset_id"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Asset"))
         self.setHeaderData(self.fieldIndex("quote"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Quote"))
