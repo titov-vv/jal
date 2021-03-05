@@ -181,7 +181,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
         conditions = []
         if self.search_text:
-            conditions.append(f"{self.search_field} LIKE '%{self.search_text}%'")
+            conditions.append(f"{self.table}.{self.search_field} LIKE '%{self.search_text}%'")
         else:
             if self.tree_view:
                 conditions.append(f"pid={self.parent}")

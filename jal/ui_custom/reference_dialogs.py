@@ -99,7 +99,7 @@ class AccountListDialog(ReferenceDataDialog):
         self.DataView.setModel(self.model)
         self.model.configureView()
 
-        self.search_field = "full_name"
+        self.search_field = "name"
         self.tree_view = False
         self.setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Accounts"))
