@@ -2,13 +2,12 @@ import logging
 from datetime import datetime
 
 from PySide2.QtCore import Qt, Signal, Property, Slot, QEvent
-from PySide2.QtSql import QSqlRelationalDelegate
-from PySide2.QtWidgets import QDialog, QMessageBox
-from PySide2.QtWidgets import QStyledItemDelegate
+from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelationalDelegate
+from PySide2.QtWidgets import QDialog, QMessageBox, QHeaderView, QStyledItemDelegate
 
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
 import jal.ui_custom.reference_selector as ui     # Full import due to "cyclic" reference
-from jal.ui_custom.helpers import g_tr, UseSqlTable, ConfigureTableView, rel_idx
+from jal.ui_custom.helpers import g_tr, ConfigureTableView, rel_idx
 from jal.db.helpers import db_connection, readSQL
 
 
@@ -18,7 +17,6 @@ from jal.db.helpers import db_connection, readSQL
 class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     # tree_view - table will be displayed as hierarchical tree with help of 3 columns: 'id', 'pid' and 'children_count'
     #  ('pid' will identify parent row for current row, and '+' will be displayed for row with 'children_count'>0
-    # relations - list of tuples that define lookup relations to other tables in database:
     def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)
@@ -41,8 +39,16 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.model = None
         self.delegates = None
 
+    def setup_db_model(self, with_relations=False):
+        if with_relations:
+            self.model = QSqlRelationalTableModel(parent=self.DataView, db=db_connection())
+            self.model.setJoinMode(QSqlRelationalTableModel.LeftJoin)  # to work correctly with NULL values in fields
+        else:
+            self.model = QSqlTableModel(parent=self.DataView, db=db_connection())
+        self.model.setTable(self.table)
+        self.model.setEditStrategy(QSqlTableModel.OnManualSubmit)
+
     def setup_ui(self):
-        self.model = UseSqlTable(self, self.table, self.columns, self.relations)
         self.delegates = ConfigureTableView(self.DataView, self.model, self.columns)
         # Storage of delegates inside class is required to keep ownership and prevent SIGSEGV as
         # https://doc.qt.io/qt-5/qabstractitemview.html#setItemDelegateForColumn says:
