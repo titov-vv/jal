@@ -29,10 +29,12 @@ class AccountListDialog(ReferenceDataDialog):
                         ("active", g_tr('ReferenceDataDialog', "Act."), 32, None, ReferenceBoolDelegate),
                         ("number", g_tr('ReferenceDataDialog', "Account #"), None, None, None),
                         ("reconciled_on", g_tr('ReferenceDataDialog', "Reconciled @"), ColumnWidth.FOR_DATETIME, None, ReferenceTimestampDelegate),
-                        ("organization_id", g_tr('ReferenceDataDialog', "Bank"), None, None, ReferenceLookupDelegate)]
+                        ("organization_id", g_tr('ReferenceDataDialog', "Bank"), None, None, ReferenceLookupDelegate),
+                        ("country_id", g_tr('TableViewConfig', "CC"), 50, None, ReferenceLookupDelegate)]
         self.relations = [("type_id", "account_types", "id", "name", g_tr('ReferenceDataDialog', "Account type:")),
                           ("currency_id", "currencies", "id", "name", None),
-                          ("organization_id", "agents", "id", "name", None)]
+                          ("organization_id", "agents", "id", "name", None),
+                          ("country_id", "countries", "id", "code", None)]
         self.search_field = "full_name"
         self.tree_view = False
         ReferenceDataDialog.__init__(self)
