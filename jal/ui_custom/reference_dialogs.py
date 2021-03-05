@@ -16,6 +16,11 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         self.setTable(table)
         self.setEditStrategy(QSqlTableModel.OnManualSubmit)
 
+    def configureView(self):
+        font = self._view.horizontalHeader().font()
+        font.setBold(True)
+        self._view.horizontalHeader().setFont(font)
+
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountTypeListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
@@ -24,11 +29,9 @@ class AccountTypeListModel(AbstractReferenceListModel):
         self.setHeaderData(self.fieldIndex("name"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Account Type"))
 
     def configureView(self):
+        super().configureView()
         self._view.setColumnHidden(self.fieldIndex("id"), True)
         self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("name"), QHeaderView.Stretch)
-        font = self._view.horizontalHeader().font()
-        font.setBold(True)
-        self._view.horizontalHeader().setFont(font)
 
 class AccountTypeListDialog(ReferenceDataDialog):
     def __init__(self):
@@ -70,6 +73,7 @@ class AccountListModel(AbstractReferenceListModel):
         self.setHeaderData(self.fieldIndex("country_id"), Qt.Horizontal, g_tr('ReferenceDataDialog', "CC"))
 
     def configureView(self):
+        super().configureView()
         self._view.setColumnHidden(self.fieldIndex("id"), True)
         self._view.setColumnHidden(self.fieldIndex("type_id"), True)
         self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("name"), QHeaderView.Stretch)
@@ -77,9 +81,6 @@ class AccountListModel(AbstractReferenceListModel):
         self._view.setColumnWidth(self.fieldIndex("reconciled_on"),
                                   self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
         self._view.setColumnWidth(self.fieldIndex("country_id"), 50)
-        font = self._view.horizontalHeader().font()
-        font.setBold(True)
-        self._view.horizontalHeader().setFont(font)
 
         self._lookup_delegate = ReferenceLookupDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
@@ -138,12 +139,10 @@ class AssetListModel(AbstractReferenceListModel):
         self.setHeaderData(self.fieldIndex("src_id"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Data source"))
 
     def configureView(self):
+        super().configureView()
         self._view.setColumnHidden(self.fieldIndex("id"), True)
         self._view.setColumnHidden(self.fieldIndex("type_id"), True)
         self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("full_name"), QHeaderView.Stretch)
-        font = self._view.horizontalHeader().font()
-        font.setBold(True)
-        self._view.horizontalHeader().setFont(font)
 
         self._lookup_delegate = ReferenceLookupDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
@@ -191,13 +190,11 @@ class PeerListModel(AbstractReferenceListModel):
         self.setHeaderData(self.fieldIndex("actions_count"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Docs count"))
 
     def configureView(self):
+        super().configureView()
         self._view.setColumnHidden(self.fieldIndex("pid"), True)
         self._view.setColumnHidden(self.fieldIndex("children_count"), True)
         self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("name"), QHeaderView.Stretch)
         self._view.setColumnWidth(self.fieldIndex("id"), 16)
-        font = self._view.horizontalHeader().font()
-        font.setBold(True)
-        self._view.horizontalHeader().setFont(font)
 
         self._tree_delegate = ReferenceTreeDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("id"), self._tree_delegate)
@@ -235,14 +232,12 @@ class CategoryListModel(AbstractReferenceListModel):
         self.setHeaderData(self.fieldIndex("often"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Often"))
 
     def configureView(self):
+        super().configureView()
         self._view.setColumnHidden(self.fieldIndex("pid"), True)
         self._view.setColumnHidden(self.fieldIndex("special"), True)
         self._view.setColumnHidden(self.fieldIndex("children_count"), True)
         self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("name"), QHeaderView.Stretch)
         self._view.setColumnWidth(self.fieldIndex("id"), 16)
-        font = self._view.horizontalHeader().font()
-        font.setBold(True)
-        self._view.horizontalHeader().setFont(font)
 
         self._tree_delegate = ReferenceTreeDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("id"), self._tree_delegate)
@@ -276,11 +271,9 @@ class TagListModel(AbstractReferenceListModel):
         self.setHeaderData(self.fieldIndex("tag"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Tag"))
 
     def configureView(self):
+        super().configureView()
         self._view.setColumnHidden(self.fieldIndex("id"), True)
         self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("tag"), QHeaderView.Stretch)
-        font = self._view.horizontalHeader().font()
-        font.setBold(True)
-        self._view.horizontalHeader().setFont(font)
 
 class TagsListDialog(ReferenceDataDialog):
     def __init__(self):
@@ -312,12 +305,10 @@ class CountryListModel(AbstractReferenceListModel):
         self.setHeaderData(self.fieldIndex("tax_treaty"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Tax Treaty"))
 
     def configureView(self):
+        super().configureView()
         self._view.setColumnHidden(self.fieldIndex("id"), True)
         self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("name"), QHeaderView.Stretch)
         self._view.setColumnWidth(self.fieldIndex("code"), 50)
-        font = self._view.horizontalHeader().font()
-        font.setBold(True)
-        self._view.horizontalHeader().setFont(font)
 
         self._bool_delegate = ReferenceBoolDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("tax_treaty"), self._bool_delegate)
@@ -353,13 +344,11 @@ class QuotesListModel(AbstractReferenceListModel):
         self.setHeaderData(self.fieldIndex("quote"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Quote"))
 
     def configureView(self):
+        super().configureView()
         self._view.setColumnHidden(self.fieldIndex("id"), True)
         self._view.setColumnWidth(self.fieldIndex("timestamp"),
                                   self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
         self._view.setColumnWidth(self.fieldIndex("quote"), 100)
-        font = self._view.horizontalHeader().font()
-        font.setBold(True)
-        self._view.horizontalHeader().setFont(font)
 
         self._lookup_delegate = ReferenceLookupDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("asset_id"), self._lookup_delegate)
