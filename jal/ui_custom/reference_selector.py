@@ -86,7 +86,7 @@ class AccountSelector(AbstractReferenceSelector):
         self.table = "accounts"
         self.selector_field = "name"
         self.details_field = None
-        self.dialog = ui_dialogs.AccountsListDialog()
+        self.dialog = ui_dialogs.AccountListDialog()
         AbstractReferenceSelector.__init__(self, parent)
 
 class AssetSelector(AbstractReferenceSelector):

@@ -1,9 +1,9 @@
-from PySide2.QtCore import Qt, Signal, Slot, Property
+from PySide2.QtCore import Signal, Slot, Property
 from PySide2.QtWidgets import QPushButton, QComboBox, QMenu
 from PySide2.QtSql import QSqlTableModel
 from jal.ui_custom.helpers import g_tr
 from jal.db.helpers import db_connection, get_account_name, get_field_by_id_from_table
-from jal.ui_custom.reference_dialogs import AccountsListDialog
+from jal.ui_custom.reference_dialogs import AccountListDialog
 
 ########################################################################################################################
 #  UI Button to choose accounts
@@ -21,7 +21,7 @@ class AccountButton(QPushButton):
         self.Menu.addAction(g_tr('AccountButton', "Any account"), self.ClearAccount)
         self.setMenu(self.Menu)
 
-        self.dialog = AccountsListDialog()
+        self.dialog = AccountListDialog()
         self.setText(self.dialog.SelectedName)
 
     def getId(self):

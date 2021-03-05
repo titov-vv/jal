@@ -9,7 +9,7 @@ from PySide2.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox, QLa
 from jal import __version__
 from jal.ui.ui_main_window import Ui_LedgerMainWindow
 from jal.ui_custom.helpers import g_tr, ManipulateDate, dependency_present
-from jal.ui_custom.reference_dialogs import AccountTypeListDialog, AccountsListDialog, AssetListDialog, TagsListDialog,\
+from jal.ui_custom.reference_dialogs import AccountTypeListDialog, AccountListDialog, AssetListDialog, TagsListDialog,\
     CategoryListDialog, CountryListDialog, QuotesListDialog, PeerListDialog
 from jal.constants import TransactionType
 from jal.db.backup_restore import JalBackup
@@ -362,7 +362,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         if dlg_type == "account_types":
             AccountTypeListDialog().exec_()
         elif dlg_type == "accounts":
-            AccountsListDialog().exec_()
+            AccountListDialog().exec_()
         elif dlg_type == "assets":
             AssetListDialog().exec_()
         elif dlg_type == "agents_ext":

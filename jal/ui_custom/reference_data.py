@@ -16,17 +16,10 @@ from jal.db.helpers import db_connection, readSQL
 # Class to display and edit table with reference data (accounts, categories, tags...)
 # --------------------------------------------------------------------------------------------------------------
 class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
-    # ----------------------------------------------------------------------------------------------------------
-    # Params:
-    # table - name of the table to display/edit
-    # columns - list of tuples - see helpers.py for details
-    # title - title of dialog window
-    # search_field - field name which will be used for search from GUI
     # tree_view - table will be displayed as hierarchical tree with help of 3 columns: 'id', 'pid' and 'children_count'
     #  ('pid' will identify parent row for current row, and '+' will be displayed for row with 'children_count'>0
     # relations - list of tuples that define lookup relations to other tables in database:
-    def __init__(self, table, columns, title='',
-                 search_field=None, toggle=None, tree_view=False, relations=None):
+    def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)
 
@@ -34,7 +27,6 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.p_selected_name = ''
         self.dialog_visible = False
         self.selection_enabled = False
-        self.tree_view = tree_view
         self.parent = 0
         self.last_parent = 0
         self.group_id = None
@@ -44,12 +36,10 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.toggle_state = False
         self.toggle_field = None
         self.search_text = ""
-        self.search_field = search_field
 
         self.db = db_connection()
-        self.table = table
-        self.Model = UseSqlTable(self, self.table, columns, relations)
-        self.delegates = ConfigureTableView(self.DataView, self.Model, columns)
+        self.Model = UseSqlTable(self, self.table, self.columns, self.relations)
+        self.delegates = ConfigureTableView(self.DataView, self.Model, self.columns)
         # Storage of delegates inside class is required to keep ownership and prevent SIGSEGV as
         # https://doc.qt.io/qt-5/qabstractitemview.html#setItemDelegateForColumn says:
         # Any existing column delegate for column will be removed, but not deleted.
@@ -57,8 +47,8 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
         self.GroupLbl.setVisible(False)
         self.GroupCombo.setVisible(False)
-        if relations is not None:
-            for relation in relations:
+        if self.relations is not None:
+            for relation in self.relations:
                 if relation[rel_idx.GROUP_NAME] is not None:
                     self.GroupLbl.setVisible(True)
                     self.GroupLbl.setText(relation[rel_idx.GROUP_NAME])
@@ -72,13 +62,6 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
                     self.group_id = relation_model.data(relation_model.index(0,
                                     relation_model.fieldIndex(self.group_fkey_field)))
 
-        self.Toggle.setVisible(False)
-        if toggle:
-            self.Toggle.setVisible(True)
-            self.toggle_field = toggle[0]
-            self.Toggle.setText(toggle[1])
-
-        self.setWindowTitle(title)
         if self.search_field is not None:
             self.SearchFrame.setVisible(True)
         else:
