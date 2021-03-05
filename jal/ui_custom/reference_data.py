@@ -33,7 +33,9 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.group_fkey_field = None
         self.toggle_state = False
         self.toggle_field = None
+        self.search_field = None
         self.search_text = ""
+        self.tree_view = False
 
         self.db = db_connection()
         self.model = None
@@ -56,20 +58,6 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     def setup_ui(self):
         self.GroupLbl.setVisible(False)
         self.GroupCombo.setVisible(False)
-        if self.relations is not None:
-            for relation in self.relations:
-                if relation[rel_idx.GROUP_NAME] is not None:
-                    self.GroupLbl.setVisible(True)
-                    self.GroupLbl.setText(relation[rel_idx.GROUP_NAME])
-                    self.GroupCombo.setVisible(True)
-                    self.group_key_field = relation[rel_idx.KEY_FIELD]
-                    self.group_key_index = self.model.fieldIndex(relation[rel_idx.KEY_FIELD])
-                    self.group_fkey_field = relation[rel_idx.FOREIGN_KEY]
-                    relation_model = self.model.relationModel(self.group_key_index)
-                    self.GroupCombo.setModel(relation_model)
-                    self.GroupCombo.setModelColumn(relation_model.fieldIndex(relation[rel_idx.LOOKUP_FIELD]))
-                    self.group_id = relation_model.data(relation_model.index(0,
-                                    relation_model.fieldIndex(self.group_fkey_field)))
 
         if self.search_field is not None:
             self.SearchFrame.setVisible(True)
@@ -89,9 +77,6 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.DataView.doubleClicked.connect(self.OnDoubleClicked)
         self.DataView.selectionModel().selectionChanged.connect(self.OnRowSelected)
         self.model.dataChanged.connect(self.OnDataChanged)
-
-        self.model.select()
-        self.setFilter()
 
     @Slot()
     def closeEvent(self, event):

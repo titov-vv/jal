@@ -41,6 +41,9 @@ class AccountTypeListDialog(ReferenceDataDialog):
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Account Types"))
         self.Toggle.setVisible(False)
 
+        self.model.select()
+        self.setFilter()
+
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountListModel(QSqlRelationalTableModel):
     def __init__(self, table, parent_view):
@@ -98,41 +101,93 @@ class AccountListDialog(ReferenceDataDialog):
         self.model = AccountListModel(self.table, self.DataView)
         self.DataView.setModel(self.model)
         self.model.configureView()
-
-        self.search_field = "name"
-        self.tree_view = False
         self.setup_ui()
+
+        self.model.select()
+        self.setFilter()
+
+    def setup_ui(self):
+        self.search_field = "name"
+        super().setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Accounts"))
         self.Toggle.setVisible(True)
         self.toggle_field = "active"
         self.Toggle.setText(g_tr('ReferenceDataDialog', "Show inactive"))
 
+        self.GroupLbl.setVisible(True)
+        self.GroupLbl.setText(g_tr('ReferenceDataDialog', "Account type:"))
+        self.GroupCombo.setVisible(True)
+        self.group_key_field = "type_id"
+        self.group_key_index = self.model.fieldIndex("type_id")
+        self.group_fkey_field = "id"
+        relation_model = self.model.relationModel(self.group_key_index)
+        self.GroupCombo.setModel(relation_model)
+        self.GroupCombo.setModelColumn(relation_model.fieldIndex("name"))
+        self.group_id = relation_model.data(relation_model.index(0, relation_model.fieldIndex(self.group_fkey_field)))
+
+
 # ----------------------------------------------------------------------------------------------------------------------
+class AssetListModel(QSqlRelationalTableModel):
+    def __init__(self, table, parent_view):
+        self._view = parent_view
+        self._lookup_delegate = None
+        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=db_connection())
+        self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
+        self.setTable(table)
+        self.setRelation(self.fieldIndex("type_id"), QSqlRelation("asset_types", "id", "name"))
+        self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "name"))
+        self.setRelation(self.fieldIndex("src_id"), QSqlRelation("data_sources", "id", "name"))
+        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.setSort(self.fieldIndex("name"), Qt.AscendingOrder)
+        self.setHeaderData(self.fieldIndex("name"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Symbol"))
+        self.setHeaderData(self.fieldIndex("full_name"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Name"))
+        self.setHeaderData(self.fieldIndex("isin"), Qt.Horizontal, g_tr('ReferenceDataDialog', "ISIN"))
+        self.setHeaderData(self.fieldIndex("country_id"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Country"))
+        self.setHeaderData(self.fieldIndex("src_id"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Data source"))
+
+    def configureView(self):
+        self._view.setColumnHidden(self.fieldIndex("id"), True)
+        self._view.setColumnHidden(self.fieldIndex("type_id"), True)
+        self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("full_name"), QHeaderView.Stretch)
+        font = self._view.horizontalHeader().font()
+        font.setBold(True)
+        self._view.horizontalHeader().setFont(font)
+
+        self._lookup_delegate = ReferenceLookupDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("src_id"), self._lookup_delegate)
+
 class AssetListDialog(ReferenceDataDialog):
     def __init__(self):
-        self.columns = [("id", None, 0, None, None),
-                        ("name", g_tr('ReferenceDataDialog', "Symbol"), None, Qt.AscendingOrder, None),
-                        ("type_id", None, 0, None, None),
-                        ("full_name", g_tr('ReferenceDataDialog', "Name"), ColumnWidth.STRETCH, None, None),
-                        ("isin", g_tr('ReferenceDataDialog', "ISIN"), None, None, None),
-                        ("country_id", g_tr('ReferenceDataDialog', "Country"), None, None, ReferenceLookupDelegate),
-                        ("src_id", g_tr('ReferenceDataDialog', "Data source"), None, None, ReferenceLookupDelegate)]
         self.relations = [("type_id", "asset_types", "id", "name", g_tr('ReferenceDataDialog', "Asset type:")),
                           ("country_id", "countries", "id", "name", None),
                           ("src_id", "data_sources", "id", "name", None)]
-
         ReferenceDataDialog.__init__(self)
         self.table = "assets"
-        self.setup_db_model(with_relations=True)
-        self.model.setRelation(self.model.fieldIndex("type_id"), QSqlRelation("asset_types", "id", "name"))
-        self.model.setRelation(self.model.fieldIndex("country_id"), QSqlRelation("countries", "id", "name"))
-        self.model.setRelation(self.model.fieldIndex("src_id"), QSqlRelation("data_sources", "id", "name"))
-
-        self.search_field = "full_name"
-        self.tree_view = False
+        self.model = AssetListModel(self.table, self.DataView)
+        self.DataView.setModel(self.model)
+        self.model.configureView()
         self.setup_ui()
+
+        self.model.select()
+        self.setFilter()
+
+    def setup_ui(self):
+        self.search_field = "full_name"
+        super().setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Assets"))
         self.Toggle.setVisible(False)
+
+        self.GroupLbl.setVisible(True)
+        self.GroupLbl.setText(g_tr('ReferenceDataDialog', "Asset type:"))
+        self.GroupCombo.setVisible(True)
+        self.group_key_field = "type_id"
+        self.group_key_index = self.model.fieldIndex("type_id")
+        self.group_fkey_field = "id"
+        relation_model = self.model.relationModel(self.group_key_index)
+        self.GroupCombo.setModel(relation_model)
+        self.GroupCombo.setModelColumn(relation_model.fieldIndex("name"))
+        self.group_id = relation_model.data(relation_model.index(0, relation_model.fieldIndex(self.group_fkey_field)))
 
 # ----------------------------------------------------------------------------------------------------------------------
 class PeerListDialog(ReferenceDataDialog):
