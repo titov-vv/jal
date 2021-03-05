@@ -1,9 +1,8 @@
 from jal.widgets.view_delegate import *
 from jal.constants import ColumnWidth
 from jal.ui_custom.helpers import g_tr
-import jal.ui_custom.reference_data as ui               # Full import due to "cyclic" reference
 from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
-    ReferenceLookupDelegate, ReferenceTimestampDelegate
+    ReferenceLookupDelegate, ReferenceTimestampDelegate, ReferenceTreeDelegate, ReferenceIntDelegate
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -51,8 +50,8 @@ class AssetListDialog(ReferenceDataDialog):
                         ("type_id", None, 0, None, None),
                         ("full_name", g_tr('ReferenceDataDialog', "Name"), ColumnWidth.STRETCH, None, None),
                         ("isin", g_tr('ReferenceDataDialog', "ISIN"), None, None, None),
-                        ("country_id", g_tr('ReferenceDataDialog', "Country"), None, None, ui.ReferenceLookupDelegate),
-                        ("src_id", g_tr('ReferenceDataDialog', "Data source"), None, None, ui.ReferenceLookupDelegate)]
+                        ("country_id", g_tr('ReferenceDataDialog', "Country"), None, None, ReferenceLookupDelegate),
+                        ("src_id", g_tr('ReferenceDataDialog', "Data source"), None, None, ReferenceLookupDelegate)]
         self.relations = [("type_id", "asset_types", "id", "name", g_tr('ReferenceDataDialog', "Asset type:")),
                           ("country_id", "countries", "id", "name", None),
                           ("src_id", "data_sources", "id", "name", None)]
@@ -66,11 +65,11 @@ class AssetListDialog(ReferenceDataDialog):
 class PeerListDialog(ReferenceDataDialog):
     def __init__(self):
         self.table = "agents_ext"
-        self.columns = [("id", " ", 16, None, ui.ReferenceTreeDelegate),
+        self.columns = [("id", " ", 16, None, ReferenceTreeDelegate),
                         ("pid", None, 0, None, None),
                         ("name", g_tr('ReferenceDataDialog', "Name"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
                         ("location", g_tr('ReferenceDataDialog', "Location"), None, None, None),
-                        ("actions_count", g_tr('ReferenceDataDialog', "Docs count"), None, None, ui.ReferenceIntDelegate),
+                        ("actions_count", g_tr('ReferenceDataDialog', "Docs count"), None, None, ReferenceIntDelegate),
                         ("children_count", None, None, None, None)]
         self.relations = None
         self.search_field = "name"
@@ -83,10 +82,10 @@ class PeerListDialog(ReferenceDataDialog):
 class CategoryListDialog(ReferenceDataDialog):
     def __init__(self):
         self.table = "categories_ext"
-        self.columns = [("id", " ", 16, None, ui.ReferenceTreeDelegate),
+        self.columns = [("id", " ", 16, None, ReferenceTreeDelegate),
                         ("pid", None, 0, None, None),
                         ("name", g_tr('ReferenceDataDialog', "Name"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
-                        ("often", g_tr('ReferenceDataDialog', "Often"), None, None, ui.ReferenceBoolDelegate),
+                        ("often", g_tr('ReferenceDataDialog', "Often"), None, None, ReferenceBoolDelegate),
                         ("special", None, 0, None, None),
                         ("children_count", None, None, None, None)]
         self.relations = None
@@ -117,7 +116,7 @@ class CountryListDialog(ReferenceDataDialog):
                         ("name", g_tr('ReferenceDataDialog', "Country"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
                         ("code", g_tr('ReferenceDataDialog', "Code"), 50, None, None),
                         ("tax_treaty", g_tr('ReferenceDataDialog', "Tax Treaty"), None, None,
-                         ui.ReferenceBoolDelegate)]
+                         ReferenceBoolDelegate)]
         self.relations = None
         self.search_field = "name"
         self.tree_view = False
@@ -131,8 +130,8 @@ class QuotesListDialog(ReferenceDataDialog):
         self.table = "quotes"
         self.columns = [("id", None, 0, None, None),
                         ("timestamp", g_tr('ReferenceDataDialog', "Date"), ColumnWidth.FOR_DATETIME, None,
-                         ui.ReferenceTimestampDelegate),
-                        ("asset_id", g_tr('ReferenceDataDialog', "Asset"), None, None, ui.ReferenceLookupDelegate),
+                         ReferenceTimestampDelegate),
+                        ("asset_id", g_tr('ReferenceDataDialog', "Asset"), None, None, ReferenceLookupDelegate),
                         ("quote", g_tr('ReferenceDataDialog', "Quote"), 100, None, None)]
         self.relations = [("asset_id", "assets", "id", "name", None)]
         self.search_field = "name"
