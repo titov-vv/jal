@@ -10,12 +10,10 @@ from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceBoolDeleg
 
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountTypeListModel(QSqlTableModel):
-    def __init__(self, parent_view):
-        self._columns = [g_tr('ReferenceDataDialog', "Account Type")]
-
+    def __init__(self, table, parent_view):
         self._view = parent_view
         QSqlTableModel.__init__(self, parent=parent_view, db=db_connection())
-        self.setTable("account_types")
+        self.setTable(table)
         self.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.setSort(self.fieldIndex("name"), Qt.AscendingOrder)
         self.setHeaderData(self.fieldIndex("name"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Account Type"))
@@ -32,7 +30,8 @@ class AccountTypeListDialog(ReferenceDataDialog):
         self.relations = None
 
         ReferenceDataDialog.__init__(self)
-        self.model = AccountTypeListModel(self.DataView)
+        self.table = "account_types"
+        self.model = AccountTypeListModel(self.table, self.DataView)
         self.DataView.setModel(self.model)
         self.model.configureView()
 
@@ -43,18 +42,52 @@ class AccountTypeListDialog(ReferenceDataDialog):
         self.Toggle.setVisible(False)
 
 # ----------------------------------------------------------------------------------------------------------------------
+class AccountListModel(QSqlRelationalTableModel):
+    def __init__(self, table, parent_view):
+        self._view = parent_view
+        self._lookup_delegate = None
+        self._timestamp_delegate = None
+        self._bool_delegate = None
+        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=db_connection())
+        self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
+        self.setTable(table)
+        self.setRelation(self.fieldIndex("type_id"), QSqlRelation("account_types", "id", "name"))
+        self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "name"))
+        self.setRelation(self.fieldIndex("organization_id"), QSqlRelation("agents", "id", "name"))
+        self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "code"))
+        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.setSort(self.fieldIndex("name"), Qt.AscendingOrder)
+        self.setHeaderData(self.fieldIndex("name"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Name"))
+        self.setHeaderData(self.fieldIndex("currency_id"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Currency"))
+        self.setHeaderData(self.fieldIndex("active"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Act."))
+        self.setHeaderData(self.fieldIndex("number"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Account #"))
+        self.setHeaderData(self.fieldIndex("reconciled_on"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Reconciled @"))
+        self.setHeaderData(self.fieldIndex("organization_id"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Bank"))
+        self.setHeaderData(self.fieldIndex("country_id"), Qt.Horizontal, g_tr('ReferenceDataDialog', "CC"))
+
+    def configureView(self):
+        self._view.setColumnHidden(self.fieldIndex("id"), True)
+        self._view.setColumnHidden(self.fieldIndex("type_id"), True)
+        self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("name"), QHeaderView.Stretch)
+        self._view.setColumnWidth(self.fieldIndex("active"), 32)
+        self._view.setColumnWidth(self.fieldIndex("reconciled_on"),
+                                  self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
+        self._view.setColumnWidth(self.fieldIndex("country_id"), 50)
+        font = self._view.horizontalHeader().font()
+        font.setBold(True)
+        self._view.horizontalHeader().setFont(font)
+
+        self._lookup_delegate = ReferenceLookupDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("organization_id"), self._lookup_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
+        self._timestamp_delegate = ReferenceTimestampDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("reconciled_on"), self._timestamp_delegate)
+        self._bool_delegate = ReferenceBoolDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("active"), self._bool_delegate)
+
 class AccountListDialog(ReferenceDataDialog):
     def __init__(self):
-        self.columns = [("id", None, 0, None, None),
-                        ("name", g_tr('ReferenceDataDialog', "Name"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
-                        ("type_id", None, 0, None, None),
-                        ("currency_id", g_tr('ReferenceDataDialog', "Currency"), None, None, ReferenceLookupDelegate),
-                        ("active", g_tr('ReferenceDataDialog', "Act."), 32, None, ReferenceBoolDelegate),
-                        ("number", g_tr('ReferenceDataDialog', "Account #"), None, None, None),
-                        ("reconciled_on", g_tr('ReferenceDataDialog', "Reconciled @"), ColumnWidth.FOR_DATETIME, None,
-                         ReferenceTimestampDelegate),
-                        ("organization_id", g_tr('ReferenceDataDialog', "Bank"), None, None, ReferenceLookupDelegate),
-                        ("country_id", g_tr('TableViewConfig', "CC"), 50, None, ReferenceLookupDelegate)]
         self.relations = [("type_id", "account_types", "id", "name", g_tr('ReferenceDataDialog', "Account type:")),
                           ("currency_id", "currencies", "id", "name", None),
                           ("organization_id", "agents", "id", "name", None),
@@ -62,11 +95,9 @@ class AccountListDialog(ReferenceDataDialog):
 
         ReferenceDataDialog.__init__(self)
         self.table = "accounts"
-        self.setup_db_model(with_relations=True)
-        self.model.setRelation(self.model.fieldIndex("type_id"), QSqlRelation("account_types", "id", "name"))
-        self.model.setRelation(self.model.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "name"))
-        self.model.setRelation(self.model.fieldIndex("organization_id"), QSqlRelation("agents", "id", "name"))
-        self.model.setRelation(self.model.fieldIndex("country_id"), QSqlRelation("countries", "id", "code"))
+        self.model = AccountListModel(self.table, self.DataView)
+        self.DataView.setModel(self.model)
+        self.model.configureView()
 
         self.search_field = "full_name"
         self.tree_view = False
