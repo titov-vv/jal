@@ -39,8 +39,8 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
         if self.details_field:
             self.name.setFixedWidth(self.name.fontMetrics().width("X") * 15)
             self.details.setVisible(True)
-        self.completer = QCompleter(self.dialog.Model)
-        self.completer.setCompletionColumn(self.dialog.Model.fieldIndex(self.selector_field))
+        self.completer = QCompleter(self.dialog.model)
+        self.completer.setCompletionColumn(self.dialog.model.fieldIndex(self.selector_field))
         self.completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.name.setCompleter(self.completer)
         self.completer.activated[QModelIndex].connect(self.on_completion)
@@ -52,14 +52,14 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
         if self.p_selected_id == selected_id:
             return
         self.p_selected_id = selected_id
-        self.dialog.Model.setFilter(f"{self.table}.id={selected_id}")
-        row_idx = self.dialog.Model.index(0, 0).row()
-        name = self.dialog.Model.record(row_idx).value(self.dialog.Model.fieldIndex(self.selector_field))
+        self.dialog.model.setFilter(f"{self.table}.id={selected_id}")
+        row_idx = self.dialog.model.index(0, 0).row()
+        name = self.dialog.model.record(row_idx).value(self.dialog.model.fieldIndex(self.selector_field))
         self.name.setText(name)
         if self.details_field:
-            details = self.dialog.Model.record(row_idx).value(self.dialog.Model.fieldIndex(self.details_field))
+            details = self.dialog.model.record(row_idx).value(self.dialog.model.fieldIndex(self.details_field))
             self.details.setText(details)
-        self.dialog.Model.setFilter("")
+        self.dialog.model.setFilter("")
 
     selected_id = Property(int, getId, setId, notify=changed, user=True)
 

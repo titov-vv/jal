@@ -38,8 +38,12 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.search_text = ""
 
         self.db = db_connection()
-        self.Model = UseSqlTable(self, self.table, self.columns, self.relations)
-        self.delegates = ConfigureTableView(self.DataView, self.Model, self.columns)
+        self.model = None
+        self.delegates = None
+
+    def setup_ui(self):
+        self.model = UseSqlTable(self, self.table, self.columns, self.relations)
+        self.delegates = ConfigureTableView(self.DataView, self.model, self.columns)
         # Storage of delegates inside class is required to keep ownership and prevent SIGSEGV as
         # https://doc.qt.io/qt-5/qabstractitemview.html#setItemDelegateForColumn says:
         # Any existing column delegate for column will be removed, but not deleted.
@@ -54,9 +58,9 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
                     self.GroupLbl.setText(relation[rel_idx.GROUP_NAME])
                     self.GroupCombo.setVisible(True)
                     self.group_key_field = relation[rel_idx.KEY_FIELD]
-                    self.group_key_index = self.Model.fieldIndex(relation[rel_idx.KEY_FIELD])
+                    self.group_key_index = self.model.fieldIndex(relation[rel_idx.KEY_FIELD])
                     self.group_fkey_field = relation[rel_idx.FOREIGN_KEY]
-                    relation_model = self.Model.relationModel(self.group_key_index)
+                    relation_model = self.model.relationModel(self.group_key_index)
                     self.GroupCombo.setModel(relation_model)
                     self.GroupCombo.setModelColumn(relation_model.fieldIndex(relation[rel_idx.LOOKUP_FIELD]))
                     self.group_id = relation_model.data(relation_model.index(0,
@@ -79,9 +83,9 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.DataView.clicked.connect(self.OnClicked)
         self.DataView.doubleClicked.connect(self.OnDoubleClicked)
         self.DataView.selectionModel().selectionChanged.connect(self.OnRowSelected)
-        self.Model.dataChanged.connect(self.OnDataChanged)
+        self.model.dataChanged.connect(self.OnDataChanged)
 
-        self.Model.select()
+        self.model.select()
         self.setFilter()
 
     @Slot()
@@ -93,7 +97,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
                 event.ignore()
                 return
             else:
-                self.Model.revertAll()
+                self.model.revertAll()
         event.accept()
 
     # Overload ancestor method to activate/deactivate filters for table view
@@ -128,11 +132,11 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
     @Slot()
     def OnAdd(self):
-        new_record = self.Model.record()
+        new_record = self.model.record()
         if self.tree_view:
             new_record.setValue('pid', self.parent)  # set current parent
-        assert self.Model.insertRows(0, 1)
-        self.Model.setRecord(0, new_record)
+        assert self.model.insertRows(0, 1)
+        self.model.setRecord(0, new_record)
         self.CommitBtn.setEnabled(True)
         self.RevertBtn.setEnabled(True)
 
@@ -140,26 +144,26 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     def OnRemove(self):
         idx = self.DataView.selectionModel().selection().indexes()
         selected_row = idx[0].row()
-        assert self.Model.removeRow(selected_row)
+        assert self.model.removeRow(selected_row)
         self.CommitBtn.setEnabled(True)
         self.RevertBtn.setEnabled(True)
 
     @Slot()
     def OnCommit(self):
         if self.group_key_index is not None:
-            record = self.Model.record(0)
-            group_field = record.value(self.Model.fieldIndex(self.group_key_field))
+            record = self.model.record(0)
+            group_field = record.value(self.model.fieldIndex(self.group_key_field))
             if not group_field:
-                self.Model.setData(self.Model.index(0, self.group_key_index), self.group_id)
-        if not self.Model.submitAll():
-            logging.fatal(g_tr('ReferenceDataDialog', "Submit failed: ") + self.Model.lastError().text())
+                self.model.setData(self.model.index(0, self.group_key_index), self.group_id)
+        if not self.model.submitAll():
+            logging.fatal(g_tr('ReferenceDataDialog', "Submit failed: ") + self.model.lastError().text())
             return
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)
 
     @Slot()
     def OnRevert(self):
-        self.Model.revertAll()
+        self.model.revertAll()
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)
 

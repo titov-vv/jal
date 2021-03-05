@@ -8,19 +8,21 @@ from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceBoolDeleg
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountTypeListDialog(ReferenceDataDialog):
     def __init__(self):
+        ReferenceDataDialog.__init__(self)
         self.table = "account_types"
         self.columns = [("id", None, 0, None, None),
                         ("name", g_tr('ReferenceDataDialog', "Account Type"), ColumnWidth.STRETCH,
                          Qt.AscendingOrder, None)]
         self.relations = None
         self.search_field = None
-        ReferenceDataDialog.__init__(self)
+        self.setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Account Types"))
         self.Toggle.setVisible(False)
 
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountListDialog(ReferenceDataDialog):
     def __init__(self):
+        ReferenceDataDialog.__init__(self)
         self.table = "accounts"
         self.columns = [("id", None, 0, None, None),
                         ("name", g_tr('ReferenceDataDialog', "Name"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
@@ -37,7 +39,7 @@ class AccountListDialog(ReferenceDataDialog):
                           ("country_id", "countries", "id", "code", None)]
         self.search_field = "full_name"
         self.tree_view = False
-        ReferenceDataDialog.__init__(self)
+        self.setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Accounts"))
         self.Toggle.setVisible(True)
         self.toggle_field = "active"
@@ -46,6 +48,7 @@ class AccountListDialog(ReferenceDataDialog):
 # ----------------------------------------------------------------------------------------------------------------------
 class AssetListDialog(ReferenceDataDialog):
     def __init__(self):
+        ReferenceDataDialog.__init__(self)
         self.table = "assets"
         self.columns = [("id", None, 0, None, None),
                         ("name", g_tr('ReferenceDataDialog', "Symbol"), None, Qt.AscendingOrder, None),
@@ -59,13 +62,14 @@ class AssetListDialog(ReferenceDataDialog):
                           ("src_id", "data_sources", "id", "name", None)]
         self.search_field = "full_name"
         self.tree_view = False
-        ReferenceDataDialog.__init__(self)
+        self.setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Assets"))
         self.Toggle.setVisible(False)
 
 # ----------------------------------------------------------------------------------------------------------------------
 class PeerListDialog(ReferenceDataDialog):
     def __init__(self):
+        ReferenceDataDialog.__init__(self)
         self.table = "agents_ext"
         self.columns = [("id", " ", 16, None, ReferenceTreeDelegate),
                         ("pid", None, 0, None, None),
@@ -76,13 +80,14 @@ class PeerListDialog(ReferenceDataDialog):
         self.relations = None
         self.search_field = "name"
         self.tree_view = True
-        ReferenceDataDialog.__init__(self)
+        self.setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Peers"))
         self.Toggle.setVisible(False)
 
 # ----------------------------------------------------------------------------------------------------------------------
 class CategoryListDialog(ReferenceDataDialog):
     def __init__(self):
+        ReferenceDataDialog.__init__(self)
         self.table = "categories_ext"
         self.columns = [("id", " ", 16, None, ReferenceTreeDelegate),
                         ("pid", None, 0, None, None),
@@ -93,26 +98,28 @@ class CategoryListDialog(ReferenceDataDialog):
         self.relations = None
         self.search_field = "name"
         self.tree_view = True
-        ReferenceDataDialog.__init__(self)
+        self.setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Categories"))
         self.Toggle.setVisible(False)
 
 # ----------------------------------------------------------------------------------------------------------------------
 class TagsListDialog(ReferenceDataDialog):
     def __init__(self):
+        ReferenceDataDialog.__init__(self)
         self.table = "tags"
         self.columns = [("id", None, 0, None, None),
                         ("tag", g_tr('ReferenceDataDialog', "Tag"), ColumnWidth.STRETCH, Qt.AscendingOrder, None)]
         self.relations = None
         self.search_field = "tag"
         self.tree_view = False
-        ReferenceDataDialog.__init__(self)
+        self.setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Tags"))
         self.Toggle.setVisible(False)
 
 # ----------------------------------------------------------------------------------------------------------------------
 class CountryListDialog(ReferenceDataDialog):
     def __init__(self):
+        ReferenceDataDialog.__init__(self)
         self.table = "countries"
         self.columns = [("id", None, 0, None, None),
                         ("name", g_tr('ReferenceDataDialog', "Country"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
@@ -129,6 +136,7 @@ class CountryListDialog(ReferenceDataDialog):
 # ----------------------------------------------------------------------------------------------------------------------
 class QuotesListDialog(ReferenceDataDialog):
     def __init__(self):
+        ReferenceDataDialog.__init__(self)
         self.table = "quotes"
         self.columns = [("id", None, 0, None, None),
                         ("timestamp", g_tr('ReferenceDataDialog', "Date"), ColumnWidth.FOR_DATETIME, None,
@@ -138,7 +146,7 @@ class QuotesListDialog(ReferenceDataDialog):
         self.relations = [("asset_id", "assets", "id", "name", None)]
         self.search_field = "name"
         self.tree_view = False
-        ReferenceDataDialog.__init__(self)
+        self.setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Quotes"))
         self.Toggle.setVisible(False)
 
