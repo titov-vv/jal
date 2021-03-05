@@ -91,11 +91,6 @@ class AccountListModel(QSqlRelationalTableModel):
 
 class AccountListDialog(ReferenceDataDialog):
     def __init__(self):
-        self.relations = [("type_id", "account_types", "id", "name", g_tr('ReferenceDataDialog', "Account type:")),
-                          ("currency_id", "currencies", "id", "name", None),
-                          ("organization_id", "agents", "id", "name", None),
-                          ("country_id", "countries", "id", "code", None)]
-
         ReferenceDataDialog.__init__(self)
         self.table = "accounts"
         self.model = AccountListModel(self.table, self.DataView)
@@ -107,7 +102,7 @@ class AccountListDialog(ReferenceDataDialog):
         self.setFilter()
 
     def setup_ui(self):
-        self.search_field = "name"
+        self.search_field = "accounts.name"
         super().setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Accounts"))
         self.Toggle.setVisible(True)
@@ -159,9 +154,6 @@ class AssetListModel(QSqlRelationalTableModel):
 
 class AssetListDialog(ReferenceDataDialog):
     def __init__(self):
-        self.relations = [("type_id", "asset_types", "id", "name", g_tr('ReferenceDataDialog', "Asset type:")),
-                          ("country_id", "countries", "id", "name", None),
-                          ("src_id", "data_sources", "id", "name", None)]
         ReferenceDataDialog.__init__(self)
         self.table = "assets"
         self.model = AssetListModel(self.table, self.DataView)
@@ -173,7 +165,7 @@ class AssetListDialog(ReferenceDataDialog):
         self.setFilter()
 
     def setup_ui(self):
-        self.search_field = "full_name"
+        self.search_field = "assets.full_name"
         super().setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Assets"))
         self.Toggle.setVisible(False)
@@ -190,103 +182,229 @@ class AssetListDialog(ReferenceDataDialog):
         self.group_id = relation_model.data(relation_model.index(0, relation_model.fieldIndex(self.group_fkey_field)))
 
 # ----------------------------------------------------------------------------------------------------------------------
+class PeerListModel(QSqlRelationalTableModel):
+    def __init__(self, table, parent_view):
+        self._view = parent_view
+        self._tree_delegate = None
+        self._int_delegate = None
+        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=db_connection())
+        self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
+        self.setTable(table)
+        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.setSort(self.fieldIndex("name"), Qt.AscendingOrder)
+        self.setHeaderData(self.fieldIndex("id"), Qt.Horizontal, " ")
+        self.setHeaderData(self.fieldIndex("name"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Name"))
+        self.setHeaderData(self.fieldIndex("location"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Location"))
+        self.setHeaderData(self.fieldIndex("actions_count"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Docs count"))
+
+    def configureView(self):
+        self._view.setColumnHidden(self.fieldIndex("pid"), True)
+        self._view.setColumnHidden(self.fieldIndex("children_count"), True)
+        self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("name"), QHeaderView.Stretch)
+        self._view.setColumnWidth(self.fieldIndex("id"), 16)
+        font = self._view.horizontalHeader().font()
+        font.setBold(True)
+        self._view.horizontalHeader().setFont(font)
+
+        self._tree_delegate = ReferenceTreeDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("id"), self._tree_delegate)
+        self._int_delegate = ReferenceIntDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("actions_count"), self._bool_delegate)
+
 class PeerListDialog(ReferenceDataDialog):
     def __init__(self):
-        self.columns = [("id", " ", 16, None, ReferenceTreeDelegate),
-                        ("pid", None, 0, None, None),
-                        ("name", g_tr('ReferenceDataDialog', "Name"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
-                        ("location", g_tr('ReferenceDataDialog', "Location"), None, None, None),
-                        ("actions_count", g_tr('ReferenceDataDialog', "Docs count"), None, None, ReferenceIntDelegate),
-                        ("children_count", None, None, None, None)]
-        self.relations = None
-
         ReferenceDataDialog.__init__(self)
         self.table = "agents_ext"
-        self.setup_db_model()
+        self.model = CategoryListModel(self.table, self.DataView)
+        self.DataView.setModel(self.model)
+        self.model.configureView()
+        self.setup_ui()
 
+        self.model.select()
+        self.setFilter()
+
+    def setup_ui(self):
         self.search_field = "name"
         self.tree_view = True
-        self.setup_ui()
+        super().setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Peers"))
         self.Toggle.setVisible(False)
 
 # ----------------------------------------------------------------------------------------------------------------------
+class CategoryListModel(QSqlRelationalTableModel):
+    def __init__(self, table, parent_view):
+        self._view = parent_view
+        self._tree_delegate = None
+        self._bool_delegate = None
+        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=db_connection())
+        self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
+        self.setTable(table)
+        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.setSort(self.fieldIndex("name"), Qt.AscendingOrder)
+        self.setHeaderData(self.fieldIndex("id"), Qt.Horizontal, " ")
+        self.setHeaderData(self.fieldIndex("name"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Name"))
+        self.setHeaderData(self.fieldIndex("often"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Often"))
+
+    def configureView(self):
+        self._view.setColumnHidden(self.fieldIndex("pid"), True)
+        self._view.setColumnHidden(self.fieldIndex("special"), True)
+        self._view.setColumnHidden(self.fieldIndex("children_count"), True)
+        self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("name"), QHeaderView.Stretch)
+        self._view.setColumnWidth(self.fieldIndex("id"), 16)
+        font = self._view.horizontalHeader().font()
+        font.setBold(True)
+        self._view.horizontalHeader().setFont(font)
+
+        self._tree_delegate = ReferenceTreeDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("id"), self._tree_delegate)
+        self._bool_delegate = ReferenceBoolDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("often"), self._bool_delegate)
+
 class CategoryListDialog(ReferenceDataDialog):
     def __init__(self):
-        self.columns = [("id", " ", 16, None, ReferenceTreeDelegate),
-                        ("pid", None, 0, None, None),
-                        ("name", g_tr('ReferenceDataDialog', "Name"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
-                        ("often", g_tr('ReferenceDataDialog', "Often"), None, None, ReferenceBoolDelegate),
-                        ("special", None, 0, None, None),
-                        ("children_count", None, None, None, None)]
-        self.relations = None
-
         ReferenceDataDialog.__init__(self)
         self.table = "categories_ext"
-        self.setup_db_model()
+        self.model = CategoryListModel(self.table, self.DataView)
+        self.DataView.setModel(self.model)
+        self.model.configureView()
+        self.setup_ui()
 
+        self.model.select()
+        self.setFilter()
+
+    def setup_ui(self):
         self.search_field = "name"
         self.tree_view = True
-        self.setup_ui()
+        super().setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Categories"))
         self.Toggle.setVisible(False)
 
 # ----------------------------------------------------------------------------------------------------------------------
+class TagListModel(QSqlRelationalTableModel):
+    def __init__(self, table, parent_view):
+        self._view = parent_view
+        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=db_connection())
+        self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
+        self.setTable(table)
+        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.setSort(self.fieldIndex("tag"), Qt.AscendingOrder)
+        self.setHeaderData(self.fieldIndex("tag"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Tag"))
+
+    def configureView(self):
+        self._view.setColumnHidden(self.fieldIndex("id"), True)
+        self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("tag"), QHeaderView.Stretch)
+        font = self._view.horizontalHeader().font()
+        font.setBold(True)
+        self._view.horizontalHeader().setFont(font)
+
 class TagsListDialog(ReferenceDataDialog):
     def __init__(self):
-        self.columns = [("id", None, 0, None, None),
-                        ("tag", g_tr('ReferenceDataDialog', "Tag"), ColumnWidth.STRETCH, Qt.AscendingOrder, None)]
-        self.relations = None
-
         ReferenceDataDialog.__init__(self)
         self.table = "tags"
-        self.setup_db_model()
+        self.model = TagListModel(self.table, self.DataView)
+        self.DataView.setModel(self.model)
+        self.model.configureView()
+        self.setup_ui()
 
+        self.model.select()
+        self.setFilter()
+
+    def setup_ui(self):
         self.search_field = "tag"
         self.tree_view = False
-        self.setup_ui()
+        super().setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Tags"))
         self.Toggle.setVisible(False)
 
 # ----------------------------------------------------------------------------------------------------------------------
+class CountryListModel(QSqlRelationalTableModel):
+    def __init__(self, table, parent_view):
+        self._view = parent_view
+        self._bool_delegate = None
+        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=db_connection())
+        self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
+        self.setTable(table)
+        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.setSort(self.fieldIndex("name"), Qt.AscendingOrder)
+        self.setHeaderData(self.fieldIndex("name"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Country"))
+        self.setHeaderData(self.fieldIndex("code"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Code"))
+        self.setHeaderData(self.fieldIndex("tax_treaty"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Tax Treaty"))
+
+    def configureView(self):
+        self._view.setColumnHidden(self.fieldIndex("id"), True)
+        self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("name"), QHeaderView.Stretch)
+        self._view.setColumnWidth(self.fieldIndex("code"), 50)
+        font = self._view.horizontalHeader().font()
+        font.setBold(True)
+        self._view.horizontalHeader().setFont(font)
+
+        self._bool_delegate = ReferenceBoolDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("tax_treaty"), self._bool_delegate)
+
 class CountryListDialog(ReferenceDataDialog):
     def __init__(self):
-        self.columns = [("id", None, 0, None, None),
-                        ("name", g_tr('ReferenceDataDialog', "Country"), ColumnWidth.STRETCH, Qt.AscendingOrder, None),
-                        ("code", g_tr('ReferenceDataDialog', "Code"), 50, None, None),
-                        ("tax_treaty", g_tr('ReferenceDataDialog', "Tax Treaty"), None, None,
-                         ReferenceBoolDelegate)]
-        self.relations = None
-
         ReferenceDataDialog.__init__(self)
         self.table = "countries"
-        self.setup_db_model()
+        self.model = CountryListModel(self.table, self.DataView)
+        self.DataView.setModel(self.model)
+        self.model.configureView()
+        self.setup_ui()
 
+        self.model.select()
+        self.setFilter()
+
+    def setup_ui(self):
         self.search_field = "name"
         self.tree_view = False
-        self.setup_ui()
+        super().setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Countries"))
         self.Toggle.setVisible(False)
 
 # ----------------------------------------------------------------------------------------------------------------------
+class QuotesListModel(QSqlRelationalTableModel):
+    def __init__(self, table, parent_view):
+        self._view = parent_view
+        self._lookup_delegate = None
+        self._timestamp_delegate = None
+        QSqlRelationalTableModel.__init__(self, parent=parent_view, db=db_connection())
+        self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
+        self.setTable(table)
+        self.setRelation(self.fieldIndex("asset_id"), QSqlRelation("assets", "id", "name"))
+        self.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.setHeaderData(self.fieldIndex("timestamp"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Date"))
+        self.setHeaderData(self.fieldIndex("asset_id"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Asset"))
+        self.setHeaderData(self.fieldIndex("quote"), Qt.Horizontal, g_tr('ReferenceDataDialog', "Quote"))
+
+    def configureView(self):
+        self._view.setColumnHidden(self.fieldIndex("id"), True)
+        self._view.setColumnWidth(self.fieldIndex("timestamp"),
+                                  self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
+        self._view.setColumnWidth(self.fieldIndex("quote"), 100)
+        font = self._view.horizontalHeader().font()
+        font.setBold(True)
+        self._view.horizontalHeader().setFont(font)
+
+        self._lookup_delegate = ReferenceLookupDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("asset_id"), self._lookup_delegate)
+        self._timestamp_delegate = ReferenceTimestampDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("timestamp"), self._timestamp_delegate)
+
 class QuotesListDialog(ReferenceDataDialog):
     def __init__(self):
-        self.columns = [("id", None, 0, None, None),
-                        ("timestamp", g_tr('ReferenceDataDialog', "Date"), ColumnWidth.FOR_DATETIME, None,
-                         ReferenceTimestampDelegate),
-                        ("asset_id", g_tr('ReferenceDataDialog', "Asset"), None, None, ReferenceLookupDelegate),
-                        ("quote", g_tr('ReferenceDataDialog', "Quote"), 100, None, None)]
-        self.relations = [("asset_id", "assets", "id", "name", None)]
-
         ReferenceDataDialog.__init__(self)
         self.table = "quotes"
-        self.setup_db_model(with_relations=True)
-        self.model.setRelation(self.model.fieldIndex("asset_id"), QSqlRelation("assets", "id", " name"))
+        self.model = QuotesListModel(self.table, self.DataView)
+        self.DataView.setModel(self.model)
+        self.model.configureView()
+        self.setup_ui()
 
+        self.model.select()
+        self.setFilter()
 
+    def setup_ui(self):
         self.search_field = "name"
         self.tree_view = False
-        self.setup_ui()
+        super().setup_ui()
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Quotes"))
         self.Toggle.setVisible(False)
 

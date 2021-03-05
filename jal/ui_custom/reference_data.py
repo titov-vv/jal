@@ -41,20 +41,6 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.model = None
         self.delegates = None
 
-    def setup_db_model(self, with_relations=False):
-        if with_relations:
-            self.model = QSqlRelationalTableModel(parent=self.DataView, db=db_connection())
-            self.model.setJoinMode(QSqlRelationalTableModel.LeftJoin)  # to work correctly with NULL values in fields
-        else:
-            self.model = QSqlTableModel(parent=self.DataView, db=db_connection())
-        self.model.setTable(self.table)
-        self.model.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        self.delegates = ConfigureTableView(self.DataView, self.model, self.columns)
-        # Storage of delegates inside class is required to keep ownership and prevent SIGSEGV as
-        # https://doc.qt.io/qt-5/qabstractitemview.html#setItemDelegateForColumn says:
-        # Any existing column delegate for column will be removed, but not deleted.
-        # QAbstractItemView does not take ownership of delegate.
-
     def setup_ui(self):
         self.GroupLbl.setVisible(False)
         self.GroupCombo.setVisible(False)
@@ -166,7 +152,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
         conditions = []
         if self.search_text:
-            conditions.append(f"{self.table}.{self.search_field} LIKE '%{self.search_text}%'")
+            conditions.append(f"{self.search_field} LIKE '%{self.search_text}%'")
         else:
             if self.tree_view:
                 conditions.append(f"pid={self.parent}")
