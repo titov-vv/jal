@@ -14,6 +14,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         self._columns = []
         self._sort_by = None
         self._hidden = []
+        self._stretch = None
         QSqlRelationalTableModel.__init__(self, parent=parent_view, db=db_connection())
         self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
         self.setTable(table)
@@ -25,6 +26,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         self.setColumnNames()
         self.setSorting()
         self.hideColumns()
+        self.setStretching()
         font = self._view.horizontalHeader().font()
         font.setBold(True)
         self._view.horizontalHeader().setFont(font)
@@ -41,6 +43,10 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         for column_name in self._hidden:
             self._view.setColumnHidden(self.fieldIndex(column_name), True)
 
+    def setStretching(self):
+        if self._stretch:
+            self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex(self._stretch), QHeaderView.Stretch)
+
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountTypeListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
@@ -48,10 +54,10 @@ class AccountTypeListModel(AbstractReferenceListModel):
         self._columns = [("name", g_tr('ReferenceDataDialog', "Account Type"))]
         self._sort_by = "name"
         self._hidden = ["id"]
+        self._stretch = "name"
 
     def configureView(self):
         super().configureView()
-        self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("name"), QHeaderView.Stretch)
 
 class AccountTypeListDialog(ReferenceDataDialog):
     def __init__(self):
@@ -83,6 +89,7 @@ class AccountListModel(AbstractReferenceListModel):
                          ("country_id", g_tr('ReferenceDataDialog', "CC"))]
         self._sort_by = "name"
         self._hidden = ["id", "type_id"]
+        self._stretch = "name"
         self._lookup_delegate = None
         self._timestamp_delegate = None
         self._bool_delegate = None
@@ -93,7 +100,6 @@ class AccountListModel(AbstractReferenceListModel):
 
     def configureView(self):
         super().configureView()
-        self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("name"), QHeaderView.Stretch)
         self._view.setColumnWidth(self.fieldIndex("active"), 32)
         self._view.setColumnWidth(self.fieldIndex("reconciled_on"),
                                   self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
@@ -150,6 +156,7 @@ class AssetListModel(AbstractReferenceListModel):
                          ("src_id", g_tr('ReferenceDataDialog', "Data source"))]
         self._sort_by = "name"
         self._hidden = ["id", "type_id"]
+        self._stretch = "full_name"
         self._lookup_delegate = None
         self.setRelation(self.fieldIndex("type_id"), QSqlRelation("asset_types", "id", "name"))
         self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "name"))
@@ -157,8 +164,6 @@ class AssetListModel(AbstractReferenceListModel):
 
     def configureView(self):
         super().configureView()
-        self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("full_name"), QHeaderView.Stretch)
-
         self._lookup_delegate = ReferenceLookupDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("src_id"), self._lookup_delegate)
@@ -202,12 +207,12 @@ class PeerListModel(AbstractReferenceListModel):
                          ("actions_count", g_tr('ReferenceDataDialog', "Docs count"))]
         self._sort_by = "name"
         self._hidden = ["pid", "children_count"]
+        self._stretch = "name"
         self._tree_delegate = None
         self._int_delegate = None
 
     def configureView(self):
         super().configureView()
-        self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("name"), QHeaderView.Stretch)
         self._view.setColumnWidth(self.fieldIndex("id"), 16)
 
         self._tree_delegate = ReferenceTreeDelegate(self._view)
@@ -243,12 +248,12 @@ class CategoryListModel(AbstractReferenceListModel):
                          ("often", g_tr('ReferenceDataDialog', "Often"))]
         self._sort_by = "name"
         self._hidden = ["pid", "special", "children_count"]
+        self._stretch = "name"
         self._tree_delegate = None
         self._bool_delegate = None
 
     def configureView(self):
         super().configureView()
-        self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("name"), QHeaderView.Stretch)
         self._view.setColumnWidth(self.fieldIndex("id"), 16)
 
         self._tree_delegate = ReferenceTreeDelegate(self._view)
@@ -282,10 +287,7 @@ class TagListModel(AbstractReferenceListModel):
         self._columns = [("tag", g_tr('ReferenceDataDialog', "Tag"))]
         self._sort_by = "tag"
         self._hidden = ["id"]
-
-    def configureView(self):
-        super().configureView()
-        self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("tag"), QHeaderView.Stretch)
+        self._stretch = "tag"
 
 class TagsListDialog(ReferenceDataDialog):
     def __init__(self):
@@ -315,11 +317,11 @@ class CountryListModel(AbstractReferenceListModel):
                          ("tax_treaty", g_tr('ReferenceDataDialog', "Tax Treaty"))]
         self._sort_by = "name"
         self._hidden = ["id"]
+        self._stretch = "name"
         self._bool_delegate = None
 
     def configureView(self):
         super().configureView()
-        self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("name"), QHeaderView.Stretch)
         self._view.setColumnWidth(self.fieldIndex("code"), 50)
 
         self._bool_delegate = ReferenceBoolDelegate(self._view)
