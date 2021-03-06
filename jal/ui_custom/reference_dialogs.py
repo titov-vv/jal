@@ -207,13 +207,13 @@ class PeerListModel(AbstractReferenceListModel):
         self._tree_delegate = ReferenceTreeDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("id"), self._tree_delegate)
         self._int_delegate = ReferenceIntDelegate(self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("actions_count"), self._bool_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("actions_count"), self._int_delegate)
 
 class PeerListDialog(ReferenceDataDialog):
     def __init__(self):
         ReferenceDataDialog.__init__(self)
         self.table = "agents_ext"
-        self.model = CategoryListModel(self.table, self.DataView)
+        self.model = PeerListModel(self.table, self.DataView)
         self.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
