@@ -11,11 +11,6 @@ class Setup:
     DISP_TOLERANCE = 1e-4
 
 
-class ColumnWidth:
-    STRETCH = -1
-    FOR_DATETIME = -2
-
-
 class BookAccount:  # PREDEFINED BOOK ACCOUNTS
     Costs = 1
     Incomes = 2

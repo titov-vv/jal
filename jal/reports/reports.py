@@ -1,8 +1,8 @@
 import pandas as pd
-from PySide2.QtWidgets import QFileDialog
+from PySide2.QtWidgets import QFileDialog, QHeaderView
 from PySide2.QtCore import QObject, Signal, QAbstractTableModel
 from PySide2.QtSql import QSqlTableModel
-from jal.constants import BookAccount, PredefinedAsset, PredefinedCategory, ColumnWidth
+from jal.constants import BookAccount, PredefinedAsset, PredefinedCategory
 from jal.widgets.view_delegate import *
 from jal.db.helpers import db_connection, executeSQL, readSQLrecord
 from jal.ui_custom.helpers import g_tr
@@ -17,67 +17,6 @@ class ReportType:
     ProfitLoss = 2
     Deals = 3
     ByCategory = 4
-
-
-# -------------------------------------------------------------------------------------------------------------------
-from PySide2.QtWidgets import QHeaderView
-class hcol_idx:
-    DB_NAME = 0
-    DISPLAY_NAME = 1
-    WIDTH = 2
-    SORT_ORDER = 3
-    DELEGATE = 4
-
-# column_list is a list of tuples: (db_column_name, display_column_name, width, sort_order, delegate)
-# column will be hidden if display_column_name is None
-# column with negative with will be stretched
-# sort order is ignored as it might be set by Query itself
-# delegate is a function for custom paint and editors
-# Returns : QSqlTableModel
-def UseSqlQuery(parent, query, columns):
-    model = QSqlTableModel(parent=parent, db=db_connection())
-    model.setQuery(query)
-    for column in columns:
-        if column[hcol_idx.DISPLAY_NAME]:
-            model.setHeaderData(model.fieldIndex(column[hcol_idx.DB_NAME]), Qt.Horizontal, column[hcol_idx.DISPLAY_NAME])
-    return model
-
-
-# -------------------------------------------------------------------------------------------------------------------
-# Return value is a list of delegates because storage of delegates
-# is required to keep ownership and prevent SIGSEGV as
-# https://doc.qt.io/qt-5/qabstractitemview.html#setItemDelegateForColumn says:
-# Any existing column delegate for column will be removed, but not deleted.
-# QAbstractItemView does not take ownership of delegate.
-def ConfigureTableView(view, model, columns):
-    view.setModel(model)
-    for column in columns:
-        if column[hcol_idx.DISPLAY_NAME] is None:   # hide column
-            view.setColumnHidden(model.fieldIndex(column[hcol_idx.DB_NAME]), True)
-        if column[hcol_idx.WIDTH] is not None:
-            if column[hcol_idx.WIDTH] == ColumnWidth.STRETCH:
-                view.horizontalHeader().setSectionResizeMode(model.fieldIndex(column[hcol_idx.DB_NAME]),
-                                                             QHeaderView.Stretch)
-            elif column[hcol_idx.WIDTH] == ColumnWidth.FOR_DATETIME:
-                view.setColumnWidth(model.fieldIndex(column[hcol_idx.DB_NAME]),
-                                    view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
-            else:  # set custom width
-                view.setColumnWidth(model.fieldIndex(column[hcol_idx.DB_NAME]), column[hcol_idx.WIDTH])
-
-    font = view.horizontalHeader().font()
-    font.setBold(True)
-    view.horizontalHeader().setFont(font)
-
-    delegates = []
-    for column in columns:
-        if column[hcol_idx.DELEGATE] is None:
-            # Use standard delegate / Remove old delegate if there was any
-            view.setItemDelegateForColumn(model.fieldIndex(column[hcol_idx.DB_NAME]), None)
-        else:
-            delegates.append(column[hcol_idx.DELEGATE](view))
-            view.setItemDelegateForColumn(model.fieldIndex(column[hcol_idx.DB_NAME]), delegates[-1])
-    return delegates
-
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -161,18 +100,96 @@ class ProfitLossReportModel(QSqlTableModel):
 
 #-----------------------------------------------------------------------------------------------------------------------
 class DealsReportModel(QSqlTableModel):
-    pass
+    def __init__(self, query, parent_view):
+        self._columns = [("asset", g_tr("Reports", "Asset")),
+                         ("open_timestamp", g_tr("Reports", "Open Date")),
+                         ("close_timestamp", g_tr("Reports", "Close Date")),
+                         ("open_price", g_tr("Reports", "Open Price")),
+                         ("close_price", g_tr("Reports", "Close Price")),
+                         ("qty", g_tr("Reports", "Qty")),
+                         ("corp_action", g_tr("Reports", "Note"))]
+        self._view = parent_view
+        self._timestamp_delegate = None
+        self._float_delegate = None
+        self._float2_delegate = None
+        self._float4_delegate = None
+        self._profit_delegate = None
+        self._ca_delegate = None
+        QSqlTableModel.__init__(self, parent=parent_view, db=db_connection())
+        self.setQuery(query)
+
+    def setColumnNames(self):
+        for column in self._columns:
+            self.setHeaderData(self.fieldIndex(column[0]), Qt.Horizontal, column[1])
+
+    def configureView(self):
+        self._view.setModel(self)
+        self.setColumnNames()
+        font = self._view.horizontalHeader().font()
+        font.setBold(True)
+        self._view.horizontalHeader().setFont(font)
+        self._view.setColumnWidth(self.fieldIndex("asset"), 300)
+        self._view.setColumnWidth(self.fieldIndex("corp_action"), 200)
+        self._view.setColumnWidth(self.fieldIndex("open_timestamp"),
+                                  self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
+        self._view.setColumnWidth(self.fieldIndex("close_timestamp"),
+                                  self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
+        self._timestamp_delegate = ReportsTimestampDelegate()
+        self._view.setItemDelegateForColumn(self.fieldIndex("open_timestamp"), self._timestamp_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("close_timestamp"), self._timestamp_delegate)
+        self._float_delegate = ReportsFloat2Delegate()
+        self._view.setItemDelegateForColumn(self.fieldIndex("qty"), self._float_delegate)
+        self._float2_delegate = ReportsFloat2Delegate()
+        self._view.setItemDelegateForColumn(self.fieldIndex("fee"), self._float2_delegate)
+        self._float4_delegate = ReportsFloat2Delegate()
+        self._view.setItemDelegateForColumn(self.fieldIndex("open_price"), self._float4_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("close_price"), self._float4_delegate)
+        self._profit_delegate = ReportsProfitDelegate()
+        self._view.setItemDelegateForColumn(self.fieldIndex("profit"), self._profit_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("rel_profit"), self._profit_delegate)
+        self._ca_delegate = ReportsCorpActionDelegate()
+        self._view.setItemDelegateForColumn(self.fieldIndex("corp_action"), self._ca_delegate)
 
 
 #-----------------------------------------------------------------------------------------------------------------------
 class CategoryReportModel(QSqlTableModel):
-    pass
+    def __init__(self, query, parent_view):
+        self._columns = [("timestamp", g_tr("Reports", "Timestamp")),
+                         ("account", g_tr("Reports", "Account")),
+                         ("name", g_tr("Reports", "Peer Name")),
+                         ("sum", g_tr("Reports", "Amount")),
+                         ("note", g_tr("Reports", "Note"))]
+        self._view = parent_view
+        self._timestamp_delegate = None
+        self._float_delegate = None
+        QSqlTableModel.__init__(self, parent=parent_view, db=db_connection())
+        self.setQuery(query)
+
+    def setColumnNames(self):
+        for column in self._columns:
+            self.setHeaderData(self.fieldIndex(column[0]), Qt.Horizontal, column[1])
+
+    def configureView(self):
+        self._view.setModel(self)
+        self.setColumnNames()
+        font = self._view.horizontalHeader().font()
+        font.setBold(True)
+        self._view.horizontalHeader().setFont(font)
+        self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("note"), QHeaderView.Stretch)
+        self._view.setColumnWidth(self.fieldIndex("account"), 200)
+        self._view.setColumnWidth(self.fieldIndex("name"), 200)
+        self._view.setColumnWidth(self.fieldIndex("sum"), 200)
+        self._view.setColumnWidth(self.fieldIndex("timestamp"),
+                                  self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
+        self._timestamp_delegate = ReportsTimestampDelegate()
+        self._view.setItemDelegateForColumn(self.fieldIndex("timestamp"), self._timestamp_delegate)
+        self._float_delegate = ReportsFloat2Delegate()
+        self._view.setItemDelegateForColumn(self.fieldIndex("sum"), self._float_delegate)
 
 
 #-----------------------------------------------------------------------------------------------------------------------
 PREPARE_REPORT_QUERY = 0
 SHOW_REPORT = 1
-REPORT_COLUMNS = 2
 
 class Reports(QObject):
     report_failure = Signal(str)
@@ -189,47 +206,35 @@ class Reports(QObject):
 
         self.reports = {
             ReportType.IncomeSpending: (self.prepareIncomeSpendingReport,
-                                        self.showPandasReport,
-                                        []),
+                                        self.showPandasReport),
             ReportType.ProfitLoss: (self.prepareProfitLossReport,
-                                    self.showProfitLossReport,
-                                    []),
+                                    self.showProfitLossReport),
             ReportType.Deals: (self.prepareDealsReport,
-                               self.showSqlQueryReport,
-                               [("asset", "Asset", 300, None, None),
-                               ("open_timestamp", "Open Date", ColumnWidth.FOR_DATETIME, None, ReportsTimestampDelegate),
-                               ("close_timestamp", "Close Date", ColumnWidth.FOR_DATETIME, None, ReportsTimestampDelegate),
-                               ("open_price", "Open Price", None, None, ReportsFloat4Delegate),
-                               ("close_price", "Close Price", None, None, ReportsFloat4Delegate),
-                               ("qty", "Qty", None, None, ReportsFloatDelegate),
-                               ("fee", "Fee", None, None, ReportsFloat2Delegate),
-                               ("profit", "P/L", None, None, ReportsProfitDelegate),
-                               ("rel_profit", "P/L, %", None, None, ReportsProfitDelegate),
-                               ("corp_action", "Note", 200, None, ReportsCorpActionDelegate)]),
+                               self.showDealsReport),
             ReportType.ByCategory: (self.prepareCategoryReport,
-                                    self.showSqlQueryReport,
-                                    [("timestamp", "Timestamp", ColumnWidth.FOR_DATETIME, None, ReportsTimestampDelegate),
-                                     ("account", "Account", 200, None, None),
-                                     ("name", "Peer Name", 200, None, None),
-                                     ("sum", "Amount", 200, None, ReportsFloat2Delegate),
-                                     ("note", "Note", -1, None, None)])
+                                    self.showByCategoryReport)
         }
 
     def runReport(self, report_type, begin=0, end=0, account_id=0, group_dates=0):
         if self.reports[report_type][PREPARE_REPORT_QUERY](begin, end, account_id, group_dates):
-            self.reports[report_type][SHOW_REPORT](report_type)
+            self.reports[report_type][SHOW_REPORT]()
 
-    def showSqlQueryReport(self, report_type):
-        self.model = UseSqlQuery(self, self.query, self.reports[report_type][REPORT_COLUMNS])
-        self.delegates = ConfigureTableView(self.table_view, self.model, self.reports[report_type][REPORT_COLUMNS])
-        self.model.select()
-
-    def showProfitLossReport(self, report_type):
+    def showProfitLossReport(self):
         self.model = ProfitLossReportModel(self.query, self.table_view)
         self.model.configureView()
         self.model.select()
 
-    def showPandasReport(self, report_type):
+    def showDealsReport(self):
+        self.model = DealsReportModel(self.query, self.table_view)
+        self.model.configureView()
+        self.model.select()
+
+    def showByCategoryReport(self):
+        self.model = CategoryReportModel(self.query, self.table_view)
+        self.model.configureView()
+        self.model.select()
+
+    def showPandasReport(self):
         self.model = PandasModel(self.dataframe)
         self.table_view.setModel(self.model)
         self.delegates = []
