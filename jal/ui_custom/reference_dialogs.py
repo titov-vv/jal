@@ -69,7 +69,6 @@ class AccountTypeListDialog(ReferenceDataDialog):
 
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Account Types"))
         self.Toggle.setVisible(False)
-
         super()._init_completed()
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -118,7 +117,6 @@ class AccountListDialog(ReferenceDataDialog):
         self.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
-
         super()._init_completed()
 
     def setup_ui(self):
@@ -171,7 +169,6 @@ class AssetListDialog(ReferenceDataDialog):
         self.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
-
         super()._init_completed()
 
     def setup_ui(self):
@@ -222,7 +219,6 @@ class PeerListDialog(ReferenceDataDialog):
         self.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
-
         super()._init_completed()
 
     def setup_ui(self):
@@ -263,7 +259,6 @@ class CategoryListDialog(ReferenceDataDialog):
         self.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
-
         super()._init_completed()
 
     def setup_ui(self):
@@ -291,7 +286,6 @@ class TagsListDialog(ReferenceDataDialog):
         self.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
-
         super()._init_completed()
 
     def setup_ui(self):
@@ -327,7 +321,6 @@ class CountryListDialog(ReferenceDataDialog):
         self.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
-
         super()._init_completed()
 
     def setup_ui(self):
@@ -367,7 +360,6 @@ class QuotesListDialog(ReferenceDataDialog):
         self.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
-
         super()._init_completed()
 
     def setup_ui(self):

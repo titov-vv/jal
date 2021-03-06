@@ -2,13 +2,13 @@ import logging
 from datetime import datetime
 
 from PySide2.QtCore import Qt, Signal, Property, Slot, QEvent
-from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelationalDelegate
+from PySide2.QtSql import QSqlRelationalDelegate
 from PySide2.QtWidgets import QDialog, QMessageBox, QStyledItemDelegate
 
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
 import jal.ui_custom.reference_selector as ui     # Full import due to "cyclic" reference
-from jal.ui_custom.helpers import g_tr, ConfigureTableView, rel_idx
-from jal.db.helpers import db_connection, readSQL
+from jal.ui_custom.helpers import g_tr
+from jal.db.helpers import readSQL
 
 
 # --------------------------------------------------------------------------------------------------------------
@@ -56,13 +56,12 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     def _init_completed(self):
         self.DataView.selectionModel().selectionChanged.connect(self.OnRowSelected)
         self.model.dataChanged.connect(self.OnDataChanged)
-
         self.model.select()
         self.setFilter()
 
     @Slot()
     def closeEvent(self, event):
-        if self.CommitBtn.isEnabled():    # There are uncommited changed in a table
+        if self.CommitBtn.isEnabled():    # There are uncommitted changed in a table
             if QMessageBox().warning(None, g_tr('ReferenceDataDialog', "Confirmation"),
                                      g_tr('ReferenceDataDialog', "You have uncommited changes. Do you want to close?"),
                                      QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
