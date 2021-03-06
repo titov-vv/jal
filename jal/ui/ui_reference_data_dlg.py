@@ -116,6 +116,11 @@ class Ui_ReferenceDataDialog(object):
 
         self.verticalLayout.addWidget(self.DataView)
 
+        self.TreeView = QTreeView(ReferenceDataDialog)
+        self.TreeView.setObjectName(u"TreeView")
+
+        self.verticalLayout.addWidget(self.TreeView)
+
 
         self.retranslateUi(ReferenceDataDialog)
 

@@ -1441,67 +1441,67 @@ do you want to save it?</source>
 <context>
     <name>ReferenceDataDialog</name>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="126"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="131"/>
         <source>Reference Data</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="127"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="132"/>
         <source>Account Type:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="44"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="127"/>
         <source>Show inactive</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="129"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="134"/>
         <source>Up</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="130"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="135"/>
         <source>Add</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="131"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="136"/>
         <source>Del</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="132"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="137"/>
         <source>Commit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="133"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="138"/>
         <source>Revert</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="134"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="139"/>
         <source>Search:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_data.py" line="111"/>
+        <location filename="../ui_custom/reference_data.py" line="86"/>
         <source>ANY</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_data.py" line="155"/>
+        <location filename="../ui_custom/reference_data.py" line="130"/>
         <source>Submit failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_data.py" line="90"/>
+        <location filename="../ui_custom/reference_data.py" line="65"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_data.py" line="90"/>
+        <location filename="../ui_custom/reference_data.py" line="65"/>
         <source>You have uncommited changes. Do you want to close?</source>
         <translation></translation>
     </message>
@@ -1521,192 +1521,287 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="13"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="53"/>
         <source>Account Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="18"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="69"/>
         <source>Account Types</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="89"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="321"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="28"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="78"/>
         <source>Currency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="29"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="79"/>
         <source>Act.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="30"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="80"/>
         <source>Account #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="31"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="81"/>
         <source>Reconciled @</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="32"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="82"/>
         <source>Bank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="34"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="130"/>
         <source>Account type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="41"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="123"/>
         <source>Accounts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="51"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="144"/>
         <source>Symbol</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="54"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="146"/>
         <source>ISIN</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="118"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="386"/>
         <source>Country</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="56"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="148"/>
         <source>Data source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="57"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="180"/>
         <source>Asset type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="63"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="175"/>
         <source>Assets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="73"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="196"/>
         <source>Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="74"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="197"/>
         <source>Docs count</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="80"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="228"/>
         <source>Peers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="90"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="322"/>
         <source>Often</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="97"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="354"/>
         <source>Categories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="105"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="361"/>
         <source>Tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="110"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="378"/>
         <source>Tags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="119"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="387"/>
         <source>Code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="120"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="388"/>
         <source>Tax Treaty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="126"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="414"/>
         <source>Countries</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="134"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="421"/>
         <source>Date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="136"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="422"/>
         <source>Asset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="137"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="423"/>
         <source>Quote</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="142"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="453"/>
         <source>Quotes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui_custom/reference_dialogs.py" line="83"/>
+        <source>CC</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>Reports</name>
     <message>
-        <location filename="../reports/reports.py" line="213"/>
+        <location filename="../reports/reports.py" line="327"/>
         <source>TOTAL</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="140"/>
+        <location filename="../reports/reports.py" line="254"/>
         <source>Save report to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="149"/>
+        <location filename="../reports/reports.py" line="263"/>
         <source>Report</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="143"/>
+        <location filename="../reports/reports.py" line="257"/>
         <source>Excel files (*.xlsx)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="237"/>
+        <location filename="../reports/reports.py" line="351"/>
         <source>You should select account to create Deals report</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="262"/>
+        <location filename="../reports/reports.py" line="376"/>
         <source>You should select account to create Profit/Loss report</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="343"/>
+        <location filename="../reports/reports.py" line="457"/>
         <source>You should select category to create By Category report</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="65"/>
+        <source>Period</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="66"/>
+        <source>In / Out</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="67"/>
+        <source>Assets value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="68"/>
+        <source>Total result</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="69"/>
+        <source>Profit / Loss</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="70"/>
+        <source>Returns</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="71"/>
+        <source>Taxes &amp; Fees</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="104"/>
+        <source>Asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="105"/>
+        <source>Open Date</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="106"/>
+        <source>Close Date</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="107"/>
+        <source>Open Price</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="108"/>
+        <source>Close Price</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="109"/>
+        <source>Qty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="161"/>
+        <source>Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="157"/>
+        <source>Timestamp</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="158"/>
+        <source>Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="159"/>
+        <source>Peer Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="160"/>
+        <source>Amount</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2115,14 +2210,6 @@ do you want to save it?</source>
     <message>
         <location filename="../data_import/statements.py" line="381"/>
         <source>ISIN mismatch for </source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>TableViewConfig</name>
-    <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="33"/>
-        <source>CC</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

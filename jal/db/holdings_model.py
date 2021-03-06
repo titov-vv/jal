@@ -2,7 +2,7 @@ from PySide2.QtCore import Qt, Slot, QAbstractItemModel, QDate, QModelIndex
 from PySide2.QtGui import QBrush, QFont
 from PySide2.QtWidgets import QStyledItemDelegate, QHeaderView
 from jal.constants import Setup, CustomColor, BookAccount
-from jal.db.helpers import executeSQL, readSQL, get_asset_name
+from jal.db.helpers import executeSQL, get_asset_name
 from jal.ui_custom.helpers import g_tr
 
 

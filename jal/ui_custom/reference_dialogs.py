@@ -1,6 +1,7 @@
+from PySide2.QtCore import QAbstractItemModel, QModelIndex
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtWidgets import QHeaderView
-from jal.db.helpers import db_connection
+from jal.db.helpers import db_connection, readSQL
 from jal.widgets.view_delegate import *
 from jal.ui_custom.helpers import g_tr
 from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
@@ -207,13 +208,13 @@ class PeerListModel(AbstractReferenceListModel):
         self._tree_delegate = ReferenceTreeDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("id"), self._tree_delegate)
         self._int_delegate = ReferenceIntDelegate(self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("actions_count"), self._bool_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("actions_count"), self._int_delegate)
 
 class PeerListDialog(ReferenceDataDialog):
     def __init__(self):
         ReferenceDataDialog.__init__(self)
         self.table = "agents_ext"
-        self.model = CategoryListModel(self.table, self.DataView)
+        self.model = PeerListModel(self.table, self.DataView)
         self.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
@@ -227,33 +228,101 @@ class PeerListDialog(ReferenceDataDialog):
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Peers"))
         self.Toggle.setVisible(False)
 
+
 # ----------------------------------------------------------------------------------------------------------------------
-class CategoryListModel(AbstractReferenceListModel):
+class CategoryTreeModel(QAbstractItemModel):
+    ROOT_PID = 0
+
     def __init__(self, table, parent_view):
-        AbstractReferenceListModel.__init__(self, table, parent_view)
-        self._columns = [("id", " "),
-                         ("name", g_tr('ReferenceDataDialog', "Name")),
-                         ("often", g_tr('ReferenceDataDialog', "Often"))]
-        self._sort_by = "name"
-        self._hidden = ["pid", "special", "children_count"]
-        self._stretch = "name"
-        self._tree_delegate = None
-        self._bool_delegate = None
+        super().__init__(parent_view)
+        self.table = table
+        self._view = parent_view
+        self._root = 0
+        self._columns = [g_tr('ReferenceDataDialog', "Name"),
+                         g_tr('ReferenceDataDialog', "Often")]
+
+    def index(self, row, column, parent=None):
+        if not parent.isValid():
+            parent_id = self._root
+        else:
+            parent_id = parent.internalId()
+        child_id = readSQL(f"SELECT id FROM {self.table} WHERE pid=:pid LIMIT 1 OFFSET :row_n",
+                           [(":pid", parent_id), (":row_n", row)])
+        if child_id:
+            return self.createIndex(row, column, id=child_id)
+        return QModelIndex()
+
+    def parent(self, index):
+        if not index.isValid():
+            return QModelIndex()
+        child_id = index.internalId()
+        parent_id = readSQL(f"SELECT pid FROM {self.table} WHERE id=:id", [(":id", child_id)])
+        if parent_id == self.ROOT_PID:
+            return QModelIndex()
+        return self.createIndex(0, 0, id=parent_id)
+
+    def rowCount(self, parent=None):
+        if not parent.isValid():
+            parent_id = self.ROOT_PID
+        else:
+            parent_id = parent.internalId()
+        count = readSQL(f"SELECT COUNT(id) FROM {self.table} WHERE pid=:pid", [(":pid", parent_id)])
+        if count:
+            return int(count)
+        else:
+            return 0
+
+    def columnCount(self, parent=None):
+        return len(self._columns)
+
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal:
+            if role == Qt.DisplayRole:
+                return self._columns[section]
+        return None
+
+    def data(self, index, role=Qt.DisplayRole):
+        if not index.isValid():
+            return None
+        item_id = index.internalId()
+        if role == Qt.DisplayRole:
+            if index.column() == 0:
+                return readSQL(f"SELECT name FROM {self.table} WHERE id=:id", [(":id", item_id)])
+            elif index.column() == 1:
+                return readSQL(f"SELECT often FROM {self.table} WHERE id=:id", [(":id", item_id)])
+            else:
+                assert False
+        return None
 
     def configureView(self):
-        super().configureView()
-        self._view.setColumnWidth(self.fieldIndex("id"), 16)
+        font = self._view.header().font()
+        font.setBold(True)
+        self._view.header().setFont(font)
 
-        self._tree_delegate = ReferenceTreeDelegate(self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("id"), self._tree_delegate)
         self._bool_delegate = ReferenceBoolDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("often"), self._bool_delegate)
+
+    def select(self):
+        pass
+
+    def fieldIndex(self, field):
+        if field == "name":
+            return 0
+        elif field == "often":
+            return 1
+        else:
+            return -1
+
+    def setFilter(self, filter_str):
+        pass
+
 
 class CategoryListDialog(ReferenceDataDialog):
     def __init__(self):
         ReferenceDataDialog.__init__(self)
         self.table = "categories_ext"
-        self.model = CategoryListModel(self.table, self.DataView)
+        self.model = CategoryTreeModel(self.table, self.TreeView)
+        self.TreeView.setModel(self.model)
         self.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
@@ -261,9 +330,9 @@ class CategoryListDialog(ReferenceDataDialog):
 
     def setup_ui(self):
         self.search_field = "name"
-        self.tree_view = True
+        # self.tree_view = True
         self.SearchFrame.setVisible(True)
-        self.UpBtn.setVisible(True)
+        # self.UpBtn.setVisible(True)
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Categories"))
         self.Toggle.setVisible(False)
 
