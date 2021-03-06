@@ -1,11 +1,12 @@
 import pandas as pd
+from PySide2.QtWidgets import QFileDialog
+from PySide2.QtCore import QObject, Signal, QAbstractTableModel
+from PySide2.QtSql import QSqlTableModel
 from jal.constants import BookAccount, PredefinedAsset, PredefinedCategory, ColumnWidth
 from jal.widgets.view_delegate import *
-from jal.db.helpers import executeSQL, readSQLrecord
-from jal.ui_custom.helpers import g_tr, UseSqlQuery, ConfigureTableView
+from jal.db.helpers import db_connection, executeSQL, readSQLrecord
+from jal.ui_custom.helpers import g_tr
 from jal.reports.helpers import XLSX
-from PySide2.QtWidgets import QFileDialog
-from PySide2.QtCore import Qt, QObject, Signal, QAbstractTableModel
 
 
 TREE_LEVEL_SEPARATOR = chr(127)
@@ -18,9 +19,69 @@ class ReportType:
     ByCategory = 4
 
 
+# -------------------------------------------------------------------------------------------------------------------
+from PySide2.QtWidgets import QHeaderView
+class hcol_idx:
+    DB_NAME = 0
+    DISPLAY_NAME = 1
+    WIDTH = 2
+    SORT_ORDER = 3
+    DELEGATE = 4
+
+# column_list is a list of tuples: (db_column_name, display_column_name, width, sort_order, delegate)
+# column will be hidden if display_column_name is None
+# column with negative with will be stretched
+# sort order is ignored as it might be set by Query itself
+# delegate is a function for custom paint and editors
+# Returns : QSqlTableModel
+def UseSqlQuery(parent, query, columns):
+    model = QSqlTableModel(parent=parent, db=db_connection())
+    model.setQuery(query)
+    for column in columns:
+        if column[hcol_idx.DISPLAY_NAME]:
+            model.setHeaderData(model.fieldIndex(column[hcol_idx.DB_NAME]), Qt.Horizontal, column[hcol_idx.DISPLAY_NAME])
+    return model
+
+
+# -------------------------------------------------------------------------------------------------------------------
+# Return value is a list of delegates because storage of delegates
+# is required to keep ownership and prevent SIGSEGV as
+# https://doc.qt.io/qt-5/qabstractitemview.html#setItemDelegateForColumn says:
+# Any existing column delegate for column will be removed, but not deleted.
+# QAbstractItemView does not take ownership of delegate.
+def ConfigureTableView(view, model, columns):
+    view.setModel(model)
+    for column in columns:
+        if column[hcol_idx.DISPLAY_NAME] is None:   # hide column
+            view.setColumnHidden(model.fieldIndex(column[hcol_idx.DB_NAME]), True)
+        if column[hcol_idx.WIDTH] is not None:
+            if column[hcol_idx.WIDTH] == ColumnWidth.STRETCH:
+                view.horizontalHeader().setSectionResizeMode(model.fieldIndex(column[hcol_idx.DB_NAME]),
+                                                             QHeaderView.Stretch)
+            elif column[hcol_idx.WIDTH] == ColumnWidth.FOR_DATETIME:
+                view.setColumnWidth(model.fieldIndex(column[hcol_idx.DB_NAME]),
+                                    view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
+            else:  # set custom width
+                view.setColumnWidth(model.fieldIndex(column[hcol_idx.DB_NAME]), column[hcol_idx.WIDTH])
+
+    font = view.horizontalHeader().font()
+    font.setBold(True)
+    view.horizontalHeader().setFont(font)
+
+    delegates = []
+    for column in columns:
+        if column[hcol_idx.DELEGATE] is None:
+            # Use standard delegate / Remove old delegate if there was any
+            view.setItemDelegateForColumn(model.fieldIndex(column[hcol_idx.DB_NAME]), None)
+        else:
+            delegates.append(column[hcol_idx.DELEGATE](view))
+            view.setItemDelegateForColumn(model.fieldIndex(column[hcol_idx.DB_NAME]), delegates[-1])
+    return delegates
+
+
+
 #-----------------------------------------------------------------------------------------------------------------------
 class PandasModel(QAbstractTableModel):
-
     CATEGORY_INTEND = "  "
 
     def __init__(self, data):
@@ -60,6 +121,55 @@ class PandasModel(QAbstractTableModel):
 
 
 #-----------------------------------------------------------------------------------------------------------------------
+class ProfitLossReportModel(QSqlTableModel):
+    def __init__(self, query, parent_view):
+        self._columns = [("period", g_tr("Reports", "Period")),
+                         ("transfer", g_tr("Reports", "In / Out")),
+                         ("assets", g_tr("Reports", "Assets value")),
+                         ("result", g_tr("Reports", "Total result")),
+                         ("profit", g_tr("Reports", "Profit / Loss")),
+                         ("dividend", g_tr("Reports", "Returns")),
+                         ("tax_fee", g_tr("Reports", "Taxes & Fees"))]
+        self._view = parent_view
+        self._ym_delegate = None
+        self._float_delegate = None
+        QSqlTableModel.__init__(self, parent=parent_view, db=db_connection())
+        self.setQuery(query)
+
+    def setColumnNames(self):
+        for column in self._columns:
+            self.setHeaderData(self.fieldIndex(column[0]), Qt.Horizontal, column[1])
+
+    def configureView(self):
+        self._view.setModel(self)
+        self.setColumnNames()
+        font = self._view.horizontalHeader().font()
+        font.setBold(True)
+        self._view.horizontalHeader().setFont(font)
+        self._view.setColumnWidth(self.fieldIndex("period"),
+                                  self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
+        self._ym_delegate = ReportsYearMonthDelegate()
+        self._view.setItemDelegateForColumn(self.fieldIndex("period"), self._ym_delegate)
+        self._float_delegate = ReportsFloat2Delegate()
+        self._view.setItemDelegateForColumn(self.fieldIndex("transfer"), self._float_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("assets"), self._float_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("result"), self._float_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("profit"), self._float_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("dividend"), self._float_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("tax_fee"), self._float_delegate)
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+class DealsReportModel(QSqlTableModel):
+    pass
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+class CategoryReportModel(QSqlTableModel):
+    pass
+
+
+#-----------------------------------------------------------------------------------------------------------------------
 PREPARE_REPORT_QUERY = 0
 SHOW_REPORT = 1
 REPORT_COLUMNS = 2
@@ -82,14 +192,8 @@ class Reports(QObject):
                                         self.showPandasReport,
                                         []),
             ReportType.ProfitLoss: (self.prepareProfitLossReport,
-                                    self.showSqlQueryReport,
-                                    [("period", "Period", ColumnWidth.FOR_DATETIME, None, ReportsYearMonthDelegate),
-                                    ("transfer", "In / Out", None, None, ReportsFloat2Delegate),
-                                    ("assets", "Assets value", None, None, ReportsFloat2Delegate),
-                                    ("result", "Total result", None, None, ReportsFloat2Delegate),
-                                    ("profit", "Profit / Loss", None, None, ReportsProfitDelegate),
-                                    ("dividend", "Returns", None, None, ReportsFloat2Delegate),
-                                    ("tax_fee", "Taxes & Fees", None, None, ReportsFloat2Delegate)]),
+                                    self.showProfitLossReport,
+                                    []),
             ReportType.Deals: (self.prepareDealsReport,
                                self.showSqlQueryReport,
                                [("asset", "Asset", 300, None, None),
@@ -118,6 +222,11 @@ class Reports(QObject):
     def showSqlQueryReport(self, report_type):
         self.model = UseSqlQuery(self, self.query, self.reports[report_type][REPORT_COLUMNS])
         self.delegates = ConfigureTableView(self.table_view, self.model, self.reports[report_type][REPORT_COLUMNS])
+        self.model.select()
+
+    def showProfitLossReport(self, report_type):
+        self.model = ProfitLossReportModel(self.query, self.table_view)
+        self.model.configureView()
         self.model.select()
 
     def showPandasReport(self, report_type):

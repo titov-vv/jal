@@ -19,8 +19,6 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
         self.setTable(table)
         self.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        for column in self._columns:
-            self.setHeaderData(self.fieldIndex(column[0]), Qt.Horizontal, column[1])
 
     def configureView(self):
         self.setColumnNames()

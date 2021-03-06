@@ -1,27 +1,5 @@
 from datetime import time, datetime, timedelta, timezone
-
-from jal.constants import ColumnWidth
 from PySide2.QtCore import QCoreApplication, Qt
-from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
-from PySide2.QtWidgets import QHeaderView
-
-class hcol_idx:
-    DB_NAME = 0
-    DISPLAY_NAME = 1
-    WIDTH = 2
-    SORT_ORDER = 3
-    DELEGATE = 4
-
-class rel_idx:
-    KEY_FIELD = 0
-    LOOKUP_TABLE = 1
-    FOREIGN_KEY = 2
-    LOOKUP_FIELD = 3
-    GROUP_NAME = 4          # Name of group field if Reference Data dialog
-
-class map_idx:
-    DB_NAME = 0
-    WIDGET = 1
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -128,53 +106,3 @@ class ManipulateDate:
         return (ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end))
 
 
-# -------------------------------------------------------------------------------------------------------------------
-# column_list is a list of tuples: (db_column_name, display_column_name, width, sort_order, delegate)
-# column will be hidden if display_column_name is None
-# column with negative with will be stretched
-# sort order is ignored as it might be set by Query itself
-# delegate is a function for custom paint and editors
-# Returns : QSqlTableModel
-def UseSqlQuery(parent, query, columns):
-    model = QSqlTableModel(parent=parent, db=parent.db)
-    model.setQuery(query)
-    for column in columns:
-        if column[hcol_idx.DISPLAY_NAME]:
-            model.setHeaderData(model.fieldIndex(column[hcol_idx.DB_NAME]), Qt.Horizontal, column[hcol_idx.DISPLAY_NAME])
-    return model
-
-
-# -------------------------------------------------------------------------------------------------------------------
-# Return value is a list of delegates because storage of delegates
-# is required to keep ownership and prevent SIGSEGV as
-# https://doc.qt.io/qt-5/qabstractitemview.html#setItemDelegateForColumn says:
-# Any existing column delegate for column will be removed, but not deleted.
-# QAbstractItemView does not take ownership of delegate.
-def ConfigureTableView(view, model, columns):
-    view.setModel(model)
-    for column in columns:
-        if column[hcol_idx.DISPLAY_NAME] is None:   # hide column
-            view.setColumnHidden(model.fieldIndex(column[hcol_idx.DB_NAME]), True)
-        if column[hcol_idx.WIDTH] is not None:
-            if column[hcol_idx.WIDTH] == ColumnWidth.STRETCH:
-                view.horizontalHeader().setSectionResizeMode(model.fieldIndex(column[hcol_idx.DB_NAME]),
-                                                             QHeaderView.Stretch)
-            elif column[hcol_idx.WIDTH] == ColumnWidth.FOR_DATETIME:
-                view.setColumnWidth(model.fieldIndex(column[hcol_idx.DB_NAME]),
-                                    view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
-            else:  # set custom width
-                view.setColumnWidth(model.fieldIndex(column[hcol_idx.DB_NAME]), column[hcol_idx.WIDTH])
-
-    font = view.horizontalHeader().font()
-    font.setBold(True)
-    view.horizontalHeader().setFont(font)
-
-    delegates = []
-    for column in columns:
-        if column[hcol_idx.DELEGATE] is None:
-            # Use standard delegate / Remove old delegate if there was any
-            view.setItemDelegateForColumn(model.fieldIndex(column[hcol_idx.DB_NAME]), None)
-        else:
-            delegates.append(column[hcol_idx.DELEGATE](view))
-            view.setItemDelegateForColumn(model.fieldIndex(column[hcol_idx.DB_NAME]), delegates[-1])
-    return delegates
