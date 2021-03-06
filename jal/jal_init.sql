@@ -510,20 +510,6 @@ DROP INDEX IF EXISTS by_sid;
 CREATE INDEX by_sid ON ledger_sums (sid);
 
 
-    -- View: agents_ext
-DROP VIEW IF EXISTS agents_ext;
-CREATE VIEW agents_ext AS
-    SELECT a1.*,
-           count(a2.id) AS children_count,
-           count(a3.id) AS actions_count
-      FROM agents AS a1
-           LEFT JOIN
-           agents AS a2 ON a1.id = a2.pid
-           LEFT JOIN
-           actions AS a3 ON a1.id = a3.peer_id
-     GROUP BY a1.id;
-
-
 -- View: all_operations
 DROP VIEW IF EXISTS all_operations;
 CREATE VIEW all_operations AS
@@ -838,17 +824,6 @@ CREATE VIEW all_transactions AS
            accounts AS a ON at.account = a.id;
 
 
--- View: categories_ext
-DROP VIEW IF EXISTS categories_ext;
-CREATE VIEW categories_ext AS
-    SELECT c1.*,
-           count(c2.id) AS children_count
-      FROM categories AS c1
-           LEFT JOIN
-           categories c2 ON c1.id = c2.pid
-     GROUP BY c1.id;
-
-
 -- View: categories_tree
 DROP VIEW IF EXISTS categories_tree;
 CREATE VIEW categories_tree AS
@@ -1076,28 +1051,6 @@ BEGIN
                 timestamp >= NEW.timestamp;
 END;
 
--- Trigger: delete_agent
-DROP TRIGGER IF EXISTS delete_agent;
-CREATE TRIGGER delete_agent
-    INSTEAD OF DELETE
-            ON agents_ext
-      FOR EACH ROW
-BEGIN
-    DELETE FROM agents
-          WHERE id = OLD.id;
-END;
-
--- Trigger: delete_category
-DROP TRIGGER IF EXISTS delete_category;
-CREATE TRIGGER delete_category
-    INSTEAD OF DELETE
-            ON categories_ext
-      FOR EACH ROW
-BEGIN
-    DELETE FROM categories
-          WHERE id = OLD.id;
-END;
-
 -- Trigger: dividends_after_delete
 DROP TRIGGER IF EXISTS dividends_after_delete;
 CREATE TRIGGER dividends_after_delete
@@ -1148,50 +1101,6 @@ BEGIN
     DELETE FROM ledger_sums
           WHERE timestamp >= OLD.timestamp OR
                 timestamp >= NEW.timestamp;
-END;
-
--- Trigger: insert_agent
-DROP TRIGGER IF EXISTS insert_agent;
-CREATE TRIGGER insert_agent
-    INSTEAD OF INSERT
-            ON agents_ext
-      FOR EACH ROW
-BEGIN
-    INSERT INTO agents (
-                           id,
-                           pid,
-                           name,
-                           location
-                       )
-                       VALUES (
-                           NEW.id,
-                           NEW.pid,
-                           NEW.name,
-                           NEW.location
-                       );
-END;
-
--- Trigger: insert_category
-DROP TRIGGER IF EXISTS insert_category;
-CREATE TRIGGER insert_category
-    INSTEAD OF INSERT
-            ON categories_ext
-      FOR EACH ROW
-BEGIN
-    INSERT INTO categories (
-                               id,
-                               pid,
-                               name,
-                               often,
-                               special
-                           )
-                           VALUES (
-                               NEW.id,
-                               NEW.pid,
-                               NEW.name,
-                               NEW.often,
-                               NEW.special
-                           );
 END;
 
 -- Trigger: trades_after_delete
@@ -1354,38 +1263,6 @@ BEGIN
           WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp OR
                 timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
 END;
-
--- Trigger: update_agent
-DROP TRIGGER IF EXISTS update_agent;
-CREATE TRIGGER update_agent
-    INSTEAD OF UPDATE
-            ON agents_ext
-      FOR EACH ROW
-BEGIN
-    UPDATE agents
-       SET id = NEW.id,
-           pid = NEW.pid,
-           name = NEW.name,
-           location = NEW.location
-     WHERE id = OLD.id;
-END;
-
--- Trigger: update_category
-DROP TRIGGER IF EXISTS update_category;
-CREATE TRIGGER update_category
-    INSTEAD OF UPDATE
-            ON categories_ext
-      FOR EACH ROW
-BEGIN
-    UPDATE categories
-       SET id = NEW.id,
-           pid = NEW.pid,
-           name = NEW.name,
-           often = NEW.often,
-           special = NEW.special
-     WHERE id = OLD.id;
-END;
-
 
 -- Trigger to keep predefinded categories from deletion
 DROP TRIGGER IF EXISTS keep_predefined_categories;
