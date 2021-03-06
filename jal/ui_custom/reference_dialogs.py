@@ -197,8 +197,8 @@ class PeerTreeModel(QAbstractItemModel):
         self._view = parent_view
         self._root = 0
         self._columns = [g_tr('ReferenceDataDialog', "Name"),
-                         g_tr('ReferenceDataDialog', "Location")
-                         # g_tr('ReferenceDataDialog', "Docs count")
+                         g_tr('ReferenceDataDialog', "Location"),
+                         g_tr('ReferenceDataDialog', "Docs count")
                          ]
 
     def index(self, row, column, parent=None):
@@ -250,8 +250,9 @@ class PeerTreeModel(QAbstractItemModel):
                 return readSQL(f"SELECT name FROM {self.table} WHERE id=:id", [(":id", item_id)])
             elif index.column() == 1:
                 return readSQL(f"SELECT location FROM {self.table} WHERE id=:id", [(":id", item_id)])
-            # elif index.column() == 2:
-            #     return readSQL(f"SELECT actions_count FROM {self.table} WHERE id=:id", [(":id", item_id)])
+            elif index.column() == 2:
+                return readSQL("SELECT COUNT(d.id) FROM agents AS p "
+                               "LEFT JOIN actions AS d ON d.peer_id=p.id WHERE p.id=:id", [(":id", item_id)])
             else:
                 assert False
         return None
@@ -261,8 +262,8 @@ class PeerTreeModel(QAbstractItemModel):
         font.setBold(True)
         self._view.header().setFont(font)
 
-        # self._int_delegate = ReferenceIntDelegate(self._view)
-        # self._view.setItemDelegateForColumn(self.fieldIndex("actions_count"), self._int_delegate)
+        self._int_delegate = ReferenceIntDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("actions_count"), self._int_delegate)
 
     def select(self):
         pass
