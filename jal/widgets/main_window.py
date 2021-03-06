@@ -125,8 +125,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.actionAccountTypes.triggered.connect(partial(self.onDataDialog, "account_types"))
         self.actionAccounts.triggered.connect(partial(self.onDataDialog, "accounts"))
         self.actionAssets.triggered.connect(partial(self.onDataDialog, "assets"))
-        self.actionPeers.triggered.connect(partial(self.onDataDialog, "agents_ext"))
-        self.actionCategories.triggered.connect(partial(self.onDataDialog, "categories_ext"))
+        self.actionPeers.triggered.connect(partial(self.onDataDialog, "agents"))
+        self.actionCategories.triggered.connect(partial(self.onDataDialog, "categories"))
         self.actionTags.triggered.connect(partial(self.onDataDialog, "tags"))
         self.actionCountries.triggered.connect(partial(self.onDataDialog, "countries"))
         self.actionQuotes.triggered.connect(partial(self.onDataDialog, "quotes"))
@@ -365,9 +365,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             AccountListDialog().exec_()
         elif dlg_type == "assets":
             AssetListDialog().exec_()
-        elif dlg_type == "agents_ext":
+        elif dlg_type == "agents":
             PeerListDialog().exec_()
-        elif dlg_type == "categories_ext":
+        elif dlg_type == "categories":
             CategoryListDialog().exec_()
         elif dlg_type == "tags":
             TagsListDialog().exec_()

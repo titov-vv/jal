@@ -1,5 +1,5 @@
 from PySide2.QtCore import QAbstractItemModel, QModelIndex
-from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
+from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRecord, QSqlField
 from PySide2.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection, readSQL
 from jal.widgets.view_delegate import *
@@ -198,10 +198,11 @@ class PeerTreeModel(QAbstractItemModel):
         self._root = 0
         self._columns = [g_tr('ReferenceDataDialog', "Name"),
                          g_tr('ReferenceDataDialog', "Location"),
-                         g_tr('ReferenceDataDialog', "Docs count")
-                         ]
+                         g_tr('ReferenceDataDialog', "Docs count")]
 
     def index(self, row, column, parent=None):
+        if parent is None:
+            return QModelIndex()
         if not parent.isValid():
             parent_id = self._root
         else:
@@ -268,13 +269,20 @@ class PeerTreeModel(QAbstractItemModel):
     def select(self):
         pass
 
+    def record(self, row):
+        a = QSqlRecord()
+        a.append(QSqlField("id"))
+        a.append(QSqlField("name"))
+        a.append(QSqlField("location"))
+        return a
+
     def fieldIndex(self, field):
         if field == "name":
             return 0
         elif field == "location":
             return 1
-        # elif field == "actions_count":
-        #     return 2
+        elif field == "actions_count":
+            return 2
         else:
             return -1
 
@@ -314,6 +322,8 @@ class CategoryTreeModel(QAbstractItemModel):
                          g_tr('ReferenceDataDialog', "Often")]
 
     def index(self, row, column, parent=None):
+        if parent is None:
+            return QModelIndex()
         if not parent.isValid():
             parent_id = self._root
         else:
@@ -377,6 +387,13 @@ class CategoryTreeModel(QAbstractItemModel):
     def select(self):
         pass
 
+    def record(self, row):
+        a = QSqlRecord()
+        a.append(QSqlField("id"))
+        a.append(QSqlField("name"))
+        a.append(QSqlField("often"))
+        return a
+
     def fieldIndex(self, field):
         if field == "name":
             return 0
@@ -392,7 +409,7 @@ class CategoryTreeModel(QAbstractItemModel):
 class CategoryListDialog(ReferenceDataDialog):
     def __init__(self):
         ReferenceDataDialog.__init__(self)
-        self.table = "categories_ext"
+        self.table = "categories"
         self.model = CategoryTreeModel(self.table, self.TreeView)
         self.TreeView.setModel(self.model)
         self.DataView.setModel(self.model)

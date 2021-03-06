@@ -99,7 +99,7 @@ class AssetSelector(AbstractReferenceSelector):
 
 class PeerSelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
-        self.table = "agents_ext"
+        self.table = "agents"
         self.selector_field = "name"
         self.details_field = None
         self.dialog = ui_dialogs.PeerListDialog()
@@ -107,7 +107,7 @@ class PeerSelector(AbstractReferenceSelector):
 
 class CategorySelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
-        self.table = "categories_ext"
+        self.table = "categories"
         self.selector_field = "name"
         self.details_field = None
         self.dialog = ui_dialogs.CategoryListDialog()
