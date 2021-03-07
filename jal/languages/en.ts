@@ -1441,12 +1441,12 @@ do you want to save it?</source>
 <context>
     <name>ReferenceDataDialog</name>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="126"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="128"/>
         <source>Reference Data</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="127"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="129"/>
         <source>Account Type:</source>
         <translation></translation>
     </message>
@@ -1456,47 +1456,47 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="129"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="131"/>
         <source>Add</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="130"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="132"/>
         <source>Del</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="131"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="133"/>
         <source>Commit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="132"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="134"/>
         <source>Revert</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="133"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="135"/>
         <source>Search:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_data.py" line="83"/>
+        <location filename="../ui_custom/reference_data.py" line="82"/>
         <source>ANY</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_data.py" line="125"/>
+        <location filename="../ui_custom/reference_data.py" line="124"/>
         <source>Submit failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_data.py" line="62"/>
+        <location filename="../ui_custom/reference_data.py" line="61"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_data.py" line="62"/>
+        <location filename="../ui_custom/reference_data.py" line="61"/>
         <source>You have uncommited changes. Do you want to close?</source>
         <translation></translation>
     </message>

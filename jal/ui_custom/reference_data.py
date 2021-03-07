@@ -19,6 +19,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         QDialog.__init__(self)
         self.setupUi(self)
 
+        self.model = None
         self.selected_id = 0
         self.p_selected_name = ''
         self.dialog_visible = False
@@ -133,7 +134,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.RevertBtn.setEnabled(False)
 
     def resetFilter(self):
-        self.DataView.model().setFilter("")
+        self.model.setFilter("")
 
     def setFilter(self):  # TODO: correctly combine different conditions
         if not self.dialog_visible:
@@ -155,8 +156,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
             condition += line + " AND "
         condition = condition[:-len(" AND ")]
 
-        if not self.tree_view:
-            self.DataView.model().setFilter(condition)
+        self.model.setFilter(condition)
 
     @Slot()
     def OnSearchChange(self):
@@ -168,13 +168,13 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         idx = selected.indexes()
         if idx:
             selected_row = idx[0].row()
-            self.selected_id = self.DataView.model().record(selected_row).value('id')
-            self.p_selected_name = self.DataView.model().record(selected_row).value('name')
+            self.selected_id = self.model.record(selected_row).value('id')
+            self.p_selected_name = self.model.record(selected_row).value('name')
 
     @Slot()
     def OnDoubleClicked(self, index):
-        self.selected_id = self.DataView.model().record(index.row()).value('id')
-        self.p_selected_name = self.DataView.model().record(index.row()).value('name')
+        self.selected_id = self.model.record(index.row()).value('id')
+        self.p_selected_name = self.model.record(index.row()).value('name')
         if self.selection_enabled:
             self.setResult(QDialog.Accepted)
             self.close()

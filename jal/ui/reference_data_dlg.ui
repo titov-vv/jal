@@ -186,7 +186,14 @@
     </widget>
    </item>
    <item>
-    <widget class="QTreeView" name="TreeView"/>
+    <widget class="QTreeView" name="TreeView">
+     <property name="expandsOnDoubleClick">
+      <bool>false</bool>
+     </property>
+     <attribute name="headerStretchLastSection">
+      <bool>false</bool>
+     </attribute>
+    </widget>
    </item>
   </layout>
  </widget>

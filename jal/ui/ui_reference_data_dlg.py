@@ -113,6 +113,8 @@ class Ui_ReferenceDataDialog(object):
 
         self.TreeView = QTreeView(ReferenceDataDialog)
         self.TreeView.setObjectName(u"TreeView")
+        self.TreeView.setExpandsOnDoubleClick(False)
+        self.TreeView.header().setStretchLastSection(False)
 
         self.verticalLayout.addWidget(self.TreeView)
 
