@@ -113,6 +113,10 @@ class Ui_ReferenceDataDialog(object):
 
         self.TreeView = QTreeView(ReferenceDataDialog)
         self.TreeView.setObjectName(u"TreeView")
+        self.TreeView.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.EditKeyPressed|QAbstractItemView.SelectedClicked)
+        self.TreeView.setTabKeyNavigation(True)
+        self.TreeView.setAlternatingRowColors(True)
+        self.TreeView.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.TreeView.setExpandsOnDoubleClick(False)
         self.TreeView.header().setStretchLastSection(False)
 

@@ -264,6 +264,11 @@ class SqlTreeModel(QAbstractItemModel):
     def columnCount(self, parent=None):
         return len(self._columns)
 
+    def flags(self, index):
+        if not index.isValid():
+            return Qt.NoItemFlags
+        return Qt.ItemIsEditable | super().flags(index)
+
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return None
@@ -275,6 +280,19 @@ class SqlTreeModel(QAbstractItemModel):
             else:
                 return None
         return None
+
+    def setData(self, index, value, role=Qt.EditRole):
+        if role != Qt.EditRole:
+            return False
+        if not index.isValid():
+            return False
+        item_id = index.internalId()
+        col = index.column()
+        _ = executeSQL("BEGIN TRANSACTION")
+        _ = executeSQL(f"UPDATE {self._table} SET {self._columns[col][0]}=:value WHERE id=:id",
+                       [(":id", item_id), (":value", value)])
+        self.dataChanged.emit(index, index, Qt.DisplayRole | Qt.EditRole)
+        return True
 
     def fieldIndex(self, field):
         column_data = [i for i, column in enumerate(self._columns) if column[0] == field]
