@@ -5,7 +5,7 @@ from jal.db.helpers import db_connection, readSQL
 from jal.widgets.view_delegate import *
 from jal.ui_custom.helpers import g_tr
 from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
-    ReferenceLookupDelegate, ReferenceTimestampDelegate, ReferenceTreeDelegate, ReferenceIntDelegate
+    ReferenceLookupDelegate, ReferenceTimestampDelegate, ReferenceIntDelegate
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -21,18 +21,19 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         self.setTable(table)
         self.setEditStrategy(QSqlTableModel.OnManualSubmit)
 
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal:
+            if role == Qt.DisplayRole:
+                return self._columns[section][1]
+        return None
+
     def configureView(self):
-        self.setColumnNames()
         self.setSorting()
         self.hideColumns()
         self.setStretching()
         font = self._view.horizontalHeader().font()
         font.setBold(True)
         self._view.horizontalHeader().setFont(font)
-
-    def setColumnNames(self):
-        for column in self._columns:
-            self.setHeaderData(self.fieldIndex(column[0]), Qt.Horizontal, column[1])
 
     def setSorting(self):
         if self._sort_by:
@@ -46,17 +47,20 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         if self._stretch:
             self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex(self._stretch), QHeaderView.Stretch)
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountTypeListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
         AbstractReferenceListModel.__init__(self, table, parent_view)
-        self._columns = [("name", g_tr('ReferenceDataDialog', "Account Type"))]
+        self._columns = [("id", ''),
+                         ("name", g_tr('ReferenceDataDialog', "Account Type"))]
         self._sort_by = "name"
         self._hidden = ["id"]
         self._stretch = "name"
 
     def configureView(self):
         super().configureView()
+
 
 class AccountTypeListDialog(ReferenceDataDialog):
     def __init__(self):
@@ -70,11 +74,14 @@ class AccountTypeListDialog(ReferenceDataDialog):
         self.Toggle.setVisible(False)
         super()._init_completed()
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
         AbstractReferenceListModel.__init__(self, table, parent_view)
-        self._columns = [("name", g_tr('ReferenceDataDialog', "Name")),
+        self._columns = [("id", ''),
+                         ("type_id", ''),
+                         ("name", g_tr('ReferenceDataDialog', "Name")),
                          ("currency_id", g_tr('ReferenceDataDialog', "Currency")),
                          ("active", g_tr('ReferenceDataDialog', "Act.")),
                          ("number", g_tr('ReferenceDataDialog', "Account #")),
@@ -108,6 +115,7 @@ class AccountListModel(AbstractReferenceListModel):
         self._bool_delegate = ReferenceBoolDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("active"), self._bool_delegate)
 
+
 class AccountListDialog(ReferenceDataDialog):
     def __init__(self):
         ReferenceDataDialog.__init__(self)
@@ -137,11 +145,14 @@ class AccountListDialog(ReferenceDataDialog):
         self.GroupCombo.setModelColumn(relation_model.fieldIndex("name"))
         self.group_id = relation_model.data(relation_model.index(0, relation_model.fieldIndex(self.group_fkey_field)))
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 class AssetListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
         AbstractReferenceListModel.__init__(self, table, parent_view)
-        self._columns = [("name", g_tr('ReferenceDataDialog', "Symbol")),
+        self._columns = [("id", ''),
+                         ("type_id", ''),
+                         ("name", g_tr('ReferenceDataDialog', "Symbol")),
                          ("full_name", g_tr('ReferenceDataDialog', "Name")),
                          ("isin", g_tr('ReferenceDataDialog', "ISIN")),
                          ("country_id", g_tr('ReferenceDataDialog', "Country")),
@@ -159,6 +170,7 @@ class AssetListModel(AbstractReferenceListModel):
         self._lookup_delegate = ReferenceLookupDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("src_id"), self._lookup_delegate)
+
 
 class AssetListDialog(ReferenceDataDialog):
     def __init__(self):
@@ -187,27 +199,24 @@ class AssetListDialog(ReferenceDataDialog):
         self.GroupCombo.setModelColumn(relation_model.fieldIndex("name"))
         self.group_id = relation_model.data(relation_model.index(0, relation_model.fieldIndex(self.group_fkey_field)))
 
+
 # ----------------------------------------------------------------------------------------------------------------------
-class PeerTreeModel(QAbstractItemModel):
+class SqlTreeModel(QAbstractItemModel):
     ROOT_PID = 0
 
     def __init__(self, table, parent_view):
         super().__init__(parent_view)
-        self.table = table
+        self._table = table
         self._view = parent_view
-        self._root = 0
-        self._columns = [g_tr('ReferenceDataDialog', "Name"),
-                         g_tr('ReferenceDataDialog', "Location"),
-                         g_tr('ReferenceDataDialog', "Docs count")]
 
     def index(self, row, column, parent=None):
         if parent is None:
             return QModelIndex()
         if not parent.isValid():
-            parent_id = self._root
+            parent_id = self.ROOT_PID
         else:
             parent_id = parent.internalId()
-        child_id = readSQL(f"SELECT id FROM {self.table} WHERE pid=:pid LIMIT 1 OFFSET :row_n",
+        child_id = readSQL(f"SELECT id FROM {self._table} WHERE pid=:pid LIMIT 1 OFFSET :row_n",
                            [(":pid", parent_id), (":row_n", row)])
         if child_id:
             return self.createIndex(row, column, id=child_id)
@@ -217,7 +226,7 @@ class PeerTreeModel(QAbstractItemModel):
         if not index.isValid():
             return QModelIndex()
         child_id = index.internalId()
-        parent_id = readSQL(f"SELECT pid FROM {self.table} WHERE id=:id", [(":id", child_id)])
+        parent_id = readSQL(f"SELECT pid FROM {self._table} WHERE id=:id", [(":id", child_id)])
         if parent_id == self.ROOT_PID:
             return QModelIndex()
         return self.createIndex(0, 0, id=parent_id)
@@ -227,7 +236,7 @@ class PeerTreeModel(QAbstractItemModel):
             parent_id = self.ROOT_PID
         else:
             parent_id = parent.internalId()
-        count = readSQL(f"SELECT COUNT(id) FROM {self.table} WHERE pid=:pid", [(":pid", parent_id)])
+        count = readSQL(f"SELECT COUNT(id) FROM {self._table} WHERE pid=:pid", [(":pid", parent_id)])
         if count:
             return int(count)
         else:
@@ -236,26 +245,29 @@ class PeerTreeModel(QAbstractItemModel):
     def columnCount(self, parent=None):
         return len(self._columns)
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if orientation == Qt.Horizontal:
-            if role == Qt.DisplayRole:
-                return self._columns[section]
-        return None
-
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return None
         item_id = index.internalId()
         if role == Qt.DisplayRole:
-            if index.column() == 0:
-                return readSQL(f"SELECT name FROM {self.table} WHERE id=:id", [(":id", item_id)])
-            elif index.column() == 1:
-                return readSQL(f"SELECT location FROM {self.table} WHERE id=:id", [(":id", item_id)])
-            elif index.column() == 2:
-                return readSQL("SELECT COUNT(d.id) FROM agents AS p "
-                               "LEFT JOIN actions AS d ON d.peer_id=p.id WHERE p.id=:id", [(":id", item_id)])
+            col = index.column()
+            if (col >= 0) and (col < len(self._columns)):
+                return readSQL(f"SELECT {self._columns[col][0]} FROM {self._table} WHERE id=:id", [(":id", item_id)])
             else:
-                assert False
+                return None
+        return None
+
+    def fieldIndex(self, field):
+        column_data = [i for i, column in enumerate(self._columns) if column[0] == field]
+        if len(column_data) > 0:
+            return column_data[0]
+        else:
+            return -1
+
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal:
+            if role == Qt.DisplayRole:
+                return self._columns[section][1]
         return None
 
     def configureView(self):
@@ -263,6 +275,28 @@ class PeerTreeModel(QAbstractItemModel):
         font.setBold(True)
         self._view.header().setFont(font)
 
+# ----------------------------------------------------------------------------------------------------------------------
+class PeerTreeModel(SqlTreeModel):
+    def __init__(self, table, parent_view):
+        super().__init__(table, parent_view)
+        self._columns = [("name", g_tr('ReferenceDataDialog', "Name")),
+                         ("location", g_tr('ReferenceDataDialog', "Location")),
+                         ("actions_count", g_tr('ReferenceDataDialog', "Docs count"))]
+
+    def data(self, index, role=Qt.DisplayRole):
+        if not index.isValid():
+            return None
+        item_id = index.internalId()
+        if role == Qt.DisplayRole:
+            if index.column() == 2:
+                return readSQL("SELECT COUNT(d.id) FROM agents AS p "
+                               "LEFT JOIN actions AS d ON d.peer_id=p.id WHERE p.id=:id", [(":id", item_id)])
+            else:
+                super().data(index, role)
+        return None
+
+    def configureView(self):
+        super().configureView()
         self._int_delegate = ReferenceIntDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("actions_count"), self._int_delegate)
 
@@ -276,18 +310,9 @@ class PeerTreeModel(QAbstractItemModel):
         a.append(QSqlField("location"))
         return a
 
-    def fieldIndex(self, field):
-        if field == "name":
-            return 0
-        elif field == "location":
-            return 1
-        elif field == "actions_count":
-            return 2
-        else:
-            return -1
-
     def setFilter(self, filter_str):
         pass
+
 
 class PeerListDialog(ReferenceDataDialog):
     def __init__(self):
@@ -310,77 +335,14 @@ class PeerListDialog(ReferenceDataDialog):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class CategoryTreeModel(QAbstractItemModel):
-    ROOT_PID = 0
-
+class CategoryTreeModel(SqlTreeModel):
     def __init__(self, table, parent_view):
-        super().__init__(parent_view)
-        self.table = table
-        self._view = parent_view
-        self._root = 0
-        self._columns = [g_tr('ReferenceDataDialog', "Name"),
-                         g_tr('ReferenceDataDialog', "Often")]
-
-    def index(self, row, column, parent=None):
-        if parent is None:
-            return QModelIndex()
-        if not parent.isValid():
-            parent_id = self._root
-        else:
-            parent_id = parent.internalId()
-        child_id = readSQL(f"SELECT id FROM {self.table} WHERE pid=:pid LIMIT 1 OFFSET :row_n",
-                           [(":pid", parent_id), (":row_n", row)])
-        if child_id:
-            return self.createIndex(row, column, id=child_id)
-        return QModelIndex()
-
-    def parent(self, index):
-        if not index.isValid():
-            return QModelIndex()
-        child_id = index.internalId()
-        parent_id = readSQL(f"SELECT pid FROM {self.table} WHERE id=:id", [(":id", child_id)])
-        if parent_id == self.ROOT_PID:
-            return QModelIndex()
-        return self.createIndex(0, 0, id=parent_id)
-
-    def rowCount(self, parent=None):
-        if not parent.isValid():
-            parent_id = self.ROOT_PID
-        else:
-            parent_id = parent.internalId()
-        count = readSQL(f"SELECT COUNT(id) FROM {self.table} WHERE pid=:pid", [(":pid", parent_id)])
-        if count:
-            return int(count)
-        else:
-            return 0
-
-    def columnCount(self, parent=None):
-        return len(self._columns)
-
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if orientation == Qt.Horizontal:
-            if role == Qt.DisplayRole:
-                return self._columns[section]
-        return None
-
-    def data(self, index, role=Qt.DisplayRole):
-        if not index.isValid():
-            return None
-        item_id = index.internalId()
-        if role == Qt.DisplayRole:
-            if index.column() == 0:
-                return readSQL(f"SELECT name FROM {self.table} WHERE id=:id", [(":id", item_id)])
-            elif index.column() == 1:
-                return readSQL(f"SELECT often FROM {self.table} WHERE id=:id", [(":id", item_id)])
-            else:
-                assert False
-        return None
+        super().__init__(table, parent_view)
+        self._columns = [("name", g_tr('ReferenceDataDialog', "Name")),
+                         ("often", g_tr('ReferenceDataDialog', "Often"))]
 
     def configureView(self):
-        font = self._view.header().font()
-        font.setBold(True)
-        self._view.header().setFont(font)
-
+        super().configureView()
         self._bool_delegate = ReferenceBoolDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("often"), self._bool_delegate)
 
@@ -393,14 +355,6 @@ class CategoryTreeModel(QAbstractItemModel):
         a.append(QSqlField("name"))
         a.append(QSqlField("often"))
         return a
-
-    def fieldIndex(self, field):
-        if field == "name":
-            return 0
-        elif field == "often":
-            return 1
-        else:
-            return -1
 
     def setFilter(self, filter_str):
         pass
@@ -425,14 +379,17 @@ class CategoryListDialog(ReferenceDataDialog):
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Categories"))
         self.Toggle.setVisible(False)
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 class TagListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
         AbstractReferenceListModel.__init__(self, table, parent_view)
-        self._columns = [("tag", g_tr('ReferenceDataDialog', "Tag"))]
+        self._columns = [("id", ''),
+                         ("tag", g_tr('ReferenceDataDialog', "Tag"))]
         self._sort_by = "tag"
         self._hidden = ["id"]
         self._stretch = "tag"
+
 
 class TagsListDialog(ReferenceDataDialog):
     def __init__(self):
@@ -450,11 +407,13 @@ class TagsListDialog(ReferenceDataDialog):
         self.SearchFrame.setVisible(True)
         self.Toggle.setVisible(False)
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 class CountryListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
         AbstractReferenceListModel.__init__(self, table, parent_view)
-        self._columns = [("name", g_tr('ReferenceDataDialog', "Country")),
+        self._columns = [("id", ''),
+                         ("name", g_tr('ReferenceDataDialog', "Country")),
                          ("code", g_tr('ReferenceDataDialog', "Code")),
                          ("tax_treaty", g_tr('ReferenceDataDialog', "Tax Treaty"))]
         self._sort_by = "name"
@@ -468,6 +427,7 @@ class CountryListModel(AbstractReferenceListModel):
 
         self._bool_delegate = ReferenceBoolDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("tax_treaty"), self._bool_delegate)
+
 
 class CountryListDialog(ReferenceDataDialog):
     def __init__(self):
@@ -485,11 +445,13 @@ class CountryListDialog(ReferenceDataDialog):
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Countries"))
         self.Toggle.setVisible(False)
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 class QuotesListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
         AbstractReferenceListModel.__init__(self, table, parent_view)
-        self._columns = [("timestamp", g_tr('ReferenceDataDialog', "Date")),
+        self._columns = [("id", ''),
+                         ("timestamp", g_tr('ReferenceDataDialog', "Date")),
                          ("asset_id", g_tr('ReferenceDataDialog', "Asset")),
                          ("quote", g_tr('ReferenceDataDialog', "Quote"))]
         self._hidden = ["id"]
@@ -508,6 +470,7 @@ class QuotesListModel(AbstractReferenceListModel):
         self._timestamp_delegate = ReferenceTimestampDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("timestamp"), self._timestamp_delegate)
 
+
 class QuotesListDialog(ReferenceDataDialog):
     def __init__(self):
         ReferenceDataDialog.__init__(self)
@@ -525,4 +488,3 @@ class QuotesListDialog(ReferenceDataDialog):
         self.Toggle.setVisible(False)
 
 # ----------------------------------------------------------------------------------------------------------------------
-

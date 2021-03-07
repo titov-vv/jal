@@ -230,24 +230,6 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 # ===================================================================================================================
 # Delegates to customize view of columns
 # ===================================================================================================================
-
-# -------------------------------------------------------------------------------------------------------------------
-# Display '+' if element have children
-class ReferenceTreeDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
-
-    def paint(self, painter, option, index):
-        painter.save()
-        model = index.model()
-        children_count = model.data(model.index(index.row(), model.fieldIndex('children_count')), Qt.DisplayRole)
-        text = ''
-        if children_count:
-            text = '+'
-        painter.drawText(option.rect, Qt.AlignHCenter, text)
-        painter.restore()
-
-# -------------------------------------------------------------------------------------------------------------------
 # Display '*' if true and empty cell if false
 # Toggle True/False by mouse click
 class ReferenceBoolDelegate(QStyledItemDelegate):
