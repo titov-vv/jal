@@ -56,7 +56,6 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     def _init_completed(self):
         self.DataView.selectionModel().selectionChanged.connect(self.OnRowSelected)
         self.model.dataChanged.connect(self.OnDataChanged)
-        self.model.select()
         self.setFilter()
 
     @Slot()

@@ -20,6 +20,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
         self.setTable(table)
         self.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        self.select()
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal:
@@ -300,9 +301,6 @@ class PeerTreeModel(SqlTreeModel):
         self._int_delegate = ReferenceIntDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("actions_count"), self._int_delegate)
 
-    def select(self):
-        pass
-
     def record(self, row):
         a = QSqlRecord()
         a.append(QSqlField("id"))
@@ -345,9 +343,6 @@ class CategoryTreeModel(SqlTreeModel):
         super().configureView()
         self._bool_delegate = ReferenceBoolDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("often"), self._bool_delegate)
-
-    def select(self):
-        pass
 
     def record(self, row):
         a = QSqlRecord()
