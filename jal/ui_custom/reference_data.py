@@ -3,7 +3,7 @@ from datetime import datetime
 
 from PySide2.QtCore import Qt, Signal, Property, Slot, QEvent
 from PySide2.QtSql import QSqlRelationalDelegate
-from PySide2.QtWidgets import QDialog, QMessageBox, QStyledItemDelegate
+from PySide2.QtWidgets import QDialog, QMessageBox, QStyledItemDelegate, QTreeView
 
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
 import jal.ui_custom.reference_selector as ui     # Full import due to "cyclic" reference
@@ -212,6 +212,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 # Toggle True/False by mouse click
 class ReferenceBoolDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
+        self._parent = parent
         QStyledItemDelegate.__init__(self, parent)
 
     def paint(self, painter, option, index):
@@ -223,6 +224,14 @@ class ReferenceBoolDelegate(QStyledItemDelegate):
         else:
             text = ''
         painter.drawText(option.rect, Qt.AlignHCenter, text)
+        # Extra code for tree views - to draw grid lines
+        if type(self._parent) == QTreeView:
+            pen = painter.pen()
+            pen.setWidth(1)
+            pen.setStyle(Qt.DotLine)
+            pen.setColor(Qt.GlobalColor.lightGray)
+            painter.setPen(pen)
+            painter.drawRect(option.rect)
         painter.restore()
 
     def editorEvent(self, event, model, option, index):
@@ -237,6 +246,7 @@ class ReferenceBoolDelegate(QStyledItemDelegate):
 # Make integer alignment to the right
 class ReferenceIntDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
+        self._parent = parent
         QStyledItemDelegate.__init__(self, parent)
 
     def paint(self, painter, option, index):
@@ -244,6 +254,14 @@ class ReferenceIntDelegate(QStyledItemDelegate):
         model = index.model()
         value = model.data(index, Qt.DisplayRole)
         painter.drawText(option.rect, Qt.AlignRight, f"{value} ")
+        # Extra code for tree views - to draw grid lines
+        if type(self._parent) == QTreeView:
+            pen = painter.pen()
+            pen.setWidth(1)
+            pen.setStyle(Qt.DotLine)
+            pen.setColor(Qt.GlobalColor.lightGray)
+            painter.setPen(pen)
+            painter.drawRect(option.rect)
         painter.restore()
 
 # -------------------------------------------------------------------------------------------------------------------

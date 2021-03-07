@@ -1,9 +1,10 @@
 from PySide2.QtCore import Qt, Slot, QAbstractItemModel, QDate, QModelIndex
 from PySide2.QtGui import QBrush, QFont
-from PySide2.QtWidgets import QStyledItemDelegate, QHeaderView
+from PySide2.QtWidgets import QHeaderView
 from jal.constants import Setup, CustomColor, BookAccount
 from jal.db.helpers import executeSQL, get_asset_name
 from jal.ui_custom.helpers import g_tr
+from jal.widgets.view_delegate import GridLinesDelegate
 
 
 class TreeItem():
@@ -332,19 +333,3 @@ class HoldingsModel(QAbstractItemModel):
         else:
             profit_relative = 0
         node.data += [profit, profit_relative, value, value_adjusted]
-
-
-class GridLinesDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
-
-    def paint(self, painter, option, index):
-        painter.save()
-        pen = painter.pen()
-        pen.setWidth(1)
-        pen.setStyle(Qt.DotLine)
-        pen.setColor(Qt.GlobalColor.lightGray)
-        painter.setPen(pen)
-        painter.drawRect(option.rect)
-        painter.restore()
-        super().paint(painter, option, index)

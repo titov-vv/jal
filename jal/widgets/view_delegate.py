@@ -142,3 +142,18 @@ class ReportsPandasDelegate(QStyledItemDelegate):
             painter.drawText(option.rect, Qt.AlignRight, text)
         painter.setPen(pen)
         painter.restore()
+
+class GridLinesDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        QStyledItemDelegate.__init__(self, parent)
+
+    def paint(self, painter, option, index):
+        painter.save()
+        pen = painter.pen()
+        pen.setWidth(1)
+        pen.setStyle(Qt.DotLine)
+        pen.setColor(Qt.GlobalColor.lightGray)
+        painter.setPen(pen)
+        painter.drawRect(option.rect)
+        painter.restore()
+        super().paint(painter, option, index)

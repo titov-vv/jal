@@ -6,6 +6,7 @@ from jal.widgets.view_delegate import *
 from jal.ui_custom.helpers import g_tr
 from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
     ReferenceLookupDelegate, ReferenceTimestampDelegate, ReferenceIntDelegate
+from jal.widgets.view_delegate import GridLinesDelegate
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -364,6 +365,7 @@ class PeerTreeModel(SqlTreeModel):
                          ("actions_count", g_tr('ReferenceDataDialog', "Docs count"))]
         self._stretch = "name"
         self._int_delegate = None
+        self._grid_delegate = None
 
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
@@ -379,15 +381,11 @@ class PeerTreeModel(SqlTreeModel):
 
     def configureView(self):
         super().configureView()
+        self._grid_delegate = GridLinesDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("name"), self._grid_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("location"), self._grid_delegate)
         self._int_delegate = ReferenceIntDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("actions_count"), self._int_delegate)
-
-    # def record(self, row):
-    #     a = QSqlRecord()
-    #     a.append(QSqlField("id"))
-    #     a.append(QSqlField("name"))
-    #     a.append(QSqlField("location"))
-    #     return a
 
     def setFilter(self, filter_str):
         pass
@@ -419,18 +417,14 @@ class CategoryTreeModel(SqlTreeModel):
                          ("often", g_tr('ReferenceDataDialog', "Often"))]
         self._stretch = "name"
         self._bool_delegate = None
+        self._grid_delegate = None
 
     def configureView(self):
         super().configureView()
+        self._grid_delegate = GridLinesDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("name"), self._grid_delegate)
         self._bool_delegate = ReferenceBoolDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("often"), self._bool_delegate)
-
-    def record(self, row):
-        a = QSqlRecord()
-        a.append(QSqlField("id"))
-        a.append(QSqlField("name"))
-        a.append(QSqlField("often"))
-        return a
 
     def setFilter(self, filter_str):
         pass
