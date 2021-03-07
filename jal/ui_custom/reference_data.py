@@ -47,11 +47,14 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.CommitBtn.clicked.connect(self.OnCommit)
         self.RevertBtn.clicked.connect(self.OnRevert)
         self.DataView.doubleClicked.connect(self.OnDoubleClicked)
+        self.TreeView.doubleClicked.connect(self.OnDoubleClicked)
 
     def _init_completed(self):
         self.DataView.setVisible(not self.tree_view)
         self.TreeView.setVisible(self.tree_view)
-        if not self.tree_view:
+        if self.tree_view:
+            self.TreeView.selectionModel().selectionChanged.connect(self.OnRowSelected)
+        else:
             self.DataView.selectionModel().selectionChanged.connect(self.OnRowSelected)
         self.model.dataChanged.connect(self.OnDataChanged)
         self.setFilter()
@@ -167,14 +170,13 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     def OnRowSelected(self, selected, _deselected):
         idx = selected.indexes()
         if idx:
-            selected_row = idx[0].row()
-            self.selected_id = self.model.record(selected_row).value('id')
-            self.p_selected_name = self.model.record(selected_row).value('name')
+            self.selected_id = self.model.getId(idx[0])
+            self.p_selected_name = self.model.getFieldValue(self.selected_id, 'name')
 
     @Slot()
     def OnDoubleClicked(self, index):
-        self.selected_id = self.model.record(index.row()).value('id')
-        self.p_selected_name = self.model.record(index.row()).value('name')
+        self.selected_id = self.model.getId(index)
+        self.p_selected_name = self.model.getFieldValue(self.selected_id, 'name')
         if self.selection_enabled:
             self.setResult(QDialog.Accepted)
             self.close()

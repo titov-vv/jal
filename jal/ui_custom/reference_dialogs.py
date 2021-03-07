@@ -49,6 +49,9 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         if self._stretch:
             self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex(self._stretch), QHeaderView.Stretch)
 
+    def getId(self, index):
+        return self.record(index.row()).value('id')
+
     def getFieldValue(self, item_id, field_name):
         return readSQL(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
 
@@ -285,6 +288,11 @@ class SqlTreeModel(QAbstractItemModel):
     def setStretching(self):
         if self._stretch:
             self._view.header().setSectionResizeMode(self.fieldIndex(self._stretch), QHeaderView.Stretch)
+
+    def getId(self, index):
+        if not index.isValid():
+            return None
+        return index.internalId()
 
     def getFieldValue(self, item_id, field_name):
         return readSQL(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
