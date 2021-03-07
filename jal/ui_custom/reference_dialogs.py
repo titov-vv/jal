@@ -326,16 +326,14 @@ class PeerListDialog(ReferenceDataDialog):
         self.table = "agents"
         self.model = PeerTreeModel(self.table, self.TreeView)
         self.TreeView.setModel(self.model)
-        self.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
         super()._init_completed()
 
     def setup_ui(self):
         self.search_field = "name"
-        # self.tree_view = True
+        self.tree_view = True
         self.SearchFrame.setVisible(True)
-        # self.UpBtn.setVisible(True)
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Peers"))
         self.Toggle.setVisible(False)
 
@@ -371,16 +369,14 @@ class CategoryListDialog(ReferenceDataDialog):
         self.table = "categories"
         self.model = CategoryTreeModel(self.table, self.TreeView)
         self.TreeView.setModel(self.model)
-        self.DataView.setModel(self.model)
         self.model.configureView()
         self.setup_ui()
         super()._init_completed()
 
     def setup_ui(self):
         self.search_field = "name"
-        # self.tree_view = True
+        self.tree_view = True
         self.SearchFrame.setVisible(True)
-        # self.UpBtn.setVisible(True)
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Categories"))
         self.Toggle.setVisible(False)
 

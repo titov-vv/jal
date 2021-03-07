@@ -50,11 +50,6 @@ class Ui_ReferenceDataDialog(object):
 
         self.edit_layout.addWidget(self.Toggle)
 
-        self.UpBtn = QPushButton(self.EditFrame)
-        self.UpBtn.setObjectName(u"UpBtn")
-
-        self.edit_layout.addWidget(self.UpBtn)
-
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.edit_layout.addItem(self.horizontalSpacer)
@@ -131,7 +126,6 @@ class Ui_ReferenceDataDialog(object):
         ReferenceDataDialog.setWindowTitle(QCoreApplication.translate("ReferenceDataDialog", u"Reference Data", None))
         self.GroupLbl.setText(QCoreApplication.translate("ReferenceDataDialog", u"Account Type:", None))
         self.Toggle.setText(QCoreApplication.translate("ReferenceDataDialog", u"Show inactive", None))
-        self.UpBtn.setText(QCoreApplication.translate("ReferenceDataDialog", u"Up", None))
         self.AddBtn.setText(QCoreApplication.translate("ReferenceDataDialog", u"Add", None))
         self.RemoveBtn.setText(QCoreApplication.translate("ReferenceDataDialog", u"Del", None))
         self.CommitBtn.setText(QCoreApplication.translate("ReferenceDataDialog", u"Commit", None))

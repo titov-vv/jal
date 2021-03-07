@@ -8,15 +8,13 @@ from PySide2.QtWidgets import QDialog, QMessageBox, QStyledItemDelegate
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
 import jal.ui_custom.reference_selector as ui     # Full import due to "cyclic" reference
 from jal.ui_custom.helpers import g_tr
-from jal.db.helpers import readSQL
 
 
 # --------------------------------------------------------------------------------------------------------------
 # Class to display and edit table with reference data (accounts, categories, tags...)
 # --------------------------------------------------------------------------------------------------------------
 class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
-    # tree_view - table will be displayed as hierarchical tree with help of 3 columns: 'id', 'pid' and 'children_count'
-    #  ('pid' will identify parent row for current row, and '+' will be displayed for row with 'children_count'>0
+    # tree_view - table will be displayed as hierarchical tree with help of 2 columns: 'id', 'pid' in sql table
     def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)
@@ -25,8 +23,6 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.p_selected_name = ''
         self.dialog_visible = False
         self.selection_enabled = False
-        self.parent = 0
-        self.last_parent = 0
         self.group_id = None
         self.group_key_field = None
         self.group_key_index = None
@@ -40,21 +36,22 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.GroupLbl.setVisible(False)
         self.GroupCombo.setVisible(False)
         self.SearchFrame.setVisible(False)
-        self.UpBtn.setVisible(False)
 
         self.SearchString.textChanged.connect(self.OnSearchChange)
-        self.UpBtn.clicked.connect(self.OnUpClick)
         self.GroupCombo.currentIndexChanged.connect(self.OnGroupChange)
         self.Toggle.stateChanged.connect(self.OnToggleChange)
         self.AddBtn.clicked.connect(self.OnAdd)
         self.RemoveBtn.clicked.connect(self.OnRemove)
         self.CommitBtn.clicked.connect(self.OnCommit)
+        self.CommitBtn.clicked.connect(self.OnCommit)
         self.RevertBtn.clicked.connect(self.OnRevert)
-        self.DataView.clicked.connect(self.OnClicked)
         self.DataView.doubleClicked.connect(self.OnDoubleClicked)
 
     def _init_completed(self):
-        self.DataView.selectionModel().selectionChanged.connect(self.OnRowSelected)
+        self.DataView.setVisible(not self.tree_view)
+        self.TreeView.setVisible(self.tree_view)
+        if not self.tree_view:
+            self.DataView.selectionModel().selectionChanged.connect(self.OnRowSelected)
         self.model.dataChanged.connect(self.OnDataChanged)
         self.setFilter()
 
@@ -103,8 +100,6 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     @Slot()
     def OnAdd(self):
         new_record = self.model.record()
-        if self.tree_view:
-            new_record.setValue('pid', self.parent)  # set current parent
         assert self.model.insertRows(0, 1)
         self.model.setRecord(0, new_record)
         self.CommitBtn.setEnabled(True)
@@ -147,9 +142,6 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         conditions = []
         if self.search_text:
             conditions.append(f"{self.search_field} LIKE '%{self.search_text}%'")
-        else:
-            if self.tree_view:
-                conditions.append(f"pid={self.parent}")
 
         if self.group_id:
             conditions.append(f"{self.table}.{self.group_key_field}={self.group_id}")
@@ -163,7 +155,8 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
             condition += line + " AND "
         condition = condition[:-len(" AND ")]
 
-        self.DataView.model().setFilter(condition)
+        if not self.tree_view:
+            self.DataView.model().setFilter(condition)
 
     @Slot()
     def OnSearchChange(self):
@@ -179,38 +172,12 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
             self.p_selected_name = self.DataView.model().record(selected_row).value('name')
 
     @Slot()
-    def OnClicked(self, index):
-        if index.column() == 0:
-            selected_row = index.row()
-            self.parent = self.DataView.model().record(selected_row).value('id')
-            self.last_parent = self.DataView.model().record(selected_row).value('pid')
-            if self.search_text:
-                self.SearchString.setText('')  # it will also call self.setFilter()
-            else:
-                self.setFilter()
-
-    @Slot()
     def OnDoubleClicked(self, index):
         self.selected_id = self.DataView.model().record(index.row()).value('id')
         self.p_selected_name = self.DataView.model().record(index.row()).value('name')
         if self.selection_enabled:
             self.setResult(QDialog.Accepted)
             self.close()
-
-    @Slot()
-    def OnUpClick(self):
-        if self.search_text:  # list filtered by search string
-            return
-        current_id = self.DataView.model().record(0).value('id')
-        if current_id is None:
-            pid = self.last_parent
-        else:
-            pid = readSQL(f"SELECT c2.pid FROM {self.table} AS c1 LEFT JOIN {self.table} AS c2 ON c1.pid=c2.id "\
-                          f"WHERE c1.id = :current_id", [(":current_id", current_id)])
-            if pid == '':
-                pid = 0
-        self.parent = pid
-        self.setFilter()
 
     @Slot()
     def OnGroupChange(self, list_id):
