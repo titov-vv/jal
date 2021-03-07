@@ -38,12 +38,16 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.GroupCombo.setVisible(False)
         self.SearchFrame.setVisible(False)
 
+        self.AddBtn.setFixedWidth(self.AddBtn.fontMetrics().width("XXX"))
+        self.RemoveBtn.setFixedWidth(self.RemoveBtn.fontMetrics().width("XXX"))
+        self.CommitBtn.setFixedWidth(self.CommitBtn.fontMetrics().width("XXX"))
+        self.RevertBtn.setFixedWidth(self.RevertBtn.fontMetrics().width("XXX"))
+
         self.SearchString.textChanged.connect(self.OnSearchChange)
         self.GroupCombo.currentIndexChanged.connect(self.OnGroupChange)
         self.Toggle.stateChanged.connect(self.OnToggleChange)
         self.AddBtn.clicked.connect(self.OnAdd)
         self.RemoveBtn.clicked.connect(self.OnRemove)
-        self.CommitBtn.clicked.connect(self.OnCommit)
         self.CommitBtn.clicked.connect(self.OnCommit)
         self.RevertBtn.clicked.connect(self.OnRevert)
         self.DataView.doubleClicked.connect(self.OnDoubleClicked)

@@ -1455,29 +1455,9 @@ do you want to save it?</source>
         <translation>Тип счета:</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="136"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="143"/>
         <source>Show inactive</source>
         <translation>Показывать неактивные</translation>
-    </message>
-    <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="131"/>
-        <source>Add</source>
-        <translation>Добавить</translation>
-    </message>
-    <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="132"/>
-        <source>Del</source>
-        <translation>Удалить</translation>
-    </message>
-    <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="133"/>
-        <source>Commit</source>
-        <translation>Сохранить</translation>
-    </message>
-    <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="134"/>
-        <source>Revert</source>
-        <translation>Отменить</translation>
     </message>
     <message>
         <location filename="../ui/ui_reference_data_dlg.py" line="135"/>
@@ -1485,22 +1465,22 @@ do you want to save it?</source>
         <translation>Поиск:</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_data.py" line="82"/>
+        <location filename="../ui_custom/reference_data.py" line="88"/>
         <source>ANY</source>
         <translation>Любой</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_data.py" line="124"/>
+        <location filename="../ui_custom/reference_data.py" line="130"/>
         <source>Submit failed: </source>
         <translation>Ошибка сохранения: </translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_data.py" line="61"/>
+        <location filename="../ui_custom/reference_data.py" line="67"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_data.py" line="61"/>
+        <location filename="../ui_custom/reference_data.py" line="67"/>
         <source>You have uncommited changes. Do you want to close?</source>
         <translation>У вас есть несохранённые данные. Всё равно закрыть?</translation>
     </message>
@@ -1520,158 +1500,178 @@ do you want to save it?</source>
         <translation>Выбран некорректный счёт</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="57"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="64"/>
         <source>Account Type</source>
         <translation>Тип счета</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="74"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="81"/>
         <source>Account Types</source>
         <translation>Типы счетов</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="345"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="360"/>
         <source>Name</source>
         <translation>Наименование</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="86"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="93"/>
         <source>Currency</source>
         <translation>Валюта</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="87"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="94"/>
         <source>Act.</source>
         <translation>Акт.</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="88"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="95"/>
         <source>Account #</source>
         <translation>№ счета</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="89"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="96"/>
         <source>Reconciled @</source>
         <translation>Сверен @</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="90"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="97"/>
         <source>Bank</source>
         <translation>Банк</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="139"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="146"/>
         <source>Account type:</source>
         <translation>Тип счета:</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="132"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="139"/>
         <source>Accounts</source>
         <translation>Счета</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="156"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="163"/>
         <source>Symbol</source>
         <translation>Символ</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="158"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="165"/>
         <source>ISIN</source>
         <translation>ISIN</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="417"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="432"/>
         <source>Country</source>
         <translation>Страна</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="160"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="167"/>
         <source>Data source</source>
         <translation>Ист.котировок</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="193"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="200"/>
         <source>Asset type:</source>
         <translation>Тип ЦБ:</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="188"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="195"/>
         <source>Assets</source>
         <translation>Ценные бумаги</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="290"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="305"/>
         <source>Location</source>
         <translation>Адрес</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="291"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="306"/>
         <source>Docs count</source>
         <translation>Кол-во док.</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="337"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="352"/>
         <source>Peers</source>
         <translation>Контрагенты</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="346"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="361"/>
         <source>Often</source>
         <translation>Частая</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="380"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="395"/>
         <source>Categories</source>
         <translation>Категории</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="389"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="404"/>
         <source>Tag</source>
         <translation>Тэг</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="407"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="422"/>
         <source>Tags</source>
         <translation>Тэги</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="418"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="433"/>
         <source>Code</source>
         <translation>Код</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="419"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="434"/>
         <source>Tax Treaty</source>
         <translation>СОИДН</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="446"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="461"/>
         <source>Countries</source>
         <translation>Страны</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="455"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="470"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="456"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="471"/>
         <source>Asset</source>
         <translation>ЦБ</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="457"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="472"/>
         <source>Quote</source>
         <translation>Котировка</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="488"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="503"/>
         <source>Quotes</source>
         <translation>Котировки</translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="91"/>
+        <location filename="../ui_custom/reference_dialogs.py" line="98"/>
         <source>CC</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_reference_data_dlg.py" line="131"/>
+        <source> +ufe0f </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_reference_data_dlg.py" line="132"/>
+        <source> u2014 </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_reference_data_dlg.py" line="133"/>
+        <source> u2714 </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_reference_data_dlg.py" line="134"/>
+        <source> u2716 </source>
         <translation type="unfinished"></translation>
     </message>
 </context>

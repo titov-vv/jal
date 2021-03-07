@@ -128,10 +128,10 @@ class Ui_ReferenceDataDialog(object):
         ReferenceDataDialog.setWindowTitle(QCoreApplication.translate("ReferenceDataDialog", u"Reference Data", None))
         self.GroupLbl.setText(QCoreApplication.translate("ReferenceDataDialog", u"Account Type:", None))
         self.Toggle.setText(QCoreApplication.translate("ReferenceDataDialog", u"Show inactive", None))
-        self.AddBtn.setText(QCoreApplication.translate("ReferenceDataDialog", u"Add", None))
-        self.RemoveBtn.setText(QCoreApplication.translate("ReferenceDataDialog", u"Del", None))
-        self.CommitBtn.setText(QCoreApplication.translate("ReferenceDataDialog", u"Commit", None))
-        self.RevertBtn.setText(QCoreApplication.translate("ReferenceDataDialog", u"Revert", None))
+        self.AddBtn.setText(QCoreApplication.translate("ReferenceDataDialog", u" +\ufe0f ", None))
+        self.RemoveBtn.setText(QCoreApplication.translate("ReferenceDataDialog", u" \u2014 ", None))
+        self.CommitBtn.setText(QCoreApplication.translate("ReferenceDataDialog", u" \u2714 ", None))
+        self.RevertBtn.setText(QCoreApplication.translate("ReferenceDataDialog", u" \u2716 ", None))
         self.SearchLbl.setText(QCoreApplication.translate("ReferenceDataDialog", u"Search:", None))
     # retranslateUi
 
