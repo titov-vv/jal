@@ -1,3 +1,4 @@
+from enum import Enum, auto
 import pandas as pd
 from PySide2.QtWidgets import QFileDialog, QHeaderView
 from PySide2.QtCore import QObject, Signal, QAbstractTableModel
@@ -7,16 +8,18 @@ from jal.widgets.view_delegate import *
 from jal.db.helpers import db_connection, executeSQL, readSQLrecord
 from jal.ui_custom.helpers import g_tr
 from jal.reports.helpers import XLSX
+from jal.reports.income_spending_report import IncomeSpendingReport
 
 
 TREE_LEVEL_SEPARATOR = chr(127)
 
 
-class ReportType:
-    IncomeSpending = 1
-    ProfitLoss = 2
-    Deals = 3
-    ByCategory = 4
+class ReportType(Enum):
+    IncomeSpending = auto()
+    ProfitLoss = auto()
+    Deals = auto()
+    ByCategory = auto()
+    IncomeSpendingByCategory = auto()
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -194,10 +197,11 @@ SHOW_REPORT = 1
 class Reports(QObject):
     report_failure = Signal(str)
 
-    def __init__(self, report_table_view):
+    def __init__(self, report_table_view, report_tree_view):
         super().__init__()
 
         self.table_view = report_table_view
+        self.tree_view = report_tree_view
         self.delegates = []
         self.current_report = None
         self.query = None
@@ -212,8 +216,18 @@ class Reports(QObject):
             ReportType.Deals: (self.prepareDealsReport,
                                self.showDealsReport),
             ReportType.ByCategory: (self.prepareCategoryReport,
-                                    self.showByCategoryReport)
+                                    self.showByCategoryReport),
+            ReportType.IncomeSpendingByCategory: (self.prepareIS2,
+                                                  self.showPandasReport)
         }
+
+    def prepareIS2(self, begin, end, account_id, group_dates):
+        self.model2 = IncomeSpendingReport(self.tree_view)
+        self.tree_view.setModel(self.model2)
+        self.model2.prepare(begin, end, account_id, group_dates)
+
+        self.prepareIncomeSpendingReport(begin, end, account_id, group_dates)
+        return True
 
     def runReport(self, report_type, begin=0, end=0, account_id=0, group_dates=0):
         if self.reports[report_type][PREPARE_REPORT_QUERY](begin, end, account_id, group_dates):

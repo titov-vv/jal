@@ -152,7 +152,7 @@
                    <second>0</second>
                    <year>2020</year>
                    <month>12</month>
-                   <day>13</day>
+                   <day>12</day>
                   </datetime>
                  </property>
                  <property name="displayFormat">
@@ -576,7 +576,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>13</day>
+               <day>12</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -714,7 +714,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>13</day>
+               <day>12</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -800,6 +800,11 @@
                <string>By Category</string>
               </property>
              </item>
+             <item>
+              <property name="text">
+               <string>Income / Spending 2</string>
+              </property>
+             </item>
             </widget>
            </item>
            <item row="1" column="11">
@@ -861,7 +866,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>13</day>
+               <day>12</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -910,6 +915,16 @@
           </attribute>
           <attribute name="verticalHeaderDefaultSectionSize">
            <number>20</number>
+          </attribute>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTreeView" name="ReportTreeView">
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
+          <attribute name="headerStretchLastSection">
+           <bool>false</bool>
           </attribute>
          </widget>
         </item>

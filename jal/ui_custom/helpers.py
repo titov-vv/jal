@@ -1,5 +1,5 @@
 from datetime import time, datetime, timedelta, timezone
-from PySide2.QtCore import QCoreApplication, Qt
+from PySide2.QtCore import QCoreApplication
 
 
 # -----------------------------------------------------------------------------------------------------------------------

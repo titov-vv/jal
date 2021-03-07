@@ -78,7 +78,7 @@ class HoldingsModel(QAbstractItemModel):
             parent_item = self._root
         else:
             parent_item = parent.internalPointer()
-        if not parent_item is None:
+        if parent_item is not None:
             return parent_item.count()
         else:
             return 0

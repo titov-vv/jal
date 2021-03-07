@@ -73,7 +73,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.logger.setLevel(log_level)
 
         # Setup reports tab
-        self.reports = Reports(self.ReportTableView)
+        self.reports = Reports(self.ReportTableView, self.ReportTreeView)
         self.reports.report_failure.connect(self.onReportFailure)
 
         # Customize UI configuration
@@ -224,7 +224,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             0: ReportType.IncomeSpending,
             1: ReportType.ProfitLoss,
             2: ReportType.Deals,
-            3: ReportType.ByCategory
+            3: ReportType.ByCategory,
+            4: ReportType.IncomeSpendingByCategory
         }
         report_type = types[self.ReportTypeCombo.currentIndex()]
         begin = self.ReportFromDate.dateTime().toSecsSinceEpoch()
