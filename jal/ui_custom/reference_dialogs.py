@@ -1,7 +1,7 @@
 from PySide2.QtCore import QAbstractItemModel, QModelIndex
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRecord, QSqlField
 from PySide2.QtWidgets import QHeaderView
-from jal.db.helpers import db_connection, readSQL
+from jal.db.helpers import db_connection, readSQL, executeSQL
 from jal.widgets.view_delegate import *
 from jal.ui_custom.helpers import g_tr
 from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
@@ -54,6 +54,15 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
 
     def getFieldValue(self, item_id, field_name):
         return readSQL(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
+
+    def addElement(self, index):
+        row = index.row()
+        assert self.insertRows(row, 1)
+        self.setRecord(row, self.record())
+
+    def removeElement(self, index):
+        row = index.row()
+        assert self.model.removeRow(row)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -296,6 +305,55 @@ class SqlTreeModel(QAbstractItemModel):
 
     def getFieldValue(self, item_id, field_name):
         return readSQL(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
+
+    def insertRows(self, row, count, parent=None):
+        if parent is None:
+            return False
+        if not parent.isValid():
+            parent_id = self.ROOT_PID
+        else:
+            parent_id = parent.internalId()
+
+        self.beginInsertRows(parent, row, row + count - 1)
+        _ = executeSQL("BEGIN TRANSACTION")
+        _ = executeSQL(f"INSERT INTO {self._table}(pid, name) VALUES (:pid, '')", [(":pid", parent_id)])
+        self.endInsertRows()
+        self.layoutChanged.emit()
+        return True
+
+    def removeRows(self, row, count, parent=None):
+        if parent is None:
+            return False
+        if not parent.isValid():
+            parent_id = self.ROOT_PID
+        else:
+            parent_id = parent.internalId()
+
+        self.beginRemoveRows(parent, row, row + count - 1)
+        _ = executeSQL("BEGIN TRANSACTION")
+        _ = executeSQL(f"DELETE FROM {self._table} WHERE id IN "
+                       f"(SELECT id FROM {self._table} WHERE pid=:pid LIMIT :row_c OFFSET :row_n)",
+                       [(":pid", parent_id), (":row_c", count), (":row_n", row)])
+        self.endRemoveRows()
+        self.layoutChanged.emit()
+        return True
+
+    def addElement(self, index):
+        row = index.row()
+        assert self.insertRows(row, 1, index.parent())
+
+    def removeElement(self, index):
+        row = index.row()
+        assert self.removeRows(row, 1, index.parent())
+
+    def submitAll(self):
+        _ = executeSQL("COMMIT")
+        self.layoutChanged.emit()
+        return True
+
+    def revertAll(self):
+        _ = executeSQL("ROLLBACK")
+        self.layoutChanged.emit()
 
 # ----------------------------------------------------------------------------------------------------------------------
 class PeerTreeModel(SqlTreeModel):

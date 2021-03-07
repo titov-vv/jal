@@ -107,17 +107,23 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
     @Slot()
     def OnAdd(self):
-        new_record = self.model.record()
-        assert self.model.insertRows(0, 1)
-        self.model.setRecord(0, new_record)
+        if self.tree_view:
+            idx = self.TreeView.selectionModel().selection().indexes()
+        else:
+            idx = self.DataView.selectionModel().selection().indexes()
+        current_index = idx[0] if idx else self.model.index(0, 0)
+        self.model.addElement(current_index)
         self.CommitBtn.setEnabled(True)
         self.RevertBtn.setEnabled(True)
 
     @Slot()
     def OnRemove(self):
-        idx = self.DataView.selectionModel().selection().indexes()
-        selected_row = idx[0].row()
-        assert self.model.removeRow(selected_row)
+        if self.tree_view:
+            idx = self.TreeView.selectionModel().selection().indexes()
+        else:
+            idx = self.DataView.selectionModel().selection().indexes()
+        current_index = idx[0] if idx else self.model.index(0, 0)
+        self.model.removeElement(current_index)
         self.CommitBtn.setEnabled(True)
         self.RevertBtn.setEnabled(True)
 
