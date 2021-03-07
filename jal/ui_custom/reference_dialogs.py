@@ -209,6 +209,7 @@ class SqlTreeModel(QAbstractItemModel):
         super().__init__(parent_view)
         self._table = table
         self._view = parent_view
+        self._stretch = None
 
     def index(self, row, column, parent=None):
         if parent is None:
@@ -272,9 +273,14 @@ class SqlTreeModel(QAbstractItemModel):
         return None
 
     def configureView(self):
+        self.setStretching()
         font = self._view.header().font()
         font.setBold(True)
         self._view.header().setFont(font)
+
+    def setStretching(self):
+        if self._stretch:
+            self._view.header().setSectionResizeMode(self.fieldIndex(self._stretch), QHeaderView.Stretch)
 
 # ----------------------------------------------------------------------------------------------------------------------
 class PeerTreeModel(SqlTreeModel):
@@ -283,6 +289,8 @@ class PeerTreeModel(SqlTreeModel):
         self._columns = [("name", g_tr('ReferenceDataDialog', "Name")),
                          ("location", g_tr('ReferenceDataDialog', "Location")),
                          ("actions_count", g_tr('ReferenceDataDialog', "Docs count"))]
+        self._stretch = "name"
+        self._int_delegate = None
 
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
@@ -293,7 +301,7 @@ class PeerTreeModel(SqlTreeModel):
                 return readSQL("SELECT COUNT(d.id) FROM agents AS p "
                                "LEFT JOIN actions AS d ON d.peer_id=p.id WHERE p.id=:id", [(":id", item_id)])
             else:
-                super().data(index, role)
+                return super().data(index, role)
         return None
 
     def configureView(self):
@@ -338,6 +346,8 @@ class CategoryTreeModel(SqlTreeModel):
         super().__init__(table, parent_view)
         self._columns = [("name", g_tr('ReferenceDataDialog', "Name")),
                          ("often", g_tr('ReferenceDataDialog', "Often"))]
+        self._stretch = "name"
+        self._bool_delegate = None
 
     def configureView(self):
         super().configureView()
