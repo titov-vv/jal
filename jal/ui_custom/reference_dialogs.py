@@ -12,13 +12,14 @@ from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceBoolDeleg
 class AbstractReferenceListModel(QSqlRelationalTableModel):
     def __init__(self, table, parent_view):
         self._view = parent_view
+        self._table = table
         self._columns = []
         self._sort_by = None
         self._hidden = []
         self._stretch = None
         QSqlRelationalTableModel.__init__(self, parent=parent_view, db=db_connection())
         self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
-        self.setTable(table)
+        self.setTable(self._table)
         self.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.select()
 
@@ -47,6 +48,9 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
     def setStretching(self):
         if self._stretch:
             self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex(self._stretch), QHeaderView.Stretch)
+
+    def getFieldValue(self, item_id, field_name):
+        return readSQL(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -282,6 +286,9 @@ class SqlTreeModel(QAbstractItemModel):
         if self._stretch:
             self._view.header().setSectionResizeMode(self.fieldIndex(self._stretch), QHeaderView.Stretch)
 
+    def getFieldValue(self, item_id, field_name):
+        return readSQL(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
+
 # ----------------------------------------------------------------------------------------------------------------------
 class PeerTreeModel(SqlTreeModel):
     def __init__(self, table, parent_view):
@@ -309,12 +316,12 @@ class PeerTreeModel(SqlTreeModel):
         self._int_delegate = ReferenceIntDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("actions_count"), self._int_delegate)
 
-    def record(self, row):
-        a = QSqlRecord()
-        a.append(QSqlField("id"))
-        a.append(QSqlField("name"))
-        a.append(QSqlField("location"))
-        return a
+    # def record(self, row):
+    #     a = QSqlRecord()
+    #     a.append(QSqlField("id"))
+    #     a.append(QSqlField("name"))
+    #     a.append(QSqlField("location"))
+    #     return a
 
     def setFilter(self, filter_str):
         pass

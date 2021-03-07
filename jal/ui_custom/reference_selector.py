@@ -52,13 +52,9 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
         if self.p_selected_id == selected_id:
             return
         self.p_selected_id = selected_id
-        self.dialog.model.setFilter(f"{self.table}.id={selected_id}")
-        row_idx = self.dialog.model.index(0, 0).row()
-        name = self.dialog.model.record(row_idx).value(self.dialog.model.fieldIndex(self.selector_field))
-        self.name.setText(name)
+        self.name.setText(self.dialog.model.getFieldValue(selected_id, self.selector_field))
         if self.details_field:
-            details = self.dialog.model.record(row_idx).value(self.dialog.model.fieldIndex(self.details_field))
-            self.details.setText(details)
+            self.details.setText(self.dialog.model.getFieldValue(selected_id, self.details_field))
         self.dialog.model.setFilter("")
 
     selected_id = Property(int, getId, setId, notify=changed, user=True)
