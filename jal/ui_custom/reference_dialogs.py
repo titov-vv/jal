@@ -1,5 +1,5 @@
 from PySide2.QtCore import QAbstractItemModel, QModelIndex
-from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRecord, QSqlField
+from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection, readSQL, executeSQL
 from jal.widgets.view_delegate import *

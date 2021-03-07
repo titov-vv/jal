@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="ru" sourcelanguage="en">
+<!DOCTYPE TS>
+<TS version="2.1" language="ru" sourcelanguage="en">
 <context>
     <name>AbstractOperationDetails</name>
     <message>
@@ -1652,27 +1653,27 @@ do you want to save it?</source>
     <message>
         <location filename="../ui_custom/reference_dialogs.py" line="108"/>
         <source>CC</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../ui/ui_reference_data_dlg.py" line="135"/>
         <source> +ufe0f </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../ui/ui_reference_data_dlg.py" line="136"/>
         <source> u2014 </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../ui/ui_reference_data_dlg.py" line="137"/>
         <source> u2714 </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../ui/ui_reference_data_dlg.py" line="138"/>
         <source> u2716 </source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -1715,92 +1716,92 @@ do you want to save it?</source>
     <message>
         <location filename="../reports/reports.py" line="65"/>
         <source>Period</source>
-        <translation type="unfinished"></translation>
+        <translation>Период</translation>
     </message>
     <message>
         <location filename="../reports/reports.py" line="66"/>
         <source>In / Out</source>
-        <translation type="unfinished"></translation>
+        <translation>Ввод / Вывод</translation>
     </message>
     <message>
         <location filename="../reports/reports.py" line="67"/>
         <source>Assets value</source>
-        <translation type="unfinished"></translation>
+        <translation>Оценка активов</translation>
     </message>
     <message>
         <location filename="../reports/reports.py" line="68"/>
         <source>Total result</source>
-        <translation type="unfinished"></translation>
+        <translation>Итого</translation>
     </message>
     <message>
         <location filename="../reports/reports.py" line="69"/>
         <source>Profit / Loss</source>
-        <translation type="unfinished">Прибыли / Убытки</translation>
+        <translation>Прибыли / Убытки</translation>
     </message>
     <message>
         <location filename="../reports/reports.py" line="70"/>
         <source>Returns</source>
-        <translation type="unfinished"></translation>
+        <translation>Выплаты</translation>
     </message>
     <message>
         <location filename="../reports/reports.py" line="71"/>
         <source>Taxes &amp; Fees</source>
-        <translation type="unfinished"></translation>
+        <translation>Налоги и Комиссии</translation>
     </message>
     <message>
         <location filename="../reports/reports.py" line="104"/>
         <source>Asset</source>
-        <translation type="unfinished">ЦБ</translation>
+        <translation>ЦБ</translation>
     </message>
     <message>
         <location filename="../reports/reports.py" line="105"/>
         <source>Open Date</source>
-        <translation type="unfinished"></translation>
+        <translation>Дата откр.</translation>
     </message>
     <message>
         <location filename="../reports/reports.py" line="106"/>
         <source>Close Date</source>
-        <translation type="unfinished"></translation>
+        <translation>Дата закр.</translation>
     </message>
     <message>
         <location filename="../reports/reports.py" line="107"/>
         <source>Open Price</source>
-        <translation type="unfinished"></translation>
+        <translation>Цена откр.</translation>
     </message>
     <message>
         <location filename="../reports/reports.py" line="108"/>
         <source>Close Price</source>
-        <translation type="unfinished"></translation>
+        <translation>Цена закр.</translation>
     </message>
     <message>
         <location filename="../reports/reports.py" line="109"/>
         <source>Qty</source>
-        <translation type="unfinished">Кол-во</translation>
+        <translation>Кол-во</translation>
     </message>
     <message>
         <location filename="../reports/reports.py" line="161"/>
         <source>Note</source>
-        <translation type="unfinished">Описание</translation>
+        <translation>Описание</translation>
     </message>
     <message>
         <location filename="../reports/reports.py" line="157"/>
         <source>Timestamp</source>
-        <translation type="unfinished">Дата/Время</translation>
+        <translation>Дата/Время</translation>
     </message>
     <message>
         <location filename="../reports/reports.py" line="158"/>
         <source>Account</source>
-        <translation type="unfinished">Счет</translation>
+        <translation>Счет</translation>
     </message>
     <message>
         <location filename="../reports/reports.py" line="159"/>
         <source>Peer Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Контрагент</translation>
     </message>
     <message>
         <location filename="../reports/reports.py" line="160"/>
         <source>Amount</source>
-        <translation type="unfinished">Сумма</translation>
+        <translation>Сумма</translation>
     </message>
 </context>
 <context>
