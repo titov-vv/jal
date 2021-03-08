@@ -104,10 +104,3 @@ class ManipulateDate:
         end = day.replace(day=1, month=1)
         begin = end.replace(year=(day.year - 1))
         return (ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end))
-
-    @staticmethod
-    def MonthName(month_number):
-        month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-        return month[month_number-1]
-
-

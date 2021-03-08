@@ -1,7 +1,7 @@
 from datetime import datetime
 from PySide2.QtCore import Qt, QAbstractItemModel, QModelIndex
 from jal.constants import BookAccount, PredefinedAsset
-from jal.ui_custom.helpers import g_tr, ManipulateDate
+from jal.ui_custom.helpers import g_tr
 from jal.db.helpers import executeSQL
 from jal.widgets.view_delegate import ReportsFloat2ZeroDelegate, GridLinesDelegate
 
@@ -119,6 +119,18 @@ class IncomeSpendingReport(QAbstractItemModel):
         self._root = None
         self._grid_delegate = None
         self._report_delegate = None
+        self.month_name = [g_tr('Reports', 'Jan'),
+                           g_tr('Reports', 'Feb'),
+                           g_tr('Reports', 'Mar'),
+                           g_tr('Reports', 'Apr'),
+                           g_tr('Reports', 'May'),
+                           g_tr('Reports', 'Jun'),
+                           g_tr('Reports', 'Jul'),
+                           g_tr('Reports', 'Aug'),
+                           g_tr('Reports', 'Sep'),
+                           g_tr('Reports', 'Oct'),
+                           g_tr('Reports', 'Nov'),
+                           g_tr('Reports', 'Dec')]
 
     def rowCount(self, parent=None):
         if not parent.isValid():
@@ -155,7 +167,7 @@ class IncomeSpendingReport(QAbstractItemModel):
                         status = '▼' if self._view.isColumnHidden(section + 1) else '▶'
                         col_name = f"{year} " + status
                     else:
-                        col_name = ManipulateDate.MonthName(month)
+                        col_name = self.month_name[month-1]
                 return col_name
             if role == Qt.TextAlignmentRole:
                 return Qt.AlignCenter

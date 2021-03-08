@@ -118,7 +118,8 @@ class ProfitLossReportModel(QSqlTableModel):
             "  SELECT CAST(strftime('%s', date(l.timestamp, 'unixepoch', 'start of month')) "
             "  AS INTEGER) AS month, SUM(-l.amount) as tax_fee "
             "  FROM ledger AS l "
-            "  WHERE l.book_account=:book_costs AND l.category_id<>:category_dividend AND l.category_id<>:category_interest AND l.account_id=:account_id "
+            "  WHERE l.book_account=:book_costs AND l.category_id<>:category_dividend "
+            "AND l.category_id<>:category_interest AND l.account_id=:account_id "
             "  GROUP BY month "
             ") AS f ON f.month = m.month",
             [(":account_id", account_id), (":begin", begin), (":end", end),

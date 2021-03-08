@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="ru" sourcelanguage="en">
+<!DOCTYPE TS>
+<TS version="2.1" language="ru" sourcelanguage="en">
 <context>
     <name>AbstractOperationDetails</name>
     <message>
@@ -1678,124 +1679,189 @@ do you want to save it?</source>
 <context>
     <name>Reports</name>
     <message>
-        <location filename="../reports/reports.py" line="206"/>
+        <location filename="../reports/reports.py" line="59"/>
         <source>Save report to:</source>
         <translation>Сохранить отчет в:</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="215"/>
+        <location filename="../reports/reports.py" line="68"/>
         <source>Report</source>
         <translation>Отчет</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="209"/>
+        <location filename="../reports/reports.py" line="62"/>
         <source>Excel files (*.xlsx)</source>
         <translation>Файлы Excel (*.xslx)</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="233"/>
-        <source>You should select account to create Deals report</source>
-        <translation>Вы должны выбрать счет, чтобы создать отчет Сделки</translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="258"/>
-        <source>You should select account to create Profit/Loss report</source>
-        <translation>Вы должны выбрать счет, чтобы создать отчет Прибыли/Убытки</translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="339"/>
-        <source>You should select category to create By Category report</source>
-        <translation>Вы должны выбрать категорию, чтобы создать отчет По категории</translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="23"/>
+        <location filename="../reports/p_and_l_report.py" line="11"/>
         <source>Period</source>
         <translation>Период</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="24"/>
+        <location filename="../reports/p_and_l_report.py" line="12"/>
         <source>In / Out</source>
         <translation>Ввод / Вывод</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="25"/>
+        <location filename="../reports/p_and_l_report.py" line="13"/>
         <source>Assets value</source>
         <translation>Оценка активов</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="26"/>
+        <location filename="../reports/p_and_l_report.py" line="14"/>
         <source>Total result</source>
-        <translation>Итого</translation>
+        <translation>Результат</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="27"/>
+        <location filename="../reports/p_and_l_report.py" line="15"/>
         <source>Profit / Loss</source>
         <translation>Прибыли / Убытки</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="28"/>
+        <location filename="../reports/p_and_l_report.py" line="16"/>
         <source>Returns</source>
         <translation>Выплаты</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="29"/>
+        <location filename="../reports/p_and_l_report.py" line="17"/>
         <source>Taxes &amp; Fees</source>
-        <translation>Налоги и Комиссии</translation>
+        <translation>Налоги / Комиссии</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="62"/>
-        <source>Asset</source>
-        <translation>ЦБ</translation>
+        <location filename="../reports/p_and_l_report.py" line="53"/>
+        <source>You should select account to create Profit/Loss report</source>
+        <translation>Вы дожлны выбрать счет для создания отчета Прибыли / Убытки</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="63"/>
-        <source>Open Date</source>
-        <translation>Дата откр.</translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="64"/>
-        <source>Close Date</source>
-        <translation>Дата закр.</translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="65"/>
-        <source>Open Price</source>
-        <translation>Цена откр.</translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="66"/>
-        <source>Close Price</source>
-        <translation>Цена закр.</translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="67"/>
-        <source>Qty</source>
-        <translation>Кол-во</translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="119"/>
-        <source>Note</source>
-        <translation>Описание</translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="115"/>
+        <location filename="../reports/category_report.py" line="12"/>
         <source>Timestamp</source>
         <translation>Дата/Время</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="116"/>
+        <location filename="../reports/category_report.py" line="13"/>
         <source>Account</source>
         <translation>Счет</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="117"/>
+        <location filename="../reports/category_report.py" line="14"/>
         <source>Peer Name</source>
         <translation>Контрагент</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="118"/>
+        <location filename="../reports/category_report.py" line="15"/>
         <source>Amount</source>
         <translation>Сумма</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals_report.py" line="18"/>
+        <source>Note</source>
+        <translation>Описание</translation>
+    </message>
+    <message>
+        <location filename="../reports/category_report.py" line="51"/>
+        <source>You should select category to create By Category report</source>
+        <translation>Вы должны выбрать категорию для создания отчета по Категориям</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending_report.py" line="122"/>
+        <source>Jan</source>
+        <translation>Янв</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending_report.py" line="123"/>
+        <source>Feb</source>
+        <translation>Фев</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending_report.py" line="124"/>
+        <source>Mar</source>
+        <translation>Март</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending_report.py" line="125"/>
+        <source>Apr</source>
+        <translation>Апр</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending_report.py" line="126"/>
+        <source>May</source>
+        <translation>Май</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending_report.py" line="127"/>
+        <source>Jun</source>
+        <translation>Июнь</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending_report.py" line="128"/>
+        <source>Jul</source>
+        <translation>Июль</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending_report.py" line="129"/>
+        <source>Aug</source>
+        <translation>Авг</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending_report.py" line="130"/>
+        <source>Sep</source>
+        <translation>Сен</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending_report.py" line="131"/>
+        <source>Oct</source>
+        <translation>Окт</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending_report.py" line="132"/>
+        <source>Nov</source>
+        <translation>Нояб</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending_report.py" line="133"/>
+        <source>Dec</source>
+        <translation>Дек</translation>
+    </message>
+    <message>
+        <location filename="../reports/income_spending_report.py" line="264"/>
+        <source>TOTAL</source>
+        <translation>ИТОГО</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals_report.py" line="12"/>
+        <source>Asset</source>
+        <translation>ЦБ</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals_report.py" line="13"/>
+        <source>Open Date</source>
+        <translation>Дата откр.</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals_report.py" line="14"/>
+        <source>Close Date</source>
+        <translation>Дата закр.</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals_report.py" line="15"/>
+        <source>Open Price</source>
+        <translation>Цена откр.</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals_report.py" line="16"/>
+        <source>Close Price</source>
+        <translation>Цена закр.</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals_report.py" line="17"/>
+        <source>Qty</source>
+        <translation>Кол-во</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals_report.py" line="68"/>
+        <source>You should select account to create Deals report</source>
+        <translation>Вы должны выбрать счет, чтобы создать отчёт Сделки</translation>
     </message>
 </context>
 <context>
