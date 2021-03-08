@@ -3,7 +3,7 @@ from PySide2.QtCore import Qt, QAbstractItemModel, QModelIndex
 from jal.constants import BookAccount, PredefinedAsset
 from jal.ui_custom.helpers import g_tr, ManipulateDate
 from jal.db.helpers import executeSQL
-from jal.widgets.view_delegate import ReportsPandasDelegate, GridLinesDelegate
+from jal.widgets.view_delegate import ReportsFloat2ZeroDelegate, GridLinesDelegate
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -194,7 +194,7 @@ class IncomeSpendingReport(QAbstractItemModel):
 
     def configureView(self):
         self._grid_delegate = GridLinesDelegate(self._view)
-        self._report_delegate = ReportsPandasDelegate(self._view)
+        self._report_delegate = ReportsFloat2ZeroDelegate(self._view)
         for column in range(self.columnCount()):
             if column == 0:
                 self._view.setColumnWidth(column, 300)

@@ -122,7 +122,7 @@ class ReportsYearMonthDelegate(QStyledItemDelegate):
         text = datetime.utcfromtimestamp(value).strftime('%Y %B')
         return text
 
-class ReportsPandasDelegate(QStyledItemDelegate):
+class ReportsFloat2ZeroDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         self._parent = parent
         QStyledItemDelegate.__init__(self, parent)

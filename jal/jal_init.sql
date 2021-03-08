@@ -386,16 +386,6 @@ CREATE TABLE t_months (
 );
 
 
--- Table: t_pivot
-DROP TABLE IF EXISTS t_pivot;
-
-CREATE TABLE t_pivot (
-    row_key INTEGER NOT NULL,
-    col_key INTEGER NOT NULL,
-    value   REAL
-);
-
-
 -- Table: tags
 DROP TABLE IF EXISTS tags;
 
@@ -1273,7 +1263,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 17);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 19);
 -- TODO Remove this value 'TriggersEnabled' from database
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);

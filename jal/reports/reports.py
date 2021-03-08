@@ -1,17 +1,13 @@
 from enum import Enum, auto
-import pandas as pd
 from PySide2.QtWidgets import QFileDialog, QHeaderView
 from PySide2.QtCore import QObject, Signal, QAbstractTableModel
 from PySide2.QtSql import QSqlTableModel
-from jal.constants import BookAccount, PredefinedAsset, PredefinedCategory
+from jal.constants import BookAccount, PredefinedCategory
 from jal.widgets.view_delegate import *
-from jal.db.helpers import db_connection, executeSQL, readSQLrecord
+from jal.db.helpers import db_connection, executeSQL
 from jal.ui_custom.helpers import g_tr
 from jal.reports.helpers import XLSX
 from jal.reports.income_spending_report import IncomeSpendingReport
-
-
-TREE_LEVEL_SEPARATOR = chr(127)
 
 
 class ReportType(Enum):
@@ -19,47 +15,6 @@ class ReportType(Enum):
     ProfitLoss = auto()
     Deals = auto()
     ByCategory = auto()
-    IncomeSpendingByCategory = auto()
-
-
-#-----------------------------------------------------------------------------------------------------------------------
-class PandasModel(QAbstractTableModel):
-    CATEGORY_INTEND = "  "
-
-    def __init__(self, data):
-        QAbstractTableModel.__init__(self)
-        self._data = data
-
-    def rowCount(self, parent=None):
-        return self._data.shape[0]
-
-    def columnCount(self, parent=None):
-        return self._data.shape[1] + 1    # +1 as extra leftmost column serves as a category header
-
-    def data(self, index, role=Qt.DisplayRole):
-        if index.isValid():
-            if role == Qt.DisplayRole:
-                if index.column() == 0:
-                    row_header = str(self._data.index[index.row()])
-                    level = row_header.count(TREE_LEVEL_SEPARATOR)
-                    if level > 0:
-                        row_header = row_header.rsplit(TREE_LEVEL_SEPARATOR, 1)[1]
-                    for i in range(level):
-                        row_header = self.CATEGORY_INTEND + row_header
-                    return row_header
-                else:
-                    return self._data.iloc[index.row(), index.column() - 1]
-        return None
-
-    def headerData(self, col, orientation, role=Qt.DisplayRole):
-        if (orientation == Qt.Horizontal and role == Qt.DisplayRole):
-            if col == 0:        # Leftmost column serves as a category header
-                return None
-            if col == self._data.shape[1]:   # Rightmost total header
-                return str(self._data.columns[col-1][1])
-            col_date = datetime(year=int(self._data.columns[col-1][1]), month=int(self._data.columns[col-1][2]), day=1)
-            return col_date.strftime("%Y %b")
-        return None
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -209,16 +164,13 @@ class Reports(QObject):
         self.model = None
 
         self.reports = {
-            ReportType.IncomeSpending: (self.prepareIncomeSpendingReport,
-                                        self.showPandasReport),
+            ReportType.IncomeSpending: (self.prepareIS2, self.showIS2),
             ReportType.ProfitLoss: (self.prepareProfitLossReport,
                                     self.showProfitLossReport),
             ReportType.Deals: (self.prepareDealsReport,
                                self.showDealsReport),
             ReportType.ByCategory: (self.prepareCategoryReport,
-                                    self.showByCategoryReport),
-            ReportType.IncomeSpendingByCategory: (self.prepareIS2,
-                                                  self.showPandasReport)
+                                    self.showByCategoryReport)
         }
 
     def prepareIS2(self, begin, end, account_id, group_dates):
@@ -227,8 +179,8 @@ class Reports(QObject):
         self.model2.prepare(begin, end, account_id, group_dates)
         self.model2.configureView()
 
-        self.prepareIncomeSpendingReport(begin, end, account_id, group_dates)
-        return True
+    def showIS2(self):
+        pass
 
     def runReport(self, report_type, begin=0, end=0, account_id=0, group_dates=0):
         if self.reports[report_type][PREPARE_REPORT_QUERY](begin, end, account_id, group_dates):
@@ -248,22 +200,6 @@ class Reports(QObject):
         self.model = CategoryReportModel(self.query, self.table_view)
         self.model.configureView()
         self.model.select()
-
-    def showPandasReport(self):
-        self.model = PandasModel(self.dataframe)
-        self.table_view.setModel(self.model)
-        # self.delegates = []
-        for column in range(self.model.columnCount()):
-            if column == 0:
-                self.table_view.setColumnWidth(column, 300)
-            else:
-                self.table_view.setColumnWidth(column, 100)
-            # self.delegates.append(ReportsPandasDelegate(self.table_view))
-            # self.table_view.setItemDelegateForColumn(column, self.delegates[-1])
-        font = self.table_view.horizontalHeader().font()
-        font.setBold(True)
-        self.table_view.horizontalHeader().setFont(font)
-        self.table_view.show()
 
     def saveReport(self):
         filename, filter = QFileDialog.getSaveFileName(None, g_tr('Reports', "Save report to:"),
@@ -290,76 +226,6 @@ class Reports(QObject):
             report.write_row(sheet, row+1, data_row)
 
         report.save()
-
-    def prepareIncomeSpendingReport(self, begin, end, account_id, group_dates):
-        _ = executeSQL("DELETE FROM t_months")
-        _ = executeSQL("DELETE FROM t_pivot")
-        _ = executeSQL("INSERT INTO t_months (month, asset_id, last_timestamp) "
-                       "SELECT strftime('%s', datetime(timestamp, 'unixepoch', 'start of month') ) "
-                       "AS month, asset_id, MAX(timestamp) AS last_timestamp "
-                       "FROM quotes AS q "
-                       "LEFT JOIN assets AS a ON q.asset_id=a.id "
-                       "WHERE a.type_id=:asset_money "
-                       "GROUP BY month, asset_id",
-                       [(":asset_money", PredefinedAsset.Money)])
-        _ = executeSQL(
-            "INSERT INTO t_pivot (row_key, col_key, value) "
-            "SELECT strftime('%s', datetime(t.timestamp, 'unixepoch', 'start of month') ) AS row_key, "
-            "t.category_id AS col_key, sum(-t.amount * coalesce(q.quote, 1)) AS value "
-            "FROM ledger AS t "
-            "LEFT JOIN t_months AS d ON row_key = d.month AND t.asset_id = d.asset_id "
-            "LEFT JOIN quotes AS q ON d.last_timestamp = q.timestamp AND t.asset_id = q.asset_id "
-            "WHERE (t.book_account=:book_costs OR t.book_account=:book_incomes) "
-            "AND t.timestamp>=:begin AND t.timestamp<=:end "
-            "GROUP BY row_key, col_key",
-            [(":book_costs", BookAccount.Costs), (":book_incomes", BookAccount.Incomes),
-             (":begin", begin), (":end", end)], commit=True)
-        self.query = executeSQL("SELECT c.id AS id, c.level AS level, c.path AS category, "
-                                "strftime('%Y', datetime(p.row_key, 'unixepoch')) AS year, "
-                                "strftime('%m', datetime(p.row_key, 'unixepoch')) AS month, p.value AS value "
-                                "FROM categories_tree AS c "
-                                "LEFT JOIN t_pivot AS p ON p.col_key=c.id "
-                                "ORDER BY c.path, year, month")
-        table = []
-        while self.query.next():
-            record = readSQLrecord(self.query, named=True)
-            turnover = record['value'] if record['value'] != '' else 0
-            table.append({
-                'category': record['category'],
-                'Y': record['year'],
-                'M': record['month'],
-                'turnover': turnover
-            })
-        data = pd.DataFrame(table)
-        data = pd.pivot_table(data, index=['category'], columns=['Y', 'M'], values=['turnover'],
-                              aggfunc=sum, fill_value=0.0, margins=True, margins_name=g_tr('Reports', "TOTAL"))
-        if data.columns[0][1] == '':   # if some categories have no data and we have null 1st column
-            data = data.drop(columns=[data.columns[0]])
-        # Calculate sub-totals from bottom to top
-        totals = {}
-        prev_level = 0
-        for index, row in data[::-1].iterrows():
-            if index == g_tr('Reports', "TOTAL"):
-                continue
-            level = index.count(TREE_LEVEL_SEPARATOR)
-            if level > prev_level:
-                totals[level] = row['turnover']
-                prev_level = level
-            elif level == prev_level:
-                try:
-                    totals[level] = totals[level] + row['turnover']
-                except KeyError:
-                    totals[level] = row['turnover']
-            elif level < prev_level:
-                try:
-                    totals[level] = totals[level] + totals[prev_level] + row['turnover']
-                except KeyError:
-                    totals[level] = totals[prev_level] + row['turnover']
-                sub_total = totals.pop(prev_level, None)
-                data.loc[index, :] = sub_total.values
-                prev_level = level
-        self.dataframe = data
-        return True
 
     def prepareDealsReport(self, begin, end, account_id, group_dates):
         if account_id == 0:
