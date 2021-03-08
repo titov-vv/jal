@@ -1,6 +1,7 @@
 from datetime import datetime
 from PySide2.QtCore import Qt, QAbstractItemModel, QModelIndex
 from jal.constants import BookAccount, PredefinedAsset
+from jal.ui_custom.helpers import g_tr, ManipulateDate
 from jal.db.helpers import executeSQL
 
 
@@ -18,6 +19,7 @@ class ReportTreeItem():
         # amounts[year][month] - amount for particular month
         # amounts[year][0] - total per year
         self._amounts = [ [0] * 13 for _ in range(self._y_e - self._y_s + 1)]
+        self._total = 0
         self._children = []
 
     def appendChild(self, child):
@@ -33,7 +35,10 @@ class ReportTreeItem():
         return len(self._children)
 
     def dataCount(self):
-        return self._y_e - self._y_s + self._m_s + 12 - self._m_e
+        if self._y_s == self._y_e:
+            return self._m_e - self._m_s + 3  # + 1 for year, + 1 for totals
+        else:
+            return (self._y_e - self._y_s + 1) + (self._m_s + 13 - self._m_e) + 1
 
     def setParent(self, parent):
         self._parent = parent
@@ -45,15 +50,18 @@ class ReportTreeItem():
         y_i = year - self._y_s
         self._amounts[y_i][month] += amount
         self._amounts[y_i][0] += amount
+        self._total += amount
+        if self._parent is not None:
+            self._parent.addAmount(year, month, amount)
 
     def getAmount(self, offset):
-        y_i = int(offset / 12)
-        m_i = offset % 12
-        try:
-            value = self._amounts[y_i][m_i]
-        except:
-            value = 0
-        return value
+        if offset < 0:
+            return 0
+        if offset >= self.dataCount()-1:
+            return self._total
+        y_i = int(offset / 13)
+        m_i = offset % 13
+        return self._amounts[y_i][m_i]
 
     def getLeafById(self, id):
         if self._id == id:
@@ -62,6 +70,14 @@ class ReportTreeItem():
         for child in self._children:
             leaf = child.getLeafById(id)
         return leaf
+
+    @property
+    def year_begin(self):
+        return self._y_s
+
+    @property
+    def month_begin(self):
+        return self._m_s
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -79,6 +95,19 @@ class IncomeSpendingReport(QAbstractItemModel):
         self._view = parent_view
         self._root = None
 
+    def _column2calendar(self, column):
+        # column 0 - name of row
+        # then repetition of [year], [jan], [feb] ... [nov], [dec]
+        # last column is total value
+        if self._root is not None:
+            if column == 0:
+                return -1, -1
+            if column == self._root.dataCount():
+                return 0, -1
+            column = column - 1  # skip row header
+            return int(column / 13), column % 13
+        return -1, -1
+
     def rowCount(self, parent=None):
         if not parent.isValid():
             parent_item = self._root
@@ -95,14 +124,22 @@ class IncomeSpendingReport(QAbstractItemModel):
         else:
             parent_item = parent.internalPointer()
         if parent_item is not None:
-            return parent_item.dataCount()
+            return parent_item.dataCount() + 1  # + 1 for row header
         else:
             return 0
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal:
             if role == Qt.DisplayRole:
-                col_name = f"COL: {section}"
+                year, month = self._column2calendar(section)
+                col_name = ''
+                if year >= 0:
+                    if month < 0:
+                        col_name = g_tr("Reports", "TOTAL")
+                    elif month == 0:
+                        col_name = f"{self._root.year_begin + year} ▶"
+                    else:
+                        col_name = ManipulateDate.MonthName(month)
                 return col_name
         return None
 
