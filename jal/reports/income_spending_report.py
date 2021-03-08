@@ -142,7 +142,8 @@ class IncomeSpendingReport(QAbstractItemModel):
                     if month < 0:
                         col_name = g_tr("Reports", "TOTAL")
                     elif month == 0:
-                        col_name = f"{self._root.year_begin + year} ▶"
+                        status = '▼' if self._view.isColumnHidden(section + 1) else '▶'
+                        col_name = f"{self._root.year_begin + year} " + status
                     else:
                         col_name = ManipulateDate.MonthName(month)
                 return col_name
@@ -191,6 +192,16 @@ class IncomeSpendingReport(QAbstractItemModel):
         font = self._view.header().font()
         font.setBold(True)
         self._view.header().setFont(font)
+
+        self._view.header().sectionDoubleClicked.connect(self.toggeYearColumns)
+
+    def toggeYearColumns(self, section):
+        year, month = self._column2calendar(section)
+        if year >= 0 and month == 0:
+            for i in range(12):
+                new_state = not self._view.isColumnHidden(section + i + 1)
+                self._view.setColumnHidden(section + i + 1, new_state)
+            self.headerDataChanged.emit(Qt.Horizontal, section, section)
 
     def prepare(self, begin, end, account_id, group_dates):
         query = executeSQL("WITH "
