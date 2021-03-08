@@ -376,16 +376,6 @@ CREATE TABLE t_last_quotes (
 );
 
 
--- Table: t_months
-DROP TABLE IF EXISTS t_months;
-
-CREATE TABLE t_months (
-    month          INTEGER,
-    asset_id       INTEGER,
-    last_timestamp INTEGER
-);
-
-
 -- Table: tags
 DROP TABLE IF EXISTS tags;
 
