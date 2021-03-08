@@ -39,7 +39,23 @@ class ReportTreeItem():
         if self._y_s == self._y_e:
             return self._m_e - self._m_s + 3  # + 1 for year, + 1 for totals
         else:
-            return (self._y_e - self._y_s + 1) + (self._m_e + 13 - self._m_s) + 1
+            # 13 * (self._y_e - self._y_s - 1) + (self._m_e + 1) + (12 - self._m_s + 2) + 1 simplified to:
+            return 13 * (self._y_e - self._y_s - 1) + (self._m_e - self._m_s + 16)
+
+    def column2calendar(self, column):
+        # column 0 - name of row - return (-1, -1)
+        # then repetition of [year], [jan], [feb] ... [nov], [dec] - return (year, 0), (year, 1) ... (year, 12)
+        # last column is total value - return (0, 0)
+        if column == 0:
+            return -1, -1
+        if column == self.dataCount():
+            return 0, 0
+        if column == 1:
+            return self._y_s, 0
+        column = column + self._m_s - 2
+        year = self._y_s + int(column / 13)
+        month = column % 13
+        return year, month
 
     def setParent(self, parent):
         self._parent = parent
@@ -55,14 +71,12 @@ class ReportTreeItem():
         if self._parent is not None:
             self._parent.addAmount(year, month, amount)
 
-    def getAmount(self, offset):
-        if offset < 0:
-            return 0
-        if offset >= self.dataCount()-1:
+    # Return amount for given date and month or total amount if year==0
+    def getAmount(self, year, month):
+        if year == 0:
             return self._total
-        y_i = int(offset / 13)
-        m_i = offset % 13
-        return self._amounts[y_i][m_i]
+        y_i = year - self._y_s
+        return self._amounts[y_i][month]
 
     def getLeafById(self, id):
         if self._id == id:
@@ -79,6 +93,14 @@ class ReportTreeItem():
     @property
     def month_begin(self):
         return self._m_s
+
+    @property
+    def year_end(self):
+        return self._y_e
+
+    @property
+    def month_end(self):
+        return self._m_e
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -97,19 +119,6 @@ class IncomeSpendingReport(QAbstractItemModel):
         self._root = None
         self._grid_delegate = None
         self._report_delegate = None
-
-    def _column2calendar(self, column):
-        # column 0 - name of row
-        # then repetition of [year], [jan], [feb] ... [nov], [dec]
-        # last column is total value
-        if self._root is not None:
-            if column == 0:
-                return -1, -1
-            if column == self._root.dataCount():
-                return 0, -1
-            column = column - 1  # skip row header
-            return int(column / 13), column % 13
-        return -1, -1
 
     def rowCount(self, parent=None):
         if not parent.isValid():
@@ -136,14 +145,15 @@ class IncomeSpendingReport(QAbstractItemModel):
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal:
             if role == Qt.DisplayRole:
-                year, month = self._column2calendar(section)
-                col_name = ''
-                if year >= 0:
-                    if month < 0:
-                        col_name = g_tr("Reports", "TOTAL")
-                    elif month == 0:
+                year, month = self._root.column2calendar(section)
+                if year < 0:
+                    col_name = ''
+                elif year == 0:
+                    col_name = g_tr("Reports", "TOTAL")
+                else:
+                    if month == 0:
                         status = '▼' if self._view.isColumnHidden(section + 1) else '▶'
-                        col_name = f"{self._root.year_begin + year} " + status
+                        col_name = f"{year} " + status
                     else:
                         col_name = ManipulateDate.MonthName(month)
                 return col_name
@@ -178,7 +188,8 @@ class IncomeSpendingReport(QAbstractItemModel):
             if index.column() == 0:
                 return item.name
             else:
-                return item.getAmount(index.column() - 1)
+                year, month = self._root.column2calendar(index.column())
+                return item.getAmount(year, month)
         return None
 
     def configureView(self):
@@ -198,10 +209,14 @@ class IncomeSpendingReport(QAbstractItemModel):
         self._view.header().sectionDoubleClicked.connect(self.toggeYearColumns)
 
     def toggeYearColumns(self, section):
-        year, month = self._column2calendar(section)
+        year, month = self._root.column2calendar(section)
         if year >= 0 and month == 0:
-            year_columns = self._root.dataCount() - section - 1
-            year_columns = year_columns if year_columns < 12 else 12
+            if year == self._root.year_begin:
+                year_columns = 12 - self._root.month_begin + 1
+            elif year == self._root.year_end:
+                year_columns = self._root.month_end
+            else:
+                year_columns = 12
             for i in range(year_columns):
                 new_state = not self._view.isColumnHidden(section + i + 1)
                 self._view.setColumnHidden(section + i + 1, new_state)
