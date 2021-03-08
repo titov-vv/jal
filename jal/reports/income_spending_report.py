@@ -231,7 +231,8 @@ class IncomeSpendingReport(QAbstractItemModel):
                            [(":asset_money", PredefinedAsset.Money), (":book_costs", BookAccount.Costs),
                             (":book_incomes", BookAccount.Incomes), (":begin", begin), (":end", end)])
         query.setForwardOnly(True)
-        self._root = ReportTreeItem(begin, end, 0, "ROOT")
+        self._root = ReportTreeItem(begin, end, -1, "ROOT")  # invisible root
+        self._root.appendChild(ReportTreeItem(begin, end, 0, g_tr("Reports", "TOTAL")))  # visible root
         indexes = range(query.record().count())
         while query.next():
             values = list(map(query.value, indexes))
