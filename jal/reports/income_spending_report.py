@@ -39,7 +39,7 @@ class ReportTreeItem():
         if self._y_s == self._y_e:
             return self._m_e - self._m_s + 3  # + 1 for year, + 1 for totals
         else:
-            return (self._y_e - self._y_s + 1) + (self._m_s + 13 - self._m_e) + 1
+            return (self._y_e - self._y_s + 1) + (self._m_e + 13 - self._m_s) + 1
 
     def setParent(self, parent):
         self._parent = parent
