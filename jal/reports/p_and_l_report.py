@@ -25,9 +25,14 @@ class ProfitLossReportModel(QSqlTableModel):
         for column in self._columns:
             self.setHeaderData(self.fieldIndex(column[0]), Qt.Horizontal, column[1])
 
+    def resetDelegates(self):
+        for column in self._columns:
+            self._view.setItemDelegateForColumn(self.fieldIndex(column[0]), None)
+
     def configureView(self):
         self._view.setModel(self)
         self.setColumnNames()
+        self.resetDelegates()
         font = self._view.horizontalHeader().font()
         font.setBold(True)
         self._view.horizontalHeader().setFont(font)
@@ -123,3 +128,4 @@ class ProfitLossReportModel(QSqlTableModel):
              (":category_dividend", PredefinedCategory.Dividends), (":category_interest", PredefinedCategory.Interest)],
             forward_only=False)
         self.setQuery(self._query)
+        self.modelReset.emit()

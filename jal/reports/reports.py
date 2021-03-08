@@ -32,15 +32,23 @@ class Reports(QObject):
         if report_type == ReportType.IncomeSpending:
             self.model = IncomeSpendingReport(self.tree_view)
             self.tree_view.setModel(self.model)
+            self.tree_view.setVisible(True)
+            self.table_view.setVisible(False)
         elif report_type == ReportType.ProfitLoss:
             self.model = ProfitLossReportModel(self.table_view)
             self.table_view.setModel(self.model)
+            self.tree_view.setVisible(False)
+            self.table_view.setVisible(True)
         elif report_type == ReportType.Deals:
             self.model = DealsReportModel(self.table_view)
             self.table_view.setModel(self.model)
+            self.tree_view.setVisible(False)
+            self.table_view.setVisible(True)
         elif report_type == ReportType.ByCategory:
             self.model = CategoryReportModel(self.table_view)
             self.table_view.setModel(self.model)
+            self.tree_view.setVisible(False)
+            self.table_view.setVisible(True)
         else:
             assert False
 
