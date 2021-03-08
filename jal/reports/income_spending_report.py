@@ -147,6 +147,8 @@ class IncomeSpendingReport(QAbstractItemModel):
                     else:
                         col_name = ManipulateDate.MonthName(month)
                 return col_name
+            if role == Qt.TextAlignmentRole:
+                return Qt.AlignCenter
         return None
 
     def index(self, row, column, parent=None):

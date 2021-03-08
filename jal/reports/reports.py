@@ -252,14 +252,14 @@ class Reports(QObject):
     def showPandasReport(self):
         self.model = PandasModel(self.dataframe)
         self.table_view.setModel(self.model)
-        self.delegates = []
+        # self.delegates = []
         for column in range(self.model.columnCount()):
             if column == 0:
                 self.table_view.setColumnWidth(column, 300)
             else:
                 self.table_view.setColumnWidth(column, 100)
-            self.delegates.append(ReportsPandasDelegate(self.table_view))
-            self.table_view.setItemDelegateForColumn(column, self.delegates[-1])
+            # self.delegates.append(ReportsPandasDelegate(self.table_view))
+            # self.table_view.setItemDelegateForColumn(column, self.delegates[-1])
         font = self.table_view.horizontalHeader().font()
         font.setBold(True)
         self.table_view.horizontalHeader().setFont(font)
