@@ -1,6 +1,6 @@
 from enum import Enum, auto
 from PySide2.QtWidgets import QFileDialog
-from PySide2.QtCore import QObject, Signal
+from PySide2.QtCore import Qt, QObject, Signal
 from jal.ui_custom.helpers import g_tr
 from jal.reports.helpers import XLSX
 from jal.reports.income_spending_report import IncomeSpendingReport
