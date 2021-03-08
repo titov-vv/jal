@@ -198,7 +198,9 @@ class IncomeSpendingReport(QAbstractItemModel):
     def toggeYearColumns(self, section):
         year, month = self._column2calendar(section)
         if year >= 0 and month == 0:
-            for i in range(12):
+            year_columns = self._root.dataCount() - section - 1
+            year_columns = year_columns if year_columns < 12 else 12
+            for i in range(year_columns):
                 new_state = not self._view.isColumnHidden(section + i + 1)
                 self._view.setColumnHidden(section + i + 1, new_state)
             self.headerDataChanged.emit(Qt.Horizontal, section, section)
