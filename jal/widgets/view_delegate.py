@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from PySide2.QtWidgets import QStyledItemDelegate
+from PySide2.QtWidgets import QStyledItemDelegate, QTreeView
 from PySide2.QtCore import Qt
 
 from jal.constants import CustomColor, CorporateAction
@@ -124,6 +124,7 @@ class ReportsYearMonthDelegate(QStyledItemDelegate):
 
 class ReportsPandasDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
+        self._parent = parent
         QStyledItemDelegate.__init__(self, parent)
 
     def paint(self, painter, option, index):
@@ -141,6 +142,14 @@ class ReportsPandasDelegate(QStyledItemDelegate):
             text = f"{amount:,.2f}"
             painter.drawText(option.rect, Qt.AlignRight, text)
         painter.setPen(pen)
+        # Extra code for tree views - to draw grid lines
+        if type(self._parent) == QTreeView:
+            pen = painter.pen()
+            pen.setWidth(1)
+            pen.setStyle(Qt.DotLine)
+            pen.setColor(Qt.GlobalColor.lightGray)
+            painter.setPen(pen)
+            painter.drawRect(option.rect)
         painter.restore()
 
 class GridLinesDelegate(QStyledItemDelegate):

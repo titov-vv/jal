@@ -225,6 +225,7 @@ class Reports(QObject):
         self.model2 = IncomeSpendingReport(self.tree_view)
         self.tree_view.setModel(self.model2)
         self.model2.prepare(begin, end, account_id, group_dates)
+        self.model2.configureView()
 
         self.prepareIncomeSpendingReport(begin, end, account_id, group_dates)
         return True

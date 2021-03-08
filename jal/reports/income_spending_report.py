@@ -3,6 +3,7 @@ from PySide2.QtCore import Qt, QAbstractItemModel, QModelIndex
 from jal.constants import BookAccount, PredefinedAsset
 from jal.ui_custom.helpers import g_tr, ManipulateDate
 from jal.db.helpers import executeSQL
+from jal.widgets.view_delegate import ReportsPandasDelegate, GridLinesDelegate
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -94,6 +95,8 @@ class IncomeSpendingReport(QAbstractItemModel):
         super().__init__(parent_view)
         self._view = parent_view
         self._root = None
+        self._grid_delegate = None
+        self._report_delegate = None
 
     def _column2calendar(self, column):
         # column 0 - name of row
@@ -119,7 +122,9 @@ class IncomeSpendingReport(QAbstractItemModel):
             return 0
 
     def columnCount(self, parent=None):
-        if not parent.isValid():
+        if parent is None:
+            parent_item = self._root
+        elif not parent.isValid():
             parent_item = self._root
         else:
             parent_item = parent.internalPointer()
@@ -172,6 +177,20 @@ class IncomeSpendingReport(QAbstractItemModel):
             else:
                 return item.getAmount(index.column() - 1)
         return None
+
+    def configureView(self):
+        self._grid_delegate = GridLinesDelegate(self._view)
+        self._report_delegate = ReportsPandasDelegate(self._view)
+        for column in range(self.columnCount()):
+            if column == 0:
+                self._view.setColumnWidth(column, 300)
+                self._view.setItemDelegateForColumn(column, self._grid_delegate)
+            else:
+                self._view.setColumnWidth(column, 100)
+                self._view.setItemDelegateForColumn(column, self._report_delegate)
+        font = self._view.header().font()
+        font.setBold(True)
+        self._view.header().setFont(font)
 
     def prepare(self, begin, end, account_id, group_dates):
         query = executeSQL("WITH "
