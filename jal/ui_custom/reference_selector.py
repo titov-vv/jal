@@ -39,8 +39,8 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
         if self.details_field:
             self.name.setFixedWidth(self.name.fontMetrics().width("X") * 15)
             self.details.setVisible(True)
-        self.completer = QCompleter(self.dialog.model)
-        self.completer.setCompletionColumn(self.dialog.model.fieldIndex(self.selector_field))
+        self.completer = QCompleter(self.dialog.model.completion_model)
+        self.completer.setCompletionColumn(self.dialog.model.completion_model.fieldIndex(self.selector_field))
         self.completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.name.setCompleter(self.completer)
         self.completer.activated[QModelIndex].connect(self.on_completion)

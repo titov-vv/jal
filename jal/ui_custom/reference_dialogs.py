@@ -11,6 +11,10 @@ from jal.widgets.view_delegate import GridLinesDelegate
 
 # ----------------------------------------------------------------------------------------------------------------------
 class AbstractReferenceListModel(QSqlRelationalTableModel):
+    @property
+    def completion_model(self):
+        return self
+
     def __init__(self, table, parent_view):
         self._view = parent_view
         self._table = table
@@ -222,11 +226,19 @@ class AssetListDialog(ReferenceDataDialog):
 class SqlTreeModel(QAbstractItemModel):
     ROOT_PID = 0
 
+    @property
+    def completion_model(self):
+        return self._completion_model
+
     def __init__(self, table, parent_view):
         super().__init__(parent_view)
         self._table = table
         self._view = parent_view
         self._stretch = None
+
+        self._completion_model = QSqlTableModel(parent=parent_view, db=db_connection())
+        self._completion_model.setTable(self._table)
+        self._completion_model.select()
 
     def index(self, row, column, parent=None):
         if parent is None:
