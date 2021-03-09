@@ -235,7 +235,7 @@ class SqlTreeModel(QAbstractItemModel):
         self._table = table
         self._view = parent_view
         self._stretch = None
-
+        # This is auxiliary 'plain' model of the same table - to be given as QCompleter source of data
         self._completion_model = QSqlTableModel(parent=parent_view, db=db_connection())
         self._completion_model.setTable(self._table)
         self._completion_model.select()

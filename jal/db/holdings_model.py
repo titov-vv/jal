@@ -1,7 +1,7 @@
 from PySide2.QtCore import Qt, Slot, QAbstractItemModel, QDate, QModelIndex
 from PySide2.QtGui import QBrush, QFont
 from PySide2.QtWidgets import QHeaderView
-from jal.constants import Setup, CustomColor, BookAccount
+from jal.constants import Setup, CustomColor, BookAccount, PredefindedAccountType
 from jal.db.helpers import executeSQL, get_asset_name
 from jal.ui_custom.helpers import g_tr
 from jal.widgets.view_delegate import GridLinesDelegate
@@ -217,6 +217,9 @@ class HoldingsModel(QAbstractItemModel):
         item = index.internalPointer()
         return item.data[self.COL_ACCOUNT], item.data[self.COL_ASSET], item.data[self.COL_QTY]
 
+    def update(self):
+        self.calculateHoldings()
+
     # Populate table 'holdings' with data calculated for given parameters of model: _currency, _date,
     def calculateHoldings(self):
         query = executeSQL(
@@ -231,13 +234,13 @@ class HoldingsModel(QAbstractItemModel):
             "FROM ledger AS l "
             "LEFT JOIN accounts AS a ON l.account_id = a.id "
             "WHERE (l.book_account=:money_book OR l.book_account=:liabilities_book) "
-            "AND a.type_id = 4 AND l.timestamp <= :holdings_timestamp GROUP BY a.id "
+            "AND a.type_id = :investments AND l.timestamp <= :holdings_timestamp GROUP BY a.id "
             "UNION ALL "
             "SELECT a.id, SUM(l.amount*q.quote) AS t_value "
             "FROM ledger AS l "
             "LEFT JOIN accounts AS a ON l.account_id = a.id "
             "LEFT JOIN _last_quotes AS q ON l.asset_id = q.asset_id "
-            "WHERE l.book_account=:assets_book AND a.type_id = 4 AND l.timestamp <= :holdings_timestamp "
+            "WHERE l.book_account=:assets_book AND a.type_id = :investments AND l.timestamp <= :holdings_timestamp "
             "GROUP BY a.id"
             ") "
             "GROUP BY id HAVING ABS(total_value) > :tolerance) "
@@ -252,7 +255,7 @@ class HoldingsModel(QAbstractItemModel):
             "LEFT JOIN _last_quotes AS cur_q ON a.currency_id = cur_q.asset_id "
             "LEFT JOIN _last_quotes AS cur_adj_q ON cur_adj_q.asset_id = :base_currency "
             "LEFT JOIN _last_assets AS t ON l.account_id = t.id "
-            "WHERE l.book_account = :assets_book AND l.timestamp <= :holdings_timestamp "
+            "WHERE a.type_id = :investments AND l.book_account = :assets_book AND l.timestamp <= :holdings_timestamp "
             "GROUP BY l.account_id, l.asset_id "
             "HAVING ABS(qty) > :tolerance "
             "UNION ALL "
@@ -264,7 +267,7 @@ class HoldingsModel(QAbstractItemModel):
             "LEFT JOIN _last_quotes AS cur_adj_q ON cur_adj_q.asset_id = :base_currency "
             "LEFT JOIN _last_assets AS t ON l.account_id = t.id "
             "WHERE (l.book_account=:money_book OR l.book_account=:liabilities_book) "
-            "AND a.type_id = 4 AND l.timestamp <= :holdings_timestamp "
+            "AND a.type_id = :investments AND l.timestamp <= :holdings_timestamp "
             "GROUP BY l.account_id, l.asset_id "
             "HAVING ABS(qty) > :tolerance "
             ") AS h "
@@ -273,7 +276,8 @@ class HoldingsModel(QAbstractItemModel):
             "ORDER BY currency, account, asset_is_currency, asset",
             [(":base_currency", self._currency), (":money_book", BookAccount.Money),
              (":assets_book", BookAccount.Assets), (":liabilities_book", BookAccount.Liabilities),
-             (":holdings_timestamp", self._date), (":tolerance", Setup.DISP_TOLERANCE)])
+             (":holdings_timestamp", self._date), (":investments", PredefindedAccountType.Investment),
+             (":tolerance", Setup.DISP_TOLERANCE)])
         query.setForwardOnly(True)
         # Load data from SQL to tree
         self._root = TreeItem([])

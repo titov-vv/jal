@@ -55,6 +55,16 @@ class CorporateAction:   # CORPORATE ACTIONS FOR ASSETS
     StockDividend = 5
 
 
+class PredefindedAccountType:
+    Case = 1
+    Bank = 2
+    Card = 3
+    Investment = 4
+    Savings = 5
+    Loans = 6
+    eWallet = 7
+
+
 class PredefinedCategory:
     Income = 1
     Spending = 2

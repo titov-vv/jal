@@ -1,11 +1,10 @@
 import logging
-
 from datetime import datetime
 from math import copysign
+from PySide2.QtCore import Signal, QObject, QDate
+from PySide2.QtWidgets import QDialog, QMessageBox
 from jal.constants import Setup, BookAccount, TransactionType, TransferSubtype, ActionSubtype, DividendSubtype, \
     CorporateAction, PredefinedCategory, PredefinedPeer
-from PySide2.QtCore import QDate
-from PySide2.QtWidgets import QDialog, QMessageBox
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_asset_name
 from jal.ui_custom.helpers import g_tr
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
@@ -43,10 +42,12 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
 # TODO Check are there positive lines for Incomes
 # TODO Check are there negative lines for Costs
 # ===================================================================================================================
-class Ledger:
+class Ledger(QObject):
+    updated = Signal()
     SILENT_REBUILD_THRESHOLD = 50
 
     def __init__(self):
+        QObject.__init__(self)
         self.current = {}
         self.current_seq = -1
 
@@ -557,6 +558,8 @@ class Ledger:
         if not silent:
             logging.info(g_tr('Ledger', "Ledger is complete. Elapsed time: ") + f"{datetime.now() - start_time}" +
                          g_tr('Ledger', ", new frontier: ") + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
+
+        self.updated.emit()
 
     def showRebuildDialog(self, parent):
         rebuild_dialog = RebuildDialog(parent, self.getCurrentFrontier())

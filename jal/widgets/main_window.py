@@ -96,7 +96,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.NewOperationMenu = QMenu()
         for i in range(self.OperationsTabs.count()):
             if hasattr(self.OperationsTabs.widget(i), "isCustom"):
-                self.OperationsTabs.widget(i).dbUpdated.connect(self.showCommitted)
+                self.OperationsTabs.widget(i).dbUpdated.connect(self.ledger.rebuild)
                 self.NewOperationMenu.addAction(self.OperationsTabs.widget(i).name,
                                                 partial(self.createOperation, i))
         self.NewOperationBtn.setMenu(self.NewOperationMenu)
@@ -152,6 +152,8 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.actionCopy.triggered.connect(self.copyOperation)
         self.downloader.download_completed.connect(self.onQuotesDownloadCompletion)
         self.statements.load_completed.connect(self.onStatementLoaded)
+        self.ledger.updated.connect(self.balances_model.update)
+        self.ledger.updated.connect(self.holdings_model.update)
 
     @Slot()
     def closeEvent(self, event):
@@ -258,11 +260,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
     def onStatementLoaded(self):
         self.ledger.rebuild()
         self.balances_model.update()  # FIXME this should be better linked to some signal emitted by ledger after rebuild completion
-
-    @Slot()
-    def showCommitted(self):
-        self.ledger.rebuild()
-        self.balances_model.update()   # FIXME this should be better linked to some signal emitted by ledger after rebuild completion
 
     @Slot()
     def importSlip(self):
