@@ -150,8 +150,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.actionDelete.triggered.connect(self.deleteOperation)
         self.CopyOperationBtn.clicked.connect(self.copyOperation)
         self.actionCopy.triggered.connect(self.copyOperation)
-        self.downloader.download_completed.connect(self.onQuotesDownloadCompletion)
-        self.statements.load_completed.connect(self.onStatementLoaded)
+        self.downloader.download_completed.connect(self.balances_model.update)
+        self.downloader.download_completed.connect(self.holdings_model.update)
+        self.statements.load_completed.connect(self.ledger.rebuild)
         self.ledger.updated.connect(self.balances_model.update)
         self.ledger.updated.connect(self.holdings_model.update)
 
@@ -253,15 +254,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.OperationsTableView.model().setDateRange(view_ranges[range_index]())
 
     @Slot()
-    def onQuotesDownloadCompletion(self):
-        self.balances_model.update()
-
-    @Slot()
-    def onStatementLoaded(self):
-        self.ledger.rebuild()
-        self.balances_model.update()  # FIXME this should be better linked to some signal emitted by ledger after rebuild completion
-
-    @Slot()
     def importSlip(self):
         dialog = ImportSlipDialog(self)
         dialog.show()
@@ -338,7 +330,6 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
             rows.append(index.row())
         self.operations_model.deleteRows(rows)
         self.ledger.rebuild()
-        self.balances_model.update()  # FIXME this should be better linked to some signal emitted by ledger after rebuild completion
 
     @Slot()
     def createOperation(self, operation_type):
