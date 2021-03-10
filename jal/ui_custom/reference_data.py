@@ -76,10 +76,12 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         event.accept()
 
     # Overload ancestor method to activate/deactivate filters for table view
-    def exec_(self, enable_selection=False):
+    def exec_(self, enable_selection=False, selected=0):
         self.dialog_visible = True
         self.selection_enabled = enable_selection
         self.setFilter()
+        if enable_selection:
+            self.model.locateItem(selected)
         res = super().exec_()
         self.dialog_visible = False
         self.resetFilter()

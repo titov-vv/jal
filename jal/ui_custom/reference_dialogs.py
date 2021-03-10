@@ -260,7 +260,11 @@ class SqlTreeModel(QAbstractItemModel):
         parent_id = readSQL(f"SELECT pid FROM {self._table} WHERE id=:id", [(":id", child_id)])
         if parent_id == self.ROOT_PID:
             return QModelIndex()
-        return self.createIndex(0, 0, id=parent_id)
+        row = readSQL(f"SELECT row_number FROM ("
+                      f"SELECT ROW_NUMBER() OVER (ORDER BY id) AS row_number, id, pid "
+                      f"FROM {self._table} WHERE pid IN (SELECT pid FROM {self._table} WHERE id=:id)) "
+                      f"WHERE id=:id", [(":id", parent_id)])
+        return self.createIndex(row-1, 0, id=parent_id)
 
     def rowCount(self, parent=None):
         if not parent.isValid():
@@ -386,6 +390,28 @@ class SqlTreeModel(QAbstractItemModel):
         _ = executeSQL("ROLLBACK")
         self.layoutChanged.emit()
 
+    # expand all parent elements for tree element with given index
+    def expand_parent(self, index):
+        parent = index.parent()
+        if parent.isValid():
+            self.expand_parent(parent)
+        self._view.expand(index)
+
+    # find item by ID and make it selected in associated self._view
+    def locateItem(self, item_id):
+        row = readSQL(f"SELECT row_number FROM ("
+                      f"SELECT ROW_NUMBER() OVER (ORDER BY id) AS row_number, id, pid "
+                      f"FROM {self._table} WHERE pid IN (SELECT pid FROM {self._table} WHERE id=:id)) "
+                      f"WHERE id=:id", [(":id", item_id)])
+        if row is None:
+            return
+        item_idx = self.createIndex(row-1, 0, id=item_id)
+        self.expand_parent(item_idx)
+        self._view.setCurrentIndex(item_idx)
+
+    def setFilter(self, filter_str):
+        pass
+
 # ----------------------------------------------------------------------------------------------------------------------
 class PeerTreeModel(SqlTreeModel):
     def __init__(self, table, parent_view):
@@ -416,9 +442,6 @@ class PeerTreeModel(SqlTreeModel):
         self._view.setItemDelegateForColumn(self.fieldIndex("location"), self._grid_delegate)
         self._int_delegate = ReferenceIntDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("actions_count"), self._int_delegate)
-
-    def setFilter(self, filter_str):
-        pass
 
 
 class PeerListDialog(ReferenceDataDialog):
@@ -455,9 +478,6 @@ class CategoryTreeModel(SqlTreeModel):
         self._view.setItemDelegateForColumn(self.fieldIndex("name"), self._grid_delegate)
         self._bool_delegate = ReferenceBoolDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("often"), self._bool_delegate)
-
-    def setFilter(self, filter_str):
-        pass
 
 
 class CategoryListDialog(ReferenceDataDialog):
