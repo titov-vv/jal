@@ -152,7 +152,7 @@
                    <second>0</second>
                    <year>2020</year>
                    <month>12</month>
-                   <day>11</day>
+                   <day>10</day>
                   </datetime>
                  </property>
                  <property name="displayFormat">
@@ -341,11 +341,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="AccountButton" name="ChooseAccountBtn">
-                 <property name="text">
-                  <string>All</string>
-                 </property>
-                </widget>
+                <widget class="AccountButton" name="ChooseAccountBtn"/>
                </item>
                <item>
                 <widget class="QLabel" name="SearchLbl">
@@ -576,7 +572,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>11</day>
+               <day>10</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -689,11 +685,7 @@
             </spacer>
            </item>
            <item row="1" column="2">
-            <widget class="AccountButton" name="ReportAccountBtn">
-             <property name="text">
-              <string>PushButton</string>
-             </property>
-            </widget>
+            <widget class="AccountButton" name="ReportAccountBtn"/>
            </item>
            <item row="0" column="9">
             <widget class="CategorySelector" name="ReportCategoryEdit" native="true"/>
@@ -714,7 +706,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>11</day>
+               <day>10</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -861,7 +853,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>11</day>
+               <day>10</day>
               </datetime>
              </property>
              <property name="displayFormat">

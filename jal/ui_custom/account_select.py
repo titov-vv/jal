@@ -14,7 +14,6 @@ class AccountButton(QPushButton):
     def __init__(self, parent):
         QPushButton.__init__(self, parent)
         self.p_account_id = 0
-        self.setText(g_tr('AccountButton', "ANY"))
 
         self.Menu = QMenu(self)
         self.Menu.addAction(g_tr('AccountButton', "Choose account"), self.ChooseAccount)
@@ -29,10 +28,7 @@ class AccountButton(QPushButton):
 
     def setId(self, account_id):
         self.p_account_id = account_id
-        if self.p_account_id:
-            self.setText(get_account_name(account_id))
-        else:
-            self.setText(g_tr('AccountButton', "ANY"))
+        self.setText(self.dialog.SelectedName)
         self.changed.emit(self.p_account_id)
 
     account_id = Property(int, getId, setId, notify=changed)

@@ -5,7 +5,7 @@ from PySide2.QtWidgets import QLineEdit
 from PySide2.QtGui import QDoubleValidator
 from jal.constants import Setup
 
-
+#TODO combine delegates into one module
 # -----------------------------------------------------------------------------------------------------------------------
 # Delegate to convert timestamp from unix-time to QDateTime
 class TimestampDelegate(QSqlRelationalDelegate):
