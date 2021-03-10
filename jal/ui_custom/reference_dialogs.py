@@ -1,4 +1,4 @@
-from PySide2.QtCore import QAbstractItemModel, QModelIndex
+from PySide2.QtCore import Signal, Slot, QAbstractItemModel, QModelIndex
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection, readSQL, executeSQL
@@ -72,7 +72,6 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
     def locateItem(self, item_id):
         pass
 
-
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountTypeListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
@@ -102,6 +101,8 @@ class AccountTypeListDialog(ReferenceDataDialog):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountListModel(AbstractReferenceListModel):
+    item_located = Signal(int, QModelIndex)
+
     def __init__(self, table, parent_view):
         AbstractReferenceListModel.__init__(self, table, parent_view)
         self._columns = [("id", ''),
@@ -140,6 +141,18 @@ class AccountListModel(AbstractReferenceListModel):
         self._bool_delegate = ReferenceBoolDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("active"), self._bool_delegate)
 
+    def locateItem(self, item_id):
+        type_id = readSQL(f"SELECT type_id FROM {self._table} WHERE id=:id", [(":id", item_id)])
+        if type_id is None:
+            return
+        # {type_id} is not a parameter by intention - somehow query fails to bind
+        row = readSQL(f"SELECT row_number FROM (SELECT ROW_NUMBER() OVER (ORDER BY name) AS row_number, id "
+                      f"FROM {self._table} WHERE type_id={type_id} AND active=1) WHERE id=:id", [(":id", item_id)])
+        if row is None:
+            return
+        item_idx = self.index(row-1, 0)
+        self.item_located.emit(type_id-1, item_idx)
+
 
 class AccountListDialog(ReferenceDataDialog):
     def __init__(self):
@@ -150,6 +163,7 @@ class AccountListDialog(ReferenceDataDialog):
         self.model.configureView()
         self.setup_ui()
         super()._init_completed()
+        self.model.item_located.connect(self.select_item)
 
     def setup_ui(self):
         self.search_field = "accounts.name"
@@ -169,6 +183,11 @@ class AccountListDialog(ReferenceDataDialog):
         self.GroupCombo.setModel(relation_model)
         self.GroupCombo.setModelColumn(relation_model.fieldIndex("name"))
         self.group_id = relation_model.data(relation_model.index(0, relation_model.fieldIndex(self.group_fkey_field)))
+
+    @Slot()
+    def select_item(self, type_id, item_idx):
+        self.GroupCombo.setCurrentIndex(type_id)
+        self.DataView.setCurrentIndex(item_idx)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
