@@ -2,14 +2,14 @@ import logging
 from datetime import datetime
 from dateutil import tz
 
-from PySide2.QtCore import Qt, Slot
-from PySide2.QtWidgets import QLabel, QDateTimeEdit, QPushButton, QTableView, QHeaderView
-from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate
+from PySide2.QtCore import Qt, Slot, QModelIndex
+from PySide2.QtWidgets import QWidget, QLabel, QDateTimeEdit, QPushButton, QTableView, QHeaderView, QStyledItemDelegate
+from PySide2.QtSql import QSqlTableModel, QSqlRelationalDelegate
 from jal.ui_custom.helpers import g_tr
 from jal.ui_custom.abstract_operation_details import AbstractOperationDetails
 from jal.ui_custom.reference_selector import AccountSelector, PeerSelector, CategorySelector, TagSelector
 from jal.widgets.mapper_delegate import MapperDelegate, FloatDelegate
-from jal.db.helpers import db_connection, executeSQL
+from jal.db.helpers import db_connection, executeSQL, readSQL
 
 
 class IncomeSpendingWidget(AbstractOperationDetails):
@@ -88,11 +88,6 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.details_model = DetailsModel(self.details_table, db_connection())
         self.details_model.setTable("action_details")
         self.details_model.setEditStrategy(QSqlTableModel.OnManualSubmit)
-        self.details_model.setJoinMode(QSqlRelationalTableModel.LeftJoin)  # to work correctly with NULL values
-        self.details_model.setRelation(self.details_model.fieldIndex("category_id"),
-                                       QSqlRelation("categories", "id", "name"))
-        self.details_model.setRelation(self.details_model.fieldIndex("tag_id"),
-                                       QSqlRelation("tags", "id", "tag"))
         self.details_table.setModel(self.details_model)
         self.details_model.dataChanged.connect(self.onDataChange)
 
@@ -187,7 +182,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         return new_record
 
 
-class DetailsModel(QSqlRelationalTableModel):
+class DetailsModel(QSqlTableModel):
     def __init__(self, parent_view, db):
         self._columns = ["id",
                          "pid",
@@ -214,15 +209,26 @@ class DetailsModel(QSqlRelationalTableModel):
         self._view.horizontalHeader().setSectionResizeMode(6, QHeaderView.Stretch)
         self._view.horizontalHeader().moveSection(6, 0)
 
+# TODO CategoryDelegate and TagDelegate are almost identical - combine
 # -----------------------------------------------------------------------------------------------------------------------
 # Delegate to display category editor
-class CategoryDelegate(QSqlRelationalDelegate):
+class CategoryDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
-        QSqlRelationalDelegate.__init__(self, parent)
+        QStyledItemDelegate.__init__(self, parent)
+
+    def paint(self, painter, option, index):
+        painter.save()
+        item_id = index.data()
+        item_name = readSQL("SELECT name FROM categories WHERE id=:id", [(":id", item_id)])
+        painter.drawText(option.rect, Qt.AlignLeft, item_name)
+        painter.restore()
 
     def createEditor(self, aParent, option, index):
         category_selector = CategorySelector(aParent)
         return category_selector
+
+    def setEditorData(self, editor: QWidget, index: QModelIndex) -> None:
+        editor.selected_id = index.data()
 
     def setModelData(self, editor, model, index):
         model.setData(index, editor.selected_id)
@@ -233,9 +239,19 @@ class TagDelegate(QSqlRelationalDelegate):
     def __init__(self, parent=None):
         QSqlRelationalDelegate.__init__(self, parent)
 
+    def paint(self, painter, option, index):
+        painter.save()
+        item_id = index.data()
+        item_name = readSQL("SELECT tag FROM tags WHERE id=:id", [(":id", item_id)])
+        painter.drawText(option.rect, Qt.AlignLeft, item_name)
+        painter.restore()
+
     def createEditor(self, aParent, option, index):
         tag_selector = TagSelector(aParent)
         return tag_selector
+
+    def setEditorData(self, editor: QWidget, index: QModelIndex) -> None:
+        editor.selected_id = index.data()
 
     def setModelData(self, editor, model, index):
         model.setData(index, editor.selected_id)

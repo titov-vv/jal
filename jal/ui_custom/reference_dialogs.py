@@ -69,6 +69,9 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         row = index.row()
         assert self.model.removeRow(row)
 
+    def locateItem(self, item_id):
+        pass
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountTypeListModel(AbstractReferenceListModel):
