@@ -134,7 +134,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.setupUi(self)
         self.initUi()
         self.model = None
-        self.delegates = []
+        self.delegate = []
 
         self.CameraGroup.setVisible(False)
         self.cameraActive = False
@@ -393,7 +393,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.model = PandasLinesModel(self.slip_lines)
         self.LinesTableView.setModel(self.model)
 
-        self.delegates = []    # FIXME - we don't need to keep a list, we may create one delegate and assign it to every column
+        self.delegate = SlipLinesDelegate(self.LinesTableView)
         for column in range(self.model.columnCount()):
             if column == 0:
                 self.LinesTableView.horizontalHeader().setSectionResizeMode(column, QHeaderView.Stretch)
@@ -403,8 +403,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
                 self.LinesTableView.setColumnHidden(column, True)
             else:
                 self.LinesTableView.setColumnWidth(column, 100)
-            self.delegates.append(SlipLinesDelegate(self.LinesTableView))
-            self.LinesTableView.setItemDelegateForColumn(column, self.delegates[-1])
+            self.LinesTableView.setItemDelegateForColumn(column, self.delegate)
         font = self.LinesTableView.horizontalHeader().font()
         font.setBold(True)
         self.LinesTableView.horizontalHeader().setFont(font)

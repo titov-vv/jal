@@ -39,9 +39,6 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
 
 
 # ===================================================================================================================
-# TODO Check are there positive lines for Incomes
-# TODO Check are there negative lines for Costs
-# ===================================================================================================================
 class Ledger(QObject):
     updated = Signal()
     SILENT_REBUILD_THRESHOLD = 50
