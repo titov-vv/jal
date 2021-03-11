@@ -3,7 +3,7 @@ from PySide2.QtCore import Qt, QAbstractItemModel, QModelIndex
 from jal.constants import BookAccount, PredefinedAsset
 from jal.ui_custom.helpers import g_tr
 from jal.db.helpers import executeSQL
-from jal.widgets.view_delegate import ReportsFloat2ZeroDelegate, GridLinesDelegate
+from jal.widgets.delegates import ReportsFloat2ZeroDelegate, GridLinesDelegate
 
 
 # ----------------------------------------------------------------------------------------------------------------------

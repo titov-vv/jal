@@ -4,7 +4,7 @@ from PySide2.QtWidgets import QHeaderView
 from jal.constants import Setup, CustomColor, BookAccount, PredefindedAccountType
 from jal.db.helpers import executeSQL, get_asset_name
 from jal.ui_custom.helpers import g_tr
-from jal.widgets.view_delegate import GridLinesDelegate
+from jal.widgets.delegates import GridLinesDelegate
 
 
 class TreeItem():

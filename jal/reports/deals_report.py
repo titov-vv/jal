@@ -2,7 +2,7 @@ from PySide2.QtCore import Qt
 from PySide2.QtSql import QSqlTableModel
 from jal.db.helpers import db_connection, executeSQL
 from jal.ui_custom.helpers import g_tr
-from jal.widgets.view_delegate import ReportsFloat2Delegate, ReportsTimestampDelegate, ReportsProfitDelegate, \
+from jal.widgets.delegates import ReportsFloat2Delegate, ReportsTimestampDelegate, ReportsProfitDelegate, \
     ReportsCorpActionDelegate
 
 

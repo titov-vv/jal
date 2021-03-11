@@ -2,11 +2,11 @@ from PySide2.QtCore import QAbstractItemModel, QModelIndex
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection, readSQL, executeSQL
-from jal.widgets.view_delegate import *
+from jal.widgets.delegates import *
 from jal.ui_custom.helpers import g_tr
 from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
     ReferenceLookupDelegate, ReferenceTimestampDelegate, ReferenceIntDelegate
-from jal.widgets.view_delegate import GridLinesDelegate
+from jal.widgets.delegates import GridLinesDelegate
 
 
 #TODO AbstractReferenceListModel and SqlTreeModel have some methods in common - combine

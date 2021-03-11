@@ -3,7 +3,7 @@ from PySide2.QtSql import QSqlTableModel
 from jal.db.helpers import db_connection, executeSQL
 from jal.ui_custom.helpers import g_tr
 from jal.constants import BookAccount, PredefinedCategory
-from jal.widgets.view_delegate import ReportsFloat2Delegate, ReportsYearMonthDelegate
+from jal.widgets.delegates import ReportsFloat2Delegate, ReportsYearMonthDelegate
 
 #-----------------------------------------------------------------------------------------------------------------------
 class ProfitLossReportModel(QSqlTableModel):
