@@ -34,11 +34,13 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.search_text = ""
         self.tree_view = False
 
+        self.AddChildBtn.setVisible(False)
         self.GroupLbl.setVisible(False)
         self.GroupCombo.setVisible(False)
         self.SearchFrame.setVisible(False)
 
         self.AddBtn.setFixedWidth(self.AddBtn.fontMetrics().width("XXX"))
+        self.AddChildBtn.setFixedWidth(self.AddChildBtn.fontMetrics().width("XXX"))
         self.RemoveBtn.setFixedWidth(self.RemoveBtn.fontMetrics().width("XXX"))
         self.CommitBtn.setFixedWidth(self.CommitBtn.fontMetrics().width("XXX"))
         self.RevertBtn.setFixedWidth(self.RevertBtn.fontMetrics().width("XXX"))
@@ -47,6 +49,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.GroupCombo.currentIndexChanged.connect(self.OnGroupChange)
         self.Toggle.stateChanged.connect(self.OnToggleChange)
         self.AddBtn.clicked.connect(self.OnAdd)
+        self.AddChildBtn.clicked.connect(self.OnChildAdd)
         self.RemoveBtn.clicked.connect(self.OnRemove)
         self.CommitBtn.clicked.connect(self.OnCommit)
         self.RevertBtn.clicked.connect(self.OnRevert)
@@ -115,6 +118,15 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.model.addElement(current_index)
         self.CommitBtn.setEnabled(True)
         self.RevertBtn.setEnabled(True)
+
+    @Slot()
+    def OnChildAdd(self):
+        if self.tree_view:
+            idx = self.TreeView.selectionModel().selection().indexes()
+            current_index = idx[0] if idx else self.model.index(0, 0)
+            self.model.addChildElement(current_index)
+            self.CommitBtn.setEnabled(True)
+            self.RevertBtn.setEnabled(True)
 
     @Slot()
     def OnRemove(self):

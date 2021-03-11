@@ -59,6 +59,11 @@ class Ui_ReferenceDataDialog(object):
 
         self.edit_layout.addWidget(self.AddBtn)
 
+        self.AddChildBtn = QPushButton(self.EditFrame)
+        self.AddChildBtn.setObjectName(u"AddChildBtn")
+
+        self.edit_layout.addWidget(self.AddChildBtn)
+
         self.RemoveBtn = QPushButton(self.EditFrame)
         self.RemoveBtn.setObjectName(u"RemoveBtn")
 
@@ -133,6 +138,7 @@ class Ui_ReferenceDataDialog(object):
         self.GroupLbl.setText(QCoreApplication.translate("ReferenceDataDialog", u"Account Type:", None))
         self.Toggle.setText(QCoreApplication.translate("ReferenceDataDialog", u"Show inactive", None))
         self.AddBtn.setText(QCoreApplication.translate("ReferenceDataDialog", u" +\ufe0f ", None))
+        self.AddChildBtn.setText(QCoreApplication.translate("ReferenceDataDialog", u"..+", None))
         self.RemoveBtn.setText(QCoreApplication.translate("ReferenceDataDialog", u" \u2014 ", None))
         self.CommitBtn.setText(QCoreApplication.translate("ReferenceDataDialog", u" \u2714 ", None))
         self.RevertBtn.setText(QCoreApplication.translate("ReferenceDataDialog", u" \u2716 ", None))

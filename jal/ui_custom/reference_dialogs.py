@@ -438,6 +438,10 @@ class SqlTreeModel(QAbstractItemModel):
         row = index.row()
         assert self.insertRows(row, 1, index.parent())
 
+    def addChildElement(self, index):
+        assert self.insertRows(0, 1, index)
+        self._view.expand(index)
+
     def removeElement(self, index):
         row = index.row()
         assert self.removeRows(row, 1, index.parent())
@@ -518,6 +522,7 @@ class PeerListDialog(ReferenceDataDialog):
     def setup_ui(self):
         self.search_field = "name"
         self.tree_view = True
+        self.AddChildBtn.setVisible(True)
         self.SearchFrame.setVisible(True)
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Peers"))
         self.Toggle.setVisible(False)
@@ -557,6 +562,7 @@ class CategoryListDialog(ReferenceDataDialog):
     def setup_ui(self):
         self.search_field = "name"
         self.tree_view = True
+        self.AddChildBtn.setVisible(True)
         self.SearchFrame.setVisible(True)
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Categories"))
         self.Toggle.setVisible(False)
