@@ -22,6 +22,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.model = None
         self.selected_id = 0
         self.p_selected_name = ''
+        self._filter_text = ''
         self.selection_enabled = False
         self.group_id = None
         self.group_key_field = None
@@ -79,7 +80,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.selection_enabled = enable_selection
         self.setFilter()
         if enable_selection:
-            self.model.locateItem(selected)
+            self.locateItem(selected)
         res = super().exec_()
         self.resetFilter()
         return res
@@ -160,12 +161,12 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
             if not self.toggle_state:
                 conditions.append(f"{self.table}.{self.toggle_field}=1")
 
-        condition = ""
+        self._filter_text = ""
         for line in conditions:
-            condition += line + " AND "
-        condition = condition[:-len(" AND ")]
+            self._filter_text += line + " AND "
+        self._filter_text = self._filter_text[:-len(" AND ")]
 
-        self.model.setFilter(condition)
+        self.model.setFilter(self._filter_text)
 
     @Slot()
     def OnSearchChange(self):

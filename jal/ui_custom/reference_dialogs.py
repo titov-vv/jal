@@ -1,4 +1,4 @@
-from PySide2.QtCore import Signal, Slot, QAbstractItemModel, QModelIndex
+from PySide2.QtCore import QAbstractItemModel, QModelIndex
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection, readSQL, executeSQL
@@ -69,8 +69,9 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         row = index.row()
         assert self.model.removeRow(row)
 
-    def locateItem(self, item_id):
+    def locateItem(self, item_id, use_filter=''):
         pass
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountTypeListModel(AbstractReferenceListModel):
@@ -101,8 +102,6 @@ class AccountTypeListDialog(ReferenceDataDialog):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountListModel(AbstractReferenceListModel):
-    item_located = Signal(int, QModelIndex)
-
     def __init__(self, table, parent_view):
         AbstractReferenceListModel.__init__(self, table, parent_view)
         self._columns = [("id", ''),
@@ -141,17 +140,17 @@ class AccountListModel(AbstractReferenceListModel):
         self._bool_delegate = ReferenceBoolDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("active"), self._bool_delegate)
 
-    def locateItem(self, item_id):
+    def getAccountType(self, item_id: int) -> int:
         type_id = readSQL(f"SELECT type_id FROM {self._table} WHERE id=:id", [(":id", item_id)])
-        if type_id is None:
-            return
-        # {type_id} is not a parameter by intention - somehow query fails to bind
+        type_id = 0 if type_id is None else type_id
+        return type_id
+
+    def locateItem(self, item_id, use_filter=''):
         row = readSQL(f"SELECT row_number FROM (SELECT ROW_NUMBER() OVER (ORDER BY name) AS row_number, id "
-                      f"FROM {self._table} WHERE type_id={type_id} AND active=1) WHERE id=:id", [(":id", item_id)])
+                      f"FROM {self._table} WHERE {use_filter}) WHERE id=:id", [(":id", item_id)])
         if row is None:
-            return
-        item_idx = self.index(row-1, 0)
-        self.item_located.emit(type_id-1, item_idx)
+            return QModelIndex()
+        return self.index(row-1, 0)
 
 
 class AccountListDialog(ReferenceDataDialog):
@@ -163,7 +162,6 @@ class AccountListDialog(ReferenceDataDialog):
         self.model.configureView()
         self.setup_ui()
         super()._init_completed()
-        self.model.item_located.connect(self.select_item)
 
     def setup_ui(self):
         self.search_field = "accounts.name"
@@ -184,9 +182,12 @@ class AccountListDialog(ReferenceDataDialog):
         self.GroupCombo.setModelColumn(relation_model.fieldIndex("name"))
         self.group_id = relation_model.data(relation_model.index(0, relation_model.fieldIndex(self.group_fkey_field)))
 
-    @Slot()
-    def select_item(self, type_id, item_idx):
-        self.GroupCombo.setCurrentIndex(type_id)
+    def locateItem(self, item_id):
+        type_id = self.model.getAccountType(item_id)
+        if type_id == 0:
+            return
+        self.GroupCombo.setCurrentIndex(type_id-1)
+        item_idx = self.model.locateItem(item_id, use_filter=self._filter_text)
         self.DataView.setCurrentIndex(item_idx)
 
 
