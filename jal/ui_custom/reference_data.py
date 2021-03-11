@@ -178,12 +178,12 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         idx = selected.indexes()
         if idx:
             self.selected_id = self.model.getId(idx[0])
-            self.p_selected_name = self.model.getFieldValue(self.selected_id, 'name')  # FIXME - here should be a name from selector
+            self.p_selected_name = self.model.getName(idx[0])
 
     @Slot()
     def OnDoubleClicked(self, index):
         self.selected_id = self.model.getId(index)
-        self.p_selected_name = self.model.getFieldValue(self.selected_id, 'name')  # FIXME - here should be a name from selector
+        self.p_selected_name = self.model.getName(index)
         if self.selection_enabled:
             self.setResult(QDialog.Accepted)
             self.close()

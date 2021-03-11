@@ -9,6 +9,7 @@ from jal.ui_custom.reference_data import ReferenceDataDialog, ReferenceBoolDeleg
 from jal.widgets.view_delegate import GridLinesDelegate
 
 
+#TODO AbstractReferenceListModel and SqlTreeModel have some methods in common - combine
 # ----------------------------------------------------------------------------------------------------------------------
 class AbstractReferenceListModel(QSqlRelationalTableModel):
     @property
@@ -19,6 +20,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         self._view = parent_view
         self._table = table
         self._columns = []
+        self._default_name = "name"
         self._sort_by = None
         self._hidden = []
         self._stretch = None
@@ -56,6 +58,9 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
 
     def getId(self, index):
         return self.record(index.row()).value('id')
+
+    def getName(self, index):
+        return self.getFieldValue(self.getId(index), self._default_name)
 
     def getFieldValue(self, item_id, field_name):
         return readSQL(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
@@ -277,6 +282,7 @@ class SqlTreeModel(QAbstractItemModel):
         super().__init__(parent_view)
         self._table = table
         self._view = parent_view
+        self._default_name = "name"
         self._stretch = None
         # This is auxiliary 'plain' model of the same table - to be given as QCompleter source of data
         self._completion_model = QSqlTableModel(parent=parent_view, db=db_connection())
@@ -380,6 +386,11 @@ class SqlTreeModel(QAbstractItemModel):
         if not index.isValid():
             return None
         return index.internalId()
+
+    def getName(self, index):
+        item_id = self.getId(index)
+        if item_id is not None:
+            self.getFieldValue(item_id, self._default_name)
 
     def getFieldValue(self, item_id, field_name):
         return readSQL(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
@@ -552,6 +563,7 @@ class TagListModel(AbstractReferenceListModel):
         AbstractReferenceListModel.__init__(self, table, parent_view)
         self._columns = [("id", ''),
                          ("tag", g_tr('ReferenceDataDialog', "Tag"))]
+        self._default_name = "tag"
         self._sort_by = "tag"
         self._hidden = ["id"]
         self._stretch = "tag"
