@@ -1,7 +1,7 @@
 from PySide2.QtCore import Qt
 from PySide2.QtSql import QSqlTableModel
 from jal.db.helpers import db_connection, executeSQL
-from jal.ui_custom.helpers import g_tr
+from widgets.helpers import g_tr
 from jal.constants import BookAccount, PredefinedCategory
 from jal.widgets.delegates import ReportsFloat2Delegate, ReportsYearMonthDelegate
 

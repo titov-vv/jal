@@ -3,10 +3,10 @@ from dateutil import tz
 
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QLabel, QDateTimeEdit, QDateEdit, QLineEdit
-from jal.ui_custom.helpers import g_tr
-from jal.ui_custom.abstract_operation_details import AbstractOperationDetails
-from jal.ui_custom.reference_selector import AccountSelector, AssetSelector
-from jal.ui_custom.amount_editor import AmountEdit
+from widgets.helpers import g_tr
+from widgets.abstract_operation_details import AbstractOperationDetails
+from widgets.reference_selector import AccountSelector, AssetSelector
+from widgets.amount_editor import AmountEdit
 from jal.widgets.delegates import WidgetMapperDelegateBase
 
 

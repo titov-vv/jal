@@ -3,17 +3,17 @@
 <context>
     <name>AbstractOperationDetails</name>
     <message>
-        <location filename="../ui_custom/abstract_operation_details.py" line="76"/>
+        <location filename="../widgets/abstract_operation_details.py" line="76"/>
         <source>Operation submit failed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/income_spending_widget.py" line="143"/>
+        <location filename="../widgets/income_spending_widget.py" line="151"/>
         <source>Operation details submit failed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/income_spending_widget.py" line="120"/>
+        <location filename="../widgets/income_spending_widget.py" line="128"/>
         <source>Failed to add new record: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -21,12 +21,12 @@
 <context>
     <name>AccountButton</name>
     <message>
-        <location filename="../ui_custom/account_select.py" line="19"/>
+        <location filename="../widgets/account_select.py" line="19"/>
         <source>Choose account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/account_select.py" line="20"/>
+        <location filename="../widgets/account_select.py" line="20"/>
         <source>Any account</source>
         <translation></translation>
     </message>
@@ -90,77 +90,77 @@
 <context>
     <name>CorpActionWidget</name>
     <message>
-        <location filename="../ui_custom/corporate_action_widget.py" line="33"/>
+        <location filename="../widgets/corporate_action_widget.py" line="45"/>
         <source>Corporate Action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/corporate_action_widget.py" line="34"/>
+        <location filename="../widgets/corporate_action_widget.py" line="46"/>
         <source>Date/Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/corporate_action_widget.py" line="35"/>
+        <location filename="../widgets/corporate_action_widget.py" line="47"/>
         <source>Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/corporate_action_widget.py" line="36"/>
+        <location filename="../widgets/corporate_action_widget.py" line="48"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/corporate_action_widget.py" line="37"/>
+        <location filename="../widgets/corporate_action_widget.py" line="49"/>
         <source>#</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/corporate_action_widget.py" line="40"/>
+        <location filename="../widgets/corporate_action_widget.py" line="52"/>
         <source>Asset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/corporate_action_widget.py" line="41"/>
+        <location filename="../widgets/corporate_action_widget.py" line="53"/>
         <source>Qty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/corporate_action_widget.py" line="42"/>
+        <location filename="../widgets/corporate_action_widget.py" line="54"/>
         <source>% of basis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/corporate_action_widget.py" line="43"/>
+        <location filename="../widgets/corporate_action_widget.py" line="55"/>
         <source>Note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/corporate_action_widget.py" line="98"/>
+        <location filename="../widgets/corporate_action_widget.py" line="110"/>
         <source>N/A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/corporate_action_widget.py" line="98"/>
+        <location filename="../widgets/corporate_action_widget.py" line="110"/>
         <source>Merger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/corporate_action_widget.py" line="98"/>
+        <location filename="../widgets/corporate_action_widget.py" line="110"/>
         <source>Spin-Off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/corporate_action_widget.py" line="98"/>
+        <location filename="../widgets/corporate_action_widget.py" line="110"/>
         <source>Symbol change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/corporate_action_widget.py" line="98"/>
+        <location filename="../widgets/corporate_action_widget.py" line="110"/>
         <source>Split</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/corporate_action_widget.py" line="98"/>
+        <location filename="../widgets/corporate_action_widget.py" line="110"/>
         <source>Stock dividend</source>
         <translation type="unfinished"></translation>
     </message>
@@ -259,27 +259,27 @@
 <context>
     <name>DetailsModel</name>
     <message>
-        <location filename="../ui_custom/income_spending_widget.py" line="189"/>
+        <location filename="../widgets/income_spending_widget.py" line="197"/>
         <source>Category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/income_spending_widget.py" line="190"/>
+        <location filename="../widgets/income_spending_widget.py" line="198"/>
         <source>Tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/income_spending_widget.py" line="191"/>
+        <location filename="../widgets/income_spending_widget.py" line="199"/>
         <source>Amount</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/income_spending_widget.py" line="192"/>
+        <location filename="../widgets/income_spending_widget.py" line="200"/>
         <source>Amount *</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/income_spending_widget.py" line="193"/>
+        <location filename="../widgets/income_spending_widget.py" line="201"/>
         <source>Note</source>
         <translation type="unfinished"></translation>
     </message>
@@ -287,57 +287,57 @@
 <context>
     <name>DividendWidget</name>
     <message>
-        <location filename="../ui_custom/dividend_widget.py" line="90"/>
+        <location filename="../widgets/dividend_widget.py" line="102"/>
         <source>Dividend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/dividend_widget.py" line="29"/>
+        <location filename="../widgets/dividend_widget.py" line="41"/>
         <source>Date/Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/dividend_widget.py" line="32"/>
+        <location filename="../widgets/dividend_widget.py" line="44"/>
         <source>#</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/dividend_widget.py" line="33"/>
+        <location filename="../widgets/dividend_widget.py" line="45"/>
         <source>Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/dividend_widget.py" line="34"/>
+        <location filename="../widgets/dividend_widget.py" line="46"/>
         <source>Asset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/dividend_widget.py" line="36"/>
+        <location filename="../widgets/dividend_widget.py" line="48"/>
         <source>Tax</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/dividend_widget.py" line="37"/>
+        <location filename="../widgets/dividend_widget.py" line="49"/>
         <source>Note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/dividend_widget.py" line="30"/>
+        <location filename="../widgets/dividend_widget.py" line="42"/>
         <source>Ex-Date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/dividend_widget.py" line="31"/>
+        <location filename="../widgets/dividend_widget.py" line="43"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/dividend_widget.py" line="90"/>
+        <location filename="../widgets/dividend_widget.py" line="102"/>
         <source>N/A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/dividend_widget.py" line="90"/>
+        <location filename="../widgets/dividend_widget.py" line="102"/>
         <source>Bond Interest</source>
         <translation type="unfinished"></translation>
     </message>
@@ -423,17 +423,17 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="415"/>
+        <location filename="../data_import/slips.py" line="414"/>
         <source>Not possible to import slip: no account set for import</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="418"/>
+        <location filename="../data_import/slips.py" line="417"/>
         <source>Not possible to import slip: can&apos;t import: no peer set for import</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="422"/>
+        <location filename="../data_import/slips.py" line="421"/>
         <source>Not possible to import slip: some categories are not set</source>
         <translation></translation>
     </message>
@@ -614,27 +614,27 @@
 <context>
     <name>IncomeSpendingWidget</name>
     <message>
-        <location filename="../ui_custom/income_spending_widget.py" line="30"/>
+        <location filename="../widgets/income_spending_widget.py" line="38"/>
         <source>Income / Spending</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/income_spending_widget.py" line="31"/>
+        <location filename="../widgets/income_spending_widget.py" line="39"/>
         <source>Date/Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/income_spending_widget.py" line="32"/>
+        <location filename="../widgets/income_spending_widget.py" line="40"/>
         <source>Details</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/income_spending_widget.py" line="33"/>
+        <location filename="../widgets/income_spending_widget.py" line="41"/>
         <source>Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/income_spending_widget.py" line="34"/>
+        <location filename="../widgets/income_spending_widget.py" line="42"/>
         <source>Peer</source>
         <translation type="unfinished"></translation>
     </message>
@@ -712,52 +712,52 @@ Application will be terminated now</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="519"/>
+        <location filename="../db/ledger.py" line="516"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="519"/>
+        <location filename="../db/ledger.py" line="516"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="524"/>
+        <location filename="../db/ledger.py" line="521"/>
         <source>Re-build ledger from: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="559"/>
+        <location filename="../db/ledger.py" line="556"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="559"/>
+        <location filename="../db/ledger.py" line="556"/>
         <source>, new frontier: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="552"/>
+        <location filename="../db/ledger.py" line="549"/>
         <source>Processed </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="552"/>
+        <location filename="../db/ledger.py" line="549"/>
         <source>k records, current frontier: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="196"/>
+        <location filename="../db/ledger.py" line="193"/>
         <source>Can&apos;t process dividend as bank isn&apos;t set for investment account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="218"/>
+        <location filename="../db/ledger.py" line="215"/>
         <source>Can&apos;t process trade as bank isn&apos;t set for investment account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="409"/>
+        <location filename="../db/ledger.py" line="406"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation></translation>
     </message>
@@ -767,27 +767,27 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="376"/>
+        <location filename="../db/ledger.py" line="373"/>
         <source>Stock dividend for was updated for </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="376"/>
+        <location filename="../db/ledger.py" line="373"/>
         <source>Please check that quantity is correct.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="169"/>
+        <location filename="../db/ledger.py" line="166"/>
         <source>Can&apos;t process operation without details</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="368"/>
+        <location filename="../db/ledger.py" line="365"/>
         <source>Unexpected data in transfer transaction</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="193"/>
+        <location filename="../db/ledger.py" line="190"/>
         <source>Can&apos;t process dividend with N/A type</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1221,47 +1221,47 @@ do you want to save it?</source>
 <context>
     <name>OperationsDelegate</name>
     <message>
-        <location filename="../widgets/view_delegate.py" line="78"/>
+        <location filename="../widgets/delegates.py" line="171"/>
         <source>Symbol change</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="79"/>
+        <location filename="../widgets/delegates.py" line="172"/>
         <source>Split</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="80"/>
+        <location filename="../widgets/delegates.py" line="173"/>
         <source>Spin-off</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="81"/>
+        <location filename="../widgets/delegates.py" line="174"/>
         <source>Merger</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="92"/>
+        <location filename="../widgets/delegates.py" line="185"/>
         <source> Opened with </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="94"/>
+        <location filename="../widgets/delegates.py" line="187"/>
         <source> Closed with </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="98"/>
+        <location filename="../widgets/delegates.py" line="191"/>
         <source> Long</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="100"/>
+        <location filename="../widgets/delegates.py" line="193"/>
         <source> Short</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/view_delegate.py" line="82"/>
+        <location filename="../widgets/delegates.py" line="175"/>
         <source>Stock dividend</source>
         <translation></translation>
     </message>
@@ -1441,7 +1441,7 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="177"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="139"/>
         <source>Show inactive</source>
         <translation></translation>
     </message>
@@ -1451,22 +1451,22 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_data.py" line="91"/>
+        <location filename="../widgets/reference_data.py" line="93"/>
         <source>ANY</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_data.py" line="139"/>
+        <location filename="../widgets/reference_data.py" line="150"/>
         <source>Submit failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_data.py" line="70"/>
+        <location filename="../widgets/reference_data.py" line="72"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_data.py" line="70"/>
+        <location filename="../widgets/reference_data.py" line="72"/>
         <source>You have uncommited changes. Do you want to close?</source>
         <translation></translation>
     </message>
@@ -1486,157 +1486,157 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="86"/>
+        <location filename="../widgets/reference_dialogs.py" line="90"/>
         <source>Account Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="103"/>
+        <location filename="../widgets/reference_dialogs.py" line="107"/>
         <source>Account Types</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="533"/>
+        <location filename="../widgets/reference_dialogs.py" line="542"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="115"/>
+        <location filename="../widgets/reference_dialogs.py" line="119"/>
         <source>Currency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="116"/>
+        <location filename="../widgets/reference_dialogs.py" line="120"/>
         <source>Act.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="117"/>
+        <location filename="../widgets/reference_dialogs.py" line="121"/>
         <source>Account #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="118"/>
+        <location filename="../widgets/reference_dialogs.py" line="122"/>
         <source>Reconciled @</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="119"/>
+        <location filename="../widgets/reference_dialogs.py" line="123"/>
         <source>Bank</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="180"/>
+        <location filename="../widgets/reference_dialogs.py" line="184"/>
         <source>Account type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="173"/>
+        <location filename="../widgets/reference_dialogs.py" line="177"/>
         <source>Accounts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="205"/>
+        <location filename="../widgets/reference_dialogs.py" line="209"/>
         <source>Symbol</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="207"/>
+        <location filename="../widgets/reference_dialogs.py" line="211"/>
         <source>ISIN</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="612"/>
+        <location filename="../widgets/reference_dialogs.py" line="622"/>
         <source>Country</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="209"/>
+        <location filename="../widgets/reference_dialogs.py" line="213"/>
         <source>Data source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="254"/>
+        <location filename="../widgets/reference_dialogs.py" line="258"/>
         <source>Asset type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="249"/>
+        <location filename="../widgets/reference_dialogs.py" line="253"/>
         <source>Assets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="481"/>
+        <location filename="../widgets/reference_dialogs.py" line="489"/>
         <source>Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="482"/>
+        <location filename="../widgets/reference_dialogs.py" line="490"/>
         <source>Docs count</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="522"/>
+        <location filename="../widgets/reference_dialogs.py" line="531"/>
         <source>Peers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="534"/>
+        <location filename="../widgets/reference_dialogs.py" line="543"/>
         <source>Often</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="561"/>
+        <location filename="../widgets/reference_dialogs.py" line="571"/>
         <source>Categories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="572"/>
+        <location filename="../widgets/reference_dialogs.py" line="582"/>
         <source>Tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="598"/>
+        <location filename="../widgets/reference_dialogs.py" line="608"/>
         <source>Tags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="613"/>
+        <location filename="../widgets/reference_dialogs.py" line="623"/>
         <source>Code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="614"/>
+        <location filename="../widgets/reference_dialogs.py" line="624"/>
         <source>Tax Treaty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="641"/>
+        <location filename="../widgets/reference_dialogs.py" line="651"/>
         <source>Countries</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="650"/>
+        <location filename="../widgets/reference_dialogs.py" line="660"/>
         <source>Date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="651"/>
+        <location filename="../widgets/reference_dialogs.py" line="661"/>
         <source>Asset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="652"/>
+        <location filename="../widgets/reference_dialogs.py" line="662"/>
         <source>Quote</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="683"/>
+        <location filename="../widgets/reference_dialogs.py" line="693"/>
         <source>Quotes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/reference_dialogs.py" line="120"/>
+        <location filename="../widgets/reference_dialogs.py" line="124"/>
         <source>CC</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2491,52 +2491,52 @@ do you want to save it?</source>
 <context>
     <name>TradeWidget</name>
     <message>
-        <location filename="../ui_custom/trade_widget.py" line="27"/>
+        <location filename="../widgets/trade_widget.py" line="40"/>
         <source>Buy / Sell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/trade_widget.py" line="28"/>
+        <location filename="../widgets/trade_widget.py" line="41"/>
         <source>Date/Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/trade_widget.py" line="29"/>
+        <location filename="../widgets/trade_widget.py" line="42"/>
         <source>Settlement</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/trade_widget.py" line="30"/>
+        <location filename="../widgets/trade_widget.py" line="43"/>
         <source>#</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/trade_widget.py" line="31"/>
+        <location filename="../widgets/trade_widget.py" line="44"/>
         <source>Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/trade_widget.py" line="32"/>
+        <location filename="../widgets/trade_widget.py" line="45"/>
         <source>Asset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/trade_widget.py" line="33"/>
+        <location filename="../widgets/trade_widget.py" line="46"/>
         <source>Qty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/trade_widget.py" line="34"/>
+        <location filename="../widgets/trade_widget.py" line="47"/>
         <source>Price</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/trade_widget.py" line="35"/>
+        <location filename="../widgets/trade_widget.py" line="48"/>
         <source>Fee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/trade_widget.py" line="36"/>
+        <location filename="../widgets/trade_widget.py" line="49"/>
         <source>Note</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2544,42 +2544,42 @@ do you want to save it?</source>
 <context>
     <name>TransferWidget</name>
     <message>
-        <location filename="../ui_custom/transfer_widget.py" line="31"/>
+        <location filename="../widgets/transfer_widget.py" line="44"/>
         <source>Transfer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/transfer_widget.py" line="35"/>
+        <location filename="../widgets/transfer_widget.py" line="48"/>
         <source>Date/Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/transfer_widget.py" line="33"/>
+        <location filename="../widgets/transfer_widget.py" line="46"/>
         <source>From</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/transfer_widget.py" line="37"/>
+        <location filename="../widgets/transfer_widget.py" line="50"/>
         <source>Amount</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/transfer_widget.py" line="36"/>
+        <location filename="../widgets/transfer_widget.py" line="49"/>
         <source>To</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/transfer_widget.py" line="38"/>
+        <location filename="../widgets/transfer_widget.py" line="51"/>
         <source>Fee from</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/transfer_widget.py" line="39"/>
+        <location filename="../widgets/transfer_widget.py" line="52"/>
         <source>Fee amount</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui_custom/transfer_widget.py" line="40"/>
+        <location filename="../widgets/transfer_widget.py" line="53"/>
         <source>Note</source>
         <translation type="unfinished"></translation>
     </message>

@@ -12,15 +12,15 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
-from jal.ui_custom.account_select import AccountButton
-from jal.ui_custom.log_viewer import LogViewer
-from jal.ui_custom.account_select import CurrencyComboBox
-from jal.ui_custom.reference_selector import CategorySelector
-from jal.ui_custom.dividend_widget import DividendWidget
-from jal.ui_custom.trade_widget import TradeWidget
-from jal.ui_custom.transfer_widget import TransferWidget
-from jal.ui_custom.corporate_action_widget import CorporateActionWidget
-from jal.ui_custom.income_spending_widget import IncomeSpendingWidget
+from jal.widgets.account_select import AccountButton
+from jal.widgets.log_viewer import LogViewer
+from jal.widgets.account_select import CurrencyComboBox
+from jal.widgets.reference_selector import CategorySelector
+from jal.widgets.dividend_widget import DividendWidget
+from jal.widgets.trade_widget import TradeWidget
+from jal.widgets.transfer_widget import TransferWidget
+from jal.widgets.corporate_action_widget import CorporateActionWidget
+from jal.widgets.income_spending_widget import IncomeSpendingWidget
 
 
 class Ui_LedgerMainWindow(object):

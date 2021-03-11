@@ -12,7 +12,7 @@ from PySide2.QtWidgets import QDialog
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from jal.constants import Setup, MarketDataFeed, BookAccount
 from jal.db.helpers import executeSQL, readSQLrecord
-from jal.ui_custom.helpers import g_tr
+from widgets.helpers import g_tr
 
 
 # ===================================================================================================================

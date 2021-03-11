@@ -9,7 +9,7 @@ from tempfile import TemporaryDirectory
 import tarfile
 
 from PySide2.QtWidgets import QFileDialog, QMessageBox
-from jal.ui_custom.helpers import g_tr
+from widgets.helpers import g_tr
 from jal.db.helpers import db_connection
 
 

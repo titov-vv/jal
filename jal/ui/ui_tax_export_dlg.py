@@ -12,7 +12,7 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
-from jal.ui_custom.reference_selector import AccountSelector
+from jal.widgets.reference_selector import AccountSelector
 
 
 class Ui_TaxExportDlg(object):

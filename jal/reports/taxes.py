@@ -5,7 +5,7 @@ import logging
 from jal.constants import Setup, TransactionType, CorporateAction, PredefinedAsset, PredefinedCategory, DividendSubtype
 from jal.reports.helpers import XLSX
 from jal.reports.dlsg import DLSG
-from jal.ui_custom.helpers import g_tr
+from widgets.helpers import g_tr
 from jal.db.helpers import executeSQL, readSQLrecord, readSQL
 from PySide2.QtWidgets import QDialog, QFileDialog
 from PySide2.QtCore import Property, Slot

@@ -5,7 +5,7 @@ import json
 import logging
 import pandas as pd
 from PySide2.QtWidgets import QStyledItemDelegate
-from jal.ui_custom.reference_selector import CategorySelector, TagSelector
+from widgets.reference_selector import CategorySelector, TagSelector
 from jal.constants import CustomColor
 from jal.db.helpers import get_category_name
 try:
@@ -19,7 +19,7 @@ from PySide2.QtCore import Qt, Slot, Signal, QDateTime, QBuffer, QThread, QAbstr
 from PySide2.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView
 # This QCamera staff ran good on Windows but didn't fly on Linux from the box until 'cheese' installation
 from PySide2.QtMultimedia import QCameraInfo, QCamera, QCameraImageCapture, QVideoFrame
-from jal.ui_custom.helpers import g_tr, dependency_present
+from widgets.helpers import g_tr, dependency_present
 from jal.db.helpers import executeSQL, readSQL
 from jal.data_import.slips_tax import SlipsTaxAPI
 from jal.ui.ui_slip_import_dlg import Ui_ImportSlipDlg

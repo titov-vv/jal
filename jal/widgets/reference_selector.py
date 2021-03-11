@@ -2,7 +2,7 @@ from abc import ABC
 
 from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from PySide2.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QCompleter
-import jal.ui_custom.reference_dialogs as ui_dialogs
+import widgets.reference_dialogs as ui_dialogs
 
 #-----------------------------------------------------------------------------------------------------------------------
 # To solve metaclass conflict

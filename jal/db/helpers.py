@@ -5,7 +5,7 @@ from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery
 from PySide2.QtWidgets import QMessageBox
 from jal.constants import Setup
 from jal.db.settings import JalSettings
-from jal.ui_custom.helpers import g_tr
+from widgets.helpers import g_tr
 
 
 # No translation of the file because these routines might be used before QApplication initialization

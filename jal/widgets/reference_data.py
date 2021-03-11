@@ -6,8 +6,8 @@ from PySide2.QtSql import QSqlRelationalDelegate
 from PySide2.QtWidgets import QDialog, QMessageBox, QStyledItemDelegate, QTreeView
 
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
-import jal.ui_custom.reference_selector as ui     # Full import due to "cyclic" reference
-from jal.ui_custom.helpers import g_tr
+import widgets.reference_selector as ui     # Full import due to "cyclic" reference
+from widgets.helpers import g_tr
 
 
 # --------------------------------------------------------------------------------------------------------------

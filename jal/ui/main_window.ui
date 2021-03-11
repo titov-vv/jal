@@ -1117,52 +1117,52 @@
   <customwidget>
    <class>AccountButton</class>
    <extends>QPushButton</extends>
-   <header>jal/ui_custom/account_select.h</header>
+   <header>jal/widgets/account_select.h</header>
   </customwidget>
   <customwidget>
    <class>LogViewer</class>
    <extends>QPlainTextEdit</extends>
-   <header>jal/ui_custom/log_viewer.h</header>
+   <header>jal/widgets/log_viewer.h</header>
   </customwidget>
   <customwidget>
    <class>CurrencyComboBox</class>
    <extends>QComboBox</extends>
-   <header>jal/ui_custom/account_select.h</header>
+   <header>jal/widgets/account_select.h</header>
   </customwidget>
   <customwidget>
    <class>CategorySelector</class>
    <extends>QWidget</extends>
-   <header>jal/ui_custom/reference_selector.h</header>
+   <header>jal/widgets/reference_selector.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>DividendWidget</class>
    <extends>QWidget</extends>
-   <header>jal/ui_custom/dividend_widget.h</header>
+   <header>jal/widgets/dividend_widget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>TradeWidget</class>
    <extends>QWidget</extends>
-   <header>jal/ui_custom/trade_widget.h</header>
+   <header>jal/widgets/trade_widget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>TransferWidget</class>
    <extends>QWidget</extends>
-   <header>jal/ui_custom/transfer_widget.h</header>
+   <header>jal/widgets/transfer_widget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>CorporateActionWidget</class>
    <extends>QWidget</extends>
-   <header>jal/ui_custom/corporate_action_widget.h</header>
+   <header>jal/widgets/corporate_action_widget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>IncomeSpendingWidget</class>
    <extends>QWidget</extends>
-   <header>jal/ui_custom/income_spending_widget.h</header>
+   <header>jal/widgets/income_spending_widget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
