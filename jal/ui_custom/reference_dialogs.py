@@ -14,7 +14,7 @@ from jal.widgets.view_delegate import GridLinesDelegate
 class AbstractReferenceListModel(QSqlRelationalTableModel):
     @property
     def completion_model(self):
-        return self
+        return self._completion_model
 
     def __init__(self, table, parent_view):
         self._view = parent_view
@@ -29,6 +29,10 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         self.setTable(self._table)
         self.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.select()
+        # This is auxiliary 'plain' model of the same table - to be given as QCompleter source of data
+        self._completion_model = QSqlTableModel(parent=parent_view, db=db_connection())
+        self._completion_model.setTable(self._table)
+        self._completion_model.select()
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal:
