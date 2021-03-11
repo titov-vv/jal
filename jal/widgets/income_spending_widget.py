@@ -4,7 +4,7 @@ from dateutil import tz
 
 from PySide2.QtCore import Qt, Slot, QModelIndex
 from PySide2.QtWidgets import QWidget, QLabel, QDateTimeEdit, QPushButton, QTableView, QHeaderView, QStyledItemDelegate
-from PySide2.QtSql import QSqlTableModel, QSqlRelationalDelegate
+from PySide2.QtSql import QSqlTableModel
 from widgets.helpers import g_tr
 from widgets.abstract_operation_details import AbstractOperationDetails
 from widgets.reference_selector import AccountSelector, PeerSelector, CategorySelector, TagSelector
@@ -26,8 +26,8 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.name = "Income/Spending"
 
         self.details_model = None
-        self.category_delegate = CategoryDelegate()
-        self.tag_delegate = TagDelegate()
+        self.category_delegate = LookupSelectorDelegate(LookupSelectorDelegate.Category)
+        self.tag_delegate = LookupSelectorDelegate(LookupSelectorDelegate.Tag)
         self.float_delegate = FloatDelegate()
 
         self.date_label = QLabel(self)
@@ -217,46 +217,39 @@ class DetailsModel(QSqlTableModel):
         self._view.horizontalHeader().setSectionResizeMode(6, QHeaderView.Stretch)
         self._view.horizontalHeader().moveSection(6, 0)
 
-# TODO CategoryDelegate and TagDelegate are almost identical - combine
+
 # -----------------------------------------------------------------------------------------------------------------------
-# Delegate to display category editor
-class CategoryDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
+class LookupSelectorDelegate(QStyledItemDelegate):
+    Category = 1
+    Tag = 2
+
+    def __init__(self, selector_type, parent=None):
         QStyledItemDelegate.__init__(self, parent)
+        self._type = selector_type
+        if self._type == self.Category:
+            self._table = "categories"
+            self._field = "name"
+        elif self._type == self.Tag:
+            self._table = "tags"
+            self._field = "tag"
+        else:
+            raise ValueError
 
     def paint(self, painter, option, index):
         painter.save()
         item_id = index.data()
-        item_name = readSQL("SELECT name FROM categories WHERE id=:id", [(":id", item_id)])
+        item_name = readSQL(f"SELECT {self._field} FROM {self._table} WHERE id=:id", [(":id", item_id)])
         painter.drawText(option.rect, Qt.AlignLeft, item_name)
         painter.restore()
 
     def createEditor(self, aParent, option, index):
-        category_selector = CategorySelector(aParent)
-        return category_selector
-
-    def setEditorData(self, editor: QWidget, index: QModelIndex) -> None:
-        editor.selected_id = index.data()
-
-    def setModelData(self, editor, model, index):
-        model.setData(index, editor.selected_id)
-
-# -----------------------------------------------------------------------------------------------------------------------
-# Delegate to display tag editor
-class TagDelegate(QSqlRelationalDelegate):
-    def __init__(self, parent=None):
-        QSqlRelationalDelegate.__init__(self, parent)
-
-    def paint(self, painter, option, index):
-        painter.save()
-        item_id = index.data()
-        item_name = readSQL("SELECT tag FROM tags WHERE id=:id", [(":id", item_id)])
-        painter.drawText(option.rect, Qt.AlignLeft, item_name)
-        painter.restore()
-
-    def createEditor(self, aParent, option, index):
-        tag_selector = TagSelector(aParent)
-        return tag_selector
+        if self._type == self.Category:
+            selector = CategorySelector(aParent)
+        elif self._type == self.Tag:
+            selector = TagSelector(aParent)
+        else:
+            raise ValueError
+        return selector
 
     def setEditorData(self, editor: QWidget, index: QModelIndex) -> None:
         editor.selected_id = index.data()
