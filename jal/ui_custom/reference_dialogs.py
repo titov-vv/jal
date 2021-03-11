@@ -395,6 +395,12 @@ class SqlTreeModel(QAbstractItemModel):
     def getFieldValue(self, item_id, field_name):
         return readSQL(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
 
+    def deleteWithChilderen(self, parent_id: int) -> None:
+        query = executeSQL(f"SELECT id FROM {self._table} WHERE pid=:pid", [(":pid", parent_id)])
+        while query.next():
+            self.deleteWithChilderen(query.value(0))
+        _ = executeSQL(f"DELETE FROM {self._table} WHERE id=:id", [(":id", parent_id)])
+
     def insertRows(self, row, count, parent=None):
         if parent is None:
             return False
@@ -420,9 +426,10 @@ class SqlTreeModel(QAbstractItemModel):
 
         self.beginRemoveRows(parent, row, row + count - 1)
         _ = executeSQL("BEGIN TRANSACTION")
-        _ = executeSQL(f"DELETE FROM {self._table} WHERE id IN "
-                       f"(SELECT id FROM {self._table} WHERE pid=:pid LIMIT :row_c OFFSET :row_n)",
-                       [(":pid", parent_id), (":row_c", count), (":row_n", row)])
+        query = executeSQL(f"SELECT id FROM {self._table} WHERE pid=:pid LIMIT :row_c OFFSET :row_n",
+                           [(":pid", parent_id), (":row_c", count), (":row_n", row)])
+        while query.next():
+            self.deleteWithChilderen(query.value(0))
         self.endRemoveRows()
         self.layoutChanged.emit()
         return True
