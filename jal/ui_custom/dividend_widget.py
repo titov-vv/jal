@@ -7,8 +7,20 @@ from jal.ui_custom.helpers import g_tr
 from jal.ui_custom.abstract_operation_details import AbstractOperationDetails
 from jal.ui_custom.reference_selector import AccountSelector, AssetSelector
 from jal.ui_custom.amount_editor import AmountEdit
-from jal.widgets.mapper_delegate import MapperDelegate
+from jal.widgets.view_delegate import WidgetMapperDelegateBase
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+class DividendWidgetDelegate(WidgetMapperDelegateBase):
+    def __init__(self, parent=None):
+        WidgetMapperDelegateBase.__init__(self, parent)
+        self.delegates = {1: self.timestamp_delegate,
+                          2: self.timestamp_delegate,
+                          7: self.float_delegate,
+                          8: self.float_delegate}
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 class DividendWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
@@ -92,7 +104,7 @@ class DividendWidget(AbstractOperationDetails):
                                              g_tr("DividendWidget", "Bond Interest")])
         self.type.setModel(self.combo_model)
 
-        self.mapper.setItemDelegate(MapperDelegate(self.mapper))
+        self.mapper.setItemDelegate(DividendWidgetDelegate(self.mapper))
 
         self.account_widget.changed.connect(self.mapper.submit)
         self.asset_widget.changed.connect(self.mapper.submit)

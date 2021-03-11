@@ -8,8 +8,21 @@ from jal.ui_custom.helpers import g_tr
 from jal.ui_custom.abstract_operation_details import AbstractOperationDetails
 from jal.ui_custom.reference_selector import AccountSelector
 from jal.ui_custom.amount_editor import AmountEdit
-from jal.widgets.mapper_delegate import MapperDelegate
+from jal.widgets.view_delegate import WidgetMapperDelegateBase
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+class TransferWidgetDelegate(WidgetMapperDelegateBase):
+    def __init__(self, parent=None):
+        WidgetMapperDelegateBase.__init__(self, parent)
+        self.delegates = {1: self.timestamp_delegate,
+                          3: self.float_delegate,
+                          4: self.timestamp_delegate,
+                          6: self.float_delegate,
+                          8: self.float_delegate}
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 class TransferWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
@@ -101,7 +114,7 @@ class TransferWidget(AbstractOperationDetails):
         self.copy_amount_btn.clicked.connect(self.onCopyAmount)
 
         super()._init_db("transfers")
-        self.mapper.setItemDelegate(MapperDelegate(self.mapper))
+        self.mapper.setItemDelegate(TransferWidgetDelegate(self.mapper))
 
         self.from_account_widget.changed.connect(self.mapper.submit)
         self.to_account_widget.changed.connect(self.mapper.submit)

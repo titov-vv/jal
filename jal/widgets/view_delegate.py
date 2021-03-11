@@ -2,11 +2,52 @@ from datetime import datetime
 
 from PySide2.QtWidgets import QStyledItemDelegate, QTreeView
 from PySide2.QtCore import Qt
+from PySide2.QtSql import QSqlRelationalDelegate
 
 from jal.constants import CustomColor, CorporateAction
 from jal.ui_custom.helpers import g_tr, formatFloatLong
+from jal.widgets.mapper_delegate import TimestampDelegate, FloatDelegate
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# Base class to provide different delegates for WidgetDataMappers in operations widgets
+# Separate delegate class is subclassed for every operation widget with own definition of self.delegates for columns
+class WidgetMapperDelegateBase(QSqlRelationalDelegate):
+    def __init__(self, parent=None):
+        QSqlRelationalDelegate.__init__(self, parent)
+
+        self.timestamp_delegate = TimestampDelegate()
+        self.float_delegate = FloatDelegate()
+        self.default = QSqlRelationalDelegate()
+
+        self.delegates = {}
+
+    def get_delegate(self, index):
+        column = index.column()
+        try:
+            delegate = self.delegates[column]
+        except KeyError:
+            delegate = self.default
+        return delegate
+
+    def paint(self, painter, option, index):
+        delegate = self.get_delegate(index)
+        delegate.paint(painter, option, index)
+
+    def createEditor(self, aParent, option, index):
+        delegate = self.get_delegate(index)
+        delegate.createEditor(aParent, option, index)
+
+    def setEditorData(self, editor, index):
+        delegate = self.get_delegate(index)
+        delegate.setEditorData(editor, index)
+
+    def setModelData(self, editor, model, index):
+        delegate = self.get_delegate(index)
+        delegate.setModelData(editor, model, index)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 class ReportsFloatDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         QStyledItemDelegate.__init__(self, parent)

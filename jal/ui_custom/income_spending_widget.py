@@ -8,10 +8,19 @@ from PySide2.QtSql import QSqlTableModel, QSqlRelationalDelegate
 from jal.ui_custom.helpers import g_tr
 from jal.ui_custom.abstract_operation_details import AbstractOperationDetails
 from jal.ui_custom.reference_selector import AccountSelector, PeerSelector, CategorySelector, TagSelector
-from jal.widgets.mapper_delegate import MapperDelegate, FloatDelegate
+from jal.widgets.mapper_delegate import FloatDelegate
 from jal.db.helpers import db_connection, executeSQL, readSQL
+from jal.widgets.view_delegate import WidgetMapperDelegateBase
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+class IncomeSpendingWidgetDelegate(WidgetMapperDelegateBase):
+    def __init__(self, parent=None):
+        WidgetMapperDelegateBase.__init__(self, parent)
+        self.delegates = {1: self.timestamp_delegate}
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 class IncomeSpendingWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
@@ -83,7 +92,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.del_button.clicked.connect(self.delChild)
 
         super()._init_db("actions")
-        self.mapper.setItemDelegate(MapperDelegate(self.mapper))
+        self.mapper.setItemDelegate(IncomeSpendingWidgetDelegate(self.mapper))
 
         self.details_model = DetailsModel(self.details_table, db_connection())
         self.details_model.setTable("action_details")
