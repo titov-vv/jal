@@ -202,6 +202,9 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
             self.toggle_state = True
         self.setFilter()
 
+    def locateItem(self, item_id):
+        raise NotImplementedError("locateItem() method is not defined in subclass ReferenceDataDialog")
+
 # ===================================================================================================================
 # Delegates to customize view of columns
 # ===================================================================================================================

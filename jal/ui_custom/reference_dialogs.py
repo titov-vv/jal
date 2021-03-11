@@ -70,7 +70,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         assert self.model.removeRow(row)
 
     def locateItem(self, item_id, use_filter=''):
-        pass
+        raise NotImplementedError("locateItem() method is not defined in subclass of AbstractReferenceListModel")
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -216,6 +216,18 @@ class AssetListModel(AbstractReferenceListModel):
         self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("src_id"), self._lookup_delegate)
 
+    def getAssetType(self, item_id: int) -> int:
+        type_id = readSQL(f"SELECT type_id FROM {self._table} WHERE id=:id", [(":id", item_id)])
+        type_id = 0 if type_id is None else type_id
+        return type_id
+
+    def locateItem(self, item_id, use_filter=''):
+        row = readSQL(f"SELECT row_number FROM (SELECT ROW_NUMBER() OVER (ORDER BY name) AS row_number, id "
+                      f"FROM {self._table} WHERE {use_filter}) WHERE id=:id", [(":id", item_id)])
+        if row is None:
+            return QModelIndex()
+        return self.index(row-1, 0)
+
 
 class AssetListDialog(ReferenceDataDialog):
     def __init__(self):
@@ -243,6 +255,14 @@ class AssetListDialog(ReferenceDataDialog):
         self.GroupCombo.setModel(relation_model)
         self.GroupCombo.setModelColumn(relation_model.fieldIndex("name"))
         self.group_id = relation_model.data(relation_model.index(0, relation_model.fieldIndex(self.group_fkey_field)))
+
+    def locateItem(self, item_id):
+        type_id = self.model.getAssetType(item_id)
+        if type_id == 0:
+            return
+        self.GroupCombo.setCurrentIndex(type_id-1)
+        item_idx = self.model.locateItem(item_id, use_filter=self._filter_text)
+        self.DataView.setCurrentIndex(item_idx)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -484,6 +504,9 @@ class PeerListDialog(ReferenceDataDialog):
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Peers"))
         self.Toggle.setVisible(False)
 
+    def locateItem(self, item_id):
+        self.model.locateItem(item_id)
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 class CategoryTreeModel(SqlTreeModel):
@@ -520,6 +543,8 @@ class CategoryListDialog(ReferenceDataDialog):
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Categories"))
         self.Toggle.setVisible(False)
 
+    def locateItem(self, item_id):
+        self.model.locateItem(item_id)
 
 # ----------------------------------------------------------------------------------------------------------------------
 class TagListModel(AbstractReferenceListModel):
@@ -530,6 +555,13 @@ class TagListModel(AbstractReferenceListModel):
         self._sort_by = "tag"
         self._hidden = ["id"]
         self._stretch = "tag"
+
+    def locateItem(self, item_id, use_filter=''):
+        row = readSQL(f"SELECT row_number FROM (SELECT ROW_NUMBER() OVER (ORDER BY tag) AS row_number, id "
+                      f"FROM {self._table}) WHERE id=:id", [(":id", item_id)])
+        if row is None:
+            return QModelIndex()
+        return self.index(row - 1, 0)
 
 
 class TagsListDialog(ReferenceDataDialog):
@@ -547,6 +579,10 @@ class TagsListDialog(ReferenceDataDialog):
         self.setWindowTitle(g_tr('ReferenceDataDialog', "Tags"))
         self.SearchFrame.setVisible(True)
         self.Toggle.setVisible(False)
+
+    def locateItem(self, item_id):
+        item_idx = self.model.locateItem(item_id)
+        self.DataView.setCurrentIndex(item_idx)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
