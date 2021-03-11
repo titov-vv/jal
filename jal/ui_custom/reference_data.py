@@ -22,7 +22,6 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.model = None
         self.selected_id = 0
         self.p_selected_name = ''
-        self.dialog_visible = False
         self.selection_enabled = False
         self.group_id = None
         self.group_key_field = None
@@ -77,13 +76,11 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
     # Overload ancestor method to activate/deactivate filters for table view
     def exec_(self, enable_selection=False, selected=0):
-        self.dialog_visible = True
         self.selection_enabled = enable_selection
         self.setFilter()
         if enable_selection:
             self.model.locateItem(selected)
         res = super().exec_()
-        self.dialog_visible = False
         self.resetFilter()
         return res
 
@@ -151,10 +148,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     def resetFilter(self):
         self.model.setFilter("")
 
-    def setFilter(self):  # TODO: correctly combine different conditions
-        if not self.dialog_visible:
-            return
-
+    def setFilter(self):
         conditions = []
         if self.search_text:
             conditions.append(f"{self.search_field} LIKE '%{self.search_text}%'")

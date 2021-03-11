@@ -55,7 +55,6 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
         self.name.setText(self.dialog.model.getFieldValue(selected_id, self.selector_field))
         if self.details_field:
             self.details.setText(self.dialog.model.getFieldValue(selected_id, self.details_field))
-        self.dialog.model.setFilter("")
 
     selected_id = Property(int, getId, setId, notify=changed, user=True)
 
