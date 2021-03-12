@@ -2,14 +2,14 @@ import logging
 from datetime import datetime
 from dateutil import tz
 
-from PySide2.QtCore import Qt, Slot, QModelIndex
-from PySide2.QtWidgets import QWidget, QLabel, QDateTimeEdit, QPushButton, QTableView, QHeaderView, QStyledItemDelegate
+from PySide2.QtCore import Qt, Slot
+from PySide2.QtWidgets import QLabel, QDateTimeEdit, QPushButton, QTableView, QHeaderView
 from PySide2.QtSql import QSqlTableModel
 from jal.widgets.helpers import g_tr
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
-from jal.widgets.reference_selector import AccountSelector, PeerSelector, CategorySelector, TagSelector
-from jal.db.helpers import db_connection, executeSQL, readSQL
-from jal.widgets.delegates import WidgetMapperDelegateBase, FloatDelegate
+from jal.widgets.reference_selector import AccountSelector, PeerSelector
+from jal.db.helpers import db_connection, executeSQL
+from jal.widgets.delegates import WidgetMapperDelegateBase, FloatDelegate, CategorySelectorDelegate, TagSelectorDelegate
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -26,8 +26,8 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.name = "Income/Spending"
 
         self.details_model = None
-        self.category_delegate = LookupSelectorDelegate(LookupSelectorDelegate.Category)
-        self.tag_delegate = LookupSelectorDelegate(LookupSelectorDelegate.Tag)
+        self.category_delegate = CategorySelectorDelegate()
+        self.tag_delegate = TagSelectorDelegate()
         self.float_delegate = FloatDelegate(2)
 
         self.date_label = QLabel(self)
@@ -216,40 +216,3 @@ class DetailsModel(QSqlTableModel):
         self._view.setColumnWidth(5, 100)
         self._view.horizontalHeader().setSectionResizeMode(6, QHeaderView.Stretch)
         self._view.horizontalHeader().moveSection(6, 0)
-
-
-# -----------------------------------------------------------------------------------------------------------------------
-class LookupSelectorDelegate(QStyledItemDelegate):
-    Category = 1
-    Tag = 2
-
-    def __init__(self, selector_type, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
-        self._type = selector_type
-        if self._type == self.Category:
-            self._table = "categories"
-            self._field = "name"
-        elif self._type == self.Tag:
-            self._table = "tags"
-            self._field = "tag"
-        else:
-            raise ValueError
-
-    def displayText(self, value, locale):
-        item_name = readSQL(f"SELECT {self._field} FROM {self._table} WHERE id=:id", [(":id", value)])
-        return item_name
-
-    def createEditor(self, aParent, option, index):
-        if self._type == self.Category:
-            selector = CategorySelector(aParent)
-        elif self._type == self.Tag:
-            selector = TagSelector(aParent)
-        else:
-            raise ValueError
-        return selector
-
-    def setEditorData(self, editor: QWidget, index: QModelIndex) -> None:
-        editor.selected_id = index.data()
-
-    def setModelData(self, editor, model, index):
-        model.setData(index, editor.selected_id)

@@ -1,8 +1,10 @@
 from datetime import datetime
-from PySide2.QtWidgets import QStyledItemDelegate, QLineEdit, QDateTimeEdit
-from PySide2.QtCore import Qt
+from PySide2.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTimeEdit
+from PySide2.QtCore import Qt, QModelIndex
 from PySide2.QtGui import QDoubleValidator, QBrush
 from jal.constants import Setup, CustomColor
+from jal.widgets.reference_selector import PeerSelector, CategorySelector, TagSelector
+from jal.db.helpers import readSQL
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -145,3 +147,60 @@ class GridLinesDelegate(QStyledItemDelegate):
         painter.drawRect(option.rect)
         painter.restore()
         super().paint(painter, option, index)
+
+
+# -----------------------------------------------------------------------------------------------------------------------
+# Base class for lookup delegate that allows Peer, Category and Tag selection
+class LookupSelectorDelegate(QStyledItemDelegate):
+    Category = 1
+    Tag = 2
+    Peer = 3
+
+    def __init__(self, parent=None):
+        QStyledItemDelegate.__init__(self, parent)
+
+    def displayText(self, value, locale):
+        item_name = readSQL(f"SELECT {self._field} FROM {self._table} WHERE id=:id", [(":id", value)])
+        return item_name
+
+    def createEditor(self, aParent, option, index):
+        if self._type == self.Category:
+            selector = CategorySelector(aParent)
+        elif self._type == self.Tag:
+            selector = TagSelector(aParent)
+        elif self._type == self.Peer:
+            selector = PeerSelector(aParent)
+        else:
+            raise ValueError
+        return selector
+
+    def setEditorData(self, editor: QWidget, index: QModelIndex) -> None:
+        editor.selected_id = index.data()
+
+    def setModelData(self, editor, model, index):
+        model.setData(index, editor.selected_id)
+
+
+class CategorySelectorDelegate(LookupSelectorDelegate):
+    def __init__(self, parent=None):
+        LookupSelectorDelegate.__init__(self, parent)
+        self._type = LookupSelectorDelegate.Category
+        self._table = "categories"
+        self._field = "name"
+
+
+class TagSelectorDelegate(LookupSelectorDelegate):
+    def __init__(self, parent=None):
+        LookupSelectorDelegate.__init__(self, parent)
+        self._type = LookupSelectorDelegate.Tag
+        self._table = "tags"
+        self._field = "tag"
+
+
+class PeerSelectorDelegate(LookupSelectorDelegate):
+    def __init__(self, parent=None):
+        LookupSelectorDelegate.__init__(self, parent)
+        self._type = LookupSelectorDelegate.Peer
+        self._table = "agents"
+        self._field = "name"
+# -----------------------------------------------------------------------------------------------------------------------

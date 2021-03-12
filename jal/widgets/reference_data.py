@@ -275,16 +275,3 @@ class ReferenceIntDelegate(QStyledItemDelegate):
             painter.setPen(pen)
             painter.drawRect(option.rect)
         painter.restore()
-
-
-# -----------------------------------------------------------------------------------------------------------------------
-# Delegate to display tag editor
-class ReferencePeerDelegate(QSqlRelationalDelegate):
-    def __init__(self, parent=None):
-        QSqlRelationalDelegate.__init__(self, parent)
-
-    def createEditor(self, aParent, option, index):
-        return ui.PeerSelector(aParent)
-
-    def setModelData(self, editor, model, index):
-        model.setData(index, editor.selected_id)
