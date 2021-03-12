@@ -235,12 +235,9 @@ class LookupSelectorDelegate(QStyledItemDelegate):
         else:
             raise ValueError
 
-    def paint(self, painter, option, index):
-        painter.save()
-        item_id = index.data()
-        item_name = readSQL(f"SELECT {self._field} FROM {self._table} WHERE id=:id", [(":id", item_id)])
-        painter.drawText(option.rect, Qt.AlignLeft, item_name)
-        painter.restore()
+    def displayText(self, value, locale):
+        item_name = readSQL(f"SELECT {self._field} FROM {self._table} WHERE id=:id", [(":id", value)])
+        return item_name
 
     def createEditor(self, aParent, option, index):
         if self._type == self.Category:

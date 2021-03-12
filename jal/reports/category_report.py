@@ -3,7 +3,7 @@ from PySide2.QtSql import QSqlTableModel
 from PySide2.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection, executeSQL
 from widgets.helpers import g_tr
-from jal.widgets.delegates import ReportsFloatDelegate, ReportsTimestampDelegate
+from jal.widgets.delegates import ReportsFloatDelegate, TimestampDelegate
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ class CategoryReportModel(QSqlTableModel):
         self._view.setColumnWidth(self.fieldIndex("sum"), 200)
         self._view.setColumnWidth(self.fieldIndex("timestamp"),
                                   self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
-        self._timestamp_delegate = ReportsTimestampDelegate()
+        self._timestamp_delegate = TimestampDelegate()
         self._view.setItemDelegateForColumn(self.fieldIndex("timestamp"), self._timestamp_delegate)
         self._float_delegate = ReportsFloatDelegate(2)
         self._view.setItemDelegateForColumn(self.fieldIndex("sum"), self._float_delegate)

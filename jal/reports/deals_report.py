@@ -2,7 +2,7 @@ from PySide2.QtCore import Qt
 from PySide2.QtSql import QSqlTableModel
 from jal.db.helpers import db_connection, executeSQL
 from widgets.helpers import g_tr
-from jal.widgets.delegates import ReportsTimestampDelegate, ReportsProfitDelegate, \
+from jal.widgets.delegates import TimestampDelegate, ReportsProfitDelegate, \
     ReportsCorpActionDelegate, ReportsFloatDelegate
 
 
@@ -47,7 +47,7 @@ class DealsReportModel(QSqlTableModel):
                                   self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
         self._view.setColumnWidth(self.fieldIndex("close_timestamp"),
                                   self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
-        self._timestamp_delegate = ReportsTimestampDelegate()
+        self._timestamp_delegate = TimestampDelegate()
         self._view.setItemDelegateForColumn(self.fieldIndex("open_timestamp"), self._timestamp_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("close_timestamp"), self._timestamp_delegate)
         self._float_delegate = ReportsFloatDelegate()

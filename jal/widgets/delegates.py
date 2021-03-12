@@ -52,6 +52,13 @@ class TimestampDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         QStyledItemDelegate.__init__(self, parent)
 
+    def displayText(self, value, locale):
+        if isinstance(value, str):  # already SQL-preprocessed date
+            text = datetime.utcfromtimestamp(int(value)).strftime('%d/%m/%Y')
+        else:
+            text = datetime.utcfromtimestamp(value).strftime('%d/%m/%Y %H:%M:%S')
+        return text
+
     def setEditorData(self, editor, index):
         timestamp = index.model().data(index, Qt.EditRole)
         if timestamp == '':
@@ -172,18 +179,6 @@ class ReportsCorpActionDelegate(QStyledItemDelegate):
                 text = g_tr('OperationsDelegate', " Short")
         painter.drawText(option.rect, Qt.AlignLeft, text)
         painter.restore()
-
-
-class ReportsTimestampDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
-
-    def displayText(self, value, locale):
-        if isinstance(value, str):  # already SQL-preprocessed date
-            text = datetime.utcfromtimestamp(int(value)).strftime('%d/%m/%Y')
-        else:
-            text = datetime.utcfromtimestamp(value).strftime('%d/%m/%Y %H:%M:%S')
-        return text
 
 
 class ReportsYearMonthDelegate(QStyledItemDelegate):
