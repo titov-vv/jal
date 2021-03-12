@@ -182,14 +182,6 @@ class ReportsCorpActionDelegate(QStyledItemDelegate):
         painter.restore()
 
 
-class ReportsYearMonthDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
-
-    def displayText(self, value, locale):
-        text = datetime.utcfromtimestamp(value).strftime('%Y %B')
-        return text
-
 class ReportsFloat2ZeroDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         self._parent = parent
