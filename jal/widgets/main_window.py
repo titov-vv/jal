@@ -97,6 +97,7 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         for i in range(self.OperationsTabs.count()):
             if hasattr(self.OperationsTabs.widget(i), "isCustom"):
                 self.OperationsTabs.widget(i).dbUpdated.connect(self.ledger.rebuild)
+                self.OperationsTabs.widget(i).dbUpdated.connect(self.operations_model.refresh)
                 self.NewOperationMenu.addAction(self.OperationsTabs.widget(i).name,
                                                 partial(self.createOperation, i))
         self.NewOperationBtn.setMenu(self.NewOperationMenu)

@@ -304,6 +304,13 @@ class OperationsModel(QAbstractTableModel):
                            [(":timestamp", timestamp), (":account_id", account_id)])
             self.prepareData()
 
+    @Slot()
+    def refresh(self):
+        idx = self._view.selectionModel().selection().indexes()
+        self.prepareData()
+        if idx:
+            self._view.setCurrentIndex(idx[0])
+
     def prepareData(self):
         self._data = []
         if self._begin == 0 and self._end == 0:
