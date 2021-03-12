@@ -4,7 +4,7 @@ from PySide2.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection, executeSQL
 from jal.widgets.delegates import *
 from jal.widgets.helpers import g_tr
-from jal.widgets.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, ReferenceIntDelegate
+from jal.widgets.reference_data import ReferenceDataDialog, ReferenceIntDelegate
 from jal.widgets.delegates import GridLinesDelegate
 
 
@@ -140,11 +140,12 @@ class AccountListModel(AbstractReferenceListModel):
 
         self._lookup_delegate = QSqlRelationalDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
+        # TODO Adopt correct usage of PeerSelectorDelegate() instead of QSqlRelationalDelegate() for organization_id
         self._view.setItemDelegateForColumn(self.fieldIndex("organization_id"), self._lookup_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
         self._timestamp_delegate = TimestampDelegate(parent=self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("reconciled_on"), self._timestamp_delegate)
-        self._bool_delegate = ReferenceBoolDelegate(self._view)
+        self._bool_delegate = BoolDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("active"), self._bool_delegate)
 
     def getAccountType(self, item_id: int) -> int:
@@ -547,7 +548,7 @@ class CategoryTreeModel(SqlTreeModel):
         super().configureView()
         self._grid_delegate = GridLinesDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("name"), self._grid_delegate)
-        self._bool_delegate = ReferenceBoolDelegate(self._view)
+        self._bool_delegate = BoolDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("often"), self._bool_delegate)
 
 
@@ -629,7 +630,7 @@ class CountryListModel(AbstractReferenceListModel):
         super().configureView()
         self._view.setColumnWidth(self.fieldIndex("code"), 50)
 
-        self._bool_delegate = ReferenceBoolDelegate(self._view)
+        self._bool_delegate = BoolDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("tax_treaty"), self._bool_delegate)
 
 

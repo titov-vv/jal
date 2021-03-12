@@ -1,12 +1,9 @@
 import logging
-from datetime import datetime
 
-from PySide2.QtCore import Qt, Signal, Property, Slot, QEvent
-from PySide2.QtSql import QSqlRelationalDelegate
+from PySide2.QtCore import Qt, Signal, Property, Slot
 from PySide2.QtWidgets import QDialog, QMessageBox, QStyledItemDelegate, QTreeView
 
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
-import jal.widgets.reference_selector as ui     # Full import due to "cyclic" reference
 from jal.widgets.helpers import g_tr
 
 
@@ -220,39 +217,6 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 # ===================================================================================================================
 # Delegates to customize view of columns
 # ===================================================================================================================
-# Display '*' if true and empty cell if false
-# Toggle True/False by mouse click
-class ReferenceBoolDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
-        self._parent = parent
-        QStyledItemDelegate.__init__(self, parent)
-
-    def paint(self, painter, option, index):
-        painter.save()
-        model = index.model()
-        status = model.data(index, Qt.DisplayRole)
-        if status:
-            text = ' * '
-        else:
-            text = ''
-        painter.drawText(option.rect, Qt.AlignHCenter, text)
-        # Extra code for tree views - to draw grid lines
-        if type(self._parent) == QTreeView:
-            pen = painter.pen()
-            pen.setWidth(1)
-            pen.setStyle(Qt.DotLine)
-            pen.setColor(Qt.GlobalColor.lightGray)
-            painter.setPen(pen)
-            painter.drawRect(option.rect)
-        painter.restore()
-
-    def editorEvent(self, event, model, option, index):
-        if event.type() == QEvent.MouseButtonPress:
-            if model.data(index, Qt.DisplayRole):  # Toggle value - from 1 to 0 and from 0 to 1
-                model.setData(index, 0)
-            else:
-                model.setData(index, 1)
-        return True
 
 # -------------------------------------------------------------------------------------------------------------------
 # Make integer alignment to the right

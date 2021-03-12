@@ -1,6 +1,6 @@
 from datetime import datetime
-from PySide2.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTimeEdit
-from PySide2.QtCore import Qt, QModelIndex
+from PySide2.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTimeEdit, QTreeView
+from PySide2.QtCore import Qt, QModelIndex, QEvent
 from PySide2.QtGui import QDoubleValidator, QBrush
 from jal.constants import Setup, CustomColor
 from jal.widgets.reference_selector import PeerSelector, CategorySelector, TagSelector
@@ -128,6 +128,42 @@ class FloatDelegate(QStyledItemDelegate):
         option.displayAlignment = Qt.AlignRight
         if self._colors:
             option.backgroundBrush = QBrush(self._color)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Display '*' if true and empty cell if false
+# Toggle True/False by mouse click
+class BoolDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        self._parent = parent
+        QStyledItemDelegate.__init__(self, parent)
+
+    def paint(self, painter, option, index):
+        painter.save()
+        model = index.model()
+        status = model.data(index, Qt.DisplayRole)
+        if status:
+            text = ' ☒ '
+        else:
+            text = ' ☐ '
+        painter.drawText(option.rect, Qt.AlignHCenter, text)
+        # Extra code for tree views - to draw grid lines
+        if type(self._parent) == QTreeView:
+            pen = painter.pen()
+            pen.setWidth(1)
+            pen.setStyle(Qt.DotLine)
+            pen.setColor(Qt.GlobalColor.lightGray)
+            painter.setPen(pen)
+            painter.drawRect(option.rect)
+        painter.restore()
+
+    def editorEvent(self, event, model, option, index):
+        if event.type() == QEvent.MouseButtonPress:
+            if model.data(index, Qt.DisplayRole):  # Toggle value - from 1 to 0 and from 0 to 1
+                model.setData(index, 0)
+            else:
+                model.setData(index, 1)
+        return True
 
 
 # ----------------------------------------------------------------------------------------------------------------------
