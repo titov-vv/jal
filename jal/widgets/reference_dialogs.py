@@ -2,7 +2,7 @@ from PySide2.QtCore import Qt, QAbstractItemModel, QModelIndex
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate
 from PySide2.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection, executeSQL, readSQL
-from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate
+from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate, PeerSelectorDelegate
 from jal.widgets.helpers import g_tr
 from jal.widgets.reference_data import ReferenceDataDialog
 from jal.widgets.delegates import GridLinesDelegate
@@ -124,11 +124,11 @@ class AccountListModel(AbstractReferenceListModel):
         self._hidden = ["id", "type_id"]
         self._stretch = "name"
         self._lookup_delegate = None
+        self._peer_delegate = None
         self._timestamp_delegate = None
         self._bool_delegate = None
         self.setRelation(self.fieldIndex("type_id"), QSqlRelation("account_types", "id", "name"))
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "name"))
-        self.setRelation(self.fieldIndex("organization_id"), QSqlRelation("agents", "id", "name"))
         self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "code"))
 
     def configureView(self):
@@ -140,9 +140,9 @@ class AccountListModel(AbstractReferenceListModel):
 
         self._lookup_delegate = QSqlRelationalDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
-        # TODO Adopt correct usage of PeerSelectorDelegate() instead of QSqlRelationalDelegate() for organization_id
-        self._view.setItemDelegateForColumn(self.fieldIndex("organization_id"), self._lookup_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
+        self._peer_delegate = PeerSelectorDelegate()
+        self._view.setItemDelegateForColumn(self.fieldIndex("organization_id"), self._peer_delegate)
         self._timestamp_delegate = TimestampDelegate(parent=self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("reconciled_on"), self._timestamp_delegate)
         self._bool_delegate = BoolDelegate(self._view)
