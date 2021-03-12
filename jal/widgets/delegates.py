@@ -124,6 +124,7 @@ class FloatDelegate(QStyledItemDelegate):
             option.backgroundBrush = QBrush(self._color)
 
 
+# ----------------------------------------------------------------------------------------------------------------------
 class ReportsCorpActionDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         QStyledItemDelegate.__init__(self, parent)
@@ -157,31 +158,7 @@ class ReportsCorpActionDelegate(QStyledItemDelegate):
         painter.restore()
 
 
-class ReportsFloat2ZeroDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
-        self._parent = parent
-        QStyledItemDelegate.__init__(self, parent)
-
-    def paint(self, painter, option, index):
-        painter.save()
-        pen = painter.pen()
-        model = index.model()
-        amount = model.data(index, Qt.DisplayRole)
-        if amount == 0:
-            pen.setColor(CustomColor.Grey)
-            painter.setPen(pen)
-        text = f"{amount:,.2f}"
-        painter.drawText(option.rect, Qt.AlignRight, text)
-        # Extra code for tree views - to draw grid lines
-        if type(self._parent) == QTreeView:
-            pen = painter.pen()
-            pen.setWidth(1)
-            pen.setStyle(Qt.DotLine)
-            pen.setColor(Qt.GlobalColor.lightGray)
-            painter.setPen(pen)
-            painter.drawRect(option.rect)
-        painter.restore()
-
+# ----------------------------------------------------------------------------------------------------------------------
 class GridLinesDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         QStyledItemDelegate.__init__(self, parent)

@@ -1,9 +1,10 @@
 from datetime import datetime
 from PySide2.QtCore import Qt, QAbstractItemModel, QModelIndex
-from jal.constants import BookAccount, PredefinedAsset
+from PySide2.QtGui import QBrush
+from jal.constants import BookAccount, PredefinedAsset, CustomColor
 from widgets.helpers import g_tr
 from jal.db.helpers import executeSQL
-from jal.widgets.delegates import ReportsFloat2ZeroDelegate, GridLinesDelegate
+from jal.widgets.delegates import GridLinesDelegate
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -201,19 +202,27 @@ class IncomeSpendingReport(QAbstractItemModel):
                 return item.name
             else:
                 year, month = self._root.column2calendar(index.column())
-                return item.getAmount(year, month)
+                return f"{item.getAmount(year, month):,.2f}"
+        if role == Qt.ForegroundRole:
+            if index.column() != 0:
+                year, month = self._root.column2calendar(index.column())
+                if item.getAmount(year, month) == 0:
+                    return QBrush(CustomColor.Grey)
+        if role == Qt.TextAlignmentRole:
+            if index.column() == 0:
+                return Qt.AlignLeft
+            else:
+                return Qt.AlignRight
         return None
 
     def configureView(self):
         self._grid_delegate = GridLinesDelegate(self._view)
-        self._report_delegate = ReportsFloat2ZeroDelegate(self._view)
         for column in range(self.columnCount()):
+            self._view.setItemDelegateForColumn(column, self._grid_delegate)
             if column == 0:
                 self._view.setColumnWidth(column, 300)
-                self._view.setItemDelegateForColumn(column, self._grid_delegate)
             else:
                 self._view.setColumnWidth(column, 100)
-                self._view.setItemDelegateForColumn(column, self._report_delegate)
         font = self._view.header().font()
         font.setBold(True)
         self._view.header().setFont(font)
