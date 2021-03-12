@@ -1,11 +1,8 @@
 from datetime import datetime
-
-from PySide2.QtWidgets import QStyledItemDelegate, QTreeView, QLineEdit
+from PySide2.QtWidgets import QStyledItemDelegate, QLineEdit
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QDoubleValidator, QBrush
-
-from jal.constants import Setup, CustomColor, CorporateAction
-from widgets.helpers import g_tr
+from jal.constants import Setup, CustomColor
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -122,40 +119,6 @@ class FloatDelegate(QStyledItemDelegate):
         option.displayAlignment = Qt.AlignRight
         if self._colors:
             option.backgroundBrush = QBrush(self._color)
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-class ReportsCorpActionDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
-
-    def paint(self, painter, option, index):
-        CorpActionNames = {
-            CorporateAction.SymbolChange: g_tr('OperationsDelegate', "Symbol change"),
-            CorporateAction.Split: g_tr('OperationsDelegate', "Split"),
-            CorporateAction.SpinOff: g_tr('OperationsDelegate', "Spin-off"),
-            CorporateAction.Merger: g_tr('OperationsDelegate', "Merger"),
-            CorporateAction.StockDividend: g_tr('OperationsDelegate', "Stock dividend")
-        }
-
-        painter.save()
-        model = index.model()
-        record = model.record(index.row())
-        type = record.value(index.column())
-        if type == '':
-            type = 0
-        if type > 0:
-            text = g_tr('OperationsDelegate', " Opened with ") + CorpActionNames[type]
-        elif type < 0:
-            text = g_tr('OperationsDelegate', " Closed with ") + CorpActionNames[-type]
-        else:
-            qty = record.value("qty")
-            if qty > 0:
-                text = g_tr('OperationsDelegate', " Long")
-            else:
-                text = g_tr('OperationsDelegate', " Short")
-        painter.drawText(option.rect, Qt.AlignLeft, text)
-        painter.restore()
 
 
 # ----------------------------------------------------------------------------------------------------------------------

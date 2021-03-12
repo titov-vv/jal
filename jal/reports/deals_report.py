@@ -2,7 +2,8 @@ from PySide2.QtCore import Qt
 from PySide2.QtSql import QSqlTableModel
 from jal.db.helpers import db_connection, executeSQL
 from widgets.helpers import g_tr
-from jal.widgets.delegates import TimestampDelegate, ReportsCorpActionDelegate, FloatDelegate
+from jal.constants import CorporateAction
+from jal.widgets.delegates import TimestampDelegate, FloatDelegate
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -15,6 +16,11 @@ class DealsReportModel(QSqlTableModel):
                          ("close_price", g_tr("Reports", "Close Price")),
                          ("qty", g_tr("Reports", "Qty")),
                          ("corp_action", g_tr("Reports", "Note"))]
+        self.ca_names = {CorporateAction.SymbolChange: g_tr('Reports', "Symbol change"),
+                         CorporateAction.Split: g_tr('Reports', "Split"),
+                         CorporateAction.SpinOff: g_tr('Reports', "Spin-off"),
+                         CorporateAction.Merger: g_tr('Reports', "Merger"),
+                         CorporateAction.StockDividend: g_tr('Reports', "Stock dividend")}
         self._view = parent_view
         self._group_dates = 0
         self._query = None
@@ -33,6 +39,22 @@ class DealsReportModel(QSqlTableModel):
     def resetDelegates(self):
         for column in self._columns:
             self._view.setItemDelegateForColumn(self.fieldIndex(column[0]), None)
+
+    def data(self, index, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole:
+            if index.column() == self.fieldIndex("corp_action"):
+                try:
+                    ca_type = int(super().data(index, role))
+                except ValueError:
+                    ca_type = 0
+                if ca_type > 0:
+                    text = g_tr('OperationsDelegate', " Opened with ") + self.ca_names[ca_type]
+                elif ca_type < 0:
+                    text = g_tr('OperationsDelegate', " Closed with ") + self.ca_names[-ca_type]
+                else:
+                    text = ''
+                return text
+        return super().data(index, role)
 
     def configureView(self):
         self._view.setModel(self)
@@ -63,8 +85,6 @@ class DealsReportModel(QSqlTableModel):
         self._profit_delegate = FloatDelegate(2, allow_tail=False, colors=True)
         self._view.setItemDelegateForColumn(self.fieldIndex("profit"), self._profit_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("rel_profit"), self._profit_delegate)
-        self._ca_delegate = ReportsCorpActionDelegate()
-        self._view.setItemDelegateForColumn(self.fieldIndex("corp_action"), self._ca_delegate)
 
     def prepare(self, begin, end, account_id, group_dates):
         if account_id == 0:
