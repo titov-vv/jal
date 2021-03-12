@@ -17,6 +17,7 @@ class DealsReportModel(QSqlTableModel):
                          ("qty", g_tr("Reports", "Qty")),
                          ("corp_action", g_tr("Reports", "Note"))]
         self._view = parent_view
+        self._group_dates = 0
         self._query = None
         self._timestamp_delegate = None
         self._float_delegate = None
@@ -47,7 +48,10 @@ class DealsReportModel(QSqlTableModel):
                                   self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
         self._view.setColumnWidth(self.fieldIndex("close_timestamp"),
                                   self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
-        self._timestamp_delegate = TimestampDelegate()
+        if self._group_dates == 1:
+            self._timestamp_delegate = TimestampDelegate(display_format='%d/%m/%Y')
+        else:
+            self._timestamp_delegate = TimestampDelegate()
         self._view.setItemDelegateForColumn(self.fieldIndex("open_timestamp"), self._timestamp_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("close_timestamp"), self._timestamp_delegate)
         self._float_delegate = ReportsFloatDelegate()
@@ -67,6 +71,7 @@ class DealsReportModel(QSqlTableModel):
         if account_id == 0:
             self.report_failure.emit(g_tr('Reports', "You should select account to create Deals report"))
             return False
+        self._group_dates = group_dates
         if group_dates == 1:
             self._query = executeSQL(
                                "SELECT asset, "

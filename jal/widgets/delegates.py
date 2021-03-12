@@ -49,14 +49,14 @@ class WidgetMapperDelegateBase(QStyledItemDelegate):
 # ----------------------------------------------------------------------------------------------------------------------
 # Delegate to convert timestamp from unix-time to QDateTime
 class TimestampDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
+    def __init__(self, display_format='%d/%m/%Y %H:%M:%S', parent=None):
         QStyledItemDelegate.__init__(self, parent)
+        self._format = display_format
 
     def displayText(self, value, locale):
-        if isinstance(value, str):  # already SQL-preprocessed date
-            text = datetime.utcfromtimestamp(int(value)).strftime('%d/%m/%Y')
-        else:
-            text = datetime.utcfromtimestamp(value).strftime('%d/%m/%Y %H:%M:%S')
+        if isinstance(value, str):  # in case of SQL agregates int value comes here in form of string
+            value = int(value)
+        text = datetime.utcfromtimestamp(value).strftime(self._format)
         return text
 
     def setEditorData(self, editor, index):
@@ -69,6 +69,7 @@ class TimestampDelegate(QStyledItemDelegate):
     def setModelData(self, editor, model, index):
         timestamp = editor.dateTime().toSecsSinceEpoch()
         model.setData(index, timestamp)
+
 
 # -----------------------------------------------------------------------------------------------------------------------
 # Delegate for nice float numbers formatting
