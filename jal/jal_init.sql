@@ -903,6 +903,7 @@ CREATE TRIGGER action_details_after_delete
          AFTER DELETE
             ON action_details
       FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= (
@@ -931,6 +932,7 @@ CREATE TRIGGER action_details_after_insert
          AFTER INSERT
             ON action_details
       FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= (
@@ -958,6 +960,7 @@ CREATE TRIGGER action_details_after_update
          AFTER UPDATE
             ON action_details
       FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= (
@@ -985,6 +988,7 @@ CREATE TRIGGER actions_after_delete
          AFTER DELETE
             ON actions
       FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM action_details
           WHERE pid = OLD.id;
@@ -1002,6 +1006,7 @@ CREATE TRIGGER actions_after_insert
          AFTER INSERT
             ON actions
       FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= NEW.timestamp;
@@ -1019,6 +1024,7 @@ CREATE TRIGGER actions_after_update
                          peer_id
             ON actions
       FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= OLD.timestamp OR
@@ -1037,6 +1043,7 @@ CREATE TRIGGER dividends_after_delete
          AFTER DELETE
             ON dividends
       FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= OLD.timestamp;
@@ -1052,6 +1059,7 @@ CREATE TRIGGER dividends_after_insert
          AFTER INSERT
             ON dividends
       FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= NEW.timestamp;
@@ -1071,6 +1079,7 @@ CREATE TRIGGER dividends_after_update
                          tax
             ON dividends
       FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= OLD.timestamp OR
@@ -1089,6 +1098,7 @@ CREATE TRIGGER trades_after_delete
          AFTER DELETE
             ON trades
       FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= OLD.timestamp;
@@ -1104,6 +1114,7 @@ CREATE TRIGGER trades_after_insert
          AFTER INSERT
             ON trades
       FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= NEW.timestamp;
@@ -1124,6 +1135,7 @@ CREATE TRIGGER trades_after_update
                          fee
             ON trades
       FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= OLD.timestamp OR
@@ -1142,6 +1154,7 @@ CREATE TRIGGER corp_after_delete
          AFTER DELETE
             ON corp_actions
       FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= OLD.timestamp;
@@ -1156,6 +1169,7 @@ CREATE TRIGGER corp_after_insert
          AFTER INSERT
             ON corp_actions
       FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= NEW.timestamp;
@@ -1176,6 +1190,7 @@ CREATE TRIGGER corp_after_update
                          qty_new
             ON corp_actions
       FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= OLD.timestamp OR
@@ -1194,6 +1209,7 @@ CREATE TRIGGER transfers_after_delete
          AFTER DELETE
             ON transfers
       FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp;
@@ -1209,6 +1225,7 @@ CREATE TRIGGER transfers_after_insert
          AFTER INSERT
             ON transfers
       FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
@@ -1232,6 +1249,7 @@ CREATE TRIGGER transfers_after_update
                          asset
             ON transfers
       FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp OR
