@@ -3,7 +3,7 @@ from PySide2.QtSql import QSqlTableModel
 from jal.db.helpers import db_connection, executeSQL
 from widgets.helpers import g_tr
 from jal.constants import BookAccount, PredefinedCategory
-from jal.widgets.delegates import ReportsFloat2Delegate, ReportsYearMonthDelegate
+from jal.widgets.delegates import ReportsFloatNDelegate, ReportsYearMonthDelegate
 
 #-----------------------------------------------------------------------------------------------------------------------
 class ProfitLossReportModel(QSqlTableModel):
@@ -40,7 +40,7 @@ class ProfitLossReportModel(QSqlTableModel):
                                   self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
         self._ym_delegate = ReportsYearMonthDelegate()
         self._view.setItemDelegateForColumn(self.fieldIndex("period"), self._ym_delegate)
-        self._float_delegate = ReportsFloat2Delegate()
+        self._float_delegate = ReportsFloatNDelegate(2)
         self._view.setItemDelegateForColumn(self.fieldIndex("transfer"), self._float_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("assets"), self._float_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("result"), self._float_delegate)

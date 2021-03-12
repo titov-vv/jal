@@ -113,30 +113,17 @@ class ReportsFloatDelegate(QStyledItemDelegate):
         painter.restore()
 # -----------------------------------------------------------------------------------------------------------------------
 
-class ReportsFloat2Delegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
+class ReportsFloatNDelegate(QStyledItemDelegate):
+    def __init__(self, tolerance, parent=None):
         QStyledItemDelegate.__init__(self, parent)
+        self._tolerance = tolerance
 
     def paint(self, painter, option, index):
         painter.save()
         model = index.model()
         record = model.record(index.row())
         amount = record.value(index.column())
-        text = f"{amount:.2f}" if amount != '' else ''
-        painter.drawText(option.rect, Qt.AlignRight, text)
-        painter.restore()
-
-
-class ReportsFloat4Delegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
-
-    def paint(self, painter, option, index):
-        painter.save()
-        model = index.model()
-        record = model.record(index.row())
-        amount = record.value(index.column())
-        text = f"{amount:.4f}" if amount != '' else ''
+        text = f"{amount:.{self._tolerance}f}" if amount != '' else ''
         painter.drawText(option.rect, Qt.AlignRight, text)
         painter.restore()
 
