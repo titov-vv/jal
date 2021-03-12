@@ -4,8 +4,7 @@ from PySide2.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection, readSQL, executeSQL
 from jal.widgets.delegates import *
 from jal.widgets.helpers import g_tr
-from jal.widgets.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
-    ReferenceTimestampDelegate, ReferenceIntDelegate
+from jal.widgets.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, ReferenceIntDelegate
 from jal.widgets.delegates import GridLinesDelegate
 
 
@@ -143,7 +142,7 @@ class AccountListModel(AbstractReferenceListModel):
         self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("organization_id"), self._lookup_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
-        self._timestamp_delegate = ReferenceTimestampDelegate(self._view)
+        self._timestamp_delegate = TimestampDelegate(parent=self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("reconciled_on"), self._timestamp_delegate)
         self._bool_delegate = ReferenceBoolDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("active"), self._bool_delegate)
@@ -660,6 +659,7 @@ class QuotesListModel(AbstractReferenceListModel):
                          ("asset_id", g_tr('ReferenceDataDialog', "Asset")),
                          ("quote", g_tr('ReferenceDataDialog', "Quote"))]
         self._hidden = ["id"]
+        self._default_name = "quote"
         self._lookup_delegate = None
         self._timestamp_delegate = None
         self.setRelation(self.fieldIndex("asset_id"), QSqlRelation("assets", "id", "name"))
@@ -672,7 +672,7 @@ class QuotesListModel(AbstractReferenceListModel):
 
         self._lookup_delegate = QSqlRelationalDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("asset_id"), self._lookup_delegate)
-        self._timestamp_delegate = ReferenceTimestampDelegate(self._view)
+        self._timestamp_delegate = TimestampDelegate(parent=self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("timestamp"), self._timestamp_delegate)
 
 

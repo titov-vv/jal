@@ -276,23 +276,6 @@ class ReferenceIntDelegate(QStyledItemDelegate):
             painter.drawRect(option.rect)
         painter.restore()
 
-# -------------------------------------------------------------------------------------------------------------------
-# Format unix timestamp into readable form '%d/%m/%Y %H:%M:%S'
-class ReferenceTimestampDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
-
-    def paint(self, painter, option, index):
-        painter.save()
-        model = index.model()
-        timestamp = model.data(index, Qt.DisplayRole)
-        if timestamp:
-            text = datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')
-        else:
-            text = ""
-        painter.drawText(option.rect, Qt.AlignLeft, text)
-        painter.restore()
-
 
 # -----------------------------------------------------------------------------------------------------------------------
 # Delegate to display tag editor
@@ -301,8 +284,7 @@ class ReferencePeerDelegate(QSqlRelationalDelegate):
         QSqlRelationalDelegate.__init__(self, parent)
 
     def createEditor(self, aParent, option, index):
-        peer_selector = ui.PeerSelector(aParent)
-        return peer_selector
+        return ui.PeerSelector(aParent)
 
     def setModelData(self, editor, model, index):
         model.setData(index, editor.selected_id)

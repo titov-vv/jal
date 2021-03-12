@@ -1,5 +1,5 @@
 from datetime import datetime
-from PySide2.QtWidgets import QStyledItemDelegate, QLineEdit
+from PySide2.QtWidgets import QStyledItemDelegate, QLineEdit, QDateTimeEdit
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QDoubleValidator, QBrush
 from jal.constants import Setup, CustomColor
@@ -55,6 +55,9 @@ class TimestampDelegate(QStyledItemDelegate):
             value = int(value)
         text = datetime.utcfromtimestamp(value).strftime(self._format)
         return text
+
+    def createEditor(self, aParent, option, index):
+        return QDateTimeEdit(aParent)
 
     def setEditorData(self, editor, index):
         timestamp = index.model().data(index, Qt.EditRole)
