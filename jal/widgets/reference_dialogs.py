@@ -1,10 +1,10 @@
-from PySide2.QtCore import QAbstractItemModel
+from PySide2.QtCore import Qt, QAbstractItemModel, QModelIndex
 from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate
 from PySide2.QtWidgets import QHeaderView
-from jal.db.helpers import db_connection, executeSQL
-from jal.widgets.delegates import *
+from jal.db.helpers import db_connection, executeSQL, readSQL
+from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate
 from jal.widgets.helpers import g_tr
-from jal.widgets.reference_data import ReferenceDataDialog, ReferenceIntDelegate
+from jal.widgets.reference_data import ReferenceDataDialog
 from jal.widgets.delegates import GridLinesDelegate
 
 
@@ -508,7 +508,7 @@ class PeerTreeModel(SqlTreeModel):
         self._grid_delegate = GridLinesDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("name"), self._grid_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("location"), self._grid_delegate)
-        self._int_delegate = ReferenceIntDelegate(self._view)
+        self._int_delegate = FloatDelegate(0, parent=self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("actions_count"), self._int_delegate)
 
 

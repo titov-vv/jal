@@ -83,6 +83,7 @@ class FloatDelegate(QStyledItemDelegate):
     DEFAULT_TOLERANCE = 6
 
     def __init__(self, tolerance=None, allow_tail=True, colors=False, parent=None):
+        self._parent = parent
         QStyledItemDelegate.__init__(self, parent)
         try:
             self._tolerance = int(tolerance)
@@ -129,6 +130,18 @@ class FloatDelegate(QStyledItemDelegate):
         if self._colors:
             option.backgroundBrush = QBrush(self._color)
 
+    def paint(self, painter, option, index):
+        super().paint(painter, option, index)
+        if type(self._parent) == QTreeView:   # Extra code for tree views - to draw grid lines
+            painter.save()
+            pen = painter.pen()
+            pen.setWidth(1)
+            pen.setStyle(Qt.DotLine)
+            pen.setColor(Qt.GlobalColor.lightGray)
+            painter.setPen(pen)
+            painter.drawRect(option.rect)
+            painter.restore()
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Display '*' if true and empty cell if false
@@ -138,24 +151,27 @@ class BoolDelegate(QStyledItemDelegate):
         self._parent = parent
         QStyledItemDelegate.__init__(self, parent)
 
-    def paint(self, painter, option, index):
-        painter.save()
-        model = index.model()
-        status = model.data(index, Qt.DisplayRole)
-        if status:
-            text = ' ☒ '
+    def displayText(self, value, locale):
+        if value:
+            return ' ☒ '
         else:
-            text = ' ☐ '
-        painter.drawText(option.rect, Qt.AlignHCenter, text)
-        # Extra code for tree views - to draw grid lines
-        if type(self._parent) == QTreeView:
+            return ' ☐ '
+
+    def initStyleOption(self, option, index):
+        super().initStyleOption(option, index)
+        option.displayAlignment = Qt.AlignCenter
+
+    def paint(self, painter, option, index):
+        super().paint(painter, option, index)
+        if type(self._parent) == QTreeView:  # Extra code for tree views - to draw grid lines
+            painter.save()
             pen = painter.pen()
             pen.setWidth(1)
             pen.setStyle(Qt.DotLine)
             pen.setColor(Qt.GlobalColor.lightGray)
             painter.setPen(pen)
             painter.drawRect(option.rect)
-        painter.restore()
+            painter.restore()
 
     def editorEvent(self, event, model, option, index):
         if event.type() == QEvent.MouseButtonPress:

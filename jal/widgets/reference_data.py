@@ -1,7 +1,7 @@
 import logging
 
-from PySide2.QtCore import Qt, Signal, Property, Slot
-from PySide2.QtWidgets import QDialog, QMessageBox, QStyledItemDelegate, QTreeView
+from PySide2.QtCore import Signal, Property, Slot
+from PySide2.QtWidgets import QDialog, QMessageBox
 
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
 from jal.widgets.helpers import g_tr
@@ -213,29 +213,3 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
     def locateItem(self, item_id):
         raise NotImplementedError("locateItem() method is not defined in subclass ReferenceDataDialog")
-
-# ===================================================================================================================
-# Delegates to customize view of columns
-# ===================================================================================================================
-
-# -------------------------------------------------------------------------------------------------------------------
-# Make integer alignment to the right
-class ReferenceIntDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
-        self._parent = parent
-        QStyledItemDelegate.__init__(self, parent)
-
-    def paint(self, painter, option, index):
-        painter.save()
-        model = index.model()
-        value = model.data(index, Qt.DisplayRole)
-        painter.drawText(option.rect, Qt.AlignRight, f"{value} ")
-        # Extra code for tree views - to draw grid lines
-        if type(self._parent) == QTreeView:
-            pen = painter.pen()
-            pen.setWidth(1)
-            pen.setStyle(Qt.DotLine)
-            pen.setColor(Qt.GlobalColor.lightGray)
-            painter.setPen(pen)
-            painter.drawRect(option.rect)
-        painter.restore()
