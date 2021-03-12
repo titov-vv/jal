@@ -5,7 +5,7 @@ from PySide2.QtCore import Qt
 from PySide2.QtGui import QDoubleValidator
 
 from jal.constants import Setup, CustomColor, CorporateAction
-from widgets.helpers import g_tr, formatFloatLong
+from widgets.helpers import g_tr
 
 
 # ----------------------------------------------------------------------------------------------------------------------

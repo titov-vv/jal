@@ -21,23 +21,6 @@ def dependency_present(module_list):
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-# Helpers to work with numbers
-
-def formatFloatLong(value):
-    if abs(value - round(value)) <= 10e-2:
-        text = f"{value:.0f}"
-    elif abs(value - round(value, 2)) <= 10e-4:
-        text = f"{value:.2f}"
-    elif abs(value - round(value, 4)) <= 10e-6:
-        text = f"{value:.4f}"
-    elif abs(value - round(value, 6)) <= 10e-8:
-        text = f"{value:.6f}"
-    else:
-        text = f"{value:.8f}"
-    return text
-
-
-# -----------------------------------------------------------------------------------------------------------------------
 # Helpers to work with datetime
 class ManipulateDate:
     @staticmethod
