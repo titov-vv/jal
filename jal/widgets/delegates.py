@@ -2,7 +2,7 @@ from datetime import datetime
 
 from PySide2.QtWidgets import QStyledItemDelegate, QTreeView, QLineEdit
 from PySide2.QtCore import Qt
-from PySide2.QtGui import QDoubleValidator
+from PySide2.QtGui import QDoubleValidator, QBrush
 
 from jal.constants import Setup, CustomColor, CorporateAction
 from widgets.helpers import g_tr
@@ -76,16 +76,17 @@ class TimestampDelegate(QStyledItemDelegate):
 class FloatDelegate(QStyledItemDelegate):
     DEFAULT_TOLERANCE = 6
 
-    def __init__(self, tolerance=None, allow_tail=True, parent=None):
+    def __init__(self, tolerance=None, allow_tail=True, colors=False, parent=None):
         QStyledItemDelegate.__init__(self, parent)
         try:
             self._tolerance = int(tolerance)
         except (ValueError, TypeError):
             self._tolerance = self.DEFAULT_TOLERANCE
         self._allow_tail = allow_tail
+        self._colors = colors
+        self._color = None
 
     def formatFloatLong(self, value):
-
         if self._allow_tail and (abs(value - round(value, self._tolerance)) >= Setup.CALC_TOLERANCE):
             text = str(value)
         else:
@@ -97,6 +98,10 @@ class FloatDelegate(QStyledItemDelegate):
             amount = float(value)
         except ValueError:
             amount = 0.0
+        if amount > 0:
+            self._color = CustomColor.LightGreen
+        elif amount < 0:
+            self._color = CustomColor.LightRed
         return self.formatFloatLong(amount)
 
     # this is required when edit operation is called from QTableView
@@ -112,29 +117,11 @@ class FloatDelegate(QStyledItemDelegate):
             amount = 0.0
         editor.setText(f"{amount}")
 
-    def paint(self, painter, option, index):
+    def initStyleOption(self, option, index):
+        super().initStyleOption(option, index)
         option.displayAlignment = Qt.AlignRight
-        super().paint(painter, option, index)
-
-
-class ReportsProfitDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
-
-    def paint(self, painter, option, index):
-        painter.save()
-        model = index.model()
-        record = model.record(index.row())
-        amount = record.value(index.column())
-        text = "N/A"
-        if amount:
-            if amount >= 0:
-                painter.fillRect(option.rect, CustomColor.LightGreen)
-            else:
-                painter.fillRect(option.rect, CustomColor.LightRed)
-            text = f"{amount:,.2f}"
-        painter.drawText(option.rect, Qt.AlignRight, text)
-        painter.restore()
+        if self._colors:
+            option.backgroundBrush = QBrush(self._color)
 
 
 class ReportsCorpActionDelegate(QStyledItemDelegate):
