@@ -78,7 +78,7 @@ CREATE TABLE actions (
     account_id      INTEGER REFERENCES accounts (id) ON DELETE CASCADE
                                                      ON UPDATE CASCADE
                             NOT NULL,
-    peer_id         INTEGER REFERENCES agents (id) ON DELETE RESTRICT
+    peer_id         INTEGER REFERENCES agents (id) ON DELETE CASCADE
                                                    ON UPDATE CASCADE
                             NOT NULL,
     alt_currency_id INTEGER REFERENCES assets (id) ON DELETE RESTRICT
@@ -1253,7 +1253,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 19);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 20);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
