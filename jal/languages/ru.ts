@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="ru" sourcelanguage="en">
+<!DOCTYPE TS>
+<TS version="2.1" language="ru" sourcelanguage="en">
 <context>
     <name>AbstractOperationDetails</name>
     <message>
@@ -1225,49 +1226,14 @@ do you want to save it?</source>
 <context>
     <name>OperationsDelegate</name>
     <message>
-        <location filename="../widgets/delegates.py" line="157"/>
-        <source>Symbol change</source>
-        <translation>Смена символа</translation>
-    </message>
-    <message>
-        <location filename="../widgets/delegates.py" line="158"/>
-        <source>Split</source>
-        <translation>Сплит</translation>
-    </message>
-    <message>
-        <location filename="../widgets/delegates.py" line="159"/>
-        <source>Spin-off</source>
-        <translation>Выделение компании</translation>
-    </message>
-    <message>
-        <location filename="../widgets/delegates.py" line="160"/>
-        <source>Merger</source>
-        <translation>Объединение компании</translation>
-    </message>
-    <message>
-        <location filename="../widgets/delegates.py" line="171"/>
+        <location filename="../reports/deals_report.py" line="51"/>
         <source> Opened with </source>
         <translation> Сделка открытия </translation>
     </message>
     <message>
-        <location filename="../widgets/delegates.py" line="173"/>
+        <location filename="../reports/deals_report.py" line="53"/>
         <source> Closed with </source>
         <translation> Сделка закрытия </translation>
-    </message>
-    <message>
-        <location filename="../widgets/delegates.py" line="177"/>
-        <source> Long</source>
-        <translation> Длинная позиция</translation>
-    </message>
-    <message>
-        <location filename="../widgets/delegates.py" line="179"/>
-        <source> Short</source>
-        <translation> Короткая позиция</translation>
-    </message>
-    <message>
-        <location filename="../widgets/delegates.py" line="161"/>
-        <source>Stock dividend</source>
-        <translation>Дивиденд акциями</translation>
     </message>
 </context>
 <context>
@@ -1667,7 +1633,7 @@ do you want to save it?</source>
     <message>
         <location filename="../ui/ui_reference_data_dlg.py" line="141"/>
         <source>..+</source>
-        <translation type="unfinished"></translation>
+        <translation>..+</translation>
     </message>
 </context>
 <context>
@@ -1758,67 +1724,67 @@ do you want to save it?</source>
         <translation>Вы должны выбрать категорию для создания отчета по Категориям</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending_report.py" line="122"/>
+        <location filename="../reports/income_spending_report.py" line="123"/>
         <source>Jan</source>
         <translation>Янв</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending_report.py" line="123"/>
+        <location filename="../reports/income_spending_report.py" line="124"/>
         <source>Feb</source>
         <translation>Фев</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending_report.py" line="124"/>
+        <location filename="../reports/income_spending_report.py" line="125"/>
         <source>Mar</source>
         <translation>Март</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending_report.py" line="125"/>
+        <location filename="../reports/income_spending_report.py" line="126"/>
         <source>Apr</source>
         <translation>Апр</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending_report.py" line="126"/>
+        <location filename="../reports/income_spending_report.py" line="127"/>
         <source>May</source>
         <translation>Май</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending_report.py" line="127"/>
+        <location filename="../reports/income_spending_report.py" line="128"/>
         <source>Jun</source>
         <translation>Июнь</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending_report.py" line="128"/>
+        <location filename="../reports/income_spending_report.py" line="129"/>
         <source>Jul</source>
         <translation>Июль</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending_report.py" line="129"/>
+        <location filename="../reports/income_spending_report.py" line="130"/>
         <source>Aug</source>
         <translation>Авг</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending_report.py" line="130"/>
+        <location filename="../reports/income_spending_report.py" line="131"/>
         <source>Sep</source>
         <translation>Сен</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending_report.py" line="131"/>
+        <location filename="../reports/income_spending_report.py" line="132"/>
         <source>Oct</source>
         <translation>Окт</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending_report.py" line="132"/>
+        <location filename="../reports/income_spending_report.py" line="133"/>
         <source>Nov</source>
         <translation>Нояб</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending_report.py" line="133"/>
+        <location filename="../reports/income_spending_report.py" line="134"/>
         <source>Dec</source>
         <translation>Дек</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending_report.py" line="264"/>
+        <location filename="../reports/income_spending_report.py" line="273"/>
         <source>TOTAL</source>
         <translation>ИТОГО</translation>
     </message>
@@ -1853,9 +1819,34 @@ do you want to save it?</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../reports/deals_report.py" line="68"/>
+        <location filename="../reports/deals_report.py" line="91"/>
         <source>You should select account to create Deals report</source>
         <translation>Вы должны выбрать счет, чтобы создать отчёт Сделки</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals_report.py" line="19"/>
+        <source>Symbol change</source>
+        <translation>Смена символа</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals_report.py" line="20"/>
+        <source>Split</source>
+        <translation>Сплит</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals_report.py" line="21"/>
+        <source>Spin-off</source>
+        <translation>Выделение компании</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals_report.py" line="22"/>
+        <source>Merger</source>
+        <translation>Объединение компании</translation>
+    </message>
+    <message>
+        <location filename="../reports/deals_report.py" line="23"/>
+        <source>Stock dividend</source>
+        <translation>Дивиденд акциями</translation>
     </message>
 </context>
 <context>
