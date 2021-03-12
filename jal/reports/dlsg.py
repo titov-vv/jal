@@ -186,7 +186,8 @@ class DLSG:
         'fi': '246',
         'nl': '528',
         'gr': '300',
-        'bm': '060'
+        'bm': '060',
+        'br': '076'
     }
 
     def __init__(self, only_dividends=False):
