@@ -2,7 +2,6 @@ from datetime import datetime
 
 from PySide2.QtWidgets import QStyledItemDelegate, QTreeView, QLineEdit
 from PySide2.QtCore import Qt
-from PySide2.QtSql import QSqlRelationalDelegate
 from PySide2.QtGui import QDoubleValidator
 
 from jal.constants import Setup, CustomColor, CorporateAction
@@ -12,13 +11,13 @@ from widgets.helpers import g_tr, formatFloatLong
 # ----------------------------------------------------------------------------------------------------------------------
 # Base class to provide different delegates for WidgetDataMappers in operations widgets
 # Separate delegate class is subclassed for every operation widget with own definition of self.delegates for columns
-class WidgetMapperDelegateBase(QSqlRelationalDelegate):
+class WidgetMapperDelegateBase(QStyledItemDelegate):
     def __init__(self, parent=None):
-        QSqlRelationalDelegate.__init__(self, parent)
+        QStyledItemDelegate.__init__(self, parent)
 
         self.timestamp_delegate = TimestampDelegate()
         self.float_delegate = FloatDelegate()
-        self.default = QSqlRelationalDelegate()
+        self.default = QStyledItemDelegate()
 
         self.delegates = {}
 
@@ -49,14 +48,14 @@ class WidgetMapperDelegateBase(QSqlRelationalDelegate):
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Delegate to convert timestamp from unix-time to QDateTime
-class TimestampDelegate(QSqlRelationalDelegate):
+class TimestampDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
-        QSqlRelationalDelegate.__init__(self, parent)
+        QStyledItemDelegate.__init__(self, parent)
 
     def setEditorData(self, editor, index):
         timestamp = index.model().data(index, Qt.EditRole)
         if timestamp == '':
-            QSqlRelationalDelegate.setEditorData(self, editor, index)
+            QStyledItemDelegate.setEditorData(self, editor, index)
         else:
             editor.setDateTime(datetime.utcfromtimestamp(timestamp))
 
@@ -66,9 +65,9 @@ class TimestampDelegate(QSqlRelationalDelegate):
 
 # -----------------------------------------------------------------------------------------------------------------------
 # Delegate for nice float numbers formatting
-class FloatDelegate(QSqlRelationalDelegate):
+class FloatDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
-        QSqlRelationalDelegate.__init__(self, parent)
+        QStyledItemDelegate.__init__(self, parent)
 
     def formatFloatLong(self, value):
         if abs(value - round(value, 2)) >= Setup.CALC_TOLERANCE:
