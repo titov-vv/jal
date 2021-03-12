@@ -3,7 +3,7 @@ from PySide2.QtGui import QBrush, QFont
 from PySide2.QtWidgets import QHeaderView
 from jal.constants import Setup, CustomColor, BookAccount, PredefindedAccountType
 from jal.db.helpers import executeSQL, get_asset_name
-from widgets.helpers import g_tr
+from jal.widgets.helpers import g_tr
 from jal.widgets.delegates import GridLinesDelegate
 
 

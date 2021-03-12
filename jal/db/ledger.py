@@ -6,7 +6,7 @@ from PySide2.QtWidgets import QDialog, QMessageBox
 from jal.constants import Setup, BookAccount, TransactionType, TransferSubtype, ActionSubtype, DividendSubtype, \
     CorporateAction, PredefinedCategory, PredefinedPeer
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_asset_name, db_triggers_disable, db_triggers_enable
-from widgets.helpers import g_tr
+from jal.widgets.helpers import g_tr
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
 
 

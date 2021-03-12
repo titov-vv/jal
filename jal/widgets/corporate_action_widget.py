@@ -3,7 +3,7 @@ from dateutil import tz
 
 from PySide2.QtCore import Qt, QStringListModel, QByteArray
 from PySide2.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QComboBox
-from widgets.helpers import g_tr
+from jal.widgets.helpers import g_tr
 from widgets.abstract_operation_details import AbstractOperationDetails
 from widgets.reference_selector import AccountSelector, AssetSelector
 from widgets.amount_editor import AmountEdit

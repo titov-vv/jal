@@ -2,7 +2,7 @@ from datetime import datetime
 from PySide2.QtCore import Qt, QAbstractItemModel, QModelIndex
 from PySide2.QtGui import QBrush
 from jal.constants import BookAccount, PredefinedAsset, CustomColor
-from widgets.helpers import g_tr
+from jal.widgets.helpers import g_tr
 from jal.db.helpers import executeSQL
 from jal.widgets.delegates import GridLinesDelegate
 

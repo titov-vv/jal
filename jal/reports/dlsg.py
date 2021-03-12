@@ -1,7 +1,7 @@
 import re
 import logging
 from datetime import date, datetime
-from widgets.helpers import g_tr
+from jal.widgets.helpers import g_tr
 
 # standard header is "DLSG            DeclYYYY0102FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", where YYYY is year of declaration
 HEADER_LENGTH = 60

@@ -5,7 +5,7 @@ from PySide2.QtCore import Qt, QAbstractTableModel
 from PySide2.QtWidgets import QDialog
 from PySide2.QtGui import QFont
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_asset_name
-from widgets.helpers import g_tr
+from jal.widgets.helpers import g_tr
 from jal.ui.ui_tax_estimation import Ui_TaxEstimationDialog
 
 class TaxEstimatorModel(QAbstractTableModel):

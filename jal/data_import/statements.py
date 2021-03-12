@@ -12,7 +12,7 @@ from PySide2.QtWidgets import QDialog, QFileDialog, QMessageBox
 from jal.constants import Setup, TransactionType, PredefinedAsset, PredefinedCategory, CorporateAction, DividendSubtype
 from jal.db.helpers import db_connection, executeSQL, readSQL, get_country_by_code, account_last_date, \
     update_asset_country
-from widgets.helpers import g_tr, ManipulateDate
+from jal.widgets.helpers import g_tr, ManipulateDate
 from jal.ui.ui_add_asset_dlg import Ui_AddAssetDialog
 from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
 

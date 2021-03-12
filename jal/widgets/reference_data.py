@@ -7,7 +7,7 @@ from PySide2.QtWidgets import QDialog, QMessageBox, QStyledItemDelegate, QTreeVi
 
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
 import widgets.reference_selector as ui     # Full import due to "cyclic" reference
-from widgets.helpers import g_tr
+from jal.widgets.helpers import g_tr
 
 
 # --------------------------------------------------------------------------------------------------------------

@@ -8,7 +8,7 @@ from PySide2.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox, QLa
 
 from jal import __version__
 from jal.ui.ui_main_window import Ui_LedgerMainWindow
-from widgets.helpers import g_tr, ManipulateDate, dependency_present
+from jal.widgets.helpers import g_tr, ManipulateDate, dependency_present
 from widgets.reference_dialogs import AccountTypeListDialog, AccountListDialog, AssetListDialog, TagsListDialog,\
     CategoryListDialog, CountryListDialog, QuotesListDialog, PeerListDialog
 from jal.constants import TransactionType

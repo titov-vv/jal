@@ -2,7 +2,7 @@ from PySide2.QtCore import Qt
 from PySide2.QtSql import QSqlTableModel
 from PySide2.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection, executeSQL
-from widgets.helpers import g_tr
+from jal.widgets.helpers import g_tr
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 
 

@@ -4,7 +4,7 @@ from PySide2.QtSql import QSqlQuery
 from PySide2.QtGui import QBrush, QFont
 from PySide2.QtWidgets import QStyledItemDelegate, QHeaderView
 from jal.constants import CustomColor, TransactionType, TransferSubtype, DividendSubtype, CorporateAction
-from widgets.helpers import g_tr
+from jal.widgets.helpers import g_tr
 from jal.db.helpers import db_connection, readSQL, executeSQL
 
 

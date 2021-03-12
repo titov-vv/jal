@@ -3,7 +3,7 @@ from PySide2.QtCore import Qt, Slot, Signal
 from PySide2.QtGui import QFont
 from PySide2.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QSpacerItem, QSizePolicy, QDataWidgetMapper
 from PySide2.QtSql import QSqlTableModel
-from widgets.helpers import g_tr
+from jal.widgets.helpers import g_tr
 from jal.db.helpers import db_connection
 
 

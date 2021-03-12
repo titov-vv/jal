@@ -1,7 +1,7 @@
 import xlsxwriter
 import logging
 
-from widgets.helpers import g_tr
+from jal.widgets.helpers import g_tr
 
 
 #-----------------------------------------------------------------------------------------------------------------------

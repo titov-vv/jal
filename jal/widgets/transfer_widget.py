@@ -4,7 +4,7 @@ from dateutil import tz
 from PySide2.QtCore import Qt, Slot
 from PySide2.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QPushButton
 from jal.constants import Setup
-from widgets.helpers import g_tr
+from jal.widgets.helpers import g_tr
 from widgets.abstract_operation_details import AbstractOperationDetails
 from widgets.reference_selector import AccountSelector
 from widgets.amount_editor import AmountEdit

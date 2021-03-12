@@ -1,7 +1,7 @@
 from PySide2.QtCore import Signal, Slot, Property
 from PySide2.QtWidgets import QPushButton, QComboBox, QMenu
 from PySide2.QtSql import QSqlTableModel
-from widgets.helpers import g_tr
+from jal.widgets.helpers import g_tr
 from jal.db.helpers import db_connection, get_field_by_id_from_table
 from widgets.reference_dialogs import AccountListDialog
 
