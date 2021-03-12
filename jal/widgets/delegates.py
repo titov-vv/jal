@@ -44,7 +44,7 @@ class WidgetMapperDelegateBase(QStyledItemDelegate):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Delegate to convert timestamp from unix-time to QDateTime
+# Delegate to convert timestamp from unix-time to QDateTime and display it according to the given format
 class TimestampDelegate(QStyledItemDelegate):
     def __init__(self, display_format='%d/%m/%Y %H:%M:%S', parent=None):
         QStyledItemDelegate.__init__(self, parent)
@@ -69,7 +69,11 @@ class TimestampDelegate(QStyledItemDelegate):
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-# Delegate for nice float numbers formatting
+# Delegate for fload numbers formatting
+# By default has 6 decimal places that may be controlled with 'tolerance' parameter
+# 'allow_tail' - display more digits for numbers that have more digits than 'tolerance'
+#                and only 'tolerance' digits otherwise
+# 'colors' - make Green/Red background for positive/negative values
 class FloatDelegate(QStyledItemDelegate):
     DEFAULT_TOLERANCE = 6
 
@@ -122,6 +126,8 @@ class FloatDelegate(QStyledItemDelegate):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# QTreeView doesn't draw grid lines and have no normal method to implement it
+# So the purpose of this delegate is solely to draw dotted box around report cell
 class GridLinesDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         QStyledItemDelegate.__init__(self, parent)
