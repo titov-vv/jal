@@ -3,7 +3,7 @@ from PySide2.QtSql import QSqlTableModel
 from PySide2.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection, executeSQL
 from widgets.helpers import g_tr
-from jal.widgets.delegates import ReportsFloatDelegate, TimestampDelegate
+from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -43,7 +43,7 @@ class CategoryReportModel(QSqlTableModel):
                                   self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
         self._timestamp_delegate = TimestampDelegate()
         self._view.setItemDelegateForColumn(self.fieldIndex("timestamp"), self._timestamp_delegate)
-        self._float_delegate = ReportsFloatDelegate(2)
+        self._float_delegate = FloatDelegate(2, allow_tail=False)
         self._view.setItemDelegateForColumn(self.fieldIndex("sum"), self._float_delegate)
 
     def prepare(self, begin, end, category_id, group_dates):

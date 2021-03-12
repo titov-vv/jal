@@ -28,7 +28,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.details_model = None
         self.category_delegate = LookupSelectorDelegate(LookupSelectorDelegate.Category)
         self.tag_delegate = LookupSelectorDelegate(LookupSelectorDelegate.Tag)
-        self.float_delegate = FloatDelegate()
+        self.float_delegate = FloatDelegate(2)
 
         self.date_label = QLabel(self)
         self.details_label = QLabel(self)

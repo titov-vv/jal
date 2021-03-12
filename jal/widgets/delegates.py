@@ -16,7 +16,7 @@ class WidgetMapperDelegateBase(QStyledItemDelegate):
         QStyledItemDelegate.__init__(self, parent)
 
         self.timestamp_delegate = TimestampDelegate()
-        self.float_delegate = FloatDelegate()
+        self.float_delegate = FloatDelegate(2)
         self.default = QStyledItemDelegate()
 
         self.delegates = {}
@@ -74,15 +74,30 @@ class TimestampDelegate(QStyledItemDelegate):
 # -----------------------------------------------------------------------------------------------------------------------
 # Delegate for nice float numbers formatting
 class FloatDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
+    DEFAULT_TOLERANCE = 6
+
+    def __init__(self, tolerance=None, allow_tail=True, parent=None):
         QStyledItemDelegate.__init__(self, parent)
+        try:
+            self._tolerance = int(tolerance)
+        except (ValueError, TypeError):
+            self._tolerance = self.DEFAULT_TOLERANCE
+        self._allow_tail = allow_tail
 
     def formatFloatLong(self, value):
-        if abs(value - round(value, 2)) >= Setup.CALC_TOLERANCE:
+
+        if self._allow_tail and (abs(value - round(value, self._tolerance)) >= Setup.CALC_TOLERANCE):
             text = str(value)
         else:
-            text = f"{value:.2f}"
+            text = f"{value:,.{self._tolerance}f}"
         return text
+
+    def displayText(self, value, locale):
+        try:
+            amount = float(value)
+        except ValueError:
+            amount = 0.0
+        return self.formatFloatLong(amount)
 
     # this is required when edit operation is called from QTableView
     def createEditor(self, aParent, option, index):
@@ -95,38 +110,11 @@ class FloatDelegate(QStyledItemDelegate):
             amount = float(index.model().data(index, Qt.EditRole))
         except ValueError:
             amount = 0.0
-        editor.setText(self.formatFloatLong(float(amount)))
+        editor.setText(f"{amount}")
 
     def paint(self, painter, option, index):
-        painter.save()
-        try:
-            amount = float(index.model().data(index, Qt.DisplayRole))
-        except ValueError:
-            amount = 0.0
-        text = self.formatFloatLong(amount)
-        painter.drawText(option.rect, Qt.AlignRight, text)
-        painter.restore()
-
-
-# -----------------------------------------------------------------------------------------------------------------------
-class ReportsFloatDelegate(QStyledItemDelegate):
-    DEFAULT_TOLERANCE = 6
-
-    def __init__(self, tolerance=None, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
-        try:
-            self._tolerance = int(tolerance)
-        except (ValueError, TypeError):
-            self._tolerance = self.DEFAULT_TOLERANCE
-
-    def paint(self, painter, option, index):
-        painter.save()
-        model = index.model()
-        record = model.record(index.row())
-        amount = record.value(index.column())
-        text = f"{amount:.{self._tolerance}f}" if amount != '' else ''
-        painter.drawText(option.rect, Qt.AlignRight, text)
-        painter.restore()
+        option.displayAlignment = Qt.AlignRight
+        super().paint(painter, option, index)
 
 
 class ReportsProfitDelegate(QStyledItemDelegate):
