@@ -5,7 +5,7 @@ from PySide2.QtCore import Signal, QObject, QDate
 from PySide2.QtWidgets import QDialog, QMessageBox
 from jal.constants import Setup, BookAccount, TransactionType, TransferSubtype, ActionSubtype, DividendSubtype, \
     CorporateAction, PredefinedCategory, PredefinedPeer
-from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_asset_name
+from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_asset_name, db_triggers_disable, db_triggers_enable
 from widgets.helpers import g_tr
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
 
@@ -375,18 +375,9 @@ class Ledger(QObject):
                                   f" @{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d.%m.%Y')}\n" +
                                   g_tr('Ledger', "Please check that quantity is correct."),
                                   QMessageBox.Ok)
-        _ = executeSQL("DROP TRIGGER IF EXISTS corp_after_update")  # FIXME improve code with triggers
         _ = executeSQL("UPDATE corp_actions SET qty=:qty, qty_new=:qty_new WHERE id=:id",
                        [(":id", self.current['id']),
                         (":qty", self.current['amount']), (":qty_new", self.current['price'])])
-        _ = executeSQL("CREATE TRIGGER corp_after_update "
-                       "AFTER UPDATE OF timestamp, account_id, type, asset_id, qty, asset_id_new, qty_new "
-                       "ON corp_actions FOR EACH ROW "
-                       "BEGIN "
-                       "DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; "
-                       "DELETE FROM sequence WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; "
-                       "DELETE FROM ledger_sums WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp; "
-                       "END")
 
     def processCorporateAction(self):
         # Stock dividends are imported without initial stock amounts -> correction happens here
@@ -528,29 +519,34 @@ class Ledger(QObject):
         _ = executeSQL("DELETE FROM sequence WHERE timestamp >= :frontier", [(":frontier", frontier)])
         _ = executeSQL("DELETE FROM ledger_sums WHERE timestamp >= :frontier", [(":frontier", frontier)], commit=True)
 
+        db_triggers_disable()
         if fast_and_dirty:  # For 30k operations difference of execution time is - with 0:02:41 / without 0:11:44
             _ = executeSQL("PRAGMA synchronous = OFF")
-        query = executeSQL("SELECT type, id, timestamp, subtype, account, currency, asset, amount, "
-                           "category, price, fee_tax, peer, tag FROM all_transactions "
-                           "WHERE timestamp >= :frontier", [(":frontier", frontier)])
-        while query.next():
-            self.current = readSQLrecord(query, named=True)
-            if self.current['type'] == TransactionType.Action:
-                subtype = copysign(1, self.current['subtype'])
-            else:
-                subtype = self.current['subtype']
-            seq_query = executeSQL("INSERT INTO sequence(timestamp, type, subtype, operation_id) "
-                                   "VALUES(:timestamp, :type, :subtype, :operation_id)",
-                                   [(":timestamp", self.current['timestamp']), (":type", self.current['type']),
-                                    (":subtype", subtype), (":operation_id", self.current['id'])])
-            self.current_seq = seq_query.lastInsertId()
-            operationProcess[self.current['type']]()
-            if not silent and (query.at() % 1000) == 0:
-                logging.info(g_tr('Ledger', "Processed ") + f"{int(query.at()/1000)}" +
-                             g_tr('Ledger', "k records, current frontier: ") +
-                             f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
-        if fast_and_dirty:
-            _ = executeSQL("PRAGMA synchronous = ON")
+        try:
+            query = executeSQL("SELECT type, id, timestamp, subtype, account, currency, asset, amount, "
+                               "category, price, fee_tax, peer, tag FROM all_transactions "
+                               "WHERE timestamp >= :frontier", [(":frontier", frontier)])
+            while query.next():
+                self.current = readSQLrecord(query, named=True)
+                if self.current['type'] == TransactionType.Action:
+                    subtype = copysign(1, self.current['subtype'])
+                else:
+                    subtype = self.current['subtype']
+                seq_query = executeSQL("INSERT INTO sequence(timestamp, type, subtype, operation_id) "
+                                       "VALUES(:timestamp, :type, :subtype, :operation_id)",
+                                       [(":timestamp", self.current['timestamp']), (":type", self.current['type']),
+                                        (":subtype", subtype), (":operation_id", self.current['id'])])
+                self.current_seq = seq_query.lastInsertId()
+                operationProcess[self.current['type']]()
+                if not silent and (query.at() % 1000) == 0:
+                    logging.info(
+                        g_tr('Ledger', "Processed ") + f"{int(query.at()/1000)}" +
+                        g_tr('Ledger', "k records, current frontier: ") +
+                        f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
+        finally:
+            if fast_and_dirty:
+                _ = executeSQL("PRAGMA synchronous = ON")
+            db_triggers_enable()
 
         if not silent:
             logging.info(g_tr('Ledger', "Ledger is complete. Elapsed time: ") + f"{datetime.now() - start_time}" +
