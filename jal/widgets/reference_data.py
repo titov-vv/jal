@@ -293,11 +293,6 @@ class ReferenceTimestampDelegate(QStyledItemDelegate):
         painter.drawText(option.rect, Qt.AlignLeft, text)
         painter.restore()
 
-# -------------------------------------------------------------------------------------------------------------------
-# The class itself is empty but it activates built-in editors for lookup tables
-class ReferenceLookupDelegate(QSqlRelationalDelegate):
-    def __init__(self, parent=None):
-        QSqlRelationalDelegate.__init__(self, parent)
 
 # -----------------------------------------------------------------------------------------------------------------------
 # Delegate to display tag editor

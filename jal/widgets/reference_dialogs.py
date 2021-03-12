@@ -1,15 +1,14 @@
 from PySide2.QtCore import QAbstractItemModel, QModelIndex
-from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
+from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate
 from PySide2.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection, readSQL, executeSQL
 from jal.widgets.delegates import *
 from jal.widgets.helpers import g_tr
 from jal.widgets.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
-    ReferenceLookupDelegate, ReferenceTimestampDelegate, ReferenceIntDelegate
+    ReferenceTimestampDelegate, ReferenceIntDelegate
 from jal.widgets.delegates import GridLinesDelegate
 
 
-#TODO AbstractReferenceListModel and SqlTreeModel have some methods in common - combine
 # ----------------------------------------------------------------------------------------------------------------------
 class AbstractReferenceListModel(QSqlRelationalTableModel):
     @property
@@ -140,7 +139,7 @@ class AccountListModel(AbstractReferenceListModel):
                                   self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
         self._view.setColumnWidth(self.fieldIndex("country_id"), 50)
 
-        self._lookup_delegate = ReferenceLookupDelegate(self._view)
+        self._lookup_delegate = QSqlRelationalDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("organization_id"), self._lookup_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
@@ -221,7 +220,7 @@ class AssetListModel(AbstractReferenceListModel):
 
     def configureView(self):
         super().configureView()
-        self._lookup_delegate = ReferenceLookupDelegate(self._view)
+        self._lookup_delegate = QSqlRelationalDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("src_id"), self._lookup_delegate)
 
@@ -403,7 +402,7 @@ class SqlTreeModel(QAbstractItemModel):
         query = executeSQL(f"SELECT id FROM {self._table} WHERE pid=:pid", [(":pid", parent_id)])
         while query.next():
             self.deleteWithChilderen(query.value(0))
-        _ = executeSQL(f"DELETE FROM {self._table} WHERE id=:id", [(":id", parent_id)])  #TODO Set CASCADE FK in DB
+        _ = executeSQL(f"DELETE FROM {self._table} WHERE id=:id", [(":id", parent_id)])
 
     def insertRows(self, row, count, parent=None):
         if parent is None:
@@ -671,7 +670,7 @@ class QuotesListModel(AbstractReferenceListModel):
                                   self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
         self._view.setColumnWidth(self.fieldIndex("quote"), 100)
 
-        self._lookup_delegate = ReferenceLookupDelegate(self._view)
+        self._lookup_delegate = QSqlRelationalDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("asset_id"), self._lookup_delegate)
         self._timestamp_delegate = ReferenceTimestampDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("timestamp"), self._timestamp_delegate)
