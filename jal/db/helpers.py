@@ -152,6 +152,7 @@ def init_and_check_db(db_path):
         return LedgerInitError(LedgerInitError.NewerDbSchema)
 
     _ = executeSQL("PRAGMA foreign_keys = ON")
+    db_triggers_enable()
 
     return LedgerInitError(LedgerInitError.DbInitSuccess)
 
