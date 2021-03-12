@@ -15,6 +15,9 @@ class DealsReportModel(QSqlTableModel):
                          ("open_price", g_tr("Reports", "Open Price")),
                          ("close_price", g_tr("Reports", "Close Price")),
                          ("qty", g_tr("Reports", "Qty")),
+                         ("fee", g_tr("Reports", "Fee")),
+                         ("profit", g_tr("Reports", "P/L")),
+                         ("rel_profit", g_tr("Reports", "P/L, %")),
                          ("corp_action", g_tr("Reports", "Note"))]
         self.ca_names = {CorporateAction.SymbolChange: g_tr('Reports', "Symbol change"),
                          CorporateAction.Split: g_tr('Reports', "Split"),
