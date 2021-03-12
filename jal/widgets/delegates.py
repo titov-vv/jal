@@ -99,24 +99,17 @@ class FloatDelegate(QStyledItemDelegate):
         painter.drawText(option.rect, Qt.AlignRight, text)
         painter.restore()
 
-class ReportsFloatDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
-        QStyledItemDelegate.__init__(self, parent)
 
-    def paint(self, painter, option, index):
-        painter.save()
-        model = index.model()
-        record = model.record(index.row())
-        amount = record.value(index.column())
-        text = formatFloatLong(float(amount)) if amount != '' else ''
-        painter.drawText(option.rect, Qt.AlignRight, text)
-        painter.restore()
 # -----------------------------------------------------------------------------------------------------------------------
+class ReportsFloatDelegate(QStyledItemDelegate):
+    DEFAULT_TOLERANCE = 6
 
-class ReportsFloatNDelegate(QStyledItemDelegate):
-    def __init__(self, tolerance, parent=None):
+    def __init__(self, tolerance=None, parent=None):
         QStyledItemDelegate.__init__(self, parent)
-        self._tolerance = tolerance
+        try:
+            self._tolerance = int(tolerance)
+        except (ValueError, TypeError):
+            self._tolerance = self.DEFAULT_TOLERANCE
 
     def paint(self, painter, option, index):
         painter.save()

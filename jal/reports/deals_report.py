@@ -2,7 +2,7 @@ from PySide2.QtCore import Qt
 from PySide2.QtSql import QSqlTableModel
 from jal.db.helpers import db_connection, executeSQL
 from widgets.helpers import g_tr
-from jal.widgets.delegates import ReportsFloatNDelegate, ReportsTimestampDelegate, ReportsProfitDelegate, \
+from jal.widgets.delegates import ReportsTimestampDelegate, ReportsProfitDelegate, \
     ReportsCorpActionDelegate, ReportsFloatDelegate
 
 
@@ -52,9 +52,9 @@ class DealsReportModel(QSqlTableModel):
         self._view.setItemDelegateForColumn(self.fieldIndex("close_timestamp"), self._timestamp_delegate)
         self._float_delegate = ReportsFloatDelegate()
         self._view.setItemDelegateForColumn(self.fieldIndex("qty"), self._float_delegate)
-        self._float2_delegate = ReportsFloatNDelegate(2)
+        self._float2_delegate = ReportsFloatDelegate(2)
         self._view.setItemDelegateForColumn(self.fieldIndex("fee"), self._float2_delegate)
-        self._float4_delegate = ReportsFloatNDelegate(4)
+        self._float4_delegate = ReportsFloatDelegate(4)
         self._view.setItemDelegateForColumn(self.fieldIndex("open_price"), self._float4_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("close_price"), self._float4_delegate)
         self._profit_delegate = ReportsProfitDelegate()
