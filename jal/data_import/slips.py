@@ -5,7 +5,7 @@ import json
 import logging
 import pandas as pd
 from PySide2.QtWidgets import QStyledItemDelegate
-from widgets.reference_selector import CategorySelector, TagSelector
+from jal.widgets.reference_selector import CategorySelector, TagSelector
 from jal.constants import CustomColor
 from jal.db.helpers import get_category_name
 try:

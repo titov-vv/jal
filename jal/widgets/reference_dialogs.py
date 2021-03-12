@@ -4,7 +4,7 @@ from PySide2.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection, readSQL, executeSQL
 from jal.widgets.delegates import *
 from jal.widgets.helpers import g_tr
-from widgets.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
+from jal.widgets.reference_data import ReferenceDataDialog, ReferenceBoolDelegate, \
     ReferenceLookupDelegate, ReferenceTimestampDelegate, ReferenceIntDelegate
 from jal.widgets.delegates import GridLinesDelegate
 

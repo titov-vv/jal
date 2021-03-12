@@ -4,9 +4,9 @@ from dateutil import tz
 from PySide2.QtCore import Qt, QStringListModel, QByteArray
 from PySide2.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QComboBox
 from jal.widgets.helpers import g_tr
-from widgets.abstract_operation_details import AbstractOperationDetails
-from widgets.reference_selector import AccountSelector, AssetSelector
-from widgets.amount_editor import AmountEdit
+from jal.widgets.abstract_operation_details import AbstractOperationDetails
+from jal.widgets.reference_selector import AccountSelector, AssetSelector
+from jal.widgets.amount_editor import AmountEdit
 from jal.widgets.delegates import WidgetMapperDelegateBase
 
 

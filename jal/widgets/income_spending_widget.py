@@ -6,8 +6,8 @@ from PySide2.QtCore import Qt, Slot, QModelIndex
 from PySide2.QtWidgets import QWidget, QLabel, QDateTimeEdit, QPushButton, QTableView, QHeaderView, QStyledItemDelegate
 from PySide2.QtSql import QSqlTableModel
 from jal.widgets.helpers import g_tr
-from widgets.abstract_operation_details import AbstractOperationDetails
-from widgets.reference_selector import AccountSelector, PeerSelector, CategorySelector, TagSelector
+from jal.widgets.abstract_operation_details import AbstractOperationDetails
+from jal.widgets.reference_selector import AccountSelector, PeerSelector, CategorySelector, TagSelector
 from jal.db.helpers import db_connection, executeSQL, readSQL
 from jal.widgets.delegates import WidgetMapperDelegateBase, FloatDelegate
 
