@@ -519,7 +519,7 @@ class TaxesRus:
             self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
 
             if self.statement is not None:
-                self.statement.add_stock_profit(deal['country_code'], self.broker_name, deal['c_date'],
+                self.statement.add_stock_profit(deal['country_code'], self.broker_name, deal['cs_date'],
                                                 self.account_currency, deal['income'], deal['income_rub'],
                                                 deal['spending_rub'], deal['c_rate'])
             data_row = data_row + 1
@@ -598,7 +598,7 @@ class TaxesRus:
             self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
 
             if self.statement is not None:
-                self.statement.add_stock_profit(deal['country_code'], self.broker_name, deal['c_date'],
+                self.statement.add_stock_profit(deal['country_code'], self.broker_name, deal['cs_date'],
                                                 self.account_currency, deal['income'], deal['income_rub'],
                                                 deal['spending_rub'], deal['c_rate'])
             data_row = data_row + 1
@@ -697,7 +697,7 @@ class TaxesRus:
             self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
 
             if self.statement is not None:
-                self.statement.add_derivative_profit(deal['country_code'], self.broker_name, deal['c_date'],
+                self.statement.add_derivative_profit(deal['country_code'], self.broker_name, deal['cs_date'],
                                                      self.account_currency, deal['income'], deal['income_rub'],
                                                      deal['spending_rub'], deal['c_rate'])
             data_row = data_row + 1
