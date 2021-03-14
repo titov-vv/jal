@@ -1262,16 +1262,32 @@ BEGIN
                 timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
 END;
 
+DROP TRIGGER IF EXISTS validate_account_insert;
+CREATE TRIGGER validate_account_insert BEFORE INSERT ON accounts
+      FOR EACH ROW
+          WHEN NEW.type_id = 4 AND NEW.organization_id IS NULL
+BEGIN
+    SELECT RAISE(ABORT, "JAL_SQL_MSG_0001");
+END;
+
+DROP TRIGGER IF EXISTS validate_account_update;
+CREATE TRIGGER validate_account_update BEFORE UPDATE ON accounts
+      FOR EACH ROW
+          WHEN NEW.type_id = 4 AND NEW.ogranization_id IS NULL
+BEGIN
+    SELECT RAISE(ABORT, "JAL_SQL_MSG_0001");
+END;
+
 -- Trigger to keep predefinded categories from deletion
 DROP TRIGGER IF EXISTS keep_predefined_categories;
 CREATE TRIGGER keep_predefined_categories BEFORE DELETE ON categories FOR EACH ROW WHEN OLD.special = 1
 BEGIN
-    SELECT RAISE(ABORT, "Can't delete predefinded category");
+    SELECT RAISE(ABORT, "JAL_SQL_MSG_0002");
 END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 20);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 21);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);

@@ -32,6 +32,13 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         self._completion_model.setTable(self._table)
         self._completion_model.select()
 
+    def fieldIndex(self, field):
+        column_data = [i for i, column in enumerate(self._columns) if column[0] == field]
+        if len(column_data) > 0:
+            return column_data[0]
+        else:
+            return -1
+
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal:
             if role == Qt.DisplayRole:
@@ -77,7 +84,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
             row = index.row()
         else:
             return
-        assert self.model.removeRow(row)
+        assert self.removeRow(row)
 
     def locateItem(self, item_id, use_filter=''):
         raise NotImplementedError("locateItem() method is not defined in subclass of AbstractReferenceListModel")

@@ -389,15 +389,7 @@ class StatementLoader(QObject):
     def getAccountBank(self, account_id):
         bank_id = readSQL("SELECT organization_id FROM accounts WHERE id=:account_id",
                           [(":account_id", account_id)])
-        if bank_id != '':
-            return bank_id
-        bank_id = readSQL("SELECT id FROM agents WHERE name='Interactive Brokers'")
-        if bank_id is not None:  # FIXME Better to check that every investment accunt has bank assigned at creation
-            return bank_id
-        query = executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'Interactive Brokers')")
-        bank_id = query.lastInsertId()
-        _ = executeSQL("UPDATE accounts SET organization_id=:bank_id WHERE id=:account_id",
-                       [(":bank_id", bank_id), (":account_id", account_id)])
+        bank_id = 0 if bank_id != '' else bank_id
         return bank_id
 
     def loadIBFlex(self, filename):
@@ -549,7 +541,6 @@ class StatementLoader(QObject):
 
         cnt = 0
         for trade in trades:
-            _ = self.getAccountBank(trade['accountId'])  # Checks that bank is present (in order to process fees)
             try:
                 cnt += ib_trade_loaders[trade['assetCategory']](trade)
             except KeyError:

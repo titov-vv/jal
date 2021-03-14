@@ -8,6 +8,18 @@ def g_tr(context, text):
     return QCoreApplication.translate(context, text)
 
 
+def decodeError(orginal_msg):
+    messages = {
+        'JAL_SQL_MSG_0001': g_tr("Error", "Investment account should have associated bank assigned"),
+        'JAL_SQL_MSG_0002': g_tr("Error", "Can't delete predefined category")
+    }
+
+    if orginal_msg[:4] != 'JAL_':
+        return orginal_msg
+    code = orginal_msg[:16]
+    return messages[code]
+
+
 # -----------------------------------------------------------------------------------------------------------------------
 # Returns True if all modules from module_list are present in the system
 def dependency_present(module_list):

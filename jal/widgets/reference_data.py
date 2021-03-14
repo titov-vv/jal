@@ -4,7 +4,7 @@ from PySide2.QtCore import Signal, Property, Slot
 from PySide2.QtWidgets import QDialog, QMessageBox
 
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
-from jal.widgets.helpers import g_tr
+from jal.widgets.helpers import g_tr, decodeError
 
 
 # --------------------------------------------------------------------------------------------------------------
@@ -140,11 +140,11 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     def OnCommit(self):
         if self.group_key_index is not None:
             record = self.model.record(0)
-            group_field = record.value(self.model.fieldIndex(self.group_key_field))
+            group_field = record.value(self.group_key_index)
             if not group_field:
                 self.model.setData(self.model.index(0, self.group_key_index), self.group_id)
         if not self.model.submitAll():
-            logging.fatal(g_tr('ReferenceDataDialog', "Submit failed: ") + self.model.lastError().text())
+            logging.fatal(g_tr('ReferenceDataDialog', "Submit failed: ") + decodeError(self.model.lastError().text()))
             return
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)
