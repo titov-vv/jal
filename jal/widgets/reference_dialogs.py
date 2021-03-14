@@ -68,12 +68,15 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         return readSQL(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
 
     def addElement(self, index):
-        row = index.row()
-        assert self.insertRows(row, 1)  #FIXME - it throws an exception on empty table
+        row = index.row() if index.isValid() else 0
+        assert self.insertRows(row, 1)
         self.setRecord(row, self.record())
 
     def removeElement(self, index):
-        row = index.row()
+        if index.isValid():
+            row = index.row()
+        else:
+            return
         assert self.model.removeRow(row)
 
     def locateItem(self, item_id, use_filter=''):
