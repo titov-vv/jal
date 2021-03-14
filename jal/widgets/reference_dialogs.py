@@ -69,7 +69,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
 
     def addElement(self, index):
         row = index.row()
-        assert self.insertRows(row, 1)
+        assert self.insertRows(row, 1)  #FIXME - it throws an exception on empty table
         self.setRecord(row, self.record())
 
     def removeElement(self, index):

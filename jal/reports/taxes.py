@@ -483,7 +483,7 @@ class TaxesRus:
                            "LEFT JOIN quotes AS qc ON ldc.timestamp=qc.timestamp AND a.currency_id=qc.asset_id "
                            "LEFT JOIN t_last_dates AS ldcs ON c.settlement=ldcs.ref_id "
                            "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
-                           "WHERE c.timestamp>=:begin AND c.timestamp<:end AND d.account_id=:account_id "
+                           "WHERE c.settlement>=:begin AND c.settlement<:end AND d.account_id=:account_id "
                            "AND (s.type_id = :stock OR s.type_id = :fund) "
                            "ORDER BY s.name, o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
@@ -554,7 +554,7 @@ class TaxesRus:
                            "LEFT JOIN quotes AS qc ON ldc.timestamp=qc.timestamp AND a.currency_id=qc.asset_id "
                            "LEFT JOIN t_last_dates AS ldcs ON c.settlement=ldcs.ref_id "
                            "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
-                           "WHERE c.timestamp>=:begin AND c.timestamp<:end AND d.account_id=:account_id "
+                           "WHERE c.settlement>=:begin AND c.settlement<:end AND d.account_id=:account_id "
                            "AND s.type_id = :bond "
                            "ORDER BY s.name, o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
@@ -662,7 +662,7 @@ class TaxesRus:
                            "LEFT JOIN quotes AS qc ON ldc.timestamp=qc.timestamp AND a.currency_id=qc.asset_id "
                            "LEFT JOIN t_last_dates AS ldcs ON c.settlement=ldcs.ref_id "
                            "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
-                           "WHERE c.timestamp>=:begin AND c.timestamp<:end AND d.account_id=:account_id "
+                           "WHERE c.settlement>=:begin AND c.settlement<:end AND d.account_id=:account_id "
                            "AND s.type_id == 6 "  # To select only derivatives
                            "ORDER BY s.name, o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id)])
