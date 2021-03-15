@@ -120,7 +120,7 @@ class FloatDelegate(QStyledItemDelegate):
     def setEditorData(self, editor, index):
         try:
             amount = float(index.model().data(index, Qt.EditRole))
-        except ValueError:
+        except (ValueError, TypeError):
             amount = 0.0
         editor.setText(f"{amount}")
 
