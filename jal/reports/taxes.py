@@ -521,7 +521,7 @@ class TaxesRus:
             if self.statement is not None:
                 self.statement.add_stock_profit(deal['country_code'], self.broker_name, deal['cs_date'],
                                                 self.account_currency, deal['income'], deal['income_rub'],
-                                                deal['spending_rub'], deal['c_rate'])
+                                                deal['spending_rub'], deal['cs_rate'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
 
@@ -600,7 +600,7 @@ class TaxesRus:
             if self.statement is not None:
                 self.statement.add_stock_profit(deal['country_code'], self.broker_name, deal['cs_date'],
                                                 self.account_currency, deal['income'], deal['income_rub'],
-                                                deal['spending_rub'], deal['c_rate'])
+                                                deal['spending_rub'], deal['cs_rate'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
 
@@ -699,7 +699,7 @@ class TaxesRus:
             if self.statement is not None:
                 self.statement.add_derivative_profit(deal['country_code'], self.broker_name, deal['cs_date'],
                                                      self.account_currency, deal['income'], deal['income_rub'],
-                                                     deal['spending_rub'], deal['c_rate'])
+                                                     deal['spending_rub'], deal['cs_rate'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
 
@@ -767,7 +767,7 @@ class TaxesRus:
                            "LEFT JOIN quotes AS qt ON ldt.timestamp=qt.timestamp AND a.currency_id=qt.asset_id "
                            "LEFT JOIN t_last_dates AS ldts ON t.settlement=ldts.ref_id "
                            "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id "
-                           "WHERE t.timestamp<:end AND d.account_id=:account_id "
+                           "WHERE t.settlement<:end AND d.account_id=:account_id "
                            "ORDER BY s.name, t.timestamp",
                            [(":end", self.year_end), (":account_id", self.account_id)])
         row = self.data_start_row
@@ -780,7 +780,7 @@ class TaxesRus:
             if previous_symbol != sale['symbol']:
                 # Clean processed qty records if symbol have changed
                 _ = executeSQL("DELETE FROM t_last_assets")
-                if sale["t_date"] >= self.year_begin:  # Don't put sub-header of operation is out of scope
+                if sale["s_date"] >= self.year_begin:  # Don't put sub-header of operation is out of scope
                     self.current_sheet.write(row, 0, f"Сделки по бумаге: {sale['symbol']} - {sale['full_name']}",
                                              self.reports_xls.formats.Bold())
                     previous_symbol = sale['symbol']
