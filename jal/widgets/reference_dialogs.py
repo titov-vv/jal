@@ -214,8 +214,8 @@ class AssetListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
         AbstractReferenceListModel.__init__(self, table, parent_view)
         self._columns = [("id", ''),
-                         ("type_id", ''),
                          ("name", g_tr('ReferenceDataDialog', "Symbol")),
+                         ("type_id", ''),
                          ("full_name", g_tr('ReferenceDataDialog', "Name")),
                          ("isin", g_tr('ReferenceDataDialog', "ISIN")),
                          ("country_id", g_tr('ReferenceDataDialog', "Country")),
