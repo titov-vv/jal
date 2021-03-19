@@ -21,7 +21,7 @@ CREATE TRIGGER validate_account_update
             ON accounts
       FOR EACH ROW
           WHEN NEW.type_id = 4 AND
-               NEW.ogranization_id IS NULL
+               NEW.organization_id IS NULL
 BEGIN
     SELECT RAISE(ABORT, "JAL_SQL_MSG_0001");
 END;

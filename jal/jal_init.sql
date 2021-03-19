@@ -1273,7 +1273,7 @@ END;
 DROP TRIGGER IF EXISTS validate_account_update;
 CREATE TRIGGER validate_account_update BEFORE UPDATE ON accounts
       FOR EACH ROW
-          WHEN NEW.type_id = 4 AND NEW.ogranization_id IS NULL
+          WHEN NEW.type_id = 4 AND NEW.organization_id IS NULL
 BEGIN
     SELECT RAISE(ABORT, "JAL_SQL_MSG_0001");
 END;
