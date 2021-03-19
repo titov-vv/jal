@@ -12,6 +12,7 @@ from PySide2.QtWidgets import QDialog
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from jal.constants import Setup, MarketDataFeed, BookAccount
 from jal.db.helpers import executeSQL, readSQLrecord
+from jal.db.update import JalDB
 from jal.widgets.helpers import g_tr
 
 
@@ -75,6 +76,7 @@ class QuoteDownloader(QObject):
 
     def UpdateQuotes(self, start_timestamp, end_timestamp):
         self.PrepareRussianCBReader()
+        jal_db = JalDB()
 
         query = executeSQL("WITH _holdings AS ( "
                            "SELECT l.asset_id AS asset FROM ledger AS l "
@@ -118,7 +120,8 @@ class QuoteDownloader(QObject):
                 continue
             if data is not None:
                 for date, quote in data.iterrows():  # Date in pandas dataset is in UTC by default
-                    self.SubmitQuote(asset['asset_id'], asset['name'], int(date.timestamp()), float(quote[0]))
+                    jal_db.update_quote(asset['asset_id'], int(date.timestamp()), float(quote[0]))
+        jal_db.commit()
         logging.info(g_tr('QuotesUpdateDialog', "Download completed"))
 
     def PrepareRussianCBReader(self):
@@ -230,18 +233,3 @@ class QuoteDownloader(QObject):
                      'Devise'])
         close = data.set_index("Date")
         return close
-
-    def SubmitQuote(self, asset_id, asset_name, timestamp, quote):
-        old_id = 0
-        query = executeSQL("SELECT id FROM quotes WHERE asset_id = :asset_id AND timestamp = :timestamp",
-                           [(":asset_id", asset_id), (":timestamp", timestamp)])
-        if query.next():
-            old_id = query.value(0)
-        if old_id:
-            executeSQL("UPDATE quotes SET quote=:quote WHERE id=:old_id",
-                       [(":quote", quote), (":old_id", old_id), ], commit=True)
-        else:
-            executeSQL("INSERT INTO quotes(timestamp, asset_id, quote) VALUES (:timestamp, :asset_id, :quote)",
-                       [(":timestamp", timestamp), (":asset_id", asset_id), (":quote", quote)], commit=True)
-        logging.info(g_tr('QuotesUpdateDialog', "Quote loaded: ") +
-                     f"{asset_name} @ {datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")
