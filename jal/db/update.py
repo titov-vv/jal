@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from jal.db.helpers import db_connection, executeSQL, get_asset_name
+from jal.db.helpers import db_connection, executeSQL, readSQL, get_asset_name
 from jal.widgets.helpers import g_tr
 
 
@@ -26,4 +26,28 @@ class JalDB():
             executeSQL("INSERT INTO quotes(timestamp, asset_id, quote) VALUES (:timestamp, :asset_id, :quote)",
                        [(":timestamp", timestamp), (":asset_id", asset_id), (":quote", quote)])
         logging.info(g_tr('JalDB', "Quote loaded: ") +
-                     f"{get_asset_name(asset_id)} @ {datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")
+                     f"{get_asset_name(asset_id)} " 
+                     f"@ {datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")
+
+    def add_trade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee):
+        trade_id = readSQL("SELECT id FROM trades "
+                           "WHERE timestamp=:timestamp AND asset_id = :asset "
+                           "AND account_id = :account AND number = :number AND qty = :qty AND price = :price",
+                           [(":timestamp", timestamp), (":asset", asset_id), (":account", account_id),
+                            (":number", number), (":qty", qty), (":price", price)])
+        if trade_id:
+            logging.info(g_tr('JalDB', "Trade already exists: #") + f"{number}")
+            return
+
+        _ = executeSQL("INSERT INTO trades (timestamp, settlement, number, account_id, asset_id, qty, price, fee) "
+                       "VALUES (:timestamp, :settlement, :number, :account, :asset, :qty, :price, :fee)",
+                       [(":timestamp", timestamp), (":settlement", settlement), (":number", number),
+                        (":account", account_id), (":asset", asset_id), (":qty", float(qty)),
+                        (":price", float(price)), (":fee", -float(fee))], commit=True)
+
+    def del_trade(self, account_id, asset_id, timestamp, _settlement, number, qty, price, _fee):
+        _ = executeSQL("DELETE FROM trades "
+                       "WHERE timestamp=:timestamp AND asset_id=:asset "
+                       "AND account_id=:account AND number=:number AND qty=:qty AND price=:price",
+                       [(":timestamp", timestamp), (":asset", asset_id), (":account", account_id),
+                        (":number", number), (":qty", -qty), (":price", price)], commit=True)
