@@ -19,11 +19,6 @@ from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-class ReportType:
-    IBKR = 'IBKR flex-query (*.xml)'
-    Quik = 'Quik HTML-report (*.htm)'
-
-
 class IBKRCashOp:
     Dividend = 0
     TaxWithhold = 1
@@ -316,20 +311,37 @@ class StatementLoader(QObject):
     def __init__(self, parent):
         super().__init__()
         self.parent = parent
-        self.loaders = {
-            ReportType.IBKR: self.loadIBFlex,
-            ReportType.Quik: self.loadQuikHtml
-        }
+        self.sources = [
+            {
+                'name': g_tr('StatementLoader', "Quik HTML"),
+                'filter': "Quik HTML-report (*.htm)",
+                'loader': self.loadQuikHtml,
+                'icon': "quik.ico"
+            },
+            {
+                'name': g_tr('StatementLoader', "Interactive Brokers XML"),
+                'filter': "IBKR flex-query (*.xml)",
+                'loader': self.loadIBFlex,
+                'icon': "ibkr.png"
+            },
+            {
+                'name': g_tr('StatementLoader', "Uralsib Broker"),
+                'filter': "Uralsib report (*.zip)",
+                'loader': None, #self.loadUralsibStatement
+                'icon': "uralsib.ico"
+            }
+        ]
         self.currentIBstatement = None
         self.last_selected_account = None
 
-    # Displays file choose dialog and loads corresponding report if user have chosen a file
-    def loadReport(self):
-        report_file, active_filter = \
-            QFileDialog.getOpenFileName(None, g_tr('StatementLoader', "Select statement file to import"),
-                                        ".", f"{ReportType.IBKR};;{ReportType.Quik}")
-        if report_file:
-            result = self.loaders[active_filter](report_file)
+    # method is called directly from menu so it contains QAction that was triggered
+    def load(self, action):
+        loader_id = action.data()
+        statement_file, active_filter = QFileDialog.getOpenFileName(None, g_tr('StatementLoader',
+                                                                               "Select statement file to import"),
+                                                                    ".", self.sources[loader_id]['filter'])
+        if statement_file:
+            result = self.sources[loader_id]['loader'](statement_file)
             if result:
                 self.load_completed.emit()
             else:

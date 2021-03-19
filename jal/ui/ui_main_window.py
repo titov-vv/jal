@@ -114,7 +114,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
         self.BalanceDate = QDateEdit(self.BalanceConfigFrame)
         self.BalanceDate.setObjectName(u"BalanceDate")
-        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 9), QTime(21, 0, 0)))
+        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 6), QTime(21, 0, 0)))
         self.BalanceDate.setCalendarPopup(True)
         self.BalanceDate.setTimeSpec(Qt.UTC)
 
@@ -332,7 +332,7 @@ class Ui_LedgerMainWindow(object):
         self.horizontalLayout_7.setContentsMargins(2, 2, 2, 2)
         self.HoldingsDate = QDateEdit(self.HoldingsParamsFrame)
         self.HoldingsDate.setObjectName(u"HoldingsDate")
-        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 9), QTime(21, 0, 0)))
+        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 6), QTime(21, 0, 0)))
         self.HoldingsDate.setCalendarPopup(True)
         self.HoldingsDate.setTimeSpec(Qt.UTC)
 
@@ -399,7 +399,7 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportToDate = QDateEdit(self.ReportParamsFrame)
         self.ReportToDate.setObjectName(u"ReportToDate")
-        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 9), QTime(21, 0, 0)))
+        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 6), QTime(21, 0, 0)))
         self.ReportToDate.setCalendarPopup(True)
         self.ReportToDate.setTimeSpec(Qt.UTC)
 
@@ -475,7 +475,7 @@ class Ui_LedgerMainWindow(object):
 
         self.ReportFromDate = QDateEdit(self.ReportParamsFrame)
         self.ReportFromDate.setObjectName(u"ReportFromDate")
-        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 9), QTime(21, 0, 0)))
+        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 6), QTime(21, 0, 0)))
         self.ReportFromDate.setCalendarPopup(True)
         self.ReportFromDate.setTimeSpec(Qt.UTC)
 
@@ -546,6 +546,8 @@ class Ui_LedgerMainWindow(object):
         self.menuLanguage.setObjectName(u"menuLanguage")
         self.menuImport = QMenu(self.MainMenu)
         self.menuImport.setObjectName(u"menuImport")
+        self.menuStatement = QMenu(self.menuImport)
+        self.menuStatement.setObjectName(u"menuStatement")
         LedgerMainWindow.setMenuBar(self.MainMenu)
         self.StatusBar = QStatusBar(LedgerMainWindow)
         self.StatusBar.setObjectName(u"StatusBar")
@@ -575,7 +577,7 @@ class Ui_LedgerMainWindow(object):
         self.menuLoad.addAction(self.action_Load_quotes)
         self.menu_Reports.addAction(self.PrepareTaxForms)
         self.menuImport.addAction(self.actionImportSlipRU)
-        self.menuImport.addAction(self.actionImportStatement)
+        self.menuImport.addAction(self.menuStatement.menuAction())
 
         self.retranslateUi(LedgerMainWindow)
 
@@ -658,5 +660,6 @@ class Ui_LedgerMainWindow(object):
         self.menu_Reports.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&Reports", None))
         self.menuLanguage.setTitle(QCoreApplication.translate("LedgerMainWindow", u"L&anguage", None))
         self.menuImport.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&Import", None))
+        self.menuStatement.setTitle(QCoreApplication.translate("LedgerMainWindow", u"&Statement", None))
     # retranslateUi
 

@@ -52,6 +52,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.langGroup = QActionGroup(self.menuLanguage)
         self.createLanguageMenu()
 
+        self.statementGroup = QActionGroup(self.menuStatement)
+        self.createStatementsImportMenu()
+
         # Operations view context menu
         self.contextMenu = QMenu(self.OperationsTableView)
         self.actionReconcile = QAction(text=g_tr('MainWindow', "Reconcile"), parent=self)
@@ -116,9 +119,9 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
         self.actionExit.triggered.connect(QApplication.instance().quit)
         self.actionAbout.triggered.connect(self.showAboutWindow)
         self.langGroup.triggered.connect(self.onLanguageChanged)
+        self.statementGroup.triggered.connect(self.statements.load)
         self.actionReconcile.triggered.connect(self.reconcileAtCurrentOperation)
         self.action_Load_quotes.triggered.connect(partial(self.downloader.showQuoteDownloadDialog, self))
-        self.actionImportStatement.triggered.connect(self.statements.loadReport)
         self.actionImportSlipRU.triggered.connect(self.importSlip)
         self.actionBackup.triggered.connect(self.backup.create)
         self.actionRestore.triggered.connect(self.backup.restore)
@@ -190,6 +193,18 @@ class MainWindow(QMainWindow, Ui_LedgerMainWindow):
                                            "Application will be terminated now"),
                                       QMessageBox.Ok)
             self.close()
+
+    # Create import menu for all known statements based on self.statements.sources values
+    def createStatementsImportMenu(self):
+        for i, source in enumerate(self.statements.sources):
+            if 'icon' in source:
+                source_icon = QIcon(self.own_path + "img" + os.sep + source['icon'])
+                action = QAction(source_icon, source['name'], self)
+            else:
+                action = QAction(source['name'], self)
+            action.setData(i)
+            self.menuStatement.addAction(action)
+            self.statementGroup.addAction(action)
 
     @Slot()
     def showAboutWindow(self):
