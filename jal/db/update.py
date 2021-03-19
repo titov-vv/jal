@@ -30,6 +30,15 @@ class JalDB():
                      f"{get_asset_name(asset_id)} " 
                      f"@ {datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")
 
+    def add_asset(self, symbol, name, asset_type, isin, data_source=-1):
+        _ = executeSQL("INSERT INTO assets(name, type_id, full_name, isin, src_id) "
+                       "VALUES(:symbol, :type, :full_name, :isin, :data_src)",
+                       [(":symbol", symbol), (":type", asset_type), (":full_name", name),
+                        (":isin", isin), (":data_src", data_source)], commit=True)
+        asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)])
+        if asset_id is None:
+            logging.error(g_tr('JalDB', "Failed to add new asset: ") + f"{symbol}")
+        return asset_id
 
     def add_dividend(self, subtype, timestamp, account_id, asset_id, amount, note, trade_number=''):
         id = readSQL("SELECT id FROM dividends WHERE timestamp=:timestamp "
