@@ -9,7 +9,7 @@ from lxml import etree
 from PySide2.QtCore import QObject, Signal, Slot
 from PySide2.QtSql import QSqlTableModel
 from PySide2.QtWidgets import QDialog, QFileDialog, QMessageBox
-from jal.constants import Setup, TransactionType, PredefinedAsset, PredefinedCategory, CorporateAction, DividendSubtype
+from jal.constants import TransactionType, PredefinedAsset, PredefinedCategory, CorporateAction, DividendSubtype
 from jal.db.helpers import db_connection, executeSQL, readSQL, get_country_by_code, account_last_date, \
     update_asset_country
 from jal.db.update import JalDB
@@ -815,32 +815,10 @@ class StatementLoader(QObject):
             return 0
         fee_idx = 2
         fee_amount = -trade['ibCommission']  # Fee is negative in IB report but we store positive value in database
-        self.createTransfer(trade['dateTime'], trade['accountId'][from_idx], from_amount,
-                            trade['accountId'][to_idx], to_amount, trade['accountId'][fee_idx],
-                            fee_amount, trade['exchange'])
+        JalDB().add_transfer(trade['dateTime'], trade['accountId'][from_idx], from_amount,
+                             trade['accountId'][to_idx], to_amount, trade['accountId'][fee_idx],
+                             fee_amount, trade['exchange'])
         return 1
-
-    def createTransfer(self, timestamp, f_acc_id, f_amount, t_acc_id, t_amount, fee_acc_id, fee, note):
-        transfer_id = readSQL("SELECT id FROM transfers WHERE withdrawal_timestamp=:timestamp "
-                              "AND withdrawal_account=:from_acc_id AND deposit_account=:to_acc_id",
-                              [(":timestamp", timestamp), (":from_acc_id", f_acc_id), (":to_acc_id", t_acc_id)])
-        if transfer_id:
-            logging.info(g_tr('StatementLoader', "Transfer/Exchange already exists: ") + f"{f_amount}->{t_amount}")
-            return
-        if abs(fee) > Setup.CALC_TOLERANCE:
-            _ = executeSQL("INSERT INTO transfers (withdrawal_timestamp, withdrawal_account, withdrawal, "
-                           "deposit_timestamp, deposit_account, deposit, fee_account, fee, note) "
-                           "VALUES (:timestamp, :f_acc_id, :f_amount, :timestamp, :t_acc_id, :t_amount, "
-                           ":fee_acc_id, :fee_amount, :note)",
-                           [(":timestamp", timestamp), (":f_acc_id", f_acc_id), (":t_acc_id", t_acc_id),
-                            (":f_amount", f_amount), (":t_amount", t_amount), (":fee_acc_id", fee_acc_id),
-                            (":fee_amount", fee), (":note", note)], commit=True)
-        else:
-            _ = executeSQL("INSERT INTO transfers (withdrawal_timestamp, withdrawal_account, withdrawal, "
-                           "deposit_timestamp, deposit_account, deposit, note) "
-                           "VALUES (:timestamp, :f_acc_id, :f_amount, :timestamp, :t_acc_id, :t_amount, :note)",
-                           [(":timestamp", timestamp), (":f_acc_id", f_acc_id), (":t_acc_id", t_acc_id),
-                            (":f_amount", f_amount), (":t_amount", t_amount), (":note", note)], commit=True)
 
     def createCorpAction(self, account_id, type, timestamp, number, asset_id_old, qty_old, asset_id_new, qty_new,
                          basis_ratio, note):
@@ -916,11 +894,11 @@ class StatementLoader(QObject):
             return 0
         self.last_selected_account = dialog.account_id
         if cash['amount'] >= 0:
-            self.createTransfer(cash['dateTime'], dialog.account_id, cash['amount'],
-                                cash['accountId'], cash['amount'], 0, 0, cash['description'])
+            JalDB().add_transfer(cash['dateTime'], dialog.account_id, cash['amount'],
+                                 cash['accountId'], cash['amount'], 0, 0, cash['description'])
         else:
-            self.createTransfer(cash['dateTime'], cash['accountId'], -cash['amount'],
-                                dialog.account_id, -cash['amount'], 0, 0, cash['description'])
+            JalDB().add_transfer(cash['dateTime'], cash['accountId'], -cash['amount'],
+                                 dialog.account_id, -cash['amount'], 0, 0, cash['description'])
         return 1
 
     def createDividend(self, subtype, timestamp, account_id, asset_id, amount, note, trade_number=''):
