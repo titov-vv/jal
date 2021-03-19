@@ -30,6 +30,20 @@ class JalDB():
                      f"{get_asset_name(asset_id)} " 
                      f"@ {datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")
 
+
+    def add_dividend(self, subtype, timestamp, account_id, asset_id, amount, note, trade_number=''):
+        id = readSQL("SELECT id FROM dividends WHERE timestamp=:timestamp "
+                     "AND account_id=:account_id AND asset_id=:asset_id AND note=:note",
+                     [(":timestamp", timestamp), (":account_id", account_id), (":asset_id", asset_id), (":note", note)])
+        if id:
+            logging.info(g_tr('StatementLoader', "Dividend already exists: ") + f"{note}")
+            return
+        _ = executeSQL("INSERT INTO dividends (timestamp, number, type, account_id, asset_id, amount, note) "
+                       "VALUES (:timestamp, :number, :subtype, :account_id, :asset_id, :amount, :note)",
+                       [(":timestamp", timestamp), (":number", trade_number), (":subtype", subtype),
+                        (":account_id", account_id), (":asset_id", asset_id), (":amount", amount), (":note", note)],
+                       commit=True)
+
     def add_trade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee):
         trade_id = readSQL("SELECT id FROM trades "
                            "WHERE timestamp=:timestamp AND asset_id = :asset "

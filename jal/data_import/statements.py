@@ -821,13 +821,14 @@ class StatementLoader(QObject):
         return 1
 
     def loadIBDividend(self, dividend):
-        self.createDividend(DividendSubtype.Dividend, dividend['dateTime'], dividend['accountId'], dividend['symbol'],
-                            dividend['amount'], dividend['description'])
+        JalDB().add_dividend(DividendSubtype.Dividend, dividend['dateTime'], dividend['accountId'], dividend['symbol'],
+                             dividend['amount'], dividend['description'])
         return 1
 
     def loadIBBondInterest(self, interest):
-        self.createDividend(DividendSubtype.BondInterest, interest['dateTime'], interest['accountId'], interest['symbol'],
-                            interest['amount'], interest['description'], interest['tradeID'])
+        JalDB().add_dividend(DividendSubtype.BondInterest, interest['dateTime'], interest['accountId'],
+                             interest['symbol'],
+                             interest['amount'], interest['description'], interest['tradeID'])
         return 1
 
     def loadIBWithholdingTax(self, tax):
@@ -881,19 +882,6 @@ class StatementLoader(QObject):
             JalDB().add_transfer(cash['dateTime'], cash['accountId'], -cash['amount'],
                                  dialog.account_id, -cash['amount'], 0, 0, cash['description'])
         return 1
-
-    def createDividend(self, subtype, timestamp, account_id, asset_id, amount, note, trade_number=''):
-        id = readSQL("SELECT id FROM dividends WHERE timestamp=:timestamp "
-                     "AND account_id=:account_id AND asset_id=:asset_id AND note=:note",
-                     [(":timestamp", timestamp), (":account_id", account_id), (":asset_id", asset_id), (":note", note)])
-        if id:
-            logging.info(g_tr('StatementLoader', "Dividend already exists: ") + f"{note}")
-            return
-        _ = executeSQL("INSERT INTO dividends (timestamp, number, type, account_id, asset_id, amount, note) "
-                       "VALUES (:timestamp, :number, :subtype, :account_id, :asset_id, :amount, :note)",
-                       [(":timestamp", timestamp), (":number", trade_number), (":subtype", subtype),
-                        (":account_id", account_id), (":asset_id", asset_id), (":amount", amount), (":note", note)],
-                       commit=True)
 
     def addWithholdingTax(self, timestamp, account_id, asset_id, amount, note):
         parts = re.match(IBKR.TaxNotePattern, note)
