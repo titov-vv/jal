@@ -29,7 +29,7 @@ class IBKRCashOp:
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-# Check dividend parsing for "RDS B" stock (see example here https://github.com/KonishchevDmitry/investments/issues/28 )
+#TODO Check dividend parsing for "RDS B" stock (see example here https://github.com/KonishchevDmitry/investments/issues/28 )
 class IBKR:
     BondPricipal = 1000
     CancelledFlag = 'Ca'
