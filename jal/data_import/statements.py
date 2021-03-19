@@ -601,10 +601,10 @@ class StatementLoader(QObject):
                 if len(paired_record) != 1:
                     logging.error(g_tr('StatementLoader', "Can't find paired record for ") + f"{action}")
                     continue
-                self.createCorpAction(action['accountId'], CorporateAction.Merger, action['dateTime'],
-                                      action['transactionID'], paired_record[0]['symbol'],
-                                      -paired_record[0]['quantity'], action['symbol'], action['quantity'], 1,
-                                      action['description'])
+                JalDB().add_corporate_action(action['accountId'], CorporateAction.Merger, action['dateTime'],
+                                             action['transactionID'], paired_record[0]['symbol'],
+                                             -paired_record[0]['quantity'], action['symbol'], action['quantity'], 1,
+                                             action['description'])
                 paired_record[0]['jal_processed'] = True
                 cnt += 2
             elif action['type'] == CorporateAction.SpinOff:
@@ -618,9 +618,9 @@ class StatementLoader(QObject):
                     continue
                 asset_id_old = self.findAssetID(spinoff['symbol_old'], spinoff['isin_old'])
                 qty_old = int(spinoff['Y']) * action['quantity'] / int(spinoff['X'])
-                self.createCorpAction(action['accountId'], CorporateAction.SpinOff, action['dateTime'],
-                                      action['transactionID'], asset_id_old,
-                                      qty_old, action['symbol'], action['quantity'], 0, action['description'])
+                JalDB().add_corporate_action(action['accountId'], CorporateAction.SpinOff, action['dateTime'],
+                                             action['transactionID'], asset_id_old,
+                                             qty_old, action['symbol'], action['quantity'], 0, action['description'])
                 cnt += 1
             elif action['type'] == CorporateAction.SymbolChange:
                 parts = re.match(IBKR.SymbolChangePattern, action['description'], re.IGNORECASE)
@@ -642,16 +642,16 @@ class StatementLoader(QObject):
                 if len(paired_record) != 1:
                     logging.error(g_tr('StatementLoader', "Can't find paired record for: ") + f"{action}")
                     continue
-                self.createCorpAction(action['accountId'], CorporateAction.SymbolChange, action['dateTime'],
-                                      action['transactionID'], paired_record[0]['symbol'],
-                                      -paired_record[0]['quantity'], action['symbol'], action['quantity'], 1,
-                                      action['description'])
+                JalDB().add_corporate_action(action['accountId'], CorporateAction.SymbolChange, action['dateTime'],
+                                             action['transactionID'], paired_record[0]['symbol'],
+                                             -paired_record[0]['quantity'], action['symbol'], action['quantity'], 1,
+                                             action['description'])
                 paired_record[0]['jal_processed'] = True
                 cnt += 2
             elif action['type'] == CorporateAction.StockDividend:
-                self.createCorpAction(action['accountId'], CorporateAction.StockDividend, action['dateTime'],
-                                      action['transactionID'], action['symbol'], -1,
-                                      action['symbol'], action['quantity'], 0, action['description'])
+                JalDB().add_corporate_action(action['accountId'], CorporateAction.StockDividend, action['dateTime'],
+                                             action['transactionID'], action['symbol'], -1,
+                                             action['symbol'], action['quantity'], 0, action['description'])
                 cnt += 1
             elif action['type'] == CorporateAction.Split:
                 parts = re.match(IBKR.SplitPattern, action['description'], re.IGNORECASE)
@@ -671,9 +671,9 @@ class StatementLoader(QObject):
                     else:               # Reverse split (X<Y)
                         qty_new = qty_delta / (int(split['X']) - int(split['Y']))
                         qty_old = int(split['Y']) * qty_delta / (int(split['X']) - int(split['Y']))
-                    self.createCorpAction(action['accountId'], CorporateAction.Split, action['dateTime'],
-                                          action['transactionID'], action['symbol'],
-                                          qty_old, action['symbol'], qty_new, 1, action['description'])
+                    JalDB().add_corporate_action(action['accountId'], CorporateAction.Split, action['dateTime'],
+                                                 action['transactionID'], action['symbol'],
+                                                 qty_old, action['symbol'], qty_new, 1, action['description'])
                     cnt += 1
                 else:  # Split together with ISIN change and there should be 2nd record available
                     description_b = action['description'][:parts.span(5)[0]] + split['symbol_old'] + ".OLD, "
@@ -687,10 +687,10 @@ class StatementLoader(QObject):
                     if len(paired_record) != 1:
                         logging.error(g_tr('StatementLoader', "Can't find paired record for: ") + f"{action}")
                         continue
-                    self.createCorpAction(action['accountId'], CorporateAction.Split, action['dateTime'],
-                                          action['transactionID'], paired_record[0]['symbol'],
-                                          -paired_record[0]['quantity'], action['symbol'], action['quantity'], 1,
-                                          action['description'])
+                    JalDB().add_corporate_action(action['accountId'], CorporateAction.Split, action['dateTime'],
+                                                 action['transactionID'], paired_record[0]['symbol'],
+                                                 -paired_record[0]['quantity'], action['symbol'], action['quantity'], 1,
+                                                 action['description'])
                     paired_record[0]['jal_processed'] = True
                     cnt += 2
             else:
@@ -819,25 +819,6 @@ class StatementLoader(QObject):
                              trade['accountId'][to_idx], to_amount, trade['accountId'][fee_idx],
                              fee_amount, trade['exchange'])
         return 1
-
-    def createCorpAction(self, account_id, type, timestamp, number, asset_id_old, qty_old, asset_id_new, qty_new,
-                         basis_ratio, note):
-        action_id = readSQL("SELECT id FROM corp_actions "
-                            "WHERE timestamp=:timestamp AND type = :type AND account_id = :account AND number = :number "
-                            "AND asset_id = :asset AND asset_id_new = :asset_new",
-                            [(":timestamp", timestamp), (":type", type), (":account", account_id), (":number", number),
-                             (":asset", asset_id_old), (":asset_new", asset_id_new)])
-        if action_id:
-            logging.info(g_tr('StatementLoader', "Corporate action already exists: #") + f"{number}")
-            return
-
-        _ = executeSQL("INSERT INTO corp_actions (timestamp, number, account_id, type, "
-                       "asset_id, qty, asset_id_new, qty_new, basis_ratio, note) "
-                       "VALUES (:timestamp, :number, :account, :type, "
-                       ":asset, :qty, :asset_new, :qty_new, :basis_ratio, :note)",
-                       [(":timestamp", timestamp), (":number", number), (":account", account_id), (":type", type),
-                        (":asset", asset_id_old), (":qty", float(qty_old)), (":asset_new", asset_id_new),
-                        (":qty_new", float(qty_new)), (":basis_ratio", basis_ratio), (":note", note)], commit=True)
 
     def loadIBDividend(self, dividend):
         self.createDividend(DividendSubtype.Dividend, dividend['dateTime'], dividend['accountId'], dividend['symbol'],

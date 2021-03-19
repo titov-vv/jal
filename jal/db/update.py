@@ -74,3 +74,22 @@ class JalDB():
                            "VALUES (:timestamp, :f_acc_id, :f_amount, :timestamp, :t_acc_id, :t_amount, :note)",
                            [(":timestamp", timestamp), (":f_acc_id", f_acc_id), (":t_acc_id", t_acc_id),
                             (":f_amount", f_amount), (":t_amount", t_amount), (":note", note)], commit=True)
+
+    def add_corporate_action(self, account_id, type, timestamp, number,
+                             asset_id_old, qty_old, asset_id_new, qty_new, basis_ratio, note):
+        action_id = readSQL("SELECT id FROM corp_actions "
+                            "WHERE timestamp=:timestamp AND type = :type AND account_id = :account AND number = :number "
+                            "AND asset_id = :asset AND asset_id_new = :asset_new",
+                            [(":timestamp", timestamp), (":type", type), (":account", account_id), (":number", number),
+                             (":asset", asset_id_old), (":asset_new", asset_id_new)])
+        if action_id:
+            logging.info(g_tr('StatementLoader', "Corporate action already exists: #") + f"{number}")
+            return
+
+        _ = executeSQL("INSERT INTO corp_actions (timestamp, number, account_id, type, "
+                       "asset_id, qty, asset_id_new, qty_new, basis_ratio, note) "
+                       "VALUES (:timestamp, :number, :account, :type, "
+                       ":asset, :qty, :asset_new, :qty_new, :basis_ratio, :note)",
+                       [(":timestamp", timestamp), (":number", number), (":account", account_id), (":type", type),
+                        (":asset", asset_id_old), (":qty", float(qty_old)), (":asset_new", asset_id_new),
+                        (":qty_new", float(qty_new)), (":basis_ratio", basis_ratio), (":note", note)], commit=True)
