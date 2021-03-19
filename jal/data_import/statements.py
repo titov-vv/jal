@@ -1,10 +1,8 @@
 import logging
-import math
 import re
 from datetime import datetime, timezone
 from itertools import groupby
 
-import pandas
 from lxml import etree
 from PySide2.QtCore import QObject, Signal, Slot
 from PySide2.QtSql import QSqlTableModel
@@ -16,6 +14,7 @@ from jal.db.update import JalDB
 from jal.widgets.helpers import g_tr, ManipulateDate
 from jal.ui.ui_add_asset_dlg import Ui_AddAssetDialog
 from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
+from jal.data_import.statement_quik import Quik
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -185,38 +184,6 @@ class IBKR:
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-class Quik:
-    ClientPattern = "^Код клиента: (.*)$"
-    DateTime = 'Дата и время заключения сделки'
-    TradeNumber = 'Номер сделки'
-    Symbol = 'Код инструмента'
-    Name = 'Краткое наименование инструмента'
-    Type = 'Направление'
-    Qty = 'Кол-во'
-    Price = 'Цена'
-    Amount = 'Объём'
-    Coupon = 'НКД'
-    SettleDate = 'Дата расчётов'
-    Buy = 'Купля'
-    Sell = 'Продажа'
-    Fee = 'Комиссия Брокера'
-    FeeEx = 'Суммарная комиссия ТС'    # This line is used in KIT Broker reports
-    FeeEx1 = 'Комиссия за ИТС'         # Below 3 lines are used in Uralsib Borker reports
-    FeeEx2 = 'Комиссия за организацию торговли'
-    FeeEx3 = 'Клиринговая комиссия'
-    Total = 'ИТОГО'
-
-
-# -----------------------------------------------------------------------------------------------------------------------
-# Strip white spaces from numbers imported form Quik html-report
-def convert_amount(val):
-    val = val.replace(' ', '')
-    try:
-        res = float(val)
-    except ValueError:
-        res = 0
-    return res
-
 
 def addNewAsset(symbol, name, asset_type, isin, data_source=-1):
     if symbol.endswith('.OLD'):
@@ -346,6 +313,9 @@ class StatementLoader(QObject):
                 self.load_completed.emit()
             else:
                 self.load_failed.emit()
+
+    def loadQuikHtml(self, filename):
+        return Quik(self, filename).load()
 
     # Searches for account_id by account number and optional currency
     # Returns: account_id or None if no account was found
@@ -935,58 +905,3 @@ class StatementLoader(QObject):
                      [(":div", DividendSubtype.Dividend), (":start_range", range_start), (":account_id", account_id),
                       (":asset_id", asset_id), (":dividend_description", note)])
         return id
-
-    def loadQuikHtml(self, filename):
-        try:
-            data = pandas.read_html(filename, encoding='cp1251',
-                                    converters={Quik.Qty: convert_amount, Quik.Amount: convert_amount,
-                                                Quik.Price: convert_amount, Quik.Coupon: convert_amount})
-        except:
-            logging.error(g_tr('StatementLoader', "Can't read statement file"))
-            return False
-
-        report_info = data[0]
-        deals_info = data[1]
-        parts = re.match(Quik.ClientPattern, report_info[0][2])
-        if parts:
-            account_id = self.findAccountID(parts.group(1))
-        else:
-            logging.error(g_tr('StatementLoader', "Can't get account number from the statement."))
-            return False
-        if account_id is None:
-            logging.error(g_tr('StatementLoader', "Account with number ") + f"{parts.group(1)}" +
-                          g_tr('StatementLoader', " not found. Import cancelled."))
-            return False
-
-        for index, row in deals_info.iterrows():
-            if row[Quik.Type] == Quik.Buy:
-                qty = int(row[Quik.Qty])
-            elif row[Quik.Type] == Quik.Sell:
-                qty = -int(row[Quik.Qty])
-            elif row[Quik.Type][:len(Quik.Total)] == Quik.Total:
-                break  # End of statement reached
-            else:
-                logging.warning(g_tr('StatementLoader', "Unknown operation type ") + f"'{row[Quik.Type]}'")
-                continue
-            asset_id = self.findAssetID(row[Quik.Symbol])
-            if asset_id is None:
-                logging.warning(g_tr('StatementLoader', "Unknown asset ") + f"'{row[Quik.Symbol]}'")
-                continue
-            timestamp = int(
-                datetime.strptime(row[Quik.DateTime], "%d.%m.%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp())
-            settlement = int(
-                datetime.strptime(row[Quik.SettleDate], "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
-            number = row[Quik.TradeNumber]
-            price = row[Quik.Price]
-            amount = row[Quik.Amount]
-            lot_size = math.pow(10, round(math.log10(amount / (price * abs(qty)))))
-            qty = qty * lot_size
-            fee = float(row[Quik.Fee])
-            if Quik.FeeEx in row:  # Broker dependent fee import
-                fee = fee + float(row[Quik.FeeEx])
-            else:
-                fee = fee + float(row[Quik.FeeEx1]) + float(row[Quik.FeeEx2]) + float(row[Quik.FeeEx3])
-            # FIXME paid/received bond interest should be recorded as separate transaction in table 'dividends'
-            bond_interest = float(row[Quik.Coupon])
-            JalDB().add_trade(account_id, asset_id, timestamp, settlement, number, qty, price, -fee)
-        return True
