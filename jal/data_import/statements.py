@@ -113,8 +113,6 @@ class StatementLoader(QObject):
                 'icon': "uralsib.ico"
             }
         ]
-        self.currentIBstatement = None
-        self.last_selected_account = None
 
     # method is called directly from menu so it contains QAction that was triggered
     def load(self, action):
@@ -203,7 +201,7 @@ class StatementLoader(QObject):
     def getAccountBank(self, account_id):
         bank_id = readSQL("SELECT organization_id FROM accounts WHERE id=:account_id",
                           [(":account_id", account_id)])
-        bank_id = 0 if bank_id != '' else bank_id
+        bank_id = 0 if bank_id == '' else bank_id
         return bank_id
 
     def selectAccount(self, text, account_id, recent_account_id):

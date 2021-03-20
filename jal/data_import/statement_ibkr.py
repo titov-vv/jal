@@ -51,6 +51,7 @@ class IBKR:
     def __init__(self, parent, filename):
         self._parent = parent
         self._filename = filename
+        self.last_selected_account = None
 
     @staticmethod
     def flString(data, name, default_value, _caller):
@@ -293,7 +294,7 @@ class IBKR:
                 if IBKR.flString(sample, 'levelOfDetail', '', self) != section_descriptions[section.tag]['level']:
                     continue
             for attr_name, attr_loader, attr_default in section_descriptions[section.tag]['values']:
-                attr_value = attr_loader(sample, attr_name, attr_default, self)
+                attr_value = attr_loader(sample, attr_name, attr_default, self._parent)
                 if attr_value is None:
                     logging.error(
                         g_tr('StatementLoader', "Failed to load attribute: ") + f"{attr_name} / {sample.attrib}")
@@ -494,11 +495,11 @@ class IBKR:
                 logging.warning(g_tr('StatementLoader', "Tax transaction already exists ") + f"{tax}")
                 continue
             query = executeSQL("INSERT INTO actions (timestamp, account_id, peer_id) "
-                                        "VALUES (:timestamp, :account_id, :bank_id)",
+                               "VALUES (:timestamp, :account_id, :bank_id)",
                                [(":timestamp", tax['date']), (":account_id", tax['accountId']), (":bank_id", bank_id)])
             pid = query.lastInsertId()
             _ = executeSQL("INSERT INTO action_details (pid, category_id, sum, note) "
-                                    "VALUES (:pid, :category_id, :sum, :note)",
+                           "VALUES (:pid, :category_id, :sum, :note)",
                            [(":pid", pid), (":category_id", PredefinedCategory.Taxes),
                             (":sum", tax['taxAmount']), (":note", note)], commit=True)
             cnt += 1
@@ -652,7 +653,7 @@ class IBKR:
             text = g_tr('StatementLoader', "Withdrawal of ") + f"{-cash['amount']:.2f} {cash['currency']} " + \
                    f"@{datetime.utcfromtimestamp(cash['dateTime']).strftime('%d.%m.%Y')}\n" + \
                    g_tr('StatementLoader', "Select account to deposit to:")
-        pair_account = self._parent.selectAccount(text, cash['accountId'], recent_account=self.last_selected_account)
+        pair_account = self._parent.selectAccount(text, cash['accountId'], self.last_selected_account)
         if pair_account == 0:
             return 0
         self.last_selected_account = pair_account
