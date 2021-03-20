@@ -6,7 +6,7 @@ import pandas
 
 from jal.widgets.helpers import g_tr
 from jal.db.update import JalDB
-from jal.constants import DividendSubtype
+from jal.constants import Setup, DividendSubtype
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -79,6 +79,7 @@ class UralsibCapital:
             "B/S": "Вид сделки",
             "price": "Цена одной ЦБ",
             "qty": "Количество ЦБ, шт.",
+            "amount": "Сумма сделки",
             "accrued_int": "НКД",
             "settlement": "Дата поставки, плановая",
             "fee_ex": "Комиссия ТС"
@@ -105,8 +106,10 @@ class UralsibCapital:
             asset_id = self._parent.findAssetID('', isin=self._statement[headers['isin']][row], name=asset_name)
             if self._statement[headers['B/S']][row] == 'Покупка':
                 qty = self._statement[headers['qty']][row]
+                bond_interest = -self._statement[headers['accrued_int']][row]
             elif self._statement[headers['B/S']][row] == 'Продажа':
                 qty = -self._statement[headers['qty']][row]
+                bond_interest = self._statement[headers['accrued_int']][row]
             else:
                 row += 1
                 logging.warning(g_tr('Uralsib', "Unknown trade type: ") + self._statement[headers['B/S']][row])
@@ -114,12 +117,13 @@ class UralsibCapital:
 
             price = self._statement[headers['price']][row]
             fee = self._statement[headers['fee_ex']][row]
+            amount = self._statement[headers['amount']][row]
+            if abs(abs(price * qty) - amount) >= Setup.CALC_TOLERANCE:
+                price = abs(amount / qty)
             ts_string = self._statement[headers['date']][row] + ' ' + self._statement[headers['time']][row]
             timestamp = int(datetime.strptime(ts_string, "%d.%m.%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp())
             settlement = int(datetime.strptime(self._statement[headers['settlement']][row],
                                                "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
-            bond_interest = self._statement[headers['accrued_int']][row]
-
             JalDB().add_trade(self._account_id, asset_id, timestamp, settlement, deal_number, qty, price, -fee)
             if bond_interest != 0:
                 JalDB().add_dividend(DividendSubtype.BondInterest, timestamp, self._account_id, asset_id,
