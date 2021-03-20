@@ -138,11 +138,6 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
     @Slot()
     def OnCommit(self):
-        if self.group_key_index is not None:
-            record = self.model.record(0)
-            group_field = record.value(self.group_key_index)
-            if not group_field:
-                self.model.setData(self.model.index(0, self.group_key_index), self.group_id)
         if not self.model.submitAll():
             logging.fatal(g_tr('ReferenceDataDialog', "Submit failed: ") + decodeError(self.model.lastError().text()))
             return
