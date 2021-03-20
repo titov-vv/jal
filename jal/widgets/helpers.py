@@ -10,7 +10,7 @@ def g_tr(context, text):
 
 def decodeError(orginal_msg):
     messages = {
-        'JAL_SQL_MSG_0001': g_tr("Error", "Investment account should have associated bank assigned"),
+        'JAL_SQL_MSG_0001': g_tr("Error", "Investment account should have associated broker assigned"),
         'JAL_SQL_MSG_0002': g_tr("Error", "Can't delete predefined category")
     }
 

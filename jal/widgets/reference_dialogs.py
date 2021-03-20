@@ -128,7 +128,7 @@ class AccountListModel(AbstractReferenceListModel):
                          ("active", g_tr('ReferenceDataDialog', "Act.")),
                          ("number", g_tr('ReferenceDataDialog', "Account #")),
                          ("reconciled_on", g_tr('ReferenceDataDialog', "Reconciled @")),
-                         ("organization_id", g_tr('ReferenceDataDialog', "Bank")),
+                         ("organization_id", g_tr('ReferenceDataDialog', "Bank/Broker")),
                          ("country_id", g_tr('ReferenceDataDialog', "CC"))]
         self._sort_by = "name"
         self._hidden = ["id", "type_id"]
