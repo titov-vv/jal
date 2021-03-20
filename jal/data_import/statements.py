@@ -207,7 +207,8 @@ class StatementLoader(QObject):
     def getAccountBank(self, account_id):
         bank_id = readSQL("SELECT organization_id FROM accounts WHERE id=:account_id",
                           [(":account_id", account_id)])
-        bank_id = 0 if bank_id == '' else bank_id
+        if bank_id == '':
+            raise RuntimeError("Broker isn't defined for Investment account")
         return bank_id
 
     def selectAccount(self, text, account_id, recent_account_id):
