@@ -178,12 +178,12 @@ class StatementLoader(QObject):
             asset_id = readSQL("SELECT id FROM assets WHERE isin=:isin", [(":isin", isin)])
             if asset_id is not None:
                 db_symbol = readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
-                if db_symbol != symbol:
+                if (symbol != '') and (db_symbol != symbol):
                     _ = executeSQL("UPDATE assets SET name=:symbol WHERE id=:asset_id",
                                    [(":symbol", symbol), (":asset_id", asset_id)])
                     # Show warning if symbol was changed not due known bankruptcy or new issue pattern
                     if (db_symbol != symbol + 'D') and (db_symbol + 'D' != symbol) \
-                            and (db_symbol != symbol + 'Q') and (db_symbol + 'Q' != symbol) and (symbol != ''):
+                            and (db_symbol != symbol + 'Q') and (db_symbol + 'Q' != symbol):
                         logging.warning(
                             g_tr('StatementLoader', "Symbol updated for ISIN ") + f"{isin}: {db_symbol} -> {symbol}")
                 return asset_id

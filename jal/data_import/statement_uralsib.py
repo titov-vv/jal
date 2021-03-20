@@ -6,6 +6,7 @@ import pandas
 
 from jal.widgets.helpers import g_tr
 from jal.db.update import JalDB
+from jal.constants import DividendSubtype
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -23,17 +24,18 @@ class UralsibCapital:
         with ZipFile(self._filename) as zip_file:
             contents = zip_file.namelist()
             if len(contents) != 1:
-                logging.info(g_tr('Uralsib', "Archive contains multiple files, only one is expected for import"))
+                logging.error(g_tr('Uralsib', "Archive contains multiple files, only one is expected for import"))
                 return False
             with zip_file.open(contents[0]) as r_file:
                 self._statement = pandas.read_excel(io=r_file.read(), header=None, na_filter=False)
         if not self.validate():
             return False
         self.load_stock_deals()
+        return True
 
     def validate(self):
         if self._statement[2][0] != self.Header:
-            logging.info(g_tr('Uralsib', "Can't find Uralsib Capital report header"))
+            logging.error(g_tr('Uralsib', "Can't find Uralsib Capital report header"))
             return False
         account_name = self._statement[2][7]
         parts = re.match(self.PeriodPattern, self._statement[2][2], re.IGNORECASE)
@@ -63,11 +65,12 @@ class UralsibCapital:
         column_indices = {column: headers.get(columns[column], -1) for column in columns}
         for idx in column_indices:
             if column_indices[idx] < 0:
-                logging.info(g_tr('Uralsib', "Column not found: ") + idx)
+                logging.error(g_tr('Uralsib', "Column not found: ") + idx)
                 start_row = -1
         return start_row, column_indices
 
     def load_stock_deals(self):
+        cnt = 0
         columns = {
             "number": "Номер сделки",
             "date": "Дата сделки",
@@ -76,7 +79,7 @@ class UralsibCapital:
             "B/S": "Вид сделки",
             "price": "Цена одной ЦБ",
             "qty": "Количество ЦБ, шт.",
-            "coupon": "НКД",
+            "accrued_int": "НКД",
             "settlement": "Дата поставки, плановая",
             "fee_ex": "Комиссия ТС"
         }
@@ -100,9 +103,27 @@ class UralsibCapital:
                 continue
 
             asset_id = self._parent.findAssetID('', isin=self._statement[headers['isin']][row], name=asset_name)
-            qty = self._statement[headers['qty']][row]
+            if self._statement[headers['B/S']][row] == 'Покупка':
+                qty = self._statement[headers['qty']][row]
+            elif self._statement[headers['B/S']][row] == 'Продажа':
+                qty = -self._statement[headers['qty']][row]
+            else:
+                row += 1
+                logging.warning(g_tr('Uralsib', "Unknown trade type: ") + self._statement[headers['B/S']][row])
+                continue
+
             price = self._statement[headers['price']][row]
             fee = self._statement[headers['fee_ex']][row]
+            ts_string = self._statement[headers['date']][row] + ' ' + self._statement[headers['time']][row]
+            timestamp = int(datetime.strptime(ts_string, "%d.%m.%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp())
+            settlement = int(datetime.strptime(self._statement[headers['settlement']][row],
+                                               "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+            bond_interest = self._statement[headers['accrued_int']][row]
 
-            # JalDB().add_trade(self._account_id, asset_id, timestamp, settlement, deal_number, qty, price, -fee)
+            JalDB().add_trade(self._account_id, asset_id, timestamp, settlement, deal_number, qty, price, -fee)
+            if bond_interest != 0:
+                JalDB().add_dividend(DividendSubtype.BondInterest, timestamp, self._account_id, asset_id,
+                                     bond_interest, "НКД", deal_number)
+            cnt += 1
             row += 1
+        logging.info(g_tr('Uralsib', "Trades loaded: ") + f"{cnt}")
