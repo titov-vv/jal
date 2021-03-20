@@ -485,7 +485,6 @@ class IBKR:
     def loadIBTaxes(self, taxes):
         cnt = 0
         for tax in taxes:
-            bank_id = self._parent.getAccountBank(tax['accountId'])
             note = f"{tax['symbol']} ({tax['description']}) - {tax['taxDescription']}"
             id = readSQL("SELECT id FROM all_operations WHERE type = :type "
                          "AND timestamp=:timestamp AND account_id=:account_id AND amount=:amount",
@@ -494,14 +493,8 @@ class IBKR:
             if id:
                 logging.warning(g_tr('StatementLoader', "Tax transaction already exists ") + f"{tax}")
                 continue
-            query = executeSQL("INSERT INTO actions (timestamp, account_id, peer_id) "
-                               "VALUES (:timestamp, :account_id, :bank_id)",
-                               [(":timestamp", tax['date']), (":account_id", tax['accountId']), (":bank_id", bank_id)])
-            pid = query.lastInsertId()
-            _ = executeSQL("INSERT INTO action_details (pid, category_id, sum, note) "
-                           "VALUES (:pid, :category_id, :sum, :note)",
-                           [(":pid", pid), (":category_id", PredefinedCategory.Taxes),
-                            (":sum", tax['taxAmount']), (":note", note)], commit=True)
+            JalDB().add_cash_transaction(tax['accountId'], self._parent.getAccountBank(tax['accountId']), tax['date'],
+                                         tax['taxAmount'], PredefinedCategory.Taxes, note)
             cnt += 1
         logging.info(g_tr('StatementLoader', "Taxes loaded: ") + f"{cnt} ({len(taxes)})")
 
@@ -619,13 +612,14 @@ class IBKR:
         return 1
 
     def loadIBFee(self, fee):
-        JalDB().add_fee(fee['accountId'], self._parent.getAccountBank(fee['accountId']),
-                        fee['dateTime'], fee['amount'], fee['description'])
+        JalDB().add_cash_transaction(fee['accountId'], self._parent.getAccountBank(fee['accountId']), fee['dateTime'],
+                                     fee['amount'], PredefinedCategory.Fees, fee['description'])
         return 1
 
     def loadIBInterest(self, interest):
-        JalDB().add_interest(interest['accountId'], self._parent.getAccountBank(interest['accountId']),
-                             interest['dateTime'], interest['amount'], interest['description'])
+        JalDB().add_cash_transaction(interest['accountId'], self._parent.getAccountBank(interest['accountId']),
+                                     interest['dateTime'], interest['amount'], PredefinedCategory.Interest,
+                                     interest['description'])
         return 1
 
     # noinspection PyMethodMayBeStatic

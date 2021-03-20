@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from jal.constants import Setup, PredefinedCategory
+from jal.constants import Setup
 from jal.db.helpers import db_connection, executeSQL, readSQL, get_asset_name
 from jal.widgets.helpers import g_tr
 
@@ -117,23 +117,12 @@ class JalDB():
                         (":asset", asset_id_old), (":qty", float(qty_old)), (":asset_new", asset_id_new),
                         (":qty_new", float(qty_new)), (":basis_ratio", basis_ratio), (":note", note)], commit=True)
 
-    def add_interest(self, account_id, broker_id, timestamp, amount, description):
-        query = executeSQL("INSERT INTO actions (timestamp, account_id, peer_id) "
-                           "VALUES (:timestamp, :account_id, :bank_id)",
-                           [(":timestamp", timestamp), (":account_id", account_id),
-                            (":bank_id", broker_id)])
-        pid = query.lastInsertId()
-        _ = executeSQL("INSERT INTO action_details (pid, category_id, sum, note) "
-                       "VALUES (:pid, :category_id, :sum, :note)",
-                       [(":pid", pid), (":category_id", PredefinedCategory.Interest), (":sum", amount),
-                        (":note", description)], commit=True)
-
-    def add_fee(self, account_id, broker_id, timestamp, amount, description):
+    def add_cash_transaction(self, account_id, broker_id, timestamp, amount, category_id, description):
         query = executeSQL("INSERT INTO actions (timestamp, account_id, peer_id) "
                            "VALUES (:timestamp, :account_id, :bank_id)",
                            [(":timestamp", timestamp), (":account_id", account_id), (":bank_id", broker_id)])
         pid = query.lastInsertId()
         _ = executeSQL("INSERT INTO action_details (pid, category_id, sum, note) "
                        "VALUES (:pid, :category_id, :sum, :note)",
-                       [(":pid", pid), (":category_id", PredefinedCategory.Fees), (":sum", amount),
+                       [(":pid", pid), (":category_id", category_id), (":sum", amount),
                         (":note", description)], commit=True)
