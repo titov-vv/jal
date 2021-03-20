@@ -45,7 +45,7 @@ class JalDB():
                      "AND account_id=:account_id AND asset_id=:asset_id AND note=:note",
                      [(":timestamp", timestamp), (":account_id", account_id), (":asset_id", asset_id), (":note", note)])
         if id:
-            logging.info(g_tr('StatementLoader', "Dividend already exists: ") + f"{note}")
+            logging.info(g_tr('JalDB', "Dividend already exists: ") + f"{note}")
             return
         _ = executeSQL("INSERT INTO dividends (timestamp, number, type, account_id, asset_id, amount, note) "
                        "VALUES (:timestamp, :number, :subtype, :account_id, :asset_id, :amount, :note)",
@@ -106,7 +106,7 @@ class JalDB():
                             [(":timestamp", timestamp), (":type", type), (":account", account_id), (":number", number),
                              (":asset", asset_id_old), (":asset_new", asset_id_new)])
         if action_id:
-            logging.info(g_tr('StatementLoader', "Corporate action already exists: #") + f"{number}")
+            logging.info(g_tr('JalDB', "Corporate action already exists: #") + f"{number}")
             return
 
         _ = executeSQL("INSERT INTO corp_actions (timestamp, number, account_id, type, "

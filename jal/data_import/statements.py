@@ -11,6 +11,7 @@ from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
 from jal.db.update import JalDB
 from jal.data_import.statement_quik import Quik
 from jal.data_import.statement_ibkr import IBKR
+from jal.data_import.statement_uralsib import UralsibCapital
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -109,7 +110,7 @@ class StatementLoader(QObject):
             {
                 'name': g_tr('StatementLoader', "Uralsib Broker"),
                 'filter': "Uralsib report (*.zip)",
-                'loader': None, #self.loadUralsibStatement
+                'loader': self.loadUralsibCapital,
                 'icon': "uralsib.ico"
             }
         ]
@@ -132,6 +133,9 @@ class StatementLoader(QObject):
 
     def loadIBFlex(self, filename):
         return IBKR(self, filename).load()
+
+    def loadUralsibCapital(self, filename):
+        return UralsibCapital(self, filename).load()
 
     # Checks if report is after last transaction recorded for account.
     # Otherwise asks for confirmation and returns False if import is cancelled
