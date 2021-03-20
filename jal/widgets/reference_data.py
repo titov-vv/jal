@@ -66,8 +66,8 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     @Slot()
     def closeEvent(self, event):
         if self.CommitBtn.isEnabled():    # There are uncommitted changed in a table
-            if QMessageBox().warning(None, g_tr('ReferenceDataDialog', "Confirmation"),
-                                     g_tr('ReferenceDataDialog', "You have uncommited changes. Do you want to close?"),
+            if QMessageBox().warning(self, g_tr('ReferenceDataDialog', "Confirmation"),
+                                     g_tr('ReferenceDataDialog', "You have uncommitted changes. Do you want to close?"),
                                      QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
                 event.ignore()
                 return
@@ -194,6 +194,8 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
     @Slot()
     def OnGroupChange(self, list_id):
+        self.OnRevert()  # Discard all possible changes
+
         model = self.GroupCombo.model()
         self.group_id = model.data(model.index(list_id, model.fieldIndex(self.group_fkey_field)))
         self.setFilter()

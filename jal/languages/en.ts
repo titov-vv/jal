@@ -1434,18 +1434,13 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_data.py" line="147"/>
+        <location filename="../widgets/reference_data.py" line="142"/>
         <source>Submit failed: </source>
         <translation></translation>
     </message>
     <message>
         <location filename="../widgets/reference_data.py" line="69"/>
         <source>Confirmation</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/reference_data.py" line="69"/>
-        <source>You have uncommited changes. Do you want to close?</source>
         <translation></translation>
     </message>
     <message>
@@ -1464,152 +1459,152 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="98"/>
+        <location filename="../widgets/reference_dialogs.py" line="106"/>
         <source>Account Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="115"/>
+        <location filename="../widgets/reference_dialogs.py" line="123"/>
         <source>Account Types</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="551"/>
+        <location filename="../widgets/reference_dialogs.py" line="561"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="127"/>
+        <location filename="../widgets/reference_dialogs.py" line="135"/>
         <source>Currency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="128"/>
+        <location filename="../widgets/reference_dialogs.py" line="136"/>
         <source>Act.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="129"/>
+        <location filename="../widgets/reference_dialogs.py" line="137"/>
         <source>Account #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="130"/>
+        <location filename="../widgets/reference_dialogs.py" line="138"/>
         <source>Reconciled @</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="193"/>
+        <location filename="../widgets/reference_dialogs.py" line="202"/>
         <source>Account type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="186"/>
+        <location filename="../widgets/reference_dialogs.py" line="195"/>
         <source>Accounts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="217"/>
+        <location filename="../widgets/reference_dialogs.py" line="226"/>
         <source>Symbol</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="220"/>
+        <location filename="../widgets/reference_dialogs.py" line="229"/>
         <source>ISIN</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="631"/>
+        <location filename="../widgets/reference_dialogs.py" line="641"/>
         <source>Country</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="222"/>
+        <location filename="../widgets/reference_dialogs.py" line="231"/>
         <source>Data source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="267"/>
+        <location filename="../widgets/reference_dialogs.py" line="277"/>
         <source>Asset type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="262"/>
+        <location filename="../widgets/reference_dialogs.py" line="272"/>
         <source>Assets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="498"/>
+        <location filename="../widgets/reference_dialogs.py" line="508"/>
         <source>Location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="499"/>
+        <location filename="../widgets/reference_dialogs.py" line="509"/>
         <source>Docs count</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="540"/>
+        <location filename="../widgets/reference_dialogs.py" line="550"/>
         <source>Peers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="552"/>
+        <location filename="../widgets/reference_dialogs.py" line="562"/>
         <source>Often</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="580"/>
+        <location filename="../widgets/reference_dialogs.py" line="590"/>
         <source>Categories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="591"/>
+        <location filename="../widgets/reference_dialogs.py" line="601"/>
         <source>Tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="617"/>
+        <location filename="../widgets/reference_dialogs.py" line="627"/>
         <source>Tags</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="632"/>
+        <location filename="../widgets/reference_dialogs.py" line="642"/>
         <source>Code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="633"/>
+        <location filename="../widgets/reference_dialogs.py" line="643"/>
         <source>Tax Treaty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="660"/>
+        <location filename="../widgets/reference_dialogs.py" line="670"/>
         <source>Countries</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="669"/>
+        <location filename="../widgets/reference_dialogs.py" line="679"/>
         <source>Date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="670"/>
+        <location filename="../widgets/reference_dialogs.py" line="680"/>
         <source>Asset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="671"/>
+        <location filename="../widgets/reference_dialogs.py" line="681"/>
         <source>Quote</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="703"/>
+        <location filename="../widgets/reference_dialogs.py" line="713"/>
         <source>Quotes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="132"/>
+        <location filename="../widgets/reference_dialogs.py" line="140"/>
         <source>CC</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1639,8 +1634,13 @@ do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="131"/>
+        <location filename="../widgets/reference_dialogs.py" line="139"/>
         <source>Bank/Broker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_data.py" line="69"/>
+        <source>You have uncommitted changes. Do you want to close?</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
