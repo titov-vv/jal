@@ -6,6 +6,7 @@ from PySide2.QtWidgets import QDialog, QFileDialog, QMessageBox
 from jal.db.helpers import db_connection, executeSQL, readSQL, account_last_date
 
 from jal.widgets.helpers import g_tr
+from jal.constants import PredefinedAsset
 from jal.ui.ui_add_asset_dlg import Ui_AddAssetDialog
 from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
 from jal.db.update import JalDB
@@ -190,6 +191,11 @@ class StatementLoader(QObject):
         asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)])
         if asset_id is not None:
             # Check why symbol was not found by ISIN
+            asset_type = readSQL("SELECT type_id FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
+            if (asset_type == PredefinedAsset.Money) \
+                    or (asset_type == PredefinedAsset.Commodity) \
+                    or (asset_type == PredefinedAsset.Derivative):
+                return asset_id  # It is ok not to have ISIN
             db_isin = readSQL("SELECT isin FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
             if db_isin == '':  # Update ISIN if it was absent in DB
                 _ = executeSQL("UPDATE assets SET isin=:isin WHERE id=:asset_id",
