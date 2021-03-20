@@ -4,6 +4,7 @@ import re
 import pandas
 from datetime import datetime, timezone
 
+from jal.constants import DividendSubtype
 from jal.widgets.helpers import g_tr
 from jal.db.update import JalDB
 
@@ -95,7 +96,9 @@ class Quik:
                 fee = fee + float(row[self.FeeEx])
             else:
                 fee = fee + float(row[self.FeeEx1]) + float(row[self.FeeEx2]) + float(row[self.FeeEx3])
-            # FIXME paid/received bond interest should be recorded as separate transaction in table 'dividends'
             bond_interest = float(row[self.Coupon])
             JalDB().add_trade(account_id, asset_id, timestamp, settlement, number, qty, price, -fee)
+            if bond_interest != 0:
+                JalDB().add_dividend(DividendSubtype.BondInterest, timestamp, account_id, asset_id,
+                                     bond_interest, "НКД", number)
         return True

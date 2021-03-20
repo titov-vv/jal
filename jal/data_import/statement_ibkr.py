@@ -619,28 +619,13 @@ class IBKR:
         return 1
 
     def loadIBFee(self, fee):
-        bank_id = self._parent.getAccountBank(fee['accountId'])
-        query = executeSQL("INSERT INTO actions (timestamp, account_id, peer_id) "
-                           "VALUES (:timestamp, :account_id, :bank_id)",
-                           [(":timestamp", fee['dateTime']), (":account_id", fee['accountId']), (":bank_id", bank_id)])
-        pid = query.lastInsertId()
-        _ = executeSQL("INSERT INTO action_details (pid, category_id, sum, note) "
-                       "VALUES (:pid, :category_id, :sum, :note)",
-                       [(":pid", pid), (":category_id", PredefinedCategory.Fees), (":sum", fee['amount']),
-                        (":note", fee['description'])], commit=True)
+        JalDB().add_fee(fee['accountId'], self._parent.getAccountBank(fee['accountId']),
+                        fee['dateTime'], fee['amount'], fee['description'])
         return 1
 
     def loadIBInterest(self, interest):
-        bank_id = self._parent.getAccountBank(interest['accountId'])
-        query = executeSQL("INSERT INTO actions (timestamp, account_id, peer_id) "
-                           "VALUES (:timestamp, :account_id, :bank_id)",
-                           [(":timestamp", interest['dateTime']), (":account_id", interest['accountId']),
-                            (":bank_id", bank_id)])
-        pid = query.lastInsertId()
-        _ = executeSQL("INSERT INTO action_details (pid, category_id, sum, note) "
-                       "VALUES (:pid, :category_id, :sum, :note)",
-                       [(":pid", pid), (":category_id", PredefinedCategory.Interest), (":sum", interest['amount']),
-                        (":note", interest['description'])], commit=True)
+        JalDB().add_interest(interest['accountId'], self._parent.getAccountBank(interest['accountId']),
+                             interest['dateTime'], interest['amount'], interest['description'])
         return 1
 
     # noinspection PyMethodMayBeStatic
