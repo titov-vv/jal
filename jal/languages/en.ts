@@ -1444,17 +1444,17 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="78"/>
+        <location filename="../data_import/statements.py" line="81"/>
         <source>No selection</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="78"/>
+        <location filename="../data_import/statements.py" line="81"/>
         <source>Please select different account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="71"/>
+        <location filename="../data_import/statements.py" line="74"/>
         <source>Invalid account selected</source>
         <translation></translation>
     </message>
@@ -1966,52 +1966,52 @@ do you want to save it?</source>
 <context>
     <name>StatementLoader</name>
     <message>
-        <location filename="../data_import/statements.py" line="120"/>
+        <location filename="../data_import/statements.py" line="123"/>
         <source>Select statement file to import</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="161"/>
+        <location filename="../data_import/statements.py" line="167"/>
         <source>Account not found: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="140"/>
+        <location filename="../data_import/statements.py" line="146"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="140"/>
+        <location filename="../data_import/statements.py" line="146"/>
         <source>Statement period starts before last recorded operation for the account. Continue import?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="181"/>
+        <location filename="../data_import/statements.py" line="187"/>
         <source>Symbol updated for ISIN </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="191"/>
+        <location filename="../data_import/statements.py" line="197"/>
         <source>ISIN updated for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="193"/>
+        <location filename="../data_import/statements.py" line="199"/>
         <source>ISIN mismatch for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="98"/>
+        <location filename="../data_import/statements.py" line="101"/>
         <source>Quik HTML</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="104"/>
+        <location filename="../data_import/statements.py" line="107"/>
         <source>Interactive Brokers XML</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="110"/>
+        <location filename="../data_import/statements.py" line="113"/>
         <source>Uralsib Broker</source>
         <translation type="unfinished"></translation>
     </message>

@@ -5,6 +5,7 @@ from zipfile import ZipFile
 import pandas
 
 from jal.widgets.helpers import g_tr
+from jal.db.update import JalDB
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -48,20 +49,23 @@ class UralsibCapital:
         self._account_id = self._parent.findAccountID(account_name)
         return True
 
-    def find_section_start(self, header, subheader, columns) -> dict:
+    def find_section_start(self, header, subheader, columns) -> (int, dict):
         header_found = False
+        start_row = -1
         headers = {}
         for i, row in self._statement.iterrows():
             if not header_found and (row[0] == header):
                 header_found = True
             if header_found and (row[0] == subheader):
+                start_row = i + 3  # skip subheader and 2 rows of column headers
                 for col in range(self._statement.shape[1]):  # Load section headers from next row
                     headers[self._statement[col][i+1]] = col
         column_indices = {column: headers.get(columns[column], -1) for column in columns}
         for idx in column_indices:
             if column_indices[idx] < 0:
-                return {}
-        return column_indices
+                logging.info(g_tr('Uralsib', "Column not found: ") + idx)
+                start_row = -1
+        return start_row, column_indices
 
     def load_stock_deals(self):
         columns = {
@@ -77,6 +81,28 @@ class UralsibCapital:
             "fee_ex": "Комиссия ТС"
         }
 
-        headers = self.find_section_start("СДЕЛКИ С ЦЕННЫМИ БУМАГАМИ",
-                                          "Биржевые сделки с ценными бумагами в отчетном периоде", columns)
-        print(f"Found {headers}")
+        row, headers = self.find_section_start("СДЕЛКИ С ЦЕННЫМИ БУМАГАМИ",
+                                               "Биржевые сделки с ценными бумагами в отчетном периоде", columns)
+        if row < 0:
+            return False
+        asset_name = ''
+        while row < self._statement.shape[0]:
+            if self._statement[0][row] == '' and self._statement[0][row+1] == '':
+                break
+            if self._statement[0][row] == 'Итого по выпуску:' or self._statement[0][row] == '':
+                row += 1
+                continue
+            try:
+                deal_number = int(self._statement[0][row])
+            except ValueError:
+                asset_name = self._statement[0][row]
+                row += 1
+                continue
+
+            asset_id = self._parent.findAssetID('', isin=self._statement[headers['isin']][row], name=asset_name)
+            qty = self._statement[headers['qty']][row]
+            price = self._statement[headers['price']][row]
+            fee = self._statement[headers['fee_ex']][row]
+
+            # JalDB().add_trade(self._account_id, asset_id, timestamp, settlement, deal_number, qty, price, -fee)
+            row += 1

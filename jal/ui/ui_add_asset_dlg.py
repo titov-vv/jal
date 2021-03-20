@@ -52,7 +52,7 @@ class Ui_AddAssetDialog(object):
 
         self.SymbolEdit = QLineEdit(AddAssetDialog)
         self.SymbolEdit.setObjectName(u"SymbolEdit")
-        self.SymbolEdit.setReadOnly(True)
+        self.SymbolEdit.setReadOnly(False)
 
         self.gridLayout.addWidget(self.SymbolEdit, 0, 1, 1, 1)
 

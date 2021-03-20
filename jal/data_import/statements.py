@@ -16,12 +16,14 @@ from jal.data_import.statement_uralsib import UralsibCapital
 
 # -----------------------------------------------------------------------------------------------------------------------
 class AddAssetDialog(QDialog, Ui_AddAssetDialog):
-    def __init__(self, parent, symbol):
+    def __init__(self, parent, symbol, isin='', name=''):
         QDialog.__init__(self)
         self.setupUi(self)
         self.asset_id = None
 
         self.SymbolEdit.setText(symbol)
+        self.isinEdit.setText(isin)
+        self.NameEdit.setText(name)
 
         self.type_model = QSqlTableModel(db=db_connection())
         self.type_model.setTable('asset_types')
@@ -171,7 +173,7 @@ class StatementLoader(QObject):
     # 3. If not found by ISIN or ISIN is not given - tries to find by symbol only
     # 4. If asset is not found - shows dialog for new asset creation.
     # Returns: asset_id or None if new asset creation failed
-    def findAssetID(self, symbol, isin='', dialog_new=True):
+    def findAssetID(self, symbol, isin='', name='', dialog_new=True):
         if isin:
             asset_id = readSQL("SELECT id FROM assets WHERE isin=:isin", [(":isin", isin)])
             if asset_id is not None:
@@ -181,7 +183,7 @@ class StatementLoader(QObject):
                                    [(":symbol", symbol), (":asset_id", asset_id)])
                     # Show warning if symbol was changed not due known bankruptcy or new issue pattern
                     if (db_symbol != symbol + 'D') and (db_symbol + 'D' != symbol) \
-                            and (db_symbol != symbol + 'Q') and (db_symbol + 'Q' != symbol):
+                            and (db_symbol != symbol + 'Q') and (db_symbol + 'Q' != symbol) and (symbol != ''):
                         logging.warning(
                             g_tr('StatementLoader', "Symbol updated for ISIN ") + f"{isin}: {db_symbol} -> {symbol}")
                 return asset_id
@@ -196,7 +198,7 @@ class StatementLoader(QObject):
             else:
                 logging.warning(g_tr('StatementLoader', "ISIN mismatch for ") + f"{symbol}: {isin} != {db_isin}")
         elif dialog_new:
-            dialog = AddAssetDialog(self.parent, symbol)
+            dialog = AddAssetDialog(self.parent, symbol, isin=isin, name=name)
             dialog.exec_()
             asset_id = dialog.asset_id
         return asset_id
