@@ -19,6 +19,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         self._table = table
         self._columns = []
         self._default_name = "name"
+        self._group_by = None
         self._sort_by = None
         self._hidden = []
         self._stretch = None
@@ -31,6 +32,10 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         self._completion_model = QSqlTableModel(parent=parent_view, db=db_connection())
         self._completion_model.setTable(self._table)
         self._completion_model.select()
+
+    @property
+    def group_by(self):
+        return self._group_by
 
     def fieldIndex(self, field):
         column_data = [i for i, column in enumerate(self._columns) if column[0] == field]
@@ -74,10 +79,13 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
     def getFieldValue(self, item_id, field_name):
         return readSQL(f"SELECT {field_name} FROM {self._table} WHERE id=:id", [(":id", item_id)])
 
-    def addElement(self, index):
+    def addElement(self, index, in_group=0):
         row = index.row() if index.isValid() else 0
         assert self.insertRows(row, 1)
-        self.setRecord(row, self.record())
+        new_record = self.record()
+        if in_group != 0:
+            new_record.setValue(self.fieldIndex(self._group_by), in_group)   # by index as it is lookup field
+        self.setRecord(row, new_record)
 
     def removeElement(self, index):
         if index.isValid():
@@ -131,6 +139,7 @@ class AccountListModel(AbstractReferenceListModel):
                          ("organization_id", g_tr('ReferenceDataDialog', "Bank/Broker")),
                          ("country_id", g_tr('ReferenceDataDialog', "CC"))]
         self._sort_by = "name"
+        self._group_by = "type_id"
         self._hidden = ["id", "type_id"]
         self._stretch = "name"
         self._lookup_delegate = None
@@ -192,8 +201,8 @@ class AccountListDialog(ReferenceDataDialog):
         self.GroupLbl.setVisible(True)
         self.GroupLbl.setText(g_tr('ReferenceDataDialog', "Account type:"))
         self.GroupCombo.setVisible(True)
-        self.group_key_field = "type_id"
-        self.group_key_index = self.model.fieldIndex("type_id")
+        self.group_key_field = self.model.group_by
+        self.group_key_index = self.model.fieldIndex(self.model.group_by)
         self.group_fkey_field = "id"
         relation_model = self.model.relationModel(self.group_key_index)
         self.GroupCombo.setModel(relation_model)
@@ -221,6 +230,7 @@ class AssetListModel(AbstractReferenceListModel):
                          ("country_id", g_tr('ReferenceDataDialog', "Country")),
                          ("src_id", g_tr('ReferenceDataDialog', "Data source"))]
         self._sort_by = "name"
+        self._group_by = "type_id"
         self._hidden = ["id", "type_id"]
         self._stretch = "full_name"
         self._lookup_delegate = None
@@ -266,8 +276,8 @@ class AssetListDialog(ReferenceDataDialog):
         self.GroupLbl.setVisible(True)
         self.GroupLbl.setText(g_tr('ReferenceDataDialog', "Asset type:"))
         self.GroupCombo.setVisible(True)
-        self.group_key_field = "type_id"
-        self.group_key_index = self.model.fieldIndex("type_id")
+        self.group_key_field = self.model.group_by
+        self.group_key_index = self.model.fieldIndex(self.model.group_by)
         self.group_fkey_field = "id"
         relation_model = self.model.relationModel(self.group_key_index)
         self.GroupCombo.setModel(relation_model)
@@ -447,7 +457,7 @@ class SqlTreeModel(QAbstractItemModel):
         self.layoutChanged.emit()
         return True
 
-    def addElement(self, index):
+    def addElement(self, index, in_group=0):  # in_group is used for plain model only, not tree
         row = index.row()
         assert self.insertRows(row, 1, index.parent())
 

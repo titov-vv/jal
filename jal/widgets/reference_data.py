@@ -112,7 +112,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         else:
             idx = self.DataView.selectionModel().selection().indexes()
         current_index = idx[0] if idx else self.model.index(0, 0)
-        self.model.addElement(current_index)
+        self.model.addElement(current_index, in_group=self.group_id)
         self.CommitBtn.setEnabled(True)
         self.RevertBtn.setEnabled(True)
 
