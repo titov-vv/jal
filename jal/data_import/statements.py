@@ -112,9 +112,15 @@ class StatementLoader(QObject):
             },
             {
                 'name': g_tr('StatementLoader', "Uralsib Broker"),
-                'filter': "Uralsib report (*.zip)",
+                'filter': "Uralsib statement (*.zip)",
                 'loader': self.loadUralsibCapital,
                 'icon': "uralsib.ico"
+            },
+            {
+                'name': g_tr('StatementLoader', "KIT Finance"),
+                'filter': "KIT Finance statement (*.xlsx)",
+                'loader': None,
+                'icon': 'kit.png'
             }
         ]
 
