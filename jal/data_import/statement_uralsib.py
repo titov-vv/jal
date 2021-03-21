@@ -31,6 +31,7 @@ class UralsibCapital:
         if not self.validate():
             return False
         self.load_stock_deals()
+        self.load_cash_tranactions()
         return True
 
     def validate(self):
@@ -51,17 +52,21 @@ class UralsibCapital:
         self._account_id = self._parent.findAccountID(account_name)
         return True
 
-    def find_section_start(self, header, subheader, columns) -> (int, dict):
+    def find_section_start(self, header, subtitle, columns, subtitle_size=2) -> (int, dict):
         header_found = False
         start_row = -1
         headers = {}
         for i, row in self._statement.iterrows():
             if not header_found and (row[0] == header):
                 header_found = True
-            if header_found and (row[0] == subheader):
-                start_row = i + 3  # skip subheader and 2 rows of column headers
-                for col in range(self._statement.shape[1]):  # Load section headers from next row
-                    headers[self._statement[col][i+1]] = col
+            if header_found and ((subtitle == '') or (row[0] == subtitle)):
+                start_row = i + 1  # points to header row
+                break
+        if start_row > 0:
+            for col in range(self._statement.shape[1]):  # Load section headers from next row
+                headers[self._statement[col][start_row]] = col
+            if subtitle != '':
+                start_row += subtitle_size
         column_indices = {column: headers.get(columns[column], -1) for column in columns}
         for idx in column_indices:
             if column_indices[idx] < 0:
@@ -91,7 +96,7 @@ class UralsibCapital:
             return False
         asset_name = ''
         while row < self._statement.shape[0]:
-            if self._statement[0][row] == '' and self._statement[0][row+1] == '':
+            if self._statement[0][row] == '' and self._statement[0][row + 1] == '':
                 break
             if self._statement[0][row] == 'Итого по выпуску:' or self._statement[0][row] == '':
                 row += 1
@@ -131,3 +136,55 @@ class UralsibCapital:
             cnt += 1
             row += 1
         logging.info(g_tr('Uralsib', "Trades loaded: ") + f"{cnt}")
+
+    def load_cash_tranactions(self):
+        cnt = 0
+        columns = {
+            "number": "№ операции",
+            "date": "Дата",
+            "type": "Тип операции",
+            "amount": "Сумма",
+            "description": "Комментарий"
+        }
+        operations = {
+            'Ввод ДС': self.transfer_in,
+            'Налог': self.tax,
+            'Доход по финансовым инструментам': self.dividend,
+            'Погашение купона': self.interest
+        }
+
+        row, headers = self.find_section_start("ДВИЖЕНИЕ ДЕНЕЖНЫХ СРЕДСТВ ЗА ОТЧЕТНЫЙ ПЕРИОД", '', columns)
+        if row < 0:
+            return False
+
+        while row < self._statement.shape[0]:
+            if self._statement[0][row] == '' and self._statement[0][row + 1] == '':
+                break
+
+            operation = self._statement[headers['type']][row]
+            if operation not in operations:   # not supported type of operation
+                row += 1
+                continue
+            number = self._statement[headers['number']][row]
+            timestamp = int(datetime.strptime(self._statement[headers['date']][row],
+                                              "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+            amount = self._statement[headers['amount']][row]
+            description = self._statement[headers['description']][row]
+
+            operations[operation](number, timestamp, amount, description)
+
+            cnt += 1
+            row += 1
+        logging.info(g_tr('Uralsib', "Cash operations loaded: ") + f"{cnt}")
+
+    def transfer_in(self, timestamp, number, amount, description):
+        pass
+
+    def dividend(self, timestamp, number, amount, description):
+        pass
+
+    def interest(self, timestamp, number, amount, description):
+        pass
+
+    def tax(self, timestamp, number, amount, description):
+        pass
