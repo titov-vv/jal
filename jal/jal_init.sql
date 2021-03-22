@@ -126,6 +126,17 @@ CREATE UNIQUE INDEX asset_name_isin_idx ON assets (
     isin ASC
 );
 
+-- Table: asset_reg_id
+DROP TABLE IF EXISTS asset_reg_id;
+
+CREATE TABLE asset_reg_id (
+    asset_id INTEGER      PRIMARY KEY
+                          UNIQUE
+                          NOT NULL
+                          REFERENCES assets (id) ON DELETE CASCADE
+                                                 ON UPDATE CASCADE,
+    reg_code VARCHAR (20) NOT NULL
+);
 
 -- Table: agents
 DROP TABLE IF EXISTS agents;
@@ -1287,7 +1298,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 21);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 22);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);

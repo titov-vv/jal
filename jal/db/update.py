@@ -24,6 +24,13 @@ class JalDB():
                            [(":new_isin", new_isin), (":asset_id", asset_id)])
                 logging.info(g_tr('JalDB', "ISIN updated for ")
                              + f"{self.get_asset_name(asset_id)}: {isin} -> {new_isin}")
+        if new_reg:
+            reg = readSQL("SELECT reg_code FROM asset_reg_id WHERE asset_id=:asset_id", [(":asset_id", asset_id)])
+            if new_reg != reg:
+                executeSQL("INSERT OR REPLACE INTO asset_reg_id(asset_id, reg_code) VALUES(:asset_id, :new_reg)",
+                           [(":new_reg", new_reg), (":asset_id", asset_id)])
+                logging.info(g_tr('JalDB', "Reg.number updated for ")
+                             + f"{self.get_asset_name(asset_id)}: {reg} -> {new_reg}")
 
     def update_quote(self, asset_id, timestamp, quote):
         if (timestamp is None) or (quote is None):
