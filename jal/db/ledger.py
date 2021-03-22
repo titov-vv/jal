@@ -5,7 +5,8 @@ from PySide2.QtCore import Signal, QObject, QDate
 from PySide2.QtWidgets import QDialog, QMessageBox
 from jal.constants import Setup, BookAccount, TransactionType, TransferSubtype, ActionSubtype, DividendSubtype, \
     CorporateAction, PredefinedCategory, PredefinedPeer
-from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_asset_name, db_triggers_disable, db_triggers_enable
+from jal.db.helpers import executeSQL, readSQL, readSQLrecord, db_triggers_disable, db_triggers_enable
+from jal.db.update import JalDB
 from jal.widgets.helpers import g_tr
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
 
@@ -369,7 +370,7 @@ class Ledger(QObject):
         asset_amount = self.getAmount(BookAccount.Assets, self.current['asset'])
         self.current['price'] = self.current['price'] + asset_amount
         self.current['amount'] = asset_amount
-        asset = get_asset_name(self.current['asset'])
+        asset = JalDB().get_asset_name(self.current['asset'])
         QMessageBox().information(None, g_tr('Ledger', "Confirmation"),
                                   g_tr('Ledger', "Stock dividend for was updated for ") + asset +
                                   f" @{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d.%m.%Y')}\n" +

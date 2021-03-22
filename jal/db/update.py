@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 from jal.constants import Setup
-from jal.db.helpers import db_connection, executeSQL, readSQL, get_asset_name
+from jal.db.helpers import db_connection, executeSQL, readSQL
 from jal.widgets.helpers import g_tr
 
 
@@ -12,6 +12,9 @@ class JalDB():
 
     def commit(self):
         db_connection().commit()
+
+    def get_asset_name(self, asset_id):
+        return readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
 
     def update_quote(self, asset_id, timestamp, quote):
         if (timestamp is None) or (quote is None):
@@ -27,7 +30,7 @@ class JalDB():
             executeSQL("INSERT INTO quotes(timestamp, asset_id, quote) VALUES (:timestamp, :asset_id, :quote)",
                        [(":timestamp", timestamp), (":asset_id", asset_id), (":quote", quote)])
         logging.info(g_tr('JalDB', "Quote loaded: ") +
-                     f"{get_asset_name(asset_id)} " 
+                     f"{self.get_asset_name(asset_id)} " 
                      f"@ {datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")
 
     def add_asset(self, symbol, name, asset_type, isin, data_source=-1):

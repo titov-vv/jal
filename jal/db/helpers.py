@@ -254,7 +254,3 @@ def account_last_date(account_number):
                              [(":account_number", account_number)])
     last_timestamp = 0 if last_timestamp == '' else last_timestamp
     return last_timestamp
-
-# -------------------------------------------------------------------------------------------------------------------
-def get_asset_name(asset_id):
-    return readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])

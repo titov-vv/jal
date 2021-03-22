@@ -3,7 +3,8 @@ from PySide2.QtGui import QBrush, QFont
 from PySide2.QtWidgets import QHeaderView
 from jal.constants import Setup, CustomColor, BookAccount
 from jal.widgets.helpers import g_tr
-from jal.db.helpers import executeSQL, get_asset_name
+from jal.db.helpers import executeSQL
+from jal.db.update import JalDB
 
 
 class BalancesModel(QAbstractTableModel):
@@ -105,7 +106,7 @@ class BalancesModel(QAbstractTableModel):
     def setCurrency(self, currency_id):
         if self._currency != currency_id:
             self._currency = currency_id
-            self._currency_name = get_asset_name(currency_id)
+            self._currency_name = JalDB().get_asset_name(currency_id)
             self.calculateBalances()
 
     @Slot()
