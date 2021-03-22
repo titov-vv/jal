@@ -410,6 +410,44 @@
     </message>
 </context>
 <context>
+    <name>IBKR</name>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="85"/>
+        <source>Unsupported date/time format: </source>
+        <translation>Неподдерживаемый формат даты/времени: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="98"/>
+        <source>Asset type isn&apos;t supported: </source>
+        <translation>Тип ЦБ не поддерживается: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="111"/>
+        <source>Corporate action isn&apos;t supported: </source>
+        <translation>Корпоративное действие не поддерживается: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="137"/>
+        <source>Cash transaction isn&apos;t supported: </source>
+        <translation>Денежная транзакция не поддерживается: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="146"/>
+        <source>Can&apos;t get currencies for accounts: </source>
+        <translation>Невозможно определить валюту счетов: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="149"/>
+        <source>Can&apos;t get account currency for fee account: </source>
+        <translation>Невозможно определить валюту списания комиссии: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="162"/>
+        <source>Can&apos;t get account currency for account: </source>
+        <translation>Невоможно определить валюту для счёта: </translation>
+    </message>
+</context>
+<context>
     <name>ImportSlipDialog</name>
     <message>
         <location filename="../data_import/slips.py" line="181"/>
@@ -723,6 +761,87 @@ Application will be terminated now</source>
         <location filename="../db/backup_restore.py" line="75"/>
         <source>Failed to restore backup file</source>
         <translation>Не удалось восстановить резервную копию</translation>
+    </message>
+</context>
+<context>
+    <name>JalDB</name>
+    <message>
+        <location filename="../db/update.py" line="37"/>
+        <source>ISIN updated for </source>
+        <translation>ISIN обновлён для </translation>
+    </message>
+    <message>
+        <location filename="../db/update.py" line="44"/>
+        <source>Reg.number updated for </source>
+        <translation>Регистрационный номер обновлён для </translation>
+    </message>
+    <message>
+        <location filename="../db/update.py" line="60"/>
+        <source>Quote loaded: </source>
+        <translation>Котировка загружена: </translation>
+    </message>
+    <message>
+        <location filename="../db/update.py" line="71"/>
+        <source>Failed to add new asset: </source>
+        <translation>Невозмоно добавить новую ЦБ: </translation>
+    </message>
+    <message>
+        <location filename="../db/update.py" line="79"/>
+        <source>Dividend already exists: </source>
+        <translation>Дивиденд уже существует: </translation>
+    </message>
+    <message>
+        <location filename="../db/update.py" line="95"/>
+        <source>Trade already exists: #</source>
+        <translation>Сделка уже существует: #</translation>
+    </message>
+    <message>
+        <location filename="../db/update.py" line="116"/>
+        <source>Transfer/Exchange already exists: </source>
+        <translation>Перевод/Обмен уже существует: </translation>
+    </message>
+    <message>
+        <location filename="../db/update.py" line="141"/>
+        <source>Corporate action already exists: #</source>
+        <translation>Корпоративное действие уже существует: #</translation>
+    </message>
+</context>
+<context>
+    <name>KIT</name>
+    <message>
+        <location filename="../data_import/statement_kit.py" line="33"/>
+        <source>Can&apos;t find KIT Finance report header</source>
+        <translation>Не найден заголовок отчёта КИТ Финанс</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_kit.py" line="37"/>
+        <source>Can&apos;t parse KIT Finance account number</source>
+        <translation>Невозможно определить номер счёта КИТ Финанс</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_kit.py" line="42"/>
+        <source>Can&apos;t parse KIT Finance statement period</source>
+        <translation>Невозможно определить период отчёта КИТ Финанс</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_kit.py" line="48"/>
+        <source>Loading KIT Finance statement for account </source>
+        <translation>Загрузка отчёта КИТ Финанс для счёта </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_kit.py" line="66"/>
+        <source>Column not found: </source>
+        <translation>Столбец не найден: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_kit.py" line="107"/>
+        <source>Unknown trade type: </source>
+        <translation>Неизвестный тип сделки: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_kit.py" line="126"/>
+        <source>Trades loaded: </source>
+        <translation>Сделок загружено: </translation>
     </message>
 </context>
 <context>
@@ -1351,6 +1470,39 @@ do you want to save it?</source>
     </message>
 </context>
 <context>
+    <name>Quik</name>
+    <message>
+        <location filename="../data_import/statement_quik.py" line="55"/>
+        <source>Can&apos;t read statement file</source>
+        <translation>Невозможно прочитать файл отчёта</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_quik.py" line="64"/>
+        <source>Can&apos;t get account number from the statement.</source>
+        <translation>Невозможно получить номер счёта из отчёта.</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_quik.py" line="67"/>
+        <source>Account with number </source>
+        <translation>Счёт с номером </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_quik.py" line="67"/>
+        <source> not found. Import cancelled.</source>
+        <translation> не найден. Импорт прерван.</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_quik.py" line="79"/>
+        <source>Unknown operation type </source>
+        <translation>Неизвестный тип операции </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_quik.py" line="83"/>
+        <source>Unknown asset </source>
+        <translation>Неизвестная ЦБ </translation>
+    </message>
+</context>
+<context>
     <name>QuotesUpdateDialog</name>
     <message>
         <location filename="../data_import/downloader.py" line="27"/>
@@ -1449,17 +1601,17 @@ do you want to save it?</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="82"/>
+        <location filename="../data_import/statements.py" line="83"/>
         <source>No selection</source>
         <translation>Ничего не выбрано</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="82"/>
+        <location filename="../data_import/statements.py" line="83"/>
         <source>Please select different account</source>
         <translation>Пожалуйста, выберите другой счёт</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="75"/>
+        <location filename="../data_import/statements.py" line="76"/>
         <source>Invalid account selected</source>
         <translation>Выбран некорректный счёт</translation>
     </message>
@@ -1971,59 +2123,249 @@ do you want to save it?</source>
 <context>
     <name>StatementLoader</name>
     <message>
-        <location filename="../data_import/statements.py" line="130"/>
+        <location filename="../data_import/statements.py" line="131"/>
         <source>Select statement file to import</source>
         <translation>Выберите файл отчета для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="174"/>
+        <location filename="../data_import/statements.py" line="178"/>
         <source>Account not found: </source>
         <translation>Счёт не найден: </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="153"/>
+        <location filename="../data_import/statements.py" line="157"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="153"/>
+        <location filename="../data_import/statements.py" line="157"/>
         <source>Statement period starts before last recorded operation for the account. Continue import?</source>
         <translation>Период отчёта начинается ранее последней операции для счёта (повторный импорт?). Продолжить импорт?</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="194"/>
+        <location filename="../data_import/statements.py" line="198"/>
         <source>Symbol updated for ISIN </source>
         <translation>Символ обновлён для ISIN </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="212"/>
+        <location filename="../data_import/statements.py" line="216"/>
         <source>ISIN updated for </source>
         <translation>ISIN обновлён для </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="214"/>
+        <location filename="../data_import/statements.py" line="218"/>
         <source>ISIN mismatch for </source>
         <translation>ISIN не совпадает для </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="102"/>
+        <location filename="../data_import/statements.py" line="103"/>
         <source>Quik HTML</source>
         <translation>Quik HTML-отчёт</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="108"/>
+        <location filename="../data_import/statements.py" line="109"/>
         <source>Interactive Brokers XML</source>
         <translation>Interactive Brokers XML</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="114"/>
+        <location filename="../data_import/statements.py" line="115"/>
         <source>Uralsib Broker</source>
         <translation>Отчет Уралсиб Кэпитал</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="120"/>
+        <location filename="../data_import/statements.py" line="121"/>
         <source>KIT Finance</source>
         <translation>КИТ Финанс</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="201"/>
+        <source>Load IB Flex-statement for account </source>
+        <translation>Загрузка отчёта IB для счёта </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="211"/>
+        <source>Failed to parse Interactive Brokers flex-report</source>
+        <translation>Невозможно загрузить отчёт Interactive Brokers</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="213"/>
+        <source>IB Flex-statement loaded successfully</source>
+        <translation>Отчёт IB загружен успешно</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="299"/>
+        <source>Failed to load attribute: </source>
+        <translation>Невозможно загрузить аттрибут: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="317"/>
+        <source>Securities loaded: </source>
+        <translation>ЦБ загружены: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="332"/>
+        <source>Asset type isn&apos;t supported for trade: </source>
+        <translation>Неподдерживаемый тип ЦБ для сделки: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="333"/>
+        <source>Trades loaded: </source>
+        <translation>Сделки загружены: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="339"/>
+        <source>Statement contains cancelled corporate actions. They were skipped.</source>
+        <translation>Отчёт содержит отменённые корпоративные действия. Они пропущены.</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="343"/>
+        <source>Corporate actions are supported for stocks only. Actions for other asset types were skipped</source>
+        <translation>Корпоративные действия поддерживаются только для акций. Действия для других типов ЦБ пропущены</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="370"/>
+        <source>Can&apos;t parse Merger description </source>
+        <translation>Невозможно распознать описание Объединения компаний </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="374"/>
+        <source>Merger description miss some data </source>
+        <translation>Недостаточно данных об Объединении компаний </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="385"/>
+        <source>Can&apos;t find paired record for </source>
+        <translation>Невозможно найти парную запись для </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="396"/>
+        <source>Can&apos;t parse Spin-off description </source>
+        <translation>Невозможно распознать описание Выделения компании </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="415"/>
+        <source>Spin-off description miss some data </source>
+        <translation>Недостаточно данных для Выделения компании </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="411"/>
+        <source>Can&apos;t parse Symbol Change description </source>
+        <translation>Невозможно распознать описание Смены символа </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="471"/>
+        <source>Can&apos;t find paired record for: </source>
+        <translation>Невозможно найти парную запись для: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="442"/>
+        <source>Can&apos;t parse Split description </source>
+        <translation>Невозможно распознать описание Сплита </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="446"/>
+        <source>Split description miss some data </source>
+        <translation>Недостаточно данных для Сплита </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="480"/>
+        <source>Corporate action type is not supported: </source>
+        <translation>Тип корпоративного действия не поддерживается: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="483"/>
+        <source>Corporate actions loaded: </source>
+        <translation>Корпоративные действия загружены: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="494"/>
+        <source>Tax transaction already exists </source>
+        <translation>Списание налога уже существует </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="499"/>
+        <source>Taxes loaded: </source>
+        <translation>Налоги загружены: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="503"/>
+        <source>Option assignment</source>
+        <translation>Исполнение проданного опциона</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="504"/>
+        <source>Option exercise</source>
+        <translation>Исполнение купленного опциона</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="505"/>
+        <source>Option expiration</source>
+        <translation>Экспирация опциона</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="507"/>
+        <source>Option assignment/exercise</source>
+        <translation>Исполнение/экспирация опциона</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="520"/>
+        <source>Option E&amp;A&amp;E action isn&apos;t implemented: </source>
+        <translation>Действие не поддерживается для опционов: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="522"/>
+        <source>Options E&amp;A&amp;E loaded: </source>
+        <translation>Действия с опционами загружены: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="551"/>
+        <source>Cash transactions loaded: </source>
+        <translation>Денежные транзакции загружены: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="590"/>
+        <source>Zero quantity in cash trade: </source>
+        <translation>Нулевое количество в обменной операции: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="628"/>
+        <source>Deposit of </source>
+        <translation>Депозит </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="630"/>
+        <source>Select account to withdraw from:</source>
+        <translation>Выберите счёт для списания:</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="632"/>
+        <source>Withdrawal of </source>
+        <translation>Списание </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="634"/>
+        <source>Select account to deposit to:</source>
+        <translation>Выберите счёт для зачисления:</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="650"/>
+        <source>*** MANUAL ENTRY REQUIRED ***</source>
+        <translation>*** НЕОБХОДИМА РУЧНАЯ ПРОВЕРКА ***</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="651"/>
+        <source>Unhandled tax pattern found: </source>
+        <translation>Неподдерживаемый формат описания налога: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="659"/>
+        <source>Dividend not found for withholding tax: </source>
+        <translation>Дивиденд не найден для удержанного налога: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr.py" line="680"/>
+        <source>Multiple dividends match withholding tax</source>
+        <translation>Несколько дивидендов совпадают с описанием налога</translation>
     </message>
 </context>
 <context>
@@ -2368,6 +2710,94 @@ do you want to save it?</source>
         <location filename="../ui/ui_update_quotes_window.py" line="67"/>
         <source>End date</source>
         <translation>По</translation>
+    </message>
+</context>
+<context>
+    <name>Uralsib</name>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="29"/>
+        <source>Archive contains multiple files, only one is expected for import</source>
+        <translation>Архив содержит несколько файлов, ожидается только один для импорта</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="41"/>
+        <source>Can&apos;t find Uralsib Capital report header</source>
+        <translation>Не найден заголовок отчёта Уралсиб Кэпитал</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="46"/>
+        <source>Can&apos;t parse Uralsib Capital statement period</source>
+        <translation>Невозможно определить период отчёта Уралсиб Кэпитал</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="52"/>
+        <source>Loading Uralsib Capital statement for account </source>
+        <translation>Загрузка отчёта Уралсиб Кэпитал для счёта </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="75"/>
+        <source>Column not found: </source>
+        <translation>Столбец не найден: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="122"/>
+        <source>Unknown trade type: </source>
+        <translation>Неизвестный тип сделки: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="140"/>
+        <source>Trades loaded: </source>
+        <translation>Сделок загружено: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="181"/>
+        <source>Cash operations loaded: </source>
+        <translation>Денежных операций загружено: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="185"/>
+        <source>Deposit of </source>
+        <translation>Депозит </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="187"/>
+        <source>Select account to withdraw from:</source>
+        <translation>Выберите счёт для списания:</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="195"/>
+        <source>Withdrawal of </source>
+        <translation>Списание </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="197"/>
+        <source>Select account to deposit to:</source>
+        <translation>Выберите счёт для зачисления:</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="206"/>
+        <source>Can&apos;t parse dividend description </source>
+        <translation>Невозможно распознать описание дивиденда </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="211"/>
+        <source>Can&apos;t find asset for dividend </source>
+        <translation>Не найдена ЦБ для дивиденда </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="216"/>
+        <source>Failed to convert dividend tax </source>
+        <translation>Ошибка при конвертации суммы налога </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="226"/>
+        <source>Can&apos;t parse bond interest description </source>
+        <translation>Невозможно распознать описание купона </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="231"/>
+        <source>Can&apos;t find asset for bond interest </source>
+        <translation>Не найдена ЦБ для купона </translation>
     </message>
 </context>
 <context>
