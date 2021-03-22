@@ -114,7 +114,8 @@ class QuoteDownloader(QObject):
             if end_timestamp < from_timestamp:
                 continue
             try:
-                data = self.data_loaders[asset['feed_id']](asset['name'], asset['isin'], from_timestamp, end_timestamp)
+                data = self.data_loaders[asset['feed_id']](asset['asset_id'], asset['name'], asset['isin'],
+                                                           from_timestamp, end_timestamp)
             except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
                 logging.warning(g_tr('QuotesUpdateDialog', "No data were downloaded for ") + f"{asset}")
                 continue
@@ -137,10 +138,10 @@ class QuoteDownloader(QObject):
         self.CBR_codes = pd.DataFrame(rows, columns=["ISO_name", "CBR_code"])
 
     # Empty method to make a unified call for any asset
-    def Dummy_DataReader(self, _symbol, _isin, _start_timestamp, _end_timestamp):
+    def Dummy_DataReader(self, _asset_id, _symbol, _isin, _start_timestamp, _end_timestamp):
         return None
 
-    def CBR_DataReader(self, currency_code, _isin, start_timestamp, end_timestamp):
+    def CBR_DataReader(self, _asset_id, currency_code, _isin, start_timestamp, end_timestamp):
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%d/%m/%Y')
         # add 1 day to end_timestamp as CBR sets rate are a day ahead
         date2 = (datetime.utcfromtimestamp(end_timestamp) + timedelta(days=1)).strftime('%d/%m/%Y')
@@ -160,7 +161,7 @@ class QuoteDownloader(QObject):
         return rates
 
     # noinspection PyMethodMayBeStatic
-    def MOEX_DataReader(self, asset_code, _isin, start_timestamp, end_timestamp):
+    def MOEX_DataReader(self, asset_id, asset_code, isin, start_timestamp, end_timestamp):
         engine = None
         market = None
         board_id = None
@@ -182,6 +183,22 @@ class QuoteDownloader(QObject):
             logging.warning(f"Failed to find {asset_code} at {url}")
             return None
 
+        # Get security info
+        url = f"https://iss.moex.com/iss/engines/{engine}/"\
+              f"markets/{market}/boards/{board_id}/securities/{asset_code}.xml"
+        xml_root = xml_tree.fromstring(get_web_data(url))
+        for node in xml_root:
+            if node.tag == 'data' and node.attrib['id'] == 'securities':
+                sec_data = list(node)
+                for row in sec_data:
+                    if row.tag == 'rows':
+                        if len(list(row)) == 1:
+                            asset_info = list(row)[0]
+                            new_isin = asset_info.attrib['ISIN'] if 'ISIN' in asset_info.attrib else ''
+                            new_reg = asset_info.attrib['REGNUMBER'] if 'REGNUMBER' in asset_info.attrib else ''
+                            JalDB().update_isin_reg(asset_id, new_isin, new_reg)
+
+        # Get price history
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d')
         date2 = datetime.utcfromtimestamp(end_timestamp).strftime('%Y-%m-%d')
         url = f"http://iss.moex.com/iss/history/engines/"\
@@ -208,7 +225,7 @@ class QuoteDownloader(QObject):
         return close
 
     # noinspection PyMethodMayBeStatic
-    def Yahoo_Downloader(self, asset_code, _isin, start_timestamp, end_timestamp):
+    def Yahoo_Downloader(self, _asset_id, asset_code, _isin, start_timestamp, end_timestamp):
         url = f"https://query1.finance.yahoo.com/v7/finance/download/{asset_code}?"\
               f"period1={start_timestamp}&period2={end_timestamp}&interval=1d&events=history"
         file = StringIO(get_web_data(url))
@@ -219,7 +236,7 @@ class QuoteDownloader(QObject):
         return close
 
     # noinspection PyMethodMayBeStatic
-    def Euronext_DataReader(self, asset_code, isin, start_timestamp, end_timestamp):
+    def Euronext_DataReader(self, _asset_id, asset_code, isin, start_timestamp, end_timestamp):
         start = int(start_timestamp * 1000)
         end = int(end_timestamp * 1000)
         url = f"https://euconsumer.euronext.com/nyx_eu_listings/price_chart/download_historical?"\

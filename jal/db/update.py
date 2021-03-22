@@ -16,6 +16,15 @@ class JalDB():
     def get_asset_name(self, asset_id):
         return readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
 
+    def update_isin_reg(self, asset_id, new_isin, new_reg):
+        if new_isin:
+            isin = readSQL("SELECT isin FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
+            if new_isin != isin:
+                executeSQL("UPDATE assets SET isin=:new_isin WHERE id=:asset_id",
+                           [(":new_isin", new_isin), (":asset_id", asset_id)])
+                logging.info(g_tr('JalDB', "ISIN updated for ")
+                             + f"{self.get_asset_name(asset_id)}: {isin} -> {new_isin}")
+
     def update_quote(self, asset_id, timestamp, quote):
         if (timestamp is None) or (quote is None):
             return
