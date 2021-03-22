@@ -68,22 +68,22 @@
 <context>
     <name>BalancesModel</name>
     <message>
-        <location filename="../db/balances_model.py" line="30"/>
+        <location filename="../db/balances_model.py" line="31"/>
         <source>Account</source>
         <translation>Счет</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="31"/>
+        <location filename="../db/balances_model.py" line="32"/>
         <source>Balance</source>
         <translation>Баланс</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="33"/>
+        <location filename="../db/balances_model.py" line="34"/>
         <source>Balance, </source>
         <translation>Баланс, </translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="182"/>
+        <location filename="../db/balances_model.py" line="183"/>
         <source>Total</source>
         <translation>Итого</translation>
     </message>
@@ -197,62 +197,62 @@
         <translation>Секция DeclForeign некорректна:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="233"/>
+        <location filename="../reports/dlsg.py" line="234"/>
         <source>Currency isn&apos;t known for tax form:</source>
         <translation>Неизвестная валюта для 3-НДФЛ:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="246"/>
+        <location filename="../reports/dlsg.py" line="247"/>
         <source>Declaration file has no &apos;DeclForeign&apos; section.</source>
         <translation>Секция &apos;DeclForeign&apos; отсутствует в файле декларации.</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="261"/>
+        <location filename="../reports/dlsg.py" line="262"/>
         <source>Unexpected declaration file header:</source>
         <translation>Неизвестный заголовок файла декларации:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="264"/>
+        <location filename="../reports/dlsg.py" line="265"/>
         <source>Declaration file is for year:</source>
         <translation>Файл декларации для года:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="283"/>
+        <location filename="../reports/dlsg.py" line="284"/>
         <source>Invalid record size at position</source>
         <translation>Некорректный размер записи в позиции</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="290"/>
+        <location filename="../reports/dlsg.py" line="291"/>
         <source>Declaration file content:</source>
         <translation>Содержимое файла декларации:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="308"/>
+        <location filename="../reports/dlsg.py" line="309"/>
         <source>Sections loaded:</source>
         <translation>Загружено секций:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="310"/>
+        <location filename="../reports/dlsg.py" line="311"/>
         <source>Section </source>
         <translation>Секция </translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="310"/>
+        <location filename="../reports/dlsg.py" line="311"/>
         <source>loaded as </source>
         <translation>загружена как </translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="314"/>
+        <location filename="../reports/dlsg.py" line="315"/>
         <source>Writing file:</source>
         <translation>Запись файла:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="320"/>
+        <location filename="../reports/dlsg.py" line="321"/>
         <source>Declaration to write:</source>
         <translation>Декларация для записи:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="238"/>
+        <location filename="../reports/dlsg.py" line="239"/>
         <source>Country isn&apos;t known for tax form (check account settings):</source>
         <translation>Неизвестная страна для 3-НДФЛ (проверьте настройки счёта):</translation>
     </message>
@@ -359,52 +359,52 @@
 <context>
     <name>HoldingsModel</name>
     <message>
-        <location filename="../db/holdings_model.py" line="67"/>
+        <location filename="../db/holdings_model.py" line="68"/>
         <source>Qty</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="68"/>
+        <location filename="../db/holdings_model.py" line="69"/>
         <source>Open</source>
         <translation>Цена откр.</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="69"/>
+        <location filename="../db/holdings_model.py" line="70"/>
         <source>Last</source>
         <translation>Цена закр.</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="70"/>
+        <location filename="../db/holdings_model.py" line="71"/>
         <source>Share, %</source>
         <translation>Доля, %</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="71"/>
+        <location filename="../db/holdings_model.py" line="72"/>
         <source>P/L, %</source>
         <translation>ПиУ, %</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="72"/>
+        <location filename="../db/holdings_model.py" line="73"/>
         <source>P/L</source>
         <translation>ПиУ</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="73"/>
+        <location filename="../db/holdings_model.py" line="74"/>
         <source>Value</source>
         <translation>Оценка</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="74"/>
+        <location filename="../db/holdings_model.py" line="75"/>
         <source>Value, </source>
         <translation>Оценка, </translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="65"/>
+        <location filename="../db/holdings_model.py" line="66"/>
         <source>Currency/Account/Asset</source>
         <translation>Валюта/Счёт/ЦБ</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="66"/>
+        <location filename="../db/holdings_model.py" line="67"/>
         <source>Asset Name</source>
         <translation>Ценна бумага</translation>
     </message>
@@ -728,52 +728,52 @@ Application will be terminated now</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="507"/>
+        <location filename="../db/ledger.py" line="508"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="507"/>
+        <location filename="../db/ledger.py" line="508"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation> операций требуют перерасчета. Вы ходите выполнить его прямо сейчас?</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="512"/>
+        <location filename="../db/ledger.py" line="513"/>
         <source>Re-build ledger from: </source>
         <translation>Перерасчет итогов с: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="552"/>
+        <location filename="../db/ledger.py" line="553"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation>Итоги рассчитаны. Затраченное время: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="552"/>
+        <location filename="../db/ledger.py" line="553"/>
         <source>, new frontier: </source>
         <translation>, новая граница: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="542"/>
+        <location filename="../db/ledger.py" line="543"/>
         <source>Processed </source>
         <translation>Обработано </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="542"/>
+        <location filename="../db/ledger.py" line="543"/>
         <source>k records, current frontier: </source>
         <translation>к записей, текущая граница: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="193"/>
+        <location filename="../db/ledger.py" line="194"/>
         <source>Can&apos;t process dividend as bank isn&apos;t set for investment account</source>
         <translation>Невозможно обработать дивиденд, т.к. не указан банк для инвестиционного счёта</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="215"/>
+        <location filename="../db/ledger.py" line="216"/>
         <source>Can&apos;t process trade as bank isn&apos;t set for investment account</source>
         <translation>Невозможно обработать сделку, т.к. не указан банк для инвестиционного счёта</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="397"/>
+        <location filename="../db/ledger.py" line="398"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation>Количество акций недостаточно для обработки корпоративного события. Дата: </translation>
     </message>
@@ -783,27 +783,27 @@ Application will be terminated now</source>
         <translation>Оценить налог для РФ</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="373"/>
+        <location filename="../db/ledger.py" line="374"/>
         <source>Stock dividend for was updated for </source>
         <translation>Дивиденд акциями был обновлён для </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="373"/>
+        <location filename="../db/ledger.py" line="374"/>
         <source>Please check that quantity is correct.</source>
         <translation>Пожалуйста проверьте корректность количества бумаг.</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="166"/>
+        <location filename="../db/ledger.py" line="167"/>
         <source>Can&apos;t process operation without details</source>
         <translation>Невозможно обработать операцию без детальной информации</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="365"/>
+        <location filename="../db/ledger.py" line="366"/>
         <source>Unexpected data in transfer transaction</source>
         <translation>Невозможно обработать трансфер</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="190"/>
+        <location filename="../db/ledger.py" line="191"/>
         <source>Can&apos;t process dividend with N/A type</source>
         <translation>Невозможно обработать дивиденд с неопределенным типом</translation>
     </message>
@@ -1358,12 +1358,12 @@ do you want to save it?</source>
         <translation> завершился с ответом </translation>
     </message>
     <message>
-        <location filename="../data_import/downloader.py" line="119"/>
+        <location filename="../data_import/downloader.py" line="120"/>
         <source>No data were downloaded for </source>
         <translation>Загружены пустые данные для </translation>
     </message>
     <message>
-        <location filename="../data_import/downloader.py" line="125"/>
+        <location filename="../data_import/downloader.py" line="126"/>
         <source>Download completed</source>
         <translation>Загрузка завершена</translation>
     </message>
@@ -1449,17 +1449,17 @@ do you want to save it?</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="81"/>
+        <location filename="../data_import/statements.py" line="82"/>
         <source>No selection</source>
         <translation>Ничего не выбрано</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="81"/>
+        <location filename="../data_import/statements.py" line="82"/>
         <source>Please select different account</source>
         <translation>Пожалуйста, выберите другой счёт</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="74"/>
+        <location filename="../data_import/statements.py" line="75"/>
         <source>Invalid account selected</source>
         <translation>Выбран некорректный счёт</translation>
     </message>
@@ -1971,54 +1971,59 @@ do you want to save it?</source>
 <context>
     <name>StatementLoader</name>
     <message>
-        <location filename="../data_import/statements.py" line="123"/>
+        <location filename="../data_import/statements.py" line="130"/>
         <source>Select statement file to import</source>
         <translation>Выберите файл отчета для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="167"/>
+        <location filename="../data_import/statements.py" line="174"/>
         <source>Account not found: </source>
         <translation>Счёт не найден: </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="146"/>
+        <location filename="../data_import/statements.py" line="153"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="146"/>
+        <location filename="../data_import/statements.py" line="153"/>
         <source>Statement period starts before last recorded operation for the account. Continue import?</source>
         <translation>Период отчёта начинается ранее последней операции для счёта (повторный импорт?). Продолжить импорт?</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="187"/>
+        <location filename="../data_import/statements.py" line="194"/>
         <source>Symbol updated for ISIN </source>
         <translation>Символ обновлён для ISIN </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="197"/>
+        <location filename="../data_import/statements.py" line="212"/>
         <source>ISIN updated for </source>
         <translation>ISIN обновлён для </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="199"/>
+        <location filename="../data_import/statements.py" line="214"/>
         <source>ISIN mismatch for </source>
         <translation>ISIN не совпадает для </translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="101"/>
+        <location filename="../data_import/statements.py" line="102"/>
         <source>Quik HTML</source>
         <translation>Quik HTML-отчёт</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="107"/>
+        <location filename="../data_import/statements.py" line="108"/>
         <source>Interactive Brokers XML</source>
         <translation>Interactive Brokers XML</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="113"/>
+        <location filename="../data_import/statements.py" line="114"/>
         <source>Uralsib Broker</source>
         <translation>Отчет Уралсиб Кэпитал</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statements.py" line="120"/>
+        <source>KIT Finance</source>
+        <translation>КИТ Финанс</translation>
     </message>
 </context>
 <context>
@@ -2047,62 +2052,62 @@ do you want to save it?</source>
 <context>
     <name>TaxEstimator</name>
     <message>
-        <location filename="../db/tax_estimator.py" line="44"/>
+        <location filename="../db/tax_estimator.py" line="45"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="67"/>
+        <location filename="../db/tax_estimator.py" line="68"/>
         <source>Tax estimation for </source>
         <translation>Оценка налога для </translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="163"/>
+        <location filename="../db/tax_estimator.py" line="164"/>
         <source>TOTAL</source>
         <translation>ИТОГО</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="45"/>
+        <location filename="../db/tax_estimator.py" line="46"/>
         <source>Qty</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="46"/>
+        <location filename="../db/tax_estimator.py" line="47"/>
         <source>Open</source>
         <translation>Цена откр.</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="47"/>
+        <location filename="../db/tax_estimator.py" line="48"/>
         <source>Rate, </source>
         <translation>Курс, </translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="48"/>
+        <location filename="../db/tax_estimator.py" line="49"/>
         <source>Profit, </source>
         <translation>Прибыль, </translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="49"/>
+        <location filename="../db/tax_estimator.py" line="50"/>
         <source>Profit, RUB</source>
         <translation>Прибыль, RUB</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="50"/>
+        <location filename="../db/tax_estimator.py" line="51"/>
         <source>Tax, RUB</source>
         <translation>Налог, RUB</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="116"/>
+        <location filename="../db/tax_estimator.py" line="117"/>
         <source>Can&apos;t get current quote for </source>
         <translation>Невозможно получить котировку для </translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="122"/>
+        <location filename="../db/tax_estimator.py" line="123"/>
         <source>Can&apos;t get currency name for account</source>
         <translation>Невозможно получить валюту для счета</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="128"/>
+        <location filename="../db/tax_estimator.py" line="129"/>
         <source>Can&apos;t get current rate for </source>
         <translation>Невозможно получить курс валюты для </translation>
     </message>
