@@ -13,6 +13,7 @@ from jal.db.update import JalDB
 from jal.data_import.statement_quik import Quik
 from jal.data_import.statement_ibkr import IBKR
 from jal.data_import.statement_uralsib import UralsibCapital
+from jal.data_import.statement_kit import KITFinance
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -119,7 +120,7 @@ class StatementLoader(QObject):
             {
                 'name': g_tr('StatementLoader', "KIT Finance"),
                 'filter': "KIT Finance statement (*.xlsx)",
-                'loader': None,
+                'loader': self.loadKITFinance,
                 'icon': 'kit.png'
             }
         ]
@@ -145,6 +146,9 @@ class StatementLoader(QObject):
 
     def loadUralsibCapital(self, filename):
         return UralsibCapital(self, filename).load()
+
+    def loadKITFinance(self, filename):
+        return KITFinance(self, filename).load()
 
     # Checks if report is after last transaction recorded for account.
     # Otherwise asks for confirmation and returns False if import is cancelled
