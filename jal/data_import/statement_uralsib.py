@@ -49,7 +49,7 @@ class UralsibCapital:
         report_start = int(datetime.strptime(statement_dates['S'], "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
         if not self._parent.checkStatementPeriod(account_name, report_start):
             return False
-        logging.info(g_tr('Uralsib', "Load Uralsib Capital statement for account ") +
+        logging.info(g_tr('Uralsib', "Loading Uralsib Capital statement for account ") +
                      f"{account_name}: {statement_dates['S']} - {statement_dates['E']}")
         self._account_id = self._parent.findAccountID(account_name)
         return True
