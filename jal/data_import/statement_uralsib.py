@@ -6,7 +6,7 @@ import pandas
 
 from jal.widgets.helpers import g_tr
 from jal.db.update import JalDB
-from jal.constants import Setup, DividendSubtype, PredefinedCategory
+from jal.constants import Setup, DividendSubtype, PredefinedCategory, PredefinedAsset
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -14,6 +14,7 @@ class UralsibCapital:
     Header = '  Брокер: ООО "УРАЛСИБ Брокер"'
     PeriodPattern = "  за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d)"
     DividendPattern = "> (?P<DESCR1>.*) \((?P<REG_CODE>.*)\) (?P<DESCR2>.*) налог в размере (?P<TAX>\d+\.\d\d) удержан. НДС не облагается."
+    BondInterestPattern = "Погашение купона №( -?\d+)? (?P<NAME>.*)"
 
     def __init__(self, parent, filename):
         self._parent = parent
@@ -193,7 +194,7 @@ class UralsibCapital:
         dividend_data = parts.groupdict()
         asset_id = self._parent.findAssetID('', reg_code=dividend_data['REG_CODE'])
         if asset_id is None:
-            logging.error(g_tr('Uralsib', "Can't match asset in dividend ") + f"'{description}'")
+            logging.error(g_tr('Uralsib', "Can't find asset for dividend ") + f"'{description}'")
             return
         try:
             tax = float(dividend_data['TAX'])
@@ -206,9 +207,17 @@ class UralsibCapital:
                              amount, shortened_description, trade_number=number, tax=tax)
 
     def interest(self, timestamp, number, amount, description):
-        pass
-        # JalDB().add_dividend(DividendSubtype.BondInterest, timestamp, self._account_id, interest['symbol'],
-        #                      amount, interest['description'], number)
+        parts = re.match(self.BondInterestPattern, description, re.IGNORECASE)
+        if parts is None:
+            logging.error(g_tr('Uralsib', "Can't parse bond interest description ") + f"'{description}'")
+            return
+        interest_data = parts.groupdict()
+        asset_id = JalDB().find_asset_like_name(interest_data['NAME'], asset_type=PredefinedAsset.Bond)
+        if asset_id is None:
+            logging.error(g_tr('Uralsib', "Can't find asset for bond interest ") + f"'{description}'")
+            return
+        JalDB().add_dividend(DividendSubtype.BondInterest, timestamp, self._account_id, asset_id,
+                             amount, description, number)
 
     def tax(self, timestamp, _number, amount, description):
         JalDB().add_cash_transaction(self._account_id, self._parent.getAccountBank(self._account_id), timestamp,
