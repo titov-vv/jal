@@ -180,11 +180,25 @@ class UralsibCapital:
             row += 1
         logging.info(g_tr('Uralsib', "Cash operations loaded: ") + f"{cnt}")
 
-    def transfer_in(self, timestamp, number, amount, description):
-        pass
+    def transfer_in(self, timestamp, _number, amount, description):
+        currency_name = JalDB().get_asset_name(JalDB().get_account_currency(self._account_id))
+        text = g_tr('Uralsib', "Deposit of ") + f"{amount:.2f} {currency_name} " + \
+               f"@{datetime.utcfromtimestamp(timestamp).strftime('%d.%m.%Y')}\n" + \
+               g_tr('Uralsib', "Select account to withdraw from:")
+        pair_account = self._parent.selectAccount(text, self._account_id)
+        if pair_account == 0:
+            return
+        JalDB().add_transfer(timestamp, pair_account, amount, self._account_id, amount, 0, 0, description)
 
-    def transfer_out(self, timestamp, number, amount, description):
-        pass
+    def transfer_out(self, timestamp, _number, amount, description):
+        currency_name = JalDB().get_asset_name(JalDB().get_account_currency(self._account_id))
+        text = g_tr('Uralsib', "Withdrawal of ") + f"{-amount:.2f} {currency_name} " + \
+               f"@{datetime.utcfromtimestamp(timestamp).strftime('%d.%m.%Y')}\n" + \
+               g_tr('Uralsib', "Select account to deposit to:")
+        pair_account = self._parent.selectAccount(text, self._account_id)
+        if pair_account == 0:
+            return                                       # amount is negative in XLS file
+        JalDB().add_transfer(timestamp, self._account_id, -amount, pair_account, -amount, 0, 0, description)
 
     def dividend(self, timestamp, number, amount, description):
         parts = re.match(self.DividendPattern, description, re.IGNORECASE)

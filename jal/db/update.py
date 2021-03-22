@@ -16,6 +16,9 @@ class JalDB():
     def get_asset_name(self, asset_id):
         return readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
 
+    def get_account_currency(self, account_id):
+        return readSQL("SELECT currency_id FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
+
     # Find asset by give partial name and type. Returns only first match even if many were found
     def find_asset_like_name(self, partial_name, asset_type=0):
         name = '%' + partial_name.replace(' ', '%') + '%'

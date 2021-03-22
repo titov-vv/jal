@@ -226,7 +226,7 @@ class StatementLoader(QObject):
             raise RuntimeError("Broker isn't defined for Investment account")
         return bank_id
 
-    def selectAccount(self, text, account_id, recent_account_id):
+    def selectAccount(self, text, account_id, recent_account_id=0):
         dialog = SelectAccountDialog(self.parent, text, account_id, recent_account=recent_account_id)
         if dialog.exec_() != QDialog.Accepted:
             return 0
