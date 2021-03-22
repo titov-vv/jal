@@ -62,7 +62,7 @@ class UralsibCapital:
             if not header_found and (row[0] == header):
                 header_found = True
             if header_found and ((subtitle == '') or (row[0] == subtitle)):
-                start_row = i + 1  # points to header row
+                start_row = i + 1  # points to columns header row
                 break
         if start_row > 0:
             for col in range(self._statement.shape[1]):  # Load section headers from next row
@@ -125,7 +125,7 @@ class UralsibCapital:
             price = self._statement[headers['price']][row]
             fee = self._statement[headers['fee_ex']][row]
             amount = self._statement[headers['amount']][row]
-            if abs(abs(price * qty) - amount) >= Setup.CALC_TOLERANCE:
+            if abs(abs(price * qty) - amount) >= Setup.DISP_TOLERANCE:
                 price = abs(amount / qty)
             ts_string = self._statement[headers['date']][row] + ' ' + self._statement[headers['time']][row]
             timestamp = int(datetime.strptime(ts_string, "%d.%m.%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp())
