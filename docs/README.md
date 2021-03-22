@@ -24,7 +24,7 @@ It was designed to keep records of personal incomes/spendings and investments wi
     1. Quik HTML-report (only trades, fee might be incomplete)
     2. Interactive Brokers Flex-query report
     3. Uralsib Broker zipped XLS reports (trades, cash transactions)
-    4. KIT Finace XLSX-report (trades)
+    4. KIT Finance XLSX-report (trades)
 - tax report preparation for foreign investments according to Russian Tax Code (![manual](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/taxes.md))
 - *experimental* download russian electronic slips from russian tax authority:
     1. QR code may be scanned from camera, clipboard image or image file on disk 
