@@ -6,13 +6,14 @@ import pandas
 
 from jal.widgets.helpers import g_tr
 from jal.db.update import JalDB
-from jal.constants import Setup, DividendSubtype
+from jal.constants import Setup, DividendSubtype, PredefinedCategory
 
 
 # -----------------------------------------------------------------------------------------------------------------------
 class UralsibCapital:
     Header = '  Брокер: ООО "УРАЛСИБ Брокер"'
     PeriodPattern = "  за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d)"
+    DividendPattern = "> (?P<DESCR1>.*) \((?P<REG_CODE>.*)\) (?P<DESCR2>.*) налог в размере (?P<TAX>\d+\.\d\d) удержан. НДС не облагается."
 
     def __init__(self, parent, filename):
         self._parent = parent
@@ -148,6 +149,7 @@ class UralsibCapital:
         }
         operations = {
             'Ввод ДС': self.transfer_in,
+            'Вывод ДС': self.transfer_out,
             'Налог': self.tax,
             'Доход по финансовым инструментам': self.dividend,
             'Погашение купона': self.interest
@@ -171,7 +173,7 @@ class UralsibCapital:
             amount = self._statement[headers['amount']][row]
             description = self._statement[headers['description']][row]
 
-            operations[operation](number, timestamp, amount, description)
+            operations[operation](timestamp, number, amount, description)
 
             cnt += 1
             row += 1
@@ -180,11 +182,34 @@ class UralsibCapital:
     def transfer_in(self, timestamp, number, amount, description):
         pass
 
-    def dividend(self, timestamp, number, amount, description):
+    def transfer_out(self, timestamp, number, amount, description):
         pass
+
+    def dividend(self, timestamp, number, amount, description):
+        parts = re.match(self.DividendPattern, description, re.IGNORECASE)
+        if parts is None:
+            logging.error(g_tr('Uralsib', "Can't parse dividend description ") + f"'{description}'")
+            return
+        dividend_data = parts.groupdict()
+        asset_id = self._parent.findAssetID('', reg_code=dividend_data['REG_CODE'])
+        if asset_id is None:
+            logging.error(g_tr('Uralsib', "Can't match asset in dividend ") + f"'{description}'")
+            return
+        try:
+            tax = float(dividend_data['TAX'])
+        except ValueError:
+            logging.error(g_tr('Uralsib', "Failed to convert dividend tax ") + f"'{description}'")
+            return
+        amount = amount + tax   # Statement contains value after taxation while JAL stores value before tax
+        shortened_description = dividend_data['DESCR1'] + ' ' + dividend_data['DESCR2']
+        JalDB().add_dividend(DividendSubtype.Dividend, timestamp, self._account_id, asset_id,
+                             amount, shortened_description, trade_number=number, tax=tax)
 
     def interest(self, timestamp, number, amount, description):
         pass
+        # JalDB().add_dividend(DividendSubtype.BondInterest, timestamp, self._account_id, interest['symbol'],
+        #                      amount, interest['description'], number)
 
-    def tax(self, timestamp, number, amount, description):
-        pass
+    def tax(self, timestamp, _number, amount, description):
+        JalDB().add_cash_transaction(self._account_id, self._parent.getAccountBank(self._account_id), timestamp,
+                                     amount, PredefinedCategory.Taxes, description)

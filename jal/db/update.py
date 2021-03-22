@@ -59,17 +59,18 @@ class JalDB():
             logging.error(g_tr('JalDB', "Failed to add new asset: ") + f"{symbol}")
         return asset_id
 
-    def add_dividend(self, subtype, timestamp, account_id, asset_id, amount, note, trade_number=''):
+    def add_dividend(self, subtype, timestamp, account_id, asset_id, amount, note, trade_number='', tax=0.0):
         id = readSQL("SELECT id FROM dividends WHERE timestamp=:timestamp "
                      "AND account_id=:account_id AND asset_id=:asset_id AND note=:note",
                      [(":timestamp", timestamp), (":account_id", account_id), (":asset_id", asset_id), (":note", note)])
         if id:
             logging.info(g_tr('JalDB', "Dividend already exists: ") + f"{note}")
             return
-        _ = executeSQL("INSERT INTO dividends (timestamp, number, type, account_id, asset_id, amount, note) "
-                       "VALUES (:timestamp, :number, :subtype, :account_id, :asset_id, :amount, :note)",
+        _ = executeSQL("INSERT INTO dividends (timestamp, number, type, account_id, asset_id, amount, tax, note) "
+                       "VALUES (:timestamp, :number, :subtype, :account_id, :asset_id, :amount, :tax, :note)",
                        [(":timestamp", timestamp), (":number", trade_number), (":subtype", subtype),
-                        (":account_id", account_id), (":asset_id", asset_id), (":amount", amount), (":note", note)],
+                        (":account_id", account_id), (":asset_id", asset_id), (":amount", amount),
+                        (":tax", tax), (":note", note)],
                        commit=True)
 
     def add_trade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee):

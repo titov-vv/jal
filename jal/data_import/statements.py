@@ -180,7 +180,7 @@ class StatementLoader(QObject):
     # 3. If not found by ISIN or ISIN is not given - tries to find by symbol only
     # 4. If asset is not found - shows dialog for new asset creation.
     # Returns: asset_id or None if new asset creation failed
-    def findAssetID(self, symbol, isin='', name='', dialog_new=True):
+    def findAssetID(self, symbol, isin='', name='', reg_code='', dialog_new=True):   #TODO this function became too complex -> move to JalDB() class and simplify
         if isin:
             asset_id = readSQL("SELECT id FROM assets WHERE isin=:isin", [(":isin", isin)])
             if asset_id is not None:
@@ -194,6 +194,9 @@ class StatementLoader(QObject):
                         logging.warning(
                             g_tr('StatementLoader', "Symbol updated for ISIN ") + f"{isin}: {db_symbol} -> {symbol}")
                 return asset_id
+        if reg_code:
+            asset_id = readSQL("SELECT asset_id FROM asset_reg_id WHERE reg_code=:reg_code", [(":reg_code", reg_code)])
+            return asset_id
         asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)])
         if asset_id is not None:
             # Check why symbol was not found by ISIN
