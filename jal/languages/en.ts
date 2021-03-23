@@ -445,6 +445,41 @@
         <source>Can&apos;t get account currency for account: </source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../data_import/statement_ibkr_old.py" line="19"/>
+        <source>Can&apos;t read statement file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr_old.py" line="22"/>
+        <source>Can&apos;t get account details from the statement</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr_old.py" line="28"/>
+        <source>Can&apos;t get account number from the statement</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr_old.py" line="35"/>
+        <source>Can&apos;t read Trades table from statement file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr_old.py" line="38"/>
+        <source>Can&apos;t get Trades table from the statement</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr_old.py" line="56"/>
+        <source>Unknown asset </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_ibkr_old.py" line="65"/>
+        <source>Load IBKR Activity statement completed</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ImportSlipDialog</name>
@@ -1596,17 +1631,17 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="83"/>
+        <location filename="../data_import/statements.py" line="84"/>
         <source>No selection</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="83"/>
+        <location filename="../data_import/statements.py" line="84"/>
         <source>Please select different account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="76"/>
+        <location filename="../data_import/statements.py" line="77"/>
         <source>Invalid account selected</source>
         <translation></translation>
     </message>
@@ -2118,57 +2153,57 @@ do you want to save it?</source>
 <context>
     <name>StatementLoader</name>
     <message>
-        <location filename="../data_import/statements.py" line="131"/>
+        <location filename="../data_import/statements.py" line="138"/>
         <source>Select statement file to import</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="178"/>
+        <location filename="../data_import/statements.py" line="197"/>
         <source>Account not found: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="157"/>
+        <location filename="../data_import/statements.py" line="176"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="157"/>
+        <location filename="../data_import/statements.py" line="176"/>
         <source>Statement period starts before last recorded operation for the account. Continue import?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="198"/>
+        <location filename="../data_import/statements.py" line="217"/>
         <source>Symbol updated for ISIN </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="216"/>
+        <location filename="../data_import/statements.py" line="235"/>
         <source>ISIN updated for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="218"/>
+        <location filename="../data_import/statements.py" line="237"/>
         <source>ISIN mismatch for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="103"/>
+        <location filename="../data_import/statements.py" line="104"/>
         <source>Quik HTML</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="109"/>
+        <location filename="../data_import/statements.py" line="110"/>
         <source>Interactive Brokers XML</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="115"/>
+        <location filename="../data_import/statements.py" line="116"/>
         <source>Uralsib Broker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="121"/>
+        <location filename="../data_import/statements.py" line="122"/>
         <source>KIT Finance</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2360,6 +2395,19 @@ do you want to save it?</source>
     <message>
         <location filename="../data_import/statement_ibkr.py" line="680"/>
         <source>Multiple dividends match withholding tax</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statements.py" line="128"/>
+        <source>IBKR Activity HTML</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statements.py" line="161"/>
+        <source>This is an obsolete routine for specific cases of old reports import.
+Use it with extra care if you understand what you are doing.
+Otherwise please use &apos;Interactive Brokers XML&apos; import.
+Continue?</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
