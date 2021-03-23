@@ -12,6 +12,7 @@ from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
 from jal.db.update import JalDB
 from jal.data_import.statement_quik import Quik
 from jal.data_import.statement_ibkr import IBKR
+from jal.data_import.statement_ibkr_old import IBKR_obsolete
 from jal.data_import.statement_uralsib import UralsibCapital
 from jal.data_import.statement_kit import KITFinance
 
@@ -122,6 +123,12 @@ class StatementLoader(QObject):
                 'filter': "KIT Finance statement (*.xlsx)",
                 'loader': self.loadKITFinance,
                 'icon': 'kit.png'
+            },
+            {
+                'name': g_tr('StatementLoader', "IBKR Activity HTML"),
+                'filter': "IBKR Activity statement (*.html)",
+                'loader': self.loadIBActivityStatement,
+                'icon': 'cancel.png'
             }
         ]
 
@@ -149,6 +156,18 @@ class StatementLoader(QObject):
 
     def loadKITFinance(self, filename):
         return KITFinance(self, filename).load()
+
+    def loadIBActivityStatement(self, filename):
+        if QMessageBox().warning(None,
+                                 g_tr('StatementLoader', "Confirmation"),
+                                 g_tr('StatementLoader',
+                                      "This is an obsolete routine for specific cases of old reports import.\n"
+                                      "Use it with extra care if you understand what you are doing.\n"
+                                      "Otherwise please use 'Interactive Brokers XML' import.\n"
+                                      "Continue?"),
+                                 QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
+            return False
+        return IBKR_obsolete(self, filename).load()
 
     # Checks if report is after last transaction recorded for account.
     # Otherwise asks for confirmation and returns False if import is cancelled
