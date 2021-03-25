@@ -52,6 +52,7 @@ class IBKR:
         self._parent = parent
         self._filename = filename
         self.last_selected_account = None
+        self._settled_cash = {}
 
     @staticmethod
     def flString(data, name, default_value, _caller):
@@ -181,7 +182,10 @@ class IBKR:
         return caller.findAssetID(data.attrib[name], isin=isin)
 
     def load(self):
+        self._settled_cash = {}
+
         section_loaders = {
+            'CashReport': self.loadIBBalances,
             'SecuritiesInfo': self.loadIBSecurities,  # Order of load is important - SecuritiesInfo is first
             'Trades': self.loadIBTrades,
             'OptionEAE': self.loadIBOptions,
@@ -211,10 +215,17 @@ class IBKR:
             logging.error(g_tr('StatementLoader', "Failed to parse Interactive Brokers flex-report") + f": {e}")
             return False
         logging.info(g_tr('StatementLoader', "IB Flex-statement loaded successfully"))
+        for account in self._settled_cash:
+            logging.info(g_tr('StatementLoader', 'Planned cash: ') + f"{self._settled_cash[account]:.2f} " +
+                              f"{JalDB().get_asset_name(JalDB().get_account_currency(account))}")
         return True
 
     def getIBdata(self, section):
         section_descriptions = {
+            'CashReport': {'tag': 'CashReportCurrency',
+                           'level': 'Currency',
+                           'values': [('accountId', IBKR.flAccount, None),
+                                      ('endingSettledCash', IBKR.flNumber, None)]},
             'SecuritiesInfo': {'tag': 'SecurityInfo',
                                'level': '',
                                'values': [('symbol', IBKR.flString, None),
@@ -302,6 +313,10 @@ class IBKR:
                 tag_dictionary[attr_name] = attr_value
             data.append(tag_dictionary)
         return data
+
+    def loadIBBalances(self, balances):
+        for balance in balances:
+            self._settled_cash[balance['accountId']] = balance['endingSettledCash']
 
     def loadIBSecurities(self, assets):
         cnt = 0

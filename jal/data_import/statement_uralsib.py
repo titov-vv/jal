@@ -21,9 +21,10 @@ class UralsibCapital:
         self._filename = filename
         self._statement = None
         self._account_id = 0
-        self._setteled_cash = 0
+        self._settled_cash = {}
 
     def load(self):
+        self._settled_cash = {}
         with ZipFile(self._filename) as zip_file:
             contents = zip_file.namelist()
             if len(contents) != 1:
@@ -35,8 +36,9 @@ class UralsibCapital:
             return False
         self.load_cash_balance()
         self.load_stock_deals()
-        self.load_cash_tranactions()
-        logging.info(g_tr('Uralsib', "Uralsib Capital statement loaded; Planned cash: ") + f"{self._setteled_cash}")
+        self.load_cash_tranactions()         # FIXME Routing raises errors if section is absent in report
+        logging.info(g_tr('Uralsib', "Uralsib Capital statement loaded; Planned cash: ")
+                     + f"{self._settled_cash[self._account_id]}")
         return True
 
     def validate(self):
@@ -252,4 +254,4 @@ class UralsibCapital:
         if row < 0:
             return False
 
-        self._setteled_cash = self._statement[headers['settled_cash']][row]
+        self._settled_cash[self._account_id] = self._statement[headers['settled_cash']][row]
