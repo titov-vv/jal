@@ -21,6 +21,7 @@ class UralsibCapital:
         self._filename = filename
         self._statement = None
         self._account_id = 0
+        self._setteled_cash = 0
 
     def load(self):
         with ZipFile(self._filename) as zip_file:
@@ -32,8 +33,10 @@ class UralsibCapital:
                 self._statement = pandas.read_excel(io=r_file.read(), header=None, na_filter=False)
         if not self.validate():
             return False
+        self.load_cash_balance()
         self.load_stock_deals()
         self.load_cash_tranactions()
+        logging.info(g_tr('Uralsib', "Uralsib Capital statement loaded; Planned cash: ") + f"{self._setteled_cash}")
         return True
 
     def validate(self):
@@ -52,9 +55,11 @@ class UralsibCapital:
         logging.info(g_tr('Uralsib', "Loading Uralsib Capital statement for account ") +
                      f"{account_name}: {statement_dates['S']} - {statement_dates['E']}")
         self._account_id = self._parent.findAccountID(account_name)
+        if self._account_id is None:
+            return False
         return True
 
-    def find_section_start(self, header, subtitle, columns, subtitle_size=2) -> (int, dict):
+    def find_section_start(self, header, subtitle, columns, header_height=2) -> (int, dict):
         header_found = False
         start_row = -1
         headers = {}
@@ -66,9 +71,9 @@ class UralsibCapital:
                 break
         if start_row > 0:
             for col in range(self._statement.shape[1]):  # Load section headers from next row
-                headers[self._statement[col][start_row]] = col
-            if subtitle != '':
-                start_row += subtitle_size
+                for row in range(header_height):
+                    headers[self._statement[col][start_row+row]] = col
+            start_row += header_height
         column_indices = {column: headers.get(columns[column], -1) for column in columns}
         for idx in column_indices:
             if column_indices[idx] < 0:
@@ -156,7 +161,8 @@ class UralsibCapital:
             'Погашение купона': self.interest
         }
 
-        row, headers = self.find_section_start("ДВИЖЕНИЕ ДЕНЕЖНЫХ СРЕДСТВ ЗА ОТЧЕТНЫЙ ПЕРИОД", '', columns)
+        row, headers = self.find_section_start("ДВИЖЕНИЕ ДЕНЕЖНЫХ СРЕДСТВ ЗА ОТЧЕТНЫЙ ПЕРИОД", '',
+                                               columns, header_height=1)
         if row < 0:
             return False
 
@@ -236,3 +242,14 @@ class UralsibCapital:
     def tax(self, timestamp, _number, amount, description):
         JalDB().add_cash_transaction(self._account_id, self._parent.getAccountBank(self._account_id), timestamp,
                                      amount, PredefinedCategory.Taxes, description)
+
+    def load_cash_balance(self):
+        columns = {
+            "settled_cash": "Плановый исходящий остаток"
+        }
+
+        row, headers = self.find_section_start("ПОЗИЦИЯ ПО ДЕНЕЖНЫМ СРЕДСТВАМ", '', columns)
+        if row < 0:
+            return False
+
+        self._setteled_cash = self._statement[headers['settled_cash']][row]
