@@ -25,7 +25,8 @@ class IBKRCashOp:
 class IBKR:
     BondPricipal = 1000
     CancelledFlag = 'Ca'
-    TaxNotePattern = "^(.*) - (..) TAX$"
+    #TaxNotePattern = "^(.*) - (..) TAX$"
+    TaxNotePattern = "^(?P<symbol>\w+)\s?\((?P<isin>\w+)\).*?(?P<amount>\d+\.\d+).* - (?P<country>\w\w) TAX$"
     MergerPattern = "^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +MERGED\(\w+\) +WITH +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
     SpinOffPattern = "^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +SPINOFF +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
     SymbolChangePattern = "^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +CUSIP\/ISIN CHANGE TO +\((?P<isin_new>\w+)\) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
@@ -661,15 +662,15 @@ class IBKR:
 
     def addWithholdingTax(self, timestamp, account_id, asset_id, amount, note):
         parts = re.match(IBKR.TaxNotePattern, note)
-        if not parts:
+        if parts is None:
             logging.warning(g_tr('StatementLoader', "*** MANUAL ENTRY REQUIRED ***"))
             logging.warning(g_tr('StatementLoader', "Unhandled tax pattern found: ") + f"{note}")
             return
-        dividend_note = parts.group(1) + '%'
-        country_code = parts.group(2).lower()
+        parts_a = parts.groupdict()
+        country_code = parts['country'].lower()
         country_id = get_country_by_code(country_code)
         update_asset_country(asset_id, country_id)
-        dividend_id = self.findDividend4Tax(timestamp, account_id, asset_id, dividend_note)
+        dividend_id = self.findDividend4Tax(timestamp, account_id, asset_id, parts['symbol'], parts['isin'], parts['amount'])
         if dividend_id is None:
             logging.warning(g_tr('StatementLoader', "Dividend not found for withholding tax: ") + f"{note}")
             return
@@ -677,12 +678,12 @@ class IBKR:
         _ = executeSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
                        [(":dividend_id", dividend_id), (":tax", old_tax + amount)], commit=True)
 
-    def findDividend4Tax(self, timestamp, account_id, asset_id, note):
+    def findDividend4Tax(self, timestamp, account_id, asset_id, symbol, isin, amount):
         # Check strong match
         id = readSQL("SELECT id FROM dividends WHERE type=:div AND timestamp=:timestamp "
-                     "AND account_id=:account_id AND asset_id=:asset_id AND note LIKE :dividend_description",
+                     "AND account_id=:account_id AND asset_id=:asset_id AND regexp(:dividend_regexp, note)",
                      [(":div", DividendSubtype.Dividend), (":timestamp", timestamp), (":account_id", account_id),
-                      (":asset_id", asset_id), (":dividend_description", note)])
+                      (":asset_id", asset_id), (":dividend_regexp", rf"^{symbol}\s*\({isin}\).*?DIVIDEND.*?{amount}")])
         if id is not None:
             return id
         # Check weak match
