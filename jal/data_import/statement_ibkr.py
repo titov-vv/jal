@@ -662,7 +662,7 @@ class IBKR:
 
     def addWithholdingTax(self, timestamp, account_id, asset_id, amount, note):
         parts = re.match(IBKR.TaxNotePattern, note)
-        if parts is None:
+        if not parts:
             logging.warning(g_tr('StatementLoader', "*** MANUAL ENTRY REQUIRED ***"))
             logging.warning(g_tr('StatementLoader', "Unhandled tax pattern found: ") + f"{note}")
             return
@@ -686,12 +686,17 @@ class IBKR:
                       (":asset_id", asset_id), (":dividend_regexp", rf"^{symbol}\s*\({isin}\).*?DIVIDEND.*?{amount}")])
         if id is not None:
             return id
+        # Suggestion: add a test, that there must be only one matching id, not two
+
+        # Suggestion: replace LIKE with regexp in readSQL queries below:
+
         # Check weak match
         range_start = ManipulateDate.startOfPreviousYear(day=datetime.utcfromtimestamp(timestamp))
         count = readSQL("SELECT COUNT(id) FROM dividends WHERE type=:div AND timestamp>=:start_range "
                         "AND account_id=:account_id AND asset_id=:asset_id AND note LIKE :dividend_description",
                         [(":div", DividendSubtype.Dividend), (":start_range", range_start), (":account_id", account_id),
                          (":asset_id", asset_id), (":dividend_description", note)])
+
         if count > 1:
             logging.warning(g_tr('StatementLoader', "Multiple dividends match withholding tax"))
             return None
