@@ -188,11 +188,13 @@ class StatementLoader(QObject):
             account_id = readSQL("SELECT a.id FROM accounts AS a "
                                  "LEFT JOIN assets AS c ON c.id=a.currency_id "
                                  "WHERE a.number=:account_number AND c.name=:currency_name",
-                                 [(":account_number", accountNumber), (":currency_name", accountCurrency)])
+                                 [(":account_number", accountNumber), (":currency_name", accountCurrency)],
+                                 check_unique=True)
         else:
             account_id = readSQL("SELECT a.id FROM accounts AS a "
                                  "LEFT JOIN assets AS c ON c.id=a.currency_id "
-                                 "WHERE a.number=:account_number", [(":account_number", accountNumber)])
+                                 "WHERE a.number=:account_number", [(":account_number", accountNumber)],
+                                 check_unique=True)
         if account_id is None:
             logging.error(g_tr('StatementLoader', "Account not found: ") + f"{accountNumber} ({accountCurrency})")
         return account_id
@@ -205,7 +207,7 @@ class StatementLoader(QObject):
     # Returns: asset_id or None if new asset creation failed
     def findAssetID(self, symbol, isin='', name='', reg_code='', dialog_new=True):   #TODO this function became too complex -> move to JalDB() class and simplify
         if isin:
-            asset_id = readSQL("SELECT id FROM assets WHERE isin=:isin", [(":isin", isin)])
+            asset_id = readSQL("SELECT id FROM assets WHERE isin=:isin", [(":isin", isin)], check_unique=True)
             if asset_id is not None:
                 db_symbol = readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
                 if (symbol != '') and (db_symbol != symbol):
@@ -218,9 +220,10 @@ class StatementLoader(QObject):
                             g_tr('StatementLoader', "Symbol updated for ISIN ") + f"{isin}: {db_symbol} -> {symbol}")
                 return asset_id
         if reg_code:
-            asset_id = readSQL("SELECT asset_id FROM asset_reg_id WHERE reg_code=:reg_code", [(":reg_code", reg_code)])
+            asset_id = readSQL("SELECT asset_id FROM asset_reg_id WHERE reg_code=:reg_code",
+                               [(":reg_code", reg_code)], check_unique=True)
             return asset_id
-        asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)])
+        asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)], check_unique=True)
         if asset_id is not None:
             # Check why symbol was not found by ISIN
             asset_type = readSQL("SELECT type_id FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])

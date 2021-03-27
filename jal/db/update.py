@@ -66,7 +66,7 @@ class JalDB():
                        "VALUES(:symbol, :type, :full_name, :isin, :data_src)",
                        [(":symbol", symbol), (":type", asset_type), (":full_name", name),
                         (":isin", isin), (":data_src", data_source)], commit=True)
-        asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)])
+        asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)], check_unique=True)
         if asset_id is None:
             logging.error(g_tr('JalDB', "Failed to add new asset: ") + f"{symbol}")
         return asset_id
