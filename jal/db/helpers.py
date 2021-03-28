@@ -105,7 +105,6 @@ def readSQL(sql_text, params=None, named=False, check_unique=False):
     if query.next():
         res = readSQLrecord(query, named=named)
         if check_unique and query.next():
-            logging.warning(g_tr('DB', "More than 1 record matched SQL query ") + f"'{sql_text}' | '{params}'")
             return None  # More then one record in result when only one expected
         return res
     else:
