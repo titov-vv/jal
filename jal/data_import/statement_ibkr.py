@@ -213,7 +213,7 @@ class IBKR:
                                 return False
                             section_loaders[section](section_data)
         except Exception as e:
-            logging.error(g_tr('StatementLoader', "Failed to parse Interactive Brokers flex-report") + f": {e}")
+            logging.error(g_tr('StatementLoader', "Failed to parse Interactive Brokers flex-report") + f": {e}", exc_info = True)
             return False
         logging.info(g_tr('StatementLoader', "IB Flex-statement loaded successfully"))
         for account in self._settled_cash:
@@ -679,29 +679,28 @@ class IBKR:
                        [(":dividend_id", dividend_id), (":tax", old_tax + amount)], commit=True)
 
     def findDividend4Tax(self, timestamp, account_id, asset_id, symbol, isin, amount):
+        dividend_regexp = rf"^{symbol}\s*\({isin}\).*?DIVIDEND.*?{amount}"
         # Check strong match
         id = readSQL("SELECT id FROM dividends WHERE type=:div AND timestamp=:timestamp "
                      "AND account_id=:account_id AND asset_id=:asset_id AND regexp(:dividend_regexp, note)",
                      [(":div", DividendSubtype.Dividend), (":timestamp", timestamp), (":account_id", account_id),
-                      (":asset_id", asset_id), (":dividend_regexp", rf"^{symbol}\s*\({isin}\).*?DIVIDEND.*?{amount}")])
+                      (":asset_id", asset_id), (":dividend_regexp", dividend_regexp)])
         if id is not None:
             return id
         # Suggestion: add a test, that there must be only one matching id, not two
 
-        # Suggestion: replace LIKE with regexp in readSQL queries below:
-
         # Check weak match
         range_start = ManipulateDate.startOfPreviousYear(day=datetime.utcfromtimestamp(timestamp))
         count = readSQL("SELECT COUNT(id) FROM dividends WHERE type=:div AND timestamp>=:start_range "
-                        "AND account_id=:account_id AND asset_id=:asset_id AND note LIKE :dividend_description",
+                        "AND account_id=:account_id AND asset_id=:asset_id AND regexp(:dividend_regexp, note)",
                         [(":div", DividendSubtype.Dividend), (":start_range", range_start), (":account_id", account_id),
-                         (":asset_id", asset_id), (":dividend_description", note)])
+                         (":asset_id", asset_id), (":dividend_regexp", dividend_regexp)])
 
         if count > 1:
             logging.warning(g_tr('StatementLoader', "Multiple dividends match withholding tax"))
             return None
         id = readSQL("SELECT id FROM dividends WHERE type=:div AND timestamp>=:start_range "
-                     "AND account_id=:account_id AND asset_id=:asset_id AND note LIKE :dividend_description",
+                     "AND account_id=:account_id AND asset_id=:asset_id AND regexp(:dividend_regexp, note)",
                      [(":div", DividendSubtype.Dividend), (":start_range", range_start), (":account_id", account_id),
-                      (":asset_id", asset_id), (":dividend_description", note)])
+                      (":asset_id", asset_id), (":dividend_regexp", dividend_regexp)])
         return id
