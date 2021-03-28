@@ -21,15 +21,15 @@ class IBKRCashOp:
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-#TODO Check dividend parsing for "RDS B" stock (see example here https://github.com/KonishchevDmitry/investments/issues/28 )
 class IBKR:
     BondPricipal = 1000
     CancelledFlag = 'Ca'
-    TaxNotePattern = "^(.*) - (..) TAX$"
-    MergerPattern = "^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +MERGED\(\w+\) +WITH +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
-    SpinOffPattern = "^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +SPINOFF +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
-    SymbolChangePattern = "^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +CUSIP\/ISIN CHANGE TO +\((?P<isin_new>\w+)\) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
-    SplitPattern = "^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +SPLIT +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
+    DividendNotePattern = r"^(?P<symbol>.*\w) ?\((?P<isin>\w+)\) +{0} +DIVIDEND{1} \(Ordinary Dividend\)$"
+    TaxNotePattern = r"^(?P<symbol>.*\w) ?\((?P<isin>\w+)\) +(?P<description>\w.*\w) +DIVIDEND(.*(?P<amount>\d+\.\d+).*)? - (?P<country>\w\w) TAX$"
+    MergerPattern = r"^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +MERGED\(\w+\) +WITH +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
+    SpinOffPattern = r"^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +SPINOFF +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
+    SymbolChangePattern = r"^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +CUSIP\/ISIN CHANGE TO +\((?P<isin_new>\w+)\) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
+    SplitPattern = r"^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +SPLIT +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
 
     AssetType = {
         'CASH': PredefinedAsset.Money,
@@ -212,7 +212,7 @@ class IBKR:
                                 return False
                             section_loaders[section](section_data)
         except Exception as e:
-            logging.error(g_tr('StatementLoader', "Failed to parse Interactive Brokers flex-report") + f": {e}")
+            logging.error(g_tr('StatementLoader', "Failed to parse Interactive Brokers flex-report") + f": {e}", exc_info = True)
             return False
         logging.info(g_tr('StatementLoader', "IB Flex-statement loaded successfully"))
         for account in self._settled_cash:
@@ -660,16 +660,16 @@ class IBKR:
         return 1
 
     def addWithholdingTax(self, timestamp, account_id, asset_id, amount, note):
-        parts = re.match(IBKR.TaxNotePattern, note)
+        parts = re.match(IBKR.TaxNotePattern, note, re.IGNORECASE)
         if not parts:
             logging.warning(g_tr('StatementLoader', "*** MANUAL ENTRY REQUIRED ***"))
             logging.warning(g_tr('StatementLoader', "Unhandled tax pattern found: ") + f"{note}")
             return
-        dividend_note = parts.group(1) + '%'
-        country_code = parts.group(2).lower()
+        parts = parts.groupdict()
+        country_code = parts['country'].lower()
         country_id = get_country_by_code(country_code)
         update_asset_country(asset_id, country_id)
-        dividend_id = self.findDividend4Tax(timestamp, account_id, asset_id, dividend_note)
+        dividend_id = self.findDividend4Tax(timestamp, account_id, asset_id, parts['description'], parts['amount'])
         if dividend_id is None:
             logging.warning(g_tr('StatementLoader', "Dividend not found for withholding tax: ") + f"{note}")
             return
@@ -677,25 +677,24 @@ class IBKR:
         _ = executeSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
                        [(":dividend_id", dividend_id), (":tax", old_tax + amount)], commit=True)
 
-    def findDividend4Tax(self, timestamp, account_id, asset_id, note):
-        # Check strong match
+    def findDividend4Tax(self, timestamp, account_id, asset_id, description, amount):
+        description = '' if description is None else description
+        if amount is None:
+            pattern = IBKR.DividendNotePattern.format(description, '')
+        else:
+            pattern = IBKR.DividendNotePattern.format('.*', f".*{amount}.*")
+        # Check strong match - requires exact asset, timestamp and valid similar description
         id = readSQL("SELECT id FROM dividends WHERE type=:div AND timestamp=:timestamp "
-                     "AND account_id=:account_id AND asset_id=:asset_id AND note LIKE :dividend_description",
+                     "AND account_id=:account_id AND asset_id=:asset_id AND regexp(:dividend_regex, note)",
                      [(":div", DividendSubtype.Dividend), (":timestamp", timestamp), (":account_id", account_id),
-                      (":asset_id", asset_id), (":dividend_description", note)])
+                      (":asset_id", asset_id), (":dividend_regex", pattern)], check_unique=True)
         if id is not None:
             return id
-        # Check weak match
+
+        # Check weak match - the same as previous but timestamp may be any during previous year
         range_start = ManipulateDate.startOfPreviousYear(day=datetime.utcfromtimestamp(timestamp))
-        count = readSQL("SELECT COUNT(id) FROM dividends WHERE type=:div AND timestamp>=:start_range "
-                        "AND account_id=:account_id AND asset_id=:asset_id AND note LIKE :dividend_description",
-                        [(":div", DividendSubtype.Dividend), (":start_range", range_start), (":account_id", account_id),
-                         (":asset_id", asset_id), (":dividend_description", note)])
-        if count > 1:
-            logging.warning(g_tr('StatementLoader', "Multiple dividends match withholding tax"))
-            return None
         id = readSQL("SELECT id FROM dividends WHERE type=:div AND timestamp>=:start_range "
-                     "AND account_id=:account_id AND asset_id=:asset_id AND note LIKE :dividend_description",
+                     "AND account_id=:account_id AND asset_id=:asset_id AND regexp(:dividend_regex, note)",
                      [(":div", DividendSubtype.Dividend), (":start_range", range_start), (":account_id", account_id),
-                      (":asset_id", asset_id), (":dividend_description", note)])
+                      (":asset_id", asset_id), (":dividend_regex", pattern)], check_unique=True)
         return id

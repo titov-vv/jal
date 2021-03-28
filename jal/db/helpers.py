@@ -142,6 +142,7 @@ def init_and_check_db(db_path):
     if not db.isValid():
         return LedgerInitError(LedgerInitError.DbDriverFailure)
     db.setDatabaseName(get_dbfilename(db_path))
+    db.setConnectOptions("QSQLITE_ENABLE_REGEXP=1")
     db.open()
     tables = db.tables(QSql.Tables)
     if not tables:
