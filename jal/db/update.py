@@ -72,9 +72,10 @@ class JalDB():
         return asset_id
 
     def add_dividend(self, subtype, timestamp, account_id, asset_id, amount, note, trade_number='', tax=0.0):
-        id = readSQL("SELECT id FROM dividends WHERE timestamp=:timestamp "
-                     "AND account_id=:account_id AND asset_id=:asset_id AND note=:note",
-                     [(":timestamp", timestamp), (":account_id", account_id), (":asset_id", asset_id), (":note", note)])
+        id = readSQL("SELECT id FROM dividends WHERE timestamp=:timestamp AND account_id=:account_id "
+                     "AND asset_id=:asset_id AND amount=:amount AND note=:note",
+                     [(":timestamp", timestamp), (":account_id", account_id), (":asset_id", asset_id),
+                      (":amount", amount), (":note", note)])
         if id:
             logging.info(g_tr('JalDB', "Dividend already exists: ") + f"{note}")
             return

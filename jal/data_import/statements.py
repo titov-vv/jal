@@ -233,9 +233,10 @@ class StatementLoader(QObject):
                 return asset_id  # It is ok not to have ISIN
             db_isin = readSQL("SELECT isin FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
             if db_isin == '':  # Update ISIN if it was absent in DB
-                _ = executeSQL("UPDATE assets SET isin=:isin WHERE id=:asset_id",
-                               [(":isin", isin), (":asset_id", asset_id)])
-                logging.info(g_tr('StatementLoader', "ISIN updated for ") + f"{symbol}: {isin}")
+                if isin:
+                    _ = executeSQL("UPDATE assets SET isin=:isin WHERE id=:asset_id",
+                                   [(":isin", isin), (":asset_id", asset_id)])
+                    logging.info(g_tr('StatementLoader', "ISIN updated for ") + f"{symbol}: {isin}")
             else:
                 logging.warning(g_tr('StatementLoader', "ISIN mismatch for ") + f"{symbol}: {isin} != {db_isin}")
         elif dialog_new:
