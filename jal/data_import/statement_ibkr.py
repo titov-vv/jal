@@ -672,14 +672,14 @@ class IBKR:
         update_asset_country(tax['symbol'], country_id)
         description = parts['description']
         previous_tax = tax['amount'] if tax['amount'] >= 0 else 0
+        new_tax = -tax['amount'] if tax['amount'] < 0 else 0
 
         dividend_id = self.findDividend4Tax(tax['dateTime'], tax['accountId'], tax['symbol'],
-                                            previous_tax, description)
+                                            previous_tax, new_tax, description)
         if dividend_id is None:
             logging.warning(g_tr('StatementLoader', "Dividend not found for withholding tax: ") +
                             f"{tax}, {previous_tax}")
             return 0
-        new_tax = -tax['amount'] if tax['amount'] < 0 else 0
         _ = executeSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
                        [(":dividend_id", dividend_id), (":tax", new_tax)], commit=True)
         return 1
@@ -689,7 +689,12 @@ class IBKR:
     # - tax amount withheld from dividend should be equal to provided 'tax' value
     # - timestamp should be the same or within previous year for weak match of Q1 taxes
     # - note should be exactly the same or contain the same key elements
-    def findDividend4Tax(self, timestamp, account_id, asset_id, tax, note):
+    def findDividend4Tax(self, timestamp, account_id, asset_id, prev_tax, new_tax, note):
+        DIV_ID = 0
+        TIMESTAMP = 1
+        AMOUNT = 2
+        NOTE = 3
+
         # select all valid candidates
         if datetime.utcfromtimestamp(timestamp).timetuple().tm_yday < 75:
             # We may have wrong date in taxes before March, 15 due to tax correction
@@ -698,7 +703,7 @@ class IBKR:
                                "WHERE type=:div AND timestamp>=:start_range AND account_id=:account_id "
                                "AND asset_id=:asset_id AND ABS(tax-:tax)<0.0001 ORDER BY timestamp",
                                [(":div", DividendSubtype.Dividend), (":start_range", range_start),
-                                (":account_id", account_id), (":asset_id", asset_id), (":tax", tax)],
+                                (":account_id", account_id), (":asset_id", asset_id), (":tax", prev_tax)],
                                forward_only=True)
         else:
             # For any other day - use exact time match
@@ -706,7 +711,7 @@ class IBKR:
                                "WHERE type=:div AND timestamp=:timestamp AND account_id=:account_id "
                                "AND asset_id=:asset_id AND ABS(tax-:tax)<0.0001 ORDER BY timestamp",
                                [(":div", DividendSubtype.Dividend), (":timestamp", timestamp),
-                                (":account_id", account_id), (":asset_id", asset_id), (":tax", tax)],
+                                (":account_id", account_id), (":asset_id", asset_id), (":tax", prev_tax)],
                                forward_only=True)
         indexes = range(query.record().count())
         dividends = []
@@ -715,14 +720,14 @@ class IBKR:
             dividends.append(values)
         # Choose either Dividends or Payments in liue with regards to note of the matching tax
         if IBKR.PaymentInLiueOfDividend in note.upper():
-            dividends = list(filter(lambda item: IBKR.PaymentInLiueOfDividend in item[3], dividends))
+            dividends = list(filter(lambda item: IBKR.PaymentInLiueOfDividend in item[NOTE], dividends))
             # we don't check for full match as there are a lot of records without amount
         else:
-            dividends = list(filter(lambda item: IBKR.PaymentInLiueOfDividend not in item[3], dividends))
+            dividends = list(filter(lambda item: IBKR.PaymentInLiueOfDividend not in item[NOTE], dividends))
             # Check for full match
             for dividend in dividends:
-                if (dividend[1] == timestamp) and (note.upper() == dividend[3][:len(note)].upper()):
-                    return dividend[0]
+                if (dividend[TIMESTAMP] == timestamp) and (note.upper() == dividend[NOTE][:len(note)].upper()):
+                    return dividend[DIV_ID]
         if len(dividends) == 0:
             return None
 
@@ -730,7 +735,7 @@ class IBKR:
         parts = re.match(IBKR.TaxNotePattern, note, re.IGNORECASE)
         if not parts:
             logging.warning(g_tr('StatementLoader', "*** MANUAL ENTRY REQUIRED ***"))
-            logging.warning(g_tr('StatementLoader', "Unhandled tax amount pattern found: ") + f"{note}")
+            logging.warning(g_tr('StatementLoader', "Unhandled tax pattern found: ") + f"{note}")
             return None
         parts = parts.groupdict()
         note_prefix = parts['prefix']
@@ -739,30 +744,32 @@ class IBKR:
             note_amount = float(parts['amount'])
         except (ValueError, TypeError):
             note_amount = 0
-        votes = [0] * len(dividends)
+        score = [DIV_ID] * len(dividends)
         for i, dividend in enumerate(dividends):
-            parts = re.match(IBKR.DividendNotePattern, dividend[3], re.IGNORECASE)
+            parts = re.match(IBKR.DividendNotePattern, dividend[NOTE], re.IGNORECASE)
             if not parts:
                 logging.warning(g_tr('StatementLoader', "*** MANUAL ENTRY REQUIRED ***"))
-                logging.warning(g_tr('StatementLoader', "Unhandled dividend amount pattern found: ") + f"{dividend[3]}")
+                logging.warning(g_tr('StatementLoader', "Unhandled dividend pattern found: ") + f"{dividend[NOTE]}")
                 return None
             parts = parts.groupdict()
             try:
                 amount = float(parts['amount'])
             except (ValueError, TypeError):
                 amount = 0
-            if dividend[1] == timestamp:
-                votes[i] += 3
-            if parts['prefix'] == note_prefix:
-                votes[i] += 1
-            if parts['suffix'] == note_suffix:
-                votes[i] += 1
-            if abs(amount - note_amount) <= 0.000005:
-                votes[i] += 5
-        for i, vote in enumerate(votes):
-            if (vote == max(votes)) and (vote > 0):
-                return dividends[i][0]
+            if abs(amount - note_amount) <= 0.000005:        # Description has very similar amount +++++
+                score[i] += 5
+            if dividend[TIMESTAMP] == timestamp:             # Timestamp exact match gives ++
+                score[i] += 2
+            if abs(0.1*dividend[AMOUNT] - new_tax) <= 0.01:  # New tax is 10% of dividend gives +
+                score[i] += 1
+            if parts['prefix'] == note_prefix:               # Prefix part of description match gives +
+                score[i] += 1
+            if parts['suffix'] == note_suffix:               # Suffix part of description match gives +
+                score[i] += 1
+        for i, vote in enumerate(score):
+            if (vote == max(score)) and (vote > 0):
+                return dividends[i][DIV_ID]
         # Final check - if only one found, return it
         if len(dividends) == 1:
-            return dividends[0]
+            return dividends[DIV_ID]
         return None
