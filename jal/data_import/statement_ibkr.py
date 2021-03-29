@@ -550,7 +550,8 @@ class IBKR:
             cnt += self.loadIBBondInterest(bond_interest)
 
         taxes = list(filter(lambda tr: tr['type'] == IBKRCashOp.TaxWithhold, cash))
-        cnt += self.loadIBWithholdingTaxes(taxes)
+        for tax in taxes:
+            cnt += self.applyWitholdingTax(tax)
 
         transfers = list(filter(lambda tr: tr['type'] == IBKRCashOp.DepositWithdrawal, cash))
         for transfer in transfers:
@@ -623,24 +624,6 @@ class IBKR:
                              interest['amount'], interest['description'], interest['tradeID'])
         return 1
 
-    def loadIBWithholdingTaxes(self, taxes):
-        skip_next = False
-        cnt = 0
-        for i, item in enumerate(taxes):
-            if skip_next:
-                skip_next = False
-                continue
-            if item['amount'] < 0:  # New tax line
-                cnt += self.applyWitholdingTax(item)
-            else:                   # Correction of old tax and next item might be a new tax value
-                if (i < len(taxes)) and (item['dateTime'] == taxes[i + 1]['dateTime']) and (
-                        item['accountId'] == taxes[i + 1]['accountId']) and (
-                        item['symbol'] == taxes[i + 1]['symbol']) and (
-                        item['description'] == taxes[i + 1]['description']) and (taxes[i + 1]['amount'] < 0):
-                    cnt += 2 * self.applyWitholdingTax(taxes[i + 1], previous_tax=item['amount'])
-                    skip_next = True    # Two items were processed during this iteration
-        return cnt
-
     def loadIBFee(self, fee):
         JalDB().add_cash_transaction(fee['accountId'], self._parent.getAccountBank(fee['accountId']), fee['dateTime'],
                                      fee['amount'], PredefinedCategory.Fees, fee['description'])
@@ -674,18 +657,21 @@ class IBKR:
                                  pair_account, -cash['amount'], 0, 0, cash['description'])
         return 1
 
-    # Applies tax to matching dividend where with given previous tax
-    def applyWitholdingTax(self, tax, previous_tax=0):
+    # Applies tax to matching dividend:
+    # if tax < 0: apply it to dividend without tax
+    # otherwise: it is a correction and there should be dividend with exactly the same tax that will be set to 0
+    def applyWitholdingTax(self, tax):
         parts = re.match(IBKR.TaxFullPattern, tax['description'], re.IGNORECASE)
         if not parts:
             logging.warning(g_tr('StatementLoader', "*** MANUAL ENTRY REQUIRED ***"))
             logging.warning(g_tr('StatementLoader', "Unhandled tax country pattern found: ") + f"{tax['description']}")
-            return
+            return 0
         parts = parts.groupdict()
         country_code = parts['country'].lower()
         country_id = get_country_by_code(country_code)
         update_asset_country(tax['symbol'], country_id)
         description = parts['description']
+        previous_tax = tax['amount'] if tax['amount'] >= 0 else 0
 
         dividend_id = self.findDividend4Tax(tax['dateTime'], tax['accountId'], tax['symbol'],
                                             previous_tax, description)
@@ -693,8 +679,9 @@ class IBKR:
             logging.warning(g_tr('StatementLoader', "Dividend not found for withholding tax: ") +
                             f"{tax}, {previous_tax}")
             return 0
-        _ = executeSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",   # tax is negative in IBKR report
-                       [(":dividend_id", dividend_id), (":tax", -tax['amount'])], commit=True)
+        new_tax = -tax['amount'] if tax['amount'] < 0 else 0
+        _ = executeSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
+                       [(":dividend_id", dividend_id), (":tax", new_tax)], commit=True)
         return 1
 
     # Searches for divident that matches tax in the best way:
