@@ -159,8 +159,8 @@ class BalancesModel(QAbstractTableModel):
             "ORDER BY account_type",
             [(":base_currency", self._currency), (":money_book", BookAccount.Money),
              (":assets_book", BookAccount.Assets), (":liabilities_book", BookAccount.Liabilities),
-             (":balances_timestamp", self._date), (":tolerance", Setup.DISP_TOLERANCE)])
-        query.setForwardOnly(True)
+             (":balances_timestamp", self._date), (":tolerance", Setup.DISP_TOLERANCE)],
+            forward_only=True)
         self._data = []
         current_type = 0
         current_type_name = ''

@@ -267,8 +267,8 @@ class IncomeSpendingReport(QAbstractItemModel):
                            "LEFT JOIN categories AS c ON ct.id=c.id "
                            "ORDER BY path, month_start",
                            [(":asset_money", PredefinedAsset.Money), (":book_costs", BookAccount.Costs),
-                            (":book_incomes", BookAccount.Incomes), (":begin", begin), (":end", end)])
-        query.setForwardOnly(True)
+                            (":book_incomes", BookAccount.Incomes), (":begin", begin), (":end", end)],
+                           forward_only=True)
         self._root = ReportTreeItem(begin, end, -1, "ROOT")  # invisible root
         self._root.appendChild(ReportTreeItem(begin, end, 0, g_tr("Reports", "TOTAL")))  # visible root
         indexes = range(query.record().count())

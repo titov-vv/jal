@@ -24,9 +24,10 @@ class IBKRCashOp:
 class IBKR:
     BondPricipal = 1000
     CancelledFlag = 'Ca'
-    DividendNotePattern = r"^(?P<symbol>.*\w) ?\((?P<isin>\w+)\).*DIVIDEND.*{0}.* \(.*\)$"
+    PaymentInLiueOfDividend = 'PAYMENT IN LIEU OF DIVIDEND'
     TaxFullPattern = r"^(?P<description>.*) - (?P<country>\w\w) TAX$"
-    TaxNotePattern = r"^(?P<symbol>.*\w) ?\((?P<isin>\w+)\) +(?P<prefix>\w.*\w) +DIVIDEND(.*(?P<amount>\d+\.\d+)(?P<suffix>.*))? - (?P<country>\w\w) TAX$"
+    TaxNotePattern = r"^(?P<symbol>.*\w) ?\((?P<isin>\w+)\)(?P<prefix>( \w*)+) +(?P<amount>\d+\.\d+)?(?P<suffix>.*)$"
+    DividendNotePattern = r"^(?P<symbol>.*\w) ?\((?P<isin>\w+)\)(?P<prefix>( \w*)+) +(?P<amount>\d+\.\d+)?(?P<suffix>.*) \(.*\)$"
     MergerPattern = r"^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +MERGED\(\w+\) +WITH +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
     SpinOffPattern = r"^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +SPINOFF +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
     SymbolChangePattern = r"^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +CUSIP\/ISIN CHANGE TO +\((?P<isin_new>\w+)\) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
@@ -549,8 +550,7 @@ class IBKR:
             cnt += self.loadIBBondInterest(bond_interest)
 
         taxes = list(filter(lambda tr: tr['type'] == IBKRCashOp.TaxWithhold, cash))
-        for tax in taxes:
-            cnt += self.loadIBWithholdingTax(tax)
+        cnt += self.loadIBWithholdingTaxes(taxes)
 
         transfers = list(filter(lambda tr: tr['type'] == IBKRCashOp.DepositWithdrawal, cash))
         for transfer in transfers:
@@ -623,9 +623,23 @@ class IBKR:
                              interest['amount'], interest['description'], interest['tradeID'])
         return 1
 
-    def loadIBWithholdingTax(self, tax):
-        self.addWithholdingTax(tax['dateTime'], tax['accountId'], tax['symbol'], -tax['amount'], tax['description'])
-        return 1
+    def loadIBWithholdingTaxes(self, taxes):
+        skip_next = False
+        cnt = 0
+        for i, item in enumerate(taxes):
+            if skip_next:
+                skip_next = False
+                continue
+            if item['amount'] < 0:  # New tax line
+                cnt += self.applyWitholdingTax(item)
+            else:                   # Correction of old tax and next item might be a new tax value
+                if (i < len(taxes)) and (item['dateTime'] == taxes[i + 1]['dateTime']) and (
+                        item['accountId'] == taxes[i + 1]['accountId']) and (
+                        item['symbol'] == taxes[i + 1]['symbol']) and (
+                        item['description'] == taxes[i + 1]['description']) and (taxes[i + 1]['amount'] < 0):
+                    cnt += 2 * self.applyWitholdingTax(taxes[i + 1], previous_tax=item['amount'])
+                    skip_next = True    # Two items were processed during this iteration
+        return cnt
 
     def loadIBFee(self, fee):
         JalDB().add_cash_transaction(fee['accountId'], self._parent.getAccountBank(fee['accountId']), fee['dateTime'],
@@ -660,65 +674,108 @@ class IBKR:
                                  pair_account, -cash['amount'], 0, 0, cash['description'])
         return 1
 
-    def addWithholdingTax(self, timestamp, account_id, asset_id, amount, note):
-        parts = re.match(IBKR.TaxFullPattern, note, re.IGNORECASE)
+    # Applies tax to matching dividend where with given previous tax
+    def applyWitholdingTax(self, tax, previous_tax=0):
+        parts = re.match(IBKR.TaxFullPattern, tax['description'], re.IGNORECASE)
         if not parts:
             logging.warning(g_tr('StatementLoader', "*** MANUAL ENTRY REQUIRED ***"))
-            logging.warning(g_tr('StatementLoader', "Unhandled tax country pattern found: ") + f"{note}")
+            logging.warning(g_tr('StatementLoader', "Unhandled tax country pattern found: ") + f"{tax['description']}")
             return
         parts = parts.groupdict()
         country_code = parts['country'].lower()
         country_id = get_country_by_code(country_code)
-        update_asset_country(asset_id, country_id)
+        update_asset_country(tax['symbol'], country_id)
         description = parts['description']
 
+        dividend_id = self.findDividend4Tax(tax['dateTime'], tax['accountId'], tax['symbol'],
+                                            previous_tax, description)
+        if dividend_id is None:
+            logging.warning(g_tr('StatementLoader', "Dividend not found for withholding tax: ") +
+                            f"{tax}, {previous_tax}")
+            return 0
+        _ = executeSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",   # tax is negative in IBKR report
+                       [(":dividend_id", dividend_id), (":tax", -tax['amount'])], commit=True)
+        return 1
+
+    # Searches for divident that matches tax in the best way:
+    # - it should have exactly the same account_id and asset_id
+    # - tax amount withheld from dividend should be equal to provided 'tax' value
+    # - timestamp should be the same or within previous year for weak match of Q1 taxes
+    # - note should be exactly the same or contain the same key elements
+    def findDividend4Tax(self, timestamp, account_id, asset_id, tax, note):
+        # select all valid candidates
+        if datetime.utcfromtimestamp(timestamp).timetuple().tm_yday < 75:
+            # We may have wrong date in taxes before March, 15 due to tax correction
+            range_start = ManipulateDate.startOfPreviousYear(day=datetime.utcfromtimestamp(timestamp))
+            query = executeSQL("SELECT id, timestamp, amount, note FROM dividends "
+                               "WHERE type=:div AND timestamp>=:start_range AND account_id=:account_id "
+                               "AND asset_id=:asset_id AND ABS(tax-:tax)<0.0001 ORDER BY timestamp",
+                               [(":div", DividendSubtype.Dividend), (":start_range", range_start),
+                                (":account_id", account_id), (":asset_id", asset_id), (":tax", tax)],
+                               forward_only=True)
+        else:
+            # For any other day - use exact time match
+            query = executeSQL("SELECT id, timestamp, amount, note FROM dividends "
+                               "WHERE type=:div AND timestamp=:timestamp AND account_id=:account_id "
+                               "AND asset_id=:asset_id AND ABS(tax-:tax)<0.0001 ORDER BY timestamp",
+                               [(":div", DividendSubtype.Dividend), (":timestamp", timestamp),
+                                (":account_id", account_id), (":asset_id", asset_id), (":tax", tax)],
+                               forward_only=True)
+        indexes = range(query.record().count())
+        dividends = []
+        while query.next():
+            values = list(map(query.value, indexes))
+            dividends.append(values)
+        # Choose either Dividends or Payments in liue with regards to note of the matching tax
+        if IBKR.PaymentInLiueOfDividend in note.upper():
+            dividends = list(filter(lambda item: IBKR.PaymentInLiueOfDividend in item[3], dividends))
+            # we don't check for full match as there are a lot of records without amount
+        else:
+            dividends = list(filter(lambda item: IBKR.PaymentInLiueOfDividend not in item[3], dividends))
+            # Check for full match
+            for dividend in dividends:
+                if (dividend[1] == timestamp) and (note.upper() == dividend[3][:len(note)].upper()):
+                    return dividend[0]
+        if len(dividends) == 0:
+            return None
+
+        # Chose most probable dividend - by amount, timestamp and description
         parts = re.match(IBKR.TaxNotePattern, note, re.IGNORECASE)
         if not parts:
             logging.warning(g_tr('StatementLoader', "*** MANUAL ENTRY REQUIRED ***"))
             logging.warning(g_tr('StatementLoader', "Unhandled tax amount pattern found: ") + f"{note}")
-            return
+            return None
         parts = parts.groupdict()
-        dividend_id = self.findDividend4Tax(timestamp, account_id, asset_id, description, parts['amount'])
-        if dividend_id is None:
-            logging.warning(g_tr('StatementLoader', "Dividend not found for withholding tax: ") + f"{note}")
-            return
-        old_tax = readSQL("SELECT tax FROM dividends WHERE id=:id", [(":id", dividend_id)])
-        _ = executeSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
-                       [(":dividend_id", dividend_id), (":tax", old_tax + amount)], commit=True)
-
-    def findDividend4Tax(self, timestamp, account_id, asset_id, description, amount):  # amount is str
-        # Check exact dividend description match - requires match of asset, timestamp and full description
-        id = readSQL("SELECT id FROM dividends WHERE type=:div AND timestamp=:timestamp "
-                     "AND account_id=:account_id AND asset_id=:asset_id AND note LIKE :description",
-                     [(":div", DividendSubtype.Dividend), (":timestamp", timestamp), (":account_id", account_id),
-                      (":asset_id", asset_id), (":description", description + '%')], check_unique=True)
-        if id is not None:
-            return id
-
-        # Check amount match - requires match of asset, timestamp and amount inside description with word DIVIDEND
-        if amount is not None:
-            pattern = IBKR.DividendNotePattern.format(amount)
-            id = readSQL("SELECT id FROM dividends WHERE type=:div AND timestamp=:timestamp "
-                         "AND account_id=:account_id AND asset_id=:asset_id AND regexp(:dividend_regex, note)",
-                         [(":div", DividendSubtype.Dividend), (":timestamp", timestamp), (":account_id", account_id),
-                          (":asset_id", asset_id), (":dividend_regex", pattern)], check_unique=True)
-            if id is not None:
-                return id
-
-        # Weak match - perform the same 2 checks but timestamp may be any during previous year
-        range_start = ManipulateDate.startOfPreviousYear(day=datetime.utcfromtimestamp(timestamp))
-        id = readSQL("SELECT id FROM dividends WHERE type=:div AND timestamp>=:start_range "
-                     "AND account_id=:account_id AND asset_id=:asset_id AND note LIKE :description",
-                     [(":div", DividendSubtype.Dividend), (":start_range", range_start), (":account_id", account_id),
-                      (":asset_id", asset_id), (":description", description + '%')], check_unique=True)
-        if id is not None:
-            return id
-
-        if amount is not None:
-            pattern = IBKR.DividendNotePattern.format(amount)
-            id = readSQL("SELECT id FROM dividends WHERE type=:div AND timestamp>=:start_range "
-                         "AND account_id=:account_id AND asset_id=:asset_id AND regexp(:dividend_regex, note)",
-                         [(":div", DividendSubtype.Dividend), (":start_range", range_start),
-                          (":account_id", account_id), (":asset_id", asset_id), (":dividend_regex", pattern)],
-                         check_unique=True)
-        return id
+        note_prefix = parts['prefix']
+        note_suffix = parts['suffix']
+        try:
+            note_amount = float(parts['amount'])
+        except (ValueError, TypeError):
+            note_amount = 0
+        votes = [0] * len(dividends)
+        for i, dividend in enumerate(dividends):
+            parts = re.match(IBKR.DividendNotePattern, dividend[3], re.IGNORECASE)
+            if not parts:
+                logging.warning(g_tr('StatementLoader', "*** MANUAL ENTRY REQUIRED ***"))
+                logging.warning(g_tr('StatementLoader', "Unhandled dividend amount pattern found: ") + f"{dividend[3]}")
+                return None
+            parts = parts.groupdict()
+            try:
+                amount = float(parts['amount'])
+            except (ValueError, TypeError):
+                amount = 0
+            if dividend[1] == timestamp:
+                votes[i] += 3
+            if parts['prefix'] == note_prefix:
+                votes[i] += 1
+            if parts['suffix'] == note_suffix:
+                votes[i] += 1
+            if abs(amount - note_amount) <= 0.000005:
+                votes[i] += 5
+        for i, vote in enumerate(votes):
+            if (vote == max(votes)) and (vote > 0):
+                return dividends[i][0]
+        # Final check - if only one found, return it
+        if len(dividends) == 1:
+            return dividends[0]
+        return None

@@ -278,8 +278,7 @@ class HoldingsModel(QAbstractItemModel):
             [(":base_currency", self._currency), (":money_book", BookAccount.Money),
              (":assets_book", BookAccount.Assets), (":liabilities_book", BookAccount.Liabilities),
              (":holdings_timestamp", self._date), (":investments", PredefindedAccountType.Investment),
-             (":tolerance", Setup.DISP_TOLERANCE)])
-        query.setForwardOnly(True)
+             (":tolerance", Setup.DISP_TOLERANCE)], forward_only=True)
         # Load data from SQL to tree
         self._root = TreeItem([])
         currency = 0
