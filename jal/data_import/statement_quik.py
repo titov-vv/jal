@@ -78,7 +78,7 @@ class Quik:
             else:
                 logging.warning(g_tr('Quik', "Unknown operation type ") + f"'{row[self.Type]}'")
                 continue
-            asset_id = self._parent.findAssetID(row[self.Symbol])
+            asset_id = JalDB().get_asset_id(row[self.Symbol])
             if asset_id is None:
                 logging.warning(g_tr('Quik', "Unknown asset ") + f"'{row[self.Symbol]}'")
                 continue

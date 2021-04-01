@@ -124,7 +124,7 @@ class UralsibCapital:
                 row += 1
                 continue
 
-            asset_id = self._parent.findAssetID('', isin=self._statement[headers['isin']][row], name=asset_name)
+            asset_id = JalDB().get_asset_id('', isin=self._statement[headers['isin']][row], name=asset_name)
             if self._statement[headers['B/S']][row] == 'Покупка':
                 qty = self._statement[headers['qty']][row]
                 bond_interest = -self._statement[headers['accrued_int']][row]
@@ -221,7 +221,7 @@ class UralsibCapital:
             logging.error(g_tr('Uralsib', "Can't parse dividend description ") + f"'{description}'")
             return
         dividend_data = parts.groupdict()
-        asset_id = self._parent.findAssetID('', reg_code=dividend_data['REG_CODE'])
+        asset_id = JalDB().get_asset_id('', reg_code=dividend_data['REG_CODE'])
         if asset_id is None:
             logging.error(g_tr('Uralsib', "Can't find asset for dividend ") + f"'{description}'")
             return

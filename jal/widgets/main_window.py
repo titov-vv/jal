@@ -7,7 +7,7 @@ from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox, QLabel, QActionGroup, QAction
 
 from jal import __version__
-from jal.ui.ui_main_window import Ui_LedgerMainWindow
+from jal.ui.ui_main_window import Ui_JAL_MainWindow
 from jal.widgets.helpers import g_tr, ManipulateDate, dependency_present
 from jal.widgets.reference_dialogs import AccountTypeListDialog, AccountListDialog, AssetListDialog, TagsListDialog,\
     CategoryListDialog, CountryListDialog, QuotesListDialog, PeerListDialog
@@ -28,7 +28,7 @@ from jal.db.tax_estimator import TaxEstimator
 
 
 #-----------------------------------------------------------------------------------------------------------------------
-class MainWindow(QMainWindow, Ui_LedgerMainWindow):
+class MainWindow(QMainWindow, Ui_JAL_MainWindow):
     def __init__(self, own_path, language):
         QMainWindow.__init__(self, None)
         self.setupUi(self)

@@ -3,6 +3,7 @@ from PySide2.QtGui import QColor
 class Setup:
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
+    MAIN_WND_NAME = "JAL_MainWindow"
     INIT_SCRIPT_PATH = 'jal_init.sql'
     UPDATES_PATH = 'updates'
     UPDATE_PREFIX = 'jal_delta_'

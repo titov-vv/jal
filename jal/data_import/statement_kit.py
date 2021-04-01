@@ -111,7 +111,7 @@ class KITFinance:
         while row < self._statement.shape[0]:
             if self._statement[0][row] == '' and self._statement[0][row + 1] == '':
                 break
-            asset_id = self._parent.findAssetID('', isin=self._statement[headers['isin']][row],
+            asset_id = JalDB().get_asset_id('', isin=self._statement[headers['isin']][row],
                                                 name=self._statement[headers['asset']][row])
             if self._statement[headers['B/S']][row] == 'Покупка':
                 amount = -self._statement[headers['amount']][row]

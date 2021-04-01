@@ -161,7 +161,7 @@ class QuoteDownloader(QObject):
         return rates
 
     # noinspection PyMethodMayBeStatic
-    def MOEX_DataReader(self, asset_id, asset_code, isin, start_timestamp, end_timestamp):
+    def MOEX_DataReader(self, asset_id, asset_code, _isin, start_timestamp, end_timestamp):
         engine = None
         market = None
         board_id = None
@@ -194,9 +194,9 @@ class QuoteDownloader(QObject):
                     if row.tag == 'rows':
                         if len(list(row)) == 1:
                             asset_info = list(row)[0]
-                            new_isin = asset_info.attrib['ISIN'] if 'ISIN' in asset_info.attrib else ''
-                            new_reg = asset_info.attrib['REGNUMBER'] if 'REGNUMBER' in asset_info.attrib else ''
-                            JalDB().update_isin_reg(asset_id, new_isin, new_reg)
+                            isin = asset_info.attrib['ISIN'] if 'ISIN' in asset_info.attrib else ''
+                            reg_code = asset_info.attrib['REGNUMBER'] if 'REGNUMBER' in asset_info.attrib else ''
+                            JalDB().update_asset_data(asset_id, new_isin=isin, new_reg=reg_code)
 
         # Get price history
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d')

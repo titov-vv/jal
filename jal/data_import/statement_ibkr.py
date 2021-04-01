@@ -175,13 +175,13 @@ class IBKR:
         if data.tag == 'Trade' and IBKR.flAssetType(data, 'assetCategory', None, None) == PredefinedAsset.Money:
             currency_asset = default_value
             for currency in data.attrib['symbol'].split('.'):
-                currency_asset = caller.findAssetID(currency)
+                currency_asset = JalDB().get_asset_id(currency)
             return currency_asset
 
         isin = data.attrib['isin'] if 'isin' in data.attrib else ''
         if data.tag == 'CorporateAction' and data.attrib[name].endswith('.OLD'):
-            return caller.findAssetID(data.attrib[name][:-len('.OLD')], isin=isin)
-        return caller.findAssetID(data.attrib[name], isin=isin)
+            return JalDB().get_asset_id(data.attrib[name][:-len('.OLD')], isin=isin)
+        return JalDB().get_asset_id(data.attrib[name], isin=isin)
 
     def load(self):
         self._settled_cash = {}
@@ -325,7 +325,7 @@ class IBKR:
         for asset in assets:
             # IB may use '.OLD' suffix if asset is being replaced
             symbol = asset['symbol'][:-len('.OLD')] if asset['symbol'].endswith('.OLD') else asset['symbol']
-            asset_id = self._parent.findAssetID(symbol, asset['isin'], dialog_new=False)
+            asset_id = JalDB().get_asset_id(symbol, isin=asset['isin'], dialog_new=False)
             if asset_id is not None:
                 continue
             asset_type = PredefinedAsset.ETF if asset['subCategory'] == "ETF" else asset['assetCategory']
@@ -391,7 +391,7 @@ class IBKR:
                     logging.error(g_tr('StatementLoader', "Merger description miss some data ") + f"'{action}'")
                     continue
                 description_b = action['description'][:parts.span(6)[0]] + merger_a['symbol_old'] + ", "
-                asset_b = self._parent.findAssetID(merger_a['symbol_old'], merger_a['isin_old'])
+                asset_b = JalDB().get_asset_id(merger_a['symbol_old'], isin=merger_a['isin_old'])
 
                 paired_record = list(filter(
                     lambda pair: pair['symbol'] == asset_b
@@ -416,7 +416,7 @@ class IBKR:
                 if len(spinoff) != 7:
                     logging.error(g_tr('StatementLoader', "Spin-off description miss some data ") + f"'{action}'")
                     continue
-                asset_id_old = self._parent.findAssetID(spinoff['symbol_old'], spinoff['isin_old'])
+                asset_id_old = JalDB().get_asset_id(spinoff['symbol_old'], isin=spinoff['isin_old'])
                 qty_old = int(spinoff['Y']) * action['quantity'] / int(spinoff['X'])
                 JalDB().add_corporate_action(action['accountId'], CorporateAction.SpinOff, action['dateTime'],
                                              action['transactionID'], asset_id_old,
@@ -432,7 +432,7 @@ class IBKR:
                     logging.error(g_tr('StatementLoader', "Spin-off description miss some data ") + f"'{action}'")
                     continue
                 description_b = action['description'][:parts.span(4)[0]] + isin_change['symbol_old'] + ".OLD, "
-                asset_b = self._parent.findAssetID(isin_change['symbol_old'], isin_change['isin_old'])
+                asset_b = JalDB().get_asset_id(isin_change['symbol_old'], isin=isin_change['isin_old'])
 
                 paired_record = list(filter(
                     lambda pair: pair['symbol'] == asset_b
@@ -477,7 +477,7 @@ class IBKR:
                     cnt += 1
                 else:  # Split together with ISIN change and there should be 2nd record available
                     description_b = action['description'][:parts.span(5)[0]] + split['symbol_old'] + ".OLD, "
-                    asset_b = self._parent.findAssetID(split['symbol_old'], split['isin_old'])
+                    asset_b = JalDB().get_asset_id(split['symbol_old'], isin=split['isin_old'])
 
                     paired_record = list(filter(
                         lambda pair: pair['symbol'] == asset_b

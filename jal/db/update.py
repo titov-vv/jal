@@ -1,8 +1,53 @@
 import logging
 from datetime import datetime
+from PySide2.QtWidgets import QApplication, QDialog
+from PySide2.QtSql import QSqlTableModel
+
+from jal.ui.ui_add_asset_dlg import Ui_AddAssetDialog
 from jal.constants import Setup
 from jal.db.helpers import db_connection, executeSQL, readSQL
 from jal.widgets.helpers import g_tr
+
+
+# -----------------------------------------------------------------------------------------------------------------------
+class AddAssetDialog(QDialog, Ui_AddAssetDialog):
+    def __init__(self, symbol, isin='', name=''):
+        QDialog.__init__(self)
+        self.setupUi(self)
+        self.asset_id = None
+
+        self.SymbolEdit.setText(symbol)
+        self.isinEdit.setText(isin)
+        self.NameEdit.setText(name)
+
+        self.type_model = QSqlTableModel(db=db_connection())
+        self.type_model.setTable('asset_types')
+        self.type_model.select()
+        self.TypeCombo.setModel(self.type_model)
+        self.TypeCombo.setModelColumn(1)
+
+        self.data_src_model = QSqlTableModel(db=db_connection())
+        self.data_src_model.setTable('data_sources')
+        self.data_src_model.select()
+        self.DataSrcCombo.setModel(self.data_src_model)
+        self.DataSrcCombo.setModelColumn(1)
+
+        # center dialog with respect to main application window
+        parent = None
+        for widget in QApplication.topLevelWidgets():
+            if widget.objectName() == Setup.MAIN_WND_NAME:
+                parent = widget
+        if parent:
+            x = parent.x() + parent.width() / 2 - self.width() / 2
+            y = parent.y() + parent.height() / 2 - self.height() / 2
+            self.setGeometry(x, y, self.width(), self.height())
+
+    def accept(self):
+        self.asset_id = JalDB().add_asset(self.SymbolEdit.text(), self.NameEdit.text(),
+                                          self.type_model.record(self.TypeCombo.currentIndex()).value("id"),
+                                          self.isinEdit.text(),
+                                          self.data_src_model.record(self.DataSrcCombo.currentIndex()).value("id"))
+        super().accept()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -19,6 +64,31 @@ class JalDB():
     def get_account_currency(self, account_id):
         return readSQL("SELECT currency_id FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
 
+    # Searches for asset_id in database - first by ISIN, then by Reg.Code next by Symbol
+    # If found - tries to update data if some is empty in database
+    # If asset not found and 'dialog_new' is True - pops up a window for asset creation
+    # Returns: asset_id or None if new asset creation failed
+    def get_asset_id(self, symbol, isin='', reg_code='', name='', dialog_new=True):
+        asset_id = None
+        if isin:
+            asset_id = readSQL("SELECT id FROM assets WHERE isin=:isin", [(":isin", isin)])
+            if asset_id is None:
+                asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol AND coalesce(isin, '')=''",
+                                   [(":symbol", symbol)])
+        else:
+            if reg_code:
+                asset_id = readSQL("SELECT asset_id FROM asset_reg_id WHERE reg_code=:reg_code",
+                                   [(":reg_code", reg_code)])
+            if asset_id is None:
+                asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)])
+        if asset_id is not None:
+            self.update_asset_data(asset_id, symbol, isin, reg_code)
+        elif dialog_new:
+            dialog = AddAssetDialog(symbol, isin=isin, name=name)
+            dialog.exec_()
+            asset_id = dialog.asset_id
+        return asset_id
+
     # Find asset by give partial name and type. Returns only first match even if many were found
     def find_asset_like_name(self, partial_name, asset_type=0):
         name = '%' + partial_name.replace(' ', '%') + '%'
@@ -28,19 +98,29 @@ class JalDB():
         else:
             return readSQL("SELECT id FROM assets WHERE full_name LIKE :name", [(":name", name)])
 
-    def update_isin_reg(self, asset_id, new_isin, new_reg):
+    def update_asset_data(self, asset_id, new_symbol='', new_isin='', new_reg=''):
+        if new_symbol:
+            symbol = readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
+            if new_symbol != symbol:
+                _ = executeSQL("UPDATE assets SET name=:symbol WHERE id=:asset_id",
+                               [(":symbol", new_symbol), (":asset_id", asset_id)])
+                # Show warning only if symbol was changed not due known bankruptcy or new issue pattern
+                if not (((symbol == new_symbol[:-1]) and (new_symbol[-1] == 'D' or new_symbol[-1] == 'Q')) or
+                        ((symbol[:-1] == new_symbol) and (symbol[-1] == 'D' or symbol[-1] == 'Q'))):
+                    logging.info(g_tr('JalDB', "Symbol updated ") + f"{symbol} -> {new_symbol}")
         if new_isin:
             isin = readSQL("SELECT isin FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
-            if new_isin != isin:
-                executeSQL("UPDATE assets SET isin=:new_isin WHERE id=:asset_id",
-                           [(":new_isin", new_isin), (":asset_id", asset_id)])
-                logging.info(g_tr('JalDB', "ISIN updated for ")
-                             + f"{self.get_asset_name(asset_id)}: {isin} -> {new_isin}")
+            if isin == '':
+                _ = executeSQL("UPDATE assets SET isin=:new_isin WHERE id=:asset_id",
+                               [(":new_isin", new_isin), (":asset_id", asset_id)])
+            elif isin != new_isin:
+                logging.warning(g_tr('JalDB', "ISIN mismatch for ")
+                                + f"{self.get_asset_name(asset_id)}: {isin} != {new_isin}")
         if new_reg:
             reg = readSQL("SELECT reg_code FROM asset_reg_id WHERE asset_id=:asset_id", [(":asset_id", asset_id)])
             if new_reg != reg:
-                executeSQL("INSERT OR REPLACE INTO asset_reg_id(asset_id, reg_code) VALUES(:asset_id, :new_reg)",
-                           [(":new_reg", new_reg), (":asset_id", asset_id)])
+                _ = executeSQL("INSERT OR REPLACE INTO asset_reg_id(asset_id, reg_code) VALUES(:asset_id, :new_reg)",
+                               [(":new_reg", new_reg), (":asset_id", asset_id)])
                 logging.info(g_tr('JalDB', "Reg.number updated for ")
                              + f"{self.get_asset_name(asset_id)}: {reg} -> {new_reg}")
 
@@ -62,11 +142,11 @@ class JalDB():
                      f"@ {datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")
 
     def add_asset(self, symbol, name, asset_type, isin, data_source=-1):
-        _ = executeSQL("INSERT INTO assets(name, type_id, full_name, isin, src_id) "
+        query = executeSQL("INSERT INTO assets(name, type_id, full_name, isin, src_id) "
                        "VALUES(:symbol, :type, :full_name, :isin, :data_src)",
                        [(":symbol", symbol), (":type", asset_type), (":full_name", name),
                         (":isin", isin), (":data_src", data_source)], commit=True)
-        asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)], check_unique=True)
+        asset_id = query.lastInsertId()
         if asset_id is None:
             logging.error(g_tr('JalDB', "Failed to add new asset: ") + f"{symbol}")
         return asset_id

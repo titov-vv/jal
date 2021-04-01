@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>LedgerMainWindow</class>
- <widget class="QMainWindow" name="LedgerMainWindow">
+ <class>JAL_MainWindow</class>
+ <widget class="QMainWindow" name="JAL_MainWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -152,7 +152,7 @@
                    <second>0</second>
                    <year>2020</year>
                    <month>12</month>
-                   <day>6</day>
+                   <day>5</day>
                   </datetime>
                  </property>
                  <property name="displayFormat">
@@ -572,7 +572,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>6</day>
+               <day>5</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -706,7 +706,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>6</day>
+               <day>5</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -853,7 +853,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>6</day>
+               <day>5</day>
               </datetime>
              </property>
              <property name="displayFormat">

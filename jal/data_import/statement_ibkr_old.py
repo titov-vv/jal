@@ -51,7 +51,7 @@ class IBKR_obsolete():
                 continue
             if account_id is None:  # no reason to check further if we don't have valid account here
                 continue
-            asset_id = self._parent.findAssetID(row[0])
+            asset_id = JalDB().get_asset_id(row[0])
             if asset_id is None:
                 logging.warning(g_tr('IBKR', "Unknown asset ") + f"'{row[0]}'")
                 continue
