@@ -1,6 +1,6 @@
 import logging
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timezone, time
 from zipfile import ZipFile
 import pandas
 
@@ -22,6 +22,8 @@ class UralsibCapital:
         self._statement = None
         self._account_id = 0
         self._settled_cash = {}
+        self._report_start = 0
+        self._report_end = 0
 
     def load(self):
         self._settled_cash = {}
@@ -35,8 +37,9 @@ class UralsibCapital:
         if not self.validate():
             return False
         self.load_cash_balance()
+        self.load_broker_fee()
         self.load_stock_deals()
-        self.load_cash_tranactions()         # FIXME Routing raises errors if section is absent in report
+        self.load_cash_tranactions()
         logging.info(g_tr('Uralsib', "Uralsib Capital statement loaded; Planned cash: ")
                      + f"{self._settled_cash[self._account_id]}")
         return True
@@ -51,8 +54,11 @@ class UralsibCapital:
             logging.error(g_tr('Uralsib', "Can't parse Uralsib Capital statement period"))
             return False
         statement_dates = parts.groupdict()
-        report_start = int(datetime.strptime(statement_dates['S'], "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
-        if not self._parent.checkStatementPeriod(account_name, report_start):
+        self._report_start = int(datetime.strptime(statement_dates['S'],
+                                                   "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+        end_day = datetime.strptime(statement_dates['E'], "%d.%m.%Y")
+        self._report_end = int(datetime.combine(end_day, time(23, 59, 59)).replace(tzinfo=timezone.utc).timestamp())
+        if not self._parent.checkStatementPeriod(account_name, self._report_start):
             return False
         logging.info(g_tr('Uralsib', "Loading Uralsib Capital statement for account ") +
                      f"{account_name}: {statement_dates['S']} - {statement_dates['E']}")
@@ -77,10 +83,11 @@ class UralsibCapital:
                     headers[self._statement[col][start_row+row]] = col
             start_row += header_height
         column_indices = {column: headers.get(columns[column], -1) for column in columns}
-        for idx in column_indices:
-            if column_indices[idx] < 0:
-                logging.error(g_tr('Uralsib', "Column not found: ") + idx)
-                start_row = -1
+        if start_row > 0:
+            for idx in column_indices:
+                if column_indices[idx] < 0:
+                    logging.error(g_tr('Uralsib', "Column not found in section ") + f"{header}: {idx}")
+                    start_row = -1
         return start_row, column_indices
 
     def load_stock_deals(self):
@@ -255,3 +262,21 @@ class UralsibCapital:
             return False
 
         self._settled_cash[self._account_id] = self._statement[headers['settled_cash']][row]
+
+    def load_broker_fee(self):
+        header_found = False
+        for i, row in self._statement.iterrows():
+            if (not header_found) and (row[0] == "Уплаченная комиссия, в том числе"):
+                header_found = True  # Start of broker fees list
+                continue
+            if header_found:
+                if row[0] != "":     # End of broker fee list
+                    break
+                try:
+                    fee = float(row[6])
+                except (ValueError, TypeError):
+                    continue
+                if fee == 0:
+                    continue
+                JalDB().add_cash_transaction(self._account_id, self._parent.getAccountBank(self._account_id),
+                                             self._report_end, fee, PredefinedCategory.Fees, row[1])
