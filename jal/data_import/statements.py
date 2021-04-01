@@ -1,7 +1,8 @@
 from PySide2.QtCore import QObject, Signal, Slot
-from PySide2.QtWidgets import QDialog, QFileDialog, QMessageBox
+from PySide2.QtWidgets import QApplication, QDialog, QFileDialog, QMessageBox
 from jal.db.helpers import readSQL, account_last_date
 
+from jal.constants import Setup
 from jal.widgets.helpers import g_tr
 from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
 from jal.data_import.statement_quik import Quik
@@ -13,7 +14,7 @@ from jal.data_import.statement_kit import KITFinance
 
 # -----------------------------------------------------------------------------------------------------------------------
 class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
-    def __init__(self, parent, description, current_account, recent_account=None):
+    def __init__(self, description, current_account, recent_account=None):
         QDialog.__init__(self)
         self.setupUi(self)
         self.account_id = recent_account
@@ -23,10 +24,15 @@ class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
         if self.account_id:
             self.AccountWidget.selected_id = self.account_id
 
-        # center dialog with respect to parent window
-        x = parent.x() + parent.width() / 2 - self.width() / 2
-        y = parent.y() + parent.height() / 2 - self.height() / 2
-        self.setGeometry(x, y, self.width(), self.height())
+        # center dialog with respect to main application window
+        parent = None
+        for widget in QApplication.topLevelWidgets():
+            if widget.objectName() == Setup.MAIN_WND_NAME:
+                parent = widget
+        if parent:
+            x = parent.x() + parent.width() / 2 - self.width() / 2
+            y = parent.y() + parent.height() / 2 - self.height() / 2
+            self.setGeometry(x, y, self.width(), self.height())
 
     @Slot()
     def closeEvent(self, event):
@@ -54,9 +60,8 @@ class StatementLoader(QObject):
     load_completed = Signal()
     load_failed = Signal()
 
-    def __init__(self, parent):
+    def __init__(self):
         super().__init__()
-        self.parent = parent
         self.sources = [
             {
                 'name': g_tr('StatementLoader', "Quik HTML"),
@@ -104,7 +109,7 @@ class StatementLoader(QObject):
                 self.load_failed.emit()
 
     def loadQuikHtml(self, filename):
-        return Quik(self, filename).load()
+        return Quik(filename).load()
 
     def loadIBFlex(self, filename):
         return IBKR(self, filename).load()
@@ -125,7 +130,7 @@ class StatementLoader(QObject):
                                       "Continue?"),
                                  QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
             return False
-        return IBKR_obsolete(self, filename).load()
+        return IBKR_obsolete(filename).load()
 
     # Checks if report is after last transaction recorded for account.
     # Otherwise asks for confirmation and returns False if import is cancelled
@@ -148,7 +153,7 @@ class StatementLoader(QObject):
         return bank_id
 
     def selectAccount(self, text, account_id, recent_account_id=0):
-        dialog = SelectAccountDialog(self.parent, text, account_id, recent_account=recent_account_id)
+        dialog = SelectAccountDialog(text, account_id, recent_account=recent_account_id)
         if dialog.exec_() != QDialog.Accepted:
             return 0
         else:

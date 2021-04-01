@@ -40,7 +40,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.ledger = Ledger()
         self.downloader = QuoteDownloader()
         self.taxes = TaxesRus()
-        self.statements = StatementLoader(self)
+        self.statements = StatementLoader()
         self.backup = JalBackup(self, get_dbfilename(self.own_path))
         self.estimator = None
 

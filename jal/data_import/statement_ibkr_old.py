@@ -6,8 +6,7 @@ from jal.widgets.helpers import g_tr
 from jal.db.update import JalDB
 
 class IBKR_obsolete():
-    def __init__(self, parent, filename):
-        self._parent = parent
+    def __init__(self, filename):
         self._filename = filename
         self._account = ''
 

@@ -42,8 +42,7 @@ class Quik:
     FeeEx3 = 'Клиринговая комиссия'
     Total = 'ИТОГО'
 
-    def __init__(self, parent, filename):
-        self._parent = parent
+    def __init__(self, filename):
         self._filename = filename
 
     def load(self):
