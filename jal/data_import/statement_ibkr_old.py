@@ -47,7 +47,7 @@ class IBKR_obsolete():
             if row[0].startswith('Total') or row[0] == 'Stocks' or row[0] == 'Symbol':  # Skip totals and headers
                 continue
             if row[0] == row[1]:  # it's a currency header - match account
-                account_id = self._parent.findAccountID(self._account, row[0])
+                account_id = JalDB().get_account_id(self._account, row[0])
                 continue
             if account_id is None:  # no reason to check further if we don't have valid account here
                 continue

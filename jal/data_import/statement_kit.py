@@ -51,7 +51,7 @@ class KITFinance:
             return False
         logging.info(g_tr('KIT', "Loading KIT Finance statement for account ") +
                      f"{account_name}: {statement_dates['S']} - {statement_dates['E']}")
-        self._account_id = self._parent.findAccountID(account_name)
+        self._account_id = JalDB().get_account_id(account_name)
         return True
 
     def find_section_start(self, header, columns) -> (int, dict):

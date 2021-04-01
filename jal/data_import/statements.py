@@ -1,5 +1,3 @@
-import logging
-
 from PySide2.QtCore import QObject, Signal, Slot
 from PySide2.QtWidgets import QDialog, QFileDialog, QMessageBox
 from jal.db.helpers import readSQL, account_last_date
@@ -140,24 +138,6 @@ class StatementLoader(QObject):
                                      QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
                 return False
         return True
-
-    # Searches for account_id by account number and optional currency
-    # Returns: account_id or None if no account was found
-    def findAccountID(self, accountNumber, accountCurrency=''):
-        if accountCurrency:
-            account_id = readSQL("SELECT a.id FROM accounts AS a "
-                                 "LEFT JOIN assets AS c ON c.id=a.currency_id "
-                                 "WHERE a.number=:account_number AND c.name=:currency_name",
-                                 [(":account_number", accountNumber), (":currency_name", accountCurrency)],
-                                 check_unique=True)
-        else:
-            account_id = readSQL("SELECT a.id FROM accounts AS a "
-                                 "LEFT JOIN assets AS c ON c.id=a.currency_id "
-                                 "WHERE a.number=:account_number", [(":account_number", accountNumber)],
-                                 check_unique=True)
-        if account_id is None:
-            logging.error(g_tr('StatementLoader', "Account not found: ") + f"{accountNumber} ({accountCurrency})")
-        return account_id
 
     # returns bank id assigned for the account or asks for assignment if field is empty
     def getAccountBank(self, account_id):

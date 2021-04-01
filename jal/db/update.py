@@ -61,6 +61,24 @@ class JalDB():
     def get_asset_name(self, asset_id):
         return readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
 
+    # Searches for account_id by account number and optional currency
+    # Returns: account_id or None if no account was found
+    def get_account_id(self, accountNumber, accountCurrency=''):
+        if accountCurrency:
+            account_id = readSQL("SELECT a.id FROM accounts AS a "
+                                 "LEFT JOIN assets AS c ON c.id=a.currency_id "
+                                 "WHERE a.number=:account_number AND c.name=:currency_name",
+                                 [(":account_number", accountNumber), (":currency_name", accountCurrency)],
+                                 check_unique=True)
+        else:
+            account_id = readSQL("SELECT a.id FROM accounts AS a "
+                                 "LEFT JOIN assets AS c ON c.id=a.currency_id "
+                                 "WHERE a.number=:account_number", [(":account_number", accountNumber)],
+                                 check_unique=True)
+        if account_id is None:
+            logging.error(g_tr('JalDB', "Account not found: ") + f"{accountNumber} ({accountCurrency})")
+        return account_id
+
     def get_account_currency(self, account_id):
         return readSQL("SELECT currency_id FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
 

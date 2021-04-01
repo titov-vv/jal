@@ -62,7 +62,7 @@ class UralsibCapital:
             return False
         logging.info(g_tr('Uralsib', "Loading Uralsib Capital statement for account ") +
                      f"{account_name}: {statement_dates['S']} - {statement_dates['E']}")
-        self._account_id = self._parent.findAccountID(account_name)
+        self._account_id = JalDB().get_account_id(account_name)
         if self._account_id is None:
             return False
         return True

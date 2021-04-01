@@ -57,13 +57,13 @@ class IBKR:
         self._settled_cash = {}
 
     @staticmethod
-    def flString(data, name, default_value, _caller):
+    def flString(data, name, default_value):
         if name not in data.attrib:
             return default_value
         return data.attrib[name]
 
     @staticmethod
-    def flNumber(data, name, default_value, _caller):
+    def flNumber(data, name, default_value):
         if name not in data.attrib:
             return default_value
         try:
@@ -73,7 +73,7 @@ class IBKR:
         return value
 
     @staticmethod
-    def flTimestamp(data, name, default_value, _caller):
+    def flTimestamp(data, name, default_value):
         if name not in data.attrib:
             return default_value
         time_str = data.attrib[name]
@@ -89,7 +89,7 @@ class IBKR:
             return None
 
     @staticmethod
-    def flAssetType(data, name, default_value, _caller):
+    def flAssetType(data, name, default_value):
         if name not in data.attrib:
             return default_value
         try:
@@ -102,7 +102,7 @@ class IBKR:
                 return None
 
     @staticmethod
-    def flCorpActionType(data, name, default_value, _caller):
+    def flCorpActionType(data, name, default_value):
         if name not in data.attrib:
             return default_value
         try:
@@ -115,7 +115,7 @@ class IBKR:
                 return None
 
     @staticmethod
-    def flCashOpType(data, name, default_value, _caller):
+    def flCashOpType(data, name, default_value):
         operations = {
             'Dividends':                    IBKRCashOp.Dividend,
             'Payment In Lieu Of Dividends': IBKRCashOp.Dividend,
@@ -141,10 +141,10 @@ class IBKR:
                 return None
 
     @staticmethod
-    def flAccount(data, name, default_value, caller):
+    def flAccount(data, name, default_value):
         if name not in data.attrib:
             return default_value
-        if data.tag == 'Trade' and IBKR.flAssetType(data, 'assetCategory', None, None) == PredefinedAsset.Money:
+        if data.tag == 'Trade' and IBKR.flAssetType(data, 'assetCategory', None) == PredefinedAsset.Money:
             if 'symbol' not in data.attrib:
                 logging.error(g_tr('IBKR', "Can't get currencies for accounts: ") + f"{data}")
                 return None
@@ -155,7 +155,7 @@ class IBKR:
             currencies.append(data.attrib['ibCommissionCurrency'])
             accountIds = []
             for currency in currencies:
-                account = caller.findAccountID(data.attrib[name], currency)
+                account = JalDB().get_account_id(data.attrib[name], currency)
                 if account is None:
                     return None
                 accountIds.append(account)
@@ -164,15 +164,15 @@ class IBKR:
             if default_value is None:
                 logging.error(g_tr('IBKR', "Can't get account currency for account: ") + f"{data}")
             return default_value
-        return caller.findAccountID(data.attrib[name], data.attrib['currency'])
+        return JalDB().get_account_id(data.attrib[name], data.attrib['currency'])
 
     @staticmethod
-    def flAsset(data, name, default_value, caller):
+    def flAsset(data, name, default_value):
         if name not in data.attrib:
             return default_value
         if data.attrib[name] == '':
             return default_value
-        if data.tag == 'Trade' and IBKR.flAssetType(data, 'assetCategory', None, None) == PredefinedAsset.Money:
+        if data.tag == 'Trade' and IBKR.flAssetType(data, 'assetCategory', None) == PredefinedAsset.Money:
             currency_asset = default_value
             for currency in data.attrib['symbol'].split('.'):
                 currency_asset = JalDB().get_asset_id(currency)
@@ -304,10 +304,10 @@ class IBKR:
         for sample in section.xpath(tag):
             tag_dictionary = {}
             if section_descriptions[section.tag]['level']:  # Skip extra lines (SUMMARY, etc)
-                if IBKR.flString(sample, 'levelOfDetail', '', self) != section_descriptions[section.tag]['level']:
+                if IBKR.flString(sample, 'levelOfDetail', '') != section_descriptions[section.tag]['level']:
                     continue
             for attr_name, attr_loader, attr_default in section_descriptions[section.tag]['values']:
-                attr_value = attr_loader(sample, attr_name, attr_default, self._parent)
+                attr_value = attr_loader(sample, attr_name, attr_default)
                 if attr_value is None:
                     logging.error(
                         g_tr('StatementLoader', "Failed to load attribute: ") + f"{attr_name} / {sample.attrib}")

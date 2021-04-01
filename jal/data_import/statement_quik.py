@@ -59,7 +59,7 @@ class Quik:
         deals_info = data[1]
         parts = re.match(self.ClientPattern, report_info[0][2])
         if parts:
-            account_id = self._parent.findAccountID(parts.group(1))
+            account_id = JalDB().get_account_id(parts.group(1))
         else:
             logging.error(g_tr('Quik', "Can't get account number from the statement."))
             return False
