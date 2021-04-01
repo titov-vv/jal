@@ -256,14 +256,13 @@ class UralsibCapital:
         columns = {
             "settled_cash": "Плановый исходящий остаток"
         }
-
         row, headers = self.find_section_start("ПОЗИЦИЯ ПО ДЕНЕЖНЫМ СРЕДСТВАМ", '', columns)
         if row < 0:
             return False
-
         self._settled_cash[self._account_id] = self._statement[headers['settled_cash']][row]
 
     def load_broker_fee(self):
+        cnt = 0
         header_found = False
         for i, row in self._statement.iterrows():
             if (not header_found) and (row[0] == "Уплаченная комиссия, в том числе"):
@@ -280,3 +279,5 @@ class UralsibCapital:
                     continue
                 JalDB().add_cash_transaction(self._account_id, self._parent.getAccountBank(self._account_id),
                                              self._report_end, fee, PredefinedCategory.Fees, row[1])
+                cnt += 1
+        logging.info(g_tr('Uralsib', "Fees loaded: ") + f"{cnt}")
