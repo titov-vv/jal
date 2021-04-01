@@ -446,37 +446,37 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr_old.py" line="19"/>
+        <location filename="../data_import/statement_ibkr_old.py" line="18"/>
         <source>Can&apos;t read statement file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr_old.py" line="22"/>
+        <location filename="../data_import/statement_ibkr_old.py" line="21"/>
         <source>Can&apos;t get account details from the statement</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr_old.py" line="28"/>
+        <location filename="../data_import/statement_ibkr_old.py" line="27"/>
         <source>Can&apos;t get account number from the statement</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr_old.py" line="35"/>
+        <location filename="../data_import/statement_ibkr_old.py" line="34"/>
         <source>Can&apos;t read Trades table from statement file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr_old.py" line="38"/>
+        <location filename="../data_import/statement_ibkr_old.py" line="37"/>
         <source>Can&apos;t get Trades table from the statement</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr_old.py" line="56"/>
+        <location filename="../data_import/statement_ibkr_old.py" line="55"/>
         <source>Unknown asset </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr_old.py" line="65"/>
+        <location filename="../data_import/statement_ibkr_old.py" line="64"/>
         <source>Load IBKR Activity statement completed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1126,48 +1126,53 @@ Application will be terminated now</source>
 <context>
     <name>JalDB</name>
     <message>
-        <location filename="../db/update.py" line="117"/>
+        <location filename="../db/update.py" line="142"/>
         <source>Reg.number updated for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="133"/>
+        <location filename="../db/update.py" line="158"/>
         <source>Quote loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="144"/>
+        <location filename="../db/update.py" line="169"/>
         <source>Failed to add new asset: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="153"/>
+        <location filename="../db/update.py" line="178"/>
         <source>Dividend already exists: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="169"/>
+        <location filename="../db/update.py" line="194"/>
         <source>Trade already exists: #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="190"/>
+        <location filename="../db/update.py" line="215"/>
         <source>Transfer/Exchange already exists: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="215"/>
+        <location filename="../db/update.py" line="240"/>
         <source>Corporate action already exists: #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="103"/>
+        <location filename="../db/update.py" line="128"/>
         <source>Symbol updated </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="110"/>
+        <location filename="../db/update.py" line="135"/>
         <source>ISIN mismatch for </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/update.py" line="79"/>
+        <source>Account not found: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1537,32 +1542,32 @@ do you want to save it?</source>
 <context>
     <name>Quik</name>
     <message>
-        <location filename="../data_import/statement_quik.py" line="55"/>
+        <location filename="../data_import/statement_quik.py" line="54"/>
         <source>Can&apos;t read statement file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_quik.py" line="64"/>
+        <location filename="../data_import/statement_quik.py" line="63"/>
         <source>Can&apos;t get account number from the statement.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_quik.py" line="67"/>
+        <location filename="../data_import/statement_quik.py" line="66"/>
         <source>Account with number </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_quik.py" line="67"/>
+        <location filename="../data_import/statement_quik.py" line="66"/>
         <source> not found. Import cancelled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_quik.py" line="79"/>
+        <location filename="../data_import/statement_quik.py" line="78"/>
         <source>Unknown operation type </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_quik.py" line="83"/>
+        <location filename="../data_import/statement_quik.py" line="82"/>
         <source>Unknown asset </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1666,17 +1671,17 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="44"/>
+        <location filename="../data_import/statements.py" line="48"/>
         <source>No selection</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="44"/>
+        <location filename="../data_import/statements.py" line="48"/>
         <source>Please select different account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="37"/>
+        <location filename="../data_import/statements.py" line="41"/>
         <source>Invalid account selected</source>
         <translation></translation>
     </message>
@@ -2188,42 +2193,37 @@ do you want to save it?</source>
 <context>
     <name>StatementLoader</name>
     <message>
-        <location filename="../data_import/statements.py" line="98"/>
+        <location filename="../data_import/statements.py" line="101"/>
         <source>Select statement file to import</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="159"/>
-        <source>Account not found: </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../data_import/statements.py" line="136"/>
+        <location filename="../data_import/statements.py" line="139"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="136"/>
+        <location filename="../data_import/statements.py" line="139"/>
         <source>Statement period starts before last recorded operation for the account. Continue import?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="64"/>
+        <location filename="../data_import/statements.py" line="67"/>
         <source>Quik HTML</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="70"/>
+        <location filename="../data_import/statements.py" line="73"/>
         <source>Interactive Brokers XML</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="76"/>
+        <location filename="../data_import/statements.py" line="79"/>
         <source>Uralsib Broker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="82"/>
+        <location filename="../data_import/statements.py" line="85"/>
         <source>KIT Finance</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2413,12 +2413,12 @@ do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="88"/>
+        <location filename="../data_import/statements.py" line="91"/>
         <source>IBKR Activity HTML</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="121"/>
+        <location filename="../data_import/statements.py" line="124"/>
         <source>This is an obsolete routine for specific cases of old reports import.
 Use it with extra care if you understand what you are doing.
 Otherwise please use &apos;Interactive Brokers XML&apos; import.
