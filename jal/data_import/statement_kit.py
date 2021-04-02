@@ -158,7 +158,8 @@ class KITFinance:
         operations = {
             'Внесение д/с в торг': self.transfer_in,
             'Вывод дс': self.transfer_out,
-            'Ком бр аб плата спот': self.fee
+            'Ком бр аб плата спот': self.fee,
+            'Комиссия НРД': self.fee
         }
         row, headers = self.find_section_start("Движение денежных средств по неторговым операциям", columns)
         if row < 0:
