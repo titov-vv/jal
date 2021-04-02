@@ -97,6 +97,9 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
     def locateItem(self, item_id, use_filter=''):
         raise NotImplementedError("locateItem() method is not defined in subclass of AbstractReferenceListModel")
 
+    def updateItemType(self, index, new_type):
+        raise NotImplementedError("updateItemType() method is not defined in subclass of AbstractReferenceListModel")
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountTypeListModel(AbstractReferenceListModel):
@@ -178,6 +181,11 @@ class AccountListModel(AbstractReferenceListModel):
         if row is None:
             return QModelIndex()
         return self.index(row-1, 0)
+
+    def updateItemType(self, index, new_type):
+        id = self.getId(index)
+        executeSQL(f"UPDATE {self._table} SET {self._group_by}=:new_type WHERE id=:id",
+                   [(":new_type", new_type), (":id", id)])
 
 
 class AccountListDialog(ReferenceDataDialog):

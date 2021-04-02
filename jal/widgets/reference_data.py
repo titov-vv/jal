@@ -1,7 +1,8 @@
 import logging
+from functools import partial
 
-from PySide2.QtCore import Signal, Property, Slot
-from PySide2.QtWidgets import QDialog, QMessageBox
+from PySide2.QtCore import Qt, Signal, Property, Slot
+from PySide2.QtWidgets import QDialog, QMessageBox, QMenu, QWidgetAction, QLabel
 
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
 from jal.widgets.helpers import g_tr, decodeError
@@ -60,8 +61,33 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
             self.TreeView.selectionModel().selectionChanged.connect(self.OnRowSelected)
         else:
             self.DataView.selectionModel().selectionChanged.connect(self.OnRowSelected)
+            self.DataView.setContextMenuPolicy(Qt.CustomContextMenu)
+            self.DataView.customContextMenuRequested.connect(self.onDataViewContextMenu)
         self.model.dataChanged.connect(self.OnDataChanged)
         self.setFilter()
+
+    def onDataViewContextMenu(self, pos):
+        if not self.group_id:
+            return
+        index = self.DataView.indexAt(pos)
+        menu_title = QWidgetAction(self.DataView)
+        title_lbl = QLabel()
+        title_lbl.setText(g_tr('ReferenceDataDialog', "Change type to:"))
+        menu_title.setDefaultWidget(title_lbl)
+        contextMenu = QMenu(self.DataView)
+        contextMenu.addAction(menu_title)
+        contextMenu.addSeparator()
+        combo_model = self.GroupCombo.model()
+        for i in range(self.GroupCombo.count()):
+            type_id = combo_model.data(combo_model.index(i, combo_model.fieldIndex(self.group_fkey_field)))
+            contextMenu.addAction(self.GroupCombo.itemText(i), partial(self.updateItemType, index, type_id))
+        contextMenu.popup(self.DataView.viewport().mapToGlobal(pos))
+
+    @Slot()
+    def updateItemType(self, index, new_type):
+        self.model.updateItemType(index, new_type)
+        self.CommitBtn.setEnabled(True)
+        self.RevertBtn.setEnabled(True)
 
     @Slot()
     def closeEvent(self, event):
