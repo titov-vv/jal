@@ -12,6 +12,7 @@ from jal.data_import.statement_uralsib import UralsibCapital
 from jal.data_import.statement_kit import KITFinance
 
 
+# TODO make common ancestor for statement loader classes but not StatementLoader (to prevent extra objects creation)
 # -----------------------------------------------------------------------------------------------------------------------
 class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
     def __init__(self, description, current_account, recent_account=None):

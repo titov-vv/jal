@@ -5,7 +5,9 @@ import traceback
 from PySide2.QtCore import Qt, QTranslator
 from PySide2.QtWidgets import QApplication, QMessageBox
 from jal.widgets.main_window import MainWindow
-from jal.db.helpers import init_and_check_db, LedgerInitError, get_language, update_db_schema
+from jal.db.update import JalDB
+from jal.db.settings import JalSettings
+from jal.db.helpers import init_and_check_db, LedgerInitError, update_db_schema
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -27,7 +29,7 @@ def main():
         error = init_and_check_db(own_path)
 
     app = QApplication([])
-    language = get_language()
+    language = JalDB().get_language_code(JalSettings().getValue('Language', default=1))
     translator = QTranslator(app)
     language_file = own_path + "languages" + os.sep + language + '.qm'
     translator.load(language_file)

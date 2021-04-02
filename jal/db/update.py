@@ -58,6 +58,12 @@ class JalDB():
     def commit(self):
         db_connection().commit()
 
+    def get_language_id(self, language_code):
+        return readSQL("SELECT id FROM languages WHERE language = :language_code", [(':language_code', language_code)])
+
+    def get_language_code(self, language_id):
+        return readSQL("SELECT language FROM languages WHERE id = :language_id", [(':language_id', language_id)])
+
     def get_asset_name(self, asset_id):
         return readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
 

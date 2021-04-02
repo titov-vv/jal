@@ -13,7 +13,8 @@ from jal.widgets.reference_dialogs import AccountTypeListDialog, AccountListDial
     CategoryListDialog, CountryListDialog, QuotesListDialog, PeerListDialog
 from jal.constants import TransactionType
 from jal.db.backup_restore import JalBackup
-from jal.db.helpers import get_dbfilename, executeSQL
+from jal.db.helpers import get_dbfilename
+from jal.db.update import JalDB
 from jal.db.settings import JalSettings
 from jal.data_import.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
@@ -183,9 +184,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
     def onLanguageChanged(self, action):
         language_code = action.data()
         if language_code != self.currentLanguage:
-            executeSQL("UPDATE settings "
-                       "SET value=(SELECT id FROM languages WHERE language = :new_language) WHERE name ='Language'",
-                       [(':new_language', language_code)])
+            JalSettings().setValue('Language', JalDB().get_language_id(language_code))
             QMessageBox().information(self, g_tr('MainWindow', "Restart required"),
                                       g_tr('MainWindow', "Language was changed to ") +
                                       QLocale.languageToString(QLocale(language_code).language()) + "\n" +

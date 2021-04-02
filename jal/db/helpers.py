@@ -205,14 +205,6 @@ def update_db_schema(db_path):
     db.close()
     return LedgerInitError(LedgerInitError.DbInitSuccess)
 
-
-# -------------------------------------------------------------------------------------------------------------------
-def get_language():   # TODO Change to make it via JalSettings instead of readSQL
-    language = readSQL("SELECT l.language FROM settings AS s "
-                       "LEFT JOIN languages AS l ON s.value=l.id WHERE s.name='Language'")
-    language = 'us' if language == '' else language
-    return language
-
 # -------------------------------------------------------------------------------------------------------------------
 def get_field_by_id_from_table(table_name, field_name, id):
     SQL = f"SELECT t.{field_name} FROM {table_name} AS t WHERE t.id = :id"
