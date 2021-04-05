@@ -50,10 +50,11 @@ class HoldingsModel(QAbstractItemModel):
     COL_QUOTE_A = 12
     COL_TOTAL = 13
     COL_TOTAL_A = 14
-    COL_PROFIT = 15
-    COL_PROFIT_R = 16
-    COL_VALUE = 17
-    COL_VALUE_A = 18
+    COL_SHARE = 15
+    COL_PROFIT = 16
+    COL_PROFIT_R = 17
+    COL_VALUE = 18
+    COL_VALUE_A = 19
 
     def __init__(self, parent_view):
         super().__init__(parent_view)
@@ -150,10 +151,7 @@ class HoldingsModel(QAbstractItemModel):
         elif column == 4:
             return f"{data[self.COL_QUOTE]:,.4f}" if data[self.COL_QUOTE] and data[self.COL_QTY] != 0 else ''
         elif column == 5:
-            if data[self.COL_QUOTE] and data[self.COL_QTY] != 0:
-                return f"{100.0 * data[self.COL_QUOTE] * data[self.COL_QTY] / data[self.COL_TOTAL]:,.2f}"
-            else:
-                return ''
+            return f"{data[self.COL_SHARE]:,.2f}"
         elif column == 6:
             return f"{100.0 * data[self.COL_PROFIT_R]:,.2f}" if data[self.COL_PROFIT_R] else ''
         elif column == 7:
@@ -312,22 +310,31 @@ class HoldingsModel(QAbstractItemModel):
                 else:
                     profit_relative = 0
                 value = values[self.COL_QUOTE] * values[self.COL_QTY]
+                share = 100.0 * value / values[self.COL_TOTAL]
                 value_adjusted = values[self.COL_QUOTE_A] * values[self.COL_QTY] if values[self.COL_QUOTE_A] else 0
-                values += [profit, profit_relative, value, value_adjusted]
+                values += [share, profit, profit_relative, value, value_adjusted]
             else:
-                values += [0, 0, 0, 0]
+                values += [0, 0, 0, 0, 0]
             node = TreeItem(values, a_node)
             a_node.appendChild(node)
 
         # Update totals
-        for i in range(self._root.count()):
+        for i in range(self._root.count()):          # Iterate through each currency
             currency_child = self._root.getChild(i)
-            for j in range(currency_child.count()):
+            for j in range(currency_child.count()):  # Iterate through each account for given currency
                 self.add_node_totals(currency_child.getChild(j))
             self.add_node_totals(currency_child)
+            for j in range(currency_child.count()):  # Calculate share of each account within currency
+                currency_child.getChild(j).data[self.COL_SHARE] = \
+                    100.0 * currency_child.getChild(j).data[self.COL_VALUE] / currency_child.data[self.COL_VALUE]
+        # Get full total of totals for all currencies adjusted to common currency
+        total = sum([self._root.getChild(i).data[self.COL_VALUE_A] for i in range(self._root.count())])
+        for i in range(self._root.count()):  # Calculate share of each currency (adjusted to common currency)
+            self._root.getChild(i).data[self.COL_SHARE] = 100.0 * self._root.getChild(i).data[self.COL_VALUE_A] / total
         self.modelReset.emit()
         self._view.expandAll()
 
+    # Update node totals with sum of profit, value and adjusted profit and value of all children
     def add_node_totals(self, node):
         profit = sum([node.getChild(i).data[self.COL_PROFIT] for i in range(node.count())])
         value = sum([node.getChild(i).data[self.COL_VALUE] for i in range(node.count())])
@@ -336,4 +343,4 @@ class HoldingsModel(QAbstractItemModel):
             profit_relative = profit / (value - profit)
         else:
             profit_relative = 0
-        node.data += [profit, profit_relative, value, value_adjusted]
+        node.data += [0, profit, profit_relative, value, value_adjusted]
