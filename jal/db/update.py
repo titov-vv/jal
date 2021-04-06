@@ -97,14 +97,14 @@ class JalDB():
         if isin:
             asset_id = readSQL("SELECT id FROM assets WHERE isin=:isin", [(":isin", isin)])
             if asset_id is None:
-                asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol AND coalesce(isin, '')=''",
+                asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol COLLATE NOCASE AND coalesce(isin, '')=''",
                                    [(":symbol", symbol)])
         else:
             if reg_code:
                 asset_id = readSQL("SELECT asset_id FROM asset_reg_id WHERE reg_code=:reg_code",
                                    [(":reg_code", reg_code)])
             if asset_id is None:
-                asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol", [(":symbol", symbol)])
+                asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol COLLATE NOCASE", [(":symbol", symbol)])
         if asset_id is not None:
             self.update_asset_data(asset_id, symbol, isin, reg_code)
         elif dialog_new:
@@ -125,7 +125,7 @@ class JalDB():
     def update_asset_data(self, asset_id, new_symbol='', new_isin='', new_reg=''):
         if new_symbol:
             symbol = readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
-            if new_symbol != symbol:
+            if new_symbol.upper() != symbol.upper():
                 _ = executeSQL("UPDATE assets SET name=:symbol WHERE id=:asset_id",
                                [(":symbol", new_symbol), (":asset_id", asset_id)])
                 # Show warning only if symbol was changed not due known bankruptcy or new issue pattern

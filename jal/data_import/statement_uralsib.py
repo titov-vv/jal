@@ -39,7 +39,8 @@ class UralsibCapital:
         self.load_cash_balance()
         self.load_broker_fee()
         self.load_stock_deals()
-        self.load_cash_tranactions()
+        self.load_futures_deals()
+        self.load_cash_transactions()
         logging.info(g_tr('Uralsib', "Uralsib Capital statement loaded; Planned cash: ")
                      + f"{self._settled_cash[self._account_id]}")
         return True
@@ -153,7 +154,64 @@ class UralsibCapital:
             row += 1
         logging.info(g_tr('Uralsib', "Trades loaded: ") + f"{cnt}")
 
-    def load_cash_tranactions(self):
+    def load_futures_deals(self):
+        cnt = 0
+        columns = {
+            "number": "Номер сделки",
+            "date": "Дата сделки",
+            "time": "Время сделки",
+            "symbol": "Код контракта",
+            "B/S": "Вид сделки",
+            "price": "Цена фьючерса",
+            "qty": "Количество контрактов, шт.",
+            "amount": "Сумма",
+            "settlement": "Дата расчетов по сделке",
+            "fee_broker": "Комиссия брокера, руб.",
+            "fee_ex": "Комиссия ТС, руб."
+        }
+
+        row, headers = self.find_section_start("СДЕЛКИ С ФЬЮЧЕРСАМИ И ОПЦИОНАМИ",
+                                               "Сделки с фьючерсами", columns)
+        if row < 0:
+            return False
+        while row < self._statement.shape[0]:
+            if self._statement[0][row] == '' and self._statement[0][row + 1] == '':
+                break
+            if self._statement[0][row].startswith("Входящая позиция по контракту") or \
+                    self._statement[0][row].startswith("Итого по контракту") or self._statement[0][row] == '':
+                row += 1
+                continue
+            try:
+                deal_number = int(self._statement[0][row])
+            except ValueError:
+                row += 1
+                continue
+
+            asset_id = JalDB().get_asset_id(self._statement[headers['symbol']][row])
+            if self._statement[headers['B/S']][row] == 'Покупка':
+                qty = self._statement[headers['qty']][row]
+            elif self._statement[headers['B/S']][row] == 'Продажа':
+                qty = -self._statement[headers['qty']][row]
+            else:
+                row += 1
+                logging.warning(g_tr('Uralsib', "Unknown trade type: ") + self._statement[headers['B/S']][row])
+                continue
+
+            price = self._statement[headers['price']][row]
+            fee = self._statement[headers['fee_broker']][row] + self._statement[headers['fee_ex']][row]
+            amount = self._statement[headers['amount']][row]
+            if abs(abs(price * qty) - amount) >= Setup.DISP_TOLERANCE:
+                price = abs(amount / qty)
+            ts_string = self._statement[headers['date']][row] + ' ' + self._statement[headers['time']][row]
+            timestamp = int(datetime.strptime(ts_string, "%d.%m.%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp())
+            settlement = int(datetime.strptime(self._statement[headers['settlement']][row],
+                                               "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+            JalDB().add_trade(self._account_id, asset_id, timestamp, settlement, deal_number, qty, price, -fee)
+            cnt += 1
+            row += 1
+        logging.info(g_tr('Uralsib', "Futures trades loaded: ") + f"{cnt}")
+
+    def load_cash_transactions(self):
         cnt = 0
         columns = {
             "number": "№ операции",
