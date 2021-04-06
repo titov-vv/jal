@@ -3,11 +3,12 @@ from datetime import datetime
 from dateutil import tz
 
 from PySide2.QtCore import Qt, Slot
-from PySide2.QtWidgets import QLabel, QDateTimeEdit, QPushButton, QTableView, QHeaderView
+from PySide2.QtWidgets import QLabel, QCheckBox, QDateTimeEdit, QPushButton, QTableView, QHeaderView
 from PySide2.QtSql import QSqlTableModel
 from jal.widgets.helpers import g_tr
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, PeerSelector
+from jal.widgets.account_select import CurrencyComboBox
 from jal.db.helpers import db_connection, executeSQL
 from jal.widgets.delegates import WidgetMapperDelegateBase, FloatDelegate, CategorySelectorDelegate, TagSelectorDelegate
 
@@ -34,12 +35,14 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.details_label = QLabel(self)
         self.account_label = QLabel(self)
         self.peer_label = QLabel(self)
+        self.a_currency_flag = QCheckBox(self)
 
         self.main_label.setText(g_tr("IncomeSpendingWidget", "Income / Spending"))
         self.date_label.setText(g_tr("IncomeSpendingWidget", "Date/Time"))
         self.details_label.setText(g_tr("IncomeSpendingWidget", "Details"))
         self.account_label.setText(g_tr("IncomeSpendingWidget", "Account"))
         self.peer_label.setText(g_tr("IncomeSpendingWidget", "Peer"))
+        self.a_currency_flag.setText(g_tr("IncomeSpendingWidget", "Paid in foreign currency:"))
 
         self.timestamp_editor = QDateTimeEdit(self)
         self.timestamp_editor.setCalendarPopup(True)
@@ -48,6 +51,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.timestamp_editor.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
         self.account_widget = AccountSelector(self)
         self.peer_widget = PeerSelector(self)
+        self.a_currency = CurrencyComboBox(self)
         self.add_button = QPushButton(self)
         self.add_button.setText(" +️ ")
         self.add_button.setFont(self.bold_font)
@@ -81,11 +85,14 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.layout.addWidget(self.account_widget, 1, 6, 1, 1)
         self.layout.addWidget(self.peer_widget, 2, 6, 1, 1)
 
-        self.layout.addWidget(self.commit_button, 0, 8, 1, 1)
-        self.layout.addWidget(self.revert_button, 0, 9, 1, 1)
+        self.layout.addWidget(self.a_currency_flag, 1, 7, 1, 1)
+        self.layout.addWidget(self.a_currency, 1, 8, 1, 1)
 
-        self.layout.addWidget(self.details_table, 4, 0, 1, 10)
-        self.layout.addItem(self.horizontalSpacer, 1, 7, 1, 1)
+        self.layout.addWidget(self.commit_button, 0, 10, 1, 1)
+        self.layout.addWidget(self.revert_button, 0, 11, 1, 1)
+
+        self.layout.addWidget(self.details_table, 4, 0, 1, 12)
+        self.layout.addItem(self.horizontalSpacer, 1, 9, 1, 1)
 
         self.add_button.clicked.connect(self.addChild)
         self.del_button.clicked.connect(self.delChild)
@@ -105,6 +112,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.timestamp_editor, self.model.fieldIndex("timestamp"))
         self.mapper.addMapping(self.account_widget, self.model.fieldIndex("account_id"))
         self.mapper.addMapping(self.peer_widget, self.model.fieldIndex("peer_id"))
+        self.mapper.addMapping(self.a_currency, self.model.fieldIndex("alt_currency_id"))
 
         self.details_table.setItemDelegateForColumn(2, self.category_delegate)
         self.details_table.setItemDelegateForColumn(3, self.tag_delegate)
