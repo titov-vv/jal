@@ -227,7 +227,7 @@ class IBKR:
             'CashReport': {'tag': 'CashReportCurrency',
                            'level': 'Currency',
                            'values': [('accountId', IBKR.flAccount, None),
-                                      ('endingSettledCash', IBKR.flNumber, None)]},
+                                      ('endingCash', IBKR.flNumber, None)]},
             'SecuritiesInfo': {'tag': 'SecurityInfo',
                                'level': '',
                                'values': [('symbol', IBKR.flString, None),
@@ -318,7 +318,7 @@ class IBKR:
 
     def loadIBBalances(self, balances):
         for balance in balances:
-            self._settled_cash[balance['accountId']] = balance['endingSettledCash']
+            self._settled_cash[balance['accountId']] = balance['endingCash']
 
     def loadIBSecurities(self, assets):
         cnt = 0
