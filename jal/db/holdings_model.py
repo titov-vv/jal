@@ -339,8 +339,5 @@ class HoldingsModel(QAbstractItemModel):
         profit = sum([node.getChild(i).data[self.COL_PROFIT] for i in range(node.count())])
         value = sum([node.getChild(i).data[self.COL_VALUE] for i in range(node.count())])
         value_adjusted = sum([node.getChild(i).data[self.COL_VALUE_A] for i in range(node.count())])
-        if value != value_adjusted:
-            profit_relative = profit / (value - profit)
-        else:
-            profit_relative = 0
+        profit_relative = profit / (value - profit) if value != profit else 0
         node.data += [0, profit, profit_relative, value, value_adjusted]
