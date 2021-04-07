@@ -62,7 +62,8 @@ CREATE TABLE action_details (
     tag_id      INTEGER    REFERENCES tags (id) ON DELETE SET NULL
                                                 ON UPDATE CASCADE,
     sum         REAL       NOT NULL,
-    alt_sum     REAL       DEFAULT (0),
+    alt_sum     REAL       DEFAULT (0)
+                           NOT NULL,
     note        TEXT (256) 
 );
 
