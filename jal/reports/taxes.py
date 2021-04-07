@@ -708,7 +708,7 @@ class TaxesRus:
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_fees(self):
-        query = executeSQL("SELECT a.timestamp AS payment_date, d.sum AS amount, d.note AS note, q.quote AS rate "
+        query = executeSQL("SELECT a.timestamp AS payment_date, d.amount AS amount, d.note AS note, q.quote AS rate "
                            "FROM actions AS a "
                            "LEFT JOIN action_details AS d ON d.pid=a.id "
                            "LEFT JOIN accounts AS c ON c.id = :account_id "
@@ -730,7 +730,7 @@ class TaxesRus:
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_interest(self):
-        query = executeSQL("SELECT a.timestamp AS payment_date, d.sum AS amount, d.note AS note, q.quote AS rate "
+        query = executeSQL("SELECT a.timestamp AS payment_date, d.amount AS amount, d.note AS note, q.quote AS rate "
                            "FROM actions AS a "
                            "LEFT JOIN action_details AS d ON d.pid=a.id "
                            "LEFT JOIN accounts AS c ON c.id = :account_id "

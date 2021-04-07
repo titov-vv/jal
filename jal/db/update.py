@@ -259,7 +259,7 @@ class JalDB():
                            "VALUES (:timestamp, :account_id, :bank_id)",
                            [(":timestamp", timestamp), (":account_id", account_id), (":bank_id", broker_id)])
         pid = query.lastInsertId()
-        _ = executeSQL("INSERT INTO action_details (pid, category_id, sum, note) "
-                       "VALUES (:pid, :category_id, :sum, :note)",
-                       [(":pid", pid), (":category_id", category_id), (":sum", amount),
+        _ = executeSQL("INSERT INTO action_details (pid, category_id, amount, note) "
+                       "VALUES (:pid, :category_id, :amount, :note)",
+                       [(":pid", pid), (":category_id", category_id), (":amount", amount),
                         (":note", description)], commit=True)

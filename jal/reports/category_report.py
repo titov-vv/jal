@@ -38,19 +38,19 @@ class CategoryReportModel(QSqlTableModel):
         self._view.horizontalHeader().setSectionResizeMode(self.fieldIndex("note"), QHeaderView.Stretch)
         self._view.setColumnWidth(self.fieldIndex("account"), 200)
         self._view.setColumnWidth(self.fieldIndex("name"), 200)
-        self._view.setColumnWidth(self.fieldIndex("sum"), 200)
+        self._view.setColumnWidth(self.fieldIndex("amount"), 200)
         self._view.setColumnWidth(self.fieldIndex("timestamp"),
                                   self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
         self._timestamp_delegate = TimestampDelegate()
         self._view.setItemDelegateForColumn(self.fieldIndex("timestamp"), self._timestamp_delegate)
         self._float_delegate = FloatDelegate(2, allow_tail=False)
-        self._view.setItemDelegateForColumn(self.fieldIndex("sum"), self._float_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("amount"), self._float_delegate)
 
     def prepare(self, begin, end, category_id, group_dates):
         if category_id == 0:
             self.report_failure.emit(g_tr('Reports', "You should select category to create By Category report"))
             return False
-        self._query = executeSQL("SELECT a.timestamp, ac.name AS account, p.name, d.sum, d.note "
+        self._query = executeSQL("SELECT a.timestamp, ac.name AS account, p.name, d.amount, d.note "
                                 "FROM actions AS a "
                                 "LEFT JOIN action_details AS d ON d.pid=a.id "
                                 "LEFT JOIN agents AS p ON p.id=a.peer_id "

@@ -61,8 +61,8 @@ CREATE TABLE action_details (
                            NOT NULL,
     tag_id      INTEGER    REFERENCES tags (id) ON DELETE SET NULL
                                                 ON UPDATE CASCADE,
-    sum         REAL       NOT NULL,
-    alt_sum     REAL       DEFAULT (0)
+    amount      REAL       NOT NULL,
+    amount_alt  REAL       DEFAULT (0)
                            NOT NULL,
     note        TEXT (256) 
 );
@@ -521,21 +521,21 @@ CREATE VIEW all_operations AS
            m.qty_trid,
            m.price,
            m.fee_tax,
-           iif(coalesce(money.sum_amount, 0)> 0, money.sum_amount, coalesce(debt.sum_amount, 0)) AS t_amount,
+           iif(coalesce(money.sum_amount, 0) > 0, money.sum_amount, coalesce(debt.sum_amount, 0) ) AS t_amount,
            m.t_qty,
            c.name AS currency,
            CASE WHEN m.timestamp <= a.reconciled_on THEN 1 ELSE 0 END AS reconciled
       FROM (
                SELECT 1 AS type,
-                      iif(SUM(d.sum) < 0, -1, 1) AS subtype,
+                      iif(SUM(d.amount) < 0, -1, 1) AS subtype,
                       o.id,
                       timestamp,
                       p.name AS num_peer,
                       account_id,
-                      sum(d.sum) AS amount,
+                      sum(d.amount) AS amount,
                       o.alt_currency_id AS asset_id,
                       NULL AS qty_trid,
-                      sum(d.alt_sum) AS price,
+                      sum(d.amount_alt) AS price,
                       NULL AS fee_tax,
                       NULL AS t_qty,
                       NULL AS note,
@@ -604,7 +604,7 @@ CREATE VIEW all_operations AS
                       t.timestamp,
                       t.number AS num_peer,
                       t.account_id,
--                     (t.price * t.qty) AS amount,
+                      -(t.price * t.qty) AS amount,
                       t.asset_id,
                       t.qty AS qty_trid,
                       t.price AS price,
@@ -704,10 +704,10 @@ CREATE VIEW all_transactions AS
                SELECT 1 AS type,
                       a.id,
                       a.timestamp,
-                      CASE WHEN SUM(d.sum) < 0 THEN -COUNT(d.sum) ELSE COUNT(d.sum) END AS subtype,
+                      CASE WHEN SUM(d.amount) < 0 THEN -COUNT(d.amount) ELSE COUNT(d.amount) END AS subtype,
                       a.account_id AS account,
                       NULL AS asset,
-                      SUM(d.sum) AS amount,
+                      SUM(d.amount) AS amount,
                       d.category_id AS category,
                       NULL AS price,
                       NULL AS fee_tax,

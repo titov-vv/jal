@@ -155,7 +155,7 @@ class Ledger(QObject):
         return debit
 
     def processActionDetails(self):
-        query = executeSQL("SELECT sum as amount, category_id, tag_id FROM action_details AS d WHERE pid=:pid",
+        query = executeSQL("SELECT amount, category_id, tag_id FROM action_details AS d WHERE pid=:pid",
                            [(":pid", self.current['id'])])
         while query.next():
             amount, self.current['category'], self.current['tag'] = readSQLrecord(query)

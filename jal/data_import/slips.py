@@ -432,7 +432,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
                        [(":peer_name", self.SlipShopName.text()), (":peer_id", self.PeerEdit.selected_id)])
 
         for index, row in self.slip_lines.iterrows():
-            _ = executeSQL("INSERT INTO action_details (pid, category_id, tag_id, sum, note) "
+            _ = executeSQL("INSERT INTO action_details (pid, category_id, tag_id, amount, note) "
                            "VALUES (:pid, :category_id, :tag_id, :amount, :note)",
                            [(":pid", pid), (":category_id", row['category']), (":tag_id", row['tag']),
                             (":amount", row['sum']), (":note", row['name'])])
