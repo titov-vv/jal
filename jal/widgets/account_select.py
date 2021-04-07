@@ -1,5 +1,5 @@
 from PySide2.QtCore import Signal, Slot, Property
-from PySide2.QtWidgets import QPushButton, QComboBox, QMenu
+from PySide2.QtWidgets import QWidget, QPushButton, QComboBox, QMenu, QHBoxLayout, QCheckBox
 from PySide2.QtSql import QSqlQuery, QSqlTableModel
 from jal.constants import PredefinedAsset
 from jal.widgets.helpers import g_tr
@@ -46,18 +46,17 @@ class AccountButton(QPushButton):
         self.account_id = 0
 
 
+# ----------------------------------------------------------------------------------------------------------------------
 class CurrencyComboBox(QComboBox):
     changed = Signal(int)
 
-    def __init__(self, parent, allow_na=False):
+    def __init__(self, parent):
         QComboBox.__init__(self, parent)
         self.p_selected_id = 0
         self.model = None
         self.activated.connect(self.OnUserSelection)
 
         sql = f"SELECT id, name FROM assets WHERE type_id={PredefinedAsset.Money}"
-        if allow_na:
-            sql += " UNION SELECT NULL AS id, '" + g_tr('CurrencyComboBox', 'N/A') + "' AS name"
         self.query = QSqlQuery(db=db_connection())
         self.query.prepare(sql)
         self.query.exec_()
@@ -93,3 +92,63 @@ class CurrencyComboBox(QComboBox):
     def OnUserSelection(self, _selected_index):
         self.selected_id = self.model.record(self.currentIndex()).value("id")
         self.changed.emit(self.selected_id)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+class OptionalCurrencyComboBox(QWidget):
+    changed = Signal()
+
+    def __init__(self, parent):
+        QWidget.__init__(self, parent)
+        self.p_value = ''
+        self.layout = QHBoxLayout()
+        self.layout.setMargin(0)
+        self.null_flag = QCheckBox(parent)
+        self.null_flag.setChecked(False)
+        self.null_flag.setText('Optional currency')
+        self.layout.addWidget(self.null_flag)
+        self.currency = CurrencyComboBox(parent)
+        self.currency.setEnabled(False)
+        self.layout.addWidget(self.currency)
+        self.setLayout(self.layout)
+
+        self.setFocusProxy(self.null_flag)
+        self.null_flag.clicked.connect(self.onClick)
+        self.currency.changed.connect(self.onCurrencyChange)
+
+    def setText(self, text):
+        self.null_flag.setText(text)
+
+    def getId(self):
+        if self.p_value:
+            return self.p_value
+        else:
+            return None
+
+    def setId(self, new_value):
+        if self.p_value == new_value:
+            return
+        self.p_value = new_value
+        self.updateView()
+
+    currency_id = Property(str, getId, setId, notify=changed, user=True)
+
+    def updateView(self):
+        has_value = True if self.p_value else False
+        if has_value:
+            self.currency.selected_id = int(self.p_value)
+        self.null_flag.setChecked(has_value)
+        self.currency.setEnabled(has_value)
+
+    @Slot()
+    def onClick(self):
+        if self.null_flag.isChecked():
+            self.currency_id = str(self.currency.selected_id)
+        else:
+            self.currency_id = ''
+        self.changed.emit()
+
+    @Slot()
+    def onCurrencyChange(self, _id):
+        self.currency_id = str(self.currency.selected_id)
+        self.changed.emit()
