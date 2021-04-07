@@ -1,6 +1,7 @@
 from PySide2.QtCore import Signal, Slot, Property
 from PySide2.QtWidgets import QPushButton, QComboBox, QMenu
-from PySide2.QtSql import QSqlTableModel
+from PySide2.QtSql import QSqlQuery, QSqlTableModel
+from jal.constants import PredefinedAsset
 from jal.widgets.helpers import g_tr
 from jal.db.helpers import db_connection, readSQL
 from jal.widgets.reference_dialogs import AccountListDialog
@@ -54,8 +55,11 @@ class CurrencyComboBox(QComboBox):
         self.model = None
         self.activated.connect(self.OnUserSelection)
 
+        self.query = QSqlQuery(db=db_connection())
+        self.query.prepare(f"SELECT id, name FROM assets WHERE type_id={PredefinedAsset.Money}")
+        self.query.exec_()
         self.model = QSqlTableModel(db=db_connection())
-        self.model.setTable("currencies")
+        self.model.setQuery(self.query)
         self.model.select()
         self.setModel(self.model)
         self.setModelColumn(self.model.fieldIndex("name"))
@@ -70,7 +74,7 @@ class CurrencyComboBox(QComboBox):
         if self.p_selected_id == new_id:
             return
         self.p_selected_id = new_id
-        name = readSQL(f"SELECT name FROM currencies WHERE id = :id", [(":id", self.p_selected_id)])
+        name = readSQL("SELECT name FROM currencies WHERE id = :id", [(":id", self.p_selected_id)])
         if self.currentIndex() == self.findText(name):
             return
         self.setCurrentIndex(self.findText(name))
