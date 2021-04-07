@@ -2,7 +2,7 @@ from PySide2.QtCore import Signal, Slot, Property
 from PySide2.QtWidgets import QPushButton, QComboBox, QMenu
 from PySide2.QtSql import QSqlTableModel
 from jal.widgets.helpers import g_tr
-from jal.db.helpers import db_connection, get_field_by_id_from_table
+from jal.db.helpers import db_connection, readSQL
 from jal.widgets.reference_dialogs import AccountListDialog
 
 ########################################################################################################################
@@ -52,15 +52,13 @@ class CurrencyComboBox(QComboBox):
         QComboBox.__init__(self, parent)
         self.p_selected_id = 0
         self.model = None
-        self.table_name = 'currencies'
-        self.field_name = 'name'
         self.activated.connect(self.OnUserSelection)
 
         self.model = QSqlTableModel(db=db_connection())
-        self.model.setTable(self.table_name)
+        self.model.setTable("currencies")
         self.model.select()
         self.setModel(self.model)
-        self.setModelColumn(self.model.fieldIndex(self.field_name))
+        self.setModelColumn(self.model.fieldIndex("name"))
 
     def isCustom(self):
         return True
@@ -72,7 +70,7 @@ class CurrencyComboBox(QComboBox):
         if self.p_selected_id == new_id:
             return
         self.p_selected_id = new_id
-        name = get_field_by_id_from_table(self.table_name, self.field_name, self.p_selected_id)
+        name = readSQL(f"SELECT name FROM currencies WHERE id = :id", [(":id", self.p_selected_id)])
         if self.currentIndex() == self.findText(name):
             return
         self.setCurrentIndex(self.findText(name))
