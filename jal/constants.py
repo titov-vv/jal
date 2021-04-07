@@ -84,6 +84,7 @@ class PredefinedAsset:
     ETF = 4
     Commodity = 5
     Derivative = 6
+    Forex = 7
 
 
 class PredefinedPeer:
