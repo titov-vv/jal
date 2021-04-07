@@ -3,6 +3,8 @@ from PySide2.QtWidgets import QWidget, QPushButton, QComboBox, QMenu, QHBoxLayou
 from PySide2.QtSql import QSqlQuery, QSqlTableModel
 from jal.constants import PredefinedAsset
 from jal.widgets.helpers import g_tr
+from jal.db.update import JalDB
+from jal.db.settings import JalSettings
 from jal.db.helpers import db_connection, readSQL
 from jal.widgets.reference_dialogs import AccountListDialog
 
@@ -56,9 +58,8 @@ class CurrencyComboBox(QComboBox):
         self.model = None
         self.activated.connect(self.OnUserSelection)
 
-        sql = f"SELECT id, name FROM assets WHERE type_id={PredefinedAsset.Money}"
         self.query = QSqlQuery(db=db_connection())
-        self.query.prepare(sql)
+        self.query.prepare(f"SELECT id, name FROM assets WHERE type_id={PredefinedAsset.Money}")
         self.query.exec_()
         self.model = QSqlTableModel(db=db_connection())
         self.model.setQuery(self.query)
@@ -97,6 +98,7 @@ class CurrencyComboBox(QComboBox):
 # ----------------------------------------------------------------------------------------------------------------------
 class OptionalCurrencyComboBox(QWidget):
     changed = Signal()
+    updated = Signal(str)
 
     def __init__(self, parent):
         QWidget.__init__(self, parent)
@@ -130,6 +132,8 @@ class OptionalCurrencyComboBox(QWidget):
             return
         self.p_value = new_value
         self.updateView()
+        name = JalDB().get_asset_name(self.p_value)
+        self.updated.emit(name)
 
     currency_id = Property(str, getId, setId, notify=changed, user=True)
 
@@ -143,6 +147,8 @@ class OptionalCurrencyComboBox(QWidget):
     @Slot()
     def onClick(self):
         if self.null_flag.isChecked():
+            if self.currency.selected_id == 0:
+                self.currency.selected_id = JalSettings().getValue('BaseCurrency')
             self.currency_id = str(self.currency.selected_id)
         else:
             self.currency_id = ''
