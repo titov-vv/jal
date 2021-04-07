@@ -51,7 +51,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.timestamp_editor.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
         self.account_widget = AccountSelector(self)
         self.peer_widget = PeerSelector(self)
-        self.a_currency = CurrencyComboBox(self)
+        self.a_currency = CurrencyComboBox(self, allow_na=True)
         self.add_button = QPushButton(self)
         self.add_button.setText(" +️ ")
         self.add_button.setFont(self.bold_font)

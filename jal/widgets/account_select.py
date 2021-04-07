@@ -49,14 +49,17 @@ class AccountButton(QPushButton):
 class CurrencyComboBox(QComboBox):
     changed = Signal(int)
 
-    def __init__(self, parent):
+    def __init__(self, parent, allow_na=False):
         QComboBox.__init__(self, parent)
         self.p_selected_id = 0
         self.model = None
         self.activated.connect(self.OnUserSelection)
 
+        sql = f"SELECT id, name FROM assets WHERE type_id={PredefinedAsset.Money}"
+        if allow_na:
+            sql += " UNION SELECT NULL AS id, '" + g_tr('CurrencyComboBox', 'N/A') + "' AS name"
         self.query = QSqlQuery(db=db_connection())
-        self.query.prepare(f"SELECT id, name FROM assets WHERE type_id={PredefinedAsset.Money}")
+        self.query.prepare(sql)
         self.query.exec_()
         self.model = QSqlTableModel(db=db_connection())
         self.model.setQuery(self.query)
