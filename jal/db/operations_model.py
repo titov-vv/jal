@@ -205,7 +205,12 @@ class OperationsModel(QAbstractTableModel):
                 return [self._data[row][self.COL_AMOUNT], self._data[row][self.COL_QTY]]
             elif self._data[row][self.COL_TYPE] == TransactionType.Dividend:
                 return [self._data[row][self.COL_AMOUNT], -self._data[row][self.COL_FEE_TAX]]
-            elif self._data[row][self.COL_TYPE] == TransactionType.Action or self._data[row][self.COL_TYPE] == TransactionType.Transfer:
+            elif self._data[row][self.COL_TYPE] == TransactionType.Action:
+                if self._data[row][self.COL_ASSET] != '':
+                    return [self._data[row][self.COL_AMOUNT], self._data[row][self.COL_PRICE]]
+                else:
+                    return [self._data[row][self.COL_AMOUNT]]
+            elif self._data[row][self.COL_TYPE] == TransactionType.Transfer:
                 return [self._data[row][self.COL_AMOUNT]]
             elif self._data[row][self.COL_TYPE] == TransactionType.CorporateAction:
                 if self._data[row][self.COL_SUBTYPE] == CorporateAction.SpinOff or self._data[row][self.COL_SUBTYPE] == CorporateAction.StockDividend:
