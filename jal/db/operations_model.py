@@ -162,7 +162,16 @@ class OperationsModel(QAbstractTableModel):
                     return self._data[row][self.COL_ACCOUNT] + " <- " + self._data[row][self.COL_NOTE2]
         elif column == 3:
             if self._data[row][self.COL_TYPE] == TransactionType.Action:
-                return self._data[row][self.COL_NUMBER_PEER]
+                note = self._data[row][self.COL_NUMBER_PEER]
+                if self._data[row][self.COL_ASSET] != '' and self._data[row][self.COL_FEE_TAX] != 0:
+                    note += "\n" + g_tr('OperationsModel', "Rate: ")
+                    if self._data[row][self.COL_FEE_TAX] >= 1:
+                        note += f"{self._data[row][self.COL_FEE_TAX]:.4f} " \
+                                f"{self._data[row][self.COL_ASSET]}/{self._data[row][self.COL_CURRENCY]}"
+                    else:
+                        note += f"{1/self._data[row][self.COL_FEE_TAX]:.4f} " \
+                                f"{self._data[row][self.COL_CURRENCY]}/{self._data[row][self.COL_ASSET]}"
+                return note
             elif self._data[row][self.COL_TYPE] == TransactionType.Transfer:
                 rate = 0 if self._data[row][self.COL_PRICE] == '' else self._data[row][self.COL_PRICE]
                 if self._data[row][self.COL_CURRENCY] != self._data[row][self.COL_NUMBER_PEER]:

@@ -536,7 +536,7 @@ CREATE VIEW all_operations AS
                       o.alt_currency_id AS asset_id,
                       NULL AS qty_trid,
                       sum(d.amount_alt) AS price,
-                      NULL AS fee_tax,
+                      coalesce(sum(d.amount_alt)/sum(d.amount), 0) AS fee_tax,
                       NULL AS t_qty,
                       NULL AS note,
                       NULL AS note2
