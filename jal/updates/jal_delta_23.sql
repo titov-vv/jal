@@ -453,5 +453,5 @@ CREATE VIEW all_operations AS
 PRAGMA foreign_keys = 1;
 --------------------------------------------------------------------------------
 -- Set new DB schema version
-UPDATE settings SET value=22 WHERE name='SchemaVersion';
+UPDATE settings SET value=23 WHERE name='SchemaVersion';
 COMMIT;
