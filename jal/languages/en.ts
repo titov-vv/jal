@@ -1501,19 +1501,24 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="178"/>
+        <location filename="../db/operations_model.py" line="187"/>
         <source>Error. Zero rate</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="182"/>
+        <location filename="../db/operations_model.py" line="191"/>
         <source>Tax: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="199"/>
+        <location filename="../db/operations_model.py" line="208"/>
         <source> cost basis</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../db/operations_model.py" line="167"/>
+        <source>Rate: </source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

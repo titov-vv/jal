@@ -1506,19 +1506,24 @@ do you want to save it?</source>
         <translation>Дивиденд акциями: {after} {new}</translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="178"/>
+        <location filename="../db/operations_model.py" line="187"/>
         <source>Error. Zero rate</source>
         <translation>Ошибка. Нулевой курс</translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="182"/>
+        <location filename="../db/operations_model.py" line="191"/>
         <source>Tax: </source>
         <translation>Налог: </translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="199"/>
+        <location filename="../db/operations_model.py" line="208"/>
         <source> cost basis</source>
         <translation> от базового актива</translation>
+    </message>
+    <message>
+        <location filename="../db/operations_model.py" line="167"/>
+        <source>Rate: </source>
+        <translation>Курс: </translation>
     </message>
 </context>
 <context>
