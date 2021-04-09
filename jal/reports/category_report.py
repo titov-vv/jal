@@ -7,6 +7,7 @@ from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 
 
 #-----------------------------------------------------------------------------------------------------------------------
+# TODO Reimplement report based on 'ledger' DB table in order to include all types of operations
 class CategoryReportModel(QSqlTableModel):
     def __init__(self, parent_view):
         self._columns = [("timestamp", g_tr("Reports", "Timestamp")),

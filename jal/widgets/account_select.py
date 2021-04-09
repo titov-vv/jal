@@ -31,7 +31,10 @@ class AccountButton(QPushButton):
 
     def setId(self, account_id):
         self.p_account_id = account_id
-        self.setText(JalDB().get_account_name(account_id))
+        if self.p_account_id:
+            self.setText(JalDB().get_account_name(account_id))
+        else:
+            self.setText(g_tr('AccountButton', "ANY"))
         self.changed.emit(self.p_account_id)
 
     account_id = Property(int, getId, setId, notify=changed)

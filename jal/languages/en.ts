@@ -30,6 +30,11 @@
         <source>Any account</source>
         <translation></translation>
     </message>
+    <message>
+        <location filename="../widgets/account_select.py" line="37"/>
+        <source>ANY</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>AddAssetDialog</name>
@@ -196,77 +201,77 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="268"/>
+        <location filename="../reports/dlsg.py" line="269"/>
         <source>Declaration file has no &apos;DeclForeign&apos; section.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="283"/>
+        <location filename="../reports/dlsg.py" line="284"/>
         <source>Unexpected declaration file header:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="286"/>
+        <location filename="../reports/dlsg.py" line="287"/>
         <source>Declaration file is for year:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="305"/>
+        <location filename="../reports/dlsg.py" line="306"/>
         <source>Invalid record size at position</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="312"/>
+        <location filename="../reports/dlsg.py" line="313"/>
         <source>Declaration file content:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="330"/>
+        <location filename="../reports/dlsg.py" line="331"/>
         <source>Sections loaded:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="332"/>
+        <location filename="../reports/dlsg.py" line="333"/>
         <source>Section </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="332"/>
+        <location filename="../reports/dlsg.py" line="333"/>
         <source>loaded as </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="336"/>
+        <location filename="../reports/dlsg.py" line="337"/>
         <source>Writing file:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="342"/>
+        <location filename="../reports/dlsg.py" line="343"/>
         <source>Declaration to write:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="216"/>
+        <location filename="../reports/dlsg.py" line="217"/>
         <source>Dividend wasn&apos;t written to russian tax form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="231"/>
+        <location filename="../reports/dlsg.py" line="232"/>
         <source>Operation with stock wasn&apos;t written to russian tax form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="245"/>
+        <location filename="../reports/dlsg.py" line="246"/>
         <source>Operation with derivative wasn&apos;t written to russian tax form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="254"/>
+        <location filename="../reports/dlsg.py" line="255"/>
         <source>Currency code isn&apos;t known for russian tax form:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="259"/>
+        <location filename="../reports/dlsg.py" line="260"/>
         <source>Country code isn&apos;t known for russian tax form (check account settings):</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1141,52 +1146,52 @@ Application will be terminated now</source>
 <context>
     <name>JalDB</name>
     <message>
-        <location filename="../db/update.py" line="148"/>
+        <location filename="../db/update.py" line="151"/>
         <source>Reg.number updated for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="164"/>
+        <location filename="../db/update.py" line="167"/>
         <source>Quote loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="175"/>
+        <location filename="../db/update.py" line="178"/>
         <source>Failed to add new asset: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="184"/>
+        <location filename="../db/update.py" line="187"/>
         <source>Dividend already exists: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="200"/>
+        <location filename="../db/update.py" line="203"/>
         <source>Trade already exists: #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="221"/>
+        <location filename="../db/update.py" line="224"/>
         <source>Transfer/Exchange already exists: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="246"/>
+        <location filename="../db/update.py" line="249"/>
         <source>Corporate action already exists: #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="134"/>
+        <location filename="../db/update.py" line="137"/>
         <source>Symbol updated </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="141"/>
+        <location filename="../db/update.py" line="144"/>
         <source>ISIN mismatch for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="85"/>
+        <location filename="../db/update.py" line="88"/>
         <source>Account not found: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1312,7 +1317,7 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="280"/>
+        <location filename="../widgets/main_window.py" line="275"/>
         <source>Estimate Russian Tax</source>
         <translation></translation>
     </message>
@@ -1383,17 +1388,17 @@ Application will be terminated now</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="188"/>
+        <location filename="../widgets/main_window.py" line="187"/>
         <source>Restart required</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="188"/>
+        <location filename="../widgets/main_window.py" line="187"/>
         <source>Language was changed to </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="188"/>
+        <location filename="../widgets/main_window.py" line="187"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation></translation>
@@ -1414,33 +1419,33 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="312"/>
+        <location filename="../widgets/main_window.py" line="307"/>
         <source>You have unsaved changes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="312"/>
+        <location filename="../widgets/main_window.py" line="307"/>
         <source> has uncommitted changes,
 do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="339"/>
+        <location filename="../widgets/main_window.py" line="334"/>
         <source>Confirmation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="339"/>
+        <location filename="../widgets/main_window.py" line="334"/>
         <source>Are you sure to delete selected transacion(s)?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="212"/>
+        <location filename="../widgets/main_window.py" line="211"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="216"/>
+        <location filename="../widgets/main_window.py" line="215"/>
         <source>&lt;p&gt;More information, manuals and problem reports are at &lt;a href=https://github.com/titov-vv/jal&gt;github home page&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Questions, comments, donations: &lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1899,17 +1904,17 @@ do you want to save it?</source>
 <context>
     <name>Reports</name>
     <message>
-        <location filename="../reports/reports.py" line="59"/>
+        <location filename="../reports/reports.py" line="61"/>
         <source>Save report to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="68"/>
+        <location filename="../reports/reports.py" line="70"/>
         <source>Report</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="62"/>
+        <location filename="../reports/reports.py" line="64"/>
         <source>Excel files (*.xlsx)</source>
         <translation></translation>
     </message>
@@ -1954,22 +1959,22 @@ do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/category_report.py" line="12"/>
+        <location filename="../reports/category_report.py" line="13"/>
         <source>Timestamp</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/category_report.py" line="13"/>
+        <location filename="../reports/category_report.py" line="14"/>
         <source>Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/category_report.py" line="14"/>
+        <location filename="../reports/category_report.py" line="15"/>
         <source>Peer Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/category_report.py" line="15"/>
+        <location filename="../reports/category_report.py" line="16"/>
         <source>Amount</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1979,7 +1984,7 @@ do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/category_report.py" line="51"/>
+        <location filename="../reports/category_report.py" line="52"/>
         <source>You should select category to create By Category report</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2121,6 +2126,11 @@ do you want to save it?</source>
     <message>
         <location filename="../reports/deals_report.py" line="20"/>
         <source>P/L, %</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="56"/>
+        <source>Report creation error</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

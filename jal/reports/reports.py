@@ -53,7 +53,7 @@ class Reports(QObject):
         try:
             self.model.prepare(begin, end, account_id, group_dates)
         except ValueError as e:
-            QMessageBox().warning(None, g_tr('Reports', "Confirmation"), str(e), QMessageBox.Ok)
+            QMessageBox().warning(None, g_tr('Reports', "Report creation error"), str(e), QMessageBox.Ok)
             return
         self.model.configureView()
 
