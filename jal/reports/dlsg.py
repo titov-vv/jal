@@ -162,6 +162,14 @@ class DLSG:
         'EUR': ('978', 'Евро', 100),
         'GBP': ('826', 'Фунт стерлингов', 100),
         'CNY': ('156', 'Юань', 1000),
+        'CAD': ('124', 'Канадский доллар', 1),
+        'HKD': ('344', 'Гонконгский доллар', 10),
+        'INR': ('356', 'Индийская рупия', 10),
+        'JPY': ('392', 'Иена', 100),
+        'SGD': ('702', 'Сингапурский доллар', 1),
+        'CHF': ('756', 'Швейцарский франк', 1),
+        'TRY': ('949', 'Турецкая лира', 10),
+        'BRL': ('986', 'Бразильский реал', 1)
     }
     codes = {
         'dividend': ('14', '1010', 'Дивиденды', '0'),
@@ -202,7 +210,11 @@ class DLSG:
         foreign_section = self.get_section('DeclForeign')
         if foreign_section is None:
             return
-        country_code, currency_code = self.get_country_currency(country, currency_name)
+        try:
+            country_code, currency_code = self.get_country_currency(country, currency_name)
+        except ValueError:
+            logging.warning(g_tr('DLSG', "Dividend wasn't written to russian tax form"))
+            return
         source = "Дивиденд от " + description
         foreign_section.add_income(self.codes['dividend'], country_code, source, timestamp,
                                    currency_code, amount, amount_rub, tax, tax_rub, rate)
@@ -213,7 +225,11 @@ class DLSG:
         foreign_section = self.get_section('DeclForeign')
         if foreign_section is None:
             return
-        country_code, currency_code = self.get_country_currency(country, currency_name)
+        try:
+            country_code, currency_code = self.get_country_currency(country, currency_name)
+        except ValueError:
+            logging.warning(g_tr('DLSG', "Operation with stock wasn't written to russian tax form"))
+            return
         foreign_section.add_income(self.codes['stock'], country_code, source, timestamp,
                                    currency_code, amount, income_rub, 0.0, 0.0, rate, deduction=spending_rub)
 
@@ -223,7 +239,11 @@ class DLSG:
         foreign_section = self.get_section('DeclForeign')
         if foreign_section is None:
             return
-        country_code, currency_code = self.get_country_currency(country, currency_name)
+        try:
+            country_code, currency_code = self.get_country_currency(country, currency_name)
+        except ValueError:
+            logging.warning(g_tr('DLSG', "Operation with derivative wasn't written to russian tax form"))
+            return
         foreign_section.add_income(self.codes['derivative'], country_code, source, timestamp,
                                    currency_code, amount, income_rub, 0.0, 0.0, rate, deduction=spending_rub)
 
@@ -231,12 +251,13 @@ class DLSG:
         try:
             currency_code = self.currencies[currency_name]
         except:
-            logging.error(g_tr('DLSG', "Currency isn't known for tax form:") + f" {currency_name}")
+            logging.error(g_tr('DLSG', "Currency code isn't known for russian tax form:") + f" {currency_name}")
             raise ValueError
         try:
             country_code = self.countries[country]
         except:
-            logging.error(g_tr('DLSG', "Country isn't known for tax form (check account settings):") + f" {country}")
+            logging.error(g_tr('DLSG', "Country code isn't known for russian tax form (check account settings):") +
+                          f" {country}")
             raise ValueError
         return country_code, currency_code
 

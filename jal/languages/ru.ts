@@ -197,64 +197,79 @@
         <translation>Секция DeclForeign некорректна:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="234"/>
-        <source>Currency isn&apos;t known for tax form:</source>
-        <translation>Неизвестная валюта для 3-НДФЛ:</translation>
-    </message>
-    <message>
-        <location filename="../reports/dlsg.py" line="247"/>
+        <location filename="../reports/dlsg.py" line="268"/>
         <source>Declaration file has no &apos;DeclForeign&apos; section.</source>
         <translation>Секция &apos;DeclForeign&apos; отсутствует в файле декларации.</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="262"/>
+        <location filename="../reports/dlsg.py" line="283"/>
         <source>Unexpected declaration file header:</source>
         <translation>Неизвестный заголовок файла декларации:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="265"/>
+        <location filename="../reports/dlsg.py" line="286"/>
         <source>Declaration file is for year:</source>
         <translation>Файл декларации для года:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="284"/>
+        <location filename="../reports/dlsg.py" line="305"/>
         <source>Invalid record size at position</source>
         <translation>Некорректный размер записи в позиции</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="291"/>
+        <location filename="../reports/dlsg.py" line="312"/>
         <source>Declaration file content:</source>
         <translation>Содержимое файла декларации:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="309"/>
+        <location filename="../reports/dlsg.py" line="330"/>
         <source>Sections loaded:</source>
         <translation>Загружено секций:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="311"/>
+        <location filename="../reports/dlsg.py" line="332"/>
         <source>Section </source>
         <translation>Секция </translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="311"/>
+        <location filename="../reports/dlsg.py" line="332"/>
         <source>loaded as </source>
         <translation>загружена как </translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="315"/>
+        <location filename="../reports/dlsg.py" line="336"/>
         <source>Writing file:</source>
         <translation>Запись файла:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="321"/>
+        <location filename="../reports/dlsg.py" line="342"/>
         <source>Declaration to write:</source>
         <translation>Декларация для записи:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="239"/>
-        <source>Country isn&apos;t known for tax form (check account settings):</source>
-        <translation>Неизвестная страна для 3-НДФЛ (проверьте настройки счёта):</translation>
+        <location filename="../reports/dlsg.py" line="216"/>
+        <source>Dividend wasn&apos;t written to russian tax form</source>
+        <translation>Дивиденд не был записан в 3-НДФЛ</translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="231"/>
+        <source>Operation with stock wasn&apos;t written to russian tax form</source>
+        <translation>Операция с ЦБ не была записана в 3-НДФЛ</translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="245"/>
+        <source>Operation with derivative wasn&apos;t written to russian tax form</source>
+        <translation>Операция с ПФИ не была записана в 3-НДФЛ</translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="254"/>
+        <source>Currency code isn&apos;t known for russian tax form:</source>
+        <translation>Код валюты для 3-НДФЛ не найден:</translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="259"/>
+        <source>Country code isn&apos;t known for russian tax form (check account settings):</source>
+        <translation>Код страны для 3-НДФЛ не найден (проверьте настройки счета):</translation>
     </message>
 </context>
 <context>

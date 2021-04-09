@@ -196,64 +196,79 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="234"/>
-        <source>Currency isn&apos;t known for tax form:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/dlsg.py" line="247"/>
+        <location filename="../reports/dlsg.py" line="268"/>
         <source>Declaration file has no &apos;DeclForeign&apos; section.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="262"/>
+        <location filename="../reports/dlsg.py" line="283"/>
         <source>Unexpected declaration file header:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="265"/>
+        <location filename="../reports/dlsg.py" line="286"/>
         <source>Declaration file is for year:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="284"/>
+        <location filename="../reports/dlsg.py" line="305"/>
         <source>Invalid record size at position</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="291"/>
+        <location filename="../reports/dlsg.py" line="312"/>
         <source>Declaration file content:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="309"/>
+        <location filename="../reports/dlsg.py" line="330"/>
         <source>Sections loaded:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="311"/>
+        <location filename="../reports/dlsg.py" line="332"/>
         <source>Section </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="311"/>
+        <location filename="../reports/dlsg.py" line="332"/>
         <source>loaded as </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="315"/>
+        <location filename="../reports/dlsg.py" line="336"/>
         <source>Writing file:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="321"/>
+        <location filename="../reports/dlsg.py" line="342"/>
         <source>Declaration to write:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="239"/>
-        <source>Country isn&apos;t known for tax form (check account settings):</source>
-        <translation></translation>
+        <location filename="../reports/dlsg.py" line="216"/>
+        <source>Dividend wasn&apos;t written to russian tax form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="231"/>
+        <source>Operation with stock wasn&apos;t written to russian tax form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="245"/>
+        <source>Operation with derivative wasn&apos;t written to russian tax form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="254"/>
+        <source>Currency code isn&apos;t known for russian tax form:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/dlsg.py" line="259"/>
+        <source>Country code isn&apos;t known for russian tax form (check account settings):</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
