@@ -67,6 +67,9 @@ class JalDB():
     def get_asset_name(self, asset_id):
         return readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
 
+    def get_account_name(self, account_id):
+        return readSQL("SELECT name FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
+
     # Searches for account_id by account number and optional currency
     # Returns: account_id or None if no account was found
     def get_account_id(self, accountNumber, accountCurrency=''):
