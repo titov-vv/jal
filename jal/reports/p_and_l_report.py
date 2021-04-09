@@ -50,8 +50,7 @@ class ProfitLossReportModel(QSqlTableModel):
 
     def prepare(self, begin, end, account_id, group_dates):
         if account_id == 0:
-            self.report_failure.emit(g_tr('Reports', "You should select account to create Profit/Loss report"))
-            return False
+            raise ValueError(g_tr('Reports', "You should select account to create Profit/Loss report"))
         self._query = executeSQL(
             "WITH "
             "_months AS ("

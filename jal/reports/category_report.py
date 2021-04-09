@@ -1,4 +1,4 @@
-from PySide2.QtCore import Qt
+from PySide2.QtCore import Qt, Signal
 from PySide2.QtSql import QSqlTableModel
 from PySide2.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection, executeSQL
@@ -48,8 +48,7 @@ class CategoryReportModel(QSqlTableModel):
 
     def prepare(self, begin, end, category_id, group_dates):
         if category_id == 0:
-            self.report_failure.emit(g_tr('Reports', "You should select category to create By Category report"))
-            return False
+            raise ValueError(g_tr('Reports', "You should select category to create By Category report"))
         self._query = executeSQL("SELECT a.timestamp, ac.name AS account, p.name, d.amount, d.note "
                                 "FROM actions AS a "
                                 "LEFT JOIN action_details AS d ON d.pid=a.id "

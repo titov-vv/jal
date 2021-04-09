@@ -78,7 +78,6 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
         # Setup reports tab
         self.reports = Reports(self.ReportTableView, self.ReportTreeView)
-        self.reports.report_failure.connect(self.onReportFailure)
 
         # Customize UI configuration
         self.balances_model = BalancesModel(self.BalancesTableView)
@@ -252,10 +251,6 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
             self.reports.runReport(report_type, begin, end, self.ReportCategoryEdit.selected_id, group_dates)
         else:
             self.reports.runReport(report_type, begin, end, self.ReportAccountBtn.account_id, group_dates)
-
-    @Slot()
-    def onReportFailure(self, error_msg):
-        self.StatusBar.showMessage(error_msg, timeout=30000)
 
     @Slot()
     def OnOperationsRangeChange(self, range_index):

@@ -1,6 +1,6 @@
 from enum import Enum, auto
-from PySide2.QtWidgets import QFileDialog
-from PySide2.QtCore import Qt, QObject, Signal
+from PySide2.QtWidgets import QFileDialog, QMessageBox
+from PySide2.QtCore import Qt, QObject
 from jal.widgets.helpers import g_tr
 from jal.reports.helpers import XLSX
 from jal.reports.income_spending_report import IncomeSpendingReport
@@ -19,8 +19,6 @@ class ReportType(Enum):
 
 #-----------------------------------------------------------------------------------------------------------------------
 class Reports(QObject):
-    report_failure = Signal(str)
-
     def __init__(self, report_table_view, report_tree_view):
         super().__init__()
 
@@ -52,7 +50,11 @@ class Reports(QObject):
         else:
             assert False
 
-        self.model.prepare(begin, end, account_id, group_dates)
+        try:
+            self.model.prepare(begin, end, account_id, group_dates)
+        except ValueError as e:
+            QMessageBox().warning(None, g_tr('Reports', "Confirmation"), str(e), QMessageBox.Ok)
+            return
         self.model.configureView()
 
     def saveReport(self):
