@@ -76,11 +76,11 @@ class OperationsModel(QAbstractTableModel):
         self._amount_delegate = None
         self._data = []
         self._row_count = 0
-        self._table_name = 'all_operations'
         self._query = QSqlQuery(db_connection())
         self._begin = 0
         self._end = 0
         self._account = 0
+        self._text_filter = ''
 
         self.prepareData()
 
@@ -299,7 +299,15 @@ class OperationsModel(QAbstractTableModel):
 
     @Slot()
     def filterText(self, filter):
-        pass  # TODO add free text search
+        if filter:
+            self._text_filter = f" AND (num_peer LIKE '%{filter}%' COLLATE NOCASE "\
+                                f"OR note LIKE '%{filter}%' COLLATE NOCASE "\
+                                f"OR note2 LIKE '%{filter}%' COLLATE NOCASE "\
+                                f"OR asset LIKE '%{filter}%' COLLATE NOCASE "\
+                                f"OR asset_name LIKE '%{filter}%' COLLATE NOCASE)"
+        else:
+            self._text_filter = ''
+        self.prepareData()
 
     def update(self):
         self.prepareData()
@@ -332,7 +340,8 @@ class OperationsModel(QAbstractTableModel):
         else:
             count_pfx = "SELECT COUNT(*) "
             query_pfx = "SELECT * "
-            query_suffix = f"FROM {self._table_name} AS o WHERE o.timestamp>={self._begin} AND o.timestamp<={self._end}"
+            query_suffix = f"FROM all_operations AS o WHERE o.timestamp>={self._begin} AND o.timestamp<={self._end}" + \
+                           self._text_filter
             if self._account:
                 query_suffix = query_suffix + f" AND o.account_id = {self._account}"
             self._row_count = readSQL(count_pfx + query_suffix)

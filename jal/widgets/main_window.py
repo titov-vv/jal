@@ -147,7 +147,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.ShowInactiveCheckBox.stateChanged.connect(self.BalancesTableView.model().toggleActive)
         self.DateRangeCombo.currentIndexChanged.connect(self.OnOperationsRangeChange)
         self.ChooseAccountBtn.changed.connect(self.OperationsTableView.model().setAccount)
-        self.SearchString.textChanged.connect(self.OperationsTableView.model().filterText)
+        self.SearchString.editingFinished.connect(self.updateOperationsFilter)
         self.HoldingsTableView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
         self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
         self.OperationsTableView.customContextMenuRequested.connect(self.onOperationContextMenu)
@@ -359,6 +359,10 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
             return
         self.checkForUncommittedChanges()
         self.OperationsTabs.widget(operation_type).copyNew()
+
+    @Slot()
+    def updateOperationsFilter(self):
+        self.OperationsTableView.model().filterText(self.SearchString.text())
 
     @Slot()
     def onDataDialog(self, dlg_type):
