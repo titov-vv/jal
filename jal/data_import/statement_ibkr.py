@@ -525,7 +525,7 @@ class IBKR:
         for option in options:
             try:
                 description = transaction_desctiption[option['transactionType']]
-                if description:
+                if description:   # TODO add condition to check that update found relevant trade
                     _ = executeSQL("UPDATE trades SET note=:description WHERE "
                                    "account_id=:account_id AND asset_id=:asset_id AND number=:trade_id",
                                    [(":description", description), (":account_id", option['accountId']),
