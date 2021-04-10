@@ -14,9 +14,9 @@ class ReportTreeItem():
         self._id = id
         self.name = name
         self._y_s = int(datetime.utcfromtimestamp(begin).strftime('%Y'))
-        self._m_s = int(datetime.utcfromtimestamp(begin).strftime('%-m'))
+        self._m_s = int(datetime.utcfromtimestamp(begin).strftime('%m').lstrip('0'))
         self._y_e = int(datetime.utcfromtimestamp(end).strftime('%Y'))
-        self._m_e = int(datetime.utcfromtimestamp(end).strftime('%-m'))
+        self._m_e = int(datetime.utcfromtimestamp(end).strftime('%m').lstrip('0'))
         # amounts is 2D-array of per month amounts:
         # amounts[year][month] - amount for particular month
         # amounts[year][0] - total per year
