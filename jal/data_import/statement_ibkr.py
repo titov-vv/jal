@@ -22,6 +22,7 @@ class IBKRCashOp:
 
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKR:
+    NotSupported = -1
     BondPricipal = 1000
     CancelledFlag = 'Ca'
     PaymentInLiueOfDividend = 'PAYMENT IN LIEU OF DIVIDEND'
@@ -39,6 +40,7 @@ class IBKR:
         'BOND': PredefinedAsset.Bond,
         'OPT': PredefinedAsset.Derivative,
         'FUT': PredefinedAsset.Derivative
+#        'WAR': PredefinedAsset.Derivative
     }
 
     CorpAction = {
@@ -95,11 +97,8 @@ class IBKR:
         try:
             return IBKR.AssetType[data.attrib[name]]
         except KeyError:
-            if default_value is not None:
-                return default_value
-            else:
-                logging.error(g_tr('IBKR', "Asset type isn't supported: ") + f"{data.attrib[name]}")
-                return None
+            logging.warning(g_tr('IBKR', "Asset type isn't supported: ") + f"{data.attrib[name]}")
+            return default_value
 
     @staticmethod
     def flCorpActionType(data, name, default_value):
@@ -108,11 +107,8 @@ class IBKR:
         try:
             return IBKR.CorpAction[data.attrib[name]]
         except KeyError:
-            if default_value is not None:
-                return default_value
-            else:
-                logging.error(g_tr('IBKR', "Corporate action isn't supported: ") + f"{data.attrib[name]}")
-                return None
+            logging.warning(g_tr('IBKR', "Corporate action isn't supported: ") + f"{data.attrib[name]}")
+            return default_value
 
     @staticmethod
     def flCashOpType(data, name, default_value):
@@ -231,13 +227,13 @@ class IBKR:
             'SecuritiesInfo': {'tag': 'SecurityInfo',
                                'level': '',
                                'values': [('symbol', IBKR.flString, None),
-                                          ('assetCategory', IBKR.flAssetType, None),
+                                          ('assetCategory', IBKR.flAssetType, IBKR.NotSupported),
                                           ('subCategory', IBKR.flString, ''),
                                           ('description', IBKR.flString, None),
                                           ('isin', IBKR.flString, '')]},
             'Trades': {'tag': 'Trade',
                        'level': 'EXECUTION',
-                       'values': [('assetCategory', IBKR.flAssetType, None),
+                       'values': [('assetCategory', IBKR.flAssetType, IBKR.NotSupported),
                                   ('symbol', IBKR.flAsset, None),
                                   ('accountId', IBKR.flAccount, None),
                                   ('dateTime', IBKR.flTimestamp, None),
@@ -264,12 +260,12 @@ class IBKR:
                                      ('notes', IBKR.flString, '')]},
             'CorporateActions': {'tag': 'CorporateAction',
                                  'level': 'DETAIL',
-                                 'values': [('type', IBKR.flCorpActionType, None),
+                                 'values': [('type', IBKR.flCorpActionType, IBKR.NotSupported),
                                             ('accountId', IBKR.flAccount, None),
                                             ('symbol', IBKR.flAsset, None),
                                             ('isin', IBKR.flString, ''),
                                             ('listingExchange', IBKR.flString, ''),
-                                            ('assetCategory', IBKR.flAssetType, None),
+                                            ('assetCategory', IBKR.flAssetType, IBKR.NotSupported),
                                             ('dateTime', IBKR.flTimestamp, None),
                                             ('transactionID', IBKR.flString, ''),
                                             ('description', IBKR.flString, None),
@@ -323,6 +319,8 @@ class IBKR:
     def loadIBSecurities(self, assets):
         cnt = 0
         for asset in assets:
+            if asset['assetCategory'] == IBKR.NotSupported:   # Skip not supported type of asset
+                continue
             # IB may use '.OLD' suffix if asset is being replaced
             symbol = asset['symbol'][:-len('.OLD')] if asset['symbol'].endswith('.OLD') else asset['symbol']
             asset_id = JalDB().get_asset_id(symbol, isin=asset['isin'], dialog_new=False)
@@ -346,7 +344,7 @@ class IBKR:
             try:
                 cnt += ib_trade_loaders[trade['assetCategory']](trade)
             except KeyError:
-                logging.error(g_tr('StatementLoader', "Asset type isn't supported for trade: ") + f"{trade})")
+                logging.warning(g_tr('StatementLoader', "Asset type isn't supported for trade: ") + f"{trade})")
         logging.info(g_tr('StatementLoader', "Trades loaded: ") + f"{cnt} ({len(trades)})")
 
     def loadIBCorporateActions(self, actions):
@@ -494,7 +492,7 @@ class IBKR:
                     paired_record[0]['jal_processed'] = True
                     cnt += 2
             else:
-                logging.error(g_tr('StatementLoader', "Corporate action type is not supported: ")
+                logging.warning(g_tr('StatementLoader', "Corporate action type is not supported: ")
                               + f"{action['type']}")
                 continue
         logging.info(g_tr('StatementLoader', "Corporate actions loaded: ") + f"{cnt} ({len(actions)})")
