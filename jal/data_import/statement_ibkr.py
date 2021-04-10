@@ -39,8 +39,8 @@ class IBKR:
         'STK': PredefinedAsset.Stock,
         'BOND': PredefinedAsset.Bond,
         'OPT': PredefinedAsset.Derivative,
-        'FUT': PredefinedAsset.Derivative
-#        'WAR': PredefinedAsset.Derivative
+        'FUT': PredefinedAsset.Derivative,
+        'WAR': PredefinedAsset.Derivative
     }
 
     CorpAction = {
