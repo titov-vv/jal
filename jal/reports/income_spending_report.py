@@ -281,7 +281,7 @@ class IncomeSpendingReport(QAbstractItemModel):
                 parent.appendChild(leaf)
             if values[self.COL_TIMESTAMP]:
                 year = int(datetime.utcfromtimestamp(int(values[self.COL_TIMESTAMP])).strftime('%Y'))
-                month = int(datetime.utcfromtimestamp(int(values[self.COL_TIMESTAMP])).strftime('%-m'))
+                month = int(datetime.utcfromtimestamp(int(values[self.COL_TIMESTAMP])).strftime('%m').lstrip('0'))
                 leaf.addAmount(year, month, values[self.COL_AMOUNT])
         self.modelReset.emit()
         self._view.expandAll()
