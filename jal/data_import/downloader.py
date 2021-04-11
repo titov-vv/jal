@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from io import StringIO
 
 import pandas as pd
+import json
 import requests
 from PySide2 import QtCore
 from PySide2.QtCore import QObject, Signal
@@ -65,7 +66,8 @@ class QuoteDownloader(QObject):
             MarketDataFeed.CBR: self.CBR_DataReader,
             MarketDataFeed.RU: self.MOEX_DataReader,
             MarketDataFeed.EU: self.Euronext_DataReader,
-            MarketDataFeed.US: self.Yahoo_Downloader
+            MarketDataFeed.US: self.Yahoo_Downloader,
+            MarketDataFeed.CA: self.TMX_Downloader
         }
 
     def showQuoteDownloadDialog(self, parent):
@@ -249,4 +251,40 @@ class QuoteDownloader(QObject):
             columns=['ISIN', 'MIC', 'Ouvert', 'Haut', 'Bas', 'Nombre de titres', 'Number of Trades', 'Capitaux',
                      'Devise'])
         close = data.set_index("Date")
+        return close
+
+    # noinspection PyMethodMayBeStatic
+    def TMX_Downloader(self, _asset_id, asset_code, _isin, start_timestamp, end_timestamp):
+        url = 'https://app-money.tmx.com/graphql'
+        s = requests.Session()
+        params = {
+            "operationName": "getCompanyPriceHistoryForDownload",
+            "variables":
+                {
+                    "symbol": asset_code,
+                    "start": datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d'),
+                    "end": datetime.utcfromtimestamp(end_timestamp).strftime('%Y-%m-%d'),
+                    "adjusted": False,
+                    "adjustmentType": None,
+                    "unadjusted": True
+                },
+            "query": "query getCompanyPriceHistoryForDownload($symbol: String!, $start: String, $end: String, $adjusted: Boolean, $adjustmentType: String, $unadjusted: Boolean) "
+                     "{getCompanyPriceHistoryForDownload(symbol: $symbol, start: $start, end: $end, adjusted: $adjusted, adjustmentType: $adjustmentType, unadjusted: $unadjusted) "
+                     "{ datetime closePrice}}"
+        }
+        response = s.post(url, json=params)
+        if response.status_code != 200:
+            logging.error(f"URL: {url}" + g_tr('QuotesUpdateDialog',
+                                               " failed with response ") + f"{response.status_code}: {response.text}")
+            return None
+        json_content = json.loads(response.text)
+        result_data = json_content['data'] if 'data' in json_content else None
+        if 'getCompanyPriceHistoryForDownload' in result_data:
+            price_array = result_data['getCompanyPriceHistoryForDownload']
+        else:
+            logging.warning(g_tr('QuotesUpdateDialog', "Can't parse data for TSX quotes: ") + f"{response.text}")
+            return None
+        data = pd.DataFrame(price_array)
+        data['datetime'] = pd.to_datetime(data['datetime'], format="%Y-%m-%d")
+        close = data.set_index("datetime")
         return close

@@ -1299,7 +1299,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 23);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 24);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
@@ -1343,6 +1343,7 @@ INSERT INTO data_sources (id, name) VALUES (0, 'Bank of Russia');
 INSERT INTO data_sources (id, name) VALUES (1, 'MOEX');
 INSERT INTO data_sources (id, name) VALUES (2, 'NYSE/Nasdaq');
 INSERT INTO data_sources (id, name) VALUES (3, 'Euronext');
+INSERT INTO data_sources (id, name) VALUES (4, 'TMX TSX');
 
 -- Initialize predefinded categories
 INSERT INTO categories (id, pid, name, often, special) VALUES (1, 0, 'Income', 0, 1);

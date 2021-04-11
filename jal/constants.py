@@ -7,7 +7,7 @@ class Setup:
     INIT_SCRIPT_PATH = 'jal_init.sql'
     UPDATES_PATH = 'updates'
     UPDATE_PREFIX = 'jal_delta_'
-    TARGET_SCHEMA = 23
+    TARGET_SCHEMA = 24
     CALC_TOLERANCE = 1e-10
     DISP_TOLERANCE = 1e-4
 
@@ -97,6 +97,7 @@ class MarketDataFeed:
     RU = 1
     US = 2
     EU = 3
+    CA = 4
 
 
 class CustomColor:
