@@ -34,7 +34,7 @@ class TreeItem():
 
 
 class HoldingsModel(QAbstractItemModel):
-    DATA_COL = 14
+    DATA_COL = 13
     COL_LEVEL = 0
     COL_CURRENCY = 1
     COL_CURRENCY_NAME = 2
@@ -49,12 +49,11 @@ class HoldingsModel(QAbstractItemModel):
     COL_QUOTE = 11
     COL_QUOTE_A = 12
     COL_TOTAL = 13
-    COL_TOTAL_A = 14
-    COL_SHARE = 15
-    COL_PROFIT = 16
-    COL_PROFIT_R = 17
-    COL_VALUE = 18
-    COL_VALUE_A = 19
+    COL_SHARE = 14
+    COL_PROFIT = 15
+    COL_PROFIT_R = 16
+    COL_VALUE = 17
+    COL_VALUE_A = 18
 
     def __init__(self, parent_view):
         super().__init__(parent_view)
@@ -151,7 +150,7 @@ class HoldingsModel(QAbstractItemModel):
         elif column == 4:
             return f"{data[self.COL_QUOTE]:,.4f}" if data[self.COL_QUOTE] and data[self.COL_QTY] != 0 else ''
         elif column == 5:
-            return f"{data[self.COL_SHARE]:,.2f}"
+            return f"{data[self.COL_SHARE]:,.2f}" if data[self.COL_SHARE] else '-.--'
         elif column == 6:
             return f"{100.0 * data[self.COL_PROFIT_R]:,.2f}" if data[self.COL_PROFIT_R] else ''
         elif column == 7:
@@ -159,7 +158,7 @@ class HoldingsModel(QAbstractItemModel):
         elif column == 8:
             return f"{data[self.COL_VALUE]:,.2f}" if data[self.COL_VALUE] else ''
         elif column == 9:
-            return f"{data[self.COL_VALUE_A]:,.2f}" if data[self.COL_VALUE_A] else ''
+            return f"{data[self.COL_VALUE_A]:,.2f}" if data[self.COL_VALUE_A] else '-.--'
         else:
             assert False
 
@@ -245,10 +244,10 @@ class HoldingsModel(QAbstractItemModel):
             "GROUP BY id HAVING ABS(total_value) > :tolerance) "
             "SELECT h.currency_id, c.name AS currency, h.account_id, h.account, h.asset_id, "
             "c.name=a.name AS asset_is_currency,  a.name AS asset, a.full_name AS asset_name, "
-            "h.qty, h.value, h.quote, h.quote_a, h.total, h.total_a FROM ("
+            "h.qty, h.value, h.quote, h.quote_a, h.total FROM ("
             "SELECT a.currency_id, l.account_id, a.name AS account, l.asset_id, sum(l.amount) AS qty, "
-            "sum(l.value) AS value, q.quote, q.quote*cur_q.quote/cur_adj_q.quote AS quote_a, t.total_value AS total, "
-            "t.total_value*cur_q.quote/cur_adj_q.quote AS total_a FROM ledger AS l "
+            "sum(l.value) AS value, q.quote, q.quote*cur_q.quote/cur_adj_q.quote AS quote_a, t.total_value AS total "
+            "FROM ledger AS l "
             "LEFT JOIN accounts AS a ON l.account_id = a.id "
             "LEFT JOIN _last_quotes AS q ON l.asset_id = q.asset_id "
             "LEFT JOIN _last_quotes AS cur_q ON a.currency_id = cur_q.asset_id "
@@ -259,8 +258,8 @@ class HoldingsModel(QAbstractItemModel):
             "HAVING ABS(qty) > :tolerance "
             "UNION ALL "
             "SELECT a.currency_id, l.account_id, a.name AS account, l.asset_id, sum(l.amount) AS qty, "
-            "0 AS value, 1, cur_q.quote/cur_adj_q.quote AS quote_a, t.total_value AS total, "
-            "t.total_value*cur_q.quote/cur_adj_q.quote AS total_a FROM ledger AS l "
+            "0 AS value, 1, cur_q.quote/cur_adj_q.quote AS quote_a, t.total_value AS total "
+            "FROM ledger AS l "
             "LEFT JOIN accounts AS a ON l.account_id = a.id "
             "LEFT JOIN _last_quotes AS cur_q ON a.currency_id = cur_q.asset_id "
             "LEFT JOIN _last_quotes AS cur_adj_q ON cur_adj_q.asset_id = :base_currency "
@@ -330,7 +329,11 @@ class HoldingsModel(QAbstractItemModel):
         # Get full total of totals for all currencies adjusted to common currency
         total = sum([self._root.getChild(i).data[self.COL_VALUE_A] for i in range(self._root.count())])
         for i in range(self._root.count()):  # Calculate share of each currency (adjusted to common currency)
-            self._root.getChild(i).data[self.COL_SHARE] = 100.0 * self._root.getChild(i).data[self.COL_VALUE_A] / total
+            if total != 0:
+                self._root.getChild(i).data[self.COL_SHARE] = 100.0 * self._root.getChild(i).data[
+                    self.COL_VALUE_A] / total
+            else:
+                self._root.getChild(i).data[self.COL_SHARE] = None
         self.modelReset.emit()
         self._view.expandAll()
 
