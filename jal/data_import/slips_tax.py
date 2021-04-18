@@ -140,6 +140,7 @@ class SlipsTaxAPI:
         return ''
 
     def refresh_session(self):
+        logging.info(g_tr('SlipsTaxAPI', "Refreshing session..."))
         session_id = self.get_ru_tax_session()
         client_secret = JalSettings().getValue('RuTaxClientSecret')
         refresh_token = JalSettings().getValue('RuTaxRefreshToken')
@@ -183,7 +184,8 @@ class SlipsTaxAPI:
         payload = '{' + f'"qr": "t={date_time}&s={amount:.2f}&fn={fn}&i={fd}&fp={fp}&n={slip_type}"' + '}'
         response = s.post('https://irkkt-mobile.nalog.ru:8888/v2/ticket', data=payload)
         if response.status_code != 200:
-            if response.status_code == 401 and response.text == "Session was not found":
+            if response.status_code == 401:
+                logging.info(g_tr('SlipsTaxAPI', "Unauthorized with reason: ") + f"{response.text}")
                 return self.refresh_session()
             else:
                 logging.error(
