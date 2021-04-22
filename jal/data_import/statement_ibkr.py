@@ -4,7 +4,8 @@ from datetime import datetime, timezone
 from itertools import groupby
 from lxml import etree
 
-from jal.constants import TransactionType, PredefinedAsset, PredefinedCategory, CorporateAction, DividendSubtype
+from jal.constants import TransactionType, PredefinedAsset, PredefinedCategory, CorporateAction, DividendSubtype, \
+    MarketDataFeed
 from jal.widgets.helpers import g_tr, ManipulateDate
 from jal.db.update import JalDB
 from jal.db.helpers import executeSQL, readSQL, get_country_by_code, update_asset_country
@@ -50,6 +51,15 @@ class IBKR:
         'HI': CorporateAction.StockDividend,
         'FS': CorporateAction.Split,
         'RS': CorporateAction.Split
+    }
+
+    Exchanges = {
+        'NYSE': MarketDataFeed.US,
+        'ARCA': MarketDataFeed.US,
+        'NASDAQ': MarketDataFeed.US,
+        'TSE': MarketDataFeed.CA,
+        'SBF': MarketDataFeed.EU,
+        'AMEX': MarketDataFeed.US
     }
 
     def __init__(self, parent, filename):
@@ -230,7 +240,8 @@ class IBKR:
                                           ('assetCategory', IBKR.flAssetType, IBKR.NotSupported),
                                           ('subCategory', IBKR.flString, ''),
                                           ('description', IBKR.flString, None),
-                                          ('isin', IBKR.flString, '')]},
+                                          ('isin', IBKR.flString, ''),
+                                          ('listingExchange', IBKR.flString, '')]},
             'Trades': {'tag': 'Trade',
                        'level': 'EXECUTION',
                        'values': [('assetCategory', IBKR.flAssetType, IBKR.NotSupported),
@@ -327,7 +338,11 @@ class IBKR:
             if asset_id is not None:
                 continue
             asset_type = PredefinedAsset.ETF if asset['subCategory'] == "ETF" else asset['assetCategory']
-            JalDB().add_asset(symbol, asset['description'], asset_type, asset['isin'])
+            try:
+                exchange = IBKR.Exchanges[asset['listingExchange']]
+            except KeyError:
+                exchange = MarketDataFeed.NA
+            JalDB().add_asset(symbol, asset['description'], asset_type, asset['isin'], data_source=exchange)
             cnt += 1
         logging.info(g_tr('StatementLoader', "Securities loaded: ") + f"{cnt} ({len(assets)})")
 
