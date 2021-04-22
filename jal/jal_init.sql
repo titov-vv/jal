@@ -538,13 +538,15 @@ CREATE VIEW all_operations AS
                       sum(d.amount_alt) AS price,
                       coalesce(sum(d.amount_alt)/sum(d.amount), 0) AS fee_tax,
                       NULL AS t_qty,
-                      NULL AS note,
-                      NULL AS note2
+                      GROUP_CONCAT(d.note, '|') AS note,
+                      GROUP_CONCAT(c.name, '|') AS note2
                  FROM actions AS o
                       LEFT JOIN
                       agents AS p ON o.peer_id = p.id
                       LEFT JOIN
                       action_details AS d ON o.id = d.pid
+                      LEFT JOIN
+                      categories AS c ON c.id = d.category_id
                 GROUP BY o.id
                UNION ALL
                SELECT 2 AS type,
@@ -1299,7 +1301,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 24);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 25);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);

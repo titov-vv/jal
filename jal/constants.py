@@ -7,7 +7,7 @@ class Setup:
     INIT_SCRIPT_PATH = 'jal_init.sql'
     UPDATES_PATH = 'updates'
     UPDATE_PREFIX = 'jal_delta_'
-    TARGET_SCHEMA = 24
+    TARGET_SCHEMA = 25
     CALC_TOLERANCE = 1e-10
     DISP_TOLERANCE = 1e-4
 
