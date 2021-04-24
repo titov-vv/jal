@@ -24,6 +24,7 @@ class IBKRCashOp:
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKR:
     NotSupported = -1
+    NotFound = -2
     BondPricipal = 1000
     CancelledFlag = 'Ca'
     PaymentInLiueOfDividend = 'PAYMENT IN LIEU OF DIVIDEND'
@@ -163,14 +164,17 @@ class IBKR:
             for currency in currencies:
                 account = JalDB().get_account_id(data.attrib[name], currency)
                 if account is None:
-                    return None
+                    return default_value
                 accountIds.append(account)
             return accountIds
         if 'currency' not in data.attrib:
             if default_value is None:
                 logging.error(g_tr('IBKR', "Can't get account currency for account: ") + f"{data}")
+            return None
+        account = JalDB().get_account_id(data.attrib[name], data.attrib['currency'])
+        if account is None:
             return default_value
-        return JalDB().get_account_id(data.attrib[name], data.attrib['currency'])
+        return account
 
     @staticmethod
     def flAsset(data, name, default_value):
@@ -232,7 +236,7 @@ class IBKR:
         section_descriptions = {
             'CashReport': {'tag': 'CashReportCurrency',
                            'level': 'Currency',
-                           'values': [('accountId', IBKR.flAccount, None),
+                           'values': [('accountId', IBKR.flAccount, IBKR.NotFound),
                                       ('endingCash', IBKR.flNumber, None)]},
             'SecuritiesInfo': {'tag': 'SecurityInfo',
                                'level': '',
@@ -246,7 +250,7 @@ class IBKR:
                        'level': 'EXECUTION',
                        'values': [('assetCategory', IBKR.flAssetType, IBKR.NotSupported),
                                   ('symbol', IBKR.flAsset, None),
-                                  ('accountId', IBKR.flAccount, None),
+                                  ('accountId', IBKR.flAccount, IBKR.NotFound),
                                   ('dateTime', IBKR.flTimestamp, None),
                                   ('settleDateTarget', IBKR.flTimestamp, 0),
                                   ('tradePrice', IBKR.flNumber, None),
@@ -261,7 +265,7 @@ class IBKR:
                           'level': '',
                           'values': [('transactionType', IBKR.flString, None),
                                      ('symbol', IBKR.flAsset, None),
-                                     ('accountId', IBKR.flAccount, None),
+                                     ('accountId', IBKR.flAccount, IBKR.NotFound),
                                      ('date', IBKR.flTimestamp, None),
                                      ('tradePrice', IBKR.flNumber, None),
                                      ('quantity', IBKR.flNumber, None),
@@ -272,7 +276,7 @@ class IBKR:
             'CorporateActions': {'tag': 'CorporateAction',
                                  'level': 'DETAIL',
                                  'values': [('type', IBKR.flCorpActionType, IBKR.NotSupported),
-                                            ('accountId', IBKR.flAccount, None),
+                                            ('accountId', IBKR.flAccount, IBKR.NotFound),
                                             ('symbol', IBKR.flAsset, None),
                                             ('isin', IBKR.flString, ''),
                                             ('listingExchange', IBKR.flString, ''),
@@ -318,6 +322,8 @@ class IBKR:
                 if attr_value is None:
                     logging.error(
                         g_tr('StatementLoader', "Failed to load attribute: ") + f"{attr_name} / {sample.attrib}")
+                    return None
+                if attr_value == IBKR.NotFound:  # Can't match something from report to database
                     return None
                 tag_dictionary[attr_name] = attr_value
             data.append(tag_dictionary)
