@@ -24,7 +24,7 @@ class IBKRCashOp:
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKR:
     NotSupported = -1
-    NotFound = -2
+    NotFound = "<-- NOT FOUND IN DB -->"  # something that won't occur in IB reports
     BondPricipal = 1000
     CancelledFlag = 'Ca'
     PaymentInLiueOfDividend = 'PAYMENT IN LIEU OF DIVIDEND'
