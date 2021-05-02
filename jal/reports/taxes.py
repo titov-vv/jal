@@ -519,6 +519,9 @@ class TaxesRus:
             self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
 
             if self.statement is not None:
+                if deal['qty'] < 0:  # short position - swap close/open dates/rates
+                    deal['cs_date'] = deal['os_date']
+                    deal['cs_rate'] = deal['os_rate']
                 self.statement.add_stock_profit(deal['country_code'], self.broker_name, deal['cs_date'],
                                                 self.account_currency, deal['income'], deal['income_rub'],
                                                 deal['spending_rub'], deal['cs_rate'])
@@ -598,6 +601,9 @@ class TaxesRus:
             self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
 
             if self.statement is not None:
+                if deal['qty'] < 0:  # short position - swap close/open dates/rates
+                    deal['cs_date'] = deal['os_date']
+                    deal['cs_rate'] = deal['os_rate']
                 self.statement.add_stock_profit(deal['country_code'], self.broker_name, deal['cs_date'],
                                                 self.account_currency, deal['income'], deal['income_rub'],
                                                 deal['spending_rub'], deal['cs_rate'])
