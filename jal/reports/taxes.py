@@ -426,7 +426,7 @@ class TaxesRus:
                            "LEFT JOIN t_last_dates AS ld ON d.timestamp=ld.ref_id "
                            "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND a.currency_id=q.asset_id "
                            "WHERE d.timestamp>=:begin AND d.timestamp<:end AND d.account_id=:account_id "
-                           " AND d.type=:type_dividend ORDER BY d.timestamp",
+                           " AND d.amount>0 AND d.type=:type_dividend ORDER BY d.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end),
                             (":account_id", self.account_id), (":type_dividend", DividendSubtype.Dividend)])
         row = start_row = self.data_start_row
