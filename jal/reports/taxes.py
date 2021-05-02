@@ -158,7 +158,8 @@ class TaxesRus:
                           14: ("Доход, RUB (код 1530)", 12, ("income_rub", "number", 2, 0, 1), None, "Доход, полученных от продажи ценных бумаг (равен сумме сделки продажи из столбца 12)"),
                           15: ("Расход, RUB (код 201)", 12, ("spending_rub", "number", 2, 0, 1), None, "Расходы, понесённые на покупку ценных бумаг и уплату комиссий (равны сумме сделки покупки из столбца 12 + комиссии из столбца 14)"),
                           16: ("Финансовый результат, RUB", 12, ("profit_rub", "number", 2, 0, 1), None, "Финансовый результат сделки в рублях (= Столбец 15 - Столбец 16)"),
-                          17: ("Финансовый результат, {currency}", 12, ("profit", "number", 2, 0, 1), None, "Финансовый результат сделки в валюте счета")
+                          17: ("Финансовый результат, {currency}", 12, ("profit", "number", 2, 0, 1), None, "Финансовый результат сделки в валюте счета"),
+                          18: ("Примечания", 12, ("s_dividend_note", "text", 0, 0, 1), None, "Дополнительная информация")
                       }
                       ),
             "Облигации": (self.prepare_bonds,
@@ -466,7 +467,8 @@ class TaxesRus:
                            "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, o.number AS o_number, "
                            "qos.quote AS os_rate, o.price AS o_price, o.qty AS o_qty, o.fee AS o_fee, "
                            "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, c.number AS c_number, "
-                           "qcs.quote AS cs_rate, c.price AS c_price, c.qty AS c_qty, c.fee AS c_fee "
+                           "qcs.quote AS cs_rate, c.price AS c_price, c.qty AS c_qty, c.fee AS c_fee, "
+                           "SUM(coalesce(-sd.amount*qsd.quote, 0)) AS s_dividend "  # Dividend paid for short position
                            "FROM deals AS d "
                            "JOIN sequence AS os ON os.id=d.open_sid AND os.type = 3 "
                            "LEFT JOIN trades AS o ON os.operation_id=o.id "
@@ -483,6 +485,10 @@ class TaxesRus:
                            "LEFT JOIN quotes AS qc ON ldc.timestamp=qc.timestamp AND a.currency_id=qc.asset_id "
                            "LEFT JOIN t_last_dates AS ldcs ON c.settlement=ldcs.ref_id "
                            "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
+                           "LEFT JOIN dividends AS sd ON d.asset_id=sd.asset_id AND sd.amount<0 "  # Include dividends paid from short positions
+                           "AND sd.ex_date>=o_date AND sd.ex_date<=c_date "
+                           "LEFT JOIN t_last_dates AS ldsd ON sd.timestamp=ldsd.ref_id "
+                           "LEFT JOIN quotes AS qsd ON ldsd.timestamp=qsd.timestamp AND a.currency_id=qsd.asset_id "
                            "WHERE c.settlement>=:begin AND c.settlement<:end AND d.account_id=:account_id "
                            "AND (s.type_id = :stock OR s.type_id = :fund) "
                            "ORDER BY s.name, o.timestamp, c.timestamp",
@@ -492,6 +498,8 @@ class TaxesRus:
         data_row = 0
         while query.next():
             deal = readSQLrecord(query, named=True)
+            if not deal['symbol']:   # there will be row of NULLs if no deals are present (due to SUM aggregation)
+                continue
             row = start_row + (data_row * 2)
             if not self.use_settlement:
                 deal['os_rate'] = deal['o_rate']
@@ -509,11 +517,15 @@ class TaxesRus:
             deal['income_rub'] = deal['c_amount_rub'] if deal['qty'] >= 0 else deal['o_amount_rub']
             deal['income'] = deal['c_amount'] if deal['qty'] >= 0 else deal['o_amount']
             deal['spending_rub'] = deal['o_amount_rub'] if deal['qty'] >= 0 else deal['c_amount_rub']
-            deal['spending_rub'] = deal['spending_rub'] + deal['o_fee_rub'] + deal['c_fee_rub']
+            deal['spending_rub'] = deal['spending_rub'] + deal['o_fee_rub'] + deal['c_fee_rub'] + deal['s_dividend']
             deal['spending'] = deal['o_amount'] if deal['qty'] >= 0 else deal['c_amount']
             deal['spending'] = deal['spending'] + deal['o_fee'] + deal['c_fee']
             deal['profit_rub'] = deal['income_rub'] - deal['spending_rub']
             deal['profit'] = deal['income'] - deal['spending']
+            if deal['s_dividend'] > 0:  # Dividend was paid during short position
+                deal['s_dividend_note'] = f"Удержанный дивиденд: {deal['s_dividend']:.2f} RUB"
+            else:
+                deal['s_dividend_note'] = ''
 
             self.add_report_row(row, deal, even_odd=data_row)
             self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
@@ -703,6 +715,9 @@ class TaxesRus:
             self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
 
             if self.statement is not None:
+                if deal['qty'] < 0:  # short position - swap close/open dates/rates
+                    deal['cs_date'] = deal['os_date']
+                    deal['cs_rate'] = deal['os_rate']
                 self.statement.add_derivative_profit(deal['country_code'], self.broker_name, deal['cs_date'],
                                                      self.account_currency, deal['income'], deal['income_rub'],
                                                      deal['spending_rub'], deal['cs_rate'])
