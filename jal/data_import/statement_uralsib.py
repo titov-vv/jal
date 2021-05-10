@@ -15,6 +15,7 @@ class UralsibCapital:
     PeriodPattern = "  за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d)"
     DividendPattern = "> (?P<DESCR1>.*) \((?P<REG_CODE>.*)\)( (?P<DESCR2>.*) налог в размере (?P<TAX>\d+\.\d\d) удержан)?. НДС не облагается."
     BondInterestPattern = "Погашение купона №( -?\d+)? (?P<NAME>.*)"
+    ISINPattern = "[A-Z]{2}.{9}\d"
 
     def __init__(self, parent, filename):
         self._parent = parent
@@ -279,17 +280,27 @@ class UralsibCapital:
             logging.error(g_tr('Uralsib', "Can't parse dividend description ") + f"'{description}'")
             return
         dividend_data = parts.groupdict()
-        asset_id = JalDB().get_asset_id('', reg_code=dividend_data['REG_CODE'])
+        isin_match = re.match(self.ISINPattern, dividend_data['REG_CODE'])
+        if isin_match:
+            asset_id = JalDB().get_asset_id('', isin=dividend_data['REG_CODE'])
+        else:
+            asset_id = JalDB().get_asset_id('', reg_code=dividend_data['REG_CODE'])
         if asset_id is None:
             logging.error(g_tr('Uralsib', "Can't find asset for dividend ") + f"'{description}'")
             return
-        try:
-            tax = float(dividend_data['TAX'])
-        except ValueError:
-            logging.error(g_tr('Uralsib', "Failed to convert dividend tax ") + f"'{description}'")
-            return
+        if dividend_data['TAX']:
+            try:
+                tax = float(dividend_data['TAX'])
+            except ValueError:
+                logging.error(g_tr('Uralsib', "Failed to convert dividend tax ") + f"'{description}'")
+                return
+        else:
+            tax = 0
         amount = amount + tax   # Statement contains value after taxation while JAL stores value before tax
-        shortened_description = dividend_data['DESCR1'] + ' ' + dividend_data['DESCR2']
+        if dividend_data['DESCR2']:
+            shortened_description = dividend_data['DESCR1'] + ' ' + dividend_data['DESCR2']
+        else:
+            shortened_description = dividend_data['DESCR1']
         JalDB().add_dividend(DividendSubtype.Dividend, timestamp, self._account_id, asset_id,
                              amount, shortened_description, trade_number=number, tax=tax)
 
