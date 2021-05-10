@@ -54,15 +54,15 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.add_button = QPushButton(self)
         self.add_button.setText(" +️ ")
         self.add_button.setFont(self.bold_font)
-        self.add_button.setFixedWidth(self.add_button.fontMetrics().width("XXX"))
+        self.add_button.setFixedWidth(self.add_button.fontMetrics().width("XXXX"))
         self.del_button = QPushButton(self)
         self.del_button.setText(" — ️")
         self.del_button.setFont(self.bold_font)
-        self.del_button.setFixedWidth(self.del_button.fontMetrics().width("XXX"))
+        self.del_button.setFixedWidth(self.del_button.fontMetrics().width("XXXX"))
         self.copy_button = QPushButton(self)
         self.copy_button.setText(" >> ️")
         self.copy_button.setFont(self.bold_font)
-        self.copy_button.setFixedWidth(self.copy_button.fontMetrics().width("XXX"))
+        self.copy_button.setFixedWidth(self.copy_button.fontMetrics().width("XXXX"))
         self.details_table = QTableView(self)
         self.details_table.horizontalHeader().setFont(self.bold_font)
         self.details_table.setAlternatingRowColors(True)
@@ -93,6 +93,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.layout.addItem(self.horizontalSpacer, 1, 8, 1, 1)
 
         self.add_button.clicked.connect(self.addChild)
+        self.copy_button.clicked.connect(self.copyChild)
         self.del_button.clicked.connect(self.delChild)
 
         super()._init_db("actions")
@@ -133,6 +134,24 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         new_record.setNull("tag_id")
         new_record.setValue("amount", 0)
         new_record.setValue("amount_alt", 0)
+        if not self.details_model.insertRecord(-1, new_record):
+            logging.fatal(
+                g_tr('AbstractOperationDetails', "Failed to add new record: ") + self.details_model.lastError().text())
+            return
+
+    @Slot()
+    def copyChild(self):
+        idx = self.details_table.selectionModel().selection().indexes()
+        src_record = self.details_model.record(idx[0].row())
+        new_record = self.details_model.record()
+        new_record.setValue("category_id", src_record.value("category_id"))
+        if src_record.value("tag_id"):
+            new_record.setValue("tag_id", src_record.value("tag_id"))
+        else:
+            new_record.setNull("tag_id")
+        new_record.setValue("amount", src_record.value("amount"))
+        new_record.setValue("amount_alt", src_record.value("amount_alt"))
+        new_record.setValue("note", src_record.value("note"))
         if not self.details_model.insertRecord(-1, new_record):
             logging.fatal(
                 g_tr('AbstractOperationDetails', "Failed to add new record: ") + self.details_model.lastError().text())
