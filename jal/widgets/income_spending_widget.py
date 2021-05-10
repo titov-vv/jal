@@ -163,6 +163,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         selected_row = idx[0].row()
         self.details_model.removeRow(selected_row)
         self.details_table.setRowHidden(selected_row, True)
+        self.onDataChange(idx[0], idx[0], None)    # TODO Probably there is a better way to update record status
 
     @Slot()
     def saveChanges(self):
