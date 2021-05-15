@@ -4,7 +4,7 @@ from PySide2.QtGui import QFont
 from PySide2.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QSpacerItem, QSizePolicy, QDataWidgetMapper
 from PySide2.QtSql import QSqlTableModel
 from jal.widgets.helpers import g_tr
-from jal.db.helpers import db_connection
+from jal.db.helpers import db_connection, load_icon
 
 
 class AbstractOperationDetails(QWidget):
@@ -29,16 +29,12 @@ class AbstractOperationDetails(QWidget):
         self.main_label.setFont(self.bold_font)
         self.layout.addWidget(self.main_label, 0, 0, 1, 1, Qt.AlignLeft)
 
-        self.commit_button = QPushButton(self)
+        self.commit_button = QPushButton(load_icon("accept.png"), '', self)
+        self.commit_button.setToolTip(g_tr("AbstractOperationDetails", "Commit changes"))
         self.commit_button.setEnabled(False)
-        self.commit_button.setText("✔")
-        self.commit_button.setFont(self.bold_font)
-        self.commit_button.setFixedWidth(self.commit_button.fontMetrics().width("XXX"))
-        self.revert_button = QPushButton(self)
+        self.revert_button = QPushButton(load_icon("cancel.png"), '', self)
+        self.revert_button.setToolTip(g_tr("AbstractOperationDetails", "Cancel changes"))
         self.revert_button.setEnabled(False)
-        self.revert_button.setText("✖️")
-        self.revert_button.setFont(self.bold_font)
-        self.revert_button.setFixedWidth(self.revert_button.fontMetrics().width("XXX"))
 
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
