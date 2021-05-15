@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="ru" sourcelanguage="en">
+<!DOCTYPE TS>
+<TS version="2.1" language="ru" sourcelanguage="en">
 <context>
     <name>AbstractOperationDetails</name>
     <message>
@@ -20,12 +21,12 @@
     <message>
         <location filename="../widgets/abstract_operation_details.py" line="33"/>
         <source>Commit changes</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить изменения</translation>
     </message>
     <message>
         <location filename="../widgets/abstract_operation_details.py" line="36"/>
         <source>Cancel changes</source>
-        <translation type="unfinished"></translation>
+        <translation>Отменить изменения</translation>
     </message>
 </context>
 <context>
@@ -757,17 +758,17 @@
     <message>
         <location filename="../widgets/income_spending_widget.py" line="55"/>
         <source>Add detail</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавить детальную запись</translation>
     </message>
     <message>
         <location filename="../widgets/income_spending_widget.py" line="57"/>
         <source>Remove detail</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалить детальную запись</translation>
     </message>
     <message>
         <location filename="../widgets/income_spending_widget.py" line="59"/>
         <source>Copy detail</source>
-        <translation type="unfinished"></translation>
+        <translation>Скопировать детальную запись</translation>
     </message>
 </context>
 <context>
@@ -1912,27 +1913,27 @@ do you want to save it?</source>
     <message>
         <location filename="../ui/ui_reference_data_dlg.py" line="141"/>
         <source>Add new</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавить</translation>
     </message>
     <message>
         <location filename="../ui/ui_reference_data_dlg.py" line="153"/>
         <source>Save changes</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить изменения</translation>
     </message>
     <message>
         <location filename="../ui/ui_reference_data_dlg.py" line="157"/>
         <source>Revert changes</source>
-        <translation type="unfinished"></translation>
+        <translation>Отменить изменения</translation>
     </message>
     <message>
         <location filename="../ui/ui_reference_data_dlg.py" line="145"/>
         <source>Add child</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавить вложенный</translation>
     </message>
     <message>
         <location filename="../ui/ui_reference_data_dlg.py" line="149"/>
         <source>Delete</source>
-        <translation type="unfinished">Удалить</translation>
+        <translation>Удалить</translation>
     </message>
 </context>
 <context>
