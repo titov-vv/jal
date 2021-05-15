@@ -3,6 +3,7 @@ import logging
 import sqlite3
 from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery
 from PySide2.QtWidgets import QMessageBox
+from PySide2.QtGui import QIcon
 from jal.constants import Setup
 from jal.db.settings import JalSettings
 from jal.widgets.helpers import g_tr
@@ -44,6 +45,13 @@ def get_app_path() -> str:
 # -------------------------------------------------------------------------------------------------------------------
 def get_dbfilename(app_path):
     return app_path + Setup.DB_PATH
+
+
+# -------------------------------------------------------------------------------------------------------------------
+# returns QIcon loaded from the file with icon_name located in folder Setup.ICONS_PATH
+def load_icon(icon_name) -> QIcon:
+    return QIcon(get_app_path() + Setup.ICONS_PATH + os.sep + icon_name)
+
 
 # -------------------------------------------------------------------------------------------------------------------
 # This function returns SQLite connection used by JAL or fails with RuntimeError exception

@@ -9,7 +9,7 @@ from jal.widgets.helpers import g_tr
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, PeerSelector
 from jal.widgets.account_select import OptionalCurrencyComboBox
-from jal.db.helpers import db_connection, executeSQL
+from jal.db.helpers import db_connection, executeSQL, load_icon
 from jal.widgets.delegates import WidgetMapperDelegateBase, FloatDelegate, CategorySelectorDelegate, TagSelectorDelegate
 
 
@@ -51,18 +51,12 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.peer_widget = PeerSelector(self)
         self.a_currency = OptionalCurrencyComboBox(self)
         self.a_currency.setText(g_tr("IncomeSpendingWidget", "Paid in foreign currency:"))
-        self.add_button = QPushButton(self)
-        self.add_button.setText(" +️ ")
-        self.add_button.setFont(self.bold_font)
-        self.add_button.setFixedWidth(self.add_button.fontMetrics().width("XXXX"))
-        self.del_button = QPushButton(self)
-        self.del_button.setText(" — ️")
-        self.del_button.setFont(self.bold_font)
-        self.del_button.setFixedWidth(self.del_button.fontMetrics().width("XXXX"))
-        self.copy_button = QPushButton(self)
-        self.copy_button.setText(" >> ️")
-        self.copy_button.setFont(self.bold_font)
-        self.copy_button.setFixedWidth(self.copy_button.fontMetrics().width("XXXX"))
+        self.add_button = QPushButton(load_icon("add.png"), '', self)
+        self.add_button.setToolTip(g_tr("IncomeSpendingWidget", "Add detail"))
+        self.del_button = QPushButton(load_icon("delete.png"), '', self)
+        self.del_button.setToolTip(g_tr("IncomeSpendingWidget", "Remove detail"))
+        self.copy_button = QPushButton(load_icon("copy.png"), '', self)
+        self.copy_button.setToolTip(g_tr("IncomeSpendingWidget", "Copy detail"))
         self.details_table = QTableView(self)
         self.details_table.horizontalHeader().setFont(self.bold_font)
         self.details_table.setAlternatingRowColors(True)

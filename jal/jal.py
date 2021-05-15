@@ -4,6 +4,7 @@ import logging
 import traceback
 from PySide2.QtCore import Qt, QTranslator
 from PySide2.QtWidgets import QApplication, QMessageBox
+from jal.constants import Setup
 from jal.widgets.main_window import MainWindow
 from jal.db.update import JalDB
 from jal.db.settings import JalSettings
@@ -30,7 +31,7 @@ def main():
     app = QApplication([])
     language = JalDB().get_language_code(JalSettings().getValue('Language', default=1))
     translator = QTranslator(app)
-    language_file = get_app_path() + "languages" + os.sep + language + '.qm'
+    language_file = get_app_path() + Setup.LANG_PATH + os.sep + language + '.qm'
     translator.load(language_file)
     app.installTranslator(translator)
 
@@ -53,5 +54,7 @@ def main():
     app.exec_()
     app.removeTranslator(translator)
 
+
+#-----------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
     main()

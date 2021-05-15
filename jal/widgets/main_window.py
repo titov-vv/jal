@@ -11,9 +11,9 @@ from jal.ui.ui_main_window import Ui_JAL_MainWindow
 from jal.widgets.helpers import g_tr, ManipulateDate, dependency_present
 from jal.widgets.reference_dialogs import AccountTypeListDialog, AccountListDialog, AssetListDialog, TagsListDialog,\
     CategoryListDialog, CountryListDialog, QuotesListDialog, PeerListDialog
-from jal.constants import TransactionType
+from jal.constants import Setup, TransactionType
 from jal.db.backup_restore import JalBackup
-from jal.db.helpers import get_app_path, get_dbfilename
+from jal.db.helpers import get_app_path, get_dbfilename, load_icon
 from jal.db.update import JalDB
 from jal.db.settings import JalSettings
 from jal.data_import.downloader import QuoteDownloader
@@ -165,7 +165,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         logging.raiseExceptions = False         # Silencing logging module exceptions
 
     def createLanguageMenu(self):
-        langPath = get_app_path() + "languages" + os.sep
+        langPath = get_app_path() + Setup.LANG_PATH + os.sep
 
         langDirectory = QDir(langPath)
         for language_file in langDirectory.entryList(['*.qm']):
@@ -195,7 +195,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
     def createStatementsImportMenu(self):
         for i, source in enumerate(self.statements.sources):
             if 'icon' in source:
-                source_icon = QIcon(get_app_path() + "img" + os.sep + source['icon'])
+                source_icon = load_icon(source['icon'])
                 action = QAction(source_icon, source['name'], self)
             else:
                 action = QAction(source['name'], self)

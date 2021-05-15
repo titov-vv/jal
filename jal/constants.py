@@ -6,6 +6,8 @@ class Setup:
     MAIN_WND_NAME = "JAL_MainWindow"
     INIT_SCRIPT_PATH = 'jal_init.sql'
     UPDATES_PATH = 'updates'
+    ICONS_PATH = "img"
+    LANG_PATH = "languages"
     UPDATE_PREFIX = 'jal_delta_'
     TARGET_SCHEMA = 25
     CALC_TOLERANCE = 1e-10
