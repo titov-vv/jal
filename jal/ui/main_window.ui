@@ -152,7 +152,7 @@
                    <second>0</second>
                    <year>2020</year>
                    <month>12</month>
-                   <day>5</day>
+                   <day>4</day>
                   </datetime>
                  </property>
                  <property name="displayFormat">
@@ -426,10 +426,10 @@
                 <enum>QFrame::Panel</enum>
                </property>
                <property name="frameShadow">
-                <enum>QFrame::Plain</enum>
+                <enum>QFrame::Sunken</enum>
                </property>
                <property name="lineWidth">
-                <number>0</number>
+                <number>1</number>
                </property>
                <layout class="QHBoxLayout" name="horizontalLayout_4">
                 <property name="leftMargin">
@@ -459,37 +459,49 @@
                 </item>
                 <item>
                  <widget class="QFrame" name="OperationsButtons">
-                  <property name="minimumSize">
-                   <size>
-                    <width>100</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="frameShape">
-                   <enum>QFrame::Panel</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Sunken</enum>
-                  </property>
                   <layout class="QVBoxLayout" name="verticalLayout_3">
+                   <property name="spacing">
+                    <number>2</number>
+                   </property>
+                   <property name="leftMargin">
+                    <number>2</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>2</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>2</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>2</number>
+                   </property>
                    <item>
                     <widget class="QPushButton" name="NewOperationBtn">
+                     <property name="toolTip">
+                      <string>New operation</string>
+                     </property>
                      <property name="text">
-                      <string>New</string>
+                      <string/>
                      </property>
                     </widget>
                    </item>
                    <item>
                     <widget class="QPushButton" name="CopyOperationBtn">
+                     <property name="toolTip">
+                      <string>Copy operation</string>
+                     </property>
                      <property name="text">
-                      <string>Copy</string>
+                      <string/>
                      </property>
                     </widget>
                    </item>
                    <item>
                     <widget class="QPushButton" name="DeleteOperationBtn">
+                     <property name="toolTip">
+                      <string>Delete operation</string>
+                     </property>
                      <property name="text">
-                      <string>Del</string>
+                      <string/>
                      </property>
                     </widget>
                    </item>
@@ -572,7 +584,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>5</day>
+               <day>4</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -706,7 +718,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>5</day>
+               <day>4</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -853,7 +865,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>5</day>
+               <day>4</day>
               </datetime>
              </property>
              <property name="displayFormat">

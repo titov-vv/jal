@@ -114,7 +114,7 @@ class Ui_JAL_MainWindow(object):
         self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
         self.BalanceDate = QDateEdit(self.BalanceConfigFrame)
         self.BalanceDate.setObjectName(u"BalanceDate")
-        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 5), QTime(21, 0, 0)))
+        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 4), QTime(21, 0, 0)))
         self.BalanceDate.setCalendarPopup(True)
         self.BalanceDate.setTimeSpec(Qt.UTC)
 
@@ -250,8 +250,8 @@ class Ui_JAL_MainWindow(object):
         self.OperationDetails.setMinimumSize(QSize(0, 100))
         self.OperationDetails.setMaximumSize(QSize(16777215, 300))
         self.OperationDetails.setFrameShape(QFrame.Panel)
-        self.OperationDetails.setFrameShadow(QFrame.Plain)
-        self.OperationDetails.setLineWidth(0)
+        self.OperationDetails.setFrameShadow(QFrame.Sunken)
+        self.OperationDetails.setLineWidth(1)
         self.horizontalLayout_4 = QHBoxLayout(self.OperationDetails)
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
@@ -280,11 +280,10 @@ class Ui_JAL_MainWindow(object):
 
         self.OperationsButtons = QFrame(self.OperationDetails)
         self.OperationsButtons.setObjectName(u"OperationsButtons")
-        self.OperationsButtons.setMinimumSize(QSize(100, 0))
-        self.OperationsButtons.setFrameShape(QFrame.Panel)
-        self.OperationsButtons.setFrameShadow(QFrame.Sunken)
         self.verticalLayout_3 = QVBoxLayout(self.OperationsButtons)
+        self.verticalLayout_3.setSpacing(2)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.verticalLayout_3.setContentsMargins(2, 2, 2, 2)
         self.NewOperationBtn = QPushButton(self.OperationsButtons)
         self.NewOperationBtn.setObjectName(u"NewOperationBtn")
 
@@ -332,7 +331,7 @@ class Ui_JAL_MainWindow(object):
         self.horizontalLayout_7.setContentsMargins(2, 2, 2, 2)
         self.HoldingsDate = QDateEdit(self.HoldingsParamsFrame)
         self.HoldingsDate.setObjectName(u"HoldingsDate")
-        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 5), QTime(21, 0, 0)))
+        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 4), QTime(21, 0, 0)))
         self.HoldingsDate.setCalendarPopup(True)
         self.HoldingsDate.setTimeSpec(Qt.UTC)
 
@@ -399,7 +398,7 @@ class Ui_JAL_MainWindow(object):
 
         self.ReportToDate = QDateEdit(self.ReportParamsFrame)
         self.ReportToDate.setObjectName(u"ReportToDate")
-        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 5), QTime(21, 0, 0)))
+        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 4), QTime(21, 0, 0)))
         self.ReportToDate.setCalendarPopup(True)
         self.ReportToDate.setTimeSpec(Qt.UTC)
 
@@ -475,7 +474,7 @@ class Ui_JAL_MainWindow(object):
 
         self.ReportFromDate = QDateEdit(self.ReportParamsFrame)
         self.ReportFromDate.setObjectName(u"ReportFromDate")
-        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 5), QTime(21, 0, 0)))
+        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 4), QTime(21, 0, 0)))
         self.ReportFromDate.setCalendarPopup(True)
         self.ReportFromDate.setTimeSpec(Qt.UTC)
 
@@ -623,9 +622,18 @@ class Ui_JAL_MainWindow(object):
 
         self.AccountLbl.setText(QCoreApplication.translate("JAL_MainWindow", u"Account:", None))
         self.SearchLbl.setText(QCoreApplication.translate("JAL_MainWindow", u"Search:", None))
-        self.NewOperationBtn.setText(QCoreApplication.translate("JAL_MainWindow", u"New", None))
-        self.CopyOperationBtn.setText(QCoreApplication.translate("JAL_MainWindow", u"Copy", None))
-        self.DeleteOperationBtn.setText(QCoreApplication.translate("JAL_MainWindow", u"Del", None))
+#if QT_CONFIG(tooltip)
+        self.NewOperationBtn.setToolTip(QCoreApplication.translate("JAL_MainWindow", u"New operation", None))
+#endif // QT_CONFIG(tooltip)
+        self.NewOperationBtn.setText("")
+#if QT_CONFIG(tooltip)
+        self.CopyOperationBtn.setToolTip(QCoreApplication.translate("JAL_MainWindow", u"Copy operation", None))
+#endif // QT_CONFIG(tooltip)
+        self.CopyOperationBtn.setText("")
+#if QT_CONFIG(tooltip)
+        self.DeleteOperationBtn.setToolTip(QCoreApplication.translate("JAL_MainWindow", u"Delete operation", None))
+#endif // QT_CONFIG(tooltip)
+        self.DeleteOperationBtn.setText("")
         self.MainTabs.setTabText(self.MainTabs.indexOf(self.BalanceTransactionTab), QCoreApplication.translate("JAL_MainWindow", u"Balance && Operations", None))
         self.HoldingsDate.setDisplayFormat(QCoreApplication.translate("JAL_MainWindow", u"dd/MM/yyyy", None))
         self.HoldingsCurrencyLbl.setText(QCoreApplication.translate("JAL_MainWindow", u"Common currency:", None))

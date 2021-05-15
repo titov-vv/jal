@@ -55,11 +55,16 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.statementGroup = QActionGroup(self.menuStatement)
         self.createStatementsImportMenu()
 
+        # Set icons
+        self.NewOperationBtn.setIcon(load_icon("new.png"))
+        self.CopyOperationBtn.setIcon(load_icon("copy.png"))
+        self.DeleteOperationBtn.setIcon(load_icon("delete.png"))
+
         # Operations view context menu
         self.contextMenu = QMenu(self.OperationsTableView)
-        self.actionReconcile = QAction(text=g_tr('MainWindow', "Reconcile"), parent=self)
-        self.actionCopy = QAction(text=g_tr('MainWindow', "Copy"), parent=self)
-        self.actionDelete = QAction(text=g_tr('MainWindow', "Delete"), parent=self)
+        self.actionReconcile = QAction(load_icon("reconcile.png"), g_tr('MainWindow', "Reconcile"), self)
+        self.actionCopy = QAction(load_icon("copy.png"), g_tr('MainWindow', "Copy"), self)
+        self.actionDelete = QAction(load_icon("delete.png"), g_tr('MainWindow', "Delete"), self)
         self.contextMenu.addAction(self.actionReconcile)
         self.contextMenu.addSeparator()
         self.contextMenu.addAction(self.actionCopy)
