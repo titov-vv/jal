@@ -13,7 +13,7 @@ from jal.widgets.reference_dialogs import AccountTypeListDialog, AccountListDial
     CategoryListDialog, CountryListDialog, QuotesListDialog, PeerListDialog
 from jal.constants import TransactionType
 from jal.db.backup_restore import JalBackup
-from jal.db.helpers import get_dbfilename
+from jal.db.helpers import get_app_path, get_dbfilename
 from jal.db.update import JalDB
 from jal.db.settings import JalSettings
 from jal.data_import.downloader import QuoteDownloader
@@ -30,11 +30,10 @@ from jal.db.tax_estimator import TaxEstimator
 
 #-----------------------------------------------------------------------------------------------------------------------
 class MainWindow(QMainWindow, Ui_JAL_MainWindow):
-    def __init__(self, own_path, language):
+    def __init__(self, language):
         QMainWindow.__init__(self, None)
         self.setupUi(self)
 
-        self.own_path = own_path
         self.currentLanguage = language
         self.current_index = None  # this is used in onOperationContextMenu() to track item for menu
 
@@ -42,7 +41,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.downloader = QuoteDownloader()
         self.taxes = TaxesRus()
         self.statements = StatementLoader()
-        self.backup = JalBackup(self, get_dbfilename(self.own_path))
+        self.backup = JalBackup(self, get_dbfilename(get_app_path()))
         self.estimator = None
 
         self.actionImportSlipRU.setEnabled(dependency_present(['pyzbar', 'PIL']))
@@ -166,7 +165,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         logging.raiseExceptions = False         # Silencing logging module exceptions
 
     def createLanguageMenu(self):
-        langPath = self.own_path + "languages" + os.sep
+        langPath = get_app_path() + "languages" + os.sep
 
         langDirectory = QDir(langPath)
         for language_file in langDirectory.entryList(['*.qm']):
@@ -196,7 +195,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
     def createStatementsImportMenu(self):
         for i, source in enumerate(self.statements.sources):
             if 'icon' in source:
-                source_icon = QIcon(self.own_path + "img" + os.sep + source['icon'])
+                source_icon = QIcon(get_app_path() + "img" + os.sep + source['icon'])
                 action = QAction(source_icon, source['name'], self)
             else:
                 action = QAction(source['name'], self)

@@ -7,7 +7,7 @@ from PySide2.QtWidgets import QApplication, QMessageBox
 from jal.widgets.main_window import MainWindow
 from jal.db.update import JalDB
 from jal.db.settings import JalSettings
-from jal.db.helpers import init_and_check_db, LedgerInitError, update_db_schema
+from jal.db.helpers import get_app_path, init_and_check_db, LedgerInitError, update_db_schema
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -22,23 +22,22 @@ def main():
     sys.excepthook = exception_logger
     os.environ['QT_MAC_WANTS_LAYER'] = '1'    # Workaround for https://bugreports.qt.io/browse/QTBUG-87014
 
-    own_path = os.path.dirname(os.path.realpath(__file__)) + os.sep
-    error = init_and_check_db(own_path)
+    error = init_and_check_db(get_app_path())
 
     if error.code == LedgerInitError.EmptyDbInitialized:  # If DB was just created from SQL - initialize it again
-        error = init_and_check_db(own_path)
+        error = init_and_check_db(get_app_path())
 
     app = QApplication([])
     language = JalDB().get_language_code(JalSettings().getValue('Language', default=1))
     translator = QTranslator(app)
-    language_file = own_path + "languages" + os.sep + language + '.qm'
+    language_file = get_app_path() + "languages" + os.sep + language + '.qm'
     translator.load(language_file)
     app.installTranslator(translator)
 
     if error.code == LedgerInitError.OutdatedDbSchema:
-        error = update_db_schema(own_path)
+        error = update_db_schema(get_app_path())
         if error.code == LedgerInitError.DbInitSuccess:
-            error = init_and_check_db(own_path)
+            error = init_and_check_db(get_app_path())
 
     if error.code != LedgerInitError.DbInitSuccess:
         window = QMessageBox()
@@ -48,7 +47,7 @@ def main():
         window.setText(error.message)
         window.setInformativeText(error.details)
     else:
-        window = MainWindow(own_path, language)
+        window = MainWindow(language)
     window.show()
 
     app.exec_()

@@ -36,9 +36,14 @@ class LedgerInitError:
 
 
 # -------------------------------------------------------------------------------------------------------------------
+# Returns absolute path to a folder from where application was started
+def get_app_path() -> str:
+    return os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + os.sep
+
+
+# -------------------------------------------------------------------------------------------------------------------
 def get_dbfilename(app_path):
     return app_path + Setup.DB_PATH
-
 
 # -------------------------------------------------------------------------------------------------------------------
 # This function returns SQLite connection used by JAL or fails with RuntimeError exception
