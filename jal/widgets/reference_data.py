@@ -6,6 +6,7 @@ from PySide2.QtWidgets import QDialog, QMessageBox, QMenu, QWidgetAction, QLabel
 
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
 from jal.widgets.helpers import g_tr, decodeError
+from jal.db.helpers import load_icon
 
 
 # --------------------------------------------------------------------------------------------------------------
@@ -37,11 +38,11 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.GroupCombo.setVisible(False)
         self.SearchFrame.setVisible(False)
 
-        self.AddBtn.setFixedWidth(self.AddBtn.fontMetrics().width("XXXX"))
-        self.AddChildBtn.setFixedWidth(self.AddChildBtn.fontMetrics().width("XXXX"))
-        self.RemoveBtn.setFixedWidth(self.RemoveBtn.fontMetrics().width("XXXX"))
-        self.CommitBtn.setFixedWidth(self.CommitBtn.fontMetrics().width("XXXX"))
-        self.RevertBtn.setFixedWidth(self.RevertBtn.fontMetrics().width("XXXX"))
+        self.AddBtn.setIcon(load_icon("add.png"))
+        self.AddChildBtn.setIcon(load_icon("add_child.png"))
+        self.RemoveBtn.setIcon(load_icon("delete.png"))
+        self.CommitBtn.setIcon(load_icon("accept.png"))
+        self.RevertBtn.setIcon(load_icon("cancel.png"))
 
         self.SearchString.textChanged.connect(self.OnSearchChange)
         self.GroupCombo.currentIndexChanged.connect(self.OnGroupChange)

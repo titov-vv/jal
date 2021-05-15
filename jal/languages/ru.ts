@@ -1,22 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="ru" sourcelanguage="en">
+<!DOCTYPE TS><TS version="2.0" language="ru" sourcelanguage="en">
 <context>
     <name>AbstractOperationDetails</name>
     <message>
-        <location filename="../widgets/abstract_operation_details.py" line="76"/>
+        <location filename="../widgets/abstract_operation_details.py" line="72"/>
         <source>Operation submit failed: </source>
         <translation>Ошибка при записи операции: </translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="160"/>
+        <location filename="../widgets/income_spending_widget.py" line="174"/>
         <source>Operation details submit failed: </source>
         <translation>Ошибка при записи деталей операции: </translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="137"/>
+        <location filename="../widgets/income_spending_widget.py" line="150"/>
         <source>Failed to add new record: </source>
         <translation>Невозможно добавить новую запись: </translation>
+    </message>
+    <message>
+        <location filename="../widgets/abstract_operation_details.py" line="33"/>
+        <source>Commit changes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/abstract_operation_details.py" line="36"/>
+        <source>Cancel changes</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -174,22 +183,22 @@
 <context>
     <name>DB</name>
     <message>
-        <location filename="../db/helpers.py" line="181"/>
+        <location filename="../db/helpers.py" line="194"/>
         <source>Database format is outdated</source>
         <translation>Формат базы данных устарел</translation>
     </message>
     <message>
-        <location filename="../db/helpers.py" line="181"/>
+        <location filename="../db/helpers.py" line="194"/>
         <source>Do you agree to upgrade your data to newer format?</source>
         <translation>Вы согласны сконвертировать данные в новый формат?</translation>
     </message>
     <message>
-        <location filename="../db/helpers.py" line="224"/>
+        <location filename="../db/helpers.py" line="237"/>
         <source>New country added (set Tax Treaty in Data-&gt;Countries menu): </source>
         <translation>Добавлена новая страна (установите СОИДН в меню Данные-&gt;Страны): </translation>
     </message>
     <message>
-        <location filename="../db/helpers.py" line="243"/>
+        <location filename="../db/helpers.py" line="256"/>
         <source>Country was changed for asset </source>
         <translation>Страна была изменена для ценной бумаги </translation>
     </message>
@@ -280,22 +289,22 @@
 <context>
     <name>DetailsModel</name>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="206"/>
+        <location filename="../widgets/income_spending_widget.py" line="220"/>
         <source>Category</source>
         <translation>Категория</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="207"/>
+        <location filename="../widgets/income_spending_widget.py" line="221"/>
         <source>Tag</source>
         <translation>Тэг</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="209"/>
+        <location filename="../widgets/income_spending_widget.py" line="223"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="210"/>
+        <location filename="../widgets/income_spending_widget.py" line="224"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
@@ -744,6 +753,21 @@
         <location filename="../widgets/income_spending_widget.py" line="53"/>
         <source>Paid in foreign currency:</source>
         <translation>Оплата в валюте:</translation>
+    </message>
+    <message>
+        <location filename="../widgets/income_spending_widget.py" line="55"/>
+        <source>Add detail</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/income_spending_widget.py" line="57"/>
+        <source>Remove detail</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/income_spending_widget.py" line="59"/>
+        <source>Copy detail</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1320,7 +1344,7 @@ Application will be terminated now</source>
         <translation>Количество акций недостаточно для обработки корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="275"/>
+        <location filename="../widgets/main_window.py" line="274"/>
         <source>Estimate Russian Tax</source>
         <translation>Оценить налог для РФ</translation>
     </message>
@@ -1391,66 +1415,66 @@ Application will be terminated now</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="187"/>
+        <location filename="../widgets/main_window.py" line="186"/>
         <source>Restart required</source>
         <translation>Требуется рестарт</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="187"/>
+        <location filename="../widgets/main_window.py" line="186"/>
         <source>Language was changed to </source>
         <translation>Язык был изменён на </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="187"/>
+        <location filename="../widgets/main_window.py" line="186"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation>Вы должны перезапустить приложение, чтобы применить изменения
 Приложение сейчас завершит свою работу</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="61"/>
+        <location filename="../widgets/main_window.py" line="60"/>
         <source>Reconcile</source>
         <translation>Сверить</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="62"/>
+        <location filename="../widgets/main_window.py" line="61"/>
         <source>Copy</source>
         <translation>Копировать</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="63"/>
+        <location filename="../widgets/main_window.py" line="62"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="307"/>
+        <location filename="../widgets/main_window.py" line="306"/>
         <source>You have unsaved changes</source>
         <translation>Есть несохранённые изменения</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="307"/>
+        <location filename="../widgets/main_window.py" line="306"/>
         <source> has uncommitted changes,
 do you want to save it?</source>
         <translation> имеет несохранённые изменения,
 Вы хотите их сохранить?</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="334"/>
+        <location filename="../widgets/main_window.py" line="333"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="334"/>
+        <location filename="../widgets/main_window.py" line="333"/>
         <source>Are you sure to delete selected transacion(s)?</source>
         <translation>Вы уверены что ходите удалить выбранную(-ые) транзацию(-и)?</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="211"/>
+        <location filename="../widgets/main_window.py" line="210"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="215"/>
+        <location filename="../widgets/main_window.py" line="214"/>
         <source>&lt;p&gt;More information, manuals and problem reports are at &lt;a href=https://github.com/titov-vv/jal&gt;github home page&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Questions, comments, donations: &lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;Дополнительная информация, инструкции, сообщения о проблемах доступны на &lt;a href=https://github.com/titov-vv/jal&gt;домашней странице проекта на github&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Вопросы, пожелания, донаты: &lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
@@ -1686,22 +1710,22 @@ do you want to save it?</source>
         <translation>Показывать неактивные</translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="145"/>
+        <location filename="../ui/ui_reference_data_dlg.py" line="160"/>
         <source>Search:</source>
         <translation>Поиск:</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_data.py" line="116"/>
+        <location filename="../widgets/reference_data.py" line="117"/>
         <source>ANY</source>
         <translation>Любой</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_data.py" line="168"/>
+        <location filename="../widgets/reference_data.py" line="169"/>
         <source>Submit failed: </source>
         <translation>Ошибка сохранения: </translation>
     </message>
     <message>
-        <location filename="../widgets/reference_data.py" line="95"/>
+        <location filename="../widgets/reference_data.py" line="96"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
@@ -1871,44 +1895,44 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="140"/>
-        <source> +ufe0f </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="142"/>
-        <source> u2014 </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="143"/>
-        <source> u2714 </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="144"/>
-        <source> u2716 </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ui/ui_reference_data_dlg.py" line="141"/>
-        <source>..+</source>
-        <translation>..+</translation>
-    </message>
-    <message>
         <location filename="../widgets/reference_dialogs.py" line="144"/>
         <source>Bank/Broker</source>
         <translation>Банк/Брокер</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_data.py" line="95"/>
+        <location filename="../widgets/reference_data.py" line="96"/>
         <source>You have uncommitted changes. Do you want to close?</source>
         <translation>У вас есть несохранённые данные. Всё равно закрыть?</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_data.py" line="75"/>
+        <location filename="../widgets/reference_data.py" line="76"/>
         <source>Change type to:</source>
         <translation>Сменить тип на:</translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_reference_data_dlg.py" line="141"/>
+        <source>Add new</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_reference_data_dlg.py" line="153"/>
+        <source>Save changes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_reference_data_dlg.py" line="157"/>
+        <source>Revert changes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_reference_data_dlg.py" line="145"/>
+        <source>Add child</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_reference_data_dlg.py" line="149"/>
+        <source>Delete</source>
+        <translation type="unfinished">Удалить</translation>
     </message>
 </context>
 <context>

@@ -91,22 +91,31 @@
       </item>
       <item>
        <widget class="QPushButton" name="AddBtn">
+        <property name="toolTip">
+         <string>Add new</string>
+        </property>
         <property name="text">
-         <string> +️ </string>
+         <string/>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="AddChildBtn">
+        <property name="toolTip">
+         <string>Add child</string>
+        </property>
         <property name="text">
-         <string>..+</string>
+         <string/>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="RemoveBtn">
+        <property name="toolTip">
+         <string>Delete</string>
+        </property>
         <property name="text">
-         <string> — </string>
+         <string/>
         </property>
        </widget>
       </item>
@@ -115,8 +124,11 @@
         <property name="enabled">
          <bool>false</bool>
         </property>
+        <property name="toolTip">
+         <string>Save changes</string>
+        </property>
         <property name="text">
-         <string> ✔ </string>
+         <string/>
         </property>
        </widget>
       </item>
@@ -125,8 +137,11 @@
         <property name="enabled">
          <bool>false</bool>
         </property>
+        <property name="toolTip">
+         <string>Revert changes</string>
+        </property>
         <property name="text">
-         <string> ✖ </string>
+         <string/>
         </property>
        </widget>
       </item>
