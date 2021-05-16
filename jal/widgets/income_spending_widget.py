@@ -53,7 +53,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.a_currency.setText(g_tr("IncomeSpendingWidget", "Paid in foreign currency:"))
         self.add_button = QPushButton(load_icon("add.png"), '', self)
         self.add_button.setToolTip(g_tr("IncomeSpendingWidget", "Add detail"))
-        self.del_button = QPushButton(load_icon("delete.png"), '', self)
+        self.del_button = QPushButton(load_icon("remove.png"), '', self)
         self.del_button.setToolTip(g_tr("IncomeSpendingWidget", "Remove detail"))
         self.copy_button = QPushButton(load_icon("copy.png"), '', self)
         self.copy_button.setToolTip(g_tr("IncomeSpendingWidget", "Copy detail"))
