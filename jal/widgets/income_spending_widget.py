@@ -4,6 +4,7 @@ from dateutil import tz
 
 from PySide2.QtCore import Qt, Slot
 from PySide2.QtWidgets import QLabel, QDateTimeEdit, QPushButton, QTableView, QHeaderView
+from PySide2.QtGui import QFont
 from PySide2.QtSql import QSqlTableModel
 from jal.widgets.helpers import g_tr
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
@@ -153,11 +154,10 @@ class IncomeSpendingWidget(AbstractOperationDetails):
 
     @Slot()
     def delChild(self):
-        idx = self.details_table.selectionModel().selection().indexes()
-        selected_row = idx[0].row()
-        self.details_model.removeRow(selected_row)
-        self.details_table.setRowHidden(selected_row, True)
-        self.onDataChange(idx[0], idx[0], None)    # TODO Probably there is a better way to update record status
+        selection = self.details_table.selectionModel().selection().indexes()
+        for idx in selection:
+            self.details_model.removeRow(idx.row())
+            self.onDataChange(idx, idx, None)
 
     @Slot()
     def saveChanges(self):
@@ -179,6 +179,14 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.revert_button.setEnabled(False)
         self.dbUpdated.emit()
         return
+
+    @Slot()
+    def revertChanges(self):
+        self.model.revertAll()
+        self.details_model.revertAll()
+        self.modified = False
+        self.commit_button.setEnabled(False)
+        self.revert_button.setEnabled(False)
 
     def createNew(self, account_id=0):
         super().createNew(account_id)
@@ -223,6 +231,7 @@ class DetailsModel(QSqlTableModel):
                          g_tr('DetailsModel', "Amount"),
                          g_tr('DetailsModel', "Note")]
         super().__init__(parent=parent_view, db=db)
+        self.deleted = []
         self.alt_currency = ''
         self._view = parent_view
 
@@ -233,6 +242,29 @@ class DetailsModel(QSqlTableModel):
             else:
                 return self._columns[section]
         return None
+
+    def removeRow(self, row, parent=None):
+        self.deleted.append(row)
+        super().removeRow(row)
+
+    def submitAll(self):
+        result = super().submitAll()
+        if result:
+            self.deleted = []
+        return result
+
+    def revertAll(self):
+        self.deleted = []
+        super().revertAll()
+
+    def data(self, index, role=Qt.DisplayRole):
+        if not index.isValid():
+            return None
+        if role == Qt.FontRole and (index.row() in self.deleted):
+            font = QFont()
+            font.setStrikeOut(True)
+            return font
+        return super().data(index, role)
 
     def configureView(self):
         self._view.setColumnHidden(0, True)

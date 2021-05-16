@@ -83,7 +83,7 @@ class AbstractOperationDetails(QWidget):
         self.model.revertAll()
         self.modified = False
         self.commit_button.setEnabled(False)
-        self.revert_button.setEnabled(False)  # FIXME Income/Spending widget details table isn't updated after revert
+        self.revert_button.setEnabled(False)
 
     def createNew(self, account_id=0):
         self.mapper.submit()           # FIXME there is check for uncommited call before - do we need submit() here?
