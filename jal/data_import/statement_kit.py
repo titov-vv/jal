@@ -12,7 +12,7 @@ from jal.constants import Setup, DividendSubtype, PredefinedCategory
 class KITFinance:
     Header = "КИТ Финанс (АО)"
     AccountPattern = "(?P<ACCOUNT>.*)-(.*)"
-    PeriodPattern = "(?P<S>\d\d\.\d\d\.\d\d\d\d) - (?P<E>\d\d\.\d\d\.\d\d\d\d)"
+    PeriodPattern = r"(?P<S>\d\d\.\d\d\.\d\d\d\d) - (?P<E>\d\d\.\d\d\.\d\d\d\d)"
 
     def __init__(self, parent, filename):
         self._parent = parent

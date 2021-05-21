@@ -10,6 +10,7 @@ from jal.data_import.statement_ibkr import IBKR
 from jal.data_import.statement_ibkr_old import IBKR_obsolete
 from jal.data_import.statement_uralsib import UralsibCapital
 from jal.data_import.statement_kit import KITFinance
+from jal.data_import.statement_psb import PSB_Broker
 
 
 # TODO make common ancestor for statement loader classes but not StatementLoader (to prevent extra objects creation)
@@ -89,6 +90,12 @@ class StatementLoader(QObject):
                 'icon': 'kit.png'
             },
             {
+                'name': g_tr('StatementLoader', "PSB Broker"),
+                'filter': "PSB broker statement (*.xlsx *.xls)",
+                'loader': self.loadPSB,
+                'icon': 'psb.ico'
+            },
+            {
                 'name': g_tr('StatementLoader', "IBKR Activity HTML"),
                 'filter': "IBKR Activity statement (*.html)",
                 'loader': self.loadIBActivityStatement,
@@ -120,6 +127,9 @@ class StatementLoader(QObject):
 
     def loadKITFinance(self, filename):
         return KITFinance(self, filename).load()
+
+    def loadPSB(self, filename):
+        return PSB_Broker(self, filename).load()
 
     def loadIBActivityStatement(self, filename):
         if QMessageBox().warning(None,

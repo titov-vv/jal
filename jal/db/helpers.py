@@ -256,6 +256,7 @@ def update_asset_country(asset_id, country_id):
     logging.warning(g_tr('DB', "Country was changed for asset ")+ f"{asset_name}: f{old_country} -> {new_country}")
 
 # -------------------------------------------------------------------------------------------------------------------
+# FIXME to use account_id instead of account_number (otherwise might be false positive)
 def account_last_date(account_number):
     last_timestamp = readSQL("SELECT MAX(o.timestamp) FROM all_operations AS o "
                              "LEFT JOIN accounts AS a ON o.account_id=a.id WHERE a.number=:account_number",
