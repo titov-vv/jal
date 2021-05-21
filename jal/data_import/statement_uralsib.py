@@ -45,9 +45,9 @@ class UralsibCapital:
         self.load_stock_deals()
         self.load_futures_deals()
         self.load_cash_transactions()
-        logging.info(g_tr('StatementLoader', "Uralsib Capital statement loaded successfully"))
+        logging.info(g_tr('Uralsib', "Uralsib Capital statement loaded successfully"))
         for account in self._settled_cash:
-            logging.info(g_tr('StatementLoader', 'Planned cash: ') + f"{self._settled_cash[account]:.2f} " +
+            logging.info(g_tr('Uralsib', 'Planned cash: ') + f"{self._settled_cash[account]:.2f} " +
                               f"{JalDB().get_asset_name(JalDB().get_account_currency(account))}")
         return True
 

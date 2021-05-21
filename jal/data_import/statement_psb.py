@@ -4,11 +4,11 @@ from datetime import datetime, timezone, time
 import pandas
 
 from jal.widgets.helpers import g_tr
+from jal.db.update import JalDB
 
 
 # -----------------------------------------------------------------------------------------------------------------------
 class PSB_Broker:
-    MaxCurrency = 15
     Header = 'Брокер: ПАО "Промсвязьбанк"'
     AccountPattern = r"(?P<ACCOUNT>\S*)( от \d\d\.\d\d\.\d\d\d\d)?"
     PeriodPattern = r"с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d)"
@@ -16,6 +16,7 @@ class PSB_Broker:
     StartingBalanceHeader = "ВХОДЯЩАЯ СУММА СРЕДСТВ НА СЧЕТЕ"
     EndingBalanceHeader = "ОСТАТОК СРЕДСТВ НА СЧЕТЕ"
     RateHeader = "Курс валют ЦБ РФ"
+    SettledCashHeader = "ПЛАНОВЫЙ ИСХОДЯЩИЙ ОСТАТОК СРЕДСТВ НА СЧЕТЕ"
 
     def __init__(self, parent, filename):
         self._parent = parent
@@ -31,6 +32,11 @@ class PSB_Broker:
         self._statement = pandas.read_excel(self._filename, header=None, na_filter=False)
         if not self.validate():
             return False
+        self.load_cash_balance()
+        logging.info(g_tr('PSB', "PSB broker statement loaded successfully"))
+        for account in self._settled_cash:
+            logging.info(g_tr('PSB', 'Planned cash: ') + f"{self._settled_cash[account]:.2f} " +
+                         f"{JalDB().get_asset_name(JalDB().get_account_currency(account))}")
         return True
 
     def validate(self):
@@ -58,6 +64,11 @@ class PSB_Broker:
         logging.info(g_tr('PSB', "Loading PSB broker statement for account ") +
                      f"{account_name}: {statement_dates['S']} - {statement_dates['E']}")
         logging.info(g_tr('PSB', "Account currencies: ") + f"{self._currencies}")
+        for currency in self._currencies:
+            self._accounts[currency] = JalDB().get_account_id(account_name, currency)
+            if self._accounts[currency] is None:
+                return False
+        return True
 
     # Finds a row with header and returns it's index.
     # Return -1 if header isn't found
@@ -75,13 +86,11 @@ class PSB_Broker:
         summary_end = self.find_row(self.EndingBalanceHeader)
         if (summary_header == -1) or (summary_start == -1) or (summary_end == -1):
             return False
-        i = 5  # Start column of different currencies
-        while self._statement[i][summary_header + 1]:
-            amounts[self._statement[i][summary_header + 1]] = 0
-            i += 1
-            if i > self.MaxCurrency:
-                logging.error(g_tr('PSB', "Too many currencies found in the statement"))
-                return False
+        column = 5  # Start column of different currencies
+        while column < self._statement.shape[1]:  # get currency names from each column
+            if self._statement[column][summary_header + 1]:
+                amounts[self._statement[column][summary_header + 1]] = 0
+            column += 1
         for i, currency in enumerate(amounts):
             for j in range(summary_start, summary_end+1):
                 if self._statement[1][j] == self.RateHeader:  # Skip currency rate if present as it doesn't change account balance
@@ -95,3 +104,15 @@ class PSB_Broker:
             if amounts[currency]:
                 self._currencies.append(currency)
         return True
+
+    def load_cash_balance(self):
+        summary_header = self.find_row(self.SummaryHeader)
+        cash_row = self.find_row(self.SettledCashHeader)
+        if (summary_header == -1) or (cash_row == -1):
+            return
+        column = 5  # Start column of different currencies
+        while column < self._statement.shape[1]:  # get currency names from each column
+            currency = self._statement[column][summary_header + 1]
+            if currency in self._currencies:
+                self._settled_cash[self._accounts[currency]] = self._statement[column][cash_row]
+            column += 1
