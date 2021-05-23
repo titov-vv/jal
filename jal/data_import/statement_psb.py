@@ -169,7 +169,45 @@ class PSB_Broker:
         logging.info(g_tr('PSB', "Securities loaded: ") + f"{loaded} ({cnt})")
 
     def load_cash_transactions(self):
-        pass
+        cnt = 0
+        columns = {
+            "date": "Дата ",
+            "currency": "Валюта счета ",
+            "amount": "Сумма",
+            "operation": "Операция",
+            "note": "Комментарий"
+        }
+
+        row, headers = self.find_section_start("Внешнее движение денежных средств в валюте счета", columns)
+        if row < 0:
+            return False
+        while row < self._statement.shape[0]:
+            if self._statement[1][row] == '':
+                break
+            if self._statement[headers['note']][row].startswith("Дивиденды") or \
+                    self._statement[headers['note']][row].startswith("Погашение купона"):
+                row += 1
+                continue
+            if self._statement[headers['note']][row] != '':
+                logging.warning(g_tr('PSB', "Unknown cash transaction: ") + self._statement[headers['note']][row])
+                row += 1
+                continue
+
+            timestamp = int(datetime.strptime(self._statement[headers['date']][row],
+                                              "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+            amount = self._statement[headers['amount']][row]
+            account_id = self._accounts[self._statement[headers['currency']][row]]
+            if self._statement[headers['operation']][row] == 'Зачислено на счет':
+                self.transfer_in(timestamp, account_id, amount)
+            elif self._statement[headers['operation']][row] == 'Списано со счета':
+                self.transfer_out(timestamp, account_id, amount)
+            else:
+                logging.warning(g_tr('PSB', "Unknown cash operation: ") + self._statement[headers['operation']][row])
+                row += 1
+                continue
+            cnt += 1
+            row += 1
+        logging.info(g_tr('PSB', "Cash transactions loaded: ") + f"{cnt}")
 
     def load_deals_t0(self):
         pass
@@ -182,3 +220,23 @@ class PSB_Broker:
 
     def load_dividends(self):
         pass
+
+    def transfer_in(self, timestamp, account_id, amount):
+        currency_name = JalDB().get_asset_name(JalDB().get_account_currency(account_id))
+        text = g_tr('PSB', "Deposit of ") + f"{amount:.2f} {currency_name} " + \
+               f"@{datetime.utcfromtimestamp(timestamp).strftime('%d.%m.%Y')}\n" + \
+               g_tr('PSB', "Select account to withdraw from:")
+        pair_account = self._parent.selectAccount(text, account_id)
+        if pair_account == 0:
+            return
+        JalDB().add_transfer(timestamp, pair_account, amount, account_id, amount, 0, 0, '')
+
+    def transfer_out(self, timestamp, account_id, amount):
+        currency_name = JalDB().get_asset_name(JalDB().get_account_currency(account_id))
+        text = g_tr('PSB', "Withdrawal of ") + f"{-amount:.2f} {currency_name} " + \
+               f"@{datetime.utcfromtimestamp(timestamp).strftime('%d.%m.%Y')}\n" + \
+               g_tr('PSB', "Select account to deposit to:")
+        pair_account = self._parent.selectAccount(text, account_id)
+        if pair_account == 0:
+            return                                       # amount is negative in XLS file
+        JalDB().add_transfer(timestamp, account_id, -amount, pair_account, -amount, 0, 0, '')
