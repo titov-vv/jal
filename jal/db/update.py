@@ -7,6 +7,7 @@ from jal.ui.ui_add_asset_dlg import Ui_AddAssetDialog
 from jal.constants import Setup
 from jal.db.helpers import db_connection, executeSQL, readSQL
 from jal.widgets.helpers import g_tr
+from jal.net.helpers import GetAssetInfoByISIN
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -94,8 +95,9 @@ class JalDB():
     # Searches for asset_id in database - first by ISIN, then by Reg.Code next by Symbol
     # If found - tries to update data if some is empty in database
     # If asset not found and 'dialog_new' is True - pops up a window for asset creation
+    # If asset not found and 'get_online' is True - tries to go online and fetch asset data by ISIN
     # Returns: asset_id or None if new asset creation failed
-    def get_asset_id(self, symbol, isin='', reg_code='', name='', dialog_new=True):
+    def get_asset_id(self, symbol, isin='', reg_code='', name='', dialog_new=True, get_online=False):
         asset_id = None
         if isin:
             asset_id = readSQL("SELECT id FROM assets WHERE isin=:isin", [(":isin", isin)])
@@ -110,7 +112,13 @@ class JalDB():
                 asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol COLLATE NOCASE", [(":symbol", symbol)])
         if asset_id is not None:
             self.update_asset_data(asset_id, symbol, isin, reg_code)
-        elif dialog_new:
+            return asset_id
+        if get_online:
+            asset_info = GetAssetInfoByISIN(isin, reg_code)
+            if len(asset_info):
+                asset_id = self.add_asset(asset_info['symbol'], asset_info['name'], asset_info['type'], isin,
+                                          data_source=asset_info['source'], reg_code=reg_code)
+        if asset_id is None and dialog_new:
             dialog = AddAssetDialog(symbol, isin=isin, name=name)
             dialog.exec_()
             asset_id = dialog.asset_id
@@ -168,7 +176,7 @@ class JalDB():
                      f"{self.get_asset_name(asset_id)} " 
                      f"@ {datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")
 
-    def add_asset(self, symbol, name, asset_type, isin, data_source=-1):
+    def add_asset(self, symbol, name, asset_type, isin, data_source=-1, reg_code=None):
         query = executeSQL("INSERT INTO assets(name, type_id, full_name, isin, src_id) "
                        "VALUES(:symbol, :type, :full_name, :isin, :data_src)",
                        [(":symbol", symbol), (":type", asset_type), (":full_name", name),
@@ -176,6 +184,9 @@ class JalDB():
         asset_id = query.lastInsertId()
         if asset_id is None:
             logging.error(g_tr('JalDB', "Failed to add new asset: ") + f"{symbol}")
+        if reg_code is not None:
+            _ = executeSQL("INSERT INTO asset_reg_id(asset_id, reg_code) VALUES(:asset_id, :new_reg)",
+                           [(":new_reg", reg_code), (":asset_id", asset_id)])
         return asset_id
 
     def add_dividend(self, subtype, timestamp, account_id, asset_id, amount, note, trade_number='', tax=0.0):

@@ -5,7 +5,6 @@ from io import StringIO
 
 import pandas as pd
 import json
-import requests
 from PySide2 import QtCore
 from PySide2.QtCore import QObject, Signal
 from PySide2.QtWidgets import QDialog
@@ -14,19 +13,8 @@ from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from jal.constants import Setup, MarketDataFeed, BookAccount
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.update import JalDB
+from jal.net.helpers import get_web_data, post_web_data
 from jal.widgets.helpers import g_tr
-
-
-# ===================================================================================================================
-# Function download URL and return it content as string or empty string if site returns error
-# ===================================================================================================================
-def get_web_data(url):
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.text
-    else:
-        logging.error(f"URL: {url}" + g_tr('QuotesUpdateDialog', " failed with response ") + f"{response}")
-        return ''
 
 
 # ===================================================================================================================
@@ -256,7 +244,6 @@ class QuoteDownloader(QObject):
     # noinspection PyMethodMayBeStatic
     def TMX_Downloader(self, _asset_id, asset_code, _isin, start_timestamp, end_timestamp):
         url = 'https://app-money.tmx.com/graphql'
-        s = requests.Session()
         params = {
             "operationName": "getCompanyPriceHistoryForDownload",
             "variables":
@@ -272,17 +259,12 @@ class QuoteDownloader(QObject):
                      "{getCompanyPriceHistoryForDownload(symbol: $symbol, start: $start, end: $end, adjusted: $adjusted, adjustmentType: $adjustmentType, unadjusted: $unadjusted) "
                      "{ datetime closePrice}}"
         }
-        response = s.post(url, json=params)
-        if response.status_code != 200:
-            logging.error(f"URL: {url}" + g_tr('QuotesUpdateDialog',
-                                               " failed with response ") + f"{response.status_code}: {response.text}")
-            return None
-        json_content = json.loads(response.text)
+        json_content = json.loads(post_web_data(url, params))
         result_data = json_content['data'] if 'data' in json_content else None
         if 'getCompanyPriceHistoryForDownload' in result_data:
             price_array = result_data['getCompanyPriceHistoryForDownload']
         else:
-            logging.warning(g_tr('QuotesUpdateDialog', "Can't parse data for TSX quotes: ") + f"{response.text}")
+            logging.warning(g_tr('QuotesUpdateDialog', "Can't parse data for TSX quotes: ") + json_content)
             return None
         data = pd.DataFrame(price_array)
         data['datetime'] = pd.to_datetime(data['datetime'], format="%Y-%m-%d")

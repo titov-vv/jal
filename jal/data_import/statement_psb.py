@@ -33,6 +33,12 @@ class PSB_Broker:
         if not self.validate():
             return False
         self.load_cash_balance()
+        self.load_securities()
+        self.load_cash_transactions()
+        self.load_deals_t0()
+        self.load_deals_tplus()
+        self.load_coupons()
+        self.load_dividends()
         logging.info(g_tr('PSB', "PSB broker statement loaded successfully"))
         for account in self._settled_cash:
             logging.info(g_tr('PSB', 'Planned cash: ') + f"{self._settled_cash[account]:.2f} " +
@@ -79,6 +85,25 @@ class PSB_Broker:
         logging.error(g_tr('PSB', "Header isn't found in PSB broker statement:") + header)
         return -1
 
+    def find_section_start(self, header, columns) -> (int, dict):
+        start_row = -1
+        headers = {}
+        for i, row in self._statement.iterrows():
+            if row[1] == header:
+                start_row = i + 1  # points to columns header row
+                break
+        if start_row > 0:
+            for col in range(self._statement.shape[1]):  # Load section headers from next row
+                headers[self._statement[col][start_row]] = col
+        column_indices = {column: headers.get(columns[column], -1) for column in columns}
+        if start_row > 0:
+            for idx in column_indices:
+                if column_indices[idx] < 0:
+                    logging.error(g_tr('PSB', "Column not found in section ") + f"{header}: {idx}")
+                    start_row = -1
+        start_row += 1
+        return start_row, column_indices
+
     def get_currencies(self):
         amounts = {}
         summary_header = self.find_row(self.SummaryHeader)
@@ -116,3 +141,44 @@ class PSB_Broker:
             if currency in self._currencies:
                 self._settled_cash[self._accounts[currency]] = self._statement[column][cash_row]
             column += 1
+
+    def load_securities(self):
+        cnt = 0
+        loaded = 0
+        columns = {
+            "name": "Наименование эмитента, вид, категория (тип), выпуск, транш ЦБ",
+            "isin": "ISIN",
+            "reg_code": "Номер гос.регистрации"
+        }
+
+        row, headers = self.find_section_start("Портфель на конец дня на биржевом рынке", columns)
+        if row < 0:  # Probably we have old report format with short title
+            row, headers = self.find_section_start("Портфель на конец дня", columns)
+        if row < 0:
+            return False
+
+        while row < self._statement.shape[0]:
+            if self._statement[1][row].startswith('Итого') or self._statement[1][row] == '':
+                break
+            asset_id = JalDB().get_asset_id('', isin=self._statement[headers['isin']][row],
+                                            reg_code=self._statement[headers['reg_code']][row], get_online=True)
+            if asset_id is not None:
+                loaded += 1
+            cnt += 1
+            row += 1
+        logging.info(g_tr('PSB', "Securities loaded: ") + f"{loaded} ({cnt})")
+
+    def load_cash_transactions(self):
+        pass
+
+    def load_deals_t0(self):
+        pass
+
+    def load_deals_tplus(self):
+        pass
+
+    def load_coupons(self):
+        pass
+
+    def load_dividends(self):
+        pass
