@@ -5,6 +5,7 @@ import pandas
 
 from jal.widgets.helpers import g_tr
 from jal.db.update import JalDB
+from jal.constants import DividendSubtype
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -85,11 +86,12 @@ class PSB_Broker:
         logging.error(g_tr('PSB', "Header isn't found in PSB broker statement:") + header)
         return -1
 
-    def find_section_start(self, header, columns) -> (int, dict):
+    def find_section_start(self, header_pattern, columns) -> (int, dict):
         start_row = -1
         headers = {}
         for i, row in self._statement.iterrows():
-            if row[1] == header:
+            match = re.search(header_pattern, row[1])
+            if match is not None:
                 start_row = i + 1  # points to columns header row
                 break
         if start_row > 0:
@@ -151,9 +153,7 @@ class PSB_Broker:
             "reg_code": "Номер гос.регистрации"
         }
 
-        row, headers = self.find_section_start("Портфель на конец дня на биржевом рынке", columns)
-        if row < 0:  # Probably we have old report format with short title
-            row, headers = self.find_section_start("Портфель на конец дня", columns)
+        row, headers = self.find_section_start(r"^Портфель на конец дня.*", columns)
         if row < 0:
             return False
 
@@ -219,7 +219,38 @@ class PSB_Broker:
         pass
 
     def load_dividends(self):
-        pass
+        cnt = 0
+        columns = {
+            "date": "Дата операции",
+            "isin": "ISIN",
+            "reg_code": "Номер гос. регистрации",
+            "currency": "Валюта Выплаты",
+            "amount": "Сумма дивидендов",
+            "tax": "Сумма удержанного налога "
+        }
+
+        row, headers = self.find_section_start("Выплата дивидендов", columns)
+        if row < 0:
+            return False
+        while row < self._statement.shape[0]:
+            if self._statement[1][row] == '':
+                break
+
+            timestamp = int(datetime.strptime(self._statement[headers['date']][row],
+                                              "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+            amount = float(self._statement[headers['amount']][row])
+            tax = float(self._statement[headers['tax']][row])
+            account_id = self._accounts[self._statement[headers['currency']][row]]
+            asset_id = JalDB().get_asset_id('', isin=self._statement[headers['isin']][row],
+                                            reg_code=self._statement[headers['reg_code']][row])
+            if asset_id is None:
+                logging.error(g_tr('PSB', "Can't find asset for dividend ") +
+                              f"{self._statement[headers['isin']][row]}/{self._statement[headers['reg_code']][row]}")
+                continue
+            JalDB().add_dividend(DividendSubtype.Dividend, timestamp, account_id, asset_id, amount, '', tax=tax)
+            cnt += 1
+            row += 1
+        logging.info(g_tr('PSB', "Dividends loaded: ") + f"{cnt}")
 
     def transfer_in(self, timestamp, account_id, amount):
         currency_name = JalDB().get_asset_name(JalDB().get_account_currency(account_id))
