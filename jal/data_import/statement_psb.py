@@ -92,6 +92,7 @@ class PSB_Broker:
         for i, row in self._statement.iterrows():
             match = re.search(header_pattern, row[1])
             if match is not None:
+                header = row[1]
                 start_row = i + 1  # points to columns header row
                 break
         if start_row > 0:
@@ -216,7 +217,44 @@ class PSB_Broker:
         pass
 
     def load_coupons(self):
-        pass
+        cnt = 0
+        columns = {
+            "date": "Дата операции",
+            "operation": "Вид операции",
+            "asset_name": "Наименование эмитента, вид, категория (тип), выпуск, транш ЦБ",
+            "isin": "ISIN",
+            "reg_code": "Регистрационный номер ЦБ",
+            "currency": "Валюта Выплаты",
+            "coupon": "НКД",
+            "tax": "Сумма удержанного налога, руб.*"
+        }
+
+        row, headers = self.find_section_start("Погашение купонов и ЦБ", columns)
+        if row < 0:
+            return False
+        while row < self._statement.shape[0]:
+            if self._statement[1][row] == '':
+                break
+            if self._statement[headers['operation']][row] != 'Погашение купона':
+                logging.warning(g_tr('PSB', "Unsupported payment: ") + self._statement[headers['operation']][row])
+                row += 1
+                continue
+            timestamp = int(datetime.strptime(self._statement[headers['date']][row],
+                                              "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+            amount = float(self._statement[headers['coupon']][row])
+            tax = float(self._statement[headers['tax']][row])
+            account_id = self._accounts[self._statement[headers['currency']][row]]
+            asset_id = JalDB().get_asset_id('', isin=self._statement[headers['isin']][row],
+                                            reg_code=self._statement[headers['reg_code']][row])
+            note = self._statement[headers['operation']][row] + " " + self._statement[headers['asset_name']][row]
+            if asset_id is None:
+                logging.error(g_tr('PSB', "Can't find asset for coupon ") +
+                              f"{self._statement[headers['isin']][row]}/{self._statement[headers['reg_code']][row]}")
+                continue
+            JalDB().add_dividend(DividendSubtype.BondInterest, timestamp, account_id, asset_id, amount, note, tax=tax)
+            cnt += 1
+            row += 1
+        logging.info(g_tr('PSB', "Dividends loaded: ") + f"{cnt}")
 
     def load_dividends(self):
         cnt = 0
