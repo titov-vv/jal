@@ -5,7 +5,7 @@ import pandas
 
 from jal.widgets.helpers import g_tr
 from jal.db.update import JalDB
-from jal.constants import DividendSubtype
+from jal.constants import Setup, DividendSubtype
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -36,8 +36,7 @@ class PSB_Broker:
         self.load_cash_balance()
         self.load_securities()
         self.load_cash_transactions()
-        self.load_deals_t0()
-        self.load_deals_tplus()
+        self.load_deals()
         self.load_coupons()
         self.load_dividends()
         logging.info(g_tr('PSB', "PSB broker statement loaded successfully"))
@@ -89,6 +88,7 @@ class PSB_Broker:
     def find_section_start(self, header_pattern, columns) -> (int, dict):
         start_row = -1
         headers = {}
+        header = ''
         for i, row in self._statement.iterrows():
             match = re.search(header_pattern, row[1])
             if match is not None:
@@ -97,14 +97,14 @@ class PSB_Broker:
                 break
         if start_row > 0:
             for col in range(self._statement.shape[1]):  # Load section headers from next row
-                headers[self._statement[col][start_row]] = col
+                headers[self._statement[col][start_row].strip()] = col  # .strip() as there are trailing spaces
         column_indices = {column: headers.get(columns[column], -1) for column in columns}
         if start_row > 0:
             for idx in column_indices:
-                if column_indices[idx] < 0:
+                if column_indices[idx] < 0 and idx[0] != '*':  # * - means header is optional
                     logging.error(g_tr('PSB', "Column not found in section ") + f"{header}: {idx}")
                     start_row = -1
-        start_row += 1
+            start_row += 1
         return start_row, column_indices
 
     def get_currencies(self):
@@ -172,8 +172,8 @@ class PSB_Broker:
     def load_cash_transactions(self):
         cnt = 0
         columns = {
-            "date": "Дата ",
-            "currency": "Валюта счета ",
+            "date": "Дата",
+            "currency": "Валюта счета",
             "amount": "Сумма",
             "operation": "Операция",
             "note": "Комментарий"
@@ -210,11 +210,80 @@ class PSB_Broker:
             row += 1
         logging.info(g_tr('PSB', "Cash transactions loaded: ") + f"{cnt}")
 
-    def load_deals_t0(self):
-        pass
+    def load_deals(self):
+        cnt = 0
+        sections = [
+            r"Сделки, .* с ЦБ на биржевых торговых .* с расчетами в дату заключения",
+            r"Сделки, .* с ЦБ на биржевых торговых .* с расчетами Т\+, незавершенные в отчетном периоде",
+            r"Сделки, .* с ЦБ на биржевых торговых .* с расчетами Т\+, рассчитанные в отчетном периоде"
+        ]
+        columns = {
+            "timestamp": "Дата и время совершения сделки",
+            "*settlement": "Фактическая дата исполнения сделки",
+            "number": "Номер сделки в ТС",
+            "isin": "ISIN",
+            "reg_code": "Номер гос. регистрации",
+            "B/S": "Вид сделки (покупка/продажа)",
+            "qty": "Кол-во ЦБ, шт.",
+            "currency": "Валюта сделки / Валюта платежа",
+            "price": "Цена (% для обл)",
+            "amount": "Сумма сделки без НКД",
+            "accrued_int": "НКД",
+            "fee1": "Комиссия торговой системы, руб",
+            "fee2": "Клиринговая комиссия, руб",
+            "fee3": "Комиссия за ИТС, руб",
+            "fee_broker": "Ком. брокера"
+        }
+        for section in sections:
+            row, headers = self.find_section_start(section, columns)
+            if row < 0:
+                continue
+            while row < self._statement.shape[0]:
+                if self._statement[1][row].startswith('Итого') or self._statement[1][row] == '':
+                    break
+                deal_number = self._statement[headers['number']][row]
+                asset_id = JalDB().get_asset_id('', isin=self._statement[headers['isin']][row],
+                                                reg_code=self._statement[headers['reg_code']][row])
+                if self._statement[headers['B/S']][row] == 'покупка':
+                    qty = self._statement[headers['qty']][row]
+                    bond_interest = -self._statement[headers['accrued_int']][row]
+                elif self._statement[headers['B/S']][row] == 'продажа':
+                    qty = -self._statement[headers['qty']][row]
+                    bond_interest = self._statement[headers['accrued_int']][row]
+                else:
+                    row += 1
+                    logging.warning(g_tr('PSB', "Unknown trade type: ") + self._statement[headers['B/S']][row])
+                    continue
+                price = self._statement[headers['price']][row]
+                currencies = [x.strip() for x in self._statement[headers['currency']][row].split('/')]
+                if currencies[0] != currencies [1]:
+                    row += 1
+                    logging.warning(g_tr('PSB', "Unsupported trade with different currencies: ") + currencies)
+                    continue
+                currency = currencies[0]
+                fee = self._statement[headers['fee1']][row] + self._statement[headers['fee2']][row] + \
+                      self._statement[headers['fee3']][row] + self._statement[headers['fee_broker']][row]
+                amount = self._statement[headers['amount']][row]
+                if abs(abs(price * qty) - amount) >= Setup.DISP_TOLERANCE:
+                    price = abs(amount / qty)
+                timestamp = int(datetime.strptime(self._statement[headers['timestamp']][row],
+                                                  "%d.%m.%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp())
+                if headers['*settlement'] == -1:
+                    settlement = int(
+                        datetime.strptime(self._statement[headers['timestamp']][row], "%d.%m.%Y %H:%M:%S").replace(
+                            tzinfo=timezone.utc).replace(hour=0, minute=0, second=0).timestamp())
+                else:
+                    settlement = int(datetime.strptime(self._statement[headers['*settlement']][row],
+                                                       "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+                JalDB().add_trade(self._accounts[currency], asset_id, timestamp, settlement, deal_number, qty, price,
+                                  -fee)
+                if bond_interest != 0:
+                    JalDB().add_dividend(DividendSubtype.BondInterest, timestamp, self._accounts[currency], asset_id,
+                                         bond_interest, "НКД", deal_number)
 
-    def load_deals_tplus(self):
-        pass
+                cnt += 1
+                row += 1
+        logging.info(g_tr('PSB', "Trades loaded: ") + f"{cnt}")
 
     def load_coupons(self):
         cnt = 0
@@ -233,7 +302,7 @@ class PSB_Broker:
         if row < 0:
             return False
         while row < self._statement.shape[0]:
-            if self._statement[1][row] == '':
+            if self._statement[2][row] == '':  # Row may contain comment in cell [1]
                 break
             if self._statement[headers['operation']][row] != 'Погашение купона':
                 logging.warning(g_tr('PSB', "Unsupported payment: ") + self._statement[headers['operation']][row])
@@ -254,7 +323,7 @@ class PSB_Broker:
             JalDB().add_dividend(DividendSubtype.BondInterest, timestamp, account_id, asset_id, amount, note, tax=tax)
             cnt += 1
             row += 1
-        logging.info(g_tr('PSB', "Dividends loaded: ") + f"{cnt}")
+        logging.info(g_tr('PSB', "Bond interests loaded: ") + f"{cnt}")
 
     def load_dividends(self):
         cnt = 0
@@ -264,7 +333,7 @@ class PSB_Broker:
             "reg_code": "Номер гос. регистрации",
             "currency": "Валюта Выплаты",
             "amount": "Сумма дивидендов",
-            "tax": "Сумма удержанного налога "
+            "tax": "Сумма удержанного налога"
         }
 
         row, headers = self.find_section_start("Выплата дивидендов", columns)
