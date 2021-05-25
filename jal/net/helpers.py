@@ -37,7 +37,8 @@ def GetAssetInfoByISIN(isin, reg_code) -> dict:
     asset_type = {
         'stock_shares': PredefinedAsset.Stock,
         'stock_bonds': PredefinedAsset.Bond,
-        'stock_etf': PredefinedAsset.ETF
+        'stock_etf': PredefinedAsset.ETF,
+        'stock_ppif': PredefinedAsset.ETF
     }
 
     asset = {}
@@ -50,10 +51,14 @@ def GetAssetInfoByISIN(isin, reg_code) -> dict:
         if security[columns.index('regnumber')] is None:
             security[columns.index('regnumber')] = ''
         if security[columns.index('isin')] == isin and security[columns.index('regnumber')] == reg_code:
-            logging.warning(g_tr('Net', "Online data found for: ") + f"{isin}/{reg_code}")
+            logging.info(g_tr('Net', "Online data found for: ") + f"{isin}/{reg_code}")
             asset['symbol'] = security[columns.index('secid')]
             asset['name'] = security[columns.index('name')]
-            asset['type'] = asset_type[security[columns.index('group')]]
+            try:
+                asset['type'] = asset_type[security[columns.index('group')]]
+            except KeyError:
+                logging.error(g_tr('Net', "Unsupported MOEX security type: ") + f"{security[columns.index('group')]}")
+                continue
             asset['source'] = MarketDataFeed.RU
             break
     return asset
