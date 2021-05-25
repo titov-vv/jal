@@ -137,6 +137,7 @@ class PSB_Broker:
         summary_header = self.find_row(self.SummaryHeader)
         cash_row = self.find_row(self.SettledCashHeader)
         if (summary_header == -1) or (cash_row == -1):
+            logging.error(g_tr('PSB', "Can't load cash balances"))
             return
         column = 5  # Start column of different currencies
         while column < self._statement.shape[1]:  # get currency names from each column

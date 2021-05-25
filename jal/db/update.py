@@ -229,8 +229,10 @@ class JalDB():
 
     def add_transfer(self, timestamp, f_acc_id, f_amount, t_acc_id, t_amount, fee_acc_id, fee, note):
         transfer_id = readSQL("SELECT id FROM transfers WHERE withdrawal_timestamp=:timestamp "
-                              "AND withdrawal_account=:from_acc_id AND deposit_account=:to_acc_id",
-                              [(":timestamp", timestamp), (":from_acc_id", f_acc_id), (":to_acc_id", t_acc_id)])
+                              "AND withdrawal_account=:from_acc_id AND deposit_account=:to_acc_id "
+                              "AND withdrawal=:f_amount AND deposit=:t_amount",
+                              [(":timestamp", timestamp), (":from_acc_id", f_acc_id), (":to_acc_id", t_acc_id),
+                               (":f_amount", f_amount), (":t_amount", t_amount)])
         if transfer_id:
             logging.info(g_tr('JalDB', "Transfer/Exchange already exists: ") + f"{f_amount}->{t_amount}")
             return
