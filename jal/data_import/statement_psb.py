@@ -98,9 +98,14 @@ class PSB_Broker:
         if start_row > 0:
             for col in range(self._statement.shape[1]):  # Load section headers from next row
                 headers[self._statement[col][start_row].strip()] = col  # .strip() as there are trailing spaces
-        column_indices = {column: headers.get(columns[column], -1) for column in columns}
+        column_indices = {column: headers.get(columns[column].split("|")[0], -1) for column in columns}
         if start_row > 0:
-            for idx in column_indices:
+            for idx in column_indices:  # Verify column
+                if column_indices[idx] < 0 and len(columns[idx].split("|")) > 1:  # Check alternative name if not found
+                    for alt_col_header in columns[idx].split("|")[1:]:
+                        column_indices[idx] = headers.get(alt_col_header, -1)
+                        if column_indices[idx] >= 0:
+                            break
                 if column_indices[idx] < 0 and idx[0] != '*':  # * - means header is optional
                     logging.error(g_tr('PSB', "Column not found in section ") + f"{header}: {idx}")
                     start_row = -1
@@ -230,9 +235,9 @@ class PSB_Broker:
             "price": "Цена (% для обл)",
             "amount": "Сумма сделки без НКД",
             "accrued_int": "НКД",
-            "fee1": "Комиссия торговой системы, руб",
-            "fee2": "Клиринговая комиссия, руб",
-            "fee3": "Комиссия за ИТС, руб",
+            "fee1": "Комиссия торговой системы, руб|Комиссия торговой системы (без НДС), руб",
+            "fee2": "Клиринговая комиссия, руб|Клиринговая комиссия (без НДС), руб",
+            "fee3": "Комиссия за ИТС, руб|Комиссия за ИТС (в т.ч. НДС), руб",
             "fee_broker": "Ком. брокера"
         }
         for section in sections:
