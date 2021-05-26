@@ -88,26 +88,24 @@ class PSB_Broker:
     def find_section_start(self, header_pattern, columns) -> (int, dict):
         start_row = -1
         headers = {}
-        header = ''
+        section_header = ''
         for i, row in self._statement.iterrows():
-            match = re.search(header_pattern, row[1])
-            if match is not None:
-                header = row[1]
+            if re.search(header_pattern, row[1]):
+                section_header = row[1]
                 start_row = i + 1  # points to columns header row
                 break
         if start_row > 0:
-            for col in range(self._statement.shape[1]):  # Load section headers from next row
-                headers[self._statement[col][start_row].strip()] = col  # .strip() as there are trailing spaces
-        column_indices = {column: headers.get(columns[column].split("|")[0], -1) for column in columns}
+            for col in range(self._statement.shape[1]):          # Load section headers from next row
+                headers[self._statement[col][start_row]] = col   # store column number per header
+        column_indices = dict.fromkeys(columns, -1)   # initialize indexes to -1
+        for column in columns:
+            for header in headers:
+                if re.search(columns[column], header):
+                    column_indices[column] = headers[header]
         if start_row > 0:
-            for idx in column_indices:  # Verify column
-                if column_indices[idx] < 0 and len(columns[idx].split("|")) > 1:  # Check alternative name if not found
-                    for alt_col_header in columns[idx].split("|")[1:]:
-                        column_indices[idx] = headers.get(alt_col_header, -1)
-                        if column_indices[idx] >= 0:
-                            break
+            for idx in column_indices:                         # Verify that all columns were found
                 if column_indices[idx] < 0 and idx[0] != '*':  # * - means header is optional
-                    logging.error(g_tr('PSB', "Column not found in section ") + f"{header}: {idx}")
+                    logging.error(g_tr('PSB', "Column not found in section ") + f"{section_header}: {idx}")
                     start_row = -1
             start_row += 1
         return start_row, column_indices
@@ -155,9 +153,9 @@ class PSB_Broker:
         cnt = 0
         loaded = 0
         columns = {
-            "name": "Наименование эмитента, вид, категория (тип), выпуск, транш ЦБ",
+            "name": r"Наименование эмитента, вид, категория \(тип\), выпуск, транш ЦБ",
             "isin": "ISIN",
-            "reg_code": "Номер гос.регистрации"
+            "reg_code": r"Номер гос\.регистрации"
         }
 
         row, headers = self.find_section_start(r"^Портфель на конец дня.*", columns)
@@ -228,17 +226,17 @@ class PSB_Broker:
             "*settlement": "Фактическая дата исполнения сделки",
             "number": "Номер сделки в ТС",
             "isin": "ISIN",
-            "reg_code": "Номер гос. регистрации",
-            "B/S": "Вид сделки (покупка/продажа)",
-            "qty": "Кол-во ЦБ, шт.",
-            "currency": "Валюта сделки / Валюта платежа",
-            "price": "Цена (% для обл)",
+            "reg_code": r"Номер гос\. регистрации",
+            "B/S": r"Вид сделки \(покупка\/продажа\)",
+            "qty": r"Кол-во ЦБ, шт\.",
+            "currency": r"Валюта сделки \/ Валюта платежа",
+            "price": r"Цена \(% для обл\)",
             "amount": "Сумма сделки без НКД",
             "accrued_int": "НКД",
-            "fee1": "Комиссия торговой системы, руб|Комиссия торговой системы (без НДС), руб",
-            "fee2": "Клиринговая комиссия, руб|Клиринговая комиссия (без НДС), руб",
-            "fee3": "Комиссия за ИТС, руб|Комиссия за ИТС (в т.ч. НДС), руб",
-            "fee_broker": "Ком. брокера"
+            "fee1": r"Комиссия торговой системы( \(без НДС\))?, руб",
+            "fee2": r"Клиринговая комиссия( \(без НДС\))?, руб",
+            "fee3": r"Комиссия за ИТС( \(в т.ч. НДС\))?, руб",
+            "fee_broker": r"Ком\. брокера"
         }
         for section in sections:
             row, headers = self.find_section_start(section, columns)
@@ -296,12 +294,12 @@ class PSB_Broker:
         columns = {
             "date": "Дата операции",
             "operation": "Вид операции",
-            "asset_name": "Наименование эмитента, вид, категория (тип), выпуск, транш ЦБ",
+            "asset_name": r"Наименование эмитента, вид, категория \(тип\), выпуск, транш ЦБ",
             "isin": "ISIN",
             "reg_code": "Регистрационный номер ЦБ",
             "currency": "Валюта Выплаты",
             "coupon": "НКД",
-            "tax": "Сумма удержанного налога, руб.*"
+            "tax": r"Сумма удержанного налога, руб.*"
         }
 
         row, headers = self.find_section_start("Погашение купонов и ЦБ", columns)
@@ -336,7 +334,7 @@ class PSB_Broker:
         columns = {
             "date": "Дата операции",
             "isin": "ISIN",
-            "reg_code": "Номер гос. регистрации",
+            "reg_code": r"Номер гос\. регистрации",
             "currency": "Валюта Выплаты",
             "amount": "Сумма дивидендов",
             "tax": "Сумма удержанного налога"
