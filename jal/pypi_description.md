@@ -15,12 +15,13 @@ It was designed to keep records of personal incomes/spendings and investments wi
     1. monthly incomes/spendings splitted by category
     2. profit/loss report for investments accounts
     3. closed deals report 
-- stock/ETF quotes updates for US (Yahoo), EU (Euronext) and RU (MOEX) exchanges traded stocks
+- stock/ETF quotes updates for US (Yahoo), EU (Euronext), CA (TSX) and RU (MOEX) exchanges traded stocks
 - broker statement import:
     1. Quik HTML-report (only trades, fee might be incomplete)
     2. Interactive Brokers Flex-query report
     3. Uralsib Broker zipped XLS reports (trades, cash transactions)
     4. KIT Finance XLSX-report (trades)
+    5. PSB Broker XLS reports (trades, cash transactions, assets list)  
 - tax report preparation for foreign investments according to Russian Tax Law
 - *experimental* download russian electronic slips from russian tax authority:
     1. QR code may be scanned from camera, clipboard image or image file on disk
