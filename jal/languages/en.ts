@@ -13,7 +13,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="150"/>
+        <location filename="../widgets/income_spending_widget.py" line="151"/>
         <source>Failed to add new record: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -289,22 +289,22 @@
 <context>
     <name>DetailsModel</name>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="220"/>
+        <location filename="../widgets/income_spending_widget.py" line="228"/>
         <source>Category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="221"/>
+        <location filename="../widgets/income_spending_widget.py" line="229"/>
         <source>Tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="223"/>
+        <location filename="../widgets/income_spending_widget.py" line="231"/>
         <source>Amount</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="224"/>
+        <location filename="../widgets/income_spending_widget.py" line="232"/>
         <source>Note</source>
         <translation type="unfinished"></translation>
     </message>
@@ -725,47 +725,47 @@
 <context>
     <name>IncomeSpendingWidget</name>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="39"/>
+        <location filename="../widgets/income_spending_widget.py" line="40"/>
         <source>Income / Spending</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="40"/>
+        <location filename="../widgets/income_spending_widget.py" line="41"/>
         <source>Date/Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="41"/>
+        <location filename="../widgets/income_spending_widget.py" line="42"/>
         <source>Details</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="42"/>
+        <location filename="../widgets/income_spending_widget.py" line="43"/>
         <source>Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="43"/>
+        <location filename="../widgets/income_spending_widget.py" line="44"/>
         <source>Peer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="53"/>
+        <location filename="../widgets/income_spending_widget.py" line="54"/>
         <source>Paid in foreign currency:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="55"/>
+        <location filename="../widgets/income_spending_widget.py" line="56"/>
         <source>Add detail</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="57"/>
+        <location filename="../widgets/income_spending_widget.py" line="58"/>
         <source>Remove detail</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="59"/>
+        <location filename="../widgets/income_spending_widget.py" line="60"/>
         <source>Copy detail</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1171,52 +1171,52 @@ Application will be terminated now</source>
 <context>
     <name>JalDB</name>
     <message>
-        <location filename="../db/update.py" line="151"/>
+        <location filename="../db/update.py" line="159"/>
         <source>Reg.number updated for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="167"/>
+        <location filename="../db/update.py" line="175"/>
         <source>Quote loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="178"/>
+        <location filename="../db/update.py" line="186"/>
         <source>Failed to add new asset: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="187"/>
+        <location filename="../db/update.py" line="198"/>
         <source>Dividend already exists: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="203"/>
+        <location filename="../db/update.py" line="214"/>
         <source>Trade already exists: #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="224"/>
+        <location filename="../db/update.py" line="237"/>
         <source>Transfer/Exchange already exists: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="249"/>
+        <location filename="../db/update.py" line="262"/>
         <source>Corporate action already exists: #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="137"/>
+        <location filename="../db/update.py" line="145"/>
         <source>Symbol updated </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="144"/>
+        <location filename="../db/update.py" line="152"/>
         <source>ISIN mismatch for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="88"/>
+        <location filename="../db/update.py" line="89"/>
         <source>Account not found: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1476,6 +1476,24 @@ do you want to save it?</source>
     </message>
 </context>
 <context>
+    <name>Net</name>
+    <message>
+        <location filename="../net/helpers.py" line="29"/>
+        <source> failed: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/helpers.py" line="54"/>
+        <source>Online data found for: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/helpers.py" line="60"/>
+        <source>Unsupported MOEX security type: </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>OperationsDelegate</name>
     <message>
         <location filename="../reports/deals_report.py" line="54"/>
@@ -1567,6 +1585,134 @@ do you want to save it?</source>
     </message>
 </context>
 <context>
+    <name>PSB</name>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="42"/>
+        <source>PSB broker statement loaded successfully</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="44"/>
+        <source>Planned cash: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="50"/>
+        <source>Can&apos;t find PSB broker report header</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="59"/>
+        <source>Can&apos;t parse PSB broker statement period</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="70"/>
+        <source>Loading PSB broker statement for account </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="72"/>
+        <source>Account currencies: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="85"/>
+        <source>Header isn&apos;t found in PSB broker statement:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="108"/>
+        <source>Column not found in section </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="143"/>
+        <source>Can&apos;t load cash balances</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="174"/>
+        <source>Securities loaded: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="197"/>
+        <source>Unknown cash transaction: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="210"/>
+        <source>Unknown cash operation: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="215"/>
+        <source>Cash transactions loaded: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="259"/>
+        <source>Unknown trade type: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="265"/>
+        <source>Unsupported trade with different currencies: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="290"/>
+        <source>Trades loaded: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="312"/>
+        <source>Unsupported payment: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="324"/>
+        <source>Can&apos;t find asset for coupon </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="330"/>
+        <source>Bond interests loaded: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="358"/>
+        <source>Can&apos;t find asset for dividend </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="364"/>
+        <source>Dividends loaded: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="368"/>
+        <source>Deposit of </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="370"/>
+        <source>Select account to withdraw from:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="378"/>
+        <source>Withdrawal of </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_psb.py" line="380"/>
+        <source>Select account to deposit to:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>PandasLinesModel</name>
     <message>
         <location filename="../data_import/slips.py" line="63"/>
@@ -1625,22 +1771,17 @@ do you want to save it?</source>
 <context>
     <name>QuotesUpdateDialog</name>
     <message>
-        <location filename="../data_import/downloader.py" line="277"/>
-        <source> failed with response </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../data_import/downloader.py" line="122"/>
+        <location filename="../data_import/downloader.py" line="110"/>
         <source>No data were downloaded for </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/downloader.py" line="128"/>
+        <location filename="../data_import/downloader.py" line="116"/>
         <source>Download completed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/downloader.py" line="285"/>
+        <location filename="../data_import/downloader.py" line="267"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1726,17 +1867,17 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="49"/>
+        <location filename="../data_import/statements.py" line="50"/>
         <source>No selection</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="49"/>
+        <location filename="../data_import/statements.py" line="50"/>
         <source>Please select different account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="42"/>
+        <location filename="../data_import/statements.py" line="43"/>
         <source>Invalid account selected</source>
         <translation></translation>
     </message>
@@ -2268,37 +2409,37 @@ do you want to save it?</source>
 <context>
     <name>StatementLoader</name>
     <message>
-        <location filename="../data_import/statements.py" line="102"/>
+        <location filename="../data_import/statements.py" line="109"/>
         <source>Select statement file to import</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="140"/>
+        <location filename="../data_import/statements.py" line="150"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="140"/>
+        <location filename="../data_import/statements.py" line="150"/>
         <source>Statement period starts before last recorded operation for the account. Continue import?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="68"/>
+        <location filename="../data_import/statements.py" line="69"/>
         <source>Quik HTML</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="74"/>
+        <location filename="../data_import/statements.py" line="75"/>
         <source>Interactive Brokers XML</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="80"/>
+        <location filename="../data_import/statements.py" line="81"/>
         <source>Uralsib Broker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="86"/>
+        <location filename="../data_import/statements.py" line="87"/>
         <source>KIT Finance</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2488,12 +2629,12 @@ do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="92"/>
+        <location filename="../data_import/statements.py" line="99"/>
         <source>IBKR Activity HTML</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="125"/>
+        <location filename="../data_import/statements.py" line="135"/>
         <source>This is an obsolete routine for specific cases of old reports import.
 Use it with extra care if you understand what you are doing.
 Otherwise please use &apos;Interactive Brokers XML&apos; import.
@@ -2501,7 +2642,7 @@ Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="50"/>
+        <location filename="../data_import/statement_ibkr.py" line="231"/>
         <source>Planned cash: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2516,8 +2657,8 @@ Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="48"/>
-        <source>Uralsib Capital statement loaded successfully</source>
+        <location filename="../data_import/statements.py" line="93"/>
+        <source>PSB Broker</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2965,6 +3106,16 @@ Continue?</source>
     <message>
         <location filename="../data_import/statement_uralsib.py" line="74"/>
         <source>Account currencies: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="48"/>
+        <source>Uralsib Capital statement loaded successfully</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="50"/>
+        <source>Planned cash: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
