@@ -491,6 +491,7 @@ class TaxesRus:
                            "LEFT JOIN quotes AS qsd ON ldsd.timestamp=qsd.timestamp AND a.currency_id=qsd.asset_id "
                            "WHERE c.settlement>=:begin AND c.settlement<:end AND d.account_id=:account_id "
                            "AND (s.type_id = :stock OR s.type_id = :fund) "
+                           "GROUP BY d.rowid "  # to prevent collapse to 1 line if 'sd' values are NULL
                            "ORDER BY s.name, o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
                             (":stock", PredefinedAsset.Stock), (":fund", PredefinedAsset.ETF)])
