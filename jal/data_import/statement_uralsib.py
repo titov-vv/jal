@@ -12,10 +12,10 @@ from jal.constants import Setup, DividendSubtype, PredefinedCategory, Predefined
 # -----------------------------------------------------------------------------------------------------------------------
 class UralsibCapital:
     Header = '  Брокер: ООО "УРАЛСИБ Брокер"'
-    PeriodPattern = "  за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d)"
-    DividendPattern = "> (?P<DESCR1>.*) \((?P<REG_CODE>.*)\)( (?P<DESCR2>.*) налог в размере (?P<TAX>\d+\.\d\d) удержан)?. НДС не облагается."
-    BondInterestPattern = "Погашение купона №( -?\d+)? (?P<NAME>.*)"
-    ISINPattern = "[A-Z]{2}.{9}\d"
+    PeriodPattern = r"  за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d)"
+    DividendPattern = r"> (?P<DESCR1>.*) \((?P<REG_CODE>.*)\)((?P<DESCR2> .*)? налог в размере (?P<TAX>\d+\.\d\d) удержан)?\. НДС не облагается\."
+    BondInterestPattern = r"Погашение купона №( -?\d+)? (?P<NAME>.*)"
+    ISINPattern = r"[A-Z]{2}.{9}\d"
 
     def __init__(self, parent, filename):
         self._parent = parent
@@ -313,7 +313,7 @@ class UralsibCapital:
             tax = 0
         amount = amount + tax   # Statement contains value after taxation while JAL stores value before tax
         if dividend_data['DESCR2']:
-            shortened_description = dividend_data['DESCR1'] + ' ' + dividend_data['DESCR2']
+            shortened_description = dividend_data['DESCR1'] + ' ' + dividend_data['DESCR2'].strip()
         else:
             shortened_description = dividend_data['DESCR1']
         JalDB().add_dividend(DividendSubtype.Dividend, timestamp, account_id, asset_id,
