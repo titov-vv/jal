@@ -1,0 +1,8 @@
+{
+  "from": 1577836800,
+  "to": 1607817600,
+  "accounts": [
+     {"accountId": "U7654321", "currency": "RUB", "startingCash": 0.0, "endingCash": 0.0, "endingSettledCash": 0.0},
+     {"accountId": "U7654321", "currency": "USD", "startingCash": 12.345, "endingCash": 1234567.249966388, "endingSettledCash": 1234567.89}
+  ]
+}

@@ -1,6 +1,7 @@
 import os
 from shutil import copyfile
 import sqlite3
+import json
 
 from pytest import approx
 
@@ -9,6 +10,7 @@ from constants import Setup
 from jal.db.helpers import init_and_check_db, get_dbfilename, LedgerInitError
 from jal.db.backup_restore import JalBackup
 from jal.db.ledger import Ledger
+from jal.data_import.statement_ibkr import StatementIBKR
 
 
 def test_db_creation(tmp_path, project_root):
@@ -225,3 +227,13 @@ def test_fifo(tmp_path, project_root):
         assert row[3] == 0
 
     db.close()
+
+
+def test_statement_ibkr(project_root):
+    data_path = project_root + os.sep + "tests" + os.sep + "test_data" + os.sep
+    with open(data_path + 'ibkr.json', 'r') as json_file:
+        statement = json.load(json_file)
+
+    IBKR = StatementIBKR()
+    IBKR.load(data_path + 'ibkr.xml')
+    assert IBKR._data == statement

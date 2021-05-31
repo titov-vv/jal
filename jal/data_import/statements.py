@@ -1,7 +1,7 @@
 from PySide2.QtCore import QObject, Signal, Slot
 from PySide2.QtWidgets import QApplication, QDialog, QFileDialog, QMessageBox
-from jal.db.helpers import readSQL, account_last_date
 
+from jal.db.helpers import readSQL, account_last_date
 from jal.constants import Setup
 from jal.widgets.helpers import g_tr
 from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
@@ -13,7 +13,6 @@ from jal.data_import.statement_kit import KITFinance
 from jal.data_import.statement_psb import PSB_Broker
 
 
-# TODO make common ancestor for statement loader classes but not StatementLoader (to prevent extra objects creation)
 # -----------------------------------------------------------------------------------------------------------------------
 class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
     def __init__(self, description, current_account, recent_account=None):
