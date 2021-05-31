@@ -66,11 +66,11 @@ class StatementIBKR(Statement):
         section_descriptions = {
             'CashReport': {'tag': 'CashReportCurrency',
                            'level': 'Currency',
-                           'values': [('accountId', IBKR.flString, None),
-                                      ('currency', IBKR.flString, None),
-                                      ('startingCash', IBKR.flNumber, None),
-                                      ('endingCash', IBKR.flNumber, None),
-                                      ('endingSettledCash', IBKR.flNumber, None)]},
+                           'values': [('accountId', 'number', IBKR.flString, None),
+                                      ('currency', 'currency', IBKR.flString, None),
+                                      ('startingCash', 'cash_begin', IBKR.flNumber, None),
+                                      ('endingCash', 'cash_end', IBKR.flNumber, None),
+                                      ('endingSettledCash', 'cash_end_settled', IBKR.flNumber, None)]},
             'SecuritiesInfo': {'tag': 'SecurityInfo',
                                'level': '',
                                'values': [('symbol', IBKR.flString, None),
@@ -150,7 +150,7 @@ class StatementIBKR(Statement):
             if section_descriptions[section.tag]['level']:  # Skip extra lines (SUMMARY, etc)
                 if IBKR.flString(sample, 'levelOfDetail', '') != section_descriptions[section.tag]['level']:
                     continue
-            for attr_name, attr_loader, attr_default in section_descriptions[section.tag]['values']:
+            for attr_name, key_name, attr_loader, attr_default in section_descriptions[section.tag]['values']:
                 attr_value = attr_loader(sample, attr_name, attr_default)
                 if attr_value is None:
                     logging.error(
@@ -158,13 +158,14 @@ class StatementIBKR(Statement):
                     return None
                 if attr_value == IBKR.NotFound:  # Can't match something from report to database
                     return None
-                tag_dictionary[attr_name] = attr_value
+                tag_dictionary[key_name] = attr_value
             data.append(tag_dictionary)
         return data
 
     def load_accounts(self, balances):
         self._data[self.ACCOUNTS] = []
-        for balance in balances:
+        for i, balance in enumerate(balances):
+            balance["id"] = -(i + 1)
             self._data[self.ACCOUNTS].append(balance)
 
 # -----------------------------------------------------------------------------------------------------------------------
