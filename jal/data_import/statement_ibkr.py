@@ -24,14 +24,45 @@ class IBKRCashOp:
 
 
 class StatementIBKR(Statement):
+    _asset_types = {
+        'CASH': 'money',
+        'STK': 'stock',
+        'ETF': 'etf',
+        'ADR': 'adr',
+        'BOND': 'bond',
+        'OPT': 'option',
+        'FUT': 'futures',
+        'WAR': 'warrant'
+    }
+
     def __init__(self):
         super().__init__()
+        self._data = {}
+
+    @staticmethod
+    def _asset_type(data, name, default_value):
+        if name not in data.attrib:
+            return default_value
+        try:
+            asset_type = StatementIBKR._asset_types[data.attrib[name]]
+        except KeyError:
+            logging.warning(g_tr('IBKR', "Asset type isn't supported: ") + f"{data.attrib[name]}")
+            return default_value
+        if 'subCategory' not in data.attrib:   # use detailed info if present
+            return asset_type
+        if data.attrib['subCategory'] == 'COMMON':
+            return asset_type
+        try:
+            return StatementIBKR._asset_types[data.attrib['subCategory']]
+        except KeyError:
+            logging.warning(g_tr('IBKR', "Asset sub-type isn't supported: ") + f"{data.attrib['subCategory']}")
+            return default_value
 
     def load(self, filename: str) -> None:
         self._data = {}
         section_loaders = {
-            'CashReport': self.load_accounts
-            # 'SecuritiesInfo': self.loadIBSecurities,  # Order of load is important - SecuritiesInfo is first
+            'CashReport': self.load_accounts,
+            'SecuritiesInfo': self.load_assets  # Order of load is important - SecuritiesInfo is first
             # 'Trades': self.loadIBTrades,
             # 'OptionEAE': self.loadIBOptions,
             # 'CorporateActions': self.loadIBCorporateActions,
@@ -73,12 +104,12 @@ class StatementIBKR(Statement):
                                       ('endingSettledCash', 'cash_end_settled', IBKR.flNumber, None)]},
             'SecuritiesInfo': {'tag': 'SecurityInfo',
                                'level': '',
-                               'values': [('symbol', IBKR.flString, None),
-                                          ('assetCategory', IBKR.flAssetType, IBKR.NotSupported),
-                                          ('subCategory', IBKR.flString, ''),
-                                          ('description', IBKR.flString, None),
-                                          ('isin', IBKR.flString, ''),
-                                          ('listingExchange', IBKR.flString, '')]},
+                               'values': [('symbol', 'symbol', IBKR.flString, None),
+                                          ('assetCategory', 'type', StatementIBKR._asset_type, IBKR.NotSupported),
+                                          ('description', 'name', IBKR.flString, None),
+                                          ('isin', 'isin', IBKR.flString, ''),
+                                          ('cusip', 'reg_code', IBKR.flString, ''),
+                                          ('listingExchange', 'exchange', IBKR.flString, '')]},
             'Trades': {'tag': 'Trade',
                        'level': 'EXECUTION',
                        'values': [('assetCategory', IBKR.flAssetType, IBKR.NotSupported),
@@ -164,9 +195,23 @@ class StatementIBKR(Statement):
 
     def load_accounts(self, balances):
         self._data[self.ACCOUNTS] = []
-        for i, balance in enumerate(balances):
-            balance["id"] = -(i + 1)
+        for i, balance in enumerate(sorted(balances, key=lambda x: x['currency'])):
+            balance['id'] = -(i + 1)
             self._data[self.ACCOUNTS].append(balance)
+
+    def load_assets(self, assets):
+        self._data[self.ASSETS] = []
+        cnt = 0
+        for i, asset in enumerate(sorted(assets, key=lambda x: x['symbol'])):
+            asset['id'] = -(i + 1)
+            if asset['type'] == IBKR.NotSupported:   # Skip not supported type of asset
+                continue
+            # IB may use '.OLD' suffix if asset is being replaced
+            asset['symbol'] = asset['symbol'][:-len('.OLD')] if asset['symbol'].endswith('.OLD') else asset['symbol']
+            cnt += 1
+            self._data[self.ASSETS].append(asset)
+        logging.info(g_tr('StatementLoader', "Securities loaded: ") + f"{cnt} ({len(assets)})")
+
 
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKR:

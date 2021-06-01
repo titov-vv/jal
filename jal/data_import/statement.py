@@ -9,6 +9,7 @@ class Statement:
     S_TIMESTAMP = "from"
     E_TIMESTAMP = "to"
     ACCOUNTS = "accounts"
+    ASSETS = "assets"
 
     def __init__(self):
         self._data = {}
