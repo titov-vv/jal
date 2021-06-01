@@ -10,6 +10,8 @@ class Statement:
     E_TIMESTAMP = "to"
     ACCOUNTS = "accounts"
     ASSETS = "assets"
+    TRADES = "trades"
+    TRANSFERS = "transfers"
 
     def __init__(self):
         self._data = {}

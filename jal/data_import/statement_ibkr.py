@@ -20,10 +20,10 @@ class IBKRCashOp:
     Fee = 3
     Interest = 4
     BondInterest = 5
-# -----------------------------------------------------------------------------------------------------------------------
 
 
-class StatementIBKR(Statement):
+class IBKR_AssetType:
+    NotSupported = -1
     _asset_types = {
         'CASH': 'money',
         'STK': 'stock',
@@ -35,35 +35,90 @@ class StatementIBKR(Statement):
         'WAR': 'warrant'
     }
 
+    def __init__(self, asset_type, subtype):
+        self.type = self.NotSupported
+        if subtype and subtype != 'COMMON':
+            try:
+                self.type = self._asset_types[subtype]
+            except KeyError:
+                logging.warning(g_tr('IBKR_AssetType', "Asset sub-type isn't supported: ") + f"{subtype}")
+        else:
+            try:
+                self.type = self._asset_types[asset_type]
+            except KeyError:
+                logging.warning(g_tr('IBKR_AssetType', "Asset type isn't supported: ") + f"{asset_type}")
+
+
+# -----------------------------------------------------------------------------------------------------------------------
+class StatementIBKR(Statement):
     def __init__(self):
         super().__init__()
         self._data = {}
 
+    # -----------------------------------------------------------------------------------------------------------------------
+    # Helpers to get values from XML tag properties
+    # Convert attribute 'attr_name' value to string or return default value if attribute not found
     @staticmethod
-    def _asset_type(data, name, default_value):
+    def attr_string(xml_element, attr_name, default_value):
+        if attr_name not in xml_element.attrib:
+            return default_value
+        return xml_element.attrib[attr_name]
+
+    # Convert attribute 'attr_name' value to float or return default value if attribute not found / not a number
+    @staticmethod
+    def attr_number(xml_element, attr_name, default_value):
+        if attr_name not in xml_element.attrib:
+            return default_value
+        try:
+            value = float(xml_element.attrib[attr_name])
+        except ValueError:
+            return None
+        return value
+
+    # Convert attribute 'attr_name' value from strings "YYYYMMDD:hhmmss' or "YYYYMMDD" to datetime object
+    # or return default value if attribute not found / has wrong format
+    @staticmethod
+    def attr_timestamp(xml_element, attr_name, default_value):
+        if attr_name not in xml_element.attrib:
+            return default_value
+        time_str = xml_element.attrib[attr_name]
+        try:
+            if len(time_str) == 15:  # YYYYMMDD;HHMMSS
+                return int(datetime.strptime(time_str, "%Y%m%d;%H%M%S").replace(tzinfo=timezone.utc).timestamp())
+            elif len(time_str) == 8:  # YYYYMMDD
+                return int(datetime.strptime(time_str, "%Y%m%d").replace(tzinfo=timezone.utc).timestamp())
+            else:
+                return default_value
+        except ValueError:
+            logging.error(g_tr('IBKR', "Unsupported date/time format: ") + f"{xml_element.attrib[attr_name]}")
+            return None
+
+    # Convert attribute 'attr_name' value into json open-format asset type
+    @staticmethod
+    def attr_asset_type(xml_element, attr_name, default_value):
+        if attr_name not in xml_element.attrib:
+            return default_value
+        sub_type = xml_element.attrib['subCategory'] if 'subCategory' in xml_element.attrib else ''
+        return IBKR_AssetType(xml_element.attrib[attr_name], sub_type).type
+
+
+    @staticmethod
+    def _asset(data, name, default_value):
         if name not in data.attrib:
-            return default_value
-        try:
-            asset_type = StatementIBKR._asset_types[data.attrib[name]]
-        except KeyError:
-            logging.warning(g_tr('IBKR', "Asset type isn't supported: ") + f"{data.attrib[name]}")
-            return default_value
-        if 'subCategory' not in data.attrib:   # use detailed info if present
-            return asset_type
-        if data.attrib['subCategory'] == 'COMMON':
-            return asset_type
-        try:
-            return StatementIBKR._asset_types[data.attrib['subCategory']]
-        except KeyError:
-            logging.warning(g_tr('IBKR', "Asset sub-type isn't supported: ") + f"{data.attrib['subCategory']}")
             return default_value
 
     def load(self, filename: str) -> None:
-        self._data = {}
+        self._data = {
+            self.ACCOUNTS: [],
+            self.ASSETS: [],
+            self.TRADES: [],
+            self.TRANSFERS: []
+        }
+
         section_loaders = {
-            'CashReport': self.load_accounts,
-            'SecuritiesInfo': self.load_assets  # Order of load is important - SecuritiesInfo is first
-            # 'Trades': self.loadIBTrades,
+            'CashReport': self.load_accounts,  # Order of load is important - accounts and assets should be loaded first
+            'SecuritiesInfo': self.load_assets
+            # 'Trades': self.load_trades
             # 'OptionEAE': self.loadIBOptions,
             # 'CorporateActions': self.loadIBCorporateActions,
             # 'CashTransactions': self.loadIBCashTransactions,
@@ -94,37 +149,43 @@ class StatementIBKR(Statement):
         logging.info(g_tr('Statement', "IB Flex-statement loaded successfully"))
 
     def get_ibkr_data(self, section):
+        attr_loader = {
+            str: self.attr_string,
+            float: self.attr_number,
+            IBKR_AssetType: self.attr_asset_type
+        }
+
         section_descriptions = {
             'CashReport': {'tag': 'CashReportCurrency',
                            'level': 'Currency',
-                           'values': [('accountId', 'number', IBKR.flString, None),
-                                      ('currency', 'currency', IBKR.flString, None),
-                                      ('startingCash', 'cash_begin', IBKR.flNumber, None),
-                                      ('endingCash', 'cash_end', IBKR.flNumber, None),
-                                      ('endingSettledCash', 'cash_end_settled', IBKR.flNumber, None)]},
+                           'values': [('accountId', 'number', str, None),
+                                      ('currency', 'currency', str, None),
+                                      ('startingCash', 'cash_begin', float, None),
+                                      ('endingCash', 'cash_end', float, None),
+                                      ('endingSettledCash', 'cash_end_settled', float, None)]},
             'SecuritiesInfo': {'tag': 'SecurityInfo',
                                'level': '',
-                               'values': [('symbol', 'symbol', IBKR.flString, None),
-                                          ('assetCategory', 'type', StatementIBKR._asset_type, IBKR.NotSupported),
-                                          ('description', 'name', IBKR.flString, None),
-                                          ('isin', 'isin', IBKR.flString, ''),
-                                          ('cusip', 'reg_code', IBKR.flString, ''),
-                                          ('listingExchange', 'exchange', IBKR.flString, '')]},
+                               'values': [('symbol', 'symbol', str, None),
+                                          ('assetCategory', 'type', IBKR_AssetType, IBKR_AssetType.NotSupported),
+                                          ('description', 'name', str, None),
+                                          ('isin', 'isin', str, ''),
+                                          ('cusip', 'reg_code', str, ''),
+                                          ('listingExchange', 'exchange', str, '')]},
             'Trades': {'tag': 'Trade',
                        'level': 'EXECUTION',
-                       'values': [('assetCategory', IBKR.flAssetType, IBKR.NotSupported),
-                                  ('symbol', IBKR.flAsset, None),
-                                  ('accountId', IBKR.flAccount, IBKR.NotFound),
-                                  ('dateTime', IBKR.flTimestamp, None),
-                                  ('settleDateTarget', IBKR.flTimestamp, 0),
-                                  ('tradePrice', IBKR.flNumber, None),
-                                  ('quantity', IBKR.flNumber, None),
-                                  ('proceeds', IBKR.flNumber, None),
-                                  ('multiplier', IBKR.flNumber, None),
-                                  ('ibCommission', IBKR.flNumber, None),
-                                  ('tradeID', IBKR.flString, ''),
-                                  ('exchange', IBKR.flString, ''),
-                                  ('notes', IBKR.flString, '')]},
+                       'values': [('assetCategory', 'type', IBKR.flAssetType, IBKR.NotSupported),
+                                  ('symbol', 'asset', StatementIBKR._asset, None),
+                                  ('accountId', 'account', IBKR.flAccount, IBKR.NotFound),
+                                  ('dateTime', 'timestamp', IBKR.flTimestamp, None),
+                                  ('settleDateTarget', 'settlement', IBKR.flTimestamp, 0),
+                                  ('tradePrice', 'price', IBKR.flNumber, None),
+                                  ('quantity', 'quantity', IBKR.flNumber, None),
+                                  ('proceeds', 'proceeds', IBKR.flNumber, None),
+                                  ('multiplier', 'multiplier', IBKR.flNumber, None),
+                                  ('ibCommission', 'fee', IBKR.flNumber, None),
+                                  ('tradeID', 'number', IBKR.flString, ''),
+                                  ('exchange', 'exchange', IBKR.flString, ''),
+                                  ('notes', 'notes', IBKR.flString, '')]},
             'OptionEAE': {'tag': 'OptionEAE',
                           'level': '',
                           'values': [('transactionType', IBKR.flString, None),
@@ -181,8 +242,8 @@ class StatementIBKR(Statement):
             if section_descriptions[section.tag]['level']:  # Skip extra lines (SUMMARY, etc)
                 if IBKR.flString(sample, 'levelOfDetail', '') != section_descriptions[section.tag]['level']:
                     continue
-            for attr_name, key_name, attr_loader, attr_default in section_descriptions[section.tag]['values']:
-                attr_value = attr_loader(sample, attr_name, attr_default)
+            for attr_name, key_name, attr_type, attr_default in section_descriptions[section.tag]['values']:
+                attr_value = attr_loader[attr_type](sample, attr_name, attr_default)
                 if attr_value is None:
                     logging.error(
                         g_tr('StatementLoader', "Failed to load attribute: ") + f"{attr_name} / {sample.attrib}")
@@ -194,13 +255,11 @@ class StatementIBKR(Statement):
         return data
 
     def load_accounts(self, balances):
-        self._data[self.ACCOUNTS] = []
         for i, balance in enumerate(sorted(balances, key=lambda x: x['currency'])):
             balance['id'] = -(i + 1)
             self._data[self.ACCOUNTS].append(balance)
 
     def load_assets(self, assets):
-        self._data[self.ASSETS] = []
         cnt = 0
         for i, asset in enumerate(sorted(assets, key=lambda x: x['symbol'])):
             asset['id'] = -(i + 1)
@@ -211,6 +270,22 @@ class StatementIBKR(Statement):
             cnt += 1
             self._data[self.ASSETS].append(asset)
         logging.info(g_tr('StatementLoader', "Securities loaded: ") + f"{cnt} ({len(assets)})")
+
+    def load_trades(self, trades):
+        # trade_loaders = {
+        #     PredefinedAsset.Stock: self.loadIBStockTrade,
+        #     PredefinedAsset.Bond: self.loadIBBondTrade,
+        #     PredefinedAsset.Derivative: self.loadIBStockTrade,
+        #     PredefinedAsset.Money: self.loadIBCurrencyTrade
+        # }
+        #
+        cnt = 0
+        # for trade in trades:
+        #     try:
+        #         cnt += trade_loaders[trade['assetCategory']](trade)
+        #     except KeyError:
+        #         logging.warning(g_tr('StatementLoader', "Asset type isn't supported for trade: ") + f"{trade})")
+        logging.info(g_tr('StatementLoader', "Trades loaded: ") + f"{cnt} ({len(trades)})")
 
 
 # -----------------------------------------------------------------------------------------------------------------------

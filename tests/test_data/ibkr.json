@@ -9,5 +9,11 @@
      {"id": -1, "type": "stock", "symbol": "AMZN", "name": "AMAZON.COM INC", "isin": "US0231351067", "reg_code": "023135106", "exchange":  "NASDAQ"},
      {"id": -2, "type": "adr", "symbol": "BABA", "name": "ALIBABA GROUP HOLDING-SP ADR", "isin": "US01609W1027", "reg_code": "01609W102", "exchange":  "NYSE"},
      {"id": -3, "type": "etf", "symbol": "VUG", "name": "VANGUARD GROWTH ETF", "isin": "US9229087369", "reg_code": "922908736", "exchange":  "ARCA"}
+  ],
+  "trades": [
+
+  ],
+  "transfers": [
+
   ]
 }
