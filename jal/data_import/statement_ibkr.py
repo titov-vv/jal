@@ -9,7 +9,7 @@ from jal.constants import TransactionType, PredefinedAsset, PredefinedCategory, 
 from jal.widgets.helpers import g_tr, ManipulateDate
 from jal.db.update import JalDB
 from jal.db.helpers import executeSQL, readSQL, get_country_by_code, update_asset_country
-from jal.data_import.statement import Statement
+from jal.data_import.statement import Statement, FOF
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -22,17 +22,18 @@ class IBKRCashOp:
     BondInterest = 5
 
 
+# -----------------------------------------------------------------------------------------------------------------------
 class IBKR_AssetType:
     NotSupported = -1
     _asset_types = {
-        'CASH': 'money',
-        'STK': 'stock',
-        'ETF': 'etf',
-        'ADR': 'adr',
-        'BOND': 'bond',
-        'OPT': 'option',
-        'FUT': 'futures',
-        'WAR': 'warrant'
+        'CASH': FOF.ASSET_MONEY,
+        'STK': FOF.ASSET_STOCK,
+        'ETF': FOF.ASSET_ETF,
+        'ADR': FOF.ASSET_ADR,
+        'BOND': FOF.ASSET_BOND,
+        'OPT': FOF.ASSET_OPTION,
+        'FUT': FOF.ASSET_FUTURES,
+        'WAR': FOF.ASSET_WARRANT
     }
 
     def __init__(self, asset_type, subtype):
@@ -47,6 +48,32 @@ class IBKR_AssetType:
                 self.type = self._asset_types[asset_type]
             except KeyError:
                 logging.warning(g_tr('IBKR_AssetType', "Asset type isn't supported: ") + f"{asset_type}")
+
+
+# -----------------------------------------------------------------------------------------------------------------------
+class IBKR_Currency:
+    def __init__(self, assets_list, code):
+        self.id = None
+        match = [x for x in assets_list if x['symbol'] == code and x['type'] == FOF.ASSET_MONEY]
+        if match:
+            if len(match) == 1:
+                self.id = match[0]["id"]
+            else:
+                logging.error(g_tr('IBKR', "Multiple match for ") + f"{code}")
+        else:
+            self.id = max([0] + [x['id'] for x in assets_list]) + 1
+            currency = {"id": self.id, "type": "money", "symbol": code}
+            assets_list.append(currency)
+
+
+# -----------------------------------------------------------------------------------------------------------------------
+class IBKR_Asset:
+    pass
+
+
+# -----------------------------------------------------------------------------------------------------------------------
+class IBKR_Account:
+    pass
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -101,24 +128,52 @@ class StatementIBKR(Statement):
         sub_type = xml_element.attrib['subCategory'] if 'subCategory' in xml_element.attrib else ''
         return IBKR_AssetType(xml_element.attrib[attr_name], sub_type).type
 
+    def attr_currency(self, xml_element, attr_name, default_value):
+        if attr_name not in xml_element.attrib:
+            return default_value
+        return IBKR_Currency(self._data[FOF.ASSETS], xml_element.attrib[attr_name]).id
+
+    def attr_asset(self, xml_element, attr_name, default_value):
+        if attr_name not in xml_element.attrib:
+            return default_value
+        symbol = xml_element.attrib[attr_name]
+        if symbol == '':
+            return default_value
+        isin = xml_element.attrib['isin'] if 'isin' in xml_element.attrib else ''
+        reg_code = xml_element.attrib['cusip'] if 'cusip' in xml_element.attrib else ''
+
+        match = [x for x in self._data[FOF.ASSETS] if x['symbol'] == symbol]
+
+
+        #
+        # if data.tag == 'Trade' and IBKR.flAssetType(data, 'assetCategory', None) == PredefinedAsset.Money:
+        #     currency_asset = default_value
+        #     for currency in data.attrib['symbol'].split('.'):
+        #         currency_asset = JalDB().get_asset_id(currency)
+        #     return currency_asset
+        #
+        # isin = data.attrib['isin'] if 'isin' in data.attrib else ''
+        # if data.tag == 'CorporateAction' and data.attrib[name].endswith('.OLD'):
+        #     return JalDB().get_asset_id(data.attrib[name][:-len('.OLD')], isin=isin)
+        # return JalDB().get_asset_id(data.attrib[name], isin=isin)
 
     @staticmethod
-    def _asset(data, name, default_value):
-        if name not in data.attrib:
+    def attr_account(xml_element, attr_name, default_value):
+        if attr_name not in xml_element.attrib:
             return default_value
 
     def load(self, filename: str) -> None:
         self._data = {
-            self.ACCOUNTS: [],
-            self.ASSETS: [],
-            self.TRADES: [],
-            self.TRANSFERS: []
+            FOF.ACCOUNTS: [],
+            FOF.ASSETS: [],
+            FOF.TRADES: [],
+            FOF.TRANSFERS: []
         }
 
         section_loaders = {
             'CashReport': self.load_accounts,  # Order of load is important - accounts and assets should be loaded first
-            'SecuritiesInfo': self.load_assets
-            # 'Trades': self.load_trades
+            'SecuritiesInfo': self.load_assets,
+            'Trades': self.load_trades
             # 'OptionEAE': self.loadIBOptions,
             # 'CorporateActions': self.loadIBCorporateActions,
             # 'CashTransactions': self.loadIBCashTransactions,
@@ -129,9 +184,9 @@ class StatementIBKR(Statement):
             for FlexStatements in xml_root.getroot():
                 for statement in FlexStatements:
                     attr = statement.attrib
-                    self._data[self.S_TIMESTAMP] = int(
+                    self._data[FOF.S_TIMESTAMP] = int(
                         datetime.strptime(attr['fromDate'], "%Y%m%d").replace(tzinfo=timezone.utc).timestamp())
-                    self._data[self.E_TIMESTAMP] = int(
+                    self._data[FOF.E_TIMESTAMP] = int(
                         datetime.strptime(attr['toDate'], "%Y%m%d").replace(tzinfo=timezone.utc).timestamp())
                     logging.info(g_tr('Statement', "Load IB Flex-statement for account ") +
                                  f"{attr['accountId']}: {attr['fromDate']} - {attr['toDate']}")
@@ -152,14 +207,18 @@ class StatementIBKR(Statement):
         attr_loader = {
             str: self.attr_string,
             float: self.attr_number,
-            IBKR_AssetType: self.attr_asset_type
+            datetime: self.attr_timestamp,
+            IBKR_Currency: self.attr_currency,
+            IBKR_AssetType: self.attr_asset_type,
+            IBKR_Asset: self.attr_asset,
+            IBKR_Account: self.attr_account
         }
 
         section_descriptions = {
             'CashReport': {'tag': 'CashReportCurrency',
                            'level': 'Currency',
                            'values': [('accountId', 'number', str, None),
-                                      ('currency', 'currency', str, None),
+                                      ('currency', 'currency', IBKR_Currency, None),
                                       ('startingCash', 'cash_begin', float, None),
                                       ('endingCash', 'cash_end', float, None),
                                       ('endingSettledCash', 'cash_end_settled', float, None)]},
@@ -173,19 +232,19 @@ class StatementIBKR(Statement):
                                           ('listingExchange', 'exchange', str, '')]},
             'Trades': {'tag': 'Trade',
                        'level': 'EXECUTION',
-                       'values': [('assetCategory', 'type', IBKR.flAssetType, IBKR.NotSupported),
-                                  ('symbol', 'asset', StatementIBKR._asset, None),
-                                  ('accountId', 'account', IBKR.flAccount, IBKR.NotFound),
-                                  ('dateTime', 'timestamp', IBKR.flTimestamp, None),
-                                  ('settleDateTarget', 'settlement', IBKR.flTimestamp, 0),
-                                  ('tradePrice', 'price', IBKR.flNumber, None),
-                                  ('quantity', 'quantity', IBKR.flNumber, None),
-                                  ('proceeds', 'proceeds', IBKR.flNumber, None),
-                                  ('multiplier', 'multiplier', IBKR.flNumber, None),
-                                  ('ibCommission', 'fee', IBKR.flNumber, None),
-                                  ('tradeID', 'number', IBKR.flString, ''),
-                                  ('exchange', 'exchange', IBKR.flString, ''),
-                                  ('notes', 'notes', IBKR.flString, '')]},
+                       'values': [('assetCategory', 'type', IBKR_AssetType, IBKR_AssetType.NotSupported),
+                                  ('symbol', 'asset', IBKR_Asset, None),
+                                  ('accountId', 'account', IBKR_Account, None),
+                                  ('dateTime', 'timestamp', datetime, None),
+                                  ('settleDateTarget', 'settlement', datetime, 0),
+                                  ('tradePrice', 'price', float, None),
+                                  ('quantity', 'quantity', float, None),
+                                  ('proceeds', 'proceeds', float, None),
+                                  ('multiplier', 'multiplier', float, None),
+                                  ('ibCommission', 'fee', float, None),
+                                  ('tradeID', 'number', str, ''),
+                                  ('exchange', 'exchange', str, ''),
+                                  ('notes', 'notes', str, '')]},
             'OptionEAE': {'tag': 'OptionEAE',
                           'level': '',
                           'values': [('transactionType', IBKR.flString, None),
@@ -256,19 +315,20 @@ class StatementIBKR(Statement):
 
     def load_accounts(self, balances):
         for i, balance in enumerate(sorted(balances, key=lambda x: x['currency'])):
-            balance['id'] = -(i + 1)
-            self._data[self.ACCOUNTS].append(balance)
+            balance['id'] = i + 1
+            self._data[FOF.ACCOUNTS].append(balance)
 
     def load_assets(self, assets):
         cnt = 0
+        base = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
         for i, asset in enumerate(sorted(assets, key=lambda x: x['symbol'])):
-            asset['id'] = -(i + 1)
+            asset['id'] = base + i
             if asset['type'] == IBKR.NotSupported:   # Skip not supported type of asset
                 continue
             # IB may use '.OLD' suffix if asset is being replaced
             asset['symbol'] = asset['symbol'][:-len('.OLD')] if asset['symbol'].endswith('.OLD') else asset['symbol']
             cnt += 1
-            self._data[self.ASSETS].append(asset)
+            self._data[FOF.ASSETS].append(asset)
         logging.info(g_tr('StatementLoader', "Securities loaded: ") + f"{cnt} ({len(assets)})")
 
     def load_trades(self, trades):

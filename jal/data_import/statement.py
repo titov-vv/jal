@@ -5,14 +5,26 @@ from jal.widgets.helpers import g_tr
 # -----------------------------------------------------------------------------------------------------------------------
 
 
-class Statement:
+class FOF:
     S_TIMESTAMP = "from"
     E_TIMESTAMP = "to"
+
     ACCOUNTS = "accounts"
     ASSETS = "assets"
     TRADES = "trades"
     TRANSFERS = "transfers"
 
+    ASSET_MONEY = "money"
+    ASSET_STOCK = "stock"
+    ASSET_ADR = "adr"
+    ASSET_ETF = "etf"
+    ASSET_BOND = "bond"
+    ASSET_FUTURES = "futures"
+    ASSET_OPTION = "option"
+    ASSET_WARRANT = "warrant"
+
+# -----------------------------------------------------------------------------------------------------------------------
+class Statement:
     def __init__(self):
         self._data = {}
 
