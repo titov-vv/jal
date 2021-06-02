@@ -201,7 +201,10 @@ class StatementIBKR(Statement):
             return default_value
         asset_category = self.attr_asset_type(xml_element, 'assetCategory', None)
         if xml_element.tag == 'Trade' and asset_category == FOF.ASSET_MONEY:
-            asset_id = 0
+            currency = xml_element.attrib[attr_name].split('.')
+            asset_id = [IBKR_Currency(self._data[FOF.ASSETS], code).id for code in currency]
+            if not asset_id:
+                return default_value
         else:
             isin = xml_element.attrib['isin'] if 'isin' in xml_element.attrib else ''
             cusip = xml_element.attrib['cusip'] if 'cusip' in xml_element.attrib else ''
@@ -403,31 +406,32 @@ class StatementIBKR(Statement):
             self._data[FOF.ASSETS].append(asset)
         logging.info(g_tr('StatementLoader', "Securities loaded: ") + f"{cnt} ({len(assets)})")
 
-    def load_trades(self, trades):
+    def load_trades(self, ib_trades):
         extra_keys = ["type", "proceeds", "multiplier"]
-        # trade_loaders = {
-        #     PredefinedAsset.Stock: self.loadIBStockTrade,
-        #     PredefinedAsset.Bond: self.loadIBBondTrade,
-        #     PredefinedAsset.Derivative: self.loadIBStockTrade,
-        #     PredefinedAsset.Money: self.loadIBCurrencyTrade
-        # }
-        #
-        # for trade in trades:
-        #     try:
-        #         cnt += trade_loaders[trade['assetCategory']](trade)
-        #     except KeyError:
-        #         logging.warning(g_tr('StatementLoader', "Asset type isn't supported for trade: ") + f"{trade})")
+        trade_base = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
+        trades = [trade for trade in ib_trades if type(trade['asset']) == int]
 
+        transfer_base = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+        transfers = [transfer for transfer in ib_trades if type(transfer['asset']) == list]
 
         cnt = 0
-        base = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
         for i, trade in enumerate(sorted(trades, key=lambda x: x['timestamp'])):
-            trade['id'] = base + i
+            trade['id'] = trade_base + i
+            trade['quantity'] = trade['quantity'] * trade['multiplier']
+            if trade['settlement'] == 0:
+                trade['settlement'] = trade['timestamp']
             for key in extra_keys:  # get rid of extra keys
                 if key in trade:
                     del trade[key]
             cnt += 1
             self._data[FOF.TRADES].append(trade)
+        for i, transfer in enumerate(sorted(transfers, key=lambda x: x['timestamp'])):
+            transfer['id'] = transfer_base + i
+            for key in extra_keys:  # get rid of extra keys
+                if key in transfer:
+                    del transfer[key]
+            cnt += 1
+            self._data[FOF.TRANSFERS].append(transfer)
         logging.info(g_tr('StatementLoader', "Trades loaded: ") + f"{cnt} ({len(trades)})")
 
 

@@ -14,10 +14,11 @@
      {"id": 6, "type": "stock", "symbol": "AAPL", "name": "","isin": "US0378331005", "reg_code": "037833100", "exchange": "NASDAQ"}
   ],
   "trades": [
-     {"id": 1, "number": "2674740000", "timestamp": 1580215513, "settlement": 1580342400, "account": 2, "asset": 5, "quantity": -1240.0, "price": 54.84, "fee": -7.75519312, "notes": ""},
+     {"id": 1, "number": "2674740000", "timestamp": 1580215513, "settlement": 1580215513, "account": 2, "asset": 5, "quantity": -1240.0, "price": 54.84, "fee": -7.75519312, "notes": ""},
      {"id": 2, "number": "2674740000", "timestamp": 1580215566, "settlement": 1580342400, "account": 2, "asset": 6, "quantity": -148.0, "price": 316.68, "fee": -1.987792848, "notes": ""}
   ],
   "transfers": [
-
+     {"id": 1, "account": [2, 1, 2], "number": "2645393202", "asset": [2, 1], "timestamp": 1581322108, "settlement": 1581379200, "quantity": 1234.0, "price": 64.00865, "fee": -2.0, "notes": ""},
+     {"id": 2, "account": [1, 2, 2], "number": "2845906676", "asset": [1, 2], "timestamp": 1590522832, "settlement": 1590537600, "quantity": -44.07, "price": 0.014108877, "fee": 0.0, "notes": ""}
   ]
 }
