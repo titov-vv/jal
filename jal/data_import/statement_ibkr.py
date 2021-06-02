@@ -46,7 +46,7 @@ class IBKR_AssetType:
             try:
                 self.type = self._asset_types[subtype]
             except KeyError:
-                logging.warning(g_tr('IBKR_AssetType', "Asset sub-type isn't supported: ") + f"{subtype}")
+                pass
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -237,6 +237,12 @@ class StatementIBKR(Statement):
         else:
             return account_id
 
+    # Removes all keys listed in extra_keys_list from operation_dict
+    def drop_extra_fields(self, operation_dict, extra_keys_list):
+        for key in extra_keys_list:
+            if key in operation_dict:
+                del operation_dict[key]
+
     def load(self, filename: str) -> None:
         self._data = {
             FOF.ACCOUNTS: [],
@@ -248,7 +254,7 @@ class StatementIBKR(Statement):
         section_loaders = {
             'CashReport': self.load_accounts,  # Order of load is important - accounts and assets should be loaded first
             'SecuritiesInfo': self.load_assets,
-            'Trades': self.load_trades
+            'Trades': self.load_ib_trades
             # 'OptionEAE': self.loadIBOptions,
             # 'CorporateActions': self.loadIBCorporateActions,
             # 'CashTransactions': self.loadIBCashTransactions,
@@ -405,14 +411,18 @@ class StatementIBKR(Statement):
             self._data[FOF.ASSETS].append(asset)
         logging.info(g_tr('StatementLoader', "Securities loaded: ") + f"{cnt} ({len(assets)})")
 
-    def load_trades(self, ib_trades):
-        extra_keys = ["type", "proceeds", "multiplier", "notes"]
-        trade_base = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
+    def load_ib_trades(self, ib_trades):
         trades = [trade for trade in ib_trades if type(trade['asset']) == int]
+        trades_loaded = self.load_trades(trades)
 
-        transfer_base = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
         transfers = [transfer for transfer in ib_trades if type(transfer['asset']) == list]
+        transfers_loaded = self.load_transfers(transfers)
 
+        logging.info(g_tr('StatementLoader', "Trades loaded: ") +
+                     f"{trades_loaded + transfers_loaded} ({len(ib_trades)})")
+
+    def load_trades(self, trades):
+        trade_base = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
         cnt = 0
         for i, trade in enumerate(sorted(trades, key=lambda x: x['timestamp'])):
             trade['id'] = trade_base + i
@@ -425,19 +435,26 @@ class StatementIBKR(Statement):
                 trade['price'] = trade['price'] * IBKR.BondPricipal / 100.0  # Bonds are priced in percents of principal
             if trade['notes'] == IBKR.CancelledFlag:
                 trade['cancelled'] = True
-            for key in extra_keys:  # get rid of extra keys
-                if key in trade:
-                    del trade[key]
-            cnt += 1
+            self.drop_extra_fields(trade, ["type", "proceeds", "multiplier", "notes"])
             self._data[FOF.TRADES].append(trade)
+            cnt += 1
+        return cnt
+
+    def load_transfers(self, transfers):
+        transfer_base = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+        cnt = 0
         for i, transfer in enumerate(sorted(transfers, key=lambda x: x['timestamp'])):
             transfer['id'] = transfer_base + i
-            for key in extra_keys:  # get rid of extra keys
-                if key in transfer:
-                    del transfer[key]
-            cnt += 1
+            if transfer['quantity'] > 0:
+                transfer['account'][0], transfer['account'][1] = transfer['account'][1], transfer['account'][0]
+                transfer['asset'][0], transfer['asset'][1] = transfer['asset'][1], transfer['asset'][0]
+                transfer['quantity'], transfer['proceeds'] = transfer['proceeds'], transfer['quantity']
+            transfer['withdrawal'] = abs(transfer.pop('quantity'))
+            transfer['deposit'] = abs(transfer.pop('proceeds'))
+            self.drop_extra_fields(transfer, ["type", "settlement", "price", "multiplier", "notes"])
             self._data[FOF.TRANSFERS].append(transfer)
-        logging.info(g_tr('StatementLoader', "Trades loaded: ") + f"{cnt} ({len(trades)})")
+            cnt += 1
+        return cnt
 
 
 # -----------------------------------------------------------------------------------------------------------------------
