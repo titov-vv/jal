@@ -68,12 +68,71 @@ class IBKR_Currency:
 
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKR_Asset:
-    pass
+    def __init__(self, assets_list, symbol, category, isin, cusip):
+        self.id = None
+        self.assets = assets_list
+
+        if symbol.endswith('.OLD'):
+            symbol = symbol[:-len('.OLD')]
+
+        if self.match_and_update('isin', isin, {'symbol': symbol, 'reg_code': cusip}):
+            return
+        if self.match_and_update('reg_code', cusip, {'symbol': symbol, 'isin': isin}):
+            return
+        if self.match_and_update('symbol', symbol, {'isin': isin, 'reg_code': cusip}):
+            return
+        self.id = max([0] + [x['id'] for x in assets_list]) + 1
+        asset = {"id": self.id, "symbol": symbol, 'type': category}
+        if isin:
+            asset['isin'] = isin
+        if cusip:
+            asset['reg_code'] = cusip
+        assets_list.append(asset)
+
+    # search in self.assets['match_key'] for value match_value
+    # iterate through key:value pairs of updates to update self.assets['key'] with 'value'
+    # assign self.id if asset was found and returns True, otherwise returns False
+    def match_and_update(self, match_key, match_value, updates):
+        if not match_value:
+            return False
+        try:
+            match = [x for x in self.assets if x[match_key] == match_value]
+        except KeyError:
+            match = []
+        if match:
+            if len(match) == 1:
+                asset = match[0]
+                for key in updates:
+                    if updates[key]:
+                        asset[key] = updates[key]
+                self.id = asset['id']
+                return True
+            else:
+                logging.error(g_tr('IBKR', "Multiple asset match for ") + f"'{match_key}':'{match_value}'")
+                return False
 
 
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKR_Account:
-    pass
+    def __init__(self, accounts_list, number, currency_ids):
+        self.id = None
+        account_ids = []
+        for currency in currency_ids:
+            match = [x for x in accounts_list if x['number'] == number and x['currency'] == currency]
+            if match:
+                if len(match) == 1:
+                    account_ids.append(match[0]["id"])
+                else:
+                    logging.error(g_tr('IBKR', "Multiple account match for ") + f"{number}")
+            else:
+                self.id = max([0] + [x['id'] for x in accounts_list]) + 1
+                account = {"id": self.id, "number": number, "currency": currency}
+                accounts_list.append(account)
+        if account_ids:
+            if len(account_ids) == 1:
+                self.id = account_ids[0]
+            else:
+                self.id = account_ids
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -131,36 +190,48 @@ class StatementIBKR(Statement):
     def attr_currency(self, xml_element, attr_name, default_value):
         if attr_name not in xml_element.attrib:
             return default_value
-        return IBKR_Currency(self._data[FOF.ASSETS], xml_element.attrib[attr_name]).id
+        currency_id = IBKR_Currency(self._data[FOF.ASSETS], xml_element.attrib[attr_name]).id
+        if currency_id is None:
+            return default_value
+        else:
+            return currency_id
 
     def attr_asset(self, xml_element, attr_name, default_value):
         if attr_name not in xml_element.attrib:
             return default_value
-        symbol = xml_element.attrib[attr_name]
-        if symbol == '':
-            return default_value
-        isin = xml_element.attrib['isin'] if 'isin' in xml_element.attrib else ''
-        reg_code = xml_element.attrib['cusip'] if 'cusip' in xml_element.attrib else ''
+        asset_category = self.attr_asset_type(xml_element, 'assetCategory', None)
+        if xml_element.tag == 'Trade' and asset_category == FOF.ASSET_MONEY:
+            asset_id = 0
+        else:
+            isin = xml_element.attrib['isin'] if 'isin' in xml_element.attrib else ''
+            cusip = xml_element.attrib['cusip'] if 'cusip' in xml_element.attrib else ''
+            asset_id = IBKR_Asset(self._data[FOF.ASSETS], xml_element.attrib[attr_name], asset_category, isin, cusip).id
+            if asset_id is None:
+                return default_value
+        return asset_id
 
-        match = [x for x in self._data[FOF.ASSETS] if x['symbol'] == symbol]
-
-
-        #
-        # if data.tag == 'Trade' and IBKR.flAssetType(data, 'assetCategory', None) == PredefinedAsset.Money:
-        #     currency_asset = default_value
-        #     for currency in data.attrib['symbol'].split('.'):
-        #         currency_asset = JalDB().get_asset_id(currency)
-        #     return currency_asset
-        #
-        # isin = data.attrib['isin'] if 'isin' in data.attrib else ''
-        # if data.tag == 'CorporateAction' and data.attrib[name].endswith('.OLD'):
-        #     return JalDB().get_asset_id(data.attrib[name][:-len('.OLD')], isin=isin)
-        # return JalDB().get_asset_id(data.attrib[name], isin=isin)
-
-    @staticmethod
-    def attr_account(xml_element, attr_name, default_value):
+    def attr_account(self, xml_element, attr_name, default_value):
         if attr_name not in xml_element.attrib:
             return default_value
+        if xml_element.tag == 'Trade' and self.attr_asset_type(xml_element, 'assetCategory', None) == FOF.ASSET_MONEY:
+            if 'symbol' not in xml_element.attrib or 'ibCommissionCurrency' not in xml_element.attrib:
+                if default_value is None:
+                    logging.error(g_tr('IBKR', "Can't get currencies for currency exchange: ") + f"{xml_element}")
+                return default_value
+            currency = xml_element.attrib['symbol'].split('.')
+            currency.append(xml_element.attrib['ibCommissionCurrency'])
+        else:
+            if 'currency' not in xml_element.attrib:
+                if default_value is None:
+                    logging.error(g_tr('IBKR', "Can't get account currency for account: ") + f"{xml_element}")
+                return default_value
+            currency = [xml_element.attrib['currency']]
+        currency_ids = [IBKR_Currency(self._data[FOF.ASSETS], code).id for code in currency]
+        account_id = IBKR_Account(self._data[FOF.ACCOUNTS], xml_element.attrib[attr_name], currency_ids).id
+        if account_id is None:
+            return default_value
+        else:
+            return account_id
 
     def load(self, filename: str) -> None:
         self._data = {
@@ -243,7 +314,7 @@ class StatementIBKR(Statement):
                                   ('multiplier', 'multiplier', float, None),
                                   ('ibCommission', 'fee', float, None),
                                   ('tradeID', 'number', str, ''),
-                                  ('exchange', 'exchange', str, ''),
+                                  ('listingExchange', 'exchange', str, ''),
                                   ('notes', 'notes', str, '')]},
             'OptionEAE': {'tag': 'OptionEAE',
                           'level': '',
@@ -332,6 +403,7 @@ class StatementIBKR(Statement):
         logging.info(g_tr('StatementLoader', "Securities loaded: ") + f"{cnt} ({len(assets)})")
 
     def load_trades(self, trades):
+        extra_keys = ["type", "exchange", "proceeds", "multiplier"]
         # trade_loaders = {
         #     PredefinedAsset.Stock: self.loadIBStockTrade,
         #     PredefinedAsset.Bond: self.loadIBBondTrade,
@@ -339,12 +411,22 @@ class StatementIBKR(Statement):
         #     PredefinedAsset.Money: self.loadIBCurrencyTrade
         # }
         #
-        cnt = 0
         # for trade in trades:
         #     try:
         #         cnt += trade_loaders[trade['assetCategory']](trade)
         #     except KeyError:
         #         logging.warning(g_tr('StatementLoader', "Asset type isn't supported for trade: ") + f"{trade})")
+
+
+        cnt = 0
+        base = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
+        for i, trade in enumerate(sorted(trades, key=lambda x: x['timestamp'])):
+            trade['id'] = base + i
+            for key in extra_keys:  # get rid of extra keys
+                if key in trade:
+                    del trade[key]
+            cnt += 1
+            self._data[FOF.TRADES].append(trade)
         logging.info(g_tr('StatementLoader', "Trades loaded: ") + f"{cnt} ({len(trades)})")
 
 
