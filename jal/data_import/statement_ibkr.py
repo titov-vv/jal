@@ -38,16 +38,15 @@ class IBKR_AssetType:
 
     def __init__(self, asset_type, subtype):
         self.type = self.NotSupported
-        if subtype and subtype != 'COMMON':
+        try:
+            self.type = self._asset_types[asset_type]
+        except KeyError:
+            logging.warning(g_tr('IBKR_AssetType', "Asset type isn't supported: ") + f"{asset_type}")
+        if self.type == FOF.ASSET_STOCK:  # Make clarification by sub-type for stocks to distinguish ADR and ETF
             try:
                 self.type = self._asset_types[subtype]
             except KeyError:
                 logging.warning(g_tr('IBKR_AssetType', "Asset sub-type isn't supported: ") + f"{subtype}")
-        else:
-            try:
-                self.type = self._asset_types[asset_type]
-            except KeyError:
-                logging.warning(g_tr('IBKR_AssetType', "Asset type isn't supported: ") + f"{asset_type}")
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -407,7 +406,7 @@ class StatementIBKR(Statement):
         logging.info(g_tr('StatementLoader', "Securities loaded: ") + f"{cnt} ({len(assets)})")
 
     def load_trades(self, ib_trades):
-        extra_keys = ["type", "proceeds", "multiplier"]
+        extra_keys = ["type", "proceeds", "multiplier", "notes"]
         trade_base = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
         trades = [trade for trade in ib_trades if type(trade['asset']) == int]
 
@@ -420,6 +419,12 @@ class StatementIBKR(Statement):
             trade['quantity'] = trade['quantity'] * trade['multiplier']
             if trade['settlement'] == 0:
                 trade['settlement'] = trade['timestamp']
+            asset = [x for x in self._data[FOF.ASSETS] if x['id'] == trade['asset']][0]
+            if asset['type'] == FOF.ASSET_BOND:
+                trade['quantity'] = trade['quantity'] / IBKR.BondPricipal
+                trade['price'] = trade['price'] * IBKR.BondPricipal / 100.0  # Bonds are priced in percents of principal
+            if trade['notes'] == IBKR.CancelledFlag:
+                trade['cancelled'] = True
             for key in extra_keys:  # get rid of extra keys
                 if key in trade:
                     del trade[key]

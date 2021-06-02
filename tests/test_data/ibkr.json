@@ -10,15 +10,19 @@
      {"id": 2, "type": "money", "symbol": "USD"},
      {"id": 3, "type": "stock", "symbol": "AMZN", "name": "AMAZON.COM INC", "isin": "US0231351067", "reg_code": "023135106", "exchange":  "NASDAQ"},
      {"id": 4, "type": "adr", "symbol": "BABA", "name": "ALIBABA GROUP HOLDING-SP ADR", "isin": "US01609W1027", "reg_code": "01609W102", "exchange":  "NYSE"},
-     {"id": 5, "type": "etf", "symbol": "VUG", "name": "VANGUARD GROWTH ETF", "isin": "US9229087369", "reg_code": "922908736", "exchange":  "ARCA"},
-     {"id": 6, "type": "stock", "symbol": "AAPL", "name": "","isin": "US0378331005", "reg_code": "037833100", "exchange": "NASDAQ"}
+     {"id": 5, "type": "stock", "symbol": "D", "name": "DOMINION ENERGY INC", "isin": "", "reg_code": "25746U109", "exchange": "NYSE"},
+     {"id": 6, "type": "etf", "symbol": "VUG", "name": "VANGUARD GROWTH ETF", "isin": "US9229087369", "reg_code": "922908736", "exchange":  "ARCA"},
+     {"id": 7, "type": "bond", "symbol": "X 6 1/4 03/15/26", "name": "X 6 1/4 03/15/26", "isin": "US912909AN84", "reg_code": "912909AN8", "exchange": ""},
+     {"id": 8, "type": "stock", "symbol": "AAPL", "name": "","isin": "US0378331005", "reg_code": "037833100", "exchange": "NASDAQ"}
   ],
   "trades": [
-     {"id": 1, "number": "2674740000", "timestamp": 1580215513, "settlement": 1580215513, "account": 2, "asset": 5, "quantity": -1240.0, "price": 54.84, "fee": -7.75519312, "notes": ""},
-     {"id": 2, "number": "2674740000", "timestamp": 1580215566, "settlement": 1580342400, "account": 2, "asset": 6, "quantity": -148.0, "price": 316.68, "fee": -1.987792848, "notes": ""}
+     {"id": 1, "number": "", "timestamp": 1548447900, "settlement": 1548447900, "account": 2, "asset": 5, "quantity": 0.567, "price": 69.2215, "fee": 0.0, "cancelled": true},
+     {"id": 2, "number": "2674740000", "timestamp": 1580215513, "settlement": 1580215513, "account": 2, "asset": 6, "quantity": -1240.0, "price": 54.84, "fee": -7.75519312},
+     {"id": 3, "number": "2674740000", "timestamp": 1580215566, "settlement": 1580342400, "account": 2, "asset": 8, "quantity": -148.0, "price": 316.68, "fee": -1.987792848},
+     {"id": 4, "number": "2882737839", "timestamp": 1590595065, "settlement": 1590710400, "account": 2, "asset": 7, "quantity": 2.0, "price": 637.09, "fee": -2.0}
   ],
   "transfers": [
-     {"id": 1, "account": [2, 1, 2], "number": "2645393202", "asset": [2, 1], "timestamp": 1581322108, "settlement": 1581379200, "quantity": 1234.0, "price": 64.00865, "fee": -2.0, "notes": ""},
-     {"id": 2, "account": [1, 2, 2], "number": "2845906676", "asset": [1, 2], "timestamp": 1590522832, "settlement": 1590537600, "quantity": -44.07, "price": 0.014108877, "fee": 0.0, "notes": ""}
+     {"id": 1, "account": [2, 1, 2], "number": "2645393202", "asset": [2, 1], "timestamp": 1581322108, "settlement": 1581379200, "quantity": 1234.0, "price": 64.00865, "fee": -2.0},
+     {"id": 2, "account": [1, 2, 2], "number": "2845906676", "asset": [1, 2], "timestamp": 1590522832, "settlement": 1590537600, "quantity": -44.07, "price": 0.014108877, "fee": 0.0}
   ]
 }
