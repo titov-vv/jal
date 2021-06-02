@@ -11,7 +11,7 @@
      {"id": 3, "type": "stock", "symbol": "AMZN", "name": "AMAZON.COM INC", "isin": "US0231351067", "reg_code": "023135106", "exchange":  "NASDAQ"},
      {"id": 4, "type": "adr", "symbol": "BABA", "name": "ALIBABA GROUP HOLDING-SP ADR", "isin": "US01609W1027", "reg_code": "01609W102", "exchange":  "NYSE"},
      {"id": 5, "type": "etf", "symbol": "VUG", "name": "VANGUARD GROWTH ETF", "isin": "US9229087369", "reg_code": "922908736", "exchange":  "ARCA"},
-     {"id": 6, "type": "stock", "symbol": "AAPL", "isin": "US0378331005", "reg_code": "037833100"}
+     {"id": 6, "type": "stock", "symbol": "AAPL", "name": "","isin": "US0378331005", "reg_code": "037833100", "exchange": "NASDAQ"}
   ],
   "trades": [
      {"id": 1, "number": "2674740000", "timestamp": 1580215513, "settlement": 1580342400, "account": 2, "asset": 5, "quantity": -1240.0, "price": 54.84, "fee": -7.75519312, "notes": ""},

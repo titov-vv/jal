@@ -68,7 +68,7 @@ class IBKR_Currency:
 
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKR_Asset:
-    def __init__(self, assets_list, symbol, category, isin, cusip):
+    def __init__(self, assets_list, symbol, category, isin, cusip, exchange=''):
         self.id = None
         self.assets = assets_list
 
@@ -82,7 +82,7 @@ class IBKR_Asset:
         if self.match_and_update('symbol', symbol, {'isin': isin, 'reg_code': cusip}):
             return
         self.id = max([0] + [x['id'] for x in assets_list]) + 1
-        asset = {"id": self.id, "symbol": symbol, 'type': category}
+        asset = {"id": self.id, "symbol": symbol, 'name': '', 'type': category, 'exchange': exchange}
         if isin:
             asset['isin'] = isin
         if cusip:
@@ -205,7 +205,9 @@ class StatementIBKR(Statement):
         else:
             isin = xml_element.attrib['isin'] if 'isin' in xml_element.attrib else ''
             cusip = xml_element.attrib['cusip'] if 'cusip' in xml_element.attrib else ''
-            asset_id = IBKR_Asset(self._data[FOF.ASSETS], xml_element.attrib[attr_name], asset_category, isin, cusip).id
+            exchange = xml_element.attrib['listingExchange'] if 'listingExchange' in xml_element.attrib else ''
+            asset_id = IBKR_Asset(self._data[FOF.ASSETS], xml_element.attrib[attr_name], asset_category, isin, cusip,
+                                  exchange).id
             if asset_id is None:
                 return default_value
         return asset_id
@@ -314,7 +316,6 @@ class StatementIBKR(Statement):
                                   ('multiplier', 'multiplier', float, None),
                                   ('ibCommission', 'fee', float, None),
                                   ('tradeID', 'number', str, ''),
-                                  ('listingExchange', 'exchange', str, ''),
                                   ('notes', 'notes', str, '')]},
             'OptionEAE': {'tag': 'OptionEAE',
                           'level': '',
@@ -403,7 +404,7 @@ class StatementIBKR(Statement):
         logging.info(g_tr('StatementLoader', "Securities loaded: ") + f"{cnt} ({len(assets)})")
 
     def load_trades(self, trades):
-        extra_keys = ["type", "exchange", "proceeds", "multiplier"]
+        extra_keys = ["type", "proceeds", "multiplier"]
         # trade_loaders = {
         #     PredefinedAsset.Stock: self.loadIBStockTrade,
         #     PredefinedAsset.Bond: self.loadIBBondTrade,
