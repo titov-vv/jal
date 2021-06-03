@@ -12,24 +12,36 @@
     {"id": 4, "type": "stock", "symbol": "AMZN", "name": "AMAZON.COM INC", "isin": "US0231351067", "reg_code": "023135106", "exchange":  "NASDAQ"},
     {"id": 5, "type": "adr", "symbol": "BABA", "name": "ALIBABA GROUP HOLDING-SP ADR", "isin": "US01609W1027", "reg_code": "01609W102", "exchange":  "NYSE"},
     {"id": 6, "type": "stock", "symbol": "D", "name": "DOMINION ENERGY INC", "isin": "", "reg_code": "25746U109", "exchange": "NYSE"},
-    {"id": 7, "type": "bond", "symbol": "X 6 1/4 03/15/26", "name": "X 6 1/4 03/15/26", "isin": "US912909AN84", "reg_code": "912909AN8", "exchange": ""},
-    {"id": 8, "type": "option", "symbol": "SPY   200529C00295000", "name": "SPY 29MAY20 295.0 C", "isin": "", "reg_code": "", "exchange": ""},
-    {"id": 9, "type": "warrant", "symbol": "DSKEW", "name": "DSKEW 27FEB22 11.5 C", "isin": "US23753F1158", "reg_code": "23753F115", "exchange": "NASDAQ"},
-    {"id": 10, "type": "stock", "symbol": "AAPL", "name": "APPLE INC", "isin": "US0378331005", "reg_code": "037833100", "exchange": "NASDAQ"},
-    {"id": 11, "type": "option", "symbol": "VLO   200724P00064000", "name": "VLO 24JUL20 64.0 P", "exchange": "CBOE"},
-    {"id": 12, "type": "stock", "symbol": "VLO", "name": "VALERO ENERGY CORP", "isin": "US91913Y1001", "reg_code": "91913Y100", "exchange": "NYSE"}
+    {"id": 7, "type": "stock", "symbol": "DM", "name": "DOMINION ENERGY MIDSTREAM PA", "isin": "", "reg_code": "257454108", "exchange": "NYSE"},
+    {"id": 8, "type": "bond", "symbol": "X 6 1/4 03/15/26", "name": "X 6 1/4 03/15/26", "isin": "US912909AN84", "reg_code": "912909AN8", "exchange": ""},
+    {"id": 9, "type": "option", "symbol": "SPY   200529C00295000", "name": "SPY 29MAY20 295.0 C", "isin": "", "reg_code": "", "exchange": ""},
+    {"id": 10, "type": "warrant", "symbol": "DSKEW", "name": "DSKEW 27FEB22 11.5 C", "isin": "US23753F1158", "reg_code": "23753F115", "exchange": "NASDAQ"},
+    {"id": 11, "type": "stock", "symbol": "MYL", "name": "MYLAN NV", "isin": "NL0011031208", "reg_code": "", "exchange": "VALUE"},
+    {"id": 12, "type": "stock", "symbol": "VTRS", "name": "VIATRIS INC-W/I",  "isin": "US92556V1061", "reg_code": "92556V106", "exchange": "NASDAQ"},
+    {"id": 13, "type": "stock", "symbol": "WAB", "name": "WABTEC CORP", "isin": "US8793822086", "reg_code": "929740108", "exchange": "NYSE"},
+    {"id": 14, "type": "adr", "symbol": "TEF", "name": "TELEFONICA SA-SPON ADR", "isin": "US8793822086", "reg_code": "879382208", "exchange": "NYSE"},
+    {"id": 15, "type": "stock", "symbol": "EQM", "name": "EQM MIDSTREAM PARTNERS LP", "isin": "US26885B1008", "reg_code": "26885B100", "exchange": "NYSE"},
+    {"id": 16, "type": "stock", "symbol": "ETRN", "name": "EQUITRANS MIDSTREAM CORP", "isin": "US2946001011", "reg_code": "294600101", "exchange": "NYSE"},
+    {"id": 17, "type": "stock", "symbol": "AAPL", "name": "APPLE INC", "isin": "US0378331005", "reg_code": "037833100", "exchange": "NASDAQ"},
+    {"id": 18, "type": "option", "symbol": "VLO   200724P00064000", "name": "VLO 24JUL20 64.0 P", "exchange": "CBOE"},
+    {"id": 19, "type": "stock", "symbol": "VLO", "name": "VALERO ENERGY CORP", "isin": "US91913Y1001", "reg_code": "91913Y100", "exchange": "NYSE"},
+    {"id": 20, "type": "stock", "symbol": "MAC", "name": "", "isin": "US5543821012", "reg_code": "554382101", "exchange": "NYSE"}
   ],
   "trades": [
     {"id": 1, "number": "", "timestamp": 1548447900, "settlement": 1548447900, "account": 2, "asset": 6, "quantity": 0.567, "price": 69.2215, "fee": 0.0, "cancelled": true},
     {"id": 2, "number": "2674740000", "timestamp": 1580215513, "settlement": 1580215513, "account": 2, "asset": 3, "quantity": -1240.0, "price": 54.84, "fee": -7.75519312},
-    {"id": 3, "number": "2674740000", "timestamp": 1580215566, "settlement": 1580342400, "account": 2, "asset": 10, "quantity": -148.0, "price": 316.68, "fee": -1.987792848},
-    {"id": 4, "number": "2882737839", "timestamp": 1590595065, "settlement": 1590710400, "account": 2, "asset": 7, "quantity": 2.0, "price": 637.09, "fee": -2.0},
-    {"id": 5, "number": "2931083780", "timestamp": 1592575273, "settlement": 1592784000, "account": 2, "asset": 11, "quantity": -100.0, "price": 4.54, "fee": -1.1058334},
-    {"id": 6, "number": "2997636969", "timestamp": 1595607600, "settlement": 1595808000, "account": 2, "asset": 11, "quantity": 100.0, "price": 0.0, "fee": 0.0, "note": "Option assignment"},
-    {"id": 7, "number": "2997636973", "timestamp": 1595607600, "settlement": 1595607600, "account": 2, "asset": 12, "quantity": 100.0, "price": 64.0, "fee": 0.0, "note": "Option assignment/exercise"}
+    {"id": 3, "number": "2674740000", "timestamp": 1580215566, "settlement": 1580342400, "account": 2, "asset": 17, "quantity": -148.0, "price": 316.68, "fee": -1.987792848},
+    {"id": 4, "number": "2882737839", "timestamp": 1590595065, "settlement": 1590710400, "account": 2, "asset": 8, "quantity": 2.0, "price": 637.09, "fee": -2.0},
+    {"id": 5, "number": "2931083780", "timestamp": 1592575273, "settlement": 1592784000, "account": 2, "asset": 18, "quantity": -100.0, "price": 4.54, "fee": -1.1058334},
+    {"id": 6, "number": "2997636969", "timestamp": 1595607600, "settlement": 1595808000, "account": 2, "asset": 18, "quantity": 100.0, "price": 0.0, "fee": 0.0, "note": "Option assignment"},
+    {"id": 7, "number": "2997636973", "timestamp": 1595607600, "settlement": 1595607600, "account": 2, "asset": 19, "quantity": 100.0, "price": 64.0, "fee": 0.0, "note": "Option assignment/exercise"}
   ],
   "transfers": [
     {"id": 1, "account": [1, 2, 2], "number": "2645393202", "asset": [1, 2], "timestamp": 1581322108, "withdrawal": 78986.6741, "deposit": 1234.0, "fee": -2.0},
     {"id": 2, "account": [1, 2, 2], "number": "2845906676", "asset": [1, 2], "timestamp": 1590522832, "withdrawal": 44.07, "deposit": 0.621778209, "fee": 0.0}
+  ],
+  "corporate_actions": [
+    {"id": 1, "type": "merger", "account": 2, "timestamp": 1605731100, "number": "10162291403", "asset": [7, 6], "quantity": [70.0, 17.444], "description": "DM(US2574541080) MERGED(Acquisition) WITH US25746U1097 2492 FOR 10000 (D, DOMINION ENERGY INC, 25746U109)"},
+    {"id": 2, "type": "merger", "account": 2, "timestamp": 1592339100, "number": "13006963996", "asset": [15, 16], "quantity": [70.0, 170.8], "description": "EQM(US26885B1008) MERGED(Acquisition) WITH US2946001011 244 FOR 100 (ETRN, EQUITRANS MIDSTREAM CORP, US2946001011)"}
   ]
 }

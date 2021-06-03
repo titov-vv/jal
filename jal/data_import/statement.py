@@ -13,6 +13,7 @@ class FOF:
     ASSETS = "assets"
     TRADES = "trades"
     TRANSFERS = "transfers"
+    ACTIONS = "corporate_actions"
 
     ASSET_MONEY = "money"
     ASSET_STOCK = "stock"
@@ -22,6 +23,12 @@ class FOF:
     ASSET_FUTURES = "futures"
     ASSET_OPTION = "option"
     ASSET_WARRANT = "warrant"
+
+    ACTION_MERGER = "merger"
+    ACTION_SPLIT = "split"
+    ACTION_SPINOFF = "spin-off"
+    ACTION_SYMBOL_CHANGE = "symbol_change"
+    ACTION_STOCK_DIVIDEND = "stock_dividend"
 
 # -----------------------------------------------------------------------------------------------------------------------
 class Statement:
