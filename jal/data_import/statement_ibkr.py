@@ -67,7 +67,7 @@ class IBKR_Currency:
 
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKR_Asset:
-    def __init__(self, assets_list, symbol, category, isin, cusip, exchange=''):
+    def __init__(self, assets_list, symbol, category, name, isin, cusip, exchange=''):
         self.id = None
         self.assets = assets_list
 
@@ -81,7 +81,7 @@ class IBKR_Asset:
         if self.match_and_update('symbol', symbol, {'isin': isin, 'reg_code': cusip}):
             return
         self.id = max([0] + [x['id'] for x in assets_list]) + 1
-        asset = {"id": self.id, "symbol": symbol, 'name': '', 'type': category, 'exchange': exchange}
+        asset = {"id": self.id, "symbol": symbol, 'name': name, 'type': category, 'exchange': exchange}
         if isin:
             asset['isin'] = isin
         if cusip:
@@ -205,11 +205,12 @@ class StatementIBKR(Statement):
             if not asset_id:
                 return default_value
         else:
+            name = xml_element.attrib['description'] if 'description' in xml_element.attrib else ''
             isin = xml_element.attrib['isin'] if 'isin' in xml_element.attrib else ''
             cusip = xml_element.attrib['cusip'] if 'cusip' in xml_element.attrib else ''
             exchange = xml_element.attrib['listingExchange'] if 'listingExchange' in xml_element.attrib else ''
-            asset_id = IBKR_Asset(self._data[FOF.ASSETS], xml_element.attrib[attr_name], asset_category, isin, cusip,
-                                  exchange).id
+            asset_id = IBKR_Asset(self._data[FOF.ASSETS], xml_element.attrib[attr_name], asset_category,
+                                  name, isin, cusip, exchange).id
             if asset_id is None:
                 return default_value
         return asset_id
@@ -254,8 +255,8 @@ class StatementIBKR(Statement):
         section_loaders = {
             'CashReport': self.load_accounts,  # Order of load is important - accounts and assets should be loaded first
             'SecuritiesInfo': self.load_assets,
-            'Trades': self.load_ib_trades
-            # 'OptionEAE': self.loadIBOptions,
+            'Trades': self.load_ib_trades,
+            'OptionEAE': self.load_options
             # 'CorporateActions': self.loadIBCorporateActions,
             # 'CashTransactions': self.loadIBCashTransactions,
             # 'TransactionTaxes': self.loadIBTaxes
@@ -269,7 +270,7 @@ class StatementIBKR(Statement):
                         datetime.strptime(attr['fromDate'], "%Y%m%d").replace(tzinfo=timezone.utc).timestamp())
                     self._data[FOF.E_TIMESTAMP] = int(
                         datetime.strptime(attr['toDate'], "%Y%m%d").replace(tzinfo=timezone.utc).timestamp())
-                    logging.info(g_tr('Statement', "Load IB Flex-statement for account ") +
+                    logging.info(g_tr('IBKR', "Load IB Flex-statement for account ") +
                                  f"{attr['accountId']}: {attr['fromDate']} - {attr['toDate']}")
                     for section in section_loaders:
                         section_elements = statement.xpath(section)  # Actually should be list of 0 or 1 element
@@ -279,10 +280,10 @@ class StatementIBKR(Statement):
                                 return
                             section_loaders[section](section_data)
         except Exception as e:
-            logging.error(g_tr('Statement', "Failed to parse Interactive Brokers flex-report") + f": {e}",
+            logging.error(g_tr('IBKR', "Failed to parse Interactive Brokers flex-report") + f": {e}",
                           exc_info=True)
             return
-        logging.info(g_tr('Statement', "IB Flex-statement loaded successfully"))
+        logging.info(g_tr('IBKR', "IB Flex-statement loaded successfully"))
 
     def get_ibkr_data(self, section):
         attr_loader = {
@@ -327,16 +328,16 @@ class StatementIBKR(Statement):
                                   ('notes', 'notes', str, '')]},
             'OptionEAE': {'tag': 'OptionEAE',
                           'level': '',
-                          'values': [('transactionType', IBKR.flString, None),
-                                     ('symbol', IBKR.flAsset, None),
-                                     ('accountId', IBKR.flAccount, IBKR.NotFound),
-                                     ('date', IBKR.flTimestamp, None),
-                                     ('tradePrice', IBKR.flNumber, None),
-                                     ('quantity', IBKR.flNumber, None),
-                                     ('multiplier', IBKR.flNumber, None),
-                                     ('commisionsAndTax', IBKR.flNumber, None),
-                                     ('tradeID', IBKR.flString, ''),
-                                     ('notes', IBKR.flString, '')]},
+                          'values': [('transactionType', 'operation', str, None),
+                                     ('symbol', 'asset', IBKR_Asset, None),
+                                     ('accountId', 'account', IBKR_Account, IBKR.NotFound),
+                                     ('date', 'timestamp', datetime, None),
+                                     ('tradePrice', 'price', float, None),
+                                     ('quantity', 'quantity', float, None),
+                                     ('multiplier', 'multiplier', float, None),
+                                     ('commisionsAndTax', 'fee', float, None),
+                                     ('tradeID', 'number', str, ''),
+                                     ('notes', 'notes', str, '')]},
             'CorporateActions': {'tag': 'CorporateAction',
                                  'level': 'DETAIL',
                                  'values': [('type', IBKR.flCorpActionType, IBKR.NotSupported),
@@ -385,7 +386,7 @@ class StatementIBKR(Statement):
                 attr_value = attr_loader[attr_type](sample, attr_name, attr_default)
                 if attr_value is None:
                     logging.error(
-                        g_tr('StatementLoader', "Failed to load attribute: ") + f"{attr_name} / {sample.attrib}")
+                        g_tr('IBKR', "Failed to load attribute: ") + f"{attr_name} / {sample.attrib}")
                     return None
                 if attr_value == IBKR.NotFound:  # Can't match something from report to database
                     return None
@@ -401,7 +402,7 @@ class StatementIBKR(Statement):
     def load_assets(self, assets):
         cnt = 0
         base = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
-        for i, asset in enumerate(sorted(assets, key=lambda x: x['symbol'])):
+        for i, asset in enumerate(assets):
             asset['id'] = base + i
             if asset['type'] == IBKR.NotSupported:   # Skip not supported type of asset
                 continue
@@ -409,7 +410,7 @@ class StatementIBKR(Statement):
             asset['symbol'] = asset['symbol'][:-len('.OLD')] if asset['symbol'].endswith('.OLD') else asset['symbol']
             cnt += 1
             self._data[FOF.ASSETS].append(asset)
-        logging.info(g_tr('StatementLoader', "Securities loaded: ") + f"{cnt} ({len(assets)})")
+        logging.info(g_tr('IBKR', "Securities loaded: ") + f"{cnt} ({len(assets)})")
 
     def load_ib_trades(self, ib_trades):
         trades = [trade for trade in ib_trades if type(trade['asset']) == int]
@@ -418,8 +419,7 @@ class StatementIBKR(Statement):
         transfers = [transfer for transfer in ib_trades if type(transfer['asset']) == list]
         transfers_loaded = self.load_transfers(transfers)
 
-        logging.info(g_tr('StatementLoader', "Trades loaded: ") +
-                     f"{trades_loaded + transfers_loaded} ({len(ib_trades)})")
+        logging.info(g_tr('IBKR', "Trades loaded: ") + f"{trades_loaded + transfers_loaded} ({len(ib_trades)})")
 
     def load_trades(self, trades):
         trade_base = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
@@ -456,6 +456,31 @@ class StatementIBKR(Statement):
             cnt += 1
         return cnt
 
+    def load_options(self, options):
+        transaction_desctiption = {
+            "Assignment": g_tr('IBKR', "Option assignment"),
+            "Exercise": g_tr('IBKR', "Option exercise"),
+            "Expiration": g_tr('IBKR', "Option expiration"),
+            "Buy": g_tr('IBKR', "Option assignment/exercise"),
+            "Sell": g_tr('IBKR', "Option assignment/exercise"),
+        }
+        cnt = 0
+        for option in options:
+            description = ''
+            try:
+                description = transaction_desctiption[option['operation']]
+            except KeyError:
+                logging.error(
+                    g_tr('IBKR', "Option E&A&E action isn't implemented: ") + f"{option['transactionType']}")
+            if description:
+                trade = [x for x in self._data[FOF.TRADES] if x['account'] == option['account']
+                         and x['asset'] == option['asset'] and x['number'] == option['number']]
+                if len(trade) == 1:
+                    trade[0]['note'] = description
+                else:
+                    logging.warning(g_tr('IBKR', "Original trade not found for Option E&A&E operation: ") + f"{option}")
+                cnt += 1
+        logging.info(g_tr('IBKR', "Options E&A&E loaded: ") + f"{cnt} ({len(options)})")
 
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKR:

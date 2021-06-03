@@ -2,27 +2,34 @@
   "from": 1577836800,
   "to": 1607817600,
   "accounts": [
-     {"id": 1, "number": "U7654321", "currency": 1, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
-     {"id": 2, "number": "U7654321", "currency": 2, "cash_begin": 12.345, "cash_end": 1234567.249966388, "cash_end_settled": 1234567.89}
+    {"id": 1, "number": "U7654321", "currency": 1, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
+    {"id": 2, "number": "U7654321", "currency": 2, "cash_begin": 12.345, "cash_end": 1234567.249966388, "cash_end_settled": 1234567.89}
   ],
   "assets": [
-     {"id": 1, "type": "money", "symbol": "RUB"},
-     {"id": 2, "type": "money", "symbol": "USD"},
-     {"id": 3, "type": "stock", "symbol": "AMZN", "name": "AMAZON.COM INC", "isin": "US0231351067", "reg_code": "023135106", "exchange":  "NASDAQ"},
-     {"id": 4, "type": "adr", "symbol": "BABA", "name": "ALIBABA GROUP HOLDING-SP ADR", "isin": "US01609W1027", "reg_code": "01609W102", "exchange":  "NYSE"},
-     {"id": 5, "type": "stock", "symbol": "D", "name": "DOMINION ENERGY INC", "isin": "", "reg_code": "25746U109", "exchange": "NYSE"},
-     {"id": 6, "type": "etf", "symbol": "VUG", "name": "VANGUARD GROWTH ETF", "isin": "US9229087369", "reg_code": "922908736", "exchange":  "ARCA"},
-     {"id": 7, "type": "bond", "symbol": "X 6 1/4 03/15/26", "name": "X 6 1/4 03/15/26", "isin": "US912909AN84", "reg_code": "912909AN8", "exchange": ""},
-     {"id": 8, "type": "stock", "symbol": "AAPL", "name": "","isin": "US0378331005", "reg_code": "037833100", "exchange": "NASDAQ"}
+    {"id": 1, "type": "money", "symbol": "RUB"},
+    {"id": 2, "type": "money", "symbol": "USD"},
+    {"id": 3, "type": "etf", "symbol": "VUG", "name": "VANGUARD GROWTH ETF", "isin": "US9229087369", "reg_code": "922908736", "exchange":  "ARCA"},
+    {"id": 4, "type": "stock", "symbol": "AMZN", "name": "AMAZON.COM INC", "isin": "US0231351067", "reg_code": "023135106", "exchange":  "NASDAQ"},
+    {"id": 5, "type": "adr", "symbol": "BABA", "name": "ALIBABA GROUP HOLDING-SP ADR", "isin": "US01609W1027", "reg_code": "01609W102", "exchange":  "NYSE"},
+    {"id": 6, "type": "stock", "symbol": "D", "name": "DOMINION ENERGY INC", "isin": "", "reg_code": "25746U109", "exchange": "NYSE"},
+    {"id": 7, "type": "bond", "symbol": "X 6 1/4 03/15/26", "name": "X 6 1/4 03/15/26", "isin": "US912909AN84", "reg_code": "912909AN8", "exchange": ""},
+    {"id": 8, "type": "option", "symbol": "SPY   200529C00295000", "name": "SPY 29MAY20 295.0 C", "isin": "", "reg_code": "", "exchange": ""},
+    {"id": 9, "type": "warrant", "symbol": "DSKEW", "name": "DSKEW 27FEB22 11.5 C", "isin": "US23753F1158", "reg_code": "23753F115", "exchange": "NASDAQ"},
+    {"id": 10, "type": "stock", "symbol": "AAPL", "name": "APPLE INC", "isin": "US0378331005", "reg_code": "037833100", "exchange": "NASDAQ"},
+    {"id": 11, "type": "option", "symbol": "VLO   200724P00064000", "name": "VLO 24JUL20 64.0 P", "exchange": "CBOE"},
+    {"id": 12, "type": "stock", "symbol": "VLO", "name": "VALERO ENERGY CORP", "isin": "US91913Y1001", "reg_code": "91913Y100", "exchange": "NYSE"}
   ],
   "trades": [
-     {"id": 1, "number": "", "timestamp": 1548447900, "settlement": 1548447900, "account": 2, "asset": 5, "quantity": 0.567, "price": 69.2215, "fee": 0.0, "cancelled": true},
-     {"id": 2, "number": "2674740000", "timestamp": 1580215513, "settlement": 1580215513, "account": 2, "asset": 6, "quantity": -1240.0, "price": 54.84, "fee": -7.75519312},
-     {"id": 3, "number": "2674740000", "timestamp": 1580215566, "settlement": 1580342400, "account": 2, "asset": 8, "quantity": -148.0, "price": 316.68, "fee": -1.987792848},
-     {"id": 4, "number": "2882737839", "timestamp": 1590595065, "settlement": 1590710400, "account": 2, "asset": 7, "quantity": 2.0, "price": 637.09, "fee": -2.0}
+    {"id": 1, "number": "", "timestamp": 1548447900, "settlement": 1548447900, "account": 2, "asset": 6, "quantity": 0.567, "price": 69.2215, "fee": 0.0, "cancelled": true},
+    {"id": 2, "number": "2674740000", "timestamp": 1580215513, "settlement": 1580215513, "account": 2, "asset": 3, "quantity": -1240.0, "price": 54.84, "fee": -7.75519312},
+    {"id": 3, "number": "2674740000", "timestamp": 1580215566, "settlement": 1580342400, "account": 2, "asset": 10, "quantity": -148.0, "price": 316.68, "fee": -1.987792848},
+    {"id": 4, "number": "2882737839", "timestamp": 1590595065, "settlement": 1590710400, "account": 2, "asset": 7, "quantity": 2.0, "price": 637.09, "fee": -2.0},
+    {"id": 5, "number": "2931083780", "timestamp": 1592575273, "settlement": 1592784000, "account": 2, "asset": 11, "quantity": -100.0, "price": 4.54, "fee": -1.1058334},
+    {"id": 6, "number": "2997636969", "timestamp": 1595607600, "settlement": 1595808000, "account": 2, "asset": 11, "quantity": 100.0, "price": 0.0, "fee": 0.0, "note": "Option assignment"},
+    {"id": 7, "number": "2997636973", "timestamp": 1595607600, "settlement": 1595607600, "account": 2, "asset": 12, "quantity": 100.0, "price": 64.0, "fee": 0.0, "note": "Option assignment/exercise"}
   ],
   "transfers": [
-     {"id": 1, "account": [1, 2, 2], "number": "2645393202", "asset": [1, 2], "timestamp": 1581322108, "withdrawal": 78986.6741, "deposit": 1234.0, "fee": -2.0},
-     {"id": 2, "account": [1, 2, 2], "number": "2845906676", "asset": [1, 2], "timestamp": 1590522832, "withdrawal": 44.07, "deposit": 0.621778209, "fee": 0.0}
+    {"id": 1, "account": [1, 2, 2], "number": "2645393202", "asset": [1, 2], "timestamp": 1581322108, "withdrawal": 78986.6741, "deposit": 1234.0, "fee": -2.0},
+    {"id": 2, "account": [1, 2, 2], "number": "2845906676", "asset": [1, 2], "timestamp": 1590522832, "withdrawal": 44.07, "deposit": 0.621778209, "fee": 0.0}
   ]
 }
