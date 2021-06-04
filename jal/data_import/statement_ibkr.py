@@ -478,6 +478,7 @@ class StatementIBKR(Statement):
             if asset['type'] == FOF.ASSET_BOND:
                 trade['quantity'] = trade['quantity'] / IBKR.BondPricipal
                 trade['price'] = trade['price'] * IBKR.BondPricipal / 100.0  # Bonds are priced in percents of principal
+            trade['fee'] = abs(trade['fee'])  # Fees are negative in IBKR statement but we need to store positive values
             if trade['notes'] == IBKR.CancelledFlag:
                 trade['cancelled'] = True
             self.drop_extra_fields(trade, ["type", "proceeds", "multiplier", "notes"])
@@ -496,6 +497,7 @@ class StatementIBKR(Statement):
                 transfer['quantity'], transfer['proceeds'] = transfer['proceeds'], transfer['quantity']
             transfer['withdrawal'] = abs(transfer.pop('quantity'))
             transfer['deposit'] = abs(transfer.pop('proceeds'))
+            transfer['fee'] = abs(transfer['fee'])  # Fees are negative in IBKR statement but we need to store positive values
             self.drop_extra_fields(transfer, ["type", "settlement", "price", "multiplier", "notes"])
             self._data[FOF.TRANSFERS].append(transfer)
             cnt += 1
