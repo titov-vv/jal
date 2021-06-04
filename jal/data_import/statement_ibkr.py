@@ -119,7 +119,7 @@ class IBKR_Asset:
         if not match_value:
             return False
         try:
-            match = [x for x in self.assets if x[match_key] == match_value]
+            match = [x for x in self.assets if match_key in x and x[match_key] == match_value]
         except KeyError:
             match = []
         if match:
@@ -127,11 +127,14 @@ class IBKR_Asset:
                 asset = match[0]
                 for key in updates:
                     if updates[key]:
-                        asset[key] = updates[key]
+                        if (key == 'symbol') and (asset[key] + 'D' == updates[key] or asset[key] + 'Q' == updates[key]):
+                            continue  # Don't update symbols due to known bankruptcy or new issue patterns
+                        if asset[key] != updates[key]:
+                            asset[key] = updates[key]
                 self.id = asset['id']
                 return True
             else:
-                logging.error(g_tr('IBKR', "Multiple asset match for ") + f"'{match_key}':'{match_value}'")
+                logging.error(g_tr('IBKR', "Multiple asset match for ") + f"'{match_key}':'{match_value}', {updates}")
                 return False
 
 
@@ -588,6 +591,7 @@ class StatementIBKR(Statement):
         if len(paired_record) != 1:
             raise IBKR_ParseError(g_tr('IBKR', "Can't find paired record for ") + f"{action}")
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.ACTIONS]]) + 1
+        action['cost_basis'] = 1.0
         action['asset'] = [paired_record[0]['asset'], action['asset']]
         action['quantity'] = [-paired_record[0]['quantity'], action['quantity']]
         self.drop_extra_fields(action, ["code", "asset_type", "jal_processed"])
@@ -609,6 +613,7 @@ class StatementIBKR(Statement):
             raise IBKR_ParseError(g_tr('IBKR', "Spin-off initial asset not found ") + f"'{action}'")
         qty_old = int(spinoff['Y']) * action['quantity'] / int(spinoff['X'])
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.ACTIONS]]) + 1
+        action['cost_basis'] = 0.0
         action['asset'] = [asset_old, action['asset']]
         action['quantity'] = [qty_old, action['quantity']]
         self.drop_extra_fields(action, ["code", "asset_type", "jal_processed"])
@@ -634,6 +639,7 @@ class StatementIBKR(Statement):
         if len(paired_record) != 1:
             raise IBKR_ParseError(g_tr('StatementLoader', "Can't find paired record for: ") + f"{action}")
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.ACTIONS]]) + 1
+        action['cost_basis'] = 1.0
         action['asset'] = [paired_record[0]['asset'], action['asset']]
         action['quantity'] = [-paired_record[0]['quantity'], action['quantity']]
         self.drop_extra_fields(action, ["code", "asset_type", "jal_processed"])
@@ -643,52 +649,53 @@ class StatementIBKR(Statement):
 
     def load_stock_dividend(self, action, parts_b) -> int:
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.ACTIONS]]) + 1
+        action['cost_basis'] = 0.0
         self.drop_extra_fields(action, ["code", "asset_type", "jal_processed"])
         self._data[FOF.ACTIONS].append(action)
         return 1
 
     def load_split(self, action, parts_b) -> int:
-        #     elif action['type'] == CorporateAction.Split:
-        #         parts = re.match(IBKR.SplitPattern, action['description'], re.IGNORECASE)
-        #         if parts is None:
-        #             logging.error(g_tr('StatementLoader', "Can't parse Split description ") + f"'{action}'")
-        #             continue
-        #         split = parts.groupdict()
-        #         if len(split) != 7:
-        #             logging.error(g_tr('StatementLoader', "Split description miss some data ") + f"'{action}'")
-        #             continue
-        #
-        #         if parts['isin_old'] == parts['id']:  # Simple split without ISIN change
-        #             qty_delta = action['quantity']
-        #             if qty_delta >= 0:  # Forward split (X>Y)
-        #                 qty_old = qty_delta / (int(split['X']) - int(split['Y']))
-        #                 qty_new = int(split['X']) * qty_delta / (int(split['X']) - int(split['Y']))
-        #             else:  # Reverse split (X<Y)
-        #                 qty_new = qty_delta / (int(split['X']) - int(split['Y']))
-        #                 qty_old = int(split['Y']) * qty_delta / (int(split['X']) - int(split['Y']))
-        #             JalDB().add_corporate_action(action['accountId'], CorporateAction.Split, action['dateTime'],
-        #                                          action['transactionID'], action['symbol'],
-        #                                          qty_old, action['symbol'], qty_new, 1, action['description'])
-        #             cnt += 1
-        #         else:  # Split together with ISIN change and there should be 2nd record available
-        #             description_b = action['description'][:parts.span(5)[0]] + split['symbol_old'] + ".OLD, "
-        #             asset_b = JalDB().get_asset_id(split['symbol_old'], isin=split['isin_old'])
-        #
-        #             paired_record = list(filter(
-        #                 lambda pair: pair['symbol'] == asset_b
-        #                              and pair['description'].startswith(description_b)
-        #                              and pair['type'] == action['type']
-        #                              and pair['dateTime'] == action['dateTime'], parts_b))
-        #             if len(paired_record) != 1:
-        #                 logging.error(g_tr('StatementLoader', "Can't find paired record for: ") + f"{action}")
-        #                 continue
-        #             JalDB().add_corporate_action(action['accountId'], CorporateAction.Split, action['dateTime'],
-        #                                          action['transactionID'], paired_record[0]['symbol'],
-        #                                          -paired_record[0]['quantity'], action['symbol'], action['quantity'], 1,
-        #                                          action['description'])
-        #             paired_record[0]['jal_processed'] = True
-        #             cnt += 2
-        return 0
+        SplitPattern = r"^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +SPLIT +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
+
+        parts = re.match(SplitPattern, action['description'], re.IGNORECASE)
+        if parts is None:
+            raise IBKR_ParseError(g_tr('IBKR', "Can't parse Split description ") + f"'{action}'")
+        split = parts.groupdict()
+        if len(split) != SplitPattern.count("(?P<"):  # check that expected number of groups was matched
+            raise IBKR_ParseError(g_tr('IBKR', "Split description miss some data ") + f"'{action}'")
+        if parts['isin_old'] == parts['id']:  # Simple split without ISIN change
+            qty_delta = action['quantity']
+            if qty_delta >= 0:  # Forward split (X>Y)
+                qty_old = qty_delta / (int(split['X']) - int(split['Y']))
+                qty_new = int(split['X']) * qty_delta / (int(split['X']) - int(split['Y']))
+            else:  # Reverse split (X<Y)
+                qty_new = qty_delta / (int(split['X']) - int(split['Y']))
+                qty_old = int(split['Y']) * qty_delta / (int(split['X']) - int(split['Y']))
+            action['id'] = max([0] + [x['id'] for x in self._data[FOF.ACTIONS]]) + 1
+            action['cost_basis'] = 1.0
+            action['asset'] = [action['asset'], action['asset']]
+            action['quantity'] = [qty_old, qty_new]
+            self.drop_extra_fields(action, ["code", "asset_type", "jal_processed"])
+            self._data[FOF.ACTIONS].append(action)
+            return 1
+        else:  # Split together with ISIN change and there should be 2nd record available
+            description_b = action['description'][:parts.span('symbol')[0]] + split['symbol_old'] + ".OLD, "
+            asset_b = self.locate_asset(split['symbol_old'], split['isin_old'])
+            paired_record = list(filter(
+                lambda pair: pair['asset'] == asset_b
+                             and pair['description'].startswith(description_b)
+                             and pair['type'] == action['type']
+                             and pair['timestamp'] == action['timestamp'], parts_b))
+            if len(paired_record) != 1:
+                raise IBKR_ParseError(g_tr('StatementLoader', "Can't find paired record for: ") + f"{action}")
+            action['id'] = max([0] + [x['id'] for x in self._data[FOF.ACTIONS]]) + 1
+            action['cost_basis'] = 1.0
+            action['asset'] = [paired_record[0]['asset'], action['asset']]
+            action['quantity'] = [-paired_record[0]['quantity'], action['quantity']]
+            self.drop_extra_fields(action, ["code", "asset_type", "jal_processed"])
+            self._data[FOF.ACTIONS].append(action)
+            paired_record[0]['jal_processed'] = True
+            return 2
 
 
 # -----------------------------------------------------------------------------------------------------------------------
