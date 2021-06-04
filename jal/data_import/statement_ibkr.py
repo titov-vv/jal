@@ -616,31 +616,29 @@ class StatementIBKR(Statement):
         return 1
 
     def load_symbol_change(self, action, parts_b) -> int:
-        #     elif action['type'] == CorporateAction.SymbolChange:
-        #         parts = re.match(IBKR.SymbolChangePattern, action['description'], re.IGNORECASE)
-        #         if parts is None:
-        #             logging.error(g_tr('StatementLoader', "Can't parse Symbol Change description ") + f"'{action}'")
-        #             continue
-        #         isin_change = parts.groupdict()
-        #         if len(isin_change) != 6:
-        #             logging.error(g_tr('StatementLoader', "Spin-off description miss some data ") + f"'{action}'")
-        #             continue
-        #         description_b = action['description'][:parts.span(4)[0]] + isin_change['symbol_old'] + ".OLD, "
-        #         asset_b = JalDB().get_asset_id(isin_change['symbol_old'], isin=isin_change['isin_old'])
-        #
-        #         paired_record = list(filter(
-        #             lambda pair: pair['symbol'] == asset_b
-        #                          and pair['description'].startswith(description_b)
-        #                          and pair['type'] == action['type']
-        #                          and pair['dateTime'] == action['dateTime'], parts_b))
-        #         if len(paired_record) != 1:
-        #             logging.error(g_tr('StatementLoader', "Can't find paired record for: ") + f"{action}")
-        #             continue
-        #         JalDB().add_corporate_action(action['accountId'], CorporateAction.SymbolChange, action['dateTime'],
-        #                                      action['transactionID'], paired_record[0]['symbol'],
-        #                                      -paired_record[0]['quantity'], action['symbol'], action['quantity'], 1,
-        #                                      action['description'])
-        #         paired_record[0]['jal_processed'] = True
+        SymbolChangePattern = r"^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +CUSIP\/ISIN CHANGE TO +\((?P<isin_new>\w+)\) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
+
+        parts = re.match(SymbolChangePattern, action['description'], re.IGNORECASE)
+        if parts is None:
+            raise IBKR_ParseError(g_tr('IBKR', "Can't parse Symbol Change description ") + f"'{action}'")
+        isin_change = parts.groupdict()
+        if len(isin_change) != SymbolChangePattern.count("(?P<"):  # check that expected number of groups was matched
+            raise IBKR_ParseError(g_tr('StatementLoader', "Spin-off description miss some data ") + f"'{action}'")
+        description_b = action['description'][:parts.span('symbol')[0]] + isin_change['symbol_old'] + ".OLD, "
+        asset_b = self.locate_asset(isin_change['symbol_old'], isin_change['isin_old'])
+        paired_record = list(filter(
+            lambda pair: pair['asset'] == asset_b
+                         and pair['description'].startswith(description_b)
+                         and pair['type'] == action['type']
+                         and pair['timestamp'] == action['timestamp'], parts_b))
+        if len(paired_record) != 1:
+            raise IBKR_ParseError(g_tr('StatementLoader', "Can't find paired record for: ") + f"{action}")
+        action['id'] = max([0] + [x['id'] for x in self._data[FOF.ACTIONS]]) + 1
+        action['asset'] = [paired_record[0]['asset'], action['asset']]
+        action['quantity'] = [-paired_record[0]['quantity'], action['quantity']]
+        self.drop_extra_fields(action, ["code", "asset_type", "jal_processed"])
+        self._data[FOF.ACTIONS].append(action)
+        paired_record[0]['jal_processed'] = True
         return 2
 
     def load_stock_dividend(self, action, parts_b) -> int:
