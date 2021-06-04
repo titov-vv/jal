@@ -644,10 +644,9 @@ class StatementIBKR(Statement):
         return 2
 
     def load_stock_dividend(self, action, parts_b) -> int:
-    # elif action['type'] == CorporateAction.StockDividend:
-    #         JalDB().add_corporate_action(action['accountId'], CorporateAction.StockDividend, action['dateTime'],
-    #                                      action['transactionID'], action['symbol'], -1,
-    #                                      action['symbol'], action['quantity'], 0, action['description'])
+        action['id'] = max([0] + [x['id'] for x in self._data[FOF.ACTIONS]]) + 1
+        self.drop_extra_fields(action, ["code", "asset_type", "jal_processed"])
+        self._data[FOF.ACTIONS].append(action)
         return 1
 
     def load_split(self, action, parts_b) -> int:
