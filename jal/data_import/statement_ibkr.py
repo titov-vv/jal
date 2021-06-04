@@ -567,22 +567,55 @@ class StatementIBKR(Statement):
                     logging.error(e)
             else:
                 logging.warning(g_tr('IBKR', "Corporate action type is not supported: ") + f"{action['type']}")
+        logging.info(g_tr('IBKR', "Corporate actions loaded: ") + f"{cnt} ({len(actions)})")
 
-        #     elif action['type'] == CorporateAction.SpinOff:
-        #         parts = re.match(IBKR.SpinOffPattern, action['description'], re.IGNORECASE)
-        #         if parts is None:
-        #             logging.error(g_tr('StatementLoader', "Can't parse Spin-off description ") + f"'{action}'")
-        #             continue
-        #         spinoff = parts.groupdict()
-        #         if len(spinoff) != 7:
-        #             logging.error(g_tr('StatementLoader', "Spin-off description miss some data ") + f"'{action}'")
-        #             continue
-        #         asset_id_old = JalDB().get_asset_id(spinoff['symbol_old'], isin=spinoff['isin_old'])
-        #         qty_old = int(spinoff['Y']) * action['quantity'] / int(spinoff['X'])
-        #         JalDB().add_corporate_action(action['accountId'], CorporateAction.SpinOff, action['dateTime'],
-        #                                      action['transactionID'], asset_id_old,
-        #                                      qty_old, action['symbol'], action['quantity'], 0, action['description'])
-        #         cnt += 1
+    def load_merger(self, action, parts_b) -> int:
+        MergerPattern = r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +MERGED\(\w+\) +WITH +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$"
+
+        parts = re.match(MergerPattern, action['description'], re.IGNORECASE)
+        if parts is None:
+            raise IBKR_ParseError(g_tr('IBKR', "Can't parse Merger description ") + f"'{action}'")
+        merger_a = parts.groupdict()
+        if len(merger_a) != MergerPattern.count("(?P<"):  # check that expected number of groups was matched
+            raise IBKR_ParseError(g_tr('IBKR', "Merger description miss some data ") + f"'{action}'")
+        description_b = action['description'][:parts.span('symbol')[0]] + merger_a['symbol_old'] + ", "
+        asset_b = self.locate_asset(merger_a['symbol_old'], merger_a['isin_old'])
+        paired_record = list(filter(
+            lambda pair: pair['asset'] == asset_b
+                         and pair['description'].startswith(description_b)
+                         and pair['type'] == action['type']
+                         and pair['timestamp'] == action['timestamp'], parts_b))
+        if len(paired_record) != 1:
+            raise IBKR_ParseError(g_tr('IBKR', "Can't find paired record for ") + f"{action}")
+        action['id'] = max([0] + [x['id'] for x in self._data[FOF.ACTIONS]]) + 1
+        action['asset'] = [paired_record[0]['asset'], action['asset']]
+        action['quantity'] = [-paired_record[0]['quantity'], action['quantity']]
+        self.drop_extra_fields(action, ["code", "asset_type", "jal_processed"])
+        self._data[FOF.ACTIONS].append(action)
+        paired_record[0]['jal_processed'] = True
+        return 2
+
+    def load_spinoff(self, action, _parts_b) -> int:
+        SpinOffPattern = r"^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +SPINOFF +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
+
+        parts = re.match(SpinOffPattern, action['description'], re.IGNORECASE)
+        if parts is None:
+            raise IBKR_ParseError(g_tr('IBKR', "Can't parse Spin-off description ") + f"'{action}'")
+        spinoff = parts.groupdict()
+        if len(spinoff) != SpinOffPattern.count("(?P<"):  # check that expected number of groups was matched
+            raise IBKR_ParseError(g_tr('IBKR', "Spin-off description miss some data ") + f"'{action}'")
+        asset_old = self.locate_asset(spinoff['symbol_old'], spinoff['isin_old'])
+        if not asset_old:
+            raise IBKR_ParseError(g_tr('IBKR', "Spin-off initial asset not found ") + f"'{action}'")
+        qty_old = int(spinoff['Y']) * action['quantity'] / int(spinoff['X'])
+        action['id'] = max([0] + [x['id'] for x in self._data[FOF.ACTIONS]]) + 1
+        action['asset'] = [asset_old, action['asset']]
+        action['quantity'] = [qty_old, action['quantity']]
+        self.drop_extra_fields(action, ["code", "asset_type", "jal_processed"])
+        self._data[FOF.ACTIONS].append(action)
+        return 1
+
+    def load_symbol_change(self, action, parts_b) -> int:
         #     elif action['type'] == CorporateAction.SymbolChange:
         #         parts = re.match(IBKR.SymbolChangePattern, action['description'], re.IGNORECASE)
         #         if parts is None:
@@ -608,12 +641,16 @@ class StatementIBKR(Statement):
         #                                      -paired_record[0]['quantity'], action['symbol'], action['quantity'], 1,
         #                                      action['description'])
         #         paired_record[0]['jal_processed'] = True
-        #         cnt += 2
-        #     elif action['type'] == CorporateAction.StockDividend:
-        #         JalDB().add_corporate_action(action['accountId'], CorporateAction.StockDividend, action['dateTime'],
-        #                                      action['transactionID'], action['symbol'], -1,
-        #                                      action['symbol'], action['quantity'], 0, action['description'])
-        #         cnt += 1
+        return 2
+
+    def load_stock_dividend(self, action, parts_b) -> int:
+    # elif action['type'] == CorporateAction.StockDividend:
+    #         JalDB().add_corporate_action(action['accountId'], CorporateAction.StockDividend, action['dateTime'],
+    #                                      action['transactionID'], action['symbol'], -1,
+    #                                      action['symbol'], action['quantity'], 0, action['description'])
+        return 1
+
+    def load_split(self, action, parts_b) -> int:
         #     elif action['type'] == CorporateAction.Split:
         #         parts = re.match(IBKR.SplitPattern, action['description'], re.IGNORECASE)
         #         if parts is None:
@@ -654,45 +691,6 @@ class StatementIBKR(Statement):
         #                                          action['description'])
         #             paired_record[0]['jal_processed'] = True
         #             cnt += 2
-
-        logging.info(g_tr('IBKR', "Corporate actions loaded: ") + f"{cnt} ({len(actions)})")
-
-    def load_merger(self, action, parts_b) -> int:
-        MergerPattern = r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +MERGED\(\w+\) +WITH +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$"
-
-        parts = re.match(MergerPattern, action['description'], re.IGNORECASE)
-        if parts is None:
-            raise IBKR_ParseError(g_tr('IBKR', "Can't parse Merger description ") + f"'{action}'")
-        merger_a = parts.groupdict()
-        if len(merger_a) != 8:
-            raise IBKR_ParseError(g_tr('IBKR', "Merger description miss some data ") + f"'{action}'")
-        description_b = action['description'][:parts.span(7)[0]] + merger_a['symbol_old'] + ", "
-        asset_b = self.locate_asset(merger_a['symbol_old'], merger_a['isin_old'])
-        paired_record = list(filter(
-            lambda pair: pair['asset'] == asset_b
-                         and pair['description'].startswith(description_b)
-                         and pair['type'] == action['type']
-                         and pair['timestamp'] == action['timestamp'], parts_b))
-        if len(paired_record) != 1:
-            raise IBKR_ParseError(g_tr('IBKR', "Can't find paired record for ") + f"{action}")
-        action['id'] = max([0] + [x['id'] for x in self._data[FOF.ACTIONS]]) + 1
-        action['asset'] = [paired_record[0]['asset'], action['asset']]
-        action['quantity'] = [-paired_record[0]['quantity'], action['quantity']]
-        self.drop_extra_fields(action, ["code", "asset_type", "jal_processed"])
-        self._data[FOF.ACTIONS].append(action)
-        paired_record[0]['jal_processed'] = True
-        return 2
-
-    def load_spinoff(self, action, parts_b) -> int:
-        return 0
-
-    def load_symbol_change(self, action, parts_b) -> int:
-        return 0
-
-    def load_stock_dividend(self, action, parts_b) -> int:
-        return 0
-
-    def load_split(self, action, parts_b) -> int:
         return 0
 
 
