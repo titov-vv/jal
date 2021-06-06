@@ -385,9 +385,12 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
         if value is None:
             return
         pen = painter.pen()
-        if value >= 0:
-            pen.setColor(CustomColor.DarkGreen)
-        else:
-            pen.setColor(CustomColor.DarkRed)
-        painter.setPen(pen)
-        painter.drawText(rect, Qt.AlignRight | Qt.AlignVCenter, f"{value:+,.2f}")
+        try:
+            if value >= 0:
+                pen.setColor(CustomColor.DarkGreen)
+            else:
+                pen.setColor(CustomColor.DarkRed)
+            painter.setPen(pen)
+            painter.drawText(rect, Qt.AlignRight | Qt.AlignVCenter, f"{value:+,.2f}")
+        except TypeError:
+            pass
