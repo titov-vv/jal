@@ -30,6 +30,7 @@ class IBKR_ParseError(Exception):
 class IBKR_AssetType:
     NotSupported = -1
     _asset_types = {
+        '': -1,
         'CASH': FOF.ASSET_MONEY,
         'STK': FOF.ASSET_STOCK,
         'ETF': FOF.ASSET_ETF,
@@ -45,8 +46,8 @@ class IBKR_AssetType:
         try:
             self.type = self._asset_types[asset_type]
         except KeyError:
-            logging.warning(g_tr('IBKR_AssetType', "Asset type isn't supported: ") + f"{asset_type}")
-        if self.type == FOF.ASSET_STOCK:  # Make clarification by sub-type for stocks to distinguish ADR and ETF
+            logging.warning(g_tr('IBKR_AssetType', "Asset type isn't supported: ") + f"'{asset_type}'")
+        if self.type == FOF.ASSET_STOCK and subtype:  # distinguish ADR and ETF from stocks
             try:
                 self.type = self._asset_types[subtype]
             except KeyError:
@@ -105,6 +106,10 @@ class IBKR_Asset:
         if self.match_and_update('symbol', symbol, {'isin': isin, 'reg_code': cusip}):
             return
         self.id = max([0] + [x['id'] for x in assets_list]) + 1
+        if category == IBKR_AssetType.NotSupported:
+            if symbol:
+                logging.warning(g_tr('IBKR_Asset', "Asset type isn't supported: ") + f"'{category}' ({symbol})")
+            return
         asset = {"id": self.id, "symbol": symbol, 'name': name, 'type': category, 'exchange': exchange}
         if isin:
             asset['isin'] = isin
@@ -295,7 +300,9 @@ class StatementIBKR(Statement):
             FOF.ASSETS: [],
             FOF.TRADES: [],
             FOF.TRANSFERS: [],
-            FOF.ACTIONS: []
+            FOF.CORP_ACTIONS: [],
+            FOF.ASSET_PAYMENTS: [],
+            FOF.TRANSACTIONS: []
         }
 
         section_loaders = {
@@ -303,8 +310,8 @@ class StatementIBKR(Statement):
             'SecuritiesInfo': self.load_assets,
             'Trades': self.load_ib_trades,
             'OptionEAE': self.load_options,
-            'CorporateActions': self.load_corporate_actions
-            # 'CashTransactions': self.loadIBCashTransactions,
+            'CorporateActions': self.load_corporate_actions,
+            'CashTransactions': self.load_cash_transactions
             # 'TransactionTaxes': self.loadIBTaxes
         }
         try:
@@ -398,14 +405,13 @@ class StatementIBKR(Statement):
                                             ('code', 'code', str, '')]},
             'CashTransactions': {'tag': 'CashTransaction',
                                  'level': 'DETAIL',
-                                 'values': [('type', IBKR.flCashOpType, None),
-                                            ('accountId', IBKR.flAccount, None),
-                                            ('currency', IBKR.flString, ''),
-                                            ('symbol', IBKR.flAsset, 0),
-                                            ('dateTime', IBKR.flTimestamp, None),
-                                            ('amount', IBKR.flNumber, None),
-                                            ('tradeID', IBKR.flString, ''),
-                                            ('description', IBKR.flString, None)]},
+                                 'values': [('type', 'type', str, None),
+                                            ('accountId', 'account', IBKR_Account, IBKR.NotFound),
+                                            ('symbol', 'asset', IBKR_Asset, None),
+                                            ('dateTime', 'timestamp', datetime, None),
+                                            ('amount', 'amount', float, None),
+                                            ('tradeID', 'number', str, ''),
+                                            ('description', 'description', str, None)]},
             'TransactionTaxes': {'tag': 'TransactionTax',
                                  'level': '',
                                  'values': [('accountId', IBKR.flAccount, None),
@@ -592,12 +598,12 @@ class StatementIBKR(Statement):
                          and pair['timestamp'] == action['timestamp'], parts_b))
         if len(paired_record) != 1:
             raise IBKR_ParseError(g_tr('IBKR', "Can't find paired record for ") + f"{action}")
-        action['id'] = max([0] + [x['id'] for x in self._data[FOF.ACTIONS]]) + 1
+        action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
         action['cost_basis'] = 1.0
         action['asset'] = [paired_record[0]['asset'], action['asset']]
         action['quantity'] = [-paired_record[0]['quantity'], action['quantity']]
         self.drop_extra_fields(action, ["code", "asset_type", "jal_processed"])
-        self._data[FOF.ACTIONS].append(action)
+        self._data[FOF.CORP_ACTIONS].append(action)
         paired_record[0]['jal_processed'] = True
         return 2
 
@@ -614,12 +620,12 @@ class StatementIBKR(Statement):
         if not asset_old:
             raise IBKR_ParseError(g_tr('IBKR', "Spin-off initial asset not found ") + f"'{action}'")
         qty_old = int(spinoff['Y']) * action['quantity'] / int(spinoff['X'])
-        action['id'] = max([0] + [x['id'] for x in self._data[FOF.ACTIONS]]) + 1
+        action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
         action['cost_basis'] = 0.0
         action['asset'] = [asset_old, action['asset']]
         action['quantity'] = [qty_old, action['quantity']]
         self.drop_extra_fields(action, ["code", "asset_type", "jal_processed"])
-        self._data[FOF.ACTIONS].append(action)
+        self._data[FOF.CORP_ACTIONS].append(action)
         return 1
 
     def load_symbol_change(self, action, parts_b) -> int:
@@ -640,20 +646,20 @@ class StatementIBKR(Statement):
                          and pair['timestamp'] == action['timestamp'], parts_b))
         if len(paired_record) != 1:
             raise IBKR_ParseError(g_tr('StatementLoader', "Can't find paired record for: ") + f"{action}")
-        action['id'] = max([0] + [x['id'] for x in self._data[FOF.ACTIONS]]) + 1
+        action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
         action['cost_basis'] = 1.0
         action['asset'] = [paired_record[0]['asset'], action['asset']]
         action['quantity'] = [-paired_record[0]['quantity'], action['quantity']]
         self.drop_extra_fields(action, ["code", "asset_type", "jal_processed"])
-        self._data[FOF.ACTIONS].append(action)
+        self._data[FOF.CORP_ACTIONS].append(action)
         paired_record[0]['jal_processed'] = True
         return 2
 
     def load_stock_dividend(self, action, parts_b) -> int:
-        action['id'] = max([0] + [x['id'] for x in self._data[FOF.ACTIONS]]) + 1
+        action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
         action['cost_basis'] = 0.0
         self.drop_extra_fields(action, ["code", "asset_type", "jal_processed"])
-        self._data[FOF.ACTIONS].append(action)
+        self._data[FOF.CORP_ACTIONS].append(action)
         return 1
 
     def load_split(self, action, parts_b) -> int:
@@ -673,12 +679,12 @@ class StatementIBKR(Statement):
             else:  # Reverse split (X<Y)
                 qty_new = qty_delta / (int(split['X']) - int(split['Y']))
                 qty_old = int(split['Y']) * qty_delta / (int(split['X']) - int(split['Y']))
-            action['id'] = max([0] + [x['id'] for x in self._data[FOF.ACTIONS]]) + 1
+            action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
             action['cost_basis'] = 1.0
             action['asset'] = [action['asset'], action['asset']]
             action['quantity'] = [qty_old, qty_new]
             self.drop_extra_fields(action, ["code", "asset_type", "jal_processed"])
-            self._data[FOF.ACTIONS].append(action)
+            self._data[FOF.CORP_ACTIONS].append(action)
             return 1
         else:  # Split together with ISIN change and there should be 2nd record available
             description_b = action['description'][:parts.span('symbol')[0]] + split['symbol_old'] + ".OLD, "
@@ -690,15 +696,73 @@ class StatementIBKR(Statement):
                              and pair['timestamp'] == action['timestamp'], parts_b))
             if len(paired_record) != 1:
                 raise IBKR_ParseError(g_tr('StatementLoader', "Can't find paired record for: ") + f"{action}")
-            action['id'] = max([0] + [x['id'] for x in self._data[FOF.ACTIONS]]) + 1
+            action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
             action['cost_basis'] = 1.0
             action['asset'] = [paired_record[0]['asset'], action['asset']]
             action['quantity'] = [-paired_record[0]['quantity'], action['quantity']]
             self.drop_extra_fields(action, ["code", "asset_type", "jal_processed"])
-            self._data[FOF.ACTIONS].append(action)
+            self._data[FOF.CORP_ACTIONS].append(action)
             paired_record[0]['jal_processed'] = True
             return 2
 
+    def load_cash_transactions(self, cash):
+        cnt = 0
+
+        dividends = list(filter(lambda tr: tr['type'] in ['Dividends', 'Payment In Lieu Of Dividends'], cash))
+        asset_payments_base = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
+        for i, dividend in enumerate(dividends):
+            dividend['id'] = asset_payments_base + i
+            dividend['type'] = FOF.PAYMENT_DIVIDEND
+            self._data[FOF.ASSET_PAYMENTS].append(dividend)
+            cnt += 1
+
+        asset_payments_base += cnt
+        bond_interests = list(filter(lambda tr: tr['type'] in ['Bond Interest Paid', 'Bond Interest Received'], cash))
+        for i, bond_interest in enumerate(bond_interests):
+            bond_interest['id'] = asset_payments_base + i
+            bond_interest['type'] = FOF.PAYMENT_INTEREST
+            self._data[FOF.ASSET_PAYMENTS].append(bond_interest)
+            cnt += 1
+
+        taxes = list(filter(lambda tr: tr['type'] == 'Withholding Tax', cash))
+        for tax in taxes:
+            cnt += self.apply_tax_withheld(tax)
+
+        transfers = list(filter(lambda tr: tr['type'] == 'Deposits/Withdrawals', cash))
+        for transfer in transfers:
+            cnt += self.load_deposit_withdrawal(transfer)
+
+        fees = list(
+            filter(lambda tr: tr['type'] in ['Other Fees', 'Commission Adjustments', 'Broker Interest Paid'], cash))
+        for fee in fees:
+            cnt += self.load_ib_fee(fee)
+
+        interests = list(filter(lambda tr: tr['type'] == 'Broker Interest Received', cash))
+        for interest in interests:
+            cnt += self.load_ib_interest(interest)
+
+        logging.info(g_tr('IBKR', "Cash transactions loaded: ") + f"{cnt} ({len(cash)})")
+
+    def apply_tax_withheld(self, tax):
+        return 1
+
+    def load_deposit_withdrawal(self, transfer):
+        return 1
+
+    def load_ib_interest(self, interest):
+        return 1
+
+    #
+    # def loadIBFee(self, fee):
+    #     JalDB().add_cash_transaction(fee['accountId'], self._parent.getAccountBank(fee['accountId']), fee['dateTime'],
+    #                                  fee['amount'], PredefinedCategory.Fees, fee['description'])
+    #     return 1
+    #
+    # def loadIBInterest(self, interest):
+    #     JalDB().add_cash_transaction(interest['accountId'], self._parent.getAccountBank(interest['accountId']),
+    #                                  interest['dateTime'], interest['amount'], PredefinedCategory.Interest,
+    #                                  interest['description'])
+    #     return 1
 
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKR:
@@ -787,7 +851,7 @@ class IBKR:
         try:
             return IBKR.AssetType[data.attrib[name]]
         except KeyError:
-            logging.warning(g_tr('IBKR', "Asset type isn't supported: ") + f"{data.attrib[name]}")
+            logging.warning(g_tr('IBKR', "Asset type isn't supported: ") + f"'{data.attrib[name]}'")
             return default_value
 
     @staticmethod

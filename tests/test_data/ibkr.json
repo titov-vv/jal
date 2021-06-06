@@ -25,21 +25,24 @@
     {"id": 17, "type": "stock", "symbol": "GE", "name": "GENERAL ELECTRIC CO", "isin": "", "reg_code": "369604103", "exchange": "NYSE"},
     {"id": 18, "type": "stock", "symbol": "EWLL", "name": "EWELLNESS HEALTHCARE CORP", "isin": "US30051D1063", "reg_code": "30051D106", "exchange": "PINK"},
     {"id": 19, "type": "stock", "symbol": "EWLL", "name": "EWELLNESS HEALTHCARE CORP", "isin": "US30051D2053", "reg_code": "30051D205","exchange": "PINK"},
-    {"id": 20, "type": "stock", "symbol": "AAPL", "name": "APPLE INC", "isin": "US0378331005", "reg_code": "037833100", "exchange": "NASDAQ"},
-    {"id": 21, "type": "option", "symbol": "VLO   200724P00064000", "name": "VLO 24JUL20 64.0 P", "exchange": "CBOE"},
-    {"id": 22, "type": "stock", "symbol": "VLO", "name": "VALERO ENERGY CORP", "isin": "US91913Y1001", "reg_code": "91913Y100", "exchange": "NYSE"},
-    {"id": 23, "type": "stock", "symbol": "MAC", "name": "", "isin": "US5543821012", "reg_code": "554382101", "exchange": "NYSE"}
+    {"id": 20, "type": "etf", "symbol": "ZROZ", "name": "PIMCO 25+ YR ZERO CPN US TIF", "isin": "US72201R8824", "reg_code": "72201R882", "exchange": "ARCA"},
+    {"id": 21, "type": "stock", "symbol": "AAPL", "name": "APPLE INC", "isin": "US0378331005", "reg_code": "037833100", "exchange": "NASDAQ"},
+    {"id": 22, "type": "option", "symbol": "VLO   200724P00064000", "name": "VLO 24JUL20 64.0 P", "exchange": "CBOE"},
+    {"id": 23, "type": "stock", "symbol": "VLO", "name": "VALERO ENERGY CORP", "isin": "US91913Y1001", "reg_code": "91913Y100", "exchange": "NYSE"},
+    {"id": 24, "type": "stock", "symbol": "MAC", "name": "", "isin": "US5543821012", "reg_code": "554382101", "exchange": "NYSE"}
   ],
   "trades": [
     {"id": 1, "number": "", "timestamp": 1548447900, "settlement": 1548447900, "account": 2, "asset": 6, "quantity": 0.567, "price": 69.2215, "fee": 0.0, "cancelled": true},
     {"id": 2, "number": "2661774904", "timestamp": 1579094694, "settlement": 1579219200, "account": 2, "asset": 18, "quantity": 45000.0, "price": 0.0012, "fee": 0.54},
     {"id": 3, "number": "2674740000", "timestamp": 1580215513, "settlement": 1580215513, "account": 2, "asset": 3, "quantity": -1240.0, "price": 54.84, "fee": 7.75519312},
-    {"id": 4, "number": "2674740000", "timestamp": 1580215566, "settlement": 1580342400, "account": 2, "asset": 20, "quantity": -148.0, "price": 316.68, "fee": 1.987792848},
+    {"id": 4, "number": "2674740000", "timestamp": 1580215566, "settlement": 1580342400, "account": 2, "asset": 21, "quantity": -148.0, "price": 316.68, "fee": 1.987792848},
     {"id": 5, "number": "2882737839", "timestamp": 1590595065, "settlement": 1590710400, "account": 2, "asset": 8, "quantity": 2.0, "price": 637.09, "fee": 2.0},
-    {"id": 6, "number": "2931083780", "timestamp": 1592575273, "settlement": 1592784000, "account": 2, "asset": 21, "quantity": -100.0, "price": 4.54, "fee": 1.1058334},
-    {"id": 7, "number": "2997636969", "timestamp": 1595607600, "settlement": 1595808000, "account": 2, "asset": 21, "quantity": 100.0, "price": 0.0, "fee": 0.0, "note": "Option assignment"},
-    {"id": 8, "number": "2997636973", "timestamp": 1595607600, "settlement": 1595607600, "account": 2, "asset": 22, "quantity": 100.0, "price": 64.0, "fee": 0.0, "note": "Option assignment/exercise"},
+    {"id": 6, "number": "2931083780", "timestamp": 1592575273, "settlement": 1592784000, "account": 2, "asset": 22, "quantity": -100.0, "price": 4.54, "fee": 1.1058334},
+    {"id": 7, "number": "2997636969", "timestamp": 1595607600, "settlement": 1595808000, "account": 2, "asset": 22, "quantity": 100.0, "price": 0.0, "fee": 0.0, "note": "Option assignment"},
+    {"id": 8, "number": "2997636973", "timestamp": 1595607600, "settlement": 1595607600, "account": 2, "asset": 23, "quantity": 100.0, "price": 64.0, "fee": 0.0, "note": "Option assignment/exercise"},
     {"id": 9, "number": "3183801882", "timestamp": 1603882231, "settlement": 1604016000, "account": 2, "asset": 19, "quantity": 500000.0, "price": 0.0001, "fee": 0.7503675}
+  ],
+  "transactions": [
   ],
   "transfers": [
     {"id": 1, "account": [1, 2, 2], "number": "2645393202", "asset": [1, 2], "timestamp": 1581322108, "withdrawal": 78986.6741, "deposit": 1234.0, "fee": 2.0},
@@ -52,6 +55,11 @@
     {"id": 4, "type": "stock_dividend", "account": 2, "timestamp": 1595017200, "number": "13259965038", "asset": 14, "quantity": 3.0, "cost_basis": 0.0, "description": "TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000 (TEF, TELEFONICA SA-SPON ADR, US8793822086)"},
     {"id": 5, "type": "merger", "account": 2, "timestamp": 1592339100, "number": "13006963996", "asset": [15, 16], "quantity": [70.0, 170.8], "cost_basis": 1.0, "description": "EQM(US26885B1008) MERGED(Acquisition) WITH US2946001011 244 FOR 100 (ETRN, EQUITRANS MIDSTREAM CORP, US2946001011)"},
     {"id": 6, "type": "split", "account": 2, "timestamp": 1581452700, "number": "12029570527", "asset": [18, 19], "quantity": [45000.0, 900.0], "cost_basis": 1.0, "description": "EWLL(US30051D1063) SPLIT 1 FOR 50 (EWLLD, EWELLNESS HEALTHCARE CORP, US30051D2053)"},
-    {"id": 7, "type": "stock_dividend", "account": 2, "timestamp": 1591215600, "number": "12882908488", "asset": 23, "quantity": 2.0, "cost_basis": 0.0, "description": "MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000 (MAC, MACERICH CO/THE, US5543821012)"}
+    {"id": 7, "type": "stock_dividend", "account": 2, "timestamp": 1591215600, "number": "12882908488", "asset": 24, "quantity": 2.0, "cost_basis": 0.0, "description": "MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000 (MAC, MACERICH CO/THE, US5543821012)"}
+  ],
+  "asset_payments": [
+    {"id": 1, "type": "dividend", "account": 2, "timestamp": 1578082800, "number": "", "asset": 20, "amount": 60.2, "description": "ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)"},
+    {"id": 2, "type": "interest", "account": 2, "timestamp": 1590595065, "number": "2882737839", "asset": 8, "amount": -25.69, "description": "PURCHASE ACCRUED INT X 6 1/4 03/15/26"},
+    {"id": 3, "type": "interest", "account": 2, "timestamp": 1600128000, "number": "", "asset": 8, "amount": 62.5, "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26)"}
   ]
 }

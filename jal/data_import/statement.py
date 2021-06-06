@@ -13,7 +13,9 @@ class FOF:
     ASSETS = "assets"
     TRADES = "trades"
     TRANSFERS = "transfers"
-    ACTIONS = "corporate_actions"
+    CORP_ACTIONS = "corporate_actions"
+    ASSET_PAYMENTS = "asset_payments"
+    TRANSACTIONS = "transactions"
 
     ASSET_MONEY = "money"
     ASSET_STOCK = "stock"
@@ -29,6 +31,9 @@ class FOF:
     ACTION_SPINOFF = "spin-off"
     ACTION_SYMBOL_CHANGE = "symbol_change"
     ACTION_STOCK_DIVIDEND = "stock_dividend"
+
+    PAYMENT_DIVIDEND = "dividend"
+    PAYMENT_INTEREST = "interest"
 
 # -----------------------------------------------------------------------------------------------------------------------
 class Statement:
