@@ -829,7 +829,7 @@ class StatementIBKR(Statement):
             db_account = JalDB().get_account_id(account['number'], currency['symbol'])
             asset = [x for x in self._data[FOF.ASSETS] if x["id"] == asset_id][0]
             db_asset = JalDB().get_asset_id(asset['symbol'], isin=asset['isin'])
-            query = executeSQL("SELECT * FROM dividends "
+            query = executeSQL("SELECT -id AS id, timestamp, amount, tax, note as description FROM dividends "
                                "WHERE type=:div AND account_id=:account_id AND asset_id=:asset_id",
                                [(":div", DividendSubtype.Dividend), (":account_id", db_account),
                                 (":asset_id", db_asset)], forward_only=True)
