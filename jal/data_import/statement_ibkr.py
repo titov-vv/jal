@@ -105,11 +105,11 @@ class IBKR_Asset:
             return
         if self.match_and_update('symbol', symbol, {'isin': isin, 'reg_code': cusip}):
             return
-        self.id = max([0] + [x['id'] for x in assets_list]) + 1
         if category == IBKR_AssetType.NotSupported:
             if symbol:
                 logging.warning(g_tr('IBKR_Asset', "Asset type isn't supported: ") + f"'{category}' ({symbol})")
             return
+        self.id = max([0] + [x['id'] for x in assets_list]) + 1
         asset = {"id": self.id, "symbol": symbol, 'name': name, 'type': category, 'exchange': exchange}
         if isin:
             asset['isin'] = isin
@@ -407,7 +407,8 @@ class StatementIBKR(Statement):
                                  'level': 'DETAIL',
                                  'values': [('type', 'type', str, None),
                                             ('accountId', 'account', IBKR_Account, IBKR.NotFound),
-                                            ('symbol', 'asset', IBKR_Asset, None),
+                                            ('symbol', 'asset', IBKR_Asset, 0),
+                                            ('currency', 'currency', IBKR_Currency, None),
                                             ('dateTime', 'timestamp', datetime, None),
                                             ('amount', 'amount', float, None),
                                             ('tradeID', 'number', str, ''),
@@ -713,6 +714,7 @@ class StatementIBKR(Statement):
         for i, dividend in enumerate(dividends):
             dividend['id'] = asset_payments_base + i
             dividend['type'] = FOF.PAYMENT_DIVIDEND
+            self.drop_extra_fields(dividend, ["currency"])
             self._data[FOF.ASSET_PAYMENTS].append(dividend)
             cnt += 1
 
@@ -721,6 +723,7 @@ class StatementIBKR(Statement):
         for i, bond_interest in enumerate(bond_interests):
             bond_interest['id'] = asset_payments_base + i
             bond_interest['type'] = FOF.PAYMENT_INTEREST
+            self.drop_extra_fields(bond_interest, ["currency"])
             self._data[FOF.ASSET_PAYMENTS].append(bond_interest)
             cnt += 1
 
@@ -728,15 +731,27 @@ class StatementIBKR(Statement):
         for tax in taxes:
             cnt += self.apply_tax_withheld(tax)
 
+        transfer_base = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
         transfers = list(filter(lambda tr: tr['type'] == 'Deposits/Withdrawals', cash))
-        for transfer in transfers:
-            cnt += self.load_deposit_withdrawal(transfer)
+        for i, transfer in enumerate(transfers):
+            transfer['id'] = transfer_base + i
+            transfer['asset'] = [transfer['currency'], transfer['currency']]
+            if transfer['amount'] >= 0:  # Deposit
+                transfer['account'] = [0, transfer['account'], 0]
+                transfer['withdrawal'] = transfer['deposit'] = transfer['amount']
+            else:  # Withdrawal
+                transfer['account'] = [transfer['account'], 0, 0]
+                transfer['withdrawal'] = transfer['deposit'] = -transfer['amount']
+            transfer['fee'] = 0.0
+            self.drop_extra_fields(transfer, ["type", "amount", "currency"])
+            self._data[FOF.TRANSFERS].append(transfer)
+            cnt += 1
 
         payment_base = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
-        fees = list(filter(lambda tr: tr['type'] in ['Other Fees',
-                                                     'Commission Adjustments',
-                                                     'Broker Interest Paid',
-                                                     'Broker Interest Received'], cash))
+        fees = list(filter(lambda tr: 'type' in tr and tr['type'] in ['Other Fees',
+                                                                      'Commission Adjustments',  #FIXME Link this fee with asset
+                                                                      'Broker Interest Paid',
+                                                                      'Broker Interest Received'], cash))
         for i, fee in enumerate(fees):
             fee['id'] = payment_base + i
             fee['peer'] = 0
@@ -745,16 +760,13 @@ class StatementIBKR(Statement):
             else:
                 category = -PredefinedCategory.Fees
             fee['lines'] = [{'amount': fee['amount'], 'category': category, 'description': fee['description']}]
-            self.drop_extra_fields(fee, ["type", "amount", "description", "asset", "number"])
+            self.drop_extra_fields(fee, ["type", "amount", "description", "asset", "number", "currency"])
             self._data[FOF.INCOME_SPENDING].append(fee)
             cnt += 1
 
         logging.info(g_tr('IBKR', "Cash transactions loaded: ") + f"{cnt} ({len(cash)})")
 
     def apply_tax_withheld(self, tax):
-        return 1
-
-    def load_deposit_withdrawal(self, transfer):
         return 1
 
 

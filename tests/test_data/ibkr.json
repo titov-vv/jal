@@ -49,7 +49,9 @@
   ],
   "transfers": [
     {"id": 1, "account": [1, 2, 2], "number": "2645393202", "asset": [1, 2], "timestamp": 1581322108, "withdrawal": 78986.6741, "deposit": 1234.0, "fee": 2.0},
-    {"id": 2, "account": [1, 2, 2], "number": "2845906676", "asset": [1, 2], "timestamp": 1590522832, "withdrawal": 44.07, "deposit": 0.621778209, "fee": 0.0}
+    {"id": 2, "account": [1, 2, 2], "number": "2845906676", "asset": [1, 2], "timestamp": 1590522832, "withdrawal": 44.07, "deposit": 0.621778209, "fee": 0.0},
+    {"id": 3, "account": [0, 1, 0], "number": "", "asset": [1, 1], "timestamp": 1600374600, "withdrawal": 123456.78, "deposit": 123456.78, "fee": 0.0, "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS"},
+    {"id": 4, "account": [2, 0, 0], "number": "", "asset": [2, 2], "timestamp": 1605744000, "withdrawal": 1234.0, "deposit": 1234.0, "fee": 0.0, "description": "DISBURSEMENT INITIATED BY John Doe"}
   ],
   "corporate_actions": [
     {"id": 1, "type": "merger", "account": 2, "timestamp": 1605731100, "number": "10162291403", "asset": [7, 6], "quantity": [70.0, 17.444], "cost_basis": 1.0, "description": "DM(US2574541080) MERGED(Acquisition) WITH US25746U1097 2492 FOR 10000 (D, DOMINION ENERGY INC, 25746U109)"},
