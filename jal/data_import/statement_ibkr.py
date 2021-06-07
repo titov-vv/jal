@@ -809,6 +809,9 @@ class StatementIBKR(Statement):
             logging.warning(g_tr('IBKR', "Dividend not found for withholding tax: ") + f"{tax}, {previous_tax}")
             return 0
         dividend["tax"] = new_tax
+        if dividend['id'] < 0:
+            dividend['type'] = FOF.PAYMENT_DIVIDEND
+            self._data[FOF.ASSET_PAYMENTS].append(dividend)
         return 1
 
     # Searches for divident that matches tax in the best way:
