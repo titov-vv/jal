@@ -15,7 +15,7 @@ class FOF:
     TRANSFERS = "transfers"
     CORP_ACTIONS = "corporate_actions"
     ASSET_PAYMENTS = "asset_payments"
-    TRANSACTIONS = "transactions"
+    INCOME_SPENDING = "income_spending"
 
     ASSET_MONEY = "money"
     ASSET_STOCK = "stock"

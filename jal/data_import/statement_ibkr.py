@@ -302,7 +302,7 @@ class StatementIBKR(Statement):
             FOF.TRANSFERS: [],
             FOF.CORP_ACTIONS: [],
             FOF.ASSET_PAYMENTS: [],
-            FOF.TRANSACTIONS: []
+            FOF.INCOME_SPENDING: []
         }
 
         section_loaders = {
@@ -732,14 +732,22 @@ class StatementIBKR(Statement):
         for transfer in transfers:
             cnt += self.load_deposit_withdrawal(transfer)
 
-        fees = list(
-            filter(lambda tr: tr['type'] in ['Other Fees', 'Commission Adjustments', 'Broker Interest Paid'], cash))
-        for fee in fees:
-            cnt += self.load_ib_fee(fee)
-
-        interests = list(filter(lambda tr: tr['type'] == 'Broker Interest Received', cash))
-        for interest in interests:
-            cnt += self.load_ib_interest(interest)
+        payment_base = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
+        fees = list(filter(lambda tr: tr['type'] in ['Other Fees',
+                                                     'Commission Adjustments',
+                                                     'Broker Interest Paid',
+                                                     'Broker Interest Received'], cash))
+        for i, fee in enumerate(fees):
+            fee['id'] = payment_base + i
+            fee['peer'] = 0
+            if fee['type'] == 'Broker Interest Received':
+                category = -PredefinedCategory.Interest
+            else:
+                category = -PredefinedCategory.Fees
+            fee['lines'] = [{'amount': fee['amount'], 'category': category, 'description': fee['description']}]
+            self.drop_extra_fields(fee, ["type", "amount", "description", "asset", "number"])
+            self._data[FOF.INCOME_SPENDING].append(fee)
+            cnt += 1
 
         logging.info(g_tr('IBKR', "Cash transactions loaded: ") + f"{cnt} ({len(cash)})")
 
@@ -749,20 +757,6 @@ class StatementIBKR(Statement):
     def load_deposit_withdrawal(self, transfer):
         return 1
 
-    def load_ib_interest(self, interest):
-        return 1
-
-    #
-    # def loadIBFee(self, fee):
-    #     JalDB().add_cash_transaction(fee['accountId'], self._parent.getAccountBank(fee['accountId']), fee['dateTime'],
-    #                                  fee['amount'], PredefinedCategory.Fees, fee['description'])
-    #     return 1
-    #
-    # def loadIBInterest(self, interest):
-    #     JalDB().add_cash_transaction(interest['accountId'], self._parent.getAccountBank(interest['accountId']),
-    #                                  interest['dateTime'], interest['amount'], PredefinedCategory.Interest,
-    #                                  interest['description'])
-    #     return 1
 
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKR:
