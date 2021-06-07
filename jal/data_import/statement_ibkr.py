@@ -824,11 +824,15 @@ class StatementIBKR(Statement):
         dividends = [x for x in self._data[FOF.ASSET_PAYMENTS] if
                      x['type'] == FOF.PAYMENT_DIVIDEND and x['asset'] == asset_id and x['account'] == account_id]
         if "pytest" not in sys.modules:  # add dividends from database if we are in production
-            assert False  # Below code should use correct db account & asset ids and return correct fields
+            account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
+            currency = [x for x in self._data[FOF.ASSETS] if x["id"] == account['currency']][0]
+            db_account = JalDB().get_account_id(account['number'], currency['symbol'])
+            asset = [x for x in self._data[FOF.ASSETS] if x["id"] == asset_id][0]
+            db_asset = JalDB().get_asset_id(asset['symbol'], isin=asset['isin'])
             query = executeSQL("SELECT * FROM dividends "
                                "WHERE type=:div AND account_id=:account_id AND asset_id=:asset_id",
-                               [(":div", DividendSubtype.Dividend), (":account_id", account_id),
-                                (":asset_id", asset_id)], forward_only=True)
+                               [(":div", DividendSubtype.Dividend), (":account_id", db_account),
+                                (":asset_id", db_asset)], forward_only=True)
             while query.next():
                 dividends.append(readSQLrecord(query, named=True))
         if datetime.utcfromtimestamp(timestamp).timetuple().tm_yday < 75:
