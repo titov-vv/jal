@@ -25,7 +25,7 @@
     {"id": 17, "type": "stock", "symbol": "GE", "name": "GENERAL ELECTRIC CO", "isin": "", "reg_code": "369604103", "exchange": "NYSE"},
     {"id": 18, "type": "stock", "symbol": "EWLL", "name": "EWELLNESS HEALTHCARE CORP", "isin": "US30051D1063", "reg_code": "30051D106", "exchange": "PINK"},
     {"id": 19, "type": "stock", "symbol": "EWLL", "name": "EWELLNESS HEALTHCARE CORP", "isin": "US30051D2053", "reg_code": "30051D205","exchange": "PINK"},
-    {"id": 20, "type": "etf", "symbol": "ZROZ", "name": "PIMCO 25+ YR ZERO CPN US TIF", "isin": "US72201R8824", "reg_code": "72201R882", "exchange": "ARCA"},
+    {"id": 20, "type": "etf", "symbol": "ZROZ", "name": "PIMCO 25+ YR ZERO CPN US TIF", "isin": "US72201R8824", "reg_code": "72201R882", "exchange": "ARCA", "country": "us"},
     {"id": 21, "type": "stock", "symbol": "AAPL", "name": "APPLE INC", "isin": "US0378331005", "reg_code": "037833100", "exchange": "NASDAQ"},
     {"id": 22, "type": "option", "symbol": "VLO   200724P00064000", "name": "VLO 24JUL20 64.0 P", "exchange": "CBOE"},
     {"id": 23, "type": "stock", "symbol": "VLO", "name": "VALERO ENERGY CORP", "isin": "US91913Y1001", "reg_code": "91913Y100", "exchange": "NYSE"},
@@ -64,7 +64,7 @@
     {"id": 7, "type": "stock_dividend", "account": 2, "timestamp": 1591215600, "number": "12882908488", "asset": 24, "quantity": 2.0, "cost_basis": 0.0, "description": "MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000 (MAC, MACERICH CO/THE, US5543821012)"}
   ],
   "asset_payments": [
-    {"id": 1, "type": "dividend", "account": 2, "timestamp": 1578082800, "number": "", "asset": 20, "amount": 60.2, "description": "ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)"},
+    {"id": 1, "type": "dividend", "account": 2, "timestamp": 1578082800, "number": "", "asset": 20, "amount": 60.2, "tax": 6.02, "description": "ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)"},
     {"id": 2, "type": "interest", "account": 2, "timestamp": 1590595065, "number": "2882737839", "asset": 8, "amount": -25.69, "description": "PURCHASE ACCRUED INT X 6 1/4 03/15/26"},
     {"id": 3, "type": "interest", "account": 2, "timestamp": 1600128000, "number": "", "asset": 8, "amount": 62.5, "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26)"}
   ]

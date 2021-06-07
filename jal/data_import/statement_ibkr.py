@@ -1,5 +1,6 @@
 import logging
 import re
+import sys
 from datetime import datetime, timezone
 from itertools import groupby
 from lxml import etree
@@ -8,7 +9,7 @@ from jal.constants import TransactionType, PredefinedAsset, PredefinedCategory, 
     MarketDataFeed
 from jal.widgets.helpers import g_tr, ManipulateDate
 from jal.db.update import JalDB
-from jal.db.helpers import executeSQL, readSQL, get_country_by_code, update_asset_country
+from jal.db.helpers import executeSQL, readSQL, readSQLrecord, get_country_by_code, update_asset_country
 from jal.data_import.statement import Statement, FOF
 
 
@@ -293,6 +294,13 @@ class StatementIBKR(Statement):
         if len(candidates) == 1:
             return candidates[0]["id"]
         return 0
+
+    def set_asset_counry(self, asset_id, country):
+        assets = [x for x in self._data[FOF.ASSETS] if 'id' in x and x['id'] == asset_id]
+        if len(assets) != 1:
+            return
+        assets[0]["country"] = country
+        return
 
     def load(self, filename: str) -> None:
         self._data = {
@@ -766,9 +774,6 @@ class StatementIBKR(Statement):
 
         logging.info(g_tr('IBKR', "Cash transactions loaded: ") + f"{cnt} ({len(cash)})")
 
-    def apply_tax_withheld(self, tax):
-        return 1
-
     def load_taxes(self, taxes):
         cnt = 0   #FIXME Link this tax with asset
         tax_base = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
@@ -781,6 +786,116 @@ class StatementIBKR(Statement):
             self._data[FOF.INCOME_SPENDING].append(tax)
             cnt += 1
         logging.info(g_tr('IBKR', "Taxes loaded: ") + f"{cnt} ({len(taxes)})")
+
+    # Applies tax to matching dividend:
+    # if tax < 0: apply it to dividend without tax
+    # otherwise: it is a correction and there should be dividend with exactly the same tax that will be set to 0
+    def apply_tax_withheld(self, tax) -> int:
+        TaxFullPattern = r"^(?P<description>.*) - (?P<country>\w\w) TAX$"
+
+        parts = re.match(TaxFullPattern, tax['description'], re.IGNORECASE)
+        if not parts:
+            logging.warning(g_tr('IBKR', "*** MANUAL ENTRY REQUIRED ***"))
+            logging.warning(g_tr('IBKR', "Unhandled tax country pattern found: ") + f"{tax['description']}")
+            return 0
+        parts = parts.groupdict()
+        self.set_asset_counry(tax['asset'], parts['country'].lower())
+        description = parts['description']
+        previous_tax = tax['amount'] if tax['amount'] >= 0 else 0
+        new_tax = -tax['amount'] if tax['amount'] < 0 else 0
+
+        dividend = self.find_dividend4tax(tax['timestamp'], tax['account'], tax['asset'], previous_tax, new_tax, description)
+        if dividend is None:
+            logging.warning(g_tr('IBKR', "Dividend not found for withholding tax: ") + f"{tax}, {previous_tax}")
+            return 0
+        dividend["tax"] = new_tax
+        return 1
+
+    # Searches for divident that matches tax in the best way:
+    # - it should have exactly the same account_id and asset_id
+    # - tax amount withheld from dividend should be equal to provided 'tax' value
+    # - timestamp should be the same or within previous year for weak match of Q1 taxes
+    # - note should be exactly the same or contain the same key elements
+    def find_dividend4tax(self, timestamp, account_id, asset_id, prev_tax, new_tax, note):
+        PaymentInLiueOfDividend = 'PAYMENT IN LIEU OF DIVIDEND'
+        TaxNotePattern = r"^(?P<symbol>.*\w) ?\((?P<isin>\w+)\)(?P<prefix>( \w*)+) +(?P<amount>\d+\.\d+)?(?P<suffix>.*)$"
+        DividendNotePattern = r"^(?P<symbol>.*\w) ?\((?P<isin>\w+)\)(?P<prefix>( \w*)+) +(?P<amount>\d+\.\d+)?(?P<suffix>.*) \(.*\)$"
+
+        dividends = [x for x in self._data[FOF.ASSET_PAYMENTS] if
+                     x['type'] == FOF.PAYMENT_DIVIDEND and x['asset'] == asset_id and x['account'] == account_id]
+        if "pytest" not in sys.modules:  # add dividends from database if we are in production
+            assert False  # Below code should use correct db account & asset ids and return correct fields
+            query = executeSQL("SELECT * FROM dividends "
+                               "WHERE type=:div AND account_id=:account_id AND asset_id=:asset_id",
+                               [(":div", DividendSubtype.Dividend), (":account_id", account_id),
+                                (":asset_id", asset_id)], forward_only=True)
+            while query.next():
+                dividends.append(readSQLrecord(query, named=True))
+        if datetime.utcfromtimestamp(timestamp).timetuple().tm_yday < 75:
+            # We may have wrong date in taxes before March, 15 due to tax correction
+            range_start = ManipulateDate.startOfPreviousYear(day=datetime.utcfromtimestamp(timestamp))
+            dividends = [x for x in dividends if x['timestamp'] >= range_start]
+        else:
+            # For any other day - use exact time match
+            dividends = [x for x in dividends if x['timestamp'] == timestamp]
+        dividends = [x for x in dividends if 'tax' not in x or (abs(x['tax'] - prev_tax) < 0.0001)]
+        dividends = sorted(dividends, key=lambda x: x['timestamp'])
+
+        # Choose either Dividends or Payments in liue with regards to note of the matching tax
+        if PaymentInLiueOfDividend in note.upper():
+            dividends = list(filter(lambda item: PaymentInLiueOfDividend in item['description'], dividends))
+            # we don't check for full match as there are a lot of records without amount
+        else:
+            dividends = list(filter(lambda item: PaymentInLiueOfDividend not in item['description'], dividends))
+            # Check for full match
+            for dividend in dividends:
+                if (dividend['timestamp'] == timestamp) and (note.upper() == dividend['description'][:len(note)].upper()):
+                    return dividend
+        if len(dividends) == 0:
+            return None
+
+        # Chose most probable dividend - by amount, timestamp and description
+        parts = re.match(TaxNotePattern, note, re.IGNORECASE)
+        if not parts:
+            logging.warning(g_tr('IBKR', "*** MANUAL ENTRY REQUIRED ***"))
+            logging.warning(g_tr('IBKR', "Unhandled tax pattern found: ") + f"{note}")
+            return None
+        parts = parts.groupdict()
+        note_prefix = parts['prefix']
+        note_suffix = parts['suffix']
+        try:
+            note_amount = float(parts['amount'])
+        except (ValueError, TypeError):
+            note_amount = 0
+        score = ['id'] * len(dividends)
+        for i, dividend in enumerate(dividends):
+            parts = re.match(DividendNotePattern, dividend['description'], re.IGNORECASE)
+            if not parts:
+                logging.warning(g_tr('IBKR', "*** MANUAL ENTRY REQUIRED ***"))
+                logging.warning(g_tr('IBKR', "Unhandled dividend pattern found: ") + f"{dividend['description']}")
+                return None
+            parts = parts.groupdict()
+            try:
+                amount = float(parts['amount'])
+            except (ValueError, TypeError):
+                amount = 0
+            if abs(amount - note_amount) <= 0.000005:            # Description has very similar amount +++++
+                score[i] += 5
+            if dividend['timestamp'] == timestamp:               # Timestamp exact match gives ++
+                score[i] += 2
+            if abs(0.1 * dividend['amount'] - new_tax) <= 0.01:  # New tax is 10% of dividend gives +
+                score[i] += 1
+            if parts['prefix'] == note_prefix:                   # Prefix part of description match gives +
+                score[i] += 1
+            if parts['suffix'] == note_suffix:                   # Suffix part of description match gives +
+                score[i] += 1
+        for i, vote in enumerate(score):
+            if (vote == max(score)) and (vote > 0):
+                return dividends[i]
+        # Final check - if only one found, return it
+        if len(dividends) == 1:
+            return dividends[0]
+        return None
 
 
 # -----------------------------------------------------------------------------------------------------------------------
