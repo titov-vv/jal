@@ -11,6 +11,9 @@ from jal.db.helpers import init_and_check_db, get_dbfilename, LedgerInitError
 from jal.db.backup_restore import JalBackup
 from jal.db.ledger import Ledger
 from jal.data_import.statement_ibkr import StatementIBKR
+from jal.db.update import JalDB
+from jal.db.helpers import executeSQL
+from PySide2.QtSql import QSqlDatabase
 
 
 def test_db_creation(tmp_path, project_root):
@@ -237,3 +240,28 @@ def test_statement_ibkr(project_root):
     IBKR = StatementIBKR()
     IBKR.load(data_path + 'ibkr.xml')
     assert IBKR._data == statement
+
+
+def test_statement_json_import(tmp_path, project_root):
+    # Prepare environment
+    src_path = project_root + os.sep + 'jal' + os.sep + Setup.INIT_SCRIPT_PATH
+    target_path = str(tmp_path) + os.sep + Setup.INIT_SCRIPT_PATH
+    copyfile(src_path, target_path)
+
+    # Activate db connection
+    error = init_and_check_db(str(tmp_path) + os.sep)
+    assert error.code == LedgerInitError.EmptyDbInitialized
+    error = init_and_check_db(str(tmp_path) + os.sep)
+    assert error.code == LedgerInitError.DbInitSuccess
+    db = QSqlDatabase.database(Setup.DB_CONNECTION)
+    assert db.isValid()
+    lang_id = JalDB().get_language_id('en')
+    assert lang_id == 1
+
+    assert executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'IB')") is not None
+    assert executeSQL("INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id) "
+                      "VALUES (4, 'IB TEST', 2, 1, 'U7654321', 1)") is not None
+
+    data_path = project_root + os.sep + "tests" + os.sep + "test_data" + os.sep
+    with open(data_path + 'ibkr.json', 'r') as json_file:
+        statement = json.load(json_file)

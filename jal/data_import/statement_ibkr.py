@@ -556,7 +556,8 @@ class StatementIBKR(Statement):
         cnt = 0
         if any(action['code'] == IBKR.CancelledFlag for action in actions):
             actions = [action for action in actions if action['code'] != IBKR.CancelledFlag]
-            logging.warning(g_tr('IBKR', "Statement contains cancelled corporate actions. They were skipped."))
+            if "pytest" not in sys.modules:  # suppress warning during testing
+                logging.warning(g_tr('IBKR', "Statement contains cancelled corporate actions. They were skipped."))
         if any(action['asset_type'] != FOF.ASSET_STOCK for action in actions):
             actions = [action for action in actions if action['asset_type'] == FOF.ASSET_STOCK]
             logging.warning(g_tr('IBKR', "Corporate actions are supported for stocks only, other assets were skipped"))
