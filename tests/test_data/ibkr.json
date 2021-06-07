@@ -45,7 +45,8 @@
   "income_spending": [
     {"id": 1, "timestamp": 1578073286, "account": 2, "peer": 0, "lines": [{"amount": -7.96, "category": -5, "description": "BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019"}]},
     {"id": 2, "timestamp": 1601462520, "account": 2, "peer": 0, "lines": [{"amount": 0.6905565, "category": -5, "description": "COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)"}]},
-    {"id": 3, "timestamp": 1591142400, "account": 1, "peer": 0, "lines": [{"amount": 0.5, "category": -8, "description": "RUB CREDIT INT FOR MAY-2020"}]}
+    {"id": 3, "timestamp": 1591142400, "account": 1, "peer": 0, "lines": [{"amount": 0.5, "category": -8, "description": "RUB CREDIT INT FOR MAY-2020"}]},
+    {"id": 4, "timestamp": 1549843200, "account": 2, "peer": 0, "lines": [{"amount": -0.249018, "category": -6, "description": "BABA (ALIBABA GROUP HOLDING-SP ADR) - French Transaction Tax"}]}
   ],
   "transfers": [
     {"id": 1, "account": [1, 2, 2], "number": "2645393202", "asset": [1, 2], "timestamp": 1581322108, "withdrawal": 78986.6741, "deposit": 1234.0, "fee": 2.0},

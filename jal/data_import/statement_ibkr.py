@@ -311,8 +311,8 @@ class StatementIBKR(Statement):
             'Trades': self.load_ib_trades,
             'OptionEAE': self.load_options,
             'CorporateActions': self.load_corporate_actions,
-            'CashTransactions': self.load_cash_transactions
-            # 'TransactionTaxes': self.loadIBTaxes
+            'CashTransactions': self.load_cash_transactions,
+            'TransactionTaxes': self.load_taxes
         }
         try:
             xml_root = etree.parse(filename)
@@ -414,13 +414,13 @@ class StatementIBKR(Statement):
                                             ('tradeID', 'number', str, ''),
                                             ('description', 'description', str, None)]},
             'TransactionTaxes': {'tag': 'TransactionTax',
-                                 'level': '',
-                                 'values': [('accountId', IBKR.flAccount, None),
-                                            ('symbol', IBKR.flString, ''),
-                                            ('date', IBKR.flTimestamp, None),
-                                            ('taxAmount', IBKR.flNumber, None),
-                                            ('description', IBKR.flString, None),
-                                            ('taxDescription', IBKR.flString, None)]}
+                                 'level': 'SUMMARY',
+                                 'values': [('accountId', 'account', IBKR_Account, IBKR.NotFound),
+                                            ('symbol', 'symbol', str, None),
+                                            ('date', 'timestamp', datetime, None),
+                                            ('taxAmount', 'amount', float, None),
+                                            ('description', 'description', str, None),
+                                            ('taxDescription', 'tax_description', str, None)]}
         }
 
         try:
@@ -768,6 +768,19 @@ class StatementIBKR(Statement):
 
     def apply_tax_withheld(self, tax):
         return 1
+
+    def load_taxes(self, taxes):
+        cnt = 0   #FIXME Link this tax with asset
+        tax_base = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
+        for i, tax in enumerate(taxes):
+            tax['id'] = tax_base + i
+            tax['peer'] = 0
+            note = f"{tax['symbol']} ({tax['description']}) - {tax['tax_description']}"
+            tax['lines'] = [{'amount': tax['amount'], 'category': -PredefinedCategory.Taxes, 'description': note}]
+            self.drop_extra_fields(tax, ["symbol", "amount", "description", "tax_description"])
+            self._data[FOF.INCOME_SPENDING].append(tax)
+            cnt += 1
+        logging.info(g_tr('IBKR', "Taxes loaded: ") + f"{cnt} ({len(taxes)})")
 
 
 # -----------------------------------------------------------------------------------------------------------------------
