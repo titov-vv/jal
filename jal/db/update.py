@@ -4,7 +4,7 @@ from PySide2.QtWidgets import QApplication, QDialog
 from PySide2.QtSql import QSqlTableModel
 
 from jal.ui.ui_add_asset_dlg import Ui_AddAssetDialog
-from jal.constants import Setup
+from jal.constants import Setup, PredefindedAccountType
 from jal.db.helpers import db_connection, executeSQL, readSQL
 from jal.widgets.helpers import g_tr
 from jal.net.helpers import GetAssetInfoByISIN
@@ -92,6 +92,30 @@ class JalDB():
     def find_account(self, account_number, currency_code):
         return readSQL("SELECT id FROM accounts WHERE number=:account_number AND currency_id=:currency",
                        [(":account_number", account_number), (":currency", currency_code)], check_unique=True)
+
+    def add_account(self, account_number, currency_code, account_type=PredefindedAccountType.Investment):
+        account_id = self.find_account(account_number, currency_code)
+        if account_id:  # Account already exists
+            logging.warning(g_tr('JalDB', "Account already exists: ") +
+                            f"{account_number} ({self.get_asset_name(currency_code)})")
+            return account_id
+        account_id = readSQL("SELECT id FROM accounts WHERE number=:account_number",
+                             [(":account_number", account_number)])
+        if account_id:  # Account with the same number but different currency exists
+            query = executeSQL("INSERT INTO accounts "
+                               "(type_id, name, active, number, currency_id, organization_id, country_id) "
+                               "SELECT a.type_id, a.name||'.'||c.name AS name, a.active, a.number, :currency_id, "
+                               "a.organization_id, a.country_id "
+                               "FROM accounts AS a LEFT JOIN assets AS c ON c.id=:currency_id "
+                               "WHERE number=:account_number LIMIT 1",
+                               [(":account_number", account_number), (":currency_id", currency_code)])
+            return query.lastInsertId()
+        currency = self.get_asset_name(currency_code)
+        query = executeSQL("INSERT INTO accounts (type_id, name, active, number, currency_id, organization_id) "
+                           "VALUES(:type, :name, 1, :number, :currency, :bank)",
+                           [(":type", account_type), (":name", account_number+'.'+currency),
+                            (":number", account_number), (":currency", currency_code), (":bank", 1)])
+        return query.lastInsertId()
 
     def get_account_currency(self, account_id):
         return readSQL("SELECT currency_id FROM accounts WHERE id=:account_id", [(":account_id", account_id)])

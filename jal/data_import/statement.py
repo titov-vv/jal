@@ -119,7 +119,9 @@ class Statement:
                             element[tag] = -new_value if element[tag] == old_value else element[tag]
 
     def import_into_db(self):
-        loaders = {
+        sections = {
+            FOF.S_TIMESTAMP: None,
+            FOF.E_TIMESTAMP: None,
             FOF.ASSETS: self._import_assets,
             FOF.ACCOUNTS: self._import_accounts,
             FOF.INCOME_SPENDING: self._import_imcomes_and_spendings,
@@ -129,10 +131,11 @@ class Statement:
             FOF.CORP_ACTIONS: self._import_corporate_actons
         }
         
+        for section in sections:
+            if section in self._data and sections[section]:
+                sections[section](self._data[section])
         for section in self._data:
-            try:
-                loaders[section](self._data[section])
-            except KeyError:
+            if section not in sections:
                 logging.warning(g_tr("Statement", "Section is not supported: ") + section)
 
     def _import_assets(self, assets):
@@ -154,10 +157,20 @@ class Statement:
                 if asset['type'] == FOF.ASSET_MONEY:
                     self._update_id("currency", old_id, asset_id)
             else:
-                raise Statement_ImportError(g_tr('Statement', "Can't create asset: ") + asset)
+                raise Statement_ImportError(g_tr('Statement', "Can't create asset: ") + f"{asset}")
     
     def _import_accounts(self, accounts):
-        pass
+        for account in accounts:
+            if account['id'] < 0:
+                continue
+            if account['currency'] > 0:
+                raise Statement_ImportError(g_tr('Statement', "Unmatched currency for account: ") + f"{account}")
+            account_id = JalDB().add_account(account['number'], -account['currency'])
+            if account_id:
+                old_id, account['id'] = account['id'], -account_id
+                self._update_id("account", old_id, account_id)
+            else:
+                raise Statement_ImportError(g_tr('Statement', "Can't create account: ") + f"{account}")
     
     def _import_imcomes_and_spendings(self, actions):
         pass
