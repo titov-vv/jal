@@ -280,6 +280,10 @@ def test_statement_json_import(tmp_path, project_root):
     # 22 assets were loaded from file and 4 was used from DB
     assert readSQL("SELECT COUNT(*) FROM assets") == 26
 
-    # 2 accounts were loaded from file and 1 was used from DB
-    assert readSQL("SELECT COUNT(*) FROM accounts") == 3
+    # 3 accounts were loaded from file and 1 was used from DB
+    assert readSQL("SELECT COUNT(*) FROM accounts") == 4
     assert readSQL("SELECT name FROM accounts WHERE id=3") == "IB TEST.CAD"
+    assert readSQL("SELECT name FROM agents WHERE id=2") == "Bank for #TEST_ACC"
+
+    # check that income/spendings were loaded with correct values
+    assert readSQL("SELECT SUM(amount) FROM action_details") == -7.0184615

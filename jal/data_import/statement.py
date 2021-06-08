@@ -173,7 +173,20 @@ class Statement:
                 raise Statement_ImportError(g_tr('Statement', "Can't create account: ") + f"{account}")
     
     def _import_imcomes_and_spendings(self, actions):
-        pass
+        for action in actions:
+            if action['account'] > 0:
+                raise Statement_ImportError(g_tr('Statement', "Unmatched account for income/spending: ") + f"{action}")
+            if action['peer'] > 0:
+                raise Statement_ImportError(g_tr('Statement', "Unmatched peer for income/spending: ") + f"{action}")
+            peer = JalDB().get_account_bank(-action['account']) if action['account'] == 0 else -action['account']
+            if len(action['lines']) != 1:   # FIXME - need support for multilines here
+                raise Statement_ImportError(g_tr('Statement', "Unsupported income/spending: ") + f"{action}")
+            amount = action['lines'][0]['amount']
+            category = -action['lines'][0]['category']
+            if category <= 0:
+                raise Statement_ImportError(g_tr('Statement', "Unmatched category for income/spending: ") + f"{action}")
+            description = action['lines'][0]['description']
+            JalDB().add_cash_transaction(-action['account'], peer, action['timestamp'], amount, category, description)
     
     def _import_transfers(self, transfers):
         pass

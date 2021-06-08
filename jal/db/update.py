@@ -111,14 +111,22 @@ class JalDB():
                                [(":account_number", account_number), (":currency_id", currency_code)])
             return query.lastInsertId()
         currency = self.get_asset_name(currency_code)
+        bank_name = g_tr('JalB', "Bank for #" + account_number)
+        bank_id = readSQL("SELECT id FROM agents WHERE name=:bank_name", [(":bank_name", bank_name)])
+        if bank_id is None:
+            query = executeSQL("INSERT INTO agents (pid, name) VALUES (0, :bank_name)", [(":bank_name", bank_name)])
+            bank_id = query.lastInsertId()
         query = executeSQL("INSERT INTO accounts (type_id, name, active, number, currency_id, organization_id) "
                            "VALUES(:type, :name, 1, :number, :currency, :bank)",
                            [(":type", account_type), (":name", account_number+'.'+currency),
-                            (":number", account_number), (":currency", currency_code), (":bank", 1)])
+                            (":number", account_number), (":currency", currency_code), (":bank", bank_id)])
         return query.lastInsertId()
 
     def get_account_currency(self, account_id):
         return readSQL("SELECT currency_id FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
+
+    def get_account_bank(self, account_id):
+        return readSQL("SELECT organization_id FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
 
     # Searches for asset_id in database - first by ISIN, then by Reg.Code next by Symbol
     # If found - tries to update data if some is empty in database
