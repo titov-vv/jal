@@ -237,7 +237,7 @@ class Statement:
                 raise Statement_ImportError(g_tr('Statement', "Unmatched account for income/spending: ") + f"{action}")
             if action['peer'] > 0:
                 raise Statement_ImportError(g_tr('Statement', "Unmatched peer for income/spending: ") + f"{action}")
-            peer = JalDB().get_account_bank(-action['account']) if action['account'] == 0 else -action['account']
+            peer = JalDB().get_account_bank(-action['account']) if action['peer'] == 0 else -action['peer']
             if len(action['lines']) != 1:   # FIXME - need support for multilines here
                 raise Statement_ImportError(g_tr('Statement', "Unsupported income/spending: ") + f"{action}")
             amount = action['lines'][0]['amount']

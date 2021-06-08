@@ -874,7 +874,7 @@ class StatementIBKR(Statement):
             note_amount = float(parts['amount'])
         except (ValueError, TypeError):
             note_amount = 0
-        score = ['id'] * len(dividends)
+        score = [0] * len(dividends)
         for i, dividend in enumerate(dividends):
             parts = re.match(DividendNotePattern, dividend['description'], re.IGNORECASE)
             if not parts:
