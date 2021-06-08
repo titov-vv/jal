@@ -4,12 +4,58 @@ import logging
 from datetime import datetime
 
 from jal.widgets.helpers import g_tr
-from jal.constants import MarketDataFeed, PredefinedAsset, DividendSubtype, CorporateAction
+from jal.constants import Setup, MarketDataFeed, PredefinedAsset, DividendSubtype, CorporateAction
 from jal.db.update import JalDB
 if "pytest" not in sys.modules:
-    from jal.data_import.statements import SelectAccountDialog
-    from PySide2.QtWidgets import QDialog
+    from PySide2.QtCore import Slot
+    from PySide2.QtWidgets import QApplication, QDialog, QMessageBox
+    from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
+
+
 # -----------------------------------------------------------------------------------------------------------------------
+# FIXME - this class is duplicated in statements.py
+# Remove old definition and adopt if for better usage with pytest framework
+if "pytest" not in sys.modules:
+    class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
+        def __init__(self, description, current_account, recent_account=None):
+            QDialog.__init__(self)
+            self.setupUi(self)
+            self.account_id = recent_account
+            self.current_account = current_account
+
+            self.DescriptionLbl.setText(description)
+            if self.account_id:
+                self.AccountWidget.selected_id = self.account_id
+
+            # center dialog with respect to main application window
+            parent = None
+            for widget in QApplication.topLevelWidgets():
+                if widget.objectName() == Setup.MAIN_WND_NAME:
+                    parent = widget
+            if parent:
+                x = parent.x() + parent.width() / 2 - self.width() / 2
+                y = parent.y() + parent.height() / 2 - self.height() / 2
+                self.setGeometry(x, y, self.width(), self.height())
+
+        @Slot()
+        def closeEvent(self, event):
+            self.account_id = self.AccountWidget.selected_id
+            if self.AccountWidget.selected_id == 0:
+                QMessageBox().warning(None, g_tr('ReferenceDataDialog', "No selection"),
+                                      g_tr('ReferenceDataDialog', "Invalid account selected"),
+                                      QMessageBox.Ok)
+                event.ignore()
+                return
+
+            if self.AccountWidget.selected_id == self.current_account:
+                QMessageBox().warning(None, g_tr('ReferenceDataDialog', "No selection"),
+                                      g_tr('ReferenceDataDialog', "Please select different account"),
+                                      QMessageBox.Ok)
+                event.ignore()
+                return
+
+            self.setResult(QDialog.Accepted)
+            event.accept()
 
 
 class FOF:
