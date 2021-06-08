@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 
 from jal.widgets.helpers import g_tr
-from jal.constants import MarketDataFeed, PredefinedAsset, DividendSubtype
+from jal.constants import MarketDataFeed, PredefinedAsset, DividendSubtype, CorporateAction
 from jal.db.update import JalDB
 if "pytest" not in sys.modules:
     from jal.data_import.statements import SelectAccountDialog
@@ -58,6 +58,13 @@ class Statement:
         FOF.ASSET_FUTURES: PredefinedAsset.Derivative,
         FOF.ASSET_OPTION: PredefinedAsset.Derivative,
         FOF.ASSET_WARRANT: PredefinedAsset.Stock,
+    }
+    _corp_actions = {
+        FOF.ACTION_MERGER: CorporateAction.Merger,
+        FOF.ACTION_SPLIT: CorporateAction.Split,
+        FOF.ACTION_SPINOFF: CorporateAction.SpinOff,
+        FOF.ACTION_SYMBOL_CHANGE: CorporateAction.SymbolChange,
+        FOF.ACTION_STOCK_DIVIDEND: CorporateAction.StockDividend
     }
     _sources = {
         'NYSE': MarketDataFeed.US,
@@ -201,7 +208,7 @@ class Statement:
                     raise Statement_ImportError(g_tr('Statement', "Unmatched account for transfer: ") + f"{transfer}")
             for asset in transfer['asset']:
                 if asset > 0:
-                    raise Statement_ImportError(g_tr('Statement', "Unmatched asset for transfer: ") + f"{asset}")
+                    raise Statement_ImportError(g_tr('Statement', "Unmatched asset for transfer: ") + f"{transfer}")
             if transfer['account'][0] == 0 or transfer['account'][1] == 0:
                 text = ''
                 pair_account = 1
@@ -260,7 +267,29 @@ class Statement:
                 raise Statement_ImportError(g_tr('Statement', "Unsupported payment type: ") + f"{payment}")
 
     def _import_corporate_actions(self, actions):
-        pass
+        for action in actions:
+            if action['account'] > 0:
+                raise Statement_ImportError(g_tr('Statement', "Unmatched account for corporate action: ") + f"{action}")
+            if type(action['asset']) == list:
+                asset_old = -action['asset'][0]
+                asset_new = -action['asset'][1]
+            else:
+                asset_old = asset_new = -action['asset']
+            if asset_old < 0 or asset_new < 0:
+                raise Statement_ImportError(g_tr('Statement', "Unmatched asset for corporate action: ") + f"{action}")
+            if type(action['quantity']) == list:
+                qty_old = action['quantity'][0]
+                qty_new = action['quantity'][1]
+            else:
+                qty_old = -1
+                qty_new = action['quantity']
+            try:
+                action_type = self._corp_actions[action['type']]
+            except KeyError:
+                raise Statement_ImportError(g_tr('Statement', "Unsupported corporate action: ") + f"{action}")
+            JalDB().add_corporate_action(-action['account'], action_type, action['timestamp'], action['number'],
+                                         asset_old, qty_old, asset_new, qty_new,
+                                         action['cost_basis'], action['description'])
 
     def select_account(self, text, account_id, recent_account_id=0):
         dialog = SelectAccountDialog(text, account_id, recent_account=recent_account_id)

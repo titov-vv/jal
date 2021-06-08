@@ -377,3 +377,17 @@ def test_statement_json_import(tmp_path, project_root):
     assert readSQL("SELECT COUNT(*) FROM dividends") == len(test_payments)
     for i, payment in enumerate(test_payments):
         assert readSQL("SELECT * FROM dividends WHERE id=:id", [(":id", i + 1)]) == payment
+
+    # validate corp actions
+    test_corp_actons = [
+        [1, 1605731100, '10162291403', 1, 1, 9, 70.0, 8, 17.444, 1.0, 'DM(US2574541080) MERGED(Acquisition) WITH US25746U1097 2492 FOR 10000 (D, DOMINION ENERGY INC, 25746U109)'],
+        [2, 1605558300, '14302257657', 1, 3, 13, 5.0, 14, 5.0, 1.0, 'MYL(NL0011031208) CUSIP/ISIN CHANGE TO (US92556V1061) (VTRS, VIATRIS INC-W/I, US92556V1061)'],
+        [3, 1605817500, '10302900848', 1, 2, 19, 100.0, 15, 0.5371, 0.0, 'GE(US3696041033) SPINOFF  5371 FOR 1000000 (WAB, WABTEC CORP, 929740108)'],
+        [4, 1595017200, '13259965038', 1, 5, 16, -1.0, 16, 3.0, 0.0, 'TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000 (TEF, TELEFONICA SA-SPON ADR, US8793822086)'],
+        [5, 1592339100, '13006963996', 1, 1, 17, 70.0, 18, 170.8, 1.0, 'EQM(US26885B1008) MERGED(Acquisition) WITH US2946001011 244 FOR 100 (ETRN, EQUITRANS MIDSTREAM CORP, US2946001011)'],
+        [6, 1581452700, '12029570527', 1, 4, 20, 45000.0, 21, 900.0, 1.0, 'EWLL(US30051D1063) SPLIT 1 FOR 50 (EWLLD, EWELLNESS HEALTHCARE CORP, US30051D2053)'],
+        [7, 1591215600, '12882908488', 1, 5, 26, -1.0, 26, 2.0, 0.0, 'MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000 (MAC, MACERICH CO/THE, US5543821012)'],
+    ]
+    assert readSQL("SELECT COUNT(*) FROM corp_actions") == len(test_corp_actons)
+    for i, action in enumerate(test_corp_actons):
+        assert readSQL("SELECT * FROM corp_actions WHERE id=:id", [(":id", i + 1)]) == action
