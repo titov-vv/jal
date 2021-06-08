@@ -13,7 +13,7 @@ from jal.db.ledger import Ledger
 from jal.data_import.statement_ibkr import StatementIBKR
 from jal.data_import.statement import Statement
 from jal.db.update import JalDB
-from jal.db.helpers import executeSQL
+from jal.db.helpers import executeSQL, readSQL
 from PySide2.QtSql import QSqlDatabase
 
 
@@ -274,4 +274,9 @@ def test_statement_json_import(tmp_path, project_root):
         expected_result = json.load(json_file)
 
     assert statement._data == expected_result
+
+    statement.import_into_db()
+
+    # 22 assets were loaded from file and 4 was used from DB
+    assert readSQL("SELECT COUNT(*) FROM assets") == 26
 
