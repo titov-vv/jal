@@ -287,3 +287,14 @@ def test_statement_json_import(tmp_path, project_root):
 
     # check that income/spendings were loaded with correct values
     assert readSQL("SELECT SUM(amount) FROM action_details") == -7.0184615
+
+    # check transfers
+    test_transfers = [
+        [1, 1581322108, 2, 78986.6741, 1581322108, 1, 1234.0, 1, 2.0, '', ''],
+        [2, 1590522832, 2, 44.07, 1590522832, 1, 0.621778209, '', '', '', ''],
+        [3, 1600374600, 1, 123456.78, 1600374600, 2, 123456.78, '', '', '', 'CASH RECEIPTS / ELECTRONIC FUND TRANSFERS'],
+        [4, 1605744000, 1, 1234.0, 1605744000, 1, 1234.0, '', '', '', 'DISBURSEMENT INITIATED BY John Doe']
+    ]
+    assert readSQL("SELECT COUNT(*) FROM transfers") == len(test_transfers)
+    for i, transfer in enumerate(test_transfers):
+        assert readSQL("SELECT * FROM transfers WHERE id=:id", [(":id", i+1)]) == transfer
