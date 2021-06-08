@@ -277,18 +277,71 @@ def test_statement_json_import(tmp_path, project_root):
 
     statement.import_into_db()
 
-    # 22 assets were loaded from file and 4 was used from DB
-    assert readSQL("SELECT COUNT(*) FROM assets") == 26
+    # validate assets
+    test_assets = [
+        [1, 'RUB', 1, 'Российский Рубль', '', 0, -1],
+        [2, 'USD', 1, 'Доллар США', '', 0, 0],
+        [3, 'EUR', 1, 'Евро', '', 0, 0],
+        [4, 'VUG', 4, 'Growth ETF', 'US9229087369', 0, 0],
+        [5, 'CAD', 1, '', '', 0, -1],
+        [6, 'AMZN', 2, 'AMAZON.COM INC', 'US0231351067', 0, 2],
+        [7, 'BABA', 2, 'ALIBABA GROUP HOLDING-SP ADR', 'US01609W1027', 0, 2],
+        [8, 'D', 2, 'DOMINION ENERGY INC', '', 0, 2],
+        [9, 'DM', 2, 'DOMINION ENERGY MIDSTREAM PA', '', 0, 2],
+        [10, 'X 6 1/4 03/15/26', 3, 'X 6 1/4 03/15/26', 'US912909AN84', 0, -1],
+        [11, 'SPY   200529C00295000', 6, 'SPY 29MAY20 295.0 C', '', 0, -1],
+        [12, 'DSKEW', 2, 'DSKEW 27FEB22 11.5 C', 'US23753F1158', 0, 2],
+        [13, 'MYL', 2, 'MYLAN NV', 'NL0011031208', 0, -1],
+        [14, 'VTRS', 2, 'VIATRIS INC-W/I', 'US92556V1061', 0, 2],
+        [15, 'WAB', 2, 'WABTEC CORP', '', 0, 2],
+        [16, 'TEF', 2, 'TELEFONICA SA-SPON ADR', 'US8793822086', 0, 2],
+        [17, 'EQM', 2, 'EQM MIDSTREAM PARTNERS LP', 'US26885B1008', 0, 2],
+        [18, 'ETRN', 2, 'EQUITRANS MIDSTREAM CORP', 'US2946001011', 0, 2],
+        [19, 'GE', 2, 'GENERAL ELECTRIC CO', '', 0, 2],
+        [20, 'EWLL', 2, 'EWELLNESS HEALTHCARE CORP', 'US30051D1063', 0, -1],
+        [21, 'EWLL', 2, 'EWELLNESS HEALTHCARE CORP', 'US30051D2053', 0, -1],
+        [22, 'ZROZ', 4, 'PIMCO 25+ YR ZERO CPN US TIF', 'US72201R8824', 0, 2],
+        [23, 'AAPL', 2, 'APPLE INC', 'US0378331005', 0, 2],
+        [24, 'VLO   200724P00064000', 6, 'VLO 24JUL20 64.0 P', '', 0, -1],
+        [25, 'VLO', 2, 'VALERO ENERGY CORP', 'US91913Y1001', 0, 2],
+        [26, 'MAC', 2, '', 'US5543821012', 0, 2],
+    ]
+    assert readSQL("SELECT COUNT(*) FROM assets") == len(test_assets)
+    for i, asset in enumerate(test_assets):
+        assert readSQL("SELECT * FROM assets WHERE id=:id", [(":id", i + 1)]) == asset
 
-    # 3 accounts were loaded from file and 1 was used from DB
-    assert readSQL("SELECT COUNT(*) FROM accounts") == 4
-    assert readSQL("SELECT name FROM accounts WHERE id=3") == "IB TEST.CAD"
-    assert readSQL("SELECT name FROM agents WHERE id=2") == "Bank for #TEST_ACC"
+    # validate accounts
+    test_accounts = [
+        [1, 4, 'IB TEST', 2, 1, 'U7654321', 0, 1, 0],
+        [2, 4, 'IB TEST.RUB', 1, 1, 'U7654321', 0, 1, 0],
+        [3, 4, 'IB TEST.CAD', 5, 1, 'U7654321', 0, 1, 0],
+        [4, 4, 'TEST_ACC.CAD', 5, 1, 'TEST_ACC', 0, 2, 0]
+    ]
+    assert readSQL("SELECT COUNT(*) FROM accounts") == len(test_accounts)
+    for i, account in enumerate(test_accounts):
+        assert readSQL("SELECT * FROM accounts WHERE id=:id", [(":id", i+1)]) == account
 
-    # check that income/spendings were loaded with correct values
-    assert readSQL("SELECT SUM(amount) FROM action_details") == -7.0184615
+    # validate peers
+    test_peers = [
+        [1, 0, 'IB', ''],
+        [2, 0, 'Bank for #TEST_ACC', '']
+    ]
+    assert readSQL("SELECT COUNT(*) FROM agents") == len(test_peers)
+    for i, peer in enumerate(test_peers):
+        assert readSQL("SELECT * FROM agents WHERE id=:id", [(":id", i + 1)]) == peer
 
-    # check transfers
+    # validate income/spending
+    test_actions = [
+        [1, 1, 5, '', -7.96, 0.0, 'BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019'],
+        [2, 2, 5, '', 0.6905565, 0.0, 'COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)'],
+        [3, 3, 8, '', 0.5, 0.0, 'RUB CREDIT INT FOR MAY-2020'],
+        [4, 4, 6, '', -0.249018, 0.0, 'BABA (ALIBABA GROUP HOLDING-SP ADR) - French Transaction Tax']
+    ]
+    assert readSQL("SELECT COUNT(amount) FROM action_details") == len(test_actions)
+    for i, action in enumerate(test_actions):
+        assert readSQL("SELECT * FROM action_details WHERE id=:id", [(":id", i+1)]) == action
+
+    # validate transfers
     test_transfers = [
         [1, 1581322108, 2, 78986.6741, 1581322108, 1, 1234.0, 1, 2.0, '', ''],
         [2, 1590522832, 2, 44.07, 1590522832, 1, 0.621778209, '', '', '', ''],
