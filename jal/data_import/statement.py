@@ -233,7 +233,14 @@ class Statement:
                                  -transfer['account'][2], transfer['fee'], description)
 
     def _import_trades(self, trades):
-        pass
+        for trade in trades:
+            if trade['account'] > 0:
+                raise Statement_ImportError(g_tr('Statement', "Unmatched account for trade: ") + f"{trade}")
+            if trade['asset'] > 0:
+                raise Statement_ImportError(g_tr('Statement', "Unmatched asset for trade: ") + f"{trade}")
+            note = trade['note'] if 'note' in trade else ''
+            JalDB().add_trade(-trade['account'], -trade['asset'], trade['timestamp'], trade['settlement'],
+                              trade['number'], trade['quantity'], trade['price'], trade['fee'], note)
 
     def _import_asset_payments(self, payments):
         pass

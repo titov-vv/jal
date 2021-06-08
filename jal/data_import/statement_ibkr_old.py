@@ -60,6 +60,6 @@ class IBKR_obsolete():
             qty = float(row[2])
             price = float(row[3])
             fee = float(row[6])
-            JalDB().add_trade(account_id, asset_id, timestamp, settlement, number, qty, price, fee)
+            JalDB().add_trade(account_id, asset_id, timestamp, settlement, number, qty, price, -fee)
         logging.info(g_tr('IBKR', "Load IBKR Activity statement completed"))
         return True

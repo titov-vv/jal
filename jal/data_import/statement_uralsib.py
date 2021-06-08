@@ -220,7 +220,7 @@ class UralsibCapital:
             timestamp = int(datetime.strptime(ts_string, "%d.%m.%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp())
             settlement = int(datetime.strptime(self._statement[headers['settlement']][row],
                                                "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
-            JalDB().add_trade(self._accounts[currency], asset_id, timestamp, settlement, deal_number, qty, price, -fee)
+            JalDB().add_trade(self._accounts[currency], asset_id, timestamp, settlement, deal_number, qty, price, fee)
             cnt += 1
             row += 1
         logging.info(g_tr('Uralsib', "Futures trades loaded: ") + f"{cnt}")

@@ -280,7 +280,7 @@ class PSB_Broker:
                     settlement = int(datetime.strptime(self._statement[headers['*settlement']][row],
                                                        "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
                 JalDB().add_trade(self._accounts[currency], asset_id, timestamp, settlement, deal_number, qty, price,
-                                  -fee)
+                                  fee)
                 if bond_interest != 0:
                     JalDB().add_dividend(DividendSubtype.BondInterest, timestamp, self._accounts[currency], asset_id,
                                          bond_interest, "НКД", deal_number)

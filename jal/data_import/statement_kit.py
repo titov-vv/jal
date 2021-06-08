@@ -136,7 +136,7 @@ class KITFinance:
             trade_datetime = t_date + timedelta(hours=t_time.hour, minutes=t_time.minute, seconds=t_time.second)
             timestamp = int(trade_datetime.replace(tzinfo=timezone.utc).timestamp())
             settlement = int(self._statement[headers['settlement']][row].replace(tzinfo=timezone.utc).timestamp())
-            JalDB().add_trade(self._account_id, asset_id, timestamp, settlement, number, qty, price, -fee)
+            JalDB().add_trade(self._account_id, asset_id, timestamp, settlement, number, qty, price, fee)
             if bond_interest != 0:
                 JalDB().add_dividend(DividendSubtype.BondInterest, timestamp, self._account_id, asset_id,
                                      bond_interest, "НКД", number)

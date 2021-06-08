@@ -240,7 +240,7 @@ class JalDB():
                         (":tax", tax), (":note", note)],
                        commit=True)
 
-    def add_trade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee):
+    def add_trade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee, note=''):
         trade_id = readSQL("SELECT id FROM trades "
                            "WHERE timestamp=:timestamp AND asset_id = :asset "
                            "AND account_id = :account AND number = :number AND qty = :qty AND price = :price",
@@ -250,11 +250,11 @@ class JalDB():
             logging.info(g_tr('JalDB', "Trade already exists: #") + f"{number}")
             return
 
-        _ = executeSQL("INSERT INTO trades (timestamp, settlement, number, account_id, asset_id, qty, price, fee) "
-                       "VALUES (:timestamp, :settlement, :number, :account, :asset, :qty, :price, :fee)",
+        _ = executeSQL("INSERT INTO trades (timestamp, settlement, number, account_id, asset_id, qty, price, fee, note)"
+                       " VALUES (:timestamp, :settlement, :number, :account, :asset, :qty, :price, :fee, :note)",
                        [(":timestamp", timestamp), (":settlement", settlement), (":number", number),
                         (":account", account_id), (":asset", asset_id), (":qty", float(qty)),
-                        (":price", float(price)), (":fee", -float(fee))], commit=True)
+                        (":price", float(price)), (":fee", float(fee)), (":note", note)], commit=True)
 
     def del_trade(self, account_id, asset_id, timestamp, _settlement, number, qty, price, _fee):
         _ = executeSQL("DELETE FROM trades "

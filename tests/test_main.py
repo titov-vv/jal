@@ -351,3 +351,19 @@ def test_statement_json_import(tmp_path, project_root):
     assert readSQL("SELECT COUNT(*) FROM transfers") == len(test_transfers)
     for i, transfer in enumerate(test_transfers):
         assert readSQL("SELECT * FROM transfers WHERE id=:id", [(":id", i+1)]) == transfer
+
+    # validate trades
+    test_trades = [
+        [1, 1548447900, 1548447900, '', 1, 8, 0.567, 69.2215, 0.0, ''],
+        [2, 1579094694, 1579219200, '2661774904', 1, 20, 45000.0, 0.0012, 0.54, ''],
+        [3, 1580215513, 1580215513, '2674740000', 1, 4, -1240.0, 54.84, 7.75519312, ''],
+        [4, 1580215566, 1580342400, '2674740000', 1, 23, -148.0, 316.68, 1.987792848, ''],
+        [5, 1590595065, 1590710400, '2882737839', 1, 10, 2.0, 637.09, 2.0, ''],
+        [6, 1592575273, 1592784000, '2931083780', 1, 24, -100.0, 4.54, 1.1058334, ''],
+        [7, 1595607600, 1595808000, '2997636969', 1, 24, 100.0, 0.0, 0.0, 'Option assignment'],
+        [8, 1595607600, 1595607600, '2997636973', 1, 25, 100.0, 64.0, 0.0, 'Option assignment/exercise'],
+        [9, 1603882231, 1604016000, '3183801882', 1, 21, 500000.0, 0.0001, 0.7503675, '']
+    ]
+    assert readSQL("SELECT COUNT(*) FROM trades") == len(test_trades)
+    for i, trade in enumerate(test_trades):
+        assert readSQL("SELECT * FROM trades WHERE id=:id", [(":id", i + 1)]) == trade

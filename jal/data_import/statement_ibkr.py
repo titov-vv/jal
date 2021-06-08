@@ -1479,7 +1479,7 @@ class IBKR:
                               trade['tradeID'], qty, trade['tradePrice'], trade['ibCommission'])
         else:
             JalDB().add_trade(trade['accountId'], trade['symbol'], trade['dateTime'], trade['settleDateTarget'],
-                              trade['tradeID'], qty, trade['tradePrice'], trade['ibCommission'])
+                              trade['tradeID'], qty, trade['tradePrice'], -trade['ibCommission'])
         return 1
 
     def loadIBBondTrade(self, trade):
@@ -1492,7 +1492,7 @@ class IBKR:
                               trade['tradeID'], qty, price, trade['ibCommission'])
         else:
             JalDB().add_trade(trade['accountId'], trade['symbol'], trade['dateTime'], trade['settleDateTarget'],
-                              trade['tradeID'], qty, price, trade['ibCommission'])
+                              trade['tradeID'], qty, price, -trade['ibCommission'])
         return 1
 
     def loadIBCurrencyTrade(self, trade):
