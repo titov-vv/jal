@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 
 from jal.widgets.helpers import g_tr
-from jal.constants import MarketDataFeed, PredefinedAsset
+from jal.constants import MarketDataFeed, PredefinedAsset, DividendSubtype
 from jal.db.update import JalDB
 if "pytest" not in sys.modules:
     from jal.data_import.statements import SelectAccountDialog
@@ -134,7 +134,7 @@ class Statement:
             FOF.TRANSFERS: self._import_transfers,
             FOF.TRADES: self._import_trades,
             FOF.ASSET_PAYMENTS: self._import_asset_payments,
-            FOF.CORP_ACTIONS: self._import_corporate_actons
+            FOF.CORP_ACTIONS: self._import_corporate_actions
         }
         
         for section in sections:
@@ -243,9 +243,23 @@ class Statement:
                               trade['number'], trade['quantity'], trade['price'], trade['fee'], note)
 
     def _import_asset_payments(self, payments):
-        pass
+        for payment in payments:
+            if payment['account'] > 0:
+                raise Statement_ImportError(g_tr('Statement', "Unmatched account for payment: ") + f"{payment}")
+            if payment['asset'] > 0:
+                raise Statement_ImportError(g_tr('Statement', "Unmatched asset for payment: ") + f"{payment}")
+            tax = payment['tax'] if 'tax' in payment else 0
+            if payment['type'] == FOF.PAYMENT_DIVIDEND:
+                JalDB().add_dividend(DividendSubtype.Dividend, payment['timestamp'], -payment['account'],
+                                     -payment['asset'], payment['amount'], payment['description'], tax=tax)
+            elif payment['type'] == FOF.PAYMENT_INTEREST:
+                JalDB().add_dividend(DividendSubtype.BondInterest, payment['timestamp'], -payment['account'],
+                                     -payment['asset'], payment['amount'], payment['description'], payment['number'],
+                                     tax=tax)
+            else:
+                raise Statement_ImportError(g_tr('Statement', "Unsupported payment type: ") + f"{payment}")
 
-    def _import_corporate_actons(self, actions):
+    def _import_corporate_actions(self, actions):
         pass
 
     def select_account(self, text, account_id, recent_account_id=0):

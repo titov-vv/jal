@@ -367,3 +367,13 @@ def test_statement_json_import(tmp_path, project_root):
     assert readSQL("SELECT COUNT(*) FROM trades") == len(test_trades)
     for i, trade in enumerate(test_trades):
         assert readSQL("SELECT * FROM trades WHERE id=:id", [(":id", i + 1)]) == trade
+
+    # validate asset payments
+    test_payments = [
+        [1, 1578082800, '', '', 1, 1, 22, 60.2, 6.02, 'ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)'],
+        [2, 1590595065, '', '2882737839', 2, 1, 10, -25.69, 0.0, 'PURCHASE ACCRUED INT X 6 1/4 03/15/26'],
+        [3, 1600128000, '', '', 2, 1, 10, 62.5, 0.0, 'BOND COUPON PAYMENT (X 6 1/4 03/15/26)']
+    ]
+    assert readSQL("SELECT COUNT(*) FROM dividends") == len(test_payments)
+    for i, payment in enumerate(test_payments):
+        assert readSQL("SELECT * FROM dividends WHERE id=:id", [(":id", i + 1)]) == payment
