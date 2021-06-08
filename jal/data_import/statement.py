@@ -2,6 +2,7 @@ import json
 import logging
 
 from jal.widgets.helpers import g_tr
+from jal.constants import MarketDataFeed, PredefinedAsset
 from jal.db.update import JalDB
 # -----------------------------------------------------------------------------------------------------------------------
 
@@ -39,6 +40,25 @@ class FOF:
 
 # -----------------------------------------------------------------------------------------------------------------------
 class Statement:
+    _asset_types = {
+        FOF.ASSET_MONEY: PredefinedAsset.Money,
+        FOF.ASSET_STOCK: PredefinedAsset.Stock,
+        FOF.ASSET_ADR: PredefinedAsset.Stock,
+        FOF.ASSET_ETF: PredefinedAsset.ETF,
+        FOF.ASSET_BOND: PredefinedAsset.Bond,
+        FOF.ASSET_FUTURES: PredefinedAsset.Derivative,
+        FOF.ASSET_OPTION: PredefinedAsset.Derivative,
+        FOF.ASSET_WARRANT: PredefinedAsset.Stock,
+    }
+    _sources = {
+        'NYSE': MarketDataFeed.US,
+        'ARCA': MarketDataFeed.US,
+        'NASDAQ': MarketDataFeed.US,
+        'TSE': MarketDataFeed.CA,
+        'SBF': MarketDataFeed.EU,
+        'AMEX': MarketDataFeed.US
+    }
+    
     def __init__(self):
         self._data = {}
 
@@ -71,9 +91,10 @@ class Statement:
 
     def _match_account_ids(self):
         for account in self._data[FOF.ACCOUNTS]:
-            account_id = JalDB().get_account_id(account['number'], account['currency'])
+            account_id = JalDB().find_account(account['number'], -account['currency'])
             if account_id:
-                self._update_id("account", account['id'], account_id)
+                old_id, account['id'] = account['id'], -account_id
+                self._update_id("account", old_id, account_id)
 
     def _update_id(self, tag_name, old_value, new_value):
         for section in self._data:

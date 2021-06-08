@@ -11,7 +11,7 @@ from jal.db.helpers import init_and_check_db, get_dbfilename, LedgerInitError
 from jal.db.backup_restore import JalBackup
 from jal.db.ledger import Ledger
 from jal.data_import.statement_ibkr import StatementIBKR
-from jal.data_import.statement import FOF, Statement
+from jal.data_import.statement import Statement
 from jal.db.update import JalDB
 from jal.db.helpers import executeSQL
 from PySide2.QtSql import QSqlDatabase
@@ -263,6 +263,8 @@ def test_statement_json_import(tmp_path, project_root):
     assert executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'IB')") is not None
     assert executeSQL("INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id) "
                       "VALUES (4, 'IB TEST', 2, 1, 'U7654321', 1)") is not None
+    assert executeSQL("INSERT INTO assets (id, name, type_id, full_name, src_id) "
+                      "VALUES (4, 'VUG', 4, 'Growth ETF', 0)") is not None
 
     statement = Statement()
     statement.load(data_path + 'ibkr.json')

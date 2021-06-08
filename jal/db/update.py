@@ -89,6 +89,10 @@ class JalDB():
             logging.error(g_tr('JalDB', "Account not found: ") + f"{accountNumber} ({accountCurrency})")
         return account_id
 
+    def find_account(self, account_number, currency_code):
+        return readSQL("SELECT id FROM accounts WHERE number=:account_number AND currency_id=:currency",
+                       [(":account_number", account_number), (":currency", currency_code)], check_unique=True)
+
     def get_account_currency(self, account_id):
         return readSQL("SELECT currency_id FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
 
