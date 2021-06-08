@@ -1,0 +1,71 @@
+{
+  "from": 1577836800,
+  "to": 1607817600,
+  "accounts": [
+    {"id": 1, "number": "U7654321", "currency": -1, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
+    {"id": 2, "number": "U7654321", "currency": -2, "cash_begin": 12.345, "cash_end": 1234567.249966388, "cash_end_settled": 1234567.89}
+  ],
+  "assets": [
+    {"id": -1, "type": "money", "symbol": "RUB"},
+    {"id": -2, "type": "money", "symbol": "USD"},
+    {"id": 3, "type": "etf", "symbol": "VUG", "name": "VANGUARD GROWTH ETF", "isin": "US9229087369", "reg_code": "922908736", "exchange":  "ARCA"},
+    {"id": 4, "type": "stock", "symbol": "AMZN", "name": "AMAZON.COM INC", "isin": "US0231351067", "reg_code": "023135106", "exchange":  "NASDAQ"},
+    {"id": 5, "type": "adr", "symbol": "BABA", "name": "ALIBABA GROUP HOLDING-SP ADR", "isin": "US01609W1027", "reg_code": "01609W102", "exchange":  "NYSE"},
+    {"id": 6, "type": "stock", "symbol": "D", "name": "DOMINION ENERGY INC", "isin": "", "reg_code": "25746U109", "exchange": "NYSE"},
+    {"id": 7, "type": "stock", "symbol": "DM", "name": "DOMINION ENERGY MIDSTREAM PA", "isin": "", "reg_code": "257454108", "exchange": "NYSE"},
+    {"id": 8, "type": "bond", "symbol": "X 6 1/4 03/15/26", "name": "X 6 1/4 03/15/26", "isin": "US912909AN84", "reg_code": "912909AN8", "exchange": ""},
+    {"id": 9, "type": "option", "symbol": "SPY   200529C00295000", "name": "SPY 29MAY20 295.0 C", "isin": "", "reg_code": "", "exchange": ""},
+    {"id": 10, "type": "warrant", "symbol": "DSKEW", "name": "DSKEW 27FEB22 11.5 C", "isin": "US23753F1158", "reg_code": "23753F115", "exchange": "NASDAQ"},
+    {"id": 11, "type": "stock", "symbol": "MYL", "name": "MYLAN NV", "isin": "NL0011031208", "reg_code": "", "exchange": "VALUE"},
+    {"id": 12, "type": "stock", "symbol": "VTRS", "name": "VIATRIS INC-W/I",  "isin": "US92556V1061", "reg_code": "92556V106", "exchange": "NASDAQ"},
+    {"id": 13, "type": "stock", "symbol": "WAB", "name": "WABTEC CORP", "isin": "", "reg_code": "929740108", "exchange": "NYSE"},
+    {"id": 14, "type": "adr", "symbol": "TEF", "name": "TELEFONICA SA-SPON ADR", "isin": "US8793822086", "reg_code": "879382208", "exchange": "NYSE"},
+    {"id": 15, "type": "stock", "symbol": "EQM", "name": "EQM MIDSTREAM PARTNERS LP", "isin": "US26885B1008", "reg_code": "26885B100", "exchange": "NYSE"},
+    {"id": 16, "type": "stock", "symbol": "ETRN", "name": "EQUITRANS MIDSTREAM CORP", "isin": "US2946001011", "reg_code": "294600101", "exchange": "NYSE"},
+    {"id": 17, "type": "stock", "symbol": "GE", "name": "GENERAL ELECTRIC CO", "isin": "", "reg_code": "369604103", "exchange": "NYSE"},
+    {"id": 18, "type": "stock", "symbol": "EWLL", "name": "EWELLNESS HEALTHCARE CORP", "isin": "US30051D1063", "reg_code": "30051D106", "exchange": "PINK"},
+    {"id": 19, "type": "stock", "symbol": "EWLL", "name": "EWELLNESS HEALTHCARE CORP", "isin": "US30051D2053", "reg_code": "30051D205","exchange": "PINK"},
+    {"id": 20, "type": "etf", "symbol": "ZROZ", "name": "PIMCO 25+ YR ZERO CPN US TIF", "isin": "US72201R8824", "reg_code": "72201R882", "exchange": "ARCA", "country": "us"},
+    {"id": 21, "type": "stock", "symbol": "AAPL", "name": "APPLE INC", "isin": "US0378331005", "reg_code": "037833100", "exchange": "NASDAQ"},
+    {"id": 22, "type": "option", "symbol": "VLO   200724P00064000", "name": "VLO 24JUL20 64.0 P", "exchange": "CBOE"},
+    {"id": 23, "type": "stock", "symbol": "VLO", "name": "VALERO ENERGY CORP", "isin": "US91913Y1001", "reg_code": "91913Y100", "exchange": "NYSE"},
+    {"id": 24, "type": "stock", "symbol": "MAC", "name": "", "isin": "US5543821012", "reg_code": "554382101", "exchange": "NYSE"}
+  ],
+  "trades": [
+    {"id": 1, "number": "", "timestamp": 1548447900, "settlement": 1548447900, "account": 2, "asset": 6, "quantity": 0.567, "price": 69.2215, "fee": 0.0, "cancelled": true},
+    {"id": 2, "number": "2661774904", "timestamp": 1579094694, "settlement": 1579219200, "account": 2, "asset": 18, "quantity": 45000.0, "price": 0.0012, "fee": 0.54},
+    {"id": 3, "number": "2674740000", "timestamp": 1580215513, "settlement": 1580215513, "account": 2, "asset": 3, "quantity": -1240.0, "price": 54.84, "fee": 7.75519312},
+    {"id": 4, "number": "2674740000", "timestamp": 1580215566, "settlement": 1580342400, "account": 2, "asset": 21, "quantity": -148.0, "price": 316.68, "fee": 1.987792848},
+    {"id": 5, "number": "2882737839", "timestamp": 1590595065, "settlement": 1590710400, "account": 2, "asset": 8, "quantity": 2.0, "price": 637.09, "fee": 2.0},
+    {"id": 6, "number": "2931083780", "timestamp": 1592575273, "settlement": 1592784000, "account": 2, "asset": 22, "quantity": -100.0, "price": 4.54, "fee": 1.1058334},
+    {"id": 7, "number": "2997636969", "timestamp": 1595607600, "settlement": 1595808000, "account": 2, "asset": 22, "quantity": 100.0, "price": 0.0, "fee": 0.0, "note": "Option assignment"},
+    {"id": 8, "number": "2997636973", "timestamp": 1595607600, "settlement": 1595607600, "account": 2, "asset": 23, "quantity": 100.0, "price": 64.0, "fee": 0.0, "note": "Option assignment/exercise"},
+    {"id": 9, "number": "3183801882", "timestamp": 1603882231, "settlement": 1604016000, "account": 2, "asset": 19, "quantity": 500000.0, "price": 0.0001, "fee": 0.7503675}
+  ],
+  "income_spending": [
+    {"id": 1, "timestamp": 1578073286, "account": 2, "peer": 0, "lines": [{"amount": -7.96, "category": -5, "description": "BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019"}]},
+    {"id": 2, "timestamp": 1601462520, "account": 2, "peer": 0, "lines": [{"amount": 0.6905565, "category": -5, "description": "COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)"}]},
+    {"id": 3, "timestamp": 1591142400, "account": 1, "peer": 0, "lines": [{"amount": 0.5, "category": -8, "description": "RUB CREDIT INT FOR MAY-2020"}]},
+    {"id": 4, "timestamp": 1549843200, "account": 2, "peer": 0, "lines": [{"amount": -0.249018, "category": -6, "description": "BABA (ALIBABA GROUP HOLDING-SP ADR) - French Transaction Tax"}]}
+  ],
+  "transfers": [
+    {"id": 1, "account": [1, 2, 2], "number": "2645393202", "asset": [-1, -2], "timestamp": 1581322108, "withdrawal": 78986.6741, "deposit": 1234.0, "fee": 2.0},
+    {"id": 2, "account": [1, 2, 2], "number": "2845906676", "asset": [-1, -2], "timestamp": 1590522832, "withdrawal": 44.07, "deposit": 0.621778209, "fee": 0.0},
+    {"id": 3, "account": [0, 1, 0], "number": "", "asset": [-1, -1], "timestamp": 1600374600, "withdrawal": 123456.78, "deposit": 123456.78, "fee": 0.0, "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS"},
+    {"id": 4, "account": [2, 0, 0], "number": "", "asset": [-2, -2], "timestamp": 1605744000, "withdrawal": 1234.0, "deposit": 1234.0, "fee": 0.0, "description": "DISBURSEMENT INITIATED BY John Doe"}
+  ],
+  "corporate_actions": [
+    {"id": 1, "type": "merger", "account": 2, "timestamp": 1605731100, "number": "10162291403", "asset": [7, 6], "quantity": [70.0, 17.444], "cost_basis": 1.0, "description": "DM(US2574541080) MERGED(Acquisition) WITH US25746U1097 2492 FOR 10000 (D, DOMINION ENERGY INC, 25746U109)"},
+    {"id": 2, "type": "symbol_change", "account": 2, "timestamp": 1605558300, "number": "14302257657", "asset": [11, 12], "quantity": [5.0, 5.0], "cost_basis": 1.0, "description": "MYL(NL0011031208) CUSIP/ISIN CHANGE TO (US92556V1061) (VTRS, VIATRIS INC-W/I, US92556V1061)"},
+    {"id": 3, "type": "spin-off", "account": 2, "timestamp": 1605817500, "number": "10302900848", "asset": [17, 13], "quantity": [100.0 ,0.5371], "cost_basis": 0.0, "description": "GE(US3696041033) SPINOFF  5371 FOR 1000000 (WAB, WABTEC CORP, 929740108)"},
+    {"id": 4, "type": "stock_dividend", "account": 2, "timestamp": 1595017200, "number": "13259965038", "asset": 14, "quantity": 3.0, "cost_basis": 0.0, "description": "TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000 (TEF, TELEFONICA SA-SPON ADR, US8793822086)"},
+    {"id": 5, "type": "merger", "account": 2, "timestamp": 1592339100, "number": "13006963996", "asset": [15, 16], "quantity": [70.0, 170.8], "cost_basis": 1.0, "description": "EQM(US26885B1008) MERGED(Acquisition) WITH US2946001011 244 FOR 100 (ETRN, EQUITRANS MIDSTREAM CORP, US2946001011)"},
+    {"id": 6, "type": "split", "account": 2, "timestamp": 1581452700, "number": "12029570527", "asset": [18, 19], "quantity": [45000.0, 900.0], "cost_basis": 1.0, "description": "EWLL(US30051D1063) SPLIT 1 FOR 50 (EWLLD, EWELLNESS HEALTHCARE CORP, US30051D2053)"},
+    {"id": 7, "type": "stock_dividend", "account": 2, "timestamp": 1591215600, "number": "12882908488", "asset": 24, "quantity": 2.0, "cost_basis": 0.0, "description": "MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000 (MAC, MACERICH CO/THE, US5543821012)"}
+  ],
+  "asset_payments": [
+    {"id": 1, "type": "dividend", "account": 2, "timestamp": 1578082800, "number": "", "asset": 20, "amount": 60.2, "tax": 6.02, "description": "ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)"},
+    {"id": 2, "type": "interest", "account": 2, "timestamp": 1590595065, "number": "2882737839", "asset": 8, "amount": -25.69, "description": "PURCHASE ACCRUED INT X 6 1/4 03/15/26"},
+    {"id": 3, "type": "interest", "account": 2, "timestamp": 1600128000, "number": "", "asset": 8, "amount": 62.5, "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26)"}
+  ]
+}
