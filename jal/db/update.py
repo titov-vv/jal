@@ -85,8 +85,6 @@ class JalDB():
                                  "LEFT JOIN assets AS c ON c.id=a.currency_id "
                                  "WHERE a.number=:account_number", [(":account_number", accountNumber)],
                                  check_unique=True)
-        if account_id is None:
-            logging.error(g_tr('JalDB', "Account not found: ") + f"{accountNumber} ({accountCurrency})")
         return account_id
 
     def find_account(self, account_number, currency_code):
