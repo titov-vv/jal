@@ -99,18 +99,25 @@ class JalDB():
             logging.warning(g_tr('JalDB', "Account already exists: ") +
                             f"{account_number} ({self.get_asset_name(currency_code)})")
             return account_id
-        account_id = readSQL("SELECT id FROM accounts WHERE number=:account_number",
-                             [(":account_number", account_number)])
-        if account_id:  # Account with the same number but different currency exists
-            query = executeSQL("INSERT INTO accounts "
-                               "(type_id, name, active, number, currency_id, organization_id, country_id) "
-                               "SELECT a.type_id, a.name||'.'||c.name AS name, a.active, a.number, :currency_id, "
-                               "a.organization_id, a.country_id "
-                               "FROM accounts AS a LEFT JOIN assets AS c ON c.id=:currency_id "
-                               "WHERE number=:account_number LIMIT 1",
-                               [(":account_number", account_number), (":currency_id", currency_code)])
-            return query.lastInsertId()
         currency = self.get_asset_name(currency_code)
+        account_info = readSQL(
+            "SELECT a.name AS name, SUBSTR(a.name, 1, LENGTH(a.name)-LENGTH(c.name)-1) AS short_name, "
+            "SUBSTR(a.name, -(LENGTH(c.name)+1), LENGTH(c.name)+1) = '.'||c.name AS auto_name "
+            "FROM accounts AS a LEFT JOIN assets AS c ON a.currency_id = c.id WHERE number=:account_number LIMIT 1",
+            [(":account_number", account_number)], named=True)
+        if account_info:  # Account with the same number but different currency exists
+            if account_info['auto_name']:
+                new_name = account_info['short_name'] + '.' + currency
+            else:
+                new_name = account_info['name'] + '.' + currency
+            query = executeSQL(
+                "INSERT INTO accounts (type_id, name, active, number, currency_id, organization_id, country_id) "
+                "SELECT a.type_id, :new_name, a.active, a.number, :currency_id, a.organization_id, a.country_id "
+                "FROM accounts AS a LEFT JOIN assets AS c ON c.id=:currency_id "
+                "WHERE number=:account_number LIMIT 1",
+                [(":account_number", account_number), (":currency_id", currency_code), (":new_name", new_name)])
+            return query.lastInsertId()
+
         bank_name = g_tr('JalB', "Bank for #" + account_number)
         bank_id = readSQL("SELECT id FROM agents WHERE name=:bank_name", [(":bank_name", bank_name)])
         if bank_id is None:
