@@ -493,7 +493,7 @@ class StatementIBKR(Statement):
             if asset['type'] == FOF.ASSET_BOND:
                 trade['quantity'] = trade['quantity'] / IBKR.BondPricipal
                 trade['price'] = trade['price'] * IBKR.BondPricipal / 100.0  # Bonds are priced in percents of principal
-            trade['fee'] = abs(trade['fee'])  # Fees are negative in IBKR statement but we need to store positive values
+            trade['fee'] = -trade['fee']    # Fees in IBKR report are negative normally, jal uses positive values
             if trade['notes'] == IBKR.CancelledFlag:
                 trade['cancelled'] = True
             self.drop_extra_fields(trade, ["type", "proceeds", "multiplier", "notes"])
