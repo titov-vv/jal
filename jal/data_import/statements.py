@@ -6,7 +6,7 @@ from jal.constants import Setup
 from jal.widgets.helpers import g_tr
 from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
 from jal.data_import.statement_quik import Quik
-from jal.data_import.statement_ibkr import IBKR
+from jal.data_import.statement_ibkr import IBKR, StatementIBKR
 from jal.data_import.statement_ibkr_old import IBKR_obsolete
 from jal.data_import.statement_uralsib import UralsibCapital
 from jal.data_import.statement_kit import KITFinance
@@ -71,6 +71,12 @@ class StatementLoader(QObject):
                 'icon': "quik.ico"
             },
             {
+                'name': 'NEW ROUTINE',
+                'filter': "IBKR flex-query (*.xml)",
+                'loader': self.loadIBFlex_NEW,
+                'icon': "ibkr.png"
+            },
+            {
                 'name': g_tr('StatementLoader', "Interactive Brokers XML"),
                 'filter': "IBKR flex-query (*.xml)",
                 'loader': self.loadIBFlex,
@@ -120,6 +126,13 @@ class StatementLoader(QObject):
 
     def loadIBFlex(self, filename):
         return IBKR(self, filename).load()
+
+    def loadIBFlex_NEW(self, filename):
+        statement = StatementIBKR()
+        statement.load(filename)
+        statement.match_db_ids(verbal=False)
+        statement.import_into_db()
+        return True
 
     def loadUralsibCapital(self, filename):
         return UralsibCapital(self, filename).load()
