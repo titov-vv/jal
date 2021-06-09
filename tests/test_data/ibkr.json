@@ -5,7 +5,8 @@
     {"id": 1, "number": "U7654321", "currency": 1, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
     {"id": 2, "number": "U7654321", "currency": 2, "cash_begin": 12.345, "cash_end": 1234567.249966388, "cash_end_settled": 1234567.89},
     {"id": 3, "number": "U7654321", "currency": 3, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
-    {"id": 4, "number": "TEST_ACC", "currency": 3, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0}
+    {"id": 4, "number": "TEST_ACC", "currency": 3, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
+    {"id": 5, "number": "U7654321", "currency": 25}
   ],
   "assets": [
     {"id": 1, "type": "money", "symbol": "RUB"},
@@ -32,7 +33,8 @@
     {"id": 22, "type": "stock", "symbol": "AAPL", "name": "APPLE INC", "isin": "US0378331005", "reg_code": "037833100", "exchange": "NASDAQ"},
     {"id": 23, "type": "option", "symbol": "VLO   200724P00064000", "name": "VLO 24JUL20 64.0 P", "exchange": "CBOE"},
     {"id": 24, "type": "stock", "symbol": "VLO", "name": "VALERO ENERGY CORP", "isin": "US91913Y1001", "reg_code": "91913Y100", "exchange": "NYSE"},
-    {"id": 25, "type": "stock", "symbol": "MAC", "name": "", "isin": "US5543821012", "reg_code": "554382101", "exchange": "NYSE"}
+    {"id": 25, "type": "money", "symbol": "EUR"},
+    {"id": 26, "type": "stock", "symbol": "MAC", "name": "", "isin": "US5543821012", "reg_code": "554382101", "exchange": "NYSE"}
   ],
   "trades": [
     {"id": 1, "number": "", "timestamp": 1548447900, "settlement": 1548447900, "account": 2, "asset": 7, "quantity": 0.567, "price": 69.2215, "fee": 0.0, "cancelled": true},
@@ -52,10 +54,11 @@
     {"id": 4, "timestamp": 1549843200, "account": 2, "peer": 0, "lines": [{"amount": -0.249018, "category": -6, "description": "BABA (ALIBABA GROUP HOLDING-SP ADR) - French Transaction Tax"}]}
   ],
   "transfers": [
-    {"id": 1, "account": [1, 2, 2], "number": "2645393202", "asset": [1, 2], "timestamp": 1581322108, "withdrawal": 78986.6741, "deposit": 1234.0, "fee": 2.0, "description": "IDEALFX"},
-    {"id": 2, "account": [1, 2, 2], "number": "2845906676", "asset": [1, 2], "timestamp": 1590522832, "withdrawal": 44.07, "deposit": 0.621778209, "fee": 0.0, "description": "IDEALFX"},
-    {"id": 3, "account": [0, 1, 0], "number": "", "asset": [1, 1], "timestamp": 1600374600, "withdrawal": 123456.78, "deposit": 123456.78, "fee": 0.0, "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS"},
-    {"id": 4, "account": [2, 0, 0], "number": "", "asset": [2, 2], "timestamp": 1605744000, "withdrawal": 1234.0, "deposit": 1234.0, "fee": 0.0, "description": "DISBURSEMENT INITIATED BY John Doe"}
+    {"id": 1, "account": [5, 2, 2], "number": "2674343226","asset": [25, 2], "timestamp": 1580443370, "withdrawal": 890.47, "deposit": 1000.0, "fee": 3.0, "description": "IDEALFX"},
+    {"id": 2, "account": [1, 2, 2], "number": "2645393202", "asset": [1, 2], "timestamp": 1581322108, "withdrawal": 78986.6741, "deposit": 1234.0, "fee": 2.0, "description": "IDEALFX"},
+    {"id": 3, "account": [1, 2, 2], "number": "2845906676", "asset": [1, 2], "timestamp": 1590522832, "withdrawal": 44.07, "deposit": 0.621778209, "fee": 0.0, "description": "IDEALFX"},
+    {"id": 4, "account": [0, 1, 0], "number": "", "asset": [1, 1], "timestamp": 1600374600, "withdrawal": 123456.78, "deposit": 123456.78, "fee": 0.0, "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS"},
+    {"id": 5, "account": [2, 0, 0], "number": "", "asset": [2, 2], "timestamp": 1605744000, "withdrawal": 1234.0, "deposit": 1234.0, "fee": 0.0, "description": "DISBURSEMENT INITIATED BY John Doe"}
   ],
   "corporate_actions": [
     {"id": 1, "type": "merger", "account": 2, "timestamp": 1605731100, "number": "10162291403", "asset": [8, 7], "quantity": [70.0, 17.444], "cost_basis": 1.0, "description": "DM(US2574541080) MERGED(Acquisition) WITH US25746U1097 2492 FOR 10000 (D, DOMINION ENERGY INC, 25746U109)"},
@@ -64,7 +67,7 @@
     {"id": 4, "type": "stock_dividend", "account": 2, "timestamp": 1595017200, "number": "13259965038", "asset": 15, "quantity": 3.0, "cost_basis": 0.0, "description": "TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000 (TEF, TELEFONICA SA-SPON ADR, US8793822086)"},
     {"id": 5, "type": "merger", "account": 2, "timestamp": 1592339100, "number": "13006963996", "asset": [16, 17], "quantity": [70.0, 170.8], "cost_basis": 1.0, "description": "EQM(US26885B1008) MERGED(Acquisition) WITH US2946001011 244 FOR 100 (ETRN, EQUITRANS MIDSTREAM CORP, US2946001011)"},
     {"id": 6, "type": "split", "account": 2, "timestamp": 1581452700, "number": "12029570527", "asset": [19, 20], "quantity": [45000.0, 900.0], "cost_basis": 1.0, "description": "EWLL(US30051D1063) SPLIT 1 FOR 50 (EWLLD, EWELLNESS HEALTHCARE CORP, US30051D2053)"},
-    {"id": 7, "type": "stock_dividend", "account": 2, "timestamp": 1591215600, "number": "12882908488", "asset": 25, "quantity": 2.0, "cost_basis": 0.0, "description": "MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000 (MAC, MACERICH CO/THE, US5543821012)"}
+    {"id": 7, "type": "stock_dividend", "account": 2, "timestamp": 1591215600, "number": "12882908488", "asset": 26, "quantity": 2.0, "cost_basis": 0.0, "description": "MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000 (MAC, MACERICH CO/THE, US5543821012)"}
   ],
   "asset_payments": [
     {"id": 1, "type": "dividend", "account": 2, "timestamp": 1578082800, "number": "", "asset": 21, "amount": 60.2, "tax": 6.02, "description": "ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)"},

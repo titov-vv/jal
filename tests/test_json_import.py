@@ -82,7 +82,8 @@ def test_statement_json_import(tmp_path, project_root):
         [1, 4, 'IB TEST', 2, 1, 'U7654321', 0, 1, 0],
         [2, 4, 'IB TEST.RUB', 1, 1, 'U7654321', 0, 1, 0],
         [3, 4, 'IB TEST.CAD', 5, 1, 'U7654321', 0, 1, 0],
-        [4, 4, 'TEST_ACC.CAD', 5, 1, 'TEST_ACC', 0, 2, 0]
+        [4, 4, 'TEST_ACC.CAD', 5, 1, 'TEST_ACC', 0, 2, 0],
+        [5, 4, 'IB TEST.EUR', 3, 1, 'U7654321', 0, 1, 0],
     ]
     assert readSQL("SELECT COUNT(*) FROM accounts") == len(test_accounts)
     for i, account in enumerate(test_accounts):
@@ -110,10 +111,11 @@ def test_statement_json_import(tmp_path, project_root):
 
     # validate transfers
     test_transfers = [
-        [1, 1581322108, 2, 78986.6741, 1581322108, 1, 1234.0, 1, 2.0, '', 'IDEALFX'],
-        [2, 1590522832, 2, 44.07, 1590522832, 1, 0.621778209, '', '', '', 'IDEALFX'],
-        [3, 1600374600, 1, 123456.78, 1600374600, 2, 123456.78, '', '', '', 'CASH RECEIPTS / ELECTRONIC FUND TRANSFERS'],
-        [4, 1605744000, 1, 1234.0, 1605744000, 1, 1234.0, '', '', '', 'DISBURSEMENT INITIATED BY John Doe']
+        [1, 1580443370, 5, 890.47, 1580443370, 1, 1000.0, 1, 3.0, '', 'IDEALFX'],
+        [2, 1581322108, 2, 78986.6741, 1581322108, 1, 1234.0, 1, 2.0, '', 'IDEALFX'],
+        [3, 1590522832, 2, 44.07, 1590522832, 1, 0.621778209, '', '', '', 'IDEALFX'],
+        [4, 1600374600, 1, 123456.78, 1600374600, 2, 123456.78, '', '', '', 'CASH RECEIPTS / ELECTRONIC FUND TRANSFERS'],
+        [5, 1605744000, 1, 1234.0, 1605744000, 1, 1234.0, '', '', '', 'DISBURSEMENT INITIATED BY John Doe']
     ]
     assert readSQL("SELECT COUNT(*) FROM transfers") == len(test_transfers)
     for i, transfer in enumerate(test_transfers):

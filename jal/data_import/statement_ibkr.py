@@ -157,8 +157,9 @@ class IBKR_Account:
                 else:
                     logging.error(g_tr('IBKR', "Multiple account match for ") + f"{number}")
             else:
-                self.id = max([0] + [x['id'] for x in accounts_list]) + 1
-                account = {"id": self.id, "number": number, "currency": currency}
+                new_id = max([0] + [x['id'] for x in accounts_list]) + 1
+                account_ids.append(new_id)
+                account = {"id": new_id, "number": number, "currency": currency}
                 accounts_list.append(account)
         if account_ids:
             if len(account_ids) == 1:
@@ -494,7 +495,7 @@ class StatementIBKR(Statement):
             if asset['type'] == FOF.ASSET_BOND:
                 trade['quantity'] = trade['quantity'] / IBKR.BondPricipal
                 trade['price'] = trade['price'] * IBKR.BondPricipal / 100.0  # Bonds are priced in percents of principal
-            trade['fee'] = -trade['fee']    # Fees in IBKR report are negative normally, jal uses positive values
+            trade['fee'] = -trade['fee'] if trade['fee'] != 0 else 0.0  # otherwise we may have negative 0.0
             if trade['notes'] == IBKR.CancelledFlag:
                 trade['cancelled'] = True
             self.drop_extra_fields(trade, ["type", "proceeds", "multiplier", "exchange", "notes"])
@@ -513,7 +514,7 @@ class StatementIBKR(Statement):
                 transfer['quantity'], transfer['proceeds'] = transfer['proceeds'], transfer['quantity']
             transfer['withdrawal'] = abs(transfer.pop('quantity'))
             transfer['deposit'] = abs(transfer.pop('proceeds'))
-            transfer['fee'] = -transfer['fee']   # Fees in IBKR report are negative normally, jal uses positive values
+            transfer['fee'] = -transfer['fee'] if transfer['fee'] != 0 else 0.0  # otherwise we may have negative 0.0
             transfer['description'] = transfer['exchange']
             self.drop_extra_fields(transfer, ["type", "settlement", "price", "multiplier", "exchange", "notes"])
             self._data[FOF.TRANSFERS].append(transfer)
