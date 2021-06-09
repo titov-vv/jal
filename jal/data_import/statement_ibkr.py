@@ -387,6 +387,7 @@ class StatementIBKR(Statement):
                                   ('multiplier', 'multiplier', float, None),
                                   ('ibCommission', 'fee', float, None),
                                   ('tradeID', 'number', str, ''),
+                                  ('exchange', 'exchange', str, ''),
                                   ('notes', 'notes', str, '')]},
             'OptionEAE': {'tag': 'OptionEAE',
                           'level': '',
@@ -496,7 +497,7 @@ class StatementIBKR(Statement):
             trade['fee'] = -trade['fee']    # Fees in IBKR report are negative normally, jal uses positive values
             if trade['notes'] == IBKR.CancelledFlag:
                 trade['cancelled'] = True
-            self.drop_extra_fields(trade, ["type", "proceeds", "multiplier", "notes"])
+            self.drop_extra_fields(trade, ["type", "proceeds", "multiplier", "exchange", "notes"])
             self._data[FOF.TRADES].append(trade)
             cnt += 1
         return cnt
@@ -512,8 +513,9 @@ class StatementIBKR(Statement):
                 transfer['quantity'], transfer['proceeds'] = transfer['proceeds'], transfer['quantity']
             transfer['withdrawal'] = abs(transfer.pop('quantity'))
             transfer['deposit'] = abs(transfer.pop('proceeds'))
-            transfer['fee'] = abs(transfer['fee'])  # Fees are negative in IBKR statement but we need to store positive values
-            self.drop_extra_fields(transfer, ["type", "settlement", "price", "multiplier", "notes"])
+            transfer['fee'] = -transfer['fee']   # Fees in IBKR report are negative normally, jal uses positive values
+            transfer['description'] = transfer['exchange']
+            self.drop_extra_fields(transfer, ["type", "settlement", "price", "multiplier", "exchange", "notes"])
             self._data[FOF.TRANSFERS].append(transfer)
             cnt += 1
         return cnt
