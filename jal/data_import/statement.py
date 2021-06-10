@@ -259,20 +259,19 @@ class Statement:
             if transfer['account'][0] == 0 or transfer['account'][1] == 0:
                 text = ''
                 pair_account = 1
-                if "pytest" not in sys.modules:  # add dividends from database if we are in production
-                    if transfer['account'][0] == 0:  # Deposit
-                        text = g_tr('Statement', "Deposit of ") + f"{transfer['deposit']:.2f} " + \
-                               f"{JalDB().get_asset_name(-transfer['asset'][1])} " + \
-                               f"@{datetime.utcfromtimestamp(transfer['timestamp']).strftime('%d.%m.%Y')}\n" + \
-                               g_tr('Statement', "Select account to withdraw from:")
-                        pair_account = transfer['account'][1]
-                    if transfer['account'][1] == 0:  # Withdrawal
-                        text = g_tr('Statement', "Withdrawal of ") + f"{transfer['withdrawal']:.2f} " + \
-                               f"{JalDB().get_asset_name(-transfer['asset'][0])} " + \
-                               f"@{datetime.utcfromtimestamp(transfer['timestamp']).strftime('%d.%m.%Y')}\n" + \
-                               g_tr('Statement', "Select account to deposit to:")
-                        pair_account = transfer['account'][0]
-                    pair_account = self.select_account(text, pair_account, self._last_selected_account)
+                if transfer['account'][0] == 0:  # Deposit
+                    text = g_tr('Statement', "Deposit of ") + f"{transfer['deposit']:.2f} " + \
+                           f"{JalDB().get_asset_name(-transfer['asset'][1])} " + \
+                           f"@{datetime.utcfromtimestamp(transfer['timestamp']).strftime('%d.%m.%Y')}\n" + \
+                           g_tr('Statement', "Select account to withdraw from:")
+                    pair_account = transfer['account'][1]
+                if transfer['account'][1] == 0:  # Withdrawal
+                    text = g_tr('Statement', "Withdrawal of ") + f"{transfer['withdrawal']:.2f} " + \
+                           f"{JalDB().get_asset_name(-transfer['asset'][0])} " + \
+                           f"@{datetime.utcfromtimestamp(transfer['timestamp']).strftime('%d.%m.%Y')}\n" + \
+                           g_tr('Statement', "Select account to deposit to:")
+                    pair_account = transfer['account'][0]
+                pair_account = self.select_account(text, pair_account, self._last_selected_account)
                 if pair_account == 0:
                     raise Statement_ImportError(g_tr('Statement', "Account not selected"))
                 self._last_selected_account = pair_account
@@ -342,8 +341,11 @@ class Statement:
                                          action['cost_basis'], action['description'])
 
     def select_account(self, text, account_id, recent_account_id=0):
-        dialog = SelectAccountDialog(text, account_id, recent_account=recent_account_id)
-        if dialog.exec_() != QDialog.Accepted:
-            return 0
+        if "pytest" in sys.modules:
+            return 1    # Always return 1st account if we are in testing mode
         else:
-            return dialog.account_id
+            dialog = SelectAccountDialog(text, account_id, recent_account=recent_account_id)
+            if dialog.exec_() != QDialog.Accepted:
+                return 0
+            else:
+                return dialog.account_id

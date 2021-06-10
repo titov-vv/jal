@@ -1,6 +1,5 @@
 import logging
 import re
-import sys
 from datetime import datetime, timezone
 from itertools import groupby
 from lxml import etree
