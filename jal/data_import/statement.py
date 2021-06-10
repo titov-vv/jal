@@ -194,7 +194,13 @@ class Statement:
                 sections[section](self._data[section])
         for section in self._data:
             if section not in sections:
-                logging.warning(g_tr("Statement", "Section is not supported: ") + section)
+                logging.warning(g_tr("Statement", "Section is not supported: ") + section)  # FIXME here should be a list of sessions to load
+
+        # FIXME This display should be outside of this method
+        for account in self._data[FOF.ACCOUNTS]:
+            if 'cash_end' in account:
+                logging.info(g_tr('Statement', 'Planned cash: ') + f"{account['cash_end']:.2f} " +
+                             f"{JalDB().get_asset_name(JalDB().get_account_currency(-account['currency']))}")
 
     def _import_assets(self, assets):
         for asset in assets:
