@@ -148,7 +148,7 @@ class Statement:
         for asset in self._data[FOF.ASSETS]:
             isin = asset['isin'] if 'isin' in asset else ''
             reg_code = asset['reg_code'] if 'reg_code' in asset else ''
-            name = asset['name'] if 'name' in asset else ''
+            name = asset['name'] if 'name' in asset else ''     # FIXME: update isin/reg_code/country in DB if different
             asset_id = JalDB().get_asset_id(asset['symbol'], isin=isin, reg_code=reg_code, name=name, dialog_new=verbal)
             if asset_id:
                 old_id, asset['id'] = asset['id'], -asset_id
@@ -204,12 +204,13 @@ class Statement:
             isin = asset['isin'] if 'isin' in asset else ''
             reg_code = asset['reg_code'] if 'reg_code' in asset else ''
             name = asset['name'] if 'name' in asset else ''
+            country_code = asset['country'] if 'country' in asset else ''
             try:
                 source = self._sources[asset['exchange']]
             except KeyError:
                 source = MarketDataFeed.NA
             asset_id = JalDB().add_asset(asset['symbol'], name, self._asset_types[asset['type']], isin,
-                                         data_source=source, reg_code=reg_code)
+                                         data_source=source, reg_code=reg_code, country_code=country_code)
             if asset_id:
                 old_id, asset['id'] = asset['id'], -asset_id
                 self._update_id("asset", old_id, asset_id)

@@ -67,7 +67,7 @@ def test_statement_json_import(tmp_path, project_root):
         [19, 'GE', 2, 'GENERAL ELECTRIC CO', '', 0, 2],
         [20, 'EWLL', 2, 'EWELLNESS HEALTHCARE CORP', 'US30051D1063', 0, -1],
         [21, 'EWLL', 2, 'EWELLNESS HEALTHCARE CORP', 'US30051D2053', 0, -1],
-        [22, 'ZROZ', 4, 'PIMCO 25+ YR ZERO CPN US TIF', 'US72201R8824', 0, 2],
+        [22, 'ZROZ', 4, 'PIMCO 25+ YR ZERO CPN US TIF', 'US72201R8824', 2, 2],
         [23, 'AAPL', 2, 'APPLE INC', 'US0378331005', 0, 2],
         [24, 'VLO   200724P00064000', 6, 'VLO 24JUL20 64.0 P', '', 0, -1],
         [25, 'VLO', 2, 'VALERO ENERGY CORP', 'US91913Y1001', 0, 2],

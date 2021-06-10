@@ -228,6 +228,8 @@ def get_account_name(account_id):
 
 # -------------------------------------------------------------------------------------------------------------------
 def get_country_by_code(country_code):
+    if not country_code:
+        return 0
     id = readSQL("SELECT id FROM countries WHERE code=:code", [(":code", country_code)], check_unique=True)
 
     if id is None:

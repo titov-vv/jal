@@ -5,7 +5,7 @@ from PySide2.QtSql import QSqlTableModel
 
 from jal.ui.ui_add_asset_dlg import Ui_AddAssetDialog
 from jal.constants import Setup, PredefindedAccountType
-from jal.db.helpers import db_connection, executeSQL, readSQL
+from jal.db.helpers import db_connection, executeSQL, readSQL, get_country_by_code
 from jal.widgets.helpers import g_tr
 from jal.net.helpers import GetAssetInfoByISIN
 
@@ -217,11 +217,12 @@ class JalDB():
                      f"{self.get_asset_name(asset_id)} " 
                      f"@ {datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")
 
-    def add_asset(self, symbol, name, asset_type, isin, data_source=-1, reg_code=None):
-        query = executeSQL("INSERT INTO assets(name, type_id, full_name, isin, src_id) "
-                       "VALUES(:symbol, :type, :full_name, :isin, :data_src)",
-                       [(":symbol", symbol), (":type", asset_type), (":full_name", name),
-                        (":isin", isin), (":data_src", data_source)], commit=True)
+    def add_asset(self, symbol, name, asset_type, isin, data_source=-1, reg_code=None, country_code=''):
+        country_id = get_country_by_code(country_code)
+        query = executeSQL("INSERT INTO assets(name, type_id, full_name, isin, src_id, country_id) "
+                           "VALUES(:symbol, :type, :full_name, :isin, :data_src, :country_id)",
+                           [(":symbol", symbol), (":type", asset_type), (":full_name", name),
+                            (":isin", isin), (":data_src", data_source), (":country_id", country_id)], commit=True)
         asset_id = query.lastInsertId()
         if asset_id is None:
             logging.error(g_tr('JalDB', "Failed to add new asset: ") + f"{symbol}")
