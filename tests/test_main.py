@@ -8,6 +8,8 @@ from constants import Setup
 from jal.db.helpers import init_and_check_db, get_dbfilename, LedgerInitError
 from jal.db.backup_restore import JalBackup
 from jal.data_import.statement_ibkr import StatementIBKR
+from jal.db.helpers import executeSQL
+from PySide2.QtSql import QSqlDatabase
 
 
 def test_db_creation(tmp_path, project_root):
@@ -66,7 +68,31 @@ def test_backup_load(tmp_path, project_root):
     db.close()
 
 
-def test_statement_ibkr(project_root):
+def test_statement_ibkr(tmp_path, project_root):
+    # Prepare environment
+    src_path = project_root + os.sep + 'jal' + os.sep + Setup.INIT_SCRIPT_PATH
+    target_path = str(tmp_path) + os.sep + Setup.INIT_SCRIPT_PATH
+    copyfile(src_path, target_path)
+
+    # Activate db connection
+    error = init_and_check_db(str(tmp_path) + os.sep)
+    assert error.code == LedgerInitError.EmptyDbInitialized
+    error = init_and_check_db(str(tmp_path) + os.sep)
+    assert error.code == LedgerInitError.DbInitSuccess
+    db = QSqlDatabase.database(Setup.DB_CONNECTION)
+    assert db.isValid()
+
+    # TODO Make a fixture together with test_statement_json_import()
+    assert executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'IB')") is not None
+    assert executeSQL("INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id) "
+                      "VALUES (4, 'IB TEST', 2, 1, 'U7654321', 1)") is not None
+    assert executeSQL("INSERT INTO assets (id, name, type_id, full_name, src_id) "
+                      "VALUES (4, 'VUG', 4, 'Growth ETF', 0), "
+                      "(5, 'EDV', 4, 'VANGUARD EXTENDED DUR TREAS', 0)") is not None
+    assert executeSQL("INSERT INTO dividends (id, timestamp, type, account_id, asset_id, amount, tax, note) "
+                      "VALUES (1, 1529612400, 1, 1, 5, 16.76, 1.68, "
+                      "'EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)')") is not None
+
     data_path = project_root + os.sep + "tests" + os.sep + "test_data" + os.sep
     with open(data_path + 'ibkr.json', 'r') as json_file:
         statement = json.load(json_file)

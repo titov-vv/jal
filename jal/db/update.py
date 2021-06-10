@@ -246,6 +246,10 @@ class JalDB():
                         (":tax", tax), (":note", note)],
                        commit=True)
 
+    def update_dividend_tax(self, dividend_id, new_tax):
+        _ = executeSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
+                       [(":dividend_id", dividend_id), (":tax", new_tax)], commit=True)
+
     def add_trade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee, note=''):
         trade_id = readSQL("SELECT id FROM trades "
                            "WHERE timestamp=:timestamp AND asset_id = :asset "

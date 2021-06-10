@@ -247,7 +247,7 @@ class StatementIBKR(Statement):
                 return default_value
         else:
             name = ''
-            if xml_element.tag != 'CorporateAction':
+            if xml_element.tag not in ['CorporateAction', 'CashTransaction']:
                 name = xml_element.attrib['description'] if 'description' in xml_element.attrib else ''
             isin = xml_element.attrib['isin'] if 'isin' in xml_element.attrib else ''
             cusip = xml_element.attrib['cusip'] if 'cusip' in xml_element.attrib else ''
@@ -829,19 +829,21 @@ class StatementIBKR(Statement):
 
         dividends = [x for x in self._data[FOF.ASSET_PAYMENTS] if
                      x['type'] == FOF.PAYMENT_DIVIDEND and x['asset'] == asset_id and x['account'] == account_id]
-        if "pytest" not in sys.modules:  # add dividends from database if we are in production
-            account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
-            currency = [x for x in self._data[FOF.ASSETS] if x["id"] == account['currency']][0]
-            db_account = JalDB().get_account_id(account['number'], currency['symbol'])
-            asset = [x for x in self._data[FOF.ASSETS] if x["id"] == asset_id][0]
-            db_asset = JalDB().get_asset_id(asset['symbol'], isin=asset['isin'], dialog_new=False)
-            if db_account is not None and db_asset is not None:
-                query = executeSQL("SELECT -id AS id, timestamp, amount, tax, note as description FROM dividends "
-                                   "WHERE type=:div AND account_id=:account_id AND asset_id=:asset_id",
-                                   [(":div", DividendSubtype.Dividend), (":account_id", db_account),
-                                    (":asset_id", db_asset)], forward_only=True)
-                while query.next():
-                    dividends.append(readSQLrecord(query, named=True))
+        account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
+        currency = [x for x in self._data[FOF.ASSETS] if x["id"] == account['currency']][0]
+        db_account = JalDB().get_account_id(account['number'], currency['symbol'])
+        asset = [x for x in self._data[FOF.ASSETS] if x["id"] == asset_id][0]
+        isin = asset['isin'] if 'isin' in asset else ''
+        db_asset = JalDB().get_asset_id(asset['symbol'], isin=isin, dialog_new=False)
+        if db_account is not None and db_asset is not None:
+            query = executeSQL(
+                "SELECT -id AS id, -account_id AS account, timestamp, number, "
+                "-asset_id AS asset, amount, tax, note as description FROM dividends "
+                "WHERE type=:div AND account_id=:account_id AND asset_id=:asset_id",
+                [(":div", DividendSubtype.Dividend), (":account_id", db_account), (":asset_id", db_asset)],
+                forward_only=True)
+            while query.next():
+                dividends.append(readSQLrecord(query, named=True))
         if datetime.utcfromtimestamp(timestamp).timetuple().tm_yday < 75:
             # We may have wrong date in taxes before March, 15 due to tax correction
             range_start = ManipulateDate.startOfPreviousYear(day=datetime.utcfromtimestamp(timestamp))

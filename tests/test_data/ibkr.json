@@ -34,7 +34,8 @@
     {"id": 23, "type": "option", "symbol": "VLO   200724P00064000", "name": "VLO 24JUL20 64.0 P", "exchange": "CBOE"},
     {"id": 24, "type": "stock", "symbol": "VLO", "name": "VALERO ENERGY CORP", "isin": "US91913Y1001", "reg_code": "91913Y100", "exchange": "NYSE"},
     {"id": 25, "type": "money", "symbol": "EUR"},
-    {"id": 26, "type": "stock", "symbol": "MAC", "name": "", "isin": "US5543821012", "reg_code": "554382101", "exchange": "NYSE"}
+    {"id": 26, "type": "stock", "symbol": "MAC", "name": "", "isin": "US5543821012", "reg_code": "554382101", "exchange": "NYSE"},
+    {"id": 27, "type": "stock", "symbol": "EDV", "name": "", "reg_code": "921910709", "exchange": "ARCA", "country": "us"}
   ],
   "trades": [
     {"id": 1, "number": "", "timestamp": 1548447900, "settlement": 1548447900, "account": 2, "asset": 7, "quantity": 0.567, "price": 69.2215, "fee": 0.0, "cancelled": true},
@@ -72,6 +73,7 @@
   "asset_payments": [
     {"id": 1, "type": "dividend", "account": 2, "timestamp": 1578082800, "number": "", "asset": 21, "amount": 60.2, "tax": 6.02, "description": "ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)"},
     {"id": 2, "type": "interest", "account": 2, "timestamp": 1590595065, "number": "2882737839", "asset": 9, "amount": -25.69, "description": "PURCHASE ACCRUED INT X 6 1/4 03/15/26"},
-    {"id": 3, "type": "interest", "account": 2, "timestamp": 1600128000, "number": "", "asset": 9, "amount": 62.5, "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26)"}
+    {"id": 3, "type": "interest", "account": 2, "timestamp": 1600128000, "number": "", "asset": 9, "amount": 62.5, "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26)"},
+    {"id": -1, "type": "dividend", "account": -1, "timestamp": 1529612400, "number": "", "asset": -5, "amount": 16.76, "tax": 0, "description": "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"}
   ]
 }
