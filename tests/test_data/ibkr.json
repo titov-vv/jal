@@ -74,6 +74,7 @@
     {"id": 1, "type": "dividend", "account": 2, "timestamp": 1578082800, "number": "", "asset": 21, "amount": 60.2, "tax": 6.02, "description": "ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)"},
     {"id": 2, "type": "interest", "account": 2, "timestamp": 1590595065, "number": "2882737839", "asset": 9, "amount": -25.69, "description": "PURCHASE ACCRUED INT X 6 1/4 03/15/26"},
     {"id": 3, "type": "interest", "account": 2, "timestamp": 1600128000, "number": "", "asset": 9, "amount": 62.5, "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26)"},
-    {"id": -1, "type": "dividend", "account": -1, "timestamp": 1529612400, "number": "", "asset": -5, "amount": 16.76, "tax": 0, "description": "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"}
+    {"id": -1, "type": "dividend", "account": 2, "timestamp": 1529612400, "number": "", "asset": 27, "amount": 16.76, "tax": 0, "description": "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"},
+    {"id": -2, "type": "dividend", "account": 2, "timestamp": 1533673200, "number": "", "asset": 27, "amount": 20.35, "tax": 0.54, "description": "EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)"}
   ]
 }

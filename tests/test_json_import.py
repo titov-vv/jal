@@ -36,7 +36,9 @@ def test_statement_json_import(tmp_path, project_root):
                       "(5, 'EDV', 4, 'VANGUARD EXTENDED DUR TREAS', 0)") is not None
     assert executeSQL("INSERT INTO dividends (id, timestamp, type, account_id, asset_id, amount, tax, note) "
                       "VALUES (1, 1529612400, 1, 1, 5, 16.76, 1.68, "
-                      "'EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)')") is not None
+                      "'EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'), "
+                      "(2, 1533673200, 1, 1, 5, 20.35, 2.04, "
+                      "'EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)')") is not None
 
     statement = Statement()
     statement.load(data_path + 'ibkr.json')
@@ -146,9 +148,10 @@ def test_statement_json_import(tmp_path, project_root):
     # validate asset payments
     test_payments = [
         [1, 1529612400, '', '', 1, 1, 5, 16.76, 0.0, 'EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'],
-        [2, 1578082800, '', '', 1, 1, 23, 60.2, 6.02, 'ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)'],
-        [3, 1590595065, '', '2882737839', 2, 1, 11, -25.69, 0.0, 'PURCHASE ACCRUED INT X 6 1/4 03/15/26'],
-        [4, 1600128000, '', '', 2, 1, 11, 62.5, 0.0, 'BOND COUPON PAYMENT (X 6 1/4 03/15/26)']
+        [2, 1533673200, '', '', 1, 1, 5, 20.35, 0.54, 'EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)'],
+        [3, 1578082800, '', '', 1, 1, 23, 60.2, 6.02, 'ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)'],
+        [4, 1590595065, '', '2882737839', 2, 1, 11, -25.69, 0.0, 'PURCHASE ACCRUED INT X 6 1/4 03/15/26'],
+        [5, 1600128000, '', '', 2, 1, 11, 62.5, 0.0, 'BOND COUPON PAYMENT (X 6 1/4 03/15/26)']
     ]
     assert readSQL("SELECT COUNT(*) FROM dividends") == len(test_payments)
     for i, payment in enumerate(test_payments):

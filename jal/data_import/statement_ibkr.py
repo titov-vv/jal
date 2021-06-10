@@ -811,7 +811,8 @@ class StatementIBKR(Statement):
             logging.warning(g_tr('IBKR', "Dividend not found for withholding tax: ") + f"{tax}, {previous_tax}")
             return 0
         dividend["tax"] = new_tax
-        if dividend['id'] < 0:
+        # append new dividend if it came from DB and haven't been loaded in self._data yet
+        if len([1 for x in self._data[FOF.ASSET_PAYMENTS] if x['id'] == dividend['id']]) == 0:
             dividend['type'] = FOF.PAYMENT_DIVIDEND
             self._data[FOF.ASSET_PAYMENTS].append(dividend)
         return 1
@@ -842,7 +843,10 @@ class StatementIBKR(Statement):
                 [(":div", DividendSubtype.Dividend), (":account_id", db_account), (":asset_id", db_asset)],
                 forward_only=True)
             while query.next():
-                dividends.append(readSQLrecord(query, named=True))
+                db_dividend = readSQLrecord(query, named=True)
+                db_dividend['asset'] = asset_id
+                db_dividend['account'] = account_id
+                dividends.append(db_dividend)
         if datetime.utcfromtimestamp(timestamp).timetuple().tm_yday < 75:
             # We may have wrong date in taxes before March, 15 due to tax correction
             range_start = ManipulateDate.startOfPreviousYear(day=datetime.utcfromtimestamp(timestamp))

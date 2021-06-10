@@ -3,6 +3,7 @@ from shutil import copyfile
 import sqlite3
 import json
 
+# FIXME fix this import to make tests operational separately
 from tests.fixtures import project_root
 from constants import Setup
 from jal.db.helpers import init_and_check_db, get_dbfilename, LedgerInitError
@@ -91,7 +92,9 @@ def test_statement_ibkr(tmp_path, project_root):
                       "(5, 'EDV', 4, 'VANGUARD EXTENDED DUR TREAS', 0)") is not None
     assert executeSQL("INSERT INTO dividends (id, timestamp, type, account_id, asset_id, amount, tax, note) "
                       "VALUES (1, 1529612400, 1, 1, 5, 16.76, 1.68, "
-                      "'EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)')") is not None
+                      "'EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'), "
+                      "(2, 1533673200, 1, 1, 5, 20.35, 2.04, "
+                      "'EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)')") is not None
 
     data_path = project_root + os.sep + "tests" + os.sep + "test_data" + os.sep
     with open(data_path + 'ibkr.json', 'r') as json_file:
