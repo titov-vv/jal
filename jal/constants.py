@@ -72,6 +72,7 @@ class PredefinedCategory:
     Income = 1
     Spending = 2
     Profits = 3
+    StartingBalance = 4
     Fees = 5
     Taxes = 6
     Dividends = 7

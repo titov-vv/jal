@@ -36,9 +36,9 @@ def prepare_db(project_root, tmp_path, data_path):
     lang_id = JalDB().get_language_id('en')
     assert lang_id == 1
 
-    assert executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'IB')") is not None
+    assert executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'Test Peer')") is not None
     assert executeSQL("INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id) "
-                      "VALUES (4, 'IB TEST', 2, 1, 'U7654321', 1)") is not None
+                      "VALUES (4, 'Inv. Account', 2, 1, 'U7654321', 1)") is not None
     assert executeSQL("INSERT INTO assets (id, name, type_id, full_name, src_id) "
                       "VALUES (4, 'VUG', 4, 'Growth ETF', 0), "
                       "(5, 'EDV', 4, 'VANGUARD EXTENDED DUR TREAS', 0)") is not None

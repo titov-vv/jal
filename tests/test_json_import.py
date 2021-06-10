@@ -53,11 +53,11 @@ def test_statement_json_import(tmp_path, project_root, data_path, prepare_db):
 
     # validate accounts
     test_accounts = [
-        [1, 4, 'IB TEST', 2, 1, 'U7654321', 0, 1, 0],
-        [2, 4, 'IB TEST.RUB', 1, 1, 'U7654321', 0, 1, 0],
-        [3, 4, 'IB TEST.CAD', 6, 1, 'U7654321', 0, 1, 0],
+        [1, 4, 'Inv. Account', 2, 1, 'U7654321', 0, 1, 0],
+        [2, 4, 'Inv. Account.RUB', 1, 1, 'U7654321', 0, 1, 0],
+        [3, 4, 'Inv. Account.CAD', 6, 1, 'U7654321', 0, 1, 0],
         [4, 4, 'TEST_ACC.CAD', 6, 1, 'TEST_ACC', 0, 2, 0],
-        [5, 4, 'IB TEST.EUR', 3, 1, 'U7654321', 0, 1, 0],
+        [5, 4, 'Inv. Account.EUR', 3, 1, 'U7654321', 0, 1, 0],
     ]
     assert readSQL("SELECT COUNT(*) FROM accounts") == len(test_accounts)
     for i, account in enumerate(test_accounts):
@@ -65,7 +65,7 @@ def test_statement_json_import(tmp_path, project_root, data_path, prepare_db):
 
     # validate peers
     test_peers = [
-        [1, 0, 'IB', ''],
+        [1, 0, 'Test Peer', ''],
         [2, 0, 'Bank for #TEST_ACC', '']
     ]
     assert readSQL("SELECT COUNT(*) FROM agents") == len(test_peers)
