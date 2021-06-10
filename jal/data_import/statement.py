@@ -59,8 +59,7 @@ if "pytest" not in sys.modules:
 
 
 class FOF:
-    S_TIMESTAMP = "from"
-    E_TIMESTAMP = "to"
+    PERIOD = "period"
 
     ACCOUNTS = "accounts"
     ASSETS = "assets"
@@ -169,6 +168,8 @@ class Statement:
         for section in self._data:
             if type(self._data[section]) != list:
                 continue
+            if section == FOF.PERIOD:
+                continue   # FIXME Here should be a list of supported sections instead of not supported
             for element in self._data[section]:
                 for tag in element:
                     if tag == tag_name:
@@ -179,8 +180,6 @@ class Statement:
 
     def import_into_db(self):
         sections = {
-            FOF.S_TIMESTAMP: None,
-            FOF.E_TIMESTAMP: None,
             FOF.ASSETS: self._import_assets,
             FOF.ACCOUNTS: self._import_accounts,
             FOF.INCOME_SPENDING: self._import_imcomes_and_spendings,

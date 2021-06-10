@@ -304,6 +304,7 @@ class StatementIBKR(Statement):
 
     def load(self, filename: str) -> None:
         self._data = {
+            FOF.PERIOD: [None, None],
             FOF.ACCOUNTS: [],
             FOF.ASSETS: [],
             FOF.TRADES: [],
@@ -327,9 +328,9 @@ class StatementIBKR(Statement):
             for FlexStatements in xml_root.getroot():
                 for statement in FlexStatements:
                     attr = statement.attrib
-                    self._data[FOF.S_TIMESTAMP] = int(
+                    self._data[FOF.PERIOD][0] = int(
                         datetime.strptime(attr['fromDate'], "%Y%m%d").replace(tzinfo=timezone.utc).timestamp())
-                    self._data[FOF.E_TIMESTAMP] = int(
+                    self._data[FOF.PERIOD][1] = int(
                         datetime.strptime(attr['toDate'], "%Y%m%d").replace(tzinfo=timezone.utc).timestamp())
                     logging.info(g_tr('IBKR', "Load IB Flex-statement for account ") +
                                  f"{attr['accountId']}: {attr['fromDate']} - {attr['toDate']}")
