@@ -324,8 +324,9 @@ class HoldingsModel(QAbstractItemModel):
                 self.add_node_totals(currency_child.getChild(j))
             self.add_node_totals(currency_child)
             for j in range(currency_child.count()):  # Calculate share of each account within currency
-                currency_child.getChild(j).data[self.COL_SHARE] = \
-                    100.0 * currency_child.getChild(j).data[self.COL_VALUE] / currency_child.data[self.COL_VALUE]
+                if currency_child.data[self.COL_VALUE]:
+                    currency_child.getChild(j).data[self.COL_SHARE] = \
+                        100.0 * currency_child.getChild(j).data[self.COL_VALUE] / currency_child.data[self.COL_VALUE]
         # Get full total of totals for all currencies adjusted to common currency
         total = sum([self._root.getChild(i).data[self.COL_VALUE_A] for i in range(self._root.count())])
         for i in range(self._root.count()):  # Calculate share of each currency (adjusted to common currency)
