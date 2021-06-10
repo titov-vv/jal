@@ -292,6 +292,10 @@ class Statement:
             if trade['asset'] > 0:
                 raise Statement_ImportError(g_tr('Statement', "Unmatched asset for trade: ") + f"{trade}")
             note = trade['note'] if 'note' in trade else ''
+            if 'cancelled' in trade and trade['cancelled']:
+                JalDB().del_trade(-trade['account'], -trade['asset'], trade['timestamp'], trade['settlement'],
+                                  trade['number'], trade['quantity'], trade['price'], trade['fee'])
+                continue
             JalDB().add_trade(-trade['account'], -trade['asset'], trade['timestamp'], trade['settlement'],
                               trade['number'], trade['quantity'], trade['price'], trade['fee'], note)
 

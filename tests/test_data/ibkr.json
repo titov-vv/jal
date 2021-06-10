@@ -39,14 +39,17 @@
   ],
   "trades": [
     {"id": 1, "number": "", "timestamp": 1548447900, "settlement": 1548447900, "account": 2, "asset": 7, "quantity": 0.567, "price": 69.2215, "fee": 0.0, "cancelled": true},
-    {"id": 2, "number": "2661774904", "timestamp": 1579094694, "settlement": 1579219200, "account": 2, "asset": 19, "quantity": 45000.0, "price": 0.0012, "fee": 0.54},
-    {"id": 3, "number": "2674740000", "timestamp": 1580215513, "settlement": 1580215513, "account": 2, "asset": 5, "quantity": -1240.0, "price": 54.84, "fee": 7.75519312},
-    {"id": 4, "number": "2674740000", "timestamp": 1580215566, "settlement": 1580342400, "account": 2, "asset": 22, "quantity": -148.0, "price": 316.68, "fee": -1.987792848},
-    {"id": 5, "number": "2882737839", "timestamp": 1590595065, "settlement": 1590710400, "account": 2, "asset": 9, "quantity": 2.0, "price": 637.09, "fee": 2.0},
-    {"id": 6, "number": "2931083780", "timestamp": 1592575273, "settlement": 1592784000, "account": 2, "asset": 23, "quantity": -100.0, "price": 4.54, "fee": 1.1058334},
-    {"id": 7, "number": "2997636969", "timestamp": 1595607600, "settlement": 1595808000, "account": 2, "asset": 23, "quantity": 100.0, "price": 0.0, "fee": 0.0, "note": "Option assignment"},
-    {"id": 8, "number": "2997636973", "timestamp": 1595607600, "settlement": 1595607600, "account": 2, "asset": 24, "quantity": 100.0, "price": 64.0, "fee": 0.0, "note": "Option assignment/exercise"},
-    {"id": 9, "number": "3183801882", "timestamp": 1603882231, "settlement": 1604016000, "account": 2, "asset": 20, "quantity": 500000.0, "price": 0.0001, "fee": 0.7503675}
+    {"id": 2, "number": "", "timestamp": 1553545500, "settlement": 1553545500, "account": 2, "asset": 6, "quantity": -0.777, "price": 169.15, "fee": 0.0},
+    {"id": 3, "number": "", "timestamp": 1553545500, "settlement": 1553545500, "account": 2, "asset": 6, "quantity": 0.777, "price": 169.15, "fee": 0.0, "cancelled": true},
+    {"id": 4, "number": "", "timestamp": 1553545500, "settlement": 1553545500, "account": 2, "asset": 6, "quantity": -0.777, "price": 168.37, "fee": 0.0},
+    {"id": 5, "number": "2661774904", "timestamp": 1579094694, "settlement": 1579219200, "account": 2, "asset": 19, "quantity": 45000.0, "price": 0.0012, "fee": 0.54},
+    {"id": 6, "number": "2674740000", "timestamp": 1580215513, "settlement": 1580215513, "account": 2, "asset": 5, "quantity": -1240.0, "price": 54.84, "fee": 7.75519312},
+    {"id": 7, "number": "2674740000", "timestamp": 1580215566, "settlement": 1580342400, "account": 2, "asset": 22, "quantity": -148.0, "price": 316.68, "fee": -1.987792848},
+    {"id": 8, "number": "2882737839", "timestamp": 1590595065, "settlement": 1590710400, "account": 2, "asset": 9, "quantity": 2.0, "price": 637.09, "fee": 2.0},
+    {"id": 9, "number": "2931083780", "timestamp": 1592575273, "settlement": 1592784000, "account": 2, "asset": 23, "quantity": -100.0, "price": 4.54, "fee": 1.1058334},
+    {"id": 10, "number": "2997636969", "timestamp": 1595607600, "settlement": 1595808000, "account": 2, "asset": 23, "quantity": 100.0, "price": 0.0, "fee": 0.0, "note": "Option assignment"},
+    {"id": 11, "number": "2997636973", "timestamp": 1595607600, "settlement": 1595607600, "account": 2, "asset": 24, "quantity": 100.0, "price": 64.0, "fee": 0.0, "note": "Option assignment/exercise"},
+    {"id": 12, "number": "3183801882", "timestamp": 1603882231, "settlement": 1604016000, "account": 2, "asset": 20, "quantity": 500000.0, "price": 0.0001, "fee": 0.7503675}
   ],
   "income_spending": [
     {"id": 1, "timestamp": 1578073286, "account": 2, "peer": 0, "lines": [{"amount": -7.96, "category": -5, "description": "BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019"}]},
