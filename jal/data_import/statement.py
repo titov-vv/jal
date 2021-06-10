@@ -103,7 +103,7 @@ class Statement:
         FOF.ASSET_BOND: PredefinedAsset.Bond,
         FOF.ASSET_FUTURES: PredefinedAsset.Derivative,
         FOF.ASSET_OPTION: PredefinedAsset.Derivative,
-        FOF.ASSET_WARRANT: PredefinedAsset.Stock,
+        FOF.ASSET_WARRANT: PredefinedAsset.Derivative,
     }
     _corp_actions = {
         FOF.ACTION_MERGER: CorporateAction.Merger,

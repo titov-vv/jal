@@ -65,7 +65,7 @@ def test_statement_json_import(tmp_path, project_root):
         [10, 'DM', 2, 'DOMINION ENERGY MIDSTREAM PA', '', 0, 2],
         [11, 'X 6 1/4 03/15/26', 3, 'X 6 1/4 03/15/26', 'US912909AN84', 0, -1],
         [12, 'SPY   200529C00295000', 6, 'SPY 29MAY20 295.0 C', '', 0, -1],
-        [13, 'DSKEW', 2, 'DSKEW 27FEB22 11.5 C', 'US23753F1158', 0, 2],
+        [13, 'DSKEW', 6, 'DSKEW 27FEB22 11.5 C', 'US23753F1158', 0, 2],
         [14, 'MYL', 2, 'MYLAN NV', 'NL0011031208', 0, -1],
         [15, 'VTRS', 2, 'VIATRIS INC-W/I', 'US92556V1061', 0, 2],
         [16, 'WAB', 2, 'WABTEC CORP', '', 0, 2],
