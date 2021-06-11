@@ -21,6 +21,9 @@ class StatementXLS(Statement):
     AccountPattern = (0, 0, '')
     HeaderCol = 0
     SummaryHeader = ''
+    trade_columns = {}
+    trades_header_height = 1
+    trade_sections = []
 
     def __init__(self):
         super().__init__()
@@ -64,6 +67,36 @@ class StatementXLS(Statement):
                 return i
         logging.error(g_tr('StatementXLS', "Row header isn't found in PSB broker statement: ") + header)
         return -1
+
+    def find_section_start(self, title, columns, subtitle='', header_height=1) -> (int, dict):
+        header_found = False
+        start_row = -1
+        column_indices = dict.fromkeys(columns, -1)  # initialize indexes to -1
+        headers = {}
+        section_header = ''
+        for i, row in self._statement.iterrows():
+            if not header_found and re.search(title, str(row[self.HeaderCol])):
+                section_header = row[self.HeaderCol]
+                header_found = True
+            if header_found and ((subtitle == '') or (row[self.HeaderCol] == subtitle)):
+                start_row = i + 1  # points to columns header row
+                break
+        if start_row < 0:
+            return start_row, column_indices
+        for col in range(self._statement.shape[1]):                 # Load section headers from next row
+            for row in range(header_height):
+                headers[self._statement[col][start_row+row]] = col  # store column number per header
+        for column in columns:
+            for header in headers:
+                if re.search(columns[column], header):
+                    column_indices[column] = headers[header]
+        if start_row > 0:
+            for idx in column_indices:                         # Verify that all columns were found
+                if column_indices[idx] < 0 and idx[0] != '*':  # * - means header is optional
+                    logging.error(g_tr('StatementXLS', "Column not found in section ") + f"{section_header}: {idx}")
+                    start_row = -1
+        start_row += header_height
+        return start_row, column_indices
 
     # validates that loaded data looks good
     def _validate(self):
@@ -156,4 +189,8 @@ class StatementXLS(Statement):
             self._data[FOF.ACCOUNTS].append(account)
 
     def _load_trades(self):
-        pass
+        for section in self.trade_sections:
+            row, headers = self.find_section_start(section[0], self.trade_columns,
+                                                   subtitle=section[1], header_height=self.trades_header_height)
+            if row < 0:
+                continue

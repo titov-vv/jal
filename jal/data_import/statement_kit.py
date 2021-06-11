@@ -14,6 +14,25 @@ class StatementKIT(StatementXLS):
     PeriodPattern = (5, 8, r"(?P<S>\d\d\.\d\d\.\d\d\d\d)\s.\s(?P<E>\d\d\.\d\d\.\d\d\d\d)")
     AccountPattern = (5, 5, r"(?P<ACCOUNT>.*)-(.*)")
     SummaryHeader = "Состояние денежных средств на счете"
+    trade_columns = {
+        "number": "Номер\nсделки",
+        "date": "Дата сделки",
+        "time": "Время сделки",
+        "settlement": "Дата поставки\n(план.)",
+        "isin": "ISIN",
+        "B/S": "Тип операции",
+        "price": "Цена сделки ",
+        "qty": "Количество",
+        "amount": "Сумма сделки",
+        "accrued_int": " НКД",
+        "fee_ex": "Комиссия\nТС",
+        "fee_broker": "Комиссия\nброкера",
+        "asset": "Наименование\nЦБ"
+    }
+    trades_header_height = 1
+    trade_sections = [
+        ("Заключенные сделки с ценными бумагами", '')
+    ]
 
 # -----------------------------------------------------------------------------------------------------------------------
 class KITFinance:
