@@ -1,6 +1,6 @@
 import json
 
-from tests.fixtures import project_root, data_path, prepare_db
+from tests.fixtures import project_root, data_path, prepare_db, test_xls_json
 from jal.data_import.statement_ibkr import StatementIBKR
 from jal.data_import.statement_uralsib import StatementUKFU
 from jal.data_import.statement_kit import StatementKIT
@@ -18,30 +18,21 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def test_statement_uralsib(tmp_path, project_root, data_path):
-    with open(data_path + 'xls.json', 'r') as json_file:
-        statement = json.load(json_file)
-
+def test_statement_uralsib(tmp_path, project_root, data_path, test_xls_json):
     UKFU = StatementUKFU()
     UKFU.load(data_path + 'ukfu.zip')
-    assert UKFU._data == statement
+    assert UKFU._data == test_xls_json
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def test_statement_kit(tmp_path, project_root, data_path):
-    with open(data_path + 'xls.json', 'r') as json_file:
-        statement = json.load(json_file)
-
+def test_statement_kit(tmp_path, project_root, data_path, test_xls_json):
     KIT = StatementKIT()
     KIT.load(data_path + 'kit.xlsx')
-    assert KIT._data == statement
+    assert KIT._data == test_xls_json
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def test_statement_psb(tmp_path, project_root, data_path):
-    with open(data_path + 'xls.json', 'r') as json_file:
-        statement = json.load(json_file)
-
+def test_statement_psb(tmp_path, project_root, data_path, test_xls_json):
     PSB = StatementPSB()
     PSB.load(data_path + 'psb.xlsx')
-    assert PSB._data == statement
+    assert PSB._data == test_xls_json

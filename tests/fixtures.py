@@ -1,5 +1,6 @@
 import pytest
 import os
+import json
 from shutil import copyfile
 from PySide2.QtSql import QSqlDatabase
 
@@ -51,3 +52,11 @@ def prepare_db(project_root, tmp_path, data_path):
     yield
 
     # TODO Add fixture cleanup code
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# provide a json dictionary structure for XLS reports load verification
+@pytest.fixture
+def test_xls_json(data_path):
+    with open(data_path + 'xls.json', 'r') as json_file:
+        yield json.load(json_file)
