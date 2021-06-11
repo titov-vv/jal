@@ -14,6 +14,7 @@ class StatementUKFU(StatementXLS):
     Header = (2, 0, '  Брокер: ООО "УРАЛСИБ Брокер"')
     PeriodPattern = (2, 2, r"  за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d)")
     AccountPattern = (2, 7, None)
+    SummaryHeader = "СОСТОЯНИЕ ДЕНЕЖНЫХ СРЕДСТВ НА СЧЕТЕ"
 
 # -----------------------------------------------------------------------------------------------------------------------
 class UralsibCapital:

@@ -1,7 +1,10 @@
 {
   "period": [1617235200, 1621555199],
   "accounts": [],
-  "assets": [],
+  "assets": [
+    {"id": 1, "type": "money", "symbol": "RUB"},
+    {"id": 2, "type": "money", "symbol": "USD"}
+  ],
   "trades": [],
   "income_spending": [],
   "transfers": [],

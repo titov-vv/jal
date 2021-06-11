@@ -13,6 +13,7 @@ class StatementKIT(StatementXLS):
     Header = (4, 0, "КИТ Финанс (АО)")
     PeriodPattern = (5, 8, r"(?P<S>\d\d\.\d\d\.\d\d\d\d)\s.\s(?P<E>\d\d\.\d\d\.\d\d\d\d)")
     AccountPattern = (5, 5, r"(?P<ACCOUNT>.*)-(.*)")
+    SummaryHeader = "Состояние денежных средств на счете"
 
 # -----------------------------------------------------------------------------------------------------------------------
 class KITFinance:

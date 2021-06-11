@@ -19,6 +19,8 @@ class StatementXLS(Statement):
     Header = (0, 0, '')           # Header that is present in broker report  (x-pos, y-pos, header)
     PeriodPattern = (0, 0, r"с (?P<S>.*) - (?P<E>.*)")   # Patter that describes report period
     AccountPattern = (0, 0, '')
+    HeaderCol = 0
+    SummaryHeader = ''
 
     def __init__(self):
         super().__init__()
@@ -48,14 +50,24 @@ class StatementXLS(Statement):
                     self._statement = pandas.read_excel(io=r_file.read(), header=None, na_filter=False)
         else:
             self._statement = pandas.read_excel(filename, header=None, na_filter=False)
+
         self._validate()
+        self._load_currencies()
+
+    # Finds a row with header in column self.HeaderCol starting with 'header' and returns it's index.
+    # Return -1 if header isn't found
+    def find_row(self, header) -> int:
+        for i, row in self._statement.iterrows():
+            if re.match(f".*{header}.*", row[self.HeaderCol], re.IGNORECASE) is not None:
+                return i
+        logging.error(g_tr('StatementXLS', "Row header isn't found in PSB broker statement: ") + header)
+        return -1
 
     # validates that loaded data looks good
     def _validate(self):
         self._check_statement_header()
         self._get_statement_period()
         self._get_account_number()
-        self._get_statement_currency()
 
     def _check_statement_header(self):
         if self._statement[self.Header[0]][self.Header[1]] != self.Header[2]:
@@ -84,5 +96,52 @@ class StatementXLS(Statement):
         else:
             self._account_number = parts.groupdict()['ACCOUNT']
 
-    def _get_statement_currency(self):
-        pass
+    def _load_currencies(self):
+        substitutions = {
+            "РУБ": "RUB",
+            "RUR": "RUB"
+        }
+
+        amounts = {}
+        currency_col = {}
+        _header_row = self.find_row(self.SummaryHeader)
+        _start_row = self.find_row("входящ")
+        _end_row = self.find_row("исходящ")
+        if (_header_row == -1) or (_start_row == -1) or (_end_row == -1):
+            logging.warning(g_tr('StatementXLS', "Can't get currencies from summary section of statement"))
+            return
+        _rate_row = self.find_row("курс")
+
+        column = 5  # there are no currencies before this column
+        while column < self._statement.shape[1]:                     # Check every column header
+            currency_code = str(self._statement[column][_header_row + 1])[-3:]  # assume it's a currency symbol
+            if currency_code:
+                amounts[currency_code] = 0
+                currency_col[currency_code] = column
+            column += 1
+
+        for i, currency in enumerate(amounts):
+            for j in range(_start_row, _end_row + 1):
+                if j == _rate_row:
+                    continue   # Skip currency rate if present as it doesn't change account balance
+                try:
+                    amount = float(self._statement[currency_col[currency]][j])
+                except ValueError:
+                    amount = 0
+                amounts[currency] += amount
+
+        for currency in amounts:
+            if amounts[currency]:
+                try:
+                    code = substitutions[currency]
+                except KeyError:
+                    code = currency
+                self._add_currency(code)
+
+    def _add_currency(self, currency_code):
+        match = [x for x in self._data[FOF.ASSETS] if x['symbol'] == currency_code and x['type'] == FOF.ASSET_MONEY]
+        if match:
+            return
+        id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
+        currency = {"id": id, "type": "money", "symbol": currency_code}
+        self._data[FOF.ASSETS].append(currency)
