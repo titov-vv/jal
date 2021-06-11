@@ -49,3 +49,5 @@ def prepare_db(project_root, tmp_path, data_path):
                       "'EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)')") is not None
 
     yield
+
+    # TODO Add fixture cleanup code

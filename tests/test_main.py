@@ -1,15 +1,14 @@
 import os
 from shutil import copyfile
 import sqlite3
-import json
 
-from tests.fixtures import project_root, data_path, prepare_db
+from tests.fixtures import project_root
 from constants import Setup
 from jal.db.helpers import init_and_check_db, get_dbfilename, LedgerInitError
 from jal.db.backup_restore import JalBackup
-from jal.data_import.statement_ibkr import StatementIBKR
 
 
+# ----------------------------------------------------------------------------------------------------------------------
 def test_db_creation(tmp_path, project_root):
     # Prepare environment
     src_path = project_root + os.sep + 'jal' + os.sep + Setup.INIT_SCRIPT_PATH
@@ -64,12 +63,3 @@ def test_backup_load(tmp_path, project_root):
     cursor.execute("SELECT COUNT(*) FROM settings")
     assert cursor.fetchone()[0] == 7
     db.close()
-
-
-def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db):
-    with open(data_path + 'ibkr.json', 'r') as json_file:
-        statement = json.load(json_file)
-
-    IBKR = StatementIBKR()
-    IBKR.load(data_path + 'ibkr.xml')
-    assert IBKR._data == statement
