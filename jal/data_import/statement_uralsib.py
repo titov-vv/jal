@@ -29,6 +29,14 @@ class StatementUKFU(StatementXLS):
         "fee_ex": "Комиссия ТС",
         "currency": "Валюта цены"
     }
+
+    asset_section = "СОСТОЯНИЕ ПОРТФЕЛЯ ЦЕННЫХ БУМАГ"
+    asset_columns = {
+        "name": "Наименование ЦБ",
+        "isin": "ISIN",
+        "reg_code": "Номер гос. регистрации / CFI код"
+    }
+
     trades_header_height = 2
     trade_sections = [
         ("СДЕЛКИ С ЦЕННЫМИ БУМАГАМИ", "Биржевые сделки с ценными бумагами в отчетном периоде"),

@@ -48,12 +48,21 @@ def GetAssetInfoByISIN(isin, reg_code) -> dict:
     columns = securities['columns']
     data = securities['data']
     for security in data:
+        matched = False
         if security[columns.index('regnumber')] is None:
-            security[columns.index('regnumber')] = ''
+            if len(data) == 1:
+                if security[columns.index('isin')] == isin:
+                    logging.info(g_tr('Net', "Online data found for: ") + f"{isin}")
+                    matched = True
+            else:
+                security[columns.index('regnumber')] = ''
         if security[columns.index('isin')] == isin and security[columns.index('regnumber')] == reg_code:
             logging.info(g_tr('Net', "Online data found for: ") + f"{isin}/{reg_code}")
+            matched = True
+        if matched:
             asset['symbol'] = security[columns.index('secid')]
             asset['name'] = security[columns.index('name')]
+            asset['reg_code'] = security[columns.index('regnumber')]
             try:
                 asset['type'] = asset_type[security[columns.index('group')]]
             except KeyError:

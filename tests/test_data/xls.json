@@ -6,7 +6,10 @@
   ],
   "assets": [
     {"id": 1, "type": "money", "symbol": "RUB"},
-    {"id": 2, "type": "money", "symbol": "USD"}
+    {"id": 2, "type": "money", "symbol": "USD"},
+    {"id": 3, "type": "stock", "symbol": "AFLT", "name": "Аэрофлот-росс.авиалин(ПАО)ао", "isin": "RU0009062285", "reg_code": "1-01-00010-A", "exchange": "MOEX"},
+    {"id": 4, "type": "etf", "symbol": "FXGD", "name": "FinEx Gold ETF USD", "isin": "IE00B8XB7377", "exchange": "MOEX"},
+    {"id": 5, "type": "bond", "symbol": "RU000A0JWM31", "name": "АО \"Тинькофф Банк\" БО-07", "isin": "RU000A0JWM31", "reg_code": "4B020702673B", "exchange": "MOEX"}
   ],
   "trades": [],
   "income_spending": [],

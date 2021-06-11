@@ -5,7 +5,9 @@ from datetime import datetime, timezone, time
 from zipfile import ZipFile
 
 from jal.widgets.helpers import g_tr
+from jal.constants import PredefinedAsset
 from jal.data_import.statement import Statement, FOF
+from jal.net.helpers import GetAssetInfoByISIN
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -21,6 +23,8 @@ class StatementXLS(Statement):
     AccountPattern = (0, 0, '')
     HeaderCol = 0
     SummaryHeader = ''
+    asset_section = ''
+    asset_columns = {}
     trade_columns = {}
     trades_header_height = 1
     trade_sections = []
@@ -57,6 +61,7 @@ class StatementXLS(Statement):
         self._validate()
         self._load_currencies()
         self._load_accounts()
+        self._load_assets()
         self._load_trades()
 
     # Finds a row with header in column self.HeaderCol starting with 'header' and returns it's index.
@@ -187,6 +192,45 @@ class StatementXLS(Statement):
             id = max([0] + [x['id'] for x in self._data[FOF.ACCOUNTS]]) + 1
             account = {"id": id, "number": self._account_number, "currency": currency['id']}
             self._data[FOF.ACCOUNTS].append(account)
+
+    def _load_assets(self):
+        cnt = 0
+        loaded = 0
+        row, headers = self.find_section_start(self.asset_section, self.asset_columns)
+        if row < 0:
+            return False
+        while row < self._statement.shape[0]:
+            if self._statement[self.HeaderCol][row].startswith('Итого') or self._statement[self.HeaderCol][row] == '':
+                break
+            if self._add_asset(self._statement[headers['isin']][row], self._statement[headers['reg_code']][row]):
+                loaded += 1
+            cnt += 1
+            row += 1
+        # logging.info(g_tr('PSB', "Securities loaded: ") + f"{loaded} ({cnt})")
+
+    # Adds assets to self._data[FOF.ASSETS] by ISIN and registration code
+    # Asset symbol and other parameters are loaded from MOEX exchange as class targets russian brokers
+    # Returns True if asset was added successfully and false otherwise
+    def _add_asset(self, isin, reg_code) -> bool:
+        asset_type = {
+            PredefinedAsset.Stock: "stock",
+            PredefinedAsset.Bond: "bond",
+            PredefinedAsset.ETF: "etf"
+        }
+
+        match = [x for x in self._data[FOF.ASSETS] if 'isin' in x and x['isin'] == isin]
+        if len(match):
+            return True
+        asset_info = GetAssetInfoByISIN(isin, reg_code)
+        if len(asset_info):
+            new_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
+            asset = {"id": new_id, "symbol": asset_info['symbol'], 'name': asset_info['name'],
+                     'type': asset_type[asset_info['type']], 'isin': isin, 'exchange': "MOEX"}
+            if asset_info['reg_code']:
+                asset['reg_code'] = asset_info['reg_code']
+            self._data[FOF.ASSETS].append(asset)
+            return True
+        return False
 
     def _load_trades(self):
         for section in self.trade_sections:

@@ -14,6 +14,14 @@ class StatementKIT(StatementXLS):
     PeriodPattern = (5, 8, r"(?P<S>\d\d\.\d\d\.\d\d\d\d)\s.\s(?P<E>\d\d\.\d\d\.\d\d\d\d)")
     AccountPattern = (5, 5, r"(?P<ACCOUNT>.*)-(.*)")
     SummaryHeader = "Состояние денежных средств на счете"
+
+    asset_section = "Состояние портфеля ценных бумаг"
+    asset_columns = {
+        "name": "Наименование\nЦБ ",
+        "isin": "ISIN",
+        "reg_code": "Код гос. регистрации"
+    }
+
     trade_columns = {
         "number": "Номер\nсделки",
         "date": "Дата сделки",

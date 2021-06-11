@@ -15,6 +15,14 @@ class StatementPSB(StatementXLS):
     AccountPattern = (3, 9, r"(?P<ACCOUNT>\S*)( от \d\d\.\d\d\.\d\d\d\d)?")
     HeaderCol = 1
     SummaryHeader = "Сводная информация по счетам клиента в валюте счета"
+
+    asset_section = r"^Портфель на конец дня.*"
+    asset_columns = {
+        "name": r"Наименование эмитента, вид, категория \(тип\), выпуск, транш ЦБ",
+        "isin": "ISIN",
+        "reg_code": r"Номер гос\.регистрации"
+    }
+
     trade_columns = {
         "number": "Номер сделки в ТС",
         "timestamp": "Дата и время совершения сделки",
