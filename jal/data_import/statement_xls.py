@@ -53,6 +53,8 @@ class StatementXLS(Statement):
 
         self._validate()
         self._load_currencies()
+        self._load_accounts()
+        self._load_trades()
 
     # Finds a row with header in column self.HeaderCol starting with 'header' and returns it's index.
     # Return -1 if header isn't found
@@ -86,7 +88,7 @@ class StatementXLS(Statement):
 
     def _get_account_number(self):
         if self.AccountPattern[2] is None:
-            self._account_number = self._statement[self.AccountPattern[0]][self.AccountPattern[1]]
+            self._account_number = str(self._statement[self.AccountPattern[0]][self.AccountPattern[1]])
             return
 
         parts = re.match(self.AccountPattern[2],
@@ -145,3 +147,13 @@ class StatementXLS(Statement):
         id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
         currency = {"id": id, "type": "money", "symbol": currency_code}
         self._data[FOF.ASSETS].append(currency)
+
+    def _load_accounts(self):
+        currencies = [x for x in self._data[FOF.ASSETS] if x['type'] == FOF.ASSET_MONEY]
+        for currency in currencies:
+            id = max([0] + [x['id'] for x in self._data[FOF.ACCOUNTS]]) + 1
+            account = {"id": id, "number": self._account_number, "currency": currency['id']}
+            self._data[FOF.ACCOUNTS].append(account)
+
+    def _load_trades(self):
+        pass
