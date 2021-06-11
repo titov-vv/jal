@@ -14,7 +14,7 @@ if "pytest" not in sys.modules:
 
 # -----------------------------------------------------------------------------------------------------------------------
 # FIXME - this class is duplicated in statements.py
-# Remove old definition and adopt if for better usage with pytest framework
+# Remove old definition in statements.py and adopt if for better usage with pytest framework
 if "pytest" not in sys.modules:
     class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
         def __init__(self, description, current_account, recent_account=None):

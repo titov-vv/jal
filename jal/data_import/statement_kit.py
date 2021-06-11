@@ -6,7 +6,13 @@ import pandas
 from jal.widgets.helpers import g_tr
 from jal.db.update import JalDB
 from jal.constants import Setup, DividendSubtype, PredefinedCategory
+from jal.data_import.statement_xls import StatementXLS
 
+
+class StatementKIT(StatementXLS):
+    Header = (4, 0, "КИТ Финанс (АО)")
+    PeriodPattern = (5, 8, r"(?P<S>\d\d\.\d\d\.\d\d\d\d)\s.\s(?P<E>\d\d\.\d\d\.\d\d\d\d)")
+    AccountPattern = (5, 5, r"(?P<ACCOUNT>.*)-(.*)")
 
 # -----------------------------------------------------------------------------------------------------------------------
 class KITFinance:

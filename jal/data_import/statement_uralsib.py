@@ -7,7 +7,13 @@ import pandas
 from jal.widgets.helpers import g_tr
 from jal.db.update import JalDB
 from jal.constants import Setup, DividendSubtype, PredefinedCategory, PredefinedAsset
+from jal.data_import.statement_xls import StatementXLS
 
+
+class StatementUKFU(StatementXLS):
+    Header = (2, 0, '  Брокер: ООО "УРАЛСИБ Брокер"')
+    PeriodPattern = (2, 2, r"  за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d)")
+    AccountPattern = (2, 7, None)
 
 # -----------------------------------------------------------------------------------------------------------------------
 class UralsibCapital:

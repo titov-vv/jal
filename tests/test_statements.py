@@ -2,6 +2,9 @@ import json
 
 from tests.fixtures import project_root, data_path, prepare_db
 from jal.data_import.statement_ibkr import StatementIBKR
+from jal.data_import.statement_uralsib import StatementUKFU
+from jal.data_import.statement_kit import StatementKIT
+from jal.data_import.statement_psb import StatementPSB
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -12,3 +15,33 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db):
     IBKR = StatementIBKR()
     IBKR.load(data_path + 'ibkr.xml')
     assert IBKR._data == statement
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_statement_uralsib(tmp_path, project_root, data_path):
+    with open(data_path + 'xls.json', 'r') as json_file:
+        statement = json.load(json_file)
+
+    UKFU = StatementUKFU()
+    UKFU.load(data_path + 'ukfu.zip')
+    assert UKFU._data == statement
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_statement_kit(tmp_path, project_root, data_path):
+    with open(data_path + 'xls.json', 'r') as json_file:
+        statement = json.load(json_file)
+
+    KIT = StatementKIT()
+    KIT.load(data_path + 'kit.xlsx')
+    assert KIT._data == statement
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_statement_psb(tmp_path, project_root, data_path):
+    with open(data_path + 'xls.json', 'r') as json_file:
+        statement = json.load(json_file)
+
+    PSB = StatementPSB()
+    PSB.load(data_path + 'psb.xlsx')
+    assert PSB._data == statement

@@ -6,6 +6,13 @@ import pandas
 from jal.widgets.helpers import g_tr
 from jal.db.update import JalDB
 from jal.constants import Setup, DividendSubtype
+from jal.data_import.statement_xls import StatementXLS
+
+
+class StatementPSB(StatementXLS):
+    Header = (2, 3, 'Брокер: ПАО "Промсвязьбанк"')
+    PeriodPattern = (3, 6, r"с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d)")
+    AccountPattern = (3, 9, r"(?P<ACCOUNT>\S*)( от \d\d\.\d\d\.\d\d\d\d)?")
 
 
 # -----------------------------------------------------------------------------------------------------------------------

@@ -14,6 +14,7 @@ from jal.data_import.statement_psb import PSB_Broker
 
 
 # -----------------------------------------------------------------------------------------------------------------------
+# TODO Remove this class definition as new one created locally in statement.py
 class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
     def __init__(self, description, current_account, recent_account=None):
         QDialog.__init__(self)

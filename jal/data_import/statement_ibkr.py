@@ -169,6 +169,7 @@ class IBKR_Account:
 
 
 # -----------------------------------------------------------------------------------------------------------------------
+# Class for Loading Interactive Brokers XML Flex report
 class StatementIBKR(Statement):
     CancelledFlag = 'Ca'
 
