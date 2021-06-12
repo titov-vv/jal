@@ -1,6 +1,6 @@
 import json
 
-from tests.fixtures import project_root, data_path, prepare_db, test_xls_json
+from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ibkr, test_xls_json
 from jal.data_import.statement_ibkr import StatementIBKR
 from jal.data_import.statement_uralsib import StatementUKFU
 from jal.data_import.statement_kit import StatementKIT
@@ -8,7 +8,7 @@ from jal.data_import.statement_psb import StatementPSB
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db):
+def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_ibkr):
     with open(data_path + 'ibkr.json', 'r') as json_file:
         statement = json.load(json_file)
 

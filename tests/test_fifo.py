@@ -1,12 +1,12 @@
 from pytest import approx
 
-from tests.fixtures import project_root, data_path, prepare_db
+from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ibkr
 from constants import Setup, PredefinedCategory, PredefinedAsset
 from jal.db.ledger import Ledger
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
 
 
-def test_fifo(prepare_db):
+def test_fifo(prepare_db_ibkr):
     # Create starting balance
     assert executeSQL("INSERT INTO actions (timestamp, account_id, peer_id) VALUES (1604221200, 1, 1)") is not None
     assert executeSQL("INSERT INTO action_details (pid, category_id, amount, note) "

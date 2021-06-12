@@ -1,11 +1,11 @@
 import json
-from tests.fixtures import project_root, data_path, prepare_db
+from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ibkr
 
 from jal.data_import.statement import Statement
 from jal.db.helpers import readSQL
 
 
-def test_statement_json_import(tmp_path, project_root, data_path, prepare_db):
+def test_statement_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
     statement = Statement()
     statement.load(data_path + 'ibkr.json')
     statement.match_db_ids(verbal=False)

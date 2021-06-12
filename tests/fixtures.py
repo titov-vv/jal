@@ -36,7 +36,11 @@ def prepare_db(project_root, tmp_path, data_path):
     assert db.isValid()
     lang_id = JalDB().get_language_id('en')
     assert lang_id == 1
+    yield
 
+
+@pytest.fixture
+def prepare_db_ibkr(prepare_db):
     assert executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'Test Peer')") is not None
     assert executeSQL("INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id) "
                       "VALUES (4, 'Inv. Account', 2, 1, 'U7654321', 1)") is not None
