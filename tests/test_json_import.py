@@ -65,7 +65,7 @@ def test_statement_json_import(tmp_path, project_root, data_path, prepare_db_ibk
 
     # validate peers
     test_peers = [
-        [1, 0, 'Test Peer', ''],
+        [1, 0, 'IB', ''],
         [2, 0, 'Bank for #TEST_ACC', '']
     ]
     assert readSQL("SELECT COUNT(*) FROM agents") == len(test_peers)

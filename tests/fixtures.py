@@ -4,7 +4,7 @@ import json
 from shutil import copyfile
 from PySide2.QtSql import QSqlDatabase
 
-from constants import Setup
+from constants import Setup, PredefinedCategory
 from jal.db.helpers import init_and_check_db, LedgerInitError
 from jal.db.update import JalDB
 from jal.db.helpers import executeSQL
@@ -38,10 +38,12 @@ def prepare_db(project_root, tmp_path, data_path):
     assert lang_id == 1
     yield
 
+    # TODO Add fixture cleanup code
+
 
 @pytest.fixture
 def prepare_db_ibkr(prepare_db):
-    assert executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'Test Peer')") is not None
+    assert executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'IB')") is not None
     assert executeSQL("INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id) "
                       "VALUES (4, 'Inv. Account', 2, 1, 'U7654321', 1)") is not None
     assert executeSQL("INSERT INTO assets (id, name, type_id, full_name, src_id) "
@@ -55,7 +57,17 @@ def prepare_db_ibkr(prepare_db):
 
     yield
 
-    # TODO Add fixture cleanup code
+
+@pytest.fixture
+def prepare_db_fifo(prepare_db):
+    assert executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'Test Peer')") is not None
+    assert executeSQL("INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id) "
+                      "VALUES (4, 'Inv. Account', 2, 1, 'U7654321', 1)") is not None
+    # Create starting balance
+    assert executeSQL("INSERT INTO actions (timestamp, account_id, peer_id) VALUES (1604221200, 1, 1)") is not None
+    assert executeSQL("INSERT INTO action_details (pid, category_id, amount, note) "
+                      "VALUES (1, :category, 10000.0, 'Initial balance')",
+                      [(":category", PredefinedCategory.StartingBalance)]) is not None
 
 
 # ----------------------------------------------------------------------------------------------------------------------
