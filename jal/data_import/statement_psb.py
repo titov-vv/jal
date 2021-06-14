@@ -205,7 +205,7 @@ class PSB_Broker:
             if self._statement[1][row].startswith('Итого') or self._statement[1][row] == '':
                 break
             asset_id = JalDB().get_asset_id('', isin=self._statement[headers['isin']][row],
-                                            reg_code=self._statement[headers['reg_code']][row], get_online=True)
+                                            reg_code=self._statement[headers['reg_code']][row])
             if asset_id is not None:
                 loaded += 1
             cnt += 1

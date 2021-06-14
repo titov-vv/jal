@@ -136,29 +136,23 @@ class JalDB():
     # Searches for asset_id in database - first by ISIN, then by Reg.Code next by Symbol
     # If found - tries to update data if some is empty in database
     # If asset not found and 'dialog_new' is True - pops up a window for asset creation
-    # If asset not found and 'get_online' is True - tries to go online and fetch asset data by ISIN
     # Returns: asset_id or None if new asset creation failed
-    def get_asset_id(self, symbol, isin='', reg_code='', name='', dialog_new=True, get_online=False):
+    def get_asset_id(self, symbol, isin='', reg_code='', name='', dialog_new=True):
         asset_id = None
         if isin:
             asset_id = readSQL("SELECT id FROM assets WHERE isin=:isin", [(":isin", isin)])
             if asset_id is None:
                 asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol COLLATE NOCASE AND coalesce(isin, '')=''",
                                    [(":symbol", symbol)])
-        else:
+        if asset_id is None:
             if reg_code:
                 asset_id = readSQL("SELECT asset_id FROM asset_reg_id WHERE reg_code=:reg_code",
                                    [(":reg_code", reg_code)])
             if asset_id is None:
                 asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol COLLATE NOCASE", [(":symbol", symbol)])
         if asset_id is not None:
-            self.update_asset_data(asset_id, symbol, isin, reg_code)
+            self.update_asset_data(asset_id, symbol, isin, reg_code)   # FIXME move it outside this method
             return asset_id
-        if get_online:
-            asset_info = GetAssetInfoByISIN(isin, reg_code)
-            if len(asset_info):
-                asset_id = self.add_asset(asset_info['symbol'], asset_info['name'], asset_info['type'], isin,
-                                          data_source=asset_info['source'], reg_code=reg_code)
         if asset_id is None and dialog_new:
             dialog = AddAssetDialog(symbol, isin=isin, name=name)
             dialog.exec_()

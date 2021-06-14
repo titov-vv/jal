@@ -76,3 +76,11 @@ def prepare_db_fifo(prepare_db):
 def test_xls_json(data_path):
     with open(data_path + 'xls.json', 'r') as json_file:
         yield json.load(json_file)
+
+
+@pytest.fixture
+def prepare_db_xls(prepare_db):
+    assert executeSQL("INSERT INTO assets (id, name, type_id, full_name, isin, src_id) "
+                      "VALUES (4, 'AFLT', 2, 'АО Аэрофлот', 'RU0009062285', 0)") is not None
+    yield
+

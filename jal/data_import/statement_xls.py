@@ -6,6 +6,7 @@ from zipfile import ZipFile
 
 from jal.widgets.helpers import g_tr
 from jal.constants import PredefinedAsset
+from jal.db.update import JalDB
 from jal.data_import.statement import Statement, FOF
 from jal.net.helpers import GetAssetInfoByISIN
 
@@ -195,23 +196,22 @@ class StatementXLS(Statement):
 
     def _load_assets(self):
         cnt = 0
-        loaded = 0
         row, headers = self.find_section_start(self.asset_section, self.asset_columns)
         if row < 0:
             return False
         while row < self._statement.shape[0]:
             if self._statement[self.HeaderCol][row].startswith('Итого') or self._statement[self.HeaderCol][row] == '':
                 break
-            if self._add_asset(self._statement[headers['isin']][row], self._statement[headers['reg_code']][row]):
-                loaded += 1
+            self._add_asset(self._statement[headers['isin']][row], self._statement[headers['reg_code']][row],
+                            self._statement[headers['name']][row])
             cnt += 1
             row += 1
-        # logging.info(g_tr('PSB', "Securities loaded: ") + f"{loaded} ({cnt})")
+        logging.info(g_tr('PSB', "Securities loaded: ") + f"{cnt}")
 
     # Adds assets to self._data[FOF.ASSETS] by ISIN and registration code
     # Asset symbol and other parameters are loaded from MOEX exchange as class targets russian brokers
     # Returns True if asset was added successfully and false otherwise
-    def _add_asset(self, isin, reg_code) -> bool:
+    def _add_asset(self, isin, reg_code, name):
         asset_type = {
             PredefinedAsset.Stock: "stock",
             PredefinedAsset.Bond: "bond",
@@ -220,17 +220,22 @@ class StatementXLS(Statement):
 
         match = [x for x in self._data[FOF.ASSETS] if 'isin' in x and x['isin'] == isin]
         if len(match):
-            return True
-        asset_info = GetAssetInfoByISIN(isin, reg_code)
-        if len(asset_info):
-            new_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
-            asset = {"id": new_id, "symbol": asset_info['symbol'], 'name': asset_info['name'],
-                     'type': asset_type[asset_info['type']], 'isin': isin, 'exchange': "MOEX"}
-            if asset_info['reg_code']:
-                asset['reg_code'] = asset_info['reg_code']
-            self._data[FOF.ASSETS].append(asset)
-            return True
-        return False
+            return  # Asset already present in list
+        asset_id = JalDB().get_asset_id('', isin=isin, reg_code=reg_code, dialog_new=False)
+        if asset_id is None:
+            asset_info = GetAssetInfoByISIN(isin, reg_code)
+            if len(asset_info):
+                new_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
+                asset = {"id": new_id, "symbol": asset_info['symbol'], 'name': asset_info['name'],
+                         'type': asset_type[asset_info['type']], 'isin': isin, 'exchange': "MOEX"}
+                if asset_info['reg_code']:
+                    asset['reg_code'] = asset_info['reg_code']
+            else:
+                raise XLS_ParseError(g_tr('StatementXLS', "Can't import asset: ") + f"{isin}/{reg_code}")
+        else:
+            asset = {"id": -asset_id, "symbol": JalDB().get_asset_name(asset_id), 'name': '',
+                     'isin': isin, 'reg_code': reg_code}
+        self._data[FOF.ASSETS].append(asset)
 
     def _load_trades(self):
         for section in self.trade_sections:
