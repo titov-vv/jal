@@ -19,6 +19,7 @@ class XLS_ParseError(Exception):
 # -----------------------------------------------------------------------------------------------------------------------
 # Base class to load Excel-format statements of russian brokers
 class StatementXLS(Statement):
+    StatementName = ""
     Header = (0, 0, '')           # Header that is present in broker report  (x-pos, y-pos, header)
     PeriodPattern = (0, 0, r"с (?P<S>.*) - (?P<E>.*)")   # Patter that describes report period
     AccountPattern = (0, 0, '')
@@ -26,9 +27,12 @@ class StatementXLS(Statement):
     SummaryHeader = ''
     asset_section = ''
     asset_columns = {}
-    trade_columns = {}
-    trades_header_height = 1
-    trade_sections = []
+    currency_substitutions = {
+        "РУБ": "RUB",
+        "RUR": "RUB"
+    }
+    keep_value_headers = []
+    currency_values = {}
 
     def __init__(self):
         super().__init__()
@@ -63,7 +67,10 @@ class StatementXLS(Statement):
         self._load_currencies()
         self._load_accounts()
         self._load_assets()
-        self._load_trades()
+        self._load_deals()
+        self._load_cash_transactions()
+
+        logging.info(g_tr('StatementXLS', "Statement loaded successfully: ") + f"{self.StatementName}")
 
     # Finds a row with header in column self.HeaderCol starting with 'header' and returns it's index.
     # Return -1 if header isn't found
@@ -138,11 +145,6 @@ class StatementXLS(Statement):
             self._account_number = parts.groupdict()['ACCOUNT']
 
     def _load_currencies(self):
-        substitutions = {
-            "РУБ": "RUB",
-            "RUR": "RUB"
-        }
-
         amounts = {}
         currency_col = {}
         _header_row = self.find_row(self.SummaryHeader)
@@ -174,7 +176,7 @@ class StatementXLS(Statement):
         for currency in amounts:
             if amounts[currency]:
                 try:
-                    code = substitutions[currency]
+                    code = self.currency_substitutions[currency]
                 except KeyError:
                     code = currency
                 self._add_currency(code)
@@ -211,23 +213,22 @@ class StatementXLS(Statement):
     # Adds assets to self._data[FOF.ASSETS] by ISIN and registration code
     # Asset symbol and other parameters are loaded from MOEX exchange as class targets russian brokers
     # Returns True if asset was added successfully and false otherwise
-    def _add_asset(self, isin, reg_code, name):
+    def _add_asset(self, isin, reg_code, symbol=''):
         asset_type = {
             PredefinedAsset.Stock: "stock",
             PredefinedAsset.Bond: "bond",
             PredefinedAsset.ETF: "etf"
         }
 
-        match = [x for x in self._data[FOF.ASSETS] if 'isin' in x and x['isin'] == isin]
-        if len(match):
-            return  # Asset already present in list
+        if self._find_asset_id(symbol, isin, reg_code) != 0:
+            raise XLS_ParseError(g_tr('StatementXLS', "Attempt to recreate existing asset: ") + f"{isin}/{reg_code}")
         asset_id = JalDB().get_asset_id('', isin=isin, reg_code=reg_code, dialog_new=False)
         if asset_id is None:
             asset_info = GetAssetInfoByISIN(isin, reg_code)
             if len(asset_info):
-                new_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
-                asset = {"id": new_id, "symbol": asset_info['symbol'], 'name': asset_info['name'],
-                         'type': asset_type[asset_info['type']], 'isin': isin, 'exchange': "MOEX"}
+                asset_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
+                asset = {"id": asset_id, "symbol": asset_info['symbol'], 'name': asset_info['name'],
+                         'type': asset_type[asset_info['type']], 'isin': asset_info['isin'], 'exchange': "MOEX"}
                 if asset_info['reg_code']:
                     asset['reg_code'] = asset_info['reg_code']
             else:
@@ -235,11 +236,63 @@ class StatementXLS(Statement):
         else:
             asset = {"id": -asset_id, "symbol": JalDB().get_asset_name(asset_id), 'name': '',
                      'isin': isin, 'reg_code': reg_code}
+            asset_id = -asset_id
         self._data[FOF.ASSETS].append(asset)
+        return asset_id
 
-    def _load_trades(self):
-        for section in self.trade_sections:
-            row, headers = self.find_section_start(section[0], self.trade_columns,
-                                                   subtitle=section[1], header_height=self.trades_header_height)
-            if row < 0:
-                continue
+    def _find_asset_id(self, symbol='', isin='', reg_code=''):
+        if isin:
+            try:
+                match = [x for x in self._data[FOF.ASSETS] if 'isin' in x and x['isin'] == isin]
+            except KeyError:
+                match = []
+        elif reg_code:
+            try:
+                match = [x for x in self._data[FOF.ASSETS] if 'reg_code' in x and x['reg_code'] == reg_code]
+            except KeyError:
+                match = []
+        else:   # make match by symbol
+            try:
+                match = [x for x in self._data[FOF.ASSETS] if 'symbol' in x and x['symbol'] == symbol]
+            except KeyError:
+                match = []
+        if match:
+            if len(match) == 1:
+                return match[0]['id']
+            else:
+                logging.error(g_tr('StatementXLS', "Multiple asset match for ") + f"'{isin}'")
+        return 0
+
+    def _find_account_id(self, number, currency):
+        try:
+            code = self.currency_substitutions[currency]
+        except KeyError:
+            code = currency
+        match = [x for x in self._data[FOF.ASSETS] if
+                 'symbol' in x and x['symbol'] == code and x['type'] == FOF.ASSET_MONEY]
+        if match:
+            if len(match) == 1:
+                currency_id = match[0]['id']
+            else:
+                raise XLS_ParseError(g_tr('StatementXLS', "Multiple currency found: ") + f"{currency}")
+        else:
+            currency_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
+            new_currency = {"id": currency_id, "symbol": code, 'name': '', 'type': FOF.ASSET_MONEY}
+            self._data[FOF.ASSETS].append(new_currency)
+        match = [x for x in self._data[FOF.ACCOUNTS] if
+                 'number' in x and x['number'] == number and x['currency'] == currency_id]
+        if match:
+            if len(match) == 1:
+                return match[0]['id']
+            else:
+                raise XLS_ParseError(g_tr('StatementXLS', "Multiple accounts found: ") + f"{number}/{currency}")
+        new_id = max([0] + [x['id'] for x in self._data[FOF.ACCOUNTS]]) + 1
+        new_account = {"id": new_id, "number": number, 'currency': currency_id}
+        self._data[FOF.ACCOUNTS].append(new_account)
+        return new_id
+
+    def _load_deals(self):
+        raise NotImplementedError("load_deals() method is not defined in subclass of StatementXLS")
+
+    def _load_cash_transactions(self):
+        raise NotImplementedError("load_cash_transactions() method is not defined in subclass of StatementXLS")

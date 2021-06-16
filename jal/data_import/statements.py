@@ -8,7 +8,7 @@ from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
 from jal.data_import.statement_quik import Quik
 from jal.data_import.statement_ibkr import StatementIBKR
 from jal.data_import.statement_ibkr_old import IBKR_obsolete
-from jal.data_import.statement_uralsib import UralsibCapital
+from jal.data_import.statement_uralsib import StatementUKFU
 from jal.data_import.statement_kit import KITFinance
 from jal.data_import.statement_psb import PSB_Broker
 
@@ -127,7 +127,11 @@ class StatementLoader(QObject):
         return True
 
     def loadUralsibCapital(self, filename):
-        return UralsibCapital(self, filename).load()
+        statement = StatementUKFU()
+        statement.load(filename)
+        statement.match_db_ids(verbal=False)
+        statement.import_into_db()
+        return True
 
     def loadKITFinance(self, filename):
         return KITFinance(self, filename).load()

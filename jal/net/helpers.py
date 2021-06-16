@@ -42,7 +42,10 @@ def GetAssetInfoByISIN(isin, reg_code) -> dict:
     }
 
     asset = {}
-    url = f"https://iss.moex.com/iss/securities.json?q={isin}&iss.meta=off"
+    if isin:
+        url = f"https://iss.moex.com/iss/securities.json?q={isin}&iss.meta=off"
+    else:
+        url = f"https://iss.moex.com/iss/securities.json?q={reg_code}&iss.meta=off"
     asset_data = json.loads(get_web_data(url))
     securities = asset_data['securities']
     columns = securities['columns']
@@ -59,9 +62,14 @@ def GetAssetInfoByISIN(isin, reg_code) -> dict:
         if security[columns.index('isin')] == isin and security[columns.index('regnumber')] == reg_code:
             logging.info(g_tr('Net', "Online data found for: ") + f"{isin}/{reg_code}")
             matched = True
+        if not isin:
+            if len(data) == 1 and security[columns.index('regnumber')] == reg_code:
+                logging.info(g_tr('Net', "Online data found for: ") + f"{reg_code}")
+                matched = True
         if matched:
             asset['symbol'] = security[columns.index('secid')]
             asset['name'] = security[columns.index('name')]
+            asset['isin'] = security[columns.index('isin')]
             asset['reg_code'] = security[columns.index('regnumber')]
             try:
                 asset['type'] = asset_type[security[columns.index('group')]]
@@ -71,4 +79,3 @@ def GetAssetInfoByISIN(isin, reg_code) -> dict:
             asset['source'] = MarketDataFeed.RU
             break
     return asset
-

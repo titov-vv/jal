@@ -1,13 +1,12 @@
 import logging
 import re
-from datetime import datetime, timezone, time
-from zipfile import ZipFile
-import pandas
+from datetime import datetime, timezone
 
 from jal.widgets.helpers import g_tr
 from jal.db.update import JalDB
-from jal.constants import Setup, DividendSubtype, PredefinedCategory, PredefinedAsset
-from jal.data_import.statement_xls import StatementXLS
+from jal.constants import Setup, PredefinedCategory, PredefinedAsset
+from jal.data_import.statement import FOF
+from jal.data_import.statement_xls import StatementXLS, XLS_ParseError
 
 
 class StatementUKFU(StatementXLS):
@@ -37,103 +36,17 @@ class StatementUKFU(StatementXLS):
         "reg_code": "Номер гос. регистрации / CFI код"
     }
 
-    trades_header_height = 2
-    trade_sections = [
-        ("СДЕЛКИ С ЦЕННЫМИ БУМАГАМИ", "Биржевые сделки с ценными бумагами в отчетном периоде"),
-        ("СДЕЛКИ С ФЬЮЧЕРСАМИ И ОПЦИОНАМИ", "Сделки с фьючерсами")
-    ]
+    def __init__(self):
+        super().__init__()
+        self.StatementName = g_tr("UKFU", "Uralsib broker")
 
-# -----------------------------------------------------------------------------------------------------------------------
-class UralsibCapital:
-    Header = '  Брокер: ООО "УРАЛСИБ Брокер"'
-    PeriodPattern = r"  за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d)"
-    DividendPattern = r"> (?P<DESCR1>.*) \((?P<REG_CODE>.*)\)((?P<DESCR2> .*)? налог в размере (?P<TAX>\d+\.\d\d) удержан)?\. НДС не облагается\."
-    BondInterestPattern = r"Погашение купона №( -?\d+)? (?P<NAME>.*)"
-    ISINPattern = r"[A-Z]{2}.{9}\d"
-
-    def __init__(self, parent, filename):
-        self._parent = parent
-        self._filename = filename
-        self._statement = None
-        self._currencies = []
-        self._accounts = {}
-        self._settled_cash = {}
-        self._report_start = 0
-        self._report_end = 0
-
-    def load(self):
-        self._settled_cash = {}
-        self._currencies = []
-        self._accounts = {}
-        with ZipFile(self._filename) as zip_file:
-            contents = zip_file.namelist()
-            if len(contents) != 1:
-                logging.error(g_tr('Uralsib', "Archive contains multiple files, only one is expected for import"))
-                return False
-            with zip_file.open(contents[0]) as r_file:
-                self._statement = pandas.read_excel(io=r_file.read(), header=None, na_filter=False)
-        if not self.validate():
-            return False
-        self.load_cash_balance()
-        self.load_broker_fee()
+    def _load_deals(self):
         self.load_stock_deals()
         self.load_futures_deals()
+
+    def _load_cash_transactions(self):
         self.load_cash_transactions()
-        logging.info(g_tr('Uralsib', "Uralsib Capital statement loaded successfully"))
-        for account in self._settled_cash:
-            logging.info(g_tr('Uralsib', 'Planned cash: ') + f"{self._settled_cash[account]:.2f} " +
-                              f"{JalDB().get_asset_name(JalDB().get_account_currency(account))}")
-        return True
-
-    def validate(self):
-        if self._statement[2][0] != self.Header:
-            logging.error(g_tr('Uralsib', "Can't find Uralsib Capital report header"))
-            return False
-        account_name = self._statement[2][7]
-        parts = re.match(self.PeriodPattern, self._statement[2][2], re.IGNORECASE)
-        if parts is None:
-            logging.error(g_tr('Uralsib', "Can't parse Uralsib Capital statement period"))
-            return False
-        statement_dates = parts.groupdict()
-        self._report_start = int(datetime.strptime(statement_dates['S'],
-                                                   "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
-        end_day = datetime.strptime(statement_dates['E'], "%d.%m.%Y")
-        self._report_end = int(datetime.combine(end_day, time(23, 59, 59)).replace(tzinfo=timezone.utc).timestamp())
-        if not self._parent.checkStatementPeriod(account_name, self._report_start):
-            return False
-        logging.info(g_tr('Uralsib', "Loading Uralsib Capital statement for account ") +
-                     f"{account_name}: {statement_dates['S']} - {statement_dates['E']}")
-        self._currencies = self._statement[2][9].split(',')
-        self._currencies = [x.strip() for x in self._currencies]
-        logging.info(g_tr('Uralsib', "Account currencies: ") + f"{self._currencies}")
-        for currency in self._currencies:
-            self._accounts[currency] = JalDB().get_account_id(account_name, currency.replace('RUR', 'RUB'))  # Uralsib uses 'RUR' code for Russian ruble while JAL has RUB usage
-            if self._accounts[currency] is None:
-                return False
-        return True
-
-    def find_section_start(self, header, subtitle, columns, header_height=2) -> (int, dict):
-        header_found = False
-        start_row = -1
-        headers = {}
-        for i, row in self._statement.iterrows():
-            if not header_found and (row[0] == header):
-                header_found = True
-            if header_found and ((subtitle == '') or (row[0] == subtitle)):
-                start_row = i + 1  # points to columns header row
-                break
-        if start_row > 0:
-            for col in range(self._statement.shape[1]):  # Load section headers from next row
-                for row in range(header_height):
-                    headers[self._statement[col][start_row+row]] = col
-            start_row += header_height
-        column_indices = {column: headers.get(columns[column], -1) for column in columns}
-        if start_row > 0:
-            for idx in column_indices:
-                if column_indices[idx] < 0:
-                    logging.error(g_tr('Uralsib', "Column not found in section ") + f"{header}: {idx}")
-                    start_row = -1
-        return start_row, column_indices
+        self.load_broker_fee()
 
     def load_stock_deals(self):
         cnt = 0
@@ -152,25 +65,27 @@ class UralsibCapital:
             "fee_ex": "Комиссия ТС"
         }
 
-        row, headers = self.find_section_start("СДЕЛКИ С ЦЕННЫМИ БУМАГАМИ",
-                                               "Биржевые сделки с ценными бумагами в отчетном периоде", columns)
+        row, headers = self.find_section_start("СДЕЛКИ С ЦЕННЫМИ БУМАГАМИ", columns,
+                                               subtitle="Биржевые сделки с ценными бумагами в отчетном периоде",
+                                               header_height=2)
         if row < 0:
-            return False
-        asset_name = ''
+            return
         while row < self._statement.shape[0]:
-            if self._statement[0][row] == '' and self._statement[0][row + 1] == '':
+            if self._statement[self.HeaderCol][row] == '' and self._statement[self.HeaderCol][row + 1] == '':
                 break
-            if self._statement[0][row] == 'Итого по выпуску:' or self._statement[0][row] == '':
+            if self._statement[self.HeaderCol][row].startswith('Итого по выпуску:') or \
+                    self._statement[self.HeaderCol][row] == '':
                 row += 1
                 continue
             try:
-                deal_number = int(self._statement[0][row])
+                deal_number = int(self._statement[self.HeaderCol][row])
             except ValueError:
-                asset_name = self._statement[0][row]
                 row += 1
                 continue
-
-            asset_id = JalDB().get_asset_id('', isin=self._statement[headers['isin']][row], name=asset_name)
+            isin = self._statement[headers['isin']][row]
+            asset_id = self._find_asset_id(isin=isin)
+            if not asset_id:
+                asset_id = self._add_asset(isin, '', '')
             if self._statement[headers['B/S']][row] == 'Покупка':
                 qty = self._statement[headers['qty']][row]
                 bond_interest = -self._statement[headers['accrued_int']][row]
@@ -179,7 +94,7 @@ class UralsibCapital:
                 bond_interest = self._statement[headers['accrued_int']][row]
             else:
                 row += 1
-                logging.warning(g_tr('Uralsib', "Unknown trade type: ") + self._statement[headers['B/S']][row])
+                logging.warning(g_tr('UKFU', "Unknown trade type: ") + self._statement[headers['B/S']][row])
                 continue
 
             price = self._statement[headers['price']][row]
@@ -192,13 +107,19 @@ class UralsibCapital:
             timestamp = int(datetime.strptime(ts_string, "%d.%m.%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp())
             settlement = int(datetime.strptime(self._statement[headers['settlement']][row],
                                                "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
-            JalDB().add_trade(self._accounts[currency], asset_id, timestamp, settlement, deal_number, qty, price, -fee)
+            account_id = self._find_account_id(self._account_number, currency)
+            new_id = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
+            trade = {"id": new_id, "number": deal_number, "timestamp": timestamp, "settlement": settlement,
+                     "account": account_id, "asset": asset_id, "quantity": qty, "price": price, "fee": fee}
+            self._data[FOF.TRADES].append(trade)
             if bond_interest != 0:
-                JalDB().add_dividend(DividendSubtype.BondInterest, timestamp, self._accounts[currency], asset_id,
-                                     bond_interest, "НКД", deal_number)
+                new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
+                payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
+                           "number": deal_number, "asset": asset_id, "amount": bond_interest, "description": "НКД"}
+                self._data[FOF.ASSET_PAYMENTS].append(payment)
             cnt += 1
             row += 1
-        logging.info(g_tr('Uralsib', "Trades loaded: ") + f"{cnt}")
+        logging.info(g_tr('UKFU', "Trades loaded: ") + f"{cnt}")
 
     def load_futures_deals(self):
         cnt = 0
@@ -217,31 +138,35 @@ class UralsibCapital:
             "fee_ex": "Комиссия ТС, руб."
         }
 
-        row, headers = self.find_section_start("СДЕЛКИ С ФЬЮЧЕРСАМИ И ОПЦИОНАМИ",
-                                               "Сделки с фьючерсами", columns)
+        row, headers = self.find_section_start("СДЕЛКИ С ФЬЮЧЕРСАМИ И ОПЦИОНАМИ", columns,
+                                               subtitle="Сделки с фьючерсами", header_height=2)
         if row < 0:
             return False
         while row < self._statement.shape[0]:
-            if self._statement[0][row] == '' and self._statement[0][row + 1] == '':
+            if self._statement[self.HeaderCol][row] == '' and self._statement[self.HeaderCol][row + 1] == '':
                 break
-            if self._statement[0][row].startswith("Входящая позиция по контракту") or \
-                    self._statement[0][row].startswith("Итого по контракту") or self._statement[0][row] == '':
+            if self._statement[self.HeaderCol][row].startswith("Входящая позиция по контракту") or \
+                    self._statement[self.HeaderCol][row].startswith("Итого по контракту") or \
+                    self._statement[self.HeaderCol][row] == '':
                 row += 1
                 continue
             try:
-                deal_number = int(self._statement[0][row])
+                deal_number = int(self._statement[self.HeaderCol][row])
             except ValueError:
                 row += 1
                 continue
 
-            asset_id = JalDB().get_asset_id(self._statement[headers['symbol']][row])
+            symbol = self._statement[headers['symbol']][row]
+            asset_id = self._find_asset_id(symbol=symbol)
+            if not asset_id:
+                asset_id = self._add_asset('', '', symbol=symbol)
             if self._statement[headers['B/S']][row] == 'Покупка':
                 qty = self._statement[headers['qty']][row]
             elif self._statement[headers['B/S']][row] == 'Продажа':
                 qty = -self._statement[headers['qty']][row]
             else:
                 row += 1
-                logging.warning(g_tr('Uralsib', "Unknown trade type: ") + self._statement[headers['B/S']][row])
+                logging.warning(g_tr('UKFU', "Unknown trade type: ") + self._statement[headers['B/S']][row])
                 continue
 
             price = self._statement[headers['price']][row]
@@ -254,10 +179,14 @@ class UralsibCapital:
             timestamp = int(datetime.strptime(ts_string, "%d.%m.%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp())
             settlement = int(datetime.strptime(self._statement[headers['settlement']][row],
                                                "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
-            JalDB().add_trade(self._accounts[currency], asset_id, timestamp, settlement, deal_number, qty, price, fee)
+            account_id = self._find_account_id(self._account_number, currency)
+            new_id = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
+            trade = {"id": new_id, "number": deal_number, "timestamp": timestamp, "settlement": settlement,
+                     "account": account_id, "asset": asset_id, "quantity": qty, "price": price, "fee": fee}
+            self._data[FOF.TRADES].append(trade)
             cnt += 1
             row += 1
-        logging.info(g_tr('Uralsib', "Futures trades loaded: ") + f"{cnt}")
+        logging.info(g_tr('UKFU', "Futures trades loaded: ") + f"{cnt}")
 
     def load_cash_transactions(self):
         cnt = 0
@@ -277,13 +206,12 @@ class UralsibCapital:
             'Погашение купона': self.interest
         }
 
-        row, headers = self.find_section_start("ДВИЖЕНИЕ ДЕНЕЖНЫХ СРЕДСТВ ЗА ОТЧЕТНЫЙ ПЕРИОД", '',
-                                               columns, header_height=1)
+        row, headers = self.find_section_start("ДВИЖЕНИЕ ДЕНЕЖНЫХ СРЕДСТВ ЗА ОТЧЕТНЫЙ ПЕРИОД",  columns)
         if row < 0:
             return False
 
         while row < self._statement.shape[0]:
-            if self._statement[0][row] == '' and self._statement[0][row + 1] == '':
+            if self._statement[self.HeaderCol][row] == '' and self._statement[self.HeaderCol][row + 1] == '':
                 break
 
             operation = self._statement[headers['type']][row]
@@ -295,7 +223,7 @@ class UralsibCapital:
                                               "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
             amount = self._statement[headers['amount']][row]
             description = self._statement[headers['description']][row]
-            account_id = self._accounts[self._statement[headers['currency']][row]]
+            account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
 
             operations[operation](timestamp, number, account_id, amount, description)
 
@@ -303,109 +231,101 @@ class UralsibCapital:
             row += 1
         logging.info(g_tr('Uralsib', "Cash operations loaded: ") + f"{cnt}")
 
-    def transfer_in(self, timestamp, _number, account_id, amount, description):
-        currency_name = JalDB().get_asset_name(JalDB().get_account_currency(account_id))
-        text = g_tr('Uralsib', "Deposit of ") + f"{amount:.2f} {currency_name} " + \
-               f"@{datetime.utcfromtimestamp(timestamp).strftime('%d.%m.%Y')}\n" + \
-               g_tr('Uralsib', "Select account to withdraw from:")
-        pair_account = self._parent.selectAccount(text, account_id)
-        if pair_account == 0:
-            return
-        JalDB().add_transfer(timestamp, pair_account, amount, account_id, amount, 0, 0, description)
+    def transfer_in(self, timestamp, number, account_id, amount, description):
+        account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
+        new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+        transfer = {"id": new_id, "account": [0, account_id, 0], "number": number,
+                    "asset": [account['currency'], account['currency']], "timestamp": timestamp,
+                    "withdrawal": amount, "deposit": amount, "fee": 0.0, "description": description}
+        self._data[FOF.TRANSFERS].append(transfer)
 
-    def transfer_out(self, timestamp, _number, account_id, amount, description):
-        currency_name = JalDB().get_asset_name(JalDB().get_account_currency(account_id))
-        text = g_tr('Uralsib', "Withdrawal of ") + f"{-amount:.2f} {currency_name} " + \
-               f"@{datetime.utcfromtimestamp(timestamp).strftime('%d.%m.%Y')}\n" + \
-               g_tr('Uralsib', "Select account to deposit to:")
-        pair_account = self._parent.selectAccount(text, account_id)
-        if pair_account == 0:
-            return                                       # amount is negative in XLS file
-        JalDB().add_transfer(timestamp, account_id, -amount, pair_account, -amount, 0, 0, description)
+    def transfer_out(self, timestamp, number, account_id, amount, description):
+        account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
+        new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+        transfer = {"id": new_id, "account": [account_id, 0, 0], "number": number,
+                    "asset": [account['currency'], account['currency']], "timestamp": timestamp,
+                    "withdrawal": -amount, "deposit": -amount, "fee": 0.0, "description": description}
+        self._data[FOF.TRANSFERS].append(transfer)
 
     def dividend(self, timestamp, number, account_id, amount, description):
-        parts = re.match(self.DividendPattern, description, re.IGNORECASE)
+        DividendPattern = r"> (?P<DESCR1>.*) \((?P<REG_CODE>.*)\)((?P<DESCR2> .*)? налог в размере (?P<TAX>\d+\.\d\d) удержан)?\. НДС не облагается\."
+        ISINPattern = r"[A-Z]{2}.{9}\d"
+
+        parts = re.match(DividendPattern, description, re.IGNORECASE)
         if parts is None:
-            logging.error(g_tr('Uralsib', "Can't parse dividend description ") + f"'{description}'")
-            return
+            raise XLS_ParseError(g_tr('UKFU', "Can't parse dividend description ") + f"'{description}'")
         dividend_data = parts.groupdict()
-        isin_match = re.match(self.ISINPattern, dividend_data['REG_CODE'])
+        isin_match = re.match(ISINPattern, dividend_data['REG_CODE'])
         if isin_match:
-            asset_id = JalDB().get_asset_id('', isin=dividend_data['REG_CODE'])
+            asset_id = self._find_asset_id(isin=dividend_data['REG_CODE'])
+            if not asset_id:
+                asset_id = self._add_asset(isin=dividend_data['REG_CODE'], reg_code='')
         else:
-            asset_id = JalDB().get_asset_id('', reg_code=dividend_data['REG_CODE'])
-        if asset_id is None:
-            logging.error(g_tr('Uralsib', "Can't find asset for dividend ") + f"'{description}'")
-            return
+            asset_id = self._find_asset_id(reg_code=dividend_data['REG_CODE'])
+            if not asset_id:
+                asset_id = self._add_asset(isin='', reg_code=dividend_data['REG_CODE'])
+
         if dividend_data['TAX']:
             try:
                 tax = float(dividend_data['TAX'])
             except ValueError:
-                logging.error(g_tr('Uralsib', "Failed to convert dividend tax ") + f"'{description}'")
-                return
+                raise XLS_ParseError(g_tr('UKFU', "Failed to convert dividend tax ") + f"'{description}'")
         else:
             tax = 0
         amount = amount + tax   # Statement contains value after taxation while JAL stores value before tax
         if dividend_data['DESCR2']:
-            shortened_description = dividend_data['DESCR1'] + ' ' + dividend_data['DESCR2'].strip()
+            short_description = dividend_data['DESCR1'] + ' ' + dividend_data['DESCR2'].strip()
         else:
-            shortened_description = dividend_data['DESCR1']
-        JalDB().add_dividend(DividendSubtype.Dividend, timestamp, account_id, asset_id,
-                             amount, shortened_description, trade_number=number, tax=tax)
+            short_description = dividend_data['DESCR1']
+        new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
+        payment = {"id": new_id, "type": FOF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
+                   "number": number, "asset": asset_id, "amount": amount, "tax": tax, "description": short_description}
+        self._data[FOF.ASSET_PAYMENTS].append(payment)
 
     def interest(self, timestamp, number, account_id, amount, description):
-        parts = re.match(self.BondInterestPattern, description, re.IGNORECASE)
+        BondInterestPattern = r"Погашение купона №( -?\d+)? (?P<NAME>.*)"
+
+        parts = re.match(BondInterestPattern, description, re.IGNORECASE)
         if parts is None:
             logging.error(g_tr('Uralsib', "Can't parse bond interest description ") + f"'{description}'")
             return
         interest_data = parts.groupdict()
+        # FIXME make it via self._find_asset_id()
         asset_id = JalDB().find_asset_like_name(interest_data['NAME'], asset_type=PredefinedAsset.Bond)
         if asset_id is None:
-            logging.error(g_tr('Uralsib', "Can't find asset for bond interest ") + f"'{description}'")
-            return
-        JalDB().add_dividend(DividendSubtype.BondInterest, timestamp, account_id, asset_id,
-                             amount, description, number)
+            raise XLS_ParseError(g_tr('Uralsib', "Can't find asset for bond interest ") + f"'{description}'")
+        new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
+        payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
+                   "number": number, "asset": asset_id, "amount": amount, "description": description}
+        self._data[FOF.ASSET_PAYMENTS].append(payment)
 
     def tax(self, timestamp, _number, account_id, amount, description):
-        JalDB().add_cash_transaction(account_id, self._parent.getAccountBank(account_id), timestamp,
-                                     amount, PredefinedCategory.Taxes, description)
-
-    def load_cash_balance(self):
-        columns = {
-            "cash": "Денежные средства",
-            "currency_code": "Код Валюты",
-            "settled_cash": "Плановый исходящий остаток"
-        }
-        row, headers = self.find_section_start("ПОЗИЦИЯ ПО ДЕНЕЖНЫМ СРЕДСТВАМ", '', columns)
-        if row < 0:
-            return False
-        while row < self._statement.shape[0]:
-            if self._statement[0][row] == '' and self._statement[0][row + 1] == '':
-                break
-            if self._statement[headers['cash']][row] == "Денежные активы":
-                currency = self._statement[headers['currency_code']][row]
-                self._settled_cash[self._accounts[currency]] = self._statement[headers['settled_cash']][row]
-                row += 1
+        new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
+        tax = {"id": new_id, "timestamp": timestamp, "account": account_id, "peer": 0,
+               "lines": [{"amount": amount, "category": -PredefinedCategory.Taxes, "description": description}]}
+        self._data[FOF.INCOME_SPENDING].append(tax)
 
     def load_broker_fee(self):
-        cnt = 0
+        header_row = self.find_row(self.SummaryHeader) + 1
         header_found = False
         for i, row in self._statement.iterrows():
-            if (not header_found) and (row[0] == "Уплаченная комиссия, в том числе"):
+            if (not header_found) and (row[self.HeaderCol] == "Уплаченная комиссия, в том числе"):
                 header_found = True  # Start of broker fees list
                 continue
             if header_found:
-                if row[0] != "":     # End of broker fee list
+                if row[self.HeaderCol] != "":     # End of broker fee list
                     break
-                for i, currency in enumerate(self._currencies):
+                for col in range(6, self._statement.shape[1]):
+                    if not self._statement[col][header_row]:
+                        break
                     try:
-                        fee = float(row[i+6])
+                        fee = float(row[col])
                     except (ValueError, TypeError):
                         continue
                     if fee == 0:
                         continue
-                    JalDB().add_cash_transaction(self._accounts[currency],
-                                                 self._parent.getAccountBank(self._accounts[currency]),
-                                                 self._report_end, fee, PredefinedCategory.Fees, row[1])
-                    cnt += 1
-        logging.info(g_tr('Uralsib', "Fees loaded: ") + f"{cnt}")
+                    account_id = self._find_account_id(self._account_number, self._statement[col][header_row])
+                    new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
+                    fee = {"id": new_id, "timestamp": self._data[FOF.PERIOD][1], "account": account_id, "peer": 0,
+                           "lines": [{"amount": fee, "category": -PredefinedCategory.Fees, "description": row[1]}]}
+                    self._data[FOF.INCOME_SPENDING].append(fee)
