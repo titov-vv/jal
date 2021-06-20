@@ -70,14 +70,6 @@ def prepare_db_fifo(prepare_db):
                       [(":category", PredefinedCategory.StartingBalance)]) is not None
 
 
-# ----------------------------------------------------------------------------------------------------------------------
-# provide a json dictionary structure for XLS reports load verification
-@pytest.fixture
-def test_xls_json(data_path):
-    with open(data_path + 'xls.json', 'r') as json_file:
-        yield json.load(json_file)
-
-
 @pytest.fixture
 def prepare_db_xls(prepare_db):
     assert executeSQL("INSERT INTO assets (id, name, type_id, full_name, isin, src_id) "
