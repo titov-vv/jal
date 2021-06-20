@@ -9,8 +9,8 @@ from jal.data_import.statement_quik import Quik
 from jal.data_import.statement_ibkr import StatementIBKR
 from jal.data_import.statement_ibkr_old import IBKR_obsolete
 from jal.data_import.statement_uralsib import StatementUKFU
-from jal.data_import.statement_kit import KITFinance
-from jal.data_import.statement_psb import PSB_Broker
+from jal.data_import.statement_kit import StatementKIT
+from jal.data_import.statement_psb import StatementPSB
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -134,10 +134,18 @@ class StatementLoader(QObject):
         return True
 
     def loadKITFinance(self, filename):
-        return KITFinance(self, filename).load()
+        statement = StatementKIT()
+        statement.load(filename)
+        statement.match_db_ids(verbal=False)
+        statement.import_into_db()
+        return True
 
     def loadPSB(self, filename):
-        return PSB_Broker(self, filename).load()
+        statement = StatementPSB()
+        statement.load(filename)
+        statement.match_db_ids(verbal=False)
+        statement.import_into_db()
+        return True
 
     def loadIBActivityStatement(self, filename):
         if QMessageBox().warning(None,
