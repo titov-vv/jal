@@ -109,13 +109,13 @@ class StatementUKFU(StatementXLS):
                                                "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
             account_id = self._find_account_id(self._account_number, currency)
             new_id = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
-            trade = {"id": new_id, "number": deal_number, "timestamp": timestamp, "settlement": settlement,
+            trade = {"id": new_id, "number": str(deal_number), "timestamp": timestamp, "settlement": settlement,
                      "account": account_id, "asset": asset_id, "quantity": qty, "price": price, "fee": fee}
             self._data[FOF.TRADES].append(trade)
             if bond_interest != 0:
                 new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
                 payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
-                           "number": deal_number, "asset": asset_id, "amount": bond_interest, "description": "НКД"}
+                           "number": str(deal_number), "asset": asset_id, "amount": bond_interest, "description": "НКД"}
                 self._data[FOF.ASSET_PAYMENTS].append(payment)
             cnt += 1
             row += 1

@@ -15,10 +15,10 @@
     {"id": 7, "type": "stock", "symbol": "CHMF", "name": "Северсталь (ПАО)ао", "isin": "RU0009046510", "reg_code": "1-02-00143-A", "exchange": "MOEX"}
   ],
   "trades": [
-    {"id": 1, "number": 3312348787, "timestamp": 1615647620, "settlement": 1615766400, "account": 1, "asset": 3, "quantity": 10, "price": 987.65, "fee": 1.23},
-    {"id": 2, "number": 3720000652, "timestamp": 1615909088, "settlement": 1615939200, "account": 1, "asset": 4, "quantity": 1, "price": 1005.7, "fee": 0.1},
-    {"id": 3, "number": 3725000743, "timestamp": 1615976923, "settlement": 1616025600, "account": 1, "asset": 4, "quantity": -1, "price": 1004.1, "fee": 0.1},
-    {"id": 4, "number": 3720123978, "timestamp": 1616770797, "settlement": 1616889600, "account": 1, "asset": 5, "quantity": 10, "price": 1532.1, "fee": 1.55}
+    {"id": 1, "number": "3312348787", "timestamp": 1615647620, "settlement": 1615766400, "account": 1, "asset": 3, "quantity": 10, "price": 987.65, "fee": 1.23},
+    {"id": 2, "number": "3720000652", "timestamp": 1615909088, "settlement": 1615939200, "account": 1, "asset": 4, "quantity": 1, "price": 1005.7, "fee": 0.1},
+    {"id": 3, "number": "3725000743", "timestamp": 1615976923, "settlement": 1616025600, "account": 1, "asset": 4, "quantity": -1, "price": 1004.1, "fee": 0.1},
+    {"id": 4, "number": "3720123978", "timestamp": 1616770797, "settlement": 1616889600, "account": 1, "asset": 5, "quantity": 10, "price": 1532.1, "fee": 1.55}
   ],
   "income_spending": [
     {"id": 1, "timestamp": 1621555199, "account": 1, "peer": 0, "lines": [{"amount": 11.22, "category": -5, "description": "комиссия Брокера"}]},
@@ -27,8 +27,8 @@
   "transfers": [],
   "corporate_actions": [],
   "asset_payments": [
-    {"id": 1, "type": "interest", "account": 1, "timestamp": 1615909088, "number": 3720000652, "asset": 4, "amount": -16.83, "description": "НКД"},
-    {"id": 2, "type": "interest", "account": 1, "timestamp": 1615976923, "number": 3725000743, "asset": 4, "amount": 17.03, "description": "НКД"},
+    {"id": 1, "type": "interest", "account": 1, "timestamp": 1615909088, "number": "3720000652", "asset": 4, "amount": -16.83, "description": "НКД"},
+    {"id": 2, "type": "interest", "account": 1, "timestamp": 1615976923, "number": "3725000743", "asset": 4, "amount": 17.03, "description": "НКД"},
     {"id": 3, "type": "dividend", "account": 1, "timestamp": 1619568000, "number": "N/210528/9533196", "asset": 6, "amount": 1417.5, "tax": 184.0, "description": "Перечисление дивидендов по акциям обыкновенным ПАО Московская Биржа"},
     {"id": 4, "type": "dividend", "account": 2, "timestamp": 1620000000, "number": "N/210603/9546601", "asset": 5, "amount": 13.35, "tax": 0, "description": "Перечисление дивидендов по иностранным акциям POLYMETAL INTL PLC"},
     {"id": 5, "type": "dividend", "account": 2, "timestamp": 1620000000, "number": "N/210603/9546481", "asset": 5, "amount": 8.9, "tax": 0, "description": "Перечисление дивидендов по иностранным акциям POLYMETAL INTL PLC"},
