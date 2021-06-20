@@ -56,7 +56,7 @@ class StatementPSB(StatementXLS):
                 deal_number = self._statement[headers['number']][row]
                 isin = self._statement[headers['isin']][row]
                 reg_code = self._statement[headers['reg_code']][row]
-                asset_id = self._find_asset_id(isin=isin)
+                asset_id = self._find_asset_id(isin=isin, reg_code=reg_code)
                 if not asset_id:
                     asset_id = self._add_asset(isin, reg_code, '')
                 if self._statement[headers['B/S']][row] == 'покупка':
