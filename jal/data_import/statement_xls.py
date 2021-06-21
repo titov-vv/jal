@@ -217,7 +217,8 @@ class StatementXLS(Statement):
         asset_type = {
             PredefinedAsset.Stock: "stock",
             PredefinedAsset.Bond: "bond",
-            PredefinedAsset.ETF: "etf"
+            PredefinedAsset.ETF: "etf",
+            PredefinedAsset.Derivative: "futures"
         }
 
         if self._find_asset_id(symbol, isin, reg_code) != 0:

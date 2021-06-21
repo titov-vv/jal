@@ -40,7 +40,7 @@ def GetAssetInfoFromMOEX(keys) -> dict:
         'stock_bonds': PredefinedAsset.Bond,
         'stock_etf': PredefinedAsset.ETF,
         'stock_ppif': PredefinedAsset.ETF,
-        'futures': PredefinedAsset.Derivative
+        'futures_forts': PredefinedAsset.Derivative
     }
 
     asset = {}
@@ -64,7 +64,6 @@ def GetAssetInfoFromMOEX(keys) -> dict:
     columns = securities['columns']
     data = securities['data']
     matched = False
-    asset_found = None
     search_set = set(keys)
     if 'secid' in keys:
         search_set.remove('secid')
@@ -79,13 +78,13 @@ def GetAssetInfoFromMOEX(keys) -> dict:
                 matched = False
             if matched:
                 break
-    if not matched and len(data) == 1:
+    if not matched:
         search_set = set(keys)
-        asset_data = dict(zip(columns, data[0]))
-        asset_data = {x: asset_data[x] for x in asset_data if asset_data[x]}  # Drop empty values from keys
         for key in search_set:
-            if key in asset_data and asset_data[key] == keys[key]:
+            subset = [x for x in data if x[columns.index(key)].lower() == keys[key].lower()]
+            if len(subset) == 1:
                 matched = True
+                asset_data = dict(zip(columns, subset[0]))
                 break
     if matched:
         asset['symbol'] = asset_data['secid']
@@ -95,6 +94,6 @@ def GetAssetInfoFromMOEX(keys) -> dict:
         try:
             asset['type'] = asset_type[asset_data['group']]
         except KeyError:
-            logging.error(g_tr('Net', "Unsupported MOEX security type: ") + f"{asset_found['group']}")
+            logging.error(g_tr('Net', "Unsupported MOEX security type: ") + f"{asset_data['group']}")
         asset['source'] = MarketDataFeed.RU
     return asset
