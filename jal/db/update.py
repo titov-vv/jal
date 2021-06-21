@@ -7,7 +7,6 @@ from jal.ui.ui_add_asset_dlg import Ui_AddAssetDialog
 from jal.constants import Setup, PredefindedAccountType
 from jal.db.helpers import db_connection, executeSQL, readSQL, get_country_by_code
 from jal.widgets.helpers import g_tr
-from jal.net.helpers import GetAssetInfoByISIN
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -67,6 +66,9 @@ class JalDB():
 
     def get_asset_name(self, asset_id):
         return readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
+
+    def get_asset_type(self, asset_id):
+        return readSQL("SELECT type_id FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
 
     def get_account_name(self, account_id):
         return readSQL("SELECT name FROM accounts WHERE id=:account_id", [(":account_id", account_id)])

@@ -235,7 +235,7 @@ class StatementXLS(Statement):
                 raise XLS_ParseError(g_tr('StatementXLS', "Can't import asset: ") + f"{isin}/{reg_code}")
         else:
             asset = {"id": -asset_id, "symbol": JalDB().get_asset_name(asset_id), 'name': '',
-                     'isin': isin, 'reg_code': reg_code}
+                     "type": asset_type[JalDB().get_asset_type(asset_id)], "isin": isin, "reg_code": reg_code}
             asset_id = -asset_id
         self._data[FOF.ASSETS].append(asset)
         return asset_id
