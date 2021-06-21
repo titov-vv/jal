@@ -8,7 +8,7 @@ from jal.widgets.helpers import g_tr
 from jal.constants import PredefinedAsset
 from jal.db.update import JalDB
 from jal.data_import.statement import Statement, FOF
-from jal.net.helpers import GetAssetInfoByISIN
+from jal.net.helpers import GetAssetInfoFromMOEX
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -224,7 +224,7 @@ class StatementXLS(Statement):
             raise XLS_ParseError(g_tr('StatementXLS', "Attempt to recreate existing asset: ") + f"{isin}/{reg_code}")
         asset_id = JalDB().get_asset_id('', isin=isin, reg_code=reg_code, dialog_new=False)
         if asset_id is None:
-            asset_info = GetAssetInfoByISIN(isin, reg_code)
+            asset_info = GetAssetInfoFromMOEX(keys={"isin": isin, "regnumber": reg_code, "secid": symbol})
             if len(asset_info):
                 asset_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
                 asset = {"id": asset_id, "symbol": asset_info['symbol'], 'name': asset_info['name'],

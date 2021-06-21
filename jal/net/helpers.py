@@ -31,51 +31,70 @@ def post_web_data(url, params):
 
 
 # ===================================================================================================================
-# Function tries to get asset information online and add it into database using isin and reg_code
+# Function tries to get asset information online from http://www.moex.com
+# Dictionary keys contains search keys that should match for found security
 # ===================================================================================================================
-def GetAssetInfoByISIN(isin, reg_code) -> dict:
+def GetAssetInfoFromMOEX(keys) -> dict:
     asset_type = {
         'stock_shares': PredefinedAsset.Stock,
         'stock_bonds': PredefinedAsset.Bond,
         'stock_etf': PredefinedAsset.ETF,
-        'stock_ppif': PredefinedAsset.ETF
+        'stock_ppif': PredefinedAsset.ETF,
+        'futures': PredefinedAsset.Derivative
     }
 
     asset = {}
-    if isin:
-        url = f"https://iss.moex.com/iss/securities.json?q={isin}&iss.meta=off"
-    else:
-        url = f"https://iss.moex.com/iss/securities.json?q={reg_code}&iss.meta=off"
+    keys = {x: keys[x] for x in keys if keys[x]}   # Drop empty values from keys
+    priority_list = ['isin', 'regnumber', 'secid']
+    try:
+        search_key = keys[sorted(keys, key=lambda x: priority_list.index(x))[0]]
+    except ValueError:
+        logging.error(g_tr('Net', "Unknown MOEX search key"))
+        return asset
+    except IndexError:
+        logging.error(g_tr('Net', "No valid MOEX search key provided"))
+        return asset
+    if not search_key:
+        logging.error(g_tr('Net', "Empty MOEX search key"))
+        return asset
+
+    url = f"https://iss.moex.com/iss/securities.json?q={search_key}&iss.meta=off&limit=10"
     asset_data = json.loads(get_web_data(url))
     securities = asset_data['securities']
     columns = securities['columns']
     data = securities['data']
-    for security in data:
-        matched = False
-        if security[columns.index('regnumber')] is None:
-            if len(data) == 1:
-                if security[columns.index('isin')] == isin:
-                    logging.info(g_tr('Net', "Online data found for: ") + f"{isin}")
-                    matched = True
-            else:
-                security[columns.index('regnumber')] = ''
-        if security[columns.index('isin')] == isin and security[columns.index('regnumber')] == reg_code:
-            logging.info(g_tr('Net', "Online data found for: ") + f"{isin}/{reg_code}")
+    matched = False
+    asset_found = None
+    search_set = set(keys)
+    if 'secid' in keys:
+        search_set.remove('secid')
+    if len(search_set):
+        for security in data:
+            asset_data = dict(zip(columns, security))
+            asset_data = {x: asset_data[x] for x in asset_data if asset_data[x]}  # Drop empty values from keys
             matched = True
-        if not isin:
-            if len(data) == 1 and security[columns.index('regnumber')] == reg_code:
-                logging.info(g_tr('Net', "Online data found for: ") + f"{reg_code}")
+            for key in search_set:
+                if key in asset_data and asset_data[key] == keys[key]:
+                    continue
+                matched = False
+            if matched:
+                break
+    if not matched and len(data) == 1:
+        search_set = set(keys)
+        asset_data = dict(zip(columns, data[0]))
+        asset_data = {x: asset_data[x] for x in asset_data if asset_data[x]}  # Drop empty values from keys
+        for key in search_set:
+            if key in asset_data and asset_data[key] == keys[key]:
                 matched = True
-        if matched:
-            asset['symbol'] = security[columns.index('secid')]
-            asset['name'] = security[columns.index('name')]
-            asset['isin'] = security[columns.index('isin')]
-            asset['reg_code'] = security[columns.index('regnumber')]
-            try:
-                asset['type'] = asset_type[security[columns.index('group')]]
-            except KeyError:
-                logging.error(g_tr('Net', "Unsupported MOEX security type: ") + f"{security[columns.index('group')]}")
-                continue
-            asset['source'] = MarketDataFeed.RU
-            break
+                break
+    if matched:
+        asset['symbol'] = asset_data['secid']
+        asset['name'] = asset_data['name']
+        asset['isin'] = asset_data['isin'] if 'isin' in asset_data else ''
+        asset['reg_code'] = asset_data['regnumber'] if 'regnumber' in asset_data else ''
+        try:
+            asset['type'] = asset_type[asset_data['group']]
+        except KeyError:
+            logging.error(g_tr('Net', "Unsupported MOEX security type: ") + f"{asset_found['group']}")
+        asset['source'] = MarketDataFeed.RU
     return asset
