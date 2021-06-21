@@ -58,7 +58,7 @@ class StatementUKFU(StatementXLS):
             "B/S": "Вид сделки",
             "price": "Цена одной ЦБ",
             "currency": "Валюта цены",
-            "qty": "Количество ЦБ, шт.",
+            "qty": r"Количество ЦБ, шт\.",
             "amount": "Сумма сделки",
             "accrued_int": "НКД",
             "settlement": "Дата поставки, плановая",
@@ -131,15 +131,15 @@ class StatementUKFU(StatementXLS):
             "B/S": "Вид сделки",
             "price": "Цена фьючерса",
             "currency": "Валюта цены",
-            "qty": "Количество контрактов, шт.",
+            "qty": r"Количество контрактов, шт\.",
             "amount": "Сумма",
             "settlement": "Дата расчетов по сделке",
-            "fee_broker": "Комиссия брокера, руб.",
-            "fee_ex": "Комиссия ТС, руб."
+            "fee_broker": r"Комиссия брокера, руб\.",
+            "fee_ex": r"Комиссия ТС, руб\."
         }
 
         row, headers = self.find_section_start("СДЕЛКИ С ФЬЮЧЕРСАМИ И ОПЦИОНАМИ", columns,
-                                               subtitle="Сделки с фьючерсами", header_height=2)
+                                               subtitle="Сделки с фьючерсами")
         if row < 0:
             return False
         while row < self._statement.shape[0]:
