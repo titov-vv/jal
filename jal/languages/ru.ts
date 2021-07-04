@@ -1355,52 +1355,52 @@ Application will be terminated now</source>
 <context>
     <name>JalDB</name>
     <message>
-        <location filename="../db/update.py" line="194"/>
+        <location filename="../db/update.py" line="187"/>
         <source>Reg.number updated for </source>
         <translation>Регистрационный номер обновлён для </translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="210"/>
+        <location filename="../db/update.py" line="203"/>
         <source>Quote loaded: </source>
         <translation>Котировка загружена: </translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="222"/>
+        <location filename="../db/update.py" line="215"/>
         <source>Failed to add new asset: </source>
         <translation>Невозмоно добавить новую ЦБ: </translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="234"/>
+        <location filename="../db/update.py" line="227"/>
         <source>Dividend already exists: </source>
         <translation>Дивиденд уже существует: </translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="254"/>
+        <location filename="../db/update.py" line="247"/>
         <source>Trade already exists: #</source>
         <translation>Сделка уже существует: #</translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="277"/>
+        <location filename="../db/update.py" line="270"/>
         <source>Transfer/Exchange already exists: </source>
         <translation>Перевод/Обмен уже существует: </translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="302"/>
+        <location filename="../db/update.py" line="295"/>
         <source>Corporate action already exists: #</source>
         <translation>Корпоративное действие уже существует: #</translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="180"/>
+        <location filename="../db/update.py" line="173"/>
         <source>Symbol updated </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="187"/>
+        <location filename="../db/update.py" line="180"/>
         <source>ISIN mismatch for </source>
         <translation>ISIN не совпадает для </translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="97"/>
+        <location filename="../db/update.py" line="99"/>
         <source>Account already exists: </source>
         <translation>Счет уже существует: </translation>
     </message>
@@ -1619,14 +1619,24 @@ do you want to save it?</source>
         <translation>неуспешный запрос: </translation>
     </message>
     <message>
-        <location filename="../net/helpers.py" line="67"/>
-        <source>Online data found for: </source>
-        <translation>Данные найдены онлайн для: </translation>
-    </message>
-    <message>
-        <location filename="../net/helpers.py" line="77"/>
+        <location filename="../net/helpers.py" line="98"/>
         <source>Unsupported MOEX security type: </source>
         <translation>Неподдерживаемый тип ЦБ МосБиржи: </translation>
+    </message>
+    <message>
+        <location filename="../net/helpers.py" line="52"/>
+        <source>Unknown MOEX search key</source>
+        <translation>Неизвестный ключ поиска для MOEX</translation>
+    </message>
+    <message>
+        <location filename="../net/helpers.py" line="55"/>
+        <source>No valid MOEX search key provided</source>
+        <translation>Нет корректного ключа поиска MOEX</translation>
+    </message>
+    <message>
+        <location filename="../net/helpers.py" line="58"/>
+        <source>Empty MOEX search key</source>
+        <translation>Пустой ключ поиска MOEX</translation>
     </message>
 </context>
 <context>
@@ -1722,11 +1732,6 @@ do you want to save it?</source>
 </context>
 <context>
     <name>PSB</name>
-    <message>
-        <location filename="../data_import/statement_xls.py" line="211"/>
-        <source>Securities loaded: </source>
-        <translation>ЦБ загружены: </translation>
-    </message>
     <message>
         <location filename="../data_import/statement_psb.py" line="135"/>
         <source>Unknown cash transaction: </source>
@@ -2608,12 +2613,12 @@ do you want to save it?</source>
         <translation>Выберите файл отчета для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="158"/>
+        <location filename="../data_import/statements.py" line="166"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="158"/>
+        <location filename="../data_import/statements.py" line="166"/>
         <source>Statement period starts before last recorded operation for the account. Continue import?</source>
         <translation>Период отчёта начинается ранее последней операции для счёта (повторный импорт?). Продолжить импорт?</translation>
     </message>
@@ -2653,7 +2658,7 @@ do you want to save it?</source>
         <translation>IBKR Activity HTML</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="143"/>
+        <location filename="../data_import/statements.py" line="151"/>
         <source>This is an obsolete routine for specific cases of old reports import.
 Use it with extra care if you understand what you are doing.
 Otherwise please use &apos;Interactive Brokers XML&apos; import.
@@ -2707,29 +2712,34 @@ Continue?</source>
         <translation>Не удалось определить валюты из общей секции отчёта</translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xls.py" line="224"/>
+        <location filename="../data_import/statement_xls.py" line="225"/>
         <source>Attempt to recreate existing asset: </source>
         <translation>Попытка создать уже существующую ЦБ: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xls.py" line="235"/>
+        <location filename="../data_import/statement_xls.py" line="236"/>
         <source>Can&apos;t import asset: </source>
         <translation>Невозможно импортировать ЦБ: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xls.py" line="263"/>
+        <location filename="../data_import/statement_xls.py" line="264"/>
         <source>Multiple asset match for </source>
         <translation>Неоднозначное совпадение ЦБ для </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xls.py" line="277"/>
+        <location filename="../data_import/statement_xls.py" line="278"/>
         <source>Multiple currency found: </source>
         <translation>Несколько валют найдено: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xls.py" line="288"/>
+        <location filename="../data_import/statement_xls.py" line="289"/>
         <source>Multiple accounts found: </source>
         <translation>Несколько счетов найдено: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_xls.py" line="211"/>
+        <source>Securities loaded: </source>
+        <translation>ЦБ загружены: </translation>
     </message>
 </context>
 <context>
@@ -3056,32 +3066,32 @@ Continue?</source>
 <context>
     <name>UKFU</name>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="41"/>
+        <location filename="../data_import/statement_uralsib.py" line="40"/>
         <source>Uralsib broker</source>
         <translation>Брокер Уралсиб</translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="169"/>
+        <location filename="../data_import/statement_uralsib.py" line="170"/>
         <source>Unknown trade type: </source>
         <translation>Неизвестный тип сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="122"/>
+        <location filename="../data_import/statement_uralsib.py" line="123"/>
         <source>Trades loaded: </source>
         <translation>Сделки загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="189"/>
+        <location filename="../data_import/statement_uralsib.py" line="190"/>
         <source>Futures trades loaded: </source>
         <translation>Сделок с фьючерсами загружено: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="256"/>
+        <location filename="../data_import/statement_uralsib.py" line="295"/>
         <source>Can&apos;t parse dividend description </source>
         <translation>Невозможно распознать описание дивиденда </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="272"/>
+        <location filename="../data_import/statement_uralsib.py" line="311"/>
         <source>Failed to convert dividend tax </source>
         <translation>Ошибка при конвертации суммы налога </translation>
     </message>
@@ -3112,19 +3122,39 @@ Continue?</source>
 <context>
     <name>Uralsib</name>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="232"/>
+        <location filename="../data_import/statement_uralsib.py" line="271"/>
         <source>Cash operations loaded: </source>
         <translation>Денежных операций загружено: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="290"/>
+        <location filename="../data_import/statement_uralsib.py" line="329"/>
         <source>Can&apos;t parse bond interest description </source>
         <translation>Невозможно распознать описание купона </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="296"/>
+        <location filename="../data_import/statement_uralsib.py" line="334"/>
         <source>Can&apos;t find asset for bond interest </source>
         <translation>Не найдена ЦБ для купона </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="345"/>
+        <source>Can&apos;t parse bond repayment description </source>
+        <translation>Невозможно распознать описание погашения облигации </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="350"/>
+        <source>Can&apos;t find asset for bond repayment </source>
+        <translation>Невозможно найти ЦБ для погашения облигации </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="353"/>
+        <source>Can&apos;t find asset cancellation record for </source>
+        <translation>Невозможно найти запись списания ЦБ для </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="356"/>
+        <source>Multiple asset cancellation match for </source>
+        <translation>Найдены несколько записей погашения ЦБ для </translation>
     </message>
 </context>
 <context>

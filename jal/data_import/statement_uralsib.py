@@ -346,7 +346,7 @@ class StatementUKFU(StatementXLS):
             return
         interest_data = parts.groupdict()
         asset_id = self._find_asset_id(symbol=interest_data['NAME'])
-        if asset_id is None:
+        if not asset_id:
             raise XLS_ParseError(g_tr('Uralsib', "Can't find asset for bond repayment ") + f"'{description}'")
         match = [x for x in self.asset_withdrawal if x['asset'] == asset_id and x['timestamp'] == timestamp]
         if not match:
@@ -362,7 +362,7 @@ class StatementUKFU(StatementXLS):
         note = description + ", " + asset_cancel['note']
         new_id = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
         trade = {"id": new_id, "number": asset_cancel['number'], "timestamp": timestamp, "settlement": timestamp,
-                 "account": account_id, "asset": asset_id, "quantity": qty, "price": price, "note": note}
+                 "account": account_id, "asset": asset_id, "quantity": qty, "price": price, "fee": 0.0, "note": note}
         self._data[FOF.TRADES].append(trade)
 
     def tax(self, timestamp, _number, account_id, amount, description):

@@ -1352,52 +1352,52 @@ Application will be terminated now</source>
 <context>
     <name>JalDB</name>
     <message>
-        <location filename="../db/update.py" line="194"/>
+        <location filename="../db/update.py" line="187"/>
         <source>Reg.number updated for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="210"/>
+        <location filename="../db/update.py" line="203"/>
         <source>Quote loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="222"/>
+        <location filename="../db/update.py" line="215"/>
         <source>Failed to add new asset: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="234"/>
+        <location filename="../db/update.py" line="227"/>
         <source>Dividend already exists: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="254"/>
+        <location filename="../db/update.py" line="247"/>
         <source>Trade already exists: #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="277"/>
+        <location filename="../db/update.py" line="270"/>
         <source>Transfer/Exchange already exists: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="302"/>
+        <location filename="../db/update.py" line="295"/>
         <source>Corporate action already exists: #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="180"/>
+        <location filename="../db/update.py" line="173"/>
         <source>Symbol updated </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="187"/>
+        <location filename="../db/update.py" line="180"/>
         <source>ISIN mismatch for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="97"/>
+        <location filename="../db/update.py" line="99"/>
         <source>Account already exists: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1614,13 +1614,23 @@ do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/helpers.py" line="67"/>
-        <source>Online data found for: </source>
+        <location filename="../net/helpers.py" line="98"/>
+        <source>Unsupported MOEX security type: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/helpers.py" line="77"/>
-        <source>Unsupported MOEX security type: </source>
+        <location filename="../net/helpers.py" line="52"/>
+        <source>Unknown MOEX search key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/helpers.py" line="55"/>
+        <source>No valid MOEX search key provided</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/helpers.py" line="58"/>
+        <source>Empty MOEX search key</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1717,11 +1727,6 @@ do you want to save it?</source>
 </context>
 <context>
     <name>PSB</name>
-    <message>
-        <location filename="../data_import/statement_xls.py" line="211"/>
-        <source>Securities loaded: </source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <location filename="../data_import/statement_psb.py" line="135"/>
         <source>Unknown cash transaction: </source>
@@ -2603,12 +2608,12 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="158"/>
+        <location filename="../data_import/statements.py" line="166"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="158"/>
+        <location filename="../data_import/statements.py" line="166"/>
         <source>Statement period starts before last recorded operation for the account. Continue import?</source>
         <translation></translation>
     </message>
@@ -2648,7 +2653,7 @@ do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="143"/>
+        <location filename="../data_import/statements.py" line="151"/>
         <source>This is an obsolete routine for specific cases of old reports import.
 Use it with extra care if you understand what you are doing.
 Otherwise please use &apos;Interactive Brokers XML&apos; import.
@@ -2699,28 +2704,33 @@ Continue?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xls.py" line="224"/>
+        <location filename="../data_import/statement_xls.py" line="225"/>
         <source>Attempt to recreate existing asset: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xls.py" line="235"/>
+        <location filename="../data_import/statement_xls.py" line="236"/>
         <source>Can&apos;t import asset: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xls.py" line="263"/>
+        <location filename="../data_import/statement_xls.py" line="264"/>
         <source>Multiple asset match for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xls.py" line="277"/>
+        <location filename="../data_import/statement_xls.py" line="278"/>
         <source>Multiple currency found: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xls.py" line="288"/>
+        <location filename="../data_import/statement_xls.py" line="289"/>
         <source>Multiple accounts found: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_xls.py" line="211"/>
+        <source>Securities loaded: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3048,32 +3058,32 @@ Continue?</source>
 <context>
     <name>UKFU</name>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="41"/>
+        <location filename="../data_import/statement_uralsib.py" line="40"/>
         <source>Uralsib broker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="169"/>
+        <location filename="../data_import/statement_uralsib.py" line="170"/>
         <source>Unknown trade type: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="122"/>
+        <location filename="../data_import/statement_uralsib.py" line="123"/>
         <source>Trades loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="189"/>
+        <location filename="../data_import/statement_uralsib.py" line="190"/>
         <source>Futures trades loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="256"/>
+        <location filename="../data_import/statement_uralsib.py" line="295"/>
         <source>Can&apos;t parse dividend description </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="272"/>
+        <location filename="../data_import/statement_uralsib.py" line="311"/>
         <source>Failed to convert dividend tax </source>
         <translation type="unfinished"></translation>
     </message>
@@ -3104,18 +3114,38 @@ Continue?</source>
 <context>
     <name>Uralsib</name>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="232"/>
+        <location filename="../data_import/statement_uralsib.py" line="271"/>
         <source>Cash operations loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="290"/>
+        <location filename="../data_import/statement_uralsib.py" line="329"/>
         <source>Can&apos;t parse bond interest description </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="296"/>
+        <location filename="../data_import/statement_uralsib.py" line="334"/>
         <source>Can&apos;t find asset for bond interest </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="345"/>
+        <source>Can&apos;t parse bond repayment description </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="350"/>
+        <source>Can&apos;t find asset for bond repayment </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="353"/>
+        <source>Can&apos;t find asset cancellation record for </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="356"/>
+        <source>Multiple asset cancellation match for </source>
         <translation type="unfinished"></translation>
     </message>
 </context>

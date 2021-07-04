@@ -19,7 +19,7 @@
     {"id": 2, "number": "3720000652", "timestamp": 1615909088, "settlement": 1615939200, "account": 1, "asset": 4, "quantity": 1, "price": 1005.7, "fee": 0.1},
     {"id": 3, "number": "3725000743", "timestamp": 1615976923, "settlement": 1616025600, "account": 1, "asset": 4, "quantity": -1, "price": 1004.1, "fee": 0.1},
     {"id": 4, "number": "3720123978", "timestamp": 1616770797, "settlement": 1616889600, "account": 1, "asset": 5, "quantity": 10, "price": 1532.1, "fee": 1.55},
-    {"id": 5, "number": "N/210624/7579904", "timestamp": 1624492800, "settlement": 1624492800, "account": 1, "asset": 4, "quantity": -12, "price": 1000.0, "note": "Погашение номинала ТинькоффБ7, Отчет вышестоящего депозитария CO2106247591 от 24.06.2021"}
+    {"id": 5, "number": "N/210624/7579904", "timestamp": 1624492800, "settlement": 1624492800, "account": 1, "asset": 4, "quantity": -12, "price": 1000.0, "fee": 0.0,"note": "Погашение номинала ТинькоффБ7, Отчет вышестоящего депозитария CO2106247591 от 24.06.2021"}
   ],
   "income_spending": [
     {"id": 1, "timestamp": 1621555199, "account": 1, "peer": 0, "lines": [{"amount": 11.22, "category": -5, "description": "комиссия Брокера"}]},
