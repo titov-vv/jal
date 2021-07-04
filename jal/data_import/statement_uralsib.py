@@ -3,8 +3,7 @@ import re
 from datetime import datetime, timezone
 
 from jal.widgets.helpers import g_tr
-from jal.db.update import JalDB
-from jal.constants import Setup, PredefinedCategory, PredefinedAsset
+from jal.constants import Setup, PredefinedCategory
 from jal.data_import.statement import FOF
 from jal.data_import.statement_xls import StatementXLS, XLS_ParseError
 
@@ -39,10 +38,12 @@ class StatementUKFU(StatementXLS):
     def __init__(self):
         super().__init__()
         self.StatementName = g_tr("UKFU", "Uralsib broker")
+        self.asset_withdrawal = []
 
     def _load_deals(self):
         self.load_stock_deals()
         self.load_futures_deals()
+        self.load_asset_cancellations()
 
     def _load_cash_transactions(self):
         self.load_cash_transactions()
@@ -188,6 +189,43 @@ class StatementUKFU(StatementXLS):
             row += 1
         logging.info(g_tr('UKFU', "Futures trades loaded: ") + f"{cnt}")
 
+    def load_asset_cancellations(self):
+        columns = {
+            "number": "№ операции",
+            "date": "Дата",
+            "type": "Тип операции",
+            "asset": "Наименование ЦБ",
+            "reg_code": r"Номер гос\. регистрации",
+            "qty": "Количество ЦБ",
+            "note": "Комментарий"
+        }
+
+        row, headers = self.find_section_start("ДВИЖЕНИЕ ЦЕННЫХ БУМАГ ЗА ОТЧЕТНЫЙ ПЕРИОД", columns)
+        if row < 0:
+            return False
+        while row < self._statement.shape[0]:
+            if self._statement[self.HeaderCol][row] == '' and self._statement[self.HeaderCol][row + 1] == '':
+                break
+
+            if self._statement[headers['type']][row] != "Списание ЦБ после погашения":
+                row += 1
+                continue
+
+            reg_code = self._statement[headers['reg_code']][row]
+            asset_id = self._find_asset_id(reg_code=reg_code)
+            if not asset_id:
+                asset_id = self._add_asset('', reg_code)
+
+            number = self._statement[headers['number']][row]
+            timestamp = int(datetime.strptime(self._statement[headers['date']][row],
+                                              "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+            # Statement has negative value for cancellation - will be used to create sell trade
+            qty = self._statement[headers['qty']][row]
+            note = self._statement[headers['note']][row]
+            record = {"timestamp": timestamp, "asset": asset_id, "number": number, "quantity": qty, "note": note}
+            self.asset_withdrawal.append(record)
+            row += 1
+
     def load_cash_transactions(self):
         cnt = 0
         columns = {
@@ -299,8 +337,33 @@ class StatementUKFU(StatementXLS):
                    "number": number, "asset": asset_id, "amount": amount, "description": description}
         self._data[FOF.ASSET_PAYMENTS].append(payment)
 
-    def bond_repayment(self, timestamp, number, account_id, amount, description):
-        pass
+    def bond_repayment(self, timestamp, _number, account_id, amount, description):
+        BondRepaymentPattern = r"Погашение номинала (?P<NAME>.*)"
+
+        parts = re.match(BondRepaymentPattern, description, re.IGNORECASE)
+        if parts is None:
+            logging.error(g_tr('Uralsib', "Can't parse bond repayment description ") + f"'{description}'")
+            return
+        interest_data = parts.groupdict()
+        asset_id = self._find_asset_id(symbol=interest_data['NAME'])
+        if asset_id is None:
+            raise XLS_ParseError(g_tr('Uralsib', "Can't find asset for bond repayment ") + f"'{description}'")
+        match = [x for x in self.asset_withdrawal if x['asset'] == asset_id and x['timestamp'] == timestamp]
+        if not match:
+            logging.error(g_tr('Uralsib', "Can't find asset cancellation record for ") + f"'{description}'")
+            return
+        if len(match) != 1:
+            logging.error(g_tr('Uralsib', "Multiple asset cancellation match for ") + f"'{description}'")
+            return
+        asset_cancel = match[0]
+
+        qty = asset_cancel['quantity']
+        price = abs(amount / qty)   # Price is always positive
+        note = description + ", " + asset_cancel['note']
+        new_id = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
+        trade = {"id": new_id, "number": asset_cancel['number'], "timestamp": timestamp, "settlement": timestamp,
+                 "account": account_id, "asset": asset_id, "quantity": qty, "price": price, "note": note}
+        self._data[FOF.TRADES].append(trade)
 
     def tax(self, timestamp, _number, account_id, amount, description):
         new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
