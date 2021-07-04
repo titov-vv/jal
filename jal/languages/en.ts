@@ -1928,17 +1928,17 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="51"/>
+        <location filename="../data_import/statement.py" line="52"/>
         <source>No selection</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="51"/>
+        <location filename="../data_import/statement.py" line="52"/>
         <source>Please select different account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="44"/>
+        <location filename="../data_import/statement.py" line="45"/>
         <source>Invalid account selected</source>
         <translation></translation>
     </message>
@@ -2470,133 +2470,143 @@ do you want to save it?</source>
 <context>
     <name>Statement</name>
     <message>
-        <location filename="../data_import/statement.py" line="135"/>
+        <location filename="../data_import/statement.py" line="136"/>
         <source>Failed to read JSON from file: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="137"/>
+        <location filename="../data_import/statement.py" line="138"/>
         <source>Failed to read file: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="197"/>
+        <location filename="../data_import/statement.py" line="199"/>
         <source>Section is not supported: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="202"/>
+        <location filename="../data_import/statement.py" line="204"/>
         <source>Planned cash: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="225"/>
+        <location filename="../data_import/statement.py" line="243"/>
         <source>Can&apos;t create asset: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="232"/>
+        <location filename="../data_import/statement.py" line="250"/>
         <source>Unmatched currency for account: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="238"/>
+        <location filename="../data_import/statement.py" line="256"/>
         <source>Can&apos;t create account: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="243"/>
+        <location filename="../data_import/statement.py" line="261"/>
         <source>Unmatched account for income/spending: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="245"/>
+        <location filename="../data_import/statement.py" line="263"/>
         <source>Unmatched peer for income/spending: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="248"/>
+        <location filename="../data_import/statement.py" line="266"/>
         <source>Unsupported income/spending: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="252"/>
+        <location filename="../data_import/statement.py" line="270"/>
         <source>Unmatched category for income/spending: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="260"/>
+        <location filename="../data_import/statement.py" line="278"/>
         <source>Unmatched account for transfer: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="263"/>
+        <location filename="../data_import/statement.py" line="281"/>
         <source>Unmatched asset for transfer: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="268"/>
+        <location filename="../data_import/statement.py" line="286"/>
         <source>Deposit of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="271"/>
+        <location filename="../data_import/statement.py" line="289"/>
         <source>Select account to withdraw from:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="274"/>
+        <location filename="../data_import/statement.py" line="292"/>
         <source>Withdrawal of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="277"/>
+        <location filename="../data_import/statement.py" line="295"/>
         <source>Select account to deposit to:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="281"/>
+        <location filename="../data_import/statement.py" line="299"/>
         <source>Account not selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="296"/>
+        <location filename="../data_import/statement.py" line="314"/>
         <source>Unmatched account for trade: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="298"/>
+        <location filename="../data_import/statement.py" line="316"/>
         <source>Unmatched asset for trade: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="310"/>
+        <location filename="../data_import/statement.py" line="328"/>
         <source>Unmatched account for payment: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="312"/>
+        <location filename="../data_import/statement.py" line="330"/>
         <source>Unmatched asset for payment: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="325"/>
+        <location filename="../data_import/statement.py" line="343"/>
         <source>Unsupported payment type: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="330"/>
+        <location filename="../data_import/statement.py" line="348"/>
         <source>Unmatched account for corporate action: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="337"/>
+        <location filename="../data_import/statement.py" line="355"/>
         <source>Unmatched asset for corporate action: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="347"/>
+        <location filename="../data_import/statement.py" line="365"/>
         <source>Unsupported corporate action: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement.py" line="221"/>
+        <source>Statement import was cancelled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement.py" line="209"/>
+        <source>Statement period is invalid</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2608,12 +2618,12 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="166"/>
+        <location filename="../data_import/statement.py" line="216"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="166"/>
+        <location filename="../data_import/statement.py" line="216"/>
         <source>Statement period starts before last recorded operation for the account. Continue import?</source>
         <translation></translation>
     </message>

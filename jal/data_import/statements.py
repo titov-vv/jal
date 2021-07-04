@@ -1,7 +1,7 @@
 from PySide2.QtCore import QObject, Signal, Slot
 from PySide2.QtWidgets import QApplication, QDialog, QFileDialog, QMessageBox
 
-from jal.db.helpers import readSQL, account_last_date
+from jal.db.helpers import readSQL
 from jal.constants import Setup
 from jal.widgets.helpers import g_tr
 from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
@@ -158,18 +158,6 @@ class StatementLoader(QObject):
                                  QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
             return False
         return IBKR_obsolete(filename).load()
-
-    # Checks if report is after last transaction recorded for account.
-    # Otherwise asks for confirmation and returns False if import is cancelled
-    def checkStatementPeriod(self, account_number, start_date) -> bool:
-        if start_date < account_last_date(account_number):
-            if QMessageBox().warning(None,
-                                     g_tr('StatementLoader', "Confirmation"),
-                                     g_tr('StatementLoader',
-                                          "Statement period starts before last recorded operation for the account. Continue import?"),
-                                     QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
-                return False
-        return True
 
     # returns bank id assigned for the account or asks for assignment if field is empty
     def getAccountBank(self, account_id):

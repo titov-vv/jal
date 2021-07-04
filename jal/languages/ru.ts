@@ -1933,17 +1933,17 @@ do you want to save it?</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="51"/>
+        <location filename="../data_import/statement.py" line="52"/>
         <source>No selection</source>
         <translation>Ничего не выбрано</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="51"/>
+        <location filename="../data_import/statement.py" line="52"/>
         <source>Please select different account</source>
         <translation>Пожалуйста, выберите другой счёт</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="44"/>
+        <location filename="../data_import/statement.py" line="45"/>
         <source>Invalid account selected</source>
         <translation>Выбран некорректный счёт</translation>
     </message>
@@ -2475,134 +2475,144 @@ do you want to save it?</source>
 <context>
     <name>Statement</name>
     <message>
-        <location filename="../data_import/statement.py" line="135"/>
+        <location filename="../data_import/statement.py" line="136"/>
         <source>Failed to read JSON from file: </source>
         <translation>Невозможно прочитать JSON из файла: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="137"/>
+        <location filename="../data_import/statement.py" line="138"/>
         <source>Failed to read file: </source>
         <translation>Невозможно прочесть файл: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="197"/>
+        <location filename="../data_import/statement.py" line="199"/>
         <source>Section is not supported: </source>
         <translation>Секция не поддерживается: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="202"/>
+        <location filename="../data_import/statement.py" line="204"/>
         <source>Planned cash: </source>
         <translation>Деньги плановые: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="225"/>
+        <location filename="../data_import/statement.py" line="243"/>
         <source>Can&apos;t create asset: </source>
         <translation>Невозможно создать ЦБ: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="232"/>
+        <location filename="../data_import/statement.py" line="250"/>
         <source>Unmatched currency for account: </source>
         <translation>Невозмоно сопоставить валюту для счёта: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="238"/>
+        <location filename="../data_import/statement.py" line="256"/>
         <source>Can&apos;t create account: </source>
         <translation>Невозможно создать счёт: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="243"/>
+        <location filename="../data_import/statement.py" line="261"/>
         <source>Unmatched account for income/spending: </source>
         <translation>Невозможно сопоставить счёт для операции прихода/расхода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="245"/>
+        <location filename="../data_import/statement.py" line="263"/>
         <source>Unmatched peer for income/spending: </source>
         <translation>Невозможно сопоставить контрагента для операции прихода/расхода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="248"/>
+        <location filename="../data_import/statement.py" line="266"/>
         <source>Unsupported income/spending: </source>
         <translation>Неподдерживаемый приход/расход: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="252"/>
+        <location filename="../data_import/statement.py" line="270"/>
         <source>Unmatched category for income/spending: </source>
         <translation>Невозможно сопоставить категорию для прихода/расхода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="260"/>
+        <location filename="../data_import/statement.py" line="278"/>
         <source>Unmatched account for transfer: </source>
         <translation>Невзоможно сопоставить счёт для перевода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="263"/>
+        <location filename="../data_import/statement.py" line="281"/>
         <source>Unmatched asset for transfer: </source>
         <translation>Невозможно сопоставить ЦБ/валюту для перевода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="268"/>
+        <location filename="../data_import/statement.py" line="286"/>
         <source>Deposit of </source>
         <translation>Депозит </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="271"/>
+        <location filename="../data_import/statement.py" line="289"/>
         <source>Select account to withdraw from:</source>
         <translation>Выберите счёт для списания:</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="274"/>
+        <location filename="../data_import/statement.py" line="292"/>
         <source>Withdrawal of </source>
         <translation>Списание </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="277"/>
+        <location filename="../data_import/statement.py" line="295"/>
         <source>Select account to deposit to:</source>
         <translation>Выберите счёт для зачисления:</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="281"/>
+        <location filename="../data_import/statement.py" line="299"/>
         <source>Account not selected</source>
         <translation>Счёт не выбран</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="296"/>
+        <location filename="../data_import/statement.py" line="314"/>
         <source>Unmatched account for trade: </source>
         <translation>Невозможно сопоставить счёт для сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="298"/>
+        <location filename="../data_import/statement.py" line="316"/>
         <source>Unmatched asset for trade: </source>
         <translation>Невозможно сопоставить ЦБ для сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="310"/>
+        <location filename="../data_import/statement.py" line="328"/>
         <source>Unmatched account for payment: </source>
         <translation>Невозможно сопоставить счёт для выплаты: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="312"/>
+        <location filename="../data_import/statement.py" line="330"/>
         <source>Unmatched asset for payment: </source>
         <translation>Невозможно сопоставить ЦБ для выплаты: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="325"/>
+        <location filename="../data_import/statement.py" line="343"/>
         <source>Unsupported payment type: </source>
         <translation>Неподдерживаемый тип выплаты: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="330"/>
+        <location filename="../data_import/statement.py" line="348"/>
         <source>Unmatched account for corporate action: </source>
         <translation>Невозможно сопоставить счёт для корпоративного действия: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="337"/>
+        <location filename="../data_import/statement.py" line="355"/>
         <source>Unmatched asset for corporate action: </source>
         <translation>Невозможно сопоставить ЦБ для корпоративного действия: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="347"/>
+        <location filename="../data_import/statement.py" line="365"/>
         <source>Unsupported corporate action: </source>
         <translation>Неподдерживаемое корпоративное действие: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement.py" line="221"/>
+        <source>Statement import was cancelled</source>
+        <translation>Импорт отчёта прерван</translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement.py" line="209"/>
+        <source>Statement period is invalid</source>
+        <translation>Неверный период отчёта</translation>
     </message>
 </context>
 <context>
@@ -2613,12 +2623,12 @@ do you want to save it?</source>
         <translation>Выберите файл отчета для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="166"/>
+        <location filename="../data_import/statement.py" line="216"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../data_import/statements.py" line="166"/>
+        <location filename="../data_import/statement.py" line="216"/>
         <source>Statement period starts before last recorded operation for the account. Continue import?</source>
         <translation>Период отчёта начинается ранее последней операции для счёта (повторный импорт?). Продолжить импорт?</translation>
     </message>

@@ -5,6 +5,7 @@ from datetime import datetime
 
 from jal.widgets.helpers import g_tr
 from jal.constants import Setup, MarketDataFeed, PredefinedAsset, DividendSubtype, CorporateAction
+from jal.db.helpers import account_last_date
 from jal.db.update import JalDB
 if "pytest" not in sys.modules:
     from PySide2.QtCore import Slot
@@ -180,6 +181,7 @@ class Statement:
 
     def import_into_db(self):
         sections = {
+            FOF.PERIOD: self._check_period,
             FOF.ASSETS: self._import_assets,
             FOF.ACCOUNTS: self._import_accounts,
             FOF.INCOME_SPENDING: self._import_imcomes_and_spendings,
@@ -201,6 +203,22 @@ class Statement:
             if 'cash_end' in account:
                 logging.info(g_tr('Statement', 'Planned cash: ') + f"{account['cash_end']:.2f} " +
                              f"{JalDB().get_asset_name(JalDB().get_account_currency(-account['currency']))}")
+
+    def _check_period(self, period):
+        if len(period) != 2:
+            logging.warning(g_tr("Statement", "Statement period is invalid"))
+        if not FOF.ACCOUNTS in self._data:
+            return
+        accounts = self._data[FOF.ACCOUNTS]
+        for account in accounts:
+            if account['id'] < 0:  # Checks if report is after last transaction recorded for account.
+                if period[0] < account_last_date(-account['id']):
+                    if QMessageBox().warning(None,
+                                             g_tr('StatementLoader', "Confirmation"),
+                                             g_tr('StatementLoader',
+                                                  "Statement period starts before last recorded operation for the account. Continue import?"),
+                                             QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
+                        raise Statement_ImportError(g_tr('Statement', "Statement import was cancelled"))
 
     def _import_assets(self, assets):
         for asset in assets:
