@@ -208,7 +208,7 @@ class StatementXLS(Statement):
                             self._statement[headers['name']][row])
             cnt += 1
             row += 1
-        logging.info(g_tr('PSB', "Securities loaded: ") + f"{cnt}")
+        logging.info(g_tr('StatementXLS', "Securities loaded: ") + f"{cnt}")
 
     # Adds assets to self._data[FOF.ASSETS] by ISIN and registration code
     # Asset symbol and other parameters are loaded from MOEX exchange as class targets russian brokers

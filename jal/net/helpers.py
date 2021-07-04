@@ -81,13 +81,14 @@ def GetAssetInfoFromMOEX(keys) -> dict:
     if not matched:
         search_set = set(keys)
         for key in search_set:
-            subset = [x for x in data if x[columns.index(key)].lower() == keys[key].lower()]
+            subset = [x for x in data if
+                      (not x[columns.index(key)] is None) and (x[columns.index(key)].lower() == keys[key].lower())]
             if len(subset) == 1:
                 matched = True
                 asset_data = dict(zip(columns, subset[0]))
                 break
-    if matched:
-        asset['symbol'] = asset_data['secid']
+    if matched:   # Sometimes symbol is "absent" - for example bonds have ISIN instead
+        asset['symbol'] = asset_data['shortname'] if asset_data['secid'] == asset_data['isin'] else asset_data['secid']
         asset['name'] = asset_data['name']
         asset['isin'] = asset_data['isin'] if 'isin' in asset_data else ''
         asset['reg_code'] = asset_data['regnumber'] if 'regnumber' in asset_data else ''

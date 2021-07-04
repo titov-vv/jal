@@ -203,7 +203,8 @@ class StatementUKFU(StatementXLS):
             'Вывод ДС': self.transfer_out,
             'Налог': self.tax,
             'Доход по финансовым инструментам': self.dividend,
-            'Погашение купона': self.interest
+            'Погашение купона': self.interest,
+            'Погашение номинала': self.bond_repayment
         }
 
         row, headers = self.find_section_start("ДВИЖЕНИЕ ДЕНЕЖНЫХ СРЕДСТВ ЗА ОТЧЕТНЫЙ ПЕРИОД",  columns)
@@ -290,14 +291,16 @@ class StatementUKFU(StatementXLS):
             logging.error(g_tr('Uralsib', "Can't parse bond interest description ") + f"'{description}'")
             return
         interest_data = parts.groupdict()
-        # FIXME make it via self._find_asset_id()
-        asset_id = JalDB().find_asset_like_name(interest_data['NAME'], asset_type=PredefinedAsset.Bond)
+        asset_id = self._find_asset_id(symbol=interest_data['NAME'])
         if asset_id is None:
             raise XLS_ParseError(g_tr('Uralsib', "Can't find asset for bond interest ") + f"'{description}'")
         new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
         payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
                    "number": number, "asset": asset_id, "amount": amount, "description": description}
         self._data[FOF.ASSET_PAYMENTS].append(payment)
+
+    def bond_repayment(self, timestamp, number, account_id, amount, description):
+        pass
 
     def tax(self, timestamp, _number, account_id, amount, description):
         new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1

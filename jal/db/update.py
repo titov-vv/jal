@@ -161,15 +161,6 @@ class JalDB():
             asset_id = dialog.asset_id
         return asset_id
 
-    # Find asset by give partial name and type. Returns only first match even if many were found
-    def find_asset_like_name(self, partial_name, asset_type=0):
-        name = '%' + partial_name.replace(' ', '%') + '%'
-        if asset_type:
-            return readSQL("SELECT id FROM assets WHERE full_name LIKE :name AND type_id=:type",
-                           [(":name", name), (":type", asset_type)])
-        else:
-            return readSQL("SELECT id FROM assets WHERE full_name LIKE :name", [(":name", name)])
-
     def update_asset_data(self, asset_id, new_symbol='', new_isin='', new_reg=''):
         if new_symbol:
             symbol = readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
