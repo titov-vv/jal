@@ -14,8 +14,7 @@ if "pytest" not in sys.modules:
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-# FIXME - this class is duplicated in statements.py
-# Remove old definition in statements.py and adopt if for better usage with pytest framework
+# FIXME - adopt if for better usage with pytest framework
 if "pytest" not in sys.modules:
     class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
         def __init__(self, description, current_account, recent_account=None):
@@ -196,7 +195,7 @@ class Statement:
                 sections[section](self._data[section])
         for section in self._data:
             if section not in sections:
-                logging.warning(g_tr("Statement", "Section is not supported: ") + section)  # FIXME here should be a list of sessions to load
+                logging.warning(g_tr("Statement", "Section is not supported: ") + section)  # FIXME here should be a list of sections to load
 
         # FIXME This display should be outside of this method
         for account in self._data[FOF.ACCOUNTS]:

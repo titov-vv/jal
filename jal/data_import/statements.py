@@ -14,50 +14,6 @@ from jal.data_import.statement_psb import StatementPSB
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-# TODO Remove this class definition as new one created locally in statement.py
-class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
-    def __init__(self, description, current_account, recent_account=None):
-        QDialog.__init__(self)
-        self.setupUi(self)
-        self.account_id = recent_account
-        self.current_account = current_account
-
-        self.DescriptionLbl.setText(description)
-        if self.account_id:
-            self.AccountWidget.selected_id = self.account_id
-
-        # center dialog with respect to main application window
-        parent = None
-        for widget in QApplication.topLevelWidgets():
-            if widget.objectName() == Setup.MAIN_WND_NAME:
-                parent = widget
-        if parent:
-            x = parent.x() + parent.width() / 2 - self.width() / 2
-            y = parent.y() + parent.height() / 2 - self.height() / 2
-            self.setGeometry(x, y, self.width(), self.height())
-
-    @Slot()
-    def closeEvent(self, event):
-        self.account_id = self.AccountWidget.selected_id
-        if self.AccountWidget.selected_id == 0:
-            QMessageBox().warning(None, g_tr('ReferenceDataDialog', "No selection"),
-                                  g_tr('ReferenceDataDialog', "Invalid account selected"),
-                                  QMessageBox.Ok)
-            event.ignore()
-            return
-
-        if self.AccountWidget.selected_id == self.current_account:
-            QMessageBox().warning(None, g_tr('ReferenceDataDialog', "No selection"),
-                                  g_tr('ReferenceDataDialog', "Please select different account"),
-                                  QMessageBox.Ok)
-            event.ignore()
-            return
-
-        self.setResult(QDialog.Accepted)
-        event.accept()
-
-
-# -----------------------------------------------------------------------------------------------------------------------
 class StatementLoader(QObject):
     load_completed = Signal()
     load_failed = Signal()
@@ -166,10 +122,3 @@ class StatementLoader(QObject):
         if bank_id == '':
             raise RuntimeError("Broker isn't defined for Investment account")
         return bank_id
-
-    def selectAccount(self, text, account_id, recent_account_id=0):
-        dialog = SelectAccountDialog(text, account_id, recent_account=recent_account_id)
-        if dialog.exec_() != QDialog.Accepted:
-            return 0
-        else:
-            return dialog.account_id
