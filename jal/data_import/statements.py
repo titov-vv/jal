@@ -1,10 +1,7 @@
-from PySide2.QtCore import QObject, Signal, Slot
-from PySide2.QtWidgets import QApplication, QDialog, QFileDialog, QMessageBox
+from PySide2.QtCore import QObject, Signal
+from PySide2.QtWidgets import QFileDialog, QMessageBox
 
-from jal.db.helpers import readSQL
-from jal.constants import Setup
 from jal.widgets.helpers import g_tr
-from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
 from jal.data_import.statement_quik import Quik
 from jal.data_import.statement_ibkr import StatementIBKR
 from jal.data_import.statement_ibkr_old import IBKR_obsolete
@@ -114,11 +111,3 @@ class StatementLoader(QObject):
                                  QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
             return False
         return IBKR_obsolete(filename).load()
-
-    # returns bank id assigned for the account or asks for assignment if field is empty
-    def getAccountBank(self, account_id):
-        bank_id = readSQL("SELECT organization_id FROM accounts WHERE id=:account_id",
-                          [(":account_id", account_id)])
-        if bank_id == '':
-            raise RuntimeError("Broker isn't defined for Investment account")
-        return bank_id
