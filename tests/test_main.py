@@ -23,6 +23,9 @@ def test_db_creation(tmp_path, project_root):
     assert os.path.getsize(result_path) > 0
     assert error.code == LedgerInitError.EmptyDbInitialized
 
+    os.remove(target_path)  # Clean db init script
+    os.remove(get_dbfilename(str(tmp_path) + os.sep))  # Clean db file
+
 
 def test_invalid_backup(tmp_path, project_root):
     # Prepare environment
@@ -37,6 +40,9 @@ def test_invalid_backup(tmp_path, project_root):
     invalid_backup = JalBackup(None, db_file_name)
     invalid_backup.backup_name = project_root + os.sep + "tests" + os.sep + "test_data" + os.sep + "invalid_backup.tgz"
     assert not invalid_backup.validate_backup()
+
+    os.remove(target_path)  # Clean db init script
+    os.remove(get_dbfilename(str(tmp_path) + os.sep))  # Clean db file
 
 
 def test_backup_load(tmp_path, project_root):
@@ -63,3 +69,6 @@ def test_backup_load(tmp_path, project_root):
     cursor.execute("SELECT COUNT(*) FROM settings")
     assert cursor.fetchone()[0] == 7
     db.close()
+
+    os.remove(target_path)  # Clean db init script
+    os.remove(get_dbfilename(str(tmp_path) + os.sep))  # Clean db file

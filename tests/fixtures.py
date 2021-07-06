@@ -1,13 +1,12 @@
 import pytest
 import os
-import json
 from shutil import copyfile
 from PySide2.QtSql import QSqlDatabase
 
 from constants import Setup, PredefinedCategory
 from jal.db.helpers import init_and_check_db, LedgerInitError
 from jal.db.update import JalDB
-from jal.db.helpers import executeSQL
+from jal.db.helpers import executeSQL, get_dbfilename
 
 
 @pytest.fixture
@@ -36,10 +35,11 @@ def prepare_db(project_root, tmp_path, data_path):
     assert db.isValid()
     lang_id = JalDB().get_language_id('en')
     assert lang_id == 1
+
     yield
 
-    # TODO Add fixture cleanup code
-
+    os.remove(target_path)  # Clean db init script
+    os.remove(get_dbfilename(str(tmp_path) + os.sep))  # Clean db file
 
 @pytest.fixture
 def prepare_db_ibkr(prepare_db):

@@ -42,10 +42,12 @@ def test_statement_json_import(tmp_path, project_root, data_path, prepare_db_ibk
         [21, 'EWLL', 2, 'EWELLNESS HEALTHCARE CORP', 'US30051D1063', 0, -1],
         [22, 'EWLL', 2, 'EWELLNESS HEALTHCARE CORP', 'US30051D2053', 0, -1],
         [23, 'ZROZ', 4, 'PIMCO 25+ YR ZERO CPN US TIF', 'US72201R8824', 2, 2],
-        [24, 'AAPL', 2, 'APPLE INC', 'US0378331005', 0, 2],
-        [25, 'VLO   200724P00064000', 6, 'VLO 24JUL20 64.0 P', '', 0, -1],
-        [26, 'VLO', 2, 'VALERO ENERGY CORP', 'US91913Y1001', 0, 2],
-        [27, 'MAC', 2, '', 'US5543821012', 0, 2]
+        [24, 'LVGO', 2, 'LIVONGO HEALTH INC', 'US5391831030', 0, -1],
+        [25, 'TDOC', 2, 'TELADOC HEALTH INC', 'US87918A1051', 0, 2],
+        [26, 'AAPL', 2, 'APPLE INC', 'US0378331005', 0, 2],
+        [27, 'VLO   200724P00064000', 6, 'VLO 24JUL20 64.0 P', '', 0, -1],
+        [28, 'VLO', 2, 'VALERO ENERGY CORP', 'US91913Y1001', 0, 2],
+        [29, 'MAC', 2, '', 'US5543821012', 0, 2]
     ]
     assert readSQL("SELECT COUNT(*) FROM assets") == len(test_assets)
     for i, asset in enumerate(test_assets):
@@ -74,10 +76,11 @@ def test_statement_json_import(tmp_path, project_root, data_path, prepare_db_ibk
 
     # validate income/spending
     test_actions = [
-        [1, 1, 5, '', -7.96, 0.0, 'BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019'],
-        [2, 2, 5, '', 0.6905565, 0.0, 'COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)'],
-        [3, 3, 8, '', 0.5, 0.0, 'RUB CREDIT INT FOR MAY-2020'],
-        [4, 4, 6, '', -0.249018, 0.0, 'BABA (ALIBABA GROUP HOLDING-SP ADR) - French Transaction Tax']
+        [1, 1, 8, '', 42.4, 0.0, 'LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)'],
+        [2, 2, 5, '', -7.96, 0.0, 'BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019'],
+        [3, 3, 5, '', 0.6905565, 0.0, 'COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)'],
+        [4, 4, 8, '', 0.5, 0.0, 'RUB CREDIT INT FOR MAY-2020'],
+        [5, 5, 6, '', -0.249018, 0.0, 'BABA (ALIBABA GROUP HOLDING-SP ADR) - French Transaction Tax']
     ]
     assert readSQL("SELECT COUNT(amount) FROM action_details") == len(test_actions)
     for i, action in enumerate(test_actions):
@@ -100,11 +103,11 @@ def test_statement_json_import(tmp_path, project_root, data_path, prepare_db_ibk
         [1, 1553545500, 1553545500, '', 1, 8, -0.777, 168.37, 0.0, ''],
         [2, 1579094694, 1579219200, '2661774904', 1, 21, 45000.0, 0.0012, 0.54, ''],
         [3, 1580215513, 1580215513, '2674740000', 1, 4, -1240.0, 54.84, 7.75519312, ''],
-        [4, 1580215566, 1580342400, '2674740000', 1, 24, -148.0, 316.68, -1.987792848, ''],
+        [4, 1580215566, 1580342400, '2674740000', 1, 26, -148.0, 316.68, -1.987792848, ''],
         [5, 1590595065, 1590710400, '2882737839', 1, 11, 2.0, 637.09, 2.0, ''],
-        [6, 1592575273, 1592784000, '2931083780', 1, 25, -100.0, 4.54, 1.1058334, ''],
-        [7, 1595607600, 1595808000, '2997636969', 1, 25, 100.0, 0.0, 0.0, 'Option assignment'],
-        [8, 1595607600, 1595607600, '2997636973', 1, 26, 100.0, 64.0, 0.0, 'Option assignment/exercise'],
+        [6, 1592575273, 1592784000, '2931083780', 1, 27, -100.0, 4.54, 1.1058334, ''],
+        [7, 1595607600, 1595808000, '2997636969', 1, 27, 100.0, 0.0, 0.0, 'Option assignment'],
+        [8, 1595607600, 1595607600, '2997636973', 1, 28, 100.0, 64.0, 0.0, 'Option assignment/exercise'],
         [9, 1603882231, 1604016000, '3183801882', 1, 22, 500000.0, 0.0001, 0.7503675, '']
     ]
     assert readSQL("SELECT COUNT(*) FROM trades") == len(test_trades)
@@ -131,7 +134,8 @@ def test_statement_json_import(tmp_path, project_root, data_path, prepare_db_ibk
         [4, 1595017200, '13259965038', 1, 5, 17, -1.0, 17, 3.0, 0.0, 'TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000 (TEF, TELEFONICA SA-SPON ADR, US8793822086)'],
         [5, 1592339100, '13006963996', 1, 1, 18, 70.0, 19, 170.8, 1.0, 'EQM(US26885B1008) MERGED(Acquisition) WITH US2946001011 244 FOR 100 (ETRN, EQUITRANS MIDSTREAM CORP, US2946001011)'],
         [6, 1581452700, '12029570527', 1, 4, 21, 45000.0, 22, 900.0, 1.0, 'EWLL(US30051D1063) SPLIT 1 FOR 50 (EWLLD, EWELLNESS HEALTHCARE CORP, US30051D2053)'],
-        [7, 1591215600, '12882908488', 1, 5, 27, -1.0, 27, 2.0, 0.0, 'MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000 (MAC, MACERICH CO/THE, US5543821012)'],
+        [7, 1604089500, '14147163475', 1, 1, 24, 10.0, 25, 5.92, 1.0, 'LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)'],
+        [8, 1591215600, '12882908488', 1, 5, 29, -1.0, 29, 2.0, 0.0, 'MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000 (MAC, MACERICH CO/THE, US5543821012)'],
     ]
     assert readSQL("SELECT COUNT(*) FROM corp_actions") == len(test_corp_actons)
     for i, action in enumerate(test_corp_actons):
