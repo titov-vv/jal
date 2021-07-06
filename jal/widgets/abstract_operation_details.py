@@ -86,7 +86,9 @@ class AbstractOperationDetails(QWidget):
         self.revert_button.setEnabled(False)
 
     def createNew(self, account_id=0):
-        self.mapper.submit()           # FIXME there is check for uncommited call before - do we need submit() here?
+        if self.modified:
+            self.revertChanges()
+            logging.warning(g_tr('AbstractOperationDetails', "Unsaved changes were reverted to create new operation"))
         self.model.setFilter(f"{self.table_name}.id = 0")
         new_record = self.prepareNew(account_id)
         assert self.model.insertRows(0, 1)

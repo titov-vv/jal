@@ -135,9 +135,6 @@ class TransferWidget(AbstractOperationDetails):
     @Slot()
     def saveChanges(self):
         record = self.model.record(0)
-        note = record.value(self.model.fieldIndex("note"))
-        if not note:  # If we don't have note - set it to NULL value  # TODO - is it really needed?
-            self.model.setData(self.model.index(0, self.model.fieldIndex("note")), None)
         # Set related fields NULL if we don't have fee. This is required for correct transfer processing
         fee_amount = record.value(self.model.fieldIndex("fee"))
         if not fee_amount:
