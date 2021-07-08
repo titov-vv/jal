@@ -151,6 +151,13 @@ class SlipsTaxAPI:
 
     def __init__(self):
         self.slip_json = None
+        self.web_session = requests.Session()
+        self.web_session.headers['ClientVersion'] = '2.9.0'
+        self.web_session.headers['Device-Id'] = str(uuid.uuid1())
+        self.web_session.headers['Device-OS'] = 'Android'
+        self.web_session.headers['Content-Type'] = 'application/json; charset=UTF-8'
+        self.web_session.headers['Accept-Encoding'] = 'gzip'
+        self.web_session.headers['User-Agent'] = 'okhttp/4.2.2'
 
     def get_ru_tax_session(self):
         stored_id = JalSettings().getValue('RuTaxSessionId')
@@ -167,20 +174,16 @@ class SlipsTaxAPI:
         return ''
 
     def refresh_session(self):
-        logging.info(g_tr('SlipsTaxAPI', "Refreshing session..."))
         session_id = self.get_ru_tax_session()
+        if not session_id:
+            logging.info(g_tr('SlipsTaxAPI', "No valid session present"))
+            return SlipsTaxAPI.Failure
+        logging.info(g_tr('SlipsTaxAPI', "Refreshing session..."))
         client_secret = JalSettings().getValue('RuTaxClientSecret')
         refresh_token = JalSettings().getValue('RuTaxRefreshToken')
-        s = requests.Session()
-        s.headers['ClientVersion'] = '2.9.0'
-        s.headers['Device-Id'] = str(uuid.uuid1())
-        s.headers['Device-OS'] = 'Android'
-        s.headers['sessionId'] = session_id
-        s.headers['Content-Type'] = 'application/json; charset=UTF-8'
-        s.headers['Accept-Encoding'] = 'gzip'
-        s.headers['User-Agent'] = 'okhttp/4.2.2'
+        self.web_session.headers['sessionId'] = session_id
         payload = '{' + f'"client_secret":"{client_secret}","refresh_token":"{refresh_token}"' + '}'
-        response = s.post('https://irkkt-mobile.nalog.ru:8888/v2/mobile/users/refresh', data=payload)
+        response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/mobile/users/refresh', data=payload)
         if response.status_code == 200:
             logging.info(g_tr('SlipsTaxAPI', "Session refreshed: ") + f"{response.text}")
             json_content = json.loads(response.text)
@@ -192,7 +195,11 @@ class SlipsTaxAPI:
             return SlipsTaxAPI.Pending   # not Success as it is sent transparently to upper callers
         else:
             logging.error(g_tr('SlipsTaxAPI', "Can't refresh session, response: ") + f"{response}/{response.text}")
-            return SlipsTaxAPI.Failure
+            JalSettings().setValue('RuTaxSessionId', '')
+            if self.get_ru_tax_session(self):
+                return SlipsTaxAPI.Failure
+            else:
+                return SlipsTaxAPI.Pending  # not Success as it is sent transparently to upper callers
 
     def get_slip(self, timestamp, amount, fn, fd, fp, slip_type):
         date_time = datetime.utcfromtimestamp(timestamp).strftime('%Y%m%dT%H%M%S')
@@ -200,16 +207,9 @@ class SlipsTaxAPI:
         session_id = self.get_ru_tax_session()
         if session_id == '':
             return SlipsTaxAPI.Failure
-        s = requests.Session()
-        s.headers['ClientVersion'] = '2.9.0'
-        s.headers['Device-Id'] = str(uuid.uuid1())
-        s.headers['Device-OS'] = 'Android'
-        s.headers['sessionId'] = session_id
-        s.headers['Content-Type'] = 'application/json; charset=UTF-8'
-        s.headers['Accept-Encoding'] = 'gzip'
-        s.headers['User-Agent'] = 'okhttp/4.2.2'
+        self.web_session.headers['sessionId'] = session_id
         payload = '{' + f'"qr": "t={date_time}&s={amount:.2f}&fn={fn}&i={fd}&fp={fp}&n={slip_type}"' + '}'
-        response = s.post('https://irkkt-mobile.nalog.ru:8888/v2/ticket', data=payload)
+        response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/ticket', data=payload)
         if response.status_code != 200:
             if response.status_code == 401:
                 logging.info(g_tr('SlipsTaxAPI', "Unauthorized with reason: ") + f"{response.text}")
@@ -225,7 +225,7 @@ class SlipsTaxAPI:
             logging.warning(g_tr('ImportSlipDialog', "Operation might be pending on server side. Trying again."))
             return SlipsTaxAPI.Pending
         url = "https://irkkt-mobile.nalog.ru:8888/v2/tickets/" + json_content['id']
-        response = s.get(url)
+        response = self.web_session.get(url)
         if response.status_code != 200:
             logging.error(g_tr('SlipsTaxAPI', "Get ticket failed: ") + f"{response}/{response.text}")
             return SlipsTaxAPI.Failure
