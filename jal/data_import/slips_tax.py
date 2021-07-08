@@ -42,7 +42,14 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
         QDialog.__init__(self, parent=parent)
         self.setupUi(self)
 
+        self.phone_number = ''
         self.web_session = requests.Session()
+        self.web_session.headers['ClientVersion'] = '2.9.0'
+        self.web_session.headers['Device-Id'] = str(uuid.uuid1())
+        self.web_session.headers['Device-OS'] = 'Android'
+        self.web_session.headers['Content-Type'] = 'application/json; charset=UTF-8'
+        self.web_session.headers['Accept-Encoding'] = 'gzip'
+        self.web_session.headers['User-Agent'] = 'okhttp/4.2.2'
         self.web_profile = QWebEngineProfile()
         self.web_interceptor = RequestInterceptor()
         self.web_interceptor.response_intercepted.connect(self.response_esia)
@@ -50,26 +57,52 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
         self.ESIAWebView.setPage(QWebEnginePage(self.web_profile, self))
 
         self.LoginMethodTabs.currentChanged.connect(self.on_tab_changed)
+        self.GetCodeBtn.clicked.connect(self.send_sms)
+        self.SMSLoginBtn.clicked.connect(self.login_sms)
         self.FNSLoginBtn.clicked.connect(self.login_fns)
 
     def on_tab_changed(self, index):
-        if index == 1: # ESIA login selected
+        if index == 2: # ESIA login selected
             self.login_esia()
+
+    def send_sms(self):
+        client_secret = JalSettings().getValue('RuTaxClientSecret')
+        self.phone_number = self.PhoneNumberEdit.text().replace('-', '')
+
+        payload = '{' + f'"client_secret":"{client_secret}","phone":"{self.phone_number}"' + '}'
+        response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/auth/phone/request', data=payload)
+        if response.status_code != 204:
+            logging.error(g_tr('SlipsTaxAPI', "FNS login failed: ") + f"{response}/{response.text}")
+        else:
+            logging.info(g_tr('SlipsTaxAPI', "SMS was requested successfully"))
+    
+    def login_sms(self):
+        if not self.phone_number:
+            return
+        client_secret = JalSettings().getValue('RuTaxClientSecret')
+        code = self.CodeEdit.text()
+
+        payload = '{' + f'"client_secret":"{client_secret}","code":"{code}","phone":"{self.phone_number}"' + '}'
+        response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/auth/phone/verify', data=payload)
+        if response.status_code != 200:
+            logging.error(g_tr('SlipsTaxAPI', "FNS login failed: ") + f"{response}/{response.text}")
+            return
+        logging.info(g_tr('SlipsTaxAPI', "FNS login successful: ") + f"{response.text}")
+        json_content = json.loads(response.text)
+        new_session_id = json_content['sessionId']
+        new_refresh_token = json_content['refresh_token']
+        settings = JalSettings()
+        settings.setValue('RuTaxSessionId', new_session_id)
+        settings.setValue('RuTaxRefreshToken', new_refresh_token)
+        self.accept()
 
     def login_fns(self):
         client_secret = JalSettings().getValue('RuTaxClientSecret')
         inn = self.InnEdit.text()
         password = self.PasswordEdit.text()
 
-        s = requests.Session()
-        s.headers['ClientVersion'] = '2.9.0'
-        s.headers['Device-Id'] = str(uuid.uuid1())
-        s.headers['Device-OS'] = 'Android'
-        s.headers['Content-Type'] = 'application/json; charset=UTF-8'
-        s.headers['Accept-Encoding'] = 'gzip'
-        s.headers['User-Agent'] = 'okhttp/4.2.2'
         payload = '{' + f'"client_secret":"{client_secret}","inn":"{inn}","password":"{password}"' + '}'
-        response = s.post('https://irkkt-mobile.nalog.ru:8888/v2/mobile/users/lkfl/auth', data=payload)
+        response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/mobile/users/lkfl/auth', data=payload)
         if response.status_code != 200:
             logging.error(g_tr('SlipsTaxAPI', "FNS login failed: ") + f"{response}/{response.text}")
             return
@@ -83,12 +116,6 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
         self.accept()
 
     def login_esia(self):
-        self.web_session.headers['ClientVersion'] = '2.9.0'
-        self.web_session.headers['Device-Id'] = str(uuid.uuid1())
-        self.web_session.headers['Device-OS'] = 'Android'
-        self.web_session.headers['Content-Type'] = 'application/json; charset=UTF-8'
-        self.web_session.headers['Accept-Encoding'] = 'gzip'
-        self.web_session.headers['User-Agent'] = 'okhttp/4.2.2'
         response = self.web_session.get('https://irkkt-mobile.nalog.ru:8888/v2/mobile/users/esia/auth/url')
         if response.status_code != 200:
             logging.error(g_tr('SlipsTaxAPI', "Get ESIA URL failed: ") + f"{response}/{response.text}")

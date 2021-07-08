@@ -695,7 +695,7 @@
 <context>
     <name>ImportSlipDialog</name>
     <message>
-        <location filename="../data_import/slips_tax.py" line="198"/>
+        <location filename="../data_import/slips_tax.py" line="225"/>
         <source>Operation might be pending on server side. Trying again.</source>
         <translation></translation>
     </message>
@@ -1511,39 +1511,59 @@ Application will be terminated now</source>
 <context>
     <name>LoginFNSDialog</name>
     <message>
-        <location filename="../ui/ui_login_fns_dlg.py" line="177"/>
+        <location filename="../ui/ui_login_fns_dlg.py" line="287"/>
         <source>Authorization FNS</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_login_fns_dlg.py" line="178"/>
+        <location filename="../ui/ui_login_fns_dlg.py" line="294"/>
         <source>INN:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_login_fns_dlg.py" line="179"/>
+        <location filename="../ui/ui_login_fns_dlg.py" line="295"/>
         <source>Password:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_login_fns_dlg.py" line="180"/>
+        <location filename="../ui/ui_login_fns_dlg.py" line="296"/>
         <source>Login</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_login_fns_dlg.py" line="183"/>
+        <location filename="../ui/ui_login_fns_dlg.py" line="299"/>
         <source>Close</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_login_fns_dlg.py" line="182"/>
+        <location filename="../ui/ui_login_fns_dlg.py" line="298"/>
         <source>FNS Login</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_login_fns_dlg.py" line="184"/>
+        <location filename="../ui/ui_login_fns_dlg.py" line="300"/>
         <source>ESIA Login</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_login_fns_dlg.py" line="288"/>
+        <source>Phone number:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_login_fns_dlg.py" line="289"/>
+        <source>Send SMS with code</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_login_fns_dlg.py" line="290"/>
+        <source>Code from SMS:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_login_fns_dlg.py" line="293"/>
+        <source>SMS Login</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2392,83 +2412,88 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="74"/>
+        <location filename="../data_import/slips_tax.py" line="107"/>
         <source>FNS login failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="76"/>
+        <location filename="../data_import/slips_tax.py" line="109"/>
         <source>FNS login successful: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="94"/>
+        <location filename="../data_import/slips_tax.py" line="121"/>
         <source>Get ESIA URL failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="107"/>
+        <location filename="../data_import/slips_tax.py" line="134"/>
         <source>ESIA login failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="109"/>
+        <location filename="../data_import/slips_tax.py" line="136"/>
         <source>ESIA login successful: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="139"/>
+        <location filename="../data_import/slips_tax.py" line="166"/>
         <source>No Russian Tax SessionId available</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="158"/>
+        <location filename="../data_import/slips_tax.py" line="185"/>
         <source>Session refreshed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="167"/>
+        <location filename="../data_import/slips_tax.py" line="194"/>
         <source>Can&apos;t refresh session, response: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="191"/>
+        <location filename="../data_import/slips_tax.py" line="218"/>
         <source>Get ticket id failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="203"/>
+        <location filename="../data_import/slips_tax.py" line="230"/>
         <source>Get ticket failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="214"/>
+        <location filename="../data_import/slips_tax.py" line="241"/>
         <source>Incorrect legth of INN. Can&apos;t get company name.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="225"/>
+        <location filename="../data_import/slips_tax.py" line="252"/>
         <source>Failed to get token for INN: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="231"/>
+        <location filename="../data_import/slips_tax.py" line="258"/>
         <source>Failed to get details about INN: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="241"/>
+        <location filename="../data_import/slips_tax.py" line="268"/>
         <source>Can&apos;t get company name from: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="143"/>
+        <location filename="../data_import/slips_tax.py" line="170"/>
         <source>Refreshing session...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="188"/>
+        <location filename="../data_import/slips_tax.py" line="215"/>
         <source>Unauthorized with reason: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/slips_tax.py" line="77"/>
+        <source>SMS was requested successfully</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
