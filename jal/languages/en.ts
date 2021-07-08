@@ -2437,17 +2437,17 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="166"/>
+        <location filename="../data_import/slips_tax.py" line="173"/>
         <source>No Russian Tax SessionId available</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="185"/>
+        <location filename="../data_import/slips_tax.py" line="188"/>
         <source>Session refreshed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="194"/>
+        <location filename="../data_import/slips_tax.py" line="197"/>
         <source>Can&apos;t refresh session, response: </source>
         <translation></translation>
     </message>
@@ -2482,7 +2482,7 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="170"/>
+        <location filename="../data_import/slips_tax.py" line="181"/>
         <source>Refreshing session...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2494,6 +2494,11 @@ do you want to save it?</source>
     <message>
         <location filename="../data_import/slips_tax.py" line="77"/>
         <source>SMS was requested successfully</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/slips_tax.py" line="179"/>
+        <source>No valid session present</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
