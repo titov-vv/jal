@@ -3,60 +3,12 @@ import sys
 import logging
 from datetime import datetime
 
+from PySide2.QtWidgets import QDialog, QMessageBox
 from jal.widgets.helpers import g_tr
-from jal.constants import Setup, MarketDataFeed, PredefinedAsset, DividendSubtype, CorporateAction
+from jal.constants import MarketDataFeed, PredefinedAsset, DividendSubtype, CorporateAction
 from jal.db.helpers import account_last_date
 from jal.db.update import JalDB
-if "pytest" not in sys.modules:
-    from PySide2.QtCore import Slot
-    from PySide2.QtWidgets import QApplication, QDialog, QMessageBox
-    from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
-
-
-# -----------------------------------------------------------------------------------------------------------------------
-# FIXME - adopt if for better usage with pytest framework
-if "pytest" not in sys.modules:
-    class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
-        def __init__(self, description, current_account, recent_account=None):
-            QDialog.__init__(self)
-            self.setupUi(self)
-            self.account_id = recent_account
-            self.current_account = current_account
-
-            self.DescriptionLbl.setText(description)
-            if self.account_id:
-                self.AccountWidget.selected_id = self.account_id
-
-            # center dialog with respect to main application window
-            parent = None
-            for widget in QApplication.topLevelWidgets():
-                if widget.objectName() == Setup.MAIN_WND_NAME:
-                    parent = widget
-            if parent:
-                x = parent.x() + parent.width() / 2 - self.width() / 2
-                y = parent.y() + parent.height() / 2 - self.height() / 2
-                self.setGeometry(x, y, self.width(), self.height())
-
-        @Slot()
-        def closeEvent(self, event):
-            self.account_id = self.AccountWidget.selected_id
-            if self.AccountWidget.selected_id == 0:
-                QMessageBox().warning(None, g_tr('ReferenceDataDialog', "No selection"),
-                                      g_tr('ReferenceDataDialog', "Invalid account selected"),
-                                      QMessageBox.Ok)
-                event.ignore()
-                return
-
-            if self.AccountWidget.selected_id == self.current_account:
-                QMessageBox().warning(None, g_tr('ReferenceDataDialog', "No selection"),
-                                      g_tr('ReferenceDataDialog', "Please select different account"),
-                                      QMessageBox.Ok)
-                event.ignore()
-                return
-
-            self.setResult(QDialog.Accepted)
-            event.accept()
-
+from jal.widgets.account_select import SelectAccountDialog
 
 class FOF:
     PERIOD = "period"
@@ -286,13 +238,13 @@ class Statement:
                            f"{JalDB().get_asset_name(-transfer['asset'][1])} " + \
                            f"@{datetime.utcfromtimestamp(transfer['timestamp']).strftime('%d.%m.%Y')}\n" + \
                            g_tr('Statement', "Select account to withdraw from:")
-                    pair_account = transfer['account'][1]
+                    pair_account = -transfer['account'][1]
                 if transfer['account'][1] == 0:  # Withdrawal
                     text = g_tr('Statement', "Withdrawal of ") + f"{transfer['withdrawal']:.2f} " + \
                            f"{JalDB().get_asset_name(-transfer['asset'][0])} " + \
                            f"@{datetime.utcfromtimestamp(transfer['timestamp']).strftime('%d.%m.%Y')}\n" + \
                            g_tr('Statement', "Select account to deposit to:")
-                    pair_account = transfer['account'][0]
+                    pair_account = -transfer['account'][0]
                 pair_account = self.select_account(text, pair_account, self._last_selected_account)
                 if pair_account == 0:
                     raise Statement_ImportError(g_tr('Statement', "Account not selected"))
@@ -369,9 +321,8 @@ class Statement:
     def select_account(self, text, account_id, recent_account_id=0):
         if "pytest" in sys.modules:
             return 1    # Always return 1st account if we are in testing mode
+        dialog = SelectAccountDialog(text, account_id, recent_account=recent_account_id)
+        if dialog.exec_() != QDialog.Accepted:
+            return 0
         else:
-            dialog = SelectAccountDialog(text, account_id, recent_account=recent_account_id)
-            if dialog.exec_() != QDialog.Accepted:
-                return 0
-            else:
-                return dialog.account_id
+            return dialog.account_id

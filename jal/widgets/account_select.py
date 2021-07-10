@@ -1,12 +1,14 @@
 from PySide2.QtCore import Signal, Slot, Property
-from PySide2.QtWidgets import QWidget, QPushButton, QComboBox, QMenu, QHBoxLayout, QCheckBox
+from PySide2.QtWidgets import QApplication, QDialog, QWidget, QPushButton, QComboBox, QMenu, QHBoxLayout, QCheckBox, \
+    QMessageBox
 from PySide2.QtSql import QSqlQuery, QSqlTableModel
-from jal.constants import PredefinedAsset
+from jal.constants import Setup, PredefinedAsset
 from jal.widgets.helpers import g_tr
 from jal.db.update import JalDB
 from jal.db.settings import JalSettings
 from jal.db.helpers import db_connection, readSQL
 from jal.widgets.reference_dialogs import AccountListDialog
+from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
 
 ########################################################################################################################
 #  UI Button to choose accounts
@@ -50,6 +52,51 @@ class AccountButton(QPushButton):
     def ClearAccount(self):
         self.account_id = 0
 
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Dialog for account selection
+# Constructor takes description to show and recent_account for default choice.
+# Selected account won't be equal to current_account
+class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
+    def __init__(self, description, current_account, recent_account=None):
+        QDialog.__init__(self)
+        self.setupUi(self)
+        self.account_id = recent_account
+        self.current_account = current_account
+
+        self.DescriptionLbl.setText(description)
+        if self.account_id:
+            self.AccountWidget.selected_id = self.account_id
+
+        # center dialog with respect to main application window
+        parent = None
+        for widget in QApplication.topLevelWidgets():
+            if widget.objectName() == Setup.MAIN_WND_NAME:
+                parent = widget
+        if parent:
+            x = parent.x() + parent.width() / 2 - self.width() / 2
+            y = parent.y() + parent.height() / 2 - self.height() / 2
+            self.setGeometry(x, y, self.width(), self.height())
+
+    @Slot()
+    def closeEvent(self, event):
+        self.account_id = self.AccountWidget.selected_id
+        if self.AccountWidget.selected_id == 0:
+            QMessageBox().warning(None, g_tr('ReferenceDataDialog', "No selection"),
+                                  g_tr('ReferenceDataDialog', "Invalid account selected"),
+                                  QMessageBox.Ok)
+            event.ignore()
+            return
+
+        if self.AccountWidget.selected_id == self.current_account:
+            QMessageBox().warning(None, g_tr('ReferenceDataDialog', "No selection"),
+                                  g_tr('ReferenceDataDialog', "Please select different account"),
+                                  QMessageBox.Ok)
+            event.ignore()
+            return
+
+        self.setResult(QDialog.Accepted)
+        event.accept()
 
 # ----------------------------------------------------------------------------------------------------------------------
 class CurrencyComboBox(QComboBox):
