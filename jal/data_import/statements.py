@@ -1,13 +1,9 @@
+import importlib
 from PySide2.QtCore import QObject, Signal
 from PySide2.QtWidgets import QFileDialog, QMessageBox
-
 from jal.widgets.helpers import g_tr
 from jal.data_import.statement_quik import Quik
-from jal.data_import.statement_ibkr import StatementIBKR
 from jal.data_import.statement_ibkr_old import IBKR_obsolete
-from jal.data_import.statement_uralsib import StatementUKFU
-from jal.data_import.statement_kit import StatementKIT
-from jal.data_import.statement_psb import StatementPSB
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -18,6 +14,12 @@ class StatementLoader(QObject):
     def __init__(self):
         super().__init__()
         self.sources = [
+            # 'name' - Title string to displain in main menu
+            # 'icon' - Optional icon to display in main menu
+            # 'filter' - file filter to apply in QFileDialog for file selection
+            # 'module' - module name inside 'jal/data_import' that contains descendant of Statement class for import
+            # 'loader_class' - class name that is derived from Statement class
+            # 'loader' - method to load some obsolete statements
             {
                 'name': g_tr('StatementLoader', "Quik HTML"),
                 'filter': "Quik HTML-report (*.htm)",
@@ -27,26 +29,30 @@ class StatementLoader(QObject):
             {
                 'name': g_tr('StatementLoader', "Interactive Brokers XML"),
                 'filter': "IBKR flex-query (*.xml)",
-                'loader': self.loadIBFlex,
-                'icon': "ibkr.png"
+                'icon': "ibkr.png",
+                'module': "statement_ibkr",
+                'loader_class': "StatementIBKR"
             },
             {
                 'name': g_tr('StatementLoader', "Uralsib Broker"),
                 'filter': "Uralsib statement (*.zip)",
-                'loader': self.loadUralsibCapital,
-                'icon': "uralsib.ico"
+                'icon': "uralsib.ico",
+                'module': "statement_uralsib",
+                'loader_class': "StatementUKFU"
             },
             {
                 'name': g_tr('StatementLoader', "KIT Finance"),
                 'filter': "KIT Finance statement (*.xlsx)",
-                'loader': self.loadKITFinance,
-                'icon': 'kit.png'
+                'icon': 'kit.png',
+                'module': "statement_kit",
+                'loader_class': "StatementKIT"
             },
             {
                 'name': g_tr('StatementLoader', "PSB Broker"),
                 'filter': "PSB broker statement (*.xlsx *.xls)",
-                'loader': self.loadPSB,
-                'icon': 'psb.ico'
+                'icon': 'psb.ico',
+                'module': "statement_psb",
+                'loader_class': "StatementPSB"
             },
             {
                 'name': g_tr('StatementLoader', "IBKR Activity HTML"),
@@ -63,42 +69,23 @@ class StatementLoader(QObject):
                                                                                "Select statement file to import"),
                                                                     ".", self.sources[loader_id]['filter'])
         if statement_file:
-            result = self.sources[loader_id]['loader'](statement_file)
-            if result:
-                self.load_completed.emit()
-            else:
-                self.load_failed.emit()
+            if 'loader' in self.sources[loader_id]:
+                result = self.sources[loader_id]['loader'](statement_file)  # TODO: This branch is for obsolete methods
+                if result:
+                    self.load_completed.emit()
+                else:
+                    self.load_failed.emit()
+
+            module = importlib.import_module(f"jal.data_import.{self.sources[loader_id]['module']}")
+            class_instance = getattr(module, self.sources[loader_id]['loader_class'])
+            statement = class_instance()
+            statement.load(statement_file)
+            statement.match_db_ids(verbal=False)
+            statement.import_into_db()
+            self.load_completed.emit()
 
     def loadQuikHtml(self, filename):
         return Quik(filename).load()
-
-    def loadIBFlex(self, filename):
-        statement = StatementIBKR()
-        statement.load(filename)
-        statement.match_db_ids(verbal=False)
-        statement.import_into_db()
-        return True
-
-    def loadUralsibCapital(self, filename):
-        statement = StatementUKFU()
-        statement.load(filename)
-        statement.match_db_ids(verbal=False)
-        statement.import_into_db()
-        return True
-
-    def loadKITFinance(self, filename):
-        statement = StatementKIT()
-        statement.load(filename)
-        statement.match_db_ids(verbal=False)
-        statement.import_into_db()
-        return True
-
-    def loadPSB(self, filename):
-        statement = StatementPSB()
-        statement.load(filename)
-        statement.match_db_ids(verbal=False)
-        statement.import_into_db()
-        return True
 
     def loadIBActivityStatement(self, filename):
         if QMessageBox().warning(None,
