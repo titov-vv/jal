@@ -12,7 +12,6 @@ from jal.widgets.account_select import SelectAccountDialog
 
 class FOF:
     PERIOD = "period"
-
     ACCOUNTS = "accounts"
     ASSETS = "assets"
     TRADES = "trades"
@@ -75,6 +74,16 @@ class Statement:
     def __init__(self):
         self._data = {}
         self._last_selected_account = None
+        self._section_loaders = {
+            FOF.PERIOD: self._check_period,
+            FOF.ASSETS: self._import_assets,
+            FOF.ACCOUNTS: self._import_accounts,
+            FOF.INCOME_SPENDING: self._import_imcomes_and_spendings,
+            FOF.TRANSFERS: self._import_transfers,
+            FOF.TRADES: self._import_trades,
+            FOF.ASSET_PAYMENTS: self._import_asset_payments,
+            FOF.CORP_ACTIONS: self._import_corporate_actions
+        }
 
     # Loads JSON statement format from file defined by 'filename'
     def load(self, filename: str) -> None:
@@ -87,6 +96,11 @@ class Statement:
                     logging.error(g_tr('Statement', "Failed to read JSON from file: ") + filename)
         except Exception as err:
             logging.error(g_tr('Statement', "Failed to read file: ") + str(err))
+        unsupported_sections = [x for x in self._data if x not in self._section_loaders]
+        if unsupported_sections:
+            for section in unsupported_sections:
+                self._data.pop(section)
+            logging.warning(g_tr("Statement", "Some sections are not supported: ") + unsupported_sections)
 
     # check are assets and accounts from self._data present in database
     # replace IDs in self._data with IDs from database (DB IDs will be negative, initial IDs will be positive)
@@ -129,23 +143,9 @@ class Statement:
                             element[tag] = -new_value if element[tag] == old_value else element[tag]
 
     def import_into_db(self):
-        sections = {
-            FOF.PERIOD: self._check_period,
-            FOF.ASSETS: self._import_assets,
-            FOF.ACCOUNTS: self._import_accounts,
-            FOF.INCOME_SPENDING: self._import_imcomes_and_spendings,
-            FOF.TRANSFERS: self._import_transfers,
-            FOF.TRADES: self._import_trades,
-            FOF.ASSET_PAYMENTS: self._import_asset_payments,
-            FOF.CORP_ACTIONS: self._import_corporate_actions
-        }
-        
-        for section in sections:
-            if section in self._data and sections[section]:
-                sections[section](self._data[section])
-        for section in self._data:
-            if section not in sections:
-                logging.warning(g_tr("Statement", "Section is not supported: ") + section)  # FIXME here should be a list of sections to load
+        for section in self._section_loaders:
+            if section in self._data:
+                self._section_loaders[section](self._data[section])
 
         # FIXME This display should be outside of this method
         for account in self._data[FOF.ACCOUNTS]:
