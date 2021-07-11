@@ -1,3 +1,7 @@
+# This file is obsolete - it was used for Quik HTML reports import for KIT and Uralsib brokers
+# But it was created before intermediate JSON statement validation was implememnted.
+# So it should be refactored to be a descendant of Statement class
+
 import logging
 import math
 import re
