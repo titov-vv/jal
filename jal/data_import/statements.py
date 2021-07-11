@@ -3,7 +3,6 @@ from PySide2.QtCore import QObject, Signal
 from PySide2.QtWidgets import QFileDialog, QMessageBox
 from jal.widgets.helpers import g_tr
 from jal.data_import.statement_quik import Quik
-from jal.data_import.statement_ibkr_old import IBKR_obsolete
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -53,12 +52,6 @@ class StatementLoader(QObject):
                 'icon': 'psb.ico',
                 'module': "statement_psb",
                 'loader_class': "StatementPSB"
-            },
-            {
-                'name': g_tr('StatementLoader', "IBKR Activity HTML"),
-                'filter': "IBKR Activity statement (*.html)",
-                'loader': self.loadIBActivityStatement,
-                'icon': 'cancel.png'
             }
         ]
 
@@ -86,15 +79,3 @@ class StatementLoader(QObject):
 
     def loadQuikHtml(self, filename):
         return Quik(filename).load()
-
-    def loadIBActivityStatement(self, filename):
-        if QMessageBox().warning(None,
-                                 g_tr('StatementLoader', "Confirmation"),
-                                 g_tr('StatementLoader',
-                                      "This is an obsolete routine for specific cases of old reports import.\n"
-                                      "Use it with extra care if you understand what you are doing.\n"
-                                      "Otherwise please use 'Interactive Brokers XML' import.\n"
-                                      "Continue?"),
-                                 QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
-            return False
-        return IBKR_obsolete(filename).load()

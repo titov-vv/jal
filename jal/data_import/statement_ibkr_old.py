@@ -1,3 +1,6 @@
+# This file is obsolete - it was created by special request to allow limited import from IBKR HTML reports
+# Import interface was changed so it was removed from menu but kept as a reference
+
 import logging
 import pandas
 from datetime import datetime, timezone
