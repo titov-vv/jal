@@ -115,18 +115,16 @@ class Statement:
                 old_id, account['id'] = account['id'], -account_id
                 self._update_id("account", old_id, account_id)
 
-    # Replace 'old_value' with 'new_value' in keys 'tag_name' of self._data
+    # Replace 'old_value' with 'new_value' in keys 'tag_name' of sections listed in mutable_sections
     def _update_id(self, tag_name, old_value, new_value):
-        for section in self._data:
-            if type(self._data[section]) != list:
-                continue
-            if section == FOF.PERIOD:
-                continue   # FIXME Here should be a list of supported sections instead of not supported
+        mutable_sections = [FOF.ACCOUNTS, FOF.ASSETS, FOF.TRADES, FOF.TRANSFERS, FOF.CORP_ACTIONS, FOF.ASSET_PAYMENTS,
+                            FOF.INCOME_SPENDING]
+        for section in mutable_sections:
             for element in self._data[section]:
                 for tag in element:
                     if tag == tag_name:
                         if type(element[tag]) == list:
-                            element[tag] = [-new_value if x==old_value else x for x in element[tag]]
+                            element[tag] = [-new_value if x == old_value else x for x in element[tag]]
                         else:
                             element[tag] = -new_value if element[tag] == old_value else element[tag]
 
