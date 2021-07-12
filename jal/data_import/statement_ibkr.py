@@ -8,7 +8,7 @@ from jal.constants import PredefinedCategory, DividendSubtype
 from jal.widgets.helpers import g_tr, ManipulateDate
 from jal.db.update import JalDB
 from jal.db.helpers import executeSQL, readSQLrecord
-from jal.data_import.statement import Statement, FOF
+from jal.data_import.statement import Statement, FOF, Statement_ImportError
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -19,10 +19,6 @@ class IBKRCashOp:
     Fee = 3
     Interest = 4
     BondInterest = 5
-
-
-class IBKR_ParseError(Exception):
-    pass
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -591,7 +587,7 @@ class StatementIBKR(Statement):
             if action['type'] in action_loaders:
                 try:
                     cnt += action_loaders[action['type']](action, parts_b)
-                except IBKR_ParseError as e:
+                except Statement_ImportError as e:
                     logging.error(e)
             else:
                 logging.warning(g_tr('IBKR', "Corporate action type is not supported: ") + f"{action['type']}")
@@ -610,10 +606,10 @@ class StatementIBKR(Statement):
             if parts:
                 break
         if parts is None:
-            raise IBKR_ParseError(g_tr('IBKR', "Can't parse Merger description ") + f"'{action}'")
+            raise Statement_ImportError(g_tr('IBKR', "Can't parse Merger description ") + f"'{action}'")
         merger_a = parts.groupdict()
         if len(merger_a) != MergerPatterns[pattern_id].count("(?P<"):  # check expected number of matches
-            raise IBKR_ParseError(g_tr('IBKR', "Merger description miss some data ") + f"'{action}'")
+            raise Statement_ImportError(g_tr('IBKR', "Merger description miss some data ") + f"'{action}'")
         description_b = action['description'][:parts.span('symbol')[0]] + merger_a['symbol_old'] + ", "
         asset_b = self.locate_asset(merger_a['symbol_old'], merger_a['isin_old'])
         paired_record = list(filter(
@@ -622,7 +618,7 @@ class StatementIBKR(Statement):
                          and pair['type'] == action['type']
                          and pair['timestamp'] == action['timestamp'], parts_b))
         if len(paired_record) != 1:
-            raise IBKR_ParseError(g_tr('IBKR', "Can't find paired record for ") + f"{action}")
+            raise Statement_ImportError(g_tr('IBKR', "Can't find paired record for ") + f"{action}")
         if pattern_id == 1:
             self.add_merger_payment(action['timestamp'], action['account'], paired_record[0]['proceeds'],
                                     parts['currency'], action['description'])
@@ -650,13 +646,13 @@ class StatementIBKR(Statement):
 
         parts = re.match(SpinOffPattern, action['description'], re.IGNORECASE)
         if parts is None:
-            raise IBKR_ParseError(g_tr('IBKR', "Can't parse Spin-off description ") + f"'{action}'")
+            raise Statement_ImportError(g_tr('IBKR', "Can't parse Spin-off description ") + f"'{action}'")
         spinoff = parts.groupdict()
         if len(spinoff) != SpinOffPattern.count("(?P<"):  # check that expected number of groups was matched
-            raise IBKR_ParseError(g_tr('IBKR', "Spin-off description miss some data ") + f"'{action}'")
+            raise Statement_ImportError(g_tr('IBKR', "Spin-off description miss some data ") + f"'{action}'")
         asset_old = self.locate_asset(spinoff['symbol_old'], spinoff['isin_old'])
         if not asset_old:
-            raise IBKR_ParseError(g_tr('IBKR', "Spin-off initial asset not found ") + f"'{action}'")
+            raise Statement_ImportError(g_tr('IBKR', "Spin-off initial asset not found ") + f"'{action}'")
         qty_old = int(spinoff['Y']) * action['quantity'] / int(spinoff['X'])
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
         action['cost_basis'] = 0.0
@@ -671,10 +667,10 @@ class StatementIBKR(Statement):
 
         parts = re.match(SymbolChangePattern, action['description'], re.IGNORECASE)
         if parts is None:
-            raise IBKR_ParseError(g_tr('IBKR', "Can't parse Symbol Change description ") + f"'{action}'")
+            raise Statement_ImportError(g_tr('IBKR', "Can't parse Symbol Change description ") + f"'{action}'")
         isin_change = parts.groupdict()
         if len(isin_change) != SymbolChangePattern.count("(?P<"):  # check that expected number of groups was matched
-            raise IBKR_ParseError(g_tr('StatementLoader', "Spin-off description miss some data ") + f"'{action}'")
+            raise Statement_ImportError(g_tr('StatementLoader', "Spin-off description miss some data ") + f"'{action}'")
         description_b = action['description'][:parts.span('symbol')[0]] + isin_change['symbol_old'] + ".OLD, "
         asset_b = self.locate_asset(isin_change['symbol_old'], isin_change['isin_old'])
         paired_record = list(filter(
@@ -683,7 +679,7 @@ class StatementIBKR(Statement):
                          and pair['type'] == action['type']
                          and pair['timestamp'] == action['timestamp'], parts_b))
         if len(paired_record) != 1:
-            raise IBKR_ParseError(g_tr('StatementLoader', "Can't find paired record for: ") + f"{action}")
+            raise Statement_ImportError(g_tr('StatementLoader', "Can't find paired record for: ") + f"{action}")
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
         action['cost_basis'] = 1.0
         action['asset'] = [paired_record[0]['asset'], action['asset']]
@@ -705,10 +701,10 @@ class StatementIBKR(Statement):
 
         parts = re.match(SplitPattern, action['description'], re.IGNORECASE)
         if parts is None:
-            raise IBKR_ParseError(g_tr('IBKR', "Can't parse Split description ") + f"'{action}'")
+            raise Statement_ImportError(g_tr('IBKR', "Can't parse Split description ") + f"'{action}'")
         split = parts.groupdict()
         if len(split) != SplitPattern.count("(?P<"):  # check that expected number of groups was matched
-            raise IBKR_ParseError(g_tr('IBKR', "Split description miss some data ") + f"'{action}'")
+            raise Statement_ImportError(g_tr('IBKR', "Split description miss some data ") + f"'{action}'")
         if parts['isin_old'] == parts['id']:  # Simple split without ISIN change
             qty_delta = action['quantity']
             if qty_delta >= 0:  # Forward split (X>Y)
@@ -733,7 +729,7 @@ class StatementIBKR(Statement):
                              and pair['type'] == action['type']
                              and pair['timestamp'] == action['timestamp'], parts_b))
             if len(paired_record) != 1:
-                raise IBKR_ParseError(g_tr('StatementLoader', "Can't find paired record for: ") + f"{action}")
+                raise Statement_ImportError(g_tr('StatementLoader', "Can't find paired record for: ") + f"{action}")
             action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
             action['cost_basis'] = 1.0
             action['asset'] = [paired_record[0]['asset'], action['asset']]
