@@ -4,8 +4,8 @@ from datetime import datetime, timezone
 
 from jal.widgets.helpers import g_tr
 from jal.constants import Setup, PredefinedCategory
-from jal.data_import.statement import FOF
-from jal.data_import.statement_xls import StatementXLS, XLS_ParseError
+from jal.data_import.statement import FOF, Statement_ImportError
+from jal.data_import.statement_xls import StatementXLS
 
 
 class StatementUKFU(StatementXLS):
@@ -292,7 +292,7 @@ class StatementUKFU(StatementXLS):
 
         parts = re.match(DividendPattern, description, re.IGNORECASE)
         if parts is None:
-            raise XLS_ParseError(g_tr('UKFU', "Can't parse dividend description ") + f"'{description}'")
+            raise Statement_ImportError(g_tr('UKFU', "Can't parse dividend description ") + f"'{description}'")
         dividend_data = parts.groupdict()
         isin_match = re.match(ISINPattern, dividend_data['REG_CODE'])
         if isin_match:
@@ -308,7 +308,7 @@ class StatementUKFU(StatementXLS):
             try:
                 tax = float(dividend_data['TAX'])
             except ValueError:
-                raise XLS_ParseError(g_tr('UKFU', "Failed to convert dividend tax ") + f"'{description}'")
+                raise Statement_ImportError(g_tr('UKFU', "Failed to convert dividend tax ") + f"'{description}'")
         else:
             tax = 0
         amount = amount + tax   # Statement contains value after taxation while JAL stores value before tax
@@ -331,7 +331,7 @@ class StatementUKFU(StatementXLS):
         interest_data = parts.groupdict()
         asset_id = self._find_asset_id(symbol=interest_data['NAME'])
         if asset_id is None:
-            raise XLS_ParseError(g_tr('Uralsib', "Can't find asset for bond interest ") + f"'{description}'")
+            raise Statement_ImportError(g_tr('Uralsib', "Can't find asset for bond interest ") + f"'{description}'")
         new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
         payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
                    "number": number, "asset": asset_id, "amount": amount, "description": description}
@@ -347,7 +347,7 @@ class StatementUKFU(StatementXLS):
         interest_data = parts.groupdict()
         asset_id = self._find_asset_id(symbol=interest_data['NAME'])
         if not asset_id:
-            raise XLS_ParseError(g_tr('Uralsib', "Can't find asset for bond repayment ") + f"'{description}'")
+            raise Statement_ImportError(g_tr('Uralsib', "Can't find asset for bond repayment ") + f"'{description}'")
         match = [x for x in self.asset_withdrawal if x['asset'] == asset_id and x['timestamp'] == timestamp]
         if not match:
             logging.error(g_tr('Uralsib', "Can't find asset cancellation record for ") + f"'{description}'")

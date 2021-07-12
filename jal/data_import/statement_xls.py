@@ -7,13 +7,8 @@ from zipfile import ZipFile
 from jal.widgets.helpers import g_tr
 from jal.constants import PredefinedAsset
 from jal.db.update import JalDB
-from jal.data_import.statement import Statement, FOF
+from jal.data_import.statement import Statement, FOF, Statement_ImportError
 from jal.net.helpers import GetAssetInfoFromMOEX
-
-
-# -----------------------------------------------------------------------------------------------------------------------
-class XLS_ParseError(Exception):
-    pass
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -57,7 +52,7 @@ class StatementXLS(Statement):
             with ZipFile(filename) as zip_file:
                 contents = zip_file.namelist()
                 if len(contents) != 1:
-                    raise XLS_ParseError(g_tr('StatementXLS', "Archive contains multiple files"))
+                    raise Statement_ImportError(g_tr('StatementXLS', "Archive contains multiple files"))
                 with zip_file.open(contents[0]) as r_file:
                     self._statement = pandas.read_excel(io=r_file.read(), header=None, na_filter=False)
         else:
@@ -119,13 +114,14 @@ class StatementXLS(Statement):
 
     def _check_statement_header(self):
         if self._statement[self.Header[0]][self.Header[1]] != self.Header[2]:
-            raise XLS_ParseError(g_tr('StatementXLS', "Can't find expected report header: ") + f"'{self.Header[2]}'")
+            raise Statement_ImportError(
+                g_tr('StatementXLS', "Can't find expected report header: ") + f"'{self.Header[2]}'")
 
     def _get_statement_period(self):
         parts = re.match(self.PeriodPattern[2],
                          self._statement[self.PeriodPattern[0]][self.PeriodPattern[1]], re.IGNORECASE)
         if parts is None:
-            raise XLS_ParseError(g_tr('StatementXLS', "Can't read report period"))
+            raise Statement_ImportError(g_tr('StatementXLS', "Can't read report period"))
         statement_dates = parts.groupdict()
         start_day = datetime.strptime(statement_dates['S'], "%d.%m.%Y")
         self._data[FOF.PERIOD][0] = int(start_day.replace(tzinfo=timezone.utc).timestamp())
@@ -222,7 +218,8 @@ class StatementXLS(Statement):
         }
 
         if self._find_asset_id(symbol, isin, reg_code) != 0:
-            raise XLS_ParseError(g_tr('StatementXLS', "Attempt to recreate existing asset: ") + f"{isin}/{reg_code}")
+            raise Statement_ImportError(
+                g_tr('StatementXLS', "Attempt to recreate existing asset: ") + f"{isin}/{reg_code}")
         asset_id = JalDB().get_asset_id('', isin=isin, reg_code=reg_code, dialog_new=False)
         if asset_id is None:
             asset_info = GetAssetInfoFromMOEX(keys={"isin": isin, "regnumber": reg_code, "secid": symbol})
@@ -233,7 +230,7 @@ class StatementXLS(Statement):
                 if asset_info['reg_code']:
                     asset['reg_code'] = asset_info['reg_code']
             else:
-                raise XLS_ParseError(g_tr('StatementXLS', "Can't import asset: ") + f"{isin}/{reg_code}")
+                raise Statement_ImportError(g_tr('StatementXLS', "Can't import asset: ") + f"{isin}/{reg_code}")
         else:
             asset = {"id": -asset_id, "symbol": JalDB().get_asset_name(asset_id), 'name': '',
                      "type": asset_type[JalDB().get_asset_type(asset_id)], "isin": isin, "reg_code": reg_code}
@@ -275,7 +272,7 @@ class StatementXLS(Statement):
             if len(match) == 1:
                 currency_id = match[0]['id']
             else:
-                raise XLS_ParseError(g_tr('StatementXLS', "Multiple currency found: ") + f"{currency}")
+                raise Statement_ImportError(g_tr('StatementXLS', "Multiple currency found: ") + f"{currency}")
         else:
             currency_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
             new_currency = {"id": currency_id, "symbol": code, 'name': '', 'type': FOF.ASSET_MONEY}
@@ -286,7 +283,7 @@ class StatementXLS(Statement):
             if len(match) == 1:
                 return match[0]['id']
             else:
-                raise XLS_ParseError(g_tr('StatementXLS', "Multiple accounts found: ") + f"{number}/{currency}")
+                raise Statement_ImportError(g_tr('StatementXLS', "Multiple accounts found: ") + f"{number}/{currency}")
         new_id = max([0] + [x['id'] for x in self._data[FOF.ACCOUNTS]]) + 1
         new_account = {"id": new_id, "number": number, 'currency': currency_id}
         self._data[FOF.ACCOUNTS].append(new_account)
