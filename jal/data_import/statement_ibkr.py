@@ -323,28 +323,23 @@ class StatementIBKR(Statement):
             'CashTransactions': self.load_cash_transactions,
             'TransactionTaxes': self.load_taxes
         }
-        try:
-            xml_root = etree.parse(filename)
-            for FlexStatements in xml_root.getroot():
-                for statement in FlexStatements:
-                    attr = statement.attrib
-                    self._data[FOF.PERIOD][0] = int(
-                        datetime.strptime(attr['fromDate'], "%Y%m%d").replace(tzinfo=timezone.utc).timestamp())
-                    self._data[FOF.PERIOD][1] = int(
-                        datetime.strptime(attr['toDate'], "%Y%m%d").replace(tzinfo=timezone.utc).timestamp())
-                    logging.info(g_tr('IBKR', "Load IB Flex-statement for account ") +
-                                 f"{attr['accountId']}: {attr['fromDate']} - {attr['toDate']}")
-                    for section in section_loaders:
-                        section_elements = statement.xpath(section)  # Actually should be list of 0 or 1 element
-                        if section_elements:
-                            section_data = self.get_ibkr_data(section_elements[0])
-                            if section_data is None:
-                                return
-                            section_loaders[section](section_data)
-        except Exception as e:
-            logging.error(g_tr('IBKR', "Failed to parse Interactive Brokers flex-report") + f": {e}",
-                          exc_info=True)
-            return
+        xml_root = etree.parse(filename)
+        for FlexStatements in xml_root.getroot():
+            for statement in FlexStatements:
+                attr = statement.attrib
+                self._data[FOF.PERIOD][0] = int(
+                    datetime.strptime(attr['fromDate'], "%Y%m%d").replace(tzinfo=timezone.utc).timestamp())
+                self._data[FOF.PERIOD][1] = int(
+                    datetime.strptime(attr['toDate'], "%Y%m%d").replace(tzinfo=timezone.utc).timestamp())
+                logging.info(g_tr('IBKR', "Load IB Flex-statement for account ") +
+                             f"{attr['accountId']}: {attr['fromDate']} - {attr['toDate']}")
+                for section in section_loaders:
+                    section_elements = statement.xpath(section)  # Actually should be list of 0 or 1 element
+                    if section_elements:
+                        section_data = self.get_ibkr_data(section_elements[0])
+                        if section_data is None:
+                            return
+                        section_loaders[section](section_data)
         logging.info(g_tr('IBKR', "IB Flex-statement loaded successfully"))
 
     def get_ibkr_data(self, section):
@@ -585,12 +580,10 @@ class StatementIBKR(Statement):
             if action['jal_processed']:
                 continue
             if action['type'] in action_loaders:
-                try:
-                    cnt += action_loaders[action['type']](action, parts_b)
-                except Statement_ImportError as e:
-                    logging.error(e)
+                cnt += action_loaders[action['type']](action, parts_b)
             else:
-                logging.warning(g_tr('IBKR', "Corporate action type is not supported: ") + f"{action['type']}")
+                raise Statement_ImportError(
+                    g_tr('IBKR', "Corporate action type is not supported: ") + f"{action['type']}")
         logging.info(g_tr('IBKR', "Corporate actions loaded: ") + f"{cnt} ({len(actions)})")
 
     def load_merger(self, action, parts_b) -> int:

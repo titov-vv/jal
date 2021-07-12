@@ -1,8 +1,10 @@
+import logging
 import importlib
 from PySide2.QtCore import QObject, Signal
 from PySide2.QtWidgets import QFileDialog
 from jal.widgets.helpers import g_tr
 from jal.data_import.statement_quik import Quik
+from jal.data_import.statement import Statement_ImportError
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -59,8 +61,12 @@ class StatementLoader(QObject):
         module = importlib.import_module(f"jal.data_import.{statement_loader['module']}")
         class_instance = getattr(module, statement_loader['loader_class'])
         statement = class_instance()
-        statement.load(statement_file)
-        statement.match_db_ids(verbal=False)
+        try:
+            statement.load(statement_file)
+            statement.match_db_ids(verbal=False)
+        except Statement_ImportError as e:
+            logging.error(g_tr('StatementLoader', "Import failed: ") + str(e))
+            return
         statement.import_into_db()
         self.load_completed.emit()  # emit self.load_completed.emit()  if failed
 
