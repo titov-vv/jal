@@ -160,7 +160,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.actionCopy.triggered.connect(self.copyOperation)
         self.downloader.download_completed.connect(self.balances_model.update)
         self.downloader.download_completed.connect(self.holdings_model.update)
-        self.statements.load_completed.connect(self.ledger.rebuild)
+        self.statements.load_completed.connect(self.onStatementImport)
         self.ledger.updated.connect(self.balances_model.update)
         self.ledger.updated.connect(self.holdings_model.update)
 
@@ -383,3 +383,8 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
             QuotesListDialog().exec_()
         else:
             assert False
+
+    @Slot()
+    def onStatementImport(self, totals):
+        self.ledger.rebuild()
+        # TODO add 'totals' validation after import

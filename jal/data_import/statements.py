@@ -1,5 +1,7 @@
 import logging
 import importlib
+from collections import defaultdict
+
 from PySide2.QtCore import QObject, Signal
 from PySide2.QtWidgets import QFileDialog
 from jal.widgets.helpers import g_tr
@@ -9,7 +11,7 @@ from jal.data_import.statement import Statement_ImportError
 
 # -----------------------------------------------------------------------------------------------------------------------
 class StatementLoader(QObject):
-    load_completed = Signal()
+    load_completed = Signal(defaultdict)
     load_failed = Signal()
 
     def __init__(self):
@@ -64,11 +66,12 @@ class StatementLoader(QObject):
         try:
             statement.load(statement_file)
             statement.match_db_ids(verbal=False)
+            totals = statement.import_into_db()
         except Statement_ImportError as e:
             logging.error(g_tr('StatementLoader', "Import failed: ") + str(e))
+            self.load_failed.emit()
             return
-        statement.import_into_db()
-        self.load_completed.emit()  # emit self.load_completed.emit()  if failed
+        self.load_completed.emit(totals)
 
     def loadQuikHtml(self, filename):
         return Quik(filename).load()

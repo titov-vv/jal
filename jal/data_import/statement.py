@@ -2,6 +2,7 @@ import json
 import sys
 import logging
 from datetime import datetime
+from collections import defaultdict
 
 from PySide2.QtWidgets import QDialog, QMessageBox
 from jal.widgets.helpers import g_tr
@@ -142,16 +143,22 @@ class Statement:
                         else:
                             element[tag] = -new_value if element[tag] == old_value else element[tag]
 
+    def validate(self):
+        pass  # TODO here should be checks that json is valid
+
+    # Store content of JSON statement into database
+    # Returns a dict of dict with amounts:
+    # { account_1: { asset_1: X, asset_2: Y, ...}, account_2: { asset_N: Z, ...}, ... }
     def import_into_db(self):
         for section in self._section_loaders:
             if section in self._data:
                 self._section_loaders[section](self._data[section])
 
-        # FIXME This display should be outside of this method
+        totals = defaultdict(dict)
         for account in self._data[FOF.ACCOUNTS]:
             if 'cash_end' in account:
-                logging.info(g_tr('Statement', 'Planned cash: ') + f"{account['cash_end']:.2f} " +
-                             f"{JalDB().get_asset_name(JalDB().get_account_currency(-account['currency']))}")
+                totals[-account['id']][-account['currency']] = account['cash_end']
+        return totals
 
     def _check_period(self, period):
         if len(period) != 2:
