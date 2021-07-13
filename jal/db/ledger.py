@@ -561,3 +561,10 @@ class Ledger(QObject):
             self.rebuild(from_timestamp=rebuild_dialog.getTimestamp(),
                          fast_and_dirty=rebuild_dialog.isFastAndDirty(), silent=False)
 
+    def get_asset_amount(self, timestamp, account_id, asset_id):
+        return readSQL("SELECT sum_amount FROM ledger_sums "
+                       "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp<=:timestamp "
+                       "AND (book_account=:money OR book_account=:assets)"
+                       "ORDER BY sid DESC LIMIT 1",
+                       [(":account_id", account_id), (":asset_id", asset_id), (":timestamp", timestamp),
+                        (":money", BookAccount.Money), (":assets", BookAccount.Assets)])

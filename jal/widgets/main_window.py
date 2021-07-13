@@ -385,6 +385,14 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
             assert False
 
     @Slot()
-    def onStatementImport(self, totals):
+    def onStatementImport(self, timestamp, totals):
         self.ledger.rebuild()
-        # TODO add 'totals' validation after import
+        for account_id in totals:
+            for asset_id in totals[account_id]:
+                amount = self.ledger.get_asset_amount(timestamp, account_id, asset_id)
+                if amount is not None:
+                    if abs(totals[account_id][asset_id] - amount) > Setup.DISP_TOLERANCE:
+                        account = JalDB().get_account_name(account_id)
+                        asset = JalDB().get_asset_name(asset_id)
+                        logging.warning(g_tr('MainWindow', "Statement ending balance doesn't match: ") +
+                                        f"{account} / {asset} / {amount} <> {totals[account_id][asset_id]}")

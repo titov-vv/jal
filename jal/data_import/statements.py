@@ -11,7 +11,7 @@ from jal.data_import.statement import Statement_ImportError
 
 # -----------------------------------------------------------------------------------------------------------------------
 class StatementLoader(QObject):
-    load_completed = Signal(defaultdict)
+    load_completed = Signal(int, defaultdict)
     load_failed = Signal()
 
     def __init__(self):
@@ -71,7 +71,7 @@ class StatementLoader(QObject):
             logging.error(g_tr('StatementLoader', "Import failed: ") + str(e))
             self.load_failed.emit()
             return
-        self.load_completed.emit(totals)
+        self.load_completed.emit(statement.period()[1], totals)
 
     def loadQuikHtml(self, filename):
         return Quik(filename).load()

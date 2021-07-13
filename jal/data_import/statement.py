@@ -86,6 +86,13 @@ class Statement:
             FOF.CORP_ACTIONS: self._import_corporate_actions
         }
 
+    # returns tuple (start_timestamp, end_timestamp)
+    def period(self):
+        if FOF.PERIOD in self._data:
+            return self._data[FOF.PERIOD][0], self._data[FOF.PERIOD][1]
+        else:
+            return 0, 0
+
     # Loads JSON statement format from file defined by 'filename'
     def load(self, filename: str) -> None:
         self._data = {}
