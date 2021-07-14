@@ -1,7 +1,7 @@
 import requests
 import logging
 import json
-from jal.constants import MarketDataFeed, PredefinedAsset
+from jal.constants import Setup, MarketDataFeed, PredefinedAsset
 from jal.widgets.helpers import g_tr
 
 
@@ -9,7 +9,9 @@ from jal.widgets.helpers import g_tr
 # Function download URL and return it content as string or empty string if site returns error
 # ===================================================================================================================
 def get_web_data(url):
-    response = requests.get(url)
+    session = requests.Session()
+    session.headers['User-Agent'] = Setup.WEB_USER_AGENT
+    response = session.get(url)
     if response.status_code == 200:
         return response.text
     else:
@@ -21,8 +23,9 @@ def get_web_data(url):
 # Function download URL and return it content as string or empty string if site returns error
 # ===================================================================================================================
 def post_web_data(url, params):
-    s = requests.Session()
-    response = s.post(url, json=params)
+    session = requests.Session()
+    session.headers['User-Agent'] = Setup.WEB_USER_AGENT
+    response = session.post(url, json=params)
     if response.status_code == 200:
         return response.text
     else:

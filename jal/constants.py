@@ -12,6 +12,7 @@ class Setup:
     TARGET_SCHEMA = 25
     CALC_TOLERANCE = 1e-10
     DISP_TOLERANCE = 1e-4
+    WEB_USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:90.0) Gecko/20100101 Firefox/90.0"
 
 
 class BookAccount:  # PREDEFINED BOOK ACCOUNTS
