@@ -1,37 +1,49 @@
 import requests
 import logging
 import json
-from jal.constants import Setup, MarketDataFeed, PredefinedAsset
+import platform
+from jal import __version__
+from jal.constants import MarketDataFeed, PredefinedAsset
 from jal.widgets.helpers import g_tr
 
 
 # ===================================================================================================================
-# Function download URL and return it content as string or empty string if site returns error
+# Function returns custom User Agent for web requests
+def make_user_agent() -> str:
+    return f"JAL/{__version__} ({platform.system()} {platform.release()})"
+
+
 # ===================================================================================================================
+# Retrieve URL from web with given method and params
+def request_url(method, url, params=None):
+    session = requests.Session()
+    session.headers['User-Agent'] = make_user_agent()
+    if method == "GET":
+        response = session.get(url)
+    elif method == "POST":
+        if params:
+            response = session.post(url, json=params)
+        else:
+            response = session.post(url)
+    else:
+        raise ValueError("Unknown download method for URL")
+    if response.status_code == 200:
+        return response.text
+    else:
+        logging.error(f"URL: {url}" + g_tr('Net', " failed: ") + f"{response.status_code}: {response.text}")
+        return ''
+
+
+# ===================================================================================================================
+# Function download URL and return it content as string or empty string if site returns error
 def get_web_data(url):
-    session = requests.Session()
-    session.headers['User-Agent'] = Setup.WEB_USER_AGENT
-    response = session.get(url)
-    if response.status_code == 200:
-        return response.text
-    else:
-        logging.error(f"URL: {url}" + g_tr('Net', " failed: ") + f"{response.status_code}: {response.text}")
-        return ''
+    return request_url("GET", url)
 
 
 # ===================================================================================================================
 # Function download URL and return it content as string or empty string if site returns error
-# ===================================================================================================================
 def post_web_data(url, params):
-    session = requests.Session()
-    session.headers['User-Agent'] = Setup.WEB_USER_AGENT
-    response = session.post(url, json=params)
-    if response.status_code == 200:
-        return response.text
-    else:
-        logging.error(f"URL: {url}" + g_tr('Net', " failed: ") + f"{response.status_code}: {response.text}")
-        return ''
-
+    return request_url("POST", url, params=params)
 
 # ===================================================================================================================
 # Function tries to get asset information online from http://www.moex.com
