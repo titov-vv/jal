@@ -3,7 +3,7 @@ from datetime import datetime, timezone, timedelta
 
 from jal.widgets.helpers import g_tr
 from jal.constants import Setup, PredefinedCategory
-from jal.data_import.statement import FOF
+from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xls import StatementXLS
 
 
@@ -55,7 +55,7 @@ class StatementKIT(StatementXLS):
                 bond_interest = -self._statement[headers['accrued_int']][row]
             elif self._statement[headers['B/S']][row] == 'Продажа':
                 amount = self._statement[headers['amount']][row]
-                qty = -self._statement[headers['qty']][row]
+                qty = self._statement[headers['qty']][row]
                 bond_interest = self._statement[headers['accrued_int']][row]
             else:
                 row += 1
@@ -101,7 +101,10 @@ class StatementKIT(StatementXLS):
             'Внесение д/с в торг': self.transfer_in,
             'Вывод дс': self.transfer_out,
             'Ком бр аб плата спот': self.fee,
-            'Комиссия НРД': self.fee
+            'Комиссия НРД': self.fee,
+            'Delta-long': self.fee,
+            '% по займу ЦБ': self.interest,
+            'Налог с див.доход ФЛ': self.tax
         }
         row, headers = self.find_section_start("Движение денежных средств по неторговым операциям", columns)
         if row < 0:
@@ -111,8 +114,7 @@ class StatementKIT(StatementXLS):
                 break
             operation = self._statement[headers['operation']][row]
             if operation not in operations:  # not supported type of operation
-                row += 1
-                continue
+                raise Statement_ImportError(g_tr('KIT', "Unsuppported cash transaction ") + f"'{operation}'")
             timestamp = int(self._statement[headers['date']][row].replace(tzinfo=timezone.utc).timestamp())
             account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
             amount = self._statement[headers['amount']][row]
@@ -143,6 +145,15 @@ class StatementKIT(StatementXLS):
 
     def fee(self, timestamp, account_id, amount, _reason, description):
         new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
-        tax = {"id": new_id, "timestamp": timestamp, "account": account_id, "peer": 0,
+        fee = {"id": new_id, "timestamp": timestamp, "account": account_id, "peer": 0,
                "lines": [{"amount": amount, "category": -PredefinedCategory.Fees, "description": description}]}
-        self._data[FOF.INCOME_SPENDING].append(tax)
+        self._data[FOF.INCOME_SPENDING].append(fee)
+
+    def interest(self, timestamp, account_id, amount, _reason, description):
+        new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
+        interest = {"id": new_id, "timestamp": timestamp, "account": account_id, "peer": 0,
+                    "lines": [{"amount": amount, "category": -PredefinedCategory.Interest, "description": description}]}
+        self._data[FOF.INCOME_SPENDING].append(interest)
+
+    def tax(self, timestamp, account_id, amount, _reason, description):
+        logging.info(g_tr('KIT', "Dividend taxes are not supported for KIT statements yet"))

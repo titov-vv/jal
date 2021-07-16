@@ -254,9 +254,8 @@ class StatementUKFU(StatementXLS):
                 break
 
             operation = self._statement[headers['type']][row]
-            if operation not in operations:   # not supported type of operation
-                row += 1
-                continue
+            if operation not in operations:
+                raise Statement_ImportError(g_tr('UKFU', "Unsuppported cash transaction ") + f"'{operation}'")
             number = self._statement[headers['number']][row]
             timestamp = int(datetime.strptime(self._statement[headers['date']][row],
                                               "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
