@@ -1418,9 +1418,19 @@ Application will be terminated now</source>
         <translation>Сделок загружено: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_kit.py" line="124"/>
+        <location filename="../data_import/statement_kit.py" line="126"/>
         <source>Cash operations loaded: </source>
         <translation>Денежных операций загружено: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_kit.py" line="117"/>
+        <source>Unsuppported cash transaction </source>
+        <translation>Неподдерживаемая денежная транзакция </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_kit.py" line="159"/>
+        <source>Dividend taxes are not supported for KIT statements yet</source>
+        <translation>Налоги для дивидендов ещё не поддерживаются для брокера КИТ Финанс</translation>
     </message>
 </context>
 <context>
@@ -1611,12 +1621,12 @@ do you want to save it?</source>
 Вы хотите их сохранить?</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="338"/>
+        <location filename="../widgets/main_window.py" line="343"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="338"/>
+        <location filename="../widgets/main_window.py" line="343"/>
         <source>Are you sure to delete selected transacion(s)?</source>
         <translation>Вы уверены что ходите удалить выбранную(-ые) транзацию(-и)?</translation>
     </message>
@@ -1631,7 +1641,7 @@ do you want to save it?</source>
         <translation>&lt;p&gt;Дополнительная информация, инструкции, сообщения о проблемах доступны на &lt;a href=https://github.com/titov-vv/jal&gt;домашней странице проекта на github&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Вопросы, пожелания, донаты: &lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="397"/>
+        <location filename="../widgets/main_window.py" line="404"/>
         <source>Statement ending balance doesn&apos;t match: </source>
         <translation>Конечный баланс по отчёту не совпадает: </translation>
     </message>
@@ -1639,27 +1649,27 @@ do you want to save it?</source>
 <context>
     <name>Net</name>
     <message>
-        <location filename="../net/helpers.py" line="29"/>
+        <location filename="../net/helpers.py" line="33"/>
         <source> failed: </source>
         <translation>неуспешный запрос: </translation>
     </message>
     <message>
-        <location filename="../net/helpers.py" line="98"/>
+        <location filename="../net/helpers.py" line="113"/>
         <source>Unsupported MOEX security type: </source>
         <translation>Неподдерживаемый тип ЦБ МосБиржи: </translation>
     </message>
     <message>
-        <location filename="../net/helpers.py" line="52"/>
+        <location filename="../net/helpers.py" line="67"/>
         <source>Unknown MOEX search key</source>
         <translation>Неизвестный ключ поиска для MOEX</translation>
     </message>
     <message>
-        <location filename="../net/helpers.py" line="55"/>
+        <location filename="../net/helpers.py" line="70"/>
         <source>No valid MOEX search key provided</source>
         <translation>Нет корректного ключа поиска MOEX</translation>
     </message>
     <message>
-        <location filename="../net/helpers.py" line="58"/>
+        <location filename="../net/helpers.py" line="73"/>
         <source>Empty MOEX search key</source>
         <translation>Пустой ключ поиска MOEX</translation>
     </message>
@@ -1735,22 +1745,22 @@ do you want to save it?</source>
         <translation>Дивиденд акциями: {after} {new}</translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="187"/>
+        <location filename="../db/operations_model.py" line="189"/>
         <source>Error. Zero rate</source>
         <translation>Ошибка. Нулевой курс</translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="191"/>
+        <location filename="../db/operations_model.py" line="193"/>
         <source>Tax: </source>
         <translation>Налог: </translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="208"/>
+        <location filename="../db/operations_model.py" line="210"/>
         <source> cost basis</source>
         <translation> от базового актива</translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="167"/>
+        <location filename="../db/operations_model.py" line="169"/>
         <source>Rate: </source>
         <translation>Курс: </translation>
     </message>
@@ -3110,14 +3120,19 @@ do you want to save it?</source>
         <translation>Сделок с фьючерсами загружено: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="295"/>
+        <location filename="../data_import/statement_uralsib.py" line="294"/>
         <source>Can&apos;t parse dividend description </source>
         <translation>Невозможно распознать описание дивиденда </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="311"/>
+        <location filename="../data_import/statement_uralsib.py" line="310"/>
         <source>Failed to convert dividend tax </source>
         <translation>Ошибка при конвертации суммы налога </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="258"/>
+        <source>Unsuppported cash transaction </source>
+        <translation>Неподдерживаемая денежная транзакция </translation>
     </message>
 </context>
 <context>
@@ -3146,37 +3161,37 @@ do you want to save it?</source>
 <context>
     <name>Uralsib</name>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="271"/>
+        <location filename="../data_import/statement_uralsib.py" line="270"/>
         <source>Cash operations loaded: </source>
         <translation>Денежных операций загружено: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="329"/>
+        <location filename="../data_import/statement_uralsib.py" line="328"/>
         <source>Can&apos;t parse bond interest description </source>
         <translation>Невозможно распознать описание купона </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="334"/>
+        <location filename="../data_import/statement_uralsib.py" line="333"/>
         <source>Can&apos;t find asset for bond interest </source>
         <translation>Не найдена ЦБ для купона </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="345"/>
+        <location filename="../data_import/statement_uralsib.py" line="344"/>
         <source>Can&apos;t parse bond repayment description </source>
         <translation>Невозможно распознать описание погашения облигации </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="350"/>
+        <location filename="../data_import/statement_uralsib.py" line="349"/>
         <source>Can&apos;t find asset for bond repayment </source>
         <translation>Невозможно найти ЦБ для погашения облигации </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="353"/>
+        <location filename="../data_import/statement_uralsib.py" line="352"/>
         <source>Can&apos;t find asset cancellation record for </source>
         <translation>Невозможно найти запись списания ЦБ для </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="356"/>
+        <location filename="../data_import/statement_uralsib.py" line="355"/>
         <source>Multiple asset cancellation match for </source>
         <translation>Найдены несколько записей погашения ЦБ для </translation>
     </message>

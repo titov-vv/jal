@@ -1415,8 +1415,18 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_kit.py" line="124"/>
+        <location filename="../data_import/statement_kit.py" line="126"/>
         <source>Cash operations loaded: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_kit.py" line="117"/>
+        <source>Unsuppported cash transaction </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_kit.py" line="159"/>
+        <source>Dividend taxes are not supported for KIT statements yet</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1606,12 +1616,12 @@ do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="338"/>
+        <location filename="../widgets/main_window.py" line="343"/>
         <source>Confirmation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="338"/>
+        <location filename="../widgets/main_window.py" line="343"/>
         <source>Are you sure to delete selected transacion(s)?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1626,7 +1636,7 @@ do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="397"/>
+        <location filename="../widgets/main_window.py" line="404"/>
         <source>Statement ending balance doesn&apos;t match: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1634,27 +1644,27 @@ do you want to save it?</source>
 <context>
     <name>Net</name>
     <message>
-        <location filename="../net/helpers.py" line="29"/>
+        <location filename="../net/helpers.py" line="33"/>
         <source> failed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/helpers.py" line="98"/>
+        <location filename="../net/helpers.py" line="113"/>
         <source>Unsupported MOEX security type: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/helpers.py" line="52"/>
+        <location filename="../net/helpers.py" line="67"/>
         <source>Unknown MOEX search key</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/helpers.py" line="55"/>
+        <location filename="../net/helpers.py" line="70"/>
         <source>No valid MOEX search key provided</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/helpers.py" line="58"/>
+        <location filename="../net/helpers.py" line="73"/>
         <source>Empty MOEX search key</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1730,22 +1740,22 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="187"/>
+        <location filename="../db/operations_model.py" line="189"/>
         <source>Error. Zero rate</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="191"/>
+        <location filename="../db/operations_model.py" line="193"/>
         <source>Tax: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="208"/>
+        <location filename="../db/operations_model.py" line="210"/>
         <source> cost basis</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="167"/>
+        <location filename="../db/operations_model.py" line="169"/>
         <source>Rate: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -3105,13 +3115,18 @@ do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="295"/>
+        <location filename="../data_import/statement_uralsib.py" line="294"/>
         <source>Can&apos;t parse dividend description </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="311"/>
+        <location filename="../data_import/statement_uralsib.py" line="310"/>
         <source>Failed to convert dividend tax </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_uralsib.py" line="258"/>
+        <source>Unsuppported cash transaction </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3141,37 +3156,37 @@ do you want to save it?</source>
 <context>
     <name>Uralsib</name>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="271"/>
+        <location filename="../data_import/statement_uralsib.py" line="270"/>
         <source>Cash operations loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="329"/>
+        <location filename="../data_import/statement_uralsib.py" line="328"/>
         <source>Can&apos;t parse bond interest description </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="334"/>
+        <location filename="../data_import/statement_uralsib.py" line="333"/>
         <source>Can&apos;t find asset for bond interest </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="345"/>
+        <location filename="../data_import/statement_uralsib.py" line="344"/>
         <source>Can&apos;t parse bond repayment description </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="350"/>
+        <location filename="../data_import/statement_uralsib.py" line="349"/>
         <source>Can&apos;t find asset for bond repayment </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="353"/>
+        <location filename="../data_import/statement_uralsib.py" line="352"/>
         <source>Can&apos;t find asset cancellation record for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_uralsib.py" line="356"/>
+        <location filename="../data_import/statement_uralsib.py" line="355"/>
         <source>Multiple asset cancellation match for </source>
         <translation type="unfinished"></translation>
     </message>
