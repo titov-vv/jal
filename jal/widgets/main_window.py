@@ -331,7 +331,12 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
     @Slot()
     def reconcileAtCurrentOperation(self):
-        self.operations_model.reconcile_operation(self.current_index.row())
+        timestamp_idx = self.operations_model.index(self.current_index.row(), self.operations_model.COL_TIMESTAMP)
+        timestamp = self.operations_model.data(timestamp_idx, Qt.UserRole)
+        account_idx = self.operations_model.index(self.current_index.row(), self.operations_model.COL_ACCOUNT_ID)
+        account_id = self.operations_model.data(account_idx, Qt.UserRole)
+        self.ledger.reconcile(account_id, timestamp)
+        self.operations_model.refresh()
 
     @Slot()
     def deleteOperation(self):
@@ -391,7 +396,9 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
             for asset_id in totals[account_id]:
                 amount = self.ledger.get_asset_amount(timestamp, account_id, asset_id)
                 if amount is not None:
-                    if abs(totals[account_id][asset_id] - amount) > Setup.DISP_TOLERANCE:
+                    if abs(totals[account_id][asset_id] - amount) <= Setup.DISP_TOLERANCE:
+                        self.ledger.reconcile(timestamp, account_id)
+                    else:
                         account = JalDB().get_account_name(account_id)
                         asset = JalDB().get_asset_name(asset_id)
                         logging.warning(g_tr('MainWindow', "Statement ending balance doesn't match: ") +

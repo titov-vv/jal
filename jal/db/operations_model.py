@@ -133,6 +133,8 @@ class OperationsModel(QAbstractTableModel):
             if index.column() == 4 or index.column() == 5:
                 return Qt.AlignRight
             return Qt.AlignLeft
+        if role == Qt.UserRole:  # return underlying data
+            return self._data[index.row()][index.column()]
 
     def data_text(self, row, column):
         if column == 0:
@@ -317,14 +319,6 @@ class OperationsModel(QAbstractTableModel):
             return self._data[row][self.COL_TYPE]
         else:
             return 0
-
-    def reconcile_operation(self, row):
-        if (row >= 0) and (row < len(self._data)):
-            timestamp = self._data[row][self.COL_TIMESTAMP]
-            account_id = self._data[row][self.COL_ACCOUNT_ID]
-            _ = executeSQL("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
-                           [(":timestamp", timestamp), (":account_id", account_id)])
-            self.prepareData()
 
     @Slot()
     def refresh(self):
