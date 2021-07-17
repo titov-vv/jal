@@ -1,0 +1,36 @@
+{
+  "type": "object",
+  "properties": {
+    "period": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "accounts": {
+      "type": "array"
+    },
+    "assets": {
+      "type": "array"
+    },
+    "trades": {
+      "type": "array"
+    },
+    "income_spending": {
+      "type": "array"
+    },
+    "transfers": {
+      "type": "array"
+    },
+    "corporate_actions": {
+      "type": "array"
+    },
+    "asset_payments": {
+      "type": "array"
+    }
+  },
+  "required": [
+    "period",
+    "accounts",
+    "assets"
+  ]
+}

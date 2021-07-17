@@ -7,6 +7,8 @@ class Setup:
     INIT_SCRIPT_PATH = 'jal_init.sql'
     UPDATES_PATH = 'updates'
     ICONS_PATH = "img"
+    IMPORT_PATH = "data_import"
+    IMPORT_SCHEMA_NAME = "import_schema.json"
     LANG_PATH = "languages"
     UPDATE_PREFIX = 'jal_delta_'
     TARGET_SCHEMA = 25

@@ -8,6 +8,7 @@ from jal.db.helpers import readSQL
 def test_statement_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
     statement = Statement()
     statement.load(data_path + 'ibkr.json')
+    statement.validate_format()
     statement.match_db_ids(verbal=False)
 
     with open(data_path + 'matched.json', 'r') as json_file:

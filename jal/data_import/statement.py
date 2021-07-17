@@ -1,13 +1,15 @@
 import json
+from jsonschema import validate
 import sys
+import os
 import logging
 from datetime import datetime
 from collections import defaultdict
 
 from PySide2.QtWidgets import QDialog, QMessageBox
 from jal.widgets.helpers import g_tr
-from jal.constants import MarketDataFeed, PredefinedAsset, DividendSubtype, CorporateAction
-from jal.db.helpers import account_last_date
+from jal.constants import Setup, MarketDataFeed, PredefinedAsset, DividendSubtype, CorporateAction
+from jal.db.helpers import account_last_date, get_app_path
 from jal.db.update import JalDB
 from jal.widgets.account_select import SelectAccountDialog
 
@@ -152,8 +154,17 @@ class Statement:
                         else:
                             element[tag] = -new_value if element[tag] == old_value else element[tag]
 
-    def validate(self):
-        pass  # TODO here should be checks that json is valid
+    def validate_format(self):
+        schema_filename = get_app_path() + Setup.IMPORT_PATH + os.sep + Setup.IMPORT_SCHEMA_NAME
+        try:
+            with open(schema_filename, 'r') as schema_file:
+                try:
+                    statement_schema = json.load(schema_file)
+                except json.JSONDecodeError:
+                    logging.error(g_tr('Statement', "Failed to read JSON schema from file: ") + schema_filename)
+        except Exception as err:
+            logging.error(g_tr('Statement', "Failed to read file: ") + str(err))
+        validate(instance=self._data, schema=statement_schema)
 
     # Store content of JSON statement into database
     # Returns a dict of dict with amounts:
