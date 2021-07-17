@@ -23,7 +23,7 @@ def test_statement_json_import(tmp_path, project_root, data_path, prepare_db_ibk
         [2, 'USD', 1, 'Доллар США', '', 0, 0],
         [3, 'EUR', 1, 'Евро', '', 0, 0],
         [4, 'VUG', 4, 'Growth ETF', 'US9229087369', 0, 0],
-        [5, 'EDV', 4, 'VANGUARD EXTENDED DUR TREAS', '', 0, 0],
+        [5, 'EDV', 4, 'VANGUARD EXTENDED DUR TREAS', '', 2, 0],
         [6, 'CAD', 1, '', '', 0, -1],
         [7, 'AMZN', 2, 'AMAZON.COM INC', 'US0231351067', 0, 2],
         [8, 'BABA', 2, 'ALIBABA GROUP HOLDING-SP ADR', 'US01609W1027', 0, 2],

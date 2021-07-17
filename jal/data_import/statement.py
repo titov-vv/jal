@@ -121,9 +121,11 @@ class Statement:
         for asset in self._data[FOF.ASSETS]:
             isin = asset['isin'] if 'isin' in asset else ''
             reg_code = asset['reg_code'] if 'reg_code' in asset else ''
-            name = asset['name'] if 'name' in asset else ''     # FIXME: update isin/reg_code/country in DB if different
+            name = asset['name'] if 'name' in asset else ''
+            country_code = asset['country'] if 'country' in asset else ''
             asset_id = JalDB().get_asset_id(asset['symbol'], isin=isin, reg_code=reg_code, name=name, dialog_new=verbal)
-            if asset_id:
+            if asset_id is not None:
+                JalDB().update_asset_data(asset_id, asset['symbol'], isin, reg_code, country_code)
                 old_id, asset['id'] = asset['id'], -asset_id
                 self._update_id("asset", old_id, asset_id)
                 if asset['type'] == FOF.ASSET_MONEY:

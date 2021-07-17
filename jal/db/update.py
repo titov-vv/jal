@@ -152,16 +152,13 @@ class JalDB():
                                    [(":reg_code", reg_code)])
             if asset_id is None:
                 asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol COLLATE NOCASE", [(":symbol", symbol)])
-        if asset_id is not None:
-            self.update_asset_data(asset_id, symbol, isin, reg_code)   # FIXME move it outside this method
-            return asset_id
         if asset_id is None and dialog_new:
             dialog = AddAssetDialog(symbol, isin=isin, name=name)
             dialog.exec_()
             asset_id = dialog.asset_id
         return asset_id
 
-    def update_asset_data(self, asset_id, new_symbol='', new_isin='', new_reg=''):
+    def update_asset_data(self, asset_id, new_symbol='', new_isin='', new_reg='', new_country_code=''):
         if new_symbol:
             symbol = readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
             if new_symbol.upper() != symbol.upper():
@@ -186,6 +183,16 @@ class JalDB():
                                [(":new_reg", new_reg), (":asset_id", asset_id)])
                 logging.info(g_tr('JalDB', "Reg.number updated for ")
                              + f"{self.get_asset_name(asset_id)}: {reg} -> {new_reg}")
+        if new_country_code:
+            country_id, country_code = readSQL("SELECT a.country_id, c.code FROM assets AS a LEFT JOIN countries AS c "
+                                   "ON a.country_id=c.id WHERE a.id=:asset_id", [(":asset_id", asset_id)])
+            if (country_id == 0) or (country_code.lower() != new_country_code.lower()):
+                new_country_id = get_country_by_code(new_country_code)
+                _ = executeSQL("UPDATE assets SET country_id=:new_country_id WHERE id=:asset_id",
+                               [(":new_country_id", new_country_id), (":asset_id", asset_id)])
+                if country_id != 0:
+                    logging.info(g_tr('JalDB', "Country updated for ")
+                                 + f"{self.get_asset_name(asset_id)}: {country_code} -> {new_country_code}")
 
     def update_quote(self, asset_id, timestamp, quote):
         if (timestamp is None) or (quote is None):

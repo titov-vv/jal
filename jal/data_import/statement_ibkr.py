@@ -299,8 +299,7 @@ class StatementIBKR(Statement):
         assets = [x for x in self._data[FOF.ASSETS] if 'id' in x and x['id'] == asset_id]
         if len(assets) != 1:
             return
-        assets[0]["country"] = country    # TODO: check if asset['country'] already has different value
-        return
+        assets[0]["country"] = country
 
     def load(self, filename: str) -> None:
         self._data = {
