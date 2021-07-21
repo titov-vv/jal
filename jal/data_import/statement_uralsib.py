@@ -239,6 +239,7 @@ class StatementUKFU(StatementXLS):
         operations = {
             'Ввод ДС': self.transfer_in,
             'Вывод ДС': self.transfer_out,
+            'Перевод ДС': self.transfer,
             'Налог': self.tax,
             'Доход по финансовым инструментам': self.dividend,
             'Погашение купона': self.interest,
@@ -268,6 +269,21 @@ class StatementUKFU(StatementXLS):
             cnt += 1
             row += 1
         logging.info(g_tr('Uralsib', "Cash operations loaded: ") + f"{cnt}")
+
+    def transfer(self, _timestamp, _number, _account_id, amount, description):
+        TransferPattern = r"^Перевод ДС на с\/с (?P<account_from>\w+) с с\/с (?P<account_to>\w+)\..*$"
+        if amount < 0:  # there should be positive paired record
+            return
+        parts = re.match(TransferPattern, description, re.IGNORECASE)
+        if parts is None:
+            raise Statement_ImportError(g_tr('Uralsib', "Can't parse transfer description ") + f"'{description}'")
+        transfer = parts.groupdict()
+        if len(transfer) != TransferPattern.count("(?P<"):  # check that expected number of groups was matched
+            raise Statement_ImportError(g_tr('Uralsib', "Transfer description miss some data ") + f"'{description}'")
+
+        if transfer['account_from'] == transfer['account_to']:  # It is a technical record for incoming transfer
+            return
+        raise NotImplementedError(g_tr('Uralsib', "Transfers are not supported yet."))
 
     def transfer_in(self, timestamp, number, account_id, amount, description):
         account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
@@ -372,6 +388,9 @@ class StatementUKFU(StatementXLS):
 
     def load_broker_fee(self):
         header_row = self.find_row(self.SummaryHeader) + 1
+        if header_row < 0:
+            logging.warning(g_tr('Uralsib', "Can't get header to find fees"))
+            return
         header_found = False
         for i, row in self._statement.iterrows():
             if (not header_found) and (row[self.HeaderCol] == "Уплаченная комиссия, в том числе"):

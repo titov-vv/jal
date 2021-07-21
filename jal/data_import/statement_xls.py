@@ -73,7 +73,6 @@ class StatementXLS(Statement):
         for i, row in self._statement.iterrows():
             if re.match(f".*{header}.*", row[self.HeaderCol], re.IGNORECASE) is not None:
                 return i
-        logging.error(g_tr('StatementXLS', "Row header isn't found in PSB broker statement: ") + header)
         return -1
 
     def find_section_start(self, title, columns, subtitle='', header_height=1) -> (int, dict):
