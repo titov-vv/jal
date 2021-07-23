@@ -270,8 +270,8 @@ class StatementUKFU(StatementXLS):
             row += 1
         logging.info(g_tr('Uralsib', "Cash operations loaded: ") + f"{cnt}")
 
-    def transfer(self, _timestamp, _number, _account_id, amount, description):
-        TransferPattern = r"^Перевод ДС на с\/с (?P<account_from>\w+) с с\/с (?P<account_to>\w+)\..*$"
+    def transfer(self, timestamp, number, account_id, amount, description):
+        TransferPattern = r"^Перевод ДС на с\/с (?P<account_to>[\w|\/]+) с с\/с (?P<account_from>[\w|\/]+)\..*$"
         if amount < 0:  # there should be positive paired record
             return
         parts = re.match(TransferPattern, description, re.IGNORECASE)
@@ -280,10 +280,17 @@ class StatementUKFU(StatementXLS):
         transfer = parts.groupdict()
         if len(transfer) != TransferPattern.count("(?P<"):  # check that expected number of groups was matched
             raise Statement_ImportError(g_tr('Uralsib', "Transfer description miss some data ") + f"'{description}'")
-
         if transfer['account_from'] == transfer['account_to']:  # It is a technical record for incoming transfer
             return
-        raise NotImplementedError(g_tr('Uralsib', "Transfers are not supported yet."))
+        currency_id = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]['currency']
+        currency_name = [x for x in self._data[FOF.ASSETS] if x["id"] == currency_id][0]['symbol']
+        account_from = self._find_account_id(transfer['account_from'], currency_name)
+        account_to = self._find_account_id(transfer['account_to'], currency_name)
+        new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+        transfer = {"id": new_id, "account": [account_from, account_to, 0], "number": number,
+                    "asset": [currency_id, currency_id], "timestamp": timestamp,
+                    "withdrawal": amount, "deposit": amount, "fee": 0.0, "description": description}
+        self._data[FOF.TRANSFERS].append(transfer)
 
     def transfer_in(self, timestamp, number, account_id, amount, description):
         account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
