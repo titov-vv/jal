@@ -415,6 +415,8 @@ class StatementUKFU(StatementXLS):
                         continue
                     if fee == 0:
                         continue
+                    if row[1] == 'комиссия торговой системы':  # Exchange fee is part of trades
+                        continue
                     account_id = self._find_account_id(self._account_number, self._statement[col][header_row])
                     new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
                     fee = {"id": new_id, "timestamp": self._data[FOF.PERIOD][1], "account": account_id, "peer": 0,
