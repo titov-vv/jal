@@ -52,6 +52,7 @@ def post_web_data(url, params):
 def GetAssetInfoFromMOEX(keys) -> dict:
     asset_type = {
         'stock_shares': PredefinedAsset.Stock,
+        'stock_dr': PredefinedAsset.Stock,
         'stock_bonds': PredefinedAsset.Bond,
         'stock_etf': PredefinedAsset.ETF,
         'stock_ppif': PredefinedAsset.ETF,
@@ -111,5 +112,6 @@ def GetAssetInfoFromMOEX(keys) -> dict:
             asset['type'] = asset_type[asset_data['group']]
         except KeyError:
             logging.error(g_tr('Net', "Unsupported MOEX security type: ") + f"{asset_data['group']}")
+            return {}
         asset['source'] = MarketDataFeed.RU
     return asset
