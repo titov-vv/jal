@@ -243,7 +243,9 @@ class StatementUKFU(StatementXLS):
             'Налог': self.tax,
             'Доход по финансовым инструментам': self.dividend,
             'Погашение купона': self.interest,
-            'Погашение номинала': self.bond_repayment
+            'Погашение номинала': self.bond_repayment,
+            'Списано по сделке': None,   # These operations are results of trades
+            'Получено по сделке': None
         }
 
         row, headers = self.find_section_start("ДВИЖЕНИЕ ДЕНЕЖНЫХ СРЕДСТВ ЗА ОТЧЕТНЫЙ ПЕРИОД",  columns)
@@ -253,7 +255,6 @@ class StatementUKFU(StatementXLS):
         while row < self._statement.shape[0]:
             if self._statement[self.HeaderCol][row] == '' and self._statement[self.HeaderCol][row + 1] == '':
                 break
-
             operation = self._statement[headers['type']][row]
             if operation not in operations:
                 raise Statement_ImportError(g_tr('UKFU', "Unsuppported cash transaction ") + f"'{operation}'")
@@ -263,9 +264,8 @@ class StatementUKFU(StatementXLS):
             amount = self._statement[headers['amount']][row]
             description = self._statement[headers['description']][row]
             account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
-
-            operations[operation](timestamp, number, account_id, amount, description)
-
+            if operations[operation] is not None:
+                operations[operation](timestamp, number, account_id, amount, description)
             cnt += 1
             row += 1
         logging.info(g_tr('Uralsib', "Cash operations loaded: ") + f"{cnt}")
