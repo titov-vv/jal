@@ -1,5 +1,6 @@
 import json
 from jsonschema import validate
+from jsonschema.exceptions import ValidationError
 import sys
 import os
 import logging
@@ -155,16 +156,19 @@ class Statement:
                             element[tag] = -new_value if element[tag] == old_value else element[tag]
 
     def validate_format(self):
-        schema_filename = get_app_path() + Setup.IMPORT_PATH + os.sep + Setup.IMPORT_SCHEMA_NAME
+        schema_name = get_app_path() + Setup.IMPORT_PATH + os.sep + Setup.IMPORT_SCHEMA_NAME
         try:
-            with open(schema_filename, 'r') as schema_file:
+            with open(schema_name, 'r') as schema_file:
                 try:
                     statement_schema = json.load(schema_file)
                 except json.JSONDecodeError:
-                    logging.error(g_tr('Statement', "Failed to read JSON schema from file: ") + schema_filename)
+                    raise Statement_ImportError(g_tr('Statement', "Failed to read JSON schema from: ") + schema_name)
         except Exception as err:
-            logging.error(g_tr('Statement', "Failed to read file: ") + str(err))
-        validate(instance=self._data, schema=statement_schema)
+            raise Statement_ImportError(g_tr('Statement', "Failed to read file: ") + str(err))
+        try:
+            validate(instance=self._data, schema=statement_schema)
+        except ValidationError:
+            raise Statement_ImportError(g_tr('StatementLoader', "Statement validation failed"))
 
     # Store content of JSON statement into database
     # Returns a dict of dict with amounts:
@@ -176,8 +180,8 @@ class Statement:
 
         totals = defaultdict(dict)
         for account in self._data[FOF.ACCOUNTS]:
-            if 'cash_end' in account:
-                totals[-account['id']][-account['currency']] = account['cash_end']
+            if 'cash_end_settled' in account:
+                totals[-account['id']][-account['currency']] = account['cash_end_settled']
         return totals
 
     def _check_period(self, period):
