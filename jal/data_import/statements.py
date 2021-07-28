@@ -49,6 +49,13 @@ class StatementLoader(QObject):
                 'icon': 'psb.ico',
                 'module': "statement_psb",
                 'loader_class': "StatementPSB"
+            },
+            {
+                'name': g_tr('StatementLoader', "Open Broker"),
+                'filter': "Open Broker statement (*.xml)",
+                'icon': 'openbroker.ico',
+                'module': "statement_openbroker",
+                'loader_class': "StatementOpenBroker"
             }
         ]
 
@@ -60,7 +67,11 @@ class StatementLoader(QObject):
                                                                     ".", statement_loader['filter'])
         if not statement_file:
             return
-        module = importlib.import_module(f"jal.data_import.{statement_loader['module']}")
+        try:
+            module = importlib.import_module(f"jal.data_import.{statement_loader['module']}")
+        except ModuleNotFoundError:
+            logging.error(g_tr('StatementLoader', "Statement loader module not found: ") + statement_loader['module'])
+            return
         class_instance = getattr(module, statement_loader['loader_class'])
         statement = class_instance()
         try:
