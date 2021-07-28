@@ -106,7 +106,7 @@ class Statement:
                 except json.JSONDecodeError:
                     logging.error(g_tr('Statement', "Failed to read JSON from file: ") + filename)
         except Exception as err:
-            logging.error(g_tr('Statement', "Failed to read file: ") + str(err))
+            raise Statement_ImportError(g_tr('Statement', "Failed to read file: ") + str(err))
         unsupported_sections = [x for x in self._data if x not in self._section_loaders]
         if unsupported_sections:
             for section in unsupported_sections:
