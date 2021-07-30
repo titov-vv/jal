@@ -72,7 +72,8 @@ class Statement:
         'NASDAQ': MarketDataFeed.US,
         'TSE': MarketDataFeed.CA,
         'SBF': MarketDataFeed.EU,
-        'AMEX': MarketDataFeed.US
+        'AMEX': MarketDataFeed.US,
+        'MOEX': MarketDataFeed.RU
     }
     
     def __init__(self):

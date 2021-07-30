@@ -1,0 +1,14 @@
+{
+  "period": [1617408000, 1620864000],
+  "accounts": [],
+  "assets": [
+    {"id": 1, "type": "bond", "symbol": "Мордовия03", "name": "Мордовия 34003 обл.", "isin": "RU000A0JWSQ7", "exchange": "MOEX", "reg_code": "RU34003MOR0"},
+    {"id": 2, "type": "bond", "symbol": "МТС 1P-05", "name": "Мобильные ТелеСистемы 001P-05", "isin": "RU000A0ZYWX7", "exchange": "MOEX", "reg_code": "4B02-05-04715-A-001P"},
+    {"id": 3, "type": "bond", "symbol": "СберБ БО37", "name": "Сбербанк ПАО БО-37", "isin": "RU000A0JWUE9", "exchange": "MOEX", "reg_code": "4B023701481B"}
+  ],
+  "trades": [],
+  "income_spending": [],
+  "transfers": [],
+  "corporate_actions": [],
+  "asset_payments": []
+}

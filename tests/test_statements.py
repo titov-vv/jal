@@ -5,6 +5,7 @@ from jal.data_import.statement_ibkr import StatementIBKR
 from jal.data_import.statement_uralsib import StatementUKFU
 from jal.data_import.statement_kit import StatementKIT
 from jal.data_import.statement_psb import StatementPSB
+from jal.data_import.statement_openbroker import StatementOpenBroker
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -45,3 +46,12 @@ def test_statement_psb(tmp_path, project_root, data_path, prepare_db_xls):
     PSB = StatementPSB()
     PSB.load(data_path + 'psb.xlsx')
     assert PSB._data == statement
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_statement_open(tmp_path, project_root, data_path, prepare_db_xls):
+    with open(data_path + 'open.json', 'r') as json_file:
+        statement = json.load(json_file)
+
+    OpenBroker = StatementOpenBroker()
+    OpenBroker.load(data_path + 'open.xml')
+    assert OpenBroker._data == statement

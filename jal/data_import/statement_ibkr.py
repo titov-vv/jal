@@ -1,14 +1,14 @@
 import logging
 import re
-from datetime import datetime, timezone
+from datetime import datetime
 from itertools import groupby
-from lxml import etree
 
 from jal.constants import PredefinedCategory, DividendSubtype
 from jal.widgets.helpers import g_tr, ManipulateDate
 from jal.db.update import JalDB
 from jal.db.helpers import executeSQL, readSQLrecord
-from jal.data_import.statement import Statement, FOF, Statement_ImportError
+from jal.data_import.statement import FOF, Statement_ImportError
+from jal.data_import.statement_xml import StatementXML
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -166,50 +166,111 @@ class IBKR_Account:
 
 # -----------------------------------------------------------------------------------------------------------------------
 # Class for Loading Interactive Brokers XML Flex report
-class StatementIBKR(Statement):
+class StatementIBKR(StatementXML):
+    statements_path = '/*/FlexStatement'
+    statement_tag = 'FlexStatement'
     CancelledFlag = 'Ca'
 
     def __init__(self):
         super().__init__()
-        self._data = {}
-
-    # -----------------------------------------------------------------------------------------------------------------------
-    # Helpers to get values from XML tag properties
-    # Convert attribute 'attr_name' value to string or return default value if attribute not found
-    @staticmethod
-    def attr_string(xml_element, attr_name, default_value):
-        if attr_name not in xml_element.attrib:
-            return default_value
-        return xml_element.attrib[attr_name]
-
-    # Convert attribute 'attr_name' value to float or return default value if attribute not found / not a number
-    @staticmethod
-    def attr_number(xml_element, attr_name, default_value):
-        if attr_name not in xml_element.attrib:
-            return default_value
-        try:
-            value = float(xml_element.attrib[attr_name])
-        except ValueError:
-            return None
-        return value
-
-    # Convert attribute 'attr_name' value from strings "YYYYMMDD:hhmmss' or "YYYYMMDD" to datetime object
-    # or return default value if attribute not found / has wrong format
-    @staticmethod
-    def attr_timestamp(xml_element, attr_name, default_value):
-        if attr_name not in xml_element.attrib:
-            return default_value
-        time_str = xml_element.attrib[attr_name]
-        try:
-            if len(time_str) == 15:  # YYYYMMDD;HHMMSS
-                return int(datetime.strptime(time_str, "%Y%m%d;%H%M%S").replace(tzinfo=timezone.utc).timestamp())
-            elif len(time_str) == 8:  # YYYYMMDD
-                return int(datetime.strptime(time_str, "%Y%m%d").replace(tzinfo=timezone.utc).timestamp())
-            else:
-                return default_value
-        except ValueError:
-            logging.error(g_tr('IBKR', "Unsupported date/time format: ") + f"{xml_element.attrib[attr_name]}")
-            return None
+        self.statement_name = g_tr('IBKR', "IBKR Flex-statement")
+        ibkr_loaders = {
+            IBKR_Currency: self.attr_currency,
+            IBKR_AssetType: self.attr_asset_type,
+            IBKR_Asset: self.attr_asset,
+            IBKR_Account: self.attr_account,
+            IBKR_CorpActionType: self.attr_corp_action_type
+        }
+        self.attr_loader.update(ibkr_loaders)
+        self._sections = {   # Order of load is important - accounts and assets should be loaded first
+            StatementXML.STATEMENT_ROOT: {'tag': self.statement_tag,
+                                          'level': '',
+                                          'values': [('accountId', 'account', str, None),
+                                                     ('fromDate', 'period_start', datetime, None),
+                                                     ('toDate', 'period_end', datetime, None)],
+                                          'loader': self.load_header
+                                          },
+            'CashReport': {'tag': 'CashReportCurrency',
+                           'level': 'Currency',
+                           'values': [('accountId', 'number', str, None),
+                                      ('currency', 'currency', IBKR_Currency, None),
+                                      ('startingCash', 'cash_begin', float, None),
+                                      ('endingCash', 'cash_end', float, None),
+                                      ('endingSettledCash', 'cash_end_settled', float, None)],
+                           'loader': self.load_accounts},
+            'SecuritiesInfo': {'tag': 'SecurityInfo',
+                               'level': '',
+                               'values': [('symbol', 'symbol', str, None),
+                                          ('assetCategory', 'type', IBKR_AssetType, IBKR_AssetType.NotSupported),
+                                          ('description', 'name', str, None),
+                                          ('isin', 'isin', str, ''),
+                                          ('cusip', 'reg_code', str, ''),
+                                          ('listingExchange', 'exchange', str, '')],
+                               'loader': self.load_assets},
+            'Trades': {'tag': 'Trade',
+                       'level': 'EXECUTION',
+                       'values': [('assetCategory', 'type', IBKR_AssetType, IBKR_AssetType.NotSupported),
+                                  ('symbol', 'asset', IBKR_Asset, None),
+                                  ('accountId', 'account', IBKR_Account, None),
+                                  ('dateTime', 'timestamp', datetime, None),
+                                  ('settleDateTarget', 'settlement', datetime, 0),
+                                  ('tradePrice', 'price', float, None),
+                                  ('quantity', 'quantity', float, None),
+                                  ('proceeds', 'proceeds', float, None),
+                                  ('multiplier', 'multiplier', float, None),
+                                  ('ibCommission', 'fee', float, None),
+                                  ('tradeID', 'number', str, ''),
+                                  ('exchange', 'exchange', str, ''),
+                                  ('notes', 'notes', str, '')],
+                       'loader': self.load_ib_trades},
+            'OptionEAE': {'tag': 'OptionEAE',
+                          'level': '',
+                          'values': [('transactionType', 'operation', str, None),
+                                     ('symbol', 'asset', IBKR_Asset, None),
+                                     ('accountId', 'account', IBKR_Account, None),
+                                     ('date', 'timestamp', datetime, None),
+                                     ('tradePrice', 'price', float, None),
+                                     ('quantity', 'quantity', float, None),
+                                     ('multiplier', 'multiplier', float, None),
+                                     ('commisionsAndTax', 'fee', float, None),
+                                     ('tradeID', 'number', str, ''),
+                                     ('notes', 'notes', str, '')],
+                          'loader': self.load_options},
+            'CorporateActions': {'tag': 'CorporateAction',
+                                 'level': 'DETAIL',
+                                 'values': [('type', 'type', IBKR_CorpActionType, IBKR_CorpActionType.NotSupported),
+                                            ('accountId', 'account', IBKR_Account, None),
+                                            ('symbol', 'asset', IBKR_Asset, None),
+                                            (
+                                            'assetCategory', 'asset_type', IBKR_AssetType, IBKR_AssetType.NotSupported),
+                                            ('dateTime', 'timestamp', datetime, None),
+                                            ('transactionID', 'number', str, ''),
+                                            ('description', 'description', str, None),
+                                            ('quantity', 'quantity', float, None),
+                                            ('proceeds', 'proceeds', float, None),
+                                            ('code', 'code', str, '')],
+                                 'loader': self.load_corporate_actions},
+            'CashTransactions': {'tag': 'CashTransaction',
+                                 'level': 'DETAIL',
+                                 'values': [('type', 'type', str, None),
+                                            ('accountId', 'account', IBKR_Account, None),
+                                            ('symbol', 'asset', IBKR_Asset, 0),
+                                            ('currency', 'currency', IBKR_Currency, None),
+                                            ('dateTime', 'timestamp', datetime, None),
+                                            ('amount', 'amount', float, None),
+                                            ('tradeID', 'number', str, ''),
+                                            ('description', 'description', str, None)],
+                                 'loader': self.load_cash_transactions},
+            'TransactionTaxes': {'tag': 'TransactionTax',
+                                 'level': 'SUMMARY',
+                                 'values': [('accountId', 'account', IBKR_Account, None),
+                                            ('symbol', 'symbol', str, None),
+                                            ('date', 'timestamp', datetime, None),
+                                            ('taxAmount', 'amount', float, None),
+                                            ('description', 'description', str, None),
+                                            ('taxDescription', 'tax_description', str, None)],
+                                 'loader': self.load_taxes}
+        }
 
     # Convert attribute 'attr_name' value into json open-format asset type
     @staticmethod
@@ -301,153 +362,12 @@ class StatementIBKR(Statement):
             return
         assets[0]["country"] = country
 
-    def load(self, filename: str) -> None:
-        self._data = {
-            FOF.PERIOD: [None, None],
-            FOF.ACCOUNTS: [],
-            FOF.ASSETS: [],
-            FOF.TRADES: [],
-            FOF.TRANSFERS: [],
-            FOF.CORP_ACTIONS: [],
-            FOF.ASSET_PAYMENTS: [],
-            FOF.INCOME_SPENDING: []
-        }
-
-        section_loaders = {
-            'CashReport': self.load_accounts,  # Order of load is important - accounts and assets should be loaded first
-            'SecuritiesInfo': self.load_assets,
-            'Trades': self.load_ib_trades,
-            'OptionEAE': self.load_options,
-            'CorporateActions': self.load_corporate_actions,
-            'CashTransactions': self.load_cash_transactions,
-            'TransactionTaxes': self.load_taxes
-        }
-        xml_root = etree.parse(filename)
-        for FlexStatements in xml_root.getroot():
-            for statement in FlexStatements:
-                attr = statement.attrib
-                self._data[FOF.PERIOD][0] = int(
-                    datetime.strptime(attr['fromDate'], "%Y%m%d").replace(tzinfo=timezone.utc).timestamp())
-                self._data[FOF.PERIOD][1] = int(
-                    datetime.strptime(attr['toDate'], "%Y%m%d").replace(tzinfo=timezone.utc).timestamp())
-                logging.info(g_tr('IBKR', "Load IB Flex-statement for account ") +
-                             f"{attr['accountId']}: {attr['fromDate']} - {attr['toDate']}")
-                for section in section_loaders:
-                    section_elements = statement.xpath(section)  # Actually should be list of 0 or 1 element
-                    if section_elements:
-                        section_data = self.get_ibkr_data(section_elements[0])
-                        if section_data is None:
-                            return
-                        section_loaders[section](section_data)
-        logging.info(g_tr('IBKR', "IB Flex-statement loaded successfully"))
-
-    def get_ibkr_data(self, section):
-        attr_loader = {
-            str: self.attr_string,
-            float: self.attr_number,
-            datetime: self.attr_timestamp,
-            IBKR_Currency: self.attr_currency,
-            IBKR_AssetType: self.attr_asset_type,
-            IBKR_Asset: self.attr_asset,
-            IBKR_Account: self.attr_account,
-            IBKR_CorpActionType: self.attr_corp_action_type
-        }
-
-        section_descriptions = {
-            'CashReport': {'tag': 'CashReportCurrency',
-                           'level': 'Currency',
-                           'values': [('accountId', 'number', str, None),
-                                      ('currency', 'currency', IBKR_Currency, None),
-                                      ('startingCash', 'cash_begin', float, None),
-                                      ('endingCash', 'cash_end', float, None),
-                                      ('endingSettledCash', 'cash_end_settled', float, None)]},
-            'SecuritiesInfo': {'tag': 'SecurityInfo',
-                               'level': '',
-                               'values': [('symbol', 'symbol', str, None),
-                                          ('assetCategory', 'type', IBKR_AssetType, IBKR_AssetType.NotSupported),
-                                          ('description', 'name', str, None),
-                                          ('isin', 'isin', str, ''),
-                                          ('cusip', 'reg_code', str, ''),
-                                          ('listingExchange', 'exchange', str, '')]},
-            'Trades': {'tag': 'Trade',
-                       'level': 'EXECUTION',
-                       'values': [('assetCategory', 'type', IBKR_AssetType, IBKR_AssetType.NotSupported),
-                                  ('symbol', 'asset', IBKR_Asset, None),
-                                  ('accountId', 'account', IBKR_Account, None),
-                                  ('dateTime', 'timestamp', datetime, None),
-                                  ('settleDateTarget', 'settlement', datetime, 0),
-                                  ('tradePrice', 'price', float, None),
-                                  ('quantity', 'quantity', float, None),
-                                  ('proceeds', 'proceeds', float, None),
-                                  ('multiplier', 'multiplier', float, None),
-                                  ('ibCommission', 'fee', float, None),
-                                  ('tradeID', 'number', str, ''),
-                                  ('exchange', 'exchange', str, ''),
-                                  ('notes', 'notes', str, '')]},
-            'OptionEAE': {'tag': 'OptionEAE',
-                          'level': '',
-                          'values': [('transactionType', 'operation', str, None),
-                                     ('symbol', 'asset', IBKR_Asset, None),
-                                     ('accountId', 'account', IBKR_Account, None),
-                                     ('date', 'timestamp', datetime, None),
-                                     ('tradePrice', 'price', float, None),
-                                     ('quantity', 'quantity', float, None),
-                                     ('multiplier', 'multiplier', float, None),
-                                     ('commisionsAndTax', 'fee', float, None),
-                                     ('tradeID', 'number', str, ''),
-                                     ('notes', 'notes', str, '')]},
-            'CorporateActions': {'tag': 'CorporateAction',
-                                 'level': 'DETAIL',
-                                 'values': [('type', 'type', IBKR_CorpActionType, IBKR_CorpActionType.NotSupported),
-                                            ('accountId', 'account', IBKR_Account, None),
-                                            ('symbol', 'asset', IBKR_Asset, None),
-                                            ('assetCategory', 'asset_type', IBKR_AssetType, IBKR_AssetType.NotSupported),
-                                            ('dateTime', 'timestamp', datetime, None),
-                                            ('transactionID', 'number', str, ''),
-                                            ('description', 'description', str, None),
-                                            ('quantity', 'quantity', float, None),
-                                            ('proceeds', 'proceeds', float, None),
-                                            ('code', 'code', str, '')]},
-            'CashTransactions': {'tag': 'CashTransaction',
-                                 'level': 'DETAIL',
-                                 'values': [('type', 'type', str, None),
-                                            ('accountId', 'account', IBKR_Account, None),
-                                            ('symbol', 'asset', IBKR_Asset, 0),
-                                            ('currency', 'currency', IBKR_Currency, None),
-                                            ('dateTime', 'timestamp', datetime, None),
-                                            ('amount', 'amount', float, None),
-                                            ('tradeID', 'number', str, ''),
-                                            ('description', 'description', str, None)]},
-            'TransactionTaxes': {'tag': 'TransactionTax',
-                                 'level': 'SUMMARY',
-                                 'values': [('accountId', 'account', IBKR_Account, None),
-                                            ('symbol', 'symbol', str, None),
-                                            ('date', 'timestamp', datetime, None),
-                                            ('taxAmount', 'amount', float, None),
-                                            ('description', 'description', str, None),
-                                            ('taxDescription', 'tax_description', str, None)]}
-        }
-
-        try:
-            tag = section_descriptions[section.tag]['tag']
-        except KeyError:
-            return []  # This section isn't used for import
-
-        data = []
-        for sample in section.xpath(tag):
-            tag_dictionary = {}
-            if section_descriptions[section.tag]['level']:  # Skip extra lines (SUMMARY, etc)
-                if self.attr_string(sample, 'levelOfDetail', '') != section_descriptions[section.tag]['level']:
-                    continue
-            for attr_name, key_name, attr_type, attr_default in section_descriptions[section.tag]['values']:
-                attr_value = attr_loader[attr_type](sample, attr_name, attr_default)
-                if attr_value is None:
-                    logging.error(
-                        g_tr('IBKR', "Failed to load attribute: ") + f"{attr_name} / {sample.attrib}")
-                    return None
-                tag_dictionary[key_name] = attr_value
-            data.append(tag_dictionary)
-        return data
+    def load_header(self, header):
+        self._data[FOF.PERIOD][0] = header['period_start']
+        self._data[FOF.PERIOD][1] = header['period_end']
+        logging.info(g_tr('IBKR', "Load IB Flex-statement for account ") +
+                     f"{header['account']}: {datetime.utcfromtimestamp(header['period_start']).strftime('%Y-%m-%d')}" +
+                     f" - {datetime.utcfromtimestamp(header['period_end']).strftime('%Y-%m-%d')}")
 
     def load_accounts(self, balances):
         for i, balance in enumerate(sorted(balances, key=lambda x: x['currency'])):
