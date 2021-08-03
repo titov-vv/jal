@@ -397,7 +397,8 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
                 amount = self.ledger.get_asset_amount(timestamp, account_id, asset_id)
                 if amount is not None:
                     if abs(totals[account_id][asset_id] - amount) <= Setup.DISP_TOLERANCE:
-                        self.ledger.reconcile(timestamp, account_id)
+                        self.ledger.reconcile(account_id, timestamp)
+                        self.balances_model.update()   # Update required to display reconciled
                     else:
                         account = JalDB().get_account_name(account_id)
                         asset = JalDB().get_asset_name(asset_id)
