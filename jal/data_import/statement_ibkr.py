@@ -341,12 +341,6 @@ class StatementIBKR(StatementXML):
         else:
             return account_id
 
-    # Removes all keys listed in extra_keys_list from operation_dict
-    def drop_extra_fields(self, operation_dict, extra_keys_list):
-        for key in extra_keys_list:
-            if key in operation_dict:
-                del operation_dict[key]
-
     def locate_asset(self, symbol, isin) -> int:
         candidates = [x for x in self._data[FOF.ASSETS] if 'isin' in x and x['isin'] == isin]
         if len(candidates) == 1:

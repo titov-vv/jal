@@ -7,11 +7,12 @@ from jal.data_import.statement_xml import StatementXML
 from jal.net.helpers import GetAssetInfoFromMOEX
 
 
-# -----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 class OpenBroker_AssetType:
     NotSupported = -1
     _asset_types = {
         '': -1,
+        'Денежные средства': FOF.ASSET_MONEY,
         'Облигации': FOF.ASSET_BOND
     }
 
@@ -23,7 +24,30 @@ class OpenBroker_AssetType:
             logging.warning(g_tr('OpenBroker_AssetType', "Asset type isn't supported: ") + f"'{asset_type}'")
 
 
-# -----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+class OpenBroker_Asset:
+    def __init__(self, assets_list, symbol, reg_code=''):
+        self.id = None
+        if reg_code:
+            match = [x for x in assets_list if
+                     ('symbol' in x and 'reg_code' in x) and (x['symbol'] == symbol and x['reg_code'] == reg_code)]
+            if match:
+                if len(match) == 1:
+                    self.id = match[0]['id']
+                    return
+                else:
+                    logging.error(g_tr('OpenBroker', "Multiple asset match for ") + f"'{symbol}':'{reg_code}'")
+                    return
+        match = [x for x in assets_list if 'symbol' in x and x['symbol'] == symbol]
+        if match:
+            if len(match) == 1:
+                self.id = match[0]['id']
+                return
+            else:
+                logging.error(g_tr('OpenBroker', "Multiple asset match for ") + f"'{symbol}'")
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 class OpenBroker_Exchange:
     _exchange_types = {
         '': '',
@@ -38,7 +62,7 @@ class OpenBroker_Exchange:
             logging.warning(g_tr('OpenBroker_Exchange', "Exchange isn't supported: ") + f"'{exchange}'")
 
 
-# -----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 class StatementOpenBroker(StatementXML):
     statements_path = '.'
     statement_tag = 'broker_report'
@@ -46,29 +70,69 @@ class StatementOpenBroker(StatementXML):
     def __init__(self):
         super().__init__()
         self.statement_name = g_tr('OpenBroker', "Open Broker statement")
+        self._account_number = ''
         open_loaders = {
             OpenBroker_AssetType: self.attr_asset_type,
+            OpenBroker_Asset: self.attr_asset,
             OpenBroker_Exchange: self.attr_exchange
         }
         self.attr_loader.update(open_loaders)
         self._sections = {
-            StatementXML.STATEMENT_ROOT: {'tag': self.statement_tag,
-                                          'level': '',
-                                          'values': [('client_code', 'account', str, None),
-                                                     ('date_from', 'period_start', datetime, None),
-                                                     ('date_to', 'period_end', datetime, None)],
-                                          'loader': self.load_header
-                                          },
-            'spot_portfolio_security_params': {'tag': 'item',
-                                               'level': '',
-                                               'values': [('ticker', 'symbol', str, None),
-                                                          ('security_type', 'type', OpenBroker_AssetType, OpenBroker_AssetType.NotSupported),
-                                                          ('security_name', 'name', str, None),
-                                                          ('isin', 'isin', str, ''),
-                                                          ('security_grn_code', 'reg_code', str, ''),
-                                                          ('board_name', 'exchange', OpenBroker_Exchange, '')],
-                                               'loader': self.load_assets
-                                               }
+            StatementXML.STATEMENT_ROOT:
+                {
+                    'tag': self.statement_tag,
+                    'level': '',
+                    'values': [('client_code', 'account', str, None),
+                               ('date_from', 'period_start', datetime, None),
+                               ('date_to', 'period_end', datetime, None)],
+                    'loader': self.load_header
+                },
+            'spot_portfolio_security_params':
+                {
+                    'tag': 'item',
+                    'level': '',
+                    'values': [('ticker', 'symbol', str, None),
+                               ('security_type', 'type', OpenBroker_AssetType, OpenBroker_AssetType.NotSupported),
+                               ('security_name', 'name', str, None),
+                               ('isin', 'isin', str, ''),
+                               ('security_grn_code', 'reg_code', str, ''),
+                               ('board_name', 'exchange', OpenBroker_Exchange, ''),
+                               ('nominal', 'bond_principal', float, 0)],
+                    'loader': self.load_assets
+                },
+            'spot_assets':
+                {
+                    'tag': 'item',
+                    'level': '',
+                    'values': [('asset_name', 'asset', OpenBroker_Asset, None),
+                               ('opening_position_fact', 'cash_begin', float, 0),
+                               ('closing_position_fact', 'cash_end', float, 0),
+                               ('closing_position_plan', 'cash_end_settled', float, 0)],
+                    'loader': self.load_balances
+                },
+            'spot_main_deals_conclusion':
+                {
+                    'tag': 'item',
+                    'level': '',
+                    'values': [('security_name', 'asset', OpenBroker_Asset, None),
+                               ('conclusion_time', 'timestamp', datetime, None),
+                               ('execution_date', 'settlement', datetime, 0),
+                               ('price', 'price', float, None),
+                               ('buy_qnty', 'quantity', float, -1),
+                               ('sell_qnty', 'quantity', float, -1),
+                               ('volume_currency', 'proceeds', float, None),
+                               ('broker_commission', 'fee', float, None),
+                               ('deal_no', 'number', str, ''),
+                               ('nkd', 'accrued_interest', float, 0)],
+                    'loader': self.load_trades
+                },
+            'spot_non_trade_money_operations':
+                {
+                    'tag': 'item',
+                    'level': '',
+                    'values': [],
+                    'loader': self.load_cash_operations
+                }
         }
 
     # Convert attribute 'attr_name' value into json open-format asset type
@@ -77,6 +141,29 @@ class StatementOpenBroker(StatementXML):
         if attr_name not in xml_element.attrib:
             return default_value
         return OpenBroker_AssetType(xml_element.attrib[attr_name]).type
+
+    def attr_asset(self, xml_element, attr_name, default_value):
+        if attr_name not in xml_element.attrib:
+            return default_value
+        asset_category = self.attr_asset_type(xml_element, 'asset_type', None)  # only for 'spot_assets'
+        if asset_category == FOF.ASSET_MONEY:
+            symbol = xml_element.attrib['asset_code'].strip()
+            reg_code = ''
+        else:
+            symbol = xml_element.attrib[attr_name].strip()
+            if xml_element.tag == 'spot_assets':
+                reg_code = xml_element.attrib['asset_code'] if 'asset_code' in xml_element.attrib else ''
+            else:
+                reg_code = xml_element.attrib['security_grn_code'] if 'security_grn_code' in xml_element.attrib else ''
+        asset_id = OpenBroker_Asset(self._data[FOF.ASSETS], symbol, reg_code).id
+        if asset_id is None:
+            if asset_category == FOF.ASSET_MONEY:
+                asset_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
+                asset = {'id': asset_id, 'type': asset_category, 'symbol': symbol}
+                self._data[FOF.ASSETS].append(asset)
+            else:
+                return default_value
+        return asset_id
 
     # Convert attribute 'attr_name' value into json open-format exchange name
     @staticmethod
@@ -88,9 +175,10 @@ class StatementOpenBroker(StatementXML):
     def load_header(self, header):
         self._data[FOF.PERIOD][0] = header['period_start']
         self._data[FOF.PERIOD][1] = header['period_end']
+        self._account_number = header['account']
         logging.info(g_tr('OpenBroker', "Load Open Broker statement for account ") +
-                     f"{header['account']}: {datetime.utcfromtimestamp(header['period_start']).strftime('%Y-%m-%d')}" +
-                     f" - {datetime.utcfromtimestamp(header['period_end']).strftime('%Y-%m-%d')}")
+                     f"{self._account_number}: {datetime.utcfromtimestamp(header['period_start']).strftime('%Y-%m-%d')}"
+                     + f" - {datetime.utcfromtimestamp(header['period_end']).strftime('%Y-%m-%d')}")
 
     def load_assets(self, assets):
         cnt = 0
@@ -113,3 +201,30 @@ class StatementOpenBroker(StatementXML):
             cnt += 1
             self._data[FOF.ASSETS].append(asset)
         logging.info(g_tr('OpenBroker', "Securities loaded: ") + f"{cnt} ({len(assets)})")
+
+    def load_balances(self, balances):
+        cnt = 0
+        base = max([0] + [x['id'] for x in self._data[FOF.ACCOUNTS]]) + 1
+        for balance in balances:
+            asset = [x for x in self._data[FOF.ASSETS] if 'id' in x and x['id'] == balance['asset']][0]
+            if asset['type'] == FOF.ASSET_MONEY:
+                account = {'id': base+cnt, 'number': self._account_number, 'currency': balance['asset']}
+                self.drop_extra_fields(balance, ["asset"])
+                account.update(balance)
+                self._data[FOF.ACCOUNTS].append(account)
+                cnt += 1
+        logging.info(g_tr('OpenBroker', "Accounts loaded: ") + f"{cnt}")
+
+    def load_trades(self, trades):
+        cnt = 0
+        base = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
+        for i, trade in enumerate(trades):
+            if trade['accrued_interest'] != 0:
+                new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
+                # payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": self._account_number,
+                #            "timestamp": trade['timestamp'], "number": trade['number'], "asset": trade['asset'],
+                #            "amount": trade['accrued_interest'], "description": "НКД"}
+                # self._data[FOF.ASSET_PAYMENTS].append(payment)
+
+    def load_cash_operations(self, cash):
+        pass
