@@ -10,9 +10,9 @@
     {"id": 4, "type": "money", "symbol": "RUB"}
   ],
   "trades": [
-    {"id": 1, "number": "4196406008", "timestamp": 1622127229, "settlement": 1622160000, "account": 1, "asset": 1, "quantity": 50.0, "price": 100.4, "fee": 10.04},
-    {"id": 2, "number": "4196909574", "timestamp": 1622135708, "settlement": 1622160000, "account": 1, "asset": 3, "quantity": 40.0, "price": 100.65, "fee": 120.78},
-    {"id": 3, "number": "4196915558", "timestamp": 1622135723, "settlement": 1622160000, "account": 1, "asset": 2, "quantity": 5.0, "price": 100.15, "fee": 2.5}
+    {"id": 1, "number": "4196406008", "timestamp": 1622127229, "settlement": 1622160000, "account": 1, "asset": 1, "quantity": 50.0, "price": 401.6, "fee": 10.04},
+    {"id": 2, "number": "4196909574", "timestamp": 1622135708, "settlement": 1622160000, "account": 1, "asset": 3, "quantity": 40.0, "price": 1006.5, "fee": 120.78},
+    {"id": 3, "number": "4196915558", "timestamp": 1622135723, "settlement": 1622160000, "account": 1, "asset": 2, "quantity": 5.0, "price": 1001.5, "fee": 2.5}
   ],
   "income_spending": [],
   "transfers": [

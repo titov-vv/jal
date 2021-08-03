@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 
 from jal.widgets.helpers import g_tr
+from jal.constants import Setup
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xml import StatementXML
 from jal.net.helpers import GetAssetInfoFromMOEX
@@ -253,7 +254,10 @@ class StatementOpenBroker(StatementXML):
                 raise Statement_ImportError(g_tr('OpenBroker', "Can't find account for trade: ") + f"{trade}")
             if trade['quantity_buy'] < 0 and trade['quantity_sell'] < 0:
                 raise Statement_ImportError(g_tr('OpenBroker', "Can't determine trade type/quantity: ") + f"{trade}")
-            trade['quantity'] = trade['quantity_buy'] if trade['quantity_sell'] < 0 else -trade['quanitity_sell']
+            trade['quantity'] = trade['quantity_buy'] if trade['quantity_sell'] < 0 else -trade['quantity_sell']
+            amount = trade['proceeds'] - trade['accrued_interest']
+            if abs(abs(trade['price'] * trade['quantity']) - amount) >= Setup.DISP_TOLERANCE:
+                trade['price'] = abs(amount / trade['quantity'])
             if trade['accrued_interest'] != 0:
                 new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
                 payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": trade['account'],
