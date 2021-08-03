@@ -1,5 +1,5 @@
 {
-  "period": [1617408000, 1620864000],
+  "period": [1617408000, 1620950399],
   "accounts": [
     {"id": 1, "number": "12345", "currency": 4, "cash_begin": 0.0, "cash_end": 599716.38, "cash_end_settled": 16766.13}
   ],

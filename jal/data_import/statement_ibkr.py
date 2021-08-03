@@ -358,7 +358,7 @@ class StatementIBKR(StatementXML):
 
     def load_header(self, header):
         self._data[FOF.PERIOD][0] = header['period_start']
-        self._data[FOF.PERIOD][1] = header['period_end']
+        self._data[FOF.PERIOD][1] = self._end_of_date(header['period_end'])
         logging.info(g_tr('IBKR', "Load IB Flex-statement for account ") +
                      f"{header['account']}: {datetime.utcfromtimestamp(header['period_start']).strftime('%Y-%m-%d')}" +
                      f" - {datetime.utcfromtimestamp(header['period_end']).strftime('%Y-%m-%d')}")

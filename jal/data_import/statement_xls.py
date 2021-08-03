@@ -122,10 +122,9 @@ class StatementXLS(Statement):
         if parts is None:
             raise Statement_ImportError(g_tr('StatementXLS', "Can't read report period"))
         statement_dates = parts.groupdict()
-        start_day = datetime.strptime(statement_dates['S'], "%d.%m.%Y")
-        self._data[FOF.PERIOD][0] = int(start_day.replace(tzinfo=timezone.utc).timestamp())
-        end_day = datetime.combine(datetime.strptime(statement_dates['E'], "%d.%m.%Y"), time(23, 59, 59))
-        self._data[FOF.PERIOD][1] = int(end_day.replace(tzinfo=timezone.utc).timestamp())
+        start_day = int(datetime.strptime(statement_dates['S'], "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+        end_day = int(datetime.strptime(statement_dates['E'], "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+        self._data[FOF.PERIOD] = [start_day, self._end_of_date(end_day)]
 
     def _get_account_number(self):
         if self.AccountPattern[2] is None:

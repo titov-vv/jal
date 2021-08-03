@@ -203,7 +203,7 @@ class StatementOpenBroker(StatementXML):
 
     def load_header(self, header):
         self._data[FOF.PERIOD][0] = header['period_start']
-        self._data[FOF.PERIOD][1] = header['period_end']
+        self._data[FOF.PERIOD][1] = self._end_of_date(header['period_end'])
         self._account_number = header['account']
         logging.info(g_tr('OpenBroker', "Load Open Broker statement for account ") +
                      f"{self._account_number}: {datetime.utcfromtimestamp(header['period_start']).strftime('%Y-%m-%d')}"

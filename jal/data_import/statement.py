@@ -4,7 +4,7 @@ from jsonschema.exceptions import ValidationError
 import sys
 import os
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from collections import defaultdict
 
 from PySide2.QtWidgets import QDialog, QMessageBox
@@ -96,6 +96,11 @@ class Statement:
             return self._data[FOF.PERIOD][0], self._data[FOF.PERIOD][1]
         else:
             return 0, 0
+
+    # returns timestamp that is equal to the last second of initial timestamp
+    def _end_of_date(self, timestamp) -> int:
+        end_of_day = datetime.utcfromtimestamp(timestamp).replace(hour=23, minute=59, second=59)
+        return int(end_of_day.replace(tzinfo=timezone.utc).timestamp())
 
     # Loads JSON statement format from file defined by 'filename'
     def load(self, filename: str) -> None:
