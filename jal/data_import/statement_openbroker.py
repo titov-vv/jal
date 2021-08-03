@@ -141,7 +141,10 @@ class StatementOpenBroker(StatementXML):
                 {
                     'tag': 'item',
                     'level': '',
-                    'values': [],
+                    'values': [('operation_date', 'timestamp', datetime, None),
+                               ('currency_code', 'currency', OpenBroker_Currency, None),
+                               ('amount', 'amount', float, None),
+                               ('comment', 'description', str, '')],
                     'loader': self.load_cash_operations
                 }
         }
@@ -261,5 +264,29 @@ class StatementOpenBroker(StatementXML):
             self._data[FOF.TRADES].append(trade)
             cnt += 1
 
-    def load_cash_operations(self, cash):
-        pass
+    def load_cash_operations(self, cash_operations):
+        cnt = 0
+        operations = {
+            'Комиссия Брокера / ': None,  # These operations are included of trade's data
+            'Поставлены на торги средства клиента': self.transfer_in
+        }
+
+        for cash in cash_operations:
+            for operation in operations:
+                if cash['description'].startswith(operation):
+                    if operations[operation] is not None:
+                        account_id = self.account_by_currency(cash['currency'])
+                        if account_id == 0:
+                            raise Statement_ImportError(g_tr('OpenBroker', "Can't find account for cash operation: ") +
+                                                        f"{cash}")
+                        operations[operation](cash['timestamp'], account_id, cash['amount'], cash['description'])
+                        cnt += 1
+        logging.info(g_tr('Uralsib', "Cash operations loaded: ") + f"{cnt}")
+
+    def transfer_in(self, timestamp, account_id, amount, description):
+        account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
+        new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+        transfer = {"id": new_id, "account": [0, account_id, 0], "asset": [account['currency'], account['currency']],
+                    "timestamp": timestamp, "withdrawal": amount, "deposit": amount, "fee": 0.0,
+                    "description": description}
+        self._data[FOF.TRANSFERS].append(transfer)

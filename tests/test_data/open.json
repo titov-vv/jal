@@ -15,7 +15,9 @@
     {"id": 3, "number": "4196915558", "timestamp": 1622135723, "settlement": 1622160000, "account": 1, "asset": 2, "quantity": 5.0, "price": 100.15, "fee": 2.5}
   ],
   "income_spending": [],
-  "transfers": [],
+  "transfers": [
+    {"id": 1, "account": [0, 1, 0], "asset": [4, 4], "timestamp": 1622073600, "withdrawal": 100000.0, "deposit": 100000.0, "fee": 0.0, "description": "Поставлены на торги средства клиента 86119"}
+  ],
   "corporate_actions": [],
   "asset_payments": [
     {"id": 1, "type": "interest", "account": 1, "timestamp": 1622127229, "number": "4196406008", "asset": 1, "amount": 346.0, "description": "НКД"},
