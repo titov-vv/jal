@@ -20,8 +20,8 @@
   ],
   "corporate_actions": [],
   "asset_payments": [
-    {"id": 1, "type": "interest", "account": 1, "timestamp": 1622127229, "number": "4196406008", "asset": 1, "amount": 346.0, "description": "НКД"},
-    {"id": 2, "type": "interest", "account": 1, "timestamp": 1622135708, "number": "4196909574", "asset": 3, "amount": 1216.4, "description": "НКД"},
-    {"id": 3, "type": "interest", "account": 1, "timestamp": 1622135723, "number": "4196915558", "asset": 2, "amount": 142.95, "description": "НКД"}
+    {"id": 1, "type": "interest", "account": 1, "timestamp": 1622127229, "number": "4196406008", "asset": 1, "amount": -346.0, "description": "НКД"},
+    {"id": 2, "type": "interest", "account": 1, "timestamp": 1622135708, "number": "4196909574", "asset": 3, "amount": -1216.4, "description": "НКД"},
+    {"id": 3, "type": "interest", "account": 1, "timestamp": 1622135723, "number": "4196915558", "asset": 2, "amount": -142.95, "description": "НКД"}
   ]
 }
