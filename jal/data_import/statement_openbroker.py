@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 
 from jal.widgets.helpers import g_tr
-from jal.data_import.statement import FOF
+from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xml import StatementXML
 from jal.net.helpers import GetAssetInfoFromMOEX
 
@@ -48,6 +48,15 @@ class OpenBroker_Asset:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+class OpenBroker_Currency:
+    def __init__(self, assets_list, symbol):
+        self.id = None
+        match = [x for x in assets_list if 'symbol' in x and x['symbol'] == symbol and x['type'] == FOF.ASSET_MONEY]
+        if match and len(match) == 1:
+            self.id = match[0]['id']
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 class OpenBroker_Exchange:
     _exchange_types = {
         '': '',
@@ -74,6 +83,7 @@ class StatementOpenBroker(StatementXML):
         open_loaders = {
             OpenBroker_AssetType: self.attr_asset_type,
             OpenBroker_Asset: self.attr_asset,
+            OpenBroker_Currency: self.attr_currency,
             OpenBroker_Exchange: self.attr_exchange
         }
         self.attr_loader.update(open_loaders)
@@ -115,11 +125,12 @@ class StatementOpenBroker(StatementXML):
                     'tag': 'item',
                     'level': '',
                     'values': [('security_name', 'asset', OpenBroker_Asset, None),
+                               ('accounting_currency_code', 'currency', OpenBroker_Currency, None),
                                ('conclusion_time', 'timestamp', datetime, None),
                                ('execution_date', 'settlement', datetime, 0),
                                ('price', 'price', float, None),
-                               ('buy_qnty', 'quantity', float, -1),
-                               ('sell_qnty', 'quantity', float, -1),
+                               ('buy_qnty', 'quantity_buy', float, -1),
+                               ('sell_qnty', 'quantity_sell', float, -1),
                                ('volume_currency', 'proceeds', float, None),
                                ('broker_commission', 'fee', float, None),
                                ('deal_no', 'number', str, ''),
@@ -165,12 +176,26 @@ class StatementOpenBroker(StatementXML):
                 return default_value
         return asset_id
 
+    # convert 'attr_name' currency code value into asset_id
+    def attr_currency(self, xml_element, attr_name, default_value):
+        if attr_name not in xml_element.attrib:
+            return default_value
+        return OpenBroker_Currency(self._data[FOF.ASSETS], xml_element.attrib[attr_name]).id
+
     # Convert attribute 'attr_name' value into json open-format exchange name
     @staticmethod
     def attr_exchange(xml_element, attr_name, default_value):
         if attr_name not in xml_element.attrib:
             return default_value
         return OpenBroker_Exchange(xml_element.attrib[attr_name]).name
+
+    def account_by_currency(self, currency_id):
+        match = [x for x in self._data[FOF.ACCOUNTS] if
+                 x['number'] == self._account_number and x['currency'] == currency_id]
+        if match and len(match) == 1:
+            return match[0]['id']
+        else:
+            return 0
 
     def load_header(self, header):
         self._data[FOF.PERIOD][0] = header['period_start']
@@ -217,14 +242,24 @@ class StatementOpenBroker(StatementXML):
 
     def load_trades(self, trades):
         cnt = 0
-        base = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
-        for i, trade in enumerate(trades):
+        trade_base = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
+        for i, trade in enumerate(sorted(trades, key=lambda x: x['timestamp'])):
+            trade['id'] = trade_base + i
+            trade['account'] = self.account_by_currency(trade['currency'])
+            if trade['account'] == 0:
+                raise Statement_ImportError(g_tr('OpenBroker', "Can't find account for trade: ") + f"{trade}")
+            if trade['quantity_buy'] < 0 and trade['quantity_sell'] < 0:
+                raise Statement_ImportError(g_tr('OpenBroker', "Can't determine trade type/quantity: ") + f"{trade}")
+            trade['quantity'] = trade['quantity_buy'] if trade['quantity_sell'] < 0 else -trade['quanitity_sell']
             if trade['accrued_interest'] != 0:
                 new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
                 # payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": self._account_number,
                 #            "timestamp": trade['timestamp'], "number": trade['number'], "asset": trade['asset'],
                 #            "amount": trade['accrued_interest'], "description": "НКД"}
                 # self._data[FOF.ASSET_PAYMENTS].append(payment)
+            self.drop_extra_fields(trade, ["currency", "proceeds", "quantity_buy", "quantity_sell", "accrued_interest"])
+            self._data[FOF.TRADES].append(trade)
+            cnt += 1
 
     def load_cash_operations(self, cash):
         pass
