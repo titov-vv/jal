@@ -253,10 +253,10 @@ class StatementOpenBroker(StatementXML):
             trade['quantity'] = trade['quantity_buy'] if trade['quantity_sell'] < 0 else -trade['quanitity_sell']
             if trade['accrued_interest'] != 0:
                 new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
-                # payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": self._account_number,
-                #            "timestamp": trade['timestamp'], "number": trade['number'], "asset": trade['asset'],
-                #            "amount": trade['accrued_interest'], "description": "НКД"}
-                # self._data[FOF.ASSET_PAYMENTS].append(payment)
+                payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": trade['account'],
+                           "timestamp": trade['timestamp'], "number": trade['number'], "asset": trade['asset'],
+                           "amount": trade['accrued_interest'], "description": "НКД"}
+                self._data[FOF.ASSET_PAYMENTS].append(payment)
             self.drop_extra_fields(trade, ["currency", "proceeds", "quantity_buy", "quantity_sell", "accrued_interest"])
             self._data[FOF.TRADES].append(trade)
             cnt += 1
