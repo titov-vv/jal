@@ -627,11 +627,12 @@ class StatementIBKR(StatementXML):
             self._data[FOF.CORP_ACTIONS].append(action)
             return 1
         else:  # Split together with ISIN change and there should be 2nd record available
-            description_b = action['description'][:parts.span('symbol')[0]] + split['symbol_old'] + ".OLD, "
+            description_b = action['description'][:parts.span('symbol')[0]] + split['symbol_old']
             asset_b = self.locate_asset(split['symbol_old'], split['isin_old'])
             paired_record = list(filter(
                 lambda pair: pair['asset'] == asset_b
-                             and pair['description'].startswith(description_b)
+                             and (pair['description'].startswith(description_b + ", ")
+                                  or pair['description'].startswith(description_b + ".OLD, "))
                              and pair['type'] == action['type']
                              and pair['timestamp'] == action['timestamp'], parts_b))
             if len(paired_record) != 1:

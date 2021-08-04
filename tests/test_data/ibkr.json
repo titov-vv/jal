@@ -25,7 +25,7 @@
     {"id": 15, "type": "adr", "symbol": "TEF", "name": "TELEFONICA SA-SPON ADR", "isin": "US8793822086", "reg_code": "879382208", "exchange": "NYSE"},
     {"id": 16, "type": "stock", "symbol": "EQM", "name": "EQM MIDSTREAM PARTNERS LP", "isin": "US26885B1008", "reg_code": "26885B100", "exchange": "NYSE"},
     {"id": 17, "type": "stock", "symbol": "ETRN", "name": "EQUITRANS MIDSTREAM CORP", "isin": "US2946001011", "reg_code": "294600101", "exchange": "NYSE"},
-    {"id": 18, "type": "stock", "symbol": "GE", "name": "GENERAL ELECTRIC CO", "isin": "", "reg_code": "369604103", "exchange": "NYSE"},
+    {"id": 18, "type": "stock", "symbol": "GE", "name": "GENERAL ELECTRIC CO", "isin": "US3696041033", "reg_code": "369604103", "exchange": "NYSE"},
     {"id": 19, "type": "stock", "symbol": "EWLL", "name": "EWELLNESS HEALTHCARE CORP", "isin": "US30051D1063", "reg_code": "30051D106", "exchange": "PINK"},
     {"id": 20, "type": "stock", "symbol": "EWLL", "name": "EWELLNESS HEALTHCARE CORP", "isin": "US30051D2053", "reg_code": "30051D205","exchange": "PINK"},
     {"id": 21, "type": "etf", "symbol": "ZROZ", "name": "PIMCO 25+ YR ZERO CPN US TIF", "isin": "US72201R8824", "reg_code": "72201R882", "exchange": "ARCA", "country": "us"},
@@ -72,9 +72,10 @@
     {"id": 3, "type": "spin-off", "account": 2, "timestamp": 1605817500, "number": "10302900848", "asset": [18, 14], "quantity": [100.0 ,0.5371], "cost_basis": 0.0, "description": "GE(US3696041033) SPINOFF  5371 FOR 1000000 (WAB, WABTEC CORP, 929740108)"},
     {"id": 4, "type": "stock_dividend", "account": 2, "timestamp": 1595017200, "number": "13259965038", "asset": 15, "quantity": 3.0, "cost_basis": 0.0, "description": "TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000 (TEF, TELEFONICA SA-SPON ADR, US8793822086)"},
     {"id": 5, "type": "merger", "account": 2, "timestamp": 1592339100, "number": "13006963996", "asset": [16, 17], "quantity": [70.0, 170.8], "cost_basis": 1.0, "description": "EQM(US26885B1008) MERGED(Acquisition) WITH US2946001011 244 FOR 100 (ETRN, EQUITRANS MIDSTREAM CORP, US2946001011)"},
-    {"id": 6, "type": "split", "account": 2, "timestamp": 1581452700, "number": "12029570527", "asset": [19, 20], "quantity": [45000.0, 900.0], "cost_basis": 1.0, "description": "EWLL(US30051D1063) SPLIT 1 FOR 50 (EWLLD, EWELLNESS HEALTHCARE CORP, US30051D2053)"},
-    {"id": 7, "type": "merger", "account": 2, "timestamp": 1604089500, "number": "14147163475", "asset": [22, 23], "quantity": [10.0, 5.92], "cost_basis": 1.0, "description": "LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)"},
-    {"id": 8, "type": "stock_dividend", "account": 2, "timestamp": 1591215600, "number": "12882908488", "asset": 28, "quantity": 2.0, "cost_basis": 0.0, "description": "MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000 (MAC, MACERICH CO/THE, US5543821012)"}
+    {"id": 6, "type": "split", "account": 2, "timestamp": 1627676700, "number": "17240033443", "asset": [18, 18], "quantity": [104.0, 13.0], "cost_basis": 1.0, "description": "GE(US3696041033) SPLIT 1 FOR 8 (GE, GENERAL ELECTRIC CO, US3696043013)"},
+    {"id": 7, "type": "split", "account": 2, "timestamp": 1581452700, "number": "12029570527", "asset": [19, 20], "quantity": [45000.0, 900.0], "cost_basis": 1.0, "description": "EWLL(US30051D1063) SPLIT 1 FOR 50 (EWLLD, EWELLNESS HEALTHCARE CORP, US30051D2053)"},
+    {"id": 8, "type": "merger", "account": 2, "timestamp": 1604089500, "number": "14147163475", "asset": [22, 23], "quantity": [10.0, 5.92], "cost_basis": 1.0, "description": "LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)"},
+    {"id": 9, "type": "stock_dividend", "account": 2, "timestamp": 1591215600, "number": "12882908488", "asset": 28, "quantity": 2.0, "cost_basis": 0.0, "description": "MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000 (MAC, MACERICH CO/THE, US5543821012)"}
   ],
   "asset_payments": [
     {"id": 1, "type": "dividend", "account": 2, "timestamp": 1578082800, "number": "", "asset": 21, "amount": 60.2, "tax": 6.02, "description": "ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)"},
