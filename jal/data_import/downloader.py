@@ -191,15 +191,15 @@ class QuoteDownloader(QObject):
               f"{engine}/markets/{market}/boards/{board_id}/securities/{asset_code}.xml?from={date1}&till={date2}"
         xml_root = xml_tree.fromstring(get_web_data(url))
         history_rows = xml_root.findall("data[@id='history']/rows/*")
-        rows = []
+        quotes = []
         for row in history_rows:
-            if row.attrib['CLOSE']:
+            if row.attrib['CLOSE']:            # TODO store principal (aka face value) for bonds
                 if 'FACEVALUE' in row.attrib:  # Correction for bonds
                     price = float(row.attrib['CLOSE']) * float(row.attrib['FACEVALUE']) / 100.0
-                    rows.append({"Date": row.attrib['TRADEDATE'], "Close": price})
+                    quotes.append({"Date": row.attrib['TRADEDATE'], "Close": price})
                 else:
-                    rows.append({"Date": row.attrib['TRADEDATE'], "Close": row.attrib['CLOSE']})
-        data = pd.DataFrame(rows, columns=["Date", "Close"])
+                    quotes.append({"Date": row.attrib['TRADEDATE'], "Close": row.attrib['CLOSE']})
+        data = pd.DataFrame(quotes, columns=["Date", "Close"])
         data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
         close = data.set_index("Date")
         return close
