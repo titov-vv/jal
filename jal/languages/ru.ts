@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="ru" sourcelanguage="en">
+<!DOCTYPE TS><TS version="2.0" language="ru" sourcelanguage="en">
 <context>
     <name>AbstractOperationDetails</name>
     <message>
@@ -622,37 +621,37 @@
         <translation>Недостаточно данных для Сплита </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr.py" line="706"/>
+        <location filename="../data_import/statement_ibkr.py" line="707"/>
         <source>Cash transactions loaded: </source>
         <translation>Денежные транзакции загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr.py" line="719"/>
+        <location filename="../data_import/statement_ibkr.py" line="720"/>
         <source>Taxes loaded: </source>
         <translation>Налоги загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr.py" line="819"/>
+        <location filename="../data_import/statement_ibkr.py" line="820"/>
         <source>*** MANUAL ENTRY REQUIRED ***</source>
         <translation>*** НЕОБХОДИМА РУЧНАЯ ПРОВЕРКА ***</translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr.py" line="730"/>
+        <location filename="../data_import/statement_ibkr.py" line="731"/>
         <source>Unhandled tax country pattern found: </source>
         <translation>Неподдерживаемый формат страны налога: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr.py" line="740"/>
+        <location filename="../data_import/statement_ibkr.py" line="741"/>
         <source>Dividend not found for withholding tax: </source>
         <translation>Дивиденд не найден для удержанного налога: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr.py" line="806"/>
+        <location filename="../data_import/statement_ibkr.py" line="807"/>
         <source>Unhandled tax pattern found: </source>
         <translation>Неподдерживаемый формат описания налога: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr.py" line="820"/>
+        <location filename="../data_import/statement_ibkr.py" line="821"/>
         <source>Unhandled dividend pattern found: </source>
         <translation>Неподдерживаемый формат описания дивиденда: </translation>
     </message>
@@ -1936,7 +1935,7 @@ do you want to save it?</source>
         <translation>Загрузка завершена</translation>
     </message>
     <message>
-        <location filename="../data_import/downloader.py" line="267"/>
+        <location filename="../data_import/downloader.py" line="257"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation>Невозможно обработать данные котировок с биржи TSX: </translation>
     </message>
@@ -2752,7 +2751,7 @@ do you want to save it?</source>
         <translation>Недостаточно данных для Выделения компании </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr.py" line="638"/>
+        <location filename="../data_import/statement_ibkr.py" line="639"/>
         <source>Can&apos;t find paired record for: </source>
         <translation>Невозможно найти парную запись для: </translation>
     </message>

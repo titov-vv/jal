@@ -621,37 +621,37 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr.py" line="706"/>
+        <location filename="../data_import/statement_ibkr.py" line="707"/>
         <source>Cash transactions loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr.py" line="719"/>
+        <location filename="../data_import/statement_ibkr.py" line="720"/>
         <source>Taxes loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr.py" line="819"/>
+        <location filename="../data_import/statement_ibkr.py" line="820"/>
         <source>*** MANUAL ENTRY REQUIRED ***</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr.py" line="730"/>
+        <location filename="../data_import/statement_ibkr.py" line="731"/>
         <source>Unhandled tax country pattern found: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr.py" line="740"/>
+        <location filename="../data_import/statement_ibkr.py" line="741"/>
         <source>Dividend not found for withholding tax: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr.py" line="806"/>
+        <location filename="../data_import/statement_ibkr.py" line="807"/>
         <source>Unhandled tax pattern found: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr.py" line="820"/>
+        <location filename="../data_import/statement_ibkr.py" line="821"/>
         <source>Unhandled dividend pattern found: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1931,7 +1931,7 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/downloader.py" line="267"/>
+        <location filename="../data_import/downloader.py" line="257"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2747,7 +2747,7 @@ do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_ibkr.py" line="638"/>
+        <location filename="../data_import/statement_ibkr.py" line="639"/>
         <source>Can&apos;t find paired record for: </source>
         <translation type="unfinished"></translation>
     </message>
