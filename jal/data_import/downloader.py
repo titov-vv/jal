@@ -151,24 +151,24 @@ class QuoteDownloader(QObject):
         return rates
 
     # noinspection PyMethodMayBeStatic
-    def MOEX_DataReader(self, asset_id, asset_code, _isin, start_timestamp, end_timestamp):
+    def MOEX_DataReader(self, asset_id, asset_code, isin, start_timestamp, end_timestamp):
         engine = None
         market = None
         board_id = None
         # Get primary board ID
         url = f"http://iss.moex.com/iss/securities/{asset_code}.xml"
         xml_root = xml_tree.fromstring(get_web_data(url))
-        for node in xml_root:
-            if node.tag == 'data' and node.attrib['id'] == 'boards':
-                boards_data = list(node)
-                for row in boards_data:
-                    if row.tag == 'rows':
-                        boards = list(row)
-                        for board in boards:
-                            if board.attrib['is_primary'] == '1':
-                                engine = board.attrib['engine']
-                                market = board.attrib['market']
-                                board_id = board.attrib['boardid']
+        boards = xml_root.findall("data[@id='boards']/rows/*")
+        if len(boards) == 0:   # can't find data by name -> use isin
+            asset_code = isin
+            url = f"http://iss.moex.com/iss/securities/{asset_code}.xml"
+            xml_root = xml_tree.fromstring(get_web_data(url))
+            boards = xml_root.findall("data[@id='boards']/rows/*")
+        for board in boards:
+            if board.attrib['is_primary'] == '1':
+                engine = board.attrib['engine']
+                market = board.attrib['market']
+                board_id = board.attrib['boardid']
         if (engine is None) or (market is None) or (board_id is None):
             logging.warning(f"Failed to find {asset_code} at {url}")
             return None
@@ -177,16 +177,12 @@ class QuoteDownloader(QObject):
         url = f"https://iss.moex.com/iss/engines/{engine}/"\
               f"markets/{market}/boards/{board_id}/securities/{asset_code}.xml"
         xml_root = xml_tree.fromstring(get_web_data(url))
-        for node in xml_root:
-            if node.tag == 'data' and node.attrib['id'] == 'securities':
-                sec_data = list(node)
-                for row in sec_data:
-                    if row.tag == 'rows':
-                        if len(list(row)) == 1:
-                            asset_info = list(row)[0]
-                            isin = asset_info.attrib['ISIN'] if 'ISIN' in asset_info.attrib else ''
-                            reg_code = asset_info.attrib['REGNUMBER'] if 'REGNUMBER' in asset_info.attrib else ''
-                            JalDB().update_asset_data(asset_id, new_isin=isin, new_reg=reg_code)
+        sec_data = xml_root.findall("data[@id='securities']/rows/*")
+        if len(sec_data) == 1:
+            asset_info = sec_data[0]
+            isin = asset_info.attrib['ISIN'] if 'ISIN' in asset_info.attrib else ''
+            reg_code = asset_info.attrib['REGNUMBER'] if 'REGNUMBER' in asset_info.attrib else ''
+            JalDB().update_asset_data(asset_id, new_isin=isin, new_reg=reg_code)
 
         # Get price history
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d')
@@ -194,21 +190,15 @@ class QuoteDownloader(QObject):
         url = f"http://iss.moex.com/iss/history/engines/"\
               f"{engine}/markets/{market}/boards/{board_id}/securities/{asset_code}.xml?from={date1}&till={date2}"
         xml_root = xml_tree.fromstring(get_web_data(url))
+        history_rows = xml_root.findall("data[@id='history']/rows/*")
         rows = []
-        for node in xml_root:
-            if node.tag == 'data' and node.attrib['id'] == 'history':
-                sections = list(node)
-                for section in sections:
-                    if section.tag == "rows":
-                        history_rows = list(section)
-                        for row in history_rows:
-                            if row.tag == "row":
-                                if row.attrib['CLOSE']:
-                                    if 'FACEVALUE' in row.attrib:  # Correction for bonds
-                                        price = float(row.attrib['CLOSE']) * float(row.attrib['FACEVALUE']) / 100.0
-                                        rows.append({"Date": row.attrib['TRADEDATE'], "Close": price})
-                                    else:
-                                        rows.append({"Date": row.attrib['TRADEDATE'], "Close": row.attrib['CLOSE']})
+        for row in history_rows:
+            if row.attrib['CLOSE']:
+                if 'FACEVALUE' in row.attrib:  # Correction for bonds
+                    price = float(row.attrib['CLOSE']) * float(row.attrib['FACEVALUE']) / 100.0
+                    rows.append({"Date": row.attrib['TRADEDATE'], "Close": price})
+                else:
+                    rows.append({"Date": row.attrib['TRADEDATE'], "Close": row.attrib['CLOSE']})
         data = pd.DataFrame(rows, columns=["Date", "Close"])
         data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
         close = data.set_index("Date")
