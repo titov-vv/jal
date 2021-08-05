@@ -27,7 +27,7 @@ It was designed to keep records of personal incomes/spendings and investments wi
 Russian tax estimation for open positions.
 - *experimental* Download russian electronic slips from russian tax authority (FNS). This function requires authorization and additional dependencies to use these function - packages `pyzbar` and `Pillow`.  
 You may authorize via SMS, FNS personal account or ESIA/Gosuslugi. QR code may be scanned from camera, clipboard image or image file on disk.
-- *experimental* Category recognition for goods in slip with help of `tensorflow`
+- *experimental* Category recognition for goods in electronic slip with help of `tensorflow`
 
 ### Installation
 *jal* was created to be portable and cross-platform. Thus you have several ways to install and run the program:

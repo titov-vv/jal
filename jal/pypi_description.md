@@ -16,15 +16,12 @@ It was designed to keep records of personal incomes/spendings and investments wi
     2. profit/loss report for investments accounts
     3. closed deals report 
 - stock/ETF quotes updates for US (Yahoo), EU (Euronext), CA (TSX) and RU (MOEX) exchanges traded stocks
-- broker statement import:
-    1. Quik HTML-statement (only trades, fee might be incomplete)
-    2. Interactive Brokers Flex statement
-    3. Uralsib Broker zipped XLS statement (trades, cash transactions)
-    4. KIT Finance XLSX-statement (trades)
-    5. PSB Broker XLS statement (trades, cash transactions, assets list)  
-- tax report preparation for foreign investments according to Russian Tax Law
-- *experimental* download russian electronic slips from russian tax authority:
-    1. QR code may be scanned from camera, clipboard image or image file on disk
-    2. Authorization via login/password to FNS personal account or ESIA/Gosuslugi (no passwords are stored in the progam, only SessionId is stored - you may check in source code)
+- Broker statement import:
+    1. Russian brokers: Uralsib broker (zipped xls), KIT Finance (xlsx), PSB broker (xls), Open broker (xml).
+    2. US brokers: Interactive Brokers Flex statement (xml).
+- Tax report preparation for foreign investments according to Russian Tax Code (![manual](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/taxes.md)).  
+Russian tax estimation for open positions.
+- *experimental* Download russian electronic slips from russian tax authority (FNS). This function requires authorization and additional dependencies to use these function - packages `pyzbar` and `Pillow`.  
+You may authorize via SMS, FNS personal account or ESIA/Gosuslugi. QR code may be scanned from camera, clipboard image or image file on disk.
 
 Full description is available at Github - *[English](https://github.com/titov-vv/jal/blob/master/docs/README.md), [Русский](https://github.com/titov-vv/jal/blob/master/docs/README.ru.md)*
