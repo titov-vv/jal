@@ -8,30 +8,26 @@ Just Another Ledger is a project for personal finance tracking.
 It was designed to keep records of personal incomes/spendings and investments with up-to-date information about account's balances and portfolio value.
 
 ### Main features
-- multiple accounts with different currencies (base currency is russian rouble but might be changed in future versions)
+- Multiple accounts with different currencies (base currency is russian rouble but might be changed in future versions)
 - 5 types of transactions: 
     1. Generic income/spending operations that may be splitted into several categories
     2. Transfers of money between different accounts and currencies
     3. Buy/Sell operation for securities (jal supports stocks, ETFs, options, partial support of bonds and futures)
     4. Dividend for stocks and Interest payments for bonds
     5. Corporate actions for stocks (Split, Symbol change, Merger, Spin-Off, Stock dividend)
-- basic reports:
+- Basic reports:
     1. monthly incomes/spendings splitted by category
     2. profit/loss report for investments accounts
     3. closed deals report 
-- stock/ETF quotes updates for US (Yahoo), EU (Euronext), CA (TSX) and RU (MOEX) exchanges traded stocks
-- broker statement import:
-    1. Quik HTML-statement (only trades, fee might be incomplete)
-    2. Interactive Brokers Flex statement
-    3. Uralsib Broker zipped XLS statement (trades, cash transactions)
-    4. KIT Finance XLSX-statement (trades)
-    5. PSB Broker XLS statement (trades, cash transactions, assets list)  
-- tax report preparation for foreign investments according to Russian Tax Code (![manual](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/taxes.md))
-- *experimental* download russian electronic slips from russian tax authority:
-    1. QR code may be scanned from camera, clipboard image or image file on disk 
-    2. Authorization via login/password to FNS personal account or ESIA/Gosuslugi (no passwords are stored in the progam, only SessionId is stored - you may check in source code)
-    (you will need to install additional dependencies to use these function - packages `pyzbar` and `Pillow`)
-- *experimental* category recognition for goods in slip with help of `tensorflow`
+- Stock/ETF quotes updates for US (Yahoo), EU (Euronext), CA (TSX) and RU (MOEX) exchanges traded stocks
+- Broker statement import:
+    1. Russian brokers: Uralsib broker (zipped xls), KIT Finance (xlsx), PSB broker (xls), Open broker (xml).
+    2. US brokers: Interactive Brokers Flex statement (xml).
+- Tax report preparation for foreign investments according to Russian Tax Code (![manual](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/taxes.md)).  
+Russian tax estimation for open positions.
+- *experimental* Download russian electronic slips from russian tax authority (FNS). This function requires authorization and additional dependencies to use these function - packages `pyzbar` and `Pillow`.  
+You may authorize via SMS, FNS personal account or ESIA/Gosuslugi. QR code may be scanned from camera, clipboard image or image file on disk.
+- *experimental* Category recognition for goods in slip with help of `tensorflow`
 
 ### Installation
 *jal* was created to be portable and cross-platform. Thus you have several ways to install and run the program:
