@@ -1,6 +1,6 @@
 from datetime import datetime
 from PySide2.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTimeEdit, QTreeView
-from PySide2.QtCore import Qt, QModelIndex, QEvent
+from PySide2.QtCore import Qt, QModelIndex, QEvent, QLocale
 from PySide2.QtGui import QDoubleValidator, QBrush
 from jal.constants import Setup, CustomColor
 from jal.widgets.reference_selector import PeerSelector, CategorySelector, TagSelector
@@ -92,12 +92,14 @@ class FloatDelegate(QStyledItemDelegate):
         self._allow_tail = allow_tail
         self._colors = colors
         self._color = None
+        self._validator = QDoubleValidator(decimals=self._tolerance)   # TODO inform user about result of validation
+        self._validator.setLocale(QLocale().system())
 
     def formatFloatLong(self, value):
         if self._allow_tail and (abs(value - round(value, self._tolerance)) >= Setup.CALC_TOLERANCE):
-            text = str(value)
+            text = QLocale().toString(value)
         else:
-            text = f"{value:,.{self._tolerance}f}"
+            text = QLocale().toString(value, 'f', self._tolerance)
         return text
 
     def displayText(self, value, locale):
@@ -114,7 +116,7 @@ class FloatDelegate(QStyledItemDelegate):
     # this is required when edit operation is called from QTableView
     def createEditor(self, aParent, option, index):
         float_editor = QLineEdit(aParent)
-        float_editor.setValidator(QDoubleValidator(decimals=2))
+        float_editor.setValidator(self._validator)
         return float_editor
 
     def setEditorData(self, editor, index):
@@ -122,7 +124,11 @@ class FloatDelegate(QStyledItemDelegate):
             amount = float(index.model().data(index, Qt.EditRole))
         except (ValueError, TypeError):
             amount = 0.0
-        editor.setText(f"{amount}")
+        editor.setText(QLocale().toString(amount, 'f', 2))
+
+    def setModelData(self, editor, model, index):
+        value = QLocale().toDouble(editor.text())[0]
+        model.setData(index, value)
 
     def initStyleOption(self, option, index):
         super().initStyleOption(option, index)
