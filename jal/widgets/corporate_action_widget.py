@@ -6,7 +6,6 @@ from PySide2.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QComboBox
 from jal.widgets.helpers import g_tr
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
-from jal.widgets.amount_editor import AmountEdit
 from jal.widgets.delegates import WidgetMapperDelegateBase
 
 
@@ -65,9 +64,9 @@ class CorporateActionWidget(AbstractOperationDetails):
         self.account_widget = AccountSelector(self)
         self.asset_b_widget = AssetSelector(self)
         self.asset_a_widget = AssetSelector(self)
-        self.qty_b_edit = AmountEdit(self)
-        self.qty_a_edit = AmountEdit(self)
-        self.ratio_edit = AmountEdit(self)
+        self.qty_b_edit = QLineEdit(self)
+        self.qty_a_edit = QLineEdit(self)
+        self.ratio_edit = QLineEdit(self)
         self.number = QLineEdit(self)
         self.comment = QLineEdit(self)
 

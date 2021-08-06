@@ -7,7 +7,6 @@ from jal.constants import Setup
 from jal.widgets.helpers import g_tr
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector
-from jal.widgets.amount_editor import AmountEdit
 from jal.widgets.delegates import WidgetMapperDelegateBase
 
 
@@ -70,11 +69,11 @@ class TransferWidget(AbstractOperationDetails):
         self.from_account_widget = AccountSelector(self)
         self.to_account_widget = AccountSelector(self)
         self.fee_account_widget = AccountSelector(self)
-        self.withdrawal = AmountEdit(self)
+        self.withdrawal = QLineEdit(self)
         self.withdrawal.setAlignment(Qt.AlignRight)
-        self.deposit = AmountEdit(self)
+        self.deposit = QLineEdit(self)
         self.deposit.setAlignment(Qt.AlignRight)
-        self.fee = AmountEdit(self)
+        self.fee = QLineEdit(self)
         self.fee.setAlignment(Qt.AlignRight)
         self.comment = QLineEdit(self)
 

@@ -6,7 +6,6 @@ from PySide2.QtWidgets import QLabel, QDateTimeEdit, QDateEdit, QLineEdit
 from jal.widgets.helpers import g_tr
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
-from jal.widgets.amount_editor import AmountEdit
 from jal.widgets.delegates import WidgetMapperDelegateBase
 
 
@@ -60,11 +59,11 @@ class TradeWidget(AbstractOperationDetails):
         self.settlement_editor.setDisplayFormat("dd/MM/yyyy")
         self.account_widget = AccountSelector(self)
         self.asset_widget = AssetSelector(self)
-        self.qty_edit = AmountEdit(self)
+        self.qty_edit = QLineEdit(self)
         self.qty_edit.setAlignment(Qt.AlignRight)
-        self.price_edit = AmountEdit(self)
+        self.price_edit = QLineEdit(self)
         self.price_edit.setAlignment(Qt.AlignRight)
-        self.fee_edit = AmountEdit(self)
+        self.fee_edit = QLineEdit(self)
         self.fee_edit.setAlignment(Qt.AlignRight)
         self.number = QLineEdit(self)
         self.comment = QLineEdit(self)
