@@ -85,7 +85,7 @@ class TransferWidget(AbstractOperationDetails):
         self.layout.addWidget(self.withdrawal_timestamp, 1, 1, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.from_account_widget, 2, 1, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.withdrawal, 3, 1, 1, 1, Qt.AlignLeft)
-        self.layout.addWidget(self.comment, 5, 1, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.comment, 5, 1, 1, 4)
 
         self.layout.addWidget(self.copy_date_btn, 1, 2, 1, 1)
         self.layout.addWidget(self.arrow_account, 2, 2, 1, 1, Qt.AlignCenter)
@@ -94,14 +94,14 @@ class TransferWidget(AbstractOperationDetails):
         self.layout.addWidget(self.to_date_label, 1, 3, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.to_account_label, 2, 3, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.to_amount_label, 3, 3, 1, 1, Qt.AlignLeft)
-        self.layout.addWidget(self.fee_account_label, 4, 3, 1, 1, Qt.AlignLeft)
-        self.layout.addWidget(self.fee_amount_label, 5, 3, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.fee_account_label, 4, 0, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.fee_amount_label, 4, 3, 1, 1, Qt.AlignLeft)
 
         self.layout.addWidget(self.deposit_timestamp, 1, 4, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.to_account_widget, 2, 4, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.deposit, 3, 4, 1, 1, Qt.AlignLeft)
-        self.layout.addWidget(self.fee_account_widget, 4, 4, 1, 1, Qt.AlignLeft)
-        self.layout.addWidget(self.fee, 5, 4, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.fee_account_widget, 4, 1, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.fee, 4, 4, 1, 1, Qt.AlignLeft)
 
         self.layout.addWidget(self.commit_button, 0, 6, 1, 1)
         self.layout.addWidget(self.revert_button, 0, 7, 1, 1)
