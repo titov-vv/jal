@@ -92,7 +92,7 @@ class FloatDelegate(QStyledItemDelegate):
         self._allow_tail = allow_tail
         self._colors = colors
         self._color = None
-        self._validator = QDoubleValidator(decimals=self._tolerance)   # TODO inform user about result of validation
+        self._validator = QDoubleValidator(decimals=self._tolerance)
         self._validator.setLocale(QLocale().system())
 
     def formatFloatLong(self, value):
