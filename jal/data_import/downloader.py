@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from io import StringIO
 
 import pandas as pd
+from pandas.errors import ParserError
 import json
 from PySide2 import QtCore
 from PySide2.QtCore import QObject, Signal
@@ -209,7 +210,10 @@ class QuoteDownloader(QObject):
         url = f"https://query1.finance.yahoo.com/v7/finance/download/{asset_code}?"\
               f"period1={start_timestamp}&period2={end_timestamp}&interval=1d&events=history"
         file = StringIO(get_web_data(url))
-        data = pd.read_csv(file)
+        try:
+            data = pd.read_csv(file)
+        except ParserError:
+            return None
         data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
         data = data.drop(columns=['Open', 'High', 'Low', 'Adj Close', 'Volume'])
         close = data.set_index("Date")
@@ -223,7 +227,10 @@ class QuoteDownloader(QObject):
               f"typefile=csv&layout=vertical&typedate=dmy&separator=point&mic=XPAR&isin={isin}&name={asset_code}&"\
               f"namefile=Price_Data_Historical&from={start}&to={end}&adjusted=1&base=0"
         file = StringIO(get_web_data(url))
-        data = pd.read_csv(file, header=3)
+        try:
+            data = pd.read_csv(file, header=3)
+        except ParserError:
+            return None
         data['Date'] = pd.to_datetime(data['Date'], format="%d/%m/%Y")
         data = data.drop(
             columns=['ISIN', 'MIC', 'Ouvert', 'Haut', 'Bas', 'Nombre de titres', 'Number of Trades', 'Capitaux',

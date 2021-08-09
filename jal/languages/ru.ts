@@ -110,77 +110,77 @@
 <context>
     <name>CorpActionWidget</name>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="45"/>
+        <location filename="../widgets/corporate_action_widget.py" line="44"/>
         <source>Corporate Action</source>
         <translation>Корпоративное действие</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="46"/>
+        <location filename="../widgets/corporate_action_widget.py" line="45"/>
         <source>Date/Time</source>
         <translation>Дата/Время</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="47"/>
+        <location filename="../widgets/corporate_action_widget.py" line="46"/>
         <source>Account</source>
         <translation>Счет</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="48"/>
+        <location filename="../widgets/corporate_action_widget.py" line="47"/>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="49"/>
+        <location filename="../widgets/corporate_action_widget.py" line="48"/>
         <source>#</source>
         <translation>№</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="52"/>
+        <location filename="../widgets/corporate_action_widget.py" line="51"/>
         <source>Asset</source>
         <translation>ЦБ</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="53"/>
+        <location filename="../widgets/corporate_action_widget.py" line="52"/>
         <source>Qty</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="54"/>
+        <location filename="../widgets/corporate_action_widget.py" line="53"/>
         <source>% of basis</source>
         <translation>% от исходного</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="55"/>
+        <location filename="../widgets/corporate_action_widget.py" line="54"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="110"/>
+        <location filename="../widgets/corporate_action_widget.py" line="109"/>
         <source>N/A</source>
         <translation>N/A</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="110"/>
+        <location filename="../widgets/corporate_action_widget.py" line="109"/>
         <source>Merger</source>
         <translation>Объединение компании</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="110"/>
+        <location filename="../widgets/corporate_action_widget.py" line="109"/>
         <source>Spin-Off</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="110"/>
+        <location filename="../widgets/corporate_action_widget.py" line="109"/>
         <source>Symbol change</source>
         <translation>Смена символа</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="110"/>
+        <location filename="../widgets/corporate_action_widget.py" line="109"/>
         <source>Split</source>
         <translation>Сплит</translation>
     </message>
     <message>
-        <location filename="../widgets/corporate_action_widget.py" line="110"/>
+        <location filename="../widgets/corporate_action_widget.py" line="109"/>
         <source>Stock dividend</source>
         <translation>Дивиденд акциями</translation>
     </message>
@@ -317,57 +317,57 @@
 <context>
     <name>DividendWidget</name>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="102"/>
+        <location filename="../widgets/dividend_widget.py" line="101"/>
         <source>Dividend</source>
         <translation>Дивиденд</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="41"/>
+        <location filename="../widgets/dividend_widget.py" line="40"/>
         <source>Date/Time</source>
         <translation>Дата/Время</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="44"/>
+        <location filename="../widgets/dividend_widget.py" line="43"/>
         <source>#</source>
         <translation>№</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="45"/>
+        <location filename="../widgets/dividend_widget.py" line="44"/>
         <source>Account</source>
         <translation>Счет</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="46"/>
+        <location filename="../widgets/dividend_widget.py" line="45"/>
         <source>Asset</source>
         <translation>ЦБ</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="48"/>
+        <location filename="../widgets/dividend_widget.py" line="47"/>
         <source>Tax</source>
         <translation>Налог</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="49"/>
+        <location filename="../widgets/dividend_widget.py" line="48"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="42"/>
+        <location filename="../widgets/dividend_widget.py" line="41"/>
         <source>Ex-Date</source>
         <translation>Отсечка</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="43"/>
+        <location filename="../widgets/dividend_widget.py" line="42"/>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="102"/>
+        <location filename="../widgets/dividend_widget.py" line="101"/>
         <source>N/A</source>
         <translation>N/A</translation>
     </message>
     <message>
-        <location filename="../widgets/dividend_widget.py" line="102"/>
+        <location filename="../widgets/dividend_widget.py" line="101"/>
         <source>Bond Interest</source>
         <translation>Купон</translation>
     </message>
@@ -3090,52 +3090,52 @@ do you want to save it?</source>
 <context>
     <name>TradeWidget</name>
     <message>
-        <location filename="../widgets/trade_widget.py" line="40"/>
+        <location filename="../widgets/trade_widget.py" line="39"/>
         <source>Buy / Sell</source>
         <translation>Покупка / Продажа</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="41"/>
+        <location filename="../widgets/trade_widget.py" line="40"/>
         <source>Date/Time</source>
         <translation>Дата/Время</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="42"/>
+        <location filename="../widgets/trade_widget.py" line="41"/>
         <source>Settlement</source>
         <translation>Дата расчетов</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="43"/>
+        <location filename="../widgets/trade_widget.py" line="42"/>
         <source>#</source>
         <translation>№</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="44"/>
+        <location filename="../widgets/trade_widget.py" line="43"/>
         <source>Account</source>
         <translation>Счет</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="45"/>
+        <location filename="../widgets/trade_widget.py" line="44"/>
         <source>Asset</source>
         <translation>ЦБ</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="46"/>
+        <location filename="../widgets/trade_widget.py" line="45"/>
         <source>Qty</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="47"/>
+        <location filename="../widgets/trade_widget.py" line="46"/>
         <source>Price</source>
         <translation>Цена</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="48"/>
+        <location filename="../widgets/trade_widget.py" line="47"/>
         <source>Fee</source>
         <translation>Комиссия</translation>
     </message>
     <message>
-        <location filename="../widgets/trade_widget.py" line="49"/>
+        <location filename="../widgets/trade_widget.py" line="48"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
@@ -3143,42 +3143,42 @@ do you want to save it?</source>
 <context>
     <name>TransferWidget</name>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="44"/>
+        <location filename="../widgets/transfer_widget.py" line="43"/>
         <source>Transfer</source>
         <translation>Перевод</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="48"/>
+        <location filename="../widgets/transfer_widget.py" line="47"/>
         <source>Date/Time</source>
         <translation>Дата/Время</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="46"/>
+        <location filename="../widgets/transfer_widget.py" line="45"/>
         <source>From</source>
         <translation>С</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="50"/>
+        <location filename="../widgets/transfer_widget.py" line="49"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="49"/>
+        <location filename="../widgets/transfer_widget.py" line="48"/>
         <source>To</source>
         <translation>На</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="51"/>
+        <location filename="../widgets/transfer_widget.py" line="50"/>
         <source>Fee from</source>
         <translation>Коммиссия с</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="52"/>
+        <location filename="../widgets/transfer_widget.py" line="51"/>
         <source>Fee amount</source>
         <translation>Размер комиссии</translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="53"/>
+        <location filename="../widgets/transfer_widget.py" line="52"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
