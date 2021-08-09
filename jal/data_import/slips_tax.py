@@ -196,7 +196,7 @@ class SlipsTaxAPI:
         else:
             logging.error(g_tr('SlipsTaxAPI', "Can't refresh session, response: ") + f"{response}/{response.text}")
             JalSettings().setValue('RuTaxSessionId', '')
-            if self.get_ru_tax_session(self):
+            if self.get_ru_tax_session():
                 return SlipsTaxAPI.Failure
             else:
                 return SlipsTaxAPI.Pending  # not Success as it is sent transparently to upper callers

@@ -4,6 +4,7 @@ import time
 import json
 import logging
 import pandas as pd
+from urllib.parse import parse_qs
 from PySide2.QtWidgets import QStyledItemDelegate
 from jal.widgets.reference_selector import CategorySelector, TagSelector
 from jal.constants import CustomColor
@@ -126,7 +127,6 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
     OPERATION_PURCHASE = 1
     OPERATION_RETURN = 2
 
-    QR_pattern = "^t=(.*)&s=(.*)&fn=(.*)&i=(.*)&fp=(.*)&n=(.*)$"
     timestamp_patterns = ['yyyyMMddTHHmm', 'yyyyMMddTHHmmss', 'yyyy-MM-ddTHH:mm', 'yyyy-MM-ddTHH:mm:ss']
 
     def __init__(self, parent):
@@ -280,19 +280,21 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
     def parseQRdata(self, qr_data):
         self.QR_data = qr_data
 
-        logging.info(g_tr('ImportSlipDialog', "QR: " +self.QR_data))
-        parts = re.match(self.QR_pattern, qr_data)
-        if not parts:
+        logging.info(g_tr('ImportSlipDialog', "QR: " + self.QR_data))
+        params = parse_qs(self.QR_data)
+        try:
+            for timestamp_pattern in self.timestamp_patterns:
+                datetime = QDateTime.fromString(params['t'][0], timestamp_pattern)
+                if datetime.isValid():
+                    self.SlipTimstamp.setDateTime(datetime)
+            self.SlipAmount.setText(params['s'][0])
+            self.FN.setText(params['fn'][0])
+            self.FD.setText(params['i'][0])
+            self.FP.setText(params['fp'][0])
+            self.SlipType.setCurrentIndex(int(params['n'][0]) - 1)
+        except KeyError:
             logging.warning(g_tr('ImportSlipDialog', "QR available but pattern isn't recognized: " + self.QR_data))
-        for timestamp_pattern in self.timestamp_patterns:
-            datetime = QDateTime.fromString(parts.group(1), timestamp_pattern)
-            if datetime.isValid():
-                self.SlipTimstamp.setDateTime(datetime)
-        self.SlipAmount.setText(parts.group(2))
-        self.FN.setText(parts.group(3))
-        self.FD.setText(parts.group(4))
-        self.FP.setText(parts.group(5))
-        self.SlipType.setCurrentIndex(int(parts.group(6)) - 1)
+            return
         self.qr_data_validated.emit()
 
     def downloadSlipJSON(self):
