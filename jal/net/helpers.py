@@ -15,14 +15,16 @@ def make_user_agent() -> str:
 
 # ===================================================================================================================
 # Retrieve URL from web with given method and params
-def request_url(method, url, params=None):
+def request_url(method, url, params=None, json_params=None):
     session = requests.Session()
     session.headers['User-Agent'] = make_user_agent()
     if method == "GET":
         response = session.get(url)
     elif method == "POST":
         if params:
-            response = session.post(url, json=params)
+            response = session.post(url, data=params)
+        elif json_params:
+            response = session.post(url, json=json_params)
         else:
             response = session.post(url)
     else:
@@ -42,8 +44,8 @@ def get_web_data(url):
 
 # ===================================================================================================================
 # Function download URL and return it content as string or empty string if site returns error
-def post_web_data(url, params):
-    return request_url("POST", url, params=params)
+def post_web_data(url, params=None, json_params=None):
+    return request_url("POST", url, params=params, json_params=json_params)
 
 # ===================================================================================================================
 # Function tries to get asset information online from http://www.moex.com

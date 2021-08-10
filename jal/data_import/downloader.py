@@ -112,7 +112,7 @@ class QuoteDownloader(QObject):
                 continue
             if data is not None:
                 for date, quote in data.iterrows():  # Date in pandas dataset is in UTC by default
-                    jal_db.update_quote(asset['asset_id'], int(date.timestamp()), float(quote[0]))
+                    jal_db.update_quote(asset['asset_id'], int(date.timestamp()), quote[0])
         jal_db.commit()
         logging.info(g_tr('QuotesUpdateDialog', "Download completed"))
 
@@ -121,7 +121,7 @@ class QuoteDownloader(QObject):
         try:
             xml_root = xml_tree.fromstring(get_web_data("http://www.cbr.ru/scripts/XML_valFull.asp"))
             for node in xml_root:
-                code = node.find("ParentCode").text if node is not None else None
+                code = node.find("ParentCode").text.strip() if node is not None else None
                 iso = node.find("ISO_Char_Code").text if node is not None else None
                 rows.append({"ISO_name": iso, "CBR_code": code})
         except xml_tree.ParseError:
@@ -202,6 +202,7 @@ class QuoteDownloader(QObject):
                     quotes.append({"Date": row.attrib['TRADEDATE'], "Close": row.attrib['CLOSE']})
         data = pd.DataFrame(quotes, columns=["Date", "Close"])
         data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
+        data['Close'] = pd.to_numeric(data['Close'])
         close = data.set_index("Date")
         return close
 
@@ -220,22 +221,32 @@ class QuoteDownloader(QObject):
         return close
 
     # noinspection PyMethodMayBeStatic
-    def Euronext_DataReader(self, _asset_id, asset_code, isin, start_timestamp, end_timestamp):
-        start = int(start_timestamp * 1000)
-        end = int(end_timestamp * 1000)
-        url = f"https://euconsumer.euronext.com/nyx_eu_listings/price_chart/download_historical?"\
-              f"typefile=csv&layout=vertical&typedate=dmy&separator=point&mic=XPAR&isin={isin}&name={asset_code}&"\
-              f"namefile=Price_Data_Historical&from={start}&to={end}&adjusted=1&base=0"
-        file = StringIO(get_web_data(url))
+    def Euronext_DataReader(self, _asset_id, _asset_code, isin, start_timestamp, end_timestamp):
+        params = {'format': 'csv', 'decimal_separator': '.', 'date_form': 'd/m/Y', 'op': '', 'adjusted': '',
+                  'base100': '', 'startdate': datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d'),
+                  'enddate': datetime.utcfromtimestamp(end_timestamp).strftime('%Y-%m-%d')}
+        url = f"https://live.euronext.com/en/ajax/AwlHistoricalPrice/getFullDownloadAjax/{isin}-XPAR"
+        quotes = post_web_data(url, params=params)
+        quotes_text = quotes.splitlines()
+        if len(quotes_text) < 4:
+            logging.warning(g_tr('QuotesUpdateDialog', "Euronext quotes history reply is too short: ") + quotes)
+            return None
+        if quotes_text[0] != '"Historical Data"':
+            logging.warning(g_tr('QuotesUpdateDialog', "Euronext quotes header not found in: ") + quotes)
+            return None
+        if quotes_text[2] != isin:
+            logging.warning(g_tr('QuotesUpdateDialog', "Euronext quotes ISIN mismatch in: ") + quotes)
+            return None
+        file = StringIO(quotes)
         try:
-            data = pd.read_csv(file, header=3)
+            data = pd.read_csv(file, header=3, sep=';')
         except ParserError:
             return None
         data['Date'] = pd.to_datetime(data['Date'], format="%d/%m/%Y")
-        data = data.drop(
-            columns=['ISIN', 'MIC', 'Ouvert', 'Haut', 'Bas', 'Nombre de titres', 'Number of Trades', 'Capitaux',
-                     'Devise'])
+        data = data.drop(columns=['Open', 'High', 'Low', 'Number of Shares', 'Number of Trades',
+                                  'Turnover', 'Number of Trades', 'vwap'])
         close = data.set_index("Date")
+        close.sort_index(inplace=True)
         return close
 
     # noinspection PyMethodMayBeStatic
@@ -256,7 +267,7 @@ class QuoteDownloader(QObject):
                      "{getCompanyPriceHistoryForDownload(symbol: $symbol, start: $start, end: $end, adjusted: $adjusted, adjustmentType: $adjustmentType, unadjusted: $unadjusted) "
                      "{ datetime closePrice}}"
         }
-        json_content = json.loads(post_web_data(url, params))
+        json_content = json.loads(post_web_data(url, json_params=params))
         result_data = json_content['data'] if 'data' in json_content else None
         if 'getCompanyPriceHistoryForDownload' in result_data:
             price_array = result_data['getCompanyPriceHistoryForDownload']
@@ -264,6 +275,8 @@ class QuoteDownloader(QObject):
             logging.warning(g_tr('QuotesUpdateDialog', "Can't parse data for TSX quotes: ") + json_content)
             return None
         data = pd.DataFrame(price_array)
-        data['datetime'] = pd.to_datetime(data['datetime'], format="%Y-%m-%d")
-        close = data.set_index("datetime")
+        data.rename(columns={'datetime': 'Date', 'closePrice': 'Close'}, inplace=True)
+        data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
+        close = data.set_index("Date")
+        close.sort_index(inplace=True)
         return close

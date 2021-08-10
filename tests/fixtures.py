@@ -76,3 +76,10 @@ def prepare_db_xls(prepare_db):
                       "VALUES (4, 'AFLT', 2, 'АО Аэрофлот', 'RU0009062285', 0)") is not None
     yield
 
+
+@pytest.fixture
+def prepare_db_moex(prepare_db):   # Create SBER stock in database to be updated from www.moex.com
+    assert executeSQL("INSERT INTO assets (id, name, type_id, full_name, isin, src_id) "
+                      "VALUES (4, 'SBER', 2, '', '', 0)") is not None
+    yield
+
