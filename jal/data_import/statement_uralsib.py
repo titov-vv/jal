@@ -245,7 +245,9 @@ class StatementUKFU(StatementXLS):
             'Погашение купона': self.interest,
             'Погашение номинала': self.bond_repayment,
             'Списано по сделке': None,   # These operations are results of trades
-            'Получено по сделке': None
+            'Получено по сделке': None,
+            "Вариационная маржа": None,  # These are non-trade operations for derivatives
+            "Заблокировано средств ГО": None
         }
 
         row, headers = self.find_section_start("ДВИЖЕНИЕ ДЕНЕЖНЫХ СРЕДСТВ ЗА ОТЧЕТНЫЙ ПЕРИОД",  columns)
