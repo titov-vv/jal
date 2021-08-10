@@ -112,7 +112,7 @@ class QuoteDownloader(QObject):
                 continue
             if data is not None:
                 for date, quote in data.iterrows():  # Date in pandas dataset is in UTC by default
-                    jal_db.update_quote(asset['asset_id'], int(date.timestamp()), quote[0])
+                    jal_db.update_quote(asset['asset_id'], int(date.timestamp()), float(quote[0]))
         jal_db.commit()
         logging.info(g_tr('QuotesUpdateDialog', "Download completed"))
 
