@@ -108,12 +108,13 @@ def GetAssetInfoFromMOEX(keys) -> dict:
     if matched:   # Sometimes symbol is "absent" - for example bonds have ISIN instead
         asset['symbol'] = asset_data['shortname'] if asset_data['secid'] == asset_data['isin'] else asset_data['secid']
         asset['name'] = asset_data['name']
-        asset['isin'] = asset_data['isin'] if 'isin' in asset_data else ''
-        asset['reg_code'] = asset_data['regnumber'] if 'regnumber' in asset_data else ''
+        asset['isin'] = asset_data['isin'] if 'isin' in asset_data else None
+        asset['reg_code'] = asset_data['regnumber'] if 'regnumber' in asset_data else None
         try:
             asset['type'] = asset_type[asset_data['group']]
         except KeyError:
             logging.error(g_tr('Net', "Unsupported MOEX security type: ") + f"{asset_data['group']}")
             return {}
         asset['source'] = MarketDataFeed.RU
+    asset = {key: value for key, value in asset.items() if value is not None}   # Drop Nones
     return asset

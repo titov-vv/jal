@@ -225,9 +225,9 @@ class StatementXLS(Statement):
                 asset_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
                 asset = {"id": asset_id, "symbol": asset_info['symbol'], 'name': asset_info['name'],
                          'type': asset_type[asset_info['type']], 'exchange': "MOEX"}
-                if asset_info['isin']:
+                if 'isin' in asset_info:
                     asset['isin'] = asset_info['isin']
-                if asset_info['reg_code']:
+                if 'reg_code' in asset_info:
                     asset['reg_code'] = asset_info['reg_code']
             else:
                 raise Statement_ImportError(g_tr('StatementXLS', "Can't import asset: ") + f"{isin}/{reg_code}")

@@ -222,8 +222,10 @@ class StatementOpenBroker(StatementXML):
                 if len(asset_info):
                     asset_data = {'symbol': asset_info['symbol'], 'name': asset_info['name'],
                                   'isin': asset_info['isin']}
-                    if asset_info['reg_code']:
-                        asset_data['reg_code'] = asset_info['reg_code']
+                    if 'isin' in asset_info:
+                        asset['isin'] = asset_info['isin']
+                    if 'reg_code' in asset_info:
+                        asset['reg_code'] = asset_info['reg_code']
                     asset.update(asset_data)
             if asset['exchange'] == '':  # don't store empty exchange
                 asset.pop('exchange')

@@ -4,6 +4,8 @@ from pandas._testing import assert_frame_equal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_moex
 from jal.db.helpers import readSQL
+from jal.constants import PredefinedAsset, MarketDataFeed
+from jal.net.helpers import GetAssetInfoFromMOEX
 from jal.data_import.downloader import QuoteDownloader
 from jal.data_import.slips_tax import SlipsTaxAPI
 
@@ -11,6 +13,21 @@ def test_INN_resolution():
     tax_API = SlipsTaxAPI()
     name = tax_API.get_shop_name_by_inn('7707083893')
     assert name == 'ПАО СБЕРБАНК'
+
+def test_MOEX_details():
+    stock = {'symbol': 'AFLT', 'name': 'Аэрофлот-росс.авиалин(ПАО)ао', 'isin': 'RU0009062285', 'reg_code': '1-01-00010-A', 'type': PredefinedAsset.Stock, 'source': MarketDataFeed.RU}
+    stock2 = {'symbol': 'POLY', 'name': 'Polymetal International plc', 'isin': 'JE00B6T5S470', 'type': PredefinedAsset.Stock, 'source': MarketDataFeed.RU}
+    pif = {'symbol': 'ЗПИФ ПНК', 'name': 'ЗПИФ Фонд ПНК-Рентал', 'isin': 'RU000A1013V9', 'reg_code': '2770', 'type': PredefinedAsset.ETF, 'source': MarketDataFeed.RU}
+    futures = {'symbol': 'SiZ1', 'name': 'Фьючерсный контракт Si-12.21', 'type': PredefinedAsset.Derivative, 'source': MarketDataFeed.RU}
+
+    data = GetAssetInfoFromMOEX(keys={"isin": "RU0009062285", "regnumber": "1-01-00010-A", "secid": "AFLT"})
+    assert data == stock
+    data = GetAssetInfoFromMOEX(keys={"isin": "JE00B6T5S470", "regnumber": "", "secid": ""})
+    assert data == stock2
+    data = GetAssetInfoFromMOEX(keys={"isin": "RU000A1013V9", "regnumber": "2770", "secid": "RU000A1013V9"})
+    assert data == pif
+    data = GetAssetInfoFromMOEX(keys={"isin": "", "regnumber": "", "secid": "SiZ1"})
+    assert data == futures
 
 def test_CBR_downloader():
     codes = pd.DataFrame({'ISO_name': ['AUD', 'ATS'], 'CBR_code': ['R01010', 'R01015']})
