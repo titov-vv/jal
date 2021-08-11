@@ -224,7 +224,9 @@ class StatementXLS(Statement):
             if len(asset_info):
                 asset_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
                 asset = {"id": asset_id, "symbol": asset_info['symbol'], 'name': asset_info['name'],
-                         'type': asset_type[asset_info['type']], 'isin': asset_info['isin'], 'exchange': "MOEX"}
+                         'type': asset_type[asset_info['type']], 'exchange': "MOEX"}
+                if asset_info['isin']:
+                    asset['isin'] = asset_info['isin']
                 if asset_info['reg_code']:
                     asset['reg_code'] = asset_info['reg_code']
             else:
