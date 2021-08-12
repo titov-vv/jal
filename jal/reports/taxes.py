@@ -682,9 +682,10 @@ class TaxesRus:
                            "LEFT JOIN t_last_dates AS ldcs ON c.settlement=ldcs.ref_id "
                            "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
                            "WHERE c.settlement>=:begin AND c.settlement<:end AND d.account_id=:account_id "
-                           "AND s.type_id == 6 "  # To select only derivatives
+                           "AND s.type_id = :derivative "
                            "ORDER BY s.name, o.timestamp, c.timestamp",
-                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id)])
+                           [(":begin", self.year_begin), (":end", self.year_end),
+                            (":account_id", self.account_id)], (":derivative", PredefinedAsset.Derivative))
         start_row = self.data_start_row
         data_row = 0
         while query.next():
