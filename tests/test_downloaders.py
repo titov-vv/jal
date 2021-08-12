@@ -6,7 +6,7 @@ from tests.fixtures import project_root, data_path, prepare_db, prepare_db_moex
 from jal.db.helpers import readSQL
 from jal.constants import PredefinedAsset
 from jal.net.helpers import isEnglish
-from net.downloader import QuoteDownloader
+from jal.net.downloader import QuoteDownloader
 from jal.data_import.slips_tax import SlipsTaxAPI
 
 

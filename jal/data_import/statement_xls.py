@@ -7,7 +7,7 @@ from zipfile import ZipFile
 from jal.widgets.helpers import g_tr
 from jal.db.update import JalDB
 from jal.data_import.statement import Statement, FOF, Statement_ImportError
-from net.downloader import QuoteDownloader
+from jal.net.downloader import QuoteDownloader
 
 
 # -----------------------------------------------------------------------------------------------------------------------
