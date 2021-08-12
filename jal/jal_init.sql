@@ -127,7 +127,8 @@ CREATE TABLE assets (
 
 CREATE UNIQUE INDEX asset_name_isin_idx ON assets (
     name ASC,
-    isin ASC
+    isin ASC,
+    expiry ASC
 );
 
 -- Table: asset_reg_id

@@ -55,7 +55,8 @@ DROP TABLE sqlitestudio_temp_table;
 
 CREATE UNIQUE INDEX asset_name_isin_idx ON assets (
     name ASC,
-    isin ASC
+    isin ASC,
+    expiry ASC
 );
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 1;
