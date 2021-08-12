@@ -115,6 +115,5 @@ def GetAssetInfoFromMOEX(keys) -> dict:
         except KeyError:
             logging.error(g_tr('Net', "Unsupported MOEX security type: ") + f"{asset_data['group']}")
             return {}
-        asset['source'] = MarketDataFeed.RU
     asset = {key: value for key, value in asset.items() if value is not None}   # Drop Nones
     return asset

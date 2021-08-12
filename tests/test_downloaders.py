@@ -15,10 +15,10 @@ def test_INN_resolution():
     assert name == 'ПАО СБЕРБАНК'
 
 def test_MOEX_details():
-    stock = {'symbol': 'AFLT', 'name': 'Аэрофлот-росс.авиалин(ПАО)ао', 'isin': 'RU0009062285', 'reg_code': '1-01-00010-A', 'type': PredefinedAsset.Stock, 'source': MarketDataFeed.RU}
-    stock2 = {'symbol': 'POLY', 'name': 'Polymetal International plc', 'isin': 'JE00B6T5S470', 'type': PredefinedAsset.Stock, 'source': MarketDataFeed.RU}
-    pif = {'symbol': 'ЗПИФ ПНК', 'name': 'ЗПИФ Фонд ПНК-Рентал', 'isin': 'RU000A1013V9', 'reg_code': '2770', 'type': PredefinedAsset.ETF, 'source': MarketDataFeed.RU}
-    futures = {'symbol': 'SiZ1', 'name': 'Фьючерсный контракт Si-12.21', 'type': PredefinedAsset.Derivative, 'source': MarketDataFeed.RU}
+    stock = {'symbol': 'AFLT', 'name': 'Аэрофлот-росс.авиалин(ПАО)ао', 'isin': 'RU0009062285', 'reg_code': '1-01-00010-A', 'type': PredefinedAsset.Stock}
+    stock2 = {'symbol': 'POLY', 'name': 'Polymetal International plc', 'isin': 'JE00B6T5S470', 'type': PredefinedAsset.Stock}
+    pif = {'symbol': 'ЗПИФ ПНК', 'name': 'ЗПИФ Фонд ПНК-Рентал', 'isin': 'RU000A1013V9', 'reg_code': '2770', 'type': PredefinedAsset.ETF}
+    futures = {'symbol': 'SiZ1', 'name': 'Фьючерсный контракт Si-12.21', 'type': PredefinedAsset.Derivative}
 
     data = GetAssetInfoFromMOEX(keys={"isin": "RU0009062285", "regnumber": "1-01-00010-A", "secid": "AFLT"})
     assert data == stock

@@ -1,7 +1,7 @@
 import logging
 import re
 import pandas
-from datetime import datetime, timezone, time
+from datetime import datetime, timezone
 from zipfile import ZipFile
 
 from jal.widgets.helpers import g_tr
@@ -220,15 +220,11 @@ class StatementXLS(Statement):
                 g_tr('StatementXLS', "Attempt to recreate existing asset: ") + f"{isin}/{reg_code}")
         asset_id = JalDB().get_asset_id('', isin=isin, reg_code=reg_code, dialog_new=False)
         if asset_id is None:
-            asset_info = GetAssetInfoFromMOEX(keys={"isin": isin, "regnumber": reg_code, "secid": symbol})
-            if len(asset_info):
-                asset_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
-                asset = {"id": asset_id, "symbol": asset_info['symbol'], 'name': asset_info['name'],
-                         'type': asset_type[asset_info['type']], 'exchange': "MOEX"}
-                if 'isin' in asset_info:
-                    asset['isin'] = asset_info['isin']
-                if 'reg_code' in asset_info:
-                    asset['reg_code'] = asset_info['reg_code']
+            asset = GetAssetInfoFromMOEX(keys={"isin": isin, "regnumber": reg_code, "secid": symbol})
+            if asset:
+                asset['id'] = asset_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
+                asset['exchange'] = "MOEX"
+                asset['type'] = asset_type[asset['type']]
             else:
                 raise Statement_ImportError(g_tr('StatementXLS', "Can't import asset: ") + f"{isin}/{reg_code}")
         else:
