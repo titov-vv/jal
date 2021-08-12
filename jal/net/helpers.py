@@ -3,7 +3,7 @@ import logging
 import json
 import platform
 from jal import __version__
-from jal.constants import MarketDataFeed, PredefinedAsset
+from jal.constants import PredefinedAsset
 from jal.widgets.helpers import g_tr
 
 

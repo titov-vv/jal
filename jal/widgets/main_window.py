@@ -16,7 +16,7 @@ from jal.db.backup_restore import JalBackup
 from jal.db.helpers import get_app_path, get_dbfilename, load_icon
 from jal.db.update import JalDB
 from jal.db.settings import JalSettings
-from jal.data_import.downloader import QuoteDownloader
+from net.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
 from jal.db.balances_model import BalancesModel
 from jal.db.holdings_model import HoldingsModel

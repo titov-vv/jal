@@ -4,9 +4,9 @@ from pandas._testing import assert_frame_equal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_moex
 from jal.db.helpers import readSQL
-from jal.constants import PredefinedAsset, MarketDataFeed
+from jal.constants import PredefinedAsset
 from jal.net.helpers import GetAssetInfoFromMOEX
-from jal.data_import.downloader import QuoteDownloader
+from net.downloader import QuoteDownloader
 from jal.data_import.slips_tax import SlipsTaxAPI
 
 def test_INN_resolution():
