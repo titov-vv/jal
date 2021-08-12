@@ -1,11 +1,12 @@
 import json
-from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ibkr
+from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ibkr, prepare_db_moex
 
 from jal.data_import.statement import Statement
 from jal.db.helpers import readSQL
+from jal.constants import PredefinedAsset
 
 
-def test_statement_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
+def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
     statement = Statement()
     statement.load(data_path + 'ibkr.json')
     statement.validate_format()
@@ -20,35 +21,35 @@ def test_statement_json_import(tmp_path, project_root, data_path, prepare_db_ibk
 
     # validate assets
     test_assets = [
-        [1, 'RUB', 1, 'Российский Рубль', '', 0, -1, 0],
-        [2, 'USD', 1, 'Доллар США', '', 0, 0, 0],
-        [3, 'EUR', 1, 'Евро', '', 0, 0, 0],
-        [4, 'VUG', 4, 'Growth ETF', 'US9229087369', 0, 0, 0],
-        [5, 'EDV', 4, 'VANGUARD EXTENDED DUR TREAS', '', 2, 0, 0],
-        [6, 'CAD', 1, '', '', 0, -1, 0],
-        [7, 'AMZN', 2, 'AMAZON.COM INC', 'US0231351067', 0, 2, 0],
-        [8, 'BABA', 2, 'ALIBABA GROUP HOLDING-SP ADR', 'US01609W1027', 0, 2, 0],
-        [9, 'D', 2, 'DOMINION ENERGY INC', '', 0, 2, 0],
-        [10, 'DM', 2, 'DOMINION ENERGY MIDSTREAM PA', '', 0, 2, 0],
+        [1, 'RUB', PredefinedAsset.Money, 'Российский Рубль', '', 0, -1, 0],
+        [2, 'USD', PredefinedAsset.Money, 'Доллар США', '', 0, 0, 0],
+        [3, 'EUR', PredefinedAsset.Money, 'Евро', '', 0, 0, 0],
+        [4, 'VUG', PredefinedAsset.ETF, 'Growth ETF', 'US9229087369', 0, 0, 0],
+        [5, 'EDV', PredefinedAsset.ETF, 'VANGUARD EXTENDED DUR TREAS', '', 2, 0, 0],
+        [6, 'CAD', PredefinedAsset.Money, '', '', 0, -1, 0],
+        [7, 'AMZN', PredefinedAsset.Stock, 'AMAZON.COM INC', 'US0231351067', 0, 2, 0],
+        [8, 'BABA', PredefinedAsset.Stock, 'ALIBABA GROUP HOLDING-SP ADR', 'US01609W1027', 0, 2, 0],
+        [9, 'D', PredefinedAsset.Stock, 'DOMINION ENERGY INC', '', 0, 2, 0],
+        [10, 'DM', PredefinedAsset.Stock, 'DOMINION ENERGY MIDSTREAM PA', '', 0, 2, 0],
         [11, 'X 6 1/4 03/15/26', 3, 'X 6 1/4 03/15/26', 'US912909AN84', 0, -1, 0],
         [12, 'SPY   200529C00295000', 6, 'SPY 29MAY20 295.0 C', '', 0, -1, 0],
-        [13, 'DSKEW', 6, 'DSKEW 27FEB22 11.5 C', 'US23753F1158', 0, 2, 0],
-        [14, 'MYL', 2, 'MYLAN NV', 'NL0011031208', 0, -1, 0],
-        [15, 'VTRS', 2, 'VIATRIS INC-W/I', 'US92556V1061', 0, 2, 0],
-        [16, 'WAB', 2, 'WABTEC CORP', '', 0, 2, 0],
-        [17, 'TEF', 2, 'TELEFONICA SA-SPON ADR', 'US8793822086', 0, 2, 0],
-        [18, 'EQM', 2, 'EQM MIDSTREAM PARTNERS LP', 'US26885B1008', 0, 2, 0],
-        [19, 'ETRN', 2, 'EQUITRANS MIDSTREAM CORP', 'US2946001011', 0, 2, 0],
-        [20, 'GE', 2, 'GENERAL ELECTRIC CO', 'US3696041033', 0, 2, 0],
-        [21, 'EWLL', 2, 'EWELLNESS HEALTHCARE CORP', 'US30051D1063', 0, -1, 0],
-        [22, 'EWLL', 2, 'EWELLNESS HEALTHCARE CORP', 'US30051D2053', 0, -1, 0],
-        [23, 'ZROZ', 4, 'PIMCO 25+ YR ZERO CPN US TIF', 'US72201R8824', 2, 2, 0],
-        [24, 'LVGO', 2, 'LIVONGO HEALTH INC', 'US5391831030', 0, -1, 0],
-        [25, 'TDOC', 2, 'TELADOC HEALTH INC', 'US87918A1051', 0, 2, 0],
-        [26, 'AAPL', 2, 'APPLE INC', 'US0378331005', 0, 2, 0],
+        [13, 'DSKEW', PredefinedAsset.Derivative, 'DSKEW 27FEB22 11.5 C', 'US23753F1158', 0, 2, 0],
+        [14, 'MYL', PredefinedAsset.Stock, 'MYLAN NV', 'NL0011031208', 0, -1, 0],
+        [15, 'VTRS', PredefinedAsset.Stock, 'VIATRIS INC-W/I', 'US92556V1061', 0, 2, 0],
+        [16, 'WAB', PredefinedAsset.Stock, 'WABTEC CORP', '', 0, 2, 0],
+        [17, 'TEF', PredefinedAsset.Stock, 'TELEFONICA SA-SPON ADR', 'US8793822086', 0, 2, 0],
+        [18, 'EQM', PredefinedAsset.Stock, 'EQM MIDSTREAM PARTNERS LP', 'US26885B1008', 0, 2, 0],
+        [19, 'ETRN', PredefinedAsset.Stock, 'EQUITRANS MIDSTREAM CORP', 'US2946001011', 0, 2, 0],
+        [20, 'GE', PredefinedAsset.Stock, 'GENERAL ELECTRIC CO', 'US3696041033', 0, 2, 0],
+        [21, 'EWLL', PredefinedAsset.Stock, 'EWELLNESS HEALTHCARE CORP', 'US30051D1063', 0, -1, 0],
+        [22, 'EWLL', PredefinedAsset.Stock, 'EWELLNESS HEALTHCARE CORP', 'US30051D2053', 0, -1, 0],
+        [23, 'ZROZ', PredefinedAsset.ETF, 'PIMCO 25+ YR ZERO CPN US TIF', 'US72201R8824', 2, 2, 0],
+        [24, 'LVGO', PredefinedAsset.Stock, 'LIVONGO HEALTH INC', 'US5391831030', 0, -1, 0],
+        [25, 'TDOC', PredefinedAsset.Stock, 'TELADOC HEALTH INC', 'US87918A1051', 0, 2, 0],
+        [26, 'AAPL', PredefinedAsset.Stock, 'APPLE INC', 'US0378331005', 0, 2, 0],
         [27, 'VLO   200724P00064000', 6, 'VLO 24JUL20 64.0 P', '', 0, -1, 0],
-        [28, 'VLO', 2, 'VALERO ENERGY CORP', 'US91913Y1001', 0, 2, 0],
-        [29, 'MAC', 2, '', 'US5543821012', 0, 2, 0]
+        [28, 'VLO', PredefinedAsset.Stock, 'VALERO ENERGY CORP', 'US91913Y1001', 0, 2, 0],
+        [29, 'MAC', PredefinedAsset.Stock, '', 'US5543821012', 0, 2, 0]
     ]
     assert readSQL("SELECT COUNT(*) FROM assets") == len(test_assets)
     for i, asset in enumerate(test_assets):
@@ -142,3 +143,30 @@ def test_statement_json_import(tmp_path, project_root, data_path, prepare_db_ibk
     assert readSQL("SELECT COUNT(*) FROM corp_actions") == len(test_corp_actons)
     for i, action in enumerate(test_corp_actons):
         assert readSQL("SELECT * FROM corp_actions WHERE id=:id", [(":id", i + 1)]) == action
+
+
+def test_ukfu_json_import(tmp_path, project_root, data_path, prepare_db_moex):
+    statement = Statement()
+    statement.load(data_path + 'ukfu.json')
+    statement.validate_format()
+    statement.match_db_ids(verbal=False)
+    statement.import_into_db()
+
+    # validate assets
+    test_assets = [
+        [1, 'RUB', 1, 'Российский Рубль', '', 0, -1, 0],
+        [2, 'USD', 1, 'Доллар США', '', 0, 0, 0],
+        [3, 'EUR', 1, 'Евро', '', 0, 0, 0],
+        [4, 'SBER', 2, '', '', 0, 0, 0],
+        [5, 'SiZ1', 6, 'Фьючерсный контракт Si-12.21', '', 0, 0, 0],
+        [6, 'FXGD', 4, 'FinEx Gold ETF USD', 'IE00B8XB7377', 0, 1, 0],
+        [7, 'ТинькоффБ7', 3, 'АО "Тинькофф Банк" БО-07', 'RU000A0JWM31', 0, 1, 0],
+        [8, 'ЗПИФ ПНК', 4, 'ЗПИФ Фонд ПНК-Рентал', 'RU000A1013V9', 0, 1, 0],
+        [9, 'POLY', 2, 'Polymetal International plc', 'JE00B6T5S470', 0, 1, 0],
+        #[9, 'SiZ1', 6, 'Фьючерсный контракт Si-12.21', '', 0, 1, 0],
+        [10, 'MOEX', 2, 'ПАО Московская Биржа', 'RU000A0JR4A1', 0, 1, 0],
+        [11, 'CHMF', 2, 'Северсталь (ПАО)ао', 'RU0009046510', 0, 1, 0]
+    ]
+    assert readSQL("SELECT COUNT(*) FROM assets") == len(test_assets)
+    for i, asset in enumerate(test_assets):
+        assert readSQL("SELECT * FROM assets WHERE id=:id", [(":id", i + 1)]) == asset

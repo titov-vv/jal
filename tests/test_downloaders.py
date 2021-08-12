@@ -90,7 +90,7 @@ def test_MOEX_downloader(prepare_db_moex):
     downloader = QuoteDownloader()
     quotes_downloaded = downloader.MOEX_DataReader(4, 'SBER', 'RU0009029540', 1618272000, 1618358400)
     assert_frame_equal(quotes, quotes_downloaded)
-    assert readSQL("SELECT * FROM assets WHERE id=4") == [4, 'SBER', 2, '', 'RU0009029540', 0, 0, 0]
+    assert readSQL("SELECT * FROM assets WHERE id=4") == [4, 'SBER', PredefinedAsset.Stock, '', 'RU0009029540', 0, 0, 0]
     assert readSQL("SELECT * FROM asset_reg_id WHERE asset_id=4") == [4, '10301481B']
 
 def test_Yahoo_downloader():

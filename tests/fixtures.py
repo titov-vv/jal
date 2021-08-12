@@ -3,7 +3,7 @@ import os
 from shutil import copyfile
 from PySide2.QtSql import QSqlDatabase
 
-from constants import Setup, PredefinedCategory
+from constants import Setup, PredefinedCategory, PredefinedAsset
 from jal.db.helpers import init_and_check_db, LedgerInitError
 from jal.db.update import JalDB
 from jal.db.helpers import executeSQL, get_dbfilename
@@ -73,13 +73,18 @@ def prepare_db_fifo(prepare_db):
 @pytest.fixture
 def prepare_db_xls(prepare_db):
     assert executeSQL("INSERT INTO assets (id, name, type_id, full_name, isin, src_id) "
-                      "VALUES (4, 'AFLT', 2, 'АО Аэрофлот', 'RU0009062285', 0)") is not None
+                      "VALUES (4, 'AFLT', :stock, 'АО Аэрофлот', 'RU0009062285', 0)",
+                      [(":stock", PredefinedAsset.Stock)]) is not None
     yield
 
 
 @pytest.fixture
 def prepare_db_moex(prepare_db):   # Create SBER stock in database to be updated from www.moex.com
     assert executeSQL("INSERT INTO assets (id, name, type_id, full_name, isin, src_id) "
-                      "VALUES (4, 'SBER', 2, '', '', 0)") is not None
+                      "VALUES (4, 'SBER', :stock, '', '', 0)",
+                      [(":stock", PredefinedAsset.Stock)]) is not None
+    assert executeSQL("INSERT INTO assets (id, name, type_id, full_name, isin, src_id) "
+                      "VALUES (5, 'SiZ1', :derivative, 'Фьючерсный контракт Si-12.21', '', 0)",
+                      [(":derivative", PredefinedAsset.Derivative)]) is not None
     yield
 
