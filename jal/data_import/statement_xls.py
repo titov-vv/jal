@@ -5,10 +5,9 @@ from datetime import datetime, timezone
 from zipfile import ZipFile
 
 from jal.widgets.helpers import g_tr
-from jal.constants import PredefinedAsset
 from jal.db.update import JalDB
 from jal.data_import.statement import Statement, FOF, Statement_ImportError
-from jal.net.helpers import GetAssetInfoFromMOEX
+from net.downloader import QuoteDownloader
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -213,7 +212,7 @@ class StatementXLS(Statement):
                 g_tr('StatementXLS', "Attempt to recreate existing asset: ") + f"{isin}/{reg_code}")
         asset_id = JalDB().get_asset_id('', isin=isin, reg_code=reg_code, dialog_new=False)
         if asset_id is None:
-            asset = GetAssetInfoFromMOEX(keys={"isin": isin, "regnumber": reg_code, "secid": symbol})
+            asset = QuoteDownloader.MOEX_info(symbol=symbol, isin=isin, regnumber=reg_code)
             if asset:
                 asset['id'] = asset_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
                 asset['exchange'] = "MOEX"

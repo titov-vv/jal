@@ -1,6 +1,6 @@
 import logging
 import xml.etree.ElementTree as xml_tree
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from io import StringIO
 
 import pandas as pd
@@ -11,10 +11,10 @@ from PySide2.QtCore import QObject, Signal
 from PySide2.QtWidgets import QDialog
 
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
-from jal.constants import Setup, MarketDataFeed, BookAccount
+from jal.constants import Setup, MarketDataFeed, BookAccount, PredefinedAsset
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.update import JalDB
-from jal.net.helpers import get_web_data, post_web_data
+from jal.net.helpers import get_web_data, post_web_data, isEnglish
 from jal.widgets.helpers import g_tr
 
 
@@ -151,50 +151,135 @@ class QuoteDownloader(QObject):
         rates = data.set_index("Date")
         return rates
 
-    # noinspection PyMethodMayBeStatic
-    def MOEX_DataReader(self, asset_id, asset_code, isin, start_timestamp, end_timestamp):
-        engine = None
-        market = None
-        board_id = None
-        # Get primary board ID
+    # Get asset data from http://www.moex.com
+    # Accepts parameters:
+    #     symbol, isin, regcode - to identify asset
+    #     special - if 'engine', 'market' and 'board' should be returned as part of result
+    # Returns asset data or empty dictionary if nothing found
+    @staticmethod
+    def MOEX_info(**kwargs) -> dict:
+        data = {}
+        if 'symbol' in kwargs and not isEnglish(kwargs['symbol']):
+            del kwargs['symbol']
+        # First try to load with symbol or isin from asset details API
+        if 'symbol' in kwargs:
+            data = QuoteDownloader.MOEX_download_info(kwargs['symbol'])
+        if not data and 'isin' in kwargs:
+            data = QuoteDownloader.MOEX_download_info(kwargs['isin'])
+        # If not found try to use search API with regnumber or isin
+        if not data and 'regnumber' in kwargs:
+            data = QuoteDownloader.MOEX_download_info(QuoteDownloader.MOEX_find_secid_by_regcode(kwargs['regnumber']))
+        if not data and 'isin' in kwargs:
+            data = QuoteDownloader.MOEX_download_info(QuoteDownloader.MOEX_find_secid_by_regcode(kwargs['isin']))
+        if 'special' not in kwargs:
+            for key in ['engine', 'market', 'board']:
+                try:
+                    del data[key]
+                except KeyError:
+                    pass
+        return data
+
+    # Searches for asset info on http://www.moex.com by symbol or ISIN provided as asset_code parameter
+    # Returns disctionary with asset data: {symbol, isin, regnumber, engine, market, board, pricipal, expiry, etc}
+    @staticmethod
+    def MOEX_download_info(asset_code) -> dict:
+        mapping = {
+            'SECID': 'symbol',
+            'NAME': 'name',
+            'SHORTNAME': 'short_name',
+            'ISIN': 'isin',
+            'REGNUMBER': 'reg_code',
+            'FACEVALUE': 'principal',
+            'MATDATE': 'expiry',
+            'LSTDELDATE': 'expiry',
+            'GROUP': 'type'
+        }
+        asset_type = {
+            'stock_shares': PredefinedAsset.Stock,
+            'stock_dr': PredefinedAsset.Stock,
+            'stock_bonds': PredefinedAsset.Bond,
+            'stock_etf': PredefinedAsset.ETF,
+            'stock_ppif': PredefinedAsset.ETF,
+            'futures_forts': PredefinedAsset.Derivative
+        }
+        asset = {}
+        if not asset_code:
+            return asset
         url = f"http://iss.moex.com/iss/securities/{asset_code}.xml"
         xml_root = xml_tree.fromstring(get_web_data(url))
+        info_rows = xml_root.findall("data[@id='description']/rows/*")
         boards = xml_root.findall("data[@id='boards']/rows/*")
-        if len(boards) == 0:   # can't find data by name -> use isin
-            asset_code = isin
-            url = f"http://iss.moex.com/iss/securities/{asset_code}.xml"
-            xml_root = xml_tree.fromstring(get_web_data(url))
-            boards = xml_root.findall("data[@id='boards']/rows/*")
+        if not boards:   # can't find boards -> not traded asset
+            return asset
+        for info in info_rows:
+            asset.update({mapping[field]: info.attrib['value'] for field in mapping if info.attrib['name'] == field})
+        if 'isin' in asset:
+            # replace symbol with short name if we have isin in place of symbol
+            asset['symbol'] = asset['short_name'] if asset['symbol'] == asset['isin'] else asset['symbol']
+        del asset['short_name']  # drop short name as we won't use it further
+        if 'principal' in asset:  # Convert principal into float if possible or drop otherwise
+            try:
+                asset['principal'] = float(asset['principal'])
+            except ValueError:
+                del asset['principal']
+        if 'expiry' in asset:  # convert YYYY-MM-DD into timestamp
+            date_value = datetime.strptime(asset['expiry'], "%Y-%m-%d")
+            asset['expiry'] = int(date_value.replace(tzinfo=timezone.utc).timestamp())
+        try:
+            asset['type'] = asset_type[asset['type']]
+        except KeyError:
+            logging.error(g_tr('QuoteDownloader', "Unsupported MOEX security type: ") + f"{asset['type']}")
+            return {}
+
         for board in boards:
             if board.attrib['is_primary'] == '1':
-                engine = board.attrib['engine']
-                market = board.attrib['market']
-                board_id = board.attrib['boardid']
-        if (engine is None) or (market is None) or (board_id is None):
-            logging.warning(f"Failed to find {asset_code} at {url}")
+                asset.update({'engine': board.attrib['engine'],
+                              'market': board.attrib['market'],
+                              'board': board.attrib['boardid']})
+                break
+        return asset
+
+    # Searches for asset info on http://www.moex.com by given reg.number
+    # Returns ISIN if asset was found and empty string otherwise
+    @staticmethod
+    def MOEX_find_secid_by_regcode(regnumber) -> str:
+        secid = ''
+        if not regnumber:
+            return secid
+        url = f"https://iss.moex.com/iss/securities.json?q={regnumber}&iss.meta=off&limit=10"
+        asset_data = json.loads(get_web_data(url))
+        securities = asset_data['securities']
+        columns = securities['columns']
+        data = securities['data']
+        if data:
+            if len(data) > 1:
+                logging.info(g_tr('QuoteDownloader', "MOEX: multiple assets found for reg.number: ") + regnumber)
+                return secid
+            asset_data = dict(zip(columns, data[0]))
+            secid = asset_data['secid'] if 'secid' in asset_data else ''
+        return secid
+
+    # noinspection PyMethodMayBeStatic
+    def MOEX_DataReader(self, asset_id, asset_code, isin, start_timestamp, end_timestamp):
+        asset = self.MOEX_info(symbol=asset_code, isin=isin, special=True)
+        if (asset['engine'] is None) or (asset['market'] is None) or (asset['board'] is None):
+            logging.warning(f"Failed to find {asset_code} on moex.com")
             return None
 
-        # Get security info
-        url = f"https://iss.moex.com/iss/engines/{engine}/"\
-              f"markets/{market}/boards/{board_id}/securities/{asset_code}.xml"
-        xml_root = xml_tree.fromstring(get_web_data(url))
-        sec_data = xml_root.findall("data[@id='securities']/rows/*")
-        if len(sec_data) == 1:
-            asset_info = sec_data[0]
-            isin = asset_info.attrib['ISIN'] if 'ISIN' in asset_info.attrib else ''
-            reg_code = asset_info.attrib['REGNUMBER'] if 'REGNUMBER' in asset_info.attrib else ''
-            JalDB().update_asset_data(asset_id, new_isin=isin, new_reg=reg_code)
+        isin = asset['isin'] if 'isin' in asset else ''
+        reg_code = asset['reg_code'] if 'reg_code' in asset else ''
+        JalDB().update_asset_data(asset_id, new_isin=isin, new_reg=reg_code)
 
         # Get price history
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d')
         date2 = datetime.utcfromtimestamp(end_timestamp).strftime('%Y-%m-%d')
-        url = f"http://iss.moex.com/iss/history/engines/"\
-              f"{engine}/markets/{market}/boards/{board_id}/securities/{asset_code}.xml?from={date1}&till={date2}"
+        url = f"http://iss.moex.com/iss/history/engines/{asset['engine']}/markets/{asset['market']}/"\
+              f"boards/{asset['board']}/securities/{asset_code}.xml?from={date1}&till={date2}"
         xml_root = xml_tree.fromstring(get_web_data(url))
         history_rows = xml_root.findall("data[@id='history']/rows/*")
         quotes = []
         for row in history_rows:
-            if row.attrib['CLOSE']:            # TODO store principal (aka face value) for bonds
+            if row.attrib['CLOSE']:
                 if 'FACEVALUE' in row.attrib:  # Correction for bonds
                     price = float(row.attrib['CLOSE']) * float(row.attrib['FACEVALUE']) / 100.0
                     quotes.append({"Date": row.attrib['TRADEDATE'], "Close": price})

@@ -2,10 +2,10 @@ import logging
 from datetime import datetime
 
 from jal.widgets.helpers import g_tr
-from jal.constants import Setup, PredefinedAsset
+from jal.constants import Setup
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xml import StatementXML
-from jal.net.helpers import GetAssetInfoFromMOEX
+from net.downloader import QuoteDownloader
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -107,8 +107,7 @@ class StatementOpenBroker(StatementXML):
                                ('security_name', 'name', str, None),
                                ('isin', 'isin', str, ''),
                                ('security_grn_code', 'reg_code', str, ''),
-                               ('board_name', 'exchange', OpenBroker_Exchange, ''),
-                               ('nominal', 'bond_principal', float, 0)],
+                               ('board_name', 'exchange', OpenBroker_Exchange, '')],
                     'loader': self.load_assets
                 },
             'spot_assets':
@@ -217,8 +216,8 @@ class StatementOpenBroker(StatementXML):
                 continue
             asset['id'] = base + i
             if asset['exchange'] == "MOEX":
-                asset_info = GetAssetInfoFromMOEX(
-                    keys={"isin": asset['isin'], "regnumber": asset['reg_code'], "secid": asset['symbol']})
+                asset_info = QuoteDownloader.MOEX_info(symbol=asset['symbol'], isin=asset['isin'],
+                                                       regnumber=asset['reg_code'])
                 if asset_info:
                     asset.update(asset_info)
                     asset['type'] = FOF.convert_predefined_asset_type(asset['type'])

@@ -1,9 +1,7 @@
 import requests
 import logging
-import json
 import platform
 from jal import __version__
-from jal.constants import PredefinedAsset
 from jal.widgets.helpers import g_tr
 
 
@@ -11,6 +9,17 @@ from jal.widgets.helpers import g_tr
 # Function returns custom User Agent for web requests
 def make_user_agent() -> str:
     return f"JAL/{__version__} ({platform.system()} {platform.release()})"
+
+
+# ===================================================================================================================
+# Returns true if text does contain only English alphabet
+def isEnglish(text):
+    try:
+        text.encode(encoding='utf-8').decode(encoding='ascii')
+    except UnicodeDecodeError:
+        return False
+    else:
+        return True
 
 
 # ===================================================================================================================
@@ -46,74 +55,3 @@ def get_web_data(url):
 # Function download URL and return it content as string or empty string if site returns error
 def post_web_data(url, params=None, json_params=None):
     return request_url("POST", url, params=params, json_params=json_params)
-
-# ===================================================================================================================
-# Function tries to get asset information online from http://www.moex.com
-# Dictionary keys contains search keys that should match for found security
-# ===================================================================================================================
-def GetAssetInfoFromMOEX(keys) -> dict:
-    asset_type = {
-        'stock_shares': PredefinedAsset.Stock,
-        'stock_dr': PredefinedAsset.Stock,
-        'stock_bonds': PredefinedAsset.Bond,
-        'stock_etf': PredefinedAsset.ETF,
-        'stock_ppif': PredefinedAsset.ETF,
-        'futures_forts': PredefinedAsset.Derivative
-    }
-
-    asset = {}
-    keys = {x: keys[x] for x in keys if keys[x]}   # Drop empty values from keys
-    priority_list = ['isin', 'regnumber', 'secid']
-    try:
-        search_key = keys[sorted(keys, key=lambda x: priority_list.index(x))[0]]
-    except ValueError:
-        logging.error(g_tr('Net', "Unknown MOEX search key"))
-        return asset
-    except IndexError:
-        logging.error(g_tr('Net', "No valid MOEX search key provided"))
-        return asset
-    if not search_key:
-        logging.error(g_tr('Net', "Empty MOEX search key"))
-        return asset
-
-    url = f"https://iss.moex.com/iss/securities.json?q={search_key}&iss.meta=off&limit=10"
-    asset_data = json.loads(get_web_data(url))
-    securities = asset_data['securities']
-    columns = securities['columns']
-    data = securities['data']
-    matched = False
-    search_set = set(keys)
-    if 'secid' in keys:
-        search_set.remove('secid')
-    if len(search_set):
-        for security in data:
-            asset_data = dict(zip(columns, security))
-            asset_data = {x: asset_data[x] for x in asset_data if asset_data[x]}  # Drop empty values from keys
-            matched = True
-            for key in search_set:
-                if key in asset_data and asset_data[key] == keys[key]:
-                    continue
-                matched = False
-            if matched:
-                break
-    if not matched:
-        search_set = set(keys)
-        for key in search_set:
-            subset = [x for x in data if
-                      (not x[columns.index(key)] is None) and (x[columns.index(key)].lower() == keys[key].lower())]
-            if len(subset) == 1:
-                matched = True
-                asset_data = dict(zip(columns, subset[0]))
-                break
-    if matched:   # Sometimes symbol is "absent" - for example bonds have ISIN instead
-        asset['symbol'] = asset_data['shortname'] if asset_data['secid'] == asset_data['isin'] else asset_data['secid']
-        asset['name'] = asset_data['name']
-        asset['isin'] = asset_data['isin'] if 'isin' in asset_data else None
-        asset['reg_code'] = asset_data['regnumber'] if 'regnumber' in asset_data else None
-        try:
-            asset['type'] = asset_type[asset_data['group']]
-        except KeyError:
-            logging.error(g_tr('Net', "Unsupported MOEX security type: ") + f"{asset_data['group']}")
-            return {}
-    asset = {key: value for key, value in asset.items() if value is not None}   # Drop Nones
-    return asset

@@ -4,9 +4,9 @@
     {"id": 1, "number": "12345", "currency": 4, "cash_begin": 0.0, "cash_end": 599716.38, "cash_end_settled": 16766.13}
   ],
   "assets": [
-    {"id": 1, "type": "bond", "symbol": "Мордовия03", "name": "Мордовия 34003 обл.", "isin": "RU000A0JWSQ7", "exchange": "MOEX", "reg_code": "RU34003MOR0", "bond_principal": 400.0},
-    {"id": 2, "type": "bond", "symbol": "МТС 1P-05", "name": "Мобильные ТелеСистемы 001P-05", "isin": "RU000A0ZYWX7", "exchange": "MOEX", "reg_code": "4B02-05-04715-A-001P", "bond_principal": 1000.0},
-    {"id": 3, "type": "bond", "symbol": "СберБ БО37", "name": "Сбербанк ПАО БО-37", "isin": "RU000A0JWUE9", "exchange": "MOEX", "reg_code": "4B023701481B", "bond_principal": 1000.0},
+    {"id": 1, "type": "bond", "symbol": "Мордовия03", "name": "Мордовия 34003 обл.", "isin": "RU000A0JWSQ7", "exchange": "MOEX", "reg_code": "RU34003MOR0", "principal": 400.0, "expiry": 1630627200},
+    {"id": 2, "type": "bond", "symbol": "МТС 1P-05", "name": "Мобильные ТелеСистемы 001P-05", "isin": "RU000A0ZYWX7", "exchange": "MOEX", "reg_code": "4B02-05-04715-A-001P", "principal": 1000.0, "expiry": 1630454400},
+    {"id": 3, "type": "bond", "symbol": "СберБ БО37", "name": "Сбербанк ПАО БО-37", "isin": "RU000A0JWUE9", "exchange": "MOEX", "reg_code": "4B023701481B", "principal": 1000.0, "expiry": 1632960000},
     {"id": 4, "type": "money", "symbol": "RUB"}
   ],
   "trades": [

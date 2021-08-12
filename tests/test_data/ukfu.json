@@ -9,12 +9,12 @@
     {"id": 2, "type": "money", "symbol": "USD"},
     {"id": -4, "type": "stock", "symbol": "AFLT", "name": "", "isin": "RU0009062285", "reg_code": "1-01-00010-A"},
     {"id": 3, "type": "etf", "symbol": "FXGD", "name": "FinEx Gold ETF USD", "isin": "IE00B8XB7377", "exchange": "MOEX"},
-    {"id": 4, "type": "bond", "symbol": "ТинькоффБ7", "name": "АО \"Тинькофф Банк\" БО-07", "isin": "RU000A0JWM31", "reg_code": "4B020702673B", "exchange": "MOEX"},
+    {"id": 4, "type": "bond", "symbol": "ТинькоффБ7", "name": "АО \"Тинькофф Банк\" БО-07", "isin": "RU000A0JWM31", "reg_code": "4B020702673B", "exchange": "MOEX", "principal": 1000.0, "expiry": 1624492800},
     {"id": 5, "type": "etf", "symbol": "ЗПИФ ПНК", "name": "ЗПИФ Фонд ПНК-Рентал", "isin":  "RU000A1013V9", "reg_code": "2770", "exchange": "MOEX"},
     {"id": 6, "type": "stock", "symbol": "POLY", "name": "Polymetal International plc", "isin": "JE00B6T5S470", "exchange": "MOEX"},
-    {"id": 7, "type": "futures", "symbol": "SiZ1", "name": "Фьючерсный контракт Si-12.21", "exchange": "MOEX"},
-    {"id": 8, "type": "stock", "symbol": "MOEX", "name": "ПАО Московская Биржа", "isin": "RU000A0JR4A1", "reg_code": "1-05-08443-H", "exchange": "MOEX"},
-    {"id": 9, "type": "stock", "symbol": "CHMF", "name": "Северсталь (ПАО)ао", "isin": "RU0009046510", "reg_code": "1-02-00143-A", "exchange": "MOEX"}
+    {"id": 7, "type": "futures", "symbol": "SiZ1", "name": "Фьючерсный контракт Si-12.21", "exchange": "MOEX", "expiry": 1639612800},
+    {"id": 8, "type": "stock", "symbol": "MOEX", "name": "ПАО Московская Биржа", "isin": "RU000A0JR4A1", "reg_code": "1-05-08443-H", "exchange": "MOEX", "principal": 1.0},
+    {"id": 9, "type": "stock", "symbol": "CHMF", "name": "Северсталь (ПАО)ао", "isin": "RU0009046510", "reg_code": "1-02-00143-A", "exchange": "MOEX", "principal": 0.01}
   ],
   "trades": [
     {"id": 1, "number": "3312348787", "timestamp": 1615647620, "settlement": 1615766400, "account": 1, "asset": 3, "quantity": 10, "price": 987.65, "fee": 1.23},
