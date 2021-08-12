@@ -4,7 +4,7 @@ from PySide2.QtWidgets import QApplication, QDialog
 from PySide2.QtSql import QSqlTableModel
 
 from jal.ui.ui_add_asset_dlg import Ui_AddAssetDialog
-from jal.constants import Setup, PredefindedAccountType
+from jal.constants import Setup, PredefindedAccountType, PredefinedAsset
 from jal.db.helpers import db_connection, executeSQL, readSQL, get_country_by_code
 from jal.widgets.helpers import g_tr
 
@@ -139,7 +139,7 @@ class JalDB():
     # If found - tries to update data if some is empty in database
     # If asset not found and 'dialog_new' is True - pops up a window for asset creation
     # Returns: asset_id or None if new asset creation failed
-    def get_asset_id(self, symbol, isin='', reg_code='', name='', dialog_new=True):
+    def get_asset_id(self, symbol, isin='', reg_code='', name='', expiry=0, dialog_new=True):  # TODO Change params to **kwargs
         asset_id = None
         if isin:
             asset_id = readSQL("SELECT id FROM assets WHERE isin=:isin", [(":isin", isin)])
@@ -151,14 +151,17 @@ class JalDB():
                 asset_id = readSQL("SELECT asset_id FROM asset_reg_id WHERE reg_code=:reg_code",
                                    [(":reg_code", reg_code)])
             if asset_id is None:
-                asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol COLLATE NOCASE", [(":symbol", symbol)])
+                asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol AND "
+                                   "((expiry=:expiry AND type_id=:derivative) OR type_id<>:derivative) COLLATE NOCASE",
+                                   [(":symbol", symbol), (":expiry", expiry),
+                                    (":derivative", PredefinedAsset.Derivative)])
         if asset_id is None and dialog_new:
             dialog = AddAssetDialog(symbol, isin=isin, name=name)
             dialog.exec_()
             asset_id = dialog.asset_id
         return asset_id
 
-    def update_asset_data(self, asset_id, new_symbol='', new_isin='', new_reg='', new_country_code=''):
+    def update_asset_data(self, asset_id, new_symbol='', new_isin='', new_reg='', new_country_code=''):  # TODO Change params to **kwargs
         if new_symbol:
             symbol = readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
             if new_symbol.upper() != symbol.upper():
@@ -211,12 +214,13 @@ class JalDB():
                      f"{self.get_asset_name(asset_id)} " 
                      f"@ {datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")
 
-    def add_asset(self, symbol, name, asset_type, isin, data_source=-1, reg_code=None, country_code=''):
+    def add_asset(self, symbol, name, asset_type, isin, data_source=-1, reg_code=None, country_code='', expiry=0):  # TODO Change params to **kwargs
         country_id = get_country_by_code(country_code)
-        query = executeSQL("INSERT INTO assets(name, type_id, full_name, isin, src_id, country_id) "
-                           "VALUES(:symbol, :type, :full_name, :isin, :data_src, :country_id)",
+        query = executeSQL("INSERT INTO assets(name, type_id, full_name, isin, src_id, country_id, expiry) "
+                           "VALUES(:symbol, :type, :full_name, :isin, :data_src, :country_id, :expiry)",
                            [(":symbol", symbol), (":type", asset_type), (":full_name", name),
-                            (":isin", isin), (":data_src", data_source), (":country_id", country_id)], commit=True)
+                            (":isin", isin), (":data_src", data_source), (":country_id", country_id),
+                            (":expiry", expiry)], commit=True)
         asset_id = query.lastInsertId()
         if asset_id is None:
             logging.error(g_tr('JalDB', "Failed to add new asset: ") + f"{symbol}")
