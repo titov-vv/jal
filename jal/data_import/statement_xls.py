@@ -208,13 +208,6 @@ class StatementXLS(Statement):
     # Asset symbol and other parameters are loaded from MOEX exchange as class targets russian brokers
     # Returns True if asset was added successfully and false otherwise
     def _add_asset(self, isin, reg_code, symbol=''):
-        asset_type = {
-            PredefinedAsset.Stock: "stock",
-            PredefinedAsset.Bond: "bond",
-            PredefinedAsset.ETF: "etf",
-            PredefinedAsset.Derivative: "futures"
-        }
-
         if self._find_asset_id(symbol, isin, reg_code) != 0:
             raise Statement_ImportError(
                 g_tr('StatementXLS', "Attempt to recreate existing asset: ") + f"{isin}/{reg_code}")
@@ -224,12 +217,13 @@ class StatementXLS(Statement):
             if asset:
                 asset['id'] = asset_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
                 asset['exchange'] = "MOEX"
-                asset['type'] = asset_type[asset['type']]
+                asset['type'] = FOF.convert_predefined_asset_type(asset['type'])
             else:
                 raise Statement_ImportError(g_tr('StatementXLS', "Can't import asset: ") + f"{isin}/{reg_code}")
         else:
-            asset = {"id": -asset_id, "symbol": JalDB().get_asset_name(asset_id), 'name': '',
-                     "type": asset_type[JalDB().get_asset_type(asset_id)], "isin": isin, "reg_code": reg_code}
+            asset = {"id": -asset_id, "symbol": JalDB().get_asset_name(asset_id),
+                     "type": FOF.convert_predefined_asset_type(JalDB().get_asset_type(asset_id)),
+                     'name': '', "isin": isin, "reg_code": reg_code}
             asset_id = -asset_id
         self._data[FOF.ASSETS].append(asset)
         return asset_id

@@ -210,13 +210,6 @@ class StatementOpenBroker(StatementXML):
                      + f" - {datetime.utcfromtimestamp(header['period_end']).strftime('%Y-%m-%d')}")
 
     def load_assets(self, assets):
-        asset_type = {
-            PredefinedAsset.Stock: "stock",
-            PredefinedAsset.Bond: "bond",
-            PredefinedAsset.ETF: "etf",
-            PredefinedAsset.Derivative: "futures"
-        }
-
         cnt = 0
         base = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
         for i, asset in enumerate(assets):
@@ -228,7 +221,7 @@ class StatementOpenBroker(StatementXML):
                     keys={"isin": asset['isin'], "regnumber": asset['reg_code'], "secid": asset['symbol']})
                 if asset_info:
                     asset.update(asset_info)
-                    asset['type'] = asset_type[asset['type']]
+                    asset['type'] = FOF.convert_predefined_asset_type(asset['type'])
             if asset['exchange'] == '':  # don't store empty exchange
                 asset.pop('exchange')
             cnt += 1

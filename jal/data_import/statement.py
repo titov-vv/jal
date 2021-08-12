@@ -14,6 +14,7 @@ from jal.db.helpers import account_last_date, get_app_path
 from jal.db.update import JalDB
 from jal.widgets.account_select import SelectAccountDialog
 
+
 class FOF:
     PERIOD = "period"
     ACCOUNTS = "accounts"
@@ -41,6 +42,19 @@ class FOF:
 
     PAYMENT_DIVIDEND = "dividend"
     PAYMENT_INTEREST = "interest"
+
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def convert_predefined_asset_type(asset_type):
+        asset_types = {
+            PredefinedAsset.Stock: FOF.ASSET_STOCK,
+            PredefinedAsset.Bond: FOF.ASSET_BOND,
+            PredefinedAsset.ETF: FOF.ASSET_ETF,
+            PredefinedAsset.Derivative: FOF.ASSET_FUTURES
+        }
+        return asset_types[asset_type]
 
 
 class Statement_ImportError(Exception):
