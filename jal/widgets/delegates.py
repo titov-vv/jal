@@ -55,7 +55,7 @@ class TimestampDelegate(QStyledItemDelegate):
     def displayText(self, value, locale):
         if isinstance(value, str):  # in case of SQL agregates int value comes here in form of string
             value = int(value)
-        text = datetime.utcfromtimestamp(value).strftime(self._format)
+        text = datetime.utcfromtimestamp(value).strftime(self._format) if value else ''
         return text
 
     def createEditor(self, aParent, option, index):
