@@ -205,6 +205,8 @@ class StatementIBKR(StatementXML):
                                           ('description', 'name', str, None),
                                           ('isin', 'isin', str, ''),
                                           ('cusip', 'reg_code', str, ''),
+                                          ('expiry', 'expiry', datetime, 0),
+                                          ('maturity', 'maturity', datetime, 0),
                                           ('listingExchange', 'exchange', str, '')],
                                'loader': self.load_assets},
             'Trades': {'tag': 'Trade',
@@ -379,6 +381,11 @@ class StatementIBKR(StatementXML):
             asset['symbol'] = asset['symbol'][:-len('.OLD')] if asset['symbol'].endswith('.OLD') else asset['symbol']
             if asset['exchange'] == '' or asset['exchange'] == 'VALUE':  # don't store 'VALUE' or empty exchange
                 asset.pop('exchange')
+            if asset['maturity']:
+                asset['expiry'] = asset['maturity']
+            if asset['expiry'] == 0:
+                asset.pop('expiry')
+            asset.pop('maturity')
             cnt += 1
             self._data[FOF.ASSETS].append(asset)
         logging.info(g_tr('IBKR', "Securities loaded: ") + f"{cnt} ({len(assets)})")
