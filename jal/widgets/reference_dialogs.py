@@ -233,12 +233,14 @@ class AssetListModel(AbstractReferenceListModel):
                          ("full_name", g_tr('ReferenceDataDialog', "Name")),
                          ("isin", g_tr('ReferenceDataDialog', "ISIN")),
                          ("country_id", g_tr('ReferenceDataDialog', "Country")),
-                         ("src_id", g_tr('ReferenceDataDialog', "Data source"))]
+                         ("src_id", g_tr('ReferenceDataDialog', "Data source")),
+                         ("expiry", g_tr('ReferenceDataDialog', "Expiry"))]
         self._sort_by = "name"
         self._group_by = "type_id"
         self._hidden = ["id", "type_id"]
         self._stretch = "full_name"
         self._lookup_delegate = None
+        self._timestamp_delegate = None
         self.setRelation(self.fieldIndex("type_id"), QSqlRelation("asset_types", "id", "name"))
         self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "name"))
         self.setRelation(self.fieldIndex("src_id"), QSqlRelation("data_sources", "id", "name"))
@@ -248,6 +250,8 @@ class AssetListModel(AbstractReferenceListModel):
         self._lookup_delegate = QSqlRelationalDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("src_id"), self._lookup_delegate)
+        self._timestamp_delegate = TimestampDelegate(parent=self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("expiry"), self._timestamp_delegate)
 
     def getAssetType(self, item_id: int) -> int:
         type_id = readSQL(f"SELECT type_id FROM {self._table} WHERE id=:id", [(":id", item_id)])

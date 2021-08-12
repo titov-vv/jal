@@ -110,7 +110,8 @@ CREATE TABLE assets (
                                                       ON UPDATE CASCADE
                           NOT NULL,
     full_name  TEXT (128) NOT NULL,
-    isin       TEXT (12),
+    isin       TEXT (12)  DEFAULT ('')
+                          NOT NULL,
     country_id INTEGER    REFERENCES countries (id) ON DELETE CASCADE
                                                     ON UPDATE CASCADE
                           NOT NULL
@@ -118,7 +119,9 @@ CREATE TABLE assets (
     src_id     INTEGER    REFERENCES data_sources (id) ON DELETE SET NULL
                                                        ON UPDATE CASCADE
                           NOT NULL
-                          DEFAULT ( -1)
+                          DEFAULT ( -1),
+    expiry     INTEGER    NOT NULL
+                          DEFAULT (0)
 );
 
 
@@ -1301,7 +1304,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 25);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 26);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
