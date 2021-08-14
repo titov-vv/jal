@@ -24,6 +24,7 @@ def clean_text(text):
 
 def recognize_categories(purchases):
     import tensorflow as tf
+    import tensorflow.keras as keras
     tf.get_logger().setLevel('WARNING')
 
     # Load only categories that were used for import
@@ -56,31 +57,31 @@ def recognize_categories(purchases):
 
     # prepare X values
     descriptions = data.cleaned_value
-    tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=5000, oov_token='UNKNOWN', lower=False)
+    tokenizer = keras.preprocessing.text.Tokenizer(num_words=5000, oov_token='UNKNOWN', lower=False)
     tokenizer.fit_on_texts(descriptions)
     dictionary_size = len(tokenizer.word_index)
     descriptions_sequenced = tokenizer.texts_to_sequences(descriptions)
     max_desc_len = len(max(descriptions_sequenced, key=len))
-    X = tf.keras.preprocessing.sequence.pad_sequences(descriptions_sequenced, padding='post', maxlen=max_desc_len)
+    X = keras.preprocessing.sequence.pad_sequences(descriptions_sequenced, padding='post', maxlen=max_desc_len)
 
     # prepare Y values
-    Y = tf.keras.utils.to_categorical(data.idx)
+    Y = keras.utils.to_categorical(data.idx)
 
     # prepare and train model
-    nn_model = tf.keras.Sequential(
-        [tf.keras.layers.Embedding(input_length=max_desc_len, input_dim=dictionary_size + 1, output_dim=classes_number * 2),
-         tf.keras.layers.Flatten(),
-         tf.keras.layers.Dense(classes_number * 4, activation='relu'),
-         tf.keras.layers.Dense(classes_number, activation='softmax')
+    nn_model = keras.Sequential(
+        [keras.layers.Embedding(input_length=max_desc_len, input_dim=dictionary_size + 1, output_dim=classes_number * 2),
+         keras.layers.Flatten(),
+         keras.layers.Dense(classes_number * 4, activation='relu'),
+         keras.layers.Dense(classes_number, activation='softmax')
          ])
     nn_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     nn_model.fit(X, Y, epochs=40, batch_size=50, verbose=0)
 
     # predict categories
     purchases_sequenced = tokenizer.texts_to_sequences(purchases)
-    NewX = tf.keras.preprocessing.sequence.pad_sequences(purchases_sequenced, padding='post', maxlen=max_desc_len)
+    NewX = keras.preprocessing.sequence.pad_sequences(purchases_sequenced, padding='post', maxlen=max_desc_len)
     NewY = nn_model.predict(NewX)
-    result_idx = tf.keras.backend.argmax(NewY, axis=1)
+    result_idx = keras.backend.argmax(NewY, axis=1)
     result = categories.take(result_idx.numpy().tolist()).category
     probability = NewY.max(axis=1)
 
