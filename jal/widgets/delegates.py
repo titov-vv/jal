@@ -1,4 +1,5 @@
 from datetime import datetime
+import decimal
 from PySide2.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTimeEdit, QTreeView
 from PySide2.QtCore import Qt, QModelIndex, QEvent, QLocale
 from PySide2.QtGui import QDoubleValidator, QBrush
@@ -92,15 +93,15 @@ class FloatDelegate(QStyledItemDelegate):
         self._allow_tail = allow_tail
         self._colors = colors
         self._color = None
-        self._validator = QDoubleValidator(decimals=self._tolerance)
+        self._validator = QDoubleValidator()
         self._validator.setLocale(QLocale().system())
 
     def formatFloatLong(self, value):
-        if self._allow_tail and (abs(value - round(value, self._tolerance)) >= Setup.CALC_TOLERANCE):
-            text = QLocale().toString(value)
-        else:
-            text = QLocale().toString(value, 'f', self._tolerance)
-        return text
+        precision = self._tolerance
+        decimal_places = -decimal.Decimal(str(value).rstrip('0')).as_tuple().exponent
+        if self._allow_tail and (decimal_places > self._tolerance):
+            precision = decimal_places
+        return QLocale().toString(value, 'f', precision)
 
     def displayText(self, value, locale):
         try:
@@ -124,7 +125,10 @@ class FloatDelegate(QStyledItemDelegate):
             amount = float(index.model().data(index, Qt.EditRole))
         except (ValueError, TypeError):
             amount = 0.0
-        editor.setText(QLocale().toString(amount, 'f', 2))
+        # QLocale().toString works in a bit weird way with float formatting - garbage appears after 5-6 decimal digits
+        # if too long precision is specified for short number. So we need to be more precise setting precision.
+        decimal_places = -decimal.Decimal(str(amount).rstrip('0')).as_tuple().exponent
+        editor.setText(QLocale().toString(amount, 'f', decimal_places))
 
     def setModelData(self, editor, model, index):
         value = QLocale().toDouble(editor.text())[0]
