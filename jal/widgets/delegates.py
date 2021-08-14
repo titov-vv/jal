@@ -3,7 +3,7 @@ import decimal
 from PySide2.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTimeEdit, QTreeView
 from PySide2.QtCore import Qt, QModelIndex, QEvent, QLocale
 from PySide2.QtGui import QDoubleValidator, QBrush
-from jal.constants import Setup, CustomColor
+from jal.constants import CustomColor
 from jal.widgets.reference_selector import PeerSelector, CategorySelector, TagSelector
 from jal.db.helpers import readSQL
 
@@ -54,7 +54,7 @@ class TimestampDelegate(QStyledItemDelegate):
         self._format = display_format
 
     def displayText(self, value, locale):
-        if isinstance(value, str):  # in case of SQL agregates int value comes here in form of string
+        if isinstance(value, str):  # in case of SQL aggregates int value comes here in form of string
             value = int(value)
         text = datetime.utcfromtimestamp(value).strftime(self._format) if value else ''
         return text
@@ -75,7 +75,7 @@ class TimestampDelegate(QStyledItemDelegate):
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-# Delegate for fload numbers formatting
+# Delegate for float numbers formatting
 # By default has 6 decimal places that may be controlled with 'tolerance' parameter
 # 'allow_tail' - display more digits for numbers that have more digits than 'tolerance'
 #                and only 'tolerance' digits otherwise
