@@ -1,8 +1,8 @@
 from datetime import datetime
 import decimal
 from PySide2.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTimeEdit, QTreeView
-from PySide2.QtCore import Qt, QModelIndex, QEvent, QLocale
-from PySide2.QtGui import QDoubleValidator, QBrush
+from PySide2.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QTime
+from PySide2.QtGui import QDoubleValidator, QBrush, QKeyEvent
 from jal.constants import CustomColor
 from jal.widgets.reference_selector import PeerSelector, CategorySelector, TagSelector
 from jal.db.helpers import readSQL
@@ -47,6 +47,19 @@ class WidgetMapperDelegateBase(QStyledItemDelegate):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Custom DateTimeEdit that is able to reset value to None
+# i.e. it handles keypress '-', sets timestamp to 0 that effectively cleans the field
+class DateTimeEditWithReset(QDateTimeEdit):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        if event.key() == Qt.Key_Minus:
+            self.setDateTime(QDateTime(QDate(1970, 1, 1), QTime(0, 0, 0), Qt.UTC))  # = 0 timestamp
+        super().keyPressEvent(event)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # Delegate to convert timestamp from unix-time to QDateTime and display it according to the given format
 class TimestampDelegate(QStyledItemDelegate):
     def __init__(self, display_format='%d/%m/%Y %H:%M:%S', parent=None):
@@ -60,7 +73,13 @@ class TimestampDelegate(QStyledItemDelegate):
         return text
 
     def createEditor(self, aParent, option, index):
-        return QDateTimeEdit(aParent)
+        editor = DateTimeEditWithReset(aParent)
+        editor.setTimeSpec(Qt.UTC)
+        if 'H' in self._format:  # we have hours and need DataTime editor to edit it
+            editor.setDisplayFormat("dd/MM/yyyy hh:mm:ss")  # TODO should we use QLocale for formats?
+        else:
+            editor.setDisplayFormat("dd/MM/yyyy")
+        return editor
 
     def setEditorData(self, editor, index):
         timestamp = index.model().data(index, Qt.EditRole)
@@ -142,7 +161,7 @@ class FloatDelegate(QStyledItemDelegate):
 
     def paint(self, painter, option, index):
         super().paint(painter, option, index)
-        if type(self._parent) == QTreeView:   # Extra code for tree views - to draw grid lines
+        if type(self._parent) == QTreeView:  # Extra code for tree views - to draw grid lines
             painter.save()
             pen = painter.pen()
             pen.setWidth(1)
