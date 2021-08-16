@@ -436,8 +436,14 @@ class Ledger(QObject):
                            "LEFT JOIN ledger AS l ON s.id = l.sid AND l.asset_id=c.asset_id_new AND l.value > 0 "
                            "WHERE c.qty_new > 0 AND c.asset_id_new=:asset_id AND c.account_id=:account_id "
                            "AND s.id < :sid AND s.id > :last_sid "
+                           "UNION ALL "  # Next part is for spin-offs that where data might be in old part
+                           "SELECT s.id, ABS(c.qty), coalesce(l.value/c.qty, 0) AS price FROM corp_actions AS c "
+                           "LEFT JOIN sequence AS s ON s.type = 5 AND s.operation_id=c.id "
+                           "LEFT JOIN ledger AS l ON s.id = l.sid AND l.asset_id=c.asset_id AND l.value > 0 "
+                           "WHERE c.qty_new > 0 AND c.asset_id=:asset_id AND c.type=:spinoff AND c.account_id=:account_id "
+                           "AND s.id < :sid AND s.id > :last_sid "
                            ")ORDER BY id",
-                           [(":asset_id", asset_id), (":account_id", account_id),
+                           [(":asset_id", asset_id), (":account_id", account_id), (":spinoff", CorporateAction.SpinOff),
                             (":sid", seq_id), (":last_sid", last_sid)])
         while query.next():  # Perform match ("closure") of previous trades
             deal_sid, deal_qty, deal_price = readSQLrecord(query)  # deal_sid -> trade_sid
@@ -474,7 +480,7 @@ class Ledger(QObject):
         new_qty = self.current['price']
         new_value = processed_value
         if self.current['subtype'] == CorporateAction.SpinOff:
-            new_value = processed_value * self.current['fee_tax']
+            new_value = processed_value * (1 - self.current['fee_tax'])
             # Modify value for old asset
             self.appendTransaction(BookAccount.Assets, self.current['amount'], processed_value - new_value)
         # Create value for new asset
