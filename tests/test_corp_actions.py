@@ -1,7 +1,7 @@
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from constants import PredefinedAsset
 from jal.db.ledger import Ledger
-from jal.db.helpers import readSQL, executeSQL, readSQLrecord
+from jal.db.helpers import readSQL, executeSQL
 
 
 def test_spin_off(prepare_db_fifo):
@@ -31,7 +31,8 @@ def test_spin_off(prepare_db_fifo):
 
     test_trades = [
         (1, 1619870400, 1619870400, 4, 100.0, 14.0, 0.0),   # Buy 100 A x 14.00 01/05/2021
-        (2, 1625140800, 1625140800, 4, 4.0, 13.0, 0.0)      # Buy   4 A x 13.00 01/07/2021
+        (2, 1625140800, 1625140800, 4, 4.0, 13.0, 0.0),     # Buy   4 A x 13.00 01/07/2021
+        (3, 1629047520, 1629047520, 4, -13.0, 150.0, 0.0)   # Sell 13 A x 150.00 15/08/2021
     ]
     for trade in test_trades:
         assert executeSQL(
@@ -56,9 +57,11 @@ def test_spin_off(prepare_db_fifo):
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
-    assert readSQL("SELECT * FROM ledger_sums WHERE asset_id=4 ORDER BY timestamp DESC LIMIT 1") == [5, 1627819200, 4, 4, 1, 13.0, 1452.0]
-    assert readSQL("SELECT * FROM ledger_sums WHERE asset_id=5 ORDER BY timestamp DESC LIMIT 1") == [3, 1622548800, 4, 5, 1, 5.0, 0.0]
-    assert readSQL("SELECT * FROM ledger_sums WHERE book_account=3 ORDER BY timestamp DESC LIMIT 1") == [4, 1625140800, 3, 2, 1, 8548.0, 0.0]
+    # Check ledger amounts before selling
+    assert readSQL("SELECT * FROM ledger_sums WHERE asset_id=4 AND timestamp<1628615520 ORDER BY timestamp DESC LIMIT 1") == [5, 1627819200, 4, 4, 1, 13.0, 1452.0]
+    assert readSQL("SELECT * FROM ledger_sums WHERE asset_id=5 AND timestamp<1628615520 ORDER BY timestamp DESC LIMIT 1") == [3, 1622548800, 4, 5, 1, 5.0, 0.0]
+    assert readSQL("SELECT * FROM ledger_sums WHERE book_account=3 AND timestamp<1628615520 ORDER BY timestamp DESC LIMIT 1") == [4, 1625140800, 3, 2, 1, 8548.0, 0.0]
+    assert readSQL("SELECT profit FROM deals_ext WHERE close_timestamp>=1629047520") == 498.0
 
 
 def test_symbol_change(prepare_db_fifo):
