@@ -15,9 +15,22 @@ class chartWidget(QWidget):
             self.series.append(point['timestamp'], point['quote'])
 
         self.chartView = QtCharts.QChartView()
-        self.chartView.chart().setTitle("-- CHART --")
         self.chartView.chart().addSeries(self.series)
-        self.chartView.chart().createDefaultAxes()
+
+        axisX = QtCharts.QDateTimeAxis()
+        axisX.setTickCount(12)
+        axisX.setFormat("yyyy/MM/dd")
+        axisX.setTitleText("Date")
+        axisX.setLabelsAngle(-90)
+        self.chartView.chart().addAxis(axisX, Qt.AlignBottom)
+        self.series.attachAxis(axisX)
+
+        axisY = QtCharts.QValueAxis()
+        axisY.setTickCount(10)
+        axisY.setTitleText("Price, RUB")    # TODO put correct currency name
+        self.chartView.chart().addAxis(axisY, Qt.AlignLeft)
+        self.series.attachAxis(axisY)
+
         self.chartView.chart().legend().hide()
         self.chartView.setViewportMargins(0, 0, 0, 0)
         self.chartView.chart().layout().setContentsMargins(0, 0, 0, 0)   # To remove extra spacing around chart
@@ -58,4 +71,4 @@ class ChartWindow(QDialog):
                            [(":asset_id", self.asset_id)])
         while query.next():
             quote = readSQLrecord(query, named=True)
-            self.quotes.append({'timestamp': quote['timestamp'], 'quote': quote['quote']})
+            self.quotes.append({'timestamp': quote['timestamp']*1000, 'quote': quote['quote']})  # timestamp to ms
