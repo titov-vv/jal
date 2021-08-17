@@ -5,7 +5,7 @@ from jal.widgets.helpers import g_tr
 from jal.constants import Setup
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xml import StatementXML
-from net.downloader import QuoteDownloader
+from jal.net.downloader import QuoteDownloader
 
 
 # ----------------------------------------------------------------------------------------------------------------------

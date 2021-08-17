@@ -1,4 +1,5 @@
-from PySide2.QtCore import Qt, Slot, QAbstractItemModel, QDate, QModelIndex
+import decimal
+from PySide2.QtCore import Qt, Slot, QAbstractItemModel, QDate, QModelIndex, QLocale
 from PySide2.QtGui import QBrush, QFont
 from PySide2.QtWidgets import QHeaderView
 from jal.constants import Setup, CustomColor, BookAccount, PredefindedAccountType
@@ -141,7 +142,15 @@ class HoldingsModel(QAbstractItemModel):
         elif column == 1:
             return data[self.COL_ASSET_FULLNAME]
         elif column == 2:
-            return str(data[self.COL_QTY]) if data[self.COL_QTY] != 0 else ''
+            if data[self.COL_QTY]:
+                if data[self.COL_ASSET_IS_CURRENCY]:
+                    decimal_places = 2
+                else:
+                    decimal_places = -decimal.Decimal(str(data[self.COL_QTY]).rstrip('0')).as_tuple().exponent
+                    decimal_places = 6 if decimal_places > 6 else decimal_places
+                return QLocale().toString(data[self.COL_QTY], 'f', decimal_places)
+            else:
+                return ''
         elif column == 3:
             if data[self.COL_QTY] != 0 and data[self.COL_VALUE_I] != 0:
                 return f"{(data[self.COL_VALUE_I] / data[self.COL_QTY]):,.4f}"

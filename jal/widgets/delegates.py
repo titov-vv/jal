@@ -1,8 +1,9 @@
 from datetime import datetime
+import decimal
 from PySide2.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTimeEdit, QTreeView
-from PySide2.QtCore import Qt, QModelIndex, QEvent, QLocale
-from PySide2.QtGui import QDoubleValidator, QBrush
-from jal.constants import Setup, CustomColor
+from PySide2.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QTime
+from PySide2.QtGui import QDoubleValidator, QBrush, QKeyEvent
+from jal.constants import CustomColor
 from jal.widgets.reference_selector import PeerSelector, CategorySelector, TagSelector
 from jal.db.helpers import readSQL
 
@@ -46,6 +47,19 @@ class WidgetMapperDelegateBase(QStyledItemDelegate):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Custom DateTimeEdit that is able to reset value to None
+# i.e. it handles keypress '-', sets timestamp to 0 that effectively cleans the field
+class DateTimeEditWithReset(QDateTimeEdit):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        if event.key() == Qt.Key_Minus:
+            self.setDateTime(QDateTime(QDate(1970, 1, 1), QTime(0, 0, 0), Qt.UTC))  # = 0 timestamp
+        super().keyPressEvent(event)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # Delegate to convert timestamp from unix-time to QDateTime and display it according to the given format
 class TimestampDelegate(QStyledItemDelegate):
     def __init__(self, display_format='%d/%m/%Y %H:%M:%S', parent=None):
@@ -53,13 +67,19 @@ class TimestampDelegate(QStyledItemDelegate):
         self._format = display_format
 
     def displayText(self, value, locale):
-        if isinstance(value, str):  # in case of SQL agregates int value comes here in form of string
+        if isinstance(value, str):  # in case of SQL aggregates int value comes here in form of string
             value = int(value)
         text = datetime.utcfromtimestamp(value).strftime(self._format) if value else ''
         return text
 
     def createEditor(self, aParent, option, index):
-        return QDateTimeEdit(aParent)
+        editor = DateTimeEditWithReset(aParent)
+        editor.setTimeSpec(Qt.UTC)
+        if 'H' in self._format:  # we have hours and need DataTime editor to edit it
+            editor.setDisplayFormat("dd/MM/yyyy hh:mm:ss")  # TODO should we use QLocale for formats?
+        else:
+            editor.setDisplayFormat("dd/MM/yyyy")
+        return editor
 
     def setEditorData(self, editor, index):
         timestamp = index.model().data(index, Qt.EditRole)
@@ -74,7 +94,7 @@ class TimestampDelegate(QStyledItemDelegate):
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-# Delegate for fload numbers formatting
+# Delegate for float numbers formatting
 # By default has 6 decimal places that may be controlled with 'tolerance' parameter
 # 'allow_tail' - display more digits for numbers that have more digits than 'tolerance'
 #                and only 'tolerance' digits otherwise
@@ -92,15 +112,15 @@ class FloatDelegate(QStyledItemDelegate):
         self._allow_tail = allow_tail
         self._colors = colors
         self._color = None
-        self._validator = QDoubleValidator(decimals=self._tolerance)
+        self._validator = QDoubleValidator()
         self._validator.setLocale(QLocale().system())
 
     def formatFloatLong(self, value):
-        if self._allow_tail and (abs(value - round(value, self._tolerance)) >= Setup.CALC_TOLERANCE):
-            text = QLocale().toString(value)
-        else:
-            text = QLocale().toString(value, 'f', self._tolerance)
-        return text
+        precision = self._tolerance
+        decimal_places = -decimal.Decimal(str(value).rstrip('0')).as_tuple().exponent
+        if self._allow_tail and (decimal_places > self._tolerance):
+            precision = decimal_places
+        return QLocale().toString(value, 'f', precision)
 
     def displayText(self, value, locale):
         try:
@@ -124,7 +144,10 @@ class FloatDelegate(QStyledItemDelegate):
             amount = float(index.model().data(index, Qt.EditRole))
         except (ValueError, TypeError):
             amount = 0.0
-        editor.setText(QLocale().toString(amount, 'f', 2))
+        # QLocale().toString works in a bit weird way with float formatting - garbage appears after 5-6 decimal digits
+        # if too long precision is specified for short number. So we need to be more precise setting precision.
+        decimal_places = -decimal.Decimal(str(amount).rstrip('0')).as_tuple().exponent
+        editor.setText(QLocale().toString(amount, 'f', decimal_places))
 
     def setModelData(self, editor, model, index):
         value = QLocale().toDouble(editor.text())[0]
@@ -138,7 +161,7 @@ class FloatDelegate(QStyledItemDelegate):
 
     def paint(self, painter, option, index):
         super().paint(painter, option, index)
-        if type(self._parent) == QTreeView:   # Extra code for tree views - to draw grid lines
+        if type(self._parent) == QTreeView:  # Extra code for tree views - to draw grid lines
             painter.save()
             pen = painter.pen()
             pen.setWidth(1)

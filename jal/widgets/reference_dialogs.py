@@ -250,7 +250,7 @@ class AssetListModel(AbstractReferenceListModel):
         self._lookup_delegate = QSqlRelationalDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("src_id"), self._lookup_delegate)
-        self._timestamp_delegate = TimestampDelegate(parent=self._view)
+        self._timestamp_delegate = TimestampDelegate(parent=self._view, display_format='%d/%m/%Y')
         self._view.setItemDelegateForColumn(self.fieldIndex("expiry"), self._timestamp_delegate)
 
     def getAssetType(self, item_id: int) -> int:

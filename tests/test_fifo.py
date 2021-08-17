@@ -33,7 +33,7 @@ def test_fifo(prepare_db_fifo):
         
     test_corp_actions = [
         (1, 1606899600, 3, 10, 100.0, 11, 100.0, 1.0, 'Symbol change G1 -> G2'),
-        (2, 1606986000, 2, 11, 100.0, 12, 20.0, 0.2, 'Spin-off H from G2'),
+        (2, 1606986000, 2, 11, 100.0, 12, 20.0, 0.8, 'Spin-off H from G2'),
         (3, 1607763600, 4, 14, 15.0, 14, 30.0, 1.0, 'Split L 15 -> 30'),
         (4, 1607850000, 3, 13, 5.0, 15, 5.0, 1.0, 'Another symbol change K -> M'),
         (5, 1607936412, 1, 14, 30.0, 15, 20.0, 1.0, 'Merger 30 L into 20 M'),
@@ -147,7 +147,7 @@ def test_fifo(prepare_db_fifo):
 
     # Spin-off
     assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=12") == 1
-    assert readSQL("SELECT profit FROM deals_ext WHERE asset_id=12") == 0
+    assert readSQL("SELECT profit FROM deals_ext WHERE asset_id=12") == approx(0)
 
     # Multiple corp actions
     assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=13 AND corp_action IS NOT NULL") == 1
