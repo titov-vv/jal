@@ -26,6 +26,7 @@ from jal.data_import.statements import StatementLoader
 from jal.reports.taxes import TaxesRus
 from jal.data_import.slips import ImportSlipDialog
 from jal.db.tax_estimator import TaxEstimator
+from jal.widgets.price_chart import ChartWindow
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -276,11 +277,23 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
     def onHoldingsContextMenu(self, pos):
         index = self.HoldingsTableView.indexAt(pos)
         contextMenu = QMenu(self.HoldingsTableView)
+        actionShowChart = QAction(text=g_tr('Ledger', "Show Price Chart"), parent=self.HoldingsTableView)
+        actionShowChart.triggered.connect(
+            partial(self.showPriceChart, self.HoldingsTableView.viewport().mapToGlobal(pos), index))
+        contextMenu.addAction(actionShowChart)
         actionEstimateTax = QAction(text=g_tr('Ledger', "Estimate Russian Tax"), parent=self.HoldingsTableView)
         actionEstimateTax.triggered.connect(
             partial(self.estimateRussianTax, self.HoldingsTableView.viewport().mapToGlobal(pos), index))
         contextMenu.addAction(actionEstimateTax)
         contextMenu.popup(self.HoldingsTableView.viewport().mapToGlobal(pos))
+
+    @Slot()
+    def showPriceChart(self, position, index):
+        model = index.model()
+        account, asset, asset_qty = model.get_data_for_tax(index)
+        self.price_chart = ChartWindow(account, asset, asset_qty, position)
+        if self.price_chart.ready:
+            self.price_chart.open()
 
     @Slot()
     def estimateRussianTax(self, position, index):
