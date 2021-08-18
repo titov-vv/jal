@@ -1,42 +1,55 @@
-from PySide2.QtCore import Qt, QMargins
+from math import log10, floor, ceil
+
+from PySide2.QtCore import Qt, QMargins, QDateTime
 from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout
 from PySide2.QtCharts import QtCharts
 from jal.db.update import JalDB
-from jal.constants import BookAccount
+from jal.constants import BookAccount, CustomColor
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord
 from jal.widgets.helpers import g_tr
 
 
 class ChartWidget(QWidget):
-    def __init__(self, parent, data, currency_name):
+    def __init__(self, parent, quotes, trades, data_range, currency_name):
         QWidget.__init__(self, parent)
 
-        self.series = QtCharts.QLineSeries()
-        for point in data:
-            self.series.append(point['timestamp'], point['quote'])
+        self.qoutes_series = QtCharts.QLineSeries()
+        for point in quotes:
+            self.qoutes_series.append(point['timestamp'], point['quote'])
 
-        self.chartView = QtCharts.QChartView()
-        self.chartView.chart().addSeries(self.series)
+        self.trade_series = QtCharts.QScatterSeries()
+        for point in trades:
+            self.trade_series.append(point['timestamp'], point['price'])
+        self.trade_series.setMarkerSize(5)
+        self.trade_series.setBorderColor(CustomColor.LightRed)
+        self.trade_series.setBrush(CustomColor.DarkRed)
 
         axisX = QtCharts.QDateTimeAxis()
-        axisX.setTickCount(12)
+        axisX.setTickCount(11)
+        axisX.setRange(QDateTime().fromSecsSinceEpoch(data_range[0]), QDateTime().fromSecsSinceEpoch(data_range[1]))
         axisX.setFormat("yyyy/MM/dd")
-        axisX.setTitleText("Date")
         axisX.setLabelsAngle(-90)
-        self.chartView.chart().addAxis(axisX, Qt.AlignBottom)
-        self.series.attachAxis(axisX)
+        axisX.setTitleText("Date")
 
         axisY = QtCharts.QValueAxis()
-        axisY.setTickCount(10)
+        axisY.setTickCount(11)
+        axisY.setRange(data_range[2], data_range[3])
         axisY.setTitleText("Price, " + currency_name)
-        self.chartView.chart().addAxis(axisY, Qt.AlignLeft)
-        self.series.attachAxis(axisY)
 
+        self.chartView = QtCharts.QChartView()
+        self.chartView.chart().addSeries(self.qoutes_series)
+        self.chartView.chart().addSeries(self.trade_series)
+        self.chartView.chart().addAxis(axisX, Qt.AlignBottom)
+        self.chartView.chart().setAxisX(axisX, self.qoutes_series)
+        self.chartView.chart().setAxisX(axisX, self.trade_series)
+        self.chartView.chart().addAxis(axisY, Qt.AlignLeft)
+        self.chartView.chart().setAxisY(axisY, self.qoutes_series)
+        self.chartView.chart().setAxisY(axisY, self.trade_series)
         self.chartView.chart().legend().hide()
         self.chartView.setViewportMargins(0, 0, 0, 0)
-        self.chartView.chart().layout().setContentsMargins(0, 0, 0, 0)   # To remove extra spacing around chart
-        self.chartView.chart().setBackgroundRoundness(0)                 # To remove corner rounding
-        self.chartView.chart().setMargins(QMargins(0, 0, 0, 0))          # Allow chart to fill all space
+        self.chartView.chart().layout().setContentsMargins(0, 0, 0, 0)  # To remove extra spacing around chart
+        self.chartView.chart().setBackgroundRoundness(0)  # To remove corner rounding
+        self.chartView.chart().setMargins(QMargins(0, 0, 0, 0))  # Allow chart to fill all space
 
         self.layout = QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)  # Remove extra space around layout
@@ -45,18 +58,20 @@ class ChartWidget(QWidget):
 
 
 class ChartWindow(QDialog):
-    def __init__(self, account_id, asset_id, asset_qty, position, parent=None):
+    def __init__(self, account_id, asset_id, _asset_qty, position, parent=None):
         super().__init__(parent)
 
         self.account_id = account_id
         self.asset_id = asset_id
         self.asset_name = JalDB().get_asset_name(self.asset_id)
         self.quotes = []
+        self.trades = []
         self.currency_name = ''
+        self.range = [0, 0, 0, 0]
 
         self.prepare_chart_data()
 
-        self.chart = ChartWidget(self, self.quotes, self.currency_name)
+        self.chart = ChartWidget(self, self.quotes, self.trades, self.range, self.currency_name)
 
         self.layout = QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)  # Remove extra space around layout
@@ -70,20 +85,51 @@ class ChartWindow(QDialog):
         self.ready = True
 
     def prepare_chart_data(self):
-        self.currency_name = JalDB().get_asset_name(JalDB().get_account_currency(self.account_id))
-        last_time = readSQL("SELECT MAX(ts) FROM "   # Take either last "empty" timestamp
-                            "(SELECT coalesce(MAX(timestamp), 0) AS ts "
-                            "FROM ledger_sums WHERE account_id=:account_id AND asset_id=:asset_id "
-                            "AND book_account=:assets_book AND sum_amount==0 "
-                            "UNION "                 # or first timestamp where position started to appear
-                            "SELECT coalesce(MIN(timestamp), 0) AS ts "
-                            "FROM ledger_sums WHERE account_id=:account_id AND asset_id=:asset_id "
-                            "AND book_account=:assets_book AND sum_amount!=0)",
-                            [(":account_id", self.account_id), (":asset_id", self.asset_id),
-                             (":assets_book", BookAccount.Assets)])
+        min_price = max_price = 0
+        min_ts = max_ts = 0
 
+        self.currency_name = JalDB().get_asset_name(JalDB().get_account_currency(self.account_id))
+        self.start_time = readSQL("SELECT MAX(ts) FROM "  # Take either last "empty" timestamp
+                                  "(SELECT coalesce(MAX(timestamp), 0) AS ts "
+                                  "FROM ledger_sums WHERE account_id=:account_id AND asset_id=:asset_id "
+                                  "AND book_account=:assets_book AND sum_amount==0 "
+                                  "UNION "  # or first timestamp where position started to appear
+                                  "SELECT coalesce(MIN(timestamp), 0) AS ts "
+                                  "FROM ledger_sums WHERE account_id=:account_id AND asset_id=:asset_id "
+                                  "AND book_account=:assets_book AND sum_amount!=0)",
+                                  [(":account_id", self.account_id), (":asset_id", self.asset_id),
+                                   (":assets_book", BookAccount.Assets)])
+        # Get quotes quotes
         query = executeSQL("SELECT timestamp, quote FROM quotes WHERE asset_id=:asset_id AND timestamp>:last",
-                           [(":asset_id", self.asset_id), (":last", last_time)])
+                           [(":asset_id", self.asset_id), (":last", self.start_time)])
         while query.next():
             quote = readSQLrecord(query, named=True)
-            self.quotes.append({'timestamp': quote['timestamp']*1000, 'quote': quote['quote']})  # timestamp to ms
+            self.quotes.append({'timestamp': quote['timestamp'] * 1000, 'quote': quote['quote']})  # timestamp to ms
+            min_price = quote['quote'] if min_price == 0 or quote['quote'] < min_price else min_price
+            max_price = quote['quote'] if quote['quote'] > max_price else max_price
+            min_ts = quote['timestamp'] if min_ts == 0 or quote['timestamp'] < min_ts else min_ts
+            max_ts = quote['timestamp'] if quote['timestamp'] > max_ts else max_ts
+
+        # Get deals quotes
+        query = executeSQL("SELECT timestamp, price, qty FROM trades "
+                           "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp>=:last",
+                           [(":account_id", self.account_id), (":asset_id", self.asset_id), (":last", self.start_time)])
+        while query.next():
+            trade = readSQLrecord(query, named=True)
+            self.trades.append({'timestamp': trade['timestamp'] * 1000, 'price': trade['price'], 'qty': trade['qty']})
+            min_price = trade['price'] if min_price == 0 or trade['price'] < min_price else min_price
+            max_price = trade['price'] if trade['price'] > max_price else max_price
+            min_ts = quote['timestamp'] if min_ts == 0 or quote['timestamp'] < min_ts else min_ts
+            max_ts = quote['timestamp'] if quote['timestamp'] > max_ts else max_ts
+
+        # Round min/max values to near "round" values in order to have 10 nice intervals
+        exp = floor(log10(max_price - min_price))
+        step = 10 ** exp
+        min_price = floor(min_price / step) * step
+        max_price = ceil(max_price / step) * step
+
+        # Add a gap at the beginning and end
+        min_ts -= 86400 * 3
+        max_ts += 86400 * 3
+
+        self.range = [min_ts, max_ts, min_price, max_price]
