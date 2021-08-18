@@ -13,9 +13,9 @@ class ChartWidget(QWidget):
     def __init__(self, parent, quotes, trades, data_range, currency_name):
         QWidget.__init__(self, parent)
 
-        self.qoutes_series = QtCharts.QLineSeries()
+        self.quotes_series = QtCharts.QLineSeries()
         for point in quotes:            # Conversion to 'float' in order not to get 'int' overflow on some platforms
-            self.qoutes_series.append(float(point['timestamp']), point['quote'])
+            self.quotes_series.append(float(point['timestamp']), point['quote'])
 
         self.trade_series = QtCharts.QScatterSeries()
         for point in trades:            # Conversion to 'float' in order not to get 'int' overflow on some platforms
@@ -37,13 +37,13 @@ class ChartWidget(QWidget):
         axisY.setTitleText("Price, " + currency_name)
 
         self.chartView = QtCharts.QChartView()
-        self.chartView.chart().addSeries(self.qoutes_series)
+        self.chartView.chart().addSeries(self.quotes_series)
         self.chartView.chart().addSeries(self.trade_series)
         self.chartView.chart().addAxis(axisX, Qt.AlignBottom)
-        self.chartView.chart().setAxisX(axisX, self.qoutes_series)
+        self.chartView.chart().setAxisX(axisX, self.quotes_series)
         self.chartView.chart().setAxisX(axisX, self.trade_series)
         self.chartView.chart().addAxis(axisY, Qt.AlignLeft)
-        self.chartView.chart().setAxisY(axisY, self.qoutes_series)
+        self.chartView.chart().setAxisY(axisY, self.quotes_series)
         self.chartView.chart().setAxisY(axisY, self.trade_series)
         self.chartView.chart().legend().hide()
         self.chartView.setViewportMargins(0, 0, 0, 0)
