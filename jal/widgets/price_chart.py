@@ -14,12 +14,12 @@ class ChartWidget(QWidget):
         QWidget.__init__(self, parent)
 
         self.qoutes_series = QtCharts.QLineSeries()
-        for point in quotes:
-            self.qoutes_series.append(point['timestamp'], point['quote'])
+        for point in quotes:            # Conversion to 'float' in order not to get 'int' overflow on some platforms
+            self.qoutes_series.append(float(point['timestamp']), point['quote'])
 
         self.trade_series = QtCharts.QScatterSeries()
-        for point in trades:
-            self.trade_series.append(point['timestamp'], point['price'])
+        for point in trades:            # Conversion to 'float' in order not to get 'int' overflow on some platforms
+            self.trade_series.append(float(point['timestamp']), point['price'])
         self.trade_series.setMarkerSize(5)
         self.trade_series.setBorderColor(CustomColor.LightRed)
         self.trade_series.setBrush(CustomColor.DarkRed)
