@@ -2,7 +2,8 @@ from PySide2.QtCore import Qt, QMargins
 from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout
 from PySide2.QtCharts import QtCharts
 from jal.db.update import JalDB
-from jal.db.helpers import executeSQL, readSQLrecord
+from jal.constants import BookAccount
+from jal.db.helpers import executeSQL, readSQL, readSQLrecord
 from jal.widgets.helpers import g_tr
 
 
@@ -70,9 +71,19 @@ class ChartWindow(QDialog):
 
     def prepare_chart_data(self):
         self.currency_name = JalDB().get_asset_name(JalDB().get_account_currency(self.account_id))
+        last_time = readSQL("SELECT MAX(ts) FROM "   # Take either last "empty" timestamp
+                            "(SELECT coalesce(MAX(timestamp), 0) AS ts "
+                            "FROM ledger_sums WHERE account_id=:account_id AND asset_id=:asset_id "
+                            "AND book_account=:assets_book AND sum_amount==0 "
+                            "UNION "                 # or first timestamp where position started to appear
+                            "SELECT coalesce(MIN(timestamp), 0) AS ts "
+                            "FROM ledger_sums WHERE account_id=:account_id AND asset_id=:asset_id "
+                            "AND book_account=:assets_book AND sum_amount!=0)",
+                            [(":account_id", self.account_id), (":asset_id", self.asset_id),
+                             (":assets_book", BookAccount.Assets)])
 
-        query = executeSQL("SELECT timestamp, quote FROM quotes WHERE asset_id=:asset_id",
-                           [(":asset_id", self.asset_id)])
+        query = executeSQL("SELECT timestamp, quote FROM quotes WHERE asset_id=:asset_id AND timestamp>:last",
+                           [(":asset_id", self.asset_id), (":last", last_time)])
         while query.next():
             quote = readSQLrecord(query, named=True)
             self.quotes.append({'timestamp': quote['timestamp']*1000, 'quote': quote['quote']})  # timestamp to ms
