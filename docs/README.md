@@ -7,6 +7,9 @@ Just Another Ledger is a project for personal finance tracking.
 
 It was designed to keep records of personal incomes/spendings and investments with up-to-date information about account's balances and portfolio value.
 
+### Support, Feedback
+If you want to ask a question, report a bug, provide help or support an author - you may use email [jal@gmx.ru](mailto:jal@gmx.ru?subject=%5BJAL%5D%20Help) or [Telegram](https://t.me/jal_support) ([Issues](https://github.com/titov-vv/jal/issues) on GitHub are always welcome also).
+
 ### Main features
 - Multiple accounts with different currencies (base currency is russian rouble but might be changed in future versions)
 - 5 types of transactions: 
