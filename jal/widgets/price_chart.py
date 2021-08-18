@@ -123,8 +123,7 @@ class ChartWindow(QDialog):
             max_ts = trade['timestamp'] if trade['timestamp'] > max_ts else max_ts
 
         # Round min/max values to near "round" values in order to have 10 nice intervals
-        exp = floor(log10(max_price - min_price))
-        step = 10 ** exp
+        step = 10 ** floor(log10(max_price - min_price))
         min_price = floor(min_price / step) * step
         max_price = ceil(max_price / step) * step
 
