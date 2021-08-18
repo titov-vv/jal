@@ -119,8 +119,8 @@ class ChartWindow(QDialog):
             self.trades.append({'timestamp': trade['timestamp'] * 1000, 'price': trade['price'], 'qty': trade['qty']})
             min_price = trade['price'] if min_price == 0 or trade['price'] < min_price else min_price
             max_price = trade['price'] if trade['price'] > max_price else max_price
-            min_ts = quote['timestamp'] if min_ts == 0 or quote['timestamp'] < min_ts else min_ts
-            max_ts = quote['timestamp'] if quote['timestamp'] > max_ts else max_ts
+            min_ts = trade['timestamp'] if min_ts == 0 or trade['timestamp'] < min_ts else min_ts
+            max_ts = trade['timestamp'] if trade['timestamp'] > max_ts else max_ts
 
         # Round min/max values to near "round" values in order to have 10 nice intervals
         exp = floor(log10(max_price - min_price))
