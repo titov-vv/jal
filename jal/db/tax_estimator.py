@@ -9,6 +9,7 @@ from jal.db.update import JalDB
 from jal.widgets.helpers import g_tr
 from jal.ui.ui_tax_estimation import Ui_TaxEstimationDialog
 
+
 class TaxEstimatorModel(QAbstractTableModel):
     def __init__(self, data, currency):
         QAbstractTableModel.__init__(self)
@@ -52,6 +53,7 @@ class TaxEstimatorModel(QAbstractTableModel):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return headers[col]
         return None
+
 
 class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
     def __init__(self, account_id, asset_id, asset_qty, position, parent=None):
@@ -116,12 +118,8 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
         if self.quote is None:
             logging.error(g_tr('TaxEstimator', "Can't get current quote for ") + self.asset_name)
             return
-        self.currency_name = readSQL("SELECT s.name FROM accounts AS a "
-                                     "LEFT JOIN assets AS s ON s.id=a.currency_id WHERE a.id=:account_id",
-                                     [(":account_id", self.account_id)])
-        if self.currency_name is None:
-            logging.error(g_tr('TaxEstimator', "Can't get currency name for account"))
-            return
+        self.currency_name = JalDB().get_asset_name(JalDB().get_account_currency(self.account_id))
+
         self.rate = readSQL("SELECT quote FROM accounts AS a "
                             "LEFT JOIN t_last_quotes AS q ON q.asset_id=a.currency_id WHERE id=:account_id",
                             [(":account_id", self.account_id)])

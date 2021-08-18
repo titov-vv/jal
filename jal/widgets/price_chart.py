@@ -6,8 +6,8 @@ from jal.db.helpers import executeSQL, readSQLrecord
 from jal.widgets.helpers import g_tr
 
 
-class chartWidget(QWidget):
-    def __init__(self, parent, data):
+class ChartWidget(QWidget):
+    def __init__(self, parent, data, currency_name):
         QWidget.__init__(self, parent)
 
         self.series = QtCharts.QLineSeries()
@@ -27,7 +27,7 @@ class chartWidget(QWidget):
 
         axisY = QtCharts.QValueAxis()
         axisY.setTickCount(10)
-        axisY.setTitleText("Price, RUB")    # TODO put correct currency name
+        axisY.setTitleText("Price, " + currency_name)
         self.chartView.chart().addAxis(axisY, Qt.AlignLeft)
         self.series.attachAxis(axisY)
 
@@ -44,16 +44,18 @@ class chartWidget(QWidget):
 
 
 class ChartWindow(QDialog):
-    def __init__(self, account_id, asset_id, _asset_qty, position, parent=None):
+    def __init__(self, account_id, asset_id, asset_qty, position, parent=None):
         super().__init__(parent)
 
         self.account_id = account_id
         self.asset_id = asset_id
         self.asset_name = JalDB().get_asset_name(self.asset_id)
         self.quotes = []
-        self.get_quotes()
+        self.currency_name = ''
 
-        self.chart = chartWidget(self, self.quotes)
+        self.prepare_chart_data()
+
+        self.chart = ChartWidget(self, self.quotes, self.currency_name)
 
         self.layout = QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)  # Remove extra space around layout
@@ -66,7 +68,9 @@ class ChartWindow(QDialog):
 
         self.ready = True
 
-    def get_quotes(self):
+    def prepare_chart_data(self):
+        self.currency_name = JalDB().get_asset_name(JalDB().get_account_currency(self.account_id))
+
         query = executeSQL("SELECT timestamp, quote FROM quotes WHERE asset_id=:asset_id",
                            [(":asset_id", self.asset_id)])
         while query.next():
