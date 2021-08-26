@@ -202,8 +202,8 @@ class Statement:
 
         totals = defaultdict(dict)
         for account in self._data[FOF.ACCOUNTS]:
-            if 'cash_end_settled' in account:
-                totals[-account['id']][-account['currency']] = account['cash_end_settled']
+            if 'cash_end' in account:
+                totals[-account['id']][-account['currency']] = account['cash_end']
         return totals
 
     def _check_period(self, period):
