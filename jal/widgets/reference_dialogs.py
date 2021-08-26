@@ -649,6 +649,7 @@ class CountryListModel(AbstractReferenceListModel):
         self._columns = [("id", ''),
                          ("name", g_tr('ReferenceDataDialog', "Country")),
                          ("code", g_tr('ReferenceDataDialog', "Code")),
+                         ("iso_code", g_tr('ReferenceDataDialog', "ISO code")),
                          ("tax_treaty", g_tr('ReferenceDataDialog', "Tax Treaty"))]
         self._sort_by = "name"
         self._hidden = ["id"]

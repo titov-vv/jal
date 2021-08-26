@@ -195,7 +195,9 @@ CREATE TABLE countries (
                               NOT NULL,
     code         CHAR (3)     UNIQUE
                               NOT NULL,
-    tax_treaty INTEGER        NOT NULL
+    iso_code     CHAR (4)     UNIQUE
+                              NOT NULL,
+    tax_treaty   INTEGER      NOT NULL
                               DEFAULT (0)
 );
 
@@ -1305,7 +1307,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 26);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 27);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
@@ -1368,28 +1370,28 @@ INSERT INTO assets (id, name, type_id, full_name, src_id) VALUES (2, 'USD', 1, '
 INSERT INTO assets (id, name, type_id, full_name, src_id) VALUES (3, 'EUR', 1, 'Евро', 0);
 
 -- Initialize some pre-defined countries
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (0, 'N/A', 'xx', 0);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (1, 'Russia', 'ru', 0);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (2, 'United States', 'us', 1);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (3, 'Ireland', 'ie', 1);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (4, 'Switzerland', 'ch', 1);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (5, 'France', 'fr', 1);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (6, 'Canada', 'ca', 1);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (7, 'Sweden', 'se', 1);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (8, 'Italy', 'it', 1);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (9, 'Spain', 'es', 1);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (10, 'Australia', 'au', 1);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (11, 'Austria', 'at', 1);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (12, 'Belgium', 'be', 1);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (13, 'Great Britain', 'gb', 1);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (14, 'Germany', 'de', 1);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (15, 'China', 'cn', 1);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (16, 'Netherlands', 'nl', 1);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (17, 'Greece', 'gr', 1);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (18, 'Bermuda', 'bm', 0);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (19, 'Finland', 'fi', 1);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (20, 'Brazil', 'br', 0);
-INSERT INTO countries (id, name, code, tax_treaty) VALUES (21, 'Jersey', 'je', 0);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (0, 'N/A', 'xx', '000', 0);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (1, 'Russia', 'ru', '643', 0);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (2, 'United States', 'us', '840', 1);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (3, 'Ireland', 'ie', '372', 1);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (4, 'Switzerland', 'ch', '756', 1);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (5, 'France', 'fr', '250', 1);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (6, 'Canada', 'ca', '124', 1);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (7, 'Sweden', 'se', '752', 1);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (8, 'Italy', 'it', '380', 1);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (9, 'Spain', 'es', '724', 1);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (10, 'Australia', 'au', '036', 1);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (11, 'Austria', 'at', '040', 1);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (12, 'Belgium', 'be', '056', 1);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (13, 'United Kingdom', 'gb', '826', 1);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (14, 'Germany', 'de', '276', 1);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (15, 'China', 'cn', '156', 1);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (16, 'Netherlands', 'nl', '528', 1);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (17, 'Greece', 'gr', '300', 1);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (18, 'Bermuda', 'bm', '060', 0);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (19, 'Finland', 'fi', '246', 1);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (20, 'Brazil', 'br', '076', 0);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (21, 'Jersey', 'je', '832', 0);
 
 -- Initialize rate for base currency
 INSERT INTO quotes (id, timestamp, asset_id, quote) VALUES (1, 946684800, 1, 1.0);

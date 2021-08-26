@@ -109,6 +109,14 @@
     </message>
 </context>
 <context>
+    <name>ChartWindow</name>
+    <message>
+        <location filename="../widgets/price_chart.py" line="81"/>
+        <source>Price chart for </source>
+        <translation>График цены для </translation>
+    </message>
+</context>
+<context>
     <name>CorpActionWidget</name>
     <message>
         <location filename="../widgets/corporate_action_widget.py" line="44"/>
@@ -1431,37 +1439,37 @@ Application will be terminated now</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="508"/>
+        <location filename="../db/ledger.py" line="514"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="508"/>
+        <location filename="../db/ledger.py" line="514"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation> операций требуют перерасчета. Вы ходите выполнить его прямо сейчас?</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="513"/>
+        <location filename="../db/ledger.py" line="519"/>
         <source>Re-build ledger from: </source>
         <translation>Перерасчет итогов с: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="553"/>
+        <location filename="../db/ledger.py" line="559"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation>Итоги рассчитаны. Затраченное время: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="553"/>
+        <location filename="../db/ledger.py" line="559"/>
         <source>, new frontier: </source>
         <translation>, новая граница: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="543"/>
+        <location filename="../db/ledger.py" line="549"/>
         <source>Processed </source>
         <translation>Обработано </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="543"/>
+        <location filename="../db/ledger.py" line="549"/>
         <source>k records, current frontier: </source>
         <translation>к записей, текущая граница: </translation>
     </message>
@@ -1481,7 +1489,7 @@ Application will be terminated now</source>
         <translation>Количество акций недостаточно для обработки корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="279"/>
+        <location filename="../widgets/main_window.py" line="286"/>
         <source>Estimate Russian Tax</source>
         <translation>Оценить налог для РФ</translation>
     </message>
@@ -1509,6 +1517,11 @@ Application will be terminated now</source>
         <location filename="../db/ledger.py" line="191"/>
         <source>Can&apos;t process dividend with N/A type</source>
         <translation>Невозможно обработать дивиденд с неопределенным типом</translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="282"/>
+        <source>Show Price Chart</source>
+        <translation>Показать график цены</translation>
     </message>
 </context>
 <context>
@@ -1572,73 +1585,73 @@ Application will be terminated now</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="191"/>
+        <location filename="../widgets/main_window.py" line="192"/>
         <source>Restart required</source>
         <translation>Требуется рестарт</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="191"/>
+        <location filename="../widgets/main_window.py" line="192"/>
         <source>Language was changed to </source>
         <translation>Язык был изменён на </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="191"/>
+        <location filename="../widgets/main_window.py" line="192"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation>Вы должны перезапустить приложение, чтобы применить изменения
 Приложение сейчас завершит свою работу</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="65"/>
+        <location filename="../widgets/main_window.py" line="66"/>
         <source>Reconcile</source>
         <translation>Сверить</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="66"/>
+        <location filename="../widgets/main_window.py" line="67"/>
         <source>Copy</source>
         <translation>Копировать</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="67"/>
+        <location filename="../widgets/main_window.py" line="68"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="311"/>
+        <location filename="../widgets/main_window.py" line="326"/>
         <source>You have unsaved changes</source>
         <translation>Есть несохранённые изменения</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="311"/>
+        <location filename="../widgets/main_window.py" line="326"/>
         <source> has uncommitted changes,
 do you want to save it?</source>
         <translation> имеет несохранённые изменения,
 Вы хотите их сохранить?</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="343"/>
+        <location filename="../widgets/main_window.py" line="358"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="343"/>
+        <location filename="../widgets/main_window.py" line="358"/>
         <source>Are you sure to delete selected transacion(s)?</source>
         <translation>Вы уверены что ходите удалить выбранную(-ые) транзацию(-и)?</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="215"/>
+        <location filename="../widgets/main_window.py" line="216"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="219"/>
-        <source>&lt;p&gt;More information, manuals and problem reports are at &lt;a href=https://github.com/titov-vv/jal&gt;github home page&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Questions, comments, donations: &lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;</source>
-        <translation>&lt;p&gt;Дополнительная информация, инструкции, сообщения о проблемах доступны на &lt;a href=https://github.com/titov-vv/jal&gt;домашней странице проекта на github&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Вопросы, пожелания, донаты: &lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;</translation>
-    </message>
-    <message>
-        <location filename="../widgets/main_window.py" line="405"/>
+        <location filename="../widgets/main_window.py" line="420"/>
         <source>Statement ending balance doesn&apos;t match: </source>
         <translation>Конечный баланс по отчёту не совпадает: </translation>
+    </message>
+    <message>
+        <location filename="../widgets/main_window.py" line="220"/>
+        <source>&lt;p&gt;More information, manuals and problem reports are at &lt;a href=https://github.com/titov-vv/jal&gt;github home page&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Questions, comments, help or donations:&lt;/p&gt;&lt;p&gt;&lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=https://t.me/jal_support&gt;Telegram&lt;/a&gt;&lt;/p&gt;</source>
+        <translation>&lt;p&gt;Дополнительная информация, инструкции, сообщения о проблемах - &lt;a href=https://github.com/titov-vv/jal&gt;github home page&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Вопросы, комментарии, помощь или донаты:&lt;/p&gt;&lt;p&gt;&lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=https://t.me/jal_support&gt;Telegram&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
 </context>
 <context>
@@ -2160,32 +2173,32 @@ do you want to save it?</source>
         <translation>Код</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="652"/>
+        <location filename="../widgets/reference_dialogs.py" line="653"/>
         <source>Tax Treaty</source>
         <translation>СОИДН</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="679"/>
+        <location filename="../widgets/reference_dialogs.py" line="680"/>
         <source>Countries</source>
         <translation>Страны</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="688"/>
+        <location filename="../widgets/reference_dialogs.py" line="689"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="689"/>
+        <location filename="../widgets/reference_dialogs.py" line="690"/>
         <source>Asset</source>
         <translation>ЦБ</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="690"/>
+        <location filename="../widgets/reference_dialogs.py" line="691"/>
         <source>Quote</source>
         <translation>Котировка</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="722"/>
+        <location filename="../widgets/reference_dialogs.py" line="723"/>
         <source>Quotes</source>
         <translation>Котировки</translation>
     </message>
@@ -2238,6 +2251,11 @@ do you want to save it?</source>
         <location filename="../widgets/reference_dialogs.py" line="237"/>
         <source>Expiry</source>
         <translation>Истекает</translation>
+    </message>
+    <message>
+        <location filename="../widgets/reference_dialogs.py" line="652"/>
+        <source>ISO code</source>
+        <translation>Код ISO</translation>
     </message>
 </context>
 <context>
@@ -2892,62 +2910,57 @@ do you want to save it?</source>
 <context>
     <name>TaxEstimator</name>
     <message>
-        <location filename="../db/tax_estimator.py" line="45"/>
+        <location filename="../db/tax_estimator.py" line="46"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="68"/>
+        <location filename="../db/tax_estimator.py" line="70"/>
         <source>Tax estimation for </source>
         <translation>Оценка налога для </translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="164"/>
+        <location filename="../db/tax_estimator.py" line="162"/>
         <source>TOTAL</source>
         <translation>ИТОГО</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="46"/>
+        <location filename="../db/tax_estimator.py" line="47"/>
         <source>Qty</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="47"/>
+        <location filename="../db/tax_estimator.py" line="48"/>
         <source>Open</source>
         <translation>Цена откр.</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="48"/>
+        <location filename="../db/tax_estimator.py" line="49"/>
         <source>Rate, </source>
         <translation>Курс, </translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="49"/>
+        <location filename="../db/tax_estimator.py" line="50"/>
         <source>Profit, </source>
         <translation>Прибыль, </translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="50"/>
+        <location filename="../db/tax_estimator.py" line="51"/>
         <source>Profit, RUB</source>
         <translation>Прибыль, RUB</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="51"/>
+        <location filename="../db/tax_estimator.py" line="52"/>
         <source>Tax, RUB</source>
         <translation>Налог, RUB</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="117"/>
+        <location filename="../db/tax_estimator.py" line="119"/>
         <source>Can&apos;t get current quote for </source>
         <translation>Невозможно получить котировку для </translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="123"/>
-        <source>Can&apos;t get currency name for account</source>
-        <translation>Невозможно получить валюту для счета</translation>
-    </message>
-    <message>
-        <location filename="../db/tax_estimator.py" line="129"/>
+        <location filename="../db/tax_estimator.py" line="127"/>
         <source>Can&apos;t get current rate for </source>
         <translation>Невозможно получить курс валюты для </translation>
     </message>
