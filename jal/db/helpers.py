@@ -230,29 +230,25 @@ def get_account_name(account_id):
 def get_country_by_code(country_code):
     if not country_code:
         return 0
-    id = readSQL("SELECT id FROM countries WHERE code=:code", [(":code", country_code)], check_unique=True)
-
-    if id is None:
-        query = executeSQL("INSERT INTO countries(name, code, tax_treaty) VALUES (:name, :code, 0)",
-                           [(":name", "Country_" + country_code), (":code", country_code)])
-        id = query.lastInsertId()
-        logging.warning(g_tr('DB', "New country added (set Tax Treaty in Data->Countries menu): ")
-                        + f"'{country_code}'")
-    return id
+    country_id = readSQL("SELECT id FROM countries WHERE code=:code", [(":code", country_code)], check_unique=True)
+    if country_id is None:
+        country_id = 0
+        logging.warning(g_tr('DB', "Unknown country code: ") + f"'{country_code}'")
+    return country_id
 
 # -------------------------------------------------------------------------------------------------------------------
 # Function sets asset country if asset.country_id is 0
 # Shows warning and sets new asset country if asset.country_id was different before
 # Does nothing if asset country had already the same value
 def update_asset_country(asset_id, country_id):
-    id = readSQL("SELECT country_id FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
-    if id == country_id:
+    old_id = readSQL("SELECT country_id FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
+    if old_id == country_id:
         return
     _ = executeSQL("UPDATE assets SET country_id=:country_id WHERE id=:asset_id",
                    [(":asset_id", asset_id), (":country_id", country_id)])
-    if id == 0:
+    if old_id == 0:
         return
-    old_country = readSQL("SELECT name FROM countries WHERE id=:country_id", [(":country_id", id)])
+    old_country = readSQL("SELECT name FROM countries WHERE id=:country_id", [(":country_id", old_id)])
     new_country = readSQL("SELECT name FROM countries WHERE id=:country_id", [(":country_id", country_id)])
     asset_name = readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":country_id", asset_id)])
     logging.warning(g_tr('DB', "Country was changed for asset ")+ f"{asset_name}: f{old_country} -> {new_country}")
