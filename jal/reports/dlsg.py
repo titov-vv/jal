@@ -196,30 +196,6 @@ class DLSG:
         'JPY': {'code': '392', 'name': 'Иена', 'multiplier': 10000}
     }
 
-    countries = {
-        'ru': '643',
-        'us': '840',
-        'ie': '372',
-        'ch': '756',
-        'fr': '250',
-        'ca': '124',
-        'se': '752',
-        'it': '380',
-        'es': '724',
-        'au': '036',
-        'at': '040',
-        'be': '056',
-        'gb': '826',
-        'de': '276',
-        'cn': '156',
-        'fi': '246',
-        'nl': '528',
-        'gr': '300',
-        'bm': '060',
-        'br': '076',
-        'je': '832'
-    }
-
     def __init__(self, only_dividends=False):
         self._only_dividends=only_dividends
         self._year = 0              # year of declaration
@@ -254,20 +230,6 @@ class DLSG:
             return
         foreign_section.add_income(tax_codes, country_code, note, timestamp,
                                    currency_data, amount, amount_rub, tax, tax_rub, rate, deduction=spending_rub)
-
-    def get_country_currency(self, country, currency_name):
-        try:
-            currency_code = self.currencies[currency_name]
-        except:
-            logging.error(g_tr('DLSG', "Currency code isn't known for russian tax form:") + f" {currency_name}")
-            raise ValueError
-        try:
-            country_code = self.countries[country]
-        except:
-            logging.error(g_tr('DLSG', "Country code isn't known for russian tax form (check account settings):") +
-                          f" {country}")
-            raise ValueError
-        return country_code, currency_code
 
     def get_section(self, name):
         for section in self._sections:
