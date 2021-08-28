@@ -255,20 +255,6 @@ class DLSG:
         foreign_section.add_income(tax_codes, country_code, note, timestamp,
                                    currency_data, amount, amount_rub, tax, tax_rub, rate, deduction=spending_rub)
 
-    def add_derivative_profit(self, country, source, timestamp, currency_name, amount, income_rub, spending_rub, rate):
-        if self._only_dividends:
-            return
-        foreign_section = self.get_section('DeclForeign')
-        if foreign_section is None:
-            return
-        try:
-            country_code, currency_code = self.get_country_currency(country, currency_name)
-        except ValueError:
-            logging.warning(g_tr('DLSG', "Operation with derivative wasn't written to russian tax form"))
-            return
-        foreign_section.add_income(self.codes[self.DERIVATIVE_INCOME], country_code, source, timestamp,
-                                   currency_code, amount, income_rub, 0.0, 0.0, rate, deduction=spending_rub)
-
     def get_country_currency(self, country, currency_name):
         try:
             currency_code = self.currencies[currency_name]

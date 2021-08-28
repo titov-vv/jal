@@ -660,7 +660,7 @@ class TaxesRus:
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_derivatives(self):
         # Take all actions without conversion
-        query = executeSQL("SELECT s.name AS symbol, d.qty AS qty, cc.code AS country_code, "
+        query = executeSQL("SELECT s.name AS symbol, d.qty AS qty, cc.iso_code AS country_iso, "
                            "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, o.number AS o_number, "
                            "qos.quote AS os_rate, o.price AS o_price, o.qty AS o_qty, o.fee AS o_fee, "
                            "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, c.number AS c_number, "
@@ -720,9 +720,10 @@ class TaxesRus:
                 if deal['qty'] < 0:  # short position - swap close/open dates/rates
                     deal['cs_date'] = deal['os_date']
                     deal['cs_rate'] = deal['os_rate']
-                self.statement.add_derivative_profit(deal['country_code'], self.broker_name, deal['cs_date'],
-                                                     self.account_currency, deal['income'], deal['income_rub'],
-                                                     deal['spending_rub'], deal['cs_rate'])
+                self.statement.add_foreign_income(
+                    DLSG.DERIVATIVE_INCOME, deal['cs_date'], deal['country_iso'], self.account_currency,
+                    deal['cs_rate'], deal['income'], deal['income_rub'], 0.0, 0.0, self.broker_name,
+                    spending_rub=deal['spending_rub'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
 
