@@ -236,7 +236,8 @@ class DLSG:
     # Create an income record of given 'type' in tax declaration
     # timestamp - date of income, country_code - 3-digit ISO country code, currency - 3-letter ISO currency code
     # rate - currency rate for given date, note - description of the income, amount and tax are currency and rubles
-    def add_foreign_income(self, type, timestamp, country_code, currency, rate, amount, amount_rub, tax, tax_rub, note):
+    def add_foreign_income(self, type, timestamp, country_code, currency,
+                           rate, amount, amount_rub, tax, tax_rub, note, spending_rub=0.0):
         if type != DLSG.DIVIDEND_INCOME and self._only_dividends:
             return
         foreign_section = self.get_section('DeclForeign')
@@ -252,21 +253,7 @@ class DLSG:
             logging.error(g_tr('DLSG', "Currency isn't supported for russian tax form: ") + currency)
             return
         foreign_section.add_income(tax_codes, country_code, note, timestamp,
-                                   currency_data, amount, amount_rub, tax, tax_rub, rate)
-
-    def add_stock_profit(self, country, source, timestamp, currency_name, amount, income_rub, spending_rub, rate):
-        if self._only_dividends:
-            return
-        foreign_section = self.get_section('DeclForeign')
-        if foreign_section is None:
-            return
-        try:
-            country_code, currency_code = self.get_country_currency(country, currency_name)
-        except ValueError:
-            logging.warning(g_tr('DLSG', "Operation with stock wasn't written to russian tax form"))
-            return
-        foreign_section.add_income(self.codes[self.STOCK_INCOME], country_code, source, timestamp,
-                                   currency_code, amount, income_rub, 0.0, 0.0, rate, deduction=spending_rub)
+                                   currency_data, amount, amount_rub, tax, tax_rub, rate, deduction=spending_rub)
 
     def add_derivative_profit(self, country, source, timestamp, currency_name, amount, income_rub, spending_rub, rate):
         if self._only_dividends:

@@ -463,7 +463,7 @@ class TaxesRus:
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_stocks_and_etf(self):
         # Take all actions without conversion
-        query = executeSQL("SELECT s.name AS symbol, s.isin AS isin, d.qty AS qty, cc.code AS country_code, "
+        query = executeSQL("SELECT s.name AS symbol, s.isin AS isin, d.qty AS qty, cc.iso_code AS country_iso, "
                            "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, o.number AS o_number, "
                            "qos.quote AS os_rate, o.price AS o_price, o.qty AS o_qty, o.fee AS o_fee, "
                            "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, c.number AS c_number, "
@@ -535,9 +535,9 @@ class TaxesRus:
                 if deal['qty'] < 0:  # short position - swap close/open dates/rates
                     deal['cs_date'] = deal['os_date']
                     deal['cs_rate'] = deal['os_rate']
-                self.statement.add_stock_profit(deal['country_code'], self.broker_name, deal['cs_date'],
-                                                self.account_currency, deal['income'], deal['income_rub'],
-                                                deal['spending_rub'], deal['cs_rate'])
+                self.statement.add_foreign_income(
+                    DLSG.STOCK_INCOME, deal['cs_date'], deal['country_iso'], self.account_currency, deal['cs_rate'],
+                    deal['income'], deal['income_rub'], 0.0, 0.0, self.broker_name, spending_rub=deal['spending_rub'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
 
@@ -547,7 +547,7 @@ class TaxesRus:
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_bonds(self):
         # First put all closed deals with bonds
-        query = executeSQL("SELECT s.name AS symbol, s.isin AS isin, d.qty AS qty, cc.code AS country_code, "
+        query = executeSQL("SELECT s.name AS symbol, s.isin AS isin, d.qty AS qty, cc.iso_code AS country_iso, "
                            "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, o.number AS o_number, "
                            "qos.quote AS os_rate, o.price AS o_price, o.qty AS o_qty, o.fee AS o_fee, -oi.amount AS o_int, "
                            "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, c.number AS c_number, "
@@ -617,15 +617,15 @@ class TaxesRus:
                 if deal['qty'] < 0:  # short position - swap close/open dates/rates
                     deal['cs_date'] = deal['os_date']
                     deal['cs_rate'] = deal['os_rate']
-                self.statement.add_stock_profit(deal['country_code'], self.broker_name, deal['cs_date'],
-                                                self.account_currency, deal['income'], deal['income_rub'],
-                                                deal['spending_rub'], deal['cs_rate'])
+                self.statement.add_foreign_income(
+                    DLSG.STOCK_INCOME, deal['cs_date'], deal['country_iso'], self.account_currency, deal['cs_rate'],
+                    deal['income'], deal['income_rub'], 0.0, 0.0, self.broker_name, spending_rub=deal['spending_rub'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
 
         # Second - take all bond interest payments not linked with buy/sell transactions
         query = executeSQL("SELECT b.name AS symbol, b.isin AS isin, i.timestamp AS o_date, i.number AS number, "
-                           "i.amount AS interest, r.quote AS rate, cc.code AS country_code "
+                           "i.amount AS interest, r.quote AS rate, cc.iso_code AS country_iso "
                            "FROM dividends AS i "
                            "LEFT JOIN trades AS t ON i.account_id=1 AND i.number=t.number "
                            "AND i.timestamp=t.timestamp AND i.asset_id=t.asset_id "
@@ -647,9 +647,9 @@ class TaxesRus:
             self.add_report_row(row, interest, even_odd=data_row, alternative=2)
 
             if self.statement is not None:
-                self.statement.add_stock_profit(interest['country_code'], self.broker_name, interest['o_date'],
-                                                self.account_currency, interest['interest'], interest['interest_rub'],
-                                                0, interest['rate'])
+                self.statement.add_foreign_income(
+                    DLSG.STOCK_INCOME, interest['o_date'], interest['country_iso'], self.account_currency,
+                    interest['rate'], interest['interest'], interest['interest_rub'], 0.0, 0.0, self.broker_name)
 
             data_row = data_row + 1
             row += 1
