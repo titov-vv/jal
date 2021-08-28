@@ -156,6 +156,9 @@ class DLSGDeclForeign(DLSGsection):
 class DLSG:
     header_pattern = "DLSG            Decl(\d{4})0102FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
     header = "DLSG            Decl{:04d}0102FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+    DIVIDEND_INCOME = 'dividend'
+    STOCK_INCOME = 'stock'
+    DERIVATIVE_INCOME = 'derivative'
 
     currencies = {
         'AUD': {'code': '036', 'name': 'Австралийский доллар', 'multiplier': 100},
@@ -192,11 +195,7 @@ class DLSG:
         'KRW': {'code': '410', 'name': 'Вона', 'multiplier': 100000},
         'JPY': {'code': '392', 'name': 'Иена', 'multiplier': 10000}
     }
-    codes = {
-        'dividend': ('14', '1010', 'Дивиденды', '0'),
-        'stock': ('13', '1530', '(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)', '201'),
-        'derivative': ('13', '1532', '(06)Доходы по оп-циям с ПФИ (обращ-ся на орг. рынке ЦБ), баз. ак. по которым являются ЦБ', '206')
-    }
+
     countries = {
         'ru': '643',
         'us': '840',
@@ -228,6 +227,33 @@ class DLSG:
         self._sections = {}
         self._footer_len = 0        # if file ends with _footer_len 0x00 bytes
 
+        self.codes = {
+            self.DIVIDEND_INCOME: ('14', '1010', 'Дивиденды', '0'),
+            self.STOCK_INCOME: ('13', '1530', '(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)', '201'),
+            self.DERIVATIVE_INCOME: ('13', '1532', '(06)Доходы по оп-циям с ПФИ (обращ-ся на орг. рынке ЦБ), баз. ак. по которым являются ЦБ', '206')
+        }
+
+    # Create an income record of given 'type' in tax declaration
+    # timestamp - date of income, country_code - 3-digit ISO country code, currency - 3-letter ISO currency code
+    # rate - currency rate for given date, note - description of the income, amount and tax are currency and rubles
+    def add_foreign_income(self, type, timestamp, country_code, currency, rate, amount, amount_rub, tax, tax_rub, note):
+        if type != DLSG.DIVIDEND_INCOME and self._only_dividends:
+            return
+        foreign_section = self.get_section('DeclForeign')
+        if foreign_section is None:
+            return
+        try:
+            tax_codes = self.codes[type]
+        except KeyError:
+            raise(g_tr('DLSG', "Unknown income type for russian tax form: ") + type)
+        try:
+            currency_data = self.currencies[currency]
+        except KeyError:
+            logging.error(g_tr('DLSG', "Currency isn't supported for russian tax form: ") + currency)
+            return
+        foreign_section.add_income(tax_codes, country_code, note, timestamp,
+                                   currency_data, amount, amount_rub, tax, tax_rub, rate)
+
     def add_dividend(self, country, description, timestamp, currency_name, amount, amount_rub, tax, tax_rub, rate):
         foreign_section = self.get_section('DeclForeign')
         if foreign_section is None:
@@ -238,7 +264,7 @@ class DLSG:
             logging.warning(g_tr('DLSG', "Dividend wasn't written to russian tax form"))
             return
         source = "Дивиденд от " + description
-        foreign_section.add_income(self.codes['dividend'], country_code, source, timestamp,
+        foreign_section.add_income(self.codes[self.DIVIDEND_INCOME], country_code, source, timestamp,
                                    currency_code, amount, amount_rub, tax, tax_rub, rate)
 
     def add_stock_profit(self, country, source, timestamp, currency_name, amount, income_rub, spending_rub, rate):
@@ -252,7 +278,7 @@ class DLSG:
         except ValueError:
             logging.warning(g_tr('DLSG', "Operation with stock wasn't written to russian tax form"))
             return
-        foreign_section.add_income(self.codes['stock'], country_code, source, timestamp,
+        foreign_section.add_income(self.codes[self.STOCK_INCOME], country_code, source, timestamp,
                                    currency_code, amount, income_rub, 0.0, 0.0, rate, deduction=spending_rub)
 
     def add_derivative_profit(self, country, source, timestamp, currency_name, amount, income_rub, spending_rub, rate):
@@ -266,7 +292,7 @@ class DLSG:
         except ValueError:
             logging.warning(g_tr('DLSG', "Operation with derivative wasn't written to russian tax form"))
             return
-        foreign_section.add_income(self.codes['derivative'], country_code, source, timestamp,
+        foreign_section.add_income(self.codes[self.DERIVATIVE_INCOME], country_code, source, timestamp,
                                    currency_code, amount, income_rub, 0.0, 0.0, rate, deduction=spending_rub)
 
     def get_country_currency(self, country, currency_name):
