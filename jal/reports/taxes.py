@@ -685,7 +685,7 @@ class TaxesRus:
                            "AND s.type_id = :derivative "
                            "ORDER BY s.name, o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end),
-                            (":account_id", self.account_id)], (":derivative", PredefinedAsset.Derivative))
+                            (":account_id", self.account_id), (":derivative", PredefinedAsset.Derivative)])
         start_row = self.data_start_row
         data_row = 0
         while query.next():
