@@ -131,10 +131,10 @@ class DLSGDeclForeign(DLSGsection):
         income.description = description
         income.income_date = (datetime.utcfromtimestamp(timestamp).date() - date(1899, 12, 30)).days
         income.tax_payment_date = income.income_date
-        income.currency_code = currency[0]
-        income.currency_name = currency[1]
-        income.income_units = income.tax_units = currency[2]
-        income.income_rate = income.tax_rate = rate * currency[2]
+        income.currency_code = currency['code']
+        income.currency_name = currency['name']
+        income.income_units = income.tax_units = currency['multiplier']
+        income.income_rate = income.tax_rate = rate * currency['multiplier']
         income.income_currency = amount
         income.income_rub = amount_rub
         income.tax_currency = tax
@@ -158,18 +158,39 @@ class DLSG:
     header = "DLSG            Decl{:04d}0102FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
 
     currencies = {
-        'USD': ('840', 'Доллар США', 100),
-        'EUR': ('978', 'Евро', 100),
-        'GBP': ('826', 'Фунт стерлингов', 100),
-        'CNY': ('156', 'Юань', 1000),
-        'CAD': ('124', 'Канадский доллар', 100),
-        'HKD': ('344', 'Гонконгский доллар', 1000),
-        'INR': ('356', 'Индийская рупия', 10000),
-        'JPY': ('392', 'Иена', 10000),
-        'SGD': ('702', 'Сингапурский доллар', 100),
-        'CHF': ('756', 'Швейцарский франк', 100),
-        'TRY': ('949', 'Турецкая лира', 100),
-        'BRL': ('986', 'Бразильский реал', 100)
+        'AUD': {'code': '036', 'name': 'Австралийский доллар', 'multiplier': 100},
+        'AZN': {'code': '944', 'name': 'Азербайджанский манат', 'multiplier': 100},
+        'GBP': {'code': '826', 'name': 'Фунт стерлингов', 'multiplier': 100},
+        'AMD': {'code': '051', 'name': 'Армянский драм', 'multiplier': 10000},
+        'BYN': {'code': '933', 'name': 'Белорусский рубль', 'multiplier': 100},
+        'BGN': {'code': '975', 'name': 'Болгарский лев', 'multiplier': 100},
+        'BRL': {'code': '986', 'name': 'Бразильский реал', 'multiplier': 100},
+        'HUF': {'code': '348', 'name': 'Форинт', 'multiplier': 10000},
+        'HKD': {'code': '344', 'name': 'Гонконгский доллар', 'multiplier': 1000},
+        'DKK': {'code': '208', 'name': 'Датская крона', 'multiplier': 100},
+        'USD': {'code': '840', 'name': 'Доллар США', 'multiplier': 100},
+        'EUR': {'code': '978', 'name': 'Евро', 'multiplier': 100},
+        'INR': {'code': '356', 'name': 'Индийская рупия', 'multiplier': 10000},
+        'KZT': {'code': '398', 'name': 'Тенге', 'multiplier': 10000},
+        'CAD': {'code': '124', 'name': 'Канадский доллар', 'multiplier': 100},
+        'KGS': {'code': '417', 'name': 'Сом', 'multiplier': 10000},
+        'CNY': {'code': '156', 'name': 'Юань', 'multiplier': 100},
+        'MDL': {'code': '498', 'name': 'Молдавский лей', 'multiplier': 1000},
+        'NOK': {'code': '578', 'name': 'Норвежская крона', 'multiplier': 1000},
+        'PLN': {'code': '985', 'name': 'Злотый', 'multiplier': 100},
+        'RON': {'code': '946', 'name': 'Румынский лей', 'multiplier': 100},
+        'SGD': {'code': '702', 'name': 'Сингапурский доллар', 'multiplier': 100},
+        'TJS': {'code': '972', 'name': 'Сомони', 'multiplier': 1000},
+        'TRY': {'code': '949', 'name': 'Турецкая лира', 'multiplier': 100},
+        'TMT': {'code': '934', 'name': 'Новый туркменский манат', 'multiplier': 100},
+        'UZS': {'code': '860', 'name': 'Узбекский сум', 'multiplier': 1000000},
+        'UAH': {'code': '980', 'name': 'Гривна', 'multiplier': 1000},
+        'CZK': {'code': '203', 'name': 'Чешская крона', 'multiplier': 1000},
+        'SEK': {'code': '752', 'name': 'Шведская крона', 'multiplier': 1000},
+        'CHF': {'code': '756', 'name': 'Швейцарский франк', 'multiplier': 100},
+        'ZAR': {'code': '710', 'name': 'Рэнд', 'multiplier': 1000},
+        'KRW': {'code': '410', 'name': 'Вона', 'multiplier': 100000},
+        'JPY': {'code': '392', 'name': 'Иена', 'multiplier': 10000}
     }
     codes = {
         'dividend': ('14', '1010', 'Дивиденды', '0'),
