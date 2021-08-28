@@ -254,19 +254,6 @@ class DLSG:
         foreign_section.add_income(tax_codes, country_code, note, timestamp,
                                    currency_data, amount, amount_rub, tax, tax_rub, rate)
 
-    def add_dividend(self, country, description, timestamp, currency_name, amount, amount_rub, tax, tax_rub, rate):
-        foreign_section = self.get_section('DeclForeign')
-        if foreign_section is None:
-            return
-        try:
-            country_code, currency_code = self.get_country_currency(country, currency_name)
-        except ValueError:
-            logging.warning(g_tr('DLSG', "Dividend wasn't written to russian tax form"))
-            return
-        source = "Дивиденд от " + description
-        foreign_section.add_income(self.codes[self.DIVIDEND_INCOME], country_code, source, timestamp,
-                                   currency_code, amount, amount_rub, tax, tax_rub, rate)
-
     def add_stock_profit(self, country, source, timestamp, currency_name, amount, income_rub, spending_rub, rate):
         if self._only_dividends:
             return

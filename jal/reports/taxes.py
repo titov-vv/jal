@@ -419,7 +419,7 @@ class TaxesRus:
     def prepare_dividends(self):
         query = executeSQL("SELECT d.timestamp AS payment_date, s.name AS symbol, s.full_name AS full_name, "
                            "s.isin AS isin, d.amount AS amount, d.tax AS tax, q.quote AS rate , "
-                           "c.name AS country, c.code AS country_code, c.tax_treaty AS tax_treaty "
+                           "c.name AS country, c.iso_code AS country_iso, c.tax_treaty AS tax_treaty "
                            "FROM dividends AS d "
                            "LEFT JOIN assets AS s ON s.id = d.asset_id "
                            "LEFT JOIN accounts AS a ON d.account_id = a.id "
@@ -443,18 +443,18 @@ class TaxesRus:
                     dividend["tax2pay"] = 0
             self.add_report_row(row, dividend, even_odd=row)
 
-            if dividend["country_code"] == 'xx':
-                dividend["country_code"] = readSQL("SELECT code FROM accounts AS a LEFT JOIN countries AS c "
+            if dividend["country_iso"] == '000':
+                dividend["country_iso"] = readSQL("SELECT c.iso_code FROM accounts AS a LEFT JOIN countries AS c "
                                                    "ON c.id = a.country_id WHERE a.id=:account_id",
                                                    [(":account_id", self.account_id)])
                 logging.warning(g_tr('TaxesRus',
                                      "Account country will be used for 3-NDFL update as country is not set for asset ")
                                 + f"'{dividend['symbol']}'")
             if self.statement is not None:
-                self.statement.add_dividend(dividend["country_code"], f"{dividend['symbol']} ({dividend['full_name']})",
-                                            dividend['payment_date'], self.account_currency, dividend['amount'],
-                                            dividend['amount_rub'], dividend['tax'], dividend['tax_rub'],
-                                            dividend['rate'])
+                self.statement.add_foreign_income(
+                    DLSG.DIVIDEND_INCOME, dividend['payment_date'], dividend["country_iso"], self.account_currency,
+                    dividend['rate'], dividend['amount'], dividend['amount_rub'], dividend['tax'], dividend['tax_rub'],
+                    f"Дивиденд от {dividend['symbol']} ({dividend['full_name']})")
             row += 1
 
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [4, 5, 6, 7, 8, 9])
