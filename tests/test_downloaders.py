@@ -69,6 +69,13 @@ def test_MOEX_details():
                                                                                        'isin': 'JE00B6T5S470',
                                                                                        'name': 'Polymetal International plc',
                                                                                        'type': PredefinedAsset.Stock}
+    assert QuoteDownloader.MOEX_info(isin='RU000A1038V6') == {'symbol': 'SU26238RMFS4',
+                                                              'isin': 'RU000A1038V6',
+                                                              'name': 'ОФЗ-ПД 26238 15/05/2041',
+                                                              'principal': 1000.0,
+                                                              'reg_code': '26238RMFS',
+                                                              'expiry': 2252188800,
+                                                              'type': PredefinedAsset.Bond}
 
 def test_CBR_downloader():
     codes = pd.DataFrame({'ISO_name': ['AUD', 'ATS'], 'CBR_code': ['R01010', 'R01015']})
@@ -83,15 +90,23 @@ def test_CBR_downloader():
     assert_frame_equal(rates, rates_downloaded)
 
 def test_MOEX_downloader(prepare_db_moex):
-    quotes = pd.DataFrame({'Close': [287.95, 287.18],
-                          'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14)]})
-    quotes = quotes.set_index('Date')
+    stock_quotes = pd.DataFrame({'Close': [287.95, 287.18],
+                                 'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14)]})
+    stock_quotes = stock_quotes.set_index('Date')
+    bond_quotes = pd.DataFrame({'Close': [1001.00, 999.31],
+                                'Date': [datetime(2021, 7, 22), datetime(2021, 7, 23)]})
+    bond_quotes = bond_quotes.set_index('Date')
 
     downloader = QuoteDownloader()
     quotes_downloaded = downloader.MOEX_DataReader(4, 'SBER', 'RU0009029540', 1618272000, 1618358400)
-    assert_frame_equal(quotes, quotes_downloaded)
+    assert_frame_equal(stock_quotes, quotes_downloaded)
     assert readSQL("SELECT * FROM assets WHERE id=4") == [4, 'SBER', PredefinedAsset.Stock, '', 'RU0009029540', 0, 0, 0]
     assert readSQL("SELECT * FROM asset_reg_id WHERE asset_id=4") == [4, '10301481B']
+
+    quotes_downloaded = downloader.MOEX_DataReader(6, 'SU26238RMFS4', 'RU000A1038V6', 1626912000, 1626998400)
+    assert_frame_equal(bond_quotes, quotes_downloaded)
+    assert readSQL("SELECT * FROM assets WHERE id=6") == [6, 'SU26238RMFS4', PredefinedAsset.Bond, '', 'RU000A1038V6', 0, 0, 2252188800]
+    assert readSQL("SELECT * FROM asset_reg_id WHERE asset_id=6") == [6, '26238RMFS']
 
 def test_Yahoo_downloader():
     quotes = pd.DataFrame({'Close': [134.429993, 132.029999],

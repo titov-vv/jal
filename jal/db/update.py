@@ -161,7 +161,7 @@ class JalDB():
             asset_id = dialog.asset_id
         return asset_id
 
-    def update_asset_data(self, asset_id, new_symbol='', new_isin='', new_reg='', new_country_code=''):  # TODO Change params to **kwargs
+    def update_asset_data(self, asset_id, new_symbol='', new_isin='', new_reg='', new_country_code='', expiry=0):  # TODO Change params to **kwargs
         if new_symbol:
             symbol = readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
             if new_symbol.upper() != symbol.upper():
@@ -196,6 +196,9 @@ class JalDB():
                 if country_id != 0:
                     logging.info(g_tr('JalDB', "Country updated for ")
                                  + f"{self.get_asset_name(asset_id)}: {country_code} -> {new_country_code}")
+        if expiry:
+            _ = executeSQL("UPDATE assets SET expiry=:expiry WHERE id=:asset_id",
+                           [(":expiry", expiry), (":asset_id", asset_id)])
 
     def update_quote(self, asset_id, timestamp, quote):
         if (timestamp is None) or (quote is None):
