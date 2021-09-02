@@ -70,6 +70,9 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
     def getDslgOutFilename(self):
         return self.DlsgOutFileName.text()
 
+    def getBrokerAsIncomeName(self):
+        return self.IncomeSourceBroker.isChecked()
+
     def getDividendsOnly(self):
         return self.DividendsOnly.isChecked()
 
@@ -82,6 +85,7 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
     update_dlsg = Property(bool, fget=getDlsgState)
     dlsg_in_filename = Property(str, fget=getDslgInFilename)
     dlsg_out_filename = Property(str, fget=getDslgOutFilename)
+    dlsg_broker_as_income = Property(bool, fget=getBrokerAsIncomeName)
     dlsg_dividends_only = Property(bool, fget=getDividendsOnly)
     no_settelement = Property(bool, fget=getNoSettlement)
 
@@ -114,6 +118,7 @@ class TaxesRus:
         self.year_end = 0
         self.account_currency = ''
         self.broker_name = ''
+        self.broker_as_income = True
         self.use_settlement = True
         self.current_report = None
         self.data_start_row = 9
@@ -260,6 +265,7 @@ class TaxesRus:
         dialog = TaxExportDialog(parent)
         if dialog.exec_():
             self.use_settlement = not dialog.no_settelement
+            self.broker_as_income = dialog.dlsg_broker_as_income
             self.save2file(dialog.xls_filename, dialog.year, dialog.account, dlsg_update=dialog.update_dlsg,
                            dlsg_in=dialog.dlsg_in_filename, dlsg_out=dialog.dlsg_out_filename,
                            dlsg_dividends_only=dialog.dlsg_dividends_only)
@@ -451,10 +457,14 @@ class TaxesRus:
                                      "Account country will be used for 3-NDFL update as country is not set for asset ")
                                 + f"'{dividend['symbol']}'")
             if self.statement is not None:
+                if self.broker_as_income:
+                    income_source = self.broker_name
+                else:
+                    income_source = f"Дивиденд от {dividend['symbol']} ({dividend['full_name']})"
                 self.statement.add_foreign_income(
                     DLSG.DIVIDEND_INCOME, dividend['payment_date'], dividend["country_iso"], self.account_currency,
                     dividend['rate'], dividend['amount'], dividend['amount_rub'], dividend['tax'], dividend['tax_rub'],
-                    f"Дивиденд от {dividend['symbol']} ({dividend['full_name']})")
+                    income_source)
             row += 1
 
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [4, 5, 6, 7, 8, 9])
@@ -535,9 +545,13 @@ class TaxesRus:
                 if deal['qty'] < 0:  # short position - swap close/open dates/rates
                     deal['cs_date'] = deal['os_date']
                     deal['cs_rate'] = deal['os_rate']
+                if self.broker_as_income:
+                    income_source = self.broker_name
+                else:
+                    income_source = f"Доход от сделки с {deal['symbol']} ({deal['isin']})"
                 self.statement.add_foreign_income(
                     DLSG.STOCK_INCOME, deal['cs_date'], deal['country_iso'], self.account_currency, deal['cs_rate'],
-                    deal['income'], deal['income_rub'], 0.0, 0.0, self.broker_name, spending_rub=deal['spending_rub'])
+                    deal['income'], deal['income_rub'], 0.0, 0.0, income_source, spending_rub=deal['spending_rub'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
 
@@ -617,9 +631,13 @@ class TaxesRus:
                 if deal['qty'] < 0:  # short position - swap close/open dates/rates
                     deal['cs_date'] = deal['os_date']
                     deal['cs_rate'] = deal['os_rate']
+                if self.broker_as_income:
+                    income_source = self.broker_name
+                else:
+                    income_source = f"Доход от сделки с {deal['symbol']} ({deal['isin']})"
                 self.statement.add_foreign_income(
                     DLSG.STOCK_INCOME, deal['cs_date'], deal['country_iso'], self.account_currency, deal['cs_rate'],
-                    deal['income'], deal['income_rub'], 0.0, 0.0, self.broker_name, spending_rub=deal['spending_rub'])
+                    deal['income'], deal['income_rub'], 0.0, 0.0, income_source, spending_rub=deal['spending_rub'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)
 
@@ -647,9 +665,13 @@ class TaxesRus:
             self.add_report_row(row, interest, even_odd=data_row, alternative=2)
 
             if self.statement is not None:
+                if self.broker_as_income:
+                    income_source = self.broker_name
+                else:
+                    income_source = f"Купонный доход от {deal['symbol']} ({deal['isin']})"
                 self.statement.add_foreign_income(
                     DLSG.STOCK_INCOME, interest['o_date'], interest['country_iso'], self.account_currency,
-                    interest['rate'], interest['interest'], interest['interest_rub'], 0.0, 0.0, self.broker_name)
+                    interest['rate'], interest['interest'], interest['interest_rub'], 0.0, 0.0, income_source)
 
             data_row = data_row + 1
             row += 1
@@ -720,9 +742,13 @@ class TaxesRus:
                 if deal['qty'] < 0:  # short position - swap close/open dates/rates
                     deal['cs_date'] = deal['os_date']
                     deal['cs_rate'] = deal['os_rate']
+                if self.broker_as_income:
+                    income_source = self.broker_name
+                else:
+                    income_source = f"Доход от сделки с {deal['symbol']}"
                 self.statement.add_foreign_income(
                     DLSG.DERIVATIVE_INCOME, deal['cs_date'], deal['country_iso'], self.account_currency,
-                    deal['cs_rate'], deal['income'], deal['income_rub'], 0.0, 0.0, self.broker_name,
+                    deal['cs_rate'], deal['income'], deal['income_rub'], 0.0, 0.0, income_source,
                     spending_rub=deal['spending_rub'])
             data_row = data_row + 1
         row = start_row + (data_row * 2)

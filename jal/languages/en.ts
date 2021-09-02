@@ -87,22 +87,22 @@
 <context>
     <name>BalancesModel</name>
     <message>
-        <location filename="../db/balances_model.py" line="31"/>
+        <location filename="../db/balances_model.py" line="19"/>
         <source>Account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="32"/>
+        <location filename="../db/balances_model.py" line="20"/>
         <source>Balance</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="34"/>
+        <location filename="../db/balances_model.py" line="22"/>
         <source>Balance, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="183"/>
+        <location filename="../db/balances_model.py" line="174"/>
         <source>Total</source>
         <translation></translation>
     </message>
@@ -381,57 +381,57 @@
 <context>
     <name>HoldingsModel</name>
     <message>
-        <location filename="../db/holdings_model.py" line="72"/>
+        <location filename="../db/holdings_model.py" line="51"/>
         <source>Qty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="73"/>
+        <location filename="../db/holdings_model.py" line="52"/>
         <source>Open</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="74"/>
+        <location filename="../db/holdings_model.py" line="53"/>
         <source>Last</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="75"/>
+        <location filename="../db/holdings_model.py" line="54"/>
         <source>Share, %</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="76"/>
+        <location filename="../db/holdings_model.py" line="55"/>
         <source>P/L, %</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="77"/>
+        <location filename="../db/holdings_model.py" line="56"/>
         <source>P/L</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="78"/>
+        <location filename="../db/holdings_model.py" line="57"/>
         <source>Value</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="79"/>
+        <location filename="../db/holdings_model.py" line="58"/>
         <source>Value, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="70"/>
+        <location filename="../db/holdings_model.py" line="49"/>
         <source>Currency/Account/Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="71"/>
+        <location filename="../db/holdings_model.py" line="50"/>
         <source>Asset Name</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="149"/>
+        <location filename="../db/holdings_model.py" line="128"/>
         <source>Exp:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1722,77 +1722,77 @@ do you want to save it?</source>
 <context>
     <name>OperationsModel</name>
     <message>
-        <location filename="../db/operations_model.py" line="35"/>
+        <location filename="../db/operations_model.py" line="14"/>
         <source>Timestamp</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="36"/>
+        <location filename="../db/operations_model.py" line="15"/>
         <source>Account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="37"/>
+        <location filename="../db/operations_model.py" line="16"/>
         <source>Notes</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="38"/>
+        <location filename="../db/operations_model.py" line="17"/>
         <source>Amount</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="39"/>
+        <location filename="../db/operations_model.py" line="18"/>
         <source>Balance</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="40"/>
+        <location filename="../db/operations_model.py" line="19"/>
         <source>Currency</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="66"/>
+        <location filename="../db/operations_model.py" line="45"/>
         <source>Symbol change {old} -&gt; {new}</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="67"/>
+        <location filename="../db/operations_model.py" line="46"/>
         <source>Split {old} {before} into {after}</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="68"/>
+        <location filename="../db/operations_model.py" line="47"/>
         <source>Spin-off {after} {new} from {before} {old}</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="69"/>
+        <location filename="../db/operations_model.py" line="48"/>
         <source>Merger {before} {old} into {after} {new}</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="70"/>
+        <location filename="../db/operations_model.py" line="49"/>
         <source>Stock dividend: {after} {new}</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="189"/>
+        <location filename="../db/operations_model.py" line="167"/>
         <source>Error. Zero rate</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="193"/>
+        <location filename="../db/operations_model.py" line="171"/>
         <source>Tax: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="210"/>
+        <location filename="../db/operations_model.py" line="188"/>
         <source> cost basis</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="169"/>
+        <location filename="../db/operations_model.py" line="147"/>
         <source>Rate: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2981,62 +2981,62 @@ do you want to save it?</source>
 <context>
     <name>TaxExportDlg</name>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="206"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="213"/>
         <source>Year:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="207"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="214"/>
         <source>Account:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="179"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="185"/>
         <source>...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="208"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="215"/>
         <source>Excel file:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="197"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="204"/>
         <source> ... </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="192"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="188"/>
         <source>Initial file:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="193"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="195"/>
         <source>Output file:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="181"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="187"/>
         <source>Update file &quot;u0414u0435u043au043bu0430u0440u0430u0446u0438u044f&quot; (*.dc0)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="201"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="208"/>
         <source>File where to store tax report in Excel format</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="204"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="211"/>
         <source>Foreign account to prepare tax report for</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="195"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="202"/>
         <source>Select file</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="183"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="193"/>
         <source>File to use as a template for russian tax form</source>
         <translation></translation>
     </message>
@@ -3046,24 +3046,29 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="198"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="196"/>
         <source>Update only information about dividends</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="175"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="181"/>
         <source>Select parameters and files for tax report</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="180"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="186"/>
         <source>Below functions are experimental - use it with care</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/ui_tax_export_dlg.py" line="209"/>
+        <location filename="../ui/ui_tax_export_dlg.py" line="216"/>
         <source>Do not use settlement date for currency rates</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_tax_export_dlg.py" line="205"/>
+        <source>Use broker name as income source</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

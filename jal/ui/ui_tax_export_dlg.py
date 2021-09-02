@@ -19,7 +19,7 @@ class Ui_TaxExportDlg(object):
     def setupUi(self, TaxExportDlg):
         if not TaxExportDlg.objectName():
             TaxExportDlg.setObjectName(u"TaxExportDlg")
-        TaxExportDlg.resize(602, 290)
+        TaxExportDlg.resize(602, 315)
         self.gridLayout = QGridLayout(TaxExportDlg)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setHorizontalSpacing(6)
@@ -63,40 +63,46 @@ class Ui_TaxExportDlg(object):
         self.gridLayout_2.setSpacing(2)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.gridLayout_2.setContentsMargins(6, 6, 6, 6)
-        self.DlsgInFileName = QLineEdit(self.DlsgGroup)
-        self.DlsgInFileName.setObjectName(u"DlsgInFileName")
+        self.InitialFileLbl = QLabel(self.DlsgGroup)
+        self.InitialFileLbl.setObjectName(u"InitialFileLbl")
 
-        self.gridLayout_2.addWidget(self.DlsgInFileName, 0, 1, 1, 1)
-
-        self.OutputSelectBtn = QPushButton(self.DlsgGroup)
-        self.OutputSelectBtn.setObjectName(u"OutputSelectBtn")
-
-        self.gridLayout_2.addWidget(self.OutputSelectBtn, 1, 2, 1, 1)
+        self.gridLayout_2.addWidget(self.InitialFileLbl, 0, 0, 1, 1)
 
         self.DlsgOutFileName = QLineEdit(self.DlsgGroup)
         self.DlsgOutFileName.setObjectName(u"DlsgOutFileName")
 
         self.gridLayout_2.addWidget(self.DlsgOutFileName, 1, 1, 1, 1)
 
-        self.InitialFileLbl = QLabel(self.DlsgGroup)
-        self.InitialFileLbl.setObjectName(u"InitialFileLbl")
+        self.DlsgInFileName = QLineEdit(self.DlsgGroup)
+        self.DlsgInFileName.setObjectName(u"DlsgInFileName")
 
-        self.gridLayout_2.addWidget(self.InitialFileLbl, 0, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.DlsgInFileName, 0, 1, 1, 1)
 
         self.OutputFileLbl = QLabel(self.DlsgGroup)
         self.OutputFileLbl.setObjectName(u"OutputFileLbl")
 
         self.gridLayout_2.addWidget(self.OutputFileLbl, 1, 0, 1, 1)
 
+        self.DividendsOnly = QCheckBox(self.DlsgGroup)
+        self.DividendsOnly.setObjectName(u"DividendsOnly")
+
+        self.gridLayout_2.addWidget(self.DividendsOnly, 3, 0, 1, 3)
+
+        self.OutputSelectBtn = QPushButton(self.DlsgGroup)
+        self.OutputSelectBtn.setObjectName(u"OutputSelectBtn")
+
+        self.gridLayout_2.addWidget(self.OutputSelectBtn, 1, 2, 1, 1)
+
         self.InitialSelectBtn = QPushButton(self.DlsgGroup)
         self.InitialSelectBtn.setObjectName(u"InitialSelectBtn")
 
         self.gridLayout_2.addWidget(self.InitialSelectBtn, 0, 2, 1, 1)
 
-        self.DividendsOnly = QCheckBox(self.DlsgGroup)
-        self.DividendsOnly.setObjectName(u"DividendsOnly")
+        self.IncomeSourceBroker = QCheckBox(self.DlsgGroup)
+        self.IncomeSourceBroker.setObjectName(u"IncomeSourceBroker")
+        self.IncomeSourceBroker.setChecked(True)
 
-        self.gridLayout_2.addWidget(self.DividendsOnly, 2, 0, 1, 3)
+        self.gridLayout_2.addWidget(self.IncomeSourceBroker, 2, 0, 1, 3)
 
 
         self.gridLayout.addWidget(self.DlsgGroup, 7, 0, 1, 4)
@@ -179,23 +185,24 @@ class Ui_TaxExportDlg(object):
         self.XlsSelectBtn.setText(QCoreApplication.translate("TaxExportDlg", u"...", None))
         self.WarningLbl.setText(QCoreApplication.translate("TaxExportDlg", u"Below functions are experimental - use it with care", None))
         self.DlsgGroup.setTitle(QCoreApplication.translate("TaxExportDlg", u"Update file \"\u0414\u0435\u043a\u043b\u0430\u0440\u0430\u0446\u0438\u044f\" (*.dc0)", None))
+        self.InitialFileLbl.setText(QCoreApplication.translate("TaxExportDlg", u"Initial file:", None))
+#if QT_CONFIG(tooltip)
+        self.DlsgOutFileName.setToolTip(QCoreApplication.translate("TaxExportDlg", u"File where to store russian tax form", None))
+#endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.DlsgInFileName.setToolTip(QCoreApplication.translate("TaxExportDlg", u"File to use as a template for russian tax form", None))
 #endif // QT_CONFIG(tooltip)
+        self.OutputFileLbl.setText(QCoreApplication.translate("TaxExportDlg", u"Output file:", None))
+        self.DividendsOnly.setText(QCoreApplication.translate("TaxExportDlg", u"Update only information about dividends", None))
 #if QT_CONFIG(tooltip)
         self.OutputSelectBtn.setToolTip(QCoreApplication.translate("TaxExportDlg", u"Select file", None))
 #endif // QT_CONFIG(tooltip)
         self.OutputSelectBtn.setText(QCoreApplication.translate("TaxExportDlg", u" ... ", None))
 #if QT_CONFIG(tooltip)
-        self.DlsgOutFileName.setToolTip(QCoreApplication.translate("TaxExportDlg", u"File where to store russian tax form", None))
-#endif // QT_CONFIG(tooltip)
-        self.InitialFileLbl.setText(QCoreApplication.translate("TaxExportDlg", u"Initial file:", None))
-        self.OutputFileLbl.setText(QCoreApplication.translate("TaxExportDlg", u"Output file:", None))
-#if QT_CONFIG(tooltip)
         self.InitialSelectBtn.setToolTip(QCoreApplication.translate("TaxExportDlg", u"Select file", None))
 #endif // QT_CONFIG(tooltip)
         self.InitialSelectBtn.setText(QCoreApplication.translate("TaxExportDlg", u" ... ", None))
-        self.DividendsOnly.setText(QCoreApplication.translate("TaxExportDlg", u"Update only information about dividends", None))
+        self.IncomeSourceBroker.setText(QCoreApplication.translate("TaxExportDlg", u"Use broker name as income source", None))
         self.Year.setSuffix("")
 #if QT_CONFIG(tooltip)
         self.XlsFileName.setToolTip(QCoreApplication.translate("TaxExportDlg", u"File where to store tax report in Excel format", None))
