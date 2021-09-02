@@ -206,14 +206,14 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/helpers.py" line="239"/>
-        <source>New country added (set Tax Treaty in Data-&gt;Countries menu): </source>
+        <location filename="../db/helpers.py" line="254"/>
+        <source>Country was changed for asset </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/helpers.py" line="258"/>
-        <source>Country was changed for asset </source>
-        <translation></translation>
+        <location filename="../db/helpers.py" line="236"/>
+        <source>Unknown country code: </source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -224,78 +224,63 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="269"/>
+        <location filename="../reports/dlsg.py" line="238"/>
         <source>Declaration file has no &apos;DeclForeign&apos; section.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="284"/>
+        <location filename="../reports/dlsg.py" line="253"/>
         <source>Unexpected declaration file header:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="287"/>
+        <location filename="../reports/dlsg.py" line="256"/>
         <source>Declaration file is for year:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="306"/>
+        <location filename="../reports/dlsg.py" line="275"/>
         <source>Invalid record size at position</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="313"/>
+        <location filename="../reports/dlsg.py" line="282"/>
         <source>Declaration file content:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="331"/>
+        <location filename="../reports/dlsg.py" line="300"/>
         <source>Sections loaded:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="333"/>
+        <location filename="../reports/dlsg.py" line="302"/>
         <source>Section </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="333"/>
+        <location filename="../reports/dlsg.py" line="302"/>
         <source>loaded as </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="337"/>
+        <location filename="../reports/dlsg.py" line="306"/>
         <source>Writing file:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="343"/>
+        <location filename="../reports/dlsg.py" line="312"/>
         <source>Declaration to write:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="217"/>
-        <source>Dividend wasn&apos;t written to russian tax form</source>
+        <location filename="../reports/dlsg.py" line="225"/>
+        <source>Unknown income type for russian tax form: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="232"/>
-        <source>Operation with stock wasn&apos;t written to russian tax form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/dlsg.py" line="246"/>
-        <source>Operation with derivative wasn&apos;t written to russian tax form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/dlsg.py" line="255"/>
-        <source>Currency code isn&apos;t known for russian tax form:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/dlsg.py" line="260"/>
-        <source>Country code isn&apos;t known for russian tax form (check account settings):</source>
+        <location filename="../reports/dlsg.py" line="229"/>
+        <source>Currency isn&apos;t supported for russian tax form: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -396,54 +381,59 @@
 <context>
     <name>HoldingsModel</name>
     <message>
-        <location filename="../db/holdings_model.py" line="69"/>
+        <location filename="../db/holdings_model.py" line="72"/>
         <source>Qty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="70"/>
+        <location filename="../db/holdings_model.py" line="73"/>
         <source>Open</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="71"/>
+        <location filename="../db/holdings_model.py" line="74"/>
         <source>Last</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="72"/>
+        <location filename="../db/holdings_model.py" line="75"/>
         <source>Share, %</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="73"/>
+        <location filename="../db/holdings_model.py" line="76"/>
         <source>P/L, %</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="74"/>
+        <location filename="../db/holdings_model.py" line="77"/>
         <source>P/L</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="75"/>
+        <location filename="../db/holdings_model.py" line="78"/>
         <source>Value</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="76"/>
+        <location filename="../db/holdings_model.py" line="79"/>
         <source>Value, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="67"/>
+        <location filename="../db/holdings_model.py" line="70"/>
         <source>Currency/Account/Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="68"/>
+        <location filename="../db/holdings_model.py" line="71"/>
         <source>Asset Name</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../db/holdings_model.py" line="149"/>
+        <source>Exp:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1355,32 +1345,32 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="213"/>
+        <location filename="../db/update.py" line="216"/>
         <source>Quote loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="226"/>
+        <location filename="../db/update.py" line="229"/>
         <source>Failed to add new asset: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="238"/>
+        <location filename="../db/update.py" line="241"/>
         <source>Dividend already exists: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="258"/>
+        <location filename="../db/update.py" line="261"/>
         <source>Trade already exists: #</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="281"/>
+        <location filename="../db/update.py" line="284"/>
         <source>Transfer/Exchange already exists: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="306"/>
+        <location filename="../db/update.py" line="309"/>
         <source>Corporate action already exists: #</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1937,22 +1927,22 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="360"/>
+        <location filename="../net/downloader.py" line="361"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="317"/>
+        <location filename="../net/downloader.py" line="318"/>
         <source>Euronext quotes history reply is too short: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="320"/>
+        <location filename="../net/downloader.py" line="321"/>
         <source>Euronext quotes header not found in: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="323"/>
+        <location filename="../net/downloader.py" line="324"/>
         <source>Euronext quotes ISIN mismatch in: </source>
         <translation type="unfinished"></translation>
     </message>

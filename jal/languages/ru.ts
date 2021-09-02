@@ -207,14 +207,14 @@
         <translation>Вы согласны сконвертировать данные в новый формат?</translation>
     </message>
     <message>
-        <location filename="../db/helpers.py" line="239"/>
-        <source>New country added (set Tax Treaty in Data-&gt;Countries menu): </source>
-        <translation>Добавлена новая страна (установите СОИДН в меню Данные-&gt;Страны): </translation>
-    </message>
-    <message>
-        <location filename="../db/helpers.py" line="258"/>
+        <location filename="../db/helpers.py" line="254"/>
         <source>Country was changed for asset </source>
         <translation>Страна была изменена для ценной бумаги </translation>
+    </message>
+    <message>
+        <location filename="../db/helpers.py" line="236"/>
+        <source>Unknown country code: </source>
+        <translation>Неизвестный код страны: </translation>
     </message>
 </context>
 <context>
@@ -225,79 +225,64 @@
         <translation>Секция DeclForeign некорректна:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="269"/>
+        <location filename="../reports/dlsg.py" line="238"/>
         <source>Declaration file has no &apos;DeclForeign&apos; section.</source>
         <translation>Секция &apos;DeclForeign&apos; отсутствует в файле декларации.</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="284"/>
+        <location filename="../reports/dlsg.py" line="253"/>
         <source>Unexpected declaration file header:</source>
         <translation>Неизвестный заголовок файла декларации:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="287"/>
+        <location filename="../reports/dlsg.py" line="256"/>
         <source>Declaration file is for year:</source>
         <translation>Файл декларации для года:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="306"/>
+        <location filename="../reports/dlsg.py" line="275"/>
         <source>Invalid record size at position</source>
         <translation>Некорректный размер записи в позиции</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="313"/>
+        <location filename="../reports/dlsg.py" line="282"/>
         <source>Declaration file content:</source>
         <translation>Содержимое файла декларации:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="331"/>
+        <location filename="../reports/dlsg.py" line="300"/>
         <source>Sections loaded:</source>
         <translation>Загружено секций:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="333"/>
+        <location filename="../reports/dlsg.py" line="302"/>
         <source>Section </source>
         <translation>Секция </translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="333"/>
+        <location filename="../reports/dlsg.py" line="302"/>
         <source>loaded as </source>
         <translation>загружена как </translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="337"/>
+        <location filename="../reports/dlsg.py" line="306"/>
         <source>Writing file:</source>
         <translation>Запись файла:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="343"/>
+        <location filename="../reports/dlsg.py" line="312"/>
         <source>Declaration to write:</source>
         <translation>Декларация для записи:</translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="217"/>
-        <source>Dividend wasn&apos;t written to russian tax form</source>
-        <translation>Дивиденд не был записан в 3-НДФЛ</translation>
+        <location filename="../reports/dlsg.py" line="225"/>
+        <source>Unknown income type for russian tax form: </source>
+        <translation>Неизвестный тип дохода в 3-НДФЛ: </translation>
     </message>
     <message>
-        <location filename="../reports/dlsg.py" line="232"/>
-        <source>Operation with stock wasn&apos;t written to russian tax form</source>
-        <translation>Операция с ЦБ не была записана в 3-НДФЛ</translation>
-    </message>
-    <message>
-        <location filename="../reports/dlsg.py" line="246"/>
-        <source>Operation with derivative wasn&apos;t written to russian tax form</source>
-        <translation>Операция с ПФИ не была записана в 3-НДФЛ</translation>
-    </message>
-    <message>
-        <location filename="../reports/dlsg.py" line="255"/>
-        <source>Currency code isn&apos;t known for russian tax form:</source>
-        <translation>Код валюты для 3-НДФЛ не найден:</translation>
-    </message>
-    <message>
-        <location filename="../reports/dlsg.py" line="260"/>
-        <source>Country code isn&apos;t known for russian tax form (check account settings):</source>
-        <translation>Код страны для 3-НДФЛ не найден (проверьте настройки счета):</translation>
+        <location filename="../reports/dlsg.py" line="229"/>
+        <source>Currency isn&apos;t supported for russian tax form: </source>
+        <translation>Валюта не поддерживается в 3-НДФЛ: </translation>
     </message>
 </context>
 <context>
@@ -397,54 +382,59 @@
 <context>
     <name>HoldingsModel</name>
     <message>
-        <location filename="../db/holdings_model.py" line="69"/>
+        <location filename="../db/holdings_model.py" line="72"/>
         <source>Qty</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="70"/>
+        <location filename="../db/holdings_model.py" line="73"/>
         <source>Open</source>
         <translation>Цена откр.</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="71"/>
+        <location filename="../db/holdings_model.py" line="74"/>
         <source>Last</source>
         <translation>Цена закр.</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="72"/>
+        <location filename="../db/holdings_model.py" line="75"/>
         <source>Share, %</source>
         <translation>Доля, %</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="73"/>
+        <location filename="../db/holdings_model.py" line="76"/>
         <source>P/L, %</source>
         <translation>ПиУ, %</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="74"/>
+        <location filename="../db/holdings_model.py" line="77"/>
         <source>P/L</source>
         <translation>ПиУ</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="75"/>
+        <location filename="../db/holdings_model.py" line="78"/>
         <source>Value</source>
         <translation>Оценка</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="76"/>
+        <location filename="../db/holdings_model.py" line="79"/>
         <source>Value, </source>
         <translation>Оценка, </translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="67"/>
+        <location filename="../db/holdings_model.py" line="70"/>
         <source>Currency/Account/Asset</source>
         <translation>Валюта/Счёт/ЦБ</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="68"/>
+        <location filename="../db/holdings_model.py" line="71"/>
         <source>Asset Name</source>
         <translation>Ценна бумага</translation>
+    </message>
+    <message>
+        <location filename="../db/holdings_model.py" line="149"/>
+        <source>Exp:</source>
+        <translation>Эксп:</translation>
     </message>
 </context>
 <context>
@@ -1358,32 +1348,32 @@ Application will be terminated now</source>
         <translation>Регистрационный номер обновлён для </translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="213"/>
+        <location filename="../db/update.py" line="216"/>
         <source>Quote loaded: </source>
         <translation>Котировка загружена: </translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="226"/>
+        <location filename="../db/update.py" line="229"/>
         <source>Failed to add new asset: </source>
         <translation>Невозмоно добавить новую ЦБ: </translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="238"/>
+        <location filename="../db/update.py" line="241"/>
         <source>Dividend already exists: </source>
         <translation>Дивиденд уже существует: </translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="258"/>
+        <location filename="../db/update.py" line="261"/>
         <source>Trade already exists: #</source>
         <translation>Сделка уже существует: #</translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="281"/>
+        <location filename="../db/update.py" line="284"/>
         <source>Transfer/Exchange already exists: </source>
         <translation>Перевод/Обмен уже существует: </translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="306"/>
+        <location filename="../db/update.py" line="309"/>
         <source>Corporate action already exists: #</source>
         <translation>Корпоративное действие уже существует: #</translation>
     </message>
@@ -1942,22 +1932,22 @@ do you want to save it?</source>
         <translation>Загрузка завершена</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="360"/>
+        <location filename="../net/downloader.py" line="361"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation>Невозможно обработать данные котировок с биржи TSX: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="317"/>
+        <location filename="../net/downloader.py" line="318"/>
         <source>Euronext quotes history reply is too short: </source>
         <translation>История котировок Euronext слишком короткая: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="320"/>
+        <location filename="../net/downloader.py" line="321"/>
         <source>Euronext quotes header not found in: </source>
         <translation>Заголовок истории котировок Euronext не найден в: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="323"/>
+        <location filename="../net/downloader.py" line="324"/>
         <source>Euronext quotes ISIN mismatch in: </source>
         <translation>ISIN в истории котировок Euronext не совпадает: </translation>
     </message>

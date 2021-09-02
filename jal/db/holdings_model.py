@@ -1,4 +1,6 @@
 import decimal
+from datetime import datetime
+
 from PySide2.QtCore import Qt, Slot, QAbstractItemModel, QDate, QModelIndex, QLocale
 from PySide2.QtGui import QBrush, QFont
 from PySide2.QtWidgets import QHeaderView
@@ -35,7 +37,7 @@ class TreeItem():
 
 
 class HoldingsModel(QAbstractItemModel):
-    DATA_COL = 13
+    DATA_COL = 14
     COL_LEVEL = 0
     COL_CURRENCY = 1
     COL_CURRENCY_NAME = 2
@@ -45,16 +47,17 @@ class HoldingsModel(QAbstractItemModel):
     COL_ASSET_IS_CURRENCY = 6
     COL_ASSET_NAME = 7
     COL_ASSET_FULLNAME = 8
-    COL_QTY = 9
-    COL_VALUE_I = 10
-    COL_QUOTE = 11
-    COL_QUOTE_A = 12
-    COL_TOTAL = 13
-    COL_SHARE = 14
-    COL_PROFIT = 15
-    COL_PROFIT_R = 16
-    COL_VALUE = 17
-    COL_VALUE_A = 18
+    COL_ASSET_EXPIRY = 9
+    COL_QTY = 10
+    COL_VALUE_I = 11
+    COL_QUOTE = 12
+    COL_QUOTE_A = 13
+    COL_TOTAL = 14
+    COL_SHARE = 15
+    COL_PROFIT = 16
+    COL_PROFIT_R = 17
+    COL_VALUE = 18
+    COL_VALUE_A = 19
 
     def __init__(self, parent_view):
         super().__init__(parent_view)
@@ -140,7 +143,12 @@ class HoldingsModel(QAbstractItemModel):
             else:
                 return data[self.COL_ASSET_NAME]
         elif column == 1:
-            return data[self.COL_ASSET_FULLNAME]
+            expiry_text = ""
+            if data[self.COL_ASSET_EXPIRY]:
+                expiry_date = datetime.utcfromtimestamp(data[self.COL_ASSET_EXPIRY])
+                expiry_header = g_tr('HoldingsModel', "Exp:")
+                expiry_text = f" [{expiry_header} {expiry_date.strftime('%d.%m.%Y')}]"
+            return data[self.COL_ASSET_FULLNAME] + expiry_text
         elif column == 2:
             if data[self.COL_QTY]:
                 if data[self.COL_ASSET_IS_CURRENCY]:
@@ -171,11 +179,22 @@ class HoldingsModel(QAbstractItemModel):
         else:
             assert False
 
-    def data_font(self, data, _column):
+    def data_font(self, data, column):
         if data[self.COL_LEVEL] < 2:
             font = QFont()
             font.setBold(True)
             return font
+        else:
+            if column == 1 and data[self.COL_ASSET_EXPIRY]:
+                expiry_date = datetime.utcfromtimestamp(data[self.COL_ASSET_EXPIRY])
+                days_remaining = int((expiry_date - datetime.utcnow()).total_seconds() / 86400)
+                if days_remaining <= 10:
+                    font = QFont()
+                    if days_remaining < 0:
+                        font.setStrikeOut(True)
+                    else:
+                        font.setItalic(True)
+                    return font
 
     def data_background(self, data, column):
         if data[self.COL_LEVEL] == 0:
@@ -252,7 +271,7 @@ class HoldingsModel(QAbstractItemModel):
             ") "
             "GROUP BY id HAVING ABS(total_value) > :tolerance) "
             "SELECT h.currency_id, c.name AS currency, h.account_id, h.account, h.asset_id, "
-            "c.name=a.name AS asset_is_currency,  a.name AS asset, a.full_name AS asset_name, "
+            "c.name=a.name AS asset_is_currency,  a.name AS asset, a.full_name AS asset_name, a.expiry, "
             "h.qty, h.value, h.quote, h.quote_a, h.total FROM ("
             "SELECT a.currency_id, l.account_id, a.name AS account, l.asset_id, sum(l.amount) AS qty, "
             "sum(l.value) AS value, q.quote, q.quote*cur_q.quote/cur_adj_q.quote AS quote_a, t.total_value AS total "
@@ -299,6 +318,7 @@ class HoldingsModel(QAbstractItemModel):
                 c_node = TreeItem(values, self._root)
                 c_node.data[self.COL_LEVEL] = 0
                 c_node.data[self.COL_ASSET_FULLNAME] = ''
+                c_node.data[self.COL_ASSET_EXPIRY] = 0
                 c_node.data[self.COL_QTY] = 0
                 self._root.appendChild(c_node)
             if values[self.COL_ACCOUNT] != account:
@@ -306,6 +326,7 @@ class HoldingsModel(QAbstractItemModel):
                 a_node = TreeItem(values, c_node)
                 a_node.data[self.COL_LEVEL] = 1
                 a_node.data[self.COL_ASSET_FULLNAME] = ''
+                a_node.data[self.COL_ASSET_EXPIRY] = 0
                 a_node.data[self.COL_QTY] = 0
                 c_node.appendChild(a_node)
             if values[self.COL_QUOTE]:
