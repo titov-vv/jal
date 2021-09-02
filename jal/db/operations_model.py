@@ -5,32 +5,11 @@ from PySide2.QtGui import QBrush, QFont
 from PySide2.QtWidgets import QStyledItemDelegate, QHeaderView
 from jal.constants import CustomColor, TransactionType, TransferSubtype, DividendSubtype, CorporateAction
 from jal.widgets.helpers import g_tr
-from jal.db.helpers import db_connection, readSQL, executeSQL
+from jal.db.helpers import db_connection, readSQL, executeSQL, readSQLrecord
 
 
 class OperationsModel(QAbstractTableModel):
     PAGE_SIZE = 100
-    COL_TYPE = 0
-    COL_SUBTYPE = 1
-    COL_ID = 2
-    COL_TIMESTAMP = 3
-    COL_ACCOUNT_ID = 4
-    COL_ACCOUNT = 5
-    COL_NUMBER_PEER = 6
-    COL_ASSET_ID = 7
-    COL_ASSET = 8
-    COL_ASSET_NAME = 9
-    COL_NOTE = 10
-    COL_NOTE2 = 11
-    COL_AMOUNT = 12
-    COL_QTY = 13
-    COL_PRICE = 14
-    COL_FEE_TAX = 15
-    COL_TOTAL_AMOUNT = 16
-    COL_TOTAL_QTY = 17
-    COL_CURRENCY = 18
-    COL_RECONCILED = 19
-
     _columns = [" ",
                 g_tr('OperationsModel', "Timestamp"),
                 g_tr('OperationsModel', "Account"),
@@ -98,9 +77,8 @@ class OperationsModel(QAbstractTableModel):
         new_size = new_size if new_size < self._row_count else self._row_count
         self.beginInsertRows(index, len(self._data), new_size - 1)
         i = 0
-        indexes = range(self._query.record().count())
         while (i < self.PAGE_SIZE) and self._query.next():
-            values = list(map(self._query.value, indexes))
+            values = readSQLrecord(self._query, named=True)
             self._data.append(values)
             i += 1
         self.endInsertRows()
@@ -112,7 +90,7 @@ class OperationsModel(QAbstractTableModel):
 
     def get_operation(self, row):
         if (row >= 0) and (row < len(self._data)):
-            return self._data[row][self.COL_TYPE], self._data[row][self.COL_ID]
+            return self._data[row]['type'], self._data[row]['id']
         else:
             return [0, 0]
 
@@ -139,132 +117,132 @@ class OperationsModel(QAbstractTableModel):
     def data_text(self, row, column):
         if column == 0:
             try:
-                return self.OperationSign[self._data[row][self.COL_TYPE], self._data[row][self.COL_SUBTYPE]][0]
+                return self.OperationSign[self._data[row]['type'], self._data[row]['subtype']][0]
             except KeyError:
                 return '?'
         elif column == 1:
-            if (self._data[row][self.COL_TYPE] == TransactionType.Trade) or (self._data[row][self.COL_TYPE] == TransactionType.Dividend) \
-                    or (self._data[row][self.COL_TYPE] == TransactionType.CorporateAction):
-                return f"{datetime.utcfromtimestamp(self._data[row][self.COL_TIMESTAMP]).strftime('%d/%m/%Y %H:%M:%S')}\n# {self._data[row][self.COL_NUMBER_PEER]}"
+            if (self._data[row]['type'] == TransactionType.Trade) or (self._data[row]['type'] == TransactionType.Dividend) \
+                    or (self._data[row]['type'] == TransactionType.CorporateAction):
+                return f"{datetime.utcfromtimestamp(self._data[row]['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}\n# {self._data[row]['num_peer']}"
             else:
-                return datetime.utcfromtimestamp(self._data[row][self.COL_TIMESTAMP]).strftime('%d/%m/%Y %H:%M:%S')
+                return datetime.utcfromtimestamp(self._data[row]['timestamp']).strftime('%d/%m/%Y %H:%M:%S')
         elif column == 2:
-            if self._data[row][self.COL_TYPE] == TransactionType.Action:
-                return self._data[row][self.COL_ACCOUNT]
-            elif (self._data[row][self.COL_TYPE] == TransactionType.Trade) \
-                    or (self._data[row][self.COL_TYPE] == TransactionType.Dividend) \
-                    or (self._data[row][self.COL_TYPE] == TransactionType.CorporateAction):
-                return self._data[row][self.COL_ACCOUNT] + "\n" + self._data[row][self.COL_ASSET_NAME]
-            elif self._data[row][self.COL_TYPE] == TransactionType.Transfer:
-                if self._data[row][self.COL_SUBTYPE] == TransferSubtype.Fee:
-                    return self._data[row][self.COL_ACCOUNT]
-                elif self._data[row][self.COL_SUBTYPE] == TransferSubtype.Outgoing:
-                    return self._data[row][self.COL_ACCOUNT] + " -> " + self._data[row][self.COL_NOTE2]
-                elif self._data[row][self.COL_SUBTYPE] == TransferSubtype.Incoming:
-                    return self._data[row][self.COL_ACCOUNT] + " <- " + self._data[row][self.COL_NOTE2]
+            if self._data[row]['type'] == TransactionType.Action:
+                return self._data[row]['account']
+            elif (self._data[row]['type'] == TransactionType.Trade) \
+                    or (self._data[row]['type'] == TransactionType.Dividend) \
+                    or (self._data[row]['type'] == TransactionType.CorporateAction):
+                return self._data[row]['account'] + "\n" + self._data[row]['asset_name']
+            elif self._data[row]['type'] == TransactionType.Transfer:
+                if self._data[row]['subtype'] == TransferSubtype.Fee:
+                    return self._data[row]['account']
+                elif self._data[row]['subtype'] == TransferSubtype.Outgoing:
+                    return self._data[row]['account'] + " -> " + self._data[row]['note2']
+                elif self._data[row]['subtype'] == TransferSubtype.Incoming:
+                    return self._data[row]['account'] + " <- " + self._data[row]['note2']
         elif column == 3:
-            if self._data[row][self.COL_TYPE] == TransactionType.Action:
-                note = self._data[row][self.COL_NUMBER_PEER]
-                if self._data[row][self.COL_ASSET] != '' and self._data[row][self.COL_FEE_TAX] != 0:
+            if self._data[row]['type'] == TransactionType.Action:
+                note = self._data[row]['num_peer']
+                if self._data[row]['asset'] != '' and self._data[row]['fee_tax'] != 0:
                     note += "\n" + g_tr('OperationsModel', "Rate: ")
-                    if self._data[row][self.COL_FEE_TAX] >= 1:
-                        note += f"{self._data[row][self.COL_FEE_TAX]:.4f} " \
-                                f"{self._data[row][self.COL_ASSET]}/{self._data[row][self.COL_CURRENCY]}"
+                    if self._data[row]['fee_tax'] >= 1:
+                        note += f"{self._data[row]['fee_tax']:.4f} " \
+                                f"{self._data[row]['asset']}/{self._data[row]['currency']}"
                     else:
-                        note += f"{1/self._data[row][self.COL_FEE_TAX]:.4f} " \
-                                f"{self._data[row][self.COL_CURRENCY]}/{self._data[row][self.COL_ASSET]}"
+                        note += f"{1/self._data[row]['fee_tax']:.4f} " \
+                                f"{self._data[row]['currency']}/{self._data[row]['asset']}"
                 return note
-            elif self._data[row][self.COL_TYPE] == TransactionType.Transfer:
-                rate = 0 if self._data[row][self.COL_PRICE] == '' else self._data[row][self.COL_PRICE]
-                if self._data[row][self.COL_CURRENCY] != self._data[row][self.COL_NUMBER_PEER]:
+            elif self._data[row]['type'] == TransactionType.Transfer:
+                rate = 0 if self._data[row]['price'] == '' else self._data[row]['price']
+                if self._data[row]['currency'] != self._data[row]['num_peer']:
                     if rate != 0:
                         if rate > 1:
-                            return self._data[row][self.COL_NOTE] + f" [1 {self._data[row][self.COL_CURRENCY]} = {rate:.4f} {self._data[row][self.COL_NUMBER_PEER]}]"
+                            return self._data[row]['note'] + f" [1 {self._data[row]['currency']} = {rate:.4f} {self._data[row]['num_peer']}]"
                         elif rate < 1:
                             rate = 1 / rate
-                            return self._data[row][self.COL_NOTE] +  f" [{rate:.4f} {self._data[row][self.COL_CURRENCY]} = 1 {self._data[row][self.COL_NUMBER_PEER]}]"
+                            return self._data[row]['note'] +  f" [{rate:.4f} {self._data[row]['currency']} = 1 {self._data[row]['num_peer']}]"
                         else:
-                            return self._data[row][self.COL_NOTE]
+                            return self._data[row]['note']
                     else:
                         return g_tr('OperationsModel', "Error. Zero rate")
                 else:
-                    return self._data[row][self.COL_NOTE]
-            elif self._data[row][self.COL_TYPE] == TransactionType.Dividend:
-                return self._data[row][self.COL_NOTE] + "\n" + g_tr('OperationsModel', "Tax: ") + self._data[row][self.COL_NOTE2]
-            elif self._data[row][self.COL_TYPE] == TransactionType.Trade:
-                if self._data[row][self.COL_FEE_TAX] != 0:
-                    text = f"{self._data[row][self.COL_QTY]:+.2f} @ {self._data[row][self.COL_PRICE]:.4f}\n({self._data[row][self.COL_FEE_TAX]:.2f}) "
+                    return self._data[row]['note']
+            elif self._data[row]['type'] == TransactionType.Dividend:
+                return self._data[row]['note'] + "\n" + g_tr('OperationsModel', "Tax: ") + self._data[row]['note2']
+            elif self._data[row]['type'] == TransactionType.Trade:
+                if self._data[row]['fee_tax'] != 0:
+                    text = f"{self._data[row]['qty_trid']:+.2f} @ {self._data[row]['price']:.4f}\n({self._data[row]['fee_tax']:.2f}) "
                 else:
-                    text = f"{self._data[row][self.COL_QTY]:+.2f} @ {self._data[row][self.COL_PRICE]:.4f}\n"
-                text = text + self._data[row][self.COL_NOTE] if self._data[row][self.COL_NOTE] else text
+                    text = f"{self._data[row]['qty_trid']:+.2f} @ {self._data[row]['price']:.4f}\n"
+                text = text + self._data[row]['note'] if self._data[row]['note'] else text
                 return text
-            elif self._data[row][self.COL_TYPE] == TransactionType.CorporateAction:
-                basis = 100.0 * self._data[row][self.COL_PRICE]
-                if self._data[row][self.COL_SUBTYPE] == CorporateAction.StockDividend:
-                    qty_after = self._data[row][self.COL_QTY] - self._data[row][self.COL_AMOUNT]
+            elif self._data[row]['type'] == TransactionType.CorporateAction:
+                basis = 100.0 * self._data[row]['price']
+                if self._data[row]['subtype'] == CorporateAction.StockDividend:
+                    qty_after = self._data[row]['qty_trid'] - self._data[row]['amount']
                 else:
-                    qty_after = self._data[row][self.COL_QTY]
-                text = self.CorpActionNames[self._data[row][self.COL_SUBTYPE]].format(old=self._data[row][self.COL_ASSET], new=self._data[row][self.COL_NOTE],
-                                                                    before=self._data[row][self.COL_AMOUNT], after=qty_after)
-                if self._data[row][self.COL_SUBTYPE] == CorporateAction.SpinOff:
-                    text += f"; {basis:.2f}% " + g_tr('OperationsModel', " cost basis") + "\n" + self._data[row][self.COL_NOTE2]
+                    qty_after = self._data[row]['qty_trid']
+                text = self.CorpActionNames[self._data[row]['subtype']].format(old=self._data[row]['asset'], new=self._data[row]['note'],
+                                                                    before=self._data[row]['amount'], after=qty_after)
+                if self._data[row]['subtype'] == CorporateAction.SpinOff:
+                    text += f"; {basis:.2f}% " + g_tr('OperationsModel', " cost basis") + "\n" + self._data[row]['note2']
                 return text
             else:
                 assert False
         elif column == 4:
-            if self._data[row][self.COL_TYPE] == TransactionType.Trade:
-                return [self._data[row][self.COL_AMOUNT], self._data[row][self.COL_QTY]]
-            elif self._data[row][self.COL_TYPE] == TransactionType.Dividend:
-                return [self._data[row][self.COL_AMOUNT], -self._data[row][self.COL_FEE_TAX]]
-            elif self._data[row][self.COL_TYPE] == TransactionType.Action:
-                if self._data[row][self.COL_ASSET] != '':
-                    return [self._data[row][self.COL_AMOUNT], self._data[row][self.COL_PRICE]]
+            if self._data[row]['type'] == TransactionType.Trade:
+                return [self._data[row]['amount'], self._data[row]['qty_trid']]
+            elif self._data[row]['type'] == TransactionType.Dividend:
+                return [self._data[row]['amount'], -self._data[row]['fee_tax']]
+            elif self._data[row]['type'] == TransactionType.Action:
+                if self._data[row]['asset'] != '':
+                    return [self._data[row]['amount'], self._data[row]['price']]
                 else:
-                    return [self._data[row][self.COL_AMOUNT]]
-            elif self._data[row][self.COL_TYPE] == TransactionType.Transfer:
-                return [self._data[row][self.COL_AMOUNT]]
-            elif self._data[row][self.COL_TYPE] == TransactionType.CorporateAction:
-                if self._data[row][self.COL_SUBTYPE] == CorporateAction.SpinOff or self._data[row][self.COL_SUBTYPE] == CorporateAction.StockDividend:
-                    return [None, self._data[row][self.COL_QTY] - self._data[row][self.COL_AMOUNT]]
+                    return [self._data[row]['amount']]
+            elif self._data[row]['type'] == TransactionType.Transfer:
+                return [self._data[row]['amount']]
+            elif self._data[row]['type'] == TransactionType.CorporateAction:
+                if self._data[row]['subtype'] == CorporateAction.SpinOff or self._data[row]['subtype'] == CorporateAction.StockDividend:
+                    return [None, self._data[row]['qty_trid'] - self._data[row]['amount']]
                 else:
-                    return [-self._data[row][self.COL_AMOUNT], self._data[row][self.COL_QTY]]
+                    return [-self._data[row]['amount'], self._data[row]['qty_trid']]
             else:
                 assert False
         elif column == 5:
-            upper_part = f"{self._data[row][self.COL_TOTAL_AMOUNT]:,.2f}" if self._data[row][self.COL_TOTAL_AMOUNT] != '' else "-.--"
-            lower_part = f"{self._data[row][self.COL_TOTAL_QTY]:,.2f}" if self._data[row][self.COL_TOTAL_QTY] != '' else ''
-            if self._data[row][self.COL_TYPE] == TransactionType.CorporateAction:
-                qty_before = self._data[row][self.COL_AMOUNT] if self._data[row][self.COL_SUBTYPE] == CorporateAction.SpinOff else 0
-                qty_after = self._data[row][self.COL_TOTAL_QTY] if self._data[row][self.COL_SUBTYPE] == CorporateAction.StockDividend else self._data[row][self.COL_QTY]
-                if self._data[row][self.COL_SUBTYPE] == CorporateAction.StockDividend:
+            upper_part = f"{self._data[row]['t_amount']:,.2f}" if self._data[row]['t_amount'] != '' else "-.--"
+            lower_part = f"{self._data[row]['t_qty']:,.2f}" if self._data[row]['t_qty'] != '' else ''
+            if self._data[row]['type'] == TransactionType.CorporateAction:
+                qty_before = self._data[row]['amount'] if self._data[row]['subtype'] == CorporateAction.SpinOff else 0
+                qty_after = self._data[row]['t_qty'] if self._data[row]['subtype'] == CorporateAction.StockDividend else self._data[row]['qty_trid']
+                if self._data[row]['subtype'] == CorporateAction.StockDividend:
                     text = f"\n{qty_after:,.2f}" if qty_after != '' else "\n-.--"
                 else:
                     text = f"{qty_before:,.2f}\n{qty_after:,.2f}"
                 return text
-            elif self._data[row][self.COL_TYPE] == TransactionType.Action or self._data[row][self.COL_TYPE] == TransactionType.Transfer:
+            elif self._data[row]['type'] == TransactionType.Action or self._data[row]['type'] == TransactionType.Transfer:
                 return upper_part
             else:
                 return upper_part + "\n" + lower_part
         elif column == 6:
-            if self._data[row][self.COL_TYPE] == TransactionType.CorporateAction:
-                asset_before = self._data[row][self.COL_ASSET] if self._data[row][self.COL_SUBTYPE] != CorporateAction.StockDividend else ""
-                return f" {asset_before}\n {self._data[row][self.COL_NOTE]}"
+            if self._data[row]['type'] == TransactionType.CorporateAction:
+                asset_before = self._data[row]['asset'] if self._data[row]['subtype'] != CorporateAction.StockDividend else ""
+                return f" {asset_before}\n {self._data[row]['note']}"
             else:
-                if self._data[row][self.COL_ASSET] != '':
-                    return f" {self._data[row][self.COL_CURRENCY]}\n {self._data[row][self.COL_ASSET]}"
+                if self._data[row]['asset'] != '':
+                    return f" {self._data[row]['currency']}\n {self._data[row]['asset']}"
                 else:
-                    return f" {self._data[row][self.COL_CURRENCY]}"
+                    return f" {self._data[row]['currency']}"
         else:
             assert False
 
     def data_foreground(self, row, column):
         if column == 0:
             try:
-                return QBrush(self.OperationSign[self._data[row][self.COL_TYPE], self._data[row][self.COL_SUBTYPE]][1])
+                return QBrush(self.OperationSign[self._data[row]['type'], self._data[row]['subtype']][1])
             except KeyError:
                 return QBrush(CustomColor.LightRed)
         if column == 5:
-            if self._data[row][self.COL_RECONCILED] == 1:
+            if self._data[row]['reconciled'] == 1:
                 return QBrush(CustomColor.Blue)
 
     def configureView(self):
@@ -316,7 +294,7 @@ class OperationsModel(QAbstractTableModel):
 
     def get_operation_type(self, row):
         if (row >= 0) and (row < len(self._data)):
-            return self._data[row][self.COL_TYPE]
+            return self._data[row]['type']
         else:
             return 0
 
@@ -348,8 +326,8 @@ class OperationsModel(QAbstractTableModel):
     def deleteRows(self, rows):
         for row in rows:
             if (row >= 0) and (row < len(self._data)):
-                table_name = self._tables[self._data[row][self.COL_TYPE]]
-                query = f"DELETE FROM {table_name} WHERE id={self._data[row][self.COL_ID]}"
+                table_name = self._tables[self._data[row]['type']]
+                query = f"DELETE FROM {table_name} WHERE id={self._data[row]['id']}"
                 _ = executeSQL(query)
         self.prepareData()
 
