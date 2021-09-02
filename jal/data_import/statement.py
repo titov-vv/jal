@@ -339,6 +339,8 @@ class Statement:
                 else:  # Dividend exists, only tax to be updated
                     JalDB().update_dividend_tax(-payment['id'], payment['tax'])
             elif payment['type'] == FOF.PAYMENT_INTEREST:
+                if 'number' not in payment:
+                    payment['number'] = ''
                 JalDB().add_dividend(DividendSubtype.BondInterest, payment['timestamp'], -payment['account'],
                                      -payment['asset'], payment['amount'], payment['description'], payment['number'],
                                      tax=tax)

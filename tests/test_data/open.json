@@ -12,16 +12,18 @@
   "trades": [
     {"id": 1, "number": "4196406008", "timestamp": 1622127229, "settlement": 1622160000, "account": 1, "asset": 1, "quantity": 50.0, "price": 401.6, "fee": 10.04},
     {"id": 2, "number": "4196909574", "timestamp": 1622135708, "settlement": 1622160000, "account": 1, "asset": 3, "quantity": 40.0, "price": 1006.5, "fee": 120.78},
-    {"id": 3, "number": "4196915558", "timestamp": 1622135723, "settlement": 1622160000, "account": 1, "asset": 2, "quantity": 5.0, "price": 1001.5, "fee": 2.5}
+    {"id": 3, "number": "4196915558", "timestamp": 1622135723, "settlement": 1622160000, "account": 1, "asset": 2, "quantity": 5.0, "price": 1001.5, "fee": 2.5},
+    {"id": 4, "number": "20210901-1", "timestamp": 1630454400, "settlement": 1630454400, "account": 1, "asset": 2, "quantity": -260.0, "price": 1000.0, "fee": 0.0, "note": "Отчет депозитария б/н от 01.09.2021. Снятие ЦБ с учета. Погашение облигаций - МТС 1P-05"}
   ],
   "income_spending": [],
   "transfers": [
-    {"id": 1, "account": [0, 1, 0], "asset": [4, 4], "timestamp": 1622073600, "withdrawal": 100000.0, "deposit": 100000.0, "fee": 0.0, "description": "Поставлены на торги средства клиента 86119"}
+    {"id": 1, "account": [0, 1, 0], "asset": [4, 4], "timestamp": 1622073600, "withdrawal": 100000.0, "deposit": 100000.0, "fee": 0.0, "description": "Поставлены на торги средства клиента 12345"}
   ],
   "corporate_actions": [],
   "asset_payments": [
     {"id": 1, "type": "interest", "account": 1, "timestamp": 1622127229, "number": "4196406008", "asset": 1, "amount": -346.0, "description": "НКД"},
     {"id": 2, "type": "interest", "account": 1, "timestamp": 1622135708, "number": "4196909574", "asset": 3, "amount": -1216.4, "description": "НКД"},
-    {"id": 3, "type": "interest", "account": 1, "timestamp": 1622135723, "number": "4196915558", "asset": 2, "amount": -142.95, "description": "НКД"}
+    {"id": 3, "type": "interest", "account": 1, "timestamp": 1622135723, "number": "4196915558", "asset": 2, "amount": -142.95, "description": "НКД"},
+    {"id": 4, "type": "interest", "account": 1, "timestamp": 1630454400, "asset": 2, "amount": 204.0, "tax": 197.0, "description": "НКД 7"}
   ]
 }

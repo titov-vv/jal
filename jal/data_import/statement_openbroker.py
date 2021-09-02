@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import datetime
 
 from jal.widgets.helpers import g_tr
@@ -81,6 +82,7 @@ class StatementOpenBroker(StatementXML):
         super().__init__()
         self.statement_name = g_tr('OpenBroker', "Open Broker statement")
         self._account_number = ''
+        self.asset_withdrawal = []
         open_loaders = {
             OpenBroker_AssetType: self.attr_asset_type,
             OpenBroker_Asset: self.attr_asset,
@@ -136,6 +138,16 @@ class StatementOpenBroker(StatementXML):
                                ('deal_no', 'number', str, ''),
                                ('nkd', 'accrued_interest', float, 0)],
                     'loader': self.load_trades
+                },
+            'spot_non_trade_security_operations':    # this section should come before 'spot_non_trade_money_operations'
+                {
+                    'tag': 'item',
+                    'level': '',
+                    'values': [('operation_date', 'timestamp', datetime, None),
+                               ('security_name', 'asset', OpenBroker_Asset, None),
+                               ('quantity', 'quantity', float, None),
+                               ('comment', 'description', str, '')],
+                    'loader': self.load_asset_operations
                 },
             'spot_non_trade_money_operations':
                 {
@@ -268,14 +280,31 @@ class StatementOpenBroker(StatementXML):
             self._data[FOF.TRADES].append(trade)
             cnt += 1
 
+    # this method loads only asset cancellations and puts it in self.asset_withdrawal for use in 'load_cash_operations'
+    def load_asset_operations(self, asset_operations):
+        for operation in asset_operations:
+            if "Снятие ЦБ с учета. Погашение облигаций" not in operation['description']:
+                raise Statement_ImportError(g_tr('OpenBroker', "Unknown non-trade operation: ")
+                                            + operation['description'])
+            asset = [x for x in self._data[FOF.ASSETS] if 'id' in x and x['id'] == operation['asset']][0]
+            new_id = max([0] + [x['id'] for x in self.asset_withdrawal]) + 1
+            record = {"id": new_id, "timestamp": operation['timestamp'], "asset": operation['asset'],
+                      "symbol": asset['symbol'], "quantity": operation['quantity'], "note": operation['description']}
+            self.asset_withdrawal.append(record)
+
     def load_cash_operations(self, cash_operations):
         cnt = 0
         operations = {
-            'Комиссия Брокера / ': None,  # These operations are included of trade's data
-            'Поставлены на торги средства клиента': self.transfer_in
+            'Комиссия Брокера / ': None,              # These operations are included of trade's data
+            'Удержан налог на купонный доход': None,  # Tax information is included into interest payment data
+            'Поставлены на торги средства клиента': self.transfer_in,
+            'Выплата дохода': self.asset_payment
         }
 
         for cash in cash_operations:
+            operation = [operation for operation in operations if cash['description'].startswith(operation)]
+            if len(operation) != 1:
+                raise Statement_ImportError(g_tr('OpenBroker', "Operation not supported: ") + cash['description'])
             for operation in operations:
                 if cash['description'].startswith(operation):
                     if operations[operation] is not None:
@@ -285,7 +314,7 @@ class StatementOpenBroker(StatementXML):
                                                         f"{cash}")
                         operations[operation](cash['timestamp'], account_id, cash['amount'], cash['description'])
                         cnt += 1
-        logging.info(g_tr('Uralsib', "Cash operations loaded: ") + f"{cnt}")
+        logging.info(g_tr('OpenBroker', "Cash operations loaded: ") + f"{cnt}")
 
     def transfer_in(self, timestamp, account_id, amount, description):
         account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
@@ -294,3 +323,62 @@ class StatementOpenBroker(StatementXML):
                     "timestamp": timestamp, "withdrawal": amount, "deposit": amount, "fee": 0.0,
                     "description": description}
         self._data[FOF.TRANSFERS].append(transfer)
+
+    def asset_payment(self, timestamp, account_id, amount, description):
+        payment_operations = {
+            'НКД': self.interest_payment,
+            'Погашение': self.bond_repayment
+        }
+        payment_pattern = r"^.*\((?P<type>\w+).*\).*$"
+        parts = re.match(payment_pattern, description, re.IGNORECASE)
+        if parts is None:
+            raise Statement_ImportError(g_tr('OpenBroker', "Unknown payment description: ") + f"'{description}'")
+        try:
+            payment_operations[parts.groupdict()['type']](timestamp, account_id, amount, description)
+        except KeyError:
+            raise Statement_ImportError(g_tr('OpenBroker', "Unknown payment type: ") + f"'{parts.groupdict()['type']}'")
+
+    def interest_payment(self, timestamp, account_id, amount, description):
+        intrest_pattern = r"^Выплата дохода клиент (?P<account>\w+) \((?P<type>\w+) (?P<number>\d+) (?P<symbol>.*)\) налог.* (?P<tax>\d+\.\d+) рубл.*$"
+        parts = re.match(intrest_pattern, description, re.IGNORECASE)
+        if parts is None:
+            raise Statement_ImportError(g_tr('OpenBroker', "Can't parse Interest description ") + f"'{description}'")
+        interest = parts.groupdict()
+        if len(interest) != intrest_pattern.count("(?P<"):  # check expected number of matches
+            raise Statement_ImportError(g_tr('OpenBroker', "Interest description miss some data ") + f"'{description}'")
+        asset_id = OpenBroker_Asset(self._data[FOF.ASSETS], interest['symbol']).id
+        if asset_id is None:
+            raise Statement_ImportError(g_tr('OpenBroker', "Can't find asset for bond interest ")
+                                        + f"'{interest['symbol']}'")
+        tax = float(interest['tax'])   # it has '\d+\.\d+' regex pattern so here shouldn't be an exception
+        note = f"{interest['type']} {interest['number']}"
+        new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
+        payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
+                   "asset": asset_id, "amount": amount, "tax": tax, "description": note}
+        self._data[FOF.ASSET_PAYMENTS].append(payment)
+
+    def bond_repayment(self, timestamp, account_id, amount, description):
+        repayment_pattern = r"^Выплата дохода клиент (?P<account>\w+) \((?P<type>\w+) (?P<asset>.*)\) налог не удерживается$"
+        parts = re.match(repayment_pattern, description, re.IGNORECASE)
+        if parts is None:
+            raise Statement_ImportError(g_tr('OpenBroker', "Can't parse Bond Mature description ") + f"'{description}'")
+        repayment = parts.groupdict()
+        if len(repayment) != repayment_pattern.count("(?P<"):  # check expected number of matches
+            raise Statement_ImportError(g_tr('OpenBroker', "Bond repayment description miss some data ")
+                                        + f"'{description}'")
+        match = [x for x in self.asset_withdrawal if x['symbol'] == repayment['asset'] and x['timestamp'] == timestamp]
+        if not match:
+            logging.error(g_tr('OpenBroker', "Can't find asset cancellation record for ") + f"'{description}'")
+            return
+        if len(match) != 1:
+            logging.error(g_tr('OpenBroker', "Multiple asset cancellation match for ") + f"'{description}'")
+            return
+        asset_cancel = match[0]
+        number = datetime.utcfromtimestamp(timestamp).strftime('%Y%m%d') + f"-{asset_cancel['id']}"
+        qty = asset_cancel['quantity']
+        price = abs(amount / qty)  # Price is always positive
+        new_id = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
+        trade = {"id": new_id, "number": number, "timestamp": timestamp, "settlement": timestamp, "account": account_id,
+                 "asset": asset_cancel['asset'], "quantity": qty, "price": price, "fee": 0.0,
+                 "note": asset_cancel['note']}
+        self._data[FOF.TRADES].append(trade)
