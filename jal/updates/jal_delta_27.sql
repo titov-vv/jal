@@ -162,7 +162,7 @@ INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (134, 'Libya
 INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (135, 'Liechtenstein', 'li', '438', 0);
 INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (136, 'Lithuania', 'lt', '440', 1);
 INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (137, 'Luxembourg', 'lu', '442', 1);
-INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (138, 'Macedonia, Republic of', 'mk', '807', 1`);
+INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (138, 'Macedonia, Republic of', 'mk', '807', 1);
 INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (139, 'Madagascar', 'mg', '450', 0);
 INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (140, 'Malawi', 'mw', '454', 0);
 INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (141, 'Malaysia', 'my', '458', 1);
