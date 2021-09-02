@@ -152,12 +152,10 @@ class BalancesModel(QAbstractTableModel):
         self._data = []
         current_type = 0
         current_type_name = ''
-        field_names = ['account_type', 'type_name', 'account', 'account_name', 'currency', 'currency_name', 'balance',
-                       'balance_a', 'unreconciled', 'active', 'level']
+        field_names = list(map(query.record().fieldName, range(query.record().count()))) + ['level']
         while query.next():
             values = readSQLrecord(query, named=True)
             values['level'] = 0
-            assert field_names == [value for value in values]   # Check that query returns expected fields
             if self._active_only and (values['active'] == 0):
                 continue
             if values['account_type'] != current_type:
