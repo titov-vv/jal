@@ -1650,50 +1650,110 @@ do you want to save it?</source>
 <context>
     <name>OpenBroker</name>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="82"/>
+        <location filename="../data_import/statement_openbroker.py" line="83"/>
         <source>Open Broker statement</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="207"/>
+        <location filename="../data_import/statement_openbroker.py" line="219"/>
         <source>Load Open Broker statement for account </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="228"/>
+        <location filename="../data_import/statement_openbroker.py" line="240"/>
         <source>Securities loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="48"/>
+        <location filename="../data_import/statement_openbroker.py" line="49"/>
         <source>Multiple asset match for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="241"/>
+        <location filename="../data_import/statement_openbroker.py" line="253"/>
         <source>Accounts loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="250"/>
+        <location filename="../data_import/statement_openbroker.py" line="262"/>
         <source>Can&apos;t find account for trade: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="252"/>
+        <location filename="../data_import/statement_openbroker.py" line="264"/>
         <source>Can&apos;t determine trade type/quantity: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="284"/>
+        <location filename="../data_import/statement_openbroker.py" line="313"/>
         <source>Can&apos;t find account for cash operation: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="287"/>
+        <source>Unknown non-trade operation: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="307"/>
+        <source>Operation not supported: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="317"/>
+        <source>Cash operations loaded: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="335"/>
+        <source>Unknown payment description: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="339"/>
+        <source>Unknown payment type: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="345"/>
+        <source>Can&apos;t parse Interest description </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="348"/>
+        <source>Interest description miss some data </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="351"/>
+        <source>Can&apos;t find asset for bond interest </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="364"/>
+        <source>Can&apos;t parse Bond Mature description </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="367"/>
+        <source>Bond repayment description miss some data </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="371"/>
+        <source>Can&apos;t find asset cancellation record for </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="374"/>
+        <source>Multiple asset cancellation match for </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>OpenBroker_AssetType</name>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="25"/>
+        <location filename="../data_import/statement_openbroker.py" line="26"/>
         <source>Asset type isn&apos;t supported: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1701,7 +1761,7 @@ do you want to save it?</source>
 <context>
     <name>OpenBroker_Exchange</name>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="72"/>
+        <location filename="../data_import/statement_openbroker.py" line="73"/>
         <source>Exchange isn&apos;t supported: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2680,22 +2740,22 @@ do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="346"/>
+        <location filename="../data_import/statement.py" line="348"/>
         <source>Unsupported payment type: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="351"/>
+        <location filename="../data_import/statement.py" line="353"/>
         <source>Unmatched account for corporate action: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="358"/>
+        <location filename="../data_import/statement.py" line="360"/>
         <source>Unmatched asset for corporate action: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="368"/>
+        <location filename="../data_import/statement.py" line="370"/>
         <source>Unsupported corporate action: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -3074,22 +3134,22 @@ do you want to save it?</source>
 <context>
     <name>TaxesRus</name>
     <message>
-        <location filename="../reports/taxes.py" line="288"/>
+        <location filename="../reports/taxes.py" line="294"/>
         <source>Can&apos;t open tax form file </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="306"/>
+        <location filename="../reports/taxes.py" line="312"/>
         <source>Can&apos;t write tax form into file </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="450"/>
+        <location filename="../reports/taxes.py" line="456"/>
         <source>Account country will be used for 3-NDFL update as country is not set for asset </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="308"/>
+        <location filename="../reports/taxes.py" line="314"/>
         <source>Tax report saved to file </source>
         <translation type="unfinished"></translation>
     </message>

@@ -1655,50 +1655,110 @@ do you want to save it?</source>
 <context>
     <name>OpenBroker</name>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="82"/>
+        <location filename="../data_import/statement_openbroker.py" line="83"/>
         <source>Open Broker statement</source>
         <translation>Отчёт Открытие брокер</translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="207"/>
+        <location filename="../data_import/statement_openbroker.py" line="219"/>
         <source>Load Open Broker statement for account </source>
-        <translation>Загрузка отчёта Открытие брокер для счёта</translation>
+        <translation>Загрузка отчёта Открытие брокер для счёта </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="228"/>
+        <location filename="../data_import/statement_openbroker.py" line="240"/>
         <source>Securities loaded: </source>
         <translation>ЦБ загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="48"/>
+        <location filename="../data_import/statement_openbroker.py" line="49"/>
         <source>Multiple asset match for </source>
         <translation>Неоднозначное совпадение ЦБ для </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="241"/>
+        <location filename="../data_import/statement_openbroker.py" line="253"/>
         <source>Accounts loaded: </source>
         <translation>Счета загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="250"/>
+        <location filename="../data_import/statement_openbroker.py" line="262"/>
         <source>Can&apos;t find account for trade: </source>
         <translation>Невозможно найти счёт для сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="252"/>
+        <location filename="../data_import/statement_openbroker.py" line="264"/>
         <source>Can&apos;t determine trade type/quantity: </source>
         <translation>Невозможно определить тип/количество для сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="284"/>
+        <location filename="../data_import/statement_openbroker.py" line="313"/>
         <source>Can&apos;t find account for cash operation: </source>
         <translation>Невозможно определить счёт для денежной транзакции: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="287"/>
+        <source>Unknown non-trade operation: </source>
+        <translation>Неизвестная неторговая операция: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="307"/>
+        <source>Operation not supported: </source>
+        <translation>Операция не поддерживается: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="317"/>
+        <source>Cash operations loaded: </source>
+        <translation>Денежных операций загружено: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="335"/>
+        <source>Unknown payment description: </source>
+        <translation>Неподдерживаемое описание платежа: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="339"/>
+        <source>Unknown payment type: </source>
+        <translation>Неизвестный тип платежа: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="345"/>
+        <source>Can&apos;t parse Interest description </source>
+        <translation>Невозможно распознать описание купона </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="348"/>
+        <source>Interest description miss some data </source>
+        <translation>Отсутствуют данные в описани купона </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="351"/>
+        <source>Can&apos;t find asset for bond interest </source>
+        <translation>Не найдена ЦБ для купона </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="364"/>
+        <source>Can&apos;t parse Bond Mature description </source>
+        <translation>Невозможно распознать описание погашения облигации </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="367"/>
+        <source>Bond repayment description miss some data </source>
+        <translation>Отсутствуют данные в описании погашения облигации </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="371"/>
+        <source>Can&apos;t find asset cancellation record for </source>
+        <translation>Невозможно найти запись списания ЦБ для </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_openbroker.py" line="374"/>
+        <source>Multiple asset cancellation match for </source>
+        <translation>Найдены несколько записей погашения ЦБ для </translation>
     </message>
 </context>
 <context>
     <name>OpenBroker_AssetType</name>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="25"/>
+        <location filename="../data_import/statement_openbroker.py" line="26"/>
         <source>Asset type isn&apos;t supported: </source>
         <translation>Тип ЦБ не поддерживается: </translation>
     </message>
@@ -1706,7 +1766,7 @@ do you want to save it?</source>
 <context>
     <name>OpenBroker_Exchange</name>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="72"/>
+        <location filename="../data_import/statement_openbroker.py" line="73"/>
         <source>Exchange isn&apos;t supported: </source>
         <translation>Биржа не поддерживается: </translation>
     </message>
@@ -2685,22 +2745,22 @@ do you want to save it?</source>
         <translation>Невозможно сопоставить ЦБ для выплаты: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="346"/>
+        <location filename="../data_import/statement.py" line="348"/>
         <source>Unsupported payment type: </source>
         <translation>Неподдерживаемый тип выплаты: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="351"/>
+        <location filename="../data_import/statement.py" line="353"/>
         <source>Unmatched account for corporate action: </source>
         <translation>Невозможно сопоставить счёт для корпоративного действия: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="358"/>
+        <location filename="../data_import/statement.py" line="360"/>
         <source>Unmatched asset for corporate action: </source>
         <translation>Невозможно сопоставить ЦБ для корпоративного действия: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="368"/>
+        <location filename="../data_import/statement.py" line="370"/>
         <source>Unsupported corporate action: </source>
         <translation>Неподдерживаемое корпоративное действие: </translation>
     </message>
@@ -3079,22 +3139,22 @@ do you want to save it?</source>
 <context>
     <name>TaxesRus</name>
     <message>
-        <location filename="../reports/taxes.py" line="288"/>
+        <location filename="../reports/taxes.py" line="294"/>
         <source>Can&apos;t open tax form file </source>
         <translation>Невозможно открыть файл с декларацией 3-НДФЛ </translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="306"/>
+        <location filename="../reports/taxes.py" line="312"/>
         <source>Can&apos;t write tax form into file </source>
         <translation>Невозможно записать декларацию 3-НДФЛ в файл </translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="450"/>
+        <location filename="../reports/taxes.py" line="456"/>
         <source>Account country will be used for 3-NDFL update as country is not set for asset </source>
         <translation>Страна счёта будет использована для файла 3-НДФЛ, т.к. страна не укзана для ЦБ </translation>
     </message>
     <message>
-        <location filename="../reports/taxes.py" line="308"/>
+        <location filename="../reports/taxes.py" line="314"/>
         <source>Tax report saved to file </source>
         <translation>Налоговый отчет сохранён в файл </translation>
     </message>
