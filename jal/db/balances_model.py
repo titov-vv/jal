@@ -3,23 +3,11 @@ from PySide2.QtGui import QBrush, QFont
 from PySide2.QtWidgets import QHeaderView
 from jal.constants import Setup, CustomColor, BookAccount
 from jal.widgets.helpers import g_tr
-from jal.db.helpers import executeSQL
+from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.update import JalDB
 
 
 class BalancesModel(QAbstractTableModel):
-    COL_LEVEL = 0
-    COL_TYPE = 1
-    COL_TYPE_NAME = 2
-    COL_ACCOUNT = 3
-    COL_ACCOUNT_NAME = 4
-    COL_CURRENCY = 5
-    COL_CURRENCY_NAME = 6
-    COL_AMOUNT = 7
-    COL_AMOUNT_A = 8
-    COL_UNRECONCILED = 9
-    COL_ACTIVE = 10
-
     def __init__(self, parent_view):
         super().__init__(parent_view)
         self._view = parent_view
@@ -64,34 +52,34 @@ class BalancesModel(QAbstractTableModel):
 
     def data_text(self, row, column):
         if column == 0:
-            if self._data[row][self.COL_LEVEL] == 0:
-                return self._data[row][self.COL_ACCOUNT_NAME]
+            if self._data[row]['level'] == 0:
+                return self._data[row]['account_name']
             else:
-                return self._data[row][self.COL_TYPE_NAME]
+                return self._data[row]['type_name']
         elif column == 1:
-            return f"{self._data[row][self.COL_AMOUNT]:,.2f}" if self._data[row][self.COL_AMOUNT] != 0 else ''
+            return f"{self._data[row]['balance']:,.2f}" if self._data[row]['balance'] != 0 else ''
         elif column == 2:
-            return self._data[row][self.COL_CURRENCY_NAME] if self._data[row][self.COL_AMOUNT] != 0 else ''
+            return self._data[row]['currency_name'] if self._data[row]['balance'] != 0 else ''
         elif column == 3:
-            return f"{self._data[row][self.COL_AMOUNT_A]:,.2f}" if self._data[row][self.COL_AMOUNT_A] != 0 else ''
+            return f"{self._data[row]['balance_a']:,.2f}" if self._data[row]['balance_a'] != 0 else ''
         else:
             assert False
 
     def data_font(self, row, column):
-        if self._data[row][self.COL_LEVEL] > 0:
+        if self._data[row]['level'] > 0:
             font = QFont()
             font.setBold(True)
             return font
-        if column == 0 and not self._data[row][self.COL_ACTIVE]:
+        if column == 0 and not self._data[row]['active']:
             font = QFont()
             font.setItalic(True)
             return font
 
     def data_background(self, row, column):
         if column == 3:
-            if self._data[row][self.COL_UNRECONCILED] > 15:
+            if self._data[row]['unreconciled'] > 15:
                 return QBrush(CustomColor.LightRed)
-            if self._data[row][self.COL_UNRECONCILED] > 7:
+            if self._data[row]['unreconciled'] > 7:
                 return QBrush(CustomColor.LightYellow)
 
     def configureView(self):
@@ -124,7 +112,7 @@ class BalancesModel(QAbstractTableModel):
         self.calculateBalances()
 
     def getAccountId(self, row):
-        return self._data[row][self.COL_ACCOUNT]
+        return self._data[row]['account']
 
     def update(self):
         self.calculateBalances()
@@ -141,8 +129,8 @@ class BalancesModel(QAbstractTableModel):
             "a.name AS account_name, a.currency_id AS currency, c.name AS currency_name, "
             "SUM(CASE WHEN l.book_account=:assets_book THEN l.amount*act_q.quote ELSE l.amount END) AS balance, "
             "SUM(CASE WHEN l.book_account=:assets_book THEN l.amount*coalesce(act_q.quote*cur_q.quote/cur_adj_q.quote, 0) "
-            "ELSE l.amount*coalesce(cur_q.quote/cur_adj_q.quote, 0) END) AS balance_adj, "
-            "(d.timestamp - coalesce(a.reconciled_on, 0))/86400 AS unreconciled_days, "
+            "ELSE l.amount*coalesce(cur_q.quote/cur_adj_q.quote, 0) END) AS balance_a, "
+            "(d.timestamp - coalesce(a.reconciled_on, 0))/86400 AS unreconciled, "
             "a.active AS active "
             "FROM ledger AS l "
             "LEFT JOIN accounts AS a ON l.account_id = a.id "
@@ -164,22 +152,28 @@ class BalancesModel(QAbstractTableModel):
         self._data = []
         current_type = 0
         current_type_name = ''
-        indexes = range(query.record().count())
+        field_names = ['account_type', 'type_name', 'account', 'account_name', 'currency', 'currency_name', 'balance',
+                       'balance_a', 'unreconciled', 'active', 'level']
         while query.next():
-            values = [0] + list(map(query.value, indexes))
-            if self._active_only and (values[self.COL_ACTIVE] == 0):
+            values = readSQLrecord(query, named=True)
+            values['level'] = 0
+            assert field_names == [value for value in values]   # Check that query returns expected fields
+            if self._active_only and (values['active'] == 0):
                 continue
-            if values[self.COL_TYPE] != current_type:
+            if values['account_type'] != current_type:
                 if current_type != 0:
-                    sub_total = sum([row[self.COL_AMOUNT_A] for row in self._data if row[self.COL_TYPE] == current_type])
-                    self._data.append([1, current_type, current_type_name, 0, '', 0, '', 0, sub_total, 0, 1])
-                current_type = values[self.COL_TYPE]
-                current_type_name = values[self.COL_TYPE_NAME]
+                    sub_total = sum([row['balance_a'] for row in self._data if row['account_type'] == current_type])
+                    self._data.append(dict(zip(field_names,
+                                               [current_type, current_type_name, 0, '', 0, '', 0, sub_total, 0, 1, 1])))
+                current_type = values['account_type']
+                current_type_name = values['type_name']
             self._data.append(values)
         if current_type != 0:
-            sub_total = sum([row[self.COL_AMOUNT_A] for row in self._data if row[self.COL_TYPE] == current_type])
-            self._data.append([1, current_type, current_type_name, 0, '', 0, '', 0, sub_total, 0, 1])
-        total_sum = sum([row[self.COL_AMOUNT_A] for row in self._data if row[self.COL_LEVEL] == 0])
-        self._data.append([2, 0, g_tr("BalancesModel", "Total"), 0, '', 0, '', 0, total_sum, 0, 1])
+            sub_total = sum([row['balance_a'] for row in self._data if row['account_type'] == current_type])
+            self._data.append(dict(zip(field_names,
+                                       [current_type, current_type_name, 0, '', 0, '', 0, sub_total, 0, 1, 1])))
+        total_sum = sum([row['balance_a'] for row in self._data if row['level'] == 0])
+        self._data.append(dict(zip(field_names,
+                                   [0, g_tr("BalancesModel", "Total"), 0, '', 0, '', 0, total_sum, 0, 1, 2])))
         self.modelReset.emit()
 
