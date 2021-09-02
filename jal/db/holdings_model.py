@@ -5,7 +5,7 @@ from PySide2.QtCore import Qt, Slot, QAbstractItemModel, QDate, QModelIndex, QLo
 from PySide2.QtGui import QBrush, QFont
 from PySide2.QtWidgets import QHeaderView
 from jal.constants import Setup, CustomColor, BookAccount, PredefindedAccountType
-from jal.db.helpers import executeSQL
+from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.update import JalDB
 from jal.widgets.helpers import g_tr
 from jal.widgets.delegates import GridLinesDelegate
@@ -14,7 +14,7 @@ from jal.widgets.delegates import GridLinesDelegate
 class TreeItem():
     def __init__(self, data, parent=None):
         self._parent = parent
-        self.data = data[:]
+        self.data = data.copy()
         self._children = []
 
     def appendChild(self, child):
@@ -37,28 +37,6 @@ class TreeItem():
 
 
 class HoldingsModel(QAbstractItemModel):
-    DATA_COL = 14
-    COL_LEVEL = 0
-    COL_CURRENCY = 1
-    COL_CURRENCY_NAME = 2
-    COL_ACCOUNT = 3
-    COL_ACCOUNT_NAME = 4
-    COL_ASSET = 5
-    COL_ASSET_IS_CURRENCY = 6
-    COL_ASSET_NAME = 7
-    COL_ASSET_FULLNAME = 8
-    COL_ASSET_EXPIRY = 9
-    COL_QTY = 10
-    COL_VALUE_I = 11
-    COL_QUOTE = 12
-    COL_QUOTE_A = 13
-    COL_TOTAL = 14
-    COL_SHARE = 15
-    COL_PROFIT = 16
-    COL_PROFIT_R = 17
-    COL_VALUE = 18
-    COL_VALUE_A = 19
-
     def __init__(self, parent_view):
         super().__init__(parent_view)
         self._view = parent_view
@@ -67,6 +45,7 @@ class HoldingsModel(QAbstractItemModel):
         self._currency = 0
         self._currency_name = ''
         self._date = QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch()
+        self.calculated_names = ['share', 'profit', 'profit_rel', 'value', 'value_a']
         self._columns = [g_tr('HoldingsModel', "Currency/Account/Asset"),
                          g_tr('HoldingsModel', "Asset Name"),
                          g_tr('HoldingsModel', "Qty"),
@@ -136,57 +115,57 @@ class HoldingsModel(QAbstractItemModel):
 
     def data_text(self, data, column):
         if column == 0:
-            if data[self.COL_LEVEL] == 0:
-                return data[self.COL_CURRENCY_NAME]
-            elif data[self.COL_LEVEL] == 1:
-                return data[self.COL_ACCOUNT_NAME]
+            if data['level'] == 0:
+                return data['currency']
+            elif data['level'] == 1:
+                return data['account']
             else:
-                return data[self.COL_ASSET_NAME]
+                return data['asset']
         elif column == 1:
             expiry_text = ""
-            if data[self.COL_ASSET_EXPIRY]:
-                expiry_date = datetime.utcfromtimestamp(data[self.COL_ASSET_EXPIRY])
+            if data['expiry']:
+                expiry_date = datetime.utcfromtimestamp(data['expiry'])
                 expiry_header = g_tr('HoldingsModel', "Exp:")
                 expiry_text = f" [{expiry_header} {expiry_date.strftime('%d.%m.%Y')}]"
-            return data[self.COL_ASSET_FULLNAME] + expiry_text
+            return data['asset_name'] + expiry_text
         elif column == 2:
-            if data[self.COL_QTY]:
-                if data[self.COL_ASSET_IS_CURRENCY]:
+            if data['qty']:
+                if data['asset_is_currency']:
                     decimal_places = 2
                 else:
-                    decimal_places = -decimal.Decimal(str(data[self.COL_QTY]).rstrip('0')).as_tuple().exponent
+                    decimal_places = -decimal.Decimal(str(data['qty']).rstrip('0')).as_tuple().exponent
                     decimal_places = 6 if decimal_places > 6 else decimal_places
-                return QLocale().toString(data[self.COL_QTY], 'f', decimal_places)
+                return QLocale().toString(data['qty'], 'f', decimal_places)
             else:
                 return ''
         elif column == 3:
-            if data[self.COL_QTY] != 0 and data[self.COL_VALUE_I] != 0:
-                return f"{(data[self.COL_VALUE_I] / data[self.COL_QTY]):,.4f}"
+            if data['qty'] != 0 and data['value_i'] != 0:
+                return f"{(data['value_i'] / data['qty']):,.4f}"
             else:
                 return ''
         elif column == 4:
-            return f"{data[self.COL_QUOTE]:,.4f}" if data[self.COL_QUOTE] and data[self.COL_QTY] != 0 else ''
+            return f"{data['quote']:,.4f}" if data['quote'] and data['qty'] != 0 else ''
         elif column == 5:
-            return f"{data[self.COL_SHARE]:,.2f}" if data[self.COL_SHARE] else '-.--'
+            return f"{data['share']:,.2f}" if data['share'] else '-.--'
         elif column == 6:
-            return f"{100.0 * data[self.COL_PROFIT_R]:,.2f}" if data[self.COL_PROFIT_R] else ''
+            return f"{100.0 * data['profit_rel']:,.2f}" if data['profit_rel'] else ''
         elif column == 7:
-            return f"{data[self.COL_PROFIT]:,.2f}" if data[self.COL_PROFIT] else ''
+            return f"{data['profit']:,.2f}" if data['profit'] else ''
         elif column == 8:
-            return f"{data[self.COL_VALUE]:,.2f}" if data[self.COL_VALUE] else ''
+            return f"{data['value']:,.2f}" if data['value'] else ''
         elif column == 9:
-            return f"{data[self.COL_VALUE_A]:,.2f}" if data[self.COL_VALUE_A] else '-.--'
+            return f"{data['value_a']:,.2f}" if data['value_a'] else '-.--'
         else:
             assert False
 
     def data_font(self, data, column):
-        if data[self.COL_LEVEL] < 2:
+        if data['level'] < 2:
             font = QFont()
             font.setBold(True)
             return font
         else:
-            if column == 1 and data[self.COL_ASSET_EXPIRY]:
-                expiry_date = datetime.utcfromtimestamp(data[self.COL_ASSET_EXPIRY])
+            if column == 1 and data['expiry']:
+                expiry_date = datetime.utcfromtimestamp(data['expiry'])
                 days_remaining = int((expiry_date - datetime.utcnow()).total_seconds() / 86400)
                 if days_remaining <= 10:
                     font = QFont()
@@ -197,17 +176,17 @@ class HoldingsModel(QAbstractItemModel):
                     return font
 
     def data_background(self, data, column):
-        if data[self.COL_LEVEL] == 0:
+        if data['level'] == 0:
             return QBrush(CustomColor.LightPurple)
-        if data[self.COL_LEVEL] == 1:
+        if data['level'] == 1:
             return QBrush(CustomColor.LightBlue)
-        if column == 6 and data[self.COL_PROFIT_R]:
-            if data[self.COL_PROFIT_R] >= 0:
+        if column == 6 and data['profit_rel']:
+            if data['profit_rel'] >= 0:
                 return QBrush(CustomColor.LightGreen)
             else:
                 return QBrush(CustomColor.LightRed)
-        if column == 7 and data[self.COL_PROFIT]:
-            if data[self.COL_PROFIT] >= 0:
+        if column == 7 and data['profit']:
+            if data['profit'] >= 0:
                 return QBrush(CustomColor.LightGreen)
             else:
                 return QBrush(CustomColor.LightRed)
@@ -241,7 +220,7 @@ class HoldingsModel(QAbstractItemModel):
         if not index.isValid():
             return None
         item = index.internalPointer()
-        return item.data[self.COL_ACCOUNT], item.data[self.COL_ASSET], item.data[self.COL_QTY]
+        return item.data['account_id'], item.data['asset_id'], item.data['qty']
 
     def update(self):
         self.calculateHoldings()
@@ -271,8 +250,8 @@ class HoldingsModel(QAbstractItemModel):
             ") "
             "GROUP BY id HAVING ABS(total_value) > :tolerance) "
             "SELECT h.currency_id, c.name AS currency, h.account_id, h.account, h.asset_id, "
-            "c.name=a.name AS asset_is_currency,  a.name AS asset, a.full_name AS asset_name, a.expiry, "
-            "h.qty, h.value, h.quote, h.quote_a, h.total FROM ("
+            "c.name=a.name AS asset_is_currency, a.name AS asset, a.full_name AS asset_name, a.expiry, "
+            "h.qty, h.value AS value_i, h.quote, h.quote_a, h.total FROM ("
             "SELECT a.currency_id, l.account_id, a.name AS account, l.asset_id, sum(l.amount) AS qty, "
             "sum(l.value) AS value, q.quote, q.quote*cur_q.quote/cur_adj_q.quote AS quote_a, t.total_value AS total "
             "FROM ledger AS l "
@@ -305,45 +284,45 @@ class HoldingsModel(QAbstractItemModel):
              (":holdings_timestamp", self._date), (":investments", PredefindedAccountType.Investment),
              (":tolerance", Setup.DISP_TOLERANCE)], forward_only=True)
         # Load data from SQL to tree
-        self._root = TreeItem([])
+        self._root = TreeItem({})
         currency = 0
         c_node = None
         account = 0
         a_node = None
-        indexes = range(query.record().count())
         while query.next():
-            values = [2] + list(map(query.value, indexes))
-            if values[self.COL_CURRENCY] != currency:
-                currency = values[self.COL_CURRENCY]
+            values = readSQLrecord(query, named=True)
+            values['level'] = 2
+            if values['currency_id'] != currency:
+                currency = values['currency_id']
                 c_node = TreeItem(values, self._root)
-                c_node.data[self.COL_LEVEL] = 0
-                c_node.data[self.COL_ASSET_FULLNAME] = ''
-                c_node.data[self.COL_ASSET_EXPIRY] = 0
-                c_node.data[self.COL_QTY] = 0
+                c_node.data['level'] = 0
+                c_node.data['asset_name'] = ''
+                c_node.data['expiry'] = 0
+                c_node.data['qty'] = 0
                 self._root.appendChild(c_node)
-            if values[self.COL_ACCOUNT] != account:
-                account = values[self.COL_ACCOUNT]
+            if values['account_id'] != account:
+                account = values['account_id']
                 a_node = TreeItem(values, c_node)
-                a_node.data[self.COL_LEVEL] = 1
-                a_node.data[self.COL_ASSET_FULLNAME] = ''
-                a_node.data[self.COL_ASSET_EXPIRY] = 0
-                a_node.data[self.COL_QTY] = 0
+                a_node.data['level'] = 1
+                a_node.data['asset_name'] = ''
+                a_node.data['expiry'] = 0
+                a_node.data['qty'] = 0
                 c_node.appendChild(a_node)
-            if values[self.COL_QUOTE]:
-                if values[self.COL_ASSET_IS_CURRENCY]:
+            if values['quote']:
+                if values['asset_is_currency']:
                     profit = 0
                 else:
-                    profit = values[self.COL_QUOTE] * values[self.COL_QTY] - values[self.COL_VALUE_I]
-                if values[self.COL_VALUE_I] != 0:
-                    profit_relative = values[self.COL_QUOTE] * values[self.COL_QTY] / values[self.COL_VALUE_I] - 1
+                    profit = values['quote'] * values['qty'] - values['value_i']
+                if values['value_i'] != 0:
+                    profit_relative = values['quote'] * values['qty'] / values['value_i'] - 1
                 else:
                     profit_relative = 0
-                value = values[self.COL_QUOTE] * values[self.COL_QTY]
-                share = 100.0 * value / values[self.COL_TOTAL]
-                value_adjusted = values[self.COL_QUOTE_A] * values[self.COL_QTY] if values[self.COL_QUOTE_A] else 0
-                values += [share, profit, profit_relative, value, value_adjusted]
+                value = values['quote'] * values['qty']
+                share = 100.0 * value / values['total']
+                value_adjusted = values['quote_a'] * values['qty'] if values['quote_a'] else 0
+                values.update(dict(zip(self.calculated_names, [share, profit, profit_relative, value, value_adjusted])))
             else:
-                values += [0, 0, 0, 0, 0]
+                values.update(dict(zip(self.calculated_names, [0, 0, 0, 0, 0])))
             node = TreeItem(values, a_node)
             a_node.appendChild(node)
 
@@ -354,24 +333,24 @@ class HoldingsModel(QAbstractItemModel):
                 self.add_node_totals(currency_child.getChild(j))
             self.add_node_totals(currency_child)
             for j in range(currency_child.count()):  # Calculate share of each account within currency
-                if currency_child.data[self.COL_VALUE]:
-                    currency_child.getChild(j).data[self.COL_SHARE] = \
-                        100.0 * currency_child.getChild(j).data[self.COL_VALUE] / currency_child.data[self.COL_VALUE]
+                if currency_child.data['value']:
+                    currency_child.getChild(j).data['share'] = \
+                        100.0 * currency_child.getChild(j).data['value'] / currency_child.data['value']
         # Get full total of totals for all currencies adjusted to common currency
-        total = sum([self._root.getChild(i).data[self.COL_VALUE_A] for i in range(self._root.count())])
+        total = sum([self._root.getChild(i).data['value_a'] for i in range(self._root.count())])
         for i in range(self._root.count()):  # Calculate share of each currency (adjusted to common currency)
             if total != 0:
-                self._root.getChild(i).data[self.COL_SHARE] = 100.0 * self._root.getChild(i).data[
-                    self.COL_VALUE_A] / total
+                self._root.getChild(i).data['share'] = 100.0 * self._root.getChild(i).data[
+                    'value_a'] / total
             else:
-                self._root.getChild(i).data[self.COL_SHARE] = None
+                self._root.getChild(i).data['share'] = None
         self.modelReset.emit()
         self._view.expandAll()
 
     # Update node totals with sum of profit, value and adjusted profit and value of all children
     def add_node_totals(self, node):
-        profit = sum([node.getChild(i).data[self.COL_PROFIT] for i in range(node.count())])
-        value = sum([node.getChild(i).data[self.COL_VALUE] for i in range(node.count())])
-        value_adjusted = sum([node.getChild(i).data[self.COL_VALUE_A] for i in range(node.count())])
+        profit = sum([node.getChild(i).data['profit'] for i in range(node.count())])
+        value = sum([node.getChild(i).data['value'] for i in range(node.count())])
+        value_adjusted = sum([node.getChild(i).data['value_a'] for i in range(node.count())])
         profit_relative = profit / (value - profit) if value != profit else 0
-        node.data += [0, profit, profit_relative, value, value_adjusted]
+        node.data.update(dict(zip(self.calculated_names, [0, profit, profit_relative, value, value_adjusted])))
