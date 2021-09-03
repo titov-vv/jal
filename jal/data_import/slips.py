@@ -10,7 +10,7 @@ from jal.constants import CustomColor
 from jal.db.helpers import get_category_name
 try:
     from pyzbar import pyzbar
-    from PIL import Image
+    from PIL import Image, UnidentifiedImageError
 except ImportError:
     pass   # We should not be in this module as dependencies have been checked in main_window.py and calls are disabled
 
@@ -198,7 +198,11 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         buffer = QBuffer()
         buffer.open(QBuffer.ReadWrite)
         image.save(buffer, "BMP")
-        pillow_image = Image.open(io.BytesIO(buffer.data()))
+        try:
+            pillow_image = Image.open(io.BytesIO(buffer.data()))
+        except UnidentifiedImageError:
+            logging.warning(g_tr('ImportSlipDialog', "Image format isn't supported"))
+            return False
         barcodes = pyzbar.decode(pillow_image, symbols=[pyzbar.ZBarSymbol.QRCODE])
         if barcodes:
             self.qr_data_available.emit(barcodes[0].data.decode('utf-8'))
@@ -210,7 +214,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
     def readClipboardQR(self):
         self.initUi()
         if not self.readImageQR(QApplication.clipboard().image()):
-            logging.warning('ImportSlipDialog', "No QR codes found in clipboard")
+            logging.warning(g_tr('ImportSlipDialog', "No QR codes found in clipboard"))
 
     @Slot()
     def readCameraQR(self):
