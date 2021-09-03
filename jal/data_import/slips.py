@@ -1,5 +1,4 @@
 import io
-import re
 import time
 import json
 import logging
@@ -122,7 +121,7 @@ class SlipLinesDelegate(QStyledItemDelegate):
 class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
     qr_data_available = Signal(str)
     qr_data_validated = Signal()
-    json_data_available = Signal()
+    qr_data_loaded = Signal()
 
     OPERATION_PURCHASE = 1
     OPERATION_RETURN = 2
@@ -146,8 +145,11 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.slip_lines = None
 
         self.slipsAPI = SlipsTaxAPI()
+        self.tensor_flow_present = dependency_present(['tensorflow'])
 
         self.qr_data_available.connect(self.parseQRdata)
+        self.qr_data_validated.connect(self.downloadSlipJSON)
+        self.qr_data_loaded.connect(self.recognizeCategories)
         self.LoadQRfromFileBtn.clicked.connect(self.loadFileQR)
         self.GetQRfromClipboardBtn.clicked.connect(self.readClipboardQR)
         self.GetQRfromCameraBtn.clicked.connect(self.readCameraQR)
@@ -158,7 +160,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.ClearBtn.clicked.connect(self.clearSlipData)
         self.AssignCategoryBtn.clicked.connect(self.recognizeCategories)
 
-        self.AssignCategoryBtn.setEnabled(dependency_present(['tensorflow']))
+        self.AssignCategoryBtn.setEnabled(self.tensor_flow_present)
 
     def closeEvent(self, arg__1):
         if self.cameraActive:
@@ -410,6 +412,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         font.setBold(True)
         self.LinesTableView.horizontalHeader().setFont(font)
         self.LinesTableView.show()
+        self.qr_data_loaded.emit()
 
     def addOperation(self):
         if self.AccountEdit.selected_id == 0:
@@ -457,6 +460,8 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
 
     @Slot()
     def recognizeCategories(self):
+        if not self.tensor_flow_present:
+            return
         self.slip_lines['category'], self.slip_lines['confidence'] = \
             recognize_categories(self.slip_lines['name'].tolist())
         self.model.dataChanged.emit(None, None)  # refresh full view
