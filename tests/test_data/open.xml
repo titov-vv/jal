@@ -409,10 +409,14 @@
 <item operation_date="2021-05-27T00:00:00" currency_code="RUB" amount="100000.00" comment="Поставлены на торги средства клиента 12345" />
 <item operation_date="2021-09-01T00:00:00" currency_code="RUB" amount="-197.00" comment="Удержан налог на купонный доход  по МТС 1P-05 с клиента 12345" />
 <item operation_date="2021-09-01T00:00:00" currency_code="RUB" amount="204.00" comment="Выплата дохода клиент 12345 (НКД 7 МТС 1P-05) налог к удержанию 197.00 рублей" />
-<item operation_date="2021-09-01T00:00:00" currency_code="RUB" amount="260000.00" comment="Выплата дохода клиент 12345 (Погашение МТС 1P-05) налог не удерживается" />
+<item operation_date="2021-09-01T00:00:00" currency_code="RUB" amount="60000.00" comment="Выплата дохода клиент 12345 (Погашение МТС 1P-05) налог не удерживается" />
+<item operation_date="2021-09-03T00:00:00" currency_code="RUB" amount="-108.00" comment="Удержан налог на купонный доход  по Мордовия-обл-03 с клиента 12345" />
+<item operation_date="2021-09-03T00:00:00" currency_code="RUB" amount="834.00" comment="Выплата дохода клиент 12345 (НКД 20 Мордовия-обл-03) налог к удержанию 108.00 рублей" />
+<item operation_date="2021-09-03T00:00:00" currency_code="RUB" amount="30000.00" comment="Выплата дохода клиент 12345 (Погашение Мордовия-обл-03) налог не удерживается" />
 </spot_non_trade_money_operations>
 <spot_non_trade_security_operations>
-<item operation_date="2021-09-01T00:00:00" security_name="МТС 1P-05 " grn_code="4B02-05-04715-A-001P" quantity="-260.00000000" comment="Отчет депозитария б/н от 01.09.2021. Снятие ЦБ с учета. Погашение облигаций - МТС 1P-05" board_name="Фондовый Рынок Московской биржи (ФР МБ)" />
+<item operation_date="2021-09-01T00:00:00" security_name="МТС 1P-05 " grn_code="4B02-05-04715-A-001P" quantity="-60.00000000" comment="Отчет депозитария б/н от 01.09.2021. Снятие ЦБ с учета. Погашение облигаций - МТС 1P-05" board_name="Фондовый Рынок Московской биржи (ФР МБ)" />
+<item operation_date="2021-09-03T00:00:00" security_name="Мордовия03" grn_code="RU34003MOR0" quantity="-75.00000000" comment="Отчет депозитария б/н от 03.09.2021. Снятие ЦБ с учета. Погашение облигаций - Мордовия-обл-03" board_name="Фондовый Рынок Московской биржи (ФР МБ)" />
 </spot_non_trade_security_operations>
 <spot_portfolio_security_params>
 <item security_name="Мордовия03" security_grn_code="RU34003MOR0" board_name="ПАО Московская биржа" issuer_name="Минфин Республики Мордовия" isin="RU000A0JWSQ7" security_type="Облигации" securyty_type_add="ОБ " nominal="400.000000" nominal_curr="RUB" lot_size="1" ticker="RU000A0JWSQ7" nkd="6.800000" nkd_face_curr="6.800000" market_price="100.420000" />

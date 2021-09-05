@@ -30,6 +30,8 @@ class OpenBroker_AssetType:
 class OpenBroker_Asset:
     def __init__(self, assets_list, symbol, reg_code=''):
         self.id = None
+
+        # Try to find asset in list first by reg.code, next by symbol and as last resort by alt_symbol if it exists
         if reg_code:
             match = [x for x in assets_list if
                      ('symbol' in x and 'reg_code' in x) and (x['symbol'] == symbol and x['reg_code'] == reg_code)]
@@ -47,7 +49,13 @@ class OpenBroker_Asset:
                 return
             else:
                 logging.error(g_tr('OpenBroker', "Multiple asset match for ") + f"'{symbol}'")
-
+        match = [x for x in assets_list if 'alt_symbol' in x and x['alt_symbol'] == symbol]
+        if match:
+            if len(match) == 1:
+                self.id = match[0]['id']
+                return
+            else:
+                logging.error(g_tr('OpenBroker', "Multiple asset match for ") + f"'{symbol}'")
 
 # ----------------------------------------------------------------------------------------------------------------------
 class OpenBroker_Currency:
@@ -282,14 +290,27 @@ class StatementOpenBroker(StatementXML):
 
     # this method loads only asset cancellations and puts it in self.asset_withdrawal for use in 'load_cash_operations'
     def load_asset_operations(self, asset_operations):
+        # Asset name is stored as 'alt_symbol' in self.assets[] and self.asset_withdrawal[]
+        bond_repayment_pattern = r"^.*Снятие ЦБ с учета\. Погашение облигаций - (?P<asset_name>.*)$"
         for operation in asset_operations:
             if "Снятие ЦБ с учета. Погашение облигаций" not in operation['description']:
                 raise Statement_ImportError(g_tr('OpenBroker', "Unknown non-trade operation: ")
                                             + operation['description'])
+            parts = re.match(bond_repayment_pattern, operation['description'], re.IGNORECASE)
+            if parts is None:
+                raise Statement_ImportError(
+                    g_tr('OpenBroker', "Can't parse bond repayment description ") + f"'{operation['description']}'")
+            repayment_note = parts.groupdict()
+            if len(repayment_note) != bond_repayment_pattern.count("(?P<"):  # check expected number of matches
+                raise Statement_ImportError(
+                    g_tr('OpenBroker', "Can't detect bond name from description ") + f"'{repayment_note}'")
             asset = [x for x in self._data[FOF.ASSETS] if 'id' in x and x['id'] == operation['asset']][0]
+            if asset['symbol'] != repayment_note['asset_name']:    # Store alternative depositary name
+                asset['alt_symbol'] = repayment_note['asset_name']
             new_id = max([0] + [x['id'] for x in self.asset_withdrawal]) + 1
             record = {"id": new_id, "timestamp": operation['timestamp'], "asset": operation['asset'],
-                      "symbol": asset['symbol'], "quantity": operation['quantity'], "note": operation['description']}
+                      "symbol": asset['symbol'], "alt_symbol": repayment_note['asset_name'],
+                      "quantity": operation['quantity'], "note": operation['description']}
             self.asset_withdrawal.append(record)
 
     def load_cash_operations(self, cash_operations):
@@ -366,13 +387,15 @@ class StatementOpenBroker(StatementXML):
         if len(repayment) != repayment_pattern.count("(?P<"):  # check expected number of matches
             raise Statement_ImportError(g_tr('OpenBroker', "Bond repayment description miss some data ")
                                         + f"'{description}'")
-        match = [x for x in self.asset_withdrawal if x['symbol'] == repayment['asset'] and x['timestamp'] == timestamp]
+        match = [x for x in self.asset_withdrawal
+                 if (x['symbol'] == repayment['asset'] or x['alt_symbol'] == repayment['asset'])
+                    and x['timestamp'] == timestamp]
         if not match:
-            logging.error(g_tr('OpenBroker', "Can't find asset cancellation record for ") + f"'{description}'")
-            return
+            raise Statement_ImportError(g_tr('OpenBroker', "Can't find asset cancellation record for ")
+                                        + f"'{description}'")
         if len(match) != 1:
-            logging.error(g_tr('OpenBroker', "Multiple asset cancellation match for ") + f"'{description}'")
-            return
+            raise Statement_ImportError(g_tr('OpenBroker', "Multiple asset cancellation match for ")
+                                        + f"'{description}'")
         asset_cancel = match[0]
         number = datetime.utcfromtimestamp(timestamp).strftime('%Y%m%d') + f"-{asset_cancel['id']}"
         qty = asset_cancel['quantity']
