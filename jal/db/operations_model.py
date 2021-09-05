@@ -94,7 +94,7 @@ class OperationsModel(QAbstractTableModel):
         else:
             return [0, 0]
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.DisplayRole, field=''):
         if not index.isValid():
             return None
         if role == Qt.DisplayRole:
@@ -111,8 +111,8 @@ class OperationsModel(QAbstractTableModel):
             if index.column() == 4 or index.column() == 5:
                 return Qt.AlignRight
             return Qt.AlignLeft
-        if role == Qt.UserRole:  # return underlying data
-            return self._data[index.row()][index.column()]
+        if role == Qt.UserRole:  # return underlying data for given field extra parameter
+            return self._data[index.row()][field]
 
     def data_text(self, row, column):
         if column == 0:

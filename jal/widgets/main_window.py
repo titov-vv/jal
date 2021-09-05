@@ -346,10 +346,9 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
     @Slot()
     def reconcileAtCurrentOperation(self):
-        timestamp_idx = self.operations_model.index(self.current_index.row(), self.operations_model.COL_TIMESTAMP)
-        timestamp = self.operations_model.data(timestamp_idx, Qt.UserRole)
-        account_idx = self.operations_model.index(self.current_index.row(), self.operations_model.COL_ACCOUNT_ID)
-        account_id = self.operations_model.data(account_idx, Qt.UserRole)
+        idx = self.operations_model.index(self.current_index.row(), 0)  # we need only row to address fields by name
+        timestamp = self.operations_model.data(idx, Qt.UserRole, field="timestamp")
+        account_id = self.operations_model.data(idx, Qt.UserRole, field="account_id")
         self.ledger.reconcile(account_id, timestamp)
         self.operations_model.refresh()
 
