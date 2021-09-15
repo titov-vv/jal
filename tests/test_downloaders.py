@@ -21,12 +21,13 @@ def test_INN_resolution():
     assert name == 'ПАО СБЕРБАНК'
 
 def test_MOEX_details():
-    assert QuoteDownloader.MOEX_find_secid_by_regcode('') == ''
-    assert QuoteDownloader.MOEX_find_secid_by_regcode('TEST') == ''
-    assert QuoteDownloader.MOEX_find_secid_by_regcode('2770') == 'RU000A1013V9'
-    assert QuoteDownloader.MOEX_find_secid_by_regcode('1-01-00010-A') == 'AFLT'
-    assert QuoteDownloader.MOEX_find_secid_by_regcode('IE00B8XB7377') == 'FXGD'
-    assert QuoteDownloader.MOEX_find_secid_by_regcode('JE00B6T5S470') == 'POLY'
+    assert QuoteDownloader.MOEX_find_secid(regcode='') == ''
+    assert QuoteDownloader.MOEX_find_secid(isin='TEST') == ''
+    assert QuoteDownloader.MOEX_find_secid(regcode='2770') == 'RU000A1013V9'
+    assert QuoteDownloader.MOEX_find_secid(regcode='1-01-00010-A') == 'AFLT'
+    assert QuoteDownloader.MOEX_find_secid(isin='IE00B8XB7377') == 'FXGD'
+    assert QuoteDownloader.MOEX_find_secid(isin='JE00B6T5S470') == 'POLY'
+    assert QuoteDownloader.MOEX_find_secid(isin='RU000A1038V6') == 'SU26238RMFS4'
 
     assert QuoteDownloader.MOEX_info() == {}
     assert QuoteDownloader.MOEX_info(special=True) == {}
@@ -56,11 +57,11 @@ def test_MOEX_details():
                                                                                'market': 'forts',
                                                                                'board': 'RFUD',
                                                                                'type': PredefinedAsset.Derivative}
-    assert QuoteDownloader.MOEX_info(symbol='', regnumber='RU000A1013V9') == {'symbol': 'ЗПИФ ПНК',
-                                                                              'isin': 'RU000A1013V9',
-                                                                              'name': 'ЗПИФ Фонд ПНК-Рентал',
-                                                                              'reg_code': '2770',
-                                                                              'type': PredefinedAsset.ETF}
+    assert QuoteDownloader.MOEX_info(symbol='', regnumber='2770') == {'symbol': 'ЗПИФ ПНК',
+                                                                      'isin': 'RU000A1013V9',
+                                                                      'name': 'ЗПИФ Фонд ПНК-Рентал',
+                                                                      'reg_code': '2770',
+                                                                      'type': PredefinedAsset.ETF}
     assert QuoteDownloader.MOEX_info(isin='IE00B8XB7377', regnumber='IE00B8XB7377', symbol='FXGD ETF') == {'symbol': 'FXGD',
                                                                                                            'isin': 'IE00B8XB7377',
                                                                                                            'name': 'FinEx Gold ETF USD',

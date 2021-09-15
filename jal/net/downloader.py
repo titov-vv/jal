@@ -29,8 +29,8 @@ class QuotesUpdateDialog(QDialog, Ui_UpdateQuotesDlg):
         self.EndDateEdit.setDate(QtCore.QDate.currentDate())
 
         # center dialog with respect to parent window
-        x = parent.x() + parent.width()/2 - self.width()/2
-        y = parent.y() + parent.height()/2 - self.height()/2
+        x = parent.x() + parent.width() / 2 - self.width() / 2
+        y = parent.y() + parent.height() / 2 - self.height() / 2
         self.setGeometry(x, y, self.width(), self.height())
 
     def getStartDate(self):
@@ -168,9 +168,9 @@ class QuoteDownloader(QObject):
             data = QuoteDownloader.MOEX_download_info(kwargs['isin'])
         # If not found try to use search API with regnumber or isin
         if not data and 'regnumber' in kwargs:
-            data = QuoteDownloader.MOEX_download_info(QuoteDownloader.MOEX_find_secid_by_regcode(kwargs['regnumber']))
+            data = QuoteDownloader.MOEX_download_info(QuoteDownloader.MOEX_find_secid(regcode=kwargs['regnumber']))
         if not data and 'isin' in kwargs:
-            data = QuoteDownloader.MOEX_download_info(QuoteDownloader.MOEX_find_secid_by_regcode(kwargs['isin']))
+            data = QuoteDownloader.MOEX_download_info(QuoteDownloader.MOEX_find_secid(isin=kwargs['isin']))
         if 'special' not in kwargs:
             for key in ['engine', 'market', 'board']:
                 try:
@@ -239,21 +239,30 @@ class QuoteDownloader(QObject):
                 break
         return asset
 
-    # Searches for asset info on http://www.moex.com by given reg.number
-    # Returns ISIN if asset was found and empty string otherwise
+    # Searches for asset info on http://www.moex.com by given reg.number or isin
+    # Returns 'secid' if asset was found and empty string otherwise
     @staticmethod
-    def MOEX_find_secid_by_regcode(regnumber) -> str:
+    def MOEX_find_secid(**kwargs) -> str:
         secid = ''
-        if not regnumber:
+        try:
+            search_key = kwargs['regcode'] if 'regcode' in kwargs else kwargs['isin']
+        except KeyError:
             return secid
-        url = f"https://iss.moex.com/iss/securities.json?q={regnumber}&iss.meta=off&limit=10"
+        if not search_key:
+            return secid
+        url = f"https://iss.moex.com/iss/securities.json?q={search_key}&iss.meta=off&limit=10"
         asset_data = json.loads(get_web_data(url))
         securities = asset_data['securities']
         columns = securities['columns']
-        data = securities['data']
+        if 'regcode' in kwargs:
+            # Take only records that have given regnumber to get rid of additional issues
+            data = [x for x in securities['data'] if
+                    x[columns.index('regnumber')] == search_key or x[columns.index('regnumber')] is None]
+        else:
+            data = securities['data']  # take the whole list if we search by isin
         if data:
             if len(data) > 1:
-                logging.info(g_tr('QuoteDownloader', "MOEX: multiple assets found for reg.number: ") + regnumber)
+                logging.info(g_tr('QuoteDownloader', "MOEX: multiple assets found for reg.number: ") + search_key)
                 return secid
             asset_data = dict(zip(columns, data[0]))
             secid = asset_data['secid'] if 'secid' in asset_data else ''
@@ -274,7 +283,7 @@ class QuoteDownloader(QObject):
         # Get price history
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d')
         date2 = datetime.utcfromtimestamp(end_timestamp).strftime('%Y-%m-%d')
-        url = f"http://iss.moex.com/iss/history/engines/{asset['engine']}/markets/{asset['market']}/"\
+        url = f"http://iss.moex.com/iss/history/engines/{asset['engine']}/markets/{asset['market']}/" \
               f"boards/{asset['board']}/securities/{asset_code}.xml?from={date1}&till={date2}"
         xml_root = xml_tree.fromstring(get_web_data(url))
         history_rows = xml_root.findall("data[@id='history']/rows/*")
@@ -294,7 +303,7 @@ class QuoteDownloader(QObject):
 
     # noinspection PyMethodMayBeStatic
     def Yahoo_Downloader(self, _asset_id, asset_code, _isin, start_timestamp, end_timestamp):
-        url = f"https://query1.finance.yahoo.com/v7/finance/download/{asset_code}?"\
+        url = f"https://query1.finance.yahoo.com/v7/finance/download/{asset_code}?" \
               f"period1={start_timestamp}&period2={end_timestamp}&interval=1d&events=history"
         file = StringIO(get_web_data(url))
         try:

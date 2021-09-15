@@ -163,10 +163,11 @@ def test_ukfu_json_import(tmp_path, project_root, data_path, prepare_db_moex):
         [7, 'FXGD', 4, 'FinEx Gold ETF USD', 'IE00B8XB7377', 0, 1, 0],
         [8, 'ТинькоффБ7', 3, 'АО "Тинькофф Банк" БО-07', 'RU000A0JWM31', 0, 1, 1624492800],
         [9, 'ЗПИФ ПНК', 4, 'ЗПИФ Фонд ПНК-Рентал', 'RU000A1013V9', 0, 1, 0],
-        [10, 'POLY', 2, 'Polymetal International plc', 'JE00B6T5S470', 0, 1, 0],
-        [11, 'SiZ1', 6, 'Фьючерсный контракт Si-12.21', '', 0, 1, 1639612800],
-        [12, 'MOEX', 2, 'ПАО Московская Биржа', 'RU000A0JR4A1', 0, 1, 0],
-        [13, 'CHMF', 2, 'Северсталь (ПАО)ао', 'RU0009046510', 0, 1, 0]
+        [10, 'VTBR', 2, 'ао ПАО Банк ВТБ', 'RU000A0JP5V6', 0, 1, 0],
+        [11, 'POLY', 2, 'Polymetal International plc', 'JE00B6T5S470', 0, 1, 0],
+        [12, 'SiZ1', 6, 'Фьючерсный контракт Si-12.21', '', 0, 1, 1639612800],
+        [13, 'MOEX', 2, 'ПАО Московская Биржа', 'RU000A0JR4A1', 0, 1, 0],
+        [14, 'CHMF', 2, 'Северсталь (ПАО)ао', 'RU0009046510', 0, 1, 0]
     ]
     assert readSQL("SELECT COUNT(*) FROM assets") == len(test_assets)
     for i, asset in enumerate(test_assets):
