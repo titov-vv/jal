@@ -92,6 +92,7 @@ class Statement:
     
     def __init__(self):
         self._data = {}
+        self._previous_accounts = {}
         self._last_selected_account = None
         self._section_loaders = {
             FOF.PERIOD: self._check_period,
@@ -297,14 +298,17 @@ class Statement:
                            f"@{datetime.utcfromtimestamp(transfer['timestamp']).strftime('%d.%m.%Y')}\n" + \
                            g_tr('Statement', "Select account to deposit to:")
                     pair_account = -transfer['account'][0]
-                pair_account = self.select_account(text, pair_account, self._last_selected_account)
-                if pair_account == 0:
+                try:
+                    chosen_account = self._previous_accounts[JalDB().get_account_currency(pair_account)]
+                except KeyError:
+                    chosen_account = self.select_account(text, pair_account, self._last_selected_account)
+                if chosen_account == 0:
                     raise Statement_ImportError(g_tr('Statement', "Account not selected"))
-                self._last_selected_account = pair_account
+                self._last_selected_account = chosen_account
                 if transfer['account'][0] == 0:
-                    transfer['account'][0] = -pair_account
+                    transfer['account'][0] = -chosen_account
                 if transfer['account'][1] == 0:
-                    transfer['account'][1] = -pair_account
+                    transfer['account'][1] = -chosen_account
 
             description = transfer['description'] if 'description' in transfer else ''
             JalDB().add_transfer(transfer['timestamp'], -transfer['account'][0], transfer['withdrawal'],
@@ -379,4 +383,6 @@ class Statement:
         if dialog.exec_() != QDialog.Accepted:
             return 0
         else:
+            if dialog.store_account:
+                self._previous_accounts[JalDB().get_account_currency(dialog.account_id)] = dialog.account_id
             return dialog.account_id

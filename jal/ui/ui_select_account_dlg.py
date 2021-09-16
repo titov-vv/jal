@@ -19,7 +19,7 @@ class Ui_SelectAccountDlg(object):
     def setupUi(self, SelectAccountDlg):
         if not SelectAccountDlg.objectName():
             SelectAccountDlg.setObjectName(u"SelectAccountDlg")
-        SelectAccountDlg.resize(400, 105)
+        SelectAccountDlg.resize(400, 141)
         self.verticalLayout = QVBoxLayout(SelectAccountDlg)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.DescriptionLbl = QLabel(SelectAccountDlg)
@@ -31,6 +31,11 @@ class Ui_SelectAccountDlg(object):
         self.AccountWidget.setObjectName(u"AccountWidget")
 
         self.verticalLayout.addWidget(self.AccountWidget)
+
+        self.ReuseAccount = QCheckBox(SelectAccountDlg)
+        self.ReuseAccount.setObjectName(u"ReuseAccount")
+
+        self.verticalLayout.addWidget(self.ReuseAccount)
 
         self.buttonBox = QDialogButtonBox(SelectAccountDlg)
         self.buttonBox.setObjectName(u"buttonBox")
@@ -53,5 +58,6 @@ class Ui_SelectAccountDlg(object):
     def retranslateUi(self, SelectAccountDlg):
         SelectAccountDlg.setWindowTitle(QCoreApplication.translate("SelectAccountDlg", u"Please select account", None))
         self.DescriptionLbl.setText(QCoreApplication.translate("SelectAccountDlg", u"TextLabel", None))
+        self.ReuseAccount.setText(QCoreApplication.translate("SelectAccountDlg", u"Use the same account for given currency", None))
     # retranslateUi
 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>105</height>
+    <height>141</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,6 +23,13 @@
    </item>
    <item>
     <widget class="AccountSelector" name="AccountWidget" native="true"/>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="ReuseAccount">
+     <property name="text">
+      <string>Use the same account for given currency</string>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">

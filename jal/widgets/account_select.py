@@ -62,6 +62,7 @@ class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
         QDialog.__init__(self)
         self.setupUi(self)
         self.account_id = recent_account
+        self.store_account = False
         self.current_account = current_account
 
         self.DescriptionLbl.setText(description)
@@ -81,6 +82,7 @@ class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
     @Slot()
     def closeEvent(self, event):
         self.account_id = self.AccountWidget.selected_id
+        self.store_account = self.ReuseAccount.isChecked()
         if self.AccountWidget.selected_id == 0:
             QMessageBox().warning(None, g_tr('ReferenceDataDialog', "No selection"),
                                   g_tr('ReferenceDataDialog', "Invalid account selected"),
