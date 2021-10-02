@@ -3,7 +3,6 @@ from dateutil import tz
 
 from PySide2.QtCore import Qt, QStringListModel, QByteArray
 from PySide2.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QComboBox
-from jal.widgets.helpers import g_tr
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
@@ -41,17 +40,17 @@ class CorporateActionWidget(AbstractOperationDetails):
         self.arrow_asset = QLabel(self)
         self.arrow_amount = QLabel(self)
 
-        self.main_label.setText(g_tr("CorpActionWidget", "Corporate Action"))
-        self.date_label.setText(g_tr("CorpActionWidget", "Date/Time"))
-        self.account_label.setText(g_tr("CorpActionWidget", "Account"))
-        self.type_label.setText(g_tr("CorpActionWidget", "Type"))
-        self.number_label.setText(g_tr("CorpActionWidget", "#"))
-        self.asset_b_label.setText(g_tr("CorpActionWidget", "Asset"))
-        self.qty_b_label.setText(g_tr("CorpActionWidget", "Qty"))
-        self.asset_a_label.setText(g_tr("CorpActionWidget", "Asset"))
-        self.qty_a_label.setText(g_tr("CorpActionWidget", "Qty"))
-        self.ratio_label.setText(g_tr("CorpActionWidget", "% of basis"))
-        self.comment_label.setText(g_tr("CorpActionWidget", "Note"))
+        self.main_label.setText(self.tr("Corporate Action"))
+        self.date_label.setText(self.tr("Date/Time"))
+        self.account_label.setText(self.tr("Account"))
+        self.type_label.setText(self.tr("Type"))
+        self.number_label.setText(self.tr("#"))
+        self.asset_b_label.setText(self.tr("Asset"))
+        self.qty_b_label.setText(self.tr("Qty"))
+        self.asset_a_label.setText(self.tr("Asset"))
+        self.qty_a_label.setText(self.tr("Qty"))
+        self.ratio_label.setText(self.tr("% of basis"))
+        self.comment_label.setText(self.tr("Note"))
         self.arrow_asset.setText(" ➜ ")
         self.arrow_amount.setText(" ➜ ")
 
@@ -106,12 +105,12 @@ class CorporateActionWidget(AbstractOperationDetails):
         self.layout.addItem(self.horizontalSpacer, 1, 7, 1, 1)
 
         super()._init_db("corp_actions")
-        self.combo_model = QStringListModel([g_tr("CorpActionWidget", "N/A"),
-                                             g_tr("CorpActionWidget", "Merger"),
-                                             g_tr("CorpActionWidget", "Spin-Off"),
-                                             g_tr("CorpActionWidget", "Symbol change"),
-                                             g_tr("CorpActionWidget", "Split"),
-                                             g_tr("CorpActionWidget", "Stock dividend")])
+        self.combo_model = QStringListModel([self.tr("N/A"),
+                                             self.tr("Merger"),
+                                             self.tr("Spin-Off"),
+                                             self.tr("Symbol change"),
+                                             self.tr("Split"),
+                                             self.tr("Stock dividend")])
         self.type.setModel(self.combo_model)
 
         self.mapper.setItemDelegate(CorporateActionWidgetDelegate(self.mapper))

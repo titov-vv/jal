@@ -1,8 +1,8 @@
 import requests
 import logging
 import platform
+from PySide2.QtWidgets import QApplication
 from jal import __version__
-from jal.widgets.helpers import g_tr
 
 
 # ===================================================================================================================
@@ -41,7 +41,8 @@ def request_url(method, url, params=None, json_params=None):
     if response.status_code == 200:
         return response.text
     else:
-        logging.error(f"URL: {url}" + g_tr('Net', " failed: ") + f"{response.status_code}: {response.text}")
+        logging.error(f"URL: {url}" + QApplication.translate('Net', " failed: ")
+                      + f"{response.status_code}: {response.text}")
         return ''
 
 

@@ -7,7 +7,6 @@ from jal.constants import Setup, BookAccount, TransactionType, TransferSubtype, 
     CorporateAction, PredefinedCategory, PredefinedPeer
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord, db_triggers_disable, db_triggers_enable
 from jal.db.update import JalDB
-from jal.widgets.helpers import g_tr
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
 
 
@@ -164,7 +163,7 @@ class Ledger(QObject):
 
     def processAction(self):
         if self.current['amount'] == '':
-            logging.warning(g_tr('Ledger', "Can't process operation without details") +
+            logging.warning(self.tr("Can't process operation without details") +
                             f" @{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d.%m.%Y %H:%M:%S')}")
             return
         action_amount = self.current['amount']
@@ -188,10 +187,10 @@ class Ledger(QObject):
         elif self.current['subtype'] == DividendSubtype.BondInterest:
             self.current['category'] = PredefinedCategory.Interest
         else:
-            logging.error(g_tr('Ledger', "Can't process dividend with N/A type"))
+            logging.error(self.tr("Can't process dividend with N/A type"))
             return
         if self.current['peer'] == '':
-            logging.error(g_tr('Ledger', "Can't process dividend as bank isn't set for investment account"))
+            logging.error(self.tr("Can't process dividend as bank isn't set for investment account"))
             return
         dividend_amount = self.current['amount']
         tax_amount = self.current['fee_tax']
@@ -213,7 +212,7 @@ class Ledger(QObject):
     # Process buy or sell operation base on self.current['amount'] (>0 - buy, <0 - sell)
     def processTrade(self):
         if self.current['peer'] == '':
-            logging.error(g_tr('Ledger', "Can't process trade as bank isn't set for investment account"))
+            logging.error(self.tr("Can't process trade as bank isn't set for investment account"))
             return
 
         seq_id = self.current_seq
@@ -363,7 +362,7 @@ class Ledger(QObject):
                 self.appendTransaction(BookAccount.Money, (self.current['amount'] - credit_returned))
             self.appendTransaction(BookAccount.Transfers, -self.current['amount'])
         else:   # TODO implement assets transfer
-            logging.error(g_tr('Ledger', "Unexpected data in transfer transaction"))
+            logging.error(self.tr("Unexpected data in transfer transaction"))
             return
 
     def updateStockDividendAssets(self):
@@ -371,10 +370,10 @@ class Ledger(QObject):
         self.current['price'] = self.current['price'] + asset_amount
         self.current['amount'] = asset_amount
         asset = JalDB().get_asset_name(self.current['asset'])
-        QMessageBox().information(None, g_tr('Ledger', "Confirmation"),
-                                  g_tr('Ledger', "Stock dividend for was updated for ") + asset +
+        QMessageBox().information(None, self.tr("Confirmation"),
+                                  self.tr("Stock dividend for was updated for ") + asset +
                                   f" @{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d.%m.%Y')}\n" +
-                                  g_tr('Ledger', "Please check that quantity is correct."),
+                                  self.tr("Please check that quantity is correct."),
                                   QMessageBox.Ok)
         _ = executeSQL("UPDATE corp_actions SET qty=:qty, qty_new=:qty_new WHERE id=:id",
                        [(":id", self.current['id']),
@@ -395,7 +394,7 @@ class Ledger(QObject):
         # Get asset amount accumulated before current operation
         asset_amount = self.getAmount(BookAccount.Assets, asset_id)
         if asset_amount < (qty - 2*Setup.CALC_TOLERANCE):
-            logging.fatal(g_tr('Ledger', "Asset amount is not enough for corporate action processing. Date: ")
+            logging.fatal(self.tr("Asset amount is not enough for corporate action processing. Date: ")
                           + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
             return
         # Get information about last deal
@@ -511,12 +510,12 @@ class Ledger(QObject):
                                        [(":frontier", frontier)])
             if operations_count > self.SILENT_REBUILD_THRESHOLD:
                 silent = False
-                if QMessageBox().warning(None, g_tr('Ledger', "Confirmation"), f"{operations_count}" +
-                                         g_tr('Ledger', " operations require rebuild. Do you want to do it right now?"),
+                if QMessageBox().warning(None, self.tr("Confirmation"), f"{operations_count}" +
+                                         self.tr(" operations require rebuild. Do you want to do it right now?"),
                                          QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
                     return
         if not silent:
-            logging.info(g_tr('Ledger', "Re-build ledger from: ") +
+            logging.info(self.tr("Re-build ledger from: ") +
                          f"{datetime.utcfromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
         start_time = datetime.now()
         _ = executeSQL("DELETE FROM deals WHERE close_sid >= "
@@ -547,8 +546,8 @@ class Ledger(QObject):
                 operationProcess[self.current['type']]()
                 if not silent and (query.at() % 1000) == 0:
                     logging.info(
-                        g_tr('Ledger', "Processed ") + f"{int(query.at()/1000)}" +
-                        g_tr('Ledger', "k records, current frontier: ") +
+                        self.tr("Processed ") + f"{int(query.at()/1000)}" +
+                        self.tr("k records, current frontier: ") +
                         f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
         finally:
             if fast_and_dirty:
@@ -556,8 +555,8 @@ class Ledger(QObject):
             db_triggers_enable()
 
         if not silent:
-            logging.info(g_tr('Ledger', "Ledger is complete. Elapsed time: ") + f"{datetime.now() - start_time}" +
-                         g_tr('Ledger', ", new frontier: ") + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
+            logging.info(self.tr("Ledger is complete. Elapsed time: ") + f"{datetime.now() - start_time}" +
+                         self.tr(", new frontier: ") + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
 
         self.updated.emit()
 

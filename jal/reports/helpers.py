@@ -1,7 +1,6 @@
 import xlsxwriter
 import logging
-
-from jal.widgets.helpers import g_tr
+from PySide2.QtWidgets import QApplication
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -23,7 +22,7 @@ class XLSX:
         try:
             self.workbook.close()
         except:
-            logging.error(g_tr('XLSX', "Can't save report into file ") + f"'{self.filename}'")
+            logging.error(QApplication.translate('XLSX', "Can't save report into file ") + f"'{self.filename}'")
 
     def add_report_sheet(self, name):
         return self.workbook.add_worksheet(name)

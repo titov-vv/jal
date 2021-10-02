@@ -1,8 +1,7 @@
-from PySide2.QtCore import Qt, Signal
+from PySide2.QtCore import Qt
 from PySide2.QtSql import QSqlTableModel
 from PySide2.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection, executeSQL
-from jal.widgets.helpers import g_tr
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 
 
@@ -10,11 +9,11 @@ from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 # TODO Reimplement report based on 'ledger' DB table in order to include all types of operations
 class CategoryReportModel(QSqlTableModel):
     def __init__(self, parent_view):
-        self._columns = [("timestamp", g_tr("Reports", "Timestamp")),
-                         ("account", g_tr("Reports", "Account")),
-                         ("name", g_tr("Reports", "Peer Name")),
-                         ("sum", g_tr("Reports", "Amount")),
-                         ("note", g_tr("Reports", "Note"))]
+        self._columns = [("timestamp", self.tr("Timestamp")),
+                         ("account", self.tr("Account")),
+                         ("name", self.tr("Peer Name")),
+                         ("sum", self.tr("Amount")),
+                         ("note", self.tr("Note"))]
         self._view = parent_view
         self._query = None
         self._timestamp_delegate = None
@@ -49,7 +48,7 @@ class CategoryReportModel(QSqlTableModel):
 
     def prepare(self, begin, end, category_id, group_dates):
         if category_id == 0:
-            raise ValueError(g_tr('Reports', "You should select category to create By Category report"))
+            raise ValueError(self.tr("You should select category to create By Category report"))
         self._query = executeSQL("SELECT a.timestamp, ac.name AS account, p.name, d.amount, d.note "
                                 "FROM actions AS a "
                                 "LEFT JOIN action_details AS d ON d.pid=a.id "

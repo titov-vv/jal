@@ -7,9 +7,8 @@ import math
 import re
 import pandas
 from datetime import datetime, timezone
-
+from PySide2.QtWidgets import QApplication
 from jal.constants import DividendSubtype
-from jal.widgets.helpers import g_tr
 from jal.db.update import JalDB
 
 
@@ -49,13 +48,16 @@ class Quik:
     def __init__(self, filename):
         self._filename = filename
 
+    def tr(self, text):
+        return QApplication.translate("Quik", text)
+
     def load(self):
         try:
             data = pandas.read_html(self._filename, encoding='cp1251',
                                     converters={self.Qty: convert_amount, self.Amount: convert_amount,
                                                 self.Price: convert_amount, self.Coupon: convert_amount})
         except:
-            logging.error(g_tr('Quik', "Can't read statement file"))
+            logging.error(self.tr("Can't read statement file"))
             return False
 
         report_info = data[0]
@@ -64,11 +66,11 @@ class Quik:
         if parts:
             account_id = JalDB().get_account_id(parts.group(1))
         else:
-            logging.error(g_tr('Quik', "Can't get account number from the statement."))
+            logging.error(self.tr("Can't get account number from the statement."))
             return False
         if account_id is None:
-            logging.error(g_tr('Quik', "Account with number ") + f"{parts.group(1)}" +
-                          g_tr('Quik', " not found. Import cancelled."))
+            logging.error(self.tr("Account with number ") + f"{parts.group(1)}" +
+                          self.tr(" not found. Import cancelled."))
             return False
 
         for index, row in deals_info.iterrows():
@@ -79,11 +81,11 @@ class Quik:
             elif row[self.Type][:len(self.Total)] == self.Total:
                 break  # End of statement reached
             else:
-                logging.warning(g_tr('Quik', "Unknown operation type ") + f"'{row[self.Type]}'")
+                logging.warning(self.tr("Unknown operation type ") + f"'{row[self.Type]}'")
                 continue
             asset_id = JalDB().get_asset_id(row[self.Symbol])
             if asset_id is None:
-                logging.warning(g_tr('Quik', "Unknown asset ") + f"'{row[self.Symbol]}'")
+                logging.warning(self.tr("Unknown asset ") + f"'{row[self.Symbol]}'")
                 continue
             timestamp = int(
                 datetime.strptime(row[self.DateTime], "%d.%m.%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp())

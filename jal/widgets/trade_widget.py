@@ -3,7 +3,6 @@ from dateutil import tz
 
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QLabel, QDateTimeEdit, QDateEdit, QLineEdit
-from jal.widgets.helpers import g_tr
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
@@ -36,16 +35,16 @@ class TradeWidget(AbstractOperationDetails):
         self.fee_label = QLabel(self)
         self.comment_label = QLabel(self)
 
-        self.main_label.setText(g_tr("TradeWidget", "Buy / Sell"))
-        self.date_label.setText(g_tr("TradeWidget", "Date/Time"))
-        self.settlement_label.setText(g_tr("TradeWidget", "Settlement"))
-        self.number_label.setText(g_tr("TradeWidget", "#"))
-        self.account_label.setText(g_tr("TradeWidget", "Account"))
-        self.symbol_label.setText(g_tr("TradeWidget", "Asset"))
-        self.qty_label.setText(g_tr("TradeWidget", "Qty"))
-        self.price_label.setText(g_tr("TradeWidget", "Price"))
-        self.fee_label.setText(g_tr("TradeWidget", "Fee"))
-        self.comment_label.setText(g_tr("TradeWidget", "Note"))
+        self.main_label.setText(self.tr("Buy / Sell"))
+        self.date_label.setText(self.tr("Date/Time"))
+        self.settlement_label.setText(self.tr("Settlement"))
+        self.number_label.setText(self.tr("#"))
+        self.account_label.setText(self.tr("Account"))
+        self.symbol_label.setText(self.tr("Asset"))
+        self.qty_label.setText(self.tr("Qty"))
+        self.price_label.setText(self.tr("Price"))
+        self.fee_label.setText(self.tr("Fee"))
+        self.comment_label.setText(self.tr("Note"))
 
         self.timestamp_editor = QDateTimeEdit(self)
         self.timestamp_editor.setCalendarPopup(True)

@@ -1,7 +1,7 @@
 import re
 import logging
 from datetime import date, datetime
-from jal.widgets.helpers import g_tr
+from PySide2.QtWidgets import QApplication
 
 # standard header is "DLSG            DeclYYYY0102FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", where YYYY is year of declaration
 HEADER_LENGTH = 60
@@ -116,13 +116,16 @@ class DLSGDeclForeign(DLSGsection):
             section_name = records.pop(0)
 
             if section_name != SECTION_PREFIX + DLSGCurrencyIncome.tag + f"{i:03d}":
-                logging.error(g_tr('DLSG', "Invalid DeclForeign subsection:") + f" {section_name}")
+                logging.error(self.tr("Invalid DeclForeign subsection:") + f" {section_name}")
                 raise ValueError
             self.sections[i] = DLSGCurrencyIncome(i, records=records)
 
         self._tail_records = []
         while (len(records) > 0) and (records[0][:1] != SECTION_PREFIX):
             self._tail_records.append(records.pop(0))
+
+    def tr(self, text):
+        return QApplication.translate("DLSG", text)
 
     def add_income(self, code, country_code, description, timestamp, currency, amount, amount_rub, tax, tax_rub, rate,
                    deduction=0.0):
@@ -209,6 +212,9 @@ class DLSG:
             self.DERIVATIVE_INCOME: ('13', '1532', '(06)Доходы по оп-циям с ПФИ (обращ-ся на орг. рынке ЦБ), баз. ак. по которым являются ЦБ', '206')
         }
 
+    def tr(self, text):
+        return QApplication.translate("DLSG", text)
+
     # Create an income record of given 'type' in tax declaration
     # timestamp - date of income, country_code - 3-digit ISO country code, currency - 3-letter ISO currency code
     # rate - currency rate for given date, note - description of the income, amount and tax are currency and rubles
@@ -222,11 +228,11 @@ class DLSG:
         try:
             tax_codes = self.codes[type]
         except KeyError:
-            raise(g_tr('DLSG', "Unknown income type for russian tax form: ") + type)
+            raise(self.tr("Unknown income type for russian tax form: ") + type)
         try:
             currency_data = self.currencies[currency]
         except KeyError:
-            logging.error(g_tr('DLSG', "Currency isn't supported for russian tax form: ") + currency)
+            logging.error(self.tr("Currency isn't supported for russian tax form: ") + currency)
             return
         foreign_section.add_income(tax_codes, country_code, note, timestamp,
                                    currency_data, amount, amount_rub, tax, tax_rub, rate, deduction=spending_rub)
@@ -235,7 +241,7 @@ class DLSG:
         for section in self._sections:
             if self._sections[section].tag == name:
                 return self._sections[section]
-        logging.error(g_tr('DLSG', "Declaration file has no 'DeclForeign' section."))
+        logging.error(self.tr("Declaration file has no 'DeclForeign' section."))
         return None
 
     # Method reads declaration form a file with given filename
@@ -250,10 +256,10 @@ class DLSG:
 
         parts = re.match(self.header_pattern, self.header)
         if not parts:
-            logging.error(g_tr('DLSG', "Unexpected declaration file header:") + f" {self.header}")
+            logging.error(self.tr("Unexpected declaration file header:") + f" {self.header}")
             raise ValueError
         self._year = int(parts.group(1))
-        logging.info(g_tr('DLSG', "Declaration file is for year:") + f" {self._year}")
+        logging.info(self.tr("Declaration file is for year:") + f" {self._year}")
 
         self.split_records(raw_data[HEADER_LENGTH:])
         self.split_sections()
@@ -262,7 +268,7 @@ class DLSG:
     def split_records(self, data):
         pos = 0
 
-        while (pos < len(data)):
+        while pos < len(data):
             length_field = data[pos : pos + SIZE_LENGTH]
 
             if length_field == (FOOTER * len(length_field)):
@@ -272,14 +278,14 @@ class DLSG:
             try:
                 length = int(length_field)
             except Exception as e:
-                logging.error(g_tr('DLSG', "Invalid record size at position")
+                logging.error(self.tr("Invalid record size at position")
                               + f" {pos+HEADER_LENGTH}: '{length_field}'")
                 raise ValueError
             pos += SIZE_LENGTH
             self._records.append(data[pos: pos + length])
             pos = pos + length
 
-        logging.debug(g_tr('DLSG', "Declaration file content:") + f" {self._records}")
+        logging.debug(self.tr("Declaration file content:") + f" {self._records}")
 
     def split_sections(self):
         i = 0
@@ -297,19 +303,19 @@ class DLSG:
             self._sections[i] = section
             i += 1
 
-        logging.debug(g_tr('DLSG', "Sections loaded:") + f" {i}")
+        logging.debug(self.tr("Sections loaded:") + f" {i}")
         for j in range(i):
-            logging.debug(g_tr('DLSG', "Section ") + f" '{self._sections[j].tag}' "
-                          + g_tr('DLSG', "loaded as ") + str(type(self._sections[j])))
+            logging.debug(self.tr("Section ") + f" '{self._sections[j].tag}' "
+                          + self.tr("loaded as ") + str(type(self._sections[j])))
 
     def write_file(self, filename):
-        logging.info(g_tr('DLSG', "Writing file:") + f" {filename}")
+        logging.info(self.tr("Writing file:") + f" {filename}")
 
         self._records = []
 
         for section in self._sections:
             self._sections[section].write(self._records)
-        logging.debug(g_tr('DLSG', "Declaration to write:") + f" {self._records}")
+        logging.debug(self.tr("Declaration to write:") + f" {self._records}")
 
         raw_data = self.header.format(self._year)
         for record in self._records:

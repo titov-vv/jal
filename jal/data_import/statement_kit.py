@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime, timezone, timedelta
 
-from jal.widgets.helpers import g_tr
 from jal.constants import Setup, PredefinedCategory
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xls import StatementXLS
@@ -59,7 +58,7 @@ class StatementKIT(StatementXLS):
                 bond_interest = self._statement[headers['accrued_int']][row]
             else:
                 row += 1
-                logging.warning(g_tr('KIT', "Unknown trade type: ") + self._statement[headers['B/S']][row])
+                logging.warning(self.tr("Unknown trade type: ") + self._statement[headers['B/S']][row])
                 continue
             price = self._statement[headers['price']][row]
             fee = round(abs(self._statement[headers['fee_ex']][row] + self._statement[headers['fee_broker']][row]), 8)
@@ -84,7 +83,7 @@ class StatementKIT(StatementXLS):
                 self._data[FOF.ASSET_PAYMENTS].append(payment)
             cnt += 1
             row += 1
-        logging.info(g_tr('KIT', "Trades loaded: ") + f"{cnt}")
+        logging.info(self.tr("Trades loaded: ") + f"{cnt}")
 
     def _load_cash_transactions(self):
         cnt = 0
@@ -114,7 +113,7 @@ class StatementKIT(StatementXLS):
                 break
             operation = self._statement[headers['operation']][row]
             if operation not in operations:  # not supported type of operation
-                raise Statement_ImportError(g_tr('KIT', "Unsuppported cash transaction ") + f"'{operation}'")
+                raise Statement_ImportError(self.tr("Unsuppported cash transaction ") + f"'{operation}'")
             timestamp = int(self._statement[headers['date']][row].replace(tzinfo=timezone.utc).timestamp())
             account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
             amount = self._statement[headers['amount']][row]
@@ -123,7 +122,7 @@ class StatementKIT(StatementXLS):
             operations[operation](timestamp, account_id, amount, reason, description)
             cnt += 1
             row += 1
-        logging.info(g_tr('KIT', "Cash operations loaded: ") + f"{cnt}")
+        logging.info(self.tr("Cash operations loaded: ") + f"{cnt}")
 
     def transfer_in(self, timestamp, account_id, amount, reason, note):
         account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
@@ -156,4 +155,4 @@ class StatementKIT(StatementXLS):
         self._data[FOF.INCOME_SPENDING].append(interest)
 
     def tax(self, timestamp, account_id, amount, _reason, description):
-        logging.info(g_tr('KIT', "Dividend taxes are not supported for KIT statements yet"))
+        logging.info(self.tr("Dividend taxes are not supported for KIT statements yet"))

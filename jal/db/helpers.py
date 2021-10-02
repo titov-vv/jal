@@ -2,11 +2,10 @@ import os
 import logging
 import sqlite3
 from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery
-from PySide2.QtWidgets import QMessageBox
+from PySide2.QtWidgets import QApplication, QMessageBox
 from PySide2.QtGui import QIcon
 from jal.constants import Setup
 from jal.db.settings import JalSettings
-from jal.widgets.helpers import g_tr
 
 
 # No translation of the file because these routines might be used before QApplication initialization
@@ -191,8 +190,8 @@ def init_db_from_sql(db_file, sql_file):
 
 # -------------------------------------------------------------------------------------------------------------------
 def update_db_schema(db_path):
-    if QMessageBox().warning(None, g_tr('DB', "Database format is outdated"),
-                             g_tr('DB', "Do you agree to upgrade your data to newer format?"),
+    if QMessageBox().warning(None, QApplication.translate('DB', "Database format is outdated"),
+                             QApplication.translate('DB', "Do you agree to upgrade your data to newer format?"),
                              QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
         return LedgerInitError(LedgerInitError.OutdatedDbSchema)
 
@@ -233,7 +232,7 @@ def get_country_by_code(country_code):
     country_id = readSQL("SELECT id FROM countries WHERE code=:code", [(":code", country_code)], check_unique=True)
     if country_id is None:
         country_id = 0
-        logging.warning(g_tr('DB', "Unknown country code: ") + f"'{country_code}'")
+        logging.warning(QApplication.translate('DB', "Unknown country code: ") + f"'{country_code}'")
     return country_id
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -251,7 +250,8 @@ def update_asset_country(asset_id, country_id):
     old_country = readSQL("SELECT name FROM countries WHERE id=:country_id", [(":country_id", old_id)])
     new_country = readSQL("SELECT name FROM countries WHERE id=:country_id", [(":country_id", country_id)])
     asset_name = readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":country_id", asset_id)])
-    logging.warning(g_tr('DB', "Country was changed for asset ")+ f"{asset_name}: f{old_country} -> {new_country}")
+    logging.warning(QApplication.translate('DB', "Country was changed for asset ") +
+                    f"{asset_name}: f{old_country} -> {new_country}")
 
 # -------------------------------------------------------------------------------------------------------------------
 def account_last_date(account_id):

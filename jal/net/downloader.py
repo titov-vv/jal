@@ -8,14 +8,13 @@ from pandas.errors import ParserError
 import json
 from PySide2 import QtCore
 from PySide2.QtCore import QObject, Signal
-from PySide2.QtWidgets import QDialog
+from PySide2.QtWidgets import QApplication, QDialog
 
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from jal.constants import Setup, MarketDataFeed, BookAccount, PredefinedAsset
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.update import JalDB
 from jal.net.helpers import get_web_data, post_web_data, isEnglish
-from jal.widgets.helpers import g_tr
 
 
 # ===================================================================================================================
@@ -108,13 +107,13 @@ class QuoteDownloader(QObject):
                 data = self.data_loaders[asset['feed_id']](asset['asset_id'], asset['name'], asset['isin'],
                                                            from_timestamp, end_timestamp)
             except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
-                logging.warning(g_tr('QuotesUpdateDialog', "No data were downloaded for ") + f"{asset}")
+                logging.warning(self.tr("No data were downloaded for ") + f"{asset}")
                 continue
             if data is not None:
                 for date, quote in data.iterrows():  # Date in pandas dataset is in UTC by default
                     jal_db.update_quote(asset['asset_id'], int(date.timestamp()), float(quote[0]))
         jal_db.commit()
-        logging.info(g_tr('QuotesUpdateDialog', "Download completed"))
+        logging.info(self.tr("Download completed"))
 
     def PrepareRussianCBReader(self):
         rows = []
@@ -228,7 +227,7 @@ class QuoteDownloader(QObject):
         try:
             asset['type'] = asset_type[asset['type']]
         except KeyError:
-            logging.error(g_tr('QuoteDownloader', "Unsupported MOEX security type: ") + f"{asset['type']}")
+            logging.error(QApplication.translate("MOEX", "Unsupported MOEX security type: ") + f"{asset['type']}")
             return {}
 
         for board in boards:
@@ -262,7 +261,7 @@ class QuoteDownloader(QObject):
             data = securities['data']  # take the whole list if we search by isin
         if data:
             if len(data) > 1:
-                logging.info(g_tr('QuoteDownloader', "MOEX: multiple assets found for reg.number: ") + search_key)
+                logging.info(QApplication.translate("MOEX", "Multiple MOEX assets found for reg.number: ") + search_key)
                 return secid
             asset_data = dict(zip(columns, data[0]))
             secid = asset_data['secid'] if 'secid' in asset_data else ''
@@ -324,13 +323,13 @@ class QuoteDownloader(QObject):
         quotes = post_web_data(url, params=params)
         quotes_text = quotes.splitlines()
         if len(quotes_text) < 4:
-            logging.warning(g_tr('QuotesUpdateDialog', "Euronext quotes history reply is too short: ") + quotes)
+            logging.warning(self.tr("Euronext quotes history reply is too short: ") + quotes)
             return None
         if quotes_text[0] != '"Historical Data"':
-            logging.warning(g_tr('QuotesUpdateDialog', "Euronext quotes header not found in: ") + quotes)
+            logging.warning(self.tr("Euronext quotes header not found in: ") + quotes)
             return None
         if quotes_text[2] != isin:
-            logging.warning(g_tr('QuotesUpdateDialog', "Euronext quotes ISIN mismatch in: ") + quotes)
+            logging.warning(self.tr("Euronext quotes ISIN mismatch in: ") + quotes)
             return None
         file = StringIO(quotes)
         try:
@@ -367,7 +366,7 @@ class QuoteDownloader(QObject):
         if 'getCompanyPriceHistoryForDownload' in result_data:
             price_array = result_data['getCompanyPriceHistoryForDownload']
         else:
-            logging.warning(g_tr('QuotesUpdateDialog', "Can't parse data for TSX quotes: ") + json_content)
+            logging.warning(self.tr("Can't parse data for TSX quotes: ") + json_content)
             return None
         data = pd.DataFrame(price_array)
         data.rename(columns={'datetime': 'Date', 'closePrice': 'Close'}, inplace=True)

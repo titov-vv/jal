@@ -8,8 +8,7 @@ from datetime import datetime
 from tempfile import TemporaryDirectory
 import tarfile
 
-from PySide2.QtWidgets import QFileDialog, QMessageBox
-from jal.widgets.helpers import g_tr
+from PySide2.QtWidgets import QApplication, QFileDialog, QMessageBox
 from jal.db.helpers import db_connection
 
 
@@ -24,6 +23,9 @@ class JalBackup:
         self.file = db_file
         self.backup_name = None
         self._backup_label_date = ''
+
+    def tr(self, text):
+        return QApplication.translate("JalBackup", text)
 
     # Function returns True if all of following conditions are met (otherwise returns False):
     # - backup contains all required filenames
@@ -44,12 +46,12 @@ class JalBackup:
             if label_content[:len(self.backup_label)] == self.backup_label:
                 self._backup_label_date = label_content[len(self.backup_label):]
             else:
-                logging.warning(g_tr('JalBackup', "Backup label not recognized"))
+                logging.warning(self.tr("Backup label not recognized"))
                 return False
             try:
                 _ = datetime.strptime(self._backup_label_date, self.date_fmt)
             except ValueError:
-                logging.warning(g_tr('JalBackup', "Can't validate backup date"))
+                logging.warning(self.tr("Can't validate backup date"))
                 return False
         return True
 
@@ -72,21 +74,21 @@ class JalBackup:
             try:
                 shutil.move(tmp_path + os.sep + Setup.DB_PATH, self.file)
             except:
-                logging.warning(g_tr('JalBackup', "Failed to restore backup file"))
+                logging.warning(self.tr("Failed to restore backup file"))
                 return False
         return True
 
     def get_filename(self, save=True):
         self.backup_name = None
         if save:
-            filename, filter = QFileDialog.getSaveFileName(None, g_tr('JalBackup', "Save backup to:"),
-                                                           ".", g_tr('JalBackup', "Archives (*.tgz)"))
+            filename, filter = QFileDialog.getSaveFileName(None, self.tr("Save backup to:"),
+                                                           ".", self.tr("Archives (*.tgz)"))
             if filename:
-                if filter == g_tr('JalBackup', "Archives (*.tgz)") and filename[-4:] != '.tgz':
+                if filter == self.tr("Archives (*.tgz)") and filename[-4:] != '.tgz':
                     filename = filename + '.tgz'
         else:
-            filename, _filter = QFileDialog.getOpenFileName(None, g_tr('JalBackup', "Select file with backup"),
-                                                            ".", g_tr('JalBackup', "Archives (*.tgz)"))
+            filename, _filter = QFileDialog.getOpenFileName(None, self.tr("Select file with backup"),
+                                                            ".", self.tr("Archives (*.tgz)"))
         if filename:
             self.backup_name = filename
 
@@ -95,7 +97,7 @@ class JalBackup:
         if self.backup_name is None:
             return
         self.do_backup()
-        logging.info(g_tr('JalBackup', "Backup saved in: ") + self.backup_name)
+        logging.info(self.tr("Backup saved in: ") + self.backup_name)
 
     def restore(self):
         self.get_filename(False)
@@ -104,17 +106,17 @@ class JalBackup:
         db_connection().close()
 
         if not self.validate_backup():
-            logging.error(g_tr('JalBackup', "Wrong format of backup file"))
+            logging.error(self.tr("Wrong format of backup file"))
             return
 
         if not self.do_restore():
             return
-        logging.info(g_tr('JalBackup', "Backup restored from: ") + self.backup_name + self._backup_label_date
-                     + g_tr('JalBackup', " into ") + self.file)
+        logging.info(self.tr("Backup restored from: ") + self.backup_name + self._backup_label_date
+                     + self.tr(" into ") + self.file)
 
-        QMessageBox().information(self.parent, g_tr('JalBackup', "Data restored"),
-                                  g_tr('JalBackup', "Database was loaded from the backup.\n") +
-                                  g_tr('JalBackup', "You should restart application to apply changes\n"
+        QMessageBox().information(self.parent, self.tr("Data restored"),
+                                  self.tr("Database was loaded from the backup.\n") +
+                                  self.tr("You should restart application to apply changes\n"
                                                     "Application will be terminated now"),
                                   QMessageBox.Ok)
         self.parent.close()

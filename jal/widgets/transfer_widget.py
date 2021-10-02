@@ -4,7 +4,6 @@ from dateutil import tz
 from PySide2.QtCore import Qt, Slot
 from PySide2.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QPushButton
 from jal.constants import Setup
-from jal.widgets.helpers import g_tr
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
@@ -40,16 +39,16 @@ class TransferWidget(AbstractOperationDetails):
         self.copy_date_btn = QPushButton(self)
         self.copy_amount_btn = QPushButton(self)
 
-        self.main_label.setText(g_tr("TransferWidget", "Transfer"))
-        self.from_date_label.setText(g_tr("TransferWidget", "Date/Time"))
-        self.from_account_label.setText(g_tr("TransferWidget", "From"))
-        self.from_amount_label.setText(g_tr("TransferWidget", "Amount"))
-        self.to_date_label.setText(g_tr("TransferWidget", "Date/Time"))
-        self.to_account_label.setText(g_tr("TransferWidget", "To"))
-        self.to_amount_label.setText(g_tr("TransferWidget", "Amount"))
-        self.fee_account_label.setText(g_tr("TransferWidget", "Fee from"))
-        self.fee_amount_label.setText(g_tr("TransferWidget", "Fee amount"))
-        self.comment_label.setText(g_tr("TransferWidget", "Note"))
+        self.main_label.setText(self.tr("Transfer"))
+        self.from_date_label.setText(self.tr("Date/Time"))
+        self.from_account_label.setText(self.tr("From"))
+        self.from_amount_label.setText(self.tr("Amount"))
+        self.to_date_label.setText(self.tr("Date/Time"))
+        self.to_account_label.setText(self.tr("To"))
+        self.to_amount_label.setText(self.tr("Amount"))
+        self.fee_account_label.setText(self.tr("Fee from"))
+        self.fee_amount_label.setText(self.tr("Fee amount"))
+        self.comment_label.setText(self.tr("Note"))
         self.arrow_account.setText(" ➜ ")
         self.copy_date_btn.setText("➜")
         self.copy_date_btn.setFixedWidth(self.copy_date_btn.fontMetrics().width("XXXX"))

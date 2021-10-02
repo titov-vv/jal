@@ -4,19 +4,11 @@ from PySide2.QtSql import QSqlQuery
 from PySide2.QtGui import QBrush, QFont
 from PySide2.QtWidgets import QStyledItemDelegate, QHeaderView
 from jal.constants import CustomColor, TransactionType, TransferSubtype, DividendSubtype, CorporateAction
-from jal.widgets.helpers import g_tr
 from jal.db.helpers import db_connection, readSQL, executeSQL, readSQLrecord
 
 
 class OperationsModel(QAbstractTableModel):
     PAGE_SIZE = 100
-    _columns = [" ",
-                g_tr('OperationsModel', "Timestamp"),
-                g_tr('OperationsModel', "Account"),
-                g_tr('OperationsModel', "Notes"),
-                g_tr('OperationsModel', "Amount"),
-                g_tr('OperationsModel', "Balance"),
-                g_tr('OperationsModel', "Currency")]
     _tables = {
         TransactionType.Action: "actions",
         TransactionType.Dividend: "dividends",
@@ -24,7 +16,6 @@ class OperationsModel(QAbstractTableModel):
         TransactionType.Transfer: "transfers",
         TransactionType.CorporateAction: "corp_actions"
     }
-
     OperationSign = {
         (TransactionType.Action, -1): ('—', CustomColor.DarkRed),
         (TransactionType.Action, +1): ('+', CustomColor.DarkGreen),
@@ -41,16 +32,18 @@ class OperationsModel(QAbstractTableModel):
         (TransactionType.CorporateAction, CorporateAction.SymbolChange): ('🡘', CustomColor.Black),
         (TransactionType.CorporateAction, CorporateAction.StockDividend): ('Δ\ns', CustomColor.DarkGreen)
     }
-    CorpActionNames = {
-        CorporateAction.SymbolChange: g_tr('OperationsModel', "Symbol change {old} -> {new}"),
-        CorporateAction.Split: g_tr('OperationsModel', "Split {old} {before} into {after}"),
-        CorporateAction.SpinOff: g_tr('OperationsModel', "Spin-off {after} {new} from {before} {old}"),
-        CorporateAction.Merger: g_tr('OperationsModel', "Merger {before} {old} into {after} {new}"),
-        CorporateAction.StockDividend: g_tr('OperationsModel', "Stock dividend: {after} {new}")
-    }
 
     def __init__(self, parent_view):
         super().__init__(parent_view)
+        self._columns = [" ", self.tr("Timestamp"), self.tr("Account"), self.tr("Notes"),
+                         self.tr("Amount"), self.tr("Balance"), self.tr("Currency")]
+        self.CorpActionNames = {
+            CorporateAction.SymbolChange: self.tr("Symbol change {old} -> {new}"),
+            CorporateAction.Split: self.tr("Split {old} {before} into {after}"),
+            CorporateAction.SpinOff: self.tr("Spin-off {after} {new} from {before} {old}"),
+            CorporateAction.Merger: self.tr("Merger {before} {old} into {after} {new}"),
+            CorporateAction.StockDividend: self.tr("Stock dividend: {after} {new}")
+        }
         self._view = parent_view
         self._amount_delegate = None
         self._data = []
@@ -144,7 +137,7 @@ class OperationsModel(QAbstractTableModel):
             if self._data[row]['type'] == TransactionType.Action:
                 note = self._data[row]['num_peer']
                 if self._data[row]['asset'] != '' and self._data[row]['fee_tax'] != 0:
-                    note += "\n" + g_tr('OperationsModel', "Rate: ")
+                    note += "\n" + self.tr("Rate: ")
                     if self._data[row]['fee_tax'] >= 1:
                         note += f"{self._data[row]['fee_tax']:.4f} " \
                                 f"{self._data[row]['asset']}/{self._data[row]['currency']}"
@@ -164,11 +157,11 @@ class OperationsModel(QAbstractTableModel):
                         else:
                             return self._data[row]['note']
                     else:
-                        return g_tr('OperationsModel', "Error. Zero rate")
+                        return self.tr("Error. Zero rate")
                 else:
                     return self._data[row]['note']
             elif self._data[row]['type'] == TransactionType.Dividend:
-                return self._data[row]['note'] + "\n" + g_tr('OperationsModel', "Tax: ") + self._data[row]['note2']
+                return self._data[row]['note'] + "\n" + self.tr("Tax: ") + self._data[row]['note2']
             elif self._data[row]['type'] == TransactionType.Trade:
                 if self._data[row]['fee_tax'] != 0:
                     text = f"{self._data[row]['qty_trid']:+.2f} @ {self._data[row]['price']:.4f}\n({self._data[row]['fee_tax']:.2f}) "
@@ -185,7 +178,7 @@ class OperationsModel(QAbstractTableModel):
                 text = self.CorpActionNames[self._data[row]['subtype']].format(old=self._data[row]['asset'], new=self._data[row]['note'],
                                                                     before=self._data[row]['amount'], after=qty_after)
                 if self._data[row]['subtype'] == CorporateAction.SpinOff:
-                    text += f"; {basis:.2f}% " + g_tr('OperationsModel', " cost basis") + "\n" + self._data[row]['note2']
+                    text += f"; {basis:.2f}% " + self.tr(" cost basis") + "\n" + self._data[row]['note2']
                 return text
             else:
                 assert False

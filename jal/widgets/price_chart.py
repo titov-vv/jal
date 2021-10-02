@@ -6,7 +6,6 @@ from PySide2.QtCharts import QtCharts
 from jal.db.update import JalDB
 from jal.constants import BookAccount, CustomColor
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord
-from jal.widgets.helpers import g_tr
 
 
 class ChartWidget(QWidget):
@@ -78,7 +77,7 @@ class ChartWindow(QDialog):
         self.layout.addWidget(self.chart)
         self.setLayout(self.layout)
 
-        self.setWindowTitle(g_tr('ChartWindow', "Price chart for ") + self.asset_name)
+        self.setWindowTitle(self.tr("Price chart for ") + self.asset_name)
         self.setWindowFlag(Qt.Tool)
         self.setGeometry(position.x(), position.y(), self.width(), self.height())
 
@@ -89,19 +88,19 @@ class ChartWindow(QDialog):
         min_ts = max_ts = 0
 
         self.currency_name = JalDB().get_asset_name(JalDB().get_account_currency(self.account_id))
-        self.start_time = readSQL("SELECT MAX(ts) FROM "  # Take either last "empty" timestamp
-                                  "(SELECT coalesce(MAX(timestamp), 0) AS ts "
-                                  "FROM ledger_sums WHERE account_id=:account_id AND asset_id=:asset_id "
-                                  "AND book_account=:assets_book AND sum_amount==0 "
-                                  "UNION "  # or first timestamp where position started to appear
-                                  "SELECT coalesce(MIN(timestamp), 0) AS ts "
-                                  "FROM ledger_sums WHERE account_id=:account_id AND asset_id=:asset_id "
-                                  "AND book_account=:assets_book AND sum_amount!=0)",
-                                  [(":account_id", self.account_id), (":asset_id", self.asset_id),
-                                   (":assets_book", BookAccount.Assets)])
+        start_time = readSQL("SELECT MAX(ts) FROM "  # Take either last "empty" timestamp
+                             "(SELECT coalesce(MAX(timestamp), 0) AS ts "
+                             "FROM ledger_sums WHERE account_id=:account_id AND asset_id=:asset_id "
+                             "AND book_account=:assets_book AND sum_amount==0 "
+                             "UNION "  # or first timestamp where position started to appear
+                             "SELECT coalesce(MIN(timestamp), 0) AS ts "
+                             "FROM ledger_sums WHERE account_id=:account_id AND asset_id=:asset_id "
+                             "AND book_account=:assets_book AND sum_amount!=0)",
+                             [(":account_id", self.account_id), (":asset_id", self.asset_id),
+                              (":assets_book", BookAccount.Assets)])
         # Get quotes quotes
         query = executeSQL("SELECT timestamp, quote FROM quotes WHERE asset_id=:asset_id AND timestamp>:last",
-                           [(":asset_id", self.asset_id), (":last", self.start_time)])
+                           [(":asset_id", self.asset_id), (":last", start_time)])
         while query.next():
             quote = readSQLrecord(query, named=True)
             self.quotes.append({'timestamp': quote['timestamp'] * 1000, 'quote': quote['quote']})  # timestamp to ms
@@ -113,7 +112,7 @@ class ChartWindow(QDialog):
         # Get deals quotes
         query = executeSQL("SELECT timestamp, price, qty FROM trades "
                            "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp>=:last",
-                           [(":account_id", self.account_id), (":asset_id", self.asset_id), (":last", self.start_time)])
+                           [(":account_id", self.account_id), (":asset_id", self.asset_id), (":last", start_time)])
         while query.next():
             trade = readSQLrecord(query, named=True)
             self.trades.append({'timestamp': trade['timestamp'] * 1000, 'price': trade['price'], 'qty': trade['qty']})

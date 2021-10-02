@@ -8,7 +8,7 @@ from PySide2.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox, QLa
 
 from jal import __version__
 from jal.ui.ui_main_window import Ui_JAL_MainWindow
-from jal.widgets.helpers import g_tr, ManipulateDate, dependency_present
+from jal.widgets.helpers import ManipulateDate, dependency_present
 from jal.widgets.reference_dialogs import AccountTypeListDialog, AccountListDialog, AssetListDialog, TagsListDialog,\
     CategoryListDialog, CountryListDialog, QuotesListDialog, PeerListDialog
 from jal.constants import Setup, TransactionType
@@ -44,10 +44,11 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.statements = StatementLoader()
         self.backup = JalBackup(self, get_dbfilename(get_app_path()))
         self.estimator = None
+        self.price_chart = None
 
         self.actionImportSlipRU.setEnabled(dependency_present(['pyzbar', 'PIL']))
 
-        self.actionAbout = QAction(text=g_tr('MainWindow', "About"), parent=self)
+        self.actionAbout = QAction(text=self.tr("About"), parent=self)
         self.MainMenu.addAction(self.actionAbout)
 
         self.langGroup = QActionGroup(self.menuLanguage)
@@ -63,9 +64,9 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
         # Operations view context menu
         self.contextMenu = QMenu(self.OperationsTableView)
-        self.actionReconcile = QAction(load_icon("reconcile.png"), g_tr('MainWindow', "Reconcile"), self)
-        self.actionCopy = QAction(load_icon("copy.png"), g_tr('MainWindow', "Copy"), self)
-        self.actionDelete = QAction(load_icon("delete.png"), g_tr('MainWindow', "Delete"), self)
+        self.actionReconcile = QAction(load_icon("reconcile.png"), self.tr("Reconcile"), self)
+        self.actionCopy = QAction(load_icon("copy.png"), self.tr("Copy"), self)
+        self.actionDelete = QAction(load_icon("delete.png"), self.tr("Delete"), self)
         self.contextMenu.addAction(self.actionReconcile)
         self.contextMenu.addSeparator()
         self.contextMenu.addAction(self.actionCopy)
@@ -189,10 +190,10 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         language_code = action.data()
         if language_code != self.currentLanguage:
             JalSettings().setValue('Language', JalDB().get_language_id(language_code))
-            QMessageBox().information(self, g_tr('MainWindow', "Restart required"),
-                                      g_tr('MainWindow', "Language was changed to ") +
+            QMessageBox().information(self, self.tr("Restart required"),
+                                      self.tr("Language was changed to ") +
                                       QLocale.languageToString(QLocale(language_code).language()) + "\n" +
-                                      g_tr('MainWindow', "You should restart application to apply changes\n"
+                                      self.tr("You should restart application to apply changes\n"
                                            "Application will be terminated now"),
                                       QMessageBox.Ok)
             self.close()
@@ -213,15 +214,14 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
     def showAboutWindow(self):
         about_box = QMessageBox(self)
         about_box.setAttribute(Qt.WA_DeleteOnClose)
-        about_box.setWindowTitle(g_tr('MainWindow', "About"))
-        title = g_tr('MainWindow',
-                     "<h3>JAL</h3><p>Just Another Ledger, version {version}</p>".format(version=__version__))
+        about_box.setWindowTitle(self.tr("About"))
+        title = self.tr("<h3>JAL</h3><p>Just Another Ledger, version {version}</p>".format(version=__version__))
         about_box.setText(title)
-        about = g_tr('MainWindow', "<p>More information, manuals and problem reports are at "
-                                   "<a href=https://github.com/titov-vv/jal>github home page</a></p>"
-                                   "<p>Questions, comments, help or donations:</p>"
-                                   "<p><a href=mailto:jal@gmx.ru>jal@gmx.ru</a></p>"
-                                   "<p><a href=https://t.me/jal_support>Telegram</a></p>")
+        about = self.tr("<p>More information, manuals and problem reports are at "
+                        "<a href=https://github.com/titov-vv/jal>github home page</a></p>"
+                        "<p>Questions, comments, help or donations:</p>"
+                        "<p><a href=mailto:jal@gmx.ru>jal@gmx.ru</a></p>"
+                        "<p><a href=https://t.me/jal_support>Telegram</a></p>")
         about_box.setInformativeText(about)
         about_box.show()
 
@@ -279,11 +279,11 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
     def onHoldingsContextMenu(self, pos):
         index = self.HoldingsTableView.indexAt(pos)
         contextMenu = QMenu(self.HoldingsTableView)
-        actionShowChart = QAction(text=g_tr('Ledger', "Show Price Chart"), parent=self.HoldingsTableView)
+        actionShowChart = QAction(text=self.tr("Show Price Chart"), parent=self.HoldingsTableView)
         actionShowChart.triggered.connect(
             partial(self.showPriceChart, self.HoldingsTableView.viewport().mapToGlobal(pos), index))
         contextMenu.addAction(actionShowChart)
-        actionEstimateTax = QAction(text=g_tr('Ledger', "Estimate Russian Tax"), parent=self.HoldingsTableView)
+        actionEstimateTax = QAction(text=self.tr("Estimate Russian Tax"), parent=self.HoldingsTableView)
         actionEstimateTax.triggered.connect(
             partial(self.estimateRussianTax, self.HoldingsTableView.viewport().mapToGlobal(pos), index))
         contextMenu.addAction(actionEstimateTax)
@@ -323,10 +323,9 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
     def checkForUncommittedChanges(self):
         for i in range(self.OperationsTabs.count()):
             if hasattr(self.OperationsTabs.widget(i), "isCustom") and self.OperationsTabs.widget(i).modified:
-                reply = QMessageBox().warning(None,
-                                              g_tr('MainWindow', "You have unsaved changes"),
+                reply = QMessageBox().warning(None, self.tr("You have unsaved changes"),
                                               self.OperationsTabs.widget(i).name +
-                                              g_tr('MainWindow', " has uncommitted changes,\ndo you want to save it?"),
+                                              self.tr(" has uncommitted changes,\ndo you want to save it?"),
                                               QMessageBox.Yes, QMessageBox.No)
                 if reply == QMessageBox.Yes:
                     self.OperationsTabs.widget(i).saveChanges()
@@ -354,8 +353,8 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
     @Slot()
     def deleteOperation(self):
-        if QMessageBox().warning(None, g_tr('MainWindow', "Confirmation"),
-                                 g_tr('MainWindow', "Are you sure to delete selected transacion(s)?"),
+        if QMessageBox().warning(None, self.tr("Confirmation"),
+                                 self.tr("Are you sure to delete selected transacion(s)?"),
                                  QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
             return
         rows = []
@@ -416,5 +415,5 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
                     else:
                         account = JalDB().get_account_name(account_id)
                         asset = JalDB().get_asset_name(asset_id)
-                        logging.warning(g_tr('MainWindow', "Statement ending balance doesn't match: ") +
+                        logging.warning(self.tr("Statement ending balance doesn't match: ") +
                                         f"{account} / {asset} / {amount} <> {totals[account_id][asset_id]}")

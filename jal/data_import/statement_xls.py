@@ -4,7 +4,6 @@ import pandas
 from datetime import datetime, timezone
 from zipfile import ZipFile
 
-from jal.widgets.helpers import g_tr
 from jal.db.update import JalDB
 from jal.data_import.statement import Statement, FOF, Statement_ImportError
 from jal.net.downloader import QuoteDownloader
@@ -51,7 +50,7 @@ class StatementXLS(Statement):
             with ZipFile(filename) as zip_file:
                 contents = zip_file.namelist()
                 if len(contents) != 1:
-                    raise Statement_ImportError(g_tr('StatementXLS', "Archive contains multiple files"))
+                    raise Statement_ImportError(self.tr("Archive contains multiple files"))
                 with zip_file.open(contents[0]) as r_file:
                     self._statement = pandas.read_excel(io=r_file.read(), header=None, na_filter=False)
         else:
@@ -64,7 +63,7 @@ class StatementXLS(Statement):
         self._load_deals()
         self._load_cash_transactions()
 
-        logging.info(g_tr('StatementXLS', "Statement loaded successfully: ") + f"{self.StatementName}")
+        logging.info(self.tr("Statement loaded successfully: ") + f"{self.StatementName}")
 
     # Finds a row with header in column self.HeaderCol starting with 'header' and returns it's index.
     # Return -1 if header isn't found
@@ -99,7 +98,7 @@ class StatementXLS(Statement):
         if start_row > 0:
             for idx in column_indices:                         # Verify that all columns were found
                 if column_indices[idx] < 0 and idx[0] != '*':  # * - means header is optional
-                    logging.error(g_tr('StatementXLS', "Column not found in section ") + f"{section_header}: {idx}")
+                    logging.error(self.tr("Column not found in section ") + f"{section_header}: {idx}")
                     start_row = -1
         start_row += header_height
         return start_row, column_indices
@@ -113,13 +112,13 @@ class StatementXLS(Statement):
     def _check_statement_header(self):
         if self._statement[self.Header[0]][self.Header[1]] != self.Header[2]:
             raise Statement_ImportError(
-                g_tr('StatementXLS', "Can't find expected report header: ") + f"'{self.Header[2]}'")
+                self.tr("Can't find expected report header: ") + f"'{self.Header[2]}'")
 
     def _get_statement_period(self):
         parts = re.match(self.PeriodPattern[2],
                          self._statement[self.PeriodPattern[0]][self.PeriodPattern[1]], re.IGNORECASE)
         if parts is None:
-            raise Statement_ImportError(g_tr('StatementXLS', "Can't read report period"))
+            raise Statement_ImportError(self.tr("Can't read report period"))
         statement_dates = parts.groupdict()
         start_day = int(datetime.strptime(statement_dates['S'], "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
         end_day = int(datetime.strptime(statement_dates['E'], "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
@@ -144,7 +143,7 @@ class StatementXLS(Statement):
         _start_row = self.find_row("входящ")
         _end_row = self.find_row("исходящ")
         if (_header_row == -1) or (_start_row == -1) or (_end_row == -1):
-            logging.warning(g_tr('StatementXLS', "Can't get currencies from summary section of statement"))
+            logging.warning(self.tr("Can't get currencies from summary section of statement"))
             return
         _rate_row = self.find_row("курс")
 
@@ -201,7 +200,7 @@ class StatementXLS(Statement):
                             self._statement[headers['name']][row])
             cnt += 1
             row += 1
-        logging.info(g_tr('StatementXLS', "Securities loaded: ") + f"{cnt}")
+        logging.info(self.tr("Securities loaded: ") + f"{cnt}")
 
     # Adds assets to self._data[FOF.ASSETS] by ISIN and registration code
     # Asset symbol and other parameters are loaded from MOEX exchange as class targets russian brokers
@@ -209,7 +208,7 @@ class StatementXLS(Statement):
     def _add_asset(self, isin, reg_code, symbol=''):
         if self._find_asset_id(symbol, isin, reg_code) != 0:
             raise Statement_ImportError(
-                g_tr('StatementXLS', "Attempt to recreate existing asset: ") + f"{isin}/{reg_code}")
+                self.tr("Attempt to recreate existing asset: ") + f"{isin}/{reg_code}")
         asset_id = JalDB().get_asset_id('', isin=isin, reg_code=reg_code, dialog_new=False)
         if asset_id is None:
             asset = QuoteDownloader.MOEX_info(symbol=symbol, isin=isin, regnumber=reg_code)
@@ -218,7 +217,7 @@ class StatementXLS(Statement):
                 asset['exchange'] = "MOEX"
                 asset['type'] = FOF.convert_predefined_asset_type(asset['type'])
             else:
-                raise Statement_ImportError(g_tr('StatementXLS', "Can't import asset: ") + f"{isin}/{reg_code}")
+                raise Statement_ImportError(self.tr("Can't import asset: ") + f"{isin}/{reg_code}")
         else:
             asset = {"id": -asset_id, "symbol": JalDB().get_asset_name(asset_id),
                      "type": FOF.convert_predefined_asset_type(JalDB().get_asset_type(asset_id)),
@@ -247,7 +246,7 @@ class StatementXLS(Statement):
             if len(match) == 1:
                 return match[0]['id']
             else:
-                logging.error(g_tr('StatementXLS', "Multiple asset match for ") + f"'{isin}'")
+                logging.error(self.tr("Multiple asset match for ") + f"'{isin}'")
         return 0
 
     def _find_account_id(self, number, currency):
@@ -261,7 +260,7 @@ class StatementXLS(Statement):
             if len(match) == 1:
                 currency_id = match[0]['id']
             else:
-                raise Statement_ImportError(g_tr('StatementXLS', "Multiple currency found: ") + f"{currency}")
+                raise Statement_ImportError(self.tr("Multiple currency found: ") + f"{currency}")
         else:
             currency_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
             new_currency = {"id": currency_id, "symbol": code, 'name': '', 'type': FOF.ASSET_MONEY}
@@ -272,7 +271,7 @@ class StatementXLS(Statement):
             if len(match) == 1:
                 return match[0]['id']
             else:
-                raise Statement_ImportError(g_tr('StatementXLS', "Multiple accounts found: ") + f"{number}/{currency}")
+                raise Statement_ImportError(self.tr("Multiple accounts found: ") + f"{number}/{currency}")
         new_id = max([0] + [x['id'] for x in self._data[FOF.ACCOUNTS]]) + 1
         new_account = {"id": new_id, "number": number, 'currency': currency_id}
         self._data[FOF.ACCOUNTS].append(new_account)

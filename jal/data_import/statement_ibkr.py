@@ -3,8 +3,9 @@ import re
 from datetime import datetime
 from itertools import groupby
 
+from PySide2.QtWidgets import QApplication
 from jal.constants import PredefinedCategory, DividendSubtype
-from jal.widgets.helpers import g_tr, ManipulateDate
+from jal.widgets.helpers import ManipulateDate
 from jal.db.update import JalDB
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.data_import.statement import FOF, Statement_ImportError
@@ -41,7 +42,7 @@ class IBKR_AssetType:
         try:
             self.type = self._asset_types[asset_type]
         except KeyError:
-            logging.warning(g_tr('IBKR_AssetType', "Asset type isn't supported: ") + f"'{asset_type}'")
+            logging.warning(QApplication.translate("IBKR", "Asset type isn't supported: ") + f"'{asset_type}'")
         if self.type == FOF.ASSET_STOCK and subtype:  # distinguish ADR and ETF from stocks
             try:
                 self.type = self._asset_types[subtype]
@@ -66,7 +67,7 @@ class IBKR_CorpActionType:
         try:
             self.type = self._corporate_action_types[action_type]
         except KeyError:
-            logging.warning(g_tr('IBKR', "Corporate action isn't supported: ") + f"{action_type}")
+            logging.warning(QApplication.translate("IBKR", "Corporate action isn't supported: ") + f"{action_type}")
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -78,7 +79,7 @@ class IBKR_Currency:
             if len(match) == 1:
                 self.id = match[0]["id"]
             else:
-                logging.error(g_tr('IBKR', "Multiple match for ") + f"{code}")
+                logging.error(QApplication.translate("IBKR", "Multiple match for ") + f"{code}")
         else:
             self.id = max([0] + [x['id'] for x in assets_list]) + 1
             currency = {"id": self.id, "type": "money", "symbol": code}
@@ -104,7 +105,7 @@ class IBKR_Asset:
             return
         if category == IBKR_AssetType.NotSupported:
             if symbol:
-                logging.warning(g_tr('IBKR_Asset', "Asset type isn't supported: ") + f"'{category}' ({symbol})")
+                logging.warning(self.tr("Asset type isn't supported: ") + f"'{category}' ({symbol})")
             return
         self.id = max([0] + [x['id'] for x in assets_list]) + 1
         asset = {"id": self.id, "symbol": symbol, 'name': name, 'type': category, 'exchange': exchange}
@@ -114,7 +115,10 @@ class IBKR_Asset:
             asset['reg_code'] = cusip
         assets_list.append(asset)
 
-    # search in self.assets['match_key'] for value match_value
+    def tr(self, text):
+        return QApplication.translate("IBKR", text)
+
+        # search in self.assets['match_key'] for value match_value
     # iterate through key:value pairs of updates to update self.assets['key'] with 'value'
     # assign self.id if asset was found and returns True, otherwise returns False
     def match_and_update(self, match_key, match_value, updates):
@@ -136,7 +140,7 @@ class IBKR_Asset:
                 self.id = asset['id']
                 return True
             else:
-                logging.error(g_tr('IBKR', "Multiple asset match for ") + f"'{match_key}':'{match_value}', {updates}")
+                logging.error(self.tr("Multiple asset match for ") + f"'{match_key}':'{match_value}', {updates}")
                 return False
 
 
@@ -151,7 +155,7 @@ class IBKR_Account:
                 if len(match) == 1:
                     account_ids.append(match[0]["id"])
                 else:
-                    logging.error(g_tr('IBKR', "Multiple account match for ") + f"{number}")
+                    logging.error(QApplication.translate("IBKR", "Multiple account match for ") + f"{number}")
             else:
                 new_id = max([0] + [x['id'] for x in accounts_list]) + 1
                 account_ids.append(new_id)
@@ -173,7 +177,7 @@ class StatementIBKR(StatementXML):
 
     def __init__(self):
         super().__init__()
-        self.statement_name = g_tr('IBKR', "IBKR Flex-statement")
+        self.statement_name = self.tr("IBKR Flex-statement")
         ibkr_loaders = {
             IBKR_Currency: self.attr_currency,
             IBKR_AssetType: self.attr_asset_type,
@@ -274,7 +278,10 @@ class StatementIBKR(StatementXML):
                                  'loader': self.load_taxes}
         }
 
-    # Convert attribute 'attr_name' value into json open-format asset type
+    def tr(self, text):
+        return QApplication.translate("IBKR", text)
+
+        # Convert attribute 'attr_name' value into json open-format asset type
     @staticmethod
     def attr_asset_type(xml_element, attr_name, default_value):
         if attr_name not in xml_element.attrib:
@@ -326,14 +333,14 @@ class StatementIBKR(StatementXML):
         if xml_element.tag == 'Trade' and self.attr_asset_type(xml_element, 'assetCategory', None) == FOF.ASSET_MONEY:
             if 'symbol' not in xml_element.attrib or 'ibCommissionCurrency' not in xml_element.attrib:
                 if default_value is None:
-                    logging.error(g_tr('IBKR', "Can't get currencies for currency exchange: ") + f"{xml_element}")
+                    logging.error(self.tr("Can't get currencies for currency exchange: ") + f"{xml_element}")
                 return default_value
             currency = xml_element.attrib['symbol'].split('.')
             currency.append(xml_element.attrib['ibCommissionCurrency'])
         else:
             if 'currency' not in xml_element.attrib:
                 if default_value is None:
-                    logging.error(g_tr('IBKR', "Can't get account currency for account: ") + f"{xml_element}")
+                    logging.error(self.tr("Can't get account currency for account: ") + f"{xml_element}")
                 return default_value
             currency = [xml_element.attrib['currency']]
         currency_ids = [IBKR_Currency(self._data[FOF.ASSETS], code).id for code in currency]
@@ -361,7 +368,7 @@ class StatementIBKR(StatementXML):
     def load_header(self, header):
         self._data[FOF.PERIOD][0] = header['period_start']
         self._data[FOF.PERIOD][1] = self._end_of_date(header['period_end'])
-        logging.info(g_tr('IBKR', "Load IB Flex-statement for account ") +
+        logging.info(self.tr("Load IB Flex-statement for account ") +
                      f"{header['account']}: {datetime.utcfromtimestamp(header['period_start']).strftime('%Y-%m-%d')}" +
                      f" - {datetime.utcfromtimestamp(header['period_end']).strftime('%Y-%m-%d')}")
 
@@ -388,7 +395,7 @@ class StatementIBKR(StatementXML):
             asset.pop('maturity')
             cnt += 1
             self._data[FOF.ASSETS].append(asset)
-        logging.info(g_tr('IBKR', "Securities loaded: ") + f"{cnt} ({len(assets)})")
+        logging.info(self.tr("Securities loaded: ") + f"{cnt} ({len(assets)})")
 
     def load_ib_trades(self, ib_trades):
         trades = [trade for trade in ib_trades if type(trade['asset']) == int]
@@ -397,7 +404,7 @@ class StatementIBKR(StatementXML):
         transfers = [transfer for transfer in ib_trades if type(transfer['asset']) == list]
         transfers_loaded = self.load_transfers(transfers)
 
-        logging.info(g_tr('IBKR', "Trades loaded: ") + f"{trades_loaded + transfers_loaded} ({len(ib_trades)})")
+        logging.info(self.tr("Trades loaded: ") + f"{trades_loaded + transfers_loaded} ({len(ib_trades)})")
 
     def load_trades(self, trades):
         trade_base = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
@@ -439,11 +446,11 @@ class StatementIBKR(StatementXML):
 
     def load_options(self, options):
         transaction_desctiption = {
-            "Assignment": g_tr('IBKR', "Option assignment"),
-            "Exercise": g_tr('IBKR', "Option exercise"),
-            "Expiration": g_tr('IBKR', "Option expiration"),
-            "Buy": g_tr('IBKR', "Option assignment/exercise"),
-            "Sell": g_tr('IBKR', "Option assignment/exercise"),
+            "Assignment": self.tr("Option assignment"),
+            "Exercise": self.tr("Option exercise"),
+            "Expiration": self.tr("Option expiration"),
+            "Buy": self.tr("Option assignment/exercise"),
+            "Sell": self.tr("Option assignment/exercise"),
         }
         cnt = 0
         for option in options:
@@ -452,16 +459,16 @@ class StatementIBKR(StatementXML):
                 description = transaction_desctiption[option['operation']]
             except KeyError:
                 logging.error(
-                    g_tr('IBKR', "Option E&A&E action isn't implemented: ") + f"{option['transactionType']}")
+                    self.tr("Option E&A&E action isn't implemented: ") + f"{option['transactionType']}")
             if description:
                 trade = [x for x in self._data[FOF.TRADES] if x['account'] == option['account']
                          and x['asset'] == option['asset'] and x['number'] == option['number']]
                 if len(trade) == 1:
                     trade[0]['note'] = description
                 else:
-                    logging.warning(g_tr('IBKR', "Original trade not found for Option E&A&E operation: ") + f"{option}")
+                    logging.warning(self.tr("Original trade not found for Option E&A&E operation: ") + f"{option}")
                 cnt += 1
-        logging.info(g_tr('IBKR', "Options E&A&E loaded: ") + f"{cnt} ({len(options)})")
+        logging.info(self.tr("Options E&A&E loaded: ") + f"{cnt} ({len(options)})")
 
     def load_corporate_actions(self, actions):
         action_loaders = {
@@ -475,10 +482,10 @@ class StatementIBKR(StatementXML):
         cnt = 0
         if any(action['code'] == StatementIBKR.CancelledFlag for action in actions):
             actions = [action for action in actions if action['code'] != StatementIBKR.CancelledFlag]
-            logging.warning(g_tr('IBKR', "Statement contains cancelled corporate actions. They were skipped."))
+            logging.warning(self.tr("Statement contains cancelled corporate actions. They were skipped."))
         if any(action['asset_type'] != FOF.ASSET_STOCK for action in actions):
             actions = [action for action in actions if action['asset_type'] == FOF.ASSET_STOCK]
-            logging.warning(g_tr('IBKR', "Corporate actions are supported for stocks only, other assets were skipped"))
+            logging.warning(self.tr("Corporate actions are supported for stocks only, other assets were skipped"))
 
         # If stocks were bought/sold on a corporate action day IBKR may put several records for one corporate
         # action. So first step is to aggregate quantity.
@@ -503,8 +510,8 @@ class StatementIBKR(StatementXML):
                 cnt += action_loaders[action['type']](action, parts_b)
             else:
                 raise Statement_ImportError(
-                    g_tr('IBKR', "Corporate action type is not supported: ") + f"{action['type']}")
-        logging.info(g_tr('IBKR', "Corporate actions loaded: ") + f"{cnt} ({len(actions)})")
+                    self.tr("Corporate action type is not supported: ") + f"{action['type']}")
+        logging.info(self.tr("Corporate actions loaded: ") + f"{cnt} ({len(actions)})")
 
     def load_merger(self, action, parts_b) -> int:
         MergerPatterns = [
@@ -519,10 +526,10 @@ class StatementIBKR(StatementXML):
             if parts:
                 break
         if parts is None:
-            raise Statement_ImportError(g_tr('IBKR', "Can't parse Merger description ") + f"'{action}'")
+            raise Statement_ImportError(self.tr("Can't parse Merger description ") + f"'{action}'")
         merger_a = parts.groupdict()
         if len(merger_a) != MergerPatterns[pattern_id].count("(?P<"):  # check expected number of matches
-            raise Statement_ImportError(g_tr('IBKR', "Merger description miss some data ") + f"'{action}'")
+            raise Statement_ImportError(self.tr("Merger description miss some data ") + f"'{action}'")
         description_b = action['description'][:parts.span('symbol')[0]] + merger_a['symbol_old'] + ", "
         asset_b = self.locate_asset(merger_a['symbol_old'], merger_a['isin_old'])
         paired_record = list(filter(
@@ -531,7 +538,7 @@ class StatementIBKR(StatementXML):
                          and pair['type'] == action['type']
                          and pair['timestamp'] == action['timestamp'], parts_b))
         if len(paired_record) != 1:
-            raise Statement_ImportError(g_tr('IBKR', "Can't find paired record for ") + f"{action}")
+            raise Statement_ImportError(self.tr("Can't find paired record for ") + f"{action}")
         if pattern_id == 1:
             self.add_merger_payment(action['timestamp'], action['account'], paired_record[0]['proceeds'],
                                     parts['currency'], action['description'])
@@ -559,13 +566,13 @@ class StatementIBKR(StatementXML):
 
         parts = re.match(SpinOffPattern, action['description'], re.IGNORECASE)
         if parts is None:
-            raise Statement_ImportError(g_tr('IBKR', "Can't parse Spin-off description ") + f"'{action}'")
+            raise Statement_ImportError(self.tr("Can't parse Spin-off description ") + f"'{action}'")
         spinoff = parts.groupdict()
         if len(spinoff) != SpinOffPattern.count("(?P<"):  # check that expected number of groups was matched
-            raise Statement_ImportError(g_tr('IBKR', "Spin-off description miss some data ") + f"'{action}'")
+            raise Statement_ImportError(self.tr("Spin-off description miss some data ") + f"'{action}'")
         asset_old = self.locate_asset(spinoff['symbol_old'], spinoff['isin_old'])
         if not asset_old:
-            raise Statement_ImportError(g_tr('IBKR', "Spin-off initial asset not found ") + f"'{action}'")
+            raise Statement_ImportError(self.tr("Spin-off initial asset not found ") + f"'{action}'")
         qty_old = int(spinoff['Y']) * action['quantity'] / int(spinoff['X'])
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
         action['cost_basis'] = 0.0
@@ -580,10 +587,10 @@ class StatementIBKR(StatementXML):
 
         parts = re.match(SymbolChangePattern, action['description'], re.IGNORECASE)
         if parts is None:
-            raise Statement_ImportError(g_tr('IBKR', "Can't parse Symbol Change description ") + f"'{action}'")
+            raise Statement_ImportError(self.tr("Can't parse Symbol Change description ") + f"'{action}'")
         isin_change = parts.groupdict()
         if len(isin_change) != SymbolChangePattern.count("(?P<"):  # check that expected number of groups was matched
-            raise Statement_ImportError(g_tr('StatementLoader', "Spin-off description miss some data ") + f"'{action}'")
+            raise Statement_ImportError(self.tr("Spin-off description miss some data ") + f"'{action}'")
         description_b = action['description'][:parts.span('symbol')[0]] + isin_change['symbol_old'] + ".OLD, "
         asset_b = self.locate_asset(isin_change['symbol_old'], isin_change['isin_old'])
         paired_record = list(filter(
@@ -592,7 +599,7 @@ class StatementIBKR(StatementXML):
                          and pair['type'] == action['type']
                          and pair['timestamp'] == action['timestamp'], parts_b))
         if len(paired_record) != 1:
-            raise Statement_ImportError(g_tr('StatementLoader', "Can't find paired record for: ") + f"{action}")
+            raise Statement_ImportError(self.tr("Can't find paired record for: ") + f"{action}")
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
         action['cost_basis'] = 1.0
         action['asset'] = [paired_record[0]['asset'], action['asset']]
@@ -614,10 +621,10 @@ class StatementIBKR(StatementXML):
 
         parts = re.match(SplitPattern, action['description'], re.IGNORECASE)
         if parts is None:
-            raise Statement_ImportError(g_tr('IBKR', "Can't parse Split description ") + f"'{action}'")
+            raise Statement_ImportError(self.tr("Can't parse Split description ") + f"'{action}'")
         split = parts.groupdict()
         if len(split) != SplitPattern.count("(?P<"):  # check that expected number of groups was matched
-            raise Statement_ImportError(g_tr('IBKR', "Split description miss some data ") + f"'{action}'")
+            raise Statement_ImportError(self.tr("Split description miss some data ") + f"'{action}'")
         if parts['isin_old'] == parts['id']:  # Simple split without ISIN change
             qty_delta = action['quantity']
             if qty_delta >= 0:  # Forward split (X>Y)
@@ -643,7 +650,7 @@ class StatementIBKR(StatementXML):
                              and pair['type'] == action['type']
                              and pair['timestamp'] == action['timestamp'], parts_b))
             if len(paired_record) != 1:
-                raise Statement_ImportError(g_tr('StatementLoader', "Can't find paired record for: ") + f"{action}")
+                raise Statement_ImportError(self.tr("Can't find paired record for: ") + f"{action}")
             action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
             action['cost_basis'] = 1.0
             action['asset'] = [paired_record[0]['asset'], action['asset']]
@@ -711,7 +718,7 @@ class StatementIBKR(StatementXML):
             self._data[FOF.INCOME_SPENDING].append(fee)
             cnt += 1
 
-        logging.info(g_tr('IBKR', "Cash transactions loaded: ") + f"{cnt} ({len(cash)})")
+        logging.info(self.tr("Cash transactions loaded: ") + f"{cnt} ({len(cash)})")
 
     def load_taxes(self, taxes):
         cnt = 0   #FIXME Link this tax with asset
@@ -724,7 +731,7 @@ class StatementIBKR(StatementXML):
             self.drop_extra_fields(tax, ["symbol", "amount", "description", "tax_description"])
             self._data[FOF.INCOME_SPENDING].append(tax)
             cnt += 1
-        logging.info(g_tr('IBKR', "Taxes loaded: ") + f"{cnt} ({len(taxes)})")
+        logging.info(self.tr("Taxes loaded: ") + f"{cnt} ({len(taxes)})")
 
     # Applies tax to matching dividend:
     # if tax < 0: apply it to dividend without tax
@@ -734,8 +741,8 @@ class StatementIBKR(StatementXML):
 
         parts = re.match(TaxFullPattern, tax['description'], re.IGNORECASE)
         if not parts:
-            logging.warning(g_tr('IBKR', "*** MANUAL ENTRY REQUIRED ***"))
-            logging.warning(g_tr('IBKR', "Unhandled tax country pattern found: ") + f"{tax['description']}")
+            logging.warning(self.tr("*** MANUAL ENTRY REQUIRED ***"))
+            logging.warning(self.tr("Unhandled tax country pattern found: ") + f"{tax['description']}")
             return 0
         parts = parts.groupdict()
         self.set_asset_counry(tax['asset'], parts['country'].lower())
@@ -745,7 +752,7 @@ class StatementIBKR(StatementXML):
 
         dividend = self.find_dividend4tax(tax['timestamp'], tax['account'], tax['asset'], previous_tax, new_tax, description)
         if dividend is None:
-            logging.warning(g_tr('IBKR', "Dividend not found for withholding tax: ") + f"{tax}, {previous_tax}")
+            logging.warning(self.tr("Dividend not found for withholding tax: ") + f"{tax}, {previous_tax}")
             return 0
         dividend["tax"] = new_tax
         # append new dividend if it came from DB and haven't been loaded in self._data yet
@@ -810,8 +817,8 @@ class StatementIBKR(StatementXML):
         # Chose most probable dividend - by amount, timestamp and description
         parts = re.match(TaxNotePattern, note, re.IGNORECASE)
         if not parts:
-            logging.warning(g_tr('IBKR', "*** MANUAL ENTRY REQUIRED ***"))
-            logging.warning(g_tr('IBKR', "Unhandled tax pattern found: ") + f"{note}")
+            logging.warning(self.tr("*** MANUAL ENTRY REQUIRED ***"))
+            logging.warning(self.tr("Unhandled tax pattern found: ") + f"{note}")
             return None
         parts = parts.groupdict()
         note_prefix = parts['prefix']
@@ -824,8 +831,8 @@ class StatementIBKR(StatementXML):
         for i, dividend in enumerate(dividends):
             parts = re.match(DividendNotePattern, dividend['description'], re.IGNORECASE)
             if not parts:
-                logging.warning(g_tr('IBKR', "*** MANUAL ENTRY REQUIRED ***"))
-                logging.warning(g_tr('IBKR', "Unhandled dividend pattern found: ") + f"{dividend['description']}")
+                logging.warning(self.tr("*** MANUAL ENTRY REQUIRED ***"))
+                logging.warning(self.tr("Unhandled dividend pattern found: ") + f"{dividend['description']}")
                 return None
             parts = parts.groupdict()
             try:

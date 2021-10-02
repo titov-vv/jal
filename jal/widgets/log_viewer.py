@@ -50,7 +50,6 @@ class LogViewer(QPlainTextEdit, logging.Handler):
         self.notification = None
 
     def cleanNotification(self):
-        self.last_level = 0
         palette = self.notification.palette()
         palette.setColor(self.notification.backgroundRole(), self.clear_color)
         self.notification.setPalette(palette)

@@ -3,7 +3,6 @@ from dateutil import tz
 
 from PySide2.QtCore import Qt, QStringListModel, QByteArray
 from PySide2.QtWidgets import QLabel, QDateTimeEdit, QDateEdit, QLineEdit, QComboBox
-from jal.widgets.helpers import g_tr
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
@@ -36,16 +35,16 @@ class DividendWidget(AbstractOperationDetails):
         self.tax_label = QLabel(self)
         self.comment_label = QLabel(self)
 
-        self.main_label.setText(g_tr("DividendWidget", "Dividend"))
-        self.date_label.setText(g_tr("DividendWidget", "Date/Time"))
-        self.ex_date_label.setText(g_tr("DividendWidget", "Ex-Date"))
-        self.type_label.setText(g_tr("DividendWidget", "Type"))
-        self.number_label.setText(g_tr("DividendWidget", "#"))
-        self.account_label.setText(g_tr("DividendWidget", "Account"))
-        self.symbol_label.setText(g_tr("DividendWidget", "Asset"))
-        self.amount_label.setText(g_tr("DividendWidget", "Dividend"))
-        self.tax_label.setText(g_tr("DividendWidget", "Tax"))
-        self.comment_label.setText(g_tr("DividendWidget", "Note"))
+        self.main_label.setText(self.tr("Dividend"))
+        self.date_label.setText(self.tr("Date/Time"))
+        self.ex_date_label.setText(self.tr("Ex-Date"))
+        self.type_label.setText(self.tr("Type"))
+        self.number_label.setText(self.tr("#"))
+        self.account_label.setText(self.tr("Account"))
+        self.symbol_label.setText(self.tr("Asset"))
+        self.amount_label.setText(self.tr("Dividend"))
+        self.tax_label.setText(self.tr("Tax"))
+        self.comment_label.setText(self.tr("Note"))
 
         self.timestamp_editor = QDateTimeEdit(self)
         self.timestamp_editor.setCalendarPopup(True)
@@ -98,9 +97,9 @@ class DividendWidget(AbstractOperationDetails):
         self.layout.addItem(self.horizontalSpacer, 1, 8, 1, 1)
 
         super()._init_db("dividends")
-        self.combo_model = QStringListModel([g_tr("DividendWidget", "N/A"),
-                                             g_tr("DividendWidget", "Dividend"),
-                                             g_tr("DividendWidget", "Bond Interest")])
+        self.combo_model = QStringListModel([self.tr("N/A"),
+                                             self.tr("Dividend"),
+                                             self.tr("Bond Interest")])
         self.type.setModel(self.combo_model)
 
         self.mapper.setItemDelegate(DividendWidgetDelegate(self.mapper))

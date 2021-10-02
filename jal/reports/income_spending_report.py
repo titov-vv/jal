@@ -2,13 +2,12 @@ from datetime import datetime
 from PySide2.QtCore import Qt, QAbstractItemModel, QModelIndex
 from PySide2.QtGui import QBrush
 from jal.constants import BookAccount, PredefinedAsset, CustomColor
-from jal.widgets.helpers import g_tr
 from jal.db.helpers import executeSQL
 from jal.widgets.delegates import GridLinesDelegate
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class ReportTreeItem():
+class ReportTreeItem:
     def __init__(self, begin, end, id, name, parent=None):
         self._parent = parent
         self._id = id
@@ -120,18 +119,10 @@ class IncomeSpendingReport(QAbstractItemModel):
         self._root = None
         self._grid_delegate = None
         self._report_delegate = None
-        self.month_name = [g_tr('Reports', 'Jan'),
-                           g_tr('Reports', 'Feb'),
-                           g_tr('Reports', 'Mar'),
-                           g_tr('Reports', 'Apr'),
-                           g_tr('Reports', 'May'),
-                           g_tr('Reports', 'Jun'),
-                           g_tr('Reports', 'Jul'),
-                           g_tr('Reports', 'Aug'),
-                           g_tr('Reports', 'Sep'),
-                           g_tr('Reports', 'Oct'),
-                           g_tr('Reports', 'Nov'),
-                           g_tr('Reports', 'Dec')]
+        self.month_name = [
+            self.tr('Jan'), self.tr('Feb'), self.tr('Mar'), self.tr('Apr'), self.tr('May'), self.tr('Jun'),
+            self.tr('Jul'), self.tr('Aug'), self.tr('Sep'), self.tr('Oct'), self.tr('Nov'), self.tr('Dec')
+        ]
 
     def rowCount(self, parent=None):
         if not parent.isValid():
@@ -162,7 +153,7 @@ class IncomeSpendingReport(QAbstractItemModel):
                 if year < 0:
                     col_name = ''
                 elif year == 0:
-                    col_name = g_tr("Reports", "TOTAL")
+                    col_name = self.tr("TOTAL")
                 else:
                     if month == 0:
                         status = '▼' if self._view.isColumnHidden(section + 1) else '▶'
@@ -270,7 +261,7 @@ class IncomeSpendingReport(QAbstractItemModel):
                             (":book_incomes", BookAccount.Incomes), (":begin", begin), (":end", end)],
                            forward_only=True)
         self._root = ReportTreeItem(begin, end, -1, "ROOT")  # invisible root
-        self._root.appendChild(ReportTreeItem(begin, end, 0, g_tr("Reports", "TOTAL")))  # visible root
+        self._root.appendChild(ReportTreeItem(begin, end, 0, self.tr("TOTAL")))  # visible root
         indexes = range(query.record().count())
         while query.next():
             values = list(map(query.value, indexes))

@@ -1,9 +1,8 @@
 import logging
 from datetime import datetime, timezone
 from lxml import etree
-
+from PySide2.QtWidgets import QApplication
 from jal.data_import.statement import Statement, FOF
-from jal.widgets.helpers import g_tr
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -70,7 +69,8 @@ class StatementXML(Statement):
             else:
                 return default_value
         except ValueError:
-            logging.error(g_tr('StatementXML', "Unsupported date/time format: ") + f"{xml_element.attrib[attr_name]}")
+            logging.error(QApplication.translate("StatementXML", "Unsupported date/time format: ")
+                          + f"{xml_element.attrib[attr_name]}")
             return None
 
     def load(self, filename: str) -> None:
@@ -91,7 +91,7 @@ class StatementXML(Statement):
                     if section_data is None:
                         return
                     self._sections[section]['loader'](section_data)
-        logging.info(self.statement_name + g_tr('StatementXML', " loaded successfully"))
+        logging.info(self.statement_name + self.tr(" loaded successfully"))
 
     def get_section_data(self, section):
         if section.tag == self.statement_tag:  # This is header section
@@ -116,7 +116,7 @@ class StatementXML(Statement):
             attr_value = self.attr_loader[attr_type](element, attr_name, attr_default)
             if attr_value is None:
                 logging.error(
-                    g_tr('StatementXML', "Failed to load attribute: ") + f"{attr_name} / {element.attrib}")
+                    self.tr("Failed to load attribute: ") + f"{attr_name} / {element.attrib}")
                 return None
             tag_dictionary[key_name] = attr_value
         return tag_dictionary

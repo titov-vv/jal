@@ -3,7 +3,6 @@ from PySide2.QtCore import Qt, Slot, Signal
 from PySide2.QtGui import QFont
 from PySide2.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QSpacerItem, QSizePolicy, QDataWidgetMapper
 from PySide2.QtSql import QSqlTableModel
-from jal.widgets.helpers import g_tr
 from jal.db.helpers import db_connection, load_icon
 
 
@@ -30,10 +29,10 @@ class AbstractOperationDetails(QWidget):
         self.layout.addWidget(self.main_label, 0, 0, 1, 1, Qt.AlignLeft)
 
         self.commit_button = QPushButton(load_icon("accept.png"), '', self)
-        self.commit_button.setToolTip(g_tr("AbstractOperationDetails", "Commit changes"))
+        self.commit_button.setToolTip(self.tr("Commit changes"))
         self.commit_button.setEnabled(False)
         self.revert_button = QPushButton(load_icon("cancel.png"), '', self)
-        self.revert_button.setToolTip(g_tr("AbstractOperationDetails", "Cancel changes"))
+        self.revert_button.setToolTip(self.tr("Cancel changes"))
         self.revert_button.setEnabled(False)
 
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
@@ -69,8 +68,7 @@ class AbstractOperationDetails(QWidget):
     @Slot()
     def saveChanges(self):
         if not self.model.submitAll():
-            logging.fatal(
-                g_tr('AbstractOperationDetails', "Operation submit failed: ") + self.model.lastError().text())
+            logging.fatal(self.tr("Operation submit failed: ") + self.model.lastError().text())
             return False
         self.modified = False
         self.commit_button.setEnabled(False)
@@ -88,7 +86,7 @@ class AbstractOperationDetails(QWidget):
     def createNew(self, account_id=0):
         if self.modified:
             self.revertChanges()
-            logging.warning(g_tr('AbstractOperationDetails', "Unsaved changes were reverted to create new operation"))
+            logging.warning(self.tr("Unsaved changes were reverted to create new operation"))
         self.model.setFilter(f"{self.table_name}.id = 0")
         new_record = self.prepareNew(account_id)
         assert self.model.insertRows(0, 1)

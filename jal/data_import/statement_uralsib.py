@@ -2,7 +2,6 @@ import logging
 import re
 from datetime import datetime, timezone
 
-from jal.widgets.helpers import g_tr
 from jal.constants import Setup, PredefinedCategory
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xls import StatementXLS
@@ -37,7 +36,7 @@ class StatementUKFU(StatementXLS):
 
     def __init__(self):
         super().__init__()
-        self.StatementName = g_tr("UKFU", "Uralsib broker")
+        self.StatementName = self.tr("Uralsib broker")
         self.asset_withdrawal = []
 
     def _load_deals(self):
@@ -95,7 +94,7 @@ class StatementUKFU(StatementXLS):
                 bond_interest = self._statement[headers['accrued_int']][row]
             else:
                 row += 1
-                logging.warning(g_tr('UKFU', "Unknown trade type: ") + self._statement[headers['B/S']][row])
+                logging.warning(self.tr("Unknown trade type: ") + self._statement[headers['B/S']][row])
                 continue
 
             price = self._statement[headers['price']][row]
@@ -120,7 +119,7 @@ class StatementUKFU(StatementXLS):
                 self._data[FOF.ASSET_PAYMENTS].append(payment)
             cnt += 1
             row += 1
-        logging.info(g_tr('UKFU', "Trades loaded: ") + f"{cnt}")
+        logging.info(self.tr("Trades loaded: ") + f"{cnt}")
 
     def load_futures_deals(self):
         cnt = 0
@@ -167,7 +166,7 @@ class StatementUKFU(StatementXLS):
                 qty = -self._statement[headers['qty']][row]
             else:
                 row += 1
-                logging.warning(g_tr('UKFU', "Unknown trade type: ") + self._statement[headers['B/S']][row])
+                logging.warning(self.tr("Unknown trade type: ") + self._statement[headers['B/S']][row])
                 continue
 
             price = self._statement[headers['price']][row]
@@ -187,7 +186,7 @@ class StatementUKFU(StatementXLS):
             self._data[FOF.TRADES].append(trade)
             cnt += 1
             row += 1
-        logging.info(g_tr('UKFU', "Futures trades loaded: ") + f"{cnt}")
+        logging.info(self.tr("Futures trades loaded: ") + f"{cnt}")
 
     def load_asset_cancellations(self):
         columns = {
@@ -259,7 +258,7 @@ class StatementUKFU(StatementXLS):
                 break
             operation = self._statement[headers['type']][row]
             if operation not in operations:
-                raise Statement_ImportError(g_tr('UKFU', "Unsuppported cash transaction ") + f"'{operation}'")
+                raise Statement_ImportError(self.tr("Unsuppported cash transaction ") + f"'{operation}'")
             number = self._statement[headers['number']][row]
             timestamp = int(datetime.strptime(self._statement[headers['date']][row],
                                               "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
@@ -270,7 +269,7 @@ class StatementUKFU(StatementXLS):
                 operations[operation](timestamp, number, account_id, amount, description)
             cnt += 1
             row += 1
-        logging.info(g_tr('Uralsib', "Cash operations loaded: ") + f"{cnt}")
+        logging.info(self.tr("Cash operations loaded: ") + f"{cnt}")
 
     def transfer(self, timestamp, number, account_id, amount, description):
         TransferPattern = r"^Перевод ДС на с\/с (?P<account_to>[\w|\/]+) с с\/с (?P<account_from>[\w|\/]+)\..*$"
@@ -278,10 +277,10 @@ class StatementUKFU(StatementXLS):
             return
         parts = re.match(TransferPattern, description, re.IGNORECASE)
         if parts is None:
-            raise Statement_ImportError(g_tr('Uralsib', "Can't parse transfer description ") + f"'{description}'")
+            raise Statement_ImportError(self.tr("Can't parse transfer description ") + f"'{description}'")
         transfer = parts.groupdict()
         if len(transfer) != TransferPattern.count("(?P<"):  # check that expected number of groups was matched
-            raise Statement_ImportError(g_tr('Uralsib', "Transfer description miss some data ") + f"'{description}'")
+            raise Statement_ImportError(self.tr("Transfer description miss some data ") + f"'{description}'")
         if transfer['account_from'] == transfer['account_to']:  # It is a technical record for incoming transfer
             return
         currency_id = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]['currency']
@@ -316,7 +315,7 @@ class StatementUKFU(StatementXLS):
 
         parts = re.match(DividendPattern, description, re.IGNORECASE)
         if parts is None:
-            raise Statement_ImportError(g_tr('UKFU', "Can't parse dividend description ") + f"'{description}'")
+            raise Statement_ImportError(self.tr("Can't parse dividend description ") + f"'{description}'")
         dividend_data = parts.groupdict()
         isin_match = re.match(ISINPattern, dividend_data['REG_CODE'])
         if isin_match:
@@ -332,7 +331,7 @@ class StatementUKFU(StatementXLS):
             try:
                 tax = float(dividend_data['TAX'])
             except ValueError:
-                raise Statement_ImportError(g_tr('UKFU', "Failed to convert dividend tax ") + f"'{description}'")
+                raise Statement_ImportError(self.tr("Failed to convert dividend tax ") + f"'{description}'")
         else:
             tax = 0
         amount = amount + tax   # Statement contains value after taxation while JAL stores value before tax
@@ -350,12 +349,12 @@ class StatementUKFU(StatementXLS):
 
         parts = re.match(BondInterestPattern, description, re.IGNORECASE)
         if parts is None:
-            logging.error(g_tr('Uralsib', "Can't parse bond interest description ") + f"'{description}'")
+            logging.error(self.tr("Can't parse bond interest description ") + f"'{description}'")
             return
         interest_data = parts.groupdict()
         asset_id = self._find_asset_id(symbol=interest_data['NAME'])
         if asset_id is None:
-            raise Statement_ImportError(g_tr('Uralsib', "Can't find asset for bond interest ") + f"'{description}'")
+            raise Statement_ImportError(self.tr("Can't find asset for bond interest ") + f"'{description}'")
         new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
         payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
                    "number": number, "asset": asset_id, "amount": amount, "description": description}
@@ -366,18 +365,18 @@ class StatementUKFU(StatementXLS):
 
         parts = re.match(BondRepaymentPattern, description, re.IGNORECASE)
         if parts is None:
-            logging.error(g_tr('Uralsib', "Can't parse bond repayment description ") + f"'{description}'")
+            logging.error(self.tr("Can't parse bond repayment description ") + f"'{description}'")
             return
         interest_data = parts.groupdict()
         asset_id = self._find_asset_id(symbol=interest_data['NAME'])
         if not asset_id:
-            raise Statement_ImportError(g_tr('Uralsib', "Can't find asset for bond repayment ") + f"'{description}'")
+            raise Statement_ImportError(self.tr("Can't find asset for bond repayment ") + f"'{description}'")
         match = [x for x in self.asset_withdrawal if x['asset'] == asset_id and x['timestamp'] == timestamp]
         if not match:
-            logging.error(g_tr('Uralsib', "Can't find asset cancellation record for ") + f"'{description}'")
+            logging.error(self.tr("Can't find asset cancellation record for ") + f"'{description}'")
             return
         if len(match) != 1:
-            logging.error(g_tr('Uralsib', "Multiple asset cancellation match for ") + f"'{description}'")
+            logging.error(self.tr("Multiple asset cancellation match for ") + f"'{description}'")
             return
         asset_cancel = match[0]
 
@@ -398,7 +397,7 @@ class StatementUKFU(StatementXLS):
     def load_broker_fee(self):
         header_row = self.find_row(self.SummaryHeader) + 1
         if header_row < 0:
-            logging.warning(g_tr('Uralsib', "Can't get header to find fees"))
+            logging.warning(self.tr("Can't get header to find fees"))
             return
         header_found = False
         for i, row in self._statement.iterrows():

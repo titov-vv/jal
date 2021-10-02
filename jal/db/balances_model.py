@@ -2,7 +2,6 @@ from PySide2.QtCore import Qt, Slot, QAbstractTableModel, QDate
 from PySide2.QtGui import QBrush, QFont
 from PySide2.QtWidgets import QHeaderView
 from jal.constants import Setup, CustomColor, BookAccount
-from jal.widgets.helpers import g_tr
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.update import JalDB
 
@@ -16,10 +15,7 @@ class BalancesModel(QAbstractTableModel):
         self._currency_name = ''
         self._active_only = True
         self._date = QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch()
-        self._columns = [g_tr('BalancesModel', "Account"),
-                         g_tr('BalancesModel', "Balance"),
-                         " ",
-                         g_tr('BalancesModel', "Balance, ")]
+        self._columns = [self.tr("Account"), self.tr("Balance"), " ", self.tr("Balance, ")]
 
     def rowCount(self, parent=None):
         return len(self._data)
@@ -172,6 +168,6 @@ class BalancesModel(QAbstractTableModel):
                                        [current_type, current_type_name, 0, '', 0, '', 0, sub_total, 0, 1, 1])))
         total_sum = sum([row['balance_a'] for row in self._data if row['level'] == 0])
         self._data.append(dict(zip(field_names,
-                                   [0, g_tr("BalancesModel", "Total"), 0, '', 0, '', 0, total_sum, 0, 1, 2])))
+                                   [0, self.tr("Total"), 0, '', 0, '', 0, total_sum, 0, 1, 2])))
         self.modelReset.emit()
 

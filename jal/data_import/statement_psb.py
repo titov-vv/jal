@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime, timezone
 
-from jal.widgets.helpers import g_tr
 from jal.constants import Setup
 from jal.data_import.statement import FOF
 from jal.data_import.statement_xls import StatementXLS
@@ -67,14 +66,14 @@ class StatementPSB(StatementXLS):
                     bond_interest = self._statement[headers['accrued_int']][row]
                 else:
                     row += 1
-                    logging.warning(g_tr('PSB', "Unknown trade type: ") + self._statement[headers['B/S']][row])
+                    logging.warning(self.tr("Unknown trade type: ") + self._statement[headers['B/S']][row])
                     continue
 
                 price = self._statement[headers['price']][row]
                 currencies = [x.strip() for x in self._statement[headers['currency']][row].split('/')]
                 if currencies[0] != currencies[1]:
                     row += 1
-                    logging.warning(g_tr('PSB', "Unsupported trade with different currencies: ") + currencies)
+                    logging.warning(self.tr("Unsupported trade with different currencies: ") + currencies)
                     continue
                 currency = currencies[0]
                 fee = self._statement[headers['fee1']][row] + self._statement[headers['fee2']][row] + \
@@ -104,7 +103,7 @@ class StatementPSB(StatementXLS):
                     self._data[FOF.ASSET_PAYMENTS].append(payment)
                 cnt += 1
                 row += 1
-        logging.info(g_tr('PSB', "Trades loaded: ") + f"{cnt}")
+        logging.info(self.tr("Trades loaded: ") + f"{cnt}")
 
     def _load_cash_transactions(self):
         self.load_cash_transactions()
@@ -132,7 +131,7 @@ class StatementPSB(StatementXLS):
                 row += 1   # These data present in separate tables to load
                 continue
             if self._statement[headers['note']][row] != '':
-                logging.warning(g_tr('PSB', "Unknown cash transaction: ") + self._statement[headers['note']][row])
+                logging.warning(self.tr("Unknown cash transaction: ") + self._statement[headers['note']][row])
                 row += 1
                 continue
 
@@ -145,12 +144,12 @@ class StatementPSB(StatementXLS):
             elif self._statement[headers['operation']][row] == 'Списано со счета':
                 self.transfer_out(timestamp, account_id, amount)
             else:
-                logging.warning(g_tr('PSB', "Unknown cash operation: ") + self._statement[headers['operation']][row])
+                logging.warning(self.tr("Unknown cash operation: ") + self._statement[headers['operation']][row])
                 row += 1
                 continue
             cnt += 1
             row += 1
-        logging.info(g_tr('PSB', "Cash transactions loaded: ") + f"{cnt}")
+        logging.info(self.tr("Cash transactions loaded: ") + f"{cnt}")
 
     def transfer_in(self, timestamp, account_id, amount):
         account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
@@ -188,7 +187,7 @@ class StatementPSB(StatementXLS):
             if self._statement[2][row] == '':  # Row may contain comment in cell [1]
                 break
             if self._statement[headers['operation']][row] != 'Погашение купона':
-                logging.warning(g_tr('PSB', "Unsupported payment: ") + self._statement[headers['operation']][row])
+                logging.warning(self.tr("Unsupported payment: ") + self._statement[headers['operation']][row])
                 row += 1
                 continue
             timestamp = int(datetime.strptime(self._statement[headers['date']][row],
@@ -208,7 +207,7 @@ class StatementPSB(StatementXLS):
             self._data[FOF.ASSET_PAYMENTS].append(payment)
             cnt += 1
             row += 1
-        logging.info(g_tr('PSB', "Bond interests loaded: ") + f"{cnt}")
+        logging.info(self.tr("Bond interests loaded: ") + f"{cnt}")
 
     def load_dividends(self):
         cnt = 0
@@ -244,4 +243,4 @@ class StatementPSB(StatementXLS):
             self._data[FOF.ASSET_PAYMENTS].append(payment)
             cnt += 1
             row += 1
-        logging.info(g_tr('PSB', "Dividends loaded: ") + f"{cnt}")
+        logging.info(self.tr("Dividends loaded: ") + f"{cnt}")

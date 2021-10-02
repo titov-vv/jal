@@ -1,20 +1,19 @@
 from PySide2.QtCore import Qt
 from PySide2.QtSql import QSqlTableModel
 from jal.db.helpers import db_connection, executeSQL
-from jal.widgets.helpers import g_tr
 from jal.constants import BookAccount, PredefinedCategory
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 
 #-----------------------------------------------------------------------------------------------------------------------
 class ProfitLossReportModel(QSqlTableModel):
     def __init__(self, parent_view):
-        self._columns = [("period", g_tr("Reports", "Period")),
-                         ("transfer", g_tr("Reports", "In / Out")),
-                         ("assets", g_tr("Reports", "Assets value")),
-                         ("result", g_tr("Reports", "Total result")),
-                         ("profit", g_tr("Reports", "Profit / Loss")),
-                         ("dividend", g_tr("Reports", "Returns")),
-                         ("tax_fee", g_tr("Reports", "Taxes & Fees"))]
+        self._columns = [("period", self.tr("Period")),
+                         ("transfer", self.tr("In / Out")),
+                         ("assets", self.tr("Assets value")),
+                         ("result", self.tr("Total result")),
+                         ("profit", self.tr("Profit / Loss")),
+                         ("dividend", self.tr("Returns")),
+                         ("tax_fee", self.tr("Taxes & Fees"))]
         self._view = parent_view
         self._query = None
         self._ym_delegate = None
@@ -50,7 +49,7 @@ class ProfitLossReportModel(QSqlTableModel):
 
     def prepare(self, begin, end, account_id, group_dates):
         if account_id == 0:
-            raise ValueError(g_tr('Reports', "You should select account to create Profit/Loss report"))
+            raise ValueError(self.tr("You should select account to create Profit/Loss report"))
         self._query = executeSQL(
             "WITH "
             "_months AS ("

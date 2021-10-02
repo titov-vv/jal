@@ -6,11 +6,10 @@ from urllib import parse
 from datetime import datetime
 
 from PySide2.QtCore import Signal, Slot, QUrl
-from PySide2.QtWidgets import QDialog
+from PySide2.QtWidgets import QApplication, QDialog
 from PySide2.QtWebEngineWidgets import QWebEngineProfile, QWebEnginePage
 from PySide2.QtWebEngineCore import QWebEngineUrlRequestInterceptor
 from jal.db.settings import JalSettings
-from jal.widgets.helpers import g_tr
 from jal.net.helpers import get_web_data, post_web_data
 from jal.ui.ui_login_fns_dlg import Ui_LoginFNSDialog
 
@@ -33,7 +32,7 @@ class RequestInterceptor(QWebEngineUrlRequestInterceptor):
             params = dict(parse.parse_qsl(parse.urlsplit(url).query))
             auth_code = params['code']
             auth_state = params['state']
-            logging.info(g_tr('SlipsTaxAPI', "ESIA login completed"))
+            logging.info(self.tr("ESIA login completed"))
             self.response_intercepted.emit(auth_code, auth_state)
 
 
@@ -73,9 +72,9 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
         payload = '{' + f'"client_secret":"{client_secret}","phone":"{self.phone_number}"' + '}'
         response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/auth/phone/request', data=payload)
         if response.status_code != 204:
-            logging.error(g_tr('SlipsTaxAPI', "FNS login failed: ") + f"{response}/{response.text}")
+            logging.error(self.tr("FNS login failed: ") + f"{response}/{response.text}")
         else:
-            logging.info(g_tr('SlipsTaxAPI', "SMS was requested successfully"))
+            logging.info(self.tr("SMS was requested successfully"))
     
     def login_sms(self):
         if not self.phone_number:
@@ -86,9 +85,9 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
         payload = '{' + f'"client_secret":"{client_secret}","code":"{code}","phone":"{self.phone_number}"' + '}'
         response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/auth/phone/verify', data=payload)
         if response.status_code != 200:
-            logging.error(g_tr('SlipsTaxAPI', "FNS login failed: ") + f"{response}/{response.text}")
+            logging.error(self.tr("FNS login failed: ") + f"{response}/{response.text}")
             return
-        logging.info(g_tr('SlipsTaxAPI', "FNS login successful: ") + f"{response.text}")
+        logging.info(self.tr("FNS login successful: ") + f"{response.text}")
         json_content = json.loads(response.text)
         new_session_id = json_content['sessionId']
         new_refresh_token = json_content['refresh_token']
@@ -105,9 +104,9 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
         payload = '{' + f'"client_secret":"{client_secret}","inn":"{inn}","password":"{password}"' + '}'
         response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/mobile/users/lkfl/auth', data=payload)
         if response.status_code != 200:
-            logging.error(g_tr('SlipsTaxAPI', "FNS login failed: ") + f"{response}/{response.text}")
+            logging.error(self.tr("FNS login failed: ") + f"{response}/{response.text}")
             return
-        logging.info(g_tr('SlipsTaxAPI', "FNS login successful: ") + f"{response.text}")
+        logging.info(self.tr("FNS login successful: ") + f"{response.text}")
         json_content = json.loads(response.text)
         new_session_id = json_content['sessionId']
         new_refresh_token = json_content['refresh_token']
@@ -119,7 +118,7 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
     def login_esia(self):
         response = self.web_session.get('https://irkkt-mobile.nalog.ru:8888/v2/mobile/users/esia/auth/url')
         if response.status_code != 200:
-            logging.error(g_tr('SlipsTaxAPI', "Get ESIA URL failed: ") + f"{response}/{response.text}")
+            logging.error(self.tr("Get ESIA URL failed: ") + f"{response}/{response.text}")
             return
         json_content = json.loads(response.text)
         auth_url = json_content['url']
@@ -132,9 +131,9 @@ class LoginFNS(QDialog, Ui_LoginFNSDialog):
                   + '}'
         response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/mobile/users/esia/auth', data=payload)
         if response.status_code != 200:
-            logging.error(g_tr('SlipsTaxAPI', "ESIA login failed: ") + f"{response}/{response.text}")
+            logging.error(self.tr("ESIA login failed: ") + f"{response}/{response.text}")
             return
-        logging.info(g_tr('SlipsTaxAPI', "ESIA login successful: ") + f"{response.text}")
+        logging.info(self.tr("ESIA login successful: ") + f"{response.text}")
         json_content = json.loads(response.text)
         new_session_id = json_content['sessionId']
         new_refresh_token = json_content['refresh_token']
@@ -160,6 +159,9 @@ class SlipsTaxAPI:
         self.web_session.headers['Accept-Encoding'] = 'gzip'
         self.web_session.headers['User-Agent'] = 'okhttp/4.2.2'
 
+    def tr(self, text):
+        QApplication.translate("SlipsTaxAPI", text)
+
     def get_ru_tax_session(self):
         stored_id = JalSettings().getValue('RuTaxSessionId')
         if stored_id != '':
@@ -171,22 +173,22 @@ class SlipsTaxAPI:
             if stored_id is not None:
                 return stored_id
 
-        logging.warning(g_tr('SlipsTaxAPI', "No Russian Tax SessionId available"))
+        logging.warning(self.tr("No Russian Tax SessionId available"))
         return ''
 
     def refresh_session(self):
         session_id = self.get_ru_tax_session()
         if not session_id:
-            logging.info(g_tr('SlipsTaxAPI', "No valid session present"))
+            logging.info(self.tr("No valid session present"))
             return SlipsTaxAPI.Failure
-        logging.info(g_tr('SlipsTaxAPI', "Refreshing session..."))
+        logging.info(self.tr("Refreshing session..."))
         client_secret = JalSettings().getValue('RuTaxClientSecret')
         refresh_token = JalSettings().getValue('RuTaxRefreshToken')
         self.web_session.headers['sessionId'] = session_id
         payload = '{' + f'"client_secret":"{client_secret}","refresh_token":"{refresh_token}"' + '}'
         response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/mobile/users/refresh', data=payload)
         if response.status_code == 200:
-            logging.info(g_tr('SlipsTaxAPI', "Session refreshed: ") + f"{response.text}")
+            logging.info(self.tr("Session refreshed: ") + f"{response.text}")
             json_content = json.loads(response.text)
             new_session_id = json_content['sessionId']
             new_refresh_token = json_content['refresh_token']
@@ -195,7 +197,7 @@ class SlipsTaxAPI:
             settings.setValue('RuTaxRefreshToken', new_refresh_token)
             return SlipsTaxAPI.Pending   # not Success as it is sent transparently to upper callers
         else:
-            logging.error(g_tr('SlipsTaxAPI', "Can't refresh session, response: ") + f"{response}/{response.text}")
+            logging.error(self.tr("Can't refresh session, response: ") + f"{response}/{response.text}")
             JalSettings().setValue('RuTaxSessionId', '')
             if self.get_ru_tax_session():
                 return SlipsTaxAPI.Failure
@@ -213,24 +215,24 @@ class SlipsTaxAPI:
         response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/ticket', data=payload)
         if response.status_code != 200:
             if response.status_code == 401:
-                logging.info(g_tr('SlipsTaxAPI', "Unauthorized with reason: ") + f"{response.text}")
+                logging.info(self.tr("Unauthorized with reason: ") + f"{response.text}")
                 return self.refresh_session()
             else:
                 logging.error(
-                    g_tr('SlipsTaxAPI', "Get ticket id failed: ") +
+                    self.tr("Get ticket id failed: ") +
                     f"{response}/{response.text} for {payload}")
                 return SlipsTaxAPI.Failure
-        logging.info(g_tr('SlipsTaxAPI', "Slip found: " + response.text))
+        logging.info(self.tr("Slip found: " + response.text))
         json_content = json.loads(response.text)
         if json_content['status'] != 2:  # Valid slip status is 2, other statuses are not fully clear
-            logging.warning(g_tr('ImportSlipDialog', "Operation might be pending on server side. Trying again."))
+            logging.warning(self.tr("Operation might be pending on server side. Trying again."))
             return SlipsTaxAPI.Pending
         url = "https://irkkt-mobile.nalog.ru:8888/v2/tickets/" + json_content['id']
         response = self.web_session.get(url)
         if response.status_code != 200:
-            logging.error(g_tr('SlipsTaxAPI', "Get ticket failed: ") + f"{response}/{response.text}")
+            logging.error(self.tr("Get ticket failed: ") + f"{response}/{response.text}")
             return SlipsTaxAPI.Failure
-        logging.info(g_tr('SlipsTaxAPI', "Slip loaded: " + response.text))
+        logging.info(self.tr("Slip loaded: " + response.text))
         self.slip_json = json.loads(response.text)
         return SlipsTaxAPI.Success
 
@@ -239,7 +241,7 @@ class SlipsTaxAPI:
     # Returns short or long name if fount and initial INN otherwise
     def get_shop_name_by_inn(self, inn):
         if len(inn) != 10 and len(inn) != 12:
-            logging.warning(g_tr('SlipsTaxAPI', "Incorrect length of INN. Can't get company name."))
+            logging.warning(self.tr("Incorrect length of INN. Can't get company name."))
             return inn
         region_list = "77,78,01,02,03,04,05,06,07,08,09,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,"\
                       "30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,"\
@@ -257,5 +259,5 @@ class SlipsTaxAPI:
         try:
             return result['rows'][0]['n']   # Return long name if exists
         except:
-            logging.warning(g_tr('SlipsTaxAPI', "Can't get company name from: ") + result)
+            logging.warning(self.tr("Can't get company name from: ") + result)
             return inn

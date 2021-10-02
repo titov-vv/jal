@@ -6,7 +6,6 @@ from PySide2.QtCore import Qt, Slot
 from PySide2.QtWidgets import QLabel, QDateTimeEdit, QPushButton, QTableView, QHeaderView
 from PySide2.QtGui import QFont
 from PySide2.QtSql import QSqlTableModel
-from jal.widgets.helpers import g_tr
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, PeerSelector
 from jal.widgets.account_select import OptionalCurrencyComboBox
@@ -37,11 +36,11 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.account_label = QLabel(self)
         self.peer_label = QLabel(self)
 
-        self.main_label.setText(g_tr("IncomeSpendingWidget", "Income / Spending"))
-        self.date_label.setText(g_tr("IncomeSpendingWidget", "Date/Time"))
-        self.details_label.setText(g_tr("IncomeSpendingWidget", "Details"))
-        self.account_label.setText(g_tr("IncomeSpendingWidget", "Account"))
-        self.peer_label.setText(g_tr("IncomeSpendingWidget", "Peer"))
+        self.main_label.setText(self.tr("Income / Spending"))
+        self.date_label.setText(self.tr("Date/Time"))
+        self.details_label.setText(self.tr("Details"))
+        self.account_label.setText(self.tr("Account"))
+        self.peer_label.setText(self.tr("Peer"))
 
         self.timestamp_editor = QDateTimeEdit(self)
         self.timestamp_editor.setCalendarPopup(True)
@@ -51,13 +50,13 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.account_widget = AccountSelector(self)
         self.peer_widget = PeerSelector(self)
         self.a_currency = OptionalCurrencyComboBox(self)
-        self.a_currency.setText(g_tr("IncomeSpendingWidget", "Paid in foreign currency:"))
+        self.a_currency.setText(self.tr("Paid in foreign currency:"))
         self.add_button = QPushButton(load_icon("add.png"), '', self)
-        self.add_button.setToolTip(g_tr("IncomeSpendingWidget", "Add detail"))
+        self.add_button.setToolTip(self.tr("Add detail"))
         self.del_button = QPushButton(load_icon("remove.png"), '', self)
-        self.del_button.setToolTip(g_tr("IncomeSpendingWidget", "Remove detail"))
+        self.del_button.setToolTip(self.tr("Remove detail"))
         self.copy_button = QPushButton(load_icon("copy.png"), '', self)
-        self.copy_button.setToolTip(g_tr("IncomeSpendingWidget", "Copy detail"))
+        self.copy_button.setToolTip(self.tr("Copy detail"))
         self.details_table = QTableView(self)
         self.details_table.horizontalHeader().setFont(self.bold_font)
         self.details_table.setAlternatingRowColors(True)
@@ -130,8 +129,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         new_record.setValue("amount", 0)
         new_record.setValue("amount_alt", 0)
         if not self.details_model.insertRecord(-1, new_record):
-            logging.fatal(
-                g_tr('AbstractOperationDetails', "Failed to add new record: ") + self.details_model.lastError().text())
+            logging.fatal(self.tr("Failed to add new record: ") + self.details_model.lastError().text())
             return
 
     @Slot()
@@ -148,8 +146,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         new_record.setValue("amount_alt", src_record.value("amount_alt"))
         new_record.setValue("note", src_record.value("note"))
         if not self.details_model.insertRecord(-1, new_record):
-            logging.fatal(
-                g_tr('AbstractOperationDetails', "Failed to add new record: ") + self.details_model.lastError().text())
+            logging.fatal(self.tr("Failed to add new record: ") + self.details_model.lastError().text())
             return
 
     @Slot()
@@ -162,8 +159,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
     @Slot()
     def saveChanges(self):
         if not self.model.submitAll():
-            logging.fatal(
-                g_tr('AbstractOperationDetails', "Operation submit failed: ") + self.model.lastError().text())
+            logging.fatal(self.tr("Operation submit failed: ") + self.model.lastError().text())
             return
         pid = self.model.data(self.model.index(0, self.model.fieldIndex("id")))
         if pid is None:  # we just have saved new action record and need last inserted id
@@ -171,8 +167,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         for row in range(self.details_model.rowCount()):
             self.details_model.setData(self.details_model.index(row, self.details_model.fieldIndex("pid")), pid)
         if not self.details_model.submitAll():
-            logging.fatal(g_tr('AbstractOperationDetails', "Operation details submit failed: ")
-                          + self.details_model.lastError().text())
+            logging.fatal(self.tr("Operation details submit failed: ") + self.details_model.lastError().text())
             return
         self.modified = False
         self.commit_button.setEnabled(False)
@@ -223,14 +218,9 @@ class IncomeSpendingWidget(AbstractOperationDetails):
 
 class DetailsModel(QSqlTableModel):
     def __init__(self, parent_view, db):
-        self._columns = ["id",
-                         "pid",
-                         g_tr('DetailsModel', "Category"),
-                         g_tr('DetailsModel', "Tag"),
-                         g_tr('DetailsModel', "Amount"),
-                         g_tr('DetailsModel', "Amount"),
-                         g_tr('DetailsModel', "Note")]
         super().__init__(parent=parent_view, db=db)
+        self._columns = ["id", "pid", self.tr("Category"), self.tr("Tag"),
+                         self.tr("Amount"), self.tr("Amount"), self.tr("Note")]
         self.deleted = []
         self.alt_currency = ''
         self._view = parent_view

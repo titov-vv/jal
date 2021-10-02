@@ -6,7 +6,6 @@ from PySide2.QtSql import QSqlTableModel
 from jal.ui.ui_add_asset_dlg import Ui_AddAssetDialog
 from jal.constants import Setup, PredefindedAccountType, PredefinedAsset
 from jal.db.helpers import db_connection, executeSQL, readSQL, get_country_by_code
-from jal.widgets.helpers import g_tr
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -51,9 +50,12 @@ class AddAssetDialog(QDialog, Ui_AddAssetDialog):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class JalDB():
+class JalDB:
     def __init__(self):
         pass
+
+    def tr(self, text):
+        return QApplication.translate("JalDB", text)
 
     def commit(self):
         db_connection().commit()
@@ -96,7 +98,7 @@ class JalDB():
     def add_account(self, account_number, currency_code, account_type=PredefindedAccountType.Investment):
         account_id = self.find_account(account_number, currency_code)
         if account_id:  # Account already exists
-            logging.warning(g_tr('JalDB', "Account already exists: ") +
+            logging.warning(self.tr("Account already exists: ") +
                             f"{account_number} ({self.get_asset_name(currency_code)})")
             return account_id
         currency = self.get_asset_name(currency_code)
@@ -118,7 +120,7 @@ class JalDB():
                 [(":account_number", account_number), (":currency_id", currency_code), (":new_name", new_name)])
             return query.lastInsertId()
 
-        bank_name = g_tr('JalB', "Bank for #" + account_number)
+        bank_name = self.tr("Bank for #" + account_number)
         bank_id = readSQL("SELECT id FROM agents WHERE name=:bank_name", [(":bank_name", bank_name)])
         if bank_id is None:
             query = executeSQL("INSERT INTO agents (pid, name) VALUES (0, :bank_name)", [(":bank_name", bank_name)])
@@ -170,21 +172,21 @@ class JalDB():
                 # Show warning only if symbol was changed not due known bankruptcy or new issue pattern
                 if not (((symbol == new_symbol[:-1]) and (new_symbol[-1] == 'D' or new_symbol[-1] == 'Q')) or
                         ((symbol[:-1] == new_symbol) and (symbol[-1] == 'D' or symbol[-1] == 'Q'))):
-                    logging.info(g_tr('JalDB', "Symbol updated ") + f"{symbol} -> {new_symbol}")
+                    logging.info(self.tr("Symbol updated ") + f"{symbol} -> {new_symbol}")
         if new_isin:
             isin = readSQL("SELECT isin FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
             if isin == '':
                 _ = executeSQL("UPDATE assets SET isin=:new_isin WHERE id=:asset_id",
                                [(":new_isin", new_isin), (":asset_id", asset_id)])
             elif isin != new_isin:
-                logging.warning(g_tr('JalDB', "ISIN mismatch for ")
+                logging.warning(self.tr("ISIN mismatch for ")
                                 + f"{self.get_asset_name(asset_id)}: {isin} != {new_isin}")
         if new_reg:
             reg = readSQL("SELECT reg_code FROM asset_reg_id WHERE asset_id=:asset_id", [(":asset_id", asset_id)])
             if new_reg != reg:
                 _ = executeSQL("INSERT OR REPLACE INTO asset_reg_id(asset_id, reg_code) VALUES(:asset_id, :new_reg)",
                                [(":new_reg", new_reg), (":asset_id", asset_id)])
-                logging.info(g_tr('JalDB', "Reg.number updated for ")
+                logging.info(self.tr("Reg.number updated for ")
                              + f"{self.get_asset_name(asset_id)}: {reg} -> {new_reg}")
         if new_country_code:
             country_id, country_code = readSQL("SELECT a.country_id, c.code FROM assets AS a LEFT JOIN countries AS c "
@@ -194,7 +196,7 @@ class JalDB():
                 _ = executeSQL("UPDATE assets SET country_id=:new_country_id WHERE id=:asset_id",
                                [(":new_country_id", new_country_id), (":asset_id", asset_id)])
                 if country_id != 0:
-                    logging.info(g_tr('JalDB', "Country updated for ")
+                    logging.info(self.tr("Country updated for ")
                                  + f"{self.get_asset_name(asset_id)}: {country_code} -> {new_country_code}")
         if expiry:
             _ = executeSQL("UPDATE assets SET expiry=:expiry WHERE id=:asset_id",
@@ -213,8 +215,7 @@ class JalDB():
         else:
             executeSQL("INSERT INTO quotes(timestamp, asset_id, quote) VALUES (:timestamp, :asset_id, :quote)",
                        [(":timestamp", timestamp), (":asset_id", asset_id), (":quote", quote)])
-        logging.info(g_tr('JalDB', "Quote loaded: ") +
-                     f"{self.get_asset_name(asset_id)} " 
+        logging.info(self.tr("Quote loaded: ") + f"{self.get_asset_name(asset_id)} " 
                      f"@ {datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")
 
     def add_asset(self, symbol, name, asset_type, isin, data_source=-1, reg_code=None, country_code='', expiry=0):  # TODO Change params to **kwargs
@@ -226,7 +227,7 @@ class JalDB():
                             (":expiry", expiry)], commit=True)
         asset_id = query.lastInsertId()
         if asset_id is None:
-            logging.error(g_tr('JalDB', "Failed to add new asset: ") + f"{symbol}")
+            logging.error(self.tr("Failed to add new asset: ") + f"{symbol}")
         if reg_code is not None:
             _ = executeSQL("INSERT INTO asset_reg_id(asset_id, reg_code) VALUES(:asset_id, :new_reg)",
                            [(":new_reg", reg_code), (":asset_id", asset_id)])
@@ -238,7 +239,7 @@ class JalDB():
                      [(":timestamp", timestamp), (":account_id", account_id), (":asset_id", asset_id),
                       (":amount", amount), (":note", note)])
         if id:
-            logging.info(g_tr('JalDB', "Dividend already exists: ") + f"{note}")
+            logging.info(self.tr("Dividend already exists: ") + f"{note}")
             return
         _ = executeSQL("INSERT INTO dividends (timestamp, number, type, account_id, asset_id, amount, tax, note) "
                        "VALUES (:timestamp, :number, :subtype, :account_id, :asset_id, :amount, :tax, :note)",
@@ -258,7 +259,7 @@ class JalDB():
                            [(":timestamp", timestamp), (":asset", asset_id), (":account", account_id),
                             (":number", number), (":qty", qty), (":price", price)])
         if trade_id:
-            logging.info(g_tr('JalDB', "Trade already exists: #") + f"{number}")
+            logging.info(self.tr("Trade already exists: #") + f"{number}")
             return
 
         _ = executeSQL("INSERT INTO trades (timestamp, settlement, number, account_id, asset_id, qty, price, fee, note)"
@@ -281,7 +282,7 @@ class JalDB():
                               [(":timestamp", timestamp), (":from_acc_id", f_acc_id), (":to_acc_id", t_acc_id),
                                (":f_amount", f_amount), (":t_amount", t_amount)])
         if transfer_id:
-            logging.info(g_tr('JalDB', "Transfer/Exchange already exists: ") + f"{f_amount}->{t_amount}")
+            logging.info(self.tr("Transfer/Exchange already exists: ") + f"{f_amount}->{t_amount}")
             return
         if abs(fee) > Setup.CALC_TOLERANCE:
             _ = executeSQL("INSERT INTO transfers (withdrawal_timestamp, withdrawal_account, withdrawal, "
@@ -306,7 +307,7 @@ class JalDB():
                             [(":timestamp", timestamp), (":type", type), (":account", account_id), (":number", number),
                              (":asset", asset_id_old), (":asset_new", asset_id_new)])
         if action_id:
-            logging.info(g_tr('JalDB', "Corporate action already exists: #") + f"{number}")
+            logging.info(self.tr("Corporate action already exists: #") + f"{number}")
             return
 
         _ = executeSQL("INSERT INTO corp_actions (timestamp, number, account_id, type, "

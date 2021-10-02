@@ -1,7 +1,6 @@
 from enum import Enum, auto
 from PySide2.QtWidgets import QFileDialog, QMessageBox
 from PySide2.QtCore import Qt, QObject
-from jal.widgets.helpers import g_tr
 from jal.reports.helpers import XLSX
 from jal.reports.income_spending_report import IncomeSpendingReport
 from jal.reports.p_and_l_report import ProfitLossReportModel
@@ -53,21 +52,21 @@ class Reports(QObject):
         try:
             self.model.prepare(begin, end, account_id, group_dates)
         except ValueError as e:
-            QMessageBox().warning(None, g_tr('Reports', "Report creation error"), str(e), QMessageBox.Ok)
+            QMessageBox().warning(None, self.tr("Report creation error"), str(e), QMessageBox.Ok)
             return
         self.model.configureView()
 
     def saveReport(self):
-        filename, filter = QFileDialog.getSaveFileName(None, g_tr('Reports', "Save report to:"),
-                                                       ".", g_tr('Reports', "Excel files (*.xlsx)"))
+        filename, filter = QFileDialog.getSaveFileName(None, self.tr("Save report to:"),
+                                                       ".", self.tr("Excel files (*.xlsx)"))
         if filename:
-            if filter == g_tr('Reports', "Excel files (*.xlsx)") and filename[-5:] != '.xlsx':
+            if filter == self.tr("Excel files (*.xlsx)") and filename[-5:] != '.xlsx':
                 filename = filename + '.xlsx'
         else:
             return
 
         report = XLSX(filename)
-        sheet = report.add_report_sheet(g_tr('Reports', "Report"))
+        sheet = report.add_report_sheet(self.tr("Report"))
 
         model = self.table_view.model()
         headers = {}

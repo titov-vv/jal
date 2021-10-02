@@ -3,7 +3,6 @@ from PySide2.QtWidgets import QApplication, QDialog, QWidget, QPushButton, QComb
     QMessageBox
 from PySide2.QtSql import QSqlQuery, QSqlTableModel
 from jal.constants import Setup, PredefinedAsset
-from jal.widgets.helpers import g_tr
 from jal.db.update import JalDB
 from jal.db.settings import JalSettings
 from jal.db.helpers import db_connection, readSQL
@@ -21,8 +20,8 @@ class AccountButton(QPushButton):
         self.p_account_id = 0
 
         self.Menu = QMenu(self)
-        self.Menu.addAction(g_tr('AccountButton', "Choose account"), self.ChooseAccount)
-        self.Menu.addAction(g_tr('AccountButton', "Any account"), self.ClearAccount)
+        self.Menu.addAction(self.tr("Choose account"), self.ChooseAccount)
+        self.Menu.addAction(self.tr("Any account"), self.ClearAccount)
         self.setMenu(self.Menu)
 
         self.dialog = AccountListDialog()
@@ -36,7 +35,7 @@ class AccountButton(QPushButton):
         if self.p_account_id:
             self.setText(JalDB().get_account_name(account_id))
         else:
-            self.setText(g_tr('AccountButton', "ANY"))
+            self.setText(self.tr("ANY"))
         self.changed.emit(self.p_account_id)
 
     account_id = Property(int, getId, setId, notify=changed)
@@ -84,15 +83,12 @@ class SelectAccountDialog(QDialog, Ui_SelectAccountDlg):
         self.account_id = self.AccountWidget.selected_id
         self.store_account = self.ReuseAccount.isChecked()
         if self.AccountWidget.selected_id == 0:
-            QMessageBox().warning(None, g_tr('ReferenceDataDialog', "No selection"),
-                                  g_tr('ReferenceDataDialog', "Invalid account selected"),
-                                  QMessageBox.Ok)
+            QMessageBox().warning(None, self.tr("No selection"), self.tr("Invalid account selected"), QMessageBox.Ok)
             event.ignore()
             return
 
         if self.AccountWidget.selected_id == self.current_account:
-            QMessageBox().warning(None, g_tr('ReferenceDataDialog', "No selection"),
-                                  g_tr('ReferenceDataDialog', "Please select different account"),
+            QMessageBox().warning(None, self.tr("No selection"), self.tr("Please select different account"),
                                   QMessageBox.Ok)
             event.ignore()
             return

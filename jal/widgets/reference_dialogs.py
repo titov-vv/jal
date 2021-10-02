@@ -3,7 +3,6 @@ from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation
 from PySide2.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection, executeSQL, readSQL
 from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate, PeerSelectorDelegate
-from jal.widgets.helpers import g_tr
 from jal.widgets.reference_data import ReferenceDataDialog
 from jal.widgets.delegates import GridLinesDelegate
 
@@ -107,8 +106,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
 class AccountTypeListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
         AbstractReferenceListModel.__init__(self, table, parent_view)
-        self._columns = [("id", ''),
-                         ("name", g_tr('ReferenceDataDialog', "Account Type"))]
+        self._columns = [("id", ''), ("name", self.tr("Account Type"))]
         self._sort_by = "name"
         self._hidden = ["id"]
         self._stretch = "name"
@@ -125,7 +123,7 @@ class AccountTypeListDialog(ReferenceDataDialog):
         self.DataView.setModel(self.model)
         self.model.configureView()
 
-        self.setWindowTitle(g_tr('ReferenceDataDialog', "Account Types"))
+        self.setWindowTitle(self.tr("Account Types"))
         self.Toggle.setVisible(False)
         super()._init_completed()
 
@@ -136,13 +134,13 @@ class AccountListModel(AbstractReferenceListModel):
         AbstractReferenceListModel.__init__(self, table, parent_view)
         self._columns = [("id", ''),
                          ("type_id", ''),
-                         ("name", g_tr('ReferenceDataDialog', "Name")),
-                         ("currency_id", g_tr('ReferenceDataDialog', "Currency")),
-                         ("active", g_tr('ReferenceDataDialog', "Act.")),
-                         ("number", g_tr('ReferenceDataDialog', "Account #")),
-                         ("reconciled_on", g_tr('ReferenceDataDialog', "Reconciled @")),
-                         ("organization_id", g_tr('ReferenceDataDialog', "Bank/Broker")),
-                         ("country_id", g_tr('ReferenceDataDialog', "CC"))]
+                         ("name", self.tr("Name")),
+                         ("currency_id", self.tr("Currency")),
+                         ("active", self.tr("Act.")),
+                         ("number", self.tr("Account #")),
+                         ("reconciled_on", self.tr("Reconciled @")),
+                         ("organization_id", self.tr("Bank/Broker")),
+                         ("country_id", self.tr("CC"))]
         self._sort_by = "name"
         self._group_by = "type_id"
         self._hidden = ["id", "type_id"]
@@ -197,14 +195,14 @@ class AccountListDialog(ReferenceDataDialog):
 
     def setup_ui(self):
         self.search_field = "accounts.name"
-        self.setWindowTitle(g_tr('ReferenceDataDialog', "Accounts"))
+        self.setWindowTitle(self.tr("Accounts"))
         self.SearchFrame.setVisible(True)
         self.Toggle.setVisible(True)
         self.toggle_field = "active"
-        self.Toggle.setText(g_tr('ReferenceDataDialog', "Show inactive"))
+        self.Toggle.setText(self.tr("Show inactive"))
 
         self.GroupLbl.setVisible(True)
-        self.GroupLbl.setText(g_tr('ReferenceDataDialog', "Account type:"))
+        self.GroupLbl.setText(self.tr("Account type:"))
         self.GroupCombo.setVisible(True)
         self.group_key_field = self.model.group_by
         self.group_key_index = self.model.fieldIndex(self.model.group_by)
@@ -228,13 +226,13 @@ class AssetListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
         AbstractReferenceListModel.__init__(self, table, parent_view)
         self._columns = [("id", ''),
-                         ("name", g_tr('ReferenceDataDialog', "Symbol")),
+                         ("name", self.tr("Symbol")),
                          ("type_id", ''),
-                         ("full_name", g_tr('ReferenceDataDialog', "Name")),
-                         ("isin", g_tr('ReferenceDataDialog', "ISIN")),
-                         ("country_id", g_tr('ReferenceDataDialog', "Country")),
-                         ("src_id", g_tr('ReferenceDataDialog', "Data source")),
-                         ("expiry", g_tr('ReferenceDataDialog', "Expiry"))]
+                         ("full_name", self.tr("Name")),
+                         ("isin", self.tr("ISIN")),
+                         ("country_id", self.tr("Country")),
+                         ("src_id", self.tr("Data source")),
+                         ("expiry", self.tr("Expiry"))]
         self._sort_by = "name"
         self._group_by = "type_id"
         self._hidden = ["id", "type_id"]
@@ -278,12 +276,12 @@ class AssetListDialog(ReferenceDataDialog):
 
     def setup_ui(self):
         self.search_field = "assets.full_name"
-        self.setWindowTitle(g_tr('ReferenceDataDialog', "Assets"))
+        self.setWindowTitle(self.tr("Assets"))
         self.SearchFrame.setVisible(True)
         self.Toggle.setVisible(False)
 
         self.GroupLbl.setVisible(True)
-        self.GroupLbl.setText(g_tr('ReferenceDataDialog', "Asset type:"))
+        self.GroupLbl.setText(self.tr("Asset type:"))
         self.GroupCombo.setVisible(True)
         self.group_key_field = self.model.group_by
         self.group_key_index = self.model.fieldIndex(self.model.group_by)
@@ -513,9 +511,9 @@ class SqlTreeModel(QAbstractItemModel):
 class PeerTreeModel(SqlTreeModel):
     def __init__(self, table, parent_view):
         super().__init__(table, parent_view)
-        self._columns = [("name", g_tr('ReferenceDataDialog', "Name")),
-                         ("location", g_tr('ReferenceDataDialog', "Location")),
-                         ("actions_count", g_tr('ReferenceDataDialog', "Docs count"))]
+        self._columns = [("name", self.tr("Name")),
+                         ("location", self.tr("Location")),
+                         ("actions_count", self.tr("Docs count"))]
         self._stretch = "name"
         self._int_delegate = None
         self._grid_delegate = None
@@ -556,7 +554,7 @@ class PeerListDialog(ReferenceDataDialog):
         self.tree_view = True
         self.AddChildBtn.setVisible(True)
         self.SearchFrame.setVisible(True)
-        self.setWindowTitle(g_tr('ReferenceDataDialog', "Peers"))
+        self.setWindowTitle(self.tr("Peers"))
         self.Toggle.setVisible(False)
 
     def locateItem(self, item_id):
@@ -567,8 +565,8 @@ class PeerListDialog(ReferenceDataDialog):
 class CategoryTreeModel(SqlTreeModel):
     def __init__(self, table, parent_view):
         super().__init__(table, parent_view)
-        self._columns = [("name", g_tr('ReferenceDataDialog', "Name")),
-                         ("often", g_tr('ReferenceDataDialog', "Often"))]
+        self._columns = [("name", self.tr("Name")),
+                         ("often", self.tr("Often"))]
         self._stretch = "name"
         self._bool_delegate = None
         self._grid_delegate = None
@@ -596,7 +594,7 @@ class CategoryListDialog(ReferenceDataDialog):
         self.tree_view = True
         self.AddChildBtn.setVisible(True)
         self.SearchFrame.setVisible(True)
-        self.setWindowTitle(g_tr('ReferenceDataDialog', "Categories"))
+        self.setWindowTitle(self.tr("Categories"))
         self.Toggle.setVisible(False)
 
     def locateItem(self, item_id):
@@ -607,7 +605,7 @@ class TagListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
         AbstractReferenceListModel.__init__(self, table, parent_view)
         self._columns = [("id", ''),
-                         ("tag", g_tr('ReferenceDataDialog', "Tag"))]
+                         ("tag", self.tr("Tag"))]
         self._default_name = "tag"
         self._sort_by = "tag"
         self._hidden = ["id"]
@@ -633,7 +631,7 @@ class TagsListDialog(ReferenceDataDialog):
 
     def setup_ui(self):
         self.search_field = "tag"
-        self.setWindowTitle(g_tr('ReferenceDataDialog', "Tags"))
+        self.setWindowTitle(self.tr("Tags"))
         self.SearchFrame.setVisible(True)
         self.Toggle.setVisible(False)
 
@@ -647,10 +645,10 @@ class CountryListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
         AbstractReferenceListModel.__init__(self, table, parent_view)
         self._columns = [("id", ''),
-                         ("name", g_tr('ReferenceDataDialog', "Country")),
-                         ("code", g_tr('ReferenceDataDialog', "Code")),
-                         ("iso_code", g_tr('ReferenceDataDialog', "ISO code")),
-                         ("tax_treaty", g_tr('ReferenceDataDialog', "Tax Treaty"))]
+                         ("name", self.tr("Country")),
+                         ("code", self.tr("Code")),
+                         ("iso_code", self.tr("ISO code")),
+                         ("tax_treaty", self.tr("Tax Treaty"))]
         self._sort_by = "name"
         self._hidden = ["id"]
         self._stretch = "name"
@@ -677,7 +675,7 @@ class CountryListDialog(ReferenceDataDialog):
     def setup_ui(self):
         self.search_field = "name"
         self.SearchFrame.setVisible(True)
-        self.setWindowTitle(g_tr('ReferenceDataDialog', "Countries"))
+        self.setWindowTitle(self.tr("Countries"))
         self.Toggle.setVisible(False)
 
 
@@ -686,9 +684,9 @@ class QuotesListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
         AbstractReferenceListModel.__init__(self, table, parent_view)
         self._columns = [("id", ''),
-                         ("timestamp", g_tr('ReferenceDataDialog', "Date")),
-                         ("asset_id", g_tr('ReferenceDataDialog', "Asset")),
-                         ("quote", g_tr('ReferenceDataDialog', "Quote"))]
+                         ("timestamp", self.tr("Date")),
+                         ("asset_id", self.tr("Asset")),
+                         ("quote", self.tr("Quote"))]
         self._hidden = ["id"]
         self._default_name = "quote"
         self._lookup_delegate = None
@@ -720,7 +718,7 @@ class QuotesListDialog(ReferenceDataDialog):
     def setup_ui(self):
         self.search_field = "name"
         self.SearchFrame.setVisible(True)
-        self.setWindowTitle(g_tr('ReferenceDataDialog', "Quotes"))
+        self.setWindowTitle(self.tr("Quotes"))
         self.Toggle.setVisible(False)
 
 # ----------------------------------------------------------------------------------------------------------------------

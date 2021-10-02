@@ -7,11 +7,10 @@ from PySide2.QtWidgets import QHeaderView
 from jal.constants import Setup, CustomColor, BookAccount, PredefindedAccountType
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.update import JalDB
-from jal.widgets.helpers import g_tr
 from jal.widgets.delegates import GridLinesDelegate
 
 
-class TreeItem():
+class TreeItem:
     def __init__(self, data, parent=None):
         self._parent = parent
         self.data = data.copy()
@@ -46,16 +45,16 @@ class HoldingsModel(QAbstractItemModel):
         self._currency_name = ''
         self._date = QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch()
         self.calculated_names = ['share', 'profit', 'profit_rel', 'value', 'value_a']
-        self._columns = [g_tr('HoldingsModel', "Currency/Account/Asset"),
-                         g_tr('HoldingsModel', "Asset Name"),
-                         g_tr('HoldingsModel', "Qty"),
-                         g_tr('HoldingsModel', "Open"),
-                         g_tr('HoldingsModel', "Last"),
-                         g_tr('HoldingsModel', "Share, %"),
-                         g_tr('HoldingsModel', "P/L, %"),
-                         g_tr('HoldingsModel', "P/L"),
-                         g_tr('HoldingsModel', "Value"),
-                         g_tr('HoldingsModel', "Value, ")]
+        self._columns = [self.tr("Currency/Account/Asset"),
+                         self.tr("Asset Name"),
+                         self.tr("Qty"),
+                         self.tr("Open"),
+                         self.tr("Last"),
+                         self.tr("Share, %"),
+                         self.tr("P/L, %"),
+                         self.tr("P/L"),
+                         self.tr("Value"),
+                         self.tr("Value, ")]
 
     def rowCount(self, parent=None):
         if not parent.isValid():
@@ -125,7 +124,7 @@ class HoldingsModel(QAbstractItemModel):
             expiry_text = ""
             if data['expiry']:
                 expiry_date = datetime.utcfromtimestamp(data['expiry'])
-                expiry_header = g_tr('HoldingsModel', "Exp:")
+                expiry_header = self.tr("Exp:")
                 expiry_text = f" [{expiry_header} {expiry_date.strftime('%d.%m.%Y')}]"
             return data['asset_name'] + expiry_text
         elif column == 2:

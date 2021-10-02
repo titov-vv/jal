@@ -2,16 +2,11 @@ from datetime import time, datetime, timedelta, timezone
 from PySide2.QtCore import QCoreApplication
 
 
-# -----------------------------------------------------------------------------------------------------------------------
-# Global translate helper to make lines shorter in code
-def g_tr(context, text):
-    return QCoreApplication.translate(context, text)
-
-
 def decodeError(orginal_msg):
     messages = {
-        'JAL_SQL_MSG_0001': g_tr("Error", "Investment account should have associated broker assigned"),
-        'JAL_SQL_MSG_0002': g_tr("Error", "Can't delete predefined category")
+        'JAL_SQL_MSG_0001': QCoreApplication.translate("Error",
+                                                       "Investment account should have associated broker assigned"),
+        'JAL_SQL_MSG_0002': QCoreApplication.translate("Error", "Can't delete predefined category")
     }
 
     if orginal_msg[:4] != 'JAL_':
@@ -80,22 +75,22 @@ class ManipulateDate:
         else:
             begin = day.replace(month=(begin_month + 12), year=(day.year - 1))
         begin = begin.replace(day=1)
-        return (ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end))
+        return ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end)
 
     @staticmethod
     def RangeYTD(day=datetime.today()):
         end = day + timedelta(days=1)
         begin = day.replace(day=1, year=(day.year - 1))
-        return (ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end))
+        return ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end)
 
     @staticmethod
     def RangeThisYear(day=datetime.today()):
         end = day + timedelta(days=1)
         begin = day.replace(day=1, month=1)
-        return (ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end))
+        return ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end)
 
     @staticmethod
     def RangePreviousYear(day=datetime.today()):
         end = day.replace(day=1, month=1)
         begin = end.replace(year=(day.year - 1))
-        return (ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end))
+        return ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end)

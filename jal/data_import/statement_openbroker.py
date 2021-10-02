@@ -2,7 +2,7 @@ import logging
 import re
 from datetime import datetime
 
-from jal.widgets.helpers import g_tr
+from PySide2.QtWidgets import QApplication
 from jal.constants import Setup
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xml import StatementXML
@@ -23,7 +23,7 @@ class OpenBroker_AssetType:
         try:
             self.type = self._asset_types[asset_type]
         except KeyError:
-            logging.warning(g_tr('OpenBroker_AssetType', "Asset type isn't supported: ") + f"'{asset_type}'")
+            logging.warning(QApplication.translate("OpenBroker", "Asset type isn't supported: ") + f"'{asset_type}'")
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -40,7 +40,8 @@ class OpenBroker_Asset:
                     self.id = match[0]['id']
                     return
                 else:
-                    logging.error(g_tr('OpenBroker', "Multiple asset match for ") + f"'{symbol}':'{reg_code}'")
+                    logging.error(QApplication.translate("OpenBroker", "Multiple asset match for ")
+                                  + f"'{symbol}':'{reg_code}'")
                     return
         match = [x for x in assets_list if 'symbol' in x and x['symbol'] == symbol]
         if match:
@@ -48,14 +49,14 @@ class OpenBroker_Asset:
                 self.id = match[0]['id']
                 return
             else:
-                logging.error(g_tr('OpenBroker', "Multiple asset match for ") + f"'{symbol}'")
+                logging.error(QApplication.translate("OpenBroker", "Multiple asset match for ") + f"'{symbol}'")
         match = [x for x in assets_list if 'alt_symbol' in x and x['alt_symbol'] == symbol]
         if match:
             if len(match) == 1:
                 self.id = match[0]['id']
                 return
             else:
-                logging.error(g_tr('OpenBroker', "Multiple asset match for ") + f"'{symbol}'")
+                logging.error(QApplication.translate("OpenBroker", "Multiple asset match for ") + f"'{symbol}'")
 
 # ----------------------------------------------------------------------------------------------------------------------
 class OpenBroker_Currency:
@@ -78,7 +79,7 @@ class OpenBroker_Exchange:
         try:
             self.name = self._exchange_types[exchange]
         except KeyError:
-            logging.warning(g_tr('OpenBroker_Exchange', "Exchange isn't supported: ") + f"'{exchange}'")
+            logging.warning(QApplication.translate("OpenBroker", "Exchange isn't supported: ") + f"'{exchange}'")
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -88,7 +89,7 @@ class StatementOpenBroker(StatementXML):
 
     def __init__(self):
         super().__init__()
-        self.statement_name = g_tr('OpenBroker', "Open Broker statement")
+        self.statement_name = self.tr("Open Broker statement")
         self._account_number = ''
         self.asset_withdrawal = []
         open_loaders = {
@@ -224,7 +225,7 @@ class StatementOpenBroker(StatementXML):
         self._data[FOF.PERIOD][0] = header['period_start']
         self._data[FOF.PERIOD][1] = self._end_of_date(header['period_end'])
         self._account_number = header['account']
-        logging.info(g_tr('OpenBroker', "Load Open Broker statement for account ") +
+        logging.info(self.tr("Load Open Broker statement for account ") +
                      f"{self._account_number}: {datetime.utcfromtimestamp(header['period_start']).strftime('%Y-%m-%d')}"
                      + f" - {datetime.utcfromtimestamp(header['period_end']).strftime('%Y-%m-%d')}")
 
@@ -245,7 +246,7 @@ class StatementOpenBroker(StatementXML):
                 asset.pop('exchange')
             cnt += 1
             self._data[FOF.ASSETS].append(asset)
-        logging.info(g_tr('OpenBroker', "Securities loaded: ") + f"{cnt} ({len(assets)})")
+        logging.info(self.tr("Securities loaded: ") + f"{cnt} ({len(assets)})")
 
     def load_balances(self, balances):
         cnt = 0
@@ -258,7 +259,7 @@ class StatementOpenBroker(StatementXML):
                 account.update(balance)
                 self._data[FOF.ACCOUNTS].append(account)
                 cnt += 1
-        logging.info(g_tr('OpenBroker', "Accounts loaded: ") + f"{cnt}")
+        logging.info(self.tr("Accounts loaded: ") + f"{cnt}")
 
     def load_trades(self, trades):
         cnt = 0
@@ -267,9 +268,9 @@ class StatementOpenBroker(StatementXML):
             trade['id'] = trade_base + i
             trade['account'] = self.account_by_currency(trade['currency'])
             if trade['account'] == 0:
-                raise Statement_ImportError(g_tr('OpenBroker', "Can't find account for trade: ") + f"{trade}")
+                raise Statement_ImportError(self.tr("Can't find account for trade: ") + f"{trade}")
             if trade['quantity_buy'] < 0 and trade['quantity_sell'] < 0:
-                raise Statement_ImportError(g_tr('OpenBroker', "Can't determine trade type/quantity: ") + f"{trade}")
+                raise Statement_ImportError(self.tr("Can't determine trade type/quantity: ") + f"{trade}")
             if trade['quantity_sell'] < 0:
                 trade['quantity'] = trade['quantity_buy']
                 trade['accrued_interest'] = -trade['accrued_interest']
@@ -294,16 +295,16 @@ class StatementOpenBroker(StatementXML):
         bond_repayment_pattern = r"^.*Снятие ЦБ с учета\. Погашение облигаций - (?P<asset_name>.*)$"
         for operation in asset_operations:
             if "Снятие ЦБ с учета. Погашение облигаций" not in operation['description']:
-                raise Statement_ImportError(g_tr('OpenBroker', "Unknown non-trade operation: ")
+                raise Statement_ImportError(self.tr("Unknown non-trade operation: ")
                                             + operation['description'])
             parts = re.match(bond_repayment_pattern, operation['description'], re.IGNORECASE)
             if parts is None:
                 raise Statement_ImportError(
-                    g_tr('OpenBroker', "Can't parse bond repayment description ") + f"'{operation['description']}'")
+                    self.tr("Can't parse bond repayment description ") + f"'{operation['description']}'")
             repayment_note = parts.groupdict()
             if len(repayment_note) != bond_repayment_pattern.count("(?P<"):  # check expected number of matches
                 raise Statement_ImportError(
-                    g_tr('OpenBroker', "Can't detect bond name from description ") + f"'{repayment_note}'")
+                    self.tr("Can't detect bond name from description ") + f"'{repayment_note}'")
             asset = [x for x in self._data[FOF.ASSETS] if 'id' in x and x['id'] == operation['asset']][0]
             if asset['symbol'] != repayment_note['asset_name']:    # Store alternative depositary name
                 asset['alt_symbol'] = repayment_note['asset_name']
@@ -325,17 +326,17 @@ class StatementOpenBroker(StatementXML):
         for cash in cash_operations:
             operation = [operation for operation in operations if cash['description'].startswith(operation)]
             if len(operation) != 1:
-                raise Statement_ImportError(g_tr('OpenBroker', "Operation not supported: ") + cash['description'])
+                raise Statement_ImportError(self.tr("Operation not supported: ") + cash['description'])
             for operation in operations:
                 if cash['description'].startswith(operation):
                     if operations[operation] is not None:
                         account_id = self.account_by_currency(cash['currency'])
                         if account_id == 0:
-                            raise Statement_ImportError(g_tr('OpenBroker', "Can't find account for cash operation: ") +
+                            raise Statement_ImportError(self.tr("Can't find account for cash operation: ") +
                                                         f"{cash}")
                         operations[operation](cash['timestamp'], account_id, cash['amount'], cash['description'])
                         cnt += 1
-        logging.info(g_tr('OpenBroker', "Cash operations loaded: ") + f"{cnt}")
+        logging.info(self.tr("Cash operations loaded: ") + f"{cnt}")
 
     def transfer_in(self, timestamp, account_id, amount, description):
         account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
@@ -353,23 +354,23 @@ class StatementOpenBroker(StatementXML):
         payment_pattern = r"^.*\((?P<type>\w+).*\).*$"
         parts = re.match(payment_pattern, description, re.IGNORECASE)
         if parts is None:
-            raise Statement_ImportError(g_tr('OpenBroker', "Unknown payment description: ") + f"'{description}'")
+            raise Statement_ImportError(self.tr("Unknown payment description: ") + f"'{description}'")
         try:
             payment_operations[parts.groupdict()['type']](timestamp, account_id, amount, description)
         except KeyError:
-            raise Statement_ImportError(g_tr('OpenBroker', "Unknown payment type: ") + f"'{parts.groupdict()['type']}'")
+            raise Statement_ImportError(self.tr("Unknown payment type: ") + f"'{parts.groupdict()['type']}'")
 
     def interest_payment(self, timestamp, account_id, amount, description):
         intrest_pattern = r"^Выплата дохода клиент (?P<account>\w+) \((?P<type>\w+) (?P<number>\d+) (?P<symbol>.*)\) налог.* (?P<tax>\d+\.\d+) рубл.*$"
         parts = re.match(intrest_pattern, description, re.IGNORECASE)
         if parts is None:
-            raise Statement_ImportError(g_tr('OpenBroker', "Can't parse Interest description ") + f"'{description}'")
+            raise Statement_ImportError(self.tr("Can't parse Interest description ") + f"'{description}'")
         interest = parts.groupdict()
         if len(interest) != intrest_pattern.count("(?P<"):  # check expected number of matches
-            raise Statement_ImportError(g_tr('OpenBroker', "Interest description miss some data ") + f"'{description}'")
+            raise Statement_ImportError(self.tr("Interest description miss some data ") + f"'{description}'")
         asset_id = OpenBroker_Asset(self._data[FOF.ASSETS], interest['symbol']).id
         if asset_id is None:
-            raise Statement_ImportError(g_tr('OpenBroker', "Can't find asset for bond interest ")
+            raise Statement_ImportError(self.tr("Can't find asset for bond interest ")
                                         + f"'{interest['symbol']}'")
         tax = float(interest['tax'])   # it has '\d+\.\d+' regex pattern so here shouldn't be an exception
         note = f"{interest['type']} {interest['number']}"
@@ -382,19 +383,19 @@ class StatementOpenBroker(StatementXML):
         repayment_pattern = r"^Выплата дохода клиент (?P<account>\w+) \((?P<type>\w+) (?P<asset>.*)\) налог не удерживается$"
         parts = re.match(repayment_pattern, description, re.IGNORECASE)
         if parts is None:
-            raise Statement_ImportError(g_tr('OpenBroker', "Can't parse Bond Mature description ") + f"'{description}'")
+            raise Statement_ImportError(self.tr("Can't parse Bond Mature description ") + f"'{description}'")
         repayment = parts.groupdict()
         if len(repayment) != repayment_pattern.count("(?P<"):  # check expected number of matches
-            raise Statement_ImportError(g_tr('OpenBroker', "Bond repayment description miss some data ")
+            raise Statement_ImportError(self.tr("Bond repayment description miss some data ")
                                         + f"'{description}'")
         match = [x for x in self.asset_withdrawal
                  if (x['symbol'] == repayment['asset'] or x['alt_symbol'] == repayment['asset'])
                     and x['timestamp'] == timestamp]
         if not match:
-            raise Statement_ImportError(g_tr('OpenBroker', "Can't find asset cancellation record for ")
+            raise Statement_ImportError(self.tr("Can't find asset cancellation record for ")
                                         + f"'{description}'")
         if len(match) != 1:
-            raise Statement_ImportError(g_tr('OpenBroker', "Multiple asset cancellation match for ")
+            raise Statement_ImportError(self.tr("Multiple asset cancellation match for ")
                                         + f"'{description}'")
         asset_cancel = match[0]
         number = datetime.utcfromtimestamp(timestamp).strftime('%Y%m%d') + f"-{asset_cancel['id']}"

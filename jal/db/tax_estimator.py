@@ -6,7 +6,6 @@ from PySide2.QtWidgets import QDialog
 from PySide2.QtGui import QFont
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord
 from jal.db.update import JalDB
-from jal.widgets.helpers import g_tr
 from jal.ui.ui_tax_estimation import Ui_TaxEstimationDialog
 
 
@@ -43,13 +42,13 @@ class TaxEstimatorModel(QAbstractTableModel):
         return None
 
     def headerData(self, col, orientation, role=Qt.DisplayRole):
-        headers = [g_tr("TaxEstimator", "Date"),
-                   g_tr("TaxEstimator", "Qty"),
-                   g_tr("TaxEstimator", "Open"),
-                   g_tr("TaxEstimator", "Rate, ") + self._currency + "/RUB",
-                   g_tr("TaxEstimator", "Profit, ") + self._currency,
-                   g_tr("TaxEstimator", "Profit, RUB"),
-                   g_tr("TaxEstimator", "Tax, RUB")]
+        headers = [self.tr("Date"),
+                   self.tr("Qty"),
+                   self.tr("Open"),
+                   self.tr("Rate, ") + self._currency + "/RUB",
+                   self.tr("Profit, ") + self._currency,
+                   self.tr("Profit, RUB"),
+                   self.tr("Tax, RUB")]
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return headers[col]
         return None
@@ -67,7 +66,7 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
         self.dataframe = None
         self.ready = False
 
-        self.setWindowTitle(g_tr('TaxEstimator', "Tax estimation for ") + self.asset_name)
+        self.setWindowTitle(self.tr("Tax estimation for ") + self.asset_name)
         self.setWindowFlag(Qt.Tool)
         self.setGeometry(position.x(), position.y(), self.width(), self.height())
 
@@ -116,7 +115,7 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
         self.quote = readSQL("SELECT quote FROM t_last_quotes WHERE asset_id=:asset_id",
                              [(":asset_id", self.asset_id)])
         if self.quote is None:
-            logging.error(g_tr('TaxEstimator', "Can't get current quote for ") + self.asset_name)
+            logging.error(self.tr("Can't get current quote for ") + self.asset_name)
             return
         self.currency_name = JalDB().get_asset_name(JalDB().get_account_currency(self.account_id))
 
@@ -124,7 +123,7 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
                             "LEFT JOIN t_last_quotes AS q ON q.asset_id=a.currency_id WHERE id=:account_id",
                             [(":account_id", self.account_id)])
         if self.rate is None:
-            logging.error(g_tr('TaxEstimator', "Can't get current rate for ") + self.currency_name)
+            logging.error(self.tr("Can't get current rate for ") + self.currency_name)
             return
 
         query = executeSQL("SELECT strftime('%d/%m/%Y', datetime(t.timestamp, 'unixepoch')) AS timestamp, "
@@ -160,7 +159,7 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
                 break
         tax = 0.13 * profit_rub if profit_rub > 0 else 0
         table.append(
-            {'timestamp': g_tr("TaxEstimator", "TOTAL"), 'qty': self.asset_qty, 'o_price': value / self.asset_qty,
+            {'timestamp': self.tr("TOTAL"), 'qty': self.asset_qty, 'o_price': value / self.asset_qty,
              'o_rate': value_rub / value,
              'profit': profit, 'profit_rub': profit_rub, 'tax': tax})
         data = pd.DataFrame(table)

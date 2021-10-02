@@ -7,8 +7,7 @@ import logging
 from datetime import datetime, timezone
 from collections import defaultdict
 
-from PySide2.QtWidgets import QDialog, QMessageBox
-from jal.widgets.helpers import g_tr
+from PySide2.QtWidgets import QApplication, QDialog, QMessageBox
 from jal.constants import Setup, MarketDataFeed, PredefinedAsset, DividendSubtype, CorporateAction
 from jal.db.helpers import account_last_date, get_app_path
 from jal.db.update import JalDB
@@ -105,7 +104,10 @@ class Statement:
             FOF.CORP_ACTIONS: self._import_corporate_actions
         }
 
-    # returns tuple (start_timestamp, end_timestamp)
+    def tr(self, text):
+        return QApplication.translate("Statement", text)
+
+        # returns tuple (start_timestamp, end_timestamp)
     def period(self):
         if FOF.PERIOD in self._data:
             return self._data[FOF.PERIOD][0], self._data[FOF.PERIOD][1]
@@ -125,14 +127,14 @@ class Statement:
                 try:
                     self._data = json.load(exchange_file)
                 except json.JSONDecodeError:
-                    logging.error(g_tr('Statement', "Failed to read JSON from file: ") + filename)
+                    logging.error(self.tr("Failed to read JSON from file: ") + filename)
         except Exception as err:
-            raise Statement_ImportError(g_tr('Statement', "Failed to read file: ") + str(err))
+            raise Statement_ImportError(self.tr("Failed to read file: ") + str(err))
         unsupported_sections = [x for x in self._data if x not in self._section_loaders]
         if unsupported_sections:
             for section in unsupported_sections:
                 self._data.pop(section)
-            logging.warning(g_tr("Statement", "Some sections are not supported: ") + unsupported_sections)
+            logging.warning(self.tr("Some sections are not supported: ") + unsupported_sections)
 
     # check are assets and accounts from self._data present in database
     # replace IDs in self._data with IDs from database (DB IDs will be negative, initial IDs will be positive)
@@ -185,13 +187,13 @@ class Statement:
                 try:
                     statement_schema = json.load(schema_file)
                 except json.JSONDecodeError:
-                    raise Statement_ImportError(g_tr('Statement', "Failed to read JSON schema from: ") + schema_name)
+                    raise Statement_ImportError(self.tr("Failed to read JSON schema from: ") + schema_name)
         except Exception as err:
-            raise Statement_ImportError(g_tr('Statement', "Failed to read file: ") + str(err))
+            raise Statement_ImportError(self.tr("Failed to read file: ") + str(err))
         try:
             validate(instance=self._data, schema=statement_schema)
         except ValidationError:
-            raise Statement_ImportError(g_tr('StatementLoader', "Statement validation failed"))
+            raise Statement_ImportError(self.tr("Statement validation failed"))
 
     # Store content of JSON statement into database
     # Returns a dict of dict with amounts:
@@ -209,19 +211,17 @@ class Statement:
 
     def _check_period(self, period):
         if len(period) != 2:
-            logging.warning(g_tr("Statement", "Statement period is invalid"))
+            logging.warning(self.tr("Statement period is invalid"))
         if not FOF.ACCOUNTS in self._data:
             return
         accounts = self._data[FOF.ACCOUNTS]
         for account in accounts:
             if account['id'] < 0:  # Checks if report is after last transaction recorded for account.
                 if period[0] < account_last_date(-account['id']):
-                    if QMessageBox().warning(None,
-                                             g_tr('StatementLoader', "Confirmation"),
-                                             g_tr('StatementLoader',
-                                                  "Statement period starts before last recorded operation for the account. Continue import?"),
+                    if QMessageBox().warning(None, self.tr("Confirmation"),
+                                             self.tr("Statement period starts before last recorded operation for the account. Continue import?"),
                                              QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
-                        raise Statement_ImportError(g_tr('Statement', "Statement import was cancelled"))
+                        raise Statement_ImportError(self.tr("Statement import was cancelled"))
 
     def _import_assets(self, assets):
         for asset in assets:
@@ -244,34 +244,34 @@ class Statement:
                 if asset['type'] == FOF.ASSET_MONEY:
                     self._update_id("currency", old_id, asset_id)
             else:
-                raise Statement_ImportError(g_tr('Statement', "Can't create asset: ") + f"{asset}")
+                raise Statement_ImportError(self.tr("Can't create asset: ") + f"{asset}")
     
     def _import_accounts(self, accounts):
         for account in accounts:
             if account['id'] < 0:
                 continue
             if account['currency'] > 0:
-                raise Statement_ImportError(g_tr('Statement', "Unmatched currency for account: ") + f"{account}")
+                raise Statement_ImportError(self.tr("Unmatched currency for account: ") + f"{account}")
             account_id = JalDB().add_account(account['number'], -account['currency'])
             if account_id:
                 old_id, account['id'] = account['id'], -account_id
                 self._update_id("account", old_id, account_id)
             else:
-                raise Statement_ImportError(g_tr('Statement', "Can't create account: ") + f"{account}")
+                raise Statement_ImportError(self.tr("Can't create account: ") + f"{account}")
     
     def _import_imcomes_and_spendings(self, actions):
         for action in actions:
             if action['account'] > 0:
-                raise Statement_ImportError(g_tr('Statement', "Unmatched account for income/spending: ") + f"{action}")
+                raise Statement_ImportError(self.tr("Unmatched account for income/spending: ") + f"{action}")
             if action['peer'] > 0:
-                raise Statement_ImportError(g_tr('Statement', "Unmatched peer for income/spending: ") + f"{action}")
+                raise Statement_ImportError(self.tr("Unmatched peer for income/spending: ") + f"{action}")
             peer = JalDB().get_account_bank(-action['account']) if action['peer'] == 0 else -action['peer']
             if len(action['lines']) != 1:   # FIXME - need support for multilines here
-                raise Statement_ImportError(g_tr('Statement', "Unsupported income/spending: ") + f"{action}")
+                raise Statement_ImportError(self.tr("Unsupported income/spending: ") + f"{action}")
             amount = action['lines'][0]['amount']
             category = -action['lines'][0]['category']
             if category <= 0:
-                raise Statement_ImportError(g_tr('Statement', "Unmatched category for income/spending: ") + f"{action}")
+                raise Statement_ImportError(self.tr("Unmatched category for income/spending: ") + f"{action}")
             description = action['lines'][0]['description']
             JalDB().add_cash_transaction(-action['account'], peer, action['timestamp'], amount, category, description)
     
@@ -279,31 +279,31 @@ class Statement:
         for transfer in transfers:
             for account in transfer['account']:
                 if account > 0:
-                    raise Statement_ImportError(g_tr('Statement', "Unmatched account for transfer: ") + f"{transfer}")
+                    raise Statement_ImportError(self.tr("Unmatched account for transfer: ") + f"{transfer}")
             for asset in transfer['asset']:
                 if asset > 0:
-                    raise Statement_ImportError(g_tr('Statement', "Unmatched asset for transfer: ") + f"{transfer}")
+                    raise Statement_ImportError(self.tr("Unmatched asset for transfer: ") + f"{transfer}")
             if transfer['account'][0] == 0 or transfer['account'][1] == 0:
                 text = ''
                 pair_account = 1
                 if transfer['account'][0] == 0:  # Deposit
-                    text = g_tr('Statement', "Deposit of ") + f"{transfer['deposit']:.2f} " + \
+                    text = self.tr("Deposit of ") + f"{transfer['deposit']:.2f} " + \
                            f"{JalDB().get_asset_name(-transfer['asset'][1])} " + \
                            f"@{datetime.utcfromtimestamp(transfer['timestamp']).strftime('%d.%m.%Y')}\n" + \
-                           g_tr('Statement', "Select account to withdraw from:")
+                           self.tr("Select account to withdraw from:")
                     pair_account = -transfer['account'][1]
                 if transfer['account'][1] == 0:  # Withdrawal
-                    text = g_tr('Statement', "Withdrawal of ") + f"{transfer['withdrawal']:.2f} " + \
+                    text = self.tr("Withdrawal of ") + f"{transfer['withdrawal']:.2f} " + \
                            f"{JalDB().get_asset_name(-transfer['asset'][0])} " + \
                            f"@{datetime.utcfromtimestamp(transfer['timestamp']).strftime('%d.%m.%Y')}\n" + \
-                           g_tr('Statement', "Select account to deposit to:")
+                           self.tr("Select account to deposit to:")
                     pair_account = -transfer['account'][0]
                 try:
                     chosen_account = self._previous_accounts[JalDB().get_account_currency(pair_account)]
                 except KeyError:
                     chosen_account = self.select_account(text, pair_account, self._last_selected_account)
                 if chosen_account == 0:
-                    raise Statement_ImportError(g_tr('Statement', "Account not selected"))
+                    raise Statement_ImportError(self.tr("Account not selected"))
                 self._last_selected_account = chosen_account
                 if transfer['account'][0] == 0:
                     transfer['account'][0] = -chosen_account
@@ -318,9 +318,9 @@ class Statement:
     def _import_trades(self, trades):
         for trade in trades:
             if trade['account'] > 0:
-                raise Statement_ImportError(g_tr('Statement', "Unmatched account for trade: ") + f"{trade}")
+                raise Statement_ImportError(self.tr("Unmatched account for trade: ") + f"{trade}")
             if trade['asset'] > 0:
-                raise Statement_ImportError(g_tr('Statement', "Unmatched asset for trade: ") + f"{trade}")
+                raise Statement_ImportError(self.tr("Unmatched asset for trade: ") + f"{trade}")
             note = trade['note'] if 'note' in trade else ''
             if 'cancelled' in trade and trade['cancelled']:
                 JalDB().del_trade(-trade['account'], -trade['asset'], trade['timestamp'], trade['settlement'],
@@ -332,9 +332,9 @@ class Statement:
     def _import_asset_payments(self, payments):
         for payment in payments:
             if payment['account'] > 0:
-                raise Statement_ImportError(g_tr('Statement', "Unmatched account for payment: ") + f"{payment}")
+                raise Statement_ImportError(self.tr("Unmatched account for payment: ") + f"{payment}")
             if payment['asset'] > 0:
-                raise Statement_ImportError(g_tr('Statement', "Unmatched asset for payment: ") + f"{payment}")
+                raise Statement_ImportError(self.tr("Unmatched asset for payment: ") + f"{payment}")
             tax = payment['tax'] if 'tax' in payment else 0
             if payment['type'] == FOF.PAYMENT_DIVIDEND:
                 if payment['id'] > 0:  # New dividend
@@ -349,19 +349,19 @@ class Statement:
                                      -payment['asset'], payment['amount'], payment['description'], payment['number'],
                                      tax=tax)
             else:
-                raise Statement_ImportError(g_tr('Statement', "Unsupported payment type: ") + f"{payment}")
+                raise Statement_ImportError(self.tr("Unsupported payment type: ") + f"{payment}")
 
     def _import_corporate_actions(self, actions):
         for action in actions:
             if action['account'] > 0:
-                raise Statement_ImportError(g_tr('Statement', "Unmatched account for corporate action: ") + f"{action}")
+                raise Statement_ImportError(self.tr("Unmatched account for corporate action: ") + f"{action}")
             if type(action['asset']) == list:
                 asset_old = -action['asset'][0]
                 asset_new = -action['asset'][1]
             else:
                 asset_old = asset_new = -action['asset']
             if asset_old < 0 or asset_new < 0:
-                raise Statement_ImportError(g_tr('Statement', "Unmatched asset for corporate action: ") + f"{action}")
+                raise Statement_ImportError(self.tr("Unmatched asset for corporate action: ") + f"{action}")
             if type(action['quantity']) == list:
                 qty_old = action['quantity'][0]
                 qty_new = action['quantity'][1]
@@ -371,7 +371,7 @@ class Statement:
             try:
                 action_type = self._corp_actions[action['type']]
             except KeyError:
-                raise Statement_ImportError(g_tr('Statement', "Unsupported corporate action: ") + f"{action}")
+                raise Statement_ImportError(self.tr("Unsupported corporate action: ") + f"{action}")
             JalDB().add_corporate_action(-action['account'], action_type, action['timestamp'], action['number'],
                                          asset_old, qty_old, asset_new, qty_new,
                                          action['cost_basis'], action['description'])

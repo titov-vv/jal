@@ -1,7 +1,6 @@
 from PySide2.QtCore import Qt
 from PySide2.QtSql import QSqlTableModel
 from jal.db.helpers import db_connection, executeSQL
-from jal.widgets.helpers import g_tr
 from jal.constants import CorporateAction
 from jal.widgets.delegates import TimestampDelegate, FloatDelegate
 
@@ -9,21 +8,21 @@ from jal.widgets.delegates import TimestampDelegate, FloatDelegate
 # -----------------------------------------------------------------------------------------------------------------------
 class DealsReportModel(QSqlTableModel):
     def __init__(self, parent_view):
-        self._columns = [("asset", g_tr("Reports", "Asset")),
-                         ("o_datetime", g_tr("Reports", "Open Date")),
-                         ("c_datetime", g_tr("Reports", "Close Date")),
-                         ("open_price", g_tr("Reports", "Open Price")),
-                         ("close_price", g_tr("Reports", "Close Price")),
-                         ("qty", g_tr("Reports", "Qty")),
-                         ("fee", g_tr("Reports", "Fee")),
-                         ("profit", g_tr("Reports", "P/L")),
-                         ("rel_profit", g_tr("Reports", "P/L, %")),
-                         ("corp_action", g_tr("Reports", "Note"))]
-        self.ca_names = {CorporateAction.SymbolChange: g_tr('Reports', "Symbol change"),
-                         CorporateAction.Split: g_tr('Reports', "Split"),
-                         CorporateAction.SpinOff: g_tr('Reports', "Spin-off"),
-                         CorporateAction.Merger: g_tr('Reports', "Merger"),
-                         CorporateAction.StockDividend: g_tr('Reports', "Stock dividend")}
+        self._columns = [("asset", self.tr("Asset")),
+                         ("o_datetime", self.tr("Open Date")),
+                         ("c_datetime", self.tr("Close Date")),
+                         ("open_price", self.tr("Open Price")),
+                         ("close_price", self.tr("Close Price")),
+                         ("qty", self.tr("Qty")),
+                         ("fee", self.tr("Fee")),
+                         ("profit", self.tr("P/L")),
+                         ("rel_profit", self.tr("P/L, %")),
+                         ("corp_action", self.tr("Note"))]
+        self.ca_names = {CorporateAction.SymbolChange: self.tr("Symbol change"),
+                         CorporateAction.Split: self.tr("Split"),
+                         CorporateAction.SpinOff: self.tr("Spin-off"),
+                         CorporateAction.Merger: self.tr("Merger"),
+                         CorporateAction.StockDividend: self.tr("Stock dividend")}
         self._view = parent_view
         self._group_dates = 0
         self._query = None
@@ -51,9 +50,9 @@ class DealsReportModel(QSqlTableModel):
                 except ValueError:
                     ca_type = 0
                 if ca_type > 0:
-                    text = g_tr('OperationsDelegate', " Opened with ") + self.ca_names[ca_type]
+                    text = self.tr(" Opened with ") + self.ca_names[ca_type]
                 elif ca_type < 0:
-                    text = g_tr('OperationsDelegate', " Closed with ") + self.ca_names[-ca_type]
+                    text = self.tr(" Closed with ") + self.ca_names[-ca_type]
                 else:
                     text = ''
                 return text
@@ -91,7 +90,7 @@ class DealsReportModel(QSqlTableModel):
 
     def prepare(self, begin, end, account_id, group_dates):
         if account_id == 0:
-            raise ValueError(g_tr('Reports', "You should select account to create Deals report"))
+            raise ValueError(self.tr("You should select account to create Deals report"))
         self._group_dates = group_dates
         if group_dates == 1:
             self._query = executeSQL(

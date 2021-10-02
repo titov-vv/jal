@@ -19,7 +19,7 @@ from PySide2.QtCore import Qt, Slot, Signal, QDateTime, QBuffer, QThread, QAbstr
 from PySide2.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView
 # This QCamera staff ran good on Windows but didn't fly on Linux from the box until 'cheese' installation
 from PySide2.QtMultimedia import QCameraInfo, QCamera, QCameraImageCapture, QVideoFrame
-from jal.widgets.helpers import g_tr, dependency_present
+from jal.widgets.helpers import dependency_present
 from jal.db.helpers import executeSQL, readSQL
 from jal.data_import.slips_tax import SlipsTaxAPI
 from jal.ui.ui_slip_import_dlg import Ui_ImportSlipDlg
@@ -58,15 +58,15 @@ class PandasLinesModel(QAbstractTableModel):
                 return True
 
     def headerData(self, col, orientation, role=Qt.DisplayRole):
-        if (orientation == Qt.Horizontal and role == Qt.DisplayRole):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             if col == 0:
-                return g_tr('PandasLinesModel', "Product name")
+                return self.tr("Product name")
             if col == 1:
-                return g_tr('PandasLinesModel', "Category")
+                return self.tr("Category")
             if col == 3:
-                return g_tr('PandasLinesModel', "Tag")
+                return self.tr("Tag")
             if col == 4:
-                return g_tr('PandasLinesModel', "Amount")
+                return self.tr("Amount")
         return None
 
 
@@ -180,7 +180,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
     def loadFileQR(self):
         self.initUi()
         qr_file, _filter = \
-            QFileDialog.getOpenFileName(self, g_tr('ImportSlipDialog', "Select file with QR code"),
+            QFileDialog.getOpenFileName(self, self.tr("Select file with QR code"),
                                         ".", "JPEG images (*.jpg);;PNG images (*.png)")
         if qr_file:
             barcodes = pyzbar.decode(Image.open(qr_file), symbols=[pyzbar.ZBarSymbol.QRCODE])
@@ -201,7 +201,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         try:
             pillow_image = Image.open(io.BytesIO(buffer.data()))
         except UnidentifiedImageError:
-            logging.warning(g_tr('ImportSlipDialog', "Image format isn't supported"))
+            logging.warning(self.tr("Image format isn't supported"))
             return False
         barcodes = pyzbar.decode(pillow_image, symbols=[pyzbar.ZBarSymbol.QRCODE])
         if barcodes:
@@ -214,20 +214,20 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
     def readClipboardQR(self):
         self.initUi()
         if not self.readImageQR(QApplication.clipboard().image()):
-            logging.warning(g_tr('ImportSlipDialog', "No QR codes found in clipboard"))
+            logging.warning(self.tr("No QR codes found in clipboard"))
 
     @Slot()
     def readCameraQR(self):
         self.initUi()
         if len(QCameraInfo.availableCameras()) == 0:
-            logging.warning(g_tr('ImportSlipDialog', "There are no cameras available"))
+            logging.warning(self.tr("There are no cameras available"))
             return
         self.cameraActive = True
         self.CameraGroup.setVisible(True)
         self.SlipDataGroup.setVisible(False)
 
         camera_info = QCameraInfo.defaultCamera()
-        logging.info(g_tr('ImportSlipDialog', "Read QR with camera: " + camera_info.deviceName()))
+        logging.info(self.tr("Read QR with camera: " + camera_info.deviceName()))
         self.camera = QCamera(camera_info)
         self.camera.errorOccurred.connect(self.onCameraError)
         self.img_capture = QCameraImageCapture(self.camera)
@@ -252,11 +252,11 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
 
     @Slot()
     def onCameraError(self, error):
-        logging.error(g_tr('ImportSlipDialog', "Camera error: " + str(error) + " / " + self.camera.errorString()))
+        logging.error(self.tr("Camera error: " + str(error) + " / " + self.camera.errorString()))
 
     @Slot()
     def onCameraCaptureError(self, _id, error, msg):
-        logging.error(g_tr('ImportSlipDialog', "Camera error: " + str(error) + " / " + msg))
+        logging.error(self.tr("Camera error: " + str(error) + " / " + msg))
 
     #----------------------------------------------------------------------
     # This event happens once upon camera start - it triggers first capture
@@ -286,7 +286,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
     def parseQRdata(self, qr_data):
         self.QR_data = qr_data
 
-        logging.info(g_tr('ImportSlipDialog', "QR: " + self.QR_data))
+        logging.info(self.tr("QR: " + self.QR_data))
         params = parse_qs(self.QR_data)
         try:
             for timestamp_pattern in self.timestamp_patterns:
@@ -299,7 +299,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             self.FP.setText(params['fp'][0])
             self.SlipType.setCurrentIndex(int(params['n'][0]) - 1)
         except KeyError:
-            logging.warning(g_tr('ImportSlipDialog', "QR available but pattern isn't recognized: " + self.QR_data))
+            logging.warning(self.tr("QR available but pattern isn't recognized: " + self.QR_data))
             return
         self.qr_data_validated.emit()
 
@@ -313,7 +313,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             if result != SlipsTaxAPI.Pending:
                 break
             if attempt > 5:
-                logging.warning(g_tr('ImportSlipDialog', "Max retry count exceeded."))
+                logging.warning(self.tr("Max retry count exceeded."))
                 break
             attempt += 1
             time.sleep(0.5) # wait half a second before next attempt
@@ -325,7 +325,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
     @Slot()
     def loadFileSlipJSON(self):
         json_file, _filter = \
-            QFileDialog.getOpenFileName(self, g_tr('ImportSlipDialog', "Select file with slip JSON data"),
+            QFileDialog.getOpenFileName(self, self.tr("Select file with slip JSON data"),
                                         ".", "JSON files (*.json)")
         if json_file:
             with open(json_file) as f:
@@ -341,10 +341,10 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
                 if 'receipt' in sub:
                     slip = sub['receipt']
                 else:
-                    logging.error(g_tr('ImportSlipDialog', "Can't find 'receipt' tag in json 'document'"))
+                    logging.error(self.tr("Can't find 'receipt' tag in json 'document'"))
                     return
             else:
-                logging.error(g_tr('ImportSlipDialog', "Can't find 'document' tag in json 'ticket'"))
+                logging.error(self.tr("Can't find 'document' tag in json 'ticket'"))
                 return
         else:
             slip = self.slip_json
@@ -354,7 +354,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         if 'operationType' in slip:
             operation = int(slip['operationType'])
         else:
-            logging.error(g_tr('ImportSlipDialog', "Can't find 'operationType' tag in json 'ticket'"))
+            logging.error(self.tr("Can't find 'operationType' tag in json 'ticket'"))
             return
         # Get shop name
         shop_name = ''
@@ -386,7 +386,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         elif operation == self.OPERATION_RETURN:
             self.slip_lines['sum'] = self.slip_lines['sum'] / 100
         else:
-            logging.error(g_tr('ImportSlipDialog', "Unknown operation type ") + f"{operation}")
+            logging.error(self.tr("Unknown operation type ") + f"{operation}")
             return
         # Use quantity if it differs from 1 unit value
         self.slip_lines.loc[self.slip_lines['quantity'] != 1, 'name'] = \
@@ -420,14 +420,13 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
 
     def addOperation(self):
         if self.AccountEdit.selected_id == 0:
-            logging.warning(g_tr('ImportSlipDialog', "Not possible to import slip: no account set for import"))
+            logging.warning(self.tr("Not possible to import slip: no account set for import"))
             return
         if self.PeerEdit.selected_id == 0:
-            logging.warning(g_tr('ImportSlipDialog',
-                                 "Not possible to import slip: can't import: no peer set for import"))
+            logging.warning(self.tr("Not possible to import slip: can't import: no peer set for import"))
             return
         if self.slip_lines[self.slip_lines['category'] == 0].shape[0] != 0:
-            logging.warning(g_tr('ImportSlipDialog', "Not possible to import slip: some categories are not set"))
+            logging.warning(self.tr("Not possible to import slip: some categories are not set"))
             return
 
         query = executeSQL("INSERT INTO actions (timestamp, account_id, peer_id) "

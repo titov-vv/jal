@@ -5,9 +5,8 @@ import logging
 from jal.constants import Setup, TransactionType, CorporateAction, PredefinedAsset, PredefinedCategory, DividendSubtype
 from jal.reports.helpers import XLSX
 from jal.reports.dlsg import DLSG
-from jal.widgets.helpers import g_tr
 from jal.db.helpers import executeSQL, readSQLrecord, readSQL
-from PySide2.QtWidgets import QDialog, QFileDialog
+from PySide2.QtWidgets import QApplication, QDialog, QFileDialog
 from PySide2.QtCore import Property, Slot
 from jal.ui.ui_tax_export_dlg import Ui_TaxExportDlg
 
@@ -30,15 +29,10 @@ class TaxExportDialog(QDialog, Ui_TaxExportDlg):
     @Slot()
     def OnFileBtn(self, type):
         selector = {
-            'XLS-OUT': (g_tr('TaxExportDialog', "Save tax reports to:"),
-                        g_tr('TaxExportDialog', "Excel files (*.xlsx)"),
-                        '.xlsx', self.XlsFileName),
-            'DLSG-IN': (g_tr('TaxExportDialog', "Get tax form template from:"),
-                        g_tr('TaxExportDialog', "Tax form 2020 (*.dc0)"),
+            'XLS-OUT': (self.tr("Save tax reports to:"), self.tr("Excel files (*.xlsx)"), '.xlsx', self.XlsFileName),
+            'DLSG-IN': (self.tr("Get tax form template from:"), self.tr("Tax form 2020 (*.dc0)"),
                         '.dc0', self.DlsgInFileName),
-            'DLSG-OUT': (g_tr('TaxExportDialog', "Save tax form to:"),
-                         g_tr('TaxExportDialog', "Tax form 2020 (*.dc0)"),
-                         '.dc0', self.DlsgOutFileName),
+            'DLSG-OUT': (self.tr("Save tax form to:"), self.tr("Tax form 2020 (*.dc0)"), '.dc0', self.DlsgOutFileName)
         }
         if type[-3:] == '-IN':
             filename = QFileDialog.getOpenFileName(self, selector[type][0], ".", selector[type][1])
@@ -117,6 +111,7 @@ class TaxesRus:
         self.year_begin = 0
         self.year_end = 0
         self.account_currency = ''
+        self.account_number = ''
         self.broker_name = ''
         self.broker_as_income = True
         self.use_settlement = True
@@ -261,6 +256,9 @@ class TaxesRus:
                                   )
         }
 
+    def tr(self, text):
+        return QApplication.translate("TaxesRus", text)
+
     def showTaxesDialog(self, parent):
         dialog = TaxExportDialog(parent)
         if dialog.exec_():
@@ -291,7 +289,7 @@ class TaxesRus:
             try:
                 self.statement.read_file(dlsg_in)
             except:
-                logging.error(g_tr('TaxesRus', "Can't open tax form file ") + f"'{dlsg_in}'")
+                logging.error(self.tr("Can't open tax form file ") + f"'{dlsg_in}'")
                 return
 
         self.prepare_exchange_rate_dates()
@@ -309,9 +307,9 @@ class TaxesRus:
             try:
                 self.statement.write_file(dlsg_out)
             except:
-                logging.error(g_tr('TaxesRus', "Can't write tax form into file ") + f"'{dlsg_out}'")
+                logging.error(self.tr("Can't write tax form into file ") + f"'{dlsg_out}'")
 
-        logging.info(g_tr('TaxesRus', "Tax report saved to file ") + f"'{taxes_file}'")
+        logging.info(self.tr("Tax report saved to file ") + f"'{taxes_file}'")
 
     # This method puts header on each report sheet
     def add_report_header(self):
@@ -453,8 +451,7 @@ class TaxesRus:
                 dividend["country_iso"] = readSQL("SELECT c.iso_code FROM accounts AS a LEFT JOIN countries AS c "
                                                    "ON c.id = a.country_id WHERE a.id=:account_id",
                                                    [(":account_id", self.account_id)])
-                logging.warning(g_tr('TaxesRus',
-                                     "Account country will be used for 3-NDFL update as country is not set for asset ")
+                logging.warning(self.tr("Account country will be used for 3-NDFL as country is not set for asset ")
                                 + f"'{dividend['symbol']}'")
             if self.statement is not None:
                 if self.broker_as_income:

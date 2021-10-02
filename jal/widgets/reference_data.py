@@ -5,7 +5,7 @@ from PySide2.QtCore import Qt, Signal, Property, Slot
 from PySide2.QtWidgets import QDialog, QMessageBox, QMenu, QWidgetAction, QLabel
 
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
-from jal.widgets.helpers import g_tr, decodeError
+from jal.widgets.helpers import decodeError
 from jal.db.helpers import load_icon
 
 
@@ -73,7 +73,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         index = self.DataView.indexAt(pos)
         menu_title = QWidgetAction(self.DataView)
         title_lbl = QLabel()
-        title_lbl.setText(g_tr('ReferenceDataDialog', "Change type to:"))
+        title_lbl.setText(self.tr("Change type to:"))
         menu_title.setDefaultWidget(title_lbl)
         contextMenu = QMenu(self.DataView)
         contextMenu.addAction(menu_title)
@@ -93,8 +93,8 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     @Slot()
     def closeEvent(self, event):
         if self.CommitBtn.isEnabled():    # There are uncommitted changed in a table
-            if QMessageBox().warning(self, g_tr('ReferenceDataDialog', "Confirmation"),
-                                     g_tr('ReferenceDataDialog', "You have uncommitted changes. Do you want to close?"),
+            if QMessageBox().warning(self, self.tr("Confirmation"),
+                                     self.tr("You have uncommitted changes. Do you want to close?"),
                                      QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
                 event.ignore()
                 return
@@ -114,7 +114,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
     def getSelectedName(self):
         if self.selected_id == 0:
-            return g_tr('ReferenceDataDialog', "ANY")
+            return self.tr("ANY")
         else:
             return self.p_selected_name
 
@@ -166,7 +166,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     @Slot()
     def OnCommit(self):
         if not self.model.submitAll():
-            logging.fatal(g_tr('ReferenceDataDialog', "Submit failed: ") + decodeError(self.model.lastError().text()))
+            logging.fatal(self.tr("Submit failed: ") + decodeError(self.model.lastError().text()))
             return
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)
