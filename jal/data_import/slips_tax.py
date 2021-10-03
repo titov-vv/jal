@@ -160,7 +160,7 @@ class SlipsTaxAPI:
         self.web_session.headers['User-Agent'] = 'okhttp/4.2.2'
 
     def tr(self, text):
-        QApplication.translate("SlipsTaxAPI", text)
+        return QApplication.translate("SlipsTaxAPI", text)
 
     def get_ru_tax_session(self):
         stored_id = JalSettings().getValue('RuTaxSessionId')
