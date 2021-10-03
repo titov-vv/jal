@@ -1,15 +1,14 @@
 import logging
 from jal.constants import CustomColor
 from PySide6.QtCore import Qt
-from PySide2 import QtWidgets
-from PySide6.QtWidgets import QPlainTextEdit
+from PySide6.QtWidgets import QApplication, QPlainTextEdit
 
 
 class LogViewer(QPlainTextEdit, logging.Handler):
     def __init__(self, parent=None):
         QPlainTextEdit.__init__(self, parent)
         logging.Handler.__init__(self)
-        self.app = QtWidgets.QApplication.instance()
+        self.app = QApplication.instance()
         self.setReadOnly(True)
         self.notification = None  # Here is QLabel element to display LOG update status
         self.clear_color = None   # Variable to store initial "clear" background color
