@@ -22,7 +22,6 @@ class AbstractOperationDetails(QWidget):
 
         self.bold_font = QFont()
         self.bold_font.setBold(True)
-        # self.bold_font.setWeight(75)   # TODO: PySide6 throws an error here
 
         self.main_label = QLabel(self)
         self.main_label.setFont(self.bold_font)
