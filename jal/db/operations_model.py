@@ -312,7 +312,7 @@ class OperationsModel(QAbstractTableModel):
             self._row_count = readSQL(count_pfx + query_suffix)
             self._query.prepare(query_pfx + query_suffix)
             self._query.setForwardOnly(True)
-            self._query.exec_()
+            self._query.exec()
         self.fetchMore(self.createIndex(0, 0))
         self.modelReset.emit()
 

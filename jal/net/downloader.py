@@ -59,7 +59,7 @@ class QuoteDownloader(QObject):
 
     def showQuoteDownloadDialog(self, parent):
         dialog = QuotesUpdateDialog(parent)
-        if dialog.exec_():
+        if dialog.exec():
             self.UpdateQuotes(dialog.getStartDate(), dialog.getEndDate())
             self.download_completed.emit()
 

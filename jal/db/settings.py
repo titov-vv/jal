@@ -22,7 +22,7 @@ class JalSettings:
 
         value = default
         get_query.bindValue(":key", key)
-        if not get_query.exec_():
+        if not get_query.exec():
             if not default:
                 logging.fatal(f"Failed to get settings for key='{key}'")
             return value
@@ -36,6 +36,6 @@ class JalSettings:
                           "VALUES((SELECT id FROM settings WHERE name=:key), :key, :value)")
         set_query.bindValue(":key", key)
         set_query.bindValue(":value", value)
-        if not set_query.exec_():
+        if not set_query.exec():
             logging.fatal(f"Failed to set settings key='{key}' to value='{value}'")
         self.db.commit()

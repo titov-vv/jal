@@ -86,7 +86,7 @@ def executeSQL(sql_text, params=[], forward_only=True, commit=False):
         return None
     for param in params:
         query.bindValue(param[0], param[1])
-    if not query.exec_():
+    if not query.exec():
         logging.error(f"SQL exec: '{query.lastError().text()}' for query '{sql_text}' with params '{params}'")
         return None
     if commit:
@@ -111,7 +111,7 @@ def readSQL(sql_text, params=None, named=False, check_unique=False):
         return None
     for param in params:
         query.bindValue(param[0], param[1])
-    if not query.exec_():
+    if not query.exec():
         logging.error(f"SQL exec: '{query.lastError().text()}' for query '{sql_text}' | '{params}'")
         return None
     if query.next():

@@ -380,7 +380,7 @@ class Statement:
         if "pytest" in sys.modules:
             return 1    # Always return 1st account if we are in testing mode
         dialog = SelectAccountDialog(text, account_id, recent_account=recent_account_id)
-        if dialog.exec_() != QDialog.Accepted:
+        if dialog.exec() != QDialog.Accepted:
             return 0
         else:
             if dialog.store_account:

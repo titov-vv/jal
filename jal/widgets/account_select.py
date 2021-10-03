@@ -44,7 +44,7 @@ class AccountButton(QPushButton):
         ref_point = self.mapToGlobal(self.geometry().bottomLeft())
         self.dialog.setGeometry(ref_point.x(), ref_point.y(), self.dialog.width(), self.dialog.height())
         self.dialog.setFilter()
-        res = self.dialog.exec_(enable_selection=True)
+        res = self.dialog.exec(enable_selection=True)
         if res:
             self.account_id = self.dialog.selected_id
 
@@ -108,7 +108,7 @@ class CurrencyComboBox(QComboBox):
 
         self.query = QSqlQuery(db=db_connection())
         self.query.prepare(f"SELECT id, name FROM assets WHERE type_id={PredefinedAsset.Money}")
-        self.query.exec_()
+        self.query.exec()
         self.model = QSqlTableModel(db=db_connection())
         self.model.setQuery(self.query)
         self.model.select()

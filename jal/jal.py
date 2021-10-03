@@ -51,7 +51,7 @@ def main():
         window = MainWindow(language)
     window.show()
 
-    app.exec_()
+    app.exec()
     app.removeTranslator(translator)
 
 

@@ -159,7 +159,7 @@ class JalDB:
                                     (":derivative", PredefinedAsset.Derivative)])
         if asset_id is None and dialog_new:
             dialog = AddAssetDialog(symbol, isin=isin, name=name)
-            dialog.exec_()
+            dialog.exec()
             asset_id = dialog.asset_id
         return asset_id
 

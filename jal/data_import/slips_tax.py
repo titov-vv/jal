@@ -167,7 +167,7 @@ class SlipsTaxAPI:
             return stored_id
 
         login_dialog = LoginFNS()
-        if login_dialog.exec_() == QDialog.Accepted:
+        if login_dialog.exec() == QDialog.Accepted:
             stored_id = JalSettings().getValue('RuTaxSessionId')
             if stored_id is not None:
                 return stored_id

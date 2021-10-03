@@ -55,7 +55,7 @@ class AbstractReferenceSelector(QWidget):
     def on_button_clicked(self):
         ref_point = self.mapToGlobal(self.name.geometry().bottomLeft())
         self.dialog.setGeometry(ref_point.x(), ref_point.y(), self.dialog.width(), self.dialog.height())
-        res = self.dialog.exec_(enable_selection=True, selected=self.selected_id)
+        res = self.dialog.exec(enable_selection=True, selected=self.selected_id)
         if res:
             self.selected_id = self.dialog.selected_id
             self.changed.emit()

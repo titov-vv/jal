@@ -261,7 +261,7 @@ class TaxesRus:
 
     def showTaxesDialog(self, parent):
         dialog = TaxExportDialog(parent)
-        if dialog.exec_():
+        if dialog.exec():
             self.use_settlement = not dialog.no_settelement
             self.broker_as_income = dialog.dlsg_broker_as_income
             self.save2file(dialog.xls_filename, dialog.year, dialog.account, dlsg_update=dialog.update_dlsg,

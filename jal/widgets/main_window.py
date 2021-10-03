@@ -384,21 +384,21 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
     @Slot()
     def onDataDialog(self, dlg_type):
         if dlg_type == "account_types":
-            AccountTypeListDialog().exec_()
+            AccountTypeListDialog().exec()
         elif dlg_type == "accounts":
-            AccountListDialog().exec_()
+            AccountListDialog().exec()
         elif dlg_type == "assets":
-            AssetListDialog().exec_()
+            AssetListDialog().exec()
         elif dlg_type == "agents":
-            PeerListDialog().exec_()
+            PeerListDialog().exec()
         elif dlg_type == "categories":
-            CategoryListDialog().exec_()
+            CategoryListDialog().exec()
         elif dlg_type == "tags":
-            TagsListDialog().exec_()
+            TagsListDialog().exec()
         elif dlg_type == "countries":
-            CountryListDialog().exec_()
+            CountryListDialog().exec()
         elif dlg_type == "quotes":
-            QuotesListDialog().exec_()
+            QuotesListDialog().exec()
         else:
             assert False
 

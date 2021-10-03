@@ -562,7 +562,7 @@ class Ledger(QObject):
 
     def showRebuildDialog(self, parent):
         rebuild_dialog = RebuildDialog(parent, self.getCurrentFrontier())
-        if rebuild_dialog.exec_():
+        if rebuild_dialog.exec():
             self.rebuild(from_timestamp=rebuild_dialog.getTimestamp(),
                          fast_and_dirty=rebuild_dialog.isFastAndDirty(), silent=False)
 
