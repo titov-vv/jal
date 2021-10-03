@@ -1,17 +1,10 @@
-from abc import ABC
-
 from PySide6.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QCompleter
 import jal.widgets.reference_dialogs as ui_dialogs
 
-#-----------------------------------------------------------------------------------------------------------------------
-# To solve metaclass conflict
-class SelectorMeta(type(ABC), type(QWidget)):
-    pass
 
 #-----------------------------------------------------------------------------------------------------------------------
-#class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
-class AbstractReferenceSelector(QWidget):    # TODO: PySide6 - check how to fix metaclass here
+class AbstractReferenceSelector(QWidget):
     changed = Signal()
 
     def __init__(self, parent=None):
