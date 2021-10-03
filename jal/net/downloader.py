@@ -6,8 +6,7 @@ from io import StringIO
 import pandas as pd
 from pandas.errors import ParserError
 import json
-from PySide2 import QtCore
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject, Signal, QDate
 from PySide6.QtWidgets import QApplication, QDialog
 
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
@@ -24,8 +23,8 @@ class QuotesUpdateDialog(QDialog, Ui_UpdateQuotesDlg):
     def __init__(self, parent):
         QDialog.__init__(self, parent=parent)
         self.setupUi(self)
-        self.StartDateEdit.setDate(QtCore.QDate.currentDate().addMonths(-1))
-        self.EndDateEdit.setDate(QtCore.QDate.currentDate())
+        self.StartDateEdit.setDate(QDate.currentDate().addMonths(-1))
+        self.EndDateEdit.setDate(QDate.currentDate())
 
         # center dialog with respect to parent window
         x = parent.x() + parent.width() / 2 - self.width() / 2
