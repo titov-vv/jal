@@ -1,7 +1,7 @@
 import pytest
 import os
 from shutil import copyfile
-from PySide2.QtSql import QSqlDatabase
+from PySide6.QtSql import QSqlDatabase
 
 from constants import Setup, PredefinedCategory, PredefinedAsset
 from jal.db.helpers import init_and_check_db, LedgerInitError

@@ -3,15 +3,22 @@
 ################################################################################
 ## Form generated from reading UI file 'rebuild_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.15.2
+## Created by: Qt User Interface Compiler version 6.2.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import *
-from PySide2.QtGui import *
-from PySide2.QtWidgets import *
-
+from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
+    QMetaObject, QObject, QPoint, QRect,
+    QSize, QTime, QUrl, Qt)
+from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
+    QFont, QFontDatabase, QGradient, QIcon,
+    QImage, QKeySequence, QLinearGradient, QPainter,
+    QPalette, QPixmap, QRadialGradient, QTransform)
+from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDateEdit,
+    QDialog, QDialogButtonBox, QFormLayout, QGroupBox,
+    QLabel, QLayout, QRadioButton, QSizePolicy,
+    QVBoxLayout)
 
 class Ui_ReBuildDialog(object):
     def setupUi(self, ReBuildDialog):
@@ -25,7 +32,7 @@ class Ui_ReBuildDialog(object):
         sizePolicy.setHeightForWidth(ReBuildDialog.sizePolicy().hasHeightForWidth())
         ReBuildDialog.setSizePolicy(sizePolicy)
         font = QFont()
-        font.setFamily(u"DejaVu Sans")
+        font.setFamilies([u"DejaVu Sans"])
         ReBuildDialog.setFont(font)
         self.verticalLayout = QVBoxLayout(ReBuildDialog)
         self.verticalLayout.setSpacing(2)

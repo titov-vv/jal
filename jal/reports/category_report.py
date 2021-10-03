@@ -1,6 +1,6 @@
-from PySide2.QtCore import Qt
-from PySide2.QtSql import QSqlTableModel
-from PySide2.QtWidgets import QHeaderView
+from PySide6.QtCore import Qt
+from PySide6.QtSql import QSqlTableModel
+from PySide6.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection, executeSQL
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 
@@ -40,7 +40,7 @@ class CategoryReportModel(QSqlTableModel):
         self._view.setColumnWidth(self.fieldIndex("name"), 200)
         self._view.setColumnWidth(self.fieldIndex("amount"), 200)
         self._view.setColumnWidth(self.fieldIndex("timestamp"),
-                                  self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
+                                  self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
         self._timestamp_delegate = TimestampDelegate()
         self._view.setItemDelegateForColumn(self.fieldIndex("timestamp"), self._timestamp_delegate)
         self._float_delegate = FloatDelegate(2, allow_tail=False)

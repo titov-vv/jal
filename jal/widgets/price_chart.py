@@ -1,8 +1,8 @@
 from math import log10, floor, ceil
 
-from PySide2.QtCore import Qt, QMargins, QDateTime
-from PySide2.QtWidgets import QDialog, QWidget, QHBoxLayout
-from PySide2.QtCharts import QtCharts
+from PySide6.QtCore import Qt, QMargins, QDateTime
+from PySide6.QtWidgets import QDialog, QWidget, QHBoxLayout
+from PySide6.QtCharts import QChartView, QLineSeries, QScatterSeries, QDateTimeAxis, QValueAxis
 from jal.db.update import JalDB
 from jal.constants import BookAccount, CustomColor
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord
@@ -12,30 +12,30 @@ class ChartWidget(QWidget):
     def __init__(self, parent, quotes, trades, data_range, currency_name):
         QWidget.__init__(self, parent)
 
-        self.quotes_series = QtCharts.QLineSeries()
+        self.quotes_series = QLineSeries()
         for point in quotes:            # Conversion to 'float' in order not to get 'int' overflow on some platforms
             self.quotes_series.append(float(point['timestamp']), point['quote'])
 
-        self.trade_series = QtCharts.QScatterSeries()
+        self.trade_series = QScatterSeries()
         for point in trades:            # Conversion to 'float' in order not to get 'int' overflow on some platforms
             self.trade_series.append(float(point['timestamp']), point['price'])
         self.trade_series.setMarkerSize(5)
         self.trade_series.setBorderColor(CustomColor.LightRed)
         self.trade_series.setBrush(CustomColor.DarkRed)
 
-        axisX = QtCharts.QDateTimeAxis()
+        axisX = QDateTimeAxis()
         axisX.setTickCount(11)
         axisX.setRange(QDateTime().fromSecsSinceEpoch(data_range[0]), QDateTime().fromSecsSinceEpoch(data_range[1]))
         axisX.setFormat("yyyy/MM/dd")
         axisX.setLabelsAngle(-90)
         axisX.setTitleText("Date")
 
-        axisY = QtCharts.QValueAxis()
+        axisY = QValueAxis()
         axisY.setTickCount(11)
         axisY.setRange(data_range[2], data_range[3])
         axisY.setTitleText("Price, " + currency_name)
 
-        self.chartView = QtCharts.QChartView()
+        self.chartView = QChartView()
         self.chartView.chart().addSeries(self.quotes_series)
         self.chartView.chart().addSeries(self.trade_series)
         self.chartView.chart().addAxis(axisX, Qt.AlignBottom)

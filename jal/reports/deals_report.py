@@ -1,5 +1,5 @@
-from PySide2.QtCore import Qt
-from PySide2.QtSql import QSqlTableModel
+from PySide6.QtCore import Qt
+from PySide6.QtSql import QSqlTableModel
 from jal.db.helpers import db_connection, executeSQL
 from jal.constants import CorporateAction
 from jal.widgets.delegates import TimestampDelegate, FloatDelegate
@@ -68,9 +68,9 @@ class DealsReportModel(QSqlTableModel):
         self._view.setColumnWidth(self.fieldIndex("asset"), 300)
         self._view.setColumnWidth(self.fieldIndex("corp_action"), 200)
         self._view.setColumnWidth(self.fieldIndex("o_datetime"),
-                                  self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
+                                  self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
         self._view.setColumnWidth(self.fieldIndex("c_datetime"),
-                                  self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
+                                  self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
         if self._group_dates == 1:
             self._timestamp_delegate = TimestampDelegate(display_format='%d/%m/%Y')
         else:

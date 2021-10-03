@@ -7,7 +7,7 @@ import logging
 from datetime import datetime, timezone
 from collections import defaultdict
 
-from PySide2.QtWidgets import QApplication, QDialog, QMessageBox
+from PySide6.QtWidgets import QApplication, QDialog, QMessageBox
 from jal.constants import Setup, MarketDataFeed, PredefinedAsset, DividendSubtype, CorporateAction
 from jal.db.helpers import account_last_date, get_app_path
 from jal.db.update import JalDB

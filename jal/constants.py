@@ -1,4 +1,4 @@
-from PySide2.QtGui import QColor
+from PySide6.QtGui import QColor
 
 class Setup:
     DB_PATH = "jal.sqlite"

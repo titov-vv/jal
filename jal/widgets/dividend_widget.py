@@ -1,8 +1,8 @@
 from datetime import datetime
 from dateutil import tz
 
-from PySide2.QtCore import Qt, QStringListModel, QByteArray
-from PySide2.QtWidgets import QLabel, QDateTimeEdit, QDateEdit, QLineEdit, QComboBox
+from PySide6.QtCore import Qt, QStringListModel, QByteArray
+from PySide6.QtWidgets import QLabel, QDateTimeEdit, QDateEdit, QLineEdit, QComboBox
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
@@ -49,12 +49,12 @@ class DividendWidget(AbstractOperationDetails):
         self.timestamp_editor = QDateTimeEdit(self)
         self.timestamp_editor.setCalendarPopup(True)
         self.timestamp_editor.setTimeSpec(Qt.UTC)
-        self.timestamp_editor.setFixedWidth(self.timestamp_editor.fontMetrics().width("00/00/0000 00:00:00") * 1.25)
+        self.timestamp_editor.setFixedWidth(self.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.timestamp_editor.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
         self.ex_date_editor = QDateEdit(self)
         self.ex_date_editor.setCalendarPopup(True)
         self.ex_date_editor.setTimeSpec(Qt.UTC)
-        self.ex_date_editor.setFixedWidth(self.ex_date_editor.fontMetrics().width("00/00/0000") * 1.5)
+        self.ex_date_editor.setFixedWidth(self.ex_date_editor.fontMetrics().horizontalAdvance("00/00/0000") * 1.5)
         self.ex_date_editor.setDisplayFormat("dd/MM/yyyy")
         self.type = QComboBox(self)
         self.account_widget = AccountSelector(self)

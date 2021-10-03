@@ -1,8 +1,8 @@
 from datetime import datetime
 from dateutil import tz
 
-from PySide2.QtCore import Qt, Slot
-from PySide2.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QPushButton
+from PySide6.QtCore import Qt, Slot
+from PySide6.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QPushButton
 from jal.constants import Setup
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector
@@ -51,19 +51,19 @@ class TransferWidget(AbstractOperationDetails):
         self.comment_label.setText(self.tr("Note"))
         self.arrow_account.setText(" ➜ ")
         self.copy_date_btn.setText("➜")
-        self.copy_date_btn.setFixedWidth(self.copy_date_btn.fontMetrics().width("XXXX"))
+        self.copy_date_btn.setFixedWidth(self.copy_date_btn.fontMetrics().horizontalAdvance("XXXX"))
         self.copy_amount_btn.setText("➜")
-        self.copy_amount_btn.setFixedWidth(self.copy_amount_btn.fontMetrics().width("XXXX"))
+        self.copy_amount_btn.setFixedWidth(self.copy_amount_btn.fontMetrics().horizontalAdvance("XXXX"))
 
         self.withdrawal_timestamp = QDateTimeEdit(self)
         self.withdrawal_timestamp.setCalendarPopup(True)
         self.withdrawal_timestamp.setTimeSpec(Qt.UTC)
-        self.withdrawal_timestamp.setFixedWidth(self.withdrawal_timestamp.fontMetrics().width("00/00/0000 00:00:00") * 1.25)
+        self.withdrawal_timestamp.setFixedWidth(self.withdrawal_timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.withdrawal_timestamp.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
         self.deposit_timestamp = QDateTimeEdit(self)
         self.deposit_timestamp.setCalendarPopup(True)
         self.deposit_timestamp.setTimeSpec(Qt.UTC)
-        self.deposit_timestamp.setFixedWidth(self.deposit_timestamp.fontMetrics().width("00/00/0000 00:00:00") * 1.25)
+        self.deposit_timestamp.setFixedWidth(self.deposit_timestamp.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.deposit_timestamp.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
         self.from_account_widget = AccountSelector(self)
         self.to_account_widget = AccountSelector(self)

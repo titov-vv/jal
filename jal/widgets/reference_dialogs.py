@@ -1,6 +1,6 @@
-from PySide2.QtCore import Qt, QAbstractItemModel, QModelIndex
-from PySide2.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate
-from PySide2.QtWidgets import QHeaderView
+from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex
+from PySide6.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate
+from PySide6.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection, executeSQL, readSQL
 from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate, PeerSelectorDelegate
 from jal.widgets.reference_data import ReferenceDataDialog
@@ -157,7 +157,7 @@ class AccountListModel(AbstractReferenceListModel):
         super().configureView()
         self._view.setColumnWidth(self.fieldIndex("active"), 32)
         self._view.setColumnWidth(self.fieldIndex("reconciled_on"),
-                                  self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
+                                  self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
         self._view.setColumnWidth(self.fieldIndex("country_id"), 50)
 
         self._lookup_delegate = QSqlRelationalDelegate(self._view)
@@ -696,7 +696,7 @@ class QuotesListModel(AbstractReferenceListModel):
     def configureView(self):
         super().configureView()
         self._view.setColumnWidth(self.fieldIndex("timestamp"),
-                                  self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
+                                  self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
         self._view.setColumnWidth(self.fieldIndex("quote"), 100)
 
         self._lookup_delegate = QSqlRelationalDelegate(self._view)

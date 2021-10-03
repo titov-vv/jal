@@ -4,7 +4,7 @@
 import logging
 import pandas
 from datetime import datetime, timezone
-from PySide2.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication
 from jal.db.update import JalDB
 
 class IBKR_obsolete:

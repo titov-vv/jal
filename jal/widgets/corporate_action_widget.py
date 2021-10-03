@@ -1,8 +1,8 @@
 from datetime import datetime
 from dateutil import tz
 
-from PySide2.QtCore import Qt, QStringListModel, QByteArray
-from PySide2.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QComboBox
+from PySide6.QtCore import Qt, QStringListModel, QByteArray
+from PySide6.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QComboBox
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
@@ -57,7 +57,7 @@ class CorporateActionWidget(AbstractOperationDetails):
         self.timestamp_editor = QDateTimeEdit(self)
         self.timestamp_editor.setCalendarPopup(True)
         self.timestamp_editor.setTimeSpec(Qt.UTC)
-        self.timestamp_editor.setFixedWidth(self.timestamp_editor.fontMetrics().width("00/00/0000 00:00:00") * 1.25)
+        self.timestamp_editor.setFixedWidth(self.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.timestamp_editor.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
         self.type = QComboBox(self)
         self.account_widget = AccountSelector(self)

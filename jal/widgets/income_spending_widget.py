@@ -2,10 +2,10 @@ import logging
 from datetime import datetime
 from dateutil import tz
 
-from PySide2.QtCore import Qt, Slot
-from PySide2.QtWidgets import QLabel, QDateTimeEdit, QPushButton, QTableView, QHeaderView
-from PySide2.QtGui import QFont
-from PySide2.QtSql import QSqlTableModel
+from PySide6.QtCore import Qt, Slot
+from PySide6.QtWidgets import QLabel, QDateTimeEdit, QPushButton, QTableView, QHeaderView
+from PySide6.QtGui import QFont
+from PySide6.QtSql import QSqlTableModel
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, PeerSelector
 from jal.widgets.account_select import OptionalCurrencyComboBox
@@ -45,7 +45,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.timestamp_editor = QDateTimeEdit(self)
         self.timestamp_editor.setCalendarPopup(True)
         self.timestamp_editor.setTimeSpec(Qt.UTC)
-        self.timestamp_editor.setFixedWidth(self.timestamp_editor.fontMetrics().width("00/00/0000 00:00:00") * 1.25)
+        self.timestamp_editor.setFixedWidth(self.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.timestamp_editor.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
         self.account_widget = AccountSelector(self)
         self.peer_widget = PeerSelector(self)

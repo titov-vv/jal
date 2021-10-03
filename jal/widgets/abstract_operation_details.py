@@ -1,8 +1,8 @@
 import logging
-from PySide2.QtCore import Qt, Slot, Signal
-from PySide2.QtGui import QFont
-from PySide2.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QSpacerItem, QSizePolicy, QDataWidgetMapper
-from PySide2.QtSql import QSqlTableModel
+from PySide6.QtCore import Qt, Slot, Signal
+from PySide6.QtGui import QFont
+from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QSpacerItem, QSizePolicy, QDataWidgetMapper
+from PySide6.QtSql import QSqlTableModel
 from jal.db.helpers import db_connection, load_icon
 
 
@@ -22,7 +22,7 @@ class AbstractOperationDetails(QWidget):
 
         self.bold_font = QFont()
         self.bold_font.setBold(True)
-        self.bold_font.setWeight(75)
+        # self.bold_font.setWeight(75)   # TODO: PySide6 throws an error here
 
         self.main_label = QLabel(self)
         self.main_label.setFont(self.bold_font)

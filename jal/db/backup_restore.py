@@ -8,7 +8,7 @@ from datetime import datetime
 from tempfile import TemporaryDirectory
 import tarfile
 
-from PySide2.QtWidgets import QApplication, QFileDialog, QMessageBox
+from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox
 from jal.db.helpers import db_connection
 
 

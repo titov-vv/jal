@@ -1,8 +1,8 @@
 from datetime import datetime
 from dateutil import tz
 
-from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QLabel, QDateTimeEdit, QDateEdit, QLineEdit
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QLabel, QDateTimeEdit, QDateEdit, QLineEdit
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
@@ -49,12 +49,12 @@ class TradeWidget(AbstractOperationDetails):
         self.timestamp_editor = QDateTimeEdit(self)
         self.timestamp_editor.setCalendarPopup(True)
         self.timestamp_editor.setTimeSpec(Qt.UTC)
-        self.timestamp_editor.setFixedWidth(self.timestamp_editor.fontMetrics().width("00/00/0000 00:00:00") * 1.25)
+        self.timestamp_editor.setFixedWidth(self.timestamp_editor.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.25)
         self.timestamp_editor.setDisplayFormat("dd/MM/yyyy hh:mm:ss")
         self.settlement_editor = QDateEdit(self)
         self.settlement_editor.setCalendarPopup(True)
         self.settlement_editor.setTimeSpec(Qt.UTC)
-        self.settlement_editor.setFixedWidth(self.settlement_editor.fontMetrics().width("00/00/0000") * 1.5)
+        self.settlement_editor.setFixedWidth(self.settlement_editor.fontMetrics().horizontalAdvance("00/00/0000") * 1.5)
         self.settlement_editor.setDisplayFormat("dd/MM/yyyy")
         self.account_widget = AccountSelector(self)
         self.asset_widget = AssetSelector(self)

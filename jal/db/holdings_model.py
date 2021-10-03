@@ -1,9 +1,9 @@
 import decimal
 from datetime import datetime
 
-from PySide2.QtCore import Qt, Slot, QAbstractItemModel, QDate, QModelIndex, QLocale
-from PySide2.QtGui import QBrush, QFont
-from PySide2.QtWidgets import QHeaderView
+from PySide6.QtCore import Qt, Slot, QAbstractItemModel, QDate, QModelIndex, QLocale
+from PySide6.QtGui import QBrush, QFont
+from PySide6.QtWidgets import QHeaderView
 from jal.constants import Setup, CustomColor, BookAccount, PredefindedAccountType
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.update import JalDB

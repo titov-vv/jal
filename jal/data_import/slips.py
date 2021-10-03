@@ -4,7 +4,7 @@ import json
 import logging
 import pandas as pd
 from urllib.parse import parse_qs
-from PySide2.QtWidgets import QStyledItemDelegate
+from PySide6.QtWidgets import QStyledItemDelegate
 from jal.widgets.reference_selector import CategorySelector, TagSelector
 from jal.constants import CustomColor
 from jal.db.helpers import get_category_name
@@ -15,10 +15,10 @@ except ImportError:
     pass   # We should not be in this module as dependencies have been checked in main_window.py and calls are disabled
 
 
-from PySide2.QtCore import Qt, Slot, Signal, QDateTime, QBuffer, QThread, QAbstractTableModel
-from PySide2.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView
+from PySide6.QtCore import Qt, Slot, Signal, QDateTime, QBuffer, QThread, QAbstractTableModel
+from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView
 # This QCamera staff ran good on Windows but didn't fly on Linux from the box until 'cheese' installation
-from PySide2.QtMultimedia import QCameraInfo, QCamera, QCameraImageCapture, QVideoFrame
+#from PySide6.QtMultimedia import QCamera, QCameraImageCapture, QVideoFrame  # TODO PySide6: review all code related with camera
 from jal.widgets.helpers import dependency_present
 from jal.db.helpers import executeSQL, readSQL
 from jal.data_import.slips_tax import SlipsTaxAPI
@@ -218,27 +218,28 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
 
     @Slot()
     def readCameraQR(self):
-        self.initUi()
-        if len(QCameraInfo.availableCameras()) == 0:
-            logging.warning(self.tr("There are no cameras available"))
-            return
-        self.cameraActive = True
-        self.CameraGroup.setVisible(True)
-        self.SlipDataGroup.setVisible(False)
+        return
+        # self.initUi()
+        # if len(QCameraInfo.availableCameras()) == 0:
+        #     logging.warning(self.tr("There are no cameras available"))
+        #     return
+        # self.cameraActive = True
+        # self.CameraGroup.setVisible(True)
+        # self.SlipDataGroup.setVisible(False)
 
-        camera_info = QCameraInfo.defaultCamera()
-        logging.info(self.tr("Read QR with camera: " + camera_info.deviceName()))
-        self.camera = QCamera(camera_info)
-        self.camera.errorOccurred.connect(self.onCameraError)
-        self.img_capture = QCameraImageCapture(self.camera)
-        self.img_capture.setCaptureDestination(QCameraImageCapture.CaptureToBuffer)
-        self.img_capture.setBufferFormat(QVideoFrame.Format_RGB32)
-        self.img_capture.error.connect(self.onCameraCaptureError)
-        self.img_capture.readyForCaptureChanged.connect(self.onReadyForCapture)
-        self.img_capture.imageAvailable.connect(self.onCameraImageReady)
-        self.camera.setViewfinder(self.Viewfinder)
-        self.camera.setCaptureMode(QCamera.CaptureStillImage)
-        self.camera.start()
+        # camera_info = QCameraInfo.defaultCamera()
+        # logging.info(self.tr("Read QR with camera: " + camera_info.deviceName()))
+        # self.camera = QCamera(self)
+        # self.camera.errorOccurred.connect(self.onCameraError)
+        # self.img_capture = QCameraImageCapture(self.camera)
+        # self.img_capture.setCaptureDestination(QCameraImageCapture.CaptureToBuffer)
+        # self.img_capture.setBufferFormat(QVideoFrame.Format_RGB32)
+        # self.img_capture.error.connect(self.onCameraCaptureError)
+        # self.img_capture.readyForCaptureChanged.connect(self.onReadyForCapture)
+        # self.img_capture.imageAvailable.connect(self.onCameraImageReady)
+        # self.camera.setViewfinder(self.Viewfinder)
+        # self.camera.setCaptureMode(QCamera.CaptureStillImage)
+        # self.camera.start()
 
     @Slot()
     def closeCamera(self):

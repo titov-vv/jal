@@ -1,8 +1,8 @@
 import logging
 from datetime import datetime
 from math import copysign
-from PySide2.QtCore import Signal, QObject, QDate
-from PySide2.QtWidgets import QDialog, QMessageBox
+from PySide6.QtCore import Signal, QObject, QDate
+from PySide6.QtWidgets import QDialog, QMessageBox
 from jal.constants import Setup, BookAccount, TransactionType, TransferSubtype, ActionSubtype, DividendSubtype, \
     CorporateAction, PredefinedCategory, PredefinedPeer
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord, db_triggers_disable, db_triggers_enable

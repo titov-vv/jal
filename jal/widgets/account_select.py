@@ -1,7 +1,7 @@
-from PySide2.QtCore import Signal, Slot, Property
-from PySide2.QtWidgets import QApplication, QDialog, QWidget, QPushButton, QComboBox, QMenu, QHBoxLayout, QCheckBox, \
+from PySide6.QtCore import Signal, Slot, Property
+from PySide6.QtWidgets import QApplication, QDialog, QWidget, QPushButton, QComboBox, QMenu, QHBoxLayout, QCheckBox, \
     QMessageBox
-from PySide2.QtSql import QSqlQuery, QSqlTableModel
+from PySide6.QtSql import QSqlQuery, QSqlTableModel
 from jal.constants import Setup, PredefinedAsset
 from jal.db.update import JalDB
 from jal.db.settings import JalSettings
@@ -152,7 +152,7 @@ class OptionalCurrencyComboBox(QWidget):
         QWidget.__init__(self, parent)
         self.p_value = ''
         self.layout = QHBoxLayout()
-        self.layout.setMargin(0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
         self.null_flag = QCheckBox(parent)
         self.null_flag.setChecked(False)
         self.null_flag.setText('Optional currency')

@@ -1,8 +1,8 @@
 import logging
 from functools import partial
 
-from PySide2.QtCore import Qt, Signal, Property, Slot
-from PySide2.QtWidgets import QDialog, QMessageBox, QMenu, QWidgetAction, QLabel
+from PySide6.QtCore import Qt, Signal, Property, Slot
+from PySide6.QtWidgets import QDialog, QMessageBox, QMenu, QWidgetAction, QLabel
 
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
 from jal.widgets.helpers import decodeError

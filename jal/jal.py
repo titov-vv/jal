@@ -2,8 +2,8 @@ import sys
 import os
 import logging
 import traceback
-from PySide2.QtCore import Qt, QTranslator
-from PySide2.QtWidgets import QApplication, QMessageBox
+from PySide6.QtCore import Qt, QTranslator
+from PySide6.QtWidgets import QApplication, QMessageBox
 from jal.constants import Setup
 from jal.widgets.main_window import MainWindow
 from jal.db.update import JalDB

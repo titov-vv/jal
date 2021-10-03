@@ -1,5 +1,5 @@
-from PySide2.QtCore import Qt
-from PySide2.QtSql import QSqlTableModel
+from PySide6.QtCore import Qt
+from PySide6.QtSql import QSqlTableModel
 from jal.db.helpers import db_connection, executeSQL
 from jal.constants import BookAccount, PredefinedCategory
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
@@ -36,7 +36,7 @@ class ProfitLossReportModel(QSqlTableModel):
         font.setBold(True)
         self._view.horizontalHeader().setFont(font)
         self._view.setColumnWidth(self.fieldIndex("period"),
-                                  self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
+                                  self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
         self._ym_delegate = TimestampDelegate(display_format='%Y %B')
         self._view.setItemDelegateForColumn(self.fieldIndex("period"), self._ym_delegate)
         self._float_delegate = FloatDelegate(2, allow_tail=False)

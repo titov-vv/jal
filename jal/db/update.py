@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
-from PySide2.QtWidgets import QApplication, QDialog
-from PySide2.QtSql import QSqlTableModel
+from PySide6.QtWidgets import QApplication, QDialog
+from PySide6.QtSql import QSqlTableModel
 
 from jal.ui.ui_add_asset_dlg import Ui_AddAssetDialog
 from jal.constants import Setup, PredefindedAccountType, PredefinedAsset

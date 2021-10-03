@@ -2,8 +2,8 @@ import logging
 import importlib
 from collections import defaultdict
 
-from PySide2.QtCore import QObject, Signal
-from PySide2.QtWidgets import QFileDialog
+from PySide6.QtCore import QObject, Signal
+from PySide6.QtWidgets import QFileDialog
 from jal.data_import.statement_quik import Quik
 from jal.data_import.statement import Statement_ImportError
 

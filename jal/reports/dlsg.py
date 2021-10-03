@@ -1,7 +1,7 @@
 import re
 import logging
 from datetime import date, datetime
-from PySide2.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication
 
 # standard header is "DLSG            DeclYYYY0102FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", where YYYY is year of declaration
 HEADER_LENGTH = 60

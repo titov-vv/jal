@@ -1,5 +1,5 @@
 import logging
-from PySide2.QtSql import QSqlDatabase, QSqlQuery
+from PySide6.QtSql import QSqlDatabase, QSqlQuery
 from jal.constants import Setup
 
 

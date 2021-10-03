@@ -1,8 +1,8 @@
 import logging
 from jal.constants import CustomColor
-from PySide2.QtCore import Qt
+from PySide6.QtCore import Qt
 from PySide2 import QtWidgets
-from PySide2.QtWidgets import QPlainTextEdit
+from PySide6.QtWidgets import QPlainTextEdit
 
 
 class LogViewer(QPlainTextEdit, logging.Handler):

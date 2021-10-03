@@ -1,6 +1,6 @@
 from datetime import datetime
-from PySide2.QtCore import Qt, QAbstractItemModel, QModelIndex
-from PySide2.QtGui import QBrush
+from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex
+from PySide6.QtGui import QBrush
 from jal.constants import BookAccount, PredefinedAsset, CustomColor
 from jal.db.helpers import executeSQL
 from jal.widgets.delegates import GridLinesDelegate

@@ -1,8 +1,8 @@
 from datetime import datetime
-from PySide2.QtCore import Qt, Slot, QAbstractTableModel, QDate
-from PySide2.QtSql import QSqlQuery
-from PySide2.QtGui import QBrush, QFont
-from PySide2.QtWidgets import QStyledItemDelegate, QHeaderView
+from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QDate
+from PySide6.QtSql import QSqlQuery
+from PySide6.QtGui import QBrush, QFont
+from PySide6.QtWidgets import QStyledItemDelegate, QHeaderView
 from jal.constants import CustomColor, TransactionType, TransferSubtype, DividendSubtype, CorporateAction
 from jal.db.helpers import db_connection, readSQL, executeSQL, readSQLrecord
 
@@ -240,7 +240,7 @@ class OperationsModel(QAbstractTableModel):
 
     def configureView(self):
         self._view.setColumnWidth(0, 10)
-        self._view.setColumnWidth(1, self._view.fontMetrics().width("00/00/0000 00:00:00") * 1.1)
+        self._view.setColumnWidth(1, self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
         self._view.setColumnWidth(2, 300)
         self._view.horizontalHeader().setSectionResizeMode(3, QHeaderView.Stretch)
         font = self._view.horizontalHeader().font()

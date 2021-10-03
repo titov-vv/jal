@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime, timezone
 from lxml import etree
-from PySide2.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication
 from jal.data_import.statement import Statement, FOF
 
 

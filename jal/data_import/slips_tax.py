@@ -5,10 +5,9 @@ import requests
 from urllib import parse
 from datetime import datetime
 
-from PySide2.QtCore import Signal, Slot, QUrl
-from PySide2.QtWidgets import QApplication, QDialog
-from PySide2.QtWebEngineWidgets import QWebEngineProfile, QWebEnginePage
-from PySide2.QtWebEngineCore import QWebEngineUrlRequestInterceptor
+from PySide6.QtCore import Signal, Slot, QUrl
+from PySide6.QtWidgets import QApplication, QDialog
+from PySide6.QtWebEngineCore import QWebEngineUrlRequestInterceptor, QWebEngineProfile, QWebEnginePage
 from jal.db.settings import JalSettings
 from jal.net.helpers import get_web_data, post_web_data
 from jal.ui.ui_login_fns_dlg import Ui_LoginFNSDialog

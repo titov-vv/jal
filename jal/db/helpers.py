@@ -1,9 +1,9 @@
 import os
 import logging
 import sqlite3
-from PySide2.QtSql import QSql, QSqlDatabase, QSqlQuery
-from PySide2.QtWidgets import QApplication, QMessageBox
-from PySide2.QtGui import QIcon
+from PySide6.QtSql import QSql, QSqlDatabase, QSqlQuery
+from PySide6.QtWidgets import QApplication, QMessageBox
+from PySide6.QtGui import QIcon
 from jal.constants import Setup
 from jal.db.settings import JalSettings
 

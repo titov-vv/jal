@@ -2,7 +2,7 @@ import logging
 import re
 from datetime import datetime
 
-from PySide2.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication
 from jal.constants import Setup
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xml import StatementXML

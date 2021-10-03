@@ -2,9 +2,9 @@ import os
 import logging
 from functools import partial
 
-from PySide2.QtCore import Qt, Slot, QDateTime, QDir, QLocale
-from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox, QLabel, QActionGroup, QAction
+from PySide6.QtCore import Qt, Slot, QDateTime, QDir, QLocale
+from PySide6.QtGui import QIcon, QActionGroup, QAction
+from PySide6.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox, QLabel
 
 from jal import __version__
 from jal.ui.ui_main_window import Ui_JAL_MainWindow

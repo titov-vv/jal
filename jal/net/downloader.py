@@ -7,8 +7,8 @@ import pandas as pd
 from pandas.errors import ParserError
 import json
 from PySide2 import QtCore
-from PySide2.QtCore import QObject, Signal
-from PySide2.QtWidgets import QApplication, QDialog
+from PySide6.QtCore import QObject, Signal
+from PySide6.QtWidgets import QApplication, QDialog
 
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from jal.constants import Setup, MarketDataFeed, BookAccount, PredefinedAsset

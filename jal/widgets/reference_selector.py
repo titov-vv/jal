@@ -1,7 +1,7 @@
 from abc import ABC
 
-from PySide2.QtCore import Qt, Signal, Property, Slot, QModelIndex
-from PySide2.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QCompleter
+from PySide6.QtCore import Qt, Signal, Property, Slot, QModelIndex
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QCompleter
 import jal.widgets.reference_dialogs as ui_dialogs
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -10,7 +10,8 @@ class SelectorMeta(type(ABC), type(QWidget)):
     pass
 
 #-----------------------------------------------------------------------------------------------------------------------
-class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
+#class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
+class AbstractReferenceSelector(QWidget):    # TODO: PySide6 - check how to fix metaclass here
     changed = Signal()
 
     def __init__(self, parent=None):
@@ -19,7 +20,7 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
         self.p_selected_id = 0
 
         self.layout = QHBoxLayout()
-        self.layout.setMargin(0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
         self.name = QLineEdit()
         self.name.setText("")
         self.layout.addWidget(self.name)
@@ -28,7 +29,7 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
         self.details.setVisible(False)
         self.layout.addWidget(self.details)
         self.button = QPushButton("...")
-        self.button.setFixedWidth(self.button.fontMetrics().width("XXXX"))
+        self.button.setFixedWidth(self.button.fontMetrics().horizontalAdvance("XXXX"))
         self.layout.addWidget(self.button)
         self.setLayout(self.layout)
 
@@ -37,7 +38,7 @@ class AbstractReferenceSelector(ABC, QWidget, metaclass=SelectorMeta):
         self.button.clicked.connect(self.on_button_clicked)
 
         if self.details_field:
-            self.name.setFixedWidth(self.name.fontMetrics().width("X") * 15)
+            self.name.setFixedWidth(self.name.fontMetrics().horizontalAdvance("X") * 15)
             self.details.setVisible(True)
         self.completer = QCompleter(self.dialog.model.completion_model)
         self.completer.setCompletionColumn(self.dialog.model.completion_model.fieldIndex(self.selector_field))

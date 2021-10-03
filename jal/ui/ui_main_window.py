@@ -3,25 +3,35 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 5.15.2
+## Created by: Qt User Interface Compiler version 6.2.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide2.QtCore import *
-from PySide2.QtGui import *
-from PySide2.QtWidgets import *
+from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
+    QMetaObject, QObject, QPoint, QRect,
+    QSize, QTime, QUrl, Qt)
+from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
+    QCursor, QFont, QFontDatabase, QGradient,
+    QIcon, QImage, QKeySequence, QLinearGradient,
+    QPainter, QPalette, QPixmap, QRadialGradient,
+    QTransform)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox,
+    QDateEdit, QFrame, QGridLayout, QGroupBox,
+    QHBoxLayout, QHeaderView, QLabel, QLineEdit,
+    QMainWindow, QMenu, QMenuBar, QPushButton,
+    QSizePolicy, QSpacerItem, QSplitter, QStackedWidget,
+    QStatusBar, QTabWidget, QTableView, QTreeView,
+    QVBoxLayout, QWidget)
 
-from jal.widgets.account_select import AccountButton
-from jal.widgets.log_viewer import LogViewer
-from jal.widgets.account_select import CurrencyComboBox
-from jal.widgets.reference_selector import CategorySelector
+from jal.widgets.account_select import (AccountButton, CurrencyComboBox)
+from jal.widgets.corporate_action_widget import CorporateActionWidget
 from jal.widgets.dividend_widget import DividendWidget
+from jal.widgets.income_spending_widget import IncomeSpendingWidget
+from jal.widgets.log_viewer import LogViewer
+from jal.widgets.reference_selector import CategorySelector
 from jal.widgets.trade_widget import TradeWidget
 from jal.widgets.transfer_widget import TransferWidget
-from jal.widgets.corporate_action_widget import CorporateActionWidget
-from jal.widgets.income_spending_widget import IncomeSpendingWidget
-
 
 class Ui_JAL_MainWindow(object):
     def setupUi(self, JAL_MainWindow):

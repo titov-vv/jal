@@ -6,8 +6,8 @@ from jal.constants import Setup, TransactionType, CorporateAction, PredefinedAss
 from jal.reports.helpers import XLSX
 from jal.reports.dlsg import DLSG
 from jal.db.helpers import executeSQL, readSQLrecord, readSQL
-from PySide2.QtWidgets import QApplication, QDialog, QFileDialog
-from PySide2.QtCore import Property, Slot
+from PySide6.QtWidgets import QApplication, QDialog, QFileDialog
+from PySide6.QtCore import Property, Slot
 from jal.ui.ui_tax_export_dlg import Ui_TaxExportDlg
 
 

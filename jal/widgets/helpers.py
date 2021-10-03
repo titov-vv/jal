@@ -1,5 +1,5 @@
 from datetime import time, datetime, timedelta, timezone
-from PySide2.QtCore import QCoreApplication
+from PySide6.QtCore import QCoreApplication
 
 
 def decodeError(orginal_msg):

@@ -1,8 +1,8 @@
 from datetime import datetime
 import decimal
-from PySide2.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTimeEdit, QTreeView
-from PySide2.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QTime
-from PySide2.QtGui import QDoubleValidator, QBrush, QKeyEvent
+from PySide6.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTimeEdit, QTreeView
+from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QTime
+from PySide6.QtGui import QDoubleValidator, QBrush, QKeyEvent
 from jal.constants import CustomColor
 from jal.widgets.reference_selector import PeerSelector, CategorySelector, TagSelector
 from jal.db.helpers import readSQL

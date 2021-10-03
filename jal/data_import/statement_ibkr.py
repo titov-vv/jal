@@ -3,7 +3,7 @@ import re
 from datetime import datetime
 from itertools import groupby
 
-from PySide2.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedCategory, DividendSubtype
 from jal.widgets.helpers import ManipulateDate
 from jal.db.update import JalDB

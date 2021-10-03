@@ -1,6 +1,6 @@
-from PySide2.QtCore import Qt, Slot, QAbstractTableModel, QDate
-from PySide2.QtGui import QBrush, QFont
-from PySide2.QtWidgets import QHeaderView
+from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QDate
+from PySide6.QtGui import QBrush, QFont
+from PySide6.QtWidgets import QHeaderView
 from jal.constants import Setup, CustomColor, BookAccount
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.update import JalDB
