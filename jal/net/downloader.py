@@ -261,6 +261,9 @@ class QuoteDownloader(QObject):
             data = securities['data']  # take the whole list if we search by isin
         if data:
             if len(data) > 1:
+                # remove not traded assets if there are any outdated doubles present
+                data = [x for x in data if x[columns.index('is_traded')] == 1]
+            if len(data) > 1:  # and then check again
                 logging.info(QApplication.translate("MOEX", "Multiple MOEX assets found for reg.number: ") + search_key)
                 return secid
             asset_data = dict(zip(columns, data[0]))
