@@ -44,6 +44,10 @@ Database will be initialized automatically with minimal required set of data and
 
 <sup>*</sup> - entry point location is platform dependable. Eg. on Linux it might be in `~/.local/run`, on Windows - `Scripts` directory of your python installation.
 
+### Upgrades
+If you upgrade to newer version from Git repository after 9 October 2021 you need to upgrade PySide (Qt) from version 5 to version 6.2 or above.
+
+
 ### Screenshots
 Qt have a better look on Linux out of the box. Here is main program window:  
 ![Main Window on Linux](https://github.com/titov-vv/jal/blob/master/docs/img/main_linux.png?raw=true)
