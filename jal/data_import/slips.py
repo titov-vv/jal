@@ -17,8 +17,6 @@ except ImportError:
 
 from PySide6.QtCore import Qt, Slot, Signal, QDateTime, QBuffer, QThread, QAbstractTableModel
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView
-# This QCamera staff ran good on Windows but didn't fly on Linux from the box until 'cheese' installation
-from PySide6.QtMultimedia import QMediaDevices, QCamera, QMediaCaptureSession, QImageCapture, QVideoFrame
 from jal.widgets.helpers import dependency_present
 from jal.db.helpers import executeSQL, readSQL
 from jal.data_import.slips_tax import SlipsTaxAPI
@@ -136,10 +134,6 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.delegate = []
 
         self.CameraGroup.setVisible(False)
-        self.cameraActive = False
-        self.camera = None
-        self.img_capture = None
-        self.capture_session = None
 
         self.QR_data = ''
         self.slip_json = None
@@ -155,6 +149,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.GetQRfromClipboardBtn.clicked.connect(self.readClipboardQR)
         self.GetQRfromCameraBtn.clicked.connect(self.readCameraQR)
         self.StopCameraBtn.clicked.connect(self.closeCamera)
+        self.ScannerQR.decodedQR.connect(self.onCameraQR)
         self.GetSlipBtn.clicked.connect(self.downloadSlipJSON)
         self.LoadJSONfromFileBtn.clicked.connect(self.loadFileSlipJSON)
         self.AddOperationBtn.clicked.connect(self.addOperation)
@@ -164,8 +159,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.AssignCategoryBtn.setEnabled(self.tensor_flow_present)
 
     def closeEvent(self, arg__1):
-        if self.cameraActive:
-            self.closeCamera()
+        self.ScannerQR.stopScan()
 
     def initUi(self):
         self.SlipAmount.setText('')
@@ -220,61 +214,20 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
     @Slot()
     def readCameraQR(self):
         self.initUi()
-        if len(QMediaDevices.videoInputs()) == 0:
-            logging.warning(self.tr("There are no cameras available"))
-            return
-        self.cameraActive = True
         self.CameraGroup.setVisible(True)
         self.SlipDataGroup.setVisible(False)
-
-        default_camera = QMediaDevices.defaultVideoInput()
-        logging.info(self.tr("Read QR with camera: " + default_camera.description()))
-        self.camera = QCamera(default_camera)
-        self.camera.errorOccurred.connect(self.onCameraError)
-        self.capture_session = QMediaCaptureSession()
-        self.capture_session.setCamera(self.camera)
-
-        self.img_capture = QImageCapture(self)
-        self.capture_session.setImageCapture(self.img_capture)
-        self.capture_session.setVideoOutput(self.Viewfinder)
-        self.img_capture.errorOccurred.connect(self.onCameraCaptureError)
-        self.img_capture.readyForCaptureChanged.connect(self.onReadyForCapture)
-        self.img_capture.imageCaptured.connect(self.onCameraImageReady)
-        self.camera.start()
+        self.ScannerQR.startScan()
 
     @Slot()
     def closeCamera(self):
-        self.camera.stop()
+        self.ScannerQR.stopScan()
         self.CameraGroup.setVisible(False)
         self.SlipDataGroup.setVisible(True)
-        self.img_capture = None
-        self.camera = None
-        self.cameraActive = False
 
     @Slot()
-    def onCameraError(self, error):
-        logging.error(self.tr("Camera error: " + str(error) + " / " + self.camera.errorString()))
-
-    @Slot()
-    def onCameraCaptureError(self, _id, error, msg):
-        logging.error(self.tr("Camera error: " + str(error) + " / " + msg))
-
-    #----------------------------------------------------------------------
-    # This event happens once upon camera start - it triggers first capture
-    # Consequent captures will be initiated after image processing in self.onCameraImageReady
-    @Slot()
-    def onReadyForCapture(self):
-        self.img_capture.capture()
-
-    #----------------------------------------------------------------------
-    # Try to decode QR from captured frame
-    # Close camera if decoded successfully otherwise try to capture again
-    def onCameraImageReady(self, _id, captured_image):
-        if self.readImageQR(captured_image):
-            self.closeCamera()
-        else:
-            QThread.sleep(1)
-            self.img_capture.capture()
+    def onCameraQR(self, decoded_qr):
+        self.closeCamera()
+        self.qr_data_available.emit(decoded_qr)
 
     #-----------------------------------------------------------------------------------------------
     # Check if available QR data matches with self.QR_pattern

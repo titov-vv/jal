@@ -15,12 +15,12 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtMultimediaWidgets import QVideoWidget
 from PySide6.QtWidgets import (QApplication, QComboBox, QDateTimeEdit, QDialog,
     QFrame, QGridLayout, QGroupBox, QHBoxLayout,
     QHeaderView, QLabel, QLineEdit, QPushButton,
     QSizePolicy, QSpacerItem, QTableView, QVBoxLayout)
 
+from jal.widgets.qr_scanner import QRScanner
 from jal.widgets.reference_selector import (AccountSelector, PeerSelector)
 
 class Ui_ImportSlipDlg(object):
@@ -180,23 +180,18 @@ class Ui_ImportSlipDlg(object):
         self.verticalLayout_2.setSpacing(2)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.verticalLayout_2.setContentsMargins(2, 2, 2, 2)
-        self.Viewfinder = QVideoWidget(self.CameraGroup)
-        self.Viewfinder.setObjectName(u"Viewfinder")
+        self.ScannerQR = QRScanner(self.CameraGroup)
+        self.ScannerQR.setObjectName(u"ScannerQR")
         sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.Viewfinder.sizePolicy().hasHeightForWidth())
-        self.Viewfinder.setSizePolicy(sizePolicy2)
+        sizePolicy2.setHeightForWidth(self.ScannerQR.sizePolicy().hasHeightForWidth())
+        self.ScannerQR.setSizePolicy(sizePolicy2)
 
-        self.verticalLayout_2.addWidget(self.Viewfinder)
+        self.verticalLayout_2.addWidget(self.ScannerQR)
 
         self.CameraBtnFrame = QFrame(self.CameraGroup)
         self.CameraBtnFrame.setObjectName(u"CameraBtnFrame")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
-        sizePolicy3.setHorizontalStretch(0)
-        sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.CameraBtnFrame.sizePolicy().hasHeightForWidth())
-        self.CameraBtnFrame.setSizePolicy(sizePolicy3)
         self.CameraBtnFrame.setFrameShape(QFrame.NoFrame)
         self.CameraBtnFrame.setFrameShadow(QFrame.Plain)
         self.horizontalLayout_5 = QHBoxLayout(self.CameraBtnFrame)

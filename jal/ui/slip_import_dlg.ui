@@ -281,7 +281,7 @@
           <number>2</number>
          </property>
          <item>
-          <widget class="QVideoWidget" name="Viewfinder" native="true">
+          <widget class="QRScanner" name="ScannerQR" native="true">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -292,12 +292,6 @@
          </item>
          <item>
           <widget class="QFrame" name="CameraBtnFrame">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
            <property name="frameShape">
             <enum>QFrame::NoFrame</enum>
            </property>
@@ -518,9 +512,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>QVideoWidget</class>
+   <class>QRScanner</class>
    <extends>QWidget</extends>
-   <header>PySide2/QtMultimediaWidgets.h</header>
+   <header>jal/widgets/qr_scanner.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
