@@ -190,7 +190,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
     # Returns: True if QR found, False if no QR found
     # Emits: qr_data_available(str: qr_data) if QR found
     def readImageQR(self, image):
-        buffer = QBuffer()
+        buffer = QBuffer()   # TODO: the same code is present in qr_scanner.py -> move to one place
         buffer.open(QBuffer.ReadWrite)
         image.save(buffer, "BMP")
         try:

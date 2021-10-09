@@ -115,7 +115,7 @@ class QRScanner(QWidget):
 
     def decodeQR(self, qr_image: QImage):
         cropped = qr_image.copy(self.calculate_center_square(qr_image).toRect())
-
+        # TODO: the same code is present in slips.py -> move to one place
         buffer = QBuffer()
         buffer.open(QBuffer.ReadWrite)
         cropped.save(buffer, "BMP")

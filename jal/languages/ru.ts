@@ -4,22 +4,22 @@
 <context>
     <name>AbstractOperationDetails</name>
     <message>
-        <location filename="../widgets/abstract_operation_details.py" line="71"/>
+        <location filename="../widgets/abstract_operation_details.py" line="70"/>
         <source>Operation submit failed: </source>
         <translation>Ошибка при записи операции: </translation>
     </message>
     <message>
-        <location filename="../widgets/abstract_operation_details.py" line="32"/>
+        <location filename="../widgets/abstract_operation_details.py" line="31"/>
         <source>Commit changes</source>
         <translation>Сохранить изменения</translation>
     </message>
     <message>
-        <location filename="../widgets/abstract_operation_details.py" line="35"/>
+        <location filename="../widgets/abstract_operation_details.py" line="34"/>
         <source>Cancel changes</source>
         <translation>Отменить изменения</translation>
     </message>
     <message>
-        <location filename="../widgets/abstract_operation_details.py" line="89"/>
+        <location filename="../widgets/abstract_operation_details.py" line="88"/>
         <source>Unsaved changes were reverted to create new operation</source>
         <translation>Несохранённые изменения были отменены перед созданием новой операции</translation>
     </message>
@@ -774,88 +774,72 @@
 <context>
     <name>ImportSlipDialog</name>
     <message>
-        <location filename="../data_import/slips.py" line="183"/>
+        <location filename="../data_import/slips.py" line="178"/>
         <source>Select file with QR code</source>
         <translation>Выберите файл с QR-кодом</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="223"/>
-        <source>There are no cameras available</source>
-        <translation>Нет доступных камер</translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips.py" line="328"/>
+        <location filename="../data_import/slips.py" line="278"/>
         <source>Select file with slip JSON data</source>
         <translation>Выберите файл с JSON-данными чека</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="423"/>
+        <location filename="../data_import/slips.py" line="373"/>
         <source>Not possible to import slip: no account set for import</source>
         <translation>Невозможно добавить чек: не указан счет для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="429"/>
+        <location filename="../data_import/slips.py" line="379"/>
         <source>Not possible to import slip: some categories are not set</source>
         <translation>Невозможно добавить чек: категории указаны не для всех строк</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="426"/>
+        <location filename="../data_import/slips.py" line="376"/>
         <source>Not possible to import slip: can&apos;t import: no peer set for import</source>
         <translation>Невозможно добавить чек: не указан контрагент для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="316"/>
+        <location filename="../data_import/slips.py" line="266"/>
         <source>Max retry count exceeded.</source>
         <translation>Превышено максимальное число попыток.</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="344"/>
+        <location filename="../data_import/slips.py" line="294"/>
         <source>Can&apos;t find &apos;receipt&apos; tag in json &apos;document&apos;</source>
         <translation>JSON тэг &apos;receipt&apos; отсутствует внутри тэга &apos;document&apos;</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="347"/>
+        <location filename="../data_import/slips.py" line="297"/>
         <source>Can&apos;t find &apos;document&apos; tag in json &apos;ticket&apos;</source>
         <translation>JSON тэг &apos;document&apos; отсутствует внутри тэга &apos;ticket&apos;</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="357"/>
+        <location filename="../data_import/slips.py" line="307"/>
         <source>Can&apos;t find &apos;operationType&apos; tag in json &apos;ticket&apos;</source>
         <translation>JSON тэг &apos;operationType&apos; отсутствует внутри тэга &apos;ticket&apos;</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="389"/>
+        <location filename="../data_import/slips.py" line="339"/>
         <source>Unknown operation type </source>
         <translation>Неизвестный тип операции </translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="204"/>
+        <location filename="../data_import/slips.py" line="199"/>
         <source>Image format isn&apos;t supported</source>
         <translation>Неподдерживаемый формат изображения</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="217"/>
+        <location filename="../data_import/slips.py" line="212"/>
         <source>No QR codes found in clipboard</source>
         <translation>QR код не обнаружен в буфере обмена</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="230"/>
-        <source>Read QR with camera: </source>
-        <translation>Чтение QR-кода камерой: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips.py" line="255"/>
-        <location filename="../data_import/slips.py" line="259"/>
-        <source>Camera error: </source>
-        <translation>Ошибка камеры: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/slips.py" line="289"/>
+        <location filename="../data_import/slips.py" line="239"/>
         <source>QR: </source>
         <translation>QR: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="302"/>
+        <location filename="../data_import/slips.py" line="252"/>
         <source>QR available but pattern isn&apos;t recognized: </source>
         <translation>Невозможно распознать прочитанный QR-код: </translation>
     </message>
@@ -1212,35 +1196,35 @@ Application will be terminated now</source>
 <context>
     <name>LoginFNS</name>
     <message>
-        <location filename="../data_import/slips_tax.py" line="75"/>
-        <location filename="../data_import/slips_tax.py" line="88"/>
-        <location filename="../data_import/slips_tax.py" line="107"/>
+        <location filename="../data_import/slips_tax.py" line="74"/>
+        <location filename="../data_import/slips_tax.py" line="87"/>
+        <location filename="../data_import/slips_tax.py" line="106"/>
         <source>FNS login failed: </source>
         <translation>Ошибка логина через ЛК ФНС: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="77"/>
+        <location filename="../data_import/slips_tax.py" line="76"/>
         <source>SMS was requested successfully</source>
         <translation>SMS было запрошено успешно</translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="90"/>
-        <location filename="../data_import/slips_tax.py" line="109"/>
+        <location filename="../data_import/slips_tax.py" line="89"/>
+        <location filename="../data_import/slips_tax.py" line="108"/>
         <source>FNS login successful: </source>
         <translation>Успешный логин через ЛК ФНС: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="121"/>
+        <location filename="../data_import/slips_tax.py" line="120"/>
         <source>Get ESIA URL failed: </source>
         <translation>Ошибка получения URL логина через Госуслуги: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="134"/>
+        <location filename="../data_import/slips_tax.py" line="133"/>
         <source>ESIA login failed: </source>
         <translation>Ошибка логина через Госуслуги: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="136"/>
+        <location filename="../data_import/slips_tax.py" line="135"/>
         <source>ESIA login successful: </source>
         <translation>Успешный логин через Госуслуги: </translation>
     </message>
@@ -1248,12 +1232,12 @@ Application will be terminated now</source>
 <context>
     <name>MOEX</name>
     <message>
-        <location filename="../net/downloader.py" line="230"/>
+        <location filename="../net/downloader.py" line="229"/>
         <source>Unsupported MOEX security type: </source>
         <translation>Неподдерживаемый тип ЦБ МосБиржи: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="264"/>
+        <location filename="../net/downloader.py" line="266"/>
         <source>Multiple MOEX assets found for reg.number: </source>
         <translation>Найдено несколько бумаг на MOEX для данного рег.номера: </translation>
     </message>
@@ -1455,22 +1439,22 @@ do you want to save it?</source>
 <context>
     <name>PandasLinesModel</name>
     <message>
-        <location filename="../data_import/slips.py" line="64"/>
+        <location filename="../data_import/slips.py" line="62"/>
         <source>Product name</source>
         <translation>Название продукта</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="70"/>
+        <location filename="../data_import/slips.py" line="68"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="66"/>
+        <location filename="../data_import/slips.py" line="64"/>
         <source>Category</source>
         <translation>Категория</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="68"/>
+        <location filename="../data_import/slips.py" line="66"/>
         <source>Tag</source>
         <translation>Тэг</translation>
     </message>
@@ -1545,6 +1529,19 @@ do you want to save it?</source>
     </message>
 </context>
 <context>
+    <name>QRScanner</name>
+    <message>
+        <location filename="../widgets/qr_scanner.py" line="41"/>
+        <source>There are no cameras available</source>
+        <translation>Нет доступных камер</translation>
+    </message>
+    <message>
+        <location filename="../widgets/qr_scanner.py" line="104"/>
+        <source>Camera error: </source>
+        <translation>Ошибка камеры: </translation>
+    </message>
+</context>
+<context>
     <name>Quik</name>
     <message>
         <location filename="../data_import/statement_quik.py" line="60"/>
@@ -1580,32 +1577,32 @@ do you want to save it?</source>
 <context>
     <name>QuoteDownloader</name>
     <message>
-        <location filename="../net/downloader.py" line="110"/>
+        <location filename="../net/downloader.py" line="109"/>
         <source>No data were downloaded for </source>
         <translation>Загружены пустые данные для </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="116"/>
+        <location filename="../net/downloader.py" line="115"/>
         <source>Download completed</source>
         <translation>Загрузка завершена</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="326"/>
+        <location filename="../net/downloader.py" line="328"/>
         <source>Euronext quotes history reply is too short: </source>
         <translation>История котировок Euronext слишком короткая: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="329"/>
+        <location filename="../net/downloader.py" line="331"/>
         <source>Euronext quotes header not found in: </source>
         <translation>Заголовок истории котировок Euronext не найден в: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="332"/>
+        <location filename="../net/downloader.py" line="334"/>
         <source>Euronext quotes ISIN mismatch in: </source>
         <translation>ISIN в истории котировок Euronext не совпадает: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="369"/>
+        <location filename="../net/downloader.py" line="371"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation>Невозможно обработать данные котировок с биржи TSX: </translation>
     </message>
@@ -1691,7 +1688,7 @@ do you want to save it?</source>
 <context>
     <name>RequestInterceptor</name>
     <message>
-        <location filename="../data_import/slips_tax.py" line="35"/>
+        <location filename="../data_import/slips_tax.py" line="34"/>
         <source>ESIA login completed</source>
         <translation>Логин через Госуслуги завершён</translation>
     </message>
@@ -1718,67 +1715,67 @@ do you want to save it?</source>
 <context>
     <name>SlipsTaxAPI</name>
     <message>
-        <location filename="../data_import/slips_tax.py" line="176"/>
+        <location filename="../data_import/slips_tax.py" line="175"/>
         <source>No Russian Tax SessionId available</source>
         <translation>Нет SessionId для загрузки чека с сайта ФНС</translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="262"/>
+        <location filename="../data_import/slips_tax.py" line="261"/>
         <source>Can&apos;t get company name from: </source>
         <translation>Не удалось получить название огранизации из: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="191"/>
+        <location filename="../data_import/slips_tax.py" line="190"/>
         <source>Session refreshed: </source>
         <translation>Сессия обновлена: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="200"/>
+        <location filename="../data_import/slips_tax.py" line="199"/>
         <source>Can&apos;t refresh session, response: </source>
         <translation>Невозможно обвновить сессию, ответ: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="223"/>
+        <location filename="../data_import/slips_tax.py" line="222"/>
         <source>Get ticket id failed: </source>
         <translation>Ошибка получения id чека: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="233"/>
+        <location filename="../data_import/slips_tax.py" line="232"/>
         <source>Get ticket failed: </source>
         <translation>Ошибка получения чека: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="184"/>
+        <location filename="../data_import/slips_tax.py" line="183"/>
         <source>Refreshing session...</source>
         <translation>Обновление сессии...</translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="218"/>
+        <location filename="../data_import/slips_tax.py" line="217"/>
         <source>Unauthorized with reason: </source>
         <translation>Неавторизовано по причине: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="182"/>
+        <location filename="../data_import/slips_tax.py" line="181"/>
         <source>No valid session present</source>
         <translation>Нет активной сессии для ФНС</translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="244"/>
+        <location filename="../data_import/slips_tax.py" line="243"/>
         <source>Incorrect length of INN. Can&apos;t get company name.</source>
         <translation>Неверная длина ИНН. Невозможно получить наименование компании.</translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="225"/>
+        <location filename="../data_import/slips_tax.py" line="224"/>
         <source>Slip found: </source>
         <translation>Чек найден: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="228"/>
+        <location filename="../data_import/slips_tax.py" line="227"/>
         <source>Operation might be pending on server side. Trying again.</source>
         <translation>Операция обрабатывается на стороне сервера. Повторяю ещё раз.</translation>
     </message>
     <message>
-        <location filename="../data_import/slips_tax.py" line="235"/>
+        <location filename="../data_import/slips_tax.py" line="234"/>
         <source>Slip loaded: </source>
         <translation>Чек загружен: </translation>
     </message>
