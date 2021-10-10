@@ -23,25 +23,30 @@ class QRScanner(QWidget):
         QWidget.__init__(self, parent)
         self.processing = False
         self.rectangle = None
+
+        self.setMinimumHeight(405)
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
-
         self.scene = QGraphicsScene(self)
         self.scene.setBackgroundBrush(QBrush(Qt.black))
         self.view = QGraphicsView(self.scene)
         self.viewfinder = QGraphicsVideoItem()
-        self.view.setMinimumSize(720, 405)
         self.scene.addItem(self.viewfinder)
         self.layout.addWidget(self.view)
-
         self.setLayout(self.layout)
 
+        self.camera = None
+        self.captureSession = None
+        self.imageCapture = None
+        self.captureTimer = None
+
+    def startScan(self):
         if len(QMediaDevices.videoInputs()) == 0:
             logging.warning(self.tr("There are no cameras available"))
-            self.camera = None
             return
 
-        self.camera = QCamera()
+        self.processing = True   # disable any capture while camera is starting
+        self.camera = QCamera(QMediaDevices.defaultVideoInput())
         self.captureSession = QMediaCaptureSession()
         self.imageCapture = QImageCapture(self.camera)
         self.captureSession.setCamera(self.camera)
@@ -55,18 +60,20 @@ class QRScanner(QWidget):
         self.imageCapture.imageCaptured.connect(self.onImageCaptured)
         self.viewfinder.nativeSizeChanged.connect(self.onVideoSizeChanged)
 
-    def startScan(self):
-        if self.camera is None:
-            return
-        self.processing = True   # disable any capture while camera is starting
         self.camera.start()
         self.processing = False
+        self.readyForCapture.emit(self.imageCapture.isReadyForCapture())
 
     def stopScan(self):
         if self.camera is None:
             return
         self.processing = True   # disable capture
         self.camera.stop()
+
+        self.camera = None
+        self.captureSession = None
+        self.imageCapture = None
+        self.captureTimer = None
 
     def onVideoSizeChanged(self, _size):
         self.resizeEvent(None)
@@ -104,14 +111,17 @@ class QRScanner(QWidget):
         logging.error(self.tr("Camera error: " + str(error) + " / " + error_str))
 
     def onReadyForCapture(self, ready: bool):
+        print("Ready")
         if ready and not self.processing:
+            print("Go")
             self.imageCapture.capture()
             self.processing = True
 
     def onImageCaptured(self, _id: int, img: QImage):
         self.decodeQR(img)
         self.processing = False
-        self.readyForCapture.emit(self.imageCapture.isReadyForCapture())
+        if self.imageCapture is not None:
+            self.readyForCapture.emit(self.imageCapture.isReadyForCapture())
 
     def decodeQR(self, qr_image: QImage):
         cropped = qr_image.copy(self.calculate_center_square(qr_image).toRect())
