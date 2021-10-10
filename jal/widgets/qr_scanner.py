@@ -21,7 +21,6 @@ class QRScanner(QWidget):
 
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
-        self.active = False
         self.processing = False
         self.rectangle = None
         self.layout = QVBoxLayout()
@@ -59,13 +58,14 @@ class QRScanner(QWidget):
     def startScan(self):
         if self.camera is None:
             return
-        self.active = True
+        self.processing = True   # disable any capture while camera is starting
         self.camera.start()
+        self.processing = False
 
     def stopScan(self):
         if self.camera is None:
             return
-        self.active = False
+        self.processing = True   # disable capture
         self.camera.stop()
 
     def onVideoSizeChanged(self, _size):
