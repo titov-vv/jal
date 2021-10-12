@@ -326,7 +326,9 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
 
         # Get date from timestamp
         if 'dateTime' in slip:
-            self.SlipDateTime.setDateTime(QDateTime.fromSecsSinceEpoch(int(slip['dateTime']), spec=Qt.UTC))
+            slip_datetime = QDateTime.fromSecsSinceEpoch(int(slip['dateTime']))
+            slip_datetime.setTimeSpec(Qt.UTC)
+            self.SlipDateTime.setDateTime(slip_datetime)
 
         # Convert price to roubles
         self.slip_lines['price'] = self.slip_lines['price'] / 100
