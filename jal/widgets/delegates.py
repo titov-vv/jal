@@ -86,7 +86,7 @@ class TimestampDelegate(QStyledItemDelegate):
         if timestamp == '':
             QStyledItemDelegate.setEditorData(self, editor, index)
         else:
-            editor.setDateTime(datetime.utcfromtimestamp(timestamp))
+            editor.setDateTime(QDateTime.fromSecsSinceEpoch(timestamp, spec=Qt.UTC))
 
     def setModelData(self, editor, model, index):
         timestamp = editor.dateTime().toSecsSinceEpoch()

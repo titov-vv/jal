@@ -112,9 +112,11 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.NewOperationBtn.setMenu(self.NewOperationMenu)
 
         # Setup balance and holdings parameters
-        self.BalanceDate.setDateTime(QDateTime.currentDateTime())
+        current_time = QDateTime.currentDateTime()
+        current_time.setTimeSpec(Qt.UTC)  # We use UTC everywhere so need to force TZ info
+        self.BalanceDate.setDateTime(current_time)
         self.BalancesCurrencyCombo.setIndex(JalSettings().getValue('BaseCurrency'))
-        self.HoldingsDate.setDateTime(QDateTime.currentDateTime())
+        self.HoldingsDate.setDateTime(current_time)
         self.HoldingsCurrencyCombo.setIndex(JalSettings().getValue('BaseCurrency'))
 
         self.OperationsTabs.setCurrentIndex(TransactionType.NA)
@@ -239,8 +241,8 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
             4: ManipulateDate.RangePreviousYear
         }
         begin, end = report_ranges[range_index]()
-        self.ReportFromDate.setDateTime(QDateTime.fromSecsSinceEpoch(begin))
-        self.ReportToDate.setDateTime(QDateTime.fromSecsSinceEpoch(end))
+        self.ReportFromDate.setDateTime(QDateTime.fromSecsSinceEpoch(begin, spec=Qt.UTC))
+        self.ReportToDate.setDateTime(QDateTime.fromSecsSinceEpoch(end, spec=Qt.UTC))
 
     @Slot()
     def onRunReport(self):
