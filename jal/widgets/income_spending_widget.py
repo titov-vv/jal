@@ -91,6 +91,8 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.del_button.clicked.connect(self.delChild)
 
         super()._init_db("actions")
+        self.model.beforeInsert.connect(self.before_record_insert)
+        self.model.beforeUpdate.connect(self.before_record_update)
         self.mapper.setItemDelegate(IncomeSpendingWidgetDelegate(self.mapper))
 
         self.details_model = DetailsModel(self.details_table, db_connection())
@@ -213,6 +215,13 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         new_record.setNull("id")
         new_record.setValue("timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
         return new_record
+
+    def before_record_insert(self, record):
+        if record.value("alt_currency_id") == 0:
+            record.setNull("alt_currency_id")
+
+    def before_record_update(self, _row, record):
+        self.before_record_insert(record)   # processing is the same as before insert
 
 
 class DetailsModel(QSqlTableModel):

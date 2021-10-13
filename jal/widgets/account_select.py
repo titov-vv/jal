@@ -150,7 +150,7 @@ class OptionalCurrencyComboBox(QWidget):
 
     def __init__(self, parent):
         QWidget.__init__(self, parent)
-        self.p_value = ''
+        self._id = 0
 
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -171,25 +171,22 @@ class OptionalCurrencyComboBox(QWidget):
         self.null_flag.setText(text)
 
     def getId(self):
-        if self.p_value:
-            return self.p_value
-        else:
-            return None
+        return self._id if self._id else None
 
     def setId(self, new_value):
-        if self.p_value == new_value:
+        if self._id == new_value:
             return
-        self.p_value = new_value
+        self._id = new_value
         self.updateView()
-        name = JalDB().get_asset_name(self.p_value)
-        self.name_updated.emit(name)
+        name = JalDB().get_asset_name(self._id)
+        self.name_updated.emit('' if name is None else name)
 
-    currency_id = Property(str, getId, setId, notify=changed, user=True)
+    currency_id = Property(int, getId, setId, notify=changed, user=True)
 
     def updateView(self):
-        has_value = True if self.p_value else False
+        has_value = True if self._id else False
         if has_value:
-            self.currency.selected_id = int(self.p_value)
+            self.currency.selected_id = self._id
         self.null_flag.setChecked(has_value)
         self.currency.setEnabled(has_value)
 
@@ -198,12 +195,12 @@ class OptionalCurrencyComboBox(QWidget):
         if self.null_flag.isChecked():
             if self.currency.selected_id == 0:
                 self.currency.selected_id = JalSettings().getValue('BaseCurrency')
-            self.currency_id = str(self.currency.selected_id)
+            self.currency_id = self.currency.selected_id
         else:
-            self.currency_id = ''
+            self.currency_id = 0
         self.changed.emit()
 
     @Slot()
     def onCurrencyChange(self, _id):
-        self.currency_id = str(self.currency.selected_id)
+        self.currency_id = self.currency.selected_id
         self.changed.emit()
