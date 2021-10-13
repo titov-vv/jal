@@ -146,16 +146,17 @@ class CurrencyComboBox(QComboBox):
 # ----------------------------------------------------------------------------------------------------------------------
 class OptionalCurrencyComboBox(QWidget):
     changed = Signal()
-    updated = Signal(str)
+    name_updated = Signal(str)
 
     def __init__(self, parent):
         QWidget.__init__(self, parent)
         self.p_value = ''
+
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.null_flag = QCheckBox(parent)
         self.null_flag.setChecked(False)
-        self.null_flag.setText('Optional currency')
+        self.null_flag.setText(self.tr("Currency"))
         self.layout.addWidget(self.null_flag)
         self.currency = CurrencyComboBox(parent)
         self.currency.setEnabled(False)
@@ -181,7 +182,7 @@ class OptionalCurrencyComboBox(QWidget):
         self.p_value = new_value
         self.updateView()
         name = JalDB().get_asset_name(self.p_value)
-        self.updated.emit(name)
+        self.name_updated.emit(name)
 
     currency_id = Property(str, getId, setId, notify=changed, user=True)
 

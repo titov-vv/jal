@@ -73,7 +73,6 @@ class AbstractOperationDetails(QWidget):
         self.commit_button.setEnabled(False)
         self.revert_button.setEnabled(False)
         self.dbUpdated.emit()
-        return True
 
     @Slot()
     def revertChanges(self):

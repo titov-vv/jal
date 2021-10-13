@@ -102,7 +102,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.account_widget.changed.connect(self.mapper.submit)
         self.peer_widget.changed.connect(self.mapper.submit)
         self.a_currency.changed.connect(self.mapper.submit)
-        self.a_currency.updated.connect(self.details_model.setAltCurrency)
+        self.a_currency.name_updated.connect(self.details_model.setAltCurrency)
 
         self.mapper.addMapping(self.timestamp_editor, self.model.fieldIndex("timestamp"))
         self.mapper.addMapping(self.account_widget, self.model.fieldIndex("account_id"))
@@ -173,7 +173,6 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.commit_button.setEnabled(False)
         self.revert_button.setEnabled(False)
         self.dbUpdated.emit()
-        return
 
     @Slot()
     def revertChanges(self):
@@ -222,13 +221,13 @@ class DetailsModel(QSqlTableModel):
         self._columns = ["id", "pid", self.tr("Category"), self.tr("Tag"),
                          self.tr("Amount"), self.tr("Amount"), self.tr("Note")]
         self.deleted = []
-        self.alt_currency = ''
+        self.alt_currency_name = ''
         self._view = parent_view
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             if section == 5:
-                return self._columns[section] + ', ' + self.alt_currency
+                return self._columns[section] + ', ' + self.alt_currency_name
             else:
                 return self._columns[section]
         return None
@@ -267,10 +266,10 @@ class DetailsModel(QSqlTableModel):
         self._view.horizontalHeader().setSectionResizeMode(6, QHeaderView.Stretch)
         self._view.horizontalHeader().moveSection(6, 0)
 
-    def setAltCurrency(self, currency):
-        if currency:
+    def setAltCurrency(self, currency_name):
+        if currency_name:
             self._view.setColumnHidden(5, False)
-            self.alt_currency = currency
+            self.alt_currency_name = currency_name
             self.headerDataChanged.emit(Qt.Horizontal, 5, 5)
         else:
             self._view.setColumnHidden(5, True)
