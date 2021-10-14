@@ -58,6 +58,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.createStatementsImportMenu()
 
         # Set icons
+        self.setWindowIcon(load_icon("jal.png"))
         self.NewOperationBtn.setIcon(load_icon("new.png"))
         self.CopyOperationBtn.setIcon(load_icon("copy.png"))
         self.DeleteOperationBtn.setIcon(load_icon("delete.png"))
