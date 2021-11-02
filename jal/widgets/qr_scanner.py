@@ -111,9 +111,7 @@ class QRScanner(QWidget):
         logging.error(self.tr("Camera error: " + str(error) + " / " + error_str))
 
     def onReadyForCapture(self, ready: bool):
-        print("Ready")
         if ready and not self.processing:
-            print("Go")
             self.imageCapture.capture()
             self.processing = True
 

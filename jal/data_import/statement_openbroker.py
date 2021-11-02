@@ -126,9 +126,9 @@ class StatementOpenBroker(StatementXML):
                     'tag': 'item',
                     'level': '',
                     'values': [('asset_name', 'asset', OpenBroker_Asset, None),
-                               ('opening_position_fact', 'cash_begin', float, 0),
-                               ('closing_position_fact', 'cash_end', float, 0),
-                               ('closing_position_plan', 'cash_end_settled', float, 0)],
+                               ('opening_position_plan', 'cash_begin', float, 0),
+                               ('closing_position_plan', 'cash_end', float, 0),
+                               ('closing_position_fact', 'cash_end_settled', float, 0)],
                     'loader': self.load_balances
                 },
             'spot_main_deals_conclusion':
