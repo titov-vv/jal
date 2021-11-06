@@ -66,7 +66,6 @@ class QuoteDownloader(QObject):
     def UpdateQuotes(self, start_timestamp, end_timestamp):
         self.PrepareRussianCBReader()
         jal_db = JalDB()
-
         query = executeSQL("WITH _holdings AS ( "
                            "SELECT l.asset_id AS asset FROM ledger AS l "
                            "WHERE l.book_account = 4 AND l.timestamp <= :end_timestamp "
@@ -275,6 +274,8 @@ class QuoteDownloader(QObject):
         if (asset['engine'] is None) or (asset['market'] is None) or (asset['board'] is None):
             logging.warning(f"Failed to find {asset_code} on moex.com")
             return None
+        if (asset['market'] == 'bonds') and (asset['board'] == 'TQCB'):
+            asset_code = isin   # Corporate bonds are quoted by ISIN
 
         isin = asset['isin'] if 'isin' in asset else ''
         reg_code = asset['reg_code'] if 'reg_code' in asset else ''

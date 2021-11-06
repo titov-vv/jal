@@ -89,5 +89,8 @@ def prepare_db_moex(prepare_db):   # Create SBER stock in database to be updated
     assert executeSQL("INSERT INTO assets (id, name, type_id, full_name, isin, src_id) "
                       "VALUES (6, 'SU26238RMFS4', :bond, '', 'RU000A1038V6', 0)",
                       [(":bond", PredefinedAsset.Bond)]) is not None
+    assert executeSQL("INSERT INTO assets (id, name, type_id, full_name, isin, src_id) "
+                      "VALUES (7, 'МКБ 1P2', :bond, '', 'RU000A1014H6', 0)",
+                      [(":bond", PredefinedAsset.Bond)]) is not None
     yield
 
