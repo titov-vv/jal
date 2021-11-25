@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from math import copysign
+import numpy as np
 from PySide6.QtCore import Signal, QObject, QDate
 from PySide6.QtWidgets import QDialog, QMessageBox
 from jal.constants import Setup, BookAccount, TransactionType, TransferSubtype, ActionSubtype, DividendSubtype, \
@@ -47,6 +48,9 @@ class Ledger(QObject):
         QObject.__init__(self)
         self.current = {}
         self.current_seq = -1
+        self.amounts = None   # store last amount for [book, account, asset]
+        self.values = None    # together with corresponding value
+        self.sids = None      # and keep sid of operation that modified it
 
     # Returns timestamp of last operations that were calculated into ledger
     def getCurrentFrontier(self):
@@ -75,24 +79,26 @@ class Ledger(QObject):
             peer_id = None
             category_id = None
             tag_id = None
-        try:
-            old_sid, old_amount, old_value = readSQL(
-                "SELECT sid, sum_amount, sum_value FROM ledger_sums "
-                "WHERE book_account = :book AND asset_id = :asset_id "
-                "AND account_id = :account_id AND sid <= :seq_id "
-                "ORDER BY sid DESC LIMIT 1",
-                [(":book", book), (":asset_id", asset_id), (":account_id", account_id), (":seq_id", seq_id)])
-        except:
-            old_sid = -1
-            old_amount = 0.0
-            old_value = 0.0
-        new_amount = old_amount + amount
-        if value is None:
-            new_value = old_value
-        else:
-            new_value = old_value + value
-        if (abs(new_amount - old_amount) + abs(new_value - old_value)) <= (2 * Setup.CALC_TOLERANCE):
-            return  # we have zero amount - no reason to put it into ledger
+        if self.amounts[book, account_id, asset_id] is None:
+            try:
+                old_sid, old_amount, old_value = readSQL(
+                    "SELECT sid, sum_amount, sum_value FROM ledger_sums "
+                    "WHERE book_account = :book AND asset_id = :asset_id "
+                    "AND account_id = :account_id AND sid <= :seq_id "
+                    "ORDER BY sid DESC LIMIT 1",
+                    [(":book", book), (":asset_id", asset_id), (":account_id", account_id), (":seq_id", seq_id)])
+            except:
+                old_sid = -1
+                old_amount = 0.0
+                old_value = 0.0
+            self.amounts[book, account_id, asset_id] = old_amount
+            self.values[book, account_id, asset_id] = old_value
+            self.sids[book, account_id, asset_id] = old_sid
+        self.amounts[book, account_id, asset_id] = self.amounts[book, account_id, asset_id] + amount
+        if value is not None:
+            self.values[book, account_id, asset_id] = self.values[book, account_id, asset_id] + value
+        # if (abs(amount) + abs(value)) <= (2 * Setup.CALC_TOLERANCE):
+        #     return  # we have zero amount - no reason to put it into ledger
 
         _ = executeSQL("INSERT INTO ledger (timestamp, sid, book_account, asset_id, account_id, "
                        "amount, value, peer_id, category_id, tag_id) "
@@ -101,11 +107,12 @@ class Ledger(QObject):
                        [(":timestamp", timestamp), (":sid", seq_id), (":book", book), (":asset_id", asset_id),
                         (":account_id", account_id), (":amount", amount), (":value", value),
                         (":peer_id", peer_id), (":category_id", category_id), (":tag_id", tag_id)])
-        if seq_id == old_sid:
+        if seq_id == self.sids[book, account_id, asset_id]:
             _ = executeSQL("UPDATE ledger_sums SET sum_amount = :new_amount, sum_value = :new_value"
                            " WHERE sid = :sid AND book_account = :book"
                            " AND asset_id = :asset_id AND account_id = :account_id",
-                           [(":new_amount", new_amount), (":new_value", new_value), (":sid", seq_id),
+                           [(":new_amount", self.amounts[book, account_id, asset_id]),
+                            (":new_value", self.values[book, account_id, asset_id]), (":sid", seq_id),
                             (":book", book), (":asset_id", asset_id), (":account_id", account_id)], commit=True)
         else:
             _ = executeSQL("INSERT INTO ledger_sums(sid, timestamp, book_account, "
@@ -113,25 +120,23 @@ class Ledger(QObject):
                            "VALUES(:sid, :timestamp, :book, :asset_id, "
                            ":account_id, :new_amount, :new_value)",
                            [(":sid", seq_id), (":timestamp", timestamp), (":book", book), (":asset_id", asset_id),
-                            (":account_id", account_id), (":new_amount", new_amount), (":new_value", new_value)],
+                            (":account_id", account_id), (":new_amount", self.amounts[book, account_id, asset_id]),
+                            (":new_value", self.values[book, account_id, asset_id])],
                            commit=True)
 
     # TODO check that condition <= is really correct for timestamp in this function
     # Returns Amount measured in current account currency or asset_id that 'book' has at current ledger frontier
     def getAmount(self, book, asset_id=None):
         if asset_id is None:
-            amount = readSQL("SELECT sum_amount FROM ledger_sums WHERE book_account = :book AND "
-                             "account_id = :account_id AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1",
-                             [(":book", book), (":account_id", self.current['account']),
-                              (":timestamp", self.current['timestamp'])])
-        else:
+            asset_id = self.current['currency']
+        if self.amounts[book, self.current['account'], asset_id] is None:
             amount = readSQL("SELECT sum_amount FROM ledger_sums WHERE book_account = :book "
                              "AND account_id = :account_id AND asset_id = :asset_id "
                              "AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1",
                              [(":book", book), (":account_id", self.current['account']),
                               (":asset_id", asset_id), (":timestamp", self.current['timestamp'])])
-        amount = float(amount) if amount is not None else 0.0
-        return amount
+            self.amounts[book, self.current['account'], asset_id] = float(amount) if amount is not None else 0.0
+        return self.amounts[book, self.current['account'], asset_id]
 
     def takeCredit(self, operation_amount):
         money_available = self.getAmount(BookAccount.Money)
@@ -500,6 +505,14 @@ class Ledger(QObject):
             TransactionType.Transfer: self.processTransfer,
             TransactionType.CorporateAction: self.processCorporateAction
         }
+
+        # Initialize array for last amount storage
+        num_books = readSQL("SELECT MAX(id) FROM books") + 1
+        num_accounts = readSQL("SELECT MAX(id) FROM accounts") + 1
+        num_assets = readSQL("SELECT MAX(id) FROM assets") + 1
+        self.amounts = np.full((num_books, num_accounts, num_assets), None, dtype=float)
+        self.values = np.full((num_books, num_accounts, num_assets), None, dtype=float)
+        self.sids = np.full((num_books, num_accounts, num_assets), -1, dtype=float)
 
         if from_timestamp >= 0:
             frontier = from_timestamp
