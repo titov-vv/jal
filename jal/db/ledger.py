@@ -142,7 +142,7 @@ class Ledger(QObject):
                              [(":book", book), (":account_id", self.current['account']),
                               (":asset_id", asset_id), (":timestamp", self.current['timestamp'])])
             self.amounts[book, self.current['account'], asset_id] = float(amount) if amount is not None else 0.0
-        return self.amounts[book, self.current['account'], asset_id]
+        return float(self.amounts[book, self.current['account'], asset_id])
 
     def takeCredit(self, operation_amount):
         money_available = self.getAmount(BookAccount.Money)
