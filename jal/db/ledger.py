@@ -79,32 +79,17 @@ class Ledger(QObject):
             peer_id = None
             category_id = None
             tag_id = None
-        if np.isnan(self.amounts[book, account_id, asset_id]):
-            try:
-                old_sid, old_amount, old_value = readSQL(
-                    "SELECT sid, sum_amount, sum_value FROM ledger_sums "
-                    "WHERE book_account = :book AND asset_id = :asset_id "
-                    "AND account_id = :account_id AND sid <= :seq_id "
-                    "ORDER BY sid DESC LIMIT 1",
-                    [(":book", book), (":asset_id", asset_id), (":account_id", account_id), (":seq_id", seq_id)])
-            except:
-                old_sid = -1
-                old_amount = 0.0
-                old_value = 0.0
-            self.amounts[book, account_id, asset_id] = old_amount
-            self.values[book, account_id, asset_id] = old_value
-            self.sids[book, account_id, asset_id] = old_sid
+        value = 0.0 if value is None else value
         if np.isnan(self.amounts[book, account_id, asset_id]):
             self.amounts[book, account_id, asset_id] = amount
         else:
-            self.amounts[book, account_id, asset_id] = self.amounts[book, account_id, asset_id] + amount
-        if value is not None:
-            if np.isnan(self.values[book, account_id, asset_id]):
-                self.values[book, account_id, asset_id] = value
-            else:
-                self.values[book, account_id, asset_id] = self.values[book, account_id, asset_id] + value
-        # if (abs(amount) + abs(value)) <= (2 * Setup.CALC_TOLERANCE):
-        #     return  # we have zero amount - no reason to put it into ledger
+            self.amounts[book, account_id, asset_id] += amount
+        if np.isnan(self.values[book, account_id, asset_id]):
+            self.values[book, account_id, asset_id] = value
+        else:
+            self.values[book, account_id, asset_id] += value
+        if (abs(amount) + abs(value)) <= (4 * Setup.CALC_TOLERANCE):
+            return  # we have zero amount - no reason to put it into ledger
 
         _ = executeSQL("INSERT INTO ledger (timestamp, sid, book_account, asset_id, account_id, "
                        "amount, value, peer_id, category_id, tag_id) "
@@ -117,8 +102,8 @@ class Ledger(QObject):
             _ = executeSQL("UPDATE ledger_sums SET sum_amount = :new_amount, sum_value = :new_value"
                            " WHERE sid = :sid AND book_account = :book"
                            " AND asset_id = :asset_id AND account_id = :account_id",
-                           [(":new_amount", self.amounts[book, account_id, asset_id]),
-                            (":new_value", self.values[book, account_id, asset_id]), (":sid", seq_id),
+                           [(":new_amount", float(self.amounts[book, account_id, asset_id])),
+                            (":new_value", float(self.values[book, account_id, asset_id])), (":sid", seq_id),
                             (":book", book), (":asset_id", asset_id), (":account_id", account_id)], commit=True)
         else:
             _ = executeSQL("INSERT INTO ledger_sums(sid, timestamp, book_account, "
@@ -129,6 +114,7 @@ class Ledger(QObject):
                             (":account_id", account_id), (":new_amount", float(self.amounts[book, account_id, asset_id])),
                             (":new_value", float(self.values[book, account_id, asset_id]))],
                            commit=True)
+            self.sids[book, account_id, asset_id] = seq_id
 
     # TODO check that condition <= is really correct for timestamp in this function
     # Returns Amount measured in current account currency or asset_id that 'book' has at current ledger frontier
