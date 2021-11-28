@@ -79,7 +79,7 @@ class Ledger(QObject):
             peer_id = None
             category_id = None
             tag_id = None
-        if self.amounts[book, account_id, asset_id] is None:
+        if np.isnan(self.amounts[book, account_id, asset_id]):
             try:
                 old_sid, old_amount, old_value = readSQL(
                     "SELECT sid, sum_amount, sum_value FROM ledger_sums "
@@ -94,9 +94,15 @@ class Ledger(QObject):
             self.amounts[book, account_id, asset_id] = old_amount
             self.values[book, account_id, asset_id] = old_value
             self.sids[book, account_id, asset_id] = old_sid
-        self.amounts[book, account_id, asset_id] = self.amounts[book, account_id, asset_id] + amount
+        if np.isnan(self.amounts[book, account_id, asset_id]):
+            self.amounts[book, account_id, asset_id] = amount
+        else:
+            self.amounts[book, account_id, asset_id] = self.amounts[book, account_id, asset_id] + amount
         if value is not None:
-            self.values[book, account_id, asset_id] = self.values[book, account_id, asset_id] + value
+            if np.isnan(self.values[book, account_id, asset_id]):
+                self.values[book, account_id, asset_id] = value
+            else:
+                self.values[book, account_id, asset_id] = self.values[book, account_id, asset_id] + value
         # if (abs(amount) + abs(value)) <= (2 * Setup.CALC_TOLERANCE):
         #     return  # we have zero amount - no reason to put it into ledger
 
@@ -120,8 +126,8 @@ class Ledger(QObject):
                            "VALUES(:sid, :timestamp, :book, :asset_id, "
                            ":account_id, :new_amount, :new_value)",
                            [(":sid", seq_id), (":timestamp", timestamp), (":book", book), (":asset_id", asset_id),
-                            (":account_id", account_id), (":new_amount", self.amounts[book, account_id, asset_id]),
-                            (":new_value", self.values[book, account_id, asset_id])],
+                            (":account_id", account_id), (":new_amount", float(self.amounts[book, account_id, asset_id])),
+                            (":new_value", float(self.values[book, account_id, asset_id]))],
                            commit=True)
 
     # TODO check that condition <= is really correct for timestamp in this function
@@ -129,7 +135,7 @@ class Ledger(QObject):
     def getAmount(self, book, asset_id=None):
         if asset_id is None:
             asset_id = self.current['currency']
-        if self.amounts[book, self.current['account'], asset_id] is None:
+        if np.isnan(self.amounts[book, self.current['account'], asset_id]):
             amount = readSQL("SELECT sum_amount FROM ledger_sums WHERE book_account = :book "
                              "AND account_id = :account_id AND asset_id = :asset_id "
                              "AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1",
