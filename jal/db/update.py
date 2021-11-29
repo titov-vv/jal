@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QApplication, QDialog
 from PySide6.QtSql import QSqlTableModel
 
 from jal.ui.ui_add_asset_dlg import Ui_AddAssetDialog
-from jal.constants import Setup, PredefindedAccountType, PredefinedAsset
+from jal.constants import Setup, BookAccount, PredefindedAccountType, PredefinedAsset
 from jal.db.helpers import db_connection, executeSQL, readSQL, get_country_by_code
 
 
@@ -331,3 +331,11 @@ class JalDB:
     def reconcile_account(self, account_id, timestamp):
         _ = executeSQL("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
                        [(":timestamp", timestamp), (":account_id", account_id)])
+
+    def get_asset_amount(self, timestamp, account_id, asset_id):
+        return readSQL("SELECT sum_amount FROM ledger_sums "
+                       "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp<=:timestamp "
+                       "AND (book_account=:money OR book_account=:assets)"
+                       "ORDER BY sid DESC LIMIT 1",
+                       [(":account_id", account_id), (":asset_id", asset_id), (":timestamp", timestamp),
+                        (":money", BookAccount.Money), (":assets", BookAccount.Assets)])

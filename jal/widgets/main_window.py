@@ -419,7 +419,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.ledger.rebuild()
         for account_id in totals:
             for asset_id in totals[account_id]:
-                amount = self.ledger.get_asset_amount(timestamp, account_id, asset_id)
+                amount = JalDB().get_asset_amount(timestamp, account_id, asset_id)
                 if amount is not None:
                     if abs(totals[account_id][asset_id] - amount) <= Setup.DISP_TOLERANCE:
                         JalDB().reconcile_account(account_id, timestamp)
