@@ -3,7 +3,7 @@ from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
 from jal.constants import Setup, CustomColor, BookAccount
 from jal.db.helpers import executeSQL, readSQLrecord
-from jal.db.update import JalDB
+from jal.db.db import JalDB
 
 
 class BalancesModel(QAbstractTableModel):

@@ -5,7 +5,7 @@ from PySide6.QtSql import QSqlDatabase
 
 from constants import Setup, PredefinedCategory, PredefinedAsset
 from jal.db.helpers import init_and_check_db, LedgerInitError
-from jal.db.update import JalDB
+from jal.db.db import JalDB
 from jal.db.helpers import executeSQL, get_dbfilename
 
 

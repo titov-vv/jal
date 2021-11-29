@@ -12,7 +12,7 @@ from PySide6.QtWidgets import QApplication, QDialog
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from jal.constants import Setup, MarketDataFeed, BookAccount, PredefinedAsset
 from jal.db.helpers import executeSQL, readSQLrecord
-from jal.db.update import JalDB
+from jal.db.db import JalDB
 from jal.net.helpers import get_web_data, post_web_data, isEnglish
 
 

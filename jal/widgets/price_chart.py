@@ -3,7 +3,7 @@ from math import log10, floor, ceil
 from PySide6.QtCore import Qt, QMargins, QDateTime
 from PySide6.QtWidgets import QDialog, QWidget, QHBoxLayout
 from PySide6.QtCharts import QChartView, QLineSeries, QScatterSeries, QDateTimeAxis, QValueAxis
-from jal.db.update import JalDB
+from jal.db.db import JalDB
 from jal.constants import BookAccount, CustomColor
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord
 

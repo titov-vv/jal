@@ -6,7 +6,7 @@ from itertools import groupby
 from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedCategory, DividendSubtype
 from jal.widgets.helpers import ManipulateDate
-from jal.db.update import JalDB
+from jal.db.db import JalDB
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xml import StatementXML

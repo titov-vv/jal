@@ -9,7 +9,7 @@ import pandas
 from datetime import datetime, timezone
 from PySide6.QtWidgets import QApplication
 from jal.constants import DividendSubtype
-from jal.db.update import JalDB
+from jal.db.db import JalDB
 
 
 # -----------------------------------------------------------------------------------------------------------------------

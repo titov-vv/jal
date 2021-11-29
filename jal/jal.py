@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt, QTranslator
 from PySide6.QtWidgets import QApplication, QMessageBox
 from jal.constants import Setup
 from jal.widgets.main_window import MainWindow
-from jal.db.update import JalDB
+from jal.db.db import JalDB
 from jal.db.settings import JalSettings
 from jal.db.helpers import get_app_path, init_and_check_db, LedgerInitError, update_db_schema
 

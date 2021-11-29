@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QApplication, QDialog, QWidget, QPushButton, QComb
     QMessageBox
 from PySide6.QtSql import QSqlQuery, QSqlTableModel
 from jal.constants import Setup, PredefinedAsset
-from jal.db.update import JalDB
+from jal.db.db import JalDB
 from jal.db.settings import JalSettings
 from jal.db.helpers import db_connection, readSQL
 from jal.widgets.reference_dialogs import AccountListDialog
