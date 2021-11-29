@@ -11,7 +11,7 @@ class Setup:
     IMPORT_SCHEMA_NAME = "import_schema.json"
     LANG_PATH = "languages"
     UPDATE_PREFIX = 'jal_delta_'
-    TARGET_SCHEMA = 27
+    TARGET_SCHEMA = 28
     CALC_TOLERANCE = 1e-10
     DISP_TOLERANCE = 1e-4
 

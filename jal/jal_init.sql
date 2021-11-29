@@ -680,7 +680,6 @@ CREATE VIEW all_operations AS
                       accounts AS a ON a.id = t.account2_id
                       LEFT JOIN
                       assets AS c ON c.id = a.currency_id
-                ORDER BY timestamp
            )
            AS m
            LEFT JOIN
@@ -700,7 +699,8 @@ CREATE VIEW all_operations AS
            LEFT JOIN
            ledger_sums AS debt ON debt.sid = q.id AND
                                   debt.account_id = m.account_id AND
-                                  debt.book_account = 5;
+                                  debt.book_account = 5
+           ORDER BY m.timestamp;
 
 
 -- View: all_transactions
@@ -814,14 +814,11 @@ CREATE VIEW all_transactions AS
                       NULL AS peer,
                       NULL AS tag
                  FROM transfers AS t
-                ORDER BY timestamp,
-                         type,
-                         subtype,
-                         id
            )
            AS at
            LEFT JOIN
-           accounts AS a ON at.account = a.id;
+           accounts AS a ON at.account = a.id
+           ORDER BY at.timestamp, at.type, at.subtype, at.id;
 
 
 -- View: categories_tree
@@ -1307,7 +1304,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 27);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 28);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
