@@ -2,6 +2,14 @@ BEGIN TRANSACTION;
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 0;
 --------------------------------------------------------------------------------
+DROP INDEX IF EXISTS by_book_account_asset_ts;
+CREATE INDEX by_book_account_asset_ts ON ledger_sums (
+    book_account,
+    account_id,
+    asset_id,
+    timestamp
+);
+--------------------------------------------------------------------------------
 -- View: all_operations
 DROP VIEW IF EXISTS all_operations;
 CREATE VIEW all_operations AS
