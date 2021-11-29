@@ -41,7 +41,7 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
 # ===================================================================================================================
 class Ledger(QObject):
     updated = Signal()
-    SILENT_REBUILD_THRESHOLD = 50
+    SILENT_REBUILD_THRESHOLD = 1000
 
     def __init__(self):
         QObject.__init__(self)
