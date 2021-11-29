@@ -50,6 +50,12 @@ class Ledger(QObject):
         self.amounts = {}   # store last amount for [book, account, asset]
         self.values = {}    # together with corresponding value
         self.sids = {}      # and keep sid of operation that modified it
+        self.main_window =None
+        self.progress_bar = None
+
+    def setProgressBar(self, main_window, progress_widget):
+        self.main_window = main_window
+        self.progress_bar = progress_widget
 
     # Returns timestamp of last operations that were calculated into ledger
     def getCurrentFrontier(self):
@@ -494,7 +500,7 @@ class Ledger(QObject):
     #      will asks for confirmation if we have more than SILENT_REBUILD_THRESHOLD operations require rebuild
     # 0 - re-build from scratch
     # any - re-build all operations after given timestamp
-    def rebuild(self, from_timestamp=-1, fast_and_dirty=False, silent=True):
+    def rebuild(self, from_timestamp=-1, fast_and_dirty=False):
         operationProcess = {
             TransactionType.Action: self.processAction,
             TransactionType.Dividend: self.processDividend,
@@ -507,23 +513,24 @@ class Ledger(QObject):
         self.amounts = {}
         self.values = {}
         self.sids = {}
-
         if from_timestamp >= 0:
             frontier = from_timestamp
-            silent = False
+            operations_count = readSQL("SELECT COUNT(id) FROM all_transactions WHERE timestamp >= :frontier",
+                                       [(":frontier", frontier)])
         else:
             frontier = self.getCurrentFrontier()
             operations_count = readSQL("SELECT COUNT(id) FROM all_transactions WHERE timestamp >= :frontier",
                                        [(":frontier", frontier)])
             if operations_count > self.SILENT_REBUILD_THRESHOLD:
-                silent = False
                 if QMessageBox().warning(None, self.tr("Confirmation"), f"{operations_count}" +
                                          self.tr(" operations require rebuild. Do you want to do it right now?"),
                                          QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
                     return
-        if not silent:
-            logging.info(self.tr("Re-build ledger from: ") +
-                         f"{datetime.utcfromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
+        if self.progress_bar is not None:
+            self.progress_bar.setRange(0, operations_count)
+            self.main_window.showProgressBar(True)
+        logging.info(self.tr("Re-building ledger since: ") +
+                     f"{datetime.utcfromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
         start_time = datetime.now()
         _ = executeSQL("DELETE FROM deals WHERE close_sid >= "
                        "(SELECT coalesce(MIN(id), 0) FROM sequence WHERE timestamp >= :frontier)",
@@ -551,19 +558,17 @@ class Ledger(QObject):
                                         (":subtype", subtype), (":operation_id", self.current['id'])])
                 self.current_seq = seq_query.lastInsertId()
                 operationProcess[self.current['type']]()
-                if not silent and (query.at() % 1000) == 0:
-                    logging.info(
-                        self.tr("Processed ") + f"{int(query.at()/1000)}" +
-                        self.tr("k records, current frontier: ") +
-                        f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
+                if self.progress_bar is not None:
+                    self.progress_bar.setValue(query.at())
         finally:
             if fast_and_dirty:
                 _ = executeSQL("PRAGMA synchronous = ON")
             db_triggers_enable()
 
-        if not silent:
-            logging.info(self.tr("Ledger is complete. Elapsed time: ") + f"{datetime.now() - start_time}" +
-                         self.tr(", new frontier: ") + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
+        if self.progress_bar is not None:
+            self.main_window.showProgressBar(False)
+        logging.info(self.tr("Ledger is complete. Elapsed time: ") + f"{datetime.now() - start_time}" +
+                     self.tr(", new frontier: ") + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
 
         self.updated.emit()
 
@@ -571,7 +576,7 @@ class Ledger(QObject):
         rebuild_dialog = RebuildDialog(parent, self.getCurrentFrontier())
         if rebuild_dialog.exec():
             self.rebuild(from_timestamp=rebuild_dialog.getTimestamp(),
-                         fast_and_dirty=rebuild_dialog.isFastAndDirty(), silent=False)
+                         fast_and_dirty=rebuild_dialog.isFastAndDirty())
 
     def get_asset_amount(self, timestamp, account_id, asset_id):
         return readSQL("SELECT sum_amount FROM ledger_sums "

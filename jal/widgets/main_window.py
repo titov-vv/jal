@@ -4,7 +4,7 @@ from functools import partial
 
 from PySide6.QtCore import Qt, Slot, QDateTime, QDir, QLocale
 from PySide6.QtGui import QIcon, QActionGroup, QAction
-from PySide6.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox, QLabel
+from PySide6.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox, QLabel, QProgressBar
 
 from jal import __version__
 from jal.ui.ui_main_window import Ui_JAL_MainWindow
@@ -74,6 +74,10 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.contextMenu.addAction(self.actionDelete)
 
         # Customize Status bar and logs
+        self.ProgressBar = QProgressBar(self)
+        self.StatusBar.addWidget(self.ProgressBar)
+        self.ProgressBar.setVisible(False)
+        self.ledger.setProgressBar(self, self.ProgressBar)
         self.NewLogEventLbl = QLabel(self)
         self.StatusBar.addWidget(self.NewLogEventLbl)
         self.Logs.setNotificationLabel(self.NewLogEventLbl)
@@ -227,6 +231,11 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
                         "<p><a href=https://t.me/jal_support>Telegram</a></p>")
         about_box.setInformativeText(about)
         about_box.show()
+
+    def showProgressBar(self, visible=False):
+        self.ProgressBar.setVisible(visible)
+        self.centralwidget.setEnabled(not visible)
+        self.MainMenu.setEnabled(not visible)
 
     @Slot()
     def OnBalanceDoubleClick(self, index):
