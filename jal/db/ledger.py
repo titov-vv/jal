@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime
 from math import copysign
-import numpy as np
 from PySide6.QtCore import Signal, QObject, QDate
 from PySide6.QtWidgets import QDialog, QMessageBox
 from jal.constants import Setup, BookAccount, TransactionType, TransferSubtype, ActionSubtype, DividendSubtype, \
@@ -48,9 +47,9 @@ class Ledger(QObject):
         QObject.__init__(self)
         self.current = {}
         self.current_seq = -1
-        self.amounts = None   # store last amount for [book, account, asset]
-        self.values = None    # together with corresponding value
-        self.sids = None      # and keep sid of operation that modified it
+        self.amounts = {}   # store last amount for [book, account, asset]
+        self.values = {}    # together with corresponding value
+        self.sids = {}      # and keep sid of operation that modified it
 
     # Returns timestamp of last operations that were calculated into ledger
     def getCurrentFrontier(self):
@@ -80,14 +79,14 @@ class Ledger(QObject):
             category_id = None
             tag_id = None
         value = 0.0 if value is None else value
-        if np.isnan(self.amounts[book, account_id, asset_id]):
-            self.amounts[book, account_id, asset_id] = amount
-        else:
-            self.amounts[book, account_id, asset_id] += amount
-        if np.isnan(self.values[book, account_id, asset_id]):
-            self.values[book, account_id, asset_id] = value
-        else:
-            self.values[book, account_id, asset_id] += value
+        try:
+            self.amounts[(book, account_id, asset_id)] += amount
+        except KeyError:
+            self.amounts[(book, account_id, asset_id)] = amount
+        try:
+            self.values[(book, account_id, asset_id)] += value
+        except KeyError:
+            self.values[(book, account_id, asset_id)] = value
         if (abs(amount) + abs(value)) <= (4 * Setup.CALC_TOLERANCE):
             return  # we have zero amount - no reason to put it into ledger
 
@@ -98,12 +97,16 @@ class Ledger(QObject):
                        [(":timestamp", timestamp), (":sid", seq_id), (":book", book), (":asset_id", asset_id),
                         (":account_id", account_id), (":amount", amount), (":value", value),
                         (":peer_id", peer_id), (":category_id", category_id), (":tag_id", tag_id)])
-        if seq_id == self.sids[book, account_id, asset_id]:
+        try:
+            old_sid = self.sids[(book, account_id, asset_id)]
+        except KeyError:
+            old_sid = -1
+        if seq_id == old_sid:
             _ = executeSQL("UPDATE ledger_sums SET sum_amount = :new_amount, sum_value = :new_value"
                            " WHERE sid = :sid AND book_account = :book"
                            " AND asset_id = :asset_id AND account_id = :account_id",
-                           [(":new_amount", float(self.amounts[book, account_id, asset_id])),
-                            (":new_value", float(self.values[book, account_id, asset_id])), (":sid", seq_id),
+                           [(":new_amount", self.amounts[(book, account_id, asset_id)]),
+                            (":new_value", self.values[(book, account_id, asset_id)]), (":sid", seq_id),
                             (":book", book), (":asset_id", asset_id), (":account_id", account_id)], commit=True)
         else:
             _ = executeSQL("INSERT INTO ledger_sums(sid, timestamp, book_account, "
@@ -111,24 +114,26 @@ class Ledger(QObject):
                            "VALUES(:sid, :timestamp, :book, :asset_id, "
                            ":account_id, :new_amount, :new_value)",
                            [(":sid", seq_id), (":timestamp", timestamp), (":book", book), (":asset_id", asset_id),
-                            (":account_id", account_id), (":new_amount", float(self.amounts[book, account_id, asset_id])),
-                            (":new_value", float(self.values[book, account_id, asset_id]))],
+                            (":account_id", account_id), (":new_amount", self.amounts[(book, account_id, asset_id)]),
+                            (":new_value", self.values[(book, account_id, asset_id)])],
                            commit=True)
-            self.sids[book, account_id, asset_id] = seq_id
+            self.sids[(book, account_id, asset_id)] = seq_id
 
     # TODO check that condition <= is really correct for timestamp in this function
     # Returns Amount measured in current account currency or asset_id that 'book' has at current ledger frontier
     def getAmount(self, book, asset_id=None):
         if asset_id is None:
             asset_id = self.current['currency']
-        if np.isnan(self.amounts[book, self.current['account'], asset_id]):
+        try:
+            return self.amounts[(book, self.current['account'], asset_id)]
+        except KeyError:
             amount = readSQL("SELECT sum_amount FROM ledger_sums WHERE book_account = :book "
                              "AND account_id = :account_id AND asset_id = :asset_id "
                              "AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1",
                              [(":book", book), (":account_id", self.current['account']),
                               (":asset_id", asset_id), (":timestamp", self.current['timestamp'])])
-            self.amounts[book, self.current['account'], asset_id] = float(amount) if amount is not None else 0.0
-        return float(self.amounts[book, self.current['account'], asset_id])
+            self.amounts[(book, self.current['account'], asset_id)] = float(amount) if amount is not None else 0.0
+        return self.amounts[(book, self.current['account'], asset_id)]
 
     def takeCredit(self, operation_amount):
         money_available = self.getAmount(BookAccount.Money)
@@ -498,13 +503,10 @@ class Ledger(QObject):
             TransactionType.CorporateAction: self.processCorporateAction
         }
 
-        # Initialize array for last amount storage
-        num_books = readSQL("SELECT MAX(id) FROM books") + 1
-        num_accounts = readSQL("SELECT MAX(id) FROM accounts") + 1
-        num_assets = readSQL("SELECT MAX(id) FROM assets") + 1
-        self.amounts = np.full((num_books, num_accounts, num_assets), None, dtype=float)
-        self.values = np.full((num_books, num_accounts, num_assets), None, dtype=float)
-        self.sids = np.full((num_books, num_accounts, num_assets), -1, dtype=float)
+        # Initialize arrays for rolling sums storage
+        self.amounts = {}
+        self.values = {}
+        self.sids = {}
 
         if from_timestamp >= 0:
             frontier = from_timestamp
