@@ -585,7 +585,3 @@ class Ledger(QObject):
                        "ORDER BY sid DESC LIMIT 1",
                        [(":account_id", account_id), (":asset_id", asset_id), (":timestamp", timestamp),
                         (":money", BookAccount.Money), (":assets", BookAccount.Assets)])
-
-    def reconcile(self, account_id, timestamp):
-        _ = executeSQL("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
-                       [(":timestamp", timestamp), (":account_id", account_id)])

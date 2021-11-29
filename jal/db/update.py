@@ -327,3 +327,7 @@ class JalDB:
                        "VALUES (:pid, :category_id, :amount, :note)",
                        [(":pid", pid), (":category_id", category_id), (":amount", amount),
                         (":note", description)], commit=True)
+
+    def reconcile_account(self, account_id, timestamp):
+        _ = executeSQL("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
+                       [(":timestamp", timestamp), (":account_id", account_id)])

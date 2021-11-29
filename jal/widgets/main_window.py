@@ -360,7 +360,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         idx = self.operations_model.index(self.current_index.row(), 0)  # we need only row to address fields by name
         timestamp = self.operations_model.data(idx, Qt.UserRole, field="timestamp")
         account_id = self.operations_model.data(idx, Qt.UserRole, field="account_id")
-        self.ledger.reconcile(account_id, timestamp)
+        JalDB().reconcile_account(account_id, timestamp)
         self.operations_model.refresh()
 
     @Slot()
@@ -422,7 +422,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
                 amount = self.ledger.get_asset_amount(timestamp, account_id, asset_id)
                 if amount is not None:
                     if abs(totals[account_id][asset_id] - amount) <= Setup.DISP_TOLERANCE:
-                        self.ledger.reconcile(account_id, timestamp)
+                        JalDB().reconcile_account(account_id, timestamp)
                         self.balances_model.update()   # Update required to display reconciled
                     else:
                         account = JalDB().get_account_name(account_id)
