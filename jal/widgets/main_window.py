@@ -285,7 +285,12 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
     @Slot()
     def importSlip(self):
         dialog = ImportSlipDialog(self)
-        dialog.show()
+        dialog.finished.connect(self.onSlipImportFinished)
+        dialog.open()
+
+    @Slot()
+    def onSlipImportFinished(self):
+        self.ledger.rebuild()
 
     @Slot()
     def onHoldingsContextMenu(self, pos):

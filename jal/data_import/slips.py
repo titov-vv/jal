@@ -54,6 +54,7 @@ class PandasLinesModel(QAbstractTableModel):
                 self._data.iloc[index.row(), index.column()] = value
                 self.dataChanged.emit(index, index)
                 return True
+        return False
 
     def headerData(self, col, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
@@ -160,6 +161,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
 
     def closeEvent(self, arg__1):
         self.ScannerQR.stopScan()
+        self.accept()
 
     def initUi(self):
         self.SlipAmount.setText('')
