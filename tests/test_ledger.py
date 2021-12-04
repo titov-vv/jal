@@ -1,9 +1,68 @@
 from pytest import approx
 
-from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
+from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo, prepare_db_ledger
 from constants import PredefinedAsset
 from jal.db.ledger import Ledger
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
+
+
+def test_ledger(prepare_db_ledger):
+    actions = [
+        (1, 1638349200, 1, 1, [(1, 5, -100.0)]),
+        (2, 1638352800, 1, 1, [(2, 6, -30.0), (3, 8, 55.0)]),
+        (3, 1638356400, 1, 1, [(4, 7, 84.0)])
+    ]
+
+    for action in actions:
+        assert executeSQL("INSERT INTO actions (id, timestamp, account_id, peer_id) "
+                          "VALUES (:id, :timestamp, :account, :peer)",
+                          [(":id", action[0]), (":timestamp", action[1]),
+                           (":account", action[2]), (":peer", action[3])], commit=True) is not None
+        for detail in action[4]:
+            assert executeSQL("INSERT INTO action_details (id, pid, category_id, amount) "
+                              "VALUES (:id, :pid, :category, :amount)",
+                              [(":id", detail[0]), (":pid", action[0]),
+                               (":category", detail[1]), (":amount", detail[2])], commit=True) is not None
+
+    # Build ledger from scratch
+    ledger = Ledger()
+    ledger.rebuild(from_timestamp=0)
+
+    # validate book amounts
+    expected_book_values = [None, 130.0, -139.0, 9.0, None, 0.0]
+    query = executeSQL("SELECT MAX(sid) AS msid, book_account, sum_amount, sum_value "
+                       "FROM ledger_sums GROUP BY book_account")
+    while query.next():
+        row = readSQLrecord(query, named=True)
+        assert row['sum_amount'] == expected_book_values[row['book_account']]
+
+    actions = [
+        (4, 1638360000, 1, 1, [(5, 5, -34.0)]),
+        (5, 1638363600, 1, 1, [(6, 7, 11.0)])
+    ]
+
+    for action in actions:
+        assert executeSQL("INSERT INTO actions (id, timestamp, account_id, peer_id) "
+                          "VALUES (:id, :timestamp, :account, :peer)",
+                          [(":id", action[0]), (":timestamp", action[1]),
+                           (":account", action[2]), (":peer", action[3])], commit=True) is not None
+        for detail in action[4]:
+            assert executeSQL("INSERT INTO action_details (id, pid, category_id, amount) "
+                              "VALUES (:id, :pid, :category, :amount)",
+                              [(":id", detail[0]), (":pid", action[0]),
+                               (":category", detail[1]), (":amount", detail[2])], commit=True) is not None
+
+    # Build ledger for recent transactions only
+    ledger = Ledger()
+    ledger.rebuild()
+
+    # validate book amounts
+    expected_book_values = [None, 164.0, -150.0, -0.0, None, -14.0]
+    query = executeSQL("SELECT MAX(sid) AS msid, book_account, sum_amount, sum_value "
+                       "FROM ledger_sums GROUP BY book_account")
+    while query.next():
+        row = readSQLrecord(query, named=True)
+        assert row['sum_amount'] == expected_book_values[row['book_account']]
 
 
 def test_fifo(prepare_db_fifo):

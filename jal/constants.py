@@ -61,7 +61,7 @@ class CorporateAction:   # CORPORATE ACTIONS FOR ASSETS
 
 
 class PredefindedAccountType:
-    Case = 1
+    Cash = 1
     Bank = 2
     Card = 3
     Investment = 4

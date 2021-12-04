@@ -41,6 +41,14 @@ def prepare_db(project_root, tmp_path, data_path):
     os.remove(target_path)  # Clean db init script
     os.remove(get_dbfilename(str(tmp_path) + os.sep))  # Clean db file
 
+
+@pytest.fixture
+def prepare_db_ledger(prepare_db):
+    assert executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'Shop')") is not None
+    assert executeSQL("INSERT INTO accounts (type_id, name, currency_id, active) "
+                      "VALUES (1, 'Wallet', 1, 1)") is not None
+
+
 @pytest.fixture
 def prepare_db_ibkr(prepare_db):
     assert executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'IB')") is not None
