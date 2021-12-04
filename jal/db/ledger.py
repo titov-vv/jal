@@ -39,6 +39,31 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
 
 
 # ===================================================================================================================
+# Subclasses dictionary to store last amount/value for [book, account, asset]
+# Differs from dictionary in a way that __getitem__() method uses DB-stored values for initialization
+class LedgerAmounts(dict):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def __getitem__(self, key):
+        # predefined indices in key tuple
+        BOOK = 0
+        ACCOUNT = 1
+        ASSET = 2
+
+        try:
+            return super().__getitem__(key)
+        except KeyError:
+            amount = readSQL("SELECT sum_amount FROM ledger_sums "
+                             "WHERE book_account = :book AND account_id = :account_id AND asset_id = :asset_id "
+                             "ORDER BY sid DESC LIMIT 1",
+                             [(":book", key[BOOK]), (":account_id", key[ACCOUNT]), (":asset_id", key[ASSET])])
+            amount = float(amount) if amount is not None else 0.0
+            super().__setitem__(key, amount)
+            return amount
+
+
+# ===================================================================================================================
 class Ledger(QObject):
     updated = Signal()
     SILENT_REBUILD_THRESHOLD = 1000
@@ -47,9 +72,9 @@ class Ledger(QObject):
         QObject.__init__(self)
         self.current = {}
         self.current_seq = -1
-        self.amounts = {}   # store last amount for [book, account, asset]
-        self.values = {}    # together with corresponding value
-        self.sids = {}      # and keep sid of operation that modified it
+        self.amounts = LedgerAmounts()    # store last amount for [book, account, asset]
+        self.values = LedgerAmounts()     # together with corresponding value
+        self.sids = {}                    # and keep sid of operation that modified it
         self.main_window =None
         self.progress_bar = None
 
@@ -85,14 +110,8 @@ class Ledger(QObject):
             category_id = None
             tag_id = None
         value = 0.0 if value is None else value
-        try:
-            self.amounts[(book, account_id, asset_id)] += amount
-        except KeyError:
-            self.amounts[(book, account_id, asset_id)] = amount
-        try:
-            self.values[(book, account_id, asset_id)] += value
-        except KeyError:
-            self.values[(book, account_id, asset_id)] = value
+        self.amounts[(book, account_id, asset_id)] += amount
+        self.values[(book, account_id, asset_id)] += value
         if (abs(amount) + abs(value)) <= (4 * Setup.CALC_TOLERANCE):
             return  # we have zero amount - no reason to put it into ledger
 
@@ -125,20 +144,10 @@ class Ledger(QObject):
                            commit=True)
             self.sids[(book, account_id, asset_id)] = seq_id
 
-    # TODO check that condition <= is really correct for timestamp in this function
-    # Returns Amount measured in current account currency or asset_id that 'book' has at current ledger frontier
+    # Returns Amount measured in current account currency or asset that 'book' has at current ledger frontier
     def getAmount(self, book, asset_id=None):
         if asset_id is None:
             asset_id = self.current['currency']
-        try:
-            return self.amounts[(book, self.current['account'], asset_id)]
-        except KeyError:
-            amount = readSQL("SELECT sum_amount FROM ledger_sums WHERE book_account = :book "
-                             "AND account_id = :account_id AND asset_id = :asset_id "
-                             "AND timestamp <= :timestamp ORDER BY sid DESC LIMIT 1",
-                             [(":book", book), (":account_id", self.current['account']),
-                              (":asset_id", asset_id), (":timestamp", self.current['timestamp'])])
-            self.amounts[(book, self.current['account'], asset_id)] = float(amount) if amount is not None else 0.0
         return self.amounts[(book, self.current['account'], asset_id)]
 
     def takeCredit(self, operation_amount):
@@ -510,8 +519,8 @@ class Ledger(QObject):
         }
 
         # Initialize arrays for rolling sums storage
-        self.amounts = {}
-        self.values = {}
+        self.amounts = LedgerAmounts()
+        self.values = LedgerAmounts()
         self.sids = {}
         if from_timestamp >= 0:
             frontier = from_timestamp
