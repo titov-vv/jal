@@ -104,7 +104,7 @@ class HoldingsModel(QAbstractItemModel):
         if role == Qt.FontRole:
             return self.data_font(item.data, index.column())
         if role == Qt.BackgroundRole:
-            return self.data_background(item.data, index.column())
+            return self.data_background(item.data, index.column(), self._view.isEnabled())
         if role == Qt.TextAlignmentRole:
             if index.column() < 2:
                 return Qt.AlignLeft
@@ -174,21 +174,22 @@ class HoldingsModel(QAbstractItemModel):
                         font.setItalic(True)
                     return font
 
-    def data_background(self, data, column):
+    def data_background(self, data, column, enabled=True):
+        factor = 100 if enabled else 125
         if data['level'] == 0:
-            return QBrush(CustomColor.LightPurple)
+            return QBrush(CustomColor.LightPurple.lighter(factor))
         if data['level'] == 1:
-            return QBrush(CustomColor.LightBlue)
+            return QBrush(CustomColor.LightBlue.lighter(factor))
         if column == 6 and data['profit_rel']:
             if data['profit_rel'] >= 0:
-                return QBrush(CustomColor.LightGreen)
+                return QBrush(CustomColor.LightGreen.lighter(factor))
             else:
-                return QBrush(CustomColor.LightRed)
+                return QBrush(CustomColor.LightRed.lighter(factor))
         if column == 7 and data['profit']:
             if data['profit'] >= 0:
-                return QBrush(CustomColor.LightGreen)
+                return QBrush(CustomColor.LightGreen.lighter(factor))
             else:
-                return QBrush(CustomColor.LightRed)
+                return QBrush(CustomColor.LightRed.lighter(factor))
 
     def configureView(self):
         self._view.header().setSectionResizeMode(0, QHeaderView.ResizeToContents)

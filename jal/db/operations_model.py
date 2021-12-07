@@ -96,7 +96,7 @@ class OperationsModel(QAbstractTableModel):
             font = QFont()
             font.setBold(True)
             return font
-        if role == Qt.ForegroundRole:
+        if role == Qt.ForegroundRole and self._view.isEnabled():
             return self.data_foreground(index.row(), index.column())
         if role == Qt.TextAlignmentRole:
             if index.column() == 0:
@@ -327,6 +327,7 @@ class OperationsModel(QAbstractTableModel):
 
 class ColoredAmountsDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
+        self._view = parent
         QStyledItemDelegate.__init__(self, parent)
 
     def paint(self, painter, option, index):
@@ -351,10 +352,11 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
             return
         pen = painter.pen()
         try:
-            if value >= 0:
-                pen.setColor(CustomColor.DarkGreen)
-            else:
-                pen.setColor(CustomColor.DarkRed)
+            if self._view.isEnabled():
+                if value >= 0:
+                    pen.setColor(CustomColor.DarkGreen)
+                else:
+                    pen.setColor(CustomColor.DarkRed)
             painter.setPen(pen)
             painter.drawText(rect, Qt.AlignRight | Qt.AlignVCenter, f"{value:+,.2f}")
         except TypeError:

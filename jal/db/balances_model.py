@@ -38,7 +38,7 @@ class BalancesModel(QAbstractTableModel):
         if role == Qt.FontRole:
             return self.data_font(index.row(), index.column())
         if role == Qt.BackgroundRole:
-            return self.data_background(index.row(), index.column())
+            return self.data_background(index.row(), index.column(), self._view.isEnabled())
         if role == Qt.TextAlignmentRole:
             if index.column() == 0 or index.column() == 2:
                 return Qt.AlignLeft
@@ -71,12 +71,13 @@ class BalancesModel(QAbstractTableModel):
             font.setItalic(True)
             return font
 
-    def data_background(self, row, column):
+    def data_background(self, row, column, enabled=True):
+        factor = 100 if enabled else 125
         if column == 3:
             if self._data[row]['unreconciled'] > 15:
-                return QBrush(CustomColor.LightRed)
+                return QBrush(CustomColor.LightRed.lighter(factor))
             if self._data[row]['unreconciled'] > 7:
-                return QBrush(CustomColor.LightYellow)
+                return QBrush(CustomColor.LightYellow.lighter(factor))
 
     def configureView(self):
         self._view.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
