@@ -43,6 +43,6 @@ setup(
     },
     include_package_data=True,
     package_data={
-        '': ['*.sql', 'languages/*.qm', 'languages/*.png', 'pypi_description.md', 'img/*.ico', 'img/*.png']
+        '': ['*.sql', '*.json', 'languages/*.qm', 'languages/*.png', 'pypi_description.md', 'img/*.ico', 'img/*.png']
     }
 )
