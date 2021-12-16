@@ -535,6 +535,9 @@ class Ledger(QObject):
                                          self.tr(" operations require rebuild. Do you want to do it right now?"),
                                          QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
                     return
+        if operations_count == 0:
+            logging.info(self.tr("Leger is empty"))
+            return
         if self.progress_bar is not None:
             self.progress_bar.setRange(0, operations_count)
             self.main_window.showProgressBar(True)

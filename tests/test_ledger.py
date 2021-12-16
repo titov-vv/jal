@@ -6,6 +6,12 @@ from jal.db.ledger import Ledger
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
 
 
+def test_empty_ledger(prepare_db_ledger):
+    # Build ledger from scratch
+    ledger = Ledger()
+    ledger.rebuild(from_timestamp=0)
+
+
 def test_ledger(prepare_db_ledger):
     actions = [
         (1, 1638349200, 1, 1, [(1, 5, -100.0)]),
