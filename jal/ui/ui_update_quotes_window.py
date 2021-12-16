@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'quotes_update.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.2.0
+## Created by: Qt User Interface Compiler version 6.2.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -16,7 +16,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QDateEdit, QDialog,
-    QDialogButtonBox, QGridLayout, QLabel, QSizePolicy)
+    QDialogButtonBox, QGridLayout, QLabel, QSizePolicy,
+    QWidget)
 
 class Ui_UpdateQuotesDlg(object):
     def setupUi(self, UpdateQuotesDlg):

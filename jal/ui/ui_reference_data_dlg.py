@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'reference_data_dlg.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.2.0
+## Created by: Qt User Interface Compiler version 6.2.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -18,7 +18,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox,
     QDialog, QFrame, QHBoxLayout, QHeaderView,
     QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QSpacerItem, QTableView, QTreeView, QVBoxLayout)
+    QSpacerItem, QTableView, QTreeView, QVBoxLayout,
+    QWidget)
 
 class Ui_ReferenceDataDialog(object):
     def setupUi(self, ReferenceDataDialog):

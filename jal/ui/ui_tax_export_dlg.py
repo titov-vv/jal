@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'tax_export_dlg.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.2.0
+## Created by: Qt User Interface Compiler version 6.2.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -18,7 +18,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDialog,
     QDialogButtonBox, QFrame, QGridLayout, QGroupBox,
     QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QSpacerItem, QSpinBox)
+    QSpacerItem, QSpinBox, QWidget)
 
 from jal.widgets.reference_selector import AccountSelector
 

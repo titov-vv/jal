@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="ru" sourcelanguage="en">
+<TS version="2.1" language="ru_RU" sourcelanguage="en_US">
 <context>
     <name>AbstractOperationDetails</name>
     <message>
@@ -19,7 +19,7 @@
         <translation>Отменить изменения</translation>
     </message>
     <message>
-        <location filename="../widgets/abstract_operation_details.py" line="88"/>
+        <location filename="../widgets/abstract_operation_details.py" line="87"/>
         <source>Unsaved changes were reverted to create new operation</source>
         <translation>Несохранённые изменения были отменены перед созданием новой операции</translation>
     </message>
@@ -178,7 +178,7 @@
         <translation>Баланс, </translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="171"/>
+        <location filename="../db/balances_model.py" line="172"/>
         <source>Total</source>
         <translation>Итого</translation>
     </message>
@@ -546,22 +546,22 @@
 <context>
     <name>DetailsModel</name>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="222"/>
+        <location filename="../widgets/income_spending_widget.py" line="230"/>
         <source>Category</source>
         <translation>Категория</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="222"/>
+        <location filename="../widgets/income_spending_widget.py" line="230"/>
         <source>Tag</source>
         <translation>Тэг</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="223"/>
+        <location filename="../widgets/income_spending_widget.py" line="231"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="224"/>
+        <location filename="../widgets/income_spending_widget.py" line="232"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
@@ -774,72 +774,72 @@
 <context>
     <name>ImportSlipDialog</name>
     <message>
-        <location filename="../data_import/slips.py" line="178"/>
+        <location filename="../data_import/slips.py" line="180"/>
         <source>Select file with QR code</source>
         <translation>Выберите файл с QR-кодом</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="278"/>
+        <location filename="../data_import/slips.py" line="281"/>
         <source>Select file with slip JSON data</source>
         <translation>Выберите файл с JSON-данными чека</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="373"/>
+        <location filename="../data_import/slips.py" line="376"/>
         <source>Not possible to import slip: no account set for import</source>
         <translation>Невозможно добавить чек: не указан счет для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="379"/>
+        <location filename="../data_import/slips.py" line="382"/>
         <source>Not possible to import slip: some categories are not set</source>
         <translation>Невозможно добавить чек: категории указаны не для всех строк</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="376"/>
+        <location filename="../data_import/slips.py" line="379"/>
         <source>Not possible to import slip: can&apos;t import: no peer set for import</source>
         <translation>Невозможно добавить чек: не указан контрагент для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="266"/>
+        <location filename="../data_import/slips.py" line="269"/>
         <source>Max retry count exceeded.</source>
         <translation>Превышено максимальное число попыток.</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="294"/>
+        <location filename="../data_import/slips.py" line="297"/>
         <source>Can&apos;t find &apos;receipt&apos; tag in json &apos;document&apos;</source>
         <translation>JSON тэг &apos;receipt&apos; отсутствует внутри тэга &apos;document&apos;</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="297"/>
+        <location filename="../data_import/slips.py" line="300"/>
         <source>Can&apos;t find &apos;document&apos; tag in json &apos;ticket&apos;</source>
         <translation>JSON тэг &apos;document&apos; отсутствует внутри тэга &apos;ticket&apos;</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="307"/>
+        <location filename="../data_import/slips.py" line="310"/>
         <source>Can&apos;t find &apos;operationType&apos; tag in json &apos;ticket&apos;</source>
         <translation>JSON тэг &apos;operationType&apos; отсутствует внутри тэга &apos;ticket&apos;</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="339"/>
+        <location filename="../data_import/slips.py" line="342"/>
         <source>Unknown operation type </source>
         <translation>Неизвестный тип операции </translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="199"/>
+        <location filename="../data_import/slips.py" line="201"/>
         <source>Image format isn&apos;t supported</source>
         <translation>Неподдерживаемый формат изображения</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="212"/>
+        <location filename="../data_import/slips.py" line="214"/>
         <source>No QR codes found in clipboard</source>
         <translation>QR код не обнаружен в буфере обмена</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="239"/>
+        <location filename="../data_import/slips.py" line="241"/>
         <source>QR: </source>
         <translation>QR: </translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="252"/>
+        <location filename="../data_import/slips.py" line="255"/>
         <source>QR available but pattern isn&apos;t recognized: </source>
         <translation>Невозможно распознать прочитанный QR-код: </translation>
     </message>
@@ -961,18 +961,18 @@
         <translation>Скопировать детальную запись</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="132"/>
-        <location filename="../widgets/income_spending_widget.py" line="149"/>
+        <location filename="../widgets/income_spending_widget.py" line="134"/>
+        <location filename="../widgets/income_spending_widget.py" line="151"/>
         <source>Failed to add new record: </source>
         <translation>Невозможно добавить новую запись: </translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="162"/>
+        <location filename="../widgets/income_spending_widget.py" line="164"/>
         <source>Operation submit failed: </source>
         <translation>Ошибка при записи операции: </translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="170"/>
+        <location filename="../widgets/income_spending_widget.py" line="172"/>
         <source>Operation details submit failed: </source>
         <translation>Ошибка при записи деталей операции: </translation>
     </message>
@@ -1054,62 +1054,62 @@ Application will be terminated now</source>
 <context>
     <name>JalDB</name>
     <message>
-        <location filename="../db/update.py" line="190"/>
+        <location filename="../db/db.py" line="190"/>
         <source>Reg.number updated for </source>
         <translation>Регистрационный номер обновлён для </translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="218"/>
+        <location filename="../db/db.py" line="218"/>
         <source>Quote loaded: </source>
         <translation>Котировка загружена: </translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="230"/>
+        <location filename="../db/db.py" line="230"/>
         <source>Failed to add new asset: </source>
         <translation>Невозмоно добавить новую ЦБ: </translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="242"/>
+        <location filename="../db/db.py" line="242"/>
         <source>Dividend already exists: </source>
         <translation>Дивиденд уже существует: </translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="262"/>
+        <location filename="../db/db.py" line="262"/>
         <source>Trade already exists: #</source>
         <translation>Сделка уже существует: #</translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="285"/>
+        <location filename="../db/db.py" line="285"/>
         <source>Transfer/Exchange already exists: </source>
         <translation>Перевод/Обмен уже существует: </translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="310"/>
+        <location filename="../db/db.py" line="310"/>
         <source>Corporate action already exists: #</source>
         <translation>Корпоративное действие уже существует: #</translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="175"/>
+        <location filename="../db/db.py" line="175"/>
         <source>Symbol updated </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="183"/>
+        <location filename="../db/db.py" line="183"/>
         <source>ISIN mismatch for </source>
         <translation>ISIN не совпадает для </translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="102"/>
+        <location filename="../db/db.py" line="102"/>
         <source>Account already exists: </source>
         <translation>Счет уже существует: </translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="200"/>
+        <location filename="../db/db.py" line="200"/>
         <source>Country updated for </source>
         <translation>Страна обновлёна для </translation>
     </message>
     <message>
-        <location filename="../db/update.py" line="123"/>
+        <location filename="../db/db.py" line="123"/>
         <source>Bank for #</source>
         <translation>Банк для №</translation>
     </message>
@@ -1117,78 +1117,73 @@ Application will be terminated now</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="373"/>
-        <location filename="../db/ledger.py" line="513"/>
+        <location filename="../db/ledger.py" line="390"/>
+        <location filename="../db/ledger.py" line="534"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="514"/>
+        <location filename="../db/ledger.py" line="535"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation> операций требуют перерасчета. Вы ходите выполнить его прямо сейчас?</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="519"/>
-        <source>Re-build ledger from: </source>
-        <translation>Перерасчет итогов с: </translation>
-    </message>
-    <message>
-        <location filename="../db/ledger.py" line="558"/>
+        <location filename="../db/ledger.py" line="582"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation>Итоги рассчитаны. Затраченное время: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="559"/>
+        <location filename="../db/ledger.py" line="583"/>
         <source>, new frontier: </source>
         <translation>, новая граница: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="549"/>
-        <source>Processed </source>
-        <translation>Обработано </translation>
-    </message>
-    <message>
-        <location filename="../db/ledger.py" line="551"/>
-        <source>k records, current frontier: </source>
-        <translation>к записей, текущая граница: </translation>
-    </message>
-    <message>
-        <location filename="../db/ledger.py" line="193"/>
+        <location filename="../db/ledger.py" line="210"/>
         <source>Can&apos;t process dividend as bank isn&apos;t set for investment account</source>
         <translation>Невозможно обработать дивиденд, т.к. не указан банк для инвестиционного счёта</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="215"/>
+        <location filename="../db/ledger.py" line="232"/>
         <source>Can&apos;t process trade as bank isn&apos;t set for investment account</source>
         <translation>Невозможно обработать сделку, т.к. не указан банк для инвестиционного счёта</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="398"/>
+        <location filename="../db/ledger.py" line="415"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation>Количество акций недостаточно для обработки корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="374"/>
+        <location filename="../db/ledger.py" line="539"/>
+        <source>Leger is empty</source>
+        <translation>Транзакции отсутствуют</translation>
+    </message>
+    <message>
+        <location filename="../db/ledger.py" line="545"/>
+        <source>Re-building ledger since: </source>
+        <translation>Пересчёт итогов с: </translation>
+    </message>
+    <message>
+        <location filename="../db/ledger.py" line="391"/>
         <source>Stock dividend for was updated for </source>
         <translation>Дивиденд акциями был обновлён для </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="376"/>
+        <location filename="../db/ledger.py" line="393"/>
         <source>Please check that quantity is correct.</source>
         <translation>Пожалуйста проверьте корректность количества бумаг.</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="167"/>
+        <location filename="../db/ledger.py" line="184"/>
         <source>Can&apos;t process operation without details</source>
         <translation>Невозможно обработать операцию без детальной информации</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="365"/>
+        <location filename="../db/ledger.py" line="382"/>
         <source>Unexpected data in transfer transaction</source>
         <translation>Невозможно обработать трансфер</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="190"/>
+        <location filename="../db/ledger.py" line="207"/>
         <source>Can&apos;t process dividend with N/A type</source>
         <translation>Невозможно обработать дивиденд с неопределенным типом</translation>
     </message>
@@ -1232,12 +1227,12 @@ Application will be terminated now</source>
 <context>
     <name>MOEX</name>
     <message>
-        <location filename="../net/downloader.py" line="229"/>
+        <location filename="../net/downloader.py" line="228"/>
         <source>Unsupported MOEX security type: </source>
         <translation>Неподдерживаемый тип ЦБ МосБиржи: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="266"/>
+        <location filename="../net/downloader.py" line="265"/>
         <source>Multiple MOEX assets found for reg.number: </source>
         <translation>Найдено несколько бумаг на MOEX для данного рег.номера: </translation>
     </message>
@@ -1245,87 +1240,87 @@ Application will be terminated now</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="193"/>
+        <location filename="../widgets/main_window.py" line="200"/>
         <source>Restart required</source>
         <translation>Требуется рестарт</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="195"/>
+        <location filename="../widgets/main_window.py" line="202"/>
         <source>Language was changed to </source>
         <translation>Язык был изменён на </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="197"/>
+        <location filename="../widgets/main_window.py" line="204"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation>Вы должны перезапустить приложение, чтобы применить изменения
 Приложение сейчас завершит свою работу</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="67"/>
+        <location filename="../widgets/main_window.py" line="68"/>
         <source>Reconcile</source>
         <translation>Сверить</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="68"/>
+        <location filename="../widgets/main_window.py" line="69"/>
         <source>Copy</source>
         <translation>Копировать</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="69"/>
+        <location filename="../widgets/main_window.py" line="70"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="326"/>
+        <location filename="../widgets/main_window.py" line="343"/>
         <source>You have unsaved changes</source>
         <translation>Есть несохранённые изменения</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="328"/>
+        <location filename="../widgets/main_window.py" line="345"/>
         <source> has uncommitted changes,
 do you want to save it?</source>
         <translation> имеет несохранённые изменения,
 Вы хотите их сохранить?</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="356"/>
+        <location filename="../widgets/main_window.py" line="373"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="357"/>
+        <location filename="../widgets/main_window.py" line="374"/>
         <source>Are you sure to delete selected transacion(s)?</source>
         <translation>Вы уверены что ходите удалить выбранную(-ые) транзацию(-и)?</translation>
     </message>
     <message>
         <location filename="../widgets/main_window.py" line="51"/>
-        <location filename="../widgets/main_window.py" line="217"/>
+        <location filename="../widgets/main_window.py" line="224"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="419"/>
+        <location filename="../widgets/main_window.py" line="436"/>
         <source>Statement ending balance doesn&apos;t match: </source>
         <translation>Конечный баланс по отчёту не совпадает: </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="225"/>
+        <location filename="../widgets/main_window.py" line="232"/>
         <source>&lt;p&gt;More information, manuals and problem reports are at &lt;a href=https://github.com/titov-vv/jal&gt;github home page&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Questions, comments, help or donations:&lt;/p&gt;&lt;p&gt;&lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=https://t.me/jal_support&gt;Telegram&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;Дополнительная информация, инструкции, сообщения о проблемах - &lt;a href=https://github.com/titov-vv/jal&gt;github home page&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Вопросы, комментарии, помощь или донаты:&lt;/p&gt;&lt;p&gt;&lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=https://t.me/jal_support&gt;Telegram&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="218"/>
+        <location filename="../widgets/main_window.py" line="225"/>
         <source>&lt;h3&gt;JAL&lt;/h3&gt;&lt;p&gt;Just Another Ledger, version {version}&lt;/p&gt;</source>
         <translation>&lt;h3&gt;JAL&lt;/h3&gt;&lt;p&gt;Just Another Ledger, версия {version}&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="282"/>
+        <location filename="../widgets/main_window.py" line="299"/>
         <source>Show Price Chart</source>
         <translation>Показать график цены</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="286"/>
+        <location filename="../widgets/main_window.py" line="303"/>
         <source>Estimate Russian Tax</source>
         <translation>Оценить налог для РФ</translation>
     </message>
@@ -1437,24 +1432,32 @@ do you want to save it?</source>
     </message>
 </context>
 <context>
+    <name>OptionalCurrencyComboBox</name>
+    <message>
+        <location filename="../widgets/account_select.py" line="159"/>
+        <source>Currency</source>
+        <translation>Валюта</translation>
+    </message>
+</context>
+<context>
     <name>PandasLinesModel</name>
     <message>
-        <location filename="../data_import/slips.py" line="62"/>
+        <location filename="../data_import/slips.py" line="63"/>
         <source>Product name</source>
         <translation>Название продукта</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="68"/>
+        <location filename="../data_import/slips.py" line="69"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="64"/>
+        <location filename="../data_import/slips.py" line="65"/>
         <source>Category</source>
         <translation>Категория</translation>
     </message>
     <message>
-        <location filename="../data_import/slips.py" line="66"/>
+        <location filename="../data_import/slips.py" line="67"/>
         <source>Tag</source>
         <translation>Тэг</translation>
     </message>
@@ -1531,12 +1534,12 @@ do you want to save it?</source>
 <context>
     <name>QRScanner</name>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="41"/>
+        <location filename="../widgets/qr_scanner.py" line="45"/>
         <source>There are no cameras available</source>
         <translation>Нет доступных камер</translation>
     </message>
     <message>
-        <location filename="../widgets/qr_scanner.py" line="104"/>
+        <location filename="../widgets/qr_scanner.py" line="111"/>
         <source>Camera error: </source>
         <translation>Ошибка камеры: </translation>
     </message>
@@ -1577,32 +1580,32 @@ do you want to save it?</source>
 <context>
     <name>QuoteDownloader</name>
     <message>
-        <location filename="../net/downloader.py" line="109"/>
+        <location filename="../net/downloader.py" line="108"/>
         <source>No data were downloaded for </source>
         <translation>Загружены пустые данные для </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="115"/>
+        <location filename="../net/downloader.py" line="114"/>
         <source>Download completed</source>
         <translation>Загрузка завершена</translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="328"/>
+        <location filename="../net/downloader.py" line="329"/>
         <source>Euronext quotes history reply is too short: </source>
         <translation>История котировок Euronext слишком короткая: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="331"/>
+        <location filename="../net/downloader.py" line="332"/>
         <source>Euronext quotes header not found in: </source>
         <translation>Заголовок истории котировок Euronext не найден в: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="334"/>
+        <location filename="../net/downloader.py" line="335"/>
         <source>Euronext quotes ISIN mismatch in: </source>
         <translation>ISIN в истории котировок Euronext не совпадает: </translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="371"/>
+        <location filename="../net/downloader.py" line="372"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation>Невозможно обработать данные котировок с биржи TSX: </translation>
     </message>

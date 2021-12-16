@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'rebuild_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.2.0
+## Created by: Qt User Interface Compiler version 6.2.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -18,7 +18,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDateEdit,
     QDialog, QDialogButtonBox, QFormLayout, QGroupBox,
     QLabel, QLayout, QRadioButton, QSizePolicy,
-    QVBoxLayout)
+    QVBoxLayout, QWidget)
 
 class Ui_ReBuildDialog(object):
     def setupUi(self, ReBuildDialog):

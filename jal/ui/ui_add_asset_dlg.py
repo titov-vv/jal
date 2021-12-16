@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'add_asset_dlg.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.2.0
+## Created by: Qt User Interface Compiler version 6.2.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -17,7 +17,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QComboBox, QDialog,
     QDialogButtonBox, QGridLayout, QLabel, QLineEdit,
-    QSizePolicy)
+    QSizePolicy, QWidget)
 
 class Ui_AddAssetDialog(object):
     def setupUi(self, AddAssetDialog):

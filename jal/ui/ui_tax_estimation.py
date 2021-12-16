@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'tax_estimation.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.2.0
+## Created by: Qt User Interface Compiler version 6.2.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -17,7 +17,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QDialog, QFrame,
     QHBoxLayout, QHeaderView, QLabel, QSizePolicy,
-    QSpacerItem, QTableView, QVBoxLayout)
+    QSpacerItem, QTableView, QVBoxLayout, QWidget)
 
 class Ui_TaxEstimationDialog(object):
     def setupUi(self, TaxEstimationDialog):

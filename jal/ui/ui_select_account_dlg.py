@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'select_account_dlg.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.2.0
+## Created by: Qt User Interface Compiler version 6.2.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -17,7 +17,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDialog,
     QDialogButtonBox, QLabel, QSizePolicy, QSpacerItem,
-    QVBoxLayout)
+    QVBoxLayout, QWidget)
 
 from jal.widgets.reference_selector import AccountSelector
 
