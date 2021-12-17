@@ -269,18 +269,21 @@ class QuoteDownloader(QObject):
         return secid
 
     # noinspection PyMethodMayBeStatic
-    def MOEX_DataReader(self, asset_id, asset_code, isin, start_timestamp, end_timestamp):
+    def MOEX_DataReader(self, asset_id, asset_code, isin, start_timestamp, end_timestamp, update_symbol=True):
         asset = self.MOEX_info(symbol=asset_code, isin=isin, special=True)
         if (asset['engine'] is None) or (asset['market'] is None) or (asset['board'] is None):
             logging.warning(f"Failed to find {asset_code} on moex.com")
             return None
         if (asset['market'] == 'bonds') and (asset['board'] == 'TQCB'):
             asset_code = isin   # Corporate bonds are quoted by ISIN
+        if (asset['market'] == 'shares') and (asset['board'] == 'TQIF'):
+            asset_code = isin   # ETFs are quoted by ISIN
 
         isin = asset['isin'] if 'isin' in asset else ''
         reg_code = asset['reg_code'] if 'reg_code' in asset else ''
         expiry = asset['expiry'] if 'expiry' in asset else 0
-        JalDB().update_asset_data(asset_id, new_isin=isin, new_reg=reg_code, expiry=expiry)
+        if update_symbol:
+            JalDB().update_asset_data(asset_id, new_isin=isin, new_reg=reg_code, expiry=expiry)
 
         # Get price history
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d')

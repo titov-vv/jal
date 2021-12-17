@@ -100,6 +100,9 @@ def test_MOEX_downloader(prepare_db_moex):
     corp_quotes = pd.DataFrame({'Close': [1002.90, 1003.70],
                                 'Date': [datetime(2021, 7, 22), datetime(2021, 7, 23)]})
     corp_quotes = corp_quotes.set_index('Date')
+    etf_quotes = pd.DataFrame({'Close': [1736.8, 1735.0],
+                               'Date': [datetime(2021, 12, 13), datetime(2021, 12, 14)]})
+    etf_quotes = etf_quotes.set_index('Date')
 
     downloader = QuoteDownloader()
     quotes_downloaded = downloader.MOEX_DataReader(4, 'SBER', 'RU0009029540', 1618272000, 1618358400)
@@ -113,10 +116,12 @@ def test_MOEX_downloader(prepare_db_moex):
     assert readSQL("SELECT * FROM asset_reg_id WHERE asset_id=6") == [6, '26238RMFS']
 
     quotes_downloaded = downloader.MOEX_DataReader(7, 'МКБ 1P2', 'RU000A1014H6', 1626912000, 1626998400)
-    print(quotes_downloaded)
     assert_frame_equal(corp_quotes, quotes_downloaded)
     assert readSQL("SELECT * FROM assets WHERE id=7") == [7, 'МКБ 1P2', 3, '', 'RU000A1014H6', 0, 0, 1638230400]
     assert readSQL("SELECT * FROM asset_reg_id WHERE asset_id=7") == [7, '4B020901978B001P']
+
+    quotes_downloaded = downloader.MOEX_DataReader(8, 'ЗПИФ ПНК', 'RU000A1013V9', 1639353600, 1639440000, update_symbol=False)
+    assert_frame_equal(etf_quotes, quotes_downloaded)
 
 def test_Yahoo_downloader():
     quotes = pd.DataFrame({'Close': [134.429993, 132.029999],
