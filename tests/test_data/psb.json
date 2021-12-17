@@ -1,7 +1,7 @@
 {
   "period": [1617235200, 1621555199],
   "accounts": [
-    {"id": 1, "currency": 1, "number": "12345"},
+    {"id": 1, "currency": 1, "number": "12345", "cash_begin": 18272.86, "cash_end": 18585.98, "cash_end_settled": 18298.06},
     {"id": 2, "currency": 2, "number": "12345"}
   ],
   "assets": [

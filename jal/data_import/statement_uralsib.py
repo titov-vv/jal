@@ -26,7 +26,13 @@ class StatementUKFU(StatementXLS):
         "fee_ex": "Комиссия ТС",
         "currency": "Валюта цены"
     }
-
+    money_section = "ПОЗИЦИЯ ПО ДЕНЕЖНЫМ СРЕДСТВАМ"
+    money_columns = {
+        "name": "Код Валюты",
+        "begin": "Входящий остаток",
+        "end": "Плановый исходящий остаток",
+        "settled_end": "Исходящий остаток"
+    }
     asset_section = "СОСТОЯНИЕ ПОРТФЕЛЯ ЦЕННЫХ БУМАГ"
     asset_columns = {
         "name": "Наименование ЦБ",

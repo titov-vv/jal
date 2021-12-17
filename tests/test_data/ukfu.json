@@ -1,8 +1,8 @@
 {
   "period": [1617235200, 1621555199],
   "accounts": [
-    {"id": 1, "currency": 1, "number": "12345"},
-    {"id": 2, "currency": 2, "number": "12345"}
+    {"id": 1, "currency": 1, "number": "12345", "cash_begin": 7636.65, "cash_end": 9804.85, "cash_end_settled": 9804.85},
+    {"id": 2, "currency": 2, "number": "12345", "cash_begin": 34.37, "cash_end": 34.37, "cash_end_settled": 34.37}
   ],
   "assets": [
     {"id": 1, "type": "money", "symbol": "RUB"},

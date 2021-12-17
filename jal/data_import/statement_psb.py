@@ -12,7 +12,13 @@ class StatementPSB(StatementXLS):
     AccountPattern = (3, 9, r"(?P<ACCOUNT>\S*)( от \d\d\.\d\d\.\d\d\d\d)?")
     HeaderCol = 1
     SummaryHeader = "Сводная информация по счетам клиента в валюте счета"
-
+    money_section = "Позиция денежных средств по биржевым площадкам"
+    money_columns = {
+        "name": "Валюта",
+        "begin": "Входящие лимиты",
+        "end": "Плановый исходящий остаток",
+        "settled_end": "Исходящие лимиты"
+    }
     asset_section = r"^Портфель на конец дня.*"
     asset_columns = {
         "name": r"Наименование эмитента, вид, категория \(тип\), выпуск, транш ЦБ",

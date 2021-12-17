@@ -18,6 +18,8 @@ class StatementXLS(Statement):
     AccountPattern = (0, 0, '')
     HeaderCol = 0
     SummaryHeader = ''
+    money_section = ''
+    money_columns = {}
     asset_section = ''
     asset_columns = {}
     currency_substitutions = {
@@ -59,6 +61,7 @@ class StatementXLS(Statement):
         self._validate()
         self._load_currencies()
         self._load_accounts()
+        self._load_money()
         self._load_assets()
         self._load_deals()
         self._load_cash_transactions()
@@ -187,6 +190,31 @@ class StatementXLS(Statement):
             id = max([0] + [x['id'] for x in self._data[FOF.ACCOUNTS]]) + 1
             account = {"id": id, "number": self._account_number, "currency": currency['id']}
             self._data[FOF.ACCOUNTS].append(account)
+
+    # Find section with start/end amounts of money per account
+    def _load_money(self):
+        cnt = 0
+        row, headers = self.find_section_start(self.money_section, self.money_columns, header_height=2)
+        if row < 0:
+            return False
+        while row < self._statement.shape[0]:
+            if self._statement[self.HeaderCol][row].startswith('ИТОГО') or self._statement[self.HeaderCol][row] == '':
+                break
+            self._update_account_balance(self._statement[headers['name']][row],
+                                         self._statement[headers['begin']][row],
+                                         self._statement[headers['end']][row],
+                                         self._statement[headers['settled_end']][row])
+            cnt += 1
+            row += 1
+        logging.info(self.tr("Cash balances loaded: ") + f"{cnt}")
+
+    # Update account data with cash balance values
+    def _update_account_balance(self, currency, begin, end, settled_end):
+        account_id = self._find_account_id(self._account_number, currency)
+        account = [x for x in self._data[FOF.ACCOUNTS] if x['id'] == account_id][0]
+        account["cash_begin"] = begin
+        account["cash_end"] = end
+        account["cash_end_settled"] = settled_end
 
     def _load_assets(self):
         cnt = 0
