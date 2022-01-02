@@ -118,7 +118,7 @@ class IBKR_Asset:
     def tr(self, text):
         return QApplication.translate("IBKR", text)
 
-        # search in self.assets['match_key'] for value match_value
+    # search in self.assets['match_key'] for value match_value
     # iterate through key:value pairs of updates to update self.assets['key'] with 'value'
     # assign self.id if asset was found and returns True, otherwise returns False
     def match_and_update(self, match_key, match_value, updates):
@@ -378,12 +378,19 @@ class StatementIBKR(StatementXML):
             self._data[FOF.ACCOUNTS].append(balance)
 
     def load_assets(self, assets):
-        cnt = 0
+        asset_count = 0
+        stored = set()
         base = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
-        for i, asset in enumerate(assets):
-            asset['id'] = base + i
+        for asset in assets:
             if asset['type'] == IBKR_AssetType.NotSupported:   # Skip not supported type of asset
                 continue
+
+            asset_data = tuple(asset.items())
+            if asset_data in stored:  # Skip duplicated assets
+                continue
+            stored.add(asset_data)
+
+            asset['id'] = base + asset_count
             # IB may use '.OLD' suffix if asset is being replaced
             asset['symbol'] = asset['symbol'][:-len('.OLD')] if asset['symbol'].endswith('.OLD') else asset['symbol']
             if asset['exchange'] == '' or asset['exchange'] == 'VALUE':  # don't store 'VALUE' or empty exchange
@@ -393,9 +400,9 @@ class StatementIBKR(StatementXML):
             if asset['expiry'] == 0:
                 asset.pop('expiry')
             asset.pop('maturity')
-            cnt += 1
+            asset_count += 1
             self._data[FOF.ASSETS].append(asset)
-        logging.info(self.tr("Securities loaded: ") + f"{cnt} ({len(assets)})")
+        logging.info(self.tr("Securities loaded: ") + f"{asset_count} ({len(assets)})")
 
     def load_ib_trades(self, ib_trades):
         trades = [trade for trade in ib_trades if type(trade['asset']) == int]
