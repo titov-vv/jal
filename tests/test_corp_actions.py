@@ -58,9 +58,9 @@ def test_spin_off(prepare_db_fifo):
     ledger.rebuild(from_timestamp=0)
 
     # Check ledger amounts before selling
-    assert readSQL("SELECT * FROM ledger_sums WHERE asset_id=4 AND timestamp<1628615520 ORDER BY timestamp DESC LIMIT 1") == [5, 1627819200, 4, 4, 1, 13.0, 1452.0]
-    assert readSQL("SELECT * FROM ledger_sums WHERE asset_id=5 AND timestamp<1628615520 ORDER BY timestamp DESC LIMIT 1") == [3, 1622548800, 4, 5, 1, 5.0, 0.0]
-    assert readSQL("SELECT * FROM ledger_sums WHERE book_account=3 AND timestamp<1628615520 ORDER BY timestamp DESC LIMIT 1") == [4, 1625140800, 3, 2, 1, 8548.0, 0.0]
+    assert readSQL("SELECT * FROM ledger WHERE asset_id=4 AND timestamp<1628615520 ORDER BY id DESC LIMIT 1") == [11, 1627819200, 5, 4, 4, 1, 13.0, 1452.0, 13.0, 1452.0, '', '', '']
+    assert readSQL("SELECT * FROM ledger WHERE asset_id=5 AND timestamp<1628615520 ORDER BY id DESC LIMIT 1") == [7, 1622548800, 3, 4, 5, 1, 5.0, 0.0, 5.0, 0.0, '', '', '']
+    assert readSQL("SELECT * FROM ledger WHERE book_account=3 AND timestamp<1628615520 ORDER BY id DESC LIMIT 1") == [8, 1625140800, 4, 3, 2, 1, -52.0, 0.0, 8548.0, 0.0, '', '', '']
     assert readSQL("SELECT profit FROM deals_ext WHERE close_timestamp>=1629047520") == 498.0
 
 

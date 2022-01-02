@@ -36,11 +36,11 @@ def test_ledger(prepare_db_ledger):
 
     # validate book amounts
     expected_book_values = [None, 130.0, -139.0, 9.0, None, 0.0]
-    query = executeSQL("SELECT MAX(sid) AS msid, book_account, sum_amount, sum_value "
-                       "FROM ledger_sums GROUP BY book_account")
+    query = executeSQL("SELECT MAX(sid) AS msid, book_account, amount_acc, value_acc "
+                       "FROM ledger GROUP BY book_account")
     while query.next():
         row = readSQLrecord(query, named=True)
-        assert row['sum_amount'] == expected_book_values[row['book_account']]
+        assert row['amount_acc'] == expected_book_values[row['book_account']]
 
     actions = [
         (4, 1638360000, 1, 1, [(5, 5, -34.0)]),
@@ -64,11 +64,11 @@ def test_ledger(prepare_db_ledger):
 
     # validate book amounts
     expected_book_values = [None, 164.0, -150.0, -0.0, None, -14.0]
-    query = executeSQL("SELECT MAX(sid) AS msid, book_account, sum_amount, sum_value "
-                       "FROM ledger_sums GROUP BY book_account")
+    query = executeSQL("SELECT MAX(sid) AS msid, book_account, amount_acc, value_acc "
+                       "FROM ledger GROUP BY book_account")
     while query.next():
         row = readSQLrecord(query, named=True)
-        assert row['sum_amount'] == expected_book_values[row['book_account']]
+        assert row['amount_acc'] == expected_book_values[row['book_account']]
 
 
 def test_fifo(prepare_db_fifo):
@@ -255,11 +255,11 @@ def test_fifo(prepare_db_fifo):
                    "WHERE os.type==5 AND cs.type==5") == 4
 
     # validate final amounts
-    query = executeSQL("SELECT MAX(sid) AS msid, asset_id, sum_amount, sum_value FROM ledger_sums GROUP BY asset_id")
+    query = executeSQL("SELECT MAX(sid) AS msid, asset_id, amount_acc, value_acc FROM ledger GROUP BY asset_id")
     while query.next():
         row = readSQLrecord(query, named=True)
         if row['asset_id'] == 2:  # Checking money amount
-            assert row['sum_amount'] == 16760
+            assert row['amount_acc'] == 16760
         else:
-            assert row['sum_amount'] == 0
-        assert row['sum_value'] == 0
+            assert row['amount_acc'] == 0
+        assert row['value_acc'] == 0
