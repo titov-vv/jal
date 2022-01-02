@@ -90,12 +90,12 @@ class ChartWindow(QDialog):
         self.currency_name = JalDB().get_asset_name(JalDB().get_account_currency(self.account_id))
         start_time = readSQL("SELECT MAX(ts) FROM "  # Take either last "empty" timestamp
                              "(SELECT coalesce(MAX(timestamp), 0) AS ts "
-                             "FROM ledger_sums WHERE account_id=:account_id AND asset_id=:asset_id "
-                             "AND book_account=:assets_book AND sum_amount==0 "
+                             "FROM ledger WHERE account_id=:account_id AND asset_id=:asset_id "
+                             "AND book_account=:assets_book AND amount_acc==0 "
                              "UNION "  # or first timestamp where position started to appear
                              "SELECT coalesce(MIN(timestamp), 0) AS ts "
-                             "FROM ledger_sums WHERE account_id=:account_id AND asset_id=:asset_id "
-                             "AND book_account=:assets_book AND sum_amount!=0)",
+                             "FROM ledger WHERE account_id=:account_id AND asset_id=:asset_id "
+                             "AND book_account=:assets_book AND amount_acc!=0)",
                              [(":account_id", self.account_id), (":asset_id", self.asset_id),
                               (":assets_book", BookAccount.Assets)])
         # Get quotes quotes
