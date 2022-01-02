@@ -333,7 +333,7 @@ class JalDB:
                        [(":timestamp", timestamp), (":account_id", account_id)])
 
     def get_asset_amount(self, timestamp, account_id, asset_id):
-        return readSQL("SELECT sum_amount FROM ledger_sums "
+        return readSQL("SELECT amount_acc FROM ledger "
                        "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp<=:timestamp "
                        "AND (book_account=:money OR book_account=:assets)"
                        "ORDER BY sid DESC LIMIT 1",
