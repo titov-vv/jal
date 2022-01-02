@@ -54,7 +54,7 @@ class LedgerAmounts(dict):
         try:
             return super().__getitem__(key)
         except KeyError:
-            amount = readSQL("SELECT sum_amount FROM ledger_sums "
+            amount = readSQL("SELECT amount_acc FROM ledger "
                              "WHERE book_account = :book AND account_id = :account_id AND asset_id = :asset_id "
                              "ORDER BY sid DESC LIMIT 1",
                              [(":book", key[BOOK]), (":account_id", key[ACCOUNT]), (":asset_id", key[ASSET])])
@@ -116,11 +116,13 @@ class Ledger(QObject):
             return  # we have zero amount - no reason to put it into ledger
 
         _ = executeSQL("INSERT INTO ledger (timestamp, sid, book_account, asset_id, account_id, "
-                       "amount, value, peer_id, category_id, tag_id) "
+                       "amount, value, amount_acc, value_acc, peer_id, category_id, tag_id) "
                        "VALUES(:timestamp, :sid, :book, :asset_id, :account_id, "
-                       ":amount, :value, :peer_id, :category_id, :tag_id)",
+                       ":amount, :value, :amount_acc, :value_acc, :peer_id, :category_id, :tag_id)",
                        [(":timestamp", timestamp), (":sid", seq_id), (":book", book), (":asset_id", asset_id),
                         (":account_id", account_id), (":amount", amount), (":value", value),
+                        (":amount_acc", self.amounts[(book, account_id, asset_id)]),
+                        (":value_acc", self.values[(book, account_id, asset_id)]),
                         (":peer_id", peer_id), (":category_id", category_id), (":tag_id", tag_id)])
         try:
             old_sid = self.sids[(book, account_id, asset_id)]

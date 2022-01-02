@@ -260,13 +260,15 @@ CREATE TABLE ledger (
     book_account INTEGER NOT NULL
                          REFERENCES books (id) ON DELETE NO ACTION
                                                ON UPDATE NO ACTION,
-    asset_id    INTEGER REFERENCES assets (id) ON DELETE SET NULL
-                                               ON UPDATE SET NULL,
+    asset_id     INTEGER REFERENCES assets (id) ON DELETE SET NULL
+                                                ON UPDATE SET NULL,
     account_id   INTEGER NOT NULL
                          REFERENCES accounts (id) ON DELETE NO ACTION
                                                   ON UPDATE NO ACTION,
     amount       REAL,
     value        REAL,
+    amount_acc   REAL,
+    value_acc    REAL,
     peer_id      INTEGER REFERENCES agents (id) ON DELETE NO ACTION
                                                 ON UPDATE NO ACTION,
     category_id  INTEGER REFERENCES categories (id) ON DELETE NO ACTION
