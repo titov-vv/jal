@@ -520,6 +520,19 @@ class StatementIBKR(StatementXML):
                     self.tr("Corporate action type is not supported: ") + f"{action['type']}")
         logging.info(self.tr("Corporate actions loaded: ") + f"{cnt} ({len(actions)})")
 
+    # Find record in list 'parts_b' (second parts of corporate actions) which matches
+    # given asset and description with more details from corp_action itself
+    def find_corp_action_pair(self, asset, description, action, parts_b):
+        paired_record = list(filter(
+            lambda pair: pair['asset'] == asset
+                         and (pair['description'].startswith(description + ", ")
+                              or pair['description'].startswith(description + ".OLD, "))
+                         and pair['type'] == action['type']
+                         and pair['timestamp'] == action['timestamp'], parts_b))
+        if len(paired_record) != 1:
+            raise Statement_ImportError(self.tr("Can't find paired record for ") + f"{action}")
+        return paired_record
+
     def load_merger(self, action, parts_b) -> int:
         MergerPatterns = [
             r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +MERGED\(\w+\) +WITH +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
@@ -537,15 +550,9 @@ class StatementIBKR(StatementXML):
         merger_a = parts.groupdict()
         if len(merger_a) != MergerPatterns[pattern_id].count("(?P<"):  # check expected number of matches
             raise Statement_ImportError(self.tr("Merger description miss some data ") + f"'{action}'")
-        description_b = action['description'][:parts.span('symbol')[0]] + merger_a['symbol_old'] + ", "
+        description_b = action['description'][:parts.span('symbol')[0]] + merger_a['symbol_old']
         asset_b = self.locate_asset(merger_a['symbol_old'], merger_a['isin_old'])
-        paired_record = list(filter(
-            lambda pair: pair['asset'] == asset_b
-                         and pair['description'].startswith(description_b)
-                         and pair['type'] == action['type']
-                         and pair['timestamp'] == action['timestamp'], parts_b))
-        if len(paired_record) != 1:
-            raise Statement_ImportError(self.tr("Can't find paired record for ") + f"{action}")
+        paired_record = self.find_corp_action_pair(asset_b, description_b, action, parts_b)
         if pattern_id == 1:
             self.add_merger_payment(action['timestamp'], action['account'], paired_record[0]['proceeds'],
                                     parts['currency'], action['description'])
@@ -598,15 +605,9 @@ class StatementIBKR(StatementXML):
         isin_change = parts.groupdict()
         if len(isin_change) != SymbolChangePattern.count("(?P<"):  # check that expected number of groups was matched
             raise Statement_ImportError(self.tr("Spin-off description miss some data ") + f"'{action}'")
-        description_b = action['description'][:parts.span('symbol')[0]] + isin_change['symbol_old'] + ".OLD, "
+        description_b = action['description'][:parts.span('symbol')[0]] + isin_change['symbol_old']
         asset_b = self.locate_asset(isin_change['symbol_old'], isin_change['isin_old'])
-        paired_record = list(filter(
-            lambda pair: pair['asset'] == asset_b
-                         and pair['description'].startswith(description_b)
-                         and pair['type'] == action['type']
-                         and pair['timestamp'] == action['timestamp'], parts_b))
-        if len(paired_record) != 1:
-            raise Statement_ImportError(self.tr("Can't find paired record for: ") + f"{action}")
+        paired_record = self.find_corp_action_pair(asset_b, description_b, action, parts_b)
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
         action['cost_basis'] = 1.0
         action['asset'] = [paired_record[0]['asset'], action['asset']]
@@ -650,14 +651,7 @@ class StatementIBKR(StatementXML):
         else:  # Split together with ISIN change and there should be 2nd record available
             description_b = action['description'][:parts.span('symbol')[0]] + split['symbol_old']
             asset_b = self.locate_asset(split['symbol_old'], split['isin_old'])
-            paired_record = list(filter(
-                lambda pair: pair['asset'] == asset_b
-                             and (pair['description'].startswith(description_b + ", ")
-                                  or pair['description'].startswith(description_b + ".OLD, "))
-                             and pair['type'] == action['type']
-                             and pair['timestamp'] == action['timestamp'], parts_b))
-            if len(paired_record) != 1:
-                raise Statement_ImportError(self.tr("Can't find paired record for: ") + f"{action}")
+            paired_record = self.find_corp_action_pair(asset_b, description_b, action, parts_b)
             action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
             action['cost_basis'] = 1.0
             action['asset'] = [paired_record[0]['asset'], action['asset']]

@@ -5,7 +5,7 @@
     {"id": 2, "number": "U7654321", "currency": 2, "cash_begin": 12.345, "cash_end": 1234567.249966388, "cash_end_settled": 1234567.89},
     {"id": 3, "number": "U7654321", "currency": 3, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
     {"id": 4, "number": "TEST_ACC", "currency": 3, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
-    {"id": 5, "number": "U7654321", "currency": 27}
+    {"id": 5, "number": "U7654321", "currency": 29}
   ],
   "assets": [
     {"id": 1, "type": "money", "symbol": "RUB"},
@@ -31,12 +31,14 @@
     {"id": 21, "type": "etf", "symbol": "ZROZ", "name": "PIMCO 25+ YR ZERO CPN US TIF", "isin": "US72201R8824", "reg_code": "72201R882", "exchange": "ARCA", "country": "us"},
     {"id": 22, "type": "stock", "symbol": "LVGO", "name": "LIVONGO HEALTH INC", "isin": "US5391831030", "reg_code": "539183103"},
     {"id": 23, "type": "stock", "symbol": "TDOC", "name": "TELADOC HEALTH INC", "isin": "US87918A1051", "reg_code": "87918A105", "exchange": "NYSE"},
-    {"id": 24, "type": "stock", "symbol": "AAPL", "name": "APPLE INC", "isin": "US0378331005", "reg_code": "037833100", "exchange": "NASDAQ"},
-    {"id": 25, "type": "option", "symbol": "VLO   200724P00064000", "name": "VLO 24JUL20 64.0 P", "exchange": "CBOE"},
-    {"id": 26, "type": "stock", "symbol": "VLO", "name": "VALERO ENERGY CORP", "isin": "US91913Y1001", "reg_code": "91913Y100", "exchange": "NYSE"},
-    {"id": 27, "type": "money", "symbol": "EUR"},
-    {"id": 28, "type": "stock", "symbol": "MAC", "name": "", "isin": "US5543821012", "reg_code": "554382101", "exchange": "NYSE"},
-    {"id": 29, "type": "stock", "symbol": "EDV", "name": "", "reg_code": "921910709", "exchange": "ARCA", "country": "us"}
+    {"id": 24, "type": "stock", "symbol": "LUMN", "name": "LUMEN TECHNOLOGIES INC", "isin": "US5502411037", "reg_code": "550241103", "exchange": "NYSE"},
+    {"id": 25, "type": "stock", "symbol": "LUMN", "name": "CENTURYLINK INC", "isin": "US1567001060", "reg_code": "156700106","exchange": "NYSE"},
+    {"id": 26, "type": "stock", "symbol": "AAPL", "name": "APPLE INC", "isin": "US0378331005", "reg_code": "037833100", "exchange": "NASDAQ"},
+    {"id": 27, "type": "option", "symbol": "VLO   200724P00064000", "name": "VLO 24JUL20 64.0 P", "exchange": "CBOE"},
+    {"id": 28, "type": "stock", "symbol": "VLO", "name": "VALERO ENERGY CORP", "isin": "US91913Y1001", "reg_code": "91913Y100", "exchange": "NYSE"},
+    {"id": 29, "type": "money", "symbol": "EUR"},
+    {"id": 30, "type": "stock", "symbol": "MAC", "name": "", "isin": "US5543821012", "reg_code": "554382101", "exchange": "NYSE"},
+    {"id": 31, "type": "stock", "symbol": "EDV", "name": "", "reg_code": "921910709", "exchange": "ARCA", "country": "us"}
   ],
   "trades": [
     {"id": 1, "number": "", "timestamp": 1548447900, "settlement": 1548447900, "account": 2, "asset": 7, "quantity": 0.567, "price": 69.2215, "fee": 0.0, "cancelled": true},
@@ -45,11 +47,11 @@
     {"id": 4, "number": "", "timestamp": 1553545500, "settlement": 1553545500, "account": 2, "asset": 6, "quantity": -0.777, "price": 168.37, "fee": 0.0},
     {"id": 5, "number": "2661774904", "timestamp": 1579094694, "settlement": 1579219200, "account": 2, "asset": 19, "quantity": 45000.0, "price": 0.0012, "fee": 0.54},
     {"id": 6, "number": "2674740000", "timestamp": 1580215513, "settlement": 1580215513, "account": 2, "asset": 5, "quantity": -1240.0, "price": 54.84, "fee": 7.75519312},
-    {"id": 7, "number": "2674740000", "timestamp": 1580215566, "settlement": 1580342400, "account": 2, "asset": 24, "quantity": -148.0, "price": 316.68, "fee": -1.987792848},
+    {"id": 7, "number": "2674740000", "timestamp": 1580215566, "settlement": 1580342400, "account": 2, "asset": 26, "quantity": -148.0, "price": 316.68, "fee": -1.987792848},
     {"id": 8, "number": "2882737839", "timestamp": 1590595065, "settlement": 1590710400, "account": 2, "asset": 9, "quantity": 2.0, "price": 637.09, "fee": 2.0},
-    {"id": 9, "number": "2931083780", "timestamp": 1592575273, "settlement": 1592784000, "account": 2, "asset": 25, "quantity": -100.0, "price": 4.54, "fee": 1.1058334},
-    {"id": 10, "number": "2997636969", "timestamp": 1595607600, "settlement": 1595808000, "account": 2, "asset": 25, "quantity": 100.0, "price": 0.0, "fee": 0.0, "note": "Option assignment"},
-    {"id": 11, "number": "2997636973", "timestamp": 1595607600, "settlement": 1595607600, "account": 2, "asset": 26, "quantity": 100.0, "price": 64.0, "fee": 0.0, "note": "Option assignment/exercise"},
+    {"id": 9, "number": "2931083780", "timestamp": 1592575273, "settlement": 1592784000, "account": 2, "asset": 27, "quantity": -100.0, "price": 4.54, "fee": 1.1058334},
+    {"id": 10, "number": "2997636969", "timestamp": 1595607600, "settlement": 1595808000, "account": 2, "asset": 27, "quantity": 100.0, "price": 0.0, "fee": 0.0, "note": "Option assignment"},
+    {"id": 11, "number": "2997636973", "timestamp": 1595607600, "settlement": 1595607600, "account": 2, "asset": 28, "quantity": 100.0, "price": 64.0, "fee": 0.0, "note": "Option assignment/exercise"},
     {"id": 12, "number": "3183801882", "timestamp": 1603882231, "settlement": 1604016000, "account": 2, "asset": 20, "quantity": 500000.0, "price": 0.0001, "fee": 0.7503675}
   ],
   "income_spending": [
@@ -60,7 +62,7 @@
     {"id": 5, "timestamp": 1549843200, "account": 2, "peer": 0, "lines": [{"amount": -0.249018, "category": -6, "description": "BABA (ALIBABA GROUP HOLDING-SP ADR) - French Transaction Tax"}]}
   ],
   "transfers": [
-    {"id": 1, "account": [5, 2, 2], "number": "2674343226","asset": [27, 2], "timestamp": 1580443370, "withdrawal": 890.47, "deposit": 1000.0, "fee": 3.0, "description": "IDEALFX"},
+    {"id": 1, "account": [5, 2, 2], "number": "2674343226","asset": [29, 2], "timestamp": 1580443370, "withdrawal": 890.47, "deposit": 1000.0, "fee": 3.0, "description": "IDEALFX"},
     {"id": 2, "account": [1, 2, 2], "number": "2645393202", "asset": [1, 2], "timestamp": 1581322108, "withdrawal": 78986.6741, "deposit": 1234.0, "fee": 2.0, "description": "IDEALFX"},
     {"id": 3, "account": [1, 2, 2], "number": "2845906676", "asset": [1, 2], "timestamp": 1590522832, "withdrawal": 44.07, "deposit": 0.621778209, "fee": 0.0, "description": "IDEALFX"},
     {"id": 4, "account": [0, 1, 0], "number": "", "asset": [1, 1], "timestamp": 1600374600, "withdrawal": 123456.78, "deposit": 123456.78, "fee": 0.0, "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS"},
@@ -75,13 +77,14 @@
     {"id": 6, "type": "split", "account": 2, "timestamp": 1627676700, "number": "17240033443", "asset": [18, 18], "quantity": [104.0, 13.0], "cost_basis": 1.0, "description": "GE(US3696041033) SPLIT 1 FOR 8 (GE, GENERAL ELECTRIC CO, US3696043013)"},
     {"id": 7, "type": "split", "account": 2, "timestamp": 1581452700, "number": "12029570527", "asset": [19, 20], "quantity": [45000.0, 900.0], "cost_basis": 1.0, "description": "EWLL(US30051D1063) SPLIT 1 FOR 50 (EWLLD, EWELLNESS HEALTHCARE CORP, US30051D2053)"},
     {"id": 8, "type": "merger", "account": 2, "timestamp": 1604089500, "number": "14147163475", "asset": [22, 23], "quantity": [10.0, 5.92], "cost_basis": 1.0, "description": "LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)"},
-    {"id": 9, "type": "stock_dividend", "account": 2, "timestamp": 1591215600, "number": "12882908488", "asset": 28, "quantity": 2.0, "cost_basis": 0.0, "description": "MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000 (MAC, MACERICH CO/THE, US5543821012)"}
+    {"id": 9, "type": "merger", "account": 2, "timestamp": 1611260700, "number": "15015004953", "asset": [25, 24], "quantity": [200, 200], "cost_basis": 1.0, "description": "LUMN.OLD(US1567001060) MERGED(Acquisition) WITH US5502411037 1 FOR 1 (LUMN, LUMEN TECHNOLOGIES INC, US5502411037)"},
+    {"id": 10, "type": "stock_dividend", "account": 2, "timestamp": 1591215600, "number": "12882908488", "asset": 30, "quantity": 2.0, "cost_basis": 0.0, "description": "MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000 (MAC, MACERICH CO/THE, US5543821012)"}
   ],
   "asset_payments": [
     {"id": 1, "type": "dividend", "account": 2, "timestamp": 1578082800, "number": "", "asset": 21, "amount": 60.2, "tax": 6.02, "description": "ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)"},
     {"id": 2, "type": "interest", "account": 2, "timestamp": 1590595065, "number": "2882737839", "asset": 9, "amount": -25.69, "description": "PURCHASE ACCRUED INT X 6 1/4 03/15/26"},
     {"id": 3, "type": "interest", "account": 2, "timestamp": 1600128000, "number": "", "asset": 9, "amount": 62.5, "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26)"},
-    {"id": -1, "type": "dividend", "account": 2, "timestamp": 1529612400, "number": "", "asset": 29, "amount": 16.76, "tax": 0, "description": "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"},
-    {"id": -2, "type": "dividend", "account": 2, "timestamp": 1533673200, "number": "", "asset": 29, "amount": 20.35, "tax": 0.54, "description": "EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)"}
+    {"id": -1, "type": "dividend", "account": 2, "timestamp": 1529612400, "number": "", "asset": 31, "amount": 16.76, "tax": 0, "description": "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"},
+    {"id": -2, "type": "dividend", "account": 2, "timestamp": 1533673200, "number": "", "asset": 31, "amount": 20.35, "tax": 0.54, "description": "EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)"}
   ]
 }
