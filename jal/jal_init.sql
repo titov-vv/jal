@@ -723,6 +723,7 @@ CREATE VIEW all_transactions AS
            a.currency_id AS currency
       FROM (
                SELECT 1 AS type,
+                      1 AS seq,
                       a.id,
                       a.timestamp,
                       CASE WHEN SUM(d.amount) < 0 THEN -COUNT(d.amount) ELSE COUNT(d.amount) END AS subtype,
@@ -740,6 +741,7 @@ CREATE VIEW all_transactions AS
                 GROUP BY a.id
                UNION ALL
                SELECT 2 AS type,
+                      2 AS seq,
                       d.id,
                       d.timestamp,
                       d.type AS subtype,
@@ -756,6 +758,7 @@ CREATE VIEW all_transactions AS
                       accounts AS a ON a.id = d.account_id
                UNION ALL
                SELECT 5 AS type,
+                      3 AS seq,
                       a.id,
                       a.timestamp,
                       a.type AS subtype,
@@ -770,6 +773,7 @@ CREATE VIEW all_transactions AS
                  FROM corp_actions AS a
                UNION ALL
                SELECT 3 AS type,
+                      4 AS seq,
                       t.id,
                       t.timestamp,
                       iif(t.qty < 0, -1, 1) AS subtype,
@@ -786,6 +790,7 @@ CREATE VIEW all_transactions AS
                       accounts AS a ON a.id = t.account_id
                UNION ALL
                SELECT 4 AS type,
+                      5 AS seq,
                       id,
                       withdrawal_timestamp AS timestamp,
                       -1 AS subtype,
@@ -800,6 +805,7 @@ CREATE VIEW all_transactions AS
                  FROM transfers AS t
                UNION ALL
                SELECT 4 AS type,
+                      5 AS seq,
                       id,
                       withdrawal_timestamp AS timestamp,
                       0 AS subtype,
@@ -815,6 +821,7 @@ CREATE VIEW all_transactions AS
                  WHERE NOT fee_account IS NULL
                UNION ALL
                SELECT 4 AS type,
+                      5 AS seq,
                       id,
                       deposit_timestamp AS timestamp,
                       1 AS subtype,
@@ -831,7 +838,7 @@ CREATE VIEW all_transactions AS
            AS at
            LEFT JOIN
            accounts AS a ON at.account = a.id
-           ORDER BY at.timestamp, at.type, at.subtype, at.id;
+     ORDER BY at.timestamp, at.seq, at.subtype, at.id;
 
 
 -- View: categories_tree

@@ -40,6 +40,133 @@ INSERT INTO ledger (id, timestamp, sid, book_account, asset_id, account_id, amou
 
 DROP TABLE sqlitestudio_temp_table;
 --------------------------------------------------------------------------------
+-- Change order of transaction processing in all_transactions view (corp.actions should go before trades)
+DROP VIEW IF EXISTS all_transactions;
+CREATE VIEW all_transactions AS
+    SELECT at.*,
+           a.currency_id AS currency
+      FROM (
+               SELECT 1 AS type,
+                      1 AS seq,
+                      a.id,
+                      a.timestamp,
+                      CASE WHEN SUM(d.amount) < 0 THEN -COUNT(d.amount) ELSE COUNT(d.amount) END AS subtype,
+                      a.account_id AS account,
+                      NULL AS asset,
+                      SUM(d.amount) AS amount,
+                      d.category_id AS category,
+                      NULL AS price,
+                      NULL AS fee_tax,
+                      a.peer_id AS peer,
+                      d.tag_id AS tag
+                 FROM actions AS a
+                      LEFT JOIN
+                      action_details AS d ON a.id = d.pid
+                GROUP BY a.id
+               UNION ALL
+               SELECT 2 AS type,
+                      2 AS seq,
+                      d.id,
+                      d.timestamp,
+                      d.type AS subtype,
+                      d.account_id AS account,
+                      d.asset_id AS asset,
+                      d.amount AS amount,
+                      NULL AS category,
+                      NULL AS price,
+                      d.tax AS fee_tax,
+                      a.organization_id AS peer,
+                      NULL AS tag
+                 FROM dividends AS d
+                      LEFT JOIN
+                      accounts AS a ON a.id = d.account_id
+               UNION ALL
+               SELECT 5 AS type,
+                      3 AS seq,
+                      a.id,
+                      a.timestamp,
+                      a.type AS subtype,
+                      a.account_id AS account,
+                      a.asset_id AS asset,
+                      a.qty AS amount,
+                      NULL AS category,
+                      a.qty_new AS price,
+                      a.basis_ratio AS fee_tax,
+                      a.asset_id_new AS peer,
+                      NULL AS tag
+                 FROM corp_actions AS a
+               UNION ALL
+               SELECT 3 AS type,
+                      4 AS seq,
+                      t.id,
+                      t.timestamp,
+                      iif(t.qty < 0, -1, 1) AS subtype,
+                      t.account_id AS account,
+                      t.asset_id AS asset,
+                      t.qty AS amount,
+                      NULL AS category,
+                      t.price AS price,
+                      t.fee AS fee_tax,
+                      a.organization_id AS peer,
+                      NULL AS tag
+                 FROM trades AS t
+                      LEFT JOIN
+                      accounts AS a ON a.id = t.account_id
+               UNION ALL
+               SELECT 4 AS type,
+                      5 AS seq,
+                      id,
+                      withdrawal_timestamp AS timestamp,
+-                     1 AS subtype,
+                      withdrawal_account AS account,
+                      asset AS asset,
+                      withdrawal AS amount,
+                      NULL AS category,
+                      NULL AS price,
+                      NULL AS fee_tax,
+                      NULL AS peer,
+                      NULL AS tag
+                 FROM transfers AS t
+               UNION ALL
+               SELECT 4 AS type,
+                      5 AS seq,
+                      id,
+                      withdrawal_timestamp AS timestamp,
+                      0 AS subtype,
+                      fee_account AS account,
+                      asset AS asset,
+                      fee AS amount,
+                      NULL AS category,
+                      NULL AS price,
+                      NULL AS fee_tax,
+                      NULL AS peer,
+                      NULL AS tag
+                 FROM transfers AS t
+                WHERE NOT fee_account IS NULL
+               UNION ALL
+               SELECT 4 AS type,
+                      5 AS seq,
+                      id,
+                      deposit_timestamp AS timestamp,
+                      1 AS subtype,
+                      deposit_account AS account,
+                      asset AS asset,
+                      deposit AS amount,
+                      NULL AS category,
+                      NULL AS price,
+                      NULL AS fee_tax,
+                      NULL AS peer,
+                      NULL AS tag
+                 FROM transfers AS t
+           )
+           AS at
+           LEFT JOIN
+           accounts AS a ON at.account = a.id
+     ORDER BY at.timestamp,
+              at.seq,
+              at.subtype,
+              at.id;
+--------------------------------------------------------------------------------
 -- Recreate view deals_ext to use ledger instead of ledger_sums
 DROP VIEW deals_ext;
 CREATE VIEW deals_ext AS
