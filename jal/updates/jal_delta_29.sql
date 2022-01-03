@@ -254,16 +254,11 @@ CREATE VIEW all_operations AS
                       a.name AS note,
                       a.full_name AS note2
                  FROM corp_actions AS ca
-                      LEFT JOIN
-                      assets AS a ON ca.asset_id_new = a.id
-                      LEFT JOIN
-                      sequence AS q ON q.type = 5 AND
-                                       ca.id = q.operation_id
-                      LEFT JOIN
-                      ledger AS l ON l.sid = q.id AND
-                                     l.asset_id = ca.asset_id_new AND
-                                     l.book_account = 4 AND
-                                     l.amount_acc > 0
+                      LEFT JOIN assets AS a ON ca.asset_id_new = a.id
+                      LEFT JOIN sequence AS q ON q.type = 5 AND ca.id = q.operation_id
+                      -- Left join accumulated sums but we need to take only last record
+                      LEFT JOIN (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledger WHERE book_account=4 GROUP BY sid)) AS l
+                      ON l.sid = q.id AND l.asset_id = ca.asset_id_new
                UNION ALL
                SELECT 3 AS type,
                       iif(t.qty < 0, -1, 1) AS subtype,
@@ -276,16 +271,14 @@ CREATE VIEW all_operations AS
                       t.qty AS qty_trid,
                       t.price AS price,
                       t.fee AS fee_tax,
-                      l.sum_amount AS t_qty,
+                      l.amount_acc AS t_qty,
                       t.note AS note,
                       NULL AS note2
                  FROM trades AS t
-                      LEFT JOIN
-                      sequence AS q ON q.type = 3 AND
-                                       t.id = q.operation_id
-                      LEFT JOIN
-                      ledger_sums AS l ON l.sid = q.id AND
-                                          l.book_account = 4
+                      LEFT JOIN sequence AS q ON q.type = 3 AND t.id = q.operation_id
+                      -- Left join accumulated sums but we need to take only last record
+                      LEFT JOIN (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledger WHERE book_account=4 GROUP BY sid)) AS l
+                      ON l.sid = q.id
                UNION ALL
                SELECT 4 AS type,
                       t.subtype,
