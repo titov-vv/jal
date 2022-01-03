@@ -524,6 +524,8 @@ CREATE INDEX by_book_account_asset_ts ON ledger_sums (
 -- View: all_operations
 DROP VIEW IF EXISTS all_operations;
 CREATE VIEW all_operations AS
+-- We will need accumulated sums from ledger, but only the last record if several available
+WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledger GROUP BY sid, book_account))
     SELECT m.type,
            m.subtype,
            m.id,
@@ -555,7 +557,7 @@ CREATE VIEW all_operations AS
                       o.alt_currency_id AS asset_id,
                       NULL AS qty_trid,
                       sum(d.amount_alt) AS price,
-                      coalesce(sum(d.amount_alt)/sum(d.amount), 0) AS fee_tax,
+                      coalesce(sum(d.amount_alt) / sum(d.amount), 0) AS fee_tax,
                       NULL AS t_qty,
                       GROUP_CONCAT(d.note, '|') AS note,
                       GROUP_CONCAT(c.name, '|') AS note2
@@ -576,22 +578,15 @@ CREATE VIEW all_operations AS
                       d.account_id,
                       d.amount AS amount,
                       d.asset_id,
-                      SUM(coalesce(l.amount, 0) ) AS qty_trid,
+                      NULL AS qty_trid,
                       NULL AS price,
                       d.tax AS fee_tax,
                       NULL AS t_qty,
                       d.note AS note,
                       c.name AS note2
                  FROM dividends AS d
-                      LEFT JOIN
-                      ledger AS l ON d.asset_id = l.asset_id AND
-                                     d.account_id = l.account_id AND
-                                     l.book_account = 4 AND
-                                     l.timestamp <= d.timestamp
-                      LEFT JOIN
-                      assets AS a ON d.asset_id = a.id
-                      LEFT JOIN
-                      countries AS c ON a.country_id = c.id
+                      LEFT JOIN assets AS a ON d.asset_id = a.id
+                      LEFT JOIN countries AS c ON a.country_id = c.id
                 GROUP BY d.id
                UNION ALL
                SELECT 5 AS type,
@@ -611,9 +606,7 @@ CREATE VIEW all_operations AS
                  FROM corp_actions AS ca
                       LEFT JOIN assets AS a ON ca.asset_id_new = a.id
                       LEFT JOIN sequence AS q ON q.type = 5 AND ca.id = q.operation_id
-                      -- Left join accumulated sums but we need to take only last record
-                      LEFT JOIN (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledger WHERE book_account=4 GROUP BY sid)) AS l
-                      ON l.sid = q.id AND l.asset_id = ca.asset_id_new
+                      LEFT JOIN _ledger_last AS l ON l.sid = q.id AND l.asset_id = ca.asset_id_new AND l.book_account = 4
                UNION ALL
                SELECT 3 AS type,
                       iif(t.qty < 0, -1, 1) AS subtype,
@@ -631,9 +624,7 @@ CREATE VIEW all_operations AS
                       NULL AS note2
                  FROM trades AS t
                       LEFT JOIN sequence AS q ON q.type = 3 AND t.id = q.operation_id
-                      -- Left join accumulated sums but we need to take only last record
-                      LEFT JOIN (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledger WHERE book_account=4 GROUP BY sid)) AS l
-                      ON l.sid = q.id
+                      LEFT JOIN _ledger_last AS l ON l.sid = q.id AND l.book_account = 4
                UNION ALL
                SELECT 4 AS type,
                       t.subtype,
@@ -689,21 +680,13 @@ CREATE VIEW all_operations AS
                       assets AS c ON c.id = a.currency_id
            )
            AS m
-           LEFT JOIN
-           accounts AS a ON m.account_id = a.id
-           LEFT JOIN
-           assets AS s ON m.asset_id = s.id
-           LEFT JOIN
-           assets AS c ON a.currency_id = c.id
-           LEFT JOIN
-           sequence AS q ON m.type = q.type AND
-                            m.subtype = q.subtype AND
-                            m.id = q.operation_id
-           LEFT JOIN (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledger WHERE book_account=3 GROUP BY sid)) AS money
-           ON money.sid = q.id AND money.account_id = m.account_id
-           LEFT JOIN (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledger WHERE book_account=5 GROUP BY sid)) AS debt
-           ON debt.sid = q.id AND debt.account_id = m.account_id
-           ORDER BY m.timestamp;
+           LEFT JOIN accounts AS a ON m.account_id = a.id
+           LEFT JOIN assets AS s ON m.asset_id = s.id
+           LEFT JOIN assets AS c ON a.currency_id = c.id
+           LEFT JOIN sequence AS q ON m.type = q.type AND m.subtype = q.subtype AND m.id = q.operation_id
+           LEFT JOIN _ledger_last AS money ON money.sid = q.id AND money.account_id = m.account_id AND money.book_account = 3
+           LEFT JOIN _ledger_last AS debt ON debt.sid = q.id AND debt.account_id = m.account_id AND debt.book_account = 5
+    ORDER BY m.timestamp;
 
 
 -- View: all_transactions
