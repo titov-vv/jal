@@ -74,7 +74,6 @@ class Ledger(QObject):
         self.current_seq = -1
         self.amounts = LedgerAmounts()    # store last amount for [book, account, asset]
         self.values = LedgerAmounts()     # together with corresponding value
-        self.sids = {}                    # and keep sid of operation that modified it
         self.main_window =None
         self.progress_bar = None
 
@@ -124,27 +123,6 @@ class Ledger(QObject):
                         (":amount_acc", self.amounts[(book, account_id, asset_id)]),
                         (":value_acc", self.values[(book, account_id, asset_id)]),
                         (":peer_id", peer_id), (":category_id", category_id), (":tag_id", tag_id)])
-        try:
-            old_sid = self.sids[(book, account_id, asset_id)]
-        except KeyError:
-            old_sid = -1
-        if seq_id == old_sid:
-            _ = executeSQL("UPDATE ledger_sums SET sum_amount = :new_amount, sum_value = :new_value"
-                           " WHERE sid = :sid AND book_account = :book"
-                           " AND asset_id = :asset_id AND account_id = :account_id",
-                           [(":new_amount", self.amounts[(book, account_id, asset_id)]),
-                            (":new_value", self.values[(book, account_id, asset_id)]), (":sid", seq_id),
-                            (":book", book), (":asset_id", asset_id), (":account_id", account_id)], commit=True)
-        else:
-            _ = executeSQL("INSERT INTO ledger_sums(sid, timestamp, book_account, "
-                           "asset_id, account_id, sum_amount, sum_value) "
-                           "VALUES(:sid, :timestamp, :book, :asset_id, "
-                           ":account_id, :new_amount, :new_value)",
-                           [(":sid", seq_id), (":timestamp", timestamp), (":book", book), (":asset_id", asset_id),
-                            (":account_id", account_id), (":new_amount", self.amounts[(book, account_id, asset_id)]),
-                            (":new_value", self.values[(book, account_id, asset_id)])],
-                           commit=True)
-            self.sids[(book, account_id, asset_id)] = seq_id
 
     # Returns Amount measured in current account currency or asset that 'book' has at current ledger frontier
     def getAmount(self, book, asset_id=None):
@@ -522,8 +500,6 @@ class Ledger(QObject):
 
         # Initialize arrays for rolling sums storage
         self.amounts = LedgerAmounts()
-        self.values = LedgerAmounts()
-        self.sids = {}
         if from_timestamp >= 0:
             frontier = from_timestamp
             operations_count = readSQL("SELECT COUNT(id) FROM all_transactions WHERE timestamp >= :frontier",
@@ -550,8 +526,7 @@ class Ledger(QObject):
                        "(SELECT coalesce(MIN(id), 0) FROM sequence WHERE timestamp >= :frontier)",
                        [(":frontier", frontier)])
         _ = executeSQL("DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
-        _ = executeSQL("DELETE FROM sequence WHERE timestamp >= :frontier", [(":frontier", frontier)])
-        _ = executeSQL("DELETE FROM ledger_sums WHERE timestamp >= :frontier", [(":frontier", frontier)], commit=True)
+        _ = executeSQL("DELETE FROM sequence WHERE timestamp >= :frontier", [(":frontier", frontier)], commit=True)
 
         db_triggers_disable()
         if fast_and_dirty:  # For 30k operations difference of execution time is - with 0:02:41 / without 0:11:44
