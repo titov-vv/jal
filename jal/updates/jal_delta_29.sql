@@ -221,7 +221,7 @@ WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledg
                       d.account_id,
                       d.amount AS amount,
                       d.asset_id,
-                      SUM(coalesce(l.amount, 0) ) AS qty_trid,
+                      NULL AS qty_trid,
                       NULL AS price,
                       d.tax AS fee_tax,
                       NULL AS t_qty,
