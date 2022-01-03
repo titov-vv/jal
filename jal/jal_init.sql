@@ -278,25 +278,6 @@ CREATE TABLE ledger (
 );
 
 
--- Table: ledger_sums
-DROP TABLE IF EXISTS ledger_sums;
-
-CREATE TABLE ledger_sums (
-    sid          INTEGER NOT NULL,
-    timestamp    INTEGER NOT NULL,
-    book_account INTEGER NOT NULL
-                         REFERENCES books (id) ON DELETE NO ACTION
-                                               ON UPDATE NO ACTION,
-    asset_id    INTEGER REFERENCES assets (id) ON DELETE SET NULL
-                                               ON UPDATE SET NULL,
-    account_id   INTEGER NOT NULL
-                         REFERENCES accounts (id) ON DELETE NO ACTION
-                                                  ON UPDATE NO ACTION,
-    sum_amount   REAL,
-    sum_value    REAL
-);
-
-
 -- Table: map_category
 DROP TABLE IF EXISTS map_category;
 
@@ -503,21 +484,6 @@ CREATE TABLE transfers (
 -- Index: agents_by_name_idx
 DROP INDEX IF EXISTS agents_by_name_idx;
 CREATE INDEX agents_by_name_idx ON agents (name);
-
-
--- Index: by_sid
-DROP INDEX IF EXISTS by_sid;
-CREATE INDEX by_sid ON ledger_sums (sid);
-
-
--- Index: by_book_account_asset_ts
-DROP INDEX IF EXISTS by_book_account_asset_ts;
-CREATE INDEX by_book_account_asset_ts ON ledger_sums (
-    book_account,
-    account_id,
-    asset_id,
-    timestamp
-);
 
 
 
@@ -916,12 +882,6 @@ BEGIN
                                    FROM actions
                                   WHERE id = OLD.pid
                              );
-    DELETE FROM ledger_sums
-          WHERE timestamp >= (
-                                 SELECT timestamp
-                                   FROM actions
-                                  WHERE id = OLD.pid
-                             );
 END;
 
 
@@ -940,12 +900,6 @@ BEGIN
                                   WHERE id = NEW.pid
                              );
     DELETE FROM sequence
-          WHERE timestamp >= (
-                                 SELECT timestamp
-                                   FROM actions
-                                  WHERE id = NEW.pid
-                             );
-    DELETE FROM ledger_sums
           WHERE timestamp >= (
                                  SELECT timestamp
                                    FROM actions
@@ -973,12 +927,6 @@ BEGIN
                                    FROM actions
                                   WHERE id = OLD.pid
                              );
-    DELETE FROM ledger_sums
-          WHERE timestamp >= (
-                                 SELECT timestamp
-                                   FROM actions
-                                  WHERE id = OLD.pid
-                             );
 END;
 
 -- Trigger: actions_after_delete
@@ -995,8 +943,6 @@ BEGIN
           WHERE timestamp >= OLD.timestamp;
     DELETE FROM sequence
           WHERE timestamp >= OLD.timestamp;
-    DELETE FROM ledger_sums
-          WHERE timestamp >= OLD.timestamp;
 END;
 
 -- Trigger: actions_after_insert
@@ -1010,8 +956,6 @@ BEGIN
     DELETE FROM ledger
           WHERE timestamp >= NEW.timestamp;
     DELETE FROM sequence
-          WHERE timestamp >= NEW.timestamp;
-    DELETE FROM ledger_sums
           WHERE timestamp >= NEW.timestamp;
 END;
 
@@ -1031,9 +975,6 @@ BEGIN
     DELETE FROM sequence
           WHERE timestamp >= OLD.timestamp OR
                 timestamp >= NEW.timestamp;
-    DELETE FROM ledger_sums
-          WHERE timestamp >= OLD.timestamp OR
-                timestamp >= NEW.timestamp;
 END;
 
 -- Trigger: dividends_after_delete
@@ -1048,8 +989,6 @@ BEGIN
           WHERE timestamp >= OLD.timestamp;
     DELETE FROM sequence
           WHERE timestamp >= OLD.timestamp;
-    DELETE FROM ledger_sums
-          WHERE timestamp >= OLD.timestamp;
 END;
 
 -- Trigger: dividends_after_insert
@@ -1063,8 +1002,6 @@ BEGIN
     DELETE FROM ledger
           WHERE timestamp >= NEW.timestamp;
     DELETE FROM sequence
-          WHERE timestamp >= NEW.timestamp;
-    DELETE FROM ledger_sums
           WHERE timestamp >= NEW.timestamp;
 END;
 
@@ -1086,9 +1023,6 @@ BEGIN
     DELETE FROM sequence
           WHERE timestamp >= OLD.timestamp OR
                 timestamp >= NEW.timestamp;
-    DELETE FROM ledger_sums
-          WHERE timestamp >= OLD.timestamp OR
-                timestamp >= NEW.timestamp;
 END;
 
 -- Trigger: trades_after_delete
@@ -1103,8 +1037,6 @@ BEGIN
           WHERE timestamp >= OLD.timestamp;
     DELETE FROM sequence
           WHERE timestamp >= OLD.timestamp;
-    DELETE FROM ledger_sums
-          WHERE timestamp >= OLD.timestamp;
 END;
 
 -- Trigger: trades_after_insert
@@ -1118,8 +1050,6 @@ BEGIN
     DELETE FROM ledger
           WHERE timestamp >= NEW.timestamp;
     DELETE FROM sequence
-          WHERE timestamp >= NEW.timestamp;
-    DELETE FROM ledger_sums
           WHERE timestamp >= NEW.timestamp;
 END;
 
@@ -1142,9 +1072,6 @@ BEGIN
     DELETE FROM sequence
           WHERE timestamp >= OLD.timestamp OR
                 timestamp >= NEW.timestamp;
-    DELETE FROM ledger_sums
-          WHERE timestamp >= OLD.timestamp OR
-                timestamp >= NEW.timestamp;
 END;
 
 -- Triggers for corp_actions table
@@ -1159,8 +1086,6 @@ BEGIN
           WHERE timestamp >= OLD.timestamp;
     DELETE FROM sequence
           WHERE timestamp >= OLD.timestamp;
-    DELETE FROM ledger_sums
-          WHERE timestamp >= OLD.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS corp_after_insert;
@@ -1173,8 +1098,6 @@ BEGIN
     DELETE FROM ledger
           WHERE timestamp >= NEW.timestamp;
     DELETE FROM sequence
-          WHERE timestamp >= NEW.timestamp;
-    DELETE FROM ledger_sums
           WHERE timestamp >= NEW.timestamp;
 END;
 
@@ -1197,9 +1120,6 @@ BEGIN
     DELETE FROM sequence
           WHERE timestamp >= OLD.timestamp OR
                 timestamp >= NEW.timestamp;
-    DELETE FROM ledger_sums
-          WHERE timestamp >= OLD.timestamp OR
-                timestamp >= NEW.timestamp;
 END;
 
 -- Trigger: transfers_after_delete
@@ -1214,8 +1134,6 @@ BEGIN
           WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp;
     DELETE FROM sequence
           WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp;
-    DELETE FROM ledger_sums
-          WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp;
 END;
 
 -- Trigger: transfers_after_insert
@@ -1229,8 +1147,6 @@ BEGIN
     DELETE FROM ledger
           WHERE timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
     DELETE FROM sequence
-          WHERE timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
-    DELETE FROM ledger_sums
           WHERE timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
 END;
 
@@ -1254,9 +1170,6 @@ BEGIN
           WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp OR
                 timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
     DELETE FROM sequence
-          WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp OR
-                timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
-    DELETE FROM ledger_sums
           WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp OR
                 timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
 END;
