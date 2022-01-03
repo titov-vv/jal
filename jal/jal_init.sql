@@ -605,7 +605,7 @@ CREATE VIEW all_operations AS
                       ca.qty_new AS qty_trid,
                       ca.basis_ratio AS price,
                       ca.type AS fee_tax,
-                      l.sum_amount AS t_qty,
+                      l.amount_acc AS t_qty,
                       a.name AS note,
                       a.full_name AS note2
                  FROM corp_actions AS ca
@@ -615,9 +615,10 @@ CREATE VIEW all_operations AS
                       sequence AS q ON q.type = 5 AND
                                        ca.id = q.operation_id
                       LEFT JOIN
-                      ledger_sums AS l ON l.sid = q.id AND
-                                          l.asset_id = ca.asset_id_new AND
-                                          l.book_account = 4
+                      ledger AS l ON l.sid = q.id AND
+                                     l.asset_id = ca.asset_id_new AND
+                                     l.book_account = 4 AND
+                                     l.amount_acc > 0
                UNION ALL
                SELECT 3 AS type,
                       iif(t.qty < 0, -1, 1) AS subtype,
