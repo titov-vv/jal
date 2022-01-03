@@ -5,9 +5,7 @@ PRAGMA foreign_keys = 0;
 -- Move accumulated value and amount fields from ledger_sums to ledger table
 --------------------------------------------------------------------------------
 CREATE TABLE sqlitestudio_temp_table AS SELECT * FROM ledger;
-
 DROP TABLE ledger;
-
 CREATE TABLE ledger (
     id           INTEGER PRIMARY KEY
                          NOT NULL
@@ -185,7 +183,7 @@ CREATE VIEW all_operations AS
            m.qty_trid,
            m.price,
            m.fee_tax,
-           iif(coalesce(money.sum_amount, 0) > 0, money.sum_amount, coalesce(debt.sum_amount, 0) ) AS t_amount,
+           iif(coalesce(money.amount_acc, 0) > 0, money.amount_acc, coalesce(debt.amount_acc, 0) ) AS t_amount,
            m.t_qty,
            c.name AS currency,
            CASE WHEN m.timestamp <= a.reconciled_on THEN 1 ELSE 0 END AS reconciled
@@ -344,14 +342,10 @@ CREATE VIEW all_operations AS
            sequence AS q ON m.type = q.type AND
                             m.subtype = q.subtype AND
                             m.id = q.operation_id
-           LEFT JOIN
-           ledger_sums AS money ON money.sid = q.id AND
-                                   money.account_id = m.account_id AND
-                                   money.book_account = 3
-           LEFT JOIN
-           ledger_sums AS debt ON debt.sid = q.id AND
-                                  debt.account_id = m.account_id AND
-                                  debt.book_account = 5
+           LEFT JOIN (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledger WHERE book_account=3 GROUP BY sid)) AS money
+           ON money.sid = q.id AND money.account_id = m.account_id
+           LEFT JOIN (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledger WHERE book_account=5 GROUP BY sid)) AS debt
+           ON debt.sid = q.id AND debt.account_id = m.account_id
      ORDER BY m.timestamp;
 --------------------------------------------------------------------------------
 -- Recreate view deals_ext to use ledger instead of ledger_sums
