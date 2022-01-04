@@ -7,6 +7,7 @@ from jal.constants import Setup, BookAccount, TransactionType, TransferSubtype, 
     CorporateAction, PredefinedCategory, PredefinedPeer
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord, db_triggers_disable, db_triggers_enable
 from jal.db.db import JalDB
+from jal.db.settings import JalSettings
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
 
 
@@ -512,6 +513,7 @@ class Ledger(QObject):
                 if QMessageBox().warning(None, self.tr("Confirmation"), f"{operations_count}" +
                                          self.tr(" operations require rebuild. Do you want to do it right now?"),
                                          QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
+                    JalSettings().setValue('RebuildDB', 1)
                     return
         if operations_count == 0:
             logging.info(self.tr("Leger is empty"))
@@ -556,6 +558,7 @@ class Ledger(QObject):
 
         if self.progress_bar is not None:
             self.main_window.showProgressBar(False)
+        JalSettings().setValue('RebuildDB', 0)
         logging.info(self.tr("Ledger is complete. Elapsed time: ") + f"{datetime.now() - start_time}" +
                      self.tr(", new frontier: ") + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
 

@@ -2,7 +2,7 @@ import os
 import logging
 from functools import partial
 
-from PySide6.QtCore import Qt, Slot, QDateTime, QDir, QLocale
+from PySide6.QtCore import Qt, Slot, QDateTime, QDir, QLocale, QMetaObject
 from PySide6.QtGui import QIcon, QActionGroup, QAction
 from PySide6.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox, QLabel, QProgressBar
 
@@ -33,6 +33,7 @@ from jal.widgets.price_chart import ChartWindow
 class MainWindow(QMainWindow, Ui_JAL_MainWindow):
     def __init__(self, language):
         QMainWindow.__init__(self, None)
+        self.running = False
         self.setupUi(self)
 
         self.currentLanguage = language
@@ -172,6 +173,22 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.statements.load_completed.connect(self.onStatementImport)
         self.ledger.updated.connect(self.balances_model.update)
         self.ledger.updated.connect(self.holdings_model.update)
+
+    @Slot()
+    def showEvent(self, event):
+        super().showEvent(event)
+        if self.running:
+            return
+        self.running = True
+        # Call slot via queued connection so it's called from the UI thread after the window has been shown
+        QMetaObject().invokeMethod(self, "afterShowEvent", Qt.ConnectionType.QueuedConnection)
+
+    @Slot()
+    def afterShowEvent(self):
+        if JalSettings().getValue('RebuildDB', 0) == 1:
+            if QMessageBox().warning(self, self.tr("Confirmation"), self.tr("Ledger isn't complete. Rebuild it now?"),
+                                     QMessageBox.Yes, QMessageBox.No) == QMessageBox.Yes:
+                self.ledger.rebuild()
 
     @Slot()
     def closeEvent(self, event):

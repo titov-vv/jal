@@ -5,6 +5,7 @@ PRAGMA foreign_keys = 0;
 -- Move accumulated value and amount fields from ledger_sums to ledger table
 --------------------------------------------------------------------------------
 DROP TABLE ledger;
+DELETE FROM sequence;  -- Clean sequence as we will need re-create ledger
 CREATE TABLE ledger (
     id           INTEGER PRIMARY KEY
                          NOT NULL
