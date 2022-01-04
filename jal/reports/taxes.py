@@ -399,25 +399,26 @@ class TaxesRus:
                        "UNION "
                        "SELECT t.timestamp AS ref_id "
                        "FROM deals AS d "
-                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 3 "
+                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = :trade "
                        "LEFT JOIN trades AS t ON s.operation_id=t.id "
                        "WHERE d.account_id = :account_id "
                        "UNION "
                        "SELECT c.settlement AS ref_id "
                        "FROM deals AS d "
-                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 3 "
+                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = :trade "
                        "LEFT JOIN trades AS c ON s.operation_id=c.id "
                        "WHERE d.account_id = :account_id "
                        "UNION "
                        "SELECT o.timestamp AS ref_id "
                        "FROM deals AS d "
-                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = 5 "
+                       "LEFT JOIN sequence AS s ON (s.id=d.open_sid OR s.id=d.close_sid) AND s.type = :corp_action "
                        "LEFT JOIN corp_actions AS o ON s.operation_id=o.id "
                        "WHERE d.account_id = :account_id) "
                        "LEFT JOIN accounts AS a ON a.id = :account_id "
                        "LEFT JOIN quotes AS q ON ref_id >= q.timestamp AND a.currency_id=q.asset_id "
                        "WHERE ref_id IS NOT NULL "
-                       "GROUP BY ref_id", [(":account_id", self.account_id)], commit=True)
+                       "GROUP BY ref_id", [(":account_id", self.account_id), (":trade", TransactionType.Trade),
+                                           (":corp_action", TransactionType.CorporateAction)], commit=True)
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_dividends(self):
@@ -477,9 +478,9 @@ class TaxesRus:
                            "qcs.quote AS cs_rate, c.price AS c_price, c.qty AS c_qty, c.fee AS c_fee, "
                            "SUM(coalesce(-sd.amount*qsd.quote, 0)) AS s_dividend "  # Dividend paid for short position
                            "FROM deals AS d "
-                           "JOIN sequence AS os ON os.id=d.open_sid AND os.type = 3 "
+                           "JOIN sequence AS os ON os.id=d.open_sid AND os.type = :trade "
                            "LEFT JOIN trades AS o ON os.operation_id=o.id "
-                           "JOIN sequence AS cs ON cs.id=d.close_sid AND cs.type = 3 "
+                           "JOIN sequence AS cs ON cs.id=d.close_sid AND cs.type = :trade "
                            "LEFT JOIN trades AS c ON cs.operation_id=c.id "
                            "LEFT JOIN assets AS s ON o.asset_id=s.id "
                            "LEFT JOIN accounts AS a ON a.id = :account_id "
@@ -501,7 +502,8 @@ class TaxesRus:
                            "GROUP BY d.rowid "  # to prevent collapse to 1 line if 'sd' values are NULL
                            "ORDER BY s.name, o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
-                            (":stock", PredefinedAsset.Stock), (":fund", PredefinedAsset.ETF)])
+                            (":trade", TransactionType.Trade), (":stock", PredefinedAsset.Stock),
+                            (":fund", PredefinedAsset.ETF)])
         start_row = self.data_start_row
         data_row = 0
         while query.next():
@@ -564,10 +566,10 @@ class TaxesRus:
                            "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, c.number AS c_number, "
                            "qcs.quote AS cs_rate, c.price AS c_price, c.qty AS c_qty, c.fee AS c_fee, ci.amount AS c_int "
                            "FROM deals AS d "
-                           "JOIN sequence AS os ON os.id=d.open_sid AND os.type = 3 "
+                           "JOIN sequence AS os ON os.id=d.open_sid AND os.type = :trade "
                            "LEFT JOIN trades AS o ON os.operation_id=o.id "
                            "LEFT JOIN dividends AS oi ON oi.account_id=:account_id AND oi.number=o.number AND oi.timestamp=o.timestamp AND oi.asset_id=o.asset_id "
-                           "JOIN sequence AS cs ON cs.id=d.close_sid AND cs.type = 3 "
+                           "JOIN sequence AS cs ON cs.id=d.close_sid AND cs.type = :trade "
                            "LEFT JOIN trades AS c ON cs.operation_id=c.id "
                            "LEFT JOIN dividends AS ci ON ci.account_id=:account_id AND ci.number=c.number AND ci.timestamp=c.timestamp AND ci.asset_id=c.asset_id "
                            "LEFT JOIN assets AS s ON o.asset_id=s.id "
@@ -585,7 +587,7 @@ class TaxesRus:
                            "AND s.type_id = :bond "
                            "ORDER BY s.name, o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
-                            (":bond", PredefinedAsset.Bond)])
+                            (":trade", TransactionType.Trade), (":bond", PredefinedAsset.Bond)])
         start_row = self.data_start_row
         data_row = 0
         while query.next():
@@ -685,9 +687,9 @@ class TaxesRus:
                            "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, c.number AS c_number, "
                            "qcs.quote AS cs_rate, c.price AS c_price, c.qty AS c_qty, c.fee AS c_fee "
                            "FROM deals AS d "
-                           "JOIN sequence AS os ON os.id=d.open_sid AND os.type = 3 "
+                           "JOIN sequence AS os ON os.id=d.open_sid AND os.type = :trade "
                            "LEFT JOIN trades AS o ON os.operation_id=o.id "
-                           "JOIN sequence AS cs ON cs.id=d.close_sid AND cs.type = 3 "
+                           "JOIN sequence AS cs ON cs.id=d.close_sid AND cs.type = :trade "
                            "LEFT JOIN trades AS c ON cs.operation_id=c.id "
                            "LEFT JOIN assets AS s ON o.asset_id=s.id "
                            "LEFT JOIN accounts AS a ON a.id = :account_id "
@@ -703,8 +705,8 @@ class TaxesRus:
                            "WHERE c.settlement>=:begin AND c.settlement<:end AND d.account_id=:account_id "
                            "AND s.type_id = :derivative "
                            "ORDER BY s.name, o.timestamp, c.timestamp",
-                           [(":begin", self.year_begin), (":end", self.year_end),
-                            (":account_id", self.account_id), (":derivative", PredefinedAsset.Derivative)])
+                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
+                            (":trade", TransactionType.Trade), (":derivative", PredefinedAsset.Derivative)])
         start_row = self.data_start_row
         data_row = 0
         while query.next():
@@ -805,8 +807,8 @@ class TaxesRus:
                            "t.timestamp AS t_date, qt.quote AS t_rate, t.settlement AS s_date, qts.quote AS s_rate, "
                            "t.price AS price, t.fee AS fee, s.full_name AS full_name, s.isin AS isin "
                            "FROM deals AS d "
-                           "JOIN sequence AS os ON os.id=d.open_sid AND os.type = 5 "
-                           "JOIN sequence AS cs ON cs.id=d.close_sid AND cs.type = 3 "
+                           "JOIN sequence AS os ON os.id=d.open_sid AND os.type = :corp_action "
+                           "JOIN sequence AS cs ON cs.id=d.close_sid AND cs.type = :trade "
                            "LEFT JOIN trades AS t ON cs.operation_id=t.id "
                            "LEFT JOIN assets AS s ON t.asset_id=s.id "
                            "LEFT JOIN accounts AS a ON a.id = :account_id "
@@ -816,7 +818,8 @@ class TaxesRus:
                            "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id "
                            "WHERE t.settlement<:end AND d.account_id=:account_id "
                            "ORDER BY s.name, t.timestamp",
-                           [(":end", self.year_end), (":account_id", self.account_id)])
+                           [(":end", self.year_end), (":account_id", self.account_id),
+                            (":trade", TransactionType.Trade), (":corp_action", TransactionType.CorporateAction)])
         row = self.data_start_row
         even_odd = 1
         basis = 1
@@ -868,10 +871,11 @@ class TaxesRus:
         # get list of deals that were closed as result of current corporate action
         open_query = executeSQL("SELECT d.open_sid AS open_sid, os.type AS op_type "
                                 "FROM deals AS d "
-                                "JOIN sequence AS os ON os.id=d.open_sid AND (os.type = 3 OR os.type = 5) "
+                                "JOIN sequence AS os ON os.id=d.open_sid AND (os.type = :trade OR os.type = :corp_action) "
                                 "WHERE d.close_sid = :sid "
                                 "ORDER BY d.open_sid",
-                                [(":sid", sid)])
+                                [(":sid", sid), (":trade", TransactionType.Trade),
+                                 (":corp_action", TransactionType.CorporateAction)])
         while open_query.next():
             open_sid, op_type = readSQLrecord(open_query)
 
@@ -892,7 +896,7 @@ class TaxesRus:
                            "t.timestamp AS t_date, qt.quote AS t_rate, t.number AS trade_number, "
                            "t.settlement AS s_date, qts.quote AS s_rate, t.price AS price, t.fee AS fee "
                            "FROM sequence AS os "
-                           "JOIN deals AS d ON os.id=d.open_sid AND os.type = 3 "
+                           "JOIN deals AS d ON os.id=d.open_sid AND os.type = :trade "
                            "LEFT JOIN trades AS t ON os.operation_id=t.id "
                            "LEFT JOIN assets AS s ON t.asset_id=s.id "
                            "LEFT JOIN accounts AS a ON a.id = t.account_id "
@@ -902,7 +906,7 @@ class TaxesRus:
                            "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id "
                            "LEFT JOIN t_last_assets AS lq ON lq.id = t.id "
                            "WHERE os.id = :sid",
-                           [(":sid", sid)], named=True)
+                           [(":sid", sid), (":trade", TransactionType.Trade)], named=True)
         if purchase['qty'] <= (2 * Setup.CALC_TOLERANCE):
             return row, proceed_qty  # This trade was fully mached before
 

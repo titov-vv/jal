@@ -246,27 +246,29 @@ class Ledger(QObject):
                 last_qty = readSQL("SELECT coalesce(SUM(qty), 0) AS qty FROM ( "
                                    "SELECT ABS(t.qty) AS qty "
                                    "FROM sequence AS s "
-                                   "LEFT JOIN trades AS t ON t.id=s.operation_id AND s.type=3 "
+                                   "LEFT JOIN trades AS t ON t.id=s.operation_id AND s.type=t.op_type "
                                    "WHERE s.id=:last_sid "
                                    "UNION ALL "
                                    "SELECT "
                                    "CASE "
-                                   "    WHEN ca.type = 2 AND ca.asset_id=:asset_id THEN ca.qty "
+                                   "    WHEN ca.type=:spinoff AND ca.asset_id=:asset_id THEN ca.qty "
                                    "    ELSE ca.qty_new "
                                    "END AS qty "
                                    "FROM sequence AS s "
-                                   "LEFT JOIN corp_actions AS ca ON ca.id=s.operation_id AND s.type=5 "
+                                   "LEFT JOIN corp_actions AS ca ON ca.id=s.operation_id AND s.type=ca.op_type "
                                    "WHERE s.id=:last_sid "
                                    ")",
-                                   [(":asset_id", asset_id), (":last_sid", last_sid)])
+                                   [(":asset_id", asset_id), (":last_sid", last_sid),
+                                    (":spinoff", CorporateAction.SpinOff)])
                 # Collect quantity of all deals where this last opposite trade participated (positive value)
                 # If it was a corporate action we need to take only where it was an opening of the deal
                 deals_qty = readSQL("SELECT coalesce(SUM(ABS(qty)), 0) "   
                                     "FROM deals AS d "
                                     "LEFT JOIN sequence AS s ON s.id=d.close_sid "
                                     "WHERE account_id=:account_id AND asset_id=:asset_id "
-                                    "AND (open_sid=:last_sid OR close_sid=:last_sid) AND s.type!=5",
-                                    [(":account_id", account_id), (":asset_id", asset_id), (":last_sid", last_sid)])
+                                    "AND (open_sid=:last_sid OR close_sid=:last_sid) AND s.type!=:corp_action",
+                                    [(":account_id", account_id), (":asset_id", asset_id),
+                                     (":last_sid", last_sid), (":corp_action", TransactionType.CorporateAction)])
                 reminder = last_qty - deals_qty
                 # if last trade is fully matched (reminder<=0) we start from next trade, otherwise we need to shift by 1
                 if reminder > 0:
@@ -286,27 +288,27 @@ class Ledger(QObject):
             # Get a list of all previous not matched trades or corporate actions of opposite direction (type parameter)
             query = executeSQL("SELECT * FROM ("
                                "SELECT s.id, ABS(t.qty), t.price FROM trades AS t "
-                               "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
+                               "LEFT JOIN sequence AS s ON s.type = t.op_type AND s.operation_id=t.id "
                                "WHERE (:type)*qty < 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
                                "AND s.id < :sid AND s.id > :last_sid "
                                "UNION ALL "
                                "SELECT s.id, "
                                "CASE "
-                               "    WHEN c.type = 2 AND c.asset_id=:asset_id THEN c.qty "
+                               "    WHEN c.type=:spinoff AND c.asset_id=:asset_id THEN c.qty "
                                "    ELSE c.qty_new "
                                "END AS qty, "
                                "CASE "
-                               "    WHEN c.type = 2 AND c.asset_id=:asset_id THEN coalesce(l.value/c.qty, 0) "
+                               "    WHEN c.type=:spinoff AND c.asset_id=:asset_id THEN coalesce(l.value/c.qty, 0) "
                                "    ELSE coalesce(l.value/c.qty_new, 0) "
                                "END AS price "
                                "FROM corp_actions AS c "
-                               "LEFT JOIN sequence AS s ON s.type = 5 AND s.operation_id=c.id "
+                               "LEFT JOIN sequence AS s ON s.type = c.op_type AND s.operation_id=c.id "
                                "LEFT JOIN ledger AS l ON s.id = l.sid AND l.asset_id=:asset_id AND l.value > 0 "
-                               "WHERE (:type)*c.qty_new < 0 AND (c.asset_id_new=:asset_id OR (c.asset_id=:asset_id AND c.type=2)) AND c.account_id=:account_id "
+                               "WHERE (:type)*c.qty_new < 0 AND (c.asset_id_new=:asset_id OR (c.asset_id=:asset_id AND c.type=:spinoff)) AND c.account_id=:account_id "
                                "AND s.id < :sid AND s.id > :last_sid "
                                ")ORDER BY id",
                                [(":type", type), (":asset_id", asset_id), (":account_id", account_id),
-                                (":sid", seq_id), (":last_sid", last_sid)])
+                                (":sid", seq_id), (":last_sid", last_sid), (":spinoff", CorporateAction.SpinOff)])
             while query.next():  # Perform match ("closure") of previous trades
                 deal_sid, deal_qty, deal_price = readSQLrecord(query)    # deal_sid -> trade_sid
                 if reminder > 0:
@@ -406,8 +408,8 @@ class Ledger(QObject):
         # Next get information about abs trade quantity that was in this last deal
         last_qty = readSQL("SELECT coalesce(ABS(t.qty), 0)+coalesce(ABS(ca.qty_new) , 0) AS qty "
                            "FROM sequence AS s "
-                           "LEFT JOIN trades AS t ON t.id=s.operation_id AND s.type=3 "
-                           "LEFT JOIN corp_actions AS ca ON ca.id=s.operation_id AND s.type=5 "
+                           "LEFT JOIN trades AS t ON t.id=s.operation_id AND s.type=t.op_type "
+                           "LEFT JOIN corp_actions AS ca ON ca.id=s.operation_id AND s.type=ca.op_type "
                            "WHERE s.id=:last_sid", [(":last_sid", last_sid)])
         last_qty = 0 if last_qty is None else last_qty
         # Collect quantity of all deals where this last opposite trade participated (positive value)
@@ -424,18 +426,18 @@ class Ledger(QObject):
         # Get a list of all previous not matched trades or corporate actions of opposite direction (type parameter)
         query = executeSQL("SELECT * FROM ("
                            "SELECT s.id, ABS(t.qty), t.price FROM trades AS t "
-                           "LEFT JOIN sequence AS s ON s.type = 3 AND s.operation_id=t.id "
+                           "LEFT JOIN sequence AS s ON s.type = t.op_type AND s.operation_id=t.id "
                            "WHERE qty > 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
                            "AND s.id < :sid AND s.id > :last_sid "
                            "UNION ALL "
                            "SELECT s.id, ABS(c.qty_new), coalesce(l.value/c.qty_new, 0) AS price FROM corp_actions AS c "
-                           "LEFT JOIN sequence AS s ON s.type = 5 AND s.operation_id=c.id "
+                           "LEFT JOIN sequence AS s ON s.type = c.op_type AND s.operation_id=c.id "
                            "LEFT JOIN ledger AS l ON s.id = l.sid AND l.asset_id=c.asset_id_new AND l.value > 0 "
                            "WHERE c.qty_new > 0 AND c.asset_id_new=:asset_id AND c.account_id=:account_id "
                            "AND s.id < :sid AND s.id > :last_sid "
                            "UNION ALL "  # Next part is for spin-offs that where data might be in old part
                            "SELECT s.id, ABS(c.qty), coalesce(l.value/c.qty, 0) AS price FROM corp_actions AS c "
-                           "LEFT JOIN sequence AS s ON s.type = 5 AND s.operation_id=c.id "
+                           "LEFT JOIN sequence AS s ON s.type = c.op_type AND s.operation_id=c.id "
                            "LEFT JOIN ledger AS l ON s.id = l.sid AND l.asset_id=c.asset_id AND l.value > 0 "
                            "WHERE c.qty_new > 0 AND c.asset_id=:asset_id AND c.type=:spinoff AND c.account_id=:account_id "
                            "AND s.id < :sid AND s.id > :last_sid "

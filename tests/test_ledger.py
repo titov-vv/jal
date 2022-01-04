@@ -1,7 +1,7 @@
 from pytest import approx
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo, prepare_db_ledger
-from constants import PredefinedAsset
+from constants import PredefinedAsset, TransactionType
 from jal.db.ledger import Ledger
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
 
@@ -244,15 +244,17 @@ def test_fifo(prepare_db_fifo):
     assert readSQL("SELECT COUNT(*) FROM deals AS d "
                    "LEFT JOIN sequence as os ON os.id = d.open_sid "
                    "LEFT JOIN sequence as cs ON cs.id = d.close_sid "
-                   "WHERE os.type=3 AND cs.type=3") == 27
+                   "WHERE os.type=:trade AND cs.type=:trade", [(":trade", TransactionType.Trade)]) == 27
     assert readSQL("SELECT COUNT(*) FROM deals AS d "
                    "LEFT JOIN sequence as os ON os.id = d.open_sid "
                    "LEFT JOIN sequence as cs ON cs.id = d.close_sid "
-                   "WHERE os.type!=5 OR cs.type!=5") == 37
+                   "WHERE os.type!=:corp_action OR cs.type!=:corp_action",
+                   [(":corp_action", TransactionType.CorporateAction)]) == 37
     assert readSQL("SELECT COUNT(*) FROM deals AS d "
                     "LEFT JOIN sequence as os ON os.id = d.open_sid "
                    "LEFT JOIN sequence as cs ON cs.id = d.close_sid "
-                   "WHERE os.type=5 AND cs.type=5") == 4
+                   "WHERE os.type=:corp_action AND cs.type=:corp_action",
+                   [(":corp_action", TransactionType.CorporateAction)]) == 4
 
     # validate final amounts
     query = executeSQL("SELECT MAX(sid) AS msid, asset_id, amount_acc, value_acc FROM ledger GROUP BY asset_id")

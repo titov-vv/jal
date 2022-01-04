@@ -522,7 +522,7 @@ WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledg
            c.name AS currency,
            CASE WHEN m.timestamp <= a.reconciled_on THEN 1 ELSE 0 END AS reconciled
       FROM (
-               SELECT 1 AS type,
+               SELECT o.op_type AS type,
                       iif(SUM(d.amount) < 0, -1, 1) AS subtype,
                       o.id,
                       timestamp,
@@ -545,7 +545,7 @@ WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledg
                       categories AS c ON c.id = d.category_id
                 GROUP BY o.id
                UNION ALL
-               SELECT 2 AS type,
+               SELECT d.op_type AS type,
                       d.type AS subtype,
                       d.id,
                       d.timestamp,
@@ -564,7 +564,7 @@ WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledg
                       LEFT JOIN countries AS c ON a.country_id = c.id
                 GROUP BY d.id
                UNION ALL
-               SELECT 5 AS type,
+               SELECT ca.op_type AS type,
                       ca.type AS subtype,
                       ca.id,
                       ca.timestamp,
@@ -583,7 +583,7 @@ WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledg
                       LEFT JOIN sequence AS q ON q.type = 5 AND ca.id = q.operation_id
                       LEFT JOIN _ledger_last AS l ON l.sid = q.id AND l.asset_id = ca.asset_id_new AND l.book_account = 4
                UNION ALL
-               SELECT 3 AS type,
+               SELECT t.op_type AS type,
                       iif(t.qty < 0, -1, 1) AS subtype,
                       t.id,
                       t.timestamp,
@@ -601,7 +601,7 @@ WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledg
                       LEFT JOIN sequence AS q ON q.type = 3 AND t.id = q.operation_id
                       LEFT JOIN _ledger_last AS l ON l.sid = q.id AND l.book_account = 4
                UNION ALL
-               SELECT 4 AS type,
+               SELECT t.op_type AS type,
                       t.subtype,
                       t.id,
                       t.timestamp,
@@ -616,7 +616,7 @@ WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledg
                       t.note,
                       a.name AS note2
                  FROM (
-                          SELECT id,
+                          SELECT op_type, id,
                                  withdrawal_timestamp AS timestamp,
                                  withdrawal_account AS account_id,
                                  deposit_account AS account2_id,
@@ -626,7 +626,7 @@ WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledg
                                  note
                             FROM transfers
                           UNION ALL
-                          SELECT id,
+                          SELECT op_type, id,
                                  withdrawal_timestamp AS timestamp,
                                  fee_account AS account_id,
                                  NULL AS account2_id,
@@ -637,7 +637,7 @@ WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledg
                             FROM transfers
                            WHERE NOT fee IS NULL
                           UNION ALL
-                          SELECT id,
+                          SELECT op_type, id,
                                  deposit_timestamp AS timestamp,
                                  deposit_account AS account_id,
                                  withdrawal_account AS account2_id,
@@ -670,7 +670,7 @@ CREATE VIEW all_transactions AS
     SELECT at.*,
            a.currency_id AS currency
       FROM (
-               SELECT 1 AS type,
+               SELECT a.op_type AS type,
                       1 AS seq,
                       a.id,
                       a.timestamp,
@@ -688,7 +688,7 @@ CREATE VIEW all_transactions AS
                       action_details AS d ON a.id = d.pid
                 GROUP BY a.id
                UNION ALL
-               SELECT 2 AS type,
+               SELECT d.op_type AS type,
                       2 AS seq,
                       d.id,
                       d.timestamp,
@@ -705,7 +705,7 @@ CREATE VIEW all_transactions AS
                       LEFT JOIN
                       accounts AS a ON a.id = d.account_id
                UNION ALL
-               SELECT 5 AS type,
+               SELECT a.op_type AS type,
                       3 AS seq,
                       a.id,
                       a.timestamp,
@@ -720,7 +720,7 @@ CREATE VIEW all_transactions AS
                       NULL AS tag
                  FROM corp_actions AS a
                UNION ALL
-               SELECT 3 AS type,
+               SELECT t.op_type AS type,
                       4 AS seq,
                       t.id,
                       t.timestamp,
@@ -737,7 +737,7 @@ CREATE VIEW all_transactions AS
                       LEFT JOIN
                       accounts AS a ON a.id = t.account_id
                UNION ALL
-               SELECT 4 AS type,
+               SELECT op_type AS type,
                       5 AS seq,
                       id,
                       withdrawal_timestamp AS timestamp,
@@ -752,7 +752,7 @@ CREATE VIEW all_transactions AS
                       NULL AS tag
                  FROM transfers AS t
                UNION ALL
-               SELECT 4 AS type,
+               SELECT op_type AS type,
                       5 AS seq,
                       id,
                       withdrawal_timestamp AS timestamp,
@@ -768,7 +768,7 @@ CREATE VIEW all_transactions AS
                  FROM transfers AS t
                  WHERE NOT fee_account IS NULL
                UNION ALL
-               SELECT 4 AS type,
+               SELECT op_type AS type,
                       5 AS seq,
                       id,
                       deposit_timestamp AS timestamp,
