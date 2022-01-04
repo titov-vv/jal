@@ -4,7 +4,6 @@ PRAGMA foreign_keys = 0;
 --------------------------------------------------------------------------------
 -- Move accumulated value and amount fields from ledger_sums to ledger table
 --------------------------------------------------------------------------------
-CREATE TABLE sqlitestudio_temp_table AS SELECT * FROM ledger;
 DROP TABLE ledger;
 CREATE TABLE ledger (
     id           INTEGER PRIMARY KEY
@@ -31,12 +30,6 @@ CREATE TABLE ledger (
     tag_id       INTEGER REFERENCES tags (id) ON DELETE NO ACTION
                                               ON UPDATE NO ACTION
 );
-
-INSERT INTO ledger (id, timestamp, sid, book_account, asset_id, account_id, amount, value, peer_id, category_id, tag_id)
-            SELECT id, timestamp, sid, book_account, asset_id, account_id, amount, value, peer_id, category_id, tag_id
-            FROM sqlitestudio_temp_table;
-
-DROP TABLE sqlitestudio_temp_table;
 --------------------------------------------------------------------------------
 -- Change order of transaction processing in all_transactions view (corp.actions should go before trades)
 DROP VIEW IF EXISTS all_transactions;
@@ -750,4 +743,5 @@ PRAGMA foreign_keys = 1;
 --------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=29 WHERE name='SchemaVersion';
+INSERT OR REPLACE INTO settings(id, name, value) VALUES (7, 'RebuildDB', 1);
 COMMIT;

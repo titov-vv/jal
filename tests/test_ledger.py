@@ -244,7 +244,7 @@ def test_fifo(prepare_db_fifo):
     assert readSQL("SELECT COUNT(*) FROM deals AS d "
                    "LEFT JOIN sequence as os ON os.id = d.open_sid "
                    "LEFT JOIN sequence as cs ON cs.id = d.close_sid "
-                   "WHERE os.type==3 AND cs.type==3") == 27
+                   "WHERE os.type=3 AND cs.type=3") == 27
     assert readSQL("SELECT COUNT(*) FROM deals AS d "
                    "LEFT JOIN sequence as os ON os.id = d.open_sid "
                    "LEFT JOIN sequence as cs ON cs.id = d.close_sid "
@@ -252,7 +252,7 @@ def test_fifo(prepare_db_fifo):
     assert readSQL("SELECT COUNT(*) FROM deals AS d "
                     "LEFT JOIN sequence as os ON os.id = d.open_sid "
                    "LEFT JOIN sequence as cs ON cs.id = d.close_sid "
-                   "WHERE os.type==5 AND cs.type==5") == 4
+                   "WHERE os.type=5 AND cs.type=5") == 4
 
     # validate final amounts
     query = executeSQL("SELECT MAX(sid) AS msid, asset_id, amount_acc, value_acc FROM ledger GROUP BY asset_id")
