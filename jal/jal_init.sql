@@ -75,6 +75,8 @@ CREATE TABLE actions (
     id              INTEGER PRIMARY KEY
                             UNIQUE
                             NOT NULL,
+    op_type         INTEGER NOT NULL
+                            DEFAULT (1),
     timestamp       INTEGER NOT NULL,
     account_id      INTEGER REFERENCES accounts (id) ON DELETE CASCADE
                                                      ON UPDATE CASCADE
@@ -83,9 +85,8 @@ CREATE TABLE actions (
                                                    ON UPDATE CASCADE
                             NOT NULL,
     alt_currency_id INTEGER REFERENCES assets (id) ON DELETE RESTRICT
-                                                    ON UPDATE CASCADE
+                                                   ON UPDATE CASCADE
 );
-
 
 -- Table: asset_types
 DROP TABLE IF EXISTS asset_types;
@@ -220,6 +221,8 @@ CREATE TABLE dividends (
     id         INTEGER     PRIMARY KEY
                            UNIQUE
                            NOT NULL,
+    op_type    INTEGER     NOT NULL
+                           DEFAULT (2),
     timestamp  INTEGER     NOT NULL,
     ex_date    INTEGER,
     number     TEXT (32)   DEFAULT (''),
@@ -228,12 +231,12 @@ CREATE TABLE dividends (
                                                     ON UPDATE CASCADE
                            NOT NULL,
     asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT
-                                                    ON UPDATE CASCADE
+                                                  ON UPDATE CASCADE
                            NOT NULL,
     amount     REAL        NOT NULL
                            DEFAULT (0),
     tax        REAL        DEFAULT (0),
-    note       TEXT (1014)
+    note       TEXT (1024)
 );
 
 
@@ -395,6 +398,8 @@ CREATE TABLE corp_actions (
     id           INTEGER     PRIMARY KEY
                              UNIQUE
                              NOT NULL,
+    op_type      INTEGER     NOT NULL
+                             DEFAULT (5),
     timestamp    INTEGER     NOT NULL,
     number       TEXT (32)   DEFAULT (''),
     account_id   INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
@@ -419,24 +424,26 @@ CREATE TABLE corp_actions (
 DROP TABLE IF EXISTS trades;
 
 CREATE TABLE trades (
-    id           INTEGER   PRIMARY KEY
+    id         INTEGER     PRIMARY KEY
                            UNIQUE
                            NOT NULL,
-    timestamp    INTEGER   NOT NULL,
-    settlement   INTEGER   DEFAULT (0),
-    number       TEXT (32) DEFAULT (''),
-    account_id   INTEGER   REFERENCES accounts (id) ON DELETE CASCADE
+    op_type    INTEGER     NOT NULL
+                           DEFAULT (3),
+    timestamp  INTEGER     NOT NULL,
+    settlement INTEGER     DEFAULT (0),
+    number     TEXT (32)   DEFAULT (''),
+    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
                                                     ON UPDATE CASCADE
                            NOT NULL,
-    asset_id     INTEGER   REFERENCES assets (id) ON DELETE RESTRICT
+    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT
                                                   ON UPDATE CASCADE
                            NOT NULL,
-    qty          REAL      NOT NULL
+    qty        REAL        NOT NULL
                            DEFAULT (0),
-    price        REAL      NOT NULL
+    price      REAL        NOT NULL
                            DEFAULT (0),
-    fee          REAL      DEFAULT (0),
-    note         TEXT (1024)
+    fee        REAL        DEFAULT (0),
+    note       TEXT (1024)
 );
 
 
@@ -462,6 +469,8 @@ CREATE TABLE transfers (
     id                   INTEGER     PRIMARY KEY
                                      UNIQUE
                                      NOT NULL,
+    op_type              INTEGER     NOT NULL
+                                     DEFAULT (4),
     withdrawal_timestamp INTEGER     NOT NULL,
     withdrawal_account   INTEGER     NOT NULL
                                      REFERENCES accounts (id) ON DELETE CASCADE

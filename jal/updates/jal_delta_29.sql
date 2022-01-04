@@ -2,6 +2,251 @@ BEGIN TRANSACTION;
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 0;
 --------------------------------------------------------------------------------
+-- Add operation code to 'actions' table
+CREATE TABLE sqlitestudio_temp_table AS SELECT * FROM actions;
+DROP TABLE actions;
+CREATE TABLE actions (
+    id              INTEGER PRIMARY KEY
+                            UNIQUE
+                            NOT NULL,
+    op_type         INTEGER NOT NULL
+                            DEFAULT (1),
+    timestamp       INTEGER NOT NULL,
+    account_id      INTEGER REFERENCES accounts (id) ON DELETE CASCADE
+                                                     ON UPDATE CASCADE
+                            NOT NULL,
+    peer_id         INTEGER REFERENCES agents (id) ON DELETE CASCADE
+                                                   ON UPDATE CASCADE
+                            NOT NULL,
+    alt_currency_id INTEGER REFERENCES assets (id) ON DELETE RESTRICT
+                                                   ON UPDATE CASCADE
+);
+INSERT INTO actions (
+                        id,
+                        timestamp,
+                        account_id,
+                        peer_id,
+                        alt_currency_id
+                    )
+                    SELECT id,
+                           timestamp,
+                           account_id,
+                           peer_id,
+                           alt_currency_id
+                      FROM sqlitestudio_temp_table;
+DROP TABLE sqlitestudio_temp_table;
+--------------------------------------------------------------------------------
+-- Add operation code to 'dividends' table
+CREATE TABLE sqlitestudio_temp_table AS SELECT * FROM dividends;
+DROP TABLE dividends;
+CREATE TABLE dividends (
+    id         INTEGER     PRIMARY KEY
+                           UNIQUE
+                           NOT NULL,
+    op_type    INTEGER     NOT NULL
+                           DEFAULT (2),
+    timestamp  INTEGER     NOT NULL,
+    ex_date    INTEGER,
+    number     TEXT (32)   DEFAULT (''),
+    type       INTEGER     NOT NULL,
+    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
+                                                    ON UPDATE CASCADE
+                           NOT NULL,
+    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT
+                                                  ON UPDATE CASCADE
+                           NOT NULL,
+    amount     REAL        NOT NULL
+                           DEFAULT (0),
+    tax        REAL        DEFAULT (0),
+    note       TEXT (1024)
+);
+
+INSERT INTO dividends (
+                          id,
+                          timestamp,
+                          ex_date,
+                          number,
+                          type,
+                          account_id,
+                          asset_id,
+                          amount,
+                          tax,
+                          note
+                      )
+                      SELECT id,
+                             timestamp,
+                             ex_date,
+                             number,
+                             type,
+                             account_id,
+                             asset_id,
+                             amount,
+                             tax,
+                             note
+                        FROM sqlitestudio_temp_table;
+DROP TABLE sqlitestudio_temp_table;
+--------------------------------------------------------------------------------
+-- Add operation code to 'trades' table
+CREATE TABLE sqlitestudio_temp_table AS SELECT * FROM trades;
+DROP TABLE trades;
+CREATE TABLE trades (
+    id         INTEGER     PRIMARY KEY
+                           UNIQUE
+                           NOT NULL,
+    op_type    INTEGER     NOT NULL
+                           DEFAULT (3),
+    timestamp  INTEGER     NOT NULL,
+    settlement INTEGER     DEFAULT (0),
+    number     TEXT (32)   DEFAULT (''),
+    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
+                                                    ON UPDATE CASCADE
+                           NOT NULL,
+    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT
+                                                  ON UPDATE CASCADE
+                           NOT NULL,
+    qty        REAL        NOT NULL
+                           DEFAULT (0),
+    price      REAL        NOT NULL
+                           DEFAULT (0),
+    fee        REAL        DEFAULT (0),
+    note       TEXT (1024)
+);
+
+INSERT INTO trades (
+                       id,
+                       timestamp,
+                       settlement,
+                       number,
+                       account_id,
+                       asset_id,
+                       qty,
+                       price,
+                       fee,
+                       note
+                   )
+                   SELECT id,
+                          timestamp,
+                          settlement,
+                          number,
+                          account_id,
+                          asset_id,
+                          qty,
+                          price,
+                          fee,
+                          note
+                     FROM sqlitestudio_temp_table;
+DROP TABLE sqlitestudio_temp_table;
+--------------------------------------------------------------------------------
+-- Add operation code to 'transfers' table
+CREATE TABLE sqlitestudio_temp_table AS SELECT * FROM transfers;
+DROP TABLE transfers;
+CREATE TABLE transfers (
+    id                   INTEGER     PRIMARY KEY
+                                     UNIQUE
+                                     NOT NULL,
+    op_type              INTEGER     NOT NULL
+                                     DEFAULT (4),
+    withdrawal_timestamp INTEGER     NOT NULL,
+    withdrawal_account   INTEGER     NOT NULL
+                                     REFERENCES accounts (id) ON DELETE CASCADE
+                                                              ON UPDATE CASCADE,
+    withdrawal           REAL        NOT NULL,
+    deposit_timestamp    INTEGER     NOT NULL,
+    deposit_account      INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
+                                                              ON UPDATE CASCADE
+                                     NOT NULL,
+    deposit              REAL        NOT NULL,
+    fee_account          INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
+                                                              ON UPDATE CASCADE,
+    fee                  REAL,
+    asset                INTEGER     REFERENCES assets (id) ON DELETE CASCADE
+                                                            ON UPDATE CASCADE,
+    note                 TEXT (1024)
+);
+
+INSERT INTO transfers (
+                          id,
+                          withdrawal_timestamp,
+                          withdrawal_account,
+                          withdrawal,
+                          deposit_timestamp,
+                          deposit_account,
+                          deposit,
+                          fee_account,
+                          fee,
+                          asset,
+                          note
+                      )
+                      SELECT id,
+                             withdrawal_timestamp,
+                             withdrawal_account,
+                             withdrawal,
+                             deposit_timestamp,
+                             deposit_account,
+                             deposit,
+                             fee_account,
+                             fee,
+                             asset,
+                             note
+                        FROM sqlitestudio_temp_table;
+
+DROP TABLE sqlitestudio_temp_table;
+--------------------------------------------------------------------------------
+-- Add operation code to 'corp_actions' table
+CREATE TABLE sqlitestudio_temp_table AS SELECT * FROM corp_actions;
+DROP TABLE corp_actions;
+CREATE TABLE corp_actions (
+    id           INTEGER     PRIMARY KEY
+                             UNIQUE
+                             NOT NULL,
+    op_type      INTEGER     NOT NULL
+                             DEFAULT (5),
+    timestamp    INTEGER     NOT NULL,
+    number       TEXT (32)   DEFAULT (''),
+    account_id   INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
+                                                      ON UPDATE CASCADE
+                             NOT NULL,
+    type         INTEGER     NOT NULL,
+    asset_id     INTEGER     REFERENCES assets (id) ON DELETE RESTRICT
+                                                    ON UPDATE CASCADE
+                             NOT NULL,
+    qty          REAL        NOT NULL,
+    asset_id_new INTEGER     REFERENCES assets (id) ON DELETE RESTRICT
+                                                    ON UPDATE CASCADE
+                             NOT NULL,
+    qty_new      REAL        NOT NULL,
+    basis_ratio  REAL        NOT NULL
+                             DEFAULT (1),
+    note         TEXT (1024)
+);
+
+INSERT INTO corp_actions (
+                             id,
+                             timestamp,
+                             number,
+                             account_id,
+                             type,
+                             asset_id,
+                             qty,
+                             asset_id_new,
+                             qty_new,
+                             basis_ratio,
+                             note
+                         )
+                         SELECT id,
+                                timestamp,
+                                number,
+                                account_id,
+                                type,
+                                asset_id,
+                                qty,
+                                asset_id_new,
+                                qty_new,
+                                basis_ratio,
+                                note
+                           FROM sqlitestudio_temp_table;
+DROP TABLE sqlitestudio_temp_table;
+--------------------------------------------------------------------------------
 -- Move accumulated value and amount fields from ledger_sums to ledger table
 --------------------------------------------------------------------------------
 DROP TABLE ledger;
