@@ -580,7 +580,7 @@ WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledg
                       a.full_name AS note2
                  FROM corp_actions AS ca
                       LEFT JOIN assets AS a ON ca.asset_id_new = a.id
-                      LEFT JOIN sequence AS q ON q.type = 5 AND ca.id = q.operation_id
+                      LEFT JOIN sequence AS q ON q.type = ca.op_type AND ca.id = q.operation_id
                       LEFT JOIN _ledger_last AS l ON l.sid = q.id AND l.asset_id = ca.asset_id_new AND l.book_account = 4
                UNION ALL
                SELECT t.op_type AS type,
@@ -598,7 +598,7 @@ WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledg
                       t.note AS note,
                       NULL AS note2
                  FROM trades AS t
-                      LEFT JOIN sequence AS q ON q.type = 3 AND t.id = q.operation_id
+                      LEFT JOIN sequence AS q ON q.type = t.op_type AND t.id = q.operation_id
                       LEFT JOIN _ledger_last AS l ON l.sid = q.id AND l.book_account = 4
                UNION ALL
                SELECT t.op_type AS type,
@@ -855,14 +855,14 @@ CREATE VIEW deals_ext AS
       FROM deals AS d
           -- Get more information about trade/corp.action that opened the deal
            LEFT JOIN sequence AS os ON d.open_sid = os.id
-           LEFT JOIN trades AS ot ON ot.id = os.operation_id AND os.type = 3
-           LEFT JOIN corp_actions AS oca ON oca.id = os.operation_id AND os.type = 5
+           LEFT JOIN trades AS ot ON ot.id = os.operation_id AND os.type = ot.op_type
+           LEFT JOIN corp_actions AS oca ON oca.id = os.operation_id AND os.type = oca.op_type
           -- Collect value of stock that was accumulated before corporate action
            LEFT JOIN ledger AS ols ON ols.sid = d.open_sid AND ols.asset_id = d.asset_id AND ols.value_acc != 0
           -- Get more information about trade/corp.action that opened the deal
            LEFT JOIN sequence AS cs ON d.close_sid = cs.id
-           LEFT JOIN trades AS ct ON ct.id = cs.operation_id AND cs.type = 3
-           LEFT JOIN corp_actions AS cca ON cca.id = cs.operation_id AND cs.type = 5
+           LEFT JOIN trades AS ct ON ct.id = cs.operation_id AND cs.type = ct.op_type
+           LEFT JOIN corp_actions AS cca ON cca.id = cs.operation_id AND cs.type = cca.op_type
           -- "Decode" account and asset
            LEFT JOIN accounts AS ac ON d.account_id = ac.id
            LEFT JOIN assets AS at ON d.asset_id = at.id
