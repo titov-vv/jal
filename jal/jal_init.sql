@@ -845,9 +845,7 @@ CREATE VIEW currencies AS
 
 -- View: frontier
 DROP VIEW IF EXISTS frontier;
-CREATE VIEW frontier AS
-    SELECT MAX(sequence.timestamp) AS ledger_frontier
-      FROM sequence;
+CREATE VIEW frontier AS SELECT MAX(ledger.timestamp) AS ledger_frontier FROM ledger;
 
 
 -- View: deals_ext

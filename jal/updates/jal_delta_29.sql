@@ -290,6 +290,10 @@ CREATE TABLE ledger (
                                               ON UPDATE NO ACTION
 );
 --------------------------------------------------------------------------------
+-- Recreate 'frontier' view based on ledger table
+DROP VIEW IF EXISTS frontier;
+CREATE VIEW frontier AS SELECT MAX(ledger.timestamp) AS ledger_frontier FROM ledger;
+--------------------------------------------------------------------------------
 -- Change order of transaction processing in all_transactions view (corp.actions should go before trades)
 DROP VIEW IF EXISTS all_transactions;
 CREATE VIEW all_transactions AS
