@@ -247,6 +247,19 @@ INSERT INTO corp_actions (
                            FROM sqlitestudio_temp_table;
 DROP TABLE sqlitestudio_temp_table;
 --------------------------------------------------------------------------------
+-- New table to support FIFO
+DROP TABLE IF EXISTS open_trades;
+CREATE TABLE open_trades (
+    id            INTEGER PRIMARY KEY
+                          UNIQUE
+                          NOT NULL,
+    op_type       INTEGER NOT NULL,
+    operation_id  INTEGER NOT NULL,
+    remaining_qty REAL    NOT NULL
+);
+
+CREATE UNIQUE INDEX open_trade_unique ON open_trades (op_type, operation_id);
+--------------------------------------------------------------------------------
 -- Move accumulated value and amount fields from ledger_sums to ledger table
 --------------------------------------------------------------------------------
 DROP TABLE ledger;

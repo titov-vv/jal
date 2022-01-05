@@ -310,6 +310,20 @@ CREATE TABLE map_peer (
 );
 
 
+-- Table: open_trades
+DROP TABLE IF EXISTS open_trades;
+
+CREATE TABLE open_trades (
+    id            INTEGER PRIMARY KEY
+                          UNIQUE
+                          NOT NULL,
+    op_type       INTEGER NOT NULL,
+    operation_id  INTEGER NOT NULL,
+    remaining_qty REAL    NOT NULL
+);
+
+CREATE UNIQUE INDEX open_trade_unique ON open_trades (op_type, operation_id);
+
 -- Table: quotes
 DROP TABLE IF EXISTS quotes;
 
