@@ -128,12 +128,11 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
 
         query = executeSQL("SELECT strftime('%d/%m/%Y', datetime(t.timestamp, 'unixepoch')) AS timestamp, "
                            "t.qty AS qty, t.price AS o_price, oq.quote AS o_rate FROM trades AS t "
-                           "LEFT JOIN sequence AS s ON s.operation_id = t.id AND s.type = t.op_type "
                            "LEFT JOIN accounts AS ac ON ac.id = :account_id "
                            "LEFT JOIN t_last_dates AS od ON od.ref_id = IIF(t.settlement=0, t.timestamp, t.settlement) "
                            "LEFT JOIN quotes AS oq ON ac.currency_id=oq.asset_id AND oq.timestamp=od.timestamp "
                            "WHERE t.account_id=:account_id AND t.asset_id=:asset_id AND t.qty*(:total_qty)>0 "
-                           "ORDER BY s.id DESC",
+                           "ORDER BY t.timestamp DESC, t.id DESC",
                            [(":account_id", self.account_id), (":asset_id", self.asset_id),
                             (":total_qty", self.asset_qty)])
         table = []
