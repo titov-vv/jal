@@ -622,7 +622,7 @@ CREATE VIEW deals_ext AS
      ORDER BY close_timestamp, open_timestamp;
 --------------------------------------------------------------------------------
 -- Update triggers linked to 'ledger_sums' table
-DROP TRIGGER action_details_after_delete;
+DROP TRIGGER IF EXISTS action_details_after_delete;
 CREATE TRIGGER action_details_after_delete
          AFTER DELETE
             ON action_details
@@ -647,7 +647,7 @@ BEGIN
                              );
 END;
 
-DROP TRIGGER action_details_after_insert;
+DROP TRIGGER IF EXISTS action_details_after_insert;
 CREATE TRIGGER action_details_after_insert
          AFTER INSERT
             ON action_details
@@ -672,7 +672,7 @@ BEGIN
                              );
 END;
 
-DROP TRIGGER action_details_after_update;
+DROP TRIGGER IF EXISTS action_details_after_update;
 CREATE TRIGGER action_details_after_update
          AFTER UPDATE
             ON action_details
@@ -697,7 +697,7 @@ BEGIN
                              );
 END;
 
-DROP TRIGGER actions_after_delete;
+DROP TRIGGER IF EXISTS actions_after_delete;
 CREATE TRIGGER actions_after_delete
          AFTER DELETE
             ON actions
@@ -716,7 +716,7 @@ BEGIN
           WHERE timestamp >= OLD.timestamp;
 END;
 
-DROP TRIGGER actions_after_insert;
+DROP TRIGGER IF EXISTS actions_after_insert;
 CREATE TRIGGER actions_after_insert
          AFTER INSERT
             ON actions
@@ -733,7 +733,7 @@ BEGIN
           WHERE timestamp >= NEW.timestamp;
 END;
 
-DROP TRIGGER actions_after_update;
+DROP TRIGGER IF EXISTS actions_after_update;
 CREATE TRIGGER actions_after_update
          AFTER UPDATE OF timestamp,
                          account_id,
@@ -754,7 +754,7 @@ BEGIN
                 timestamp >= NEW.timestamp;
 END;
 
-DROP TRIGGER dividends_after_delete;
+DROP TRIGGER IF EXISTS dividends_after_delete;
 CREATE TRIGGER dividends_after_delete
          AFTER DELETE
             ON dividends
@@ -771,7 +771,7 @@ BEGIN
           WHERE timestamp >= OLD.timestamp;
 END;
 
-DROP TRIGGER dividends_after_insert;
+DROP TRIGGER IF EXISTS dividends_after_insert;
 CREATE TRIGGER dividends_after_insert
          AFTER INSERT
             ON dividends
@@ -788,7 +788,7 @@ BEGIN
           WHERE timestamp >= NEW.timestamp;
 END;
 
-DROP TRIGGER dividends_after_update;
+DROP TRIGGER IF EXISTS dividends_after_update;
 CREATE TRIGGER dividends_after_update
          AFTER UPDATE OF timestamp,
                          account_id,
@@ -811,7 +811,7 @@ BEGIN
                 timestamp >= NEW.timestamp;
 END;
 
-DROP TRIGGER trades_after_delete;
+DROP TRIGGER IF EXISTS trades_after_delete;
 CREATE TRIGGER trades_after_delete
          AFTER DELETE
             ON trades
@@ -828,7 +828,7 @@ BEGIN
           WHERE timestamp >= OLD.timestamp;
 END;
 
-DROP TRIGGER trades_after_insert;
+DROP TRIGGER IF EXISTS trades_after_insert;
 CREATE TRIGGER trades_after_insert
          AFTER INSERT
             ON trades
@@ -845,7 +845,7 @@ BEGIN
           WHERE timestamp >= NEW.timestamp;
 END;
 
-DROP TRIGGER trades_after_update;
+DROP TRIGGER IF EXISTS trades_after_update;
 CREATE TRIGGER trades_after_update
          AFTER UPDATE OF timestamp,
                          account_id,
@@ -869,7 +869,7 @@ BEGIN
                 timestamp >= NEW.timestamp;
 END;
 
-DROP TRIGGER corp_after_delete;
+DROP TRIGGER IF EXISTS corp_after_delete;
 CREATE TRIGGER corp_after_delete
          AFTER DELETE
             ON corp_actions
@@ -886,7 +886,7 @@ BEGIN
           WHERE timestamp >= OLD.timestamp;
 END;
 
-DROP TRIGGER corp_after_insert;
+DROP TRIGGER IF EXISTS corp_after_insert;
 CREATE TRIGGER corp_after_insert
          AFTER INSERT
             ON corp_actions
@@ -903,7 +903,7 @@ BEGIN
           WHERE timestamp >= NEW.timestamp;
 END;
 
-DROP TRIGGER corp_after_update;
+DROP TRIGGER IF EXISTS corp_after_update;
 CREATE TRIGGER corp_after_update
          AFTER UPDATE OF timestamp,
                          account_id,
@@ -928,7 +928,7 @@ BEGIN
                 timestamp >= NEW.timestamp;
 END;
 
-DROP TRIGGER transfers_after_delete;
+DROP TRIGGER IF EXISTS transfers_after_delete;
 CREATE TRIGGER transfers_after_delete
          AFTER DELETE
             ON transfers
@@ -947,7 +947,7 @@ BEGIN
                 timestamp >= OLD.deposit_timestamp;
 END;
 
-DROP TRIGGER transfers_after_insert;
+DROP TRIGGER IF EXISTS transfers_after_insert;
 CREATE TRIGGER transfers_after_insert
          AFTER INSERT
             ON transfers
@@ -966,7 +966,7 @@ BEGIN
                 timestamp >= NEW.deposit_timestamp;
 END;
 
-DROP TRIGGER transfers_after_update;
+DROP TRIGGER IF EXISTS transfers_after_update;
 CREATE TRIGGER transfers_after_update
          AFTER UPDATE OF withdrawal_timestamp,
                          deposit_timestamp,
