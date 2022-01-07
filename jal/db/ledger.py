@@ -385,16 +385,9 @@ class Ledger(QObject):
 
             next_deal_qty = opening_trade['remaining_qty']
             if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
-                next_deal_qty = qty - processed_qty  # If it happens - just process the remainder of the trade
-                # if self.current['subtype'] != CorporateAction.SpinOff:
-                _ = executeSQL("UPDATE open_trades SET remaining_qty=remaining_qty-:qty "
-                               "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
-                               [(":qty", next_deal_qty), (":op_type", opening_trade['op_type']),
-                                (":id", opening_trade['operation_id']), (":asset_id", asset_id)])
-            else:
-                # if self.current['subtype'] != CorporateAction.SpinOff:
-                _ = executeSQL("DELETE FROM open_trades WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
-                               [(":op_type", opening_trade['op_type']), (":id", opening_trade['operation_id']), (":asset_id", asset_id)])
+                assert True, self.tr("Unhandled case: Corporate action covers not full open position")
+            _ = executeSQL("DELETE FROM open_trades WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
+                           [(":op_type", opening_trade['op_type']), (":id", opening_trade['operation_id']), (":asset_id", asset_id)])
 
             # Create a deal with relevant sign of quantity (-1 for short, +1 for long)
             _ = executeSQL("INSERT INTO deals(account_id, asset_id, open_sid, close_sid, qty) "
