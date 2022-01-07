@@ -95,6 +95,8 @@ class Ledger(QObject):
     # Method uses Account, Asset,Peer, Category and Tag values from current transaction
     def appendTransaction(self, book, amount, value=None):
         seq_id = self.current_seq
+        op_type = self.current['type']
+        op_id = self.current['id']
         timestamp = self.current['timestamp']
         if book == BookAccount.Assets:
             asset_id = self.current['asset']
@@ -115,13 +117,13 @@ class Ledger(QObject):
         if (abs(amount) + abs(value)) <= (4 * Setup.CALC_TOLERANCE):
             return  # we have zero amount - no reason to put it into ledger
 
-        _ = executeSQL("INSERT INTO ledger (timestamp, sid, book_account, asset_id, account_id, "
+        _ = executeSQL("INSERT INTO ledger (timestamp, sid, op_type, operation_id, book_account, asset_id, account_id, "
                        "amount, value, amount_acc, value_acc, peer_id, category_id, tag_id) "
-                       "VALUES(:timestamp, :sid, :book, :asset_id, :account_id, "
+                       "VALUES(:timestamp, :sid, :op_type, :operation_id, :book, :asset_id, :account_id, "
                        ":amount, :value, :amount_acc, :value_acc, :peer_id, :category_id, :tag_id)",
-                       [(":timestamp", timestamp), (":sid", seq_id), (":book", book), (":asset_id", asset_id),
-                        (":account_id", account_id), (":amount", amount), (":value", value),
-                        (":amount_acc", self.amounts[(book, account_id, asset_id)]),
+                       [(":timestamp", timestamp), (":sid", seq_id), (":op_type", op_type), (":operation_id", op_id),
+                        (":book", book), (":asset_id", asset_id), (":account_id", account_id), (":amount", amount),
+                        (":value", value), (":amount_acc", self.amounts[(book, account_id, asset_id)]),
                         (":value_acc", self.values[(book, account_id, asset_id)]),
                         (":peer_id", peer_id), (":category_id", category_id), (":tag_id", tag_id)])
 
@@ -210,7 +212,8 @@ class Ledger(QObject):
     # Process buy or sell operation base on self.current['amount'] (>0 - buy, <0 - sell)
     def processTrade(self):
         if self.current['peer'] == '':
-            logging.error(self.tr("Can't process trade as bank isn't set for investment account"))
+            logging.error(self.tr("Can't process trade as bank isn't set for investment account: ") +
+                          JalDB().get_account_name(self.current['account']))
             return
 
         seq_id = self.current_seq
@@ -227,72 +230,20 @@ class Ledger(QObject):
         # Get asset amount accumulated before current operation
         asset_amount = self.getAmount(BookAccount.Assets, asset_id)
         if ((-type) * asset_amount) > 0:  # Process deal match if we have asset that is opposite to operation
-            last_type = readSQL("SELECT s.type FROM deals AS d "
-                                "LEFT JOIN sequence AS s ON d.close_sid=s.id "
-                                "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
-                                "ORDER BY d.close_sid DESC, d.open_sid DESC LIMIT 1",
-                                [(":account_id", account_id), (":asset_id", asset_id)])
-            if last_type is None or last_type == TransactionType.Trade:
-                # Get information about last deal with quantity of opposite sign
-                last_sid = readSQL("SELECT "
-                                   "CASE WHEN (:type)*qty<0 THEN open_sid ELSE close_sid END AS last_sid "
-                                   "FROM deals "
-                                   "WHERE account_id=:account_id AND asset_id=:asset_id "
-                                   "ORDER BY close_sid DESC, open_sid DESC LIMIT 1",
-                                   [(":type", type), (":account_id", account_id), (":asset_id", asset_id)])
-                last_sid = 0 if last_sid is None else last_sid
-                # Next get information about abs trade quantity that was in this last deal
-                # It may be a corporate action - its quantity calculation is a bit more complicated
-                last_qty = readSQL("SELECT coalesce(SUM(qty), 0) AS qty FROM ( "
-                                   "SELECT ABS(t.qty) AS qty "
-                                   "FROM sequence AS s "
-                                   "LEFT JOIN trades AS t ON t.id=s.operation_id AND s.type=t.op_type "
-                                   "WHERE s.id=:last_sid "
-                                   "UNION ALL "
-                                   "SELECT "
-                                   "CASE "
-                                   "    WHEN ca.type=:spinoff AND ca.asset_id=:asset_id THEN ca.qty "
-                                   "    ELSE ca.qty_new "
-                                   "END AS qty "
-                                   "FROM sequence AS s "
-                                   "LEFT JOIN corp_actions AS ca ON ca.id=s.operation_id AND s.type=ca.op_type "
-                                   "WHERE s.id=:last_sid "
-                                   ")",
-                                   [(":asset_id", asset_id), (":last_sid", last_sid),
-                                    (":spinoff", CorporateAction.SpinOff)])
-                # Collect quantity of all deals where this last opposite trade participated (positive value)
-                # If it was a corporate action we need to take only where it was an opening of the deal
-                deals_qty = readSQL("SELECT coalesce(SUM(ABS(qty)), 0) "   
-                                    "FROM deals AS d "
-                                    "LEFT JOIN sequence AS s ON s.id=d.close_sid "
-                                    "WHERE account_id=:account_id AND asset_id=:asset_id "
-                                    "AND (open_sid=:last_sid OR close_sid=:last_sid) AND s.type!=:corp_action",
-                                    [(":account_id", account_id), (":asset_id", asset_id),
-                                     (":last_sid", last_sid), (":corp_action", TransactionType.CorporateAction)])
-                reminder = last_qty - deals_qty
-                # if last trade is fully matched (reminder<=0) we start from next trade, otherwise we need to shift by 1
-                if reminder > 0:
-                    last_sid -= 1
-            elif last_type == TransactionType.CorporateAction:
-                last_sid, ca_type = readSQL("SELECT d.close_sid, c.type FROM deals AS d "
-                                            "LEFT JOIN sequence AS s ON d.close_sid=s.id "
-                                            "LEFT JOIN corp_actions AS c ON s.operation_id=c.id "
-                                            "WHERE d.account_id=:account_id AND d.asset_id=:asset_id "
-                                            "ORDER BY d.close_sid DESC, d.open_sid DESC LIMIT 1",
-                                            [(":account_id", account_id), (":asset_id", asset_id)])
-                if ca_type == CorporateAction.Split \
-                        or ca_type == CorporateAction.StockDividend or ca_type == CorporateAction.SpinOff:
-                    last_sid -= 1
-                reminder = 0
-
-            # Get a list of all previous not matched trades or corporate actions of opposite direction (type parameter)
-            query = executeSQL("SELECT * FROM ("
-                               "SELECT s.id, ABS(t.qty), t.price FROM trades AS t "
-                               "LEFT JOIN sequence AS s ON s.type = t.op_type AND s.operation_id=t.id "
-                               "WHERE (:type)*qty < 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
-                               "AND s.id < :sid AND s.id > :last_sid "
-                               "UNION ALL "
-                               "SELECT s.id, "
+            # Get a list of all previous not matched trades or corporate actions
+            query = executeSQL("SELECT timestamp, op_type, operation_id, account_id, asset_id, remaining_qty "
+                               "FROM open_trades "
+                               "WHERE account_id=:account_id AND asset_id=:asset_id "
+                               "ORDER BY timestamp, op_type DESC",
+                               [(":account_id", account_id), (":asset_id", asset_id)])
+            while query.next():
+                opening_trade = readSQLrecord(query, named=True)
+                if opening_trade['op_type'] == TransactionType.Trade:
+                    deal_sid, deal_qty, deal_price = readSQL("SELECT s.id, ABS(t.qty), t.price FROM trades AS t "
+                                                             "LEFT JOIN sequence AS s ON s.type = t.op_type AND s.operation_id=t.id "
+                                                             "WHERE t.id=:trade_id", [(":trade_id", opening_trade['operation_id'])])
+                elif opening_trade['op_type'] == TransactionType.CorporateAction:
+                    deal_sid, deal_qty, deal_price = readSQL("SELECT s.id, "
                                "CASE "
                                "    WHEN c.type=:spinoff AND c.asset_id=:asset_id THEN c.qty "
                                "    ELSE c.qty_new "
@@ -304,20 +255,21 @@ class Ledger(QObject):
                                "FROM corp_actions AS c "
                                "LEFT JOIN sequence AS s ON s.type = c.op_type AND s.operation_id=c.id "
                                "LEFT JOIN ledger AS l ON s.id = l.sid AND l.asset_id=:asset_id AND l.value > 0 "
-                               "WHERE (:type)*c.qty_new < 0 AND (c.asset_id_new=:asset_id OR (c.asset_id=:asset_id AND c.type=:spinoff)) AND c.account_id=:account_id "
-                               "AND s.id < :sid AND s.id > :last_sid "
-                               ")ORDER BY id",
-                               [(":type", type), (":asset_id", asset_id), (":account_id", account_id),
-                                (":sid", seq_id), (":last_sid", last_sid), (":spinoff", CorporateAction.SpinOff)])
-            while query.next():  # Perform match ("closure") of previous trades
-                deal_sid, deal_qty, deal_price = readSQLrecord(query)    # deal_sid -> trade_sid
-                if reminder > 0:
-                    next_deal_qty = reminder
-                    reminder = 0
+                               "WHERE c.id=:corp_action_id", [(":corp_action_id", opening_trade['operation_id']),
+                                                              (":asset_id", asset_id), (":spinoff", CorporateAction.SpinOff)])
                 else:
-                    next_deal_qty = deal_qty
-                if (processed_qty + next_deal_qty) >= qty:  # We can't process more than qty of current trade
-                    next_deal_qty = qty - processed_qty     # If it happens - just process the remainder of the trade
+                    raise ValueError("Unexpected open trade operation")
+
+                next_deal_qty = opening_trade['remaining_qty']
+                if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
+                    next_deal_qty = qty - processed_qty  # If it happens - just process the remainder of the trade
+                    _ = executeSQL("UPDATE open_trades SET remaining_qty=remaining_qty-:qty "
+                                   "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
+                                   [(":qty", next_deal_qty), (":op_type", opening_trade['op_type']),
+                                    (":id", opening_trade['operation_id']), (":asset_id", asset_id)])
+                else:
+                    _ = executeSQL("DELETE FROM open_trades WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
+                                   [(":op_type", opening_trade['op_type']), (":id", opening_trade['operation_id']), (":asset_id", asset_id)])
                 # Create a deal with relevant sign of quantity (-1 for short, +1 for long)
                 _ = executeSQL("INSERT INTO deals(account_id, asset_id, open_sid, close_sid, qty) "
                                "VALUES(:account_id, :asset_id, :open_sid, :close_sid, :qty)",
@@ -339,6 +291,10 @@ class Ledger(QObject):
             self.current['category'] = PredefinedCategory.Profit
             self.appendTransaction(BookAccount.Incomes, type * ((price * processed_qty) - processed_value))
         if processed_qty < qty:  # We have reminder that opens a new position
+            _ = executeSQL("INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, remaining_qty) "
+                           "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :remaining_qty)",
+                           [(":timestamp", self.current['timestamp']), (":type", TransactionType.Trade), (":operation_id", self.current['id']),
+                            (":account_id", account_id), (":asset_id", asset_id), (":remaining_qty", qty - processed_qty)])
             self.appendTransaction(BookAccount.Assets, type*(qty - processed_qty), type*(qty - processed_qty) * price)
         if self.current['fee_tax']:
             self.current['category'] = PredefinedCategory.Fees
@@ -397,62 +353,49 @@ class Ledger(QObject):
             logging.fatal(self.tr("Asset amount is not enough for corporate action processing. Date: ")
                           + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
             return
-        # Get information about last deal
-        last_sid = readSQL("SELECT "
-                           "CASE WHEN qty>0 THEN open_sid ELSE close_sid END AS last_sid "
-                           "FROM deals "
-                           "WHERE account_id=:account_id AND asset_id=:asset_id "
-                           "ORDER BY close_sid DESC, open_sid DESC LIMIT 1",
-                           [(":account_id", account_id), (":asset_id", asset_id)])
-        last_sid = 0 if last_sid is None else last_sid
-        # Next get information about abs trade quantity that was in this last deal
-        last_qty = readSQL("SELECT coalesce(ABS(t.qty), 0)+coalesce(ABS(ca.qty_new) , 0) AS qty "
-                           "FROM sequence AS s "
-                           "LEFT JOIN trades AS t ON t.id=s.operation_id AND s.type=t.op_type "
-                           "LEFT JOIN corp_actions AS ca ON ca.id=s.operation_id AND s.type=ca.op_type "
-                           "WHERE s.id=:last_sid", [(":last_sid", last_sid)])
-        last_qty = 0 if last_qty is None else last_qty
-        # Collect quantity of all deals where this last opposite trade participated (positive value)
-        deals_qty = readSQL("SELECT coalesce(SUM(ABS(qty)), 0) "
-                            "FROM deals AS d "
-                            "WHERE account_id=:account_id AND asset_id=:asset_id "
-                            "AND (open_sid=:last_sid OR close_sid=:last_sid)",
-                            [(":account_id", account_id), (":asset_id", asset_id), (":last_sid", last_sid)])
-        reminder = last_qty - deals_qty
-        # if last trade is fully matched (reminder<=0) we start from next trade, otherwise we need to shift by 1
-        if reminder > 0:
-            last_sid = last_sid - 1
 
-        # Get a list of all previous not matched trades or corporate actions of opposite direction (type parameter)
-        query = executeSQL("SELECT * FROM ("
-                           "SELECT s.id, ABS(t.qty), t.price FROM trades AS t "
-                           "LEFT JOIN sequence AS s ON s.type = t.op_type AND s.operation_id=t.id "
-                           "WHERE qty > 0 AND t.asset_id = :asset_id AND t.account_id = :account_id "
-                           "AND s.id < :sid AND s.id > :last_sid "
-                           "UNION ALL "
-                           "SELECT s.id, ABS(c.qty_new), coalesce(l.value/c.qty_new, 0) AS price FROM corp_actions AS c "
-                           "LEFT JOIN sequence AS s ON s.type = c.op_type AND s.operation_id=c.id "
-                           "LEFT JOIN ledger AS l ON s.id = l.sid AND l.asset_id=c.asset_id_new AND l.value > 0 "
-                           "WHERE c.qty_new > 0 AND c.asset_id_new=:asset_id AND c.account_id=:account_id "
-                           "AND s.id < :sid AND s.id > :last_sid "
-                           "UNION ALL "  # Next part is for spin-offs that where data might be in old part
-                           "SELECT s.id, ABS(c.qty), coalesce(l.value/c.qty, 0) AS price FROM corp_actions AS c "
-                           "LEFT JOIN sequence AS s ON s.type = c.op_type AND s.operation_id=c.id "
-                           "LEFT JOIN ledger AS l ON s.id = l.sid AND l.asset_id=c.asset_id AND l.value > 0 "
-                           "WHERE c.qty_new > 0 AND c.asset_id=:asset_id AND c.type=:spinoff AND c.account_id=:account_id "
-                           "AND s.id < :sid AND s.id > :last_sid "
-                           ")ORDER BY id",
-                           [(":asset_id", asset_id), (":account_id", account_id), (":spinoff", CorporateAction.SpinOff),
-                            (":sid", seq_id), (":last_sid", last_sid)])
-        while query.next():  # Perform match ("closure") of previous trades
-            deal_sid, deal_qty, deal_price = readSQLrecord(query)  # deal_sid -> trade_sid
-            if reminder > 0:
-                next_deal_qty = reminder
-                reminder = 0
+        # Get a list of all previous not matched trades or corporate actions
+        query = executeSQL("SELECT timestamp, op_type, operation_id, account_id, asset_id, remaining_qty "
+                           "FROM open_trades "
+                           "WHERE account_id=:account_id AND asset_id=:asset_id "
+                           "ORDER BY timestamp, op_type DESC",
+                           [(":account_id", account_id), (":asset_id", asset_id)])
+        while query.next():
+            opening_trade = readSQLrecord(query, named=True)
+            if opening_trade['op_type'] == TransactionType.Trade:
+                deal_sid, deal_qty, deal_price = readSQL("SELECT s.id, ABS(t.qty), t.price FROM trades AS t "
+                                                         "LEFT JOIN sequence AS s ON s.type = t.op_type AND s.operation_id=t.id "
+                                                         "WHERE t.id=:trade_id",
+                                                         [(":trade_id", opening_trade['operation_id'])])
+            elif opening_trade['op_type'] == TransactionType.CorporateAction:
+                deal_sid, deal_qty, deal_price = readSQL(
+                    "SELECT s.id, ABS(c.qty_new), coalesce(l.value/c.qty_new, 0) AS price FROM corp_actions AS c "
+                    "LEFT JOIN sequence AS s ON s.type = c.op_type AND s.operation_id=c.id "
+                    "LEFT JOIN ledger AS l ON s.id = l.sid AND l.asset_id=c.asset_id_new AND l.value > 0 "
+                    "WHERE c.id=:corp_action_id AND c.asset_id_new=:asset_id "
+                    "UNION ALL "  # Next part is for spin-offs that where data might be in old part
+                    "SELECT s.id, ABS(c.qty), coalesce(l.value/c.qty, 0) AS price FROM corp_actions AS c "
+                    "LEFT JOIN sequence AS s ON s.type = c.op_type AND s.operation_id=c.id "
+                    "LEFT JOIN ledger AS l ON s.id = l.sid AND l.asset_id=c.asset_id AND l.value > 0 "
+                    "WHERE c.id=:corp_action_id AND c.asset_id=:asset_id AND c.type=:spinoff",
+                    [(":corp_action_id", opening_trade['operation_id']), (":asset_id", asset_id),
+                     (":spinoff", CorporateAction.SpinOff)])
             else:
-                next_deal_qty = deal_qty
-            if (processed_qty + next_deal_qty) >= qty:  # We can't process more than qty of current trade
+                raise ValueError("Unexpected open trade operation")
+
+            next_deal_qty = opening_trade['remaining_qty']
+            if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
                 next_deal_qty = qty - processed_qty  # If it happens - just process the remainder of the trade
+                # if self.current['subtype'] != CorporateAction.SpinOff:
+                _ = executeSQL("UPDATE open_trades SET remaining_qty=remaining_qty-:qty "
+                               "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
+                               [(":qty", next_deal_qty), (":op_type", opening_trade['op_type']),
+                                (":id", opening_trade['operation_id']), (":asset_id", asset_id)])
+            else:
+                # if self.current['subtype'] != CorporateAction.SpinOff:
+                _ = executeSQL("DELETE FROM open_trades WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
+                               [(":op_type", opening_trade['op_type']), (":id", opening_trade['operation_id']), (":asset_id", asset_id)])
+
             # Create a deal with relevant sign of quantity (-1 for short, +1 for long)
             _ = executeSQL("INSERT INTO deals(account_id, asset_id, open_sid, close_sid, qty) "
                            "VALUES(:account_id, :asset_id, :open_sid, :close_sid, :qty)",
@@ -482,8 +425,19 @@ class Ledger(QObject):
             new_value = processed_value * (1 - self.current['fee_tax'])
             # Modify value for old asset
             self.appendTransaction(BookAccount.Assets, self.current['amount'], processed_value - new_value)
+            _ = executeSQL(
+                "INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, remaining_qty) "
+                "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :remaining_qty)",
+                [(":timestamp", self.current['timestamp']), (":type", TransactionType.CorporateAction),
+                 (":operation_id", self.current['id']),
+                 (":account_id", account_id), (":asset_id", self.current['asset']), (":remaining_qty", self.current['amount'])])
         # Create value for new asset
         self.current['asset'] = new_asset
+        _ = executeSQL("INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, remaining_qty) "
+                       "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :remaining_qty)",
+                       [(":timestamp", self.current['timestamp']), (":type", TransactionType.CorporateAction),
+                        (":operation_id", self.current['id']),
+                        (":account_id", account_id), (":asset_id", new_asset), (":remaining_qty", new_qty)])
         self.appendTransaction(BookAccount.Assets, new_qty, new_value)
 
     # Rebuild transaction sequence and recalculate all amounts
@@ -530,6 +484,7 @@ class Ledger(QObject):
                        "(SELECT coalesce(MIN(id), 0) FROM sequence WHERE timestamp >= :frontier)",
                        [(":frontier", frontier)])
         _ = executeSQL("DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
+        _ = executeSQL("DELETE FROM open_trades WHERE timestamp >= :frontier", [(":frontier", frontier)])
         _ = executeSQL("DELETE FROM sequence WHERE timestamp >= :frontier", [(":frontier", frontier)], commit=True)
 
         db_triggers_disable()

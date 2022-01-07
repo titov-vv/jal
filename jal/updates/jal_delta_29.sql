@@ -253,12 +253,18 @@ CREATE TABLE open_trades (
     id            INTEGER PRIMARY KEY
                           UNIQUE
                           NOT NULL,
+    timestamp     INTEGER NOT NULL,
     op_type       INTEGER NOT NULL,
     operation_id  INTEGER NOT NULL,
+    account_id    INTEGER REFERENCES accounts (id) ON DELETE CASCADE
+                                                   ON UPDATE CASCADE
+                          NOT NULL,
+    asset_id      INTEGER NOT NULL
+                          REFERENCES assets (id) ON DELETE CASCADE
+                                                 ON UPDATE CASCADE,
     remaining_qty REAL    NOT NULL
 );
 
-CREATE UNIQUE INDEX open_trade_unique ON open_trades (op_type, operation_id);
 --------------------------------------------------------------------------------
 -- Move accumulated value and amount fields from ledger_sums to ledger table
 --------------------------------------------------------------------------------
@@ -270,6 +276,8 @@ CREATE TABLE ledger (
                          UNIQUE,
     timestamp    INTEGER NOT NULL,
     sid          INTEGER NOT NULL,
+    op_type      INTEGER NOT NULL,
+    operation_id INTEGER NOT NULL,
     book_account INTEGER NOT NULL
                          REFERENCES books (id) ON DELETE NO ACTION
                                                ON UPDATE NO ACTION,
@@ -626,111 +634,56 @@ DROP TRIGGER IF EXISTS action_details_after_delete;
 CREATE TRIGGER action_details_after_delete
          AFTER DELETE
             ON action_details
-      FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger
-          WHERE timestamp >= (
-                                 SELECT timestamp
-                                   FROM actions
-                                  WHERE id = OLD.pid
-                             );
-    DELETE FROM sequence
-          WHERE timestamp >= (
-                                 SELECT timestamp
-                                   FROM actions
-                                  WHERE id = OLD.pid
-                             );
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM actions WHERE id = OLD.pid);
+    DELETE FROM sequence WHERE timestamp >= (SELECT timestamp FROM actions WHERE id = OLD.pid);
 END;
 
 DROP TRIGGER IF EXISTS action_details_after_insert;
 CREATE TRIGGER action_details_after_insert
          AFTER INSERT
             ON action_details
-      FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger
-          WHERE timestamp >= (
-                                 SELECT timestamp
-                                   FROM actions
-                                  WHERE id = NEW.pid
-                             );
-    DELETE FROM sequence
-          WHERE timestamp >= (
-                                 SELECT timestamp
-                                   FROM actions
-                                  WHERE id = NEW.pid
-                             );
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM actions WHERE id = NEW.pid);
+    DELETE FROM sequence WHERE timestamp >= (SELECT timestamp FROM actions WHERE id = NEW.pid);
 END;
 
 DROP TRIGGER IF EXISTS action_details_after_update;
 CREATE TRIGGER action_details_after_update
          AFTER UPDATE
             ON action_details
-      FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger
-          WHERE timestamp >= (
-                                 SELECT timestamp
-                                   FROM actions
-                                  WHERE id = OLD.pid
-                             );
-    DELETE FROM sequence
-          WHERE timestamp >= (
-                                 SELECT timestamp
-                                   FROM actions
-                                  WHERE id = OLD.pid
-                             );
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM actions WHERE id = OLD.pid);
+    DELETE FROM sequence WHERE timestamp >= (SELECT timestamp FROM actions WHERE id = OLD.pid);
 END;
 
 DROP TRIGGER IF EXISTS actions_after_delete;
 CREATE TRIGGER actions_after_delete
          AFTER DELETE
             ON actions
-      FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM action_details
-          WHERE pid = OLD.id;
-    DELETE FROM ledger
-          WHERE timestamp >= OLD.timestamp;
-    DELETE FROM sequence
-          WHERE timestamp >= OLD.timestamp;
+    DELETE FROM action_details WHERE pid = OLD.id;
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
+    DELETE FROM sequence WHERE timestamp >= OLD.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS actions_after_insert;
 CREATE TRIGGER actions_after_insert
          AFTER INSERT
             ON actions
-      FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger
-          WHERE timestamp >= NEW.timestamp;
-    DELETE FROM sequence
-          WHERE timestamp >= NEW.timestamp;
+    DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
+    DELETE FROM sequence WHERE timestamp >= NEW.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS actions_after_update;
@@ -739,53 +692,33 @@ CREATE TRIGGER actions_after_update
                          account_id,
                          peer_id
             ON actions
-      FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger
-          WHERE timestamp >= OLD.timestamp OR
-                timestamp >= NEW.timestamp;
-    DELETE FROM sequence
-          WHERE timestamp >= OLD.timestamp OR
-                timestamp >= NEW.timestamp;
+    DELETE FROM ledger  WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    DELETE FROM sequence WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS dividends_after_delete;
 CREATE TRIGGER dividends_after_delete
          AFTER DELETE
             ON dividends
-      FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger
-          WHERE timestamp >= OLD.timestamp;
-    DELETE FROM sequence
-          WHERE timestamp >= OLD.timestamp;
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
+    DELETE FROM sequence WHERE timestamp >= OLD.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS dividends_after_insert;
 CREATE TRIGGER dividends_after_insert
          AFTER INSERT
             ON dividends
-      FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger
-          WHERE timestamp >= NEW.timestamp;
-    DELETE FROM sequence
-          WHERE timestamp >= NEW.timestamp;
+    DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
+    DELETE FROM sequence WHERE timestamp >= NEW.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS dividends_after_update;
@@ -796,53 +729,35 @@ CREATE TRIGGER dividends_after_update
                          amount,
                          tax
             ON dividends
-      FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger
-          WHERE timestamp >= OLD.timestamp OR
-                timestamp >= NEW.timestamp;
-    DELETE FROM sequence
-          WHERE timestamp >= OLD.timestamp OR
-                timestamp >= NEW.timestamp;
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    DELETE FROM sequence WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS trades_after_delete;
 CREATE TRIGGER trades_after_delete
          AFTER DELETE
             ON trades
-      FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger
-          WHERE timestamp >= OLD.timestamp;
-    DELETE FROM sequence
-          WHERE timestamp >= OLD.timestamp;
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
+    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp;
+    DELETE FROM sequence WHERE timestamp >= OLD.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS trades_after_insert;
 CREATE TRIGGER trades_after_insert
          AFTER INSERT
             ON trades
-      FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger
-          WHERE timestamp >= NEW.timestamp;
-    DELETE FROM sequence
-          WHERE timestamp >= NEW.timestamp;
+    DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
+    DELETE FROM open_trades WHERE timestamp >= NEW.timestamp;
+    DELETE FROM sequence WHERE timestamp >= NEW.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS trades_after_update;
@@ -854,53 +769,36 @@ CREATE TRIGGER trades_after_update
                          price,
                          fee
             ON trades
-      FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger
-          WHERE timestamp >= OLD.timestamp OR
-                timestamp >= NEW.timestamp;
-    DELETE FROM sequence
-          WHERE timestamp >= OLD.timestamp OR
-                timestamp >= NEW.timestamp;
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    DELETE FROM sequence WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS corp_after_delete;
 CREATE TRIGGER corp_after_delete
          AFTER DELETE
             ON corp_actions
-      FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger
-          WHERE timestamp >= OLD.timestamp;
-    DELETE FROM sequence
-          WHERE timestamp >= OLD.timestamp;
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
+    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp;
+    DELETE FROM sequence WHERE timestamp >= OLD.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS corp_after_insert;
 CREATE TRIGGER corp_after_insert
          AFTER INSERT
             ON corp_actions
-      FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger
-          WHERE timestamp >= NEW.timestamp;
-    DELETE FROM sequence
-          WHERE timestamp >= NEW.timestamp;
+    DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
+    DELETE FROM open_trades WHERE timestamp >= NEW.timestamp;
+    DELETE FROM sequence WHERE timestamp >= NEW.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS corp_after_update;
@@ -913,57 +811,34 @@ CREATE TRIGGER corp_after_update
                          asset_id_new,
                          qty_new
             ON corp_actions
-      FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger
-          WHERE timestamp >= OLD.timestamp OR
-                timestamp >= NEW.timestamp;
-    DELETE FROM sequence
-          WHERE timestamp >= OLD.timestamp OR
-                timestamp >= NEW.timestamp;
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp  OR timestamp >= NEW.timestamp;
+    DELETE FROM sequence WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS transfers_after_delete;
 CREATE TRIGGER transfers_after_delete
          AFTER DELETE
             ON transfers
-      FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger
-          WHERE timestamp >= OLD.withdrawal_timestamp OR
-                timestamp >= OLD.deposit_timestamp;
-    DELETE FROM sequence
-          WHERE timestamp >= OLD.withdrawal_timestamp OR
-                timestamp >= OLD.deposit_timestamp;
+    DELETE FROM ledger WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp;
+    DELETE FROM sequence WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp;
 END;
 
 DROP TRIGGER IF EXISTS transfers_after_insert;
 CREATE TRIGGER transfers_after_insert
          AFTER INSERT
             ON transfers
-      FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger
-          WHERE timestamp >= NEW.withdrawal_timestamp OR
-                timestamp >= NEW.deposit_timestamp;
-    DELETE FROM sequence
-          WHERE timestamp >= NEW.withdrawal_timestamp OR
-                timestamp >= NEW.deposit_timestamp;
+    DELETE FROM ledger WHERE timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
+    DELETE FROM sequence WHERE timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
 END;
 
 DROP TRIGGER IF EXISTS transfers_after_update;
@@ -978,12 +853,8 @@ CREATE TRIGGER transfers_after_update
                          fee,
                          asset
             ON transfers
-      FOR EACH ROW
-          WHEN (
-    SELECT value
-      FROM settings
-     WHERE id = 1
-)
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger
           WHERE timestamp >= OLD.withdrawal_timestamp OR
