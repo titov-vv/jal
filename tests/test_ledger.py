@@ -71,6 +71,59 @@ def test_ledger(prepare_db_ledger):
         assert row['amount_acc'] == expected_book_values[row['book_account']]
 
 
+def test_buy_sell_change(prepare_db_fifo):
+    # Prepare single stock
+    assert executeSQL("INSERT INTO assets (id, name, type_id, full_name) VALUES (4, 'A', :type, 'A SHARE')",
+                      [(":type", PredefinedAsset.Stock)], commit=True) is not None
+
+    test_trades = [
+        (1, 1609567200, 1609653600, 4, 10.0, 100.0, 1.0),
+        (2, 1609653600, 1609740000, 4, -7.0, 200.0, 5.0)
+    ]
+    for trade in test_trades:
+        assert executeSQL(
+            "INSERT INTO trades (id, timestamp, settlement, account_id, asset_id, qty, price, fee) "
+            "VALUES (:id, :timestamp, :settlement, 1, :asset, :qty, :price, :fee)",
+            [(":id", trade[0]), (":timestamp", trade[1]), (":settlement", trade[2]), (":asset", trade[3]),
+             (":qty", trade[4]), (":price", trade[5]), (":fee", trade[6])]) is not None
+
+    # Build ledger
+    ledger = Ledger()
+    ledger.rebuild(from_timestamp=0)
+
+    # Validate initial deal quantity
+    assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
+    assert readSQL("SELECT qty FROM deals WHERE asset_id=4") == 7.0
+
+    # Modify closing deal quantity
+    _ = executeSQL("UPDATE trades SET qty=-5 WHERE id=2")
+
+    # Re-build ledger from last actual data
+    ledger.rebuild()
+
+    # Check that deal quantity remains correct
+    assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
+    assert readSQL("SELECT qty FROM deals WHERE asset_id=4") == 5.0
+
+    # Add one more trade
+    assert executeSQL("INSERT INTO trades (id, timestamp, settlement, account_id, asset_id, qty, price, fee) "
+                      "VALUES (3, 1609815600, 1609902000, 1, 4, -8, 150, 3.0)") is not None
+
+    # Re-build ledger from last actual data
+    ledger.rebuild()
+
+    # Check that deal quantity remains correct
+    assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 2
+
+    _ = executeSQL("DELETE FROM trades WHERE id=2", commit=True)
+    # Re-build ledger from last actual data
+    ledger.rebuild()
+
+    # Check that deal quantity remains correct
+    assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
+    assert readSQL("SELECT qty FROM deals WHERE asset_id=4") == 8.0
+
+
 def test_fifo(prepare_db_fifo):
     # Prepare trades and corporate actions setup
     test_assets = [
