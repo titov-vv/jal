@@ -258,7 +258,7 @@ class Ledger(QObject):
                                "WHERE c.id=:corp_action_id", [(":corp_action_id", opening_trade['operation_id']),
                                                               (":asset_id", asset_id), (":spinoff", CorporateAction.SpinOff)])
                 else:
-                    raise ValueError("Unexpected open trade operation")
+                    raise ValueError(self.tr("Unexpected open trade operation"))
 
                 next_deal_qty = opening_trade['remaining_qty']
                 if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
@@ -381,11 +381,11 @@ class Ledger(QObject):
                     [(":corp_action_id", opening_trade['operation_id']), (":asset_id", asset_id),
                      (":spinoff", CorporateAction.SpinOff)])
             else:
-                raise ValueError("Unexpected open trade operation")
+                raise ValueError(self.tr("Unexpected open trade operation"))
 
             next_deal_qty = opening_trade['remaining_qty']
             if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
-                assert True, self.tr("Unhandled case: Corporate action covers not full open position")
+                raise ValueError(self.tr("Unhandled case: Corporate action covers not full open position"))
             _ = executeSQL("DELETE FROM open_trades WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
                            [(":op_type", opening_trade['op_type']), (":id", opening_trade['operation_id']), (":asset_id", asset_id)])
 
