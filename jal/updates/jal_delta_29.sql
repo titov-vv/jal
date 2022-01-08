@@ -262,6 +262,7 @@ CREATE TABLE open_trades (
     asset_id      INTEGER NOT NULL
                           REFERENCES assets (id) ON DELETE CASCADE
                                                  ON UPDATE CASCADE,
+    price         REAL    NOT NULL,
     remaining_qty REAL    NOT NULL
 );
 

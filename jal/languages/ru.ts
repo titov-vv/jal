@@ -1117,28 +1117,28 @@ Application will be terminated now</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="329"/>
-        <location filename="../db/ledger.py" line="462"/>
+        <location filename="../db/ledger.py" line="310"/>
+        <location filename="../db/ledger.py" line="427"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="388"/>
+        <location filename="../db/ledger.py" line="351"/>
         <source>Unhandled case: Corporate action covers not full open position</source>
         <translation>Неподдерживаемый случай: Корпоративное событие не для всей открытой позиции</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="463"/>
+        <location filename="../db/ledger.py" line="428"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation> операций требуют перерасчета. Вы ходите выполнить его прямо сейчас?</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="512"/>
+        <location filename="../db/ledger.py" line="477"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation>Итоги рассчитаны. Затраченное время: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="513"/>
+        <location filename="../db/ledger.py" line="478"/>
         <source>, new frontier: </source>
         <translation>, новая граница: </translation>
     </message>
@@ -1148,22 +1148,22 @@ Application will be terminated now</source>
         <translation>Невозможно обработать дивиденд, т.к. не указан банк для инвестиционного счёта</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="354"/>
+        <location filename="../db/ledger.py" line="335"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation>Количество акций недостаточно для обработки корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="468"/>
+        <location filename="../db/ledger.py" line="433"/>
         <source>Leger is empty</source>
         <translation>Транзакции отсутствуют</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="474"/>
+        <location filename="../db/ledger.py" line="439"/>
         <source>Re-building ledger since: </source>
         <translation>Пересчёт итогов с: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="330"/>
+        <location filename="../db/ledger.py" line="311"/>
         <source>Stock dividend for was updated for </source>
         <translation>Дивиденд акциями был обновлён для </translation>
     </message>
@@ -1173,13 +1173,7 @@ Application will be terminated now</source>
         <translation>Невозможно обработать сделку, т.к. не указан банк для инвестиционного счёта</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="261"/>
-        <location filename="../db/ledger.py" line="384"/>
-        <source>Unexpected open trade operation</source>
-        <translation>Сделка открыта неподдерживаемой операцией</translation>
-    </message>
-    <message>
-        <location filename="../db/ledger.py" line="332"/>
+        <location filename="../db/ledger.py" line="313"/>
         <source>Please check that quantity is correct.</source>
         <translation>Пожалуйста проверьте корректность количества бумаг.</translation>
     </message>
@@ -1189,7 +1183,7 @@ Application will be terminated now</source>
         <translation>Невозможно обработать операцию без детальной информации</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="321"/>
+        <location filename="../db/ledger.py" line="302"/>
         <source>Unexpected data in transfer transaction</source>
         <translation>Невозможно обработать трансфер</translation>
     </message>

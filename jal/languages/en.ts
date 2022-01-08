@@ -1115,28 +1115,28 @@ Application will be terminated now</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="329"/>
-        <location filename="../db/ledger.py" line="462"/>
+        <location filename="../db/ledger.py" line="310"/>
+        <location filename="../db/ledger.py" line="427"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="388"/>
+        <location filename="../db/ledger.py" line="351"/>
         <source>Unhandled case: Corporate action covers not full open position</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="463"/>
+        <location filename="../db/ledger.py" line="428"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="512"/>
+        <location filename="../db/ledger.py" line="477"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="513"/>
+        <location filename="../db/ledger.py" line="478"/>
         <source>, new frontier: </source>
         <translation></translation>
     </message>
@@ -1146,22 +1146,22 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="354"/>
+        <location filename="../db/ledger.py" line="335"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="468"/>
+        <location filename="../db/ledger.py" line="433"/>
         <source>Leger is empty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="474"/>
+        <location filename="../db/ledger.py" line="439"/>
         <source>Re-building ledger since: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="330"/>
+        <location filename="../db/ledger.py" line="311"/>
         <source>Stock dividend for was updated for </source>
         <translation></translation>
     </message>
@@ -1171,13 +1171,7 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="261"/>
-        <location filename="../db/ledger.py" line="384"/>
-        <source>Unexpected open trade operation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../db/ledger.py" line="332"/>
+        <location filename="../db/ledger.py" line="313"/>
         <source>Please check that quantity is correct.</source>
         <translation></translation>
     </message>
@@ -1187,7 +1181,7 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="321"/>
+        <location filename="../db/ledger.py" line="302"/>
         <source>Unexpected data in transfer transaction</source>
         <translation></translation>
     </message>
