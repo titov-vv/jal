@@ -12,11 +12,11 @@ from jal.widgets.delegates import WidgetMapperDelegateBase
 class TradeWidgetDelegate(WidgetMapperDelegateBase):
     def __init__(self, parent=None):
         WidgetMapperDelegateBase.__init__(self, parent)
-        self.delegates = {1: self.timestamp_delegate,
-                       2: self.timestamp_delegate,
-                       6: self.float_delegate,
-                       7: self.float_delegate,
-                       8: self.float_delegate}
+        self.delegates = {'timestamp': self.timestamp_delegate,
+                          'settlement': self.timestamp_delegate,
+                          'qty': self.float_delegate,
+                          'price': self.float_delegate,
+                          'fee': self.float_delegate}
 
 
 # ----------------------------------------------------------------------------------------------------------------------

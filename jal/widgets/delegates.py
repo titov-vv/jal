@@ -22,9 +22,9 @@ class WidgetMapperDelegateBase(QStyledItemDelegate):
         self.delegates = {}
 
     def get_delegate(self, index):
-        column = index.column()
+        column_name = index.model().record().fieldName(index.column())
         try:
-            delegate = self.delegates[column]
+            delegate = self.delegates[column_name]
         except KeyError:
             delegate = self.default
         return delegate

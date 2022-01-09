@@ -13,11 +13,11 @@ from jal.widgets.delegates import WidgetMapperDelegateBase
 class TransferWidgetDelegate(WidgetMapperDelegateBase):
     def __init__(self, parent=None):
         WidgetMapperDelegateBase.__init__(self, parent)
-        self.delegates = {1: self.timestamp_delegate,
-                          3: self.float_delegate,
-                          4: self.timestamp_delegate,
-                          6: self.float_delegate,
-                          8: self.float_delegate}
+        self.delegates = {'withdrawal_timestamp': self.timestamp_delegate,
+                          'withdrawal': self.float_delegate,
+                          'deposit_timestamp': self.timestamp_delegate,
+                          'deposit': self.float_delegate,
+                          'fee': self.float_delegate}
 
 
 # ----------------------------------------------------------------------------------------------------------------------

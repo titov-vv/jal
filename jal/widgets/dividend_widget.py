@@ -12,10 +12,10 @@ from jal.widgets.delegates import WidgetMapperDelegateBase
 class DividendWidgetDelegate(WidgetMapperDelegateBase):
     def __init__(self, parent=None):
         WidgetMapperDelegateBase.__init__(self, parent)
-        self.delegates = {1: self.timestamp_delegate,
-                          2: self.timestamp_delegate,
-                          7: self.float_delegate,
-                          8: self.float_delegate}
+        self.delegates = {'timestamp': self.timestamp_delegate,
+                          'ex_date': self.timestamp_delegate,
+                          'amount': self.float_delegate,
+                          'tax': self.float_delegate}
 
 
 # ----------------------------------------------------------------------------------------------------------------------

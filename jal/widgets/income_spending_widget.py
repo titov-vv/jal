@@ -17,7 +17,7 @@ from jal.widgets.delegates import WidgetMapperDelegateBase, FloatDelegate, Categ
 class IncomeSpendingWidgetDelegate(WidgetMapperDelegateBase):
     def __init__(self, parent=None):
         WidgetMapperDelegateBase.__init__(self, parent)
-        self.delegates = {1: self.timestamp_delegate}
+        self.delegates = {'timestamp': self.timestamp_delegate}
 
 
 # ----------------------------------------------------------------------------------------------------------------------

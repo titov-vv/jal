@@ -12,10 +12,10 @@ from jal.widgets.delegates import WidgetMapperDelegateBase
 class CorporateActionWidgetDelegate(WidgetMapperDelegateBase):
     def __init__(self, parent=None):
         WidgetMapperDelegateBase.__init__(self, parent)
-        self.delegates = {1: self.timestamp_delegate,
-                             6: self.float_delegate,
-                             8: self.float_delegate,
-                             9: self.float_delegate}
+        self.delegates = {'timestamp': self.timestamp_delegate,
+                          'qty': self.float_delegate,
+                          'qty_new': self.float_delegate,
+                          'basis_ratio': self.float_delegate}
 
 
 # ----------------------------------------------------------------------------------------------------------------------
