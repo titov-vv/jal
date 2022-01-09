@@ -885,23 +885,21 @@ CREATE VIEW deals_ext AS
            d.qty * (coalesce(ct.price, ot.price) - coalesce(ot.price, ols.value_acc / ols.amount_acc) ) - (coalesce(ot.fee * abs(d.qty / ot.qty), 0) + coalesce(ct.fee * abs(d.qty / ct.qty), 0) ) AS profit,
            coalesce(100 * (d.qty * (coalesce(ct.price, ot.price) - coalesce(ot.price, ols.value_acc / ols.amount_acc) ) - (coalesce(ot.fee * abs(d.qty / ot.qty), 0) + coalesce(ct.fee * abs(d.qty / ct.qty), 0) ) ) / abs(d.qty * coalesce(ot.price, ols.value_acc / ols.amount_acc) ), 0) AS rel_profit,
            coalesce(oca.type, -cca.type) AS corp_action
-      FROM deals AS d
+    FROM deals AS d
           -- Get more information about trade/corp.action that opened the deal
-           LEFT JOIN sequence AS os ON d.open_sid = os.id
-           LEFT JOIN trades AS ot ON ot.id = os.operation_id AND os.type = ot.op_type
-           LEFT JOIN corp_actions AS oca ON oca.id = os.operation_id AND os.type = oca.op_type
+           LEFT JOIN trades AS ot ON ot.id=d.open_op_id AND ot.op_type=d.open_op_type
+           LEFT JOIN corp_actions AS oca ON oca.id=d.open_op_id AND oca.op_type=d.open_op_type
           -- Collect value of stock that was accumulated before corporate action
            LEFT JOIN ledger AS ols ON ols.sid = d.open_sid AND ols.asset_id = d.asset_id AND ols.value_acc != 0
           -- Get more information about trade/corp.action that opened the deal
-           LEFT JOIN sequence AS cs ON d.close_sid = cs.id
-           LEFT JOIN trades AS ct ON ct.id = cs.operation_id AND cs.type = ct.op_type
-           LEFT JOIN corp_actions AS cca ON cca.id = cs.operation_id AND cs.type = cca.op_type
+           LEFT JOIN trades AS ct ON ct.id=d.close_op_id AND ct.op_type=d.close_op_type
+           LEFT JOIN corp_actions AS cca ON cca.id=d.close_op_id AND cca.op_type=d.close_op_type
           -- "Decode" account and asset
            LEFT JOIN accounts AS ac ON d.account_id = ac.id
            LEFT JOIN assets AS at ON d.asset_id = at.id
      -- drop cases where deal was opened and closed with corporate action
-     WHERE NOT (os.type = 5 AND cs.type = 5)
-     ORDER BY close_timestamp, open_timestamp;
+     WHERE NOT (d.open_op_type = 5 AND d.close_op_type = 5)
+     ORDER BY close_timestamp, open_timestamp
 
 
 -- Trigger: action_details_after_delete
