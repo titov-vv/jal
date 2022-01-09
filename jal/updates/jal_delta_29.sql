@@ -542,8 +542,7 @@ WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledg
                       a.full_name AS note2
                  FROM corp_actions AS ca
                       LEFT JOIN assets AS a ON ca.asset_id_new = a.id
-                      LEFT JOIN sequence AS q ON q.type = ca.op_type AND ca.id = q.operation_id
-                      LEFT JOIN _ledger_last AS l ON l.sid = q.id AND l.asset_id = ca.asset_id_new AND l.book_account = 4
+                      LEFT JOIN _ledger_last AS l ON l.op_type = ca.op_type AND l.operation_id=ca.id AND l.asset_id = ca.asset_id_new AND l.book_account = 4
                UNION ALL
                SELECT t.op_type AS type,
                       iif(t.qty < 0, -1, 1) AS subtype,
@@ -560,8 +559,7 @@ WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledg
                       t.note AS note,
                       NULL AS note2
                  FROM trades AS t
-                      LEFT JOIN sequence AS q ON q.type = t.op_type AND t.id = q.operation_id
-                      LEFT JOIN _ledger_last AS l ON l.sid = q.id AND l.book_account = 4
+                      LEFT JOIN _ledger_last AS l ON l.op_type=t.op_type AND l.operation_id=t.id AND l.book_account = 4
                UNION ALL
                SELECT t.op_type AS type,
                       t.subtype,
@@ -620,9 +618,8 @@ WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledg
            LEFT JOIN accounts AS a ON m.account_id = a.id
            LEFT JOIN assets AS s ON m.asset_id = s.id
            LEFT JOIN assets AS c ON a.currency_id = c.id
-           LEFT JOIN sequence AS q ON m.type = q.type AND m.subtype = q.subtype AND m.id = q.operation_id
-           LEFT JOIN _ledger_last AS money ON money.sid = q.id AND money.account_id = m.account_id AND money.book_account = 3
-           LEFT JOIN _ledger_last AS debt ON debt.sid = q.id AND debt.account_id = m.account_id AND debt.book_account = 5
+           LEFT JOIN _ledger_last AS money ON money.op_type=m.type AND money.operation_id=m.id AND money.account_id = m.account_id AND money.book_account = 3
+           LEFT JOIN _ledger_last AS debt ON debt.op_type=m.type AND debt.operation_id=m.id AND debt.account_id = m.account_id AND debt.book_account = 5
      ORDER BY m.timestamp;
 --------------------------------------------------------------------------------
 -- Recreate view deals_ext to use ledger instead of ledger_sums
