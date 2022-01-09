@@ -233,7 +233,7 @@ class Ledger(QObject):
             # Get a list of all previous not matched trades or corporate actions
             query = executeSQL("SELECT timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty "
                                "FROM open_trades "
-                               "WHERE account_id=:account_id AND asset_id=:asset_id "
+                               "WHERE account_id=:account_id AND asset_id=:asset_id AND remaining_qty!=0 "
                                "ORDER BY timestamp, op_type DESC",
                                [(":account_id", account_id), (":asset_id", asset_id)])
             while query.next():
@@ -244,18 +244,14 @@ class Ledger(QObject):
                 next_deal_qty = opening_trade['remaining_qty']
                 if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
                     next_deal_qty = qty - processed_qty  # If it happens - just process the remainder of the trade
-                    _ = executeSQL("UPDATE open_trades SET remaining_qty=remaining_qty-:qty "
-                                   "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
-                                   [(":qty", next_deal_qty), (":op_type", opening_trade['op_type']),
-                                    (":id", opening_trade['operation_id']), (":asset_id", asset_id)])
-                else:
-                    _ = executeSQL("DELETE FROM open_trades WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
-                                   [(":op_type", opening_trade['op_type']), (":id", opening_trade['operation_id']), (":asset_id", asset_id)])
-                # Create a deal with relevant sign of quantity (-1 for short, +1 for long)
-                _ = executeSQL("INSERT INTO deals(account_id, asset_id, open_sid, close_sid, qty) "
-                               "VALUES(:account_id, :asset_id, :open_sid, :close_sid, :qty)",
-                               [(":account_id", account_id), (":asset_id", asset_id), (":open_sid", deal_sid),
-                                (":close_sid", seq_id), (":qty", (-type)*next_deal_qty)])
+                _ = executeSQL("UPDATE open_trades SET remaining_qty=remaining_qty-:qty "
+                               "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
+                               [(":qty", next_deal_qty), (":op_type", opening_trade['op_type']),
+                                (":id", opening_trade['operation_id']), (":asset_id", asset_id)])
+                _ = executeSQL("INSERT INTO deals(account_id, asset_id, open_sid, open_op_type, open_op_id, close_sid, close_op_type, close_op_id, qty) "
+                               "VALUES(:account_id, :asset_id, :open_sid, :open_op_type, :open_op_id, :close_sid, :close_op_type, :close_op_id, :qty)",
+                               [(":account_id", account_id), (":asset_id", asset_id), (":open_sid", deal_sid), (":open_op_type", opening_trade['op_type']), (":open_op_id", opening_trade['operation_id']),
+                                (":close_sid", seq_id), (":close_op_type", TransactionType.Trade), (":close_op_id", self.current['id']), (":qty", (-type)*next_deal_qty)])
                 processed_qty += next_deal_qty
                 processed_value += (next_deal_qty * opening_trade['price'])
                 if processed_qty == qty:
@@ -338,7 +334,7 @@ class Ledger(QObject):
         # Get a list of all previous not matched trades or corporate actions
         query = executeSQL("SELECT timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty "
                            "FROM open_trades "
-                           "WHERE account_id=:account_id AND asset_id=:asset_id "
+                           "WHERE account_id=:account_id AND asset_id=:asset_id  AND remaining_qty!=0 "
                            "ORDER BY timestamp, op_type DESC",
                            [(":account_id", account_id), (":asset_id", asset_id)])
         while query.next():
@@ -349,14 +345,16 @@ class Ledger(QObject):
             next_deal_qty = opening_trade['remaining_qty']
             if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
                 raise ValueError(self.tr("Unhandled case: Corporate action covers not full open position"))
-            _ = executeSQL("DELETE FROM open_trades WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
-                           [(":op_type", opening_trade['op_type']), (":id", opening_trade['operation_id']), (":asset_id", asset_id)])
+            _ = executeSQL("UPDATE open_trades SET remaining_qty=0 "
+                           "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
+                           [(":op_type", opening_trade['op_type']),(":id", opening_trade['operation_id']),
+                            (":asset_id", asset_id)])
 
             # Create a deal with relevant sign of quantity (-1 for short, +1 for long)
-            _ = executeSQL("INSERT INTO deals(account_id, asset_id, open_sid, close_sid, qty) "
-                           "VALUES(:account_id, :asset_id, :open_sid, :close_sid, :qty)",
-                           [(":account_id", account_id), (":asset_id", asset_id), (":open_sid", deal_sid),
-                            (":close_sid", seq_id), (":qty", next_deal_qty)])
+            _ = executeSQL("INSERT INTO deals(account_id, asset_id, open_sid, open_op_type, open_op_id, close_sid, close_op_type, close_op_id, qty) "
+                           "VALUES(:account_id, :asset_id, :open_sid, :open_op_type, :open_op_id, :close_sid, :close_op_type, :close_op_id, :qty)",
+                           [(":account_id", account_id), (":asset_id", asset_id), (":open_sid", deal_sid), (":open_op_type", opening_trade['op_type']),(":open_op_id", opening_trade['operation_id']),
+                            (":close_sid", seq_id), (":close_op_type", TransactionType.CorporateAction), (":close_op_id", self.current['id']), (":qty", next_deal_qty)])
             processed_qty += next_deal_qty
             processed_value += (next_deal_qty * opening_trade['price'])
             if processed_qty == qty:

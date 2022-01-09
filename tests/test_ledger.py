@@ -6,6 +6,21 @@ from jal.db.ledger import Ledger
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
 
 
+#-----------------------------------------------------------------------------------------------------------------------
+# Helper functions for unification
+def create_action(action):
+    assert executeSQL("INSERT INTO actions (id, timestamp, account_id, peer_id) "
+                      "VALUES (:id, :timestamp, :account, :peer)",
+                      [(":id", action[0]), (":timestamp", action[1]),
+                       (":account", action[2]), (":peer", action[3])], commit=True) is not None
+    for detail in action[4]:
+        assert executeSQL("INSERT INTO action_details (id, pid, category_id, amount) "
+                          "VALUES (:id, :pid, :category, :amount)",
+                          [(":id", detail[0]), (":pid", action[0]),
+                           (":category", detail[1]), (":amount", detail[2])], commit=True) is not None
+
+
+#-----------------------------------------------------------------------------------------------------------------------
 def test_empty_ledger(prepare_db_ledger):
     # Build ledger from scratch
     ledger = Ledger()
@@ -20,15 +35,7 @@ def test_ledger(prepare_db_ledger):
     ]
 
     for action in actions:
-        assert executeSQL("INSERT INTO actions (id, timestamp, account_id, peer_id) "
-                          "VALUES (:id, :timestamp, :account, :peer)",
-                          [(":id", action[0]), (":timestamp", action[1]),
-                           (":account", action[2]), (":peer", action[3])], commit=True) is not None
-        for detail in action[4]:
-            assert executeSQL("INSERT INTO action_details (id, pid, category_id, amount) "
-                              "VALUES (:id, :pid, :category, :amount)",
-                              [(":id", detail[0]), (":pid", action[0]),
-                               (":category", detail[1]), (":amount", detail[2])], commit=True) is not None
+        create_action(action)
 
     # Build ledger from scratch
     ledger = Ledger()
@@ -48,15 +55,7 @@ def test_ledger(prepare_db_ledger):
     ]
 
     for action in actions:
-        assert executeSQL("INSERT INTO actions (id, timestamp, account_id, peer_id) "
-                          "VALUES (:id, :timestamp, :account, :peer)",
-                          [(":id", action[0]), (":timestamp", action[1]),
-                           (":account", action[2]), (":peer", action[3])], commit=True) is not None
-        for detail in action[4]:
-            assert executeSQL("INSERT INTO action_details (id, pid, category_id, amount) "
-                              "VALUES (:id, :pid, :category, :amount)",
-                              [(":id", detail[0]), (":pid", action[0]),
-                               (":category", detail[1]), (":amount", detail[2])], commit=True) is not None
+        create_action(action)
 
     # Build ledger for recent transactions only
     ledger = Ledger()
@@ -78,7 +77,7 @@ def test_buy_sell_change(prepare_db_fifo):
 
     test_trades = [
         (1, 1609567200, 1609653600, 4, 10.0, 100.0, 1.0),
-        (2, 1609653600, 1609740000, 4, -7.0, 200.0, 5.0)
+        (2, 1609729200, 1609815600, 4, -7.0, 200.0, 5.0)
     ]
     for trade in test_trades:
         assert executeSQL(
@@ -86,6 +85,9 @@ def test_buy_sell_change(prepare_db_fifo):
             "VALUES (:id, :timestamp, :settlement, 1, :asset, :qty, :price, :fee)",
             [(":id", trade[0]), (":timestamp", trade[1]), (":settlement", trade[2]), (":asset", trade[3]),
              (":qty", trade[4]), (":price", trade[5]), (":fee", trade[6])]) is not None
+
+    # insert action between trades to shift frontier
+    create_action((2, 1609642800, 1, 1, [(2, 7, 100.0)]))
 
     # Build ledger
     ledger = Ledger()
@@ -103,6 +105,7 @@ def test_buy_sell_change(prepare_db_fifo):
 
     # Check that deal quantity remains correct
     assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
+    assert readSQL("SELECT COUNT(*) FROM open_trades WHERE asset_id=4") == 1
     assert readSQL("SELECT qty FROM deals WHERE asset_id=4") == 5.0
 
     # Add one more trade

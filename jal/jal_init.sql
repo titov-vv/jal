@@ -474,16 +474,31 @@ CREATE TABLE trades (
 DROP TABLE IF EXISTS deals;
 
 CREATE TABLE deals (
-    id             INTEGER PRIMARY KEY
-                           UNIQUE
-                           NOT NULL,
-    account_id     INTEGER NOT NULL,
-    asset_id       INTEGER NOT NULL,
-    open_sid  INTEGER NOT NULL,
-    close_sid INTEGER NOT NULL,
-    qty            REAL    NOT NULL
+    id            INTEGER PRIMARY KEY
+                          UNIQUE
+                          NOT NULL,
+    account_id    INTEGER NOT NULL,
+    asset_id      INTEGER NOT NULL,
+    open_sid      INTEGER NOT NULL,
+    open_op_type  INTEGER NOT NULL,
+    open_op_id    INTEGER NOT NULL,
+    close_sid     INTEGER NOT NULL,
+    close_op_type INTEGER NOT NULL,
+    close_op_id   INTEGER NOT NULL,
+    qty           REAL    NOT NULL
 );
 
+
+CREATE TRIGGER on_deal_delete
+         AFTER DELETE
+            ON deals
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
+BEGIN
+    UPDATE open_trades
+       SET remaining_qty = remaining_qty + OLD.qty
+     WHERE op_type=OLD.open_op_type AND operation_id=OLD.open_op_id AND account_id=OLD.account_id AND asset_id = OLD.asset_id;
+END;
 
 -- Table: transfers
 DROP TABLE IF EXISTS transfers;
