@@ -792,7 +792,7 @@ class TaxesRus:
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_corporate_actions(self):
         # get list of all deals that were opened with corp.action and closed by normal trade
-        query = executeSQL("SELECT d.open_sid AS sid, s.name AS symbol, d.qty AS qty, t.number AS trade_number, "
+        query = executeSQL("SELECT d.open_op_id AS operation_id, s.name AS symbol, d.qty AS qty, t.number AS trade_number, "
                            "t.timestamp AS t_date, qt.quote AS t_rate, t.settlement AS s_date, qts.quote AS s_rate, "
                            "t.price AS price, t.fee AS fee, s.full_name AS full_name, s.isin AS isin "
                            "FROM deals AS d "
@@ -837,44 +837,44 @@ class TaxesRus:
             sale['spending_rub'] = sale['fee_rub']
 
             if sale["t_date"] < self.year_begin:    # Don't show deal that is before report year (level = -1)
-                row = self.proceed_corporate_action(sale['sid'], sale['symbol'], sale['qty'], basis, -1, row, even_odd)
+                row = self.proceed_corporate_action(sale['operation_id'], sale['symbol'], sale['qty'], basis, -1, row, even_odd)
             else:
                 self.add_report_row(row, sale, even_odd=even_odd)
                 row += 1
-                row = self.proceed_corporate_action(sale['sid'], sale['symbol'], sale['qty'], basis, 1, row, even_odd)
+                row = self.proceed_corporate_action(sale['operation_id'], sale['symbol'], sale['qty'], basis, 1, row, even_odd)
                 self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [14, 15, 16])
                 row += 1
 
             even_odd = even_odd + 1
         return row
 
-    def proceed_corporate_action(self, sid, symbol, qty, basis, level, row, even_odd):
-        row, qty, symbol, basis = self.output_corp_action(sid, symbol, qty, basis, level, row, even_odd)
+    def proceed_corporate_action(self, operation_id, symbol, qty, basis, level, row, even_odd):
+        row, qty, symbol, basis = self.output_corp_action(operation_id, symbol, qty, basis, level, row, even_odd)
         next_level = -1 if level == -1 else (level + 1)
-        row = self.next_corporate_action(sid, symbol, qty, basis, next_level, row, even_odd)
+        row = self.next_corporate_action(operation_id, symbol, qty, basis, next_level, row, even_odd)
         return row
 
-    def next_corporate_action(self, sid, symbol, qty, basis, level, row, even_odd):
+    # operation_id - id of corporate action
+    def next_corporate_action(self, operation_id, symbol, qty, basis, level, row, even_odd):
         # get list of deals that were closed as result of current corporate action
-        open_query = executeSQL("SELECT d.open_sid AS open_sid, os.type AS op_type "
+        open_query = executeSQL("SELECT d.open_op_id AS open_op_id, d.open_op_type AS op_type "
                                 "FROM deals AS d "
-                                "JOIN sequence AS os ON os.id=d.open_sid AND (os.type = :trade OR os.type = :corp_action) "
-                                "WHERE d.close_sid = :sid "
+                                "WHERE d.close_op_id=:close_op_id AND d.close_op_type=:corp_action "
                                 "ORDER BY d.open_sid",
-                                [(":sid", sid), (":trade", TransactionType.Trade),
-                                 (":corp_action", TransactionType.CorporateAction)])
+                                [(":close_op_id", operation_id), (":corp_action", TransactionType.CorporateAction)])
         while open_query.next():
-            open_sid, op_type = readSQLrecord(open_query)
+            open_id, open_type = readSQLrecord(open_query)
 
-            if op_type == TransactionType.Trade:
-                row, qty = self.output_purchase(open_sid, qty, basis, level, row, even_odd)
-            elif op_type == TransactionType.CorporateAction:
-                row = self.proceed_corporate_action(open_sid, symbol, qty, basis, level, row, even_odd)
+            if open_type == TransactionType.Trade:
+                row, qty = self.output_purchase(open_id, qty, basis, level, row, even_odd)
+            elif open_type == TransactionType.CorporateAction:
+                row = self.proceed_corporate_action(open_id, symbol, qty, basis, level, row, even_odd)
             else:
                 assert False
         return row
 
-    def output_purchase(self, sid, proceed_qty, basis, level, row, even_odd):
+    # operation_id - id of buy operation
+    def output_purchase(self, operation_id, proceed_qty, basis, level, row, even_odd):
         if proceed_qty <= 0:
             return row, proceed_qty
 
@@ -882,9 +882,8 @@ class TaxesRus:
                            "coalesce(d.qty-SUM(lq.total_value), d.qty) AS qty, "
                            "t.timestamp AS t_date, qt.quote AS t_rate, t.number AS trade_number, "
                            "t.settlement AS s_date, qts.quote AS s_rate, t.price AS price, t.fee AS fee "
-                           "FROM sequence AS os "
-                           "JOIN deals AS d ON os.id=d.open_sid AND os.type = :trade "
-                           "LEFT JOIN trades AS t ON os.operation_id=t.id "
+                           "FROM trades AS t "
+                           "JOIN deals AS d ON t.id=d.open_op_id AND t.op_type=d.open_op_type "
                            "LEFT JOIN assets AS s ON t.asset_id=s.id "
                            "LEFT JOIN accounts AS a ON a.id = t.account_id "
                            "LEFT JOIN t_last_dates AS ldt ON t.timestamp=ldt.ref_id "
@@ -892,8 +891,8 @@ class TaxesRus:
                            "LEFT JOIN t_last_dates AS ldts ON t.settlement=ldts.ref_id "
                            "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id "
                            "LEFT JOIN t_last_assets AS lq ON lq.id = t.id "
-                           "WHERE os.id = :sid",
-                           [(":sid", sid), (":trade", TransactionType.Trade)], named=True)
+                           "WHERE t.id = :operation_id",
+                           [(":operation_id", operation_id)], named=True)
         if purchase['qty'] <= (2 * Setup.CALC_TOLERANCE):
             return row, proceed_qty  # This trade was fully mached before
 
@@ -915,7 +914,7 @@ class TaxesRus:
             row += 1
         return row, proceed_qty - purchase['qty']
 
-    def output_corp_action(self, sid, symbol, proceed_qty, basis, level, row, even_odd):
+    def output_corp_action(self, operation_id, symbol, proceed_qty, basis, level, row, even_odd):
         if proceed_qty <= 0:
             return row, proceed_qty
 
@@ -923,12 +922,11 @@ class TaxesRus:
                          "s1.name AS symbol, s1.isin AS isin, a.qty AS qty, "
                          "s2.name AS symbol_new, s2.isin AS isin_new, a.qty_new AS qty_new, "
                          "a.note AS note, a.basis_ratio "
-                         "FROM sequence AS os "
-                         "LEFT JOIN corp_actions AS a ON os.operation_id=a.id "
+                         "FROM corp_actions AS a "
                          "LEFT JOIN assets AS s1 ON a.asset_id=s1.id "
                          "LEFT JOIN assets AS s2 ON a.asset_id_new=s2.id "
-                         "WHERE os.id = :open_sid ",
-                         [(":open_sid", sid)], named=True)
+                         "WHERE a.id = :operation_id ",
+                         [(":operation_id", operation_id)], named=True)
         action['operation'] = ' ' * level * 3 + "Корп. действие"
         old_asset = f"{action['symbol']} ({action['isin']})"
         new_asset = f"{action['symbol_new']} ({action['isin_new']})"
