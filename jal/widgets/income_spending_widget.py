@@ -9,6 +9,7 @@ from PySide6.QtSql import QSqlTableModel
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, PeerSelector
 from jal.widgets.account_select import OptionalCurrencyComboBox
+from jal.constants import TransactionType
 from jal.db.helpers import db_connection, executeSQL, load_icon
 from jal.widgets.delegates import WidgetMapperDelegateBase, FloatDelegate, CategorySelectorDelegate, TagSelectorDelegate
 
@@ -25,6 +26,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
         self.name = "Income/Spending"
+        self.operation_type = TransactionType.Action
 
         self.details_model = None
         self.category_delegate = CategorySelectorDelegate()
@@ -189,8 +191,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.details_model.setFilter(f"action_details.pid = 0")
 
     def prepareNew(self, account_id):
-        new_record = self.model.record()
-        new_record.setNull("id")
+        new_record = super().prepareNew(account_id)
         new_record.setValue("timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
         new_record.setValue("account_id", account_id)
         new_record.setValue("peer_id", 0)

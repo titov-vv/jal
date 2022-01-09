@@ -7,6 +7,7 @@ from jal.constants import Setup
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
+from jal.constants import TransactionType
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -25,6 +26,7 @@ class TransferWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
         self.name = "Transfer"
+        self.operation_type = TransactionType.Transfer
 
         self.from_date_label = QLabel(self)
         self.from_account_label = QLabel(self)
@@ -143,8 +145,7 @@ class TransferWidget(AbstractOperationDetails):
         super().saveChanges()
 
     def prepareNew(self, account_id):
-        new_record = self.model.record()
-        new_record.setNull("id")
+        new_record = super().prepareNew(account_id)
         new_record.setValue("withdrawal_timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
         new_record.setValue("withdrawal_account", account_id)
         new_record.setValue("withdrawal", 0)

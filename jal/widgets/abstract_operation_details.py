@@ -16,6 +16,7 @@ class AbstractOperationDetails(QWidget):
         self.mapper = None
         self.modified = False
         self.name = "N/A"
+        self.operation_type = None
 
         self.layout = QGridLayout(self)
         self.layout.setContentsMargins(2, 2, 2, 2)
@@ -93,6 +94,8 @@ class AbstractOperationDetails(QWidget):
 
     def prepareNew(self, account_id):
         new_record = self.model.record()
+        new_record.setNull("id")
+        new_record.setValue("op_type", self.operation_type)
         return new_record
 
     def copyNew(self):

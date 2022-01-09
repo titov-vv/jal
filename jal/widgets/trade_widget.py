@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QLabel, QDateTimeEdit, QDateEdit, QLineEdit
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
+from jal.constants import TransactionType
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -24,6 +25,7 @@ class TradeWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
         self.name = "Trade"
+        self.operation_type = TransactionType.Trade
 
         self.date_label = QLabel(self)
         self.settlement_label = QLabel()
@@ -115,8 +117,7 @@ class TradeWidget(AbstractOperationDetails):
         self.model.select()
 
     def prepareNew(self, account_id):
-        new_record = self.model.record()
-        new_record.setNull("id")
+        new_record = super().prepareNew(account_id)
         new_record.setValue("timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
         new_record.setValue("settlement", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
         new_record.setValue("number", '')
