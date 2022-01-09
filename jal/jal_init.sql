@@ -899,7 +899,7 @@ CREATE VIEW deals_ext AS
            LEFT JOIN assets AS at ON d.asset_id = at.id
      -- drop cases where deal was opened and closed with corporate action
      WHERE NOT (d.open_op_type = 5 AND d.close_op_type = 5)
-     ORDER BY close_timestamp, open_timestamp
+     ORDER BY close_timestamp, open_timestamp;
 
 
 -- Trigger: action_details_after_delete
