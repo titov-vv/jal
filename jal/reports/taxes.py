@@ -803,7 +803,7 @@ class TaxesRus:
                            "LEFT JOIN quotes AS qt ON ldt.timestamp=qt.timestamp AND a.currency_id=qt.asset_id "
                            "LEFT JOIN t_last_dates AS ldts ON t.settlement=ldts.ref_id "
                            "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id "
-                           "WHERE t.settlement<:end AND d.account_id=:account_id AND d.open_op_type=:corp_action"
+                           "WHERE t.settlement<:end AND d.account_id=:account_id AND d.open_op_type=:corp_action "
                            "ORDER BY s.name, t.timestamp",
                            [(":end", self.year_end), (":account_id", self.account_id),
                             (":corp_action", TransactionType.CorporateAction)])
