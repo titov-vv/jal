@@ -857,10 +857,10 @@ class TaxesRus:
     # operation_id - id of corporate action
     def next_corporate_action(self, operation_id, symbol, qty, basis, level, row, even_odd):
         # get list of deals that were closed as result of current corporate action
-        open_query = executeSQL("SELECT d.open_op_id AS open_op_id, d.open_op_type AS op_type "
-                                "FROM deals AS d "
-                                "WHERE d.close_op_id=:close_op_id AND d.close_op_type=:corp_action "
-                                "ORDER BY d.open_sid",
+        open_query = executeSQL("SELECT open_op_id AS open_op_id, open_op_type AS op_type "
+                                "FROM deals "
+                                "WHERE close_op_id=:close_op_id AND close_op_type=:corp_action "
+                                "ORDER BY id",
                                 [(":close_op_id", operation_id), (":corp_action", TransactionType.CorporateAction)])
         while open_query.next():
             open_id, open_type = readSQLrecord(open_query)

@@ -57,7 +57,7 @@ class LedgerAmounts(dict):
         except KeyError:
             amount = readSQL("SELECT amount_acc FROM ledger "
                              "WHERE book_account = :book AND account_id = :account_id AND asset_id = :asset_id "
-                             "ORDER BY sid DESC LIMIT 1",
+                             "ORDER BY id DESC LIMIT 1",
                              [(":book", key[BOOK]), (":account_id", key[ACCOUNT]), (":asset_id", key[ASSET])])
             amount = float(amount) if amount is not None else 0.0
             super().__setitem__(key, amount)
@@ -72,7 +72,6 @@ class Ledger(QObject):
     def __init__(self):
         QObject.__init__(self)
         self.current = {}
-        self.current_seq = -1
         self.amounts = LedgerAmounts()    # store last amount for [book, account, asset]
         self.values = LedgerAmounts()     # together with corresponding value
         self.main_window =None
@@ -94,7 +93,6 @@ class Ledger(QObject):
     #    of money in current account currency. Otherwise Amount contains only money value.
     # Method uses Account, Asset,Peer, Category and Tag values from current transaction
     def appendTransaction(self, book, amount, value=None):
-        seq_id = self.current_seq
         op_type = self.current['type']
         op_id = self.current['id']
         timestamp = self.current['timestamp']
@@ -117,11 +115,11 @@ class Ledger(QObject):
         if (abs(amount) + abs(value)) <= (4 * Setup.CALC_TOLERANCE):
             return  # we have zero amount - no reason to put it into ledger
 
-        _ = executeSQL("INSERT INTO ledger (timestamp, sid, op_type, operation_id, book_account, asset_id, account_id, "
+        _ = executeSQL("INSERT INTO ledger (timestamp, op_type, operation_id, book_account, asset_id, account_id, "
                        "amount, value, amount_acc, value_acc, peer_id, category_id, tag_id) "
-                       "VALUES(:timestamp, :sid, :op_type, :operation_id, :book, :asset_id, :account_id, "
+                       "VALUES(:timestamp, :op_type, :operation_id, :book, :asset_id, :account_id, "
                        ":amount, :value, :amount_acc, :value_acc, :peer_id, :category_id, :tag_id)",
-                       [(":timestamp", timestamp), (":sid", seq_id), (":op_type", op_type), (":operation_id", op_id),
+                       [(":timestamp", timestamp), (":op_type", op_type), (":operation_id", op_id),
                         (":book", book), (":asset_id", asset_id), (":account_id", account_id), (":amount", amount),
                         (":value", value), (":amount_acc", self.amounts[(book, account_id, asset_id)]),
                         (":value_acc", self.values[(book, account_id, asset_id)]),
@@ -216,7 +214,6 @@ class Ledger(QObject):
                           JalDB().get_account_name(self.current['account']))
             return
 
-        seq_id = self.current_seq
         account_id = self.current['account']
         asset_id = self.current['asset']
         type = copysign(1, self.current['amount'])  # 1 is buy, -1 is sell
@@ -238,9 +235,6 @@ class Ledger(QObject):
                                [(":account_id", account_id), (":asset_id", asset_id)])
             while query.next():
                 opening_trade = readSQLrecord(query, named=True)
-                deal_sid = readSQL("SELECT id FROM sequence WHERE type = :op_type AND operation_id=:op_id",
-                                   [(":op_type", opening_trade['op_type']), (":op_id", opening_trade['operation_id'])])
-
                 next_deal_qty = opening_trade['remaining_qty']
                 if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
                     next_deal_qty = qty - processed_qty  # If it happens - just process the remainder of the trade
@@ -248,10 +242,10 @@ class Ledger(QObject):
                                "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
                                [(":qty", next_deal_qty), (":op_type", opening_trade['op_type']),
                                 (":id", opening_trade['operation_id']), (":asset_id", asset_id)])
-                _ = executeSQL("INSERT INTO deals(account_id, asset_id, open_sid, open_op_type, open_op_id, close_sid, close_op_type, close_op_id, qty) "
-                               "VALUES(:account_id, :asset_id, :open_sid, :open_op_type, :open_op_id, :close_sid, :close_op_type, :close_op_id, :qty)",
-                               [(":account_id", account_id), (":asset_id", asset_id), (":open_sid", deal_sid), (":open_op_type", opening_trade['op_type']), (":open_op_id", opening_trade['operation_id']),
-                                (":close_sid", seq_id), (":close_op_type", TransactionType.Trade), (":close_op_id", self.current['id']), (":qty", (-type)*next_deal_qty)])
+                _ = executeSQL("INSERT INTO deals(account_id, asset_id, open_op_type, open_op_id, open_timestamp, close_op_type, close_op_id, close_timestamp, qty) "
+                               "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :close_op_type, :close_op_id, :close_timestamp, :qty)",
+                               [(":account_id", account_id), (":asset_id", asset_id), (":open_op_type", opening_trade['op_type']), (":open_op_id", opening_trade['operation_id']), (":open_timestamp", opening_trade['timestamp']),
+                                (":close_op_type", TransactionType.Trade), (":close_op_id", self.current['id']), (":close_timestamp", self.current['timestamp']), (":qty", (-type)*next_deal_qty)])
                 processed_qty += next_deal_qty
                 processed_value += (next_deal_qty * opening_trade['price'])
                 if processed_qty == qty:
@@ -317,7 +311,6 @@ class Ledger(QObject):
         if self.current['subtype'] == CorporateAction.StockDividend and self.current['amount'] < 0:
             self.updateStockDividendAssets()
 
-        seq_id = self.current_seq
         account_id = self.current['account']
         asset_id = self.current['asset']
         qty = self.current['amount']
@@ -339,9 +332,6 @@ class Ledger(QObject):
                            [(":account_id", account_id), (":asset_id", asset_id)])
         while query.next():
             opening_trade = readSQLrecord(query, named=True)
-            deal_sid = readSQL("SELECT id FROM sequence WHERE type = :op_type AND operation_id=:op_id",
-                               [(":op_type", opening_trade['op_type']), (":op_id", opening_trade['operation_id'])])
-
             next_deal_qty = opening_trade['remaining_qty']
             if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
                 raise ValueError(self.tr("Unhandled case: Corporate action covers not full open position"))
@@ -351,10 +341,10 @@ class Ledger(QObject):
                             (":asset_id", asset_id)])
 
             # Create a deal with relevant sign of quantity (-1 for short, +1 for long)
-            _ = executeSQL("INSERT INTO deals(account_id, asset_id, open_sid, open_op_type, open_op_id, close_sid, close_op_type, close_op_id, qty) "
-                           "VALUES(:account_id, :asset_id, :open_sid, :open_op_type, :open_op_id, :close_sid, :close_op_type, :close_op_id, :qty)",
-                           [(":account_id", account_id), (":asset_id", asset_id), (":open_sid", deal_sid), (":open_op_type", opening_trade['op_type']),(":open_op_id", opening_trade['operation_id']),
-                            (":close_sid", seq_id), (":close_op_type", TransactionType.CorporateAction), (":close_op_id", self.current['id']), (":qty", next_deal_qty)])
+            _ = executeSQL("INSERT INTO deals(account_id, asset_id, open_op_type, open_op_id, open_timestamp, close_op_type, close_op_id, close_timestamp, qty) "
+                           "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :close_op_type, :close_op_id, :close_timestamp, :qty)",
+                           [(":account_id", account_id), (":asset_id", asset_id), (":open_op_type", opening_trade['op_type']),(":open_op_id", opening_trade['operation_id']), (":open_timestamp", opening_trade['timestamp']),
+                            (":close_op_type", TransactionType.CorporateAction), (":close_op_id", self.current['id']), (":close_timestamp", self.current['timestamp']), (":qty", next_deal_qty)])
             processed_qty += next_deal_qty
             processed_value += (next_deal_qty * opening_trade['price'])
             if processed_qty == qty:
@@ -436,12 +426,9 @@ class Ledger(QObject):
         logging.info(self.tr("Re-building ledger since: ") +
                      f"{datetime.utcfromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
         start_time = datetime.now()
-        _ = executeSQL("DELETE FROM deals WHERE close_sid >= "
-                       "(SELECT coalesce(MIN(id), 0) FROM sequence WHERE timestamp >= :frontier)",
-                       [(":frontier", frontier)])
+        _ = executeSQL("DELETE FROM deals WHERE close_timestamp >= :frontier", [(":frontier", frontier)])
         _ = executeSQL("DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
         _ = executeSQL("DELETE FROM open_trades WHERE timestamp >= :frontier", [(":frontier", frontier)])
-        _ = executeSQL("DELETE FROM sequence WHERE timestamp >= :frontier", [(":frontier", frontier)], commit=True)
 
         db_triggers_disable()
         if fast_and_dirty:  # For 30k operations difference of execution time is - with 0:02:41 / without 0:11:44
@@ -456,11 +443,6 @@ class Ledger(QObject):
                     subtype = copysign(1, self.current['subtype'])
                 else:
                     subtype = self.current['subtype']
-                seq_query = executeSQL("INSERT INTO sequence(timestamp, type, subtype, operation_id) "
-                                       "VALUES(:timestamp, :type, :subtype, :operation_id)",
-                                       [(":timestamp", self.current['timestamp']), (":type", self.current['type']),
-                                        (":subtype", subtype), (":operation_id", self.current['id'])])
-                self.current_seq = seq_query.lastInsertId()
                 operationProcess[self.current['type']]()
                 if self.progress_bar is not None:
                     self.progress_bar.setValue(query.at())

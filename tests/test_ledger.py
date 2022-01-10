@@ -1,7 +1,7 @@
 from pytest import approx
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo, prepare_db_ledger
-from constants import PredefinedAsset, TransactionType
+from constants import PredefinedAsset, TransactionType, BookAccount
 from jal.db.ledger import Ledger
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
 
@@ -43,7 +43,7 @@ def test_ledger(prepare_db_ledger):
 
     # validate book amounts
     expected_book_values = [None, 130.0, -139.0, 9.0, None, 0.0]
-    query = executeSQL("SELECT MAX(sid) AS msid, book_account, amount_acc, value_acc "
+    query = executeSQL("SELECT MAX(id) AS mid, book_account, amount_acc, value_acc "
                        "FROM ledger GROUP BY book_account")
     while query.next():
         row = readSQLrecord(query, named=True)
@@ -63,7 +63,7 @@ def test_ledger(prepare_db_ledger):
 
     # validate book amounts
     expected_book_values = [None, 164.0, -150.0, -0.0, None, -14.0]
-    query = executeSQL("SELECT MAX(sid) AS msid, book_account, amount_acc, value_acc "
+    query = executeSQL("SELECT MAX(id) AS mid, book_account, amount_acc, value_acc "
                        "FROM ledger GROUP BY book_account")
     while query.next():
         row = readSQLrecord(query, named=True)
@@ -118,7 +118,16 @@ def test_buy_sell_change(prepare_db_fifo):
     # Check that deal quantity remains correct
     assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 2
 
+    assert readSQL("SELECT COUNT(*) FROM open_trades") == 2
+
     _ = executeSQL("DELETE FROM trades WHERE id=2", commit=True)
+
+    assert readSQL("SELECT COUNT(*) FROM open_trades") == 1
+    assert readSQL("SELECT COUNT(*) FROM ledger WHERE timestamp>=1609729200") == 0
+    print("----------------")
+    print(readSQL("SELECT * FROM open_trades"))
+    print(readSQL("SELECT COUNT(*) FROM deals"))
+    print("----------------")
     # Re-build ledger from last actual data
     ledger.rebuild()
 
@@ -294,26 +303,18 @@ def test_fifo(prepare_db_fifo):
     assert readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=18") == 200
 
     # totals
-    assert readSQL("SELECT COUNT(*) FROM deals AS d "
-                   "LEFT JOIN sequence as os ON os.id = d.open_sid "
-                   "LEFT JOIN sequence as cs ON cs.id = d.close_sid") == 41
-    assert readSQL("SELECT COUNT(*) FROM deals AS d "
-                   "LEFT JOIN sequence as os ON os.id = d.open_sid "
-                   "LEFT JOIN sequence as cs ON cs.id = d.close_sid "
-                   "WHERE os.type=:trade AND cs.type=:trade", [(":trade", TransactionType.Trade)]) == 27
-    assert readSQL("SELECT COUNT(*) FROM deals AS d "
-                   "LEFT JOIN sequence as os ON os.id = d.open_sid "
-                   "LEFT JOIN sequence as cs ON cs.id = d.close_sid "
-                   "WHERE os.type!=:corp_action OR cs.type!=:corp_action",
-                   [(":corp_action", TransactionType.CorporateAction)]) == 37
-    assert readSQL("SELECT COUNT(*) FROM deals AS d "
-                    "LEFT JOIN sequence as os ON os.id = d.open_sid "
-                   "LEFT JOIN sequence as cs ON cs.id = d.close_sid "
-                   "WHERE os.type=:corp_action AND cs.type=:corp_action",
-                   [(":corp_action", TransactionType.CorporateAction)]) == 4
+    assert readSQL("SELECT COUNT(*) FROM deals") == 41
+    assert readSQL("SELECT COUNT(*) FROM deals WHERE open_op_type=:trade AND close_op_type=:trade",
+                  [(":trade", TransactionType.Trade)]) == 27
+    assert readSQL("SELECT COUNT(*) FROM deals WHERE open_op_type!=:corp_action OR close_op_type!=:corp_action",
+                  [(":corp_action", TransactionType.CorporateAction)]) == 37
+    assert readSQL("SELECT COUNT(*) FROM deals WHERE open_op_type=:corp_action AND close_op_type=:corp_action",
+                  [(":corp_action", TransactionType.CorporateAction)]) == 4
 
     # validate final amounts
-    query = executeSQL("SELECT MAX(sid) AS msid, asset_id, amount_acc, value_acc FROM ledger GROUP BY asset_id")
+    query = executeSQL("SELECT MAX(id) AS mid, asset_id, amount_acc, value_acc FROM ledger "
+                       "WHERE book_account=:money OR book_account=:assets GROUP BY asset_id",
+                       [(":money", BookAccount.Money), (":assets", BookAccount.Assets)])
     while query.next():
         row = readSQLrecord(query, named=True)
         if row['asset_id'] == 2:  # Checking money amount
