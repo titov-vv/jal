@@ -135,7 +135,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.langGroup.triggered.connect(self.onLanguageChanged)
         self.statementGroup.triggered.connect(self.statements.load)
         self.actionReconcile.triggered.connect(self.reconcileAtCurrentOperation)
-        self.action_Load_quotes.triggered.connect(partial(self.downloader.showQuoteDownloadDialog, self))
+        self.action_LoadQuotes.triggered.connect(partial(self.downloader.showQuoteDownloadDialog, self))
         self.actionImportSlipRU.triggered.connect(self.importSlip)
         self.actionBackup.triggered.connect(self.backup.create)
         self.actionRestore.triggered.connect(self.backup.restore)

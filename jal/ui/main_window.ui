@@ -152,7 +152,7 @@
                    <second>0</second>
                    <year>2020</year>
                    <month>12</month>
-                   <day>4</day>
+                   <day>3</day>
                   </datetime>
                  </property>
                  <property name="displayFormat">
@@ -584,7 +584,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>4</day>
+               <day>3</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -718,7 +718,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>4</day>
+               <day>3</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -865,7 +865,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>4</day>
+               <day>3</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -967,7 +967,7 @@
      <x>0</x>
      <y>0</y>
      <width>1700</width>
-     <height>22</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -976,7 +976,7 @@
     </property>
     <addaction name="actionExit"/>
    </widget>
-   <widget class="QMenu" name="menu_DAta">
+   <widget class="QMenu" name="menu_Data">
     <property name="title">
      <string>&amp;Data</string>
     </property>
@@ -998,17 +998,12 @@
     <addaction name="separator"/>
     <addaction name="actionBackup"/>
     <addaction name="actionRestore"/>
+    <addaction name="separator"/>
     <addaction name="action_Re_build_Ledger"/>
    </widget>
-   <widget class="QMenu" name="menuLoad">
+   <widget class="QMenu" name="menu_Export">
     <property name="title">
-     <string>&amp;Load</string>
-    </property>
-    <addaction name="action_Load_quotes"/>
-   </widget>
-   <widget class="QMenu" name="menu_Reports">
-    <property name="title">
-     <string>&amp;Reports</string>
+     <string>&amp;Export</string>
     </property>
     <addaction name="PrepareTaxForms"/>
    </widget>
@@ -1026,14 +1021,14 @@
       <string>&amp;Statement</string>
      </property>
     </widget>
-    <addaction name="actionImportSlipRU"/>
+    <addaction name="action_LoadQuotes"/>
     <addaction name="menuStatement"/>
+    <addaction name="actionImportSlipRU"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menu_DAta"/>
-   <addaction name="menuLoad"/>
+   <addaction name="menu_Data"/>
    <addaction name="menuImport"/>
-   <addaction name="menu_Reports"/>
+   <addaction name="menu_Export"/>
    <addaction name="menuLanguage"/>
   </widget>
   <widget class="QStatusBar" name="StatusBar"/>
@@ -1050,9 +1045,9 @@
     <string>Re-build &amp;Ledger...</string>
    </property>
   </action>
-  <action name="action_Load_quotes">
+  <action name="action_LoadQuotes">
    <property name="text">
-    <string>Load &amp;Quotes...</string>
+    <string>&amp;Quotes...</string>
    </property>
   </action>
   <action name="actionImportStatement">
