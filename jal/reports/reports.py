@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QObject
-from jal.reports.helpers import XLSX
+from data_export.helpers import XLSX
 from jal.reports.income_spending_report import IncomeSpendingReport
 from jal.reports.p_and_l_report import ProfitLossReportModel
 from jal.reports.deals_report import DealsReportModel

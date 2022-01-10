@@ -23,7 +23,7 @@ from jal.db.holdings_model import HoldingsModel
 from jal.db.operations_model import OperationsModel
 from jal.reports.reports import Reports, ReportType
 from jal.data_import.statements import StatementLoader
-from jal.reports.taxes import TaxesRus
+from data_export.taxes import TaxesRus
 from jal.data_import.slips import ImportSlipDialog
 from jal.db.tax_estimator import TaxEstimator
 from jal.widgets.price_chart import ChartWindow
