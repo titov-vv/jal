@@ -8,19 +8,18 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox, QLa
 
 from jal import __version__
 from jal.ui.ui_main_window import Ui_JAL_MainWindow
+from jal.widgets.operations_widget import OperationsWidget
 from jal.widgets.helpers import ManipulateDate, dependency_present
 from jal.widgets.reference_dialogs import AccountTypeListDialog, AccountListDialog, AssetListDialog, TagsListDialog,\
     CategoryListDialog, CountryListDialog, QuotesListDialog, PeerListDialog
-from jal.constants import Setup, TransactionType
+from jal.constants import Setup
 from jal.db.backup_restore import JalBackup
 from jal.db.helpers import get_app_path, get_dbfilename, load_icon
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
 from jal.net.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
-from jal.db.balances_model import BalancesModel
 from jal.db.holdings_model import HoldingsModel
-from jal.db.operations_model import OperationsModel
 from jal.reports.reports import Reports, ReportType
 from jal.data_import.statements import StatementLoader
 from data_export.taxes import TaxesRus
@@ -37,14 +36,18 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.running = False
         self.setupUi(self)
 
+        self.ledger = Ledger()   # FIXME - check that ledger should live in main window (not in operations)
+
+        self.ops = self.mdiArea.addSubWindow(self.MainTabs)
+        self.ops.setWindowTitle("Balance & Operations OLD")
+
+        self.operations_balance_window = OperationsWidget(self.ledger, self)
+        self.mdiArea.addSubWindow(self.operations_balance_window)
         self.Logs = LogViewer(self)
-        self.mdiArea.addSubWindow(self.MainTabs)
         self.mdiArea.addSubWindow(self.Logs)
 
         self.currentLanguage = language
-        self.current_index = None  # this is used in onOperationContextMenu() to track item for menu
 
-        self.ledger = Ledger()
         self.downloader = QuoteDownloader()
         self.taxes = TaxesRus()
         self.statements = StatementLoader()
@@ -63,21 +66,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.statementGroup = QActionGroup(self.menuStatement)
         self.createStatementsImportMenu()
 
-        # Set icons
         self.setWindowIcon(load_icon("jal.png"))
-        self.NewOperationBtn.setIcon(load_icon("new.png"))
-        self.CopyOperationBtn.setIcon(load_icon("copy.png"))
-        self.DeleteOperationBtn.setIcon(load_icon("delete.png"))
-
-        # Operations view context menu
-        self.contextMenu = QMenu(self.OperationsTableView)
-        self.actionReconcile = QAction(load_icon("reconcile.png"), self.tr("Reconcile"), self)
-        self.actionCopy = QAction(load_icon("copy.png"), self.tr("Copy"), self)
-        self.actionDelete = QAction(load_icon("delete.png"), self.tr("Delete"), self)
-        self.contextMenu.addAction(self.actionReconcile)
-        self.contextMenu.addSeparator()
-        self.contextMenu.addAction(self.actionCopy)
-        self.contextMenu.addAction(self.actionDelete)
 
         # Customize Status bar and logs
         self.ProgressBar = QProgressBar(self)
@@ -96,50 +85,24 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         # Setup reports tab
         self.reports = Reports(self.ReportTableView, self.ReportTreeView)
 
-        # Customize UI configuration
-        self.balances_model = BalancesModel(self.BalancesTableView)
-        self.BalancesTableView.setModel(self.balances_model)
-        self.balances_model.configureView()
-
         self.holdings_model = HoldingsModel(self.HoldingsTableView)
         self.HoldingsTableView.setModel(self.holdings_model)
         self.holdings_model.configureView()
         self.HoldingsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
 
-        self.operations_model = OperationsModel(self.OperationsTableView)
-        self.OperationsTableView.setModel(self.operations_model)
-        self.operations_model.configureView()
-        self.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
-
         self.connect_signals_and_slots()
 
-        self.NewOperationMenu = QMenu()
-        for i in range(self.OperationsTabs.count()):
-            if hasattr(self.OperationsTabs.widget(i), "isCustom"):
-                self.OperationsTabs.widget(i).dbUpdated.connect(self.ledger.rebuild)
-                self.OperationsTabs.widget(i).dbUpdated.connect(self.operations_model.refresh)
-                self.NewOperationMenu.addAction(self.OperationsTabs.widget(i).name,
-                                                partial(self.createOperation, i))
-        self.NewOperationBtn.setMenu(self.NewOperationMenu)
-
-        # Setup balance and holdings parameters
+        # Setup holdings parameters
         current_time = QDateTime.currentDateTime()
         current_time.setTimeSpec(Qt.UTC)  # We use UTC everywhere so need to force TZ info
-        self.BalanceDate.setDateTime(current_time)
-        self.BalancesCurrencyCombo.setIndex(JalSettings().getValue('BaseCurrency'))
         self.HoldingsDate.setDateTime(current_time)
         self.HoldingsCurrencyCombo.setIndex(JalSettings().getValue('BaseCurrency'))
-
-        self.OperationsTabs.setCurrentIndex(TransactionType.NA)
-        self.OperationsTableView.selectRow(0)
-        self.OnOperationsRangeChange(0)
 
     def connect_signals_and_slots(self):
         self.actionExit.triggered.connect(QApplication.instance().quit)
         self.actionAbout.triggered.connect(self.showAboutWindow)
         self.langGroup.triggered.connect(self.onLanguageChanged)
         self.statementGroup.triggered.connect(self.statements.load)
-        self.actionReconcile.triggered.connect(self.reconcileAtCurrentOperation)
         self.action_LoadQuotes.triggered.connect(partial(self.downloader.showQuoteDownloadDialog, self))
         self.actionImportSlipRU.triggered.connect(self.importSlip)
         self.actionBackup.triggered.connect(self.backup.create)
@@ -154,29 +117,16 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.actionCountries.triggered.connect(partial(self.onDataDialog, "countries"))
         self.actionQuotes.triggered.connect(partial(self.onDataDialog, "quotes"))
         self.PrepareTaxForms.triggered.connect(partial(self.taxes.showTaxesDialog, self))
-        self.BalanceDate.dateChanged.connect(self.BalancesTableView.model().setDate)
         self.HoldingsDate.dateChanged.connect(self.HoldingsTableView.model().setDate)
-        self.BalancesCurrencyCombo.changed.connect(self.BalancesTableView.model().setCurrency)
-        self.BalancesTableView.doubleClicked.connect(self.OnBalanceDoubleClick)
         self.HoldingsCurrencyCombo.changed.connect(self.HoldingsTableView.model().setCurrency)
         self.ReportRangeCombo.currentIndexChanged.connect(self.onReportRangeChange)
         self.RunReportBtn.clicked.connect(self.onRunReport)
         self.SaveReportBtn.clicked.connect(self.reports.saveReport)
-        self.ShowInactiveCheckBox.stateChanged.connect(self.BalancesTableView.model().toggleActive)
-        self.DateRangeCombo.currentIndexChanged.connect(self.OnOperationsRangeChange)
-        self.ChooseAccountBtn.changed.connect(self.OperationsTableView.model().setAccount)
-        self.SearchString.editingFinished.connect(self.updateOperationsFilter)
         self.HoldingsTableView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
-        self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
-        self.OperationsTableView.customContextMenuRequested.connect(self.onOperationContextMenu)
-        self.DeleteOperationBtn.clicked.connect(self.deleteOperation)
-        self.actionDelete.triggered.connect(self.deleteOperation)
-        self.CopyOperationBtn.clicked.connect(self.copyOperation)
-        self.actionCopy.triggered.connect(self.copyOperation)
-        self.downloader.download_completed.connect(self.balances_model.update)
+        # self.downloader.download_completed.connect(self.balances_model.update)  # FIXME
         self.downloader.download_completed.connect(self.holdings_model.update)
         self.statements.load_completed.connect(self.onStatementImport)
-        self.ledger.updated.connect(self.balances_model.update)
+        # self.ledger.updated.connect(self.balances_model.update)   # FIXME
         self.ledger.updated.connect(self.holdings_model.update)
 
     @Slot()
@@ -260,10 +210,6 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.MainMenu.setEnabled(not visible)
 
     @Slot()
-    def OnBalanceDoubleClick(self, index):
-        self.ChooseAccountBtn.account_id = index.model().getAccountId(index.row())
-
-    @Slot()
     def onReportRangeChange(self, range_index):
         report_ranges = {
             0: lambda: (0, 0),
@@ -292,17 +238,6 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
             self.reports.runReport(report_type, begin, end, self.ReportCategoryEdit.selected_id, group_dates)
         else:
             self.reports.runReport(report_type, begin, end, self.ReportAccountBtn.account_id, group_dates)
-
-    @Slot()
-    def OnOperationsRangeChange(self, range_index):
-        view_ranges = {
-            0: ManipulateDate.startOfPreviousWeek,
-            1: ManipulateDate.startOfPreviousMonth,
-            2: ManipulateDate.startOfPreviousQuarter,
-            3: ManipulateDate.startOfPreviousYear,
-            4: lambda: 0
-        }
-        self.OperationsTableView.model().setDateRange(view_ranges[range_index]())
 
     @Slot()
     def importSlip(self):
@@ -343,82 +278,6 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.estimator = TaxEstimator(account, asset, asset_qty, position)
         if self.estimator.ready:
             self.estimator.open()
-
-    @Slot()
-    def OnOperationChange(self, selected, _deselected):
-        self.checkForUncommittedChanges()
-
-        if len(self.OperationsTableView.selectionModel().selectedRows()) != 1:
-            self.OperationsTabs.setCurrentIndex(TransactionType.NA)
-        else:
-            idx = selected.indexes()
-            if idx:
-                selected_row = idx[0].row()
-                operation_type, operation_id = self.OperationsTableView.model().get_operation(selected_row)
-                self.OperationsTabs.setCurrentIndex(operation_type)
-                self.OperationsTabs.widget(operation_type).setId(operation_id)
-
-    @Slot()
-    def checkForUncommittedChanges(self):
-        for i in range(self.OperationsTabs.count()):
-            if hasattr(self.OperationsTabs.widget(i), "isCustom") and self.OperationsTabs.widget(i).modified:
-                reply = QMessageBox().warning(None, self.tr("You have unsaved changes"),
-                                              self.OperationsTabs.widget(i).name +
-                                              self.tr(" has uncommitted changes,\ndo you want to save it?"),
-                                              QMessageBox.Yes, QMessageBox.No)
-                if reply == QMessageBox.Yes:
-                    self.OperationsTabs.widget(i).saveChanges()
-                else:
-                    self.OperationsTabs.widget(i).revertChanges()
-
-    @Slot()
-    def onOperationContextMenu(self, pos):
-        self.current_index = self.OperationsTableView.indexAt(pos)
-        if len(self.OperationsTableView.selectionModel().selectedRows()) != 1:
-            self.actionReconcile.setEnabled(False)
-            self.actionCopy.setEnabled(False)
-        else:
-            self.actionReconcile.setEnabled(True)
-            self.actionCopy.setEnabled(True)
-        self.contextMenu.popup(self.OperationsTableView.viewport().mapToGlobal(pos))
-
-    @Slot()
-    def reconcileAtCurrentOperation(self):
-        idx = self.operations_model.index(self.current_index.row(), 0)  # we need only row to address fields by name
-        timestamp = self.operations_model.data(idx, Qt.UserRole, field="timestamp")
-        account_id = self.operations_model.data(idx, Qt.UserRole, field="account_id")
-        JalDB().reconcile_account(account_id, timestamp)
-        self.operations_model.refresh()
-
-    @Slot()
-    def deleteOperation(self):
-        if QMessageBox().warning(None, self.tr("Confirmation"),
-                                 self.tr("Are you sure to delete selected transacion(s)?"),
-                                 QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
-            return
-        rows = []
-        for index in self.OperationsTableView.selectionModel().selectedRows():
-            rows.append(index.row())
-        self.operations_model.deleteRows(rows)
-        self.ledger.rebuild()
-
-    @Slot()
-    def createOperation(self, operation_type):
-        self.checkForUncommittedChanges()
-        self.OperationsTabs.widget(operation_type).createNew(account_id=self.operations_model.getAccount())
-        self.OperationsTabs.setCurrentIndex(operation_type)
-
-    @Slot()
-    def copyOperation(self):
-        operation_type = self.OperationsTabs.currentIndex()
-        if operation_type == TransactionType.NA:
-            return
-        self.checkForUncommittedChanges()
-        self.OperationsTabs.widget(operation_type).copyNew()
-
-    @Slot()
-    def updateOperationsFilter(self):
-        self.OperationsTableView.model().filterText(self.SearchString.text())
 
     @Slot()
     def onDataDialog(self, dlg_type):

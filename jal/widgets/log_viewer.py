@@ -7,6 +7,7 @@ from PySide6.QtWidgets import QApplication, QPlainTextEdit
 class LogViewer(QPlainTextEdit, logging.Handler):
     def __init__(self, parent=None):
         QPlainTextEdit.__init__(self, parent)
+        self.setWindowTitle(self.tr("Logs"))
         logging.Handler.__init__(self)
         self.app = QApplication.instance()
         self.setReadOnly(True)

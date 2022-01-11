@@ -19,16 +19,17 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox,
     QDateEdit, QFrame, QGridLayout, QGroupBox,
     QHBoxLayout, QHeaderView, QLabel, QLineEdit,
-    QMainWindow, QMdiArea, QMenu, QMenuBar,
-    QPushButton, QSizePolicy, QSpacerItem, QSplitter,
-    QStackedWidget, QStatusBar, QTabWidget, QTableView,
-    QTreeView, QVBoxLayout, QWidget)
+    QMainWindow, QMenu, QMenuBar, QPushButton,
+    QSizePolicy, QSpacerItem, QSplitter, QStackedWidget,
+    QStatusBar, QTabWidget, QTableView, QTreeView,
+    QVBoxLayout, QWidget)
 
 from jal.widgets.account_select import (AccountButton, CurrencyComboBox)
 from jal.widgets.corporate_action_widget import CorporateActionWidget
 from jal.widgets.dividend_widget import DividendWidget
 from jal.widgets.income_spending_widget import IncomeSpendingWidget
 from jal.widgets.reference_selector import CategorySelector
+from jal.widgets.tabbed_mdi_area import TabbedMdiArea
 from jal.widgets.trade_widget import TradeWidget
 from jal.widgets.transfer_widget import TransferWidget
 
@@ -36,7 +37,7 @@ class Ui_JAL_MainWindow(object):
     def setupUi(self, JAL_MainWindow):
         if not JAL_MainWindow.objectName():
             JAL_MainWindow.setObjectName(u"JAL_MainWindow")
-        JAL_MainWindow.resize(1700, 900)
+        JAL_MainWindow.resize(1482, 583)
         JAL_MainWindow.setMinimumSize(QSize(0, 0))
         self.actionExit = QAction(JAL_MainWindow)
         self.actionExit.setObjectName(u"actionExit")
@@ -81,12 +82,15 @@ class Ui_JAL_MainWindow(object):
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setMaximumSize(QSize(16777215, 16777215))
         self.verticalLayout_6 = QVBoxLayout(self.centralwidget)
+        self.verticalLayout_6.setSpacing(0)
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
         self.verticalLayout_6.setContentsMargins(0, 0, 0, 0)
         self.MainTabs = QTabWidget(self.centralwidget)
         self.MainTabs.setObjectName(u"MainTabs")
         self.MainTabs.setTabPosition(QTabWidget.West)
         self.MainTabs.setTabShape(QTabWidget.Triangular)
+        self.MainTabs.setDocumentMode(False)
+        self.MainTabs.setTabsClosable(True)
         self.BalanceTransactionTab = QWidget()
         self.BalanceTransactionTab.setObjectName(u"BalanceTransactionTab")
         self.horizontalLayout = QHBoxLayout(self.BalanceTransactionTab)
@@ -123,7 +127,7 @@ class Ui_JAL_MainWindow(object):
         self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
         self.BalanceDate = QDateEdit(self.BalanceConfigFrame)
         self.BalanceDate.setObjectName(u"BalanceDate")
-        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 2), QTime(21, 0, 0)))
+        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 1), QTime(21, 0, 0)))
         self.BalanceDate.setCalendarPopup(True)
         self.BalanceDate.setTimeSpec(Qt.UTC)
 
@@ -340,7 +344,7 @@ class Ui_JAL_MainWindow(object):
         self.horizontalLayout_7.setContentsMargins(2, 2, 2, 2)
         self.HoldingsDate = QDateEdit(self.HoldingsParamsFrame)
         self.HoldingsDate.setObjectName(u"HoldingsDate")
-        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 2), QTime(21, 0, 0)))
+        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 1), QTime(21, 0, 0)))
         self.HoldingsDate.setCalendarPopup(True)
         self.HoldingsDate.setTimeSpec(Qt.UTC)
 
@@ -407,7 +411,7 @@ class Ui_JAL_MainWindow(object):
 
         self.ReportToDate = QDateEdit(self.ReportParamsFrame)
         self.ReportToDate.setObjectName(u"ReportToDate")
-        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 2), QTime(21, 0, 0)))
+        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 1), QTime(21, 0, 0)))
         self.ReportToDate.setCalendarPopup(True)
         self.ReportToDate.setTimeSpec(Qt.UTC)
 
@@ -483,7 +487,7 @@ class Ui_JAL_MainWindow(object):
 
         self.ReportFromDate = QDateEdit(self.ReportParamsFrame)
         self.ReportFromDate.setObjectName(u"ReportFromDate")
-        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 2), QTime(21, 0, 0)))
+        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 1), QTime(21, 0, 0)))
         self.ReportFromDate.setCalendarPopup(True)
         self.ReportFromDate.setTimeSpec(Qt.UTC)
 
@@ -525,7 +529,7 @@ class Ui_JAL_MainWindow(object):
 
         self.verticalLayout_6.addWidget(self.MainTabs)
 
-        self.mdiArea = QMdiArea(self.centralwidget)
+        self.mdiArea = TabbedMdiArea(self.centralwidget)
         self.mdiArea.setObjectName(u"mdiArea")
 
         self.verticalLayout_6.addWidget(self.mdiArea)
@@ -533,7 +537,7 @@ class Ui_JAL_MainWindow(object):
         JAL_MainWindow.setCentralWidget(self.centralwidget)
         self.MainMenu = QMenuBar(JAL_MainWindow)
         self.MainMenu.setObjectName(u"MainMenu")
-        self.MainMenu.setGeometry(QRect(0, 0, 1700, 23))
+        self.MainMenu.setGeometry(QRect(0, 0, 1482, 23))
         self.menuFile = QMenu(self.MainMenu)
         self.menuFile.setObjectName(u"menuFile")
         self.menu_Data = QMenu(self.MainMenu)

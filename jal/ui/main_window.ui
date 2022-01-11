@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1700</width>
-    <height>900</height>
+    <width>1482</width>
+    <height>583</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -27,6 +27,9 @@
     </size>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_6">
+    <property name="spacing">
+     <number>0</number>
+    </property>
     <property name="leftMargin">
      <number>0</number>
     </property>
@@ -49,6 +52,12 @@
       </property>
       <property name="currentIndex">
        <number>0</number>
+      </property>
+      <property name="documentMode">
+       <bool>false</bool>
+      </property>
+      <property name="tabsClosable">
+       <bool>true</bool>
       </property>
       <widget class="QWidget" name="BalanceTransactionTab">
        <attribute name="title">
@@ -152,7 +161,7 @@
                    <second>0</second>
                    <year>2020</year>
                    <month>12</month>
-                   <day>2</day>
+                   <day>1</day>
                   </datetime>
                  </property>
                  <property name="displayFormat">
@@ -584,7 +593,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>2</day>
+               <day>1</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -718,7 +727,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>2</day>
+               <day>1</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -865,7 +874,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>2</day>
+               <day>1</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -938,7 +947,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QMdiArea" name="mdiArea"/>
+     <widget class="TabbedMdiArea" name="mdiArea" native="true"/>
     </item>
    </layout>
   </widget>
@@ -947,7 +956,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1700</width>
+     <width>1482</width>
      <height>23</height>
     </rect>
    </property>
@@ -1157,6 +1166,12 @@
    <class>IncomeSpendingWidget</class>
    <extends>QWidget</extends>
    <header>jal/widgets/income_spending_widget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>TabbedMdiArea</class>
+   <extends>QWidget</extends>
+   <header>jal/widgets/tabbed_mdi_area.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
