@@ -10,7 +10,8 @@ from jal import __version__
 from jal.ui.ui_main_window import Ui_JAL_MainWindow
 from jal.widgets.operations_widget import OperationsWidget
 from jal.widgets.holdings_widget import HoldingsWidget
-from jal.widgets.helpers import ManipulateDate, dependency_present
+from jal.widgets.reports_widget import ReportsWidget
+from jal.widgets.helpers import dependency_present
 from jal.widgets.reference_dialogs import AccountTypeListDialog, AccountListDialog, AssetListDialog, TagsListDialog,\
     CategoryListDialog, CountryListDialog, QuotesListDialog, PeerListDialog
 from jal.constants import Setup
@@ -20,7 +21,6 @@ from jal.db.db import JalDB
 from jal.db.settings import JalSettings
 from jal.net.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
-from jal.reports.reports import Reports, ReportType
 from jal.data_import.statements import StatementLoader
 from data_export.taxes import TaxesRus
 from jal.data_import.slips import ImportSlipDialog
@@ -36,13 +36,12 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
         self.ledger = Ledger()   # FIXME - check that ledger should live in main window (not in operations)
 
-        self.ops = self.mdiArea.addSubWindow(self.MainTabs)
-        self.ops.setWindowTitle("Balance & Operations OLD")
-
         self.operations_balance_window = OperationsWidget(self.ledger, self)
         self.mdiArea.addSubWindow(self.operations_balance_window)
         self.holdings_window = HoldingsWidget(self.ledger, self)
         self.mdiArea.addSubWindow(self.holdings_window)
+        self.reports_window = ReportsWidget(self)
+        self.mdiArea.addSubWindow(self.reports_window)
         self.Logs = LogViewer(self)
         self.mdiArea.addSubWindow(self.Logs)
 
@@ -82,9 +81,6 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         log_level = os.environ.get('LOGLEVEL', 'INFO').upper()
         self.logger.setLevel(log_level)
 
-        # Setup reports tab
-        self.reports = Reports(self.ReportTableView, self.ReportTreeView)
-
         self.connect_signals_and_slots()
 
     def connect_signals_and_slots(self):
@@ -106,9 +102,6 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.actionCountries.triggered.connect(partial(self.onDataDialog, "countries"))
         self.actionQuotes.triggered.connect(partial(self.onDataDialog, "quotes"))
         self.PrepareTaxForms.triggered.connect(partial(self.taxes.showTaxesDialog, self))
-        self.ReportRangeCombo.currentIndexChanged.connect(self.onReportRangeChange)
-        self.RunReportBtn.clicked.connect(self.onRunReport)
-        self.SaveReportBtn.clicked.connect(self.reports.saveReport)
         # self.downloader.download_completed.connect(self.balances_model.update)  # FIXME
         # self.downloader.download_completed.connect(self.holdings_model.update)
         self.statements.load_completed.connect(self.onStatementImport)
@@ -194,36 +187,6 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.ProgressBar.setVisible(visible)
         self.centralwidget.setEnabled(not visible)
         self.MainMenu.setEnabled(not visible)
-
-    @Slot()
-    def onReportRangeChange(self, range_index):
-        report_ranges = {
-            0: lambda: (0, 0),
-            1: ManipulateDate.Last3Months,
-            2: ManipulateDate.RangeYTD,
-            3: ManipulateDate.RangeThisYear,
-            4: ManipulateDate.RangePreviousYear
-        }
-        begin, end = report_ranges[range_index]()
-        self.ReportFromDate.setDateTime(QDateTime.fromSecsSinceEpoch(begin, spec=Qt.UTC))
-        self.ReportToDate.setDateTime(QDateTime.fromSecsSinceEpoch(end, spec=Qt.UTC))
-
-    @Slot()
-    def onRunReport(self):
-        types = {
-            0: ReportType.IncomeSpending,
-            1: ReportType.ProfitLoss,
-            2: ReportType.Deals,
-            3: ReportType.ByCategory
-        }
-        report_type = types[self.ReportTypeCombo.currentIndex()]
-        begin = self.ReportFromDate.dateTime().toSecsSinceEpoch()
-        end = self.ReportToDate.dateTime().toSecsSinceEpoch()
-        group_dates = 1 if self.ReportGroupCheck.isChecked() else 0
-        if report_type == ReportType.ByCategory:
-            self.reports.runReport(report_type, begin, end, self.ReportCategoryEdit.selected_id, group_dates)
-        else:
-            self.reports.runReport(report_type, begin, end, self.ReportAccountBtn.account_id, group_dates)
 
     @Slot()
     def importSlip(self):
