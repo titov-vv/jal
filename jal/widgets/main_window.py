@@ -38,7 +38,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
         self.operations_balance_window = OperationsWidget(self.ledger, self)
         self.mdiArea.addSubWindow(self.operations_balance_window)
-        self.holdings_window = HoldingsWidget(self.ledger, self)
+        self.holdings_window = HoldingsWidget(self)
         self.mdiArea.addSubWindow(self.holdings_window)
         self.reports_window = ReportsWidget(self)
         self.mdiArea.addSubWindow(self.reports_window)

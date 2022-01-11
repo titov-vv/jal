@@ -12,11 +12,9 @@ from jal.widgets.price_chart import ChartWindow
 
 # ----------------------------------------------------------------------------------------------------------------------
 class HoldingsWidget(QWidget, Ui_HoldingsWidget):
-    def __init__(self, ledger, parent=None):
+    def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self.setupUi(self)
-
-        self.ledger = ledger
 
         self.holdings_model = HoldingsModel(self.HoldingsTableView)
         self.HoldingsTableView.setModel(self.holdings_model)
