@@ -380,77 +380,6 @@
     </message>
 </context>
 <context>
-    <name>DLSG</name>
-    <message>
-        <location filename="../reports/dlsg.py" line="244"/>
-        <source>Declaration file has no &apos;DeclForeign&apos; section.</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/dlsg.py" line="259"/>
-        <source>Unexpected declaration file header:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/dlsg.py" line="262"/>
-        <source>Declaration file is for year:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/dlsg.py" line="282"/>
-        <source>Invalid record size at position</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/dlsg.py" line="288"/>
-        <source>Declaration file content:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/dlsg.py" line="306"/>
-        <source>Sections loaded:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/dlsg.py" line="308"/>
-        <source>Section </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/dlsg.py" line="309"/>
-        <source>loaded as </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/dlsg.py" line="312"/>
-        <source>Writing file:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/dlsg.py" line="318"/>
-        <source>Declaration to write:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/dlsg.py" line="231"/>
-        <source>Unknown income type for russian tax form: </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/dlsg.py" line="235"/>
-        <source>Currency isn&apos;t supported for russian tax form: </source>
-        <translation></translation>
-    </message>
-</context>
-<context>
-    <name>DLSGDeclForeign</name>
-    <message>
-        <location filename="../reports/dlsg.py" line="119"/>
-        <source>Invalid DeclForeign subsection:</source>
-        <translation></translation>
-    </message>
-</context>
-<context>
     <name>DealsReportModel</name>
     <message>
         <location filename="../reports/deals_report.py" line="11"/>
@@ -1243,91 +1172,91 @@ Application will be terminated now</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="217"/>
+        <location filename="../widgets/main_window.py" line="222"/>
         <source>Restart required</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="219"/>
+        <location filename="../widgets/main_window.py" line="224"/>
         <source>Language was changed to </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="221"/>
+        <location filename="../widgets/main_window.py" line="226"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="69"/>
+        <location filename="../widgets/main_window.py" line="74"/>
         <source>Reconcile</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="70"/>
+        <location filename="../widgets/main_window.py" line="75"/>
         <source>Copy</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="71"/>
+        <location filename="../widgets/main_window.py" line="76"/>
         <source>Delete</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="189"/>
+        <location filename="../widgets/main_window.py" line="194"/>
         <source>Ledger isn&apos;t complete. Rebuild it now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="360"/>
+        <location filename="../widgets/main_window.py" line="365"/>
         <source>You have unsaved changes</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="362"/>
+        <location filename="../widgets/main_window.py" line="367"/>
         <source> has uncommitted changes,
 do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="189"/>
-        <location filename="../widgets/main_window.py" line="390"/>
+        <location filename="../widgets/main_window.py" line="194"/>
+        <location filename="../widgets/main_window.py" line="395"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="391"/>
+        <location filename="../widgets/main_window.py" line="396"/>
         <source>Are you sure to delete selected transacion(s)?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="52"/>
-        <location filename="../widgets/main_window.py" line="241"/>
+        <location filename="../widgets/main_window.py" line="57"/>
+        <location filename="../widgets/main_window.py" line="246"/>
         <source>About</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="453"/>
+        <location filename="../widgets/main_window.py" line="458"/>
         <source>Statement ending balance doesn&apos;t match: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="249"/>
+        <location filename="../widgets/main_window.py" line="254"/>
         <source>&lt;p&gt;More information, manuals and problem reports are at &lt;a href=https://github.com/titov-vv/jal&gt;github home page&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Questions, comments, help or donations:&lt;/p&gt;&lt;p&gt;&lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=https://t.me/jal_support&gt;Telegram&lt;/a&gt;&lt;/p&gt;</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="242"/>
+        <location filename="../widgets/main_window.py" line="247"/>
         <source>&lt;h3&gt;JAL&lt;/h3&gt;&lt;p&gt;Just Another Ledger, version {version}&lt;/p&gt;</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="316"/>
+        <location filename="../widgets/main_window.py" line="321"/>
         <source>Show Price Chart</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="320"/>
+        <location filename="../widgets/main_window.py" line="325"/>
         <source>Estimate Russian Tax</source>
         <translation></translation>
     </message>
@@ -2601,58 +2530,6 @@ do you want to save it?</source>
     </message>
 </context>
 <context>
-    <name>TaxExportDialog</name>
-    <message>
-        <location filename="../reports/taxes.py" line="32"/>
-        <source>Save tax reports to:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/taxes.py" line="32"/>
-        <source>Excel files (*.xlsx)</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/taxes.py" line="33"/>
-        <source>Get tax form template from:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/taxes.py" line="33"/>
-        <location filename="../reports/taxes.py" line="35"/>
-        <source>Tax form 2020 (*.dc0)</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/taxes.py" line="35"/>
-        <source>Save tax form to:</source>
-        <translation></translation>
-    </message>
-</context>
-<context>
-    <name>TaxesRus</name>
-    <message>
-        <location filename="../reports/taxes.py" line="292"/>
-        <source>Can&apos;t open tax form file </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/taxes.py" line="310"/>
-        <source>Can&apos;t write tax form into file </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/taxes.py" line="312"/>
-        <source>Tax report saved to file </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/taxes.py" line="442"/>
-        <source>Account country will be used for 3-NDFL as country is not set for asset </source>
-        <translation></translation>
-    </message>
-</context>
-<context>
     <name>TradeWidget</name>
     <message>
         <location filename="../widgets/trade_widget.py" line="40"/>
@@ -2747,14 +2624,6 @@ do you want to save it?</source>
     <message>
         <location filename="../widgets/transfer_widget.py" line="53"/>
         <source>Note</source>
-        <translation></translation>
-    </message>
-</context>
-<context>
-    <name>XLSX</name>
-    <message>
-        <location filename="../reports/helpers.py" line="25"/>
-        <source>Can&apos;t save report into file </source>
         <translation></translation>
     </message>
 </context>

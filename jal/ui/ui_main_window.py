@@ -19,16 +19,15 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox,
     QDateEdit, QFrame, QGridLayout, QGroupBox,
     QHBoxLayout, QHeaderView, QLabel, QLineEdit,
-    QMainWindow, QMenu, QMenuBar, QPushButton,
-    QSizePolicy, QSpacerItem, QSplitter, QStackedWidget,
-    QStatusBar, QTabWidget, QTableView, QTreeView,
-    QVBoxLayout, QWidget)
+    QMainWindow, QMdiArea, QMenu, QMenuBar,
+    QPushButton, QSizePolicy, QSpacerItem, QSplitter,
+    QStackedWidget, QStatusBar, QTabWidget, QTableView,
+    QTreeView, QVBoxLayout, QWidget)
 
 from jal.widgets.account_select import (AccountButton, CurrencyComboBox)
 from jal.widgets.corporate_action_widget import CorporateActionWidget
 from jal.widgets.dividend_widget import DividendWidget
 from jal.widgets.income_spending_widget import IncomeSpendingWidget
-from jal.widgets.log_viewer import LogViewer
 from jal.widgets.reference_selector import CategorySelector
 from jal.widgets.trade_widget import TradeWidget
 from jal.widgets.transfer_widget import TransferWidget
@@ -124,7 +123,7 @@ class Ui_JAL_MainWindow(object):
         self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
         self.BalanceDate = QDateEdit(self.BalanceConfigFrame)
         self.BalanceDate.setObjectName(u"BalanceDate")
-        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 3), QTime(21, 0, 0)))
+        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 12, 2), QTime(21, 0, 0)))
         self.BalanceDate.setCalendarPopup(True)
         self.BalanceDate.setTimeSpec(Qt.UTC)
 
@@ -341,7 +340,7 @@ class Ui_JAL_MainWindow(object):
         self.horizontalLayout_7.setContentsMargins(2, 2, 2, 2)
         self.HoldingsDate = QDateEdit(self.HoldingsParamsFrame)
         self.HoldingsDate.setObjectName(u"HoldingsDate")
-        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 3), QTime(21, 0, 0)))
+        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 12, 2), QTime(21, 0, 0)))
         self.HoldingsDate.setCalendarPopup(True)
         self.HoldingsDate.setTimeSpec(Qt.UTC)
 
@@ -408,7 +407,7 @@ class Ui_JAL_MainWindow(object):
 
         self.ReportToDate = QDateEdit(self.ReportParamsFrame)
         self.ReportToDate.setObjectName(u"ReportToDate")
-        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 3), QTime(21, 0, 0)))
+        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 12, 2), QTime(21, 0, 0)))
         self.ReportToDate.setCalendarPopup(True)
         self.ReportToDate.setTimeSpec(Qt.UTC)
 
@@ -484,7 +483,7 @@ class Ui_JAL_MainWindow(object):
 
         self.ReportFromDate = QDateEdit(self.ReportParamsFrame)
         self.ReportFromDate.setObjectName(u"ReportFromDate")
-        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 3), QTime(21, 0, 0)))
+        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 12, 2), QTime(21, 0, 0)))
         self.ReportFromDate.setCalendarPopup(True)
         self.ReportFromDate.setTimeSpec(Qt.UTC)
 
@@ -523,19 +522,13 @@ class Ui_JAL_MainWindow(object):
         self.verticalLayout_7.addWidget(self.ReportTreeView)
 
         self.MainTabs.addTab(self.ReportsTab, "")
-        self.LoggingTab = QWidget()
-        self.LoggingTab.setObjectName(u"LoggingTab")
-        self.verticalLayout_5 = QVBoxLayout(self.LoggingTab)
-        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.verticalLayout_5.setContentsMargins(0, 0, 0, 0)
-        self.Logs = LogViewer(self.LoggingTab)
-        self.Logs.setObjectName(u"Logs")
-
-        self.verticalLayout_5.addWidget(self.Logs)
-
-        self.MainTabs.addTab(self.LoggingTab, "")
 
         self.verticalLayout_6.addWidget(self.MainTabs)
+
+        self.mdiArea = QMdiArea(self.centralwidget)
+        self.mdiArea.setObjectName(u"mdiArea")
+
+        self.verticalLayout_6.addWidget(self.mdiArea)
 
         JAL_MainWindow.setCentralWidget(self.centralwidget)
         self.MainMenu = QMenuBar(JAL_MainWindow)
@@ -668,7 +661,6 @@ class Ui_JAL_MainWindow(object):
 
         self.ReportFromDate.setDisplayFormat(QCoreApplication.translate("JAL_MainWindow", u"dd/MM/yyyy", None))
         self.MainTabs.setTabText(self.MainTabs.indexOf(self.ReportsTab), QCoreApplication.translate("JAL_MainWindow", u"Reports", None))
-        self.MainTabs.setTabText(self.MainTabs.indexOf(self.LoggingTab), QCoreApplication.translate("JAL_MainWindow", u"Log messages", None))
         self.menuFile.setTitle(QCoreApplication.translate("JAL_MainWindow", u"&File", None))
         self.menu_Data.setTitle(QCoreApplication.translate("JAL_MainWindow", u"&Data", None))
         self.menuPredefined_data.setTitle(QCoreApplication.translate("JAL_MainWindow", u"Predefined data", None))

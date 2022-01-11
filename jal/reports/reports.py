@@ -81,4 +81,3 @@ class Reports(QObject):
             report.write_row(sheet, row+1, data_row)
 
         report.save()
-

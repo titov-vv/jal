@@ -26,6 +26,7 @@ from jal.data_import.statements import StatementLoader
 from data_export.taxes import TaxesRus
 from jal.data_import.slips import ImportSlipDialog
 from jal.db.tax_estimator import TaxEstimator
+from jal.widgets.log_viewer import LogViewer
 from jal.widgets.price_chart import ChartWindow
 
 
@@ -35,6 +36,10 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         QMainWindow.__init__(self, None)
         self.running = False
         self.setupUi(self)
+
+        self.Logs = LogViewer(self)
+        self.mdiArea.addSubWindow(self.MainTabs)
+        self.mdiArea.addSubWindow(self.Logs)
 
         self.currentLanguage = language
         self.current_index = None  # this is used in onOperationContextMenu() to track item for menu

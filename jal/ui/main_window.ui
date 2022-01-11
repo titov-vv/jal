@@ -152,7 +152,7 @@
                    <second>0</second>
                    <year>2020</year>
                    <month>12</month>
-                   <day>3</day>
+                   <day>2</day>
                   </datetime>
                  </property>
                  <property name="displayFormat">
@@ -584,7 +584,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>3</day>
+               <day>2</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -718,7 +718,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>3</day>
+               <day>2</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -865,7 +865,7 @@
                <second>0</second>
                <year>2020</year>
                <month>12</month>
-               <day>3</day>
+               <day>2</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -935,29 +935,10 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="LoggingTab">
-       <attribute name="title">
-        <string>Log messages</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_5">
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="LogViewer" name="Logs"/>
-        </item>
-       </layout>
-      </widget>
      </widget>
+    </item>
+    <item>
+     <widget class="QMdiArea" name="mdiArea"/>
     </item>
    </layout>
   </widget>
@@ -1136,11 +1117,6 @@
    <class>AccountButton</class>
    <extends>QPushButton</extends>
    <header>jal/widgets/account_select.h</header>
-  </customwidget>
-  <customwidget>
-   <class>LogViewer</class>
-   <extends>QPlainTextEdit</extends>
-   <header>jal/widgets/log_viewer.h</header>
   </customwidget>
   <customwidget>
    <class>CurrencyComboBox</class>
