@@ -1121,6 +1121,14 @@ Application will be terminated now</source>
     </message>
 </context>
 <context>
+    <name>LogViewer</name>
+    <message>
+        <location filename="../widgets/log_viewer.py" line="10"/>
+        <source>Logs</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>LoginFNS</name>
     <message>
         <location filename="../data_import/slips_tax.py" line="74"/>
@@ -1172,91 +1180,59 @@ Application will be terminated now</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="227"/>
+        <location filename="../widgets/main_window.py" line="172"/>
         <source>Restart required</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="229"/>
+        <location filename="../widgets/main_window.py" line="174"/>
         <source>Language was changed to </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="231"/>
+        <location filename="../widgets/main_window.py" line="176"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="79"/>
-        <source>Reconcile</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/main_window.py" line="80"/>
-        <source>Copy</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/main_window.py" line="81"/>
-        <source>Delete</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/main_window.py" line="199"/>
+        <location filename="../widgets/main_window.py" line="144"/>
         <source>Ledger isn&apos;t complete. Rebuild it now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="370"/>
-        <source>You have unsaved changes</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/main_window.py" line="372"/>
-        <source> has uncommitted changes,
-do you want to save it?</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/main_window.py" line="199"/>
-        <location filename="../widgets/main_window.py" line="400"/>
+        <location filename="../widgets/main_window.py" line="144"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="401"/>
-        <source>Are you sure to delete selected transacion(s)?</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/main_window.py" line="62"/>
-        <location filename="../widgets/main_window.py" line="251"/>
+        <location filename="../widgets/main_window.py" line="60"/>
+        <location filename="../widgets/main_window.py" line="196"/>
         <source>About</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="463"/>
+        <location filename="../widgets/main_window.py" line="317"/>
         <source>Statement ending balance doesn&apos;t match: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="259"/>
+        <location filename="../widgets/main_window.py" line="204"/>
         <source>&lt;p&gt;More information, manuals and problem reports are at &lt;a href=https://github.com/titov-vv/jal&gt;github home page&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Questions, comments, help or donations:&lt;/p&gt;&lt;p&gt;&lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=https://t.me/jal_support&gt;Telegram&lt;/a&gt;&lt;/p&gt;</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="252"/>
+        <location filename="../widgets/main_window.py" line="197"/>
         <source>&lt;h3&gt;JAL&lt;/h3&gt;&lt;p&gt;Just Another Ledger, version {version}&lt;/p&gt;</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="326"/>
+        <location filename="../widgets/main_window.py" line="256"/>
         <source>Show Price Chart</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="330"/>
+        <location filename="../widgets/main_window.py" line="260"/>
         <source>Estimate Russian Tax</source>
         <translation></translation>
     </message>
