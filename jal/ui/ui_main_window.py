@@ -23,7 +23,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateEdit,
     QTabWidget, QTableView, QTreeView, QVBoxLayout,
     QWidget, QAbstractItemView)
 
-from jal.widgets.account_select import (AccountButton, CurrencyComboBox)
+from jal.widgets.account_select import AccountButton
 from jal.widgets.reference_selector import CategorySelector
 from jal.widgets.tabbed_mdi_area import TabbedMdiArea
 
@@ -85,55 +85,6 @@ class Ui_JAL_MainWindow(object):
         self.MainTabs.setTabShape(QTabWidget.Triangular)
         self.MainTabs.setDocumentMode(False)
         self.MainTabs.setTabsClosable(True)
-        self.HoldingsTab = QWidget()
-        self.HoldingsTab.setObjectName(u"HoldingsTab")
-        self.verticalLayout_4 = QVBoxLayout(self.HoldingsTab)
-        self.verticalLayout_4.setSpacing(0)
-        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
-        self.HoldingsParamsFrame = QFrame(self.HoldingsTab)
-        self.HoldingsParamsFrame.setObjectName(u"HoldingsParamsFrame")
-        self.HoldingsParamsFrame.setFrameShape(QFrame.Panel)
-        self.HoldingsParamsFrame.setFrameShadow(QFrame.Sunken)
-        self.horizontalLayout_7 = QHBoxLayout(self.HoldingsParamsFrame)
-        self.horizontalLayout_7.setSpacing(6)
-        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
-        self.horizontalLayout_7.setContentsMargins(2, 2, 2, 2)
-        self.HoldingsDate = QDateEdit(self.HoldingsParamsFrame)
-        self.HoldingsDate.setObjectName(u"HoldingsDate")
-        self.HoldingsDate.setDateTime(QDateTime(QDate(2020, 11, 29), QTime(21, 0, 0)))
-        self.HoldingsDate.setCalendarPopup(True)
-        self.HoldingsDate.setTimeSpec(Qt.UTC)
-
-        self.horizontalLayout_7.addWidget(self.HoldingsDate)
-
-        self.HoldingsCurrencyLbl = QLabel(self.HoldingsParamsFrame)
-        self.HoldingsCurrencyLbl.setObjectName(u"HoldingsCurrencyLbl")
-
-        self.horizontalLayout_7.addWidget(self.HoldingsCurrencyLbl)
-
-        self.HoldingsCurrencyCombo = CurrencyComboBox(self.HoldingsParamsFrame)
-        self.HoldingsCurrencyCombo.setObjectName(u"HoldingsCurrencyCombo")
-
-        self.horizontalLayout_7.addWidget(self.HoldingsCurrencyCombo)
-
-        self.horizontalSpacer_3 = QSpacerItem(1411, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_7.addItem(self.horizontalSpacer_3)
-
-
-        self.verticalLayout_4.addWidget(self.HoldingsParamsFrame)
-
-        self.HoldingsTableView = QTreeView(self.HoldingsTab)
-        self.HoldingsTableView.setObjectName(u"HoldingsTableView")
-        self.HoldingsTableView.setFrameShape(QFrame.Panel)
-        self.HoldingsTableView.setAlternatingRowColors(True)
-        self.HoldingsTableView.setAnimated(True)
-        self.HoldingsTableView.setAllColumnsShowFocus(True)
-
-        self.verticalLayout_4.addWidget(self.HoldingsTableView)
-
-        self.MainTabs.addTab(self.HoldingsTab, "")
         self.ReportsTab = QWidget()
         self.ReportsTab.setObjectName(u"ReportsTab")
         self.verticalLayout_7 = QVBoxLayout(self.ReportsTab)
@@ -168,7 +119,7 @@ class Ui_JAL_MainWindow(object):
 
         self.ReportToDate = QDateEdit(self.ReportParamsFrame)
         self.ReportToDate.setObjectName(u"ReportToDate")
-        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 11, 29), QTime(21, 0, 0)))
+        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 11, 28), QTime(21, 0, 0)))
         self.ReportToDate.setCalendarPopup(True)
         self.ReportToDate.setTimeSpec(Qt.UTC)
 
@@ -244,7 +195,7 @@ class Ui_JAL_MainWindow(object):
 
         self.ReportFromDate = QDateEdit(self.ReportParamsFrame)
         self.ReportFromDate.setObjectName(u"ReportFromDate")
-        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 11, 29), QTime(21, 0, 0)))
+        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 11, 28), QTime(21, 0, 0)))
         self.ReportFromDate.setCalendarPopup(True)
         self.ReportFromDate.setTimeSpec(Qt.UTC)
 
@@ -342,7 +293,7 @@ class Ui_JAL_MainWindow(object):
 
         self.retranslateUi(JAL_MainWindow)
 
-        self.MainTabs.setCurrentIndex(1)
+        self.MainTabs.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(JAL_MainWindow)
@@ -369,9 +320,6 @@ class Ui_JAL_MainWindow(object):
         self.actionImportSlipRU.setText(QCoreApplication.translate("JAL_MainWindow", u"Slip [RU]...", None))
         self.actionCountries.setText(QCoreApplication.translate("JAL_MainWindow", u"C&ountries", None))
         self.actionQuotes.setText(QCoreApplication.translate("JAL_MainWindow", u"&Quotes", None))
-        self.HoldingsDate.setDisplayFormat(QCoreApplication.translate("JAL_MainWindow", u"dd/MM/yyyy", None))
-        self.HoldingsCurrencyLbl.setText(QCoreApplication.translate("JAL_MainWindow", u"Common currency:", None))
-        self.MainTabs.setTabText(self.MainTabs.indexOf(self.HoldingsTab), QCoreApplication.translate("JAL_MainWindow", u"Holdings", None))
         self.ReportTypeLbl.setText(QCoreApplication.translate("JAL_MainWindow", u"Report:", None))
         self.ReportToDate.setDisplayFormat(QCoreApplication.translate("JAL_MainWindow", u"dd/MM/yyyy", None))
         self.ReportAccountLbl.setText(QCoreApplication.translate("JAL_MainWindow", u"Account:", None))

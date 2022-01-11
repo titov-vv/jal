@@ -51,7 +51,7 @@
        <enum>QTabWidget::Triangular</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -59,117 +59,6 @@
       <property name="tabsClosable">
        <bool>true</bool>
       </property>
-      <widget class="QWidget" name="HoldingsTab">
-       <attribute name="title">
-        <string>Holdings</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_4">
-        <property name="spacing">
-         <number>0</number>
-        </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="QFrame" name="HoldingsParamsFrame">
-          <property name="frameShape">
-           <enum>QFrame::Panel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_7">
-           <property name="spacing">
-            <number>6</number>
-           </property>
-           <property name="leftMargin">
-            <number>2</number>
-           </property>
-           <property name="topMargin">
-            <number>2</number>
-           </property>
-           <property name="rightMargin">
-            <number>2</number>
-           </property>
-           <property name="bottomMargin">
-            <number>2</number>
-           </property>
-           <item>
-            <widget class="QDateEdit" name="HoldingsDate">
-             <property name="dateTime">
-              <datetime>
-               <hour>21</hour>
-               <minute>0</minute>
-               <second>0</second>
-               <year>2020</year>
-               <month>11</month>
-               <day>29</day>
-              </datetime>
-             </property>
-             <property name="displayFormat">
-              <string>dd/MM/yyyy</string>
-             </property>
-             <property name="calendarPopup">
-              <bool>true</bool>
-             </property>
-             <property name="timeSpec">
-              <enum>Qt::UTC</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="HoldingsCurrencyLbl">
-             <property name="text">
-              <string>Common currency:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="CurrencyComboBox" name="HoldingsCurrencyCombo"/>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_3">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>1411</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QTreeView" name="HoldingsTableView">
-          <property name="frameShape">
-           <enum>QFrame::Panel</enum>
-          </property>
-          <property name="alternatingRowColors">
-           <bool>true</bool>
-          </property>
-          <property name="animated">
-           <bool>true</bool>
-          </property>
-          <property name="allColumnsShowFocus">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
       <widget class="QWidget" name="ReportsTab">
        <attribute name="title">
         <string>Reports</string>
@@ -246,7 +135,7 @@
                <second>0</second>
                <year>2020</year>
                <month>11</month>
-               <day>29</day>
+               <day>28</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -393,7 +282,7 @@
                <second>0</second>
                <year>2020</year>
                <month>11</month>
-               <day>29</day>
+               <day>28</day>
               </datetime>
              </property>
              <property name="displayFormat">
@@ -644,11 +533,6 @@
   <customwidget>
    <class>AccountButton</class>
    <extends>QPushButton</extends>
-   <header>jal/widgets/account_select.h</header>
-  </customwidget>
-  <customwidget>
-   <class>CurrencyComboBox</class>
-   <extends>QComboBox</extends>
    <header>jal/widgets/account_select.h</header>
   </customwidget>
   <customwidget>

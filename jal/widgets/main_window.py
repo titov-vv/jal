@@ -9,6 +9,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox, QLa
 from jal import __version__
 from jal.ui.ui_main_window import Ui_JAL_MainWindow
 from jal.widgets.operations_widget import OperationsWidget
+from jal.widgets.holdings_widget import HoldingsWidget
 from jal.widgets.helpers import ManipulateDate, dependency_present
 from jal.widgets.reference_dialogs import AccountTypeListDialog, AccountListDialog, AssetListDialog, TagsListDialog,\
     CategoryListDialog, CountryListDialog, QuotesListDialog, PeerListDialog
@@ -19,14 +20,11 @@ from jal.db.db import JalDB
 from jal.db.settings import JalSettings
 from jal.net.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
-from jal.db.holdings_model import HoldingsModel
 from jal.reports.reports import Reports, ReportType
 from jal.data_import.statements import StatementLoader
 from data_export.taxes import TaxesRus
 from jal.data_import.slips import ImportSlipDialog
-from jal.db.tax_estimator import TaxEstimator
 from jal.widgets.log_viewer import LogViewer
-from jal.widgets.price_chart import ChartWindow
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -43,6 +41,8 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
         self.operations_balance_window = OperationsWidget(self.ledger, self)
         self.mdiArea.addSubWindow(self.operations_balance_window)
+        self.holdings_window = HoldingsWidget(self.ledger, self)
+        self.mdiArea.addSubWindow(self.holdings_window)
         self.Logs = LogViewer(self)
         self.mdiArea.addSubWindow(self.Logs)
 
@@ -85,18 +85,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         # Setup reports tab
         self.reports = Reports(self.ReportTableView, self.ReportTreeView)
 
-        self.holdings_model = HoldingsModel(self.HoldingsTableView)
-        self.HoldingsTableView.setModel(self.holdings_model)
-        self.holdings_model.configureView()
-        self.HoldingsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
-
         self.connect_signals_and_slots()
-
-        # Setup holdings parameters
-        current_time = QDateTime.currentDateTime()
-        current_time.setTimeSpec(Qt.UTC)  # We use UTC everywhere so need to force TZ info
-        self.HoldingsDate.setDateTime(current_time)
-        self.HoldingsCurrencyCombo.setIndex(JalSettings().getValue('BaseCurrency'))
 
     def connect_signals_and_slots(self):
         self.actionExit.triggered.connect(QApplication.instance().quit)
@@ -117,17 +106,14 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.actionCountries.triggered.connect(partial(self.onDataDialog, "countries"))
         self.actionQuotes.triggered.connect(partial(self.onDataDialog, "quotes"))
         self.PrepareTaxForms.triggered.connect(partial(self.taxes.showTaxesDialog, self))
-        self.HoldingsDate.dateChanged.connect(self.HoldingsTableView.model().setDate)
-        self.HoldingsCurrencyCombo.changed.connect(self.HoldingsTableView.model().setCurrency)
         self.ReportRangeCombo.currentIndexChanged.connect(self.onReportRangeChange)
         self.RunReportBtn.clicked.connect(self.onRunReport)
         self.SaveReportBtn.clicked.connect(self.reports.saveReport)
-        self.HoldingsTableView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
         # self.downloader.download_completed.connect(self.balances_model.update)  # FIXME
-        self.downloader.download_completed.connect(self.holdings_model.update)
+        # self.downloader.download_completed.connect(self.holdings_model.update)
         self.statements.load_completed.connect(self.onStatementImport)
         # self.ledger.updated.connect(self.balances_model.update)   # FIXME
-        self.ledger.updated.connect(self.holdings_model.update)
+        # self.ledger.updated.connect(self.holdings_model.update)
 
     @Slot()
     def showEvent(self, event):
@@ -248,36 +234,6 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
     @Slot()
     def onSlipImportFinished(self):
         self.ledger.rebuild()
-
-    @Slot()
-    def onHoldingsContextMenu(self, pos):
-        index = self.HoldingsTableView.indexAt(pos)
-        contextMenu = QMenu(self.HoldingsTableView)
-        actionShowChart = QAction(text=self.tr("Show Price Chart"), parent=self.HoldingsTableView)
-        actionShowChart.triggered.connect(
-            partial(self.showPriceChart, self.HoldingsTableView.viewport().mapToGlobal(pos), index))
-        contextMenu.addAction(actionShowChart)
-        actionEstimateTax = QAction(text=self.tr("Estimate Russian Tax"), parent=self.HoldingsTableView)
-        actionEstimateTax.triggered.connect(
-            partial(self.estimateRussianTax, self.HoldingsTableView.viewport().mapToGlobal(pos), index))
-        contextMenu.addAction(actionEstimateTax)
-        contextMenu.popup(self.HoldingsTableView.viewport().mapToGlobal(pos))
-
-    @Slot()
-    def showPriceChart(self, position, index):
-        model = index.model()
-        account, asset, asset_qty = model.get_data_for_tax(index)
-        self.price_chart = ChartWindow(account, asset, asset_qty, position)
-        if self.price_chart.ready:
-            self.price_chart.open()
-
-    @Slot()
-    def estimateRussianTax(self, position, index):
-        model = index.model()
-        account, asset, asset_qty = model.get_data_for_tax(index)
-        self.estimator = TaxEstimator(account, asset, asset_qty, position)
-        if self.estimator.ready:
-            self.estimator.open()
 
     @Slot()
     def onDataDialog(self, dlg_type):
