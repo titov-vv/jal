@@ -3,7 +3,7 @@ from functools import partial
 from PySide6.QtCore import Qt, Slot, Signal, QDateTime
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu
-from jal.ui.ui_holdings_widget import Ui_HoldingsWidget
+from ui.reports.ui_holdings_report import Ui_HoldingsWidget
 from jal.db.settings import JalSettings
 from jal.db.holdings_model import HoldingsModel
 from widgets.mdi import MdiWidget

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'holdings_widget.ui'
+## Form generated from reading UI file 'holdings_report.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.2.2
 ##
