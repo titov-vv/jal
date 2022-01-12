@@ -34,16 +34,18 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.running = False
         self.setupUi(self)
 
-        self.ledger = Ledger()   # FIXME - check that ledger should live in main window (not in operations)
+        self.ledger = Ledger()
 
-        self.operations_balance_window = OperationsWidget(self.ledger, self)
-        self.mdiArea.addSubWindow(self.operations_balance_window)
+        self.operations_balance_window = OperationsWidget(self)
+        self.ops = self.mdiArea.addSubWindow(self.operations_balance_window)
+        self.ops.widget().dbUpdated.connect(self.ledger.rebuild)
         self.holdings_window = HoldingsWidget(self)
         self.mdiArea.addSubWindow(self.holdings_window)
         self.reports_window = ReportsWidget(self)
         self.mdiArea.addSubWindow(self.reports_window)
         self.Logs = LogViewer(self)
         self.mdiArea.addSubWindow(self.Logs)
+        self.ops.showMaximized()
 
         self.currentLanguage = language
 

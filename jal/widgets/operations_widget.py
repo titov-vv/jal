@@ -1,6 +1,6 @@
 from functools import partial
 
-from PySide6.QtCore import Qt, Slot, QDateTime
+from PySide6.QtCore import Qt, Slot, Signal, QDateTime
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QWidget, QMenu, QMessageBox
 from jal.ui.ui_operations_widget import Ui_OperationsWidget
@@ -15,11 +15,11 @@ from jal.db.operations_model import OperationsModel
 
 # ----------------------------------------------------------------------------------------------------------------------
 class OperationsWidget(QWidget, Ui_OperationsWidget):
-    def __init__(self, ledger, parent=None):
+    dbUpdated = Signal()
+
+    def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self.setupUi(self)
-
-        self.ledger = ledger
 
         self.current_index = None  # this is used in onOperationContextMenu() to track item for menu
 
@@ -53,7 +53,7 @@ class OperationsWidget(QWidget, Ui_OperationsWidget):
         self.NewOperationMenu = QMenu()
         for i in range(self.OperationsTabs.count()):
             if hasattr(self.OperationsTabs.widget(i), "isCustom"):
-                self.OperationsTabs.widget(i).dbUpdated.connect(self.ledger.rebuild)
+                self.OperationsTabs.widget(i).dbUpdated.connect(self.dbUpdated)
                 self.OperationsTabs.widget(i).dbUpdated.connect(self.operations_model.refresh)
                 self.NewOperationMenu.addAction(self.OperationsTabs.widget(i).name,
                                                 partial(self.createOperation, i))
@@ -95,7 +95,7 @@ class OperationsWidget(QWidget, Ui_OperationsWidget):
         for index in self.OperationsTableView.selectionModel().selectedRows():
             rows.append(index.row())
         self.operations_model.deleteRows(rows)
-        self.ledger.rebuild()
+        self.dbUpdated.emit()
 
     @Slot()
     def createOperation(self, operation_type):
