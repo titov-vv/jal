@@ -1,4 +1,5 @@
 import os
+import base64
 import logging
 from functools import partial
 
@@ -33,6 +34,8 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         QMainWindow.__init__(self, None)
         self.running = False
         self.setupUi(self)
+        self.restoreGeometry(base64.decodebytes(JalSettings().getValue('WindowGeometry', '').encode('utf-8')))
+        self.restoreState(base64.decodebytes(JalSettings().getValue('WindowState', '').encode('utf-8')))
 
         self.ledger = Ledger()
 
@@ -126,8 +129,11 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
     @Slot()
     def closeEvent(self, event):
+        JalSettings().setValue('WindowGeometry', base64.encodebytes(self.saveGeometry()).decode('utf-8'))
+        JalSettings().setValue('WindowState', base64.encodebytes(self.saveState()).decode('utf-8'))
         self.logger.removeHandler(self.Logs)    # Removing handler (but it doesn't prevent exception at exit)
         logging.raiseExceptions = False         # Silencing logging module exceptions
+        super().closeEvent(event)
 
     def createLanguageMenu(self):
         langPath = get_app_path() + Setup.LANG_PATH + os.sep
