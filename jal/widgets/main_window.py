@@ -221,8 +221,8 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
     @Slot()
     def updateWidgets(self):
-        for window in self.mdiArea.subWindows:
-            self.mdiArea.subWindows[window].widget().refresh()
+        for window in self.mdiArea.subWindowList():
+            window.widget().refresh()
 
     @Slot()
     def onStatementImport(self, timestamp, totals):

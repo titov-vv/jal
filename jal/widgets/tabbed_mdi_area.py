@@ -5,11 +5,8 @@ from PySide6.QtWidgets import QWidget, QMdiArea, QTabBar, QVBoxLayout
 # ----------------------------------------------------------------------------------------------------------------------
 # Class that acts as QMdiArea in SubWindowView mode but has Tabs at the same time
 class TabbedMdiArea(QWidget):
-    TAB_IDX_PROPERTY = 'TabIndex'
-
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
-        self.subWindows = {}
 
         self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -27,23 +24,34 @@ class TabbedMdiArea(QWidget):
 
         self.mdi.subWindowActivated.connect(self.subWindowActivated)
         self.tabs.currentChanged.connect(self.tabClicked)
+        self.tabs.tabCloseRequested.connect(self.tabClose)
+
+    def subWindowList(self, order=QMdiArea.CreationOrder):
+        return self.mdi.subWindowList(order)
 
     def addSubWindow(self, widget):
         sub_window = self.mdi.addSubWindow(widget)
-        idx = self.tabs.addTab(sub_window.windowTitle())
-        sub_window.setProperty(TabbedMdiArea.TAB_IDX_PROPERTY, idx)
-        self.subWindows[idx] = sub_window
+        self.tabs.addTab(sub_window.windowTitle())
         return sub_window
 
     @Slot()
     def subWindowActivated(self, window):
         if window is not None:
-            self.tabs.setCurrentIndex(window.property(TabbedMdiArea.TAB_IDX_PROPERTY))
+            self.tabs.setCurrentIndex(self.mdi.subWindowList().index(window))
 
     @Slot()
     def tabClicked(self, index):
         try:
-            sub_window = self.subWindows[index]
+            sub_window = self.subWindowList()[index]
         except KeyError:
             return
         self.mdi.setActiveSubWindow(sub_window)
+
+    @Slot()
+    def tabClose(self, index):   # TODO Update of tab bar is required after sub window closure by window close button
+        try:
+            sub_window = self.subWindowList()[index]
+        except KeyError:
+            return
+        self.mdi.removeSubWindow(sub_window)
+        self.tabs.removeTab(index)
