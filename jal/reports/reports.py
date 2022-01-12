@@ -50,8 +50,7 @@ class JalReports(QObject):
             return
         class_instance = getattr(module, report_loader['window_class'])
         report = class_instance(self.mdi)
-        report_window = self.mdi.addSubWindow(report)
-        report_window.showMaximized()
+        self.mdi.addSubWindow(report, maximized=True)
 
 #-----------------------------------------------------------------------------------------------------------------------
 class Reports(QObject):

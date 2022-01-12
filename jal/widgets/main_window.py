@@ -5,7 +5,7 @@ from functools import partial
 
 from PySide6.QtCore import Qt, Slot, QDateTime, QDir, QLocale, QMetaObject
 from PySide6.QtGui import QIcon, QActionGroup, QAction
-from PySide6.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox, QProgressBar
+from PySide6.QtWidgets import QApplication, QMainWindow, QMdiArea, QMenu, QMessageBox, QProgressBar
 
 from jal import __version__
 from jal.ui.ui_main_window import Ui_JAL_MainWindow
@@ -38,9 +38,8 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.ledger = Ledger()
 
         self.operations_balance_window = OperationsWidget(self)
-        self.operations_window = self.mdiArea.addSubWindow(self.operations_balance_window)
+        self.operations_window = self.mdiArea.addSubWindow(self.operations_balance_window, maximized=True)
         self.operations_window.widget().dbUpdated.connect(self.ledger.rebuild)
-        self.operations_window.showMaximized()
 
         self.currentLanguage = language
 

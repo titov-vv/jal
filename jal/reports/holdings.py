@@ -54,14 +54,10 @@ class HoldingsReport(MdiWidget, Ui_HoldingsWidget):
     def showPriceChart(self, index):
         model = index.model()
         account, asset, asset_qty = model.get_data_for_tax(index)
-        price_chart = ChartWindow(account, asset, asset_qty)
-        price_window = self.parent_mdi.addSubWindow(price_chart)
-        price_window.show()
+        self.parent_mdi.addSubWindow(ChartWindow(account, asset, asset_qty))
 
     @Slot()
     def estimateRussianTax(self, index):
         model = index.model()
         account, asset, asset_qty = model.get_data_for_tax(index)
-        tax_table = TaxEstimator(account, asset, asset_qty)
-        tax_window = self.parent_mdi.addSubWindow(tax_table)
-        tax_window.show()
+        self.parent_mdi.addSubWindow(TaxEstimator(account, asset, asset_qty))

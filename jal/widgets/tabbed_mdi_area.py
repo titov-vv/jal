@@ -29,10 +29,15 @@ class TabbedMdiArea(QWidget):
     def subWindowList(self, order=QMdiArea.CreationOrder):
         return self.mdi.subWindowList(order)
 
-    def addSubWindow(self, widget):
+    def addSubWindow(self, widget, maximized=False):
         sub_window = self.mdi.addSubWindow(widget)
         widget.onClose.connect(self.subWindowClosed)
         self.tabs.addTab(sub_window.windowTitle())
+        if maximized:
+            sub_window.showMaximized()
+            self.mdi.setOption(QMdiArea.DontMaximizeSubWindowOnActivation)
+        else:
+            sub_window.show()
         return sub_window
 
     @Slot()
