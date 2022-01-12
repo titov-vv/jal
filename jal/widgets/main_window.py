@@ -5,7 +5,7 @@ from functools import partial
 
 from PySide6.QtCore import Qt, Slot, QDateTime, QDir, QLocale, QMetaObject
 from PySide6.QtGui import QIcon, QActionGroup, QAction
-from PySide6.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox, QLabel, QProgressBar
+from PySide6.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox, QProgressBar
 
 from jal import __version__
 from jal.ui.ui_main_window import Ui_JAL_MainWindow
@@ -38,9 +38,9 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.ledger = Ledger()
 
         self.operations_balance_window = OperationsWidget(self)
-        self.ops = self.mdiArea.addSubWindow(self.operations_balance_window)
-        self.ops.widget().dbUpdated.connect(self.ledger.rebuild)
-        self.ops.showMaximized()
+        self.operations_window = self.mdiArea.addSubWindow(self.operations_balance_window)
+        self.operations_window.widget().dbUpdated.connect(self.ledger.rebuild)
+        self.operations_window.showMaximized()
 
         self.currentLanguage = language
 
@@ -70,13 +70,10 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
         # Customize Status bar and logs
         self.ProgressBar = QProgressBar(self)
-        self.StatusBar.addWidget(self.ProgressBar)
+        self.StatusBar.addPermanentWidget(self.ProgressBar)
         self.ProgressBar.setVisible(False)
         self.ledger.setProgressBar(self, self.ProgressBar)
-        self.NewLogEventLbl = QLabel(self)
-        self.StatusBar.addWidget(self.NewLogEventLbl)
-        self.Logs.setNotificationLabel(self.NewLogEventLbl)
-        self.Logs.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        self.Logs.setStatusBar(self.StatusBar)
         self.logger = logging.getLogger()
         self.logger.addHandler(self.Logs)
         log_level = os.environ.get('LOGLEVEL', 'INFO').upper()

@@ -1,7 +1,7 @@
 import logging
 from jal.constants import CustomColor
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication, QPlainTextEdit
+from PySide6.QtCore import Qt, Slot
+from PySide6.QtWidgets import QApplication, QPlainTextEdit, QLabel, QPushButton
 
 
 class LogViewer(QPlainTextEdit, logging.Handler):
@@ -11,8 +11,12 @@ class LogViewer(QPlainTextEdit, logging.Handler):
         logging.Handler.__init__(self)
         self.app = QApplication.instance()
         self.setReadOnly(True)
+        self.status_bar = None    # Status bar where notifications and control are located
+        self.expandButton = None  # Button that shows/hides log window
         self.notification = None  # Here is QLabel element to display LOG update status
         self.clear_color = None   # Variable to store initial "clear" background color
+        self.collapsed_text = self.tr("▶ logs")
+        self.expanded_text = self.tr("▲ logs")
 
     def emit(self, record, **kwargs):
         # Store message in log window
@@ -40,12 +44,23 @@ class LogViewer(QPlainTextEdit, logging.Handler):
         self.cleanNotification()
         super().showEvent(event)
 
-    def setNotificationLabel(self, label):
-        self.notification = label
+    def setStatusBar(self, status_bar):
+        self.setVisible(False)
+        self.status_bar = status_bar
+
+        self.expandButton = QPushButton(self.collapsed_text, parent=self)
+        self.expandButton.setFixedWidth(self.expandButton.fontMetrics().horizontalAdvance(self.collapsed_text) * 1.25)
+        self.expandButton.setCheckable(True)
+        self.expandButton.clicked.connect(self.showLogs)
+        self.status_bar.addWidget(self.expandButton)
+
+        self.notification = QLabel(self)
+        self.status_bar.addWidget(self.notification)
         self.notification.setAutoFillBackground(True)
         self.clear_color = self.notification.palette().color(self.notification.backgroundRole())
+        self.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 
-    def removeNotificationLabel(self):
+    def removeStatusBar(self):
         self.cleanNotification()
         self.notification = None
 
@@ -54,3 +69,9 @@ class LogViewer(QPlainTextEdit, logging.Handler):
         palette.setColor(self.notification.backgroundRole(), self.clear_color)
         self.notification.setPalette(palette)
         self.notification.setText("")
+
+    @Slot()
+    def showLogs(self):
+        self.setVisible(self.expandButton.isChecked())
+        text = self.expanded_text if self.expandButton.isChecked() else self.collapsed_text
+        self.expandButton.setText(text)

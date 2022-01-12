@@ -17,7 +17,8 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
 from PySide6.QtWidgets import (QApplication, QMainWindow, QMenu, QMenuBar,
-    QSizePolicy, QStatusBar, QVBoxLayout, QWidget)
+    QSizePolicy, QSplitter, QStatusBar, QVBoxLayout,
+    QWidget)
 
 from jal.widgets.log_viewer import LogViewer
 from jal.widgets.tabbed_mdi_area import TabbedMdiArea
@@ -70,19 +71,21 @@ class Ui_JAL_MainWindow(object):
         self.centralwidget = QWidget(JAL_MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setMaximumSize(QSize(16777215, 16777215))
-        self.verticalLayout_6 = QVBoxLayout(self.centralwidget)
-        self.verticalLayout_6.setSpacing(0)
-        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
-        self.verticalLayout_6.setContentsMargins(0, 0, 0, 0)
-        self.mdiArea = TabbedMdiArea(self.centralwidget)
+        self.verticalLayout = QVBoxLayout(self.centralwidget)
+        self.verticalLayout.setSpacing(0)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.splitter = QSplitter(self.centralwidget)
+        self.splitter.setObjectName(u"splitter")
+        self.splitter.setOrientation(Qt.Vertical)
+        self.mdiArea = TabbedMdiArea(self.splitter)
         self.mdiArea.setObjectName(u"mdiArea")
-
-        self.verticalLayout_6.addWidget(self.mdiArea)
-
-        self.Logs = LogViewer(self.centralwidget)
+        self.splitter.addWidget(self.mdiArea)
+        self.Logs = LogViewer(self.splitter)
         self.Logs.setObjectName(u"Logs")
+        self.splitter.addWidget(self.Logs)
 
-        self.verticalLayout_6.addWidget(self.Logs)
+        self.verticalLayout.addWidget(self.splitter)
 
         JAL_MainWindow.setCentralWidget(self.centralwidget)
         self.MainMenu = QMenuBar(JAL_MainWindow)

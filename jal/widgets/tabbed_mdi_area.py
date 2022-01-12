@@ -49,7 +49,7 @@ class TabbedMdiArea(QWidget):
     def tabClicked(self, index):
         try:
             sub_window = self.subWindowList()[index]
-        except KeyError:
+        except IndexError:
             return
         self.mdi.setActiveSubWindow(sub_window)
 
