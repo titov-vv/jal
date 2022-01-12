@@ -2,9 +2,10 @@ from functools import partial
 
 from PySide6.QtCore import Qt, Slot, Signal, QDateTime
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QWidget, QMenu, QMessageBox
+from PySide6.QtWidgets import QMenu, QMessageBox
 from jal.ui.ui_operations_widget import Ui_OperationsWidget
 from jal.widgets.helpers import ManipulateDate
+from jal.widgets.mdi_widget import MdiWidget
 from jal.constants import TransactionType
 from jal.db.helpers import load_icon
 from jal.db.db import JalDB
@@ -14,11 +15,11 @@ from jal.db.operations_model import OperationsModel
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class OperationsWidget(QWidget, Ui_OperationsWidget):
+class OperationsWidget(MdiWidget, Ui_OperationsWidget):
     dbUpdated = Signal()
 
     def __init__(self, parent=None):
-        QWidget.__init__(self, parent)
+        MdiWidget.__init__(self, parent)
         self.setupUi(self)
 
         self.current_index = None  # this is used in onOperationContextMenu() to track item for menu

@@ -31,6 +31,7 @@ class TabbedMdiArea(QWidget):
 
     def addSubWindow(self, widget):
         sub_window = self.mdi.addSubWindow(widget)
+        widget.onClose.connect(self.subWindowClosed)
         self.tabs.addTab(sub_window.windowTitle())
         return sub_window
 
@@ -38,6 +39,11 @@ class TabbedMdiArea(QWidget):
     def subWindowActivated(self, window):
         if window is not None:
             self.tabs.setCurrentIndex(self.mdi.subWindowList().index(window))
+
+    @Slot()
+    def subWindowClosed(self, window):
+        index = self.subWindowList().index(window)
+        self.tabs.removeTab(index)
 
     @Slot()
     def tabClicked(self, index):
@@ -48,7 +54,7 @@ class TabbedMdiArea(QWidget):
         self.mdi.setActiveSubWindow(sub_window)
 
     @Slot()
-    def tabClose(self, index):   # TODO Update of tab bar is required after sub window closure by window close button
+    def tabClose(self, index):
         try:
             sub_window = self.subWindowList()[index]
         except KeyError:

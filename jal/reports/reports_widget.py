@@ -1,14 +1,16 @@
-from PySide6.QtCore import Qt, Slot, QDateTime
-from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import Qt, Slot, Signal, QDateTime
 from jal.ui.ui_reports_widget import Ui_ReportsWidget
 from jal.widgets.helpers import ManipulateDate
+from jal.widgets.mdi_widget import MdiWidget
 from jal.reports.reports import Reports, ReportType
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class ReportsWidget(QWidget, Ui_ReportsWidget):
+class ReportsWidget(MdiWidget, Ui_ReportsWidget):
+    onClose = Signal()
+
     def __init__(self, parent=None):
-        QWidget.__init__(self, parent)
+        MdiWidget.__init__(self, parent)
         self.setupUi(self)
 
         # Setup reports tab
@@ -50,6 +52,3 @@ class ReportsWidget(QWidget, Ui_ReportsWidget):
             self.reports.runReport(report_type, begin, end, self.ReportCategoryEdit.selected_id, group_dates)
         else:
             self.reports.runReport(report_type, begin, end, self.ReportAccountBtn.account_id, group_dates)
-
-    def refresh(self):
-        pass

@@ -45,6 +45,9 @@
     <item>
      <widget class="TabbedMdiArea" name="mdiArea" native="true"/>
     </item>
+    <item>
+     <widget class="LogViewer" name="Logs"/>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="MainMenu">
@@ -229,6 +232,11 @@
    <extends>QWidget</extends>
    <header>jal/widgets/tabbed_mdi_area.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>LogViewer</class>
+   <extends>QPlainTextEdit</extends>
+   <header>jal/widgets/log_viewer.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

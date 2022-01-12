@@ -24,7 +24,6 @@ from jal.data_import.statements import StatementLoader
 from jal.data_export.taxes import TaxesRus
 from jal.reports.reports import JalReports
 from jal.data_import.slips import ImportSlipDialog
-from jal.widgets.log_viewer import LogViewer
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -41,8 +40,6 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.operations_balance_window = OperationsWidget(self)
         self.ops = self.mdiArea.addSubWindow(self.operations_balance_window)
         self.ops.widget().dbUpdated.connect(self.ledger.rebuild)
-        self.Logs = LogViewer(self)
-        self.mdiArea.addSubWindow(self.Logs)
         self.ops.showMaximized()
 
         self.currentLanguage = language

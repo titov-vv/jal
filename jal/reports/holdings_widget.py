@@ -1,19 +1,22 @@
 from functools import partial
 
-from PySide6.QtCore import Qt, Slot, QDateTime
+from PySide6.QtCore import Qt, Slot, Signal, QDateTime
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QWidget, QMenu
+from PySide6.QtWidgets import QMenu
 from jal.ui.ui_holdings_widget import Ui_HoldingsWidget
 from jal.db.settings import JalSettings
 from jal.db.holdings_model import HoldingsModel
+from jal.widgets.mdi_widget import MdiWidget
 from jal.db.tax_estimator import TaxEstimator
 from jal.widgets.price_chart import ChartWindow
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class HoldingsWidget(QWidget, Ui_HoldingsWidget):
+class HoldingsWidget(MdiWidget, Ui_HoldingsWidget):
+    onClose = Signal()
+
     def __init__(self, parent=None):
-        QWidget.__init__(self, parent)
+        MdiWidget.__init__(self, parent)
         self.setupUi(self)
 
         self.holdings_model = HoldingsModel(self.HoldingsTableView)
@@ -63,6 +66,3 @@ class HoldingsWidget(QWidget, Ui_HoldingsWidget):
         self.estimator = TaxEstimator(account, asset, asset_qty, position)
         if self.estimator.ready:
             self.estimator.open()
-
-    def refresh(self):
-        self.holdings_model.update()
