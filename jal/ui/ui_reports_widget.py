@@ -182,7 +182,6 @@ class Ui_ReportsWidget(object):
         self.ReportGroupCheck.setText(QCoreApplication.translate("ReportsWidget", u"Group dates", None))
         self.ReportTypeCombo.setItemText(0, QCoreApplication.translate("ReportsWidget", u"Profit / Loss", None))
         self.ReportTypeCombo.setItemText(1, QCoreApplication.translate("ReportsWidget", u"Deals", None))
-        self.ReportTypeCombo.setItemText(2, QCoreApplication.translate("ReportsWidget", u"By Category", None))
 
         self.SaveReportBtn.setText(QCoreApplication.translate("ReportsWidget", u"Save", None))
         self.RunReportBtn.setText(QCoreApplication.translate("ReportsWidget", u"Run", None))

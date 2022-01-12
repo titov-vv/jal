@@ -40,14 +40,10 @@ class ReportsWidget(MdiWidget, Ui_ReportsWidget):
     def onRunReport(self):
         types = {
             0: ReportType.ProfitLoss,
-            1: ReportType.Deals,
-            2: ReportType.ByCategory
+            1: ReportType.Deals
         }
         report_type = types[self.ReportTypeCombo.currentIndex()]
         begin = self.ReportFromDate.dateTime().toSecsSinceEpoch()
         end = self.ReportToDate.dateTime().toSecsSinceEpoch()
         group_dates = 1 if self.ReportGroupCheck.isChecked() else 0
-        if report_type == ReportType.ByCategory:
-            self.reports.runReport(report_type, begin, end, self.ReportCategoryEdit.selected_id, group_dates)
-        else:
-            self.reports.runReport(report_type, begin, end, self.ReportAccountBtn.account_id, group_dates)
+        self.reports.runReport(report_type, begin, end, self.ReportAccountBtn.account_id, group_dates)

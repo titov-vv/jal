@@ -7,14 +7,13 @@ from PySide6.QtCore import Qt, QObject
 from data_export.helpers import XLSX
 from jal.reports.p_and_l_report import ProfitLossReportModel
 from jal.reports.deals_report import DealsReportModel
-from jal.reports.category_report import CategoryReportModel
+from jal.reports.category import CategoryReportModel
 
 
 #-----------------------------------------------------------------------------------------------------------------------
 class ReportType(Enum):
     ProfitLoss = auto()
     Deals = auto()
-    ByCategory = auto()
 
 
 class JalReports(QObject):
@@ -35,6 +34,11 @@ class JalReports(QObject):
                 'name': self.tr("Income/Spending"),
                 'module': 'income_spending',
                 'window_class': 'IncomeSpendingReport'
+            },
+            {
+                'name': self.tr("Operations by Category"),
+                'module': 'category',
+                'window_class': 'CategoryReport'
             },
             {
                 'name': self.tr("Other"),
@@ -69,9 +73,6 @@ class Reports(QObject):
             self.table_view.setModel(self.model)
         elif report_type == ReportType.Deals:
             self.model = DealsReportModel(self.table_view)
-            self.table_view.setModel(self.model)
-        elif report_type == ReportType.ByCategory:
-            self.model = CategoryReportModel(self.table_view)
             self.table_view.setModel(self.model)
         else:
             assert False

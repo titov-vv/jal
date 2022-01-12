@@ -1,8 +1,10 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtWidgets import QHeaderView
+from ui.reports.ui_category_report import Ui_CategoryReportWidget
 from jal.db.helpers import db_connection, executeSQL
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
+from widgets.mdi import MdiWidget
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -12,12 +14,15 @@ class CategoryReportModel(QSqlTableModel):
         self._columns = [("timestamp", self.tr("Timestamp")),
                          ("account", self.tr("Account")),
                          ("name", self.tr("Peer Name")),
-                         ("sum", self.tr("Amount")),
+                         ("amount", self.tr("Amount")),
                          ("note", self.tr("Note"))]
         self._view = parent_view
         self._query = None
         self._timestamp_delegate = None
         self._float_delegate = None
+        self._begin = 0
+        self._end = 0
+        self._category_id = 0
         QSqlTableModel.__init__(self, parent=parent_view, db=db_connection())
 
     def setColumnNames(self):
@@ -29,6 +34,8 @@ class CategoryReportModel(QSqlTableModel):
             self._view.setItemDelegateForColumn(self.fieldIndex(column[0]), None)
 
     def configureView(self):
+        if self.columnCount() == 0:
+            return
         self._view.setModel(self)
         self.setColumnNames()
         self.resetDelegates()
@@ -46,9 +53,20 @@ class CategoryReportModel(QSqlTableModel):
         self._float_delegate = FloatDelegate(2, allow_tail=False)
         self._view.setItemDelegateForColumn(self.fieldIndex("amount"), self._float_delegate)
 
-    def prepare(self, begin, end, category_id, group_dates):
-        if category_id == 0:
-            raise ValueError(self.tr("You should select category to create By Category report"))
+    def setDatesRange(self, begin, end):
+        self._begin = begin
+        self._end = end
+        self.calculateCategoryReport()
+        self.configureView()
+
+    def setCategory(self, category):
+        self._category_id = category
+        self.calculateCategoryReport()
+        self.configureView()
+
+    def calculateCategoryReport(self):
+        if self._category_id == 0:
+            return
         self._query = executeSQL("SELECT a.timestamp, ac.name AS account, p.name, d.amount, d.note "
                                 "FROM actions AS a "
                                 "LEFT JOIN action_details AS d ON d.pid=a.id "
@@ -56,6 +74,45 @@ class CategoryReportModel(QSqlTableModel):
                                 "LEFT JOIN accounts AS ac ON ac.id=a.account_id "
                                 "WHERE a.timestamp>=:begin AND a.timestamp<=:end "
                                 "AND d.category_id=:category_id",
-                                [(":category_id", category_id), (":begin", begin), (":end", end)], forward_only=False)
+                                [(":category_id", self._category_id), (":begin", self._begin), (":end", self._end)],
+                                 forward_only=False)
         self.setQuery(self._query)
         self.modelReset.emit()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+class CategoryReport(MdiWidget, Ui_CategoryReportWidget):
+    onClose = Signal()
+
+    def __init__(self, parent=None):
+        MdiWidget.__init__(self, parent)
+        self.setupUi(self)
+        self.parent_mdi = parent
+
+        self.category_model = CategoryReportModel(self.ReportTableView)
+        self.ReportTableView.setModel(self.category_model)
+
+        self.connect_signals_and_slots()
+        self.ReportRangeCombo.selectIndex(0)
+
+    def connect_signals_and_slots(self):
+        self.ReportFromDate.dateChanged.connect(self.onDateChange)
+        self.ReportToDate.dateChanged.connect(self.onDateChange)
+        self.ReportRangeCombo.changed.connect(self.onReportRangeChange)
+        self.ReportCategoryEdit.changed.connect(self.onCategoryChange)
+
+    @Slot()
+    def onReportRangeChange(self, start_date, end_date):
+        self.ReportFromDate.blockSignals(True)  # Prevent signal from firing as we need to update only once
+        self.ReportFromDate.setDateTime(start_date)
+        self.ReportFromDate.blockSignals(False)
+        self.ReportToDate.setDateTime(end_date)
+
+    @Slot()
+    def onDateChange(self):
+        self.ReportTableView.model().setDatesRange(self.ReportFromDate.date().startOfDay(Qt.UTC).toSecsSinceEpoch(),
+                                                   self.ReportToDate.date().endOfDay(Qt.UTC).toSecsSinceEpoch())
+
+    @Slot()
+    def onCategoryChange(self):
+        self.ReportTableView.model().setCategory(self.ReportCategoryEdit.selected_id)

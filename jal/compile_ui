@@ -13,6 +13,7 @@
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_holdings_report.py ./ui/reports/holdings_report.ui
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_tax_estimation.py ./ui/reports/tax_estimation.ui
 /usr/lib/qt6/uic -g python -o ./ui/reports/ui_income_spending_report.py ./ui/reports/income_spending_report.ui
+/usr/lib/qt6/uic -g python -o ./ui/reports/ui_category_report.py ./ui/reports/category_report.ui
 
 /usr/lib/qt6/bin/lupdate -no-obsolete jal.pro
 
