@@ -14,6 +14,7 @@ class TabbedMdiArea(QWidget):
         self.setLayout(self.layout)
 
         self.mdi = QMdiArea(self)
+        self.mdi.setOption(QMdiArea.DontMaximizeSubWindowOnActivation)
         self.layout.addWidget(self.mdi)
 
         self.tabs = QTabBar(self)
@@ -35,7 +36,6 @@ class TabbedMdiArea(QWidget):
         self.tabs.addTab(sub_window.windowTitle())
         if maximized:
             sub_window.showMaximized()
-            self.mdi.setOption(QMdiArea.DontMaximizeSubWindowOnActivation)
         else:
             sub_window.show()
         return sub_window
