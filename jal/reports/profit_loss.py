@@ -1,8 +1,10 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtSql import QSqlTableModel
+from ui.reports.ui_profit_loss_report import Ui_ProfitLossReportWidget
 from jal.db.helpers import db_connection, executeSQL
 from jal.constants import BookAccount, PredefinedCategory
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
+from widgets.mdi import MdiWidget
 
 #-----------------------------------------------------------------------------------------------------------------------
 class ProfitLossReportModel(QSqlTableModel):
@@ -15,6 +17,9 @@ class ProfitLossReportModel(QSqlTableModel):
                          ("dividend", self.tr("Returns")),
                          ("tax_fee", self.tr("Taxes & Fees"))]
         self._view = parent_view
+        self._begin = 0
+        self._end = 0
+        self._account_id = 0
         self._query = None
         self._ym_delegate = None
         self._float_delegate = None
@@ -47,9 +52,20 @@ class ProfitLossReportModel(QSqlTableModel):
         self._view.setItemDelegateForColumn(self.fieldIndex("dividend"), self._float_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("tax_fee"), self._float_delegate)
 
-    def prepare(self, begin, end, account_id, group_dates):
-        if account_id == 0:
-            raise ValueError(self.tr("You should select account to create Profit/Loss report"))
+    def setDatesRange(self, begin, end):
+        self._begin = begin
+        self._end = end
+        self.calculateProfitLossReport()
+        self.configureView()
+
+    def setAccount(self, account_id):
+        self._account_id = account_id
+        self.calculateProfitLossReport()
+        self.configureView()
+
+    def calculateProfitLossReport(self):
+        if self._account_id == 0:
+            return
         self._query = executeSQL(
             "WITH "
             "_months AS ("
@@ -120,7 +136,7 @@ class ProfitLossReportModel(QSqlTableModel):
             "AND l.category_id<>:category_interest AND l.account_id=:account_id "
             "  GROUP BY month "
             ") AS f ON f.month = m.month",
-            [(":account_id", account_id), (":begin", begin), (":end", end),
+            [(":account_id", self._account_id), (":begin", self._begin), (":end", self._end),
              (":book_costs", BookAccount.Costs), (":book_incomes", BookAccount.Incomes),
              (":book_money", BookAccount.Money), (":book_assets", BookAccount.Assets),
              (":book_transfers", BookAccount.Transfers), (":category_profit", PredefinedCategory.Profit),
@@ -128,3 +144,40 @@ class ProfitLossReportModel(QSqlTableModel):
             forward_only=False)
         self.setQuery(self._query)
         self.modelReset.emit()
+
+# ----------------------------------------------------------------------------------------------------------------------
+class ProfitLossReport(MdiWidget, Ui_ProfitLossReportWidget):
+    onClose = Signal()
+
+    def __init__(self, parent=None):
+        MdiWidget.__init__(self, parent)
+        self.setupUi(self)
+        self.parent_mdi = parent
+
+        self.category_model = ProfitLossReportModel(self.ReportTableView)
+        self.ReportTableView.setModel(self.category_model)
+
+        self.connect_signals_and_slots()
+        self.ReportRangeCombo.selectIndex(0)
+
+    def connect_signals_and_slots(self):
+        self.ReportFromDate.dateChanged.connect(self.onDateChange)
+        self.ReportToDate.dateChanged.connect(self.onDateChange)
+        self.ReportRangeCombo.changed.connect(self.onReportRangeChange)
+        self.ReportAccountBtn.changed.connect(self.onAccountChange)
+
+    @Slot()
+    def onReportRangeChange(self, start_date, end_date):
+        self.ReportFromDate.blockSignals(True)  # Prevent signal from firing as we need to update only once
+        self.ReportFromDate.setDateTime(start_date)
+        self.ReportFromDate.blockSignals(False)
+        self.ReportToDate.setDateTime(end_date)
+
+    @Slot()
+    def onDateChange(self):
+        self.ReportTableView.model().setDatesRange(self.ReportFromDate.date().startOfDay(Qt.UTC).toSecsSinceEpoch(),
+                                                   self.ReportToDate.date().endOfDay(Qt.UTC).toSecsSinceEpoch())
+
+    @Slot()
+    def onAccountChange(self):
+        self.ReportTableView.model().setAccount(self.ReportAccountBtn.account_id)

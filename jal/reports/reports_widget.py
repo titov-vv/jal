@@ -2,7 +2,7 @@ from PySide6.QtCore import Qt, Slot, Signal, QDateTime
 from jal.ui.ui_reports_widget import Ui_ReportsWidget
 from jal.widgets.helpers import ManipulateDate
 from widgets.mdi import MdiWidget
-from jal.reports.reports import Reports, ReportType
+from jal.reports.reports import Reports
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -38,12 +38,4 @@ class ReportsWidget(MdiWidget, Ui_ReportsWidget):
 
     @Slot()
     def onRunReport(self):
-        types = {
-            0: ReportType.ProfitLoss,
-            1: ReportType.Deals
-        }
-        report_type = types[self.ReportTypeCombo.currentIndex()]
-        begin = self.ReportFromDate.dateTime().toSecsSinceEpoch()
-        end = self.ReportToDate.dateTime().toSecsSinceEpoch()
-        group_dates = 1 if self.ReportGroupCheck.isChecked() else 0
-        self.reports.runReport(report_type, begin, end, self.ReportAccountBtn.account_id, group_dates)
+        pass

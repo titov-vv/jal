@@ -1,16 +1,10 @@
 import logging
 import importlib
 
-from enum import Enum, auto
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QObject
 from data_export.helpers import XLSX
-from jal.reports.p_and_l_report import ProfitLossReportModel
-
-
-#-----------------------------------------------------------------------------------------------------------------------
-class ReportType(Enum):
-    ProfitLoss = auto()
+from jal.reports.profit_loss import ProfitLossReportModel
 
 
 class JalReports(QObject):
@@ -31,6 +25,11 @@ class JalReports(QObject):
                 'name': self.tr("Income/Spending"),
                 'module': 'income_spending',
                 'window_class': 'IncomeSpendingReport'
+            },
+            {
+                'name': self.tr("P&L by Account"),
+                'module': 'profit_loss',
+                'window_class': 'ProfitLossReport'
             },
             {
                 'name': self.tr("Deals by Account"),
@@ -70,18 +69,7 @@ class Reports(QObject):
         self.model = None
 
     def runReport(self, report_type, begin=0, end=0, account_id=0, group_dates=0):
-        if report_type == ReportType.ProfitLoss:
-            self.model = ProfitLossReportModel(self.table_view)
-            self.table_view.setModel(self.model)
-        else:
-            assert False
-
-        try:
-            self.model.prepare(begin, end, account_id, group_dates)
-        except ValueError as e:
-            QMessageBox().warning(None, self.tr("Report creation error"), str(e), QMessageBox.Ok)
-            return
-        self.model.configureView()
+        pass
 
     def saveReport(self):
         filename, filter = QFileDialog.getSaveFileName(None, self.tr("Save report to:"),
