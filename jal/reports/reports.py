@@ -5,7 +5,6 @@ from enum import Enum, auto
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QObject
 from data_export.helpers import XLSX
-from jal.reports.income_spending_report import IncomeSpendingReport
 from jal.reports.p_and_l_report import ProfitLossReportModel
 from jal.reports.deals_report import DealsReportModel
 from jal.reports.category_report import CategoryReportModel
@@ -13,7 +12,6 @@ from jal.reports.category_report import CategoryReportModel
 
 #-----------------------------------------------------------------------------------------------------------------------
 class ReportType(Enum):
-    IncomeSpending = auto()
     ProfitLoss = auto()
     Deals = auto()
     ByCategory = auto()
@@ -32,6 +30,11 @@ class JalReports(QObject):
                 'name': self.tr("Holdings"),
                 'module': 'holdings',
                 'window_class': 'HoldingsReport'
+            },
+            {
+                'name': self.tr("Income/Spending"),
+                'module': 'income_spending',
+                'window_class': 'IncomeSpendingReport'
             },
             {
                 'name': self.tr("Other"),
@@ -54,34 +57,22 @@ class JalReports(QObject):
 
 #-----------------------------------------------------------------------------------------------------------------------
 class Reports(QObject):
-    def __init__(self, report_table_view, report_tree_view):
+    def __init__(self, report_table_view):
         super().__init__()
 
         self.table_view = report_table_view
-        self.tree_view = report_tree_view
         self.model = None
 
     def runReport(self, report_type, begin=0, end=0, account_id=0, group_dates=0):
-        if report_type == ReportType.IncomeSpending:
-            self.model = IncomeSpendingReport(self.tree_view)
-            self.tree_view.setModel(self.model)
-            self.tree_view.setVisible(True)
-            self.table_view.setVisible(False)
-        elif report_type == ReportType.ProfitLoss:
+        if report_type == ReportType.ProfitLoss:
             self.model = ProfitLossReportModel(self.table_view)
             self.table_view.setModel(self.model)
-            self.tree_view.setVisible(False)
-            self.table_view.setVisible(True)
         elif report_type == ReportType.Deals:
             self.model = DealsReportModel(self.table_view)
             self.table_view.setModel(self.model)
-            self.tree_view.setVisible(False)
-            self.table_view.setVisible(True)
         elif report_type == ReportType.ByCategory:
             self.model = CategoryReportModel(self.table_view)
             self.table_view.setModel(self.model)
-            self.tree_view.setVisible(False)
-            self.table_view.setVisible(True)
         else:
             assert False
 

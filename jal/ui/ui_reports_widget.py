@@ -61,7 +61,7 @@ class Ui_ReportsWidget(object):
 
         self.ReportToDate = QDateEdit(self.ReportParamsFrame)
         self.ReportToDate.setObjectName(u"ReportToDate")
-        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 11, 23), QTime(21, 0, 0)))
+        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 11, 21), QTime(21, 0, 0)))
         self.ReportToDate.setCalendarPopup(True)
         self.ReportToDate.setTimeSpec(Qt.UTC)
 
@@ -105,7 +105,6 @@ class Ui_ReportsWidget(object):
         self.ReportTypeCombo.addItem("")
         self.ReportTypeCombo.addItem("")
         self.ReportTypeCombo.addItem("")
-        self.ReportTypeCombo.addItem("")
         self.ReportTypeCombo.setObjectName(u"ReportTypeCombo")
 
         self.gridLayout.addWidget(self.ReportTypeCombo, 0, 2, 1, 1)
@@ -137,7 +136,7 @@ class Ui_ReportsWidget(object):
 
         self.ReportFromDate = QDateEdit(self.ReportParamsFrame)
         self.ReportFromDate.setObjectName(u"ReportFromDate")
-        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 11, 23), QTime(21, 0, 0)))
+        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 11, 21), QTime(21, 0, 0)))
         self.ReportFromDate.setCalendarPopup(True)
         self.ReportFromDate.setTimeSpec(Qt.UTC)
 
@@ -167,14 +166,6 @@ class Ui_ReportsWidget(object):
 
         self.verticalLayout.addWidget(self.ReportTableView)
 
-        self.ReportTreeView = QTreeView(ReportsWidget)
-        self.ReportTreeView.setObjectName(u"ReportTreeView")
-        self.ReportTreeView.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.ReportTreeView.setAlternatingRowColors(True)
-        self.ReportTreeView.header().setStretchLastSection(False)
-
-        self.verticalLayout.addWidget(self.ReportTreeView)
-
 
         self.retranslateUi(ReportsWidget)
 
@@ -189,10 +180,9 @@ class Ui_ReportsWidget(object):
         self.ReportToLbl.setText(QCoreApplication.translate("ReportsWidget", u"To:", None))
         self.ReportFromLbl.setText(QCoreApplication.translate("ReportsWidget", u"From:", None))
         self.ReportGroupCheck.setText(QCoreApplication.translate("ReportsWidget", u"Group dates", None))
-        self.ReportTypeCombo.setItemText(0, QCoreApplication.translate("ReportsWidget", u"Income / Spending", None))
-        self.ReportTypeCombo.setItemText(1, QCoreApplication.translate("ReportsWidget", u"Profit / Loss", None))
-        self.ReportTypeCombo.setItemText(2, QCoreApplication.translate("ReportsWidget", u"Deals", None))
-        self.ReportTypeCombo.setItemText(3, QCoreApplication.translate("ReportsWidget", u"By Category", None))
+        self.ReportTypeCombo.setItemText(0, QCoreApplication.translate("ReportsWidget", u"Profit / Loss", None))
+        self.ReportTypeCombo.setItemText(1, QCoreApplication.translate("ReportsWidget", u"Deals", None))
+        self.ReportTypeCombo.setItemText(2, QCoreApplication.translate("ReportsWidget", u"By Category", None))
 
         self.SaveReportBtn.setText(QCoreApplication.translate("ReportsWidget", u"Save", None))
         self.RunReportBtn.setText(QCoreApplication.translate("ReportsWidget", u"Run", None))

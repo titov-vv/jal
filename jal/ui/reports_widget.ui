@@ -88,7 +88,7 @@
           <second>0</second>
           <year>2020</year>
           <month>11</month>
-          <day>23</day>
+          <day>21</day>
          </datetime>
         </property>
         <property name="displayFormat">
@@ -154,11 +154,6 @@
       </item>
       <item row="0" column="2">
        <widget class="QComboBox" name="ReportTypeCombo">
-        <item>
-         <property name="text">
-          <string>Income / Spending</string>
-         </property>
-        </item>
         <item>
          <property name="text">
           <string>Profit / Loss</string>
@@ -235,7 +230,7 @@
           <second>0</second>
           <year>2020</year>
           <month>11</month>
-          <day>23</day>
+          <day>21</day>
          </datetime>
         </property>
         <property name="displayFormat">
@@ -287,19 +282,6 @@
      </attribute>
      <attribute name="verticalHeaderDefaultSectionSize">
       <number>20</number>
-     </attribute>
-    </widget>
-   </item>
-   <item>
-    <widget class="QTreeView" name="ReportTreeView">
-     <property name="editTriggers">
-      <set>QAbstractItemView::NoEditTriggers</set>
-     </property>
-     <property name="alternatingRowColors">
-      <bool>true</bool>
-     </property>
-     <attribute name="headerStretchLastSection">
-      <bool>false</bool>
      </attribute>
     </widget>
    </item>

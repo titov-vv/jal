@@ -2,6 +2,7 @@
 /usr/lib/qt6/uic -g python -o ./ui/ui_main_window.py ./ui/main_window.ui
 /usr/lib/qt6/uic -g python -o ./ui/ui_operations_widget.py ./ui/operations_widget.ui
 /usr/lib/qt6/uic -g python -o ./ui/ui_holdings_widget.py ./ui/holdings_widget.ui
+/usr/lib/qt6/uic -g python -o ./ui/ui_income_spending_report.py ./ui/income_spending_report.ui
 /usr/lib/qt6/uic -g python -o ./ui/ui_reports_widget.py ./ui/reports_widget.ui
 /usr/lib/qt6/uic -g python -o ./ui/ui_rebuild_window.py ./ui/rebuild_window.ui
 /usr/lib/qt6/uic -g python -o ./ui/ui_update_quotes_window.py ./ui/quotes_update.ui

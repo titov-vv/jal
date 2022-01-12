@@ -240,7 +240,7 @@
 <context>
     <name>ChartWindow</name>
     <message>
-        <location filename="../widgets/price_chart.py" line="80"/>
+        <location filename="../widgets/price_chart.py" line="81"/>
         <source>Price chart for </source>
         <translation>График цены для </translation>
     </message>
@@ -377,6 +377,29 @@
         <location filename="../db/helpers.py" line="235"/>
         <source>Unknown country code: </source>
         <translation>Неизвестный код страны: </translation>
+    </message>
+</context>
+<context>
+    <name>DateRangeCombo</name>
+    <message>
+        <location filename="../widgets/helpers.py" line="110"/>
+        <source>Quarter to date</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/helpers.py" line="111"/>
+        <source>Year to date</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/helpers.py" line="112"/>
+        <source>This year</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/helpers.py" line="113"/>
+        <source>Previous year</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -558,12 +581,12 @@
 <context>
     <name>Error</name>
     <message>
-        <location filename="../widgets/helpers.py" line="12"/>
+        <location filename="../widgets/helpers.py" line="13"/>
         <source>Can&apos;t delete predefined category</source>
         <translation>Невозможно удалить предопределённую категорию</translation>
     </message>
     <message>
-        <location filename="../widgets/helpers.py" line="8"/>
+        <location filename="../widgets/helpers.py" line="9"/>
         <source>Investment account should have associated broker assigned</source>
         <translation>Поле Банк/Брокер должно быть заполнено для инвестиционного счета</translation>
     </message>
@@ -774,75 +797,6 @@
     </message>
 </context>
 <context>
-    <name>IncomeSpendingReport</name>
-    <message>
-        <location filename="../reports/income_spending_report.py" line="123"/>
-        <source>Jan</source>
-        <translation>Янв</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending_report.py" line="123"/>
-        <source>Feb</source>
-        <translation>Фев</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending_report.py" line="123"/>
-        <source>Mar</source>
-        <translation>Март</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending_report.py" line="123"/>
-        <source>Apr</source>
-        <translation>Апр</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending_report.py" line="123"/>
-        <source>May</source>
-        <translation>Май</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending_report.py" line="123"/>
-        <source>Jun</source>
-        <translation>Июнь</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending_report.py" line="124"/>
-        <source>Jul</source>
-        <translation>Июль</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending_report.py" line="124"/>
-        <source>Aug</source>
-        <translation>Авг</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending_report.py" line="124"/>
-        <source>Sep</source>
-        <translation>Сен</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending_report.py" line="124"/>
-        <source>Oct</source>
-        <translation>Окт</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending_report.py" line="124"/>
-        <source>Nov</source>
-        <translation>Нояб</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending_report.py" line="127"/>
-        <source>Dec</source>
-        <translation>Дек</translation>
-    </message>
-    <message>
-        <location filename="../reports/income_spending_report.py" line="157"/>
-        <location filename="../reports/income_spending_report.py" line="264"/>
-        <source>TOTAL</source>
-        <translation>ИТОГО</translation>
-    </message>
-</context>
-<context>
     <name>IncomeSpendingWidget</name>
     <message>
         <location filename="../widgets/income_spending_widget.py" line="41"/>
@@ -1044,6 +998,29 @@ Application will be terminated now</source>
     </message>
 </context>
 <context>
+    <name>JalReports</name>
+    <message>
+        <location filename="../reports/reports.py" line="30"/>
+        <source>Holdings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="35"/>
+        <source>Income/Spending</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="40"/>
+        <source>Other</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="52"/>
+        <source>Report module not found: </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Ledger</name>
     <message>
         <location filename="../db/ledger.py" line="300"/>
@@ -1129,6 +1106,16 @@ Application will be terminated now</source>
         <source>Logs</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../widgets/log_viewer.py" line="19"/>
+        <source>▶ logs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/log_viewer.py" line="21"/>
+        <source>▲ logs</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>LoginFNS</name>
@@ -1182,50 +1169,50 @@ Application will be terminated now</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="157"/>
+        <location filename="../widgets/main_window.py" line="150"/>
         <source>Restart required</source>
         <translation>Требуется рестарт</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="159"/>
+        <location filename="../widgets/main_window.py" line="152"/>
         <source>Language was changed to </source>
         <translation>Язык был изменён на </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="161"/>
+        <location filename="../widgets/main_window.py" line="154"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation>Вы должны перезапустить приложение, чтобы применить изменения
 Приложение сейчас завершит свою работу</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="126"/>
+        <location filename="../widgets/main_window.py" line="119"/>
         <source>Ledger isn&apos;t complete. Rebuild it now?</source>
         <translation>Итога транзакций неактуальны. Пересчитать сейчас?</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="126"/>
+        <location filename="../widgets/main_window.py" line="119"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="64"/>
-        <location filename="../widgets/main_window.py" line="181"/>
+        <location filename="../widgets/main_window.py" line="56"/>
+        <location filename="../widgets/main_window.py" line="182"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="247"/>
+        <location filename="../widgets/main_window.py" line="248"/>
         <source>Statement ending balance doesn&apos;t match: </source>
         <translation>Конечный баланс по отчёту не совпадает: </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="189"/>
+        <location filename="../widgets/main_window.py" line="190"/>
         <source>&lt;p&gt;More information, manuals and problem reports are at &lt;a href=https://github.com/titov-vv/jal&gt;github home page&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Questions, comments, help or donations:&lt;/p&gt;&lt;p&gt;&lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=https://t.me/jal_support&gt;Telegram&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;Дополнительная информация, инструкции, сообщения о проблемах - &lt;a href=https://github.com/titov-vv/jal&gt;github home page&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Вопросы, комментарии, помощь или донаты:&lt;/p&gt;&lt;p&gt;&lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=https://t.me/jal_support&gt;Telegram&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="182"/>
+        <location filename="../widgets/main_window.py" line="183"/>
         <source>&lt;h3&gt;JAL&lt;/h3&gt;&lt;p&gt;Just Another Ledger, version {version}&lt;/p&gt;</source>
         <translation>&lt;h3&gt;JAL&lt;/h3&gt;&lt;p&gt;Just Another Ledger, версия {version}&lt;/p&gt;</translation>
     </message>
@@ -1572,23 +1559,23 @@ Application will be terminated now</source>
 <context>
     <name>Reports</name>
     <message>
-        <location filename="../reports/reports.py" line="60"/>
+        <location filename="../reports/reports.py" line="87"/>
         <source>Save report to:</source>
         <translation>Сохранить отчет в:</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="69"/>
+        <location filename="../reports/reports.py" line="96"/>
         <source>Report</source>
         <translation>Отчет</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="61"/>
-        <location filename="../reports/reports.py" line="63"/>
+        <location filename="../reports/reports.py" line="88"/>
+        <location filename="../reports/reports.py" line="90"/>
         <source>Excel files (*.xlsx)</source>
         <translation>Файлы Excel (*.xslx)</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="55"/>
+        <location filename="../reports/reports.py" line="82"/>
         <source>Report creation error</source>
         <translation>Ошибка создания отчёта</translation>
     </message>
@@ -2445,17 +2432,17 @@ Application will be terminated now</source>
         <translation>Оценка налога для </translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="161"/>
+        <location filename="../db/tax_estimator.py" line="159"/>
         <source>TOTAL</source>
         <translation>ИТОГО</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="118"/>
+        <location filename="../db/tax_estimator.py" line="116"/>
         <source>Can&apos;t get current quote for </source>
         <translation>Невозможно получить котировку для </translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="126"/>
+        <location filename="../db/tax_estimator.py" line="124"/>
         <source>Can&apos;t get current rate for </source>
         <translation>Невозможно получить курс валюты для </translation>
     </message>

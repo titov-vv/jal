@@ -1,9 +1,11 @@
 from datetime import datetime
-from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex
+from PySide6.QtCore import Qt, Signal, Slot, QDateTime, QAbstractItemModel, QModelIndex
 from PySide6.QtGui import QBrush
+from jal.ui.ui_income_spending_report import Ui_IncomeSpendingReportWidget
 from jal.constants import BookAccount, PredefinedAsset, CustomColor
 from jal.db.helpers import executeSQL
 from jal.widgets.delegates import GridLinesDelegate
+from widgets.mdi import MdiWidget
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -104,7 +106,7 @@ class ReportTreeItem:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class IncomeSpendingReport(QAbstractItemModel):
+class IncomeSpendingReportModel(QAbstractItemModel):
     COL_LEVEL = 0
     COL_ID = 1
     COL_PID = 2
@@ -115,6 +117,8 @@ class IncomeSpendingReport(QAbstractItemModel):
 
     def __init__(self, parent_view):
         super().__init__(parent_view)
+        self._begin = 0
+        self._end = 0
         self._view = parent_view
         self._root = None
         self._grid_delegate = None
@@ -234,7 +238,13 @@ class IncomeSpendingReport(QAbstractItemModel):
                 self._view.setColumnHidden(section + i + 1, new_state)
             self.headerDataChanged.emit(Qt.Horizontal, section, section)
 
-    def prepare(self, begin, end, account_id, group_dates):
+    def setDatesRange(self, begin, end):
+        self._begin = begin
+        self._end = end
+        self.calculateIncomeSpendings()
+        self.configureView()
+
+    def calculateIncomeSpendings(self):
         query = executeSQL("WITH "
                            "_months AS (SELECT strftime('%s', datetime(timestamp, 'unixepoch', 'start of month') ) "
                            "AS month, asset_id, MAX(timestamp) AS last_timestamp "
@@ -258,17 +268,17 @@ class IncomeSpendingReport(QAbstractItemModel):
                            "LEFT JOIN categories AS c ON ct.id=c.id "
                            "ORDER BY path, month_start",
                            [(":asset_money", PredefinedAsset.Money), (":book_costs", BookAccount.Costs),
-                            (":book_incomes", BookAccount.Incomes), (":begin", begin), (":end", end)],
+                            (":book_incomes", BookAccount.Incomes), (":begin", self._begin), (":end", self._end)],
                            forward_only=True)
-        self._root = ReportTreeItem(begin, end, -1, "ROOT")  # invisible root
-        self._root.appendChild(ReportTreeItem(begin, end, 0, self.tr("TOTAL")))  # visible root
+        self._root = ReportTreeItem(self._begin, self._end, -1, "ROOT")  # invisible root
+        self._root.appendChild(ReportTreeItem(self._begin, self._end, 0, self.tr("TOTAL")))  # visible root
         indexes = range(query.record().count())
         while query.next():
             values = list(map(query.value, indexes))
             leaf = self._root.getLeafById(values[self.COL_ID])
             if leaf is None:
                 parent = self._root.getLeafById(values[self.COL_PID])
-                leaf = ReportTreeItem(begin, end, values[self.COL_ID], values[self.COL_NAME], parent)
+                leaf = ReportTreeItem(self._begin, self._end, values[self.COL_ID], values[self.COL_NAME], parent)
                 parent.appendChild(leaf)
             if values[self.COL_TIMESTAMP]:
                 year = int(datetime.utcfromtimestamp(int(values[self.COL_TIMESTAMP])).strftime('%Y'))
@@ -276,3 +286,36 @@ class IncomeSpendingReport(QAbstractItemModel):
                 leaf.addAmount(year, month, values[self.COL_AMOUNT])
         self.modelReset.emit()
         self._view.expandAll()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+class IncomeSpendingReport(MdiWidget, Ui_IncomeSpendingReportWidget):
+    onClose = Signal()
+
+    def __init__(self, parent=None):
+        MdiWidget.__init__(self, parent)
+        self.setupUi(self)
+        self.parent_mdi = parent
+
+        self.income_spending_model = IncomeSpendingReportModel(self.ReportTreeView)
+        self.ReportTreeView.setModel(self.income_spending_model)
+
+        self.connect_signals_and_slots()
+        self.ReportRangeCombo.selectIndex(0)
+
+    def connect_signals_and_slots(self):
+        self.ReportFromDate.dateChanged.connect(self.onDateChange)
+        self.ReportToDate.dateChanged.connect(self.onDateChange)
+        self.ReportRangeCombo.changed.connect(self.onReportRangeChange)
+
+    @Slot()
+    def onReportRangeChange(self, start_date, end_date):
+        self.ReportFromDate.blockSignals(True)       # Prevent signal from firing as we need to update only once
+        self.ReportFromDate.setDateTime(start_date)
+        self.ReportFromDate.blockSignals(False)
+        self.ReportToDate.setDateTime(end_date)
+
+    @Slot()
+    def onDateChange(self):
+        self.ReportTreeView.model().setDatesRange(self.ReportFromDate.date().startOfDay(Qt.UTC).toSecsSinceEpoch(),
+                                                  self.ReportToDate.date().endOfDay(Qt.UTC).toSecsSinceEpoch())

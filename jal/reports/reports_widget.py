@@ -14,7 +14,7 @@ class ReportsWidget(MdiWidget, Ui_ReportsWidget):
         self.setupUi(self)
 
         # Setup reports tab
-        self.reports = Reports(self.ReportTableView, self.ReportTreeView)
+        self.reports = Reports(self.ReportTableView)
 
         self.connect_signals_and_slots()
 
@@ -39,10 +39,9 @@ class ReportsWidget(MdiWidget, Ui_ReportsWidget):
     @Slot()
     def onRunReport(self):
         types = {
-            0: ReportType.IncomeSpending,
-            1: ReportType.ProfitLoss,
-            2: ReportType.Deals,
-            3: ReportType.ByCategory
+            0: ReportType.ProfitLoss,
+            1: ReportType.Deals,
+            2: ReportType.ByCategory
         }
         report_type = types[self.ReportTypeCombo.currentIndex()]
         begin = self.ReportFromDate.dateTime().toSecsSinceEpoch()
