@@ -63,3 +63,6 @@ class HoldingsWidget(QWidget, Ui_HoldingsWidget):
         self.estimator = TaxEstimator(account, asset, asset_qty, position)
         if self.estimator.ready:
             self.estimator.open()
+
+    def refresh(self):
+        self.holdings_model.update()

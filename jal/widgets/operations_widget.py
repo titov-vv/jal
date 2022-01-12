@@ -175,3 +175,6 @@ class OperationsWidget(QWidget, Ui_OperationsWidget):
         account_id = self.operations_model.data(idx, Qt.UserRole, field="account_id")
         JalDB().reconcile_account(account_id, timestamp)
         self.operations_model.refresh()
+
+    def refresh(self):
+        self.balances_model.update()

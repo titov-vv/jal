@@ -104,11 +104,9 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.actionCountries.triggered.connect(partial(self.onDataDialog, "countries"))
         self.actionQuotes.triggered.connect(partial(self.onDataDialog, "quotes"))
         self.PrepareTaxForms.triggered.connect(partial(self.taxes.showTaxesDialog, self))
-        # self.downloader.download_completed.connect(self.balances_model.update)  # FIXME
-        # self.downloader.download_completed.connect(self.holdings_model.update)
+        self.downloader.download_completed.connect(self.updateWidgets)
+        self.ledger.updated.connect(self.updateWidgets)
         self.statements.load_completed.connect(self.onStatementImport)
-        # self.ledger.updated.connect(self.balances_model.update)   # FIXME
-        # self.ledger.updated.connect(self.holdings_model.update)
 
     @Slot()
     def showEvent(self, event):
@@ -220,6 +218,11 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
             QuotesListDialog().exec()
         else:
             assert False
+
+    @Slot()
+    def updateWidgets(self):
+        for window in self.mdiArea.subWindows:
+            self.mdiArea.subWindows[window].widget().refresh()
 
     @Slot()
     def onStatementImport(self, timestamp, totals):

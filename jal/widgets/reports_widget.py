@@ -50,3 +50,6 @@ class ReportsWidget(QWidget, Ui_ReportsWidget):
             self.reports.runReport(report_type, begin, end, self.ReportCategoryEdit.selected_id, group_dates)
         else:
             self.reports.runReport(report_type, begin, end, self.ReportAccountBtn.account_id, group_dates)
+
+    def refresh(self):
+        pass

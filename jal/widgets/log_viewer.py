@@ -55,3 +55,5 @@ class LogViewer(QPlainTextEdit, logging.Handler):
         self.notification.setPalette(palette)
         self.notification.setText("")
 
+    def refresh(self):
+        pass
