@@ -1,3 +1,6 @@
+import logging
+import importlib
+
 from enum import Enum, auto
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QObject
@@ -15,6 +18,42 @@ class ReportType(Enum):
     Deals = auto()
     ByCategory = auto()
 
+
+class JalReports(QObject):
+    def __init__(self, parent, MdiArea):
+        super().__init__()
+        self.parent = parent
+        self.mdi = MdiArea
+        self.items = [
+            # 'name' - Title string to display in main menu
+            # 'module' - module name inside 'jal/reports' that contains descendant of ReportWidget class
+            # 'window_class' - class name that is derived from ReportWidget class
+            {
+                'name': self.tr("Holdings"),
+                'module': 'holdings_widget',
+                'window_class': 'HoldingsWidget'
+            },
+            {
+                'name': self.tr("Other"),
+                'module': 'reports_widget',
+                'window_class': 'ReportsWidget'
+            }
+        ]
+        self.reports = []
+
+    # method is called directly from menu, so it contains QAction that was triggered
+    def show(self, action):
+        report_loader = self.items[action.data()]
+        try:
+            module = importlib.import_module(f"jal.reports.{report_loader['module']}")
+        except ModuleNotFoundError:
+            logging.error(self.tr("Report module not found: ") + report_loader['module'])
+            return
+        class_instance = getattr(module, report_loader['window_class'])
+        report = class_instance(self.parent)
+        self.reports.append(report)
+        report_window = self.mdi.addSubWindow(report)
+        report_window.showMaximized()
 
 #-----------------------------------------------------------------------------------------------------------------------
 class Reports(QObject):

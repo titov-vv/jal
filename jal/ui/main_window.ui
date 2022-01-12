@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1482</width>
-    <height>583</height>
+    <width>835</width>
+    <height>436</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -52,7 +52,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1482</width>
+     <width>835</width>
      <height>23</height>
     </rect>
    </property>
@@ -111,8 +111,14 @@
     <addaction name="menuStatement"/>
     <addaction name="actionImportSlipRU"/>
    </widget>
+   <widget class="QMenu" name="menuReports">
+    <property name="title">
+     <string>&amp;Reports</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_Data"/>
+   <addaction name="menuReports"/>
    <addaction name="menuImport"/>
    <addaction name="menu_Export"/>
    <addaction name="menuLanguage"/>

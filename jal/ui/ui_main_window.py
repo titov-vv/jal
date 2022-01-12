@@ -25,7 +25,7 @@ class Ui_JAL_MainWindow(object):
     def setupUi(self, JAL_MainWindow):
         if not JAL_MainWindow.objectName():
             JAL_MainWindow.setObjectName(u"JAL_MainWindow")
-        JAL_MainWindow.resize(1482, 583)
+        JAL_MainWindow.resize(835, 436)
         JAL_MainWindow.setMinimumSize(QSize(0, 0))
         self.actionExit = QAction(JAL_MainWindow)
         self.actionExit.setObjectName(u"actionExit")
@@ -81,7 +81,7 @@ class Ui_JAL_MainWindow(object):
         JAL_MainWindow.setCentralWidget(self.centralwidget)
         self.MainMenu = QMenuBar(JAL_MainWindow)
         self.MainMenu.setObjectName(u"MainMenu")
-        self.MainMenu.setGeometry(QRect(0, 0, 1482, 23))
+        self.MainMenu.setGeometry(QRect(0, 0, 835, 23))
         self.menuFile = QMenu(self.MainMenu)
         self.menuFile.setObjectName(u"menuFile")
         self.menu_Data = QMenu(self.MainMenu)
@@ -96,6 +96,8 @@ class Ui_JAL_MainWindow(object):
         self.menuImport.setObjectName(u"menuImport")
         self.menuStatement = QMenu(self.menuImport)
         self.menuStatement.setObjectName(u"menuStatement")
+        self.menuReports = QMenu(self.MainMenu)
+        self.menuReports.setObjectName(u"menuReports")
         JAL_MainWindow.setMenuBar(self.MainMenu)
         self.StatusBar = QStatusBar(JAL_MainWindow)
         self.StatusBar.setObjectName(u"StatusBar")
@@ -103,6 +105,7 @@ class Ui_JAL_MainWindow(object):
 
         self.MainMenu.addAction(self.menuFile.menuAction())
         self.MainMenu.addAction(self.menu_Data.menuAction())
+        self.MainMenu.addAction(self.menuReports.menuAction())
         self.MainMenu.addAction(self.menuImport.menuAction())
         self.MainMenu.addAction(self.menu_Export.menuAction())
         self.MainMenu.addAction(self.menuLanguage.menuAction())
@@ -160,5 +163,6 @@ class Ui_JAL_MainWindow(object):
         self.menuLanguage.setTitle(QCoreApplication.translate("JAL_MainWindow", u"L&anguage", None))
         self.menuImport.setTitle(QCoreApplication.translate("JAL_MainWindow", u"&Import", None))
         self.menuStatement.setTitle(QCoreApplication.translate("JAL_MainWindow", u"&Statement", None))
+        self.menuReports.setTitle(QCoreApplication.translate("JAL_MainWindow", u"&Reports", None))
     # retranslateUi
 

@@ -16,7 +16,7 @@ class StatementLoader(QObject):
     def __init__(self):
         super().__init__()
         self.sources = [
-            # 'name' - Title string to displain in main menu
+            # 'name' - Title string to display in main menu
             # 'icon' - Optional icon to display in main menu
             # 'filter' - file filter to apply in QFileDialog for file selection
             # 'module' - module name inside 'jal/data_import' that contains descendant of Statement class for import

@@ -10,8 +10,6 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QMenu, QMessageBox, QLa
 from jal import __version__
 from jal.ui.ui_main_window import Ui_JAL_MainWindow
 from jal.widgets.operations_widget import OperationsWidget
-from jal.widgets.holdings_widget import HoldingsWidget
-from jal.widgets.reports_widget import ReportsWidget
 from jal.widgets.helpers import dependency_present
 from jal.widgets.reference_dialogs import AccountTypeListDialog, AccountListDialog, AssetListDialog, TagsListDialog,\
     CategoryListDialog, CountryListDialog, QuotesListDialog, PeerListDialog
@@ -23,7 +21,8 @@ from jal.db.settings import JalSettings
 from jal.net.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
 from jal.data_import.statements import StatementLoader
-from data_export.taxes import TaxesRus
+from jal.data_export.taxes import TaxesRus
+from jal.reports.reports import JalReports
 from jal.data_import.slips import ImportSlipDialog
 from jal.widgets.log_viewer import LogViewer
 
@@ -42,10 +41,6 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.operations_balance_window = OperationsWidget(self)
         self.ops = self.mdiArea.addSubWindow(self.operations_balance_window)
         self.ops.widget().dbUpdated.connect(self.ledger.rebuild)
-        self.holdings_window = HoldingsWidget(self)
-        self.mdiArea.addSubWindow(self.holdings_window)
-        self.reports_window = ReportsWidget(self)
-        self.mdiArea.addSubWindow(self.reports_window)
         self.Logs = LogViewer(self)
         self.mdiArea.addSubWindow(self.Logs)
         self.ops.showMaximized()
@@ -55,6 +50,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.downloader = QuoteDownloader()
         self.taxes = TaxesRus()
         self.statements = StatementLoader()
+        self.reports = JalReports(self, self.mdiArea)
         self.backup = JalBackup(self, get_dbfilename(get_app_path()))
         self.estimator = None
         self.price_chart = None
@@ -69,6 +65,9 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
         self.statementGroup = QActionGroup(self.menuStatement)
         self.createStatementsImportMenu()
+
+        self.reportsGroup = QActionGroup(self.menuReports)
+        self.createReportsMenu()
 
         self.setWindowIcon(load_icon("jal.png"))
 
@@ -93,6 +92,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.actionAbout.triggered.connect(self.showAboutWindow)
         self.langGroup.triggered.connect(self.onLanguageChanged)
         self.statementGroup.triggered.connect(self.statements.load)
+        self.reportsGroup.triggered.connect(self.reports.show)
         self.action_LoadQuotes.triggered.connect(partial(self.downloader.showQuoteDownloadDialog, self))
         self.actionImportSlipRU.triggered.connect(self.importSlip)
         self.actionBackup.triggered.connect(self.backup.create)
@@ -173,6 +173,14 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
             action.setData(i)
             self.menuStatement.addAction(action)
             self.statementGroup.addAction(action)
+
+    # Create menu entry for all known reports based on self.reports.sources values
+    def createReportsMenu(self):
+        for i, report in enumerate(self.reports.items):
+            action = QAction(report['name'], self)
+            action.setData(i)
+            self.menuReports.addAction(action)
+            self.reportsGroup.addAction(action)
 
     @Slot()
     def showAboutWindow(self):
