@@ -6,7 +6,7 @@ from PySide6.QtGui import QFont
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord
 from jal.db.db import JalDB
 from jal.ui.ui_tax_estimation import Ui_TaxEstimationDialog
-from jal.widgets.mdi_widget import MdiWidget
+from widgets.mdi import MdiWidget
 
 
 class TaxEstimatorModel(QAbstractTableModel):

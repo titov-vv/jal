@@ -1,9 +1,28 @@
-from PySide6.QtCore import Slot
+from PySide6.QtCore import Slot, Signal
 from PySide6.QtWidgets import QWidget, QMdiArea, QTabBar, QVBoxLayout
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Base class that is used for any other widget which should be displayed inside JAL MainWindow MDI
+# implemented as TabbedMdiArea() class (below)
+class MdiWidget(QWidget):
+    onClose = Signal(QWidget)
+
+    def __init__(self, parent=None):
+        QWidget.__init__(self, parent)
+
+    @Slot()
+    def closeEvent(self, event):
+        self.onClose.emit(self.parent())
+        super().closeEvent(event)
+
+    def refresh(self):
+        pass
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # Class that acts as QMdiArea in SubWindowView mode but has Tabs at the same time
+# Child windows should be derived from MdiWidget class for correct operation
 class TabbedMdiArea(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)

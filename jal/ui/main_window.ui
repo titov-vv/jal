@@ -233,7 +233,7 @@
   <customwidget>
    <class>TabbedMdiArea</class>
    <extends>QWidget</extends>
-   <header>jal/widgets/tabbed_mdi_area.h</header>
+   <header>jal/widgets/mdi.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

@@ -21,7 +21,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QMenu, QMenuBar,
     QWidget)
 
 from jal.widgets.log_viewer import LogViewer
-from jal.widgets.tabbed_mdi_area import TabbedMdiArea
+from jal.widgets.mdi import TabbedMdiArea
 
 class Ui_JAL_MainWindow(object):
     def setupUi(self, JAL_MainWindow):

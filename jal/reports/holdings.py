@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QMenu
 from jal.ui.ui_holdings_widget import Ui_HoldingsWidget
 from jal.db.settings import JalSettings
 from jal.db.holdings_model import HoldingsModel
-from jal.widgets.mdi_widget import MdiWidget
+from widgets.mdi import MdiWidget
 from jal.db.tax_estimator import TaxEstimator
 from jal.widgets.price_chart import ChartWindow
 

@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt, Slot, Signal, QDateTime
 from jal.ui.ui_reports_widget import Ui_ReportsWidget
 from jal.widgets.helpers import ManipulateDate
-from jal.widgets.mdi_widget import MdiWidget
+from widgets.mdi import MdiWidget
 from jal.reports.reports import Reports, ReportType
 
 
