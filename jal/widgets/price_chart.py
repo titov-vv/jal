@@ -1,11 +1,12 @@
 from math import log10, floor, ceil
 
 from PySide6.QtCore import Qt, QMargins, QDateTime
-from PySide6.QtWidgets import QDialog, QWidget, QHBoxLayout
+from PySide6.QtWidgets import QWidget, QHBoxLayout
 from PySide6.QtCharts import QChartView, QLineSeries, QScatterSeries, QDateTimeAxis, QValueAxis
 from jal.db.db import JalDB
 from jal.constants import BookAccount, CustomColor
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord
+from jal.widgets.mdi_widget import MdiWidget
 
 
 class ChartWidget(QWidget):
@@ -56,8 +57,8 @@ class ChartWidget(QWidget):
         self.setLayout(self.layout)
 
 
-class ChartWindow(QDialog):
-    def __init__(self, account_id, asset_id, _asset_qty, position, parent=None):
+class ChartWindow(MdiWidget):
+    def __init__(self, account_id, asset_id, _asset_qty, parent=None):
         super().__init__(parent)
 
         self.account_id = account_id
@@ -78,8 +79,6 @@ class ChartWindow(QDialog):
         self.setLayout(self.layout)
 
         self.setWindowTitle(self.tr("Price chart for ") + self.asset_name)
-        self.setWindowFlag(Qt.Tool)
-        self.setGeometry(position.x(), position.y(), self.width(), self.height())
 
         self.ready = True
 

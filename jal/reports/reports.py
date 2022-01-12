@@ -30,8 +30,8 @@ class JalReports(QObject):
             # 'window_class' - class name that is derived from ReportWidget class
             {
                 'name': self.tr("Holdings"),
-                'module': 'holdings_widget',
-                'window_class': 'HoldingsWidget'
+                'module': 'holdings',
+                'window_class': 'HoldingsReport'
             },
             {
                 'name': self.tr("Other"),
@@ -39,7 +39,6 @@ class JalReports(QObject):
                 'window_class': 'ReportsWidget'
             }
         ]
-        self.reports = []
 
     # method is called directly from menu, so it contains QAction that was triggered
     def show(self, action):
@@ -50,8 +49,7 @@ class JalReports(QObject):
             logging.error(self.tr("Report module not found: ") + report_loader['module'])
             return
         class_instance = getattr(module, report_loader['window_class'])
-        report = class_instance(self.parent)
-        self.reports.append(report)
+        report = class_instance(self.mdi)
         report_window = self.mdi.addSubWindow(report)
         report_window.showMaximized()
 

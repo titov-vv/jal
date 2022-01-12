@@ -12,12 +12,13 @@ from jal.widgets.price_chart import ChartWindow
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class HoldingsWidget(MdiWidget, Ui_HoldingsWidget):
+class HoldingsReport(MdiWidget, Ui_HoldingsWidget):
     onClose = Signal()
 
     def __init__(self, parent=None):
         MdiWidget.__init__(self, parent)
         self.setupUi(self)
+        self.parent_mdi = parent
 
         self.holdings_model = HoldingsModel(self.HoldingsTableView)
         self.HoldingsTableView.setModel(self.holdings_model)
@@ -42,27 +43,25 @@ class HoldingsWidget(MdiWidget, Ui_HoldingsWidget):
         index = self.HoldingsTableView.indexAt(pos)
         contextMenu = QMenu(self.HoldingsTableView)
         actionShowChart = QAction(text=self.tr("Show Price Chart"), parent=self.HoldingsTableView)
-        actionShowChart.triggered.connect(
-            partial(self.showPriceChart, self.HoldingsTableView.viewport().mapToGlobal(pos), index))
+        actionShowChart.triggered.connect(partial(self.showPriceChart, index))
         contextMenu.addAction(actionShowChart)
         actionEstimateTax = QAction(text=self.tr("Estimate Russian Tax"), parent=self.HoldingsTableView)
-        actionEstimateTax.triggered.connect(
-            partial(self.estimateRussianTax, self.HoldingsTableView.viewport().mapToGlobal(pos), index))
+        actionEstimateTax.triggered.connect(partial(self.estimateRussianTax, index))
         contextMenu.addAction(actionEstimateTax)
         contextMenu.popup(self.HoldingsTableView.viewport().mapToGlobal(pos))
 
     @Slot()
-    def showPriceChart(self, position, index):
+    def showPriceChart(self, index):
         model = index.model()
         account, asset, asset_qty = model.get_data_for_tax(index)
-        self.price_chart = ChartWindow(account, asset, asset_qty, position)
-        if self.price_chart.ready:
-            self.price_chart.open()
+        price_chart = ChartWindow(account, asset, asset_qty)
+        price_window = self.parent_mdi.addSubWindow(price_chart)
+        price_window.show()
 
     @Slot()
-    def estimateRussianTax(self, position, index):
+    def estimateRussianTax(self, index):
         model = index.model()
         account, asset, asset_qty = model.get_data_for_tax(index)
-        self.estimator = TaxEstimator(account, asset, asset_qty, position)
-        if self.estimator.ready:
-            self.estimator.open()
+        tax_table = TaxEstimator(account, asset, asset_qty)
+        tax_window = self.parent_mdi.addSubWindow(tax_table)
+        tax_window.show()

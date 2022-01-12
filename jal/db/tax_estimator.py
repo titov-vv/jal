@@ -2,11 +2,11 @@ import logging
 
 import pandas as pd
 from PySide6.QtCore import Qt, QAbstractTableModel
-from PySide6.QtWidgets import QDialog
 from PySide6.QtGui import QFont
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord
 from jal.db.db import JalDB
 from jal.ui.ui_tax_estimation import Ui_TaxEstimationDialog
+from jal.widgets.mdi_widget import MdiWidget
 
 
 class TaxEstimatorModel(QAbstractTableModel):
@@ -54,8 +54,8 @@ class TaxEstimatorModel(QAbstractTableModel):
         return None
 
 
-class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
-    def __init__(self, account_id, asset_id, asset_qty, position, parent=None):
+class TaxEstimator(MdiWidget, Ui_TaxEstimationDialog):
+    def __init__(self, account_id, asset_id, asset_qty, parent=None):
         super(TaxEstimator, self).__init__(parent)
         self.setupUi(self)
 
@@ -67,8 +67,6 @@ class TaxEstimator(QDialog, Ui_TaxEstimationDialog):
         self.ready = False
 
         self.setWindowTitle(self.tr("Tax estimation for ") + self.asset_name)
-        self.setWindowFlag(Qt.Tool)
-        self.setGeometry(position.x(), position.y(), self.width(), self.height())
 
         font = self.DealsView.horizontalHeader().font()
         font.setBold(True)
