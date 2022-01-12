@@ -1,8 +1,10 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtSql import QSqlTableModel
+from ui.reports.ui_deals_report import Ui_DealsReportWidget
 from jal.db.helpers import db_connection, executeSQL
 from jal.constants import CorporateAction
 from jal.widgets.delegates import TimestampDelegate, FloatDelegate
+from widgets.mdi import MdiWidget
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -24,6 +26,9 @@ class DealsReportModel(QSqlTableModel):
                          CorporateAction.Merger: self.tr("Merger"),
                          CorporateAction.StockDividend: self.tr("Stock dividend")}
         self._view = parent_view
+        self._begin = 0
+        self._end = 0
+        self._account_id = 0
         self._group_dates = 0
         self._query = None
         self._timestamp_delegate = None
@@ -88,11 +93,26 @@ class DealsReportModel(QSqlTableModel):
         self._view.setItemDelegateForColumn(self.fieldIndex("profit"), self._profit_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("rel_profit"), self._profit_delegate)
 
-    def prepare(self, begin, end, account_id, group_dates):
-        if account_id == 0:
-            raise ValueError(self.tr("You should select account to create Deals report"))
+    def setDatesRange(self, begin, end):
+        self._begin = begin
+        self._end = end
+        self.calculateDealsReport()
+        self.configureView()
+
+    def setAccount(self, account_id):
+        self._account_id = account_id
+        self.calculateDealsReport()
+        self.configureView()
+
+    def setGrouping(self, group_dates):
         self._group_dates = group_dates
-        if group_dates == 1:
+        self.calculateDealsReport()
+        self.configureView()
+
+    def calculateDealsReport(self):
+        if self._account_id == 0:
+            return
+        if self._group_dates == 1:
             self._query = executeSQL(
                 "SELECT asset, "
                 "strftime('%s', datetime(open_timestamp, 'unixepoch', 'start of day')) as o_datetime, "
@@ -104,7 +124,7 @@ class DealsReportModel(QSqlTableModel):
                 "WHERE account_id=:account_id AND close_timestamp>=:begin AND close_timestamp<=:end "
                 "GROUP BY asset, o_datetime, c_datetime "
                 "ORDER BY c_datetime, o_datetime",
-                [(":account_id", account_id), (":begin", begin), (":end", end)], forward_only=False)
+                [(":account_id", self._account_id), (":begin", self._begin), (":end", self._end)], forward_only=False)
         else:
             self._query = executeSQL(
                 "SELECT asset, open_timestamp AS o_datetime, close_timestamp AS c_datetime, "
@@ -112,6 +132,50 @@ class DealsReportModel(QSqlTableModel):
                 "FROM deals_ext "
                 "WHERE account_id=:account_id AND close_timestamp>=:begin AND close_timestamp<=:end "
                 "ORDER BY c_datetime, o_datetime",
-                [(":account_id", account_id), (":begin", begin), (":end", end)], forward_only=False)
+                [(":account_id", self._account_id), (":begin", self._begin), (":end", self._end)], forward_only=False)
         self.setQuery(self._query)
         self.modelReset.emit()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+class DealsReport(MdiWidget, Ui_DealsReportWidget):
+    onClose = Signal()
+
+    def __init__(self, parent=None):
+        MdiWidget.__init__(self, parent)
+        self.setupUi(self)
+        self.parent_mdi = parent
+
+        self.category_model = DealsReportModel(self.ReportTableView)
+        self.ReportTableView.setModel(self.category_model)
+
+        self.connect_signals_and_slots()
+        self.ReportRangeCombo.selectIndex(0)
+
+    def connect_signals_and_slots(self):
+        self.ReportFromDate.dateChanged.connect(self.onDateChange)
+        self.ReportToDate.dateChanged.connect(self.onDateChange)
+        self.ReportRangeCombo.changed.connect(self.onReportRangeChange)
+        self.ReportAccountBtn.changed.connect(self.onAccountChange)
+        self.ReportGroupCheck.clicked.connect(self.onGroupChange)
+
+    @Slot()
+    def onReportRangeChange(self, start_date, end_date):
+        self.ReportFromDate.blockSignals(True)  # Prevent signal from firing as we need to update only once
+        self.ReportFromDate.setDateTime(start_date)
+        self.ReportFromDate.blockSignals(False)
+        self.ReportToDate.setDateTime(end_date)
+
+    @Slot()
+    def onDateChange(self):
+        self.ReportTableView.model().setDatesRange(self.ReportFromDate.date().startOfDay(Qt.UTC).toSecsSinceEpoch(),
+                                                   self.ReportToDate.date().endOfDay(Qt.UTC).toSecsSinceEpoch())
+
+    @Slot()
+    def onAccountChange(self):
+        self.ReportTableView.model().setAccount(self.ReportAccountBtn.account_id)
+
+    @Slot()
+    def onGroupChange(self):
+        group_dates = 1 if self.ReportGroupCheck.isChecked() else 0
+        self.ReportTableView.model().setGrouping(group_dates)

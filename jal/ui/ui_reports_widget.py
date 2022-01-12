@@ -103,8 +103,6 @@ class Ui_ReportsWidget(object):
 
         self.ReportTypeCombo = QComboBox(self.ReportParamsFrame)
         self.ReportTypeCombo.addItem("")
-        self.ReportTypeCombo.addItem("")
-        self.ReportTypeCombo.addItem("")
         self.ReportTypeCombo.setObjectName(u"ReportTypeCombo")
 
         self.gridLayout.addWidget(self.ReportTypeCombo, 0, 2, 1, 1)
@@ -181,7 +179,6 @@ class Ui_ReportsWidget(object):
         self.ReportFromLbl.setText(QCoreApplication.translate("ReportsWidget", u"From:", None))
         self.ReportGroupCheck.setText(QCoreApplication.translate("ReportsWidget", u"Group dates", None))
         self.ReportTypeCombo.setItemText(0, QCoreApplication.translate("ReportsWidget", u"Profit / Loss", None))
-        self.ReportTypeCombo.setItemText(1, QCoreApplication.translate("ReportsWidget", u"Deals", None))
 
         self.SaveReportBtn.setText(QCoreApplication.translate("ReportsWidget", u"Save", None))
         self.RunReportBtn.setText(QCoreApplication.translate("ReportsWidget", u"Run", None))
