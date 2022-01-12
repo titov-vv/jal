@@ -4,10 +4,9 @@ import importlib
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QObject
 from data_export.helpers import XLSX
-from jal.reports.profit_loss import ProfitLossReportModel
 
 
-class JalReports(QObject):
+class Reports(QObject):
     def __init__(self, parent, MdiArea):
         super().__init__()
         self.parent = parent
@@ -40,11 +39,6 @@ class JalReports(QObject):
                 'name': self.tr("Operations by Category"),
                 'module': 'category',
                 'window_class': 'CategoryReport'
-            },
-            {
-                'name': self.tr("Other"),
-                'module': 'reports_widget',
-                'window_class': 'ReportsWidget'
             }
         ]
 
@@ -59,17 +53,6 @@ class JalReports(QObject):
         class_instance = getattr(module, report_loader['window_class'])
         report = class_instance(self.mdi)
         self.mdi.addSubWindow(report, maximized=True)
-
-#-----------------------------------------------------------------------------------------------------------------------
-class Reports(QObject):
-    def __init__(self, report_table_view):
-        super().__init__()
-
-        self.table_view = report_table_view
-        self.model = None
-
-    def runReport(self, report_type, begin=0, end=0, account_id=0, group_dates=0):
-        pass
 
     def saveReport(self):
         filename, filter = QFileDialog.getSaveFileName(None, self.tr("Save report to:"),

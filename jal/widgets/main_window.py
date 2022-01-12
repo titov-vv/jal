@@ -22,7 +22,7 @@ from jal.net.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
 from jal.data_import.statements import StatementLoader
 from jal.data_export.taxes import TaxesRus
-from jal.reports.reports import JalReports
+from jal.reports.reports import Reports
 from jal.data_import.slips import ImportSlipDialog
 
 
@@ -46,7 +46,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.downloader = QuoteDownloader()
         self.taxes = TaxesRus()
         self.statements = StatementLoader()
-        self.reports = JalReports(self, self.mdiArea)
+        self.reports = Reports(self, self.mdiArea)
         self.backup = JalBackup(self, get_dbfilename(get_app_path()))
         self.estimator = None
         self.price_chart = None
