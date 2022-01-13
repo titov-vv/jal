@@ -192,39 +192,6 @@
     </message>
 </context>
 <context>
-    <name>CategoryReportModel</name>
-    <message>
-        <location filename="../reports/category_report.py" line="12"/>
-        <source>Timestamp</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/category_report.py" line="13"/>
-        <source>Account</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/category_report.py" line="14"/>
-        <source>Peer Name</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/category_report.py" line="15"/>
-        <source>Amount</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/category_report.py" line="16"/>
-        <source>Note</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/category_report.py" line="51"/>
-        <source>You should select category to create By Category report</source>
-        <translation></translation>
-    </message>
-</context>
-<context>
     <name>CategoryTreeModel</name>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="568"/>
@@ -400,99 +367,6 @@
         <location filename="../widgets/helpers.py" line="113"/>
         <source>Previous year</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DealsReportModel</name>
-    <message>
-        <location filename="../reports/deals_report.py" line="11"/>
-        <source>Asset</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="12"/>
-        <source>Open Date</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="13"/>
-        <source>Close Date</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="14"/>
-        <source>Open Price</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="15"/>
-        <source>Close Price</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="16"/>
-        <source>Qty</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="17"/>
-        <source>Fee</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="18"/>
-        <source>P/L</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="19"/>
-        <source>P/L, %</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="20"/>
-        <source>Note</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="21"/>
-        <source>Symbol change</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="22"/>
-        <source>Split</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="23"/>
-        <source>Spin-off</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="24"/>
-        <source>Merger</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="26"/>
-        <source>Stock dividend</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="53"/>
-        <source> Opened with </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="55"/>
-        <source> Closed with </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="93"/>
-        <source>You should select account to create Deals report</source>
-        <translation></translation>
     </message>
 </context>
 <context>
@@ -996,29 +870,6 @@ Application will be terminated now</source>
     </message>
 </context>
 <context>
-    <name>JalReports</name>
-    <message>
-        <location filename="../reports/reports.py" line="30"/>
-        <source>Holdings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="35"/>
-        <source>Income/Spending</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="40"/>
-        <source>Other</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="52"/>
-        <source>Report module not found: </source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>Ledger</name>
     <message>
         <location filename="../db/ledger.py" line="300"/>
@@ -1378,49 +1229,6 @@ Application will be terminated now</source>
     </message>
 </context>
 <context>
-    <name>ProfitLossReportModel</name>
-    <message>
-        <location filename="../reports/p_and_l_report.py" line="10"/>
-        <source>Period</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/p_and_l_report.py" line="11"/>
-        <source>In / Out</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/p_and_l_report.py" line="12"/>
-        <source>Assets value</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/p_and_l_report.py" line="13"/>
-        <source>Total result</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/p_and_l_report.py" line="14"/>
-        <source>Profit / Loss</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/p_and_l_report.py" line="15"/>
-        <source>Returns</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/p_and_l_report.py" line="16"/>
-        <source>Taxes &amp; Fees</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/p_and_l_report.py" line="52"/>
-        <source>You should select account to create Profit/Loss report</source>
-        <translation></translation>
-    </message>
-</context>
-<context>
     <name>QRScanner</name>
     <message>
         <location filename="../widgets/qr_scanner.py" line="45"/>
@@ -1556,24 +1364,49 @@ Application will be terminated now</source>
 <context>
     <name>Reports</name>
     <message>
-        <location filename="../reports/reports.py" line="87"/>
+        <location filename="../reports/reports.py" line="19"/>
+        <source>Holdings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="24"/>
+        <source>Income/Spending</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="29"/>
+        <source>P&amp;L by Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="34"/>
+        <source>Deals by Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="39"/>
+        <source>Operations by Category</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="51"/>
+        <source>Report module not found: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="58"/>
         <source>Save report to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="96"/>
+        <location filename="../reports/reports.py" line="67"/>
         <source>Report</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="88"/>
-        <location filename="../reports/reports.py" line="90"/>
+        <location filename="../reports/reports.py" line="59"/>
+        <location filename="../reports/reports.py" line="61"/>
         <source>Excel files (*.xlsx)</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="82"/>
-        <source>Report creation error</source>
         <translation></translation>
     </message>
 </context>

@@ -192,39 +192,6 @@
     </message>
 </context>
 <context>
-    <name>CategoryReportModel</name>
-    <message>
-        <location filename="../reports/category_report.py" line="12"/>
-        <source>Timestamp</source>
-        <translation>Дата/Время</translation>
-    </message>
-    <message>
-        <location filename="../reports/category_report.py" line="13"/>
-        <source>Account</source>
-        <translation>Счет</translation>
-    </message>
-    <message>
-        <location filename="../reports/category_report.py" line="14"/>
-        <source>Peer Name</source>
-        <translation>Контрагент</translation>
-    </message>
-    <message>
-        <location filename="../reports/category_report.py" line="15"/>
-        <source>Amount</source>
-        <translation>Сумма</translation>
-    </message>
-    <message>
-        <location filename="../reports/category_report.py" line="16"/>
-        <source>Note</source>
-        <translation>Описание</translation>
-    </message>
-    <message>
-        <location filename="../reports/category_report.py" line="51"/>
-        <source>You should select category to create By Category report</source>
-        <translation>Вы должны выбрать категорию для создания отчета по Категориям</translation>
-    </message>
-</context>
-<context>
     <name>CategoryTreeModel</name>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="568"/>
@@ -384,115 +351,22 @@
     <message>
         <location filename="../widgets/helpers.py" line="110"/>
         <source>Quarter to date</source>
-        <translation type="unfinished"></translation>
+        <translation>Предыдуший квартал</translation>
     </message>
     <message>
         <location filename="../widgets/helpers.py" line="111"/>
         <source>Year to date</source>
-        <translation type="unfinished"></translation>
+        <translation>12 месяцев</translation>
     </message>
     <message>
         <location filename="../widgets/helpers.py" line="112"/>
         <source>This year</source>
-        <translation type="unfinished"></translation>
+        <translation>Этот год</translation>
     </message>
     <message>
         <location filename="../widgets/helpers.py" line="113"/>
         <source>Previous year</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>DealsReportModel</name>
-    <message>
-        <location filename="../reports/deals_report.py" line="11"/>
-        <source>Asset</source>
-        <translation>ЦБ</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="12"/>
-        <source>Open Date</source>
-        <translation>Дата откр.</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="13"/>
-        <source>Close Date</source>
-        <translation>Дата закр.</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="14"/>
-        <source>Open Price</source>
-        <translation>Цена откр.</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="15"/>
-        <source>Close Price</source>
-        <translation>Цена закр.</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="16"/>
-        <source>Qty</source>
-        <translation>Кол-во</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="17"/>
-        <source>Fee</source>
-        <translation>Комиссия</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="18"/>
-        <source>P/L</source>
-        <translation>ПиУ</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="19"/>
-        <source>P/L, %</source>
-        <translation>ПиУ, %</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="20"/>
-        <source>Note</source>
-        <translation>Описание</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="21"/>
-        <source>Symbol change</source>
-        <translation>Смена символа</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="22"/>
-        <source>Split</source>
-        <translation>Сплит</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="23"/>
-        <source>Spin-off</source>
-        <translation>Выделение компании</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="24"/>
-        <source>Merger</source>
-        <translation>Объединение компании</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="26"/>
-        <source>Stock dividend</source>
-        <translation>Дивиденд акциями</translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="53"/>
-        <source> Opened with </source>
-        <translation> Сделка открытия </translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="55"/>
-        <source> Closed with </source>
-        <translation> Сделка закрытия </translation>
-    </message>
-    <message>
-        <location filename="../reports/deals_report.py" line="93"/>
-        <source>You should select account to create Deals report</source>
-        <translation>Вы должны выбрать счет, чтобы создать отчёт Сделки</translation>
+        <translation>Предыдущий год</translation>
     </message>
 </context>
 <context>
@@ -998,29 +872,6 @@ Application will be terminated now</source>
     </message>
 </context>
 <context>
-    <name>JalReports</name>
-    <message>
-        <location filename="../reports/reports.py" line="30"/>
-        <source>Holdings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="35"/>
-        <source>Income/Spending</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="40"/>
-        <source>Other</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="52"/>
-        <source>Report module not found: </source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>Ledger</name>
     <message>
         <location filename="../db/ledger.py" line="300"/>
@@ -1104,17 +955,17 @@ Application will be terminated now</source>
     <message>
         <location filename="../widgets/log_viewer.py" line="10"/>
         <source>Logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Logs</translation>
     </message>
     <message>
         <location filename="../widgets/log_viewer.py" line="19"/>
         <source>▶ logs</source>
-        <translation type="unfinished"></translation>
+        <translation>▶ logs</translation>
     </message>
     <message>
         <location filename="../widgets/log_viewer.py" line="21"/>
         <source>▲ logs</source>
-        <translation type="unfinished"></translation>
+        <translation>▲ logs</translation>
     </message>
 </context>
 <context>
@@ -1381,49 +1232,6 @@ Application will be terminated now</source>
     </message>
 </context>
 <context>
-    <name>ProfitLossReportModel</name>
-    <message>
-        <location filename="../reports/p_and_l_report.py" line="10"/>
-        <source>Period</source>
-        <translation>Период</translation>
-    </message>
-    <message>
-        <location filename="../reports/p_and_l_report.py" line="11"/>
-        <source>In / Out</source>
-        <translation>Ввод / Вывод</translation>
-    </message>
-    <message>
-        <location filename="../reports/p_and_l_report.py" line="12"/>
-        <source>Assets value</source>
-        <translation>Оценка активов</translation>
-    </message>
-    <message>
-        <location filename="../reports/p_and_l_report.py" line="13"/>
-        <source>Total result</source>
-        <translation>Результат</translation>
-    </message>
-    <message>
-        <location filename="../reports/p_and_l_report.py" line="14"/>
-        <source>Profit / Loss</source>
-        <translation>Прибыли / Убытки</translation>
-    </message>
-    <message>
-        <location filename="../reports/p_and_l_report.py" line="15"/>
-        <source>Returns</source>
-        <translation>Выплаты</translation>
-    </message>
-    <message>
-        <location filename="../reports/p_and_l_report.py" line="16"/>
-        <source>Taxes &amp; Fees</source>
-        <translation>Налоги / Комиссии</translation>
-    </message>
-    <message>
-        <location filename="../reports/p_and_l_report.py" line="52"/>
-        <source>You should select account to create Profit/Loss report</source>
-        <translation>Вы дожлны выбрать счет для создания отчета Прибыли / Убытки</translation>
-    </message>
-</context>
-<context>
     <name>QRScanner</name>
     <message>
         <location filename="../widgets/qr_scanner.py" line="45"/>
@@ -1559,25 +1367,50 @@ Application will be terminated now</source>
 <context>
     <name>Reports</name>
     <message>
-        <location filename="../reports/reports.py" line="87"/>
+        <location filename="../reports/reports.py" line="19"/>
+        <source>Holdings</source>
+        <translation>Портфель</translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="24"/>
+        <source>Income/Spending</source>
+        <translation>Доходы/Расходы</translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="29"/>
+        <source>P&amp;L by Account</source>
+        <translation>ПиУ по счёту</translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="34"/>
+        <source>Deals by Account</source>
+        <translation>Сделки по счету</translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="39"/>
+        <source>Operations by Category</source>
+        <translation>Операции по категории</translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="51"/>
+        <source>Report module not found: </source>
+        <translation>Модуль отчёта не найден: </translation>
+    </message>
+    <message>
+        <location filename="../reports/reports.py" line="58"/>
         <source>Save report to:</source>
         <translation>Сохранить отчет в:</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="96"/>
+        <location filename="../reports/reports.py" line="67"/>
         <source>Report</source>
         <translation>Отчет</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="88"/>
-        <location filename="../reports/reports.py" line="90"/>
+        <location filename="../reports/reports.py" line="59"/>
+        <location filename="../reports/reports.py" line="61"/>
         <source>Excel files (*.xlsx)</source>
         <translation>Файлы Excel (*.xslx)</translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="82"/>
-        <source>Report creation error</source>
-        <translation>Ошибка создания отчёта</translation>
     </message>
 </context>
 <context>
