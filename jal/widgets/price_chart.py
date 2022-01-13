@@ -83,9 +83,6 @@ class ChartWindow(MdiWidget):
         self.ready = True
 
     def prepare_chart_data(self):
-        min_price = max_price = 0
-        min_ts = max_ts = 0
-
         self.currency_name = JalDB().get_asset_name(JalDB().get_account_currency(self.account_id))
         start_time = readSQL("SELECT MAX(ts) FROM "  # Take either last "empty" timestamp
                              "(SELECT coalesce(MAX(timestamp), 0) AS ts "
@@ -103,10 +100,10 @@ class ChartWindow(MdiWidget):
         while query.next():
             quote = readSQLrecord(query, named=True)
             self.quotes.append({'timestamp': quote['timestamp'] * 1000, 'quote': quote['quote']})  # timestamp to ms
-            min_price = quote['quote'] if min_price == 0 or quote['quote'] < min_price else min_price
-            max_price = quote['quote'] if quote['quote'] > max_price else max_price
-            min_ts = quote['timestamp'] if min_ts == 0 or quote['timestamp'] < min_ts else min_ts
-            max_ts = quote['timestamp'] if quote['timestamp'] > max_ts else max_ts
+        min_price = min([x['quote'] for x in self.quotes])
+        max_price = max([x['quote'] for x in self.quotes])
+        min_ts = min([x['timestamp'] for x in self.quotes]) / 1000
+        max_ts = max([x['timestamp'] for x in self.quotes]) / 1000
 
         # Get deals quotes
         query = executeSQL("SELECT timestamp, price, qty FROM trades "
@@ -115,10 +112,10 @@ class ChartWindow(MdiWidget):
         while query.next():
             trade = readSQLrecord(query, named=True)
             self.trades.append({'timestamp': trade['timestamp'] * 1000, 'price': trade['price'], 'qty': trade['qty']})
-            min_price = trade['price'] if min_price == 0 or trade['price'] < min_price else min_price
-            max_price = trade['price'] if trade['price'] > max_price else max_price
-            min_ts = trade['timestamp'] if min_ts == 0 or trade['timestamp'] < min_ts else min_ts
-            max_ts = trade['timestamp'] if trade['timestamp'] > max_ts else max_ts
+        min_price = min(min_price, min([x['price'] for x in self.trades]))
+        max_price = max(max_price, max([x['price'] for x in self.trades]))
+        min_ts = min(min_ts, min([x['timestamp'] for x in self.trades]) / 1000)
+        max_ts = max(max_ts, max([x['timestamp'] for x in self.trades]) / 1000)
 
         # Round min/max values to near "round" values in order to have 10 nice intervals
         step = 10 ** floor(log10(max_price - min_price))
@@ -126,7 +123,7 @@ class ChartWindow(MdiWidget):
         max_price = ceil(max_price / step) * step
 
         # Add a gap at the beginning and end
-        min_ts -= 86400 * 3
-        max_ts += 86400 * 3
+        min_ts = int(min_ts - 86400 * 3)
+        max_ts = int(max_ts + 86400 * 3)
 
         self.range = [min_ts, max_ts, min_price, max_price]
