@@ -225,29 +225,37 @@
     </message>
 </context>
 <context>
+    <name>CategoryReport</name>
+    <message>
+        <location filename="../reports/category.py" line="90"/>
+        <source>Operations by Category</source>
+        <translation>Операции по категории</translation>
+    </message>
+</context>
+<context>
     <name>CategoryReportModel</name>
     <message>
-        <location filename="../reports/category.py" line="14"/>
+        <location filename="../reports/category.py" line="16"/>
         <source>Timestamp</source>
         <translation>Дата/Время</translation>
     </message>
     <message>
-        <location filename="../reports/category.py" line="15"/>
+        <location filename="../reports/category.py" line="17"/>
         <source>Account</source>
         <translation>Счет</translation>
     </message>
     <message>
-        <location filename="../reports/category.py" line="16"/>
+        <location filename="../reports/category.py" line="18"/>
         <source>Peer Name</source>
         <translation>Контрагент</translation>
     </message>
     <message>
-        <location filename="../reports/category.py" line="17"/>
+        <location filename="../reports/category.py" line="19"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../reports/category.py" line="18"/>
+        <location filename="../reports/category.py" line="20"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
@@ -492,89 +500,97 @@
     </message>
 </context>
 <context>
+    <name>DealsReport</name>
+    <message>
+        <location filename="../reports/deals.py" line="147"/>
+        <source>Deals by Account</source>
+        <translation>Сделки по счету</translation>
+    </message>
+</context>
+<context>
     <name>DealsReportModel</name>
     <message>
-        <location filename="../reports/deals.py" line="14"/>
+        <location filename="../reports/deals.py" line="15"/>
         <source>Asset</source>
         <translation>ЦБ</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="15"/>
+        <location filename="../reports/deals.py" line="16"/>
         <source>Open Date</source>
         <translation>Дата открытия</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="16"/>
+        <location filename="../reports/deals.py" line="17"/>
         <source>Close Date</source>
         <translation>Дата закрытия</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="17"/>
+        <location filename="../reports/deals.py" line="18"/>
         <source>Open Price</source>
         <translation>Цена открытия</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="18"/>
+        <location filename="../reports/deals.py" line="19"/>
         <source>Close Price</source>
         <translation>Цена закрытия</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="19"/>
+        <location filename="../reports/deals.py" line="20"/>
         <source>Qty</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="20"/>
+        <location filename="../reports/deals.py" line="21"/>
         <source>Fee</source>
         <translation>Комиссия</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="21"/>
+        <location filename="../reports/deals.py" line="22"/>
         <source>P/L</source>
         <translation>ПиУ</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="22"/>
+        <location filename="../reports/deals.py" line="23"/>
         <source>P/L, %</source>
         <translation>ПиУ, %</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="23"/>
+        <location filename="../reports/deals.py" line="24"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="24"/>
+        <location filename="../reports/deals.py" line="25"/>
         <source>Symbol change</source>
         <translation>Смена символа</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="25"/>
+        <location filename="../reports/deals.py" line="26"/>
         <source>Split</source>
         <translation>Сплит</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="26"/>
+        <location filename="../reports/deals.py" line="27"/>
         <source>Spin-off</source>
         <translation>Выделение компании (спин-офф)</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="27"/>
+        <location filename="../reports/deals.py" line="28"/>
         <source>Merger</source>
         <translation>Объединение компании</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="29"/>
+        <location filename="../reports/deals.py" line="30"/>
         <source>Stock dividend</source>
         <translation>Дивиденд акциями</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="59"/>
+        <location filename="../reports/deals.py" line="60"/>
         <source> Opened with </source>
         <translation>Открыта с </translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="61"/>
+        <location filename="../reports/deals.py" line="62"/>
         <source> Closed with </source>
         <translation>Закрыта с </translation>
     </message>
@@ -754,12 +770,20 @@
 <context>
     <name>HoldingsReport</name>
     <message>
-        <location filename="../reports/holdings.py" line="45"/>
+        <location filename="../reports/holdings.py" line="21"/>
+        <source>Holdings</source>
+        <translation>Портфель ЦБ</translation>
+    </message>
+</context>
+<context>
+    <name>HoldingsReportWindow</name>
+    <message>
+        <location filename="../reports/holdings.py" line="53"/>
         <source>Show Price Chart</source>
         <translation>Показать график цены</translation>
     </message>
     <message>
-        <location filename="../reports/holdings.py" line="48"/>
+        <location filename="../reports/holdings.py" line="56"/>
         <source>Estimate Russian Tax</source>
         <translation>Оценка налога для России</translation>
     </message>
@@ -1084,70 +1108,78 @@
     </message>
 </context>
 <context>
+    <name>IncomeSpendingReport</name>
+    <message>
+        <location filename="../reports/income_spending.py" line="298"/>
+        <source>Income/Spending</source>
+        <translation>Доходы/Расходы</translation>
+    </message>
+</context>
+<context>
     <name>IncomeSpendingReportModel</name>
     <message>
-        <location filename="../reports/income_spending.py" line="127"/>
+        <location filename="../reports/income_spending.py" line="129"/>
         <source>Jan</source>
         <translation>Янв</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="127"/>
+        <location filename="../reports/income_spending.py" line="129"/>
         <source>Feb</source>
         <translation>Фев</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="127"/>
+        <location filename="../reports/income_spending.py" line="129"/>
         <source>Mar</source>
         <translation>Мар</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="127"/>
+        <location filename="../reports/income_spending.py" line="129"/>
         <source>Apr</source>
         <translation>Апр</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="127"/>
+        <location filename="../reports/income_spending.py" line="129"/>
         <source>May</source>
         <translation>Май</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="127"/>
+        <location filename="../reports/income_spending.py" line="129"/>
         <source>Jun</source>
         <translation>Июн</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="128"/>
+        <location filename="../reports/income_spending.py" line="130"/>
         <source>Jul</source>
         <translation>Июл</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="128"/>
+        <location filename="../reports/income_spending.py" line="130"/>
         <source>Aug</source>
         <translation>Авг</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="128"/>
+        <location filename="../reports/income_spending.py" line="130"/>
         <source>Sep</source>
         <translation>Сен</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="128"/>
+        <location filename="../reports/income_spending.py" line="130"/>
         <source>Oct</source>
         <translation>Окт</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="128"/>
+        <location filename="../reports/income_spending.py" line="130"/>
         <source>Nov</source>
         <translation>Ноя</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="131"/>
+        <location filename="../reports/income_spending.py" line="133"/>
         <source>Dec</source>
         <translation>Дек</translation>
     </message>
     <message>
-        <location filename="../reports/income_spending.py" line="161"/>
-        <location filename="../reports/income_spending.py" line="274"/>
+        <location filename="../reports/income_spending.py" line="163"/>
+        <location filename="../reports/income_spending.py" line="276"/>
         <source>TOTAL</source>
         <translation>ИТОГО</translation>
     </message>
@@ -1741,7 +1773,7 @@ Application will be terminated now</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="56"/>
+        <location filename="../widgets/main_window.py" line="67"/>
         <location filename="../widgets/main_window.py" line="182"/>
         <source>About</source>
         <translation>О программе</translation>
@@ -2050,39 +2082,47 @@ do you want to save it?</source>
     </message>
 </context>
 <context>
+    <name>ProfitLossReport</name>
+    <message>
+        <location filename="../reports/profit_loss.py" line="157"/>
+        <source>P&amp;L by Account</source>
+        <translation>ПиУ по счёту</translation>
+    </message>
+</context>
+<context>
     <name>ProfitLossReportModel</name>
     <message>
-        <location filename="../reports/profit_loss.py" line="12"/>
+        <location filename="../reports/profit_loss.py" line="15"/>
         <source>Period</source>
         <translation>Период</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="13"/>
+        <location filename="../reports/profit_loss.py" line="16"/>
         <source>In / Out</source>
         <translation>Ввод / Вывод</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="14"/>
+        <location filename="../reports/profit_loss.py" line="17"/>
         <source>Assets value</source>
         <translation>Оценка активов</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="15"/>
+        <location filename="../reports/profit_loss.py" line="18"/>
         <source>Total result</source>
         <translation>Результат</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="16"/>
+        <location filename="../reports/profit_loss.py" line="19"/>
         <source>Profit / Loss</source>
         <translation>Прибыль / Убыток</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="17"/>
+        <location filename="../reports/profit_loss.py" line="20"/>
         <source>Returns</source>
         <translation>Выплаты</translation>
     </message>
     <message>
-        <location filename="../reports/profit_loss.py" line="18"/>
+        <location filename="../reports/profit_loss.py" line="21"/>
         <source>Taxes &amp; Fees</source>
         <translation>Налоги и комиссии</translation>
     </message>
@@ -2324,48 +2364,23 @@ do you want to save it?</source>
 <context>
     <name>Reports</name>
     <message>
-        <location filename="../reports/reports.py" line="19"/>
-        <source>Holdings</source>
-        <translation>Портфель</translation>
+        <location filename="../reports/reports.py" line="64"/>
+        <source>Report class can&apos;t be loaded: </source>
+        <translation>Невозможно загрузить класс отчёта: </translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="24"/>
-        <source>Income/Spending</source>
-        <translation>Доходы/Расходы</translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="29"/>
-        <source>P&amp;L by Account</source>
-        <translation>ПиУ по счёту</translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="34"/>
-        <source>Deals by Account</source>
-        <translation>Сделки по счету</translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="39"/>
-        <source>Operations by Category</source>
-        <translation>Операции по категории</translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="51"/>
-        <source>Report module not found: </source>
-        <translation>Модуль отчёта не найден: </translation>
-    </message>
-    <message>
-        <location filename="../reports/reports.py" line="58"/>
+        <location filename="../reports/reports.py" line="79"/>
         <source>Save report to:</source>
         <translation>Сохранить отчет в:</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="67"/>
+        <location filename="../reports/reports.py" line="88"/>
         <source>Report</source>
         <translation>Отчет</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="59"/>
-        <location filename="../reports/reports.py" line="61"/>
+        <location filename="../reports/reports.py" line="80"/>
+        <location filename="../reports/reports.py" line="82"/>
         <source>Excel files (*.xlsx)</source>
         <translation>Файлы Excel (*.xslx)</translation>
     </message>

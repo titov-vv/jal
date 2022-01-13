@@ -1,11 +1,12 @@
-from datetime import datetime, timezone
-from PySide6.QtCore import Qt, Signal, Slot
+from PySide6.QtCore import Qt, Signal, Slot, QObject
 from PySide6.QtSql import QSqlTableModel
 from ui.reports.ui_deals_report import Ui_DealsReportWidget
 from jal.db.helpers import db_connection, executeSQL
 from jal.constants import CorporateAction
 from jal.widgets.delegates import TimestampDelegate, FloatDelegate
-from widgets.mdi import MdiWidget
+from jal.widgets.mdi import MdiWidget
+
+JAL_REPORT_CLASS = "DealsReport"
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -139,9 +140,15 @@ class DealsReportModel(QSqlTableModel):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class DealsReport(MdiWidget, Ui_DealsReportWidget):
-    onClose = Signal()
+class DealsReport(QObject):
+    def __init__(self):
+        super().__init__()
+        self.name = self.name = self.tr("Deals by Account")
+        self.window_class = "DealsReportWindow"
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+class DealsReportWindow(MdiWidget, Ui_DealsReportWidget):
     def __init__(self, parent=None):
         MdiWidget.__init__(self, parent)
         self.setupUi(self)

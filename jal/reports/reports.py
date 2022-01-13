@@ -1,8 +1,11 @@
+import os
 import logging
 import importlib
 
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QObject
+from jal.constants import Setup
+from jal.db.helpers import get_app_path
 from data_export.helpers import XLSX
 
 
@@ -11,45 +14,33 @@ class Reports(QObject):
         super().__init__()
         self.parent = parent
         self.mdi = MdiArea
-        self.items = [
-            # 'name' - Title string to display in main menu
-            # 'module' - module name inside 'jal/reports' that contains descendant of ReportWidget class
-            # 'window_class' - class name that is derived from ReportWidget class
-            {
-                'name': self.tr("Holdings"),
-                'module': 'holdings',
-                'window_class': 'HoldingsReport'
-            },
-            {
-                'name': self.tr("Income/Spending"),
-                'module': 'income_spending',
-                'window_class': 'IncomeSpendingReport'
-            },
-            {
-                'name': self.tr("P&L by Account"),
-                'module': 'profit_loss',
-                'window_class': 'ProfitLossReport'
-            },
-            {
-                'name': self.tr("Deals by Account"),
-                'module': 'deals',
-                'window_class': 'DealsReport'
-            },
-            {
-                'name': self.tr("Operations by Category"),
-                'module': 'category',
-                'window_class': 'CategoryReport'
-            }
-        ]
+
+        self.items = []
+        self.loadReportsList()
+
+    def loadReportsList(self):
+        reports_folder = get_app_path() + Setup.REPORT_PATH
+        report_modules = [filename[:-3] for filename in os.listdir(reports_folder) if filename.endswith(".py")]
+        for module_name in report_modules:
+            logging.debug(f"Trying to load report module: {module_name}")
+            module = importlib.import_module(f"jal.reports.{module_name}")
+            try:
+                report_class_name = getattr(module, "JAL_REPORT_CLASS")
+            except AttributeError:
+                continue
+            try:
+                class_instance = getattr(module, report_class_name)
+            except AttributeError:
+                logging.error(self.tr("Report class can't be loaded: ") + report_class_name)
+                continue
+            report = class_instance()
+            self.items.append({'name': report.name, 'module': module, 'window_class': report.window_class})
+            logging.debug(f"Report class '{report_class_name}' providing '{report.name}' report has been loaded")
 
     # method is called directly from menu, so it contains QAction that was triggered
     def show(self, action):
         report_loader = self.items[action.data()]
-        try:
-            module = importlib.import_module(f"jal.reports.{report_loader['module']}")
-        except ModuleNotFoundError:
-            logging.error(self.tr("Report module not found: ") + report_loader['module'])
-            return
+        module = report_loader['module']
         class_instance = getattr(module, report_loader['window_class'])
         report = class_instance(self.mdi)
         self.mdi.addSubWindow(report, maximized=True)

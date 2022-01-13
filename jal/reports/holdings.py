@@ -1,6 +1,6 @@
 from functools import partial
 
-from PySide6.QtCore import Qt, Slot, Signal, QDateTime
+from PySide6.QtCore import Qt, Slot, Signal, QObject, QDateTime
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu
 from ui.reports.ui_holdings_report import Ui_HoldingsWidget
@@ -10,11 +10,19 @@ from widgets.mdi import MdiWidget
 from jal.db.tax_estimator import TaxEstimator
 from jal.widgets.price_chart import ChartWindow
 
+JAL_REPORT_CLASS = "HoldingsReport"
+
 
 # ----------------------------------------------------------------------------------------------------------------------
-class HoldingsReport(MdiWidget, Ui_HoldingsWidget):
-    onClose = Signal()
+class HoldingsReport(QObject):
+    def __init__(self):
+        super().__init__()
+        self.name = self.name = self.tr("Holdings")
+        self.window_class = "HoldingsReportWindow"
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+class HoldingsReportWindow(MdiWidget, Ui_HoldingsWidget):
     def __init__(self, parent=None):
         MdiWidget.__init__(self, parent)
         self.setupUi(self)

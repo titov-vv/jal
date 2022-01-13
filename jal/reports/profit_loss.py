@@ -1,10 +1,13 @@
-from PySide6.QtCore import Qt, Signal, Slot
+from PySide6.QtCore import Qt, Signal, Slot, QObject
 from PySide6.QtSql import QSqlTableModel
 from ui.reports.ui_profit_loss_report import Ui_ProfitLossReportWidget
 from jal.db.helpers import db_connection, executeSQL
 from jal.constants import BookAccount, PredefinedCategory
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 from widgets.mdi import MdiWidget
+
+JAL_REPORT_CLASS = "ProfitLossReport"
+
 
 #-----------------------------------------------------------------------------------------------------------------------
 class ProfitLossReportModel(QSqlTableModel):
@@ -145,10 +148,17 @@ class ProfitLossReportModel(QSqlTableModel):
         self.setQuery(self._query)
         self.modelReset.emit()
 
-# ----------------------------------------------------------------------------------------------------------------------
-class ProfitLossReport(MdiWidget, Ui_ProfitLossReportWidget):
-    onClose = Signal()
 
+# ----------------------------------------------------------------------------------------------------------------------
+class ProfitLossReport(QObject):
+    def __init__(self):
+        super().__init__()
+        self.name = self.name = self.tr("P&L by Account")
+        self.window_class = "ProfitLossReportWindow"
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+class ProfitLossReportWindow(MdiWidget, Ui_ProfitLossReportWidget):
     def __init__(self, parent=None):
         MdiWidget.__init__(self, parent)
         self.setupUi(self)

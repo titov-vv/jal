@@ -1,11 +1,13 @@
 from datetime import datetime
-from PySide6.QtCore import Qt, Signal, Slot, QAbstractItemModel, QModelIndex
+from PySide6.QtCore import Qt, Signal, Slot, QObject, QAbstractItemModel, QModelIndex
 from PySide6.QtGui import QBrush
 from ui.reports.ui_income_spending_report import Ui_IncomeSpendingReportWidget
 from jal.constants import BookAccount, PredefinedAsset, CustomColor
 from jal.db.helpers import executeSQL
 from jal.widgets.delegates import GridLinesDelegate
 from widgets.mdi import MdiWidget
+
+JAL_REPORT_CLASS = "IncomeSpendingReport"
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -289,9 +291,15 @@ class IncomeSpendingReportModel(QAbstractItemModel):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class IncomeSpendingReport(MdiWidget, Ui_IncomeSpendingReportWidget):
-    onClose = Signal()
+class IncomeSpendingReport(QObject):
+    def __init__(self):
+        super().__init__()
+        self.name = self.tr("Income/Spending")
+        self.window_class = "IncomeSpendingReportWindow"
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+class IncomeSpendingReportWindow(MdiWidget, Ui_IncomeSpendingReportWidget):
     def __init__(self, parent=None):
         MdiWidget.__init__(self, parent)
         self.setupUi(self)

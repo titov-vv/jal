@@ -1,13 +1,15 @@
-from PySide6.QtCore import Qt, Signal, Slot
+from PySide6.QtCore import Qt, Signal, Slot, QObject
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtWidgets import QHeaderView
 from ui.reports.ui_category_report import Ui_CategoryReportWidget
 from jal.db.helpers import db_connection, executeSQL
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
-from widgets.mdi import MdiWidget
+from jal.widgets.mdi import MdiWidget
+
+JAL_REPORT_CLASS = "CategoryReport"
 
 
-#-----------------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 # TODO Reimplement report based on 'ledger' DB table in order to include all types of operations
 class CategoryReportModel(QSqlTableModel):
     def __init__(self, parent_view):
@@ -81,9 +83,15 @@ class CategoryReportModel(QSqlTableModel):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class CategoryReport(MdiWidget, Ui_CategoryReportWidget):
-    onClose = Signal()
+class CategoryReport(QObject):
+    def __init__(self):
+        super().__init__()
+        self.name = self.tr("Operations by Category")
+        self.window_class = "CategoryReportWindow"
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+class CategoryReportWindow(MdiWidget, Ui_CategoryReportWidget):
     def __init__(self, parent=None):
         MdiWidget.__init__(self, parent)
         self.setupUi(self)

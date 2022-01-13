@@ -10,6 +10,7 @@ class Setup:
     IMPORT_PATH = "data_import"
     IMPORT_SCHEMA_NAME = "import_schema.json"
     LANG_PATH = "languages"
+    REPORT_PATH = "reports"
     UPDATE_PREFIX = 'jal_delta_'
     TARGET_SCHEMA = 29
     CALC_TOLERANCE = 1e-10

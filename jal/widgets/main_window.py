@@ -37,6 +37,17 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
         self.ledger = Ledger()
 
+        # Customize Status bar and logs
+        self.ProgressBar = QProgressBar(self)
+        self.StatusBar.addPermanentWidget(self.ProgressBar)
+        self.ProgressBar.setVisible(False)
+        self.ledger.setProgressBar(self, self.ProgressBar)
+        self.Logs.setStatusBar(self.StatusBar)
+        self.logger = logging.getLogger()
+        self.logger.addHandler(self.Logs)
+        log_level = os.environ.get('LOGLEVEL', 'INFO').upper()
+        self.logger.setLevel(log_level)
+
         self.operations_balance_window = OperationsWidget(self)
         self.operations_window = self.mdiArea.addSubWindow(self.operations_balance_window, maximized=True)
         self.operations_window.widget().dbUpdated.connect(self.ledger.rebuild)
@@ -66,17 +77,6 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.createReportsMenu()
 
         self.setWindowIcon(load_icon("jal.png"))
-
-        # Customize Status bar and logs
-        self.ProgressBar = QProgressBar(self)
-        self.StatusBar.addPermanentWidget(self.ProgressBar)
-        self.ProgressBar.setVisible(False)
-        self.ledger.setProgressBar(self, self.ProgressBar)
-        self.Logs.setStatusBar(self.StatusBar)
-        self.logger = logging.getLogger()
-        self.logger.addHandler(self.Logs)
-        log_level = os.environ.get('LOGLEVEL', 'INFO').upper()
-        self.logger.setLevel(log_level)
 
         self.connect_signals_and_slots()
 
