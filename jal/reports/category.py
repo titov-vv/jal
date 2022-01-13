@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt, Signal, Slot, QObject
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtWidgets import QHeaderView
-from ui.reports.ui_category_report import Ui_CategoryReportWidget
+from jal.ui.reports.ui_category_report import Ui_CategoryReportWidget
 from jal.db.helpers import db_connection, executeSQL
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 from jal.widgets.mdi import MdiWidget

@@ -1,7 +1,7 @@
 from datetime import datetime
 from PySide6.QtCore import Qt, Signal, Slot, QObject, QAbstractItemModel, QModelIndex
 from PySide6.QtGui import QBrush
-from ui.reports.ui_income_spending_report import Ui_IncomeSpendingReportWidget
+from jal.ui.reports.ui_income_spending_report import Ui_IncomeSpendingReportWidget
 from jal.constants import BookAccount, PredefinedAsset, CustomColor
 from jal.db.helpers import executeSQL
 from jal.widgets.delegates import GridLinesDelegate

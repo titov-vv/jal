@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, Signal, Slot, QObject
 from PySide6.QtSql import QSqlTableModel
-from ui.reports.ui_profit_loss_report import Ui_ProfitLossReportWidget
+from jal.ui.reports.ui_profit_loss_report import Ui_ProfitLossReportWidget
 from jal.db.helpers import db_connection, executeSQL
 from jal.constants import BookAccount, PredefinedCategory
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate

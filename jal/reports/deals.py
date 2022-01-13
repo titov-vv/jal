@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, Signal, Slot, QObject
 from PySide6.QtSql import QSqlTableModel
-from ui.reports.ui_deals_report import Ui_DealsReportWidget
+from jal.ui.reports.ui_deals_report import Ui_DealsReportWidget
 from jal.db.helpers import db_connection, executeSQL
 from jal.constants import CorporateAction
 from jal.widgets.delegates import TimestampDelegate, FloatDelegate
