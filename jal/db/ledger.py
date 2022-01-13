@@ -439,10 +439,6 @@ class Ledger(QObject):
                                "WHERE timestamp >= :frontier", [(":frontier", frontier)])
             while query.next():
                 self.current = readSQLrecord(query, named=True)
-                if self.current['type'] == TransactionType.Action:
-                    subtype = copysign(1, self.current['subtype'])
-                else:
-                    subtype = self.current['subtype']
                 operationProcess[self.current['type']]()
                 if self.progress_bar is not None:
                     self.progress_bar.setValue(query.at())
