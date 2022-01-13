@@ -240,7 +240,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
                 if amount is not None:
                     if abs(totals[account_id][asset_id] - amount) <= Setup.DISP_TOLERANCE:
                         JalDB().reconcile_account(account_id, timestamp)
-                        self.balances_model.update()   # Update required to display reconciled
+                        self.updateWidgets()
                     else:
                         account = JalDB().get_account_name(account_id)
                         asset = JalDB().get_asset_name(asset_id)
