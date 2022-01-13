@@ -1,6 +1,5 @@
 from datetime import time, datetime, timedelta, timezone
-from PySide6.QtCore import Qt, Signal, Slot, QCoreApplication, QDateTime
-from PySide6.QtWidgets import QComboBox
+from PySide6.QtCore import QCoreApplication
 
 
 def decodeError(orginal_msg):
@@ -95,37 +94,3 @@ class ManipulateDate:
         end = day.replace(day=1, month=1)
         begin = end.replace(year=(day.year - 1))
         return ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end)
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-class DateRangeCombo(QComboBox):
-    changed = Signal(QDateTime, QDateTime)
-
-    def __init__(self, parent):
-        QComboBox.__init__(self, parent)
-
-        self._begin = 0
-        self._end = 0
-
-        self.addItem(self.tr("Quarter to date"))
-        self.addItem(self.tr("Year to date"))
-        self.addItem(self.tr("This year"))
-        self.addItem(self.tr("Previous year"))
-
-        self.currentIndexChanged.connect(self.onRangeChange)
-
-    @Slot()
-    def onRangeChange(self, index):
-        report_ranges = {
-            0: ManipulateDate.Last3Months,
-            1: ManipulateDate.RangeYTD,
-            2: ManipulateDate.RangeThisYear,
-            3: ManipulateDate.RangePreviousYear
-        }
-        self._begin, self._end = report_ranges[index]()
-        self.changed.emit(QDateTime.fromSecsSinceEpoch(self._begin, spec=Qt.UTC),
-                          QDateTime.fromSecsSinceEpoch(self._end, spec=Qt.UTC))
-
-    def selectIndex(self, index):
-        self.setCurrentIndex(index)
-        self.onRangeChange(index)

@@ -260,23 +260,7 @@
         <translation>Отчёт по категории</translation>
     </message>
     <message>
-        <location filename="../ui/reports/category_report.ui" line="72"/>
-        <location filename="../ui/reports/category_report.ui" line="131"/>
-        <source>dd/MM/yyyy</source>
-        <translation>dd/MM/yyyy</translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/category_report.ui" line="88"/>
-        <source>To:</source>
-        <translation>До:</translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/category_report.ui" line="111"/>
-        <source>From:</source>
-        <translation>С:</translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/category_report.ui" line="144"/>
+        <location filename="../ui/reports/category_report.ui" line="75"/>
         <source>Category:</source>
         <translation>Категория:</translation>
     </message>
@@ -508,29 +492,6 @@
     </message>
 </context>
 <context>
-    <name>DateRangeCombo</name>
-    <message>
-        <location filename="../widgets/helpers.py" line="110"/>
-        <source>Quarter to date</source>
-        <translation>Предыдуший квартал</translation>
-    </message>
-    <message>
-        <location filename="../widgets/helpers.py" line="111"/>
-        <source>Year to date</source>
-        <translation>12 месяцев</translation>
-    </message>
-    <message>
-        <location filename="../widgets/helpers.py" line="112"/>
-        <source>This year</source>
-        <translation>Этот год</translation>
-    </message>
-    <message>
-        <location filename="../widgets/helpers.py" line="113"/>
-        <source>Previous year</source>
-        <translation>Предыдущий год</translation>
-    </message>
-</context>
-<context>
     <name>DealsReportModel</name>
     <message>
         <location filename="../reports/deals.py" line="14"/>
@@ -627,27 +588,11 @@
     </message>
     <message>
         <location filename="../ui/reports/deals_report.ui" line="62"/>
-        <source>From:</source>
-        <translation>С:</translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/deals_report.ui" line="82"/>
-        <location filename="../ui/reports/deals_report.ui" line="115"/>
-        <source>dd/MM/yyyy</source>
-        <translation>dd/MM/yyyy</translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/deals_report.ui" line="95"/>
-        <source>To:</source>
-        <translation>По:</translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/deals_report.ui" line="128"/>
         <source>Group dates</source>
         <translation>Сгруппировать даты</translation>
     </message>
     <message>
-        <location filename="../ui/reports/deals_report.ui" line="135"/>
+        <location filename="../ui/reports/deals_report.ui" line="69"/>
         <source>Account:</source>
         <translation>Счет:</translation>
     </message>
@@ -738,12 +683,12 @@
 <context>
     <name>Error</name>
     <message>
-        <location filename="../widgets/helpers.py" line="13"/>
+        <location filename="../widgets/helpers.py" line="12"/>
         <source>Can&apos;t delete predefined category</source>
         <translation>Невозможно удалить предопределённую категорию</translation>
     </message>
     <message>
-        <location filename="../widgets/helpers.py" line="9"/>
+        <location filename="../widgets/helpers.py" line="8"/>
         <source>Investment account should have associated broker assigned</source>
         <translation>Поле Банк/Брокер должно быть заполнено для инвестиционного счета</translation>
     </message>
@@ -1213,22 +1158,6 @@
         <location filename="../ui/reports/income_spending_report.ui" line="14"/>
         <source>Income/Spending</source>
         <translation>Доходы/Расходы</translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/income_spending_report.ui" line="62"/>
-        <source>From:</source>
-        <translation>С:</translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/income_spending_report.ui" line="82"/>
-        <location filename="../ui/reports/income_spending_report.ui" line="115"/>
-        <source>dd/MM/yyyy</source>
-        <translation>dd/MM/yyyy</translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/income_spending_report.ui" line="95"/>
-        <source>To:</source>
-        <translation>По:</translation>
     </message>
 </context>
 <context>
@@ -2167,22 +2096,6 @@ do you want to save it?</source>
     </message>
     <message>
         <location filename="../ui/reports/profit_loss_report.ui" line="62"/>
-        <source>From:</source>
-        <translation>С:</translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/profit_loss_report.ui" line="82"/>
-        <location filename="../ui/reports/profit_loss_report.ui" line="115"/>
-        <source>dd/MM/yyyy</source>
-        <translation>dd/MM/yyyy</translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/profit_loss_report.ui" line="95"/>
-        <source>To:</source>
-        <translation>По:</translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/profit_loss_report.ui" line="128"/>
         <source>Account:</source>
         <translation>Счет:</translation>
     </message>
@@ -3464,7 +3377,7 @@ do you want to save it?</source>
     <message>
         <location filename="../ui/tax_export_dlg.ui" line="76"/>
         <source>Update file &quot;Декларация&quot; (*.dc0)</source>
-        <translation type="unfinished"></translation>
+        <translation>Обновить файл &quot;Декларация&quot; (*.dc0)</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_dlg.ui" line="106"/>

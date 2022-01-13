@@ -54,73 +54,7 @@
        <number>2</number>
       </property>
       <item>
-       <widget class="DateRangeCombo" name="ReportRangeCombo"/>
-      </item>
-      <item>
-       <widget class="QLabel" name="ReportFromLbl">
-        <property name="text">
-         <string>From:</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QDateEdit" name="ReportFromDate">
-        <property name="dateTime">
-         <datetime>
-          <hour>21</hour>
-          <minute>0</minute>
-          <second>0</second>
-          <year>2020</year>
-          <month>11</month>
-          <day>18</day>
-         </datetime>
-        </property>
-        <property name="displayFormat">
-         <string>dd/MM/yyyy</string>
-        </property>
-        <property name="calendarPopup">
-         <bool>true</bool>
-        </property>
-        <property name="timeSpec">
-         <enum>Qt::UTC</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="ReportToLbl">
-        <property name="text">
-         <string>To:</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QDateEdit" name="ReportToDate">
-        <property name="dateTime">
-         <datetime>
-          <hour>21</hour>
-          <minute>0</minute>
-          <second>0</second>
-          <year>2020</year>
-          <month>11</month>
-          <day>18</day>
-         </datetime>
-        </property>
-        <property name="displayFormat">
-         <string>dd/MM/yyyy</string>
-        </property>
-        <property name="calendarPopup">
-         <bool>true</bool>
-        </property>
-        <property name="timeSpec">
-         <enum>Qt::UTC</enum>
-        </property>
-       </widget>
+       <widget class="DateRangeSelector" name="ReportRange" native="true"/>
       </item>
       <item>
        <spacer name="horizontalSpacer">
@@ -155,9 +89,10 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>DateRangeCombo</class>
-   <extends>QComboBox</extends>
-   <header>jal/widgets/helpers.h</header>
+   <class>DateRangeSelector</class>
+   <extends>QWidget</extends>
+   <header>jal/widgets/date_range_selector.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

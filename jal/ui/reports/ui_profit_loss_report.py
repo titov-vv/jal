@@ -15,12 +15,12 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDateEdit, QFrame, QHBoxLayout,
-    QHeaderView, QLabel, QSizePolicy, QSpacerItem,
-    QTableView, QVBoxLayout, QWidget, QAbstractItemView)
+from PySide6.QtWidgets import (QApplication, QFrame, QHBoxLayout, QHeaderView,
+    QLabel, QSizePolicy, QSpacerItem, QTableView,
+    QVBoxLayout, QWidget, QAbstractItemView)
 
 from jal.widgets.account_select import AccountButton
-from jal.widgets.helpers import DateRangeCombo
+from jal.widgets.date_range_selector import DateRangeSelector
 
 class Ui_ProfitLossReportWidget(object):
     def setupUi(self, ProfitLossReportWidget):
@@ -39,38 +39,10 @@ class Ui_ProfitLossReportWidget(object):
         self.horizontalLayout.setSpacing(6)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(2, 2, 2, 2)
-        self.ReportRangeCombo = DateRangeCombo(self.ReportParamsFrame)
-        self.ReportRangeCombo.setObjectName(u"ReportRangeCombo")
+        self.ReportRange = DateRangeSelector(self.ReportParamsFrame)
+        self.ReportRange.setObjectName(u"ReportRange")
 
-        self.horizontalLayout.addWidget(self.ReportRangeCombo)
-
-        self.ReportFromLbl = QLabel(self.ReportParamsFrame)
-        self.ReportFromLbl.setObjectName(u"ReportFromLbl")
-        self.ReportFromLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.horizontalLayout.addWidget(self.ReportFromLbl)
-
-        self.ReportFromDate = QDateEdit(self.ReportParamsFrame)
-        self.ReportFromDate.setObjectName(u"ReportFromDate")
-        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 11, 19), QTime(21, 0, 0)))
-        self.ReportFromDate.setCalendarPopup(True)
-        self.ReportFromDate.setTimeSpec(Qt.UTC)
-
-        self.horizontalLayout.addWidget(self.ReportFromDate)
-
-        self.ReportToLbl = QLabel(self.ReportParamsFrame)
-        self.ReportToLbl.setObjectName(u"ReportToLbl")
-        self.ReportToLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.horizontalLayout.addWidget(self.ReportToLbl)
-
-        self.ReportToDate = QDateEdit(self.ReportParamsFrame)
-        self.ReportToDate.setObjectName(u"ReportToDate")
-        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 11, 19), QTime(21, 0, 0)))
-        self.ReportToDate.setCalendarPopup(True)
-        self.ReportToDate.setTimeSpec(Qt.UTC)
-
-        self.horizontalLayout.addWidget(self.ReportToDate)
+        self.horizontalLayout.addWidget(self.ReportRange)
 
         self.ReportAccountLbl = QLabel(self.ReportParamsFrame)
         self.ReportAccountLbl.setObjectName(u"ReportAccountLbl")
@@ -111,10 +83,6 @@ class Ui_ProfitLossReportWidget(object):
 
     def retranslateUi(self, ProfitLossReportWidget):
         ProfitLossReportWidget.setWindowTitle(QCoreApplication.translate("ProfitLossReportWidget", u"P&L", None))
-        self.ReportFromLbl.setText(QCoreApplication.translate("ProfitLossReportWidget", u"From:", None))
-        self.ReportFromDate.setDisplayFormat(QCoreApplication.translate("ProfitLossReportWidget", u"dd/MM/yyyy", None))
-        self.ReportToLbl.setText(QCoreApplication.translate("ProfitLossReportWidget", u"To:", None))
-        self.ReportToDate.setDisplayFormat(QCoreApplication.translate("ProfitLossReportWidget", u"dd/MM/yyyy", None))
         self.ReportAccountLbl.setText(QCoreApplication.translate("ProfitLossReportWidget", u"Account:", None))
     # retranslateUi
 

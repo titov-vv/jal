@@ -93,28 +93,10 @@ class CategoryReport(MdiWidget, Ui_CategoryReportWidget):
         self.ReportTableView.setModel(self.category_model)
 
         self.connect_signals_and_slots()
-        self.ReportRangeCombo.selectIndex(0)
 
     def connect_signals_and_slots(self):
-        self.ReportFromDate.dateChanged.connect(self.onDateChange)
-        self.ReportToDate.dateChanged.connect(self.onDateChange)
-        self.ReportRangeCombo.changed.connect(self.onReportRangeChange)
+        self.ReportRange.changed.connect(self.ReportTableView.model().setDatesRange)
         self.ReportCategoryEdit.changed.connect(self.onCategoryChange)
-
-    @Slot()
-    def onReportRangeChange(self, start_date, end_date):
-        self.ReportFromDate.blockSignals(True)      # Prevent signal from firing and trigger one update for both
-        self.ReportFromDate.setDateTime(start_date)
-        self.ReportFromDate.blockSignals(False)
-        self.ReportToDate.blockSignals(True)
-        self.ReportToDate.setDateTime(end_date)
-        self.ReportToDate.blockSignals(False)
-        self.onDateChange()
-
-    @Slot()
-    def onDateChange(self):
-        self.ReportTableView.model().setDatesRange(self.ReportFromDate.date().startOfDay(Qt.UTC).toSecsSinceEpoch(),
-                                                   self.ReportToDate.date().endOfDay(Qt.UTC).toSecsSinceEpoch())
 
     @Slot()
     def onCategoryChange(self):

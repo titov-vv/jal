@@ -15,11 +15,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDateEdit, QFrame, QGridLayout,
-    QHeaderView, QLabel, QSizePolicy, QSpacerItem,
-    QTableView, QVBoxLayout, QWidget, QAbstractItemView)
+from PySide6.QtWidgets import (QApplication, QFrame, QGridLayout, QHeaderView,
+    QLabel, QSizePolicy, QSpacerItem, QTableView,
+    QVBoxLayout, QWidget, QAbstractItemView)
 
-from jal.widgets.helpers import DateRangeCombo
+from jal.widgets.date_range_selector import DateRangeSelector
 from jal.widgets.reference_selector import CategorySelector
 
 class Ui_CategoryReportWidget(object):
@@ -39,52 +39,24 @@ class Ui_CategoryReportWidget(object):
         self.gridLayout.setSpacing(6)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(2, 2, 2, 2)
-        self.ReportRangeCombo = DateRangeCombo(self.ReportParamsFrame)
-        self.ReportRangeCombo.setObjectName(u"ReportRangeCombo")
-
-        self.gridLayout.addWidget(self.ReportRangeCombo, 0, 0, 1, 1)
-
-        self.ReportToDate = QDateEdit(self.ReportParamsFrame)
-        self.ReportToDate.setObjectName(u"ReportToDate")
-        self.ReportToDate.setDateTime(QDateTime(QDate(2020, 11, 19), QTime(21, 0, 0)))
-        self.ReportToDate.setCalendarPopup(True)
-        self.ReportToDate.setTimeSpec(Qt.UTC)
-
-        self.gridLayout.addWidget(self.ReportToDate, 0, 4, 1, 1)
-
-        self.ReportCategoryEdit = CategorySelector(self.ReportParamsFrame)
-        self.ReportCategoryEdit.setObjectName(u"ReportCategoryEdit")
-
-        self.gridLayout.addWidget(self.ReportCategoryEdit, 0, 6, 1, 1)
-
-        self.ReportToLbl = QLabel(self.ReportParamsFrame)
-        self.ReportToLbl.setObjectName(u"ReportToLbl")
-        self.ReportToLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
-
-        self.gridLayout.addWidget(self.ReportToLbl, 0, 3, 1, 1)
-
         self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 7, 1, 1)
+        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 3, 1, 1)
 
-        self.ReportFromLbl = QLabel(self.ReportParamsFrame)
-        self.ReportFromLbl.setObjectName(u"ReportFromLbl")
-        self.ReportFromLbl.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
+        self.ReportRange = DateRangeSelector(self.ReportParamsFrame)
+        self.ReportRange.setObjectName(u"ReportRange")
 
-        self.gridLayout.addWidget(self.ReportFromLbl, 0, 1, 1, 1)
-
-        self.ReportFromDate = QDateEdit(self.ReportParamsFrame)
-        self.ReportFromDate.setObjectName(u"ReportFromDate")
-        self.ReportFromDate.setDateTime(QDateTime(QDate(2020, 11, 19), QTime(21, 0, 0)))
-        self.ReportFromDate.setCalendarPopup(True)
-        self.ReportFromDate.setTimeSpec(Qt.UTC)
-
-        self.gridLayout.addWidget(self.ReportFromDate, 0, 2, 1, 1)
+        self.gridLayout.addWidget(self.ReportRange, 0, 0, 1, 1)
 
         self.ReportCategoryLbl = QLabel(self.ReportParamsFrame)
         self.ReportCategoryLbl.setObjectName(u"ReportCategoryLbl")
 
-        self.gridLayout.addWidget(self.ReportCategoryLbl, 0, 5, 1, 1)
+        self.gridLayout.addWidget(self.ReportCategoryLbl, 0, 1, 1, 1)
+
+        self.ReportCategoryEdit = CategorySelector(self.ReportParamsFrame)
+        self.ReportCategoryEdit.setObjectName(u"ReportCategoryEdit")
+
+        self.gridLayout.addWidget(self.ReportCategoryEdit, 0, 2, 1, 1)
 
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
@@ -111,10 +83,6 @@ class Ui_CategoryReportWidget(object):
 
     def retranslateUi(self, CategoryReportWidget):
         CategoryReportWidget.setWindowTitle(QCoreApplication.translate("CategoryReportWidget", u"Report by category", None))
-        self.ReportToDate.setDisplayFormat(QCoreApplication.translate("CategoryReportWidget", u"dd/MM/yyyy", None))
-        self.ReportToLbl.setText(QCoreApplication.translate("CategoryReportWidget", u"To:", None))
-        self.ReportFromLbl.setText(QCoreApplication.translate("CategoryReportWidget", u"From:", None))
-        self.ReportFromDate.setDisplayFormat(QCoreApplication.translate("CategoryReportWidget", u"dd/MM/yyyy", None))
         self.ReportCategoryLbl.setText(QCoreApplication.translate("CategoryReportWidget", u"Category:", None))
     # retranslateUi
 
