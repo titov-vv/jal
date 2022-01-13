@@ -103,10 +103,13 @@ class CategoryReport(MdiWidget, Ui_CategoryReportWidget):
 
     @Slot()
     def onReportRangeChange(self, start_date, end_date):
-        self.ReportFromDate.blockSignals(True)  # Prevent signal from firing as we need to update only once
+        self.ReportFromDate.blockSignals(True)      # Prevent signal from firing and trigger one update for both
         self.ReportFromDate.setDateTime(start_date)
         self.ReportFromDate.blockSignals(False)
+        self.ReportToDate.blockSignals(True)
         self.ReportToDate.setDateTime(end_date)
+        self.ReportToDate.blockSignals(False)
+        self.onDateChange()
 
     @Slot()
     def onDateChange(self):
