@@ -1106,6 +1106,8 @@ INSERT INTO settings(id, name, value) VALUES (4, 'RuTaxClientSecret', 'IyvrAbKt9
 INSERT INTO settings(id, name, value) VALUES (5, 'RuTaxSessionId', '');
 INSERT INTO settings(id, name, value) VALUES (6, 'RuTaxRefreshToken', '');
 INSERT INTO settings(id, name, value) VALUES (7, 'RebuildDB', 0);
+INSERT INTO settings(id, name, value) VALUES (8, 'WindowGeometry', '');
+INSERT INTO settings(id, name, value) VALUES (9, 'WindowState', '');
 
 -- Initialize available languages
 INSERT INTO languages (id, language) VALUES (1, 'en');
