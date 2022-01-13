@@ -68,7 +68,7 @@ class Ui_OperationsWidget(object):
         self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
         self.BalanceDate = QDateEdit(self.BalanceConfigFrame)
         self.BalanceDate.setObjectName(u"BalanceDate")
-        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 11, 28), QTime(21, 0, 0)))
+        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 11, 27), QTime(21, 0, 0)))
         self.BalanceDate.setCalendarPopup(True)
         self.BalanceDate.setTimeSpec(Qt.UTC)
 
@@ -278,7 +278,7 @@ class Ui_OperationsWidget(object):
     # setupUi
 
     def retranslateUi(self, OperationsWidget):
-        OperationsWidget.setWindowTitle(QCoreApplication.translate("OperationsWidget", u"Operations && Balances", None))
+        OperationsWidget.setWindowTitle(QCoreApplication.translate("OperationsWidget", u"Operations & Balances", None))
         self.BalanceBox.setTitle(QCoreApplication.translate("OperationsWidget", u"Balances", None))
         self.BalanceDate.setDisplayFormat(QCoreApplication.translate("OperationsWidget", u"dd/MM/yyyy", None))
         self.CurrencyLbl.setText(QCoreApplication.translate("OperationsWidget", u"Sum Currency:", None))

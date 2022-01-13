@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Operations &amp;&amp; Balances</string>
+   <string>Operations &amp; Balances</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
    <property name="spacing">
@@ -114,7 +114,7 @@
               <second>0</second>
               <year>2020</year>
               <month>11</month>
-              <day>28</day>
+              <day>27</day>
              </datetime>
             </property>
             <property name="displayFormat">

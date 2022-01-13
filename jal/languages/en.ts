@@ -1942,7 +1942,7 @@ do you want to save it?</source>
     </message>
     <message>
         <location filename="../ui/operations_widget.ui" line="14"/>
-        <source>Operations &amp;&amp; Balances</source>
+        <source>Operations &amp; Balances</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

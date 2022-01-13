@@ -52,7 +52,7 @@ class TabbedMdiArea(QWidget):
     def addSubWindow(self, widget, maximized=False):
         sub_window = self.mdi.addSubWindow(widget)
         widget.onClose.connect(self.subWindowClosed)
-        self.tabs.addTab(sub_window.windowTitle())
+        self.tabs.addTab(sub_window.windowTitle().replace('&', '&&'))  # & -> && to prevent shortcut creation
         if maximized:
             sub_window.showMaximized()
         else:

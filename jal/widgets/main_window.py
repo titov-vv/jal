@@ -169,7 +169,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
     # Create menu entry for all known reports based on self.reports.sources values
     def createReportsMenu(self):
         for i, report in enumerate(self.reports.items):
-            action = QAction(report['name'], self)
+            action = QAction(report['name'].replace('&', '&&'), self)  # & -> && to prevent shortcut creation
             action.setData(i)
             self.menuReports.addAction(action)
             self.reportsGroup.addAction(action)
