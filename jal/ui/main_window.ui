@@ -62,10 +62,11 @@
      <height>23</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFile">
+   <widget class="QMenu" name="menuMain">
     <property name="title">
-     <string>&amp;File</string>
+     <string>&amp;Main</string>
     </property>
+    <addaction name="actionOperations"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menu_Data">
@@ -122,7 +123,7 @@
      <string>&amp;Reports</string>
     </property>
    </widget>
-   <addaction name="menuFile"/>
+   <addaction name="menuMain"/>
    <addaction name="menu_Data"/>
    <addaction name="menuReports"/>
    <addaction name="menuImport"/>
@@ -226,6 +227,11 @@
   <action name="actionQuotes">
    <property name="text">
     <string>&amp;Quotes</string>
+   </property>
+  </action>
+  <action name="actionOperations">
+   <property name="text">
+    <string>&amp;Operations</string>
    </property>
   </action>
  </widget>

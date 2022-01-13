@@ -48,10 +48,6 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         log_level = os.environ.get('LOGLEVEL', 'INFO').upper()
         self.logger.setLevel(log_level)
 
-        self.operations_balance_window = OperationsWidget(self)
-        self.operations_window = self.mdiArea.addSubWindow(self.operations_balance_window, maximized=True)
-        self.operations_window.widget().dbUpdated.connect(self.ledger.rebuild)
-
         self.currentLanguage = language
 
         self.downloader = QuoteDownloader()
@@ -80,8 +76,11 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
         self.connect_signals_and_slots()
 
+        self.actionOperations.trigger()
+
     def connect_signals_and_slots(self):
         self.actionExit.triggered.connect(QApplication.instance().quit)
+        self.actionOperations.triggered.connect(self.createOperationsWindow)
         self.actionAbout.triggered.connect(self.showAboutWindow)
         self.langGroup.triggered.connect(self.onLanguageChanged)
         self.statementGroup.triggered.connect(self.statements.load)
@@ -174,6 +173,11 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
             action.setData(i)
             self.menuReports.addAction(action)
             self.reportsGroup.addAction(action)
+
+    @Slot()
+    def createOperationsWindow(self):
+        operations_window = self.mdiArea.addSubWindow(OperationsWidget(self), maximized=True)
+        operations_window.widget().dbUpdated.connect(self.ledger.rebuild)
 
     @Slot()
     def showAboutWindow(self):

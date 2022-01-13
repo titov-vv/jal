@@ -1264,137 +1264,142 @@
         <translation>jal</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="135"/>
+        <location filename="../ui/main_window.ui" line="67"/>
+        <source>&amp;Main</source>
+        <translation>&amp;Основное</translation>
+    </message>
+    <message>
+        <location filename="../ui/main_window.ui" line="136"/>
         <source>&amp;Exit</source>
         <translation>&amp;Выход</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="143"/>
+        <location filename="../ui/main_window.ui" line="144"/>
         <source>Re-build &amp;Ledger...</source>
         <translation>Пересчитать &amp;итоги...</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="153"/>
+        <location filename="../ui/main_window.ui" line="154"/>
         <source>&amp;Broker statement...</source>
         <translation>&amp;Брокерский отчет...</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="158"/>
+        <location filename="../ui/main_window.ui" line="159"/>
         <source>Account &amp;Types</source>
         <translation>&amp;Типы счетов</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="163"/>
+        <location filename="../ui/main_window.ui" line="164"/>
         <source>&amp;Accounts</source>
         <translation>&amp;Счета</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="168"/>
+        <location filename="../ui/main_window.ui" line="169"/>
         <source>A&amp;ssets</source>
         <translation>&amp;Ценные бумаги</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="173"/>
+        <location filename="../ui/main_window.ui" line="174"/>
         <source>&amp;Peers</source>
         <translation>К&amp;онтрагенты</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="178"/>
+        <location filename="../ui/main_window.ui" line="179"/>
         <source>&amp;Categories</source>
         <translation>&amp;Категории</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="183"/>
+        <location filename="../ui/main_window.ui" line="184"/>
         <source>&amp;Backup...</source>
         <translation>&amp;Бэкап...</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="188"/>
+        <location filename="../ui/main_window.ui" line="189"/>
         <source>&amp;Restore...</source>
         <translation>&amp;Восстановление...</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="193"/>
+        <location filename="../ui/main_window.ui" line="194"/>
         <source>&amp;Tax report [RU]</source>
         <translation>&amp;Налоговый отчет [RU]</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="198"/>
+        <location filename="../ui/main_window.ui" line="199"/>
         <source>&amp;Deals report</source>
         <translation>Отчет &amp;Сделки</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="203"/>
+        <location filename="../ui/main_window.ui" line="204"/>
         <source>&amp;Tags</source>
         <translation>&amp;Тэги</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="208"/>
+        <location filename="../ui/main_window.ui" line="209"/>
         <source>&amp;Profit/Loss report</source>
         <translation>Отчет &amp;Прибыли/Убытки</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="213"/>
+        <location filename="../ui/main_window.ui" line="214"/>
         <source>&amp;Income/Spending report</source>
         <translation>Отчет &amp;Доходы/Расходы</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="218"/>
+        <location filename="../ui/main_window.ui" line="219"/>
         <source>Slip [RU]...</source>
         <translation>Чек [RU]...</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="223"/>
+        <location filename="../ui/main_window.ui" line="224"/>
         <source>C&amp;ountries</source>
         <translation>&amp;Страны</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="228"/>
+        <location filename="../ui/main_window.ui" line="229"/>
         <source>&amp;Quotes</source>
         <translation>&amp;Котировки</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="67"/>
-        <source>&amp;File</source>
-        <translation>&amp;Файл</translation>
+        <location filename="../ui/main_window.ui" line="234"/>
+        <source>&amp;Operations</source>
+        <translation>&amp;Операции</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="73"/>
+        <location filename="../ui/main_window.ui" line="74"/>
         <source>&amp;Data</source>
         <translation>&amp;Данные</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="77"/>
+        <location filename="../ui/main_window.ui" line="78"/>
         <source>Predefined data</source>
         <translation>Предопределенные</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="122"/>
+        <location filename="../ui/main_window.ui" line="123"/>
         <source>&amp;Reports</source>
         <translation>&amp;Отчеты</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="104"/>
+        <location filename="../ui/main_window.ui" line="105"/>
         <source>L&amp;anguage</source>
         <translation>&amp;Язык</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="109"/>
+        <location filename="../ui/main_window.ui" line="110"/>
         <source>&amp;Import</source>
         <translation>&amp;Импорт</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="113"/>
+        <location filename="../ui/main_window.ui" line="114"/>
         <source>&amp;Statement</source>
         <translation>&amp;Выписка</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="148"/>
+        <location filename="../ui/main_window.ui" line="149"/>
         <source>&amp;Quotes...</source>
         <translation>&amp;Котировки...</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="98"/>
+        <location filename="../ui/main_window.ui" line="99"/>
         <source>&amp;Export</source>
         <translation>&amp;Экспорт</translation>
     </message>
@@ -1555,12 +1560,12 @@ Application will be terminated now</source>
         <translation> операций требуют перерасчета. Вы ходите выполнить его прямо сейчас?</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="457"/>
+        <location filename="../db/ledger.py" line="453"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation>Итоги рассчитаны. Затраченное время: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="458"/>
+        <location filename="../db/ledger.py" line="454"/>
         <source>, new frontier: </source>
         <translation>, новая граница: </translation>
     </message>
@@ -1746,50 +1751,50 @@ Application will be terminated now</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="150"/>
+        <location filename="../widgets/main_window.py" line="149"/>
         <source>Restart required</source>
         <translation>Требуется рестарт</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="152"/>
+        <location filename="../widgets/main_window.py" line="151"/>
         <source>Language was changed to </source>
         <translation>Язык был изменён на </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="154"/>
+        <location filename="../widgets/main_window.py" line="153"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation>Вы должны перезапустить приложение, чтобы применить изменения
 Приложение сейчас завершит свою работу</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="119"/>
+        <location filename="../widgets/main_window.py" line="118"/>
         <source>Ledger isn&apos;t complete. Rebuild it now?</source>
         <translation>Итога транзакций неактуальны. Пересчитать сейчас?</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="119"/>
+        <location filename="../widgets/main_window.py" line="118"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="67"/>
-        <location filename="../widgets/main_window.py" line="182"/>
+        <location filename="../widgets/main_window.py" line="63"/>
+        <location filename="../widgets/main_window.py" line="186"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="248"/>
+        <location filename="../widgets/main_window.py" line="252"/>
         <source>Statement ending balance doesn&apos;t match: </source>
         <translation>Конечный баланс по отчёту не совпадает: </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="190"/>
+        <location filename="../widgets/main_window.py" line="194"/>
         <source>&lt;p&gt;More information, manuals and problem reports are at &lt;a href=https://github.com/titov-vv/jal&gt;github home page&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Questions, comments, help or donations:&lt;/p&gt;&lt;p&gt;&lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=https://t.me/jal_support&gt;Telegram&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&amp;lt;p&amp;gt;Дополнительная информация, инструкции, сообщения о проблемах - &amp;lt;a href=https://github.com/titov-vv/jal&amp;gt;github home page&amp;lt;/a&amp;gt;&amp;lt;/p&amp;gt;&amp;lt;p&amp;gt;Вопросы, комментарии, помощь или донаты:&amp;lt;/p&amp;gt;&amp;lt;p&amp;gt;&amp;lt;a href=mailto:jal@gmx.ru&amp;gt;jal@gmx.ru&amp;lt;/a&amp;gt;&amp;lt;/p&amp;gt;&amp;lt;p&amp;gt;&amp;lt;a href=https://t.me/jal_support&amp;gt;Telegram&amp;lt;/a&amp;gt;&amp;lt;/p&amp;gt;</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="183"/>
+        <location filename="../widgets/main_window.py" line="187"/>
         <source>&lt;h3&gt;JAL&lt;/h3&gt;&lt;p&gt;Just Another Ledger, version {version}&lt;/p&gt;</source>
         <translation>&amp;lt;h3&amp;gt;JAL&amp;lt;/h3&amp;gt;&amp;lt;p&amp;gt;Just Another Ledger, версия {version}&amp;lt;/p&amp;gt;</translation>
     </message>
@@ -2364,23 +2369,23 @@ do you want to save it?</source>
 <context>
     <name>Reports</name>
     <message>
-        <location filename="../reports/reports.py" line="64"/>
+        <location filename="../reports/reports.py" line="34"/>
         <source>Report class can&apos;t be loaded: </source>
         <translation>Невозможно загрузить класс отчёта: </translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="79"/>
+        <location filename="../reports/reports.py" line="49"/>
         <source>Save report to:</source>
         <translation>Сохранить отчет в:</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="88"/>
+        <location filename="../reports/reports.py" line="58"/>
         <source>Report</source>
         <translation>Отчет</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="80"/>
-        <location filename="../reports/reports.py" line="82"/>
+        <location filename="../reports/reports.py" line="50"/>
+        <location filename="../reports/reports.py" line="52"/>
         <source>Excel files (*.xlsx)</source>
         <translation>Файлы Excel (*.xslx)</translation>
     </message>
