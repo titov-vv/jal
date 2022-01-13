@@ -6,7 +6,7 @@ from PySide6.QtCharts import QChartView, QLineSeries, QScatterSeries, QDateTimeA
 from jal.db.db import JalDB
 from jal.constants import BookAccount, CustomColor
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord
-from widgets.mdi import MdiWidget
+from jal.widgets.mdi import MdiWidget
 
 
 class ChartWidget(QWidget):

@@ -4,7 +4,7 @@ from ui.reports.ui_profit_loss_report import Ui_ProfitLossReportWidget
 from jal.db.helpers import db_connection, executeSQL
 from jal.constants import BookAccount, PredefinedCategory
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
-from widgets.mdi import MdiWidget
+from jal.widgets.mdi import MdiWidget
 
 JAL_REPORT_CLASS = "ProfitLossReport"
 

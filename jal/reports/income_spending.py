@@ -5,7 +5,7 @@ from ui.reports.ui_income_spending_report import Ui_IncomeSpendingReportWidget
 from jal.constants import BookAccount, PredefinedAsset, CustomColor
 from jal.db.helpers import executeSQL
 from jal.widgets.delegates import GridLinesDelegate
-from widgets.mdi import MdiWidget
+from jal.widgets.mdi import MdiWidget
 
 JAL_REPORT_CLASS = "IncomeSpendingReport"
 
