@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QObject
 from jal.constants import Setup
 from jal.db.helpers import get_app_path
-from data_export.helpers import XLSX
+from jal.data_export.helpers import XLSX
 
 
 class Reports(QObject):

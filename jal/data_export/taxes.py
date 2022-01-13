@@ -3,8 +3,8 @@ from datetime import datetime, timezone
 import logging
 
 from jal.constants import Setup, TransactionType, CorporateAction, PredefinedAsset, PredefinedCategory, DividendSubtype
-from data_export.helpers import XLSX
-from data_export.dlsg import DLSG
+from jal.data_export.helpers import XLSX
+from jal.data_export.dlsg import DLSG
 from jal.db.helpers import executeSQL, readSQLrecord, readSQL
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog
 from PySide6.QtCore import Property, Slot
