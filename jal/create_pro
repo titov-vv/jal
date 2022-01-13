@@ -1,2 +1,3 @@
-echo "SOURCES = "$(find . -type f -name "*.py") > jal.pro
+echo "SOURCES = "$(find . -type f -name "*.py" -not -path "./ui/*") > jal.pro
+echo "FORMS = "$(find ./ui -type f -name "*.ui") >> jal.pro
 echo "TRANSLATIONS = languages/en.ts languages/ru.ts" >> jal.pro
