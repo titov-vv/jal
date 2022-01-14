@@ -22,6 +22,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         self._sort_by = None
         self._hidden = []
         self._stretch = None
+        self._default_values = {}   # To fill in default values for fields allowed to be NULL
         QSqlRelationalTableModel.__init__(self, parent=parent_view, db=db_connection())
         self.setJoinMode(QSqlRelationalTableModel.LeftJoin)
         self.setTable(self._table)
@@ -84,6 +85,8 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         new_record = self.record()
         if in_group != 0:
             new_record.setValue(self.fieldIndex(self._group_by), in_group)   # by index as it is lookup field
+        for field in self._default_values:
+            new_record.setValue(self.fieldIndex(field), self._default_values[field])
         self.setRecord(row, new_record)
 
     def removeElement(self, index):
@@ -149,6 +152,7 @@ class AccountListModel(AbstractReferenceListModel):
         self._peer_delegate = None
         self._timestamp_delegate = None
         self._bool_delegate = None
+        self._default_values = {'active': 1, 'reconciled_on': 0, 'country_id': 0}
         self.setRelation(self.fieldIndex("type_id"), QSqlRelation("account_types", "id", "name"))
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "name"))
         self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "code"))
@@ -239,6 +243,7 @@ class AssetListModel(AbstractReferenceListModel):
         self._stretch = "full_name"
         self._lookup_delegate = None
         self._timestamp_delegate = None
+        self._default_values = {'isin': '', 'country_id': 0, 'src_id': -1, 'expiry': 0}
         self.setRelation(self.fieldIndex("type_id"), QSqlRelation("asset_types", "id", "name"))
         self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "name"))
         self.setRelation(self.fieldIndex("src_id"), QSqlRelation("data_sources", "id", "name"))
@@ -652,6 +657,7 @@ class CountryListModel(AbstractReferenceListModel):
         self._sort_by = "name"
         self._hidden = ["id"]
         self._stretch = "name"
+        self._default_values = {'tax_treaty': 0}
         self._bool_delegate = None
 
     def configureView(self):
