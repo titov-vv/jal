@@ -44,7 +44,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         else:
             return -1
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
+    def headerData(self, section, orientation=Qt.Horizontal, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal:
             if role == Qt.DisplayRole:
                 return self._columns[section][1]

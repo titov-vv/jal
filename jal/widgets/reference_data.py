@@ -166,6 +166,14 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     @Slot()
     def OnCommit(self):
         if not self.model.submitAll():
+            if self.model.lastError().nativeErrorCode() == '1299':
+                prefix = "NOT NULL constraint failed: " + self.model.tableName() + "."
+                if self.model.lastError().databaseText().startswith(prefix):
+                    field_name = self.model.lastError().databaseText()[len(prefix):]
+                    header_title = self.model.headerData(self.model.fieldIndex(field_name))
+                    QMessageBox().warning(self, self.tr("Data are incomplete"),
+                                          self.tr("Column has no valid value: " + header_title), QMessageBox.Ok)
+                    return
             logging.fatal(self.tr("Submit failed: ") + decodeError(self.model.lastError().text()))
             return
         self.CommitBtn.setEnabled(False)
