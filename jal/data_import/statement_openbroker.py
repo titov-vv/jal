@@ -110,7 +110,7 @@ class StatementOpenBroker(StatementXML):
                                ('date_to', 'period_end', datetime, None)],
                     'loader': self.load_header
                 },
-            'spot_portfolio_security_params':
+            'spot_portfolio_security_params':   # Section that describes assets present in the statement
                 {
                     'tag': 'item',
                     'level': '',
@@ -122,7 +122,7 @@ class StatementOpenBroker(StatementXML):
                                ('board_name', 'exchange', OpenBroker_Exchange, '')],
                     'loader': self.load_assets
                 },
-            'spot_assets':
+            'spot_assets':    # Section describes end balances of account
                 {
                     'tag': 'item',
                     'level': '',
@@ -132,7 +132,7 @@ class StatementOpenBroker(StatementXML):
                                ('closing_position_fact', 'cash_end_settled', float, 0)],
                     'loader': self.load_balances
                 },
-            'spot_main_deals_conclusion':
+            'spot_main_deals_conclusion':    # Deals list
                 {
                     'tag': 'item',
                     'level': '',
@@ -187,7 +187,7 @@ class StatementOpenBroker(StatementXML):
             reg_code = ''
         else:
             symbol = xml_element.attrib[attr_name].strip()
-            if xml_element.tag == 'spot_assets':
+            if xml_element.getparent().tag == 'spot_assets':   # need to check in which group we are now
                 reg_code = xml_element.attrib['asset_code'] if 'asset_code' in xml_element.attrib else ''
             else:
                 reg_code = xml_element.attrib['security_grn_code'] if 'security_grn_code' in xml_element.attrib else ''
@@ -238,11 +238,14 @@ class StatementOpenBroker(StatementXML):
                 continue
             asset['id'] = base + i
             if asset['exchange'] == "MOEX":
+                broker_name = asset['name']   # store how symbol was named in broker statement
                 asset_info = QuoteDownloader.MOEX_info(symbol=asset['symbol'], isin=asset['isin'],
                                                        regnumber=asset['reg_code'])
                 if asset_info:
                     asset.update(asset_info)
                     asset['type'] = FOF.convert_predefined_asset_type(asset['type'])
+                if asset['symbol'] != broker_name:
+                    asset['alt_symbol'] = broker_name
             if asset['exchange'] == '':  # don't store empty exchange
                 asset.pop('exchange')
             cnt += 1
