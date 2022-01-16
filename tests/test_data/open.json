@@ -1,13 +1,14 @@
 {
   "period": [1617408000, 1620950399],
   "accounts": [
-    {"id": 1, "number": "12345", "currency": 4, "cash_begin": 0.0, "cash_end": 16766.13, "cash_end_settled": 599716.38}
+    {"id": 1, "number": "12345", "currency": 5, "cash_begin": 0.0, "cash_end": 16766.13, "cash_end_settled": 599716.38}
   ],
   "assets": [
     {"id": 1, "type": "bond", "symbol": "Мордовия03", "name": "Мордовия 34003 обл.", "isin": "RU000A0JWSQ7", "exchange": "MOEX", "reg_code": "RU34003MOR0", "principal": 400.0, "expiry": 1630627200, "alt_symbol": "Мордовия-обл-03"},
     {"id": 2, "type": "bond", "symbol": "МТС 1P-05", "name": "Мобильные ТелеСистемы 001P-05", "isin": "RU000A0ZYWX7", "exchange": "MOEX", "reg_code": "4B02-05-04715-A-001P", "principal": 1000.0, "expiry": 1630454400},
     {"id": 3, "type": "bond", "symbol": "СберБ БО37", "name": "Сбербанк ПАО БО-37", "isin": "RU000A0JWUE9", "exchange": "MOEX", "reg_code": "4B023701481B", "principal": 1000.0, "expiry": 1632960000},
-    {"id": 4, "type": "money", "symbol": "RUB"}
+    {"id": 4, "type": "stock", "symbol": "SBER", "name": "Сбербанк России ПАО ао", "isin": "RU0009029540", "exchange": "MOEX", "reg_code": "10301481B", "principal": 3.0},
+    {"id": 5, "type": "money", "symbol": "RUB"}
   ],
   "trades": [
     {"id": 1, "number": "4196406008", "timestamp": 1622127229, "settlement": 1622160000, "account": 1, "asset": 1, "quantity": 50.0, "price": 401.6, "fee": 10.04},
@@ -18,7 +19,7 @@
   ],
   "income_spending": [],
   "transfers": [
-    {"id": 1, "account": [0, 1, 0], "asset": [4, 4], "timestamp": 1622073600, "withdrawal": 100000.0, "deposit": 100000.0, "fee": 0.0, "description": "Поставлены на торги средства клиента 12345"}
+    {"id": 1, "account": [0, 1, 0], "asset": [5, 5], "timestamp": 1622073600, "withdrawal": 100000.0, "deposit": 100000.0, "fee": 0.0, "description": "Поставлены на торги средства клиента 12345"}
   ],
   "corporate_actions": [],
   "asset_payments": [

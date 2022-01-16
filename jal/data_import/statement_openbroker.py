@@ -15,6 +15,7 @@ class OpenBroker_AssetType:
     _asset_types = {
         '': -1,
         'Денежные средства': FOF.ASSET_MONEY,
+        'Акции': FOF.ASSET_STOCK,
         'Облигации': FOF.ASSET_BOND
     }
 
