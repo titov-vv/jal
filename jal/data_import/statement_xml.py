@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timezone
 from lxml import etree
 from PySide6.QtWidgets import QApplication
-from jal.data_import.statement import Statement, FOF
+from jal.data_import.statement import Statement, FOF, Statement_ImportError
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -74,7 +74,10 @@ class StatementXML(Statement):
             return None
 
     def load(self, filename: str) -> None:
-        xml_root = etree.parse(filename)
+        try:
+            xml_root = etree.parse(filename)
+        except etree.XMLSyntaxError as e:
+            raise Statement_ImportError(self.tr("Can't parse XML file: ") + e.msg.replace('\n', "; "))
         statements = xml_root.findall(self.statements_path)
         for statement in statements:
             if statement.tag != self.statement_tag:
