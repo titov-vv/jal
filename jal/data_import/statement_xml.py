@@ -77,7 +77,7 @@ class StatementXML(Statement):
         try:
             xml_root = etree.parse(filename)
         except etree.XMLSyntaxError as e:
-            raise Statement_ImportError(self.tr("Can't parse XML file: ") + e.msg.replace('\n', "; "))
+            raise Statement_ImportError(self.tr("Can't parse XML file: ") + e.msg)
         statements = xml_root.findall(self.statements_path)
         for statement in statements:
             if statement.tag != self.statement_tag:

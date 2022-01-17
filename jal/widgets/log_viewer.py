@@ -33,8 +33,8 @@ class LogViewer(QPlainTextEdit, logging.Handler):
                 palette.setColor(self.notification.backgroundRole(), CustomColor.LightRed)
             self.notification.setPalette(palette)
 
-            available_width = self.notification.parent().width() - 64
-            elided_text = self.notification.fontMetrics().elidedText(msg, Qt.ElideRight, available_width)
+            msg = msg.replace('\n', "; ") + msg  # Get rid of new lines in error message
+            elided_text = self.notification.fontMetrics().elidedText(msg, Qt.ElideRight, self.get_available_width())
             self.notification.setText(elided_text)
 
         self.app.processEvents()
@@ -74,3 +74,11 @@ class LogViewer(QPlainTextEdit, logging.Handler):
         self.setVisible(self.expandButton.isChecked())
         text = self.expanded_text if self.expandButton.isChecked() else self.collapsed_text
         self.expandButton.setText(text)
+
+    # Calculates maximum width that is free on status bar
+    def get_available_width(self):
+        width = self.status_bar.width()
+        for child in self.status_bar.children():
+            if hasattr(child, "width") and child != self.notification:
+                width -= child.width()
+        return width - 8    # return calculated width reduced by small safety gap
