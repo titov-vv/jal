@@ -523,7 +523,7 @@ CREATE INDEX agents_by_name_idx ON agents (name);
 DROP VIEW IF EXISTS all_operations;
 CREATE VIEW all_operations AS
 -- We will need accumulated sums from ledger, but only the last record if several available
-WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledger GROUP BY op_type, operation_id, book_account))
+WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledger GROUP BY op_type, operation_id, book_account, account_id))
     SELECT m.type,
            m.subtype,
            m.id,
