@@ -19,6 +19,8 @@ CREATE TABLE ledger_totals (
 );
 DROP INDEX IF EXISTS ledger_totals_by_timestamp;
 CREATE INDEX ledger_totals_by_timestamp ON ledger_totals (timestamp);
+DROP INDEX IF EXISTS ledger_totals_by_operation_book;
+CREATE INDEX ledger_totals_by_operation_book ON ledger_totals (op_type, operation_id, book_account);
 
 
 -- Populate data from current ledger
@@ -29,8 +31,6 @@ WHERE id IN (SELECT MAX(id) FROM ledger GROUP BY op_type, operation_id, book_acc
 -- View: all_operations
 DROP VIEW IF EXISTS all_operations;
 CREATE VIEW all_operations AS
--- We will need accumulated sums from ledger, but only the last record if several available
-WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledger GROUP BY op_type, operation_id, book_account, account_id))
     SELECT m.type,
            m.subtype,
            m.id,
@@ -110,7 +110,7 @@ WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledg
                       a.full_name AS note2
                  FROM corp_actions AS ca
                       LEFT JOIN assets AS a ON ca.asset_id_new = a.id
-                      LEFT JOIN _ledger_last AS l ON l.op_type = ca.op_type AND l.operation_id=ca.id AND l.asset_id = ca.asset_id_new AND l.book_account = 4
+                      LEFT JOIN ledger_totals AS l ON l.op_type = ca.op_type AND l.operation_id=ca.id AND l.asset_id = ca.asset_id_new AND l.book_account = 4
                UNION ALL
                SELECT t.op_type AS type,
                       iif(t.qty < 0, -1, 1) AS subtype,
@@ -127,7 +127,7 @@ WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledg
                       t.note AS note,
                       NULL AS note2
                  FROM trades AS t
-                      LEFT JOIN _ledger_last AS l ON l.op_type=t.op_type AND l.operation_id=t.id AND l.book_account = 4
+                      LEFT JOIN ledger_totals AS l ON l.op_type=t.op_type AND l.operation_id=t.id AND l.book_account = 4
                UNION ALL
                SELECT t.op_type AS type,
                       t.subtype,
@@ -186,8 +186,8 @@ WITH _ledger_last AS (SELECT * FROM ledger WHERE id IN (SELECT MAX(id) FROM ledg
            LEFT JOIN accounts AS a ON m.account_id = a.id
            LEFT JOIN assets AS s ON m.asset_id = s.id
            LEFT JOIN assets AS c ON a.currency_id = c.id
-           LEFT JOIN _ledger_last AS money ON money.op_type=m.type AND money.operation_id=m.id AND money.account_id = m.account_id AND money.book_account = 3
-           LEFT JOIN _ledger_last AS debt ON debt.op_type=m.type AND debt.operation_id=m.id AND debt.account_id = m.account_id AND debt.book_account = 5
+           LEFT JOIN ledger_totals AS money ON money.op_type=m.type AND money.operation_id=m.id AND money.account_id = m.account_id AND money.book_account = 3
+           LEFT JOIN ledger_totals AS debt ON debt.op_type=m.type AND debt.operation_id=m.id AND debt.account_id = m.account_id AND debt.book_account = 5
     ORDER BY m.timestamp;
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 1;
