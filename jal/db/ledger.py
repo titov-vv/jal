@@ -428,6 +428,7 @@ class Ledger(QObject):
         start_time = datetime.now()
         _ = executeSQL("DELETE FROM deals WHERE close_timestamp >= :frontier", [(":frontier", frontier)])
         _ = executeSQL("DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
+        _ = executeSQL("DELETE FROM ledger_totals WHERE timestamp >= :frontier", [(":frontier", frontier)])
         _ = executeSQL("DELETE FROM open_trades WHERE timestamp >= :frontier", [(":frontier", frontier)])
 
         db_triggers_disable()
@@ -446,6 +447,14 @@ class Ledger(QObject):
             if fast_and_dirty:
                 _ = executeSQL("PRAGMA synchronous = ON")
             db_triggers_enable()
+        # Fill ledger totals values
+        _ = executeSQL("INSERT INTO ledger_totals"
+                       "(op_type, operation_id, timestamp, book_account, asset_id, account_id, amount_acc, value_acc) "
+                       "SELECT op_type, operation_id, timestamp, book_account, "
+                       "asset_id, account_id, amount_acc, value_acc FROM ledger "
+                       "WHERE id IN ("
+                       "SELECT MAX(id) FROM ledger WHERE timestamp >= :frontier "
+                       "GROUP BY op_type, operation_id, book_account, account_id)", [(":frontier", frontier)])
 
         if self.progress_bar is not None:
             self.main_window.showProgressBar(False)

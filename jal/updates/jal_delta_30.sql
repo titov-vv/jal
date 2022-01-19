@@ -2,6 +2,30 @@ BEGIN TRANSACTION;
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 0;
 --------------------------------------------------------------------------------
+-- Table: ledger_totals to keep last accumulated amount value for each transaction
+DROP TABLE IF EXISTS ledger_totals;
+CREATE TABLE ledger_totals (
+    id           INTEGER PRIMARY KEY
+                         UNIQUE
+                         NOT NULL,
+    op_type      INTEGER NOT NULL,
+    operation_id INTEGER NOT NULL,
+    timestamp    INTEGER NOT NULL,
+    book_account INTEGER NOT NULL,
+    asset_id     INTEGER NOT NULL,
+    account_id   INTEGER NOT NULL,
+    amount_acc   REAL    NOT NULL,
+    value_acc    REAL    NOT NULL
+);
+DROP INDEX IF EXISTS ledger_totals_by_timestamp;
+CREATE INDEX ledger_totals_by_timestamp ON ledger_totals (timestamp);
+
+
+-- Populate data from current ledger
+INSERT INTO ledger_totals(op_type, operation_id, timestamp, book_account, asset_id, account_id, amount_acc, value_acc)
+SELECT op_type, operation_id, timestamp, book_account, asset_id, account_id, amount_acc, value_acc FROM ledger
+WHERE id IN (SELECT MAX(id) FROM ledger GROUP BY op_type, operation_id, book_account, account_id);
+
 -- View: all_operations
 DROP VIEW IF EXISTS all_operations;
 CREATE VIEW all_operations AS

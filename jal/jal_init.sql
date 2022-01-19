@@ -253,7 +253,6 @@ CREATE TABLE languages (
 
 -- Table: ledger
 DROP TABLE IF EXISTS ledger;
-
 CREATE TABLE ledger (
     id           INTEGER PRIMARY KEY
                          NOT NULL
@@ -281,6 +280,24 @@ CREATE TABLE ledger (
                                               ON UPDATE NO ACTION
 );
 
+-- Table: ledger_totals to keep last accumulated amount value for each transaction
+DROP TABLE IF EXISTS ledger_totals;
+CREATE TABLE ledger_totals (
+    id           INTEGER PRIMARY KEY
+                         UNIQUE
+                         NOT NULL,
+    op_type      INTEGER NOT NULL,
+    operation_id INTEGER NOT NULL,
+    timestamp    INTEGER NOT NULL,
+    book_account INTEGER NOT NULL,
+    asset_id     INTEGER NOT NULL,
+    account_id   INTEGER NOT NULL,
+    amount_acc   REAL    NOT NULL,
+    value_acc    REAL    NOT NULL
+);
+
+DROP INDEX IF EXISTS ledger_totals_by_timestamp;
+CREATE INDEX ledger_totals_by_timestamp ON ledger_totals (timestamp);
 
 -- Table: map_category
 DROP TABLE IF EXISTS map_category;
