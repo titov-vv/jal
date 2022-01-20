@@ -33,7 +33,7 @@ class LogViewer(QPlainTextEdit, logging.Handler):
                 palette.setColor(self.notification.backgroundRole(), CustomColor.LightRed)
             self.notification.setPalette(palette)
 
-            msg = msg.replace('\n', "; ") + msg  # Get rid of new lines in error message
+            msg = msg.replace('\n', "; ")  # Get rid of new lines in error message
             elided_text = self.notification.fontMetrics().elidedText(msg, Qt.ElideRight, self.get_available_width())
             self.notification.setText(elided_text)
 
