@@ -43,8 +43,11 @@ class RebuildDialog(QDialog, Ui_ReBuildDialog):
 # Subclasses dictionary to store last amount/value for [book, account, asset]
 # Differs from dictionary in a way that __getitem__() method uses DB-stored values for initialization
 class LedgerAmounts(dict):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, total_field=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if total_field is None:
+            raise ValueError("Unitialized field in LedgerAmounts")
+        self.total_field = total_field
 
     def __getitem__(self, key):
         # predefined indices in key tuple
@@ -55,7 +58,7 @@ class LedgerAmounts(dict):
         try:
             return super().__getitem__(key)
         except KeyError:
-            amount = readSQL("SELECT amount_acc FROM ledger "
+            amount = readSQL(f"SELECT {self.total_field} FROM ledger "
                              "WHERE book_account = :book AND account_id = :account_id AND asset_id = :asset_id "
                              "ORDER BY id DESC LIMIT 1",
                              [(":book", key[BOOK]), (":account_id", key[ACCOUNT]), (":asset_id", key[ASSET])])
@@ -72,9 +75,9 @@ class Ledger(QObject):
     def __init__(self):
         QObject.__init__(self)
         self.current = {}
-        self.amounts = LedgerAmounts()    # store last amount for [book, account, asset]
-        self.values = LedgerAmounts()     # together with corresponding value
-        self.main_window =None
+        self.amounts = LedgerAmounts("amount_acc")    # store last amount for [book, account, asset]
+        self.values = LedgerAmounts("value_acc")      # together with corresponding value
+        self.main_window = None
         self.progress_bar = None
 
     def setProgressBar(self, main_window, progress_widget):
@@ -401,8 +404,8 @@ class Ledger(QObject):
             TransactionType.CorporateAction: self.processCorporateAction
         }
 
-        # Initialize arrays for rolling sums storage
-        self.amounts = LedgerAmounts()
+        self.amounts.clear()
+        self.values.clear()
         if from_timestamp >= 0:
             frontier = from_timestamp
             operations_count = readSQL("SELECT COUNT(id) FROM all_transactions WHERE timestamp >= :frontier",

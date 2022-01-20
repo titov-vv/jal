@@ -61,13 +61,24 @@ def test_ledger(prepare_db_ledger):
     ledger = Ledger()
     ledger.rebuild()
 
-    # validate book amounts
-    expected_book_values = [None, 164.0, -150.0, -0.0, None, -14.0]
+    # validate book amounts and values
+    expected_book_amounts = [None, 164.0, -150.0, -0.0, None, -14.0]
+    expected_book_values = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     query = executeSQL("SELECT MAX(id) AS mid, book_account, amount_acc, value_acc "
                        "FROM ledger GROUP BY book_account")
     while query.next():
         row = readSQLrecord(query, named=True)
-        assert row['amount_acc'] == expected_book_values[row['book_account']]
+        assert row['amount_acc'] == expected_book_amounts[row['book_account']]
+        assert row['value_acc'] == expected_book_values[row['book_account']]
+
+    # Re-build from the middle - validation should pass again
+    ledger.rebuild(from_timestamp=1638352800)
+    query = executeSQL("SELECT MAX(id) AS mid, book_account, amount_acc, value_acc "
+                       "FROM ledger GROUP BY book_account")
+    while query.next():
+        row = readSQLrecord(query, named=True)
+        assert row['amount_acc'] == expected_book_amounts[row['book_account']]
+        assert row['value_acc'] == expected_book_values[row['book_account']]
 
 
 def test_buy_sell_change(prepare_db_fifo):
