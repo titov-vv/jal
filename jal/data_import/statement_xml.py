@@ -6,10 +6,10 @@ from jal.data_import.statement import Statement, FOF, Statement_ImportError
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-# Base class to load XML-based statements
+# Base class to load XML-based broker_statements
 class StatementXML(Statement):
-    statements_path = ''    # Where in XML structure search for statements
-    statement_tag = ''      # Tag of the statement in XML (there might be several statements in one XML)
+    statements_path = ''    # Where in XML structure search for broker_statements
+    statement_tag = ''      # Tag of the statement in XML (there might be several broker_statements in one XML)
     STATEMENT_ROOT = '<statement_root>'
 
     def __init__(self):

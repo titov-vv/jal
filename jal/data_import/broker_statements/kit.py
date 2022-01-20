@@ -5,7 +5,10 @@ from jal.constants import Setup, PredefinedCategory
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xls import StatementXLS
 
+JAL_STATEMENT_CLASS = "StatementKIT"
 
+
+# ----------------------------------------------------------------------------------------------------------------------
 class StatementKIT(StatementXLS):
     Header = (4, 0, "КИТ Финанс (АО)")
     PeriodPattern = (5, 8, r"(?P<S>\d\d\.\d\d\.\d\d\d\d)\s.\s(?P<E>\d\d\.\d\d\.\d\d\d\d)")
@@ -18,6 +21,12 @@ class StatementKIT(StatementXLS):
         "isin": "ISIN",
         "reg_code": "Код гос. регистрации"
     }
+
+    def __init__(self):
+        super().__init__()
+        self.name = self.tr("KIT Finance")
+        self.icon_name = "kit.png"
+        self.filename_filter = self.tr("KIT Finance statement (*.xlsx)")
 
     def _load_deals(self):
         cnt = 0
@@ -155,4 +164,4 @@ class StatementKIT(StatementXLS):
         self._data[FOF.INCOME_SPENDING].append(interest)
 
     def tax(self, timestamp, account_id, amount, _reason, description):
-        logging.info(self.tr("Dividend taxes are not supported for KIT statements yet"))
+        logging.info(self.tr("Dividend taxes are not supported for KIT broker_statements yet"))

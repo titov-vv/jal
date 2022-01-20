@@ -36,6 +36,7 @@ class Reports(QObject):
             report = class_instance()
             self.items.append({'name': report.name, 'module': module, 'window_class': report.window_class})
             logging.debug(f"Report class '{report_class_name}' providing '{report.name}' report has been loaded")
+        self.items = sorted(self.items, key=lambda item: item['name'])
 
     # method is called directly from menu, so it contains QAction that was triggered
     def show(self, action):

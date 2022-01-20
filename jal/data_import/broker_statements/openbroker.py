@@ -8,6 +8,8 @@ from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xml import StatementXML
 from jal.net.downloader import QuoteDownloader
 
+JAL_STATEMENT_CLASS = "StatementOpenBroker"
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 class OpenBroker_AssetType:
@@ -85,12 +87,15 @@ class OpenBroker_Exchange:
 
 # ----------------------------------------------------------------------------------------------------------------------
 class StatementOpenBroker(StatementXML):
-    statements_path = '.'
+    statements_path = '..'
     statement_tag = 'broker_report'
 
     def __init__(self):
         super().__init__()
-        self.statement_name = self.tr("Open Broker statement")
+        self.name = self.tr("Open Broker")
+        self.icon_name = "openbroker.ico"
+        self.filename_filter = self.tr("Open Broker statement (*.xml)")
+
         self._account_number = ''
         self.asset_withdrawal = []
         open_loaders = {

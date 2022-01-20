@@ -10,7 +10,7 @@ from jal.net.downloader import QuoteDownloader
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-# Base class to load Excel-format statements of russian brokers
+# Base class to load Excel-format broker_statements of russian brokers
 class StatementXLS(Statement):
     StatementName = ""
     Header = (0, 0, '')           # Header that is present in broker report  (x-pos, y-pos, header)

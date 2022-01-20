@@ -1,11 +1,10 @@
 import json
 
-from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ibkr, prepare_db_xls
-from jal.data_import.statement_ibkr import StatementIBKR
-from jal.data_import.statement_uralsib import StatementUKFU
-from jal.data_import.statement_kit import StatementKIT
-from jal.data_import.statement_psb import StatementPSB
-from jal.data_import.statement_openbroker import StatementOpenBroker
+from data_import.broker_statements.ibkr import StatementIBKR
+from data_import.broker_statements.uralsib import StatementUKFU
+from data_import.broker_statements.kit import StatementKIT
+from data_import.broker_statements.psb import StatementPSB
+from data_import.broker_statements.openbroker import StatementOpenBroker
 
 
 # ----------------------------------------------------------------------------------------------------------------------

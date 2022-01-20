@@ -11,6 +11,7 @@ class Setup:
     IMPORT_SCHEMA_NAME = "import_schema.json"
     LANG_PATH = "languages"
     REPORT_PATH = "reports"
+    STATEMENT_PATH = "broker_statements"
     UPDATE_PREFIX = 'jal_delta_'
     TARGET_SCHEMA = 29
     CALC_TOLERANCE = 1e-10

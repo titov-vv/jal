@@ -5,7 +5,10 @@ from jal.constants import Setup
 from jal.data_import.statement import FOF
 from jal.data_import.statement_xls import StatementXLS
 
+JAL_STATEMENT_CLASS = "StatementPSB"
 
+
+# ----------------------------------------------------------------------------------------------------------------------
 class StatementPSB(StatementXLS):
     Header = (2, 3, 'Брокер: ПАО "Промсвязьбанк"')
     PeriodPattern = (3, 6, r"с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d)")
@@ -25,6 +28,12 @@ class StatementPSB(StatementXLS):
         "isin": "ISIN",
         "reg_code": r"Номер гос\.регистрации"
     }
+
+    def __init__(self):
+        super().__init__()
+        self.name = self.tr("PSB Broker")
+        self.icon_name = "psb.ico"
+        self.filename_filter = self.tr("PSB broker statement (*.xlsx *.xls)")
 
     def _load_deals(self):
         cnt = 0

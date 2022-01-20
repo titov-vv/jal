@@ -6,7 +6,10 @@ from jal.constants import Setup, PredefinedCategory
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xls import StatementXLS
 
+JAL_STATEMENT_CLASS = "StatementUKFU"
 
+
+# ----------------------------------------------------------------------------------------------------------------------
 class StatementUKFU(StatementXLS):
     Header = (2, 0, '  Брокер: ООО "УРАЛСИБ Брокер"')
     PeriodPattern = (2, 2, r"  за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d)")
@@ -42,7 +45,9 @@ class StatementUKFU(StatementXLS):
 
     def __init__(self):
         super().__init__()
-        self.StatementName = self.tr("Uralsib broker")
+        self.name = self.tr("Uralsib Broker")
+        self.icon_name = "uralsib.ico"
+        self.filename_filter = self.tr("Uralsib statement (*.zip)")
         self.asset_withdrawal = []
 
     def _load_deals(self):

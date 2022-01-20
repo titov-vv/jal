@@ -11,6 +11,8 @@ from jal.db.helpers import executeSQL, readSQLrecord
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xml import StatementXML
 
+JAL_STATEMENT_CLASS = "StatementIBKR"
+
 
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKRCashOp:
@@ -177,7 +179,10 @@ class StatementIBKR(StatementXML):
 
     def __init__(self):
         super().__init__()
-        self.statement_name = self.tr("IBKR Flex-statement")
+        self.name = self.tr("Interactive Brokers")
+        self.icon_name = "ibkr.png"
+        self.filename_filter = self.tr("IBKR flex-query (*.xml)")
+
         ibkr_loaders = {
             IBKR_Currency: self.attr_currency,
             IBKR_AssetType: self.attr_asset_type,

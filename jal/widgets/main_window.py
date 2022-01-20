@@ -20,7 +20,7 @@ from jal.db.db import JalDB
 from jal.db.settings import JalSettings
 from jal.net.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
-from jal.data_import.statements import StatementLoader
+from jal.data_import.statements import Statements
 from jal.data_export.taxes import TaxesRus
 from jal.reports.reports import Reports
 from jal.data_import.slips import ImportSlipDialog
@@ -52,7 +52,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
         self.downloader = QuoteDownloader()
         self.taxes = TaxesRus()
-        self.statements = StatementLoader()
+        self.statements = Statements(self)
         self.reports = Reports(self, self.mdiArea)
         self.backup = JalBackup(self, get_dbfilename(get_app_path()))
         self.estimator = None
@@ -154,14 +154,15 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
                                       QMessageBox.Ok)
             self.close()
 
-    # Create import menu for all known statements based on self.statements.sources values
+    # Create import menu for all known broker_statements based on self.broker_statements.sources values
     def createStatementsImportMenu(self):
-        for i, source in enumerate(self.statements.sources):
-            if 'icon' in source:
-                source_icon = load_icon(source['icon'])
-                action = QAction(source_icon, source['name'], self)
+        for i, statement in enumerate(self.statements.items):
+            statement_name = statement['name'].replace('&', '&&')  # & -> && to prevent shortcut creation
+            if statement['icon']:
+                statement_icon = load_icon(statement['icon'])
+                action = QAction(statement_icon, statement_name, self)
             else:
-                action = QAction(source['name'], self)
+                action = QAction(statement_name, self)
             action.setData(i)
             self.menuStatement.addAction(action)
             self.statementGroup.addAction(action)

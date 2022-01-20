@@ -7,6 +7,7 @@ import logging
 from datetime import datetime, timezone
 from collections import defaultdict
 
+from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QApplication, QDialog, QMessageBox
 from jal.constants import Setup, MarketDataFeed, PredefinedAsset, DividendSubtype, CorporateAction
 from jal.db.helpers import account_last_date, get_app_path
@@ -61,7 +62,7 @@ class Statement_ImportError(Exception):
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-class Statement:
+class Statement(QObject):   # derived from QObject to have proper string translation
     _asset_types = {
         FOF.ASSET_MONEY: PredefinedAsset.Money,
         FOF.ASSET_STOCK: PredefinedAsset.Stock,
@@ -90,6 +91,7 @@ class Statement:
     }
     
     def __init__(self):
+        super().__init__()
         self._data = {}
         self._previous_accounts = {}
         self._last_selected_account = None
@@ -104,10 +106,7 @@ class Statement:
             FOF.CORP_ACTIONS: self._import_corporate_actions
         }
 
-    def tr(self, text):
-        return QApplication.translate("Statement", text)
-
-        # returns tuple (start_timestamp, end_timestamp)
+    # returns tuple (start_timestamp, end_timestamp)
     def period(self):
         if FOF.PERIOD in self._data:
             return self._data[FOF.PERIOD][0], self._data[FOF.PERIOD][1]
