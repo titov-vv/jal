@@ -794,7 +794,7 @@ class StatementIBKR(StatementXML):
                 dividends.append(db_dividend)
         if datetime.utcfromtimestamp(timestamp).timetuple().tm_yday < 75:
             # We may have wrong date in taxes before March, 15 due to tax correction
-            range_start = ManipulateDate.startOfPreviousYear(day=datetime.utcfromtimestamp(timestamp))
+            range_start, _range_end = ManipulateDate.PreviousYear(day=datetime.utcfromtimestamp(timestamp))
             dividends = [x for x in dividends if x['timestamp'] >= range_start]
         else:
             # For any other day - use exact time match
