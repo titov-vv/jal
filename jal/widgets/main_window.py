@@ -154,7 +154,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
                                       QMessageBox.Ok)
             self.close()
 
-    # Create import menu for all known broker_statements based on self.broker_statements.sources values
+    # Create import menu for all known statements based on self.statements.items values
     def createStatementsImportMenu(self):
         for i, statement in enumerate(self.statements.items):
             statement_name = statement['name'].replace('&', '&&')  # & -> && to prevent shortcut creation

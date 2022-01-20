@@ -164,4 +164,4 @@ class StatementKIT(StatementXLS):
         self._data[FOF.INCOME_SPENDING].append(interest)
 
     def tax(self, timestamp, account_id, amount, _reason, description):
-        logging.info(self.tr("Dividend taxes are not supported for KIT broker_statements yet"))
+        logging.info(self.tr("Dividend taxes are not supported for KIT broker statements yet"))

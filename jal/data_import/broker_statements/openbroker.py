@@ -87,7 +87,7 @@ class OpenBroker_Exchange:
 
 # ----------------------------------------------------------------------------------------------------------------------
 class StatementOpenBroker(StatementXML):
-    statements_path = '..'
+    statements_path = '.'
     statement_tag = 'broker_report'
 
     def __init__(self):
