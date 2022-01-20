@@ -114,7 +114,7 @@
               <second>0</second>
               <year>2020</year>
               <month>11</month>
-              <day>27</day>
+              <day>25</day>
              </datetime>
             </property>
             <property name="displayFormat">
@@ -260,39 +260,10 @@
            <number>2</number>
           </property>
           <item>
-           <widget class="QLabel" name="DateRangeLbl">
-            <property name="text">
-             <string>Time range:</string>
+           <widget class="DateRangeSelector" name="DateRange" native="true">
+            <property name="ItemsList" stdset="0">
+             <string notr="true">week;month;quarter;year;all</string>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="DateRangeCombo">
-            <item>
-             <property name="text">
-              <string>Week</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Month</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Quarter</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Year</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>All</string>
-             </property>
-            </item>
            </widget>
           </item>
           <item>
@@ -532,6 +503,12 @@
    <class>IncomeSpendingWidget</class>
    <extends>QWidget</extends>
    <header>jal/widgets/income_spending_widget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DateRangeSelector</class>
+   <extends>QWidget</extends>
+   <header>jal/widgets/date_range_selector.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

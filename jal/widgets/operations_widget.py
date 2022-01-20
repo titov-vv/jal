@@ -68,7 +68,7 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
 
         self.OperationsTabs.setCurrentIndex(TransactionType.NA)
         self.OperationsTableView.selectRow(0)
-        self.OnOperationsRangeChange(0)
+        self.DateRange.setCurrentIndex(0)
 
     def connect_signals_and_slots(self):
         self.actionReconcile.triggered.connect(self.reconcileAtCurrentOperation)
@@ -76,7 +76,7 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
         self.BalancesCurrencyCombo.changed.connect(self.BalancesTableView.model().setCurrency)
         self.BalancesTableView.doubleClicked.connect(self.OnBalanceDoubleClick)
         self.ShowInactiveCheckBox.stateChanged.connect(self.BalancesTableView.model().toggleActive)
-        self.DateRangeCombo.currentIndexChanged.connect(self.OnOperationsRangeChange)
+        self.DateRange.changed.connect(self.operations_model.setDateRange)
         self.ChooseAccountBtn.changed.connect(self.OperationsTableView.model().setAccount)
         self.SearchString.editingFinished.connect(self.updateOperationsFilter)
         self.OperationsTableView.selectionModel().selectionChanged.connect(self.OnOperationChange)
@@ -111,17 +111,6 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
             return
         self.checkForUncommittedChanges()
         self.OperationsTabs.widget(operation_type).copyNew()
-
-    @Slot()
-    def OnOperationsRangeChange(self, range_index):
-        view_ranges = {
-            0: ManipulateDate.startOfPreviousWeek,
-            1: ManipulateDate.startOfPreviousMonth,
-            2: ManipulateDate.startOfPreviousQuarter,
-            3: ManipulateDate.startOfPreviousYear,
-            4: lambda: 0
-        }
-        self.OperationsTableView.model().setDateRange(view_ranges[range_index]())
 
     @Slot()
     def updateOperationsFilter(self):

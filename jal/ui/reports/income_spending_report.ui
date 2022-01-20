@@ -54,7 +54,11 @@
        <number>2</number>
       </property>
       <item>
-       <widget class="DateRangeSelector" name="ReportRange" native="true"/>
+       <widget class="DateRangeSelector" name="ReportRange" native="true">
+        <property name="ItemsList" stdset="0">
+         <string notr="true">QTD;YTD;this_year;last_year</string>
+        </property>
+       </widget>
       </item>
       <item>
        <spacer name="horizontalSpacer">

@@ -1,26 +1,37 @@
-from PySide6.QtCore import Qt, Signal, Slot, QDateTime
+from PySide6.QtCore import Qt, Signal, Slot, QDateTime, Property
 from PySide6.QtWidgets import QWidget, QComboBox, QHBoxLayout, QLabel, QDateEdit
 from jal.widgets.helpers import ManipulateDate
 
 
+ITEM_NAME = 0
+ITEM_METHOD = 1
 # ----------------------------------------------------------------------------------------------------------------------
 class DateRangeSelector(QWidget):
     changed = Signal(int, int)   # emits signal when one or both dates were changed, "from" and "to" timestamps are sent
 
     def __init__(self, parent):
         QWidget.__init__(self, parent)
+        self.report_ranges = {
+            'week': (self.tr("Week"), ManipulateDate.PreviousWeek),
+            'month': (self.tr("Month"), ManipulateDate.PreviousMonth),
+            'quarter': (self.tr("Quarter"), ManipulateDate.PreviousQuarter),
+            'year': (self.tr("Year"), ManipulateDate.PreviousYear),
+            'QTD': (self.tr("Quarter to date"), ManipulateDate.QuarterToDate),
+            'YTD': (self.tr("Year to date"), ManipulateDate.YearToDate),
+            'this_year': (self.tr("This year"), ManipulateDate.ThisYear),
+            'last_year': (self.tr("Previous year"), ManipulateDate.LastYear),
+            'all': (self.tr("All dates"), ManipulateDate.AllDates),
+        }
+
         self._begin = 0
         self._end = 0
+        self._items = []
         self.changing_range = False
 
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
 
         self.range_combo = QComboBox(self)
-        self.range_combo.addItem(self.tr("Quarter to date"))
-        self.range_combo.addItem(self.tr("Year to date"))
-        self.range_combo.addItem(self.tr("This year"))
-        self.range_combo.addItem(self.tr("Previous year"))
         self.layout.addWidget(self.range_combo)
 
         self.from_label = QLabel(self.tr("From:"), parent=self)
@@ -47,6 +58,23 @@ class DateRangeSelector(QWidget):
 
         self.connect_signals_and_slots()
 
+    def getConfig(self):
+        return ';'.join(self._items)
+
+    def setConfig(self, items_list):
+        try:
+            self._items = items_list.split(';')
+        except AttributeError:
+            self._items = []
+        for item in self._items:
+            try:
+                item_name = self.report_ranges[item][ITEM_NAME]
+                self.range_combo.addItem(item_name, item)
+            except KeyError:
+                continue
+
+    ItemsList = Property(str, getConfig, setConfig)
+
     def connect_signals_and_slots(self):
         self.range_combo.currentIndexChanged.connect(self.onRangeChange)
         self.from_date.dateChanged.connect(self.onFromChange)
@@ -54,13 +82,8 @@ class DateRangeSelector(QWidget):
 
     @Slot()
     def onRangeChange(self, index):
-        report_ranges = {
-            0: ManipulateDate.Last3Months,
-            1: ManipulateDate.RangeYTD,
-            2: ManipulateDate.RangeThisYear,
-            3: ManipulateDate.RangePreviousYear
-        }
-        self._begin, self._end = report_ranges[index]()
+        item = self.range_combo.itemData(index)
+        self._begin, self._end = self.report_ranges[item][ITEM_METHOD]()
         self.changing_range = True
         self.from_date.setDateTime(QDateTime.fromSecsSinceEpoch(self._begin, spec=Qt.UTC))
         self.to_date.setDateTime(QDateTime.fromSecsSinceEpoch(self._end, spec=Qt.UTC))
@@ -78,3 +101,9 @@ class DateRangeSelector(QWidget):
         self._end = self.to_date.date().startOfDay(Qt.UTC).toSecsSinceEpoch()
         if not self.changing_range:
             self.changed.emit(self._begin, self._end)
+
+    def setCurrentIndex(self, index):
+        if index == self.range_combo.currentIndex():
+            self.onRangeChange(index)
+        else:
+            self.range_combo.setCurrentIndex(index)

@@ -15,14 +15,15 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox,
-    QDateEdit, QFrame, QGroupBox, QHBoxLayout,
-    QHeaderView, QLabel, QLineEdit, QPushButton,
-    QSizePolicy, QSpacerItem, QSplitter, QStackedWidget,
-    QTableView, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QDateEdit,
+    QFrame, QGroupBox, QHBoxLayout, QHeaderView,
+    QLabel, QLineEdit, QPushButton, QSizePolicy,
+    QSpacerItem, QSplitter, QStackedWidget, QTableView,
+    QVBoxLayout, QWidget)
 
 from jal.widgets.account_select import (AccountButton, CurrencyComboBox)
 from jal.widgets.corporate_action_widget import CorporateActionWidget
+from jal.widgets.date_range_selector import DateRangeSelector
 from jal.widgets.dividend_widget import DividendWidget
 from jal.widgets.income_spending_widget import IncomeSpendingWidget
 from jal.widgets.trade_widget import TradeWidget
@@ -68,7 +69,7 @@ class Ui_OperationsWidget(object):
         self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
         self.BalanceDate = QDateEdit(self.BalanceConfigFrame)
         self.BalanceDate.setObjectName(u"BalanceDate")
-        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 11, 27), QTime(21, 0, 0)))
+        self.BalanceDate.setDateTime(QDateTime(QDate(2020, 11, 25), QTime(21, 0, 0)))
         self.BalanceDate.setCalendarPopup(True)
         self.BalanceDate.setTimeSpec(Qt.UTC)
 
@@ -134,20 +135,11 @@ class Ui_OperationsWidget(object):
         self.horizontalLayout_3 = QHBoxLayout(self.OperationConfigFrame)
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
         self.horizontalLayout_3.setContentsMargins(2, 2, 2, 2)
-        self.DateRangeLbl = QLabel(self.OperationConfigFrame)
-        self.DateRangeLbl.setObjectName(u"DateRangeLbl")
+        self.DateRange = DateRangeSelector(self.OperationConfigFrame)
+        self.DateRange.setObjectName(u"DateRange")
+        self.DateRange.setProperty("ItemsList", u"week;month;quarter;year;all")
 
-        self.horizontalLayout_3.addWidget(self.DateRangeLbl)
-
-        self.DateRangeCombo = QComboBox(self.OperationConfigFrame)
-        self.DateRangeCombo.addItem("")
-        self.DateRangeCombo.addItem("")
-        self.DateRangeCombo.addItem("")
-        self.DateRangeCombo.addItem("")
-        self.DateRangeCombo.addItem("")
-        self.DateRangeCombo.setObjectName(u"DateRangeCombo")
-
-        self.horizontalLayout_3.addWidget(self.DateRangeCombo)
+        self.horizontalLayout_3.addWidget(self.DateRange)
 
         self.AccountLbl = QLabel(self.OperationConfigFrame)
         self.AccountLbl.setObjectName(u"AccountLbl")
@@ -284,13 +276,6 @@ class Ui_OperationsWidget(object):
         self.CurrencyLbl.setText(QCoreApplication.translate("OperationsWidget", u"Sum Currency:", None))
         self.ShowInactiveCheckBox.setText(QCoreApplication.translate("OperationsWidget", u"Show &Inactive", None))
         self.OperationsBox.setTitle(QCoreApplication.translate("OperationsWidget", u"Operations", None))
-        self.DateRangeLbl.setText(QCoreApplication.translate("OperationsWidget", u"Time range:", None))
-        self.DateRangeCombo.setItemText(0, QCoreApplication.translate("OperationsWidget", u"Week", None))
-        self.DateRangeCombo.setItemText(1, QCoreApplication.translate("OperationsWidget", u"Month", None))
-        self.DateRangeCombo.setItemText(2, QCoreApplication.translate("OperationsWidget", u"Quarter", None))
-        self.DateRangeCombo.setItemText(3, QCoreApplication.translate("OperationsWidget", u"Year", None))
-        self.DateRangeCombo.setItemText(4, QCoreApplication.translate("OperationsWidget", u"All", None))
-
         self.AccountLbl.setText(QCoreApplication.translate("OperationsWidget", u"Account:", None))
         self.SearchLbl.setText(QCoreApplication.translate("OperationsWidget", u"Search:", None))
 #if QT_CONFIG(tooltip)

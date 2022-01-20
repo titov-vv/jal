@@ -67,7 +67,11 @@
        </spacer>
       </item>
       <item row="0" column="0">
-       <widget class="DateRangeSelector" name="ReportRange" native="true"/>
+       <widget class="DateRangeSelector" name="ReportRange" native="true">
+        <property name="ItemsList" stdset="0">
+         <string notr="true">QTD;YTD;this_year;last_year</string>
+        </property>
+       </widget>
       </item>
       <item row="0" column="1">
        <widget class="QLabel" name="ReportCategoryLbl">

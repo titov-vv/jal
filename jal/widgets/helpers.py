@@ -37,37 +37,41 @@ class ManipulateDate:
         return int(dt_value.replace(tzinfo=timezone.utc).timestamp())
 
     @staticmethod
-    def startOfPreviousWeek(day=datetime.today()):
-        prev_week = day - timedelta(days = 7)
-        start_of_week = prev_week - timedelta(days = prev_week.weekday())
-        return ManipulateDate.toTimestamp(start_of_week)
+    def PreviousWeek(day=datetime.today()):
+        end = day + timedelta(days=1)
+        prev_week = day - timedelta(days=7)
+        start_of_week = prev_week - timedelta(days=prev_week.weekday())
+        return ManipulateDate.toTimestamp(start_of_week), ManipulateDate.toTimestamp(end)
 
     @staticmethod
-    def startOfPreviousMonth(day=datetime.today()):
+    def PreviousMonth(day=datetime.today()):
+        end = day + timedelta(days=1)
         first_day_of_month = day.replace(day=1)
         last_day_of_prev_month = first_day_of_month - timedelta(days=1)
         first_day_of_prev_month = last_day_of_prev_month.replace(day=1)
-        return ManipulateDate.toTimestamp(first_day_of_prev_month)
+        return ManipulateDate.toTimestamp(first_day_of_prev_month), ManipulateDate.toTimestamp(end)
 
     @staticmethod
-    def startOfPreviousQuarter(day=datetime.today()):
+    def PreviousQuarter(day=datetime.today()):
+        end = day + timedelta(days=1)
         prev_quarter_month = day.month - day.month % 3 - 3
         if prev_quarter_month > 0:
-            quarter_back = day.replace(month = prev_quarter_month)
+            quarter_back = day.replace(month=prev_quarter_month)
         else:
-            quarter_back = day.replace(month = (prev_quarter_month + 12), year = (day.year - 1))
+            quarter_back = day.replace(month=(prev_quarter_month + 12), year=(day.year - 1))
         first_day_of_prev_quarter = quarter_back.replace(day=1)
-        return ManipulateDate.toTimestamp(first_day_of_prev_quarter)
+        return ManipulateDate.toTimestamp(first_day_of_prev_quarter), ManipulateDate.toTimestamp(end)
 
     @staticmethod
-    def startOfPreviousYear(day=datetime.today()):
+    def PreviousYear(day=datetime.today()):
+        end = day + timedelta(days=1)
         first_day_of_year = day.replace(day=1, month=1)
         last_day_of_prev_year = first_day_of_year - timedelta(days=1)
         first_day_of_prev_year = last_day_of_prev_year.replace(day=1, month=1)
-        return ManipulateDate.toTimestamp(first_day_of_prev_year)
+        return ManipulateDate.toTimestamp(first_day_of_prev_year), ManipulateDate.toTimestamp(end)
 
     @staticmethod
-    def Last3Months(day=datetime.today()):
+    def QuarterToDate(day=datetime.today()):
         end = day + timedelta(days=1)
         begin_month = day.month - 3
         if begin_month > 0:
@@ -78,19 +82,24 @@ class ManipulateDate:
         return ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end)
 
     @staticmethod
-    def RangeYTD(day=datetime.today()):
+    def YearToDate(day=datetime.today()):
         end = day + timedelta(days=1)
         begin = day.replace(day=1, year=(day.year - 1))
         return ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end)
 
     @staticmethod
-    def RangeThisYear(day=datetime.today()):
+    def ThisYear(day=datetime.today()):
         end = day + timedelta(days=1)
         begin = day.replace(day=1, month=1)
         return ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end)
 
     @staticmethod
-    def RangePreviousYear(day=datetime.today()):
+    def LastYear(day=datetime.today()):
         end = day.replace(day=1, month=1)
         begin = end.replace(year=(day.year - 1))
         return ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end)
+
+    @staticmethod
+    def AllDates(day=datetime.today()):
+        end = day.replace(day=1, month=1)
+        return 0, ManipulateDate.toTimestamp(end)

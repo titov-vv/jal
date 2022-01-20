@@ -268,7 +268,7 @@
         <translation>Отчёт по категории</translation>
     </message>
     <message>
-        <location filename="../ui/reports/category_report.ui" line="75"/>
+        <location filename="../ui/reports/category_report.ui" line="79"/>
         <source>Category:</source>
         <translation>Категория:</translation>
     </message>
@@ -500,6 +500,64 @@
     </message>
 </context>
 <context>
+    <name>DateRangeSelector</name>
+    <message>
+        <location filename="../widgets/date_range_selector.py" line="15"/>
+        <source>Week</source>
+        <translation>Неделя</translation>
+    </message>
+    <message>
+        <location filename="../widgets/date_range_selector.py" line="16"/>
+        <source>Month</source>
+        <translation>Месяц</translation>
+    </message>
+    <message>
+        <location filename="../widgets/date_range_selector.py" line="17"/>
+        <source>Quarter</source>
+        <translation>Квартал</translation>
+    </message>
+    <message>
+        <location filename="../widgets/date_range_selector.py" line="18"/>
+        <source>Year</source>
+        <translation>Год</translation>
+    </message>
+    <message>
+        <location filename="../widgets/date_range_selector.py" line="19"/>
+        <source>Quarter to date</source>
+        <translation>Квартал до сегодня</translation>
+    </message>
+    <message>
+        <location filename="../widgets/date_range_selector.py" line="20"/>
+        <source>Year to date</source>
+        <translation>Год до сегодня</translation>
+    </message>
+    <message>
+        <location filename="../widgets/date_range_selector.py" line="21"/>
+        <source>This year</source>
+        <translation>Этот год</translation>
+    </message>
+    <message>
+        <location filename="../widgets/date_range_selector.py" line="22"/>
+        <source>Previous year</source>
+        <translation>Предыдущий год</translation>
+    </message>
+    <message>
+        <location filename="../widgets/date_range_selector.py" line="23"/>
+        <source>All dates</source>
+        <translation>Все даты</translation>
+    </message>
+    <message>
+        <location filename="../widgets/date_range_selector.py" line="37"/>
+        <source>From:</source>
+        <translation>С:</translation>
+    </message>
+    <message>
+        <location filename="../widgets/date_range_selector.py" line="46"/>
+        <source>To:</source>
+        <translation>До:</translation>
+    </message>
+</context>
+<context>
     <name>DealsReport</name>
     <message>
         <location filename="../reports/deals.py" line="147"/>
@@ -603,12 +661,12 @@
         <translation>Сделки</translation>
     </message>
     <message>
-        <location filename="../ui/reports/deals_report.ui" line="62"/>
+        <location filename="../ui/reports/deals_report.ui" line="66"/>
         <source>Group dates</source>
         <translation>Сгруппировать даты</translation>
     </message>
     <message>
-        <location filename="../ui/reports/deals_report.ui" line="69"/>
+        <location filename="../ui/reports/deals_report.ui" line="73"/>
         <source>Account:</source>
         <translation>Счет:</translation>
     </message>
@@ -1560,12 +1618,12 @@ Application will be terminated now</source>
         <translation> операций требуют перерасчета. Вы ходите выполнить его прямо сейчас?</translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="453"/>
+        <location filename="../db/ledger.py" line="462"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation>Итоги рассчитаны. Затраченное время: </translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="454"/>
+        <location filename="../db/ledger.py" line="463"/>
         <source>, new frontier: </source>
         <translation>, новая граница: </translation>
     </message>
@@ -1810,19 +1868,19 @@ Application will be terminated now</source>
 <context>
     <name>OpenBroker</name>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="44"/>
-        <location filename="../data_import/statement_openbroker.py" line="52"/>
-        <location filename="../data_import/statement_openbroker.py" line="59"/>
+        <location filename="../data_import/statement_openbroker.py" line="45"/>
+        <location filename="../data_import/statement_openbroker.py" line="53"/>
+        <location filename="../data_import/statement_openbroker.py" line="60"/>
         <source>Multiple asset match for </source>
         <translation>Неоднозначное совпадение ЦБ для </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="26"/>
+        <location filename="../data_import/statement_openbroker.py" line="27"/>
         <source>Asset type isn&apos;t supported: </source>
         <translation>Тип ЦБ не поддерживается: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="82"/>
+        <location filename="../data_import/statement_openbroker.py" line="83"/>
         <source>Exchange isn&apos;t supported: </source>
         <translation>Биржа не поддерживается: </translation>
     </message>
@@ -1933,12 +1991,12 @@ Application will be terminated now</source>
         <translation>Вы хотите удалить выбранные операции?</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="152"/>
+        <location filename="../widgets/operations_widget.py" line="141"/>
         <source>You have unsaved changes</source>
         <translation>У вас есть несохранённые изменения</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="154"/>
+        <location filename="../widgets/operations_widget.py" line="143"/>
         <source> has uncommitted changes,
 do you want to save it?</source>
         <translation>не сохранён, вы хотите сохранить?</translation>
@@ -1974,57 +2032,27 @@ do you want to save it?</source>
         <translation>Операции</translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="265"/>
-        <source>Time range:</source>
-        <translation>Интервал:</translation>
-    </message>
-    <message>
-        <location filename="../ui/operations_widget.ui" line="273"/>
-        <source>Week</source>
-        <translation>Неделя</translation>
-    </message>
-    <message>
-        <location filename="../ui/operations_widget.ui" line="278"/>
-        <source>Month</source>
-        <translation>Месяц</translation>
-    </message>
-    <message>
-        <location filename="../ui/operations_widget.ui" line="283"/>
-        <source>Quarter</source>
-        <translation>Квартал</translation>
-    </message>
-    <message>
-        <location filename="../ui/operations_widget.ui" line="288"/>
-        <source>Year</source>
-        <translation>Год</translation>
-    </message>
-    <message>
-        <location filename="../ui/operations_widget.ui" line="293"/>
-        <source>All</source>
-        <translation>Все</translation>
-    </message>
-    <message>
-        <location filename="../ui/operations_widget.ui" line="301"/>
+        <location filename="../ui/operations_widget.ui" line="272"/>
         <source>Account:</source>
         <translation>Счет:</translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="311"/>
+        <location filename="../ui/operations_widget.ui" line="282"/>
         <source>Search:</source>
         <translation>Поиск:</translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="443"/>
+        <location filename="../ui/operations_widget.ui" line="414"/>
         <source>New operation</source>
         <translation>Новая операция</translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="453"/>
+        <location filename="../ui/operations_widget.ui" line="424"/>
         <source>Copy operation</source>
         <translation>Копировать операцию</translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="463"/>
+        <location filename="../ui/operations_widget.ui" line="434"/>
         <source>Delete operation</source>
         <translation>Удалить операцию</translation>
     </message>
@@ -2140,7 +2168,7 @@ do you want to save it?</source>
         <translation>ПиУ</translation>
     </message>
     <message>
-        <location filename="../ui/reports/profit_loss_report.ui" line="62"/>
+        <location filename="../ui/reports/profit_loss_report.ui" line="66"/>
         <source>Account:</source>
         <translation>Счет:</translation>
     </message>
@@ -2918,107 +2946,107 @@ do you want to save it?</source>
 <context>
     <name>StatementOpenBroker</name>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="93"/>
+        <location filename="../data_import/statement_openbroker.py" line="94"/>
         <source>Open Broker statement</source>
         <translation>Отчёт Открытие брокер</translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="229"/>
+        <location filename="../data_import/statement_openbroker.py" line="230"/>
         <source>Load Open Broker statement for account </source>
         <translation>Загрузка отчёта Открытие брокер для счёта </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="249"/>
+        <location filename="../data_import/statement_openbroker.py" line="253"/>
         <source>Securities loaded: </source>
         <translation>ЦБ загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="262"/>
+        <location filename="../data_import/statement_openbroker.py" line="266"/>
         <source>Accounts loaded: </source>
         <translation>Счета загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="271"/>
+        <location filename="../data_import/statement_openbroker.py" line="275"/>
         <source>Can&apos;t find account for trade: </source>
         <translation>Невозможно найти счёт для сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="273"/>
+        <location filename="../data_import/statement_openbroker.py" line="277"/>
         <source>Can&apos;t determine trade type/quantity: </source>
         <translation>Невозможно определить тип/количество для сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="299"/>
+        <location filename="../data_import/statement_openbroker.py" line="303"/>
         <source>Unknown non-trade operation: </source>
         <translation>Неизвестная неторговая операция: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="303"/>
+        <location filename="../data_import/statement_openbroker.py" line="307"/>
         <source>Can&apos;t parse bond repayment description </source>
         <translation>Невозможно распознать описание погашения облигации </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="307"/>
+        <location filename="../data_import/statement_openbroker.py" line="311"/>
         <source>Can&apos;t detect bond name from description </source>
         <translation>Невозможно распознать название облигации в описании</translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="329"/>
+        <location filename="../data_import/statement_openbroker.py" line="333"/>
         <source>Operation not supported: </source>
         <translation>Операция не поддерживается: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="336"/>
+        <location filename="../data_import/statement_openbroker.py" line="340"/>
         <source>Can&apos;t find account for cash operation: </source>
         <translation>Невозможно определить счёт для денежной транзакции: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="339"/>
+        <location filename="../data_import/statement_openbroker.py" line="343"/>
         <source>Cash operations loaded: </source>
         <translation>Денежных операций загружено: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="357"/>
+        <location filename="../data_import/statement_openbroker.py" line="361"/>
         <source>Unknown payment description: </source>
         <translation>Неподдерживаемое описание платежа: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="361"/>
+        <location filename="../data_import/statement_openbroker.py" line="365"/>
         <source>Unknown payment type: </source>
         <translation>Неизвестный тип платежа: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="367"/>
+        <location filename="../data_import/statement_openbroker.py" line="371"/>
         <source>Can&apos;t parse Interest description </source>
         <translation>Невозможно распознать описание купона </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="370"/>
+        <location filename="../data_import/statement_openbroker.py" line="374"/>
         <source>Interest description miss some data </source>
         <translation>Отсутствуют данные в описани купона </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="374"/>
+        <location filename="../data_import/statement_openbroker.py" line="378"/>
         <source>Can&apos;t find asset for bond interest </source>
         <translation>Не найдена ЦБ для купона </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="386"/>
+        <location filename="../data_import/statement_openbroker.py" line="390"/>
         <source>Can&apos;t parse Bond Mature description </source>
         <translation>Невозможно распознать описание погашения облигации </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="390"/>
+        <location filename="../data_import/statement_openbroker.py" line="394"/>
         <source>Bond repayment description miss some data </source>
         <translation>Отсутствуют данные в описании погашения облигации </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="396"/>
+        <location filename="../data_import/statement_openbroker.py" line="400"/>
         <source>Can&apos;t find asset cancellation record for </source>
         <translation>Невозможно найти запись списания ЦБ для </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_openbroker.py" line="399"/>
+        <location filename="../data_import/statement_openbroker.py" line="403"/>
         <source>Multiple asset cancellation match for </source>
         <translation>Найдены несколько записей погашения ЦБ для </translation>
     </message>
@@ -3236,12 +3264,17 @@ do you want to save it?</source>
         <translation>Неподдерживаемый формат даты/времени: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xml.py" line="94"/>
+        <location filename="../data_import/statement_xml.py" line="80"/>
+        <source>Can&apos;t parse XML file: </source>
+        <translation>Неверный формат XML файла: </translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement_xml.py" line="97"/>
         <source> loaded successfully</source>
         <translation> загружен успешно</translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xml.py" line="119"/>
+        <location filename="../data_import/statement_xml.py" line="122"/>
         <source>Failed to load attribute: </source>
         <translation>Невозможно загрузить аттрибут: </translation>
     </message>

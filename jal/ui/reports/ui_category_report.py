@@ -45,6 +45,7 @@ class Ui_CategoryReportWidget(object):
 
         self.ReportRange = DateRangeSelector(self.ReportParamsFrame)
         self.ReportRange.setObjectName(u"ReportRange")
+        self.ReportRange.setProperty("ItemsList", u"QTD;YTD;this_year;last_year")
 
         self.gridLayout.addWidget(self.ReportRange, 0, 0, 1, 1)
 
