@@ -13,7 +13,7 @@ class Setup:
     REPORT_PATH = "reports"
     STATEMENT_PATH = "broker_statements"
     UPDATE_PREFIX = 'jal_delta_'
-    TARGET_SCHEMA = 29
+    TARGET_SCHEMA = 30
     CALC_TOLERANCE = 1e-10
     DISP_TOLERANCE = 1e-4
 

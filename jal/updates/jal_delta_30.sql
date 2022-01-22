@@ -17,6 +17,7 @@ CREATE TABLE ledger_totals (
     amount_acc   REAL    NOT NULL,
     value_acc    REAL    NOT NULL
 );
+
 DROP INDEX IF EXISTS ledger_totals_by_timestamp;
 CREATE INDEX ledger_totals_by_timestamp ON ledger_totals (timestamp);
 DROP INDEX IF EXISTS ledger_totals_by_operation_book;
