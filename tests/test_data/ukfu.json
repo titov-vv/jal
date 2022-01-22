@@ -39,6 +39,7 @@
     {"id": 5, "type": "dividend", "account": 2, "timestamp": 1620000000, "number": "N/210603/9546481", "asset": 7, "amount": 8.9, "tax": 0, "description": "Перечисление дивидендов по иностранным акциям POLYMETAL INTL PLC"},
     {"id": 6, "type": "dividend", "account": 1, "timestamp": 1620518400, "number": "N/210609/9561721", "asset": 10, "amount": 1403.1, "tax": 182.0, "description": "Перечисление дивидендов по акциям обыкновенным ПАО \"Северсталь\" за период за 1 кв 2021"},
     {"id": 7, "type": "dividend", "account": 1, "timestamp": 1620518400, "number": "N/210609/9562103", "asset": 10, "amount": 1088.1, "tax": 141.0, "description": "Перечисление дивидендов по акциям обыкновенным ПАО \"Северсталь\" за период за 2020 год"},
-    {"id": 8, "type": "interest", "account": 1, "timestamp": 1624492800, "number": "NC/210624/191213", "asset": 4, "amount": 385.32, "description": "Погашение купона № ТинькоффБ7"}
+    {"id": 8, "type": "interest", "account": 1, "timestamp": 1624492800, "number": "NC/210624/191213", "asset": 4, "amount": 385.32, "description": "Погашение купона № ТинькоффБ7"},
+    {"id": 9, "type": "dividend", "account": 1, "timestamp": 1642723200, "number": "N/220121/10105625", "asset": 5, "amount": 1392.45, "tax": 0, "description": "Перечисление дивидендов по акциям привилегированным ООО УК \"Индустриальная недвижимость (\"ЗПИФ недвижимости \"ПНК-Рентал\"); налог удержан"}
   ]
 }

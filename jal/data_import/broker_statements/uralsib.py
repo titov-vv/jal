@@ -321,7 +321,7 @@ class StatementUKFU(StatementXLS):
         self._data[FOF.TRANSFERS].append(transfer)
 
     def dividend(self, timestamp, number, account_id, amount, description):
-        DividendPattern = r"> (?P<DESCR1>.*) \((?P<REG_CODE>.*)\)((?P<DESCR2> .*)? налог в размере (?P<TAX>\d+\.\d\d) удержан)?\. НДС не облагается\."
+        DividendPattern = r"> (?P<DESCR1>.*) \((?P<REG_CODE>.*)\)((?P<DESCR2> .*)?(?P<TAX_TEXT> налог (в размере (?P<TAX>\d+\.\d\d) )?.*удержан))?\. НДС не облагается\."
         ISINPattern = r"[A-Z]{2}.{9}\d"
 
         parts = re.match(DividendPattern, description, re.IGNORECASE)
@@ -337,7 +337,10 @@ class StatementUKFU(StatementXLS):
             asset_id = self._find_asset_id(reg_code=dividend_data['REG_CODE'])
             if not asset_id:
                 asset_id = self._add_asset(isin='', reg_code=dividend_data['REG_CODE'])
-
+        if dividend_data['DESCR2']:
+            short_description = dividend_data['DESCR1'] + ' ' + dividend_data['DESCR2'].strip()
+        else:
+            short_description = dividend_data['DESCR1']
         if dividend_data['TAX']:
             try:
                 tax = float(dividend_data['TAX'])
@@ -345,11 +348,9 @@ class StatementUKFU(StatementXLS):
                 raise Statement_ImportError(self.tr("Failed to convert dividend tax ") + f"'{description}'")
         else:
             tax = 0
+            if dividend_data['TAX_TEXT']:
+                short_description += '; ' + dividend_data['TAX_TEXT'].strip()
         amount = amount + tax   # Statement contains value after taxation while JAL stores value before tax
-        if dividend_data['DESCR2']:
-            short_description = dividend_data['DESCR1'] + ' ' + dividend_data['DESCR2'].strip()
-        else:
-            short_description = dividend_data['DESCR1']
         new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
         payment = {"id": new_id, "type": FOF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
                    "number": number, "asset": asset_id, "amount": amount, "tax": tax, "description": short_description}

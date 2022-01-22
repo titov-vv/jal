@@ -8,7 +8,7 @@ from jal.db.helpers import db_connection, readSQL, executeSQL, readSQLrecord
 
 
 class OperationsModel(QAbstractTableModel):
-    PAGE_SIZE = 100
+    PAGE_SIZE = 250
     _tables = {
         TransactionType.Action: "actions",
         TransactionType.Dividend: "dividends",
@@ -153,7 +153,7 @@ class OperationsModel(QAbstractTableModel):
                             return self._data[row]['note'] + f" [1 {self._data[row]['currency']} = {rate:.4f} {self._data[row]['num_peer']}]"
                         elif rate < 1:
                             rate = 1 / rate
-                            return self._data[row]['note'] +  f" [{rate:.4f} {self._data[row]['currency']} = 1 {self._data[row]['num_peer']}]"
+                            return self._data[row]['note'] + f" [{rate:.4f} {self._data[row]['currency']} = 1 {self._data[row]['num_peer']}]"
                         else:
                             return self._data[row]['note']
                     else:
