@@ -102,3 +102,9 @@ def prepare_db_moex(prepare_db):   # Create SBER stock in database to be updated
                       [(":bond", PredefinedAsset.Bond)]) is not None
     yield
 
+@pytest.fixture
+def prepare_db_taxes(prepare_db):
+    assert executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'IB')") is not None
+    assert executeSQL("INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id, country_id) "
+                      "VALUES (4, 'Inv. Account', 2, 1, 'U7654321', 1, 2)") is not None
+    yield

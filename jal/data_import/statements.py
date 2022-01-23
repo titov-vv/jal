@@ -48,7 +48,7 @@ class Statements(QObject):
             logging.debug(f"Class '{statement_class_name}' providing '{statement.name}' statement has been loaded")
         self.items = sorted(self.items, key=lambda item: item['name'])
 
-        # method is called directly from menu so it contains QAction that was triggered
+    # method is called directly from menu, so it contains QAction that was triggered
     def load(self, action):
         statement_loader = self.items[action.data()]
         statement_file, active_filter = QFileDialog.getOpenFileName(None, self.tr("Select statement file to import"),

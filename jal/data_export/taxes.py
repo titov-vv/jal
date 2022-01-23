@@ -1,6 +1,7 @@
 from functools import partial
 from datetime import datetime, timezone
 import logging
+import sys
 
 from jal.constants import Setup, TransactionType, CorporateAction, PredefinedAsset, PredefinedCategory, DividendSubtype
 from jal.data_export.helpers import XLSX
@@ -8,80 +9,79 @@ from jal.data_export.dlsg import DLSG
 from jal.db.helpers import executeSQL, readSQLrecord, readSQL
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog
 from PySide6.QtCore import Property, Slot
-from jal.ui.ui_tax_export_dlg import Ui_TaxExportDlg
+if "pytest" not in sys.modules:
+    from jal.ui.ui_tax_export_dlg import Ui_TaxExportDlg
 
+    class TaxExportDialog(QDialog, Ui_TaxExportDlg):
+        def __init__(self, parent):
+            QDialog.__init__(self)
+            self.setupUi(self)
 
-# -----------------------------------------------------------------------------------------------------------------------
-class TaxExportDialog(QDialog, Ui_TaxExportDlg):
-    def __init__(self, parent):
-        QDialog.__init__(self)
-        self.setupUi(self)
+            self.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, 'XLS-OUT'))
+            self.InitialSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG-IN'))
+            self.OutputSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG-OUT'))
 
-        self.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, 'XLS-OUT'))
-        self.InitialSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG-IN'))
-        self.OutputSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG-OUT'))
+            # center dialog with respect to parent window
+            x = parent.x() + parent.width() / 2 - self.width() / 2
+            y = parent.y() + parent.height() / 2 - self.height() / 2
+            self.setGeometry(x, y, self.width(), self.height())
 
-        # center dialog with respect to parent window
-        x = parent.x() + parent.width() / 2 - self.width() / 2
-        y = parent.y() + parent.height() / 2 - self.height() / 2
-        self.setGeometry(x, y, self.width(), self.height())
-
-    @Slot()
-    def OnFileBtn(self, type):
-        selector = {
-            'XLS-OUT': (self.tr("Save tax reports to:"), self.tr("Excel files (*.xlsx)"), '.xlsx', self.XlsFileName),
-            'DLSG-IN': (self.tr("Get tax form template from:"), self.tr("Tax form 2020 (*.dc0)"),
-                        '.dc0', self.DlsgInFileName),
-            'DLSG-OUT': (self.tr("Save tax form to:"), self.tr("Tax form 2020 (*.dc0)"), '.dc0', self.DlsgOutFileName)
-        }
-        if type[-3:] == '-IN':
-            filename = QFileDialog.getOpenFileName(self, selector[type][0], ".", selector[type][1])
-        elif type[-4:] == '-OUT':
-            filename = QFileDialog.getSaveFileName(self, selector[type][0], ".", selector[type][1])
-        else:
-            raise ValueError
-        if filename[0]:
-            if filename[1] == selector[type][1] and filename[0][-len(selector[type][2]):] != selector[type][2]:
-                selector[type][3].setText(filename[0] + selector[type][2])
+        @Slot()
+        def OnFileBtn(self, type):
+            selector = {
+                'XLS-OUT': (self.tr("Save tax reports to:"), self.tr("Excel files (*.xlsx)"), '.xlsx', self.XlsFileName),
+                'DLSG-IN': (self.tr("Get tax form template from:"), self.tr("Tax form 2020 (*.dc0)"),
+                            '.dc0', self.DlsgInFileName),
+                'DLSG-OUT': (self.tr("Save tax form to:"), self.tr("Tax form 2020 (*.dc0)"), '.dc0', self.DlsgOutFileName)
+            }
+            if type[-3:] == '-IN':
+                filename = QFileDialog.getOpenFileName(self, selector[type][0], ".", selector[type][1])
+            elif type[-4:] == '-OUT':
+                filename = QFileDialog.getSaveFileName(self, selector[type][0], ".", selector[type][1])
             else:
-                selector[type][3].setText(filename[0])
+                raise ValueError
+            if filename[0]:
+                if filename[1] == selector[type][1] and filename[0][-len(selector[type][2]):] != selector[type][2]:
+                    selector[type][3].setText(filename[0] + selector[type][2])
+                else:
+                    selector[type][3].setText(filename[0])
 
-    def getYear(self):
-        return self.Year.value()
+        def getYear(self):
+            return self.Year.value()
 
-    def getXlsFilename(self):
-        return self.XlsFileName.text()
+        def getXlsFilename(self):
+            return self.XlsFileName.text()
 
-    def getAccount(self):
-        return self.AccountWidget.selected_id
+        def getAccount(self):
+            return self.AccountWidget.selected_id
 
-    def getDlsgState(self):
-        return self.DlsgGroup.isChecked()
+        def getDlsgState(self):
+            return self.DlsgGroup.isChecked()
 
-    def getDslgInFilename(self):
-        return self.DlsgInFileName.text()
+        def getDslgInFilename(self):
+            return self.DlsgInFileName.text()
 
-    def getDslgOutFilename(self):
-        return self.DlsgOutFileName.text()
+        def getDslgOutFilename(self):
+            return self.DlsgOutFileName.text()
 
-    def getBrokerAsIncomeName(self):
-        return self.IncomeSourceBroker.isChecked()
+        def getBrokerAsIncomeName(self):
+            return self.IncomeSourceBroker.isChecked()
 
-    def getDividendsOnly(self):
-        return self.DividendsOnly.isChecked()
+        def getDividendsOnly(self):
+            return self.DividendsOnly.isChecked()
 
-    def getNoSettlement(self):
-        return self.NoSettlement.isChecked()
+        def getNoSettlement(self):
+            return self.NoSettlement.isChecked()
 
-    year = Property(int, fget=getYear)
-    xls_filename = Property(str, fget=getXlsFilename)
-    account = Property(int, fget=getAccount)
-    update_dlsg = Property(bool, fget=getDlsgState)
-    dlsg_in_filename = Property(str, fget=getDslgInFilename)
-    dlsg_out_filename = Property(str, fget=getDslgOutFilename)
-    dlsg_broker_as_income = Property(bool, fget=getBrokerAsIncomeName)
-    dlsg_dividends_only = Property(bool, fget=getDividendsOnly)
-    no_settelement = Property(bool, fget=getNoSettlement)
+        year = Property(int, fget=getYear)
+        xls_filename = Property(str, fget=getXlsFilename)
+        account = Property(int, fget=getAccount)
+        update_dlsg = Property(bool, fget=getDlsgState)
+        dlsg_in_filename = Property(str, fget=getDslgInFilename)
+        dlsg_out_filename = Property(str, fget=getDslgOutFilename)
+        dlsg_broker_as_income = Property(bool, fget=getBrokerAsIncomeName)
+        dlsg_dividends_only = Property(bool, fget=getDividendsOnly)
+        no_settelement = Property(bool, fget=getNoSettlement)
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -261,15 +261,19 @@ class TaxesRus:
 
     def showTaxesDialog(self, parent):
         dialog = TaxExportDialog(parent)
+        tax_report = None
         if dialog.exec():
             self.use_settlement = not dialog.no_settelement
             self.broker_as_income = dialog.dlsg_broker_as_income
-            self.save2file(dialog.xls_filename, dialog.year, dialog.account, dlsg_update=dialog.update_dlsg,
-                           dlsg_in=dialog.dlsg_in_filename, dlsg_out=dialog.dlsg_out_filename,
-                           dlsg_dividends_only=dialog.dlsg_dividends_only)
+            tax_report = self.save2file(dialog.xls_filename, dialog.year, dialog.account, dlsg_update=dialog.update_dlsg,
+                                        dlsg_in=dialog.dlsg_in_filename, dlsg_out=dialog.dlsg_out_filename,
+                                        dlsg_dividends_only=dialog.dlsg_dividends_only)
+        print(tax_report)
+        return tax_report
 
     def save2file(self, taxes_file, year, account_id,
                   dlsg_update=False, dlsg_in=None, dlsg_out=None, dlsg_dividends_only=False):
+        tax_report = {}
         self.account_id = account_id
         self.account_number, self.account_currency = \
             readSQL("SELECT a.number, c.name FROM accounts AS a "
@@ -290,7 +294,7 @@ class TaxesRus:
                 self.statement.read_file(dlsg_in)
             except:
                 logging.error(self.tr("Can't open tax form file ") + f"'{dlsg_in}'")
-                return
+                return tax_report
 
         self.prepare_exchange_rate_dates()
         for report in self.reports:
@@ -298,7 +302,8 @@ class TaxesRus:
             self.current_sheet = self.reports_xls.add_report_sheet(report)
             self.add_report_header()
             report_description = self.reports[self.current_report]
-            next_row = report_description[self.RPT_METHOD]()
+            next_row, report_section = report_description[self.RPT_METHOD]()
+            tax_report[report] = report_section
             self.add_report_footer(next_row)
 
         self.reports_xls.save()
@@ -310,6 +315,7 @@ class TaxesRus:
                 logging.error(self.tr("Can't write tax form into file ") + f"'{dlsg_out}'")
 
         logging.info(self.tr("Tax report saved to file ") + f"'{taxes_file}'")
+        return tax_report
 
     # This method puts header on each report sheet
     def add_report_header(self):
@@ -408,6 +414,7 @@ class TaxesRus:
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_dividends(self):
+        dividends = []
         query = executeSQL("SELECT d.timestamp AS payment_date, s.name AS symbol, s.full_name AS full_name, "
                            "s.isin AS isin, d.amount AS amount, d.tax AS tax, q.quote AS rate , "
                            "c.name AS country, c.iso_code AS country_iso, c.tax_treaty AS tax_treaty "
@@ -433,6 +440,7 @@ class TaxesRus:
                 else:
                     dividend["tax2pay"] = 0
             self.add_report_row(row, dividend, even_odd=row)
+            dividends.append(dividend)
 
             if dividend["country_iso"] == '000':
                 dividend["country_iso"] = readSQL("SELECT c.iso_code FROM accounts AS a LEFT JOIN countries AS c "
@@ -452,10 +460,11 @@ class TaxesRus:
             row += 1
 
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [4, 5, 6, 7, 8, 9])
-        return row+1
+        return row+1, dividends
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_stocks_and_etf(self):
+        deals = []
         # Take all actions without conversion
         query = executeSQL("SELECT s.name AS symbol, s.isin AS isin, d.qty AS qty, cc.iso_code AS country_iso, "
                            "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, o.number AS o_number, "
@@ -522,6 +531,7 @@ class TaxesRus:
 
             self.add_report_row(row, deal, even_odd=data_row)
             self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
+            deals.append(deal)
 
             if self.statement is not None:
                 if deal['qty'] < 0:  # short position - swap close/open dates/rates
@@ -538,10 +548,11 @@ class TaxesRus:
         row = start_row + (data_row * 2)
 
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [13, 14, 15, 16, 17])
-        return row + 1
+        return row + 1, deals
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_bonds(self):
+        bonds = []
         # First put all closed deals with bonds
         query = executeSQL("SELECT s.name AS symbol, s.isin AS isin, d.qty AS qty, cc.iso_code AS country_iso, "
                            "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, o.number AS o_number, "
@@ -606,6 +617,7 @@ class TaxesRus:
 
             self.add_report_row(row, deal, even_odd=data_row)
             self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
+            bonds.append(deal)
 
             if self.statement is not None:
                 if deal['qty'] < 0:  # short position - swap close/open dates/rates
@@ -643,6 +655,7 @@ class TaxesRus:
             interest['interest_rub'] = round(interest['interest'] * interest['rate'], 2) if interest['rate'] else 0
             interest['income_rub'] = interest['interest_rub']
             self.add_report_row(row, interest, even_odd=data_row, alternative=2)
+            bonds.append[interest]
 
             if self.statement is not None:
                 if self.broker_as_income:
@@ -657,10 +670,11 @@ class TaxesRus:
             row += 1
 
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [16, 17, 18, 19, 20])
-        return row + 1
+        return row + 1, bonds
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_derivatives(self):
+        derivatives = []
         # Take all actions without conversion
         query = executeSQL("SELECT s.name AS symbol, d.qty AS qty, cc.iso_code AS country_iso, "
                            "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, o.number AS o_number, "
@@ -715,6 +729,7 @@ class TaxesRus:
 
             self.add_report_row(row, deal, even_odd=data_row)
             self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
+            derivatives.append(deal)
 
             if self.statement is not None:
                 if deal['qty'] < 0:  # short position - swap close/open dates/rates
@@ -732,10 +747,11 @@ class TaxesRus:
         row = start_row + (data_row * 2)
 
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [12, 13, 14, 15, 16])
-        return row + 1
+        return row + 1, derivatives
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_fees(self):
+        fees = []
         query = executeSQL("SELECT a.timestamp AS payment_date, d.amount AS amount, d.note AS note, q.quote AS rate "
                            "FROM actions AS a "
                            "LEFT JOIN action_details AS d ON d.pid=a.id "
@@ -752,12 +768,14 @@ class TaxesRus:
             fee['amount'] = -fee['amount']
             fee['amount_rub'] = round(fee['amount'] * fee['rate'], 2) if fee['rate'] else 0
             self.add_report_row(row, fee, even_odd=row)
+            fees.append(fee)
             row += 1
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [0, 1, 4])
-        return row + 1
+        return row + 1, fees
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_interest(self):
+        interests = []
         query = executeSQL("SELECT a.timestamp AS payment_date, d.amount AS amount, d.note AS note, q.quote AS rate "
                            "FROM actions AS a "
                            "LEFT JOIN action_details AS d ON d.pid=a.id "
@@ -775,12 +793,14 @@ class TaxesRus:
             interest['amount_rub'] = round(interest['amount'] * interest['rate'], 2) if interest['rate'] else 0
             interest['tax_rub'] = round(0.13 * interest['amount_rub'], 2)
             self.add_report_row(row, interest, even_odd=row)
+            interests.append(interest)
             row += 1
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [0, 1, 4, 5])
-        return row + 1
+        return row + 1, interests
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_corporate_actions(self):
+        actions = []
         # get list of all deals that were opened with corp.action and closed by normal trade
         query = executeSQL("SELECT d.open_op_id AS operation_id, s.name AS symbol, d.qty AS qty, t.number AS trade_number, "
                            "t.timestamp AS t_date, qt.quote AS t_rate, t.settlement AS s_date, qts.quote AS s_rate, "
@@ -836,7 +856,7 @@ class TaxesRus:
                 row += 1
 
             even_odd = even_odd + 1
-        return row
+        return row, actions
 
     def proceed_corporate_action(self, operation_id, symbol, qty, basis, level, row, even_odd):
         row, qty, symbol, basis = self.output_corp_action(operation_id, symbol, qty, basis, level, row, even_odd)
