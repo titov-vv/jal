@@ -1,23 +1,10 @@
 from pytest import approx
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo, prepare_db_ledger
+from tests.helpers import create_actions
 from constants import PredefinedAsset, TransactionType, BookAccount
 from jal.db.ledger import Ledger
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
-
-
-#-----------------------------------------------------------------------------------------------------------------------
-# Helper functions for unification
-def create_action(action):
-    assert executeSQL("INSERT INTO actions (id, timestamp, account_id, peer_id) "
-                      "VALUES (:id, :timestamp, :account, :peer)",
-                      [(":id", action[0]), (":timestamp", action[1]),
-                       (":account", action[2]), (":peer", action[3])], commit=True) is not None
-    for detail in action[4]:
-        assert executeSQL("INSERT INTO action_details (id, pid, category_id, amount) "
-                          "VALUES (:id, :pid, :category, :amount)",
-                          [(":id", detail[0]), (":pid", action[0]),
-                           (":category", detail[1]), (":amount", detail[2])], commit=True) is not None
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -29,13 +16,11 @@ def test_empty_ledger(prepare_db_ledger):
 
 def test_ledger(prepare_db_ledger):
     actions = [
-        (1, 1638349200, 1, 1, [(1, 5, -100.0)]),
-        (2, 1638352800, 1, 1, [(2, 6, -30.0), (3, 8, 55.0)]),
-        (3, 1638356400, 1, 1, [(4, 7, 84.0)])
+        (1638349200, 1, 1, [(5, -100.0)]),
+        (1638352800, 1, 1, [(6, -30.0), (8, 55.0)]),
+        (1638356400, 1, 1, [(7, 84.0)])
     ]
-
-    for action in actions:
-        create_action(action)
+    create_actions(actions)
 
     # Build ledger from scratch
     ledger = Ledger()
@@ -50,12 +35,10 @@ def test_ledger(prepare_db_ledger):
         assert row['amount_acc'] == expected_book_values[row['book_account']]
 
     actions = [
-        (4, 1638360000, 1, 1, [(5, 5, -34.0)]),
-        (5, 1638363600, 1, 1, [(6, 7, 11.0)])
+        (1638360000, 1, 1, [(5, -34.0)]),
+        (1638363600, 1, 1, [(7, 11.0)])
     ]
-
-    for action in actions:
-        create_action(action)
+    create_actions(actions)
 
     # Build ledger for recent transactions only
     ledger = Ledger()
@@ -98,7 +81,7 @@ def test_buy_sell_change(prepare_db_fifo):
              (":qty", trade[4]), (":price", trade[5]), (":fee", trade[6])]) is not None
 
     # insert action between trades to shift frontier
-    create_action((2, 1609642800, 1, 1, [(2, 7, 100.0)]))
+    create_actions([(1609642800, 1, 1, [(7, 100.0)])])
 
     # Build ledger
     ledger = Ledger()
