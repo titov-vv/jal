@@ -1,11 +1,21 @@
 from jal.db.helpers import executeSQL
+from constants import PredefinedAsset
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Helper functions for unification
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Fill actions into DB. actions is a list of tuples:
+# Create assets in database with PredefinedAsset.Stock type : assets is a list of tuples (asset_id, symbol, full_name)
+def create_stocks(assets):
+    for asset in assets:
+        assert executeSQL("INSERT INTO assets (id, name, type_id, full_name) "
+                          "VALUES (:id, :name, :type, :full_name)",
+                          [(":id", asset[0]), (":name", asset[1]),
+                           (":type", PredefinedAsset.Stock), (":full_name", asset[2])], commit=True) is not None
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Create actions in database: actions is a list of tuples
 # (timestamp, account, peer, [(category, amount), (category, amount), ...])
 def create_actions(actions):
     for action in actions:

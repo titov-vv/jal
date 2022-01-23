@@ -1,7 +1,7 @@
 from pytest import approx
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo, prepare_db_ledger
-from tests.helpers import create_actions
+from tests.helpers import create_stocks, create_actions
 from constants import PredefinedAsset, TransactionType, BookAccount
 from jal.db.ledger import Ledger
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
@@ -66,8 +66,7 @@ def test_ledger(prepare_db_ledger):
 
 def test_buy_sell_change(prepare_db_fifo):
     # Prepare single stock
-    assert executeSQL("INSERT INTO assets (id, name, type_id, full_name) VALUES (4, 'A', :type, 'A SHARE')",
-                      [(":type", PredefinedAsset.Stock)], commit=True) is not None
+    create_stocks([(4, 'A', 'A SHARE')])
 
     test_trades = [
         (1, 1609567200, 1609653600, 4, 10.0, 100.0, 1.0),
@@ -149,12 +148,8 @@ def test_fifo(prepare_db_fifo):
         (17, 'O', 'O SHARE'),
         (18, 'P', 'P SHARE'),
     ]
-    for asset in test_assets:
-        assert executeSQL("INSERT INTO assets (id, name, type_id, full_name) "
-                          "VALUES (:id, :name, :type, :full_name)",
-                          [(":id", asset[0]), (":name", asset[1]),
-                           (":type", PredefinedAsset.Stock), (":full_name", asset[2])], commit=True) is not None
-        
+    create_stocks(test_assets)
+
     test_corp_actions = [
         (1, 1606899600, 3, 10, 100.0, 11, 100.0, 1.0, 'Symbol change G1 -> G2'),
         (2, 1606986000, 2, 11, 100.0, 12, 20.0, 0.8, 'Spin-off H from G2'),
