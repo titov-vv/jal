@@ -78,7 +78,8 @@ class XLSX:
     def output_data(self, sheet, data, template, header_data):
         self.add_report_header(sheet, template, header_data)
         for i, record in enumerate(data):
-            self.add_report_row(sheet, template, i+self.START_ROW, record, even_odd=i)
+            for j in range(template[self.RPT_DATA_ROWS]):
+                self.add_report_row(sheet, template, i*template[self.RPT_DATA_ROWS]+j+self.START_ROW, record, even_odd=i, alternative=j)
     
     # This method puts header on each report sheet
     def add_report_header(self, sheet, template, header_data):
