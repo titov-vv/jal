@@ -1,3 +1,4 @@
+import os
 import json
 
 
@@ -8,7 +9,7 @@ from jal.data_export.taxes import TaxesRus
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def test_taxes_rus(tmp_path, project_root, data_path, prepare_db_taxes):
+def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
     with open(data_path + 'taxes_rus.json', 'r') as json_file:
         report = json.load(json_file)
 
@@ -53,5 +54,8 @@ def test_taxes_rus(tmp_path, project_root, data_path, prepare_db_taxes):
     ledger.rebuild(from_timestamp=0)
 
     taxes = TaxesRus()
-    tax_report = taxes.save2file(project_root + 'taxes.xlsx', 2020, 1)
+    excel_file = str(tmp_path) + os.sep + 'taxes.xlsx'
+    tax_report = taxes.save2file(excel_file, 2020, 1)
     assert tax_report == report
+
+    os.remove(excel_file)  # cleanup

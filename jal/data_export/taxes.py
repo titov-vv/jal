@@ -308,6 +308,18 @@ class TaxesRus:
 
         self.reports_xls.save()
 
+        self.reports_xls = XLSX(taxes_file.replace(".xlsx", "_new.xlsx"))
+        for section in tax_report:
+            sheet = self.reports_xls.add_report_sheet(section)
+            header_data = {
+                "year_begin": self.year_begin,
+                "year_end": self.year_end,
+                "account_number": self.account_number,
+                "account_currency": self.account_currency
+            }
+            self.reports_xls.output_data(sheet, tax_report[section], self.reports[section], header_data)
+        self.reports_xls.save()
+
         if dlsg_update:
             try:
                 self.statement.write_file(dlsg_out)
@@ -655,7 +667,7 @@ class TaxesRus:
             interest['interest_rub'] = round(interest['interest'] * interest['rate'], 2) if interest['rate'] else 0
             interest['income_rub'] = interest['interest_rub']
             self.add_report_row(row, interest, even_odd=data_row, alternative=2)
-            bonds.append[interest]
+            bonds.append(interest)
 
             if self.statement is not None:
                 if self.broker_as_income:

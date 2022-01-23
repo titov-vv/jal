@@ -1,5 +1,6 @@
 import xlsxwriter
 import logging
+from datetime import datetime
 from PySide6.QtWidgets import QApplication
 
 
@@ -12,6 +13,17 @@ class XLSX:
     ROW_SPAN_H = 3
     ROW_SPAN_V = 4
     totals = "ИТОГО"
+
+    RPT_METHOD = 0
+    RPT_TITLE = 1
+    RPT_COLUMNS = 2
+    RPT_DATA_ROWS = 3
+
+    COL_TITLE = 0
+    COL_WIDTH = 1
+    COL_FIELD = 2
+    COL_DESCR = -1
+    START_ROW = 9
 
     def __init__(self, xlsx_filename):
         self.filename = xlsx_filename
@@ -62,6 +74,66 @@ class XLSX:
                     sheet.merge_range(row, column, row + cd[self.ROW_SPAN_V], column + cd[self.ROW_SPAN_H],
                                         cd[self.ROW_DATA], cd[self.ROW_FORMAT])
             sheet.write(row, column, cd[self.ROW_DATA], cd[self.ROW_FORMAT])
+
+    def output_data(self, sheet, data, template, header_data):
+        self.add_report_header(sheet, template, header_data)
+        for i, record in enumerate(data):
+            self.add_report_row(sheet, template, i+self.START_ROW, record, even_odd=i)
+    
+    # This method puts header on each report sheet
+    def add_report_header(self, sheet, template, header_data):
+        sheet.write(0, 0, template[self.RPT_TITLE], self.formats.Bold())
+        sheet.write(2, 0, "Документ-основание:", self.formats.CommentText())
+        sheet.write(3, 0, f"Период: {datetime.utcfromtimestamp(header_data['year_begin']).strftime('%d.%m.%Y')}"
+                                       f" - {datetime.utcfromtimestamp(header_data['year_end'] - 1).strftime('%d.%m.%Y')}",
+                                 self.formats.CommentText())
+        sheet.write(4, 0, "ФИО:", self.formats.CommentText())
+        sheet.write(5, 0, f"Номер счета: {header_data['account_number']} ({header_data['account_currency']})",
+                                 self.formats.CommentText())
+
+        header_row = {}
+        numbers_row = {}  # Put column numbers for reference
+        for column in template[self.RPT_COLUMNS]:
+            # make tuple for each column i: ("Column_Title", xlsx.formats.ColumnHeader(), Column_Width, 0, 0)
+            title = template[self.RPT_COLUMNS][column][self.COL_TITLE].format(currency=header_data['account_currency'])
+            width = template[self.RPT_COLUMNS][column][self.COL_WIDTH]
+            header_row[column] = (title, self.formats.ColumnHeader(), width, 0, 0)
+            numbers_row[column] = (f"({column + 1})", self.formats.ColumnHeader())
+        self.write_row(sheet, 7, header_row, 60)
+        self.write_row(sheet, 8, numbers_row)
+
+    def add_report_row(self, sheet, template, row, data, even_odd=1, alternative=0):
+        KEY_NAME = 0
+        VALUE_FMT = 1
+        FMT_DETAILS = 2
+        H_SPAN = 3
+        V_SPAN = 4
+
+        data_row = {}
+        idx = self.COL_FIELD + alternative
+        for column in template[self.RPT_COLUMNS]:
+            field_dscr = template[self.RPT_COLUMNS][column][idx]
+            if field_dscr is not None:
+                value = data[field_dscr[KEY_NAME]]
+                format_as = field_dscr[VALUE_FMT]
+                if format_as == "text":
+                    fmt = self.formats.Text(even_odd)
+                elif format_as == "number":
+                    precision = field_dscr[FMT_DETAILS]
+                    fmt = self.formats.Number(even_odd, tolerance=precision)
+                elif format_as == "date":
+                    value = datetime.utcfromtimestamp(value).strftime('%d.%m.%Y')
+                    fmt = self.formats.Text(even_odd)
+                elif format_as == "bool":
+                    value = field_dscr[FMT_DETAILS][value]
+                    fmt = self.formats.Text(even_odd)
+                else:
+                    raise ValueError
+                if len(field_dscr) == 5:  # There are horizontal or vertical span defined
+                    data_row[column] = (value, fmt, 0, field_dscr[H_SPAN], field_dscr[V_SPAN])
+                else:
+                    data_row[column] = (value, fmt)
+        self.write_row(sheet, row, data_row)
 
 #-----------------------------------------------------------------------------------------------------------------------
 class xslxFormat:
