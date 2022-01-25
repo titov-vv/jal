@@ -2412,18 +2412,18 @@ do you want to save it?</source>
         <translation>Невозможно загрузить класс отчёта: </translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="50"/>
+        <location filename="../reports/reports.py" line="53"/>
         <source>Save report to:</source>
         <translation>Сохранить отчет в:</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="59"/>
+        <location filename="../reports/reports.py" line="62"/>
         <source>Report</source>
         <translation>Отчет</translation>
     </message>
     <message>
-        <location filename="../reports/reports.py" line="51"/>
-        <location filename="../reports/reports.py" line="53"/>
+        <location filename="../reports/reports.py" line="54"/>
+        <location filename="../reports/reports.py" line="56"/>
         <source>Excel files (*.xlsx)</source>
         <translation>Файлы Excel (*.xslx)</translation>
     </message>
@@ -2544,158 +2544,158 @@ do you want to save it?</source>
 <context>
     <name>Statement</name>
     <message>
-        <location filename="../data_import/statement.py" line="130"/>
+        <location filename="../data_import/statement.py" line="129"/>
         <source>Failed to read JSON from file: </source>
         <translation>Невозможно прочитать JSON из файла: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="132"/>
-        <location filename="../data_import/statement.py" line="192"/>
+        <location filename="../data_import/statement.py" line="131"/>
+        <location filename="../data_import/statement.py" line="191"/>
         <source>Failed to read file: </source>
         <translation>Невозможно прочесть файл: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="247"/>
+        <location filename="../data_import/statement.py" line="246"/>
         <source>Can&apos;t create asset: </source>
         <translation>Невозможно создать ЦБ: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="254"/>
+        <location filename="../data_import/statement.py" line="253"/>
         <source>Unmatched currency for account: </source>
         <translation>Невозмоно сопоставить валюту для счёта: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="260"/>
+        <location filename="../data_import/statement.py" line="259"/>
         <source>Can&apos;t create account: </source>
         <translation>Невозможно создать счёт: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="265"/>
+        <location filename="../data_import/statement.py" line="264"/>
         <source>Unmatched account for income/spending: </source>
         <translation>Невозможно сопоставить счёт для операции прихода/расхода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="267"/>
+        <location filename="../data_import/statement.py" line="266"/>
         <source>Unmatched peer for income/spending: </source>
         <translation>Невозможно сопоставить контрагента для операции прихода/расхода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="270"/>
+        <location filename="../data_import/statement.py" line="269"/>
         <source>Unsupported income/spending: </source>
         <translation>Неподдерживаемый приход/расход: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="274"/>
+        <location filename="../data_import/statement.py" line="273"/>
         <source>Unmatched category for income/spending: </source>
         <translation>Невозможно сопоставить категорию для прихода/расхода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="282"/>
+        <location filename="../data_import/statement.py" line="281"/>
         <source>Unmatched account for transfer: </source>
         <translation>Невзоможно сопоставить счёт для перевода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="285"/>
+        <location filename="../data_import/statement.py" line="284"/>
         <source>Unmatched asset for transfer: </source>
         <translation>Невозможно сопоставить ЦБ/валюту для перевода: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="290"/>
+        <location filename="../data_import/statement.py" line="289"/>
         <source>Deposit of </source>
         <translation>Депозит </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="294"/>
+        <location filename="../data_import/statement.py" line="293"/>
         <source>Select account to withdraw from:</source>
         <translation>Выберите счёт для списания:</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="296"/>
+        <location filename="../data_import/statement.py" line="295"/>
         <source>Withdrawal of </source>
         <translation>Списание </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="300"/>
+        <location filename="../data_import/statement.py" line="299"/>
         <source>Select account to deposit to:</source>
         <translation>Выберите счёт для зачисления:</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="306"/>
+        <location filename="../data_import/statement.py" line="305"/>
         <source>Account not selected</source>
         <translation>Счёт не выбран</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="321"/>
+        <location filename="../data_import/statement.py" line="320"/>
         <source>Unmatched account for trade: </source>
         <translation>Невозможно сопоставить счёт для сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="323"/>
+        <location filename="../data_import/statement.py" line="322"/>
         <source>Unmatched asset for trade: </source>
         <translation>Невозможно сопоставить ЦБ для сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="335"/>
+        <location filename="../data_import/statement.py" line="334"/>
         <source>Unmatched account for payment: </source>
         <translation>Невозможно сопоставить счёт для выплаты: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="337"/>
+        <location filename="../data_import/statement.py" line="336"/>
         <source>Unmatched asset for payment: </source>
         <translation>Невозможно сопоставить ЦБ для выплаты: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="352"/>
+        <location filename="../data_import/statement.py" line="351"/>
         <source>Unsupported payment type: </source>
         <translation>Неподдерживаемый тип выплаты: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="357"/>
+        <location filename="../data_import/statement.py" line="356"/>
         <source>Unmatched account for corporate action: </source>
         <translation>Невозможно сопоставить счёт для корпоративного действия: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="364"/>
+        <location filename="../data_import/statement.py" line="363"/>
         <source>Unmatched asset for corporate action: </source>
         <translation>Невозможно сопоставить ЦБ для корпоративного действия: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="374"/>
+        <location filename="../data_import/statement.py" line="373"/>
         <source>Unsupported corporate action: </source>
         <translation>Неподдерживаемое корпоративное действие: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="224"/>
+        <location filename="../data_import/statement.py" line="223"/>
         <source>Statement import was cancelled</source>
         <translation>Импорт отчёта прерван</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="214"/>
+        <location filename="../data_import/statement.py" line="213"/>
         <source>Statement period is invalid</source>
         <translation>Неверный период отчёта</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="137"/>
+        <location filename="../data_import/statement.py" line="136"/>
         <source>Some sections are not supported: </source>
         <translation>Некоторые секции не поддерживаются: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="190"/>
+        <location filename="../data_import/statement.py" line="189"/>
         <source>Failed to read JSON schema from: </source>
         <translation>Не удалось прочитать схему JSON из: </translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="196"/>
+        <location filename="../data_import/statement.py" line="195"/>
         <source>Statement validation failed</source>
         <translation>Отчёт содержит ошибки</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="221"/>
+        <location filename="../data_import/statement.py" line="220"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="222"/>
+        <location filename="../data_import/statement.py" line="221"/>
         <source>Statement period starts before last recorded operation for the account. Continue import?</source>
         <translation>Период отчёта начинается ранее последней операции для счёта (повторный импорт?). Продолжить импорт?</translation>
     </message>
@@ -2911,8 +2911,8 @@ do you want to save it?</source>
     </message>
     <message>
         <location filename="../data_import/broker_statements/kit.py" line="167"/>
-        <source>Dividend taxes are not supported for KIT broker_statements yet</source>
-        <translation>Налоги для дивидендов пока не поддерживаются для брокера КИТ Финанс</translation>
+        <source>Dividend taxes are not supported for KIT broker statements yet</source>
+        <translation>Налог на дивиденды не поддерживается для брокера КИТ-финанс</translation>
     </message>
 </context>
 <context>
@@ -3140,42 +3140,42 @@ do you want to save it?</source>
         <translation>Невозможно распознать описание дивиденда </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="345"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="348"/>
         <source>Failed to convert dividend tax </source>
         <translation>Ошибка при конвертации суммы налога </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="363"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="364"/>
         <source>Can&apos;t parse bond interest description </source>
         <translation>Невозможно распознать описание купона </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="368"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="369"/>
         <source>Can&apos;t find asset for bond interest </source>
         <translation>Не найдена ЦБ для купона </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="379"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="380"/>
         <source>Can&apos;t parse bond repayment description </source>
         <translation>Невозможно распознать описание погашения облигации </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="384"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="385"/>
         <source>Can&apos;t find asset for bond repayment </source>
         <translation>Невозможно найти ЦБ для погашения облигации </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="387"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="388"/>
         <source>Can&apos;t find asset cancellation record for </source>
         <translation>Невозможно найти запись списания ЦБ для </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="390"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="391"/>
         <source>Multiple asset cancellation match for </source>
         <translation>Найдены несколько записей погашения ЦБ для </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="411"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="412"/>
         <source>Can&apos;t get header to find fees</source>
         <translation>Невозможно найти заголовок комиссий</translation>
     </message>
@@ -3518,22 +3518,22 @@ do you want to save it?</source>
 <context>
     <name>TaxesRus</name>
     <message>
-        <location filename="../data_export/taxes.py" line="292"/>
+        <location filename="../data_export/taxes.py" line="296"/>
         <source>Can&apos;t open tax form file </source>
         <translation>Невозможно открыть файл 3-НДФЛ </translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="310"/>
+        <location filename="../data_export/taxes.py" line="332"/>
         <source>Can&apos;t write tax form into file </source>
         <translation>Невозможно записать 3-НДФЛ в файл </translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="312"/>
+        <location filename="../data_export/taxes.py" line="334"/>
         <source>Tax report saved to file </source>
         <translation>Налоговый отчёт сохранён в файл </translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="442"/>
+        <location filename="../data_export/taxes.py" line="468"/>
         <source>Account country will be used for 3-NDFL as country is not set for asset </source>
         <translation>Не задана страна для ЦБ - в 3-НДФЛ будет использована страна счёта:</translation>
     </message>
@@ -3663,9 +3663,34 @@ do you want to save it?</source>
 <context>
     <name>XLSX</name>
     <message>
-        <location filename="../data_export/helpers.py" line="25"/>
+        <location filename="../data_export/helpers.py" line="45"/>
         <source>Can&apos;t save report into file </source>
         <translation>Невозможно сохранить отчёт в файл </translation>
+    </message>
+    <message>
+        <location filename="../data_export/helpers.py" line="93"/>
+        <source>Can&apos;t load report template from file </source>
+        <translation>Невозможно загрузить шаблон отчёта из файла </translation>
+    </message>
+    <message>
+        <location filename="../data_export/helpers.py" line="109"/>
+        <source>No report row template set</source>
+        <translation>Не указан шаблон для строки отчёта</translation>
+    </message>
+    <message>
+        <location filename="../data_export/helpers.py" line="113"/>
+        <source>Report row template not found: </source>
+        <translation>Шаблон для строки отчёта не найден: </translation>
+    </message>
+    <message>
+        <location filename="../data_export/helpers.py" line="153"/>
+        <source>Format is missing for report field: </source>
+        <translation>Формат не задан для поля отчёта: </translation>
+    </message>
+    <message>
+        <location filename="../data_export/helpers.py" line="173"/>
+        <source>Unrecognized format string: </source>
+        <translation>Неизвестная строка форматирования: </translation>
     </message>
 </context>
 </TS>

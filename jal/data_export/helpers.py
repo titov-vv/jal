@@ -90,7 +90,7 @@ class XLSX:
             with open(file_path, 'r') as json_file:
                 template = json.load(json_file)
         except:
-            logging.error(self.tr("Can't load template from file file ") + f"'{file_path}'")
+            logging.error(self.tr("Can't load report template from file ") + f"'{file_path}'")
         return template
 
     def output_data(self, data, template_file, parameters):
