@@ -309,15 +309,20 @@ class TaxesRus:
         self.reports_xls.save()
 
         self.reports_xls = XLSX(taxes_file.replace(".xlsx", "_new.xlsx"))
+        templates = {
+            "Дивиденды": "tax_rus_dividends.json",
+            "Акции": "tax_rus_trades.json"
+        }
         for section in tax_report:
-            sheet = self.reports_xls.add_report_sheet(section)
-            header_data = {
-                "year_begin": self.year_begin,
-                "year_end": self.year_end,
-                "account_number": self.account_number,
-                "account_currency": self.account_currency
+            if section not in templates:
+                continue
+            parameters = {
+                "period": f"{datetime.utcfromtimestamp(self.year_begin).strftime('%d.%m.%Y')}"
+                          f" - {datetime.utcfromtimestamp(self.year_end - 1).strftime('%d.%m.%Y')}",
+                "account": f"{self.account_number} ({self.account_currency})",
+                "currency": self.account_currency
             }
-            self.reports_xls.output_data(sheet, tax_report[section], self.reports[section], header_data)
+            self.reports_xls.output_data(tax_report[section], templates[section], parameters)
         self.reports_xls.save()
 
         if dlsg_update:
@@ -452,6 +457,7 @@ class TaxesRus:
                 else:
                     dividend["tax2pay"] = 0
             self.add_report_row(row, dividend, even_odd=row)
+            dividend['report_template'] = "dividend"
             dividends.append(dividend)
 
             if dividend["country_iso"] == '000':
@@ -543,6 +549,7 @@ class TaxesRus:
 
             self.add_report_row(row, deal, even_odd=data_row)
             self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
+            deal['report_template'] = "trade"
             deals.append(deal)
 
             if self.statement is not None:

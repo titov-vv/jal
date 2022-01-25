@@ -8,10 +8,12 @@ class Setup:
     UPDATES_PATH = 'updates'
     ICONS_PATH = "img"
     IMPORT_PATH = "data_import"
+    EXPORT_PATH = "data_export"
     IMPORT_SCHEMA_NAME = "import_schema.json"
     LANG_PATH = "languages"
     REPORT_PATH = "reports"
     STATEMENT_PATH = "broker_statements"
+    TEMPLATE_PATH = "templates"
     UPDATE_PREFIX = 'jal_delta_'
     TARGET_SCHEMA = 30
     CALC_TOLERANCE = 1e-10

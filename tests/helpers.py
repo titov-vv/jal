@@ -55,7 +55,7 @@ def create_actions(actions):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Create dividends in database: actions is a list of dividends as tuples
+# Create dividends in database: dividends is a list of dividends as tuples
 # (timestamp, account, asset_id, amount, tax, note)
 def create_dividends(dividends):
     for dividend in dividends:
@@ -64,6 +64,18 @@ def create_dividends(dividends):
                           [(":timestamp", dividend[0]), (":div_type", DividendSubtype.Dividend),
                            (":account_id", dividend[1]), (":asset_id", dividend[2]), (":amount", dividend[3]),
                            (":tax", dividend[4]), (":note", dividend[5])], commit=True) is not None
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Create dividends with type "interest" in database: coupons is a list of interests as tuples
+# (timestamp, account, asset_id, amount, tax, note, number)
+def create_coupons(coupons):
+    for coupon in coupons:
+        assert executeSQL("INSERT INTO dividends (timestamp, type, account_id, asset_id, amount, tax, note, number) "
+                          "VALUES (:timestamp, :div_type, :account_id, :asset_id, :amount, :tax, :note, :number)",
+                          [(":timestamp", coupon[0]), (":div_type", DividendSubtype.BondInterest),
+                           (":account_id", coupon[1]), (":asset_id", coupon[2]), (":amount", coupon[3]),
+                           (":tax", coupon[4]), (":note", coupon[5]), (":number", coupon[6])], commit=True) is not None
 
 
 # ----------------------------------------------------------------------------------------------------------------------

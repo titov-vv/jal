@@ -1,7 +1,12 @@
-import xlsxwriter
+import os
+import json
 import logging
 from datetime import datetime
+import xlsxwriter
+
 from PySide6.QtWidgets import QApplication
+from jal.constants import Setup
+from jal.db.helpers import get_app_path
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -30,11 +35,14 @@ class XLSX:
         self.workbook = xlsxwriter.Workbook(filename=xlsx_filename)
         self.formats = xslxFormat(self.workbook)
 
+    def tr(self, text):
+        return QApplication.translate("XLSX", text)
+
     def save(self):
         try:
             self.workbook.close()
         except:
-            logging.error(QApplication.translate('XLSX', "Can't save report into file ") + f"'{self.filename}'")
+            logging.error(self.tr("Can't save report into file ") + f"'{self.filename}'")
 
     def add_report_sheet(self, name):
         return self.workbook.add_worksheet(name)
@@ -75,66 +83,102 @@ class XLSX:
                                         cd[self.ROW_DATA], cd[self.ROW_FORMAT])
             sheet.write(row, column, cd[self.ROW_DATA], cd[self.ROW_FORMAT])
 
-    def output_data(self, sheet, data, template, header_data):
-        self.add_report_header(sheet, template, header_data)
-        for i, record in enumerate(data):
-            for j in range(template[self.RPT_DATA_ROWS]):
-                self.add_report_row(sheet, template, i*template[self.RPT_DATA_ROWS]+j+self.START_ROW, record, even_odd=i, alternative=j)
+    def load_template(self, file):
+        template = None
+        file_path = get_app_path()+ Setup.EXPORT_PATH + os.sep + Setup.TEMPLATE_PATH + os.sep + file
+        try:
+            with open(file_path, 'r') as json_file:
+                template = json.load(json_file)
+        except:
+            logging.error(self.tr("Can't load template from file file ") + f"'{file_path}'")
+        return template
+
+    def output_data(self, data, template_file, parameters):
+        template = self.load_template(template_file)
+        if template is None:
+            return
+        sheet = self.workbook.add_worksheet(template['page'])
+        self.add_report_title(sheet, template['title'])
+        row = self.add_report_headers(sheet, template['headers'], parameters)
+        numbered = template['columns_numbered'] if 'columns_numbered' in template else False
+        row = self.add_column_headers(sheet, template['columns'], parameters, start_row=row + 1, numbered=numbered)
+        for i, values in enumerate(data):
+            try:
+                row_template_name = values['report_template']
+            except KeyError:
+                raise RuntimeError(self.tr("No report row template set"))
+            try:
+                row_template = template[row_template_name]
+            except KeyError:
+                raise RuntimeError(self.tr("Report row template not found: ") + row_template_name)
+            row += self.add_data_row(sheet, row, values, row_template, even_odd=i)
+        self.add_report_footers(sheet, template['footers'], start_row=row + 1)
+
+    # Put bold title in cell A1
+    def add_report_title(self, sheet, title):
+        sheet.write(0, 0, title, self.formats.Bold())
     
-    # This method puts header on each report sheet
-    def add_report_header(self, sheet, template, header_data):
-        sheet.write(0, 0, template[self.RPT_TITLE], self.formats.Bold())
-        sheet.write(2, 0, "Документ-основание:", self.formats.CommentText())
-        sheet.write(3, 0, f"Период: {datetime.utcfromtimestamp(header_data['year_begin']).strftime('%d.%m.%Y')}"
-                                       f" - {datetime.utcfromtimestamp(header_data['year_end'] - 1).strftime('%d.%m.%Y')}",
-                                 self.formats.CommentText())
-        sheet.write(4, 0, "ФИО:", self.formats.CommentText())
-        sheet.write(5, 0, f"Номер счета: {header_data['account_number']} ({header_data['account_currency']})",
-                                 self.formats.CommentText())
+    # Put report headers below the title, skip one row after title
+    # Returns last used row
+    def add_report_headers(self, sheet, headers, parameters, start_row=2):
+        for i, header in enumerate(headers):
+            sheet.write(start_row + i, 0, header.format(parameters=parameters), self.formats.CommentText())
+        return start_row + len(headers)
 
-        header_row = {}
-        numbers_row = {}  # Put column numbers for reference
-        for column in template[self.RPT_COLUMNS]:
-            # make tuple for each column i: ("Column_Title", xlsx.formats.ColumnHeader(), Column_Width, 0, 0)
-            title = template[self.RPT_COLUMNS][column][self.COL_TITLE].format(currency=header_data['account_currency'])
-            width = template[self.RPT_COLUMNS][column][self.COL_WIDTH]
-            header_row[column] = (title, self.formats.ColumnHeader(), width, 0, 0)
-            numbers_row[column] = (f"({column + 1})", self.formats.ColumnHeader())
-        self.write_row(sheet, 7, header_row, 60)
-        self.write_row(sheet, 8, numbers_row)
+    # Put titles for columns of the report
+    # Returns last used row
+    def add_column_headers(self, sheet, columns, parameters, start_row=2, numbered=False):
+        sheet.set_row(start_row, 60)
+        for i, column in enumerate(columns):
+            title = column['name'].format(parameters=parameters)
+            sheet.write(start_row, i, title, self.formats.ColumnHeader())
+            sheet.set_column(i, i, column['width'])
+            if numbered:
+                sheet.write(start_row + 1, i,  f"({i + 1})", self.formats.ColumnHeader())
+        last_row = start_row+2 if numbered else start_row+1
+        return last_row
 
-    def add_report_row(self, sheet, template, row, data, even_odd=1, alternative=0):
-        KEY_NAME = 0
-        VALUE_FMT = 1
-        FMT_DETAILS = 2
-        H_SPAN = 3
-        V_SPAN = 4
-
-        data_row = {}
-        idx = self.COL_FIELD + alternative
-        for column in template[self.RPT_COLUMNS]:
-            field_dscr = template[self.RPT_COLUMNS][column][idx]
-            if field_dscr is not None:
-                value = data[field_dscr[KEY_NAME]]
-                format_as = field_dscr[VALUE_FMT]
-                if format_as == "text":
-                    fmt = self.formats.Text(even_odd)
-                elif format_as == "number":
-                    precision = field_dscr[FMT_DETAILS]
-                    fmt = self.formats.Number(even_odd, tolerance=precision)
-                elif format_as == "date":
-                    value = datetime.utcfromtimestamp(value).strftime('%d.%m.%Y')
-                    fmt = self.formats.Text(even_odd)
-                elif format_as == "bool":
-                    value = field_dscr[FMT_DETAILS][value]
-                    fmt = self.formats.Text(even_odd)
+    def add_data_row(self, sheet, start_row, values, template, even_odd=1):
+        for row, row_template in enumerate(template['rows']):
+            for col, column_key in enumerate(row_template):
+                if column_key is None:
+                    continue
+                try:
+                    value = values[column_key]
+                except KeyError:
+                    value = '{' + column_key + '}'
+                try:
+                    value, value_format = self.apply_format(value, template['formats'][row][col], even_odd)
+                except KeyError:
+                    logging.warning(self.tr("Format is missing for report field: ") + column_key)
+                    value_format = self.formats.Text(even_odd)
+                if 'span' in template and not template['span'][row][col] is None:
+                    span = template['span'][row][col]
+                    sheet.merge_range(start_row+row, col, start_row+row+span['v'], col+span['h'], value, value_format)
                 else:
-                    raise ValueError
-                if len(field_dscr) == 5:  # There are horizontal or vertical span defined
-                    data_row[column] = (value, fmt, 0, field_dscr[H_SPAN], field_dscr[V_SPAN])
-                else:
-                    data_row[column] = (value, fmt)
-        self.write_row(sheet, row, data_row)
+                    sheet.write(start_row+row, col, value, value_format)
+        return len(template['rows'])
+
+    def apply_format(self, value, format_string, even_odd=1):
+        if format_string is None:
+            return value, self.formats.Text(even_odd)
+        if format_string[0] == 'T':
+            return value, self.formats.Text(even_odd)
+        elif format_string[0] == 'D':
+            value = datetime.utcfromtimestamp(value).strftime('%d.%m.%Y')
+            return value, self.formats.Text(even_odd)
+        elif format_string[0] == 'N':
+            return value, self.formats.Number(even_odd, tolerance=int(format_string[2:]))
+        else:
+            logging.warning(self.tr("Unrecognized format string: ") + format_string)
+            return value, self.formats.Text(even_odd)
+
+    # Put report footers from start_row and below
+    # Returns last used row
+    def add_report_footers(self, sheet, footers, start_row=2):
+        for i, footer in enumerate(footers):
+            sheet.write(start_row + i, 0, footer, self.formats.CommentText())
+        return start_row + len(footers)
 
 #-----------------------------------------------------------------------------------------------------------------------
 class xslxFormat:

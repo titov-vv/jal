@@ -1,6 +1,7 @@
 {
    "Дивиденды":[
       {
+         "report_template": "dividend",
          "payment_date":1580156400,
          "symbol":"GE",
          "full_name":"General Electric Company",
@@ -16,6 +17,7 @@
          "tax2pay":1.8499999999999996
       },
       {
+         "report_template": "dividend",
          "payment_date":1581106800,
          "symbol":"TLT",
          "full_name":"iShares 20+ Year Treasury Bond ETF",
@@ -31,6 +33,7 @@
          "tax2pay":138.29
       },
       {
+         "report_template": "dividend",
          "payment_date":1587586800,
          "symbol":"ERIC",
          "full_name":"Telefonaktiebolaget LM Ericsson B ADR",
@@ -48,6 +51,7 @@
    ],
    "Акции":[
       {
+         "report_template": "trade",
          "symbol":"GOLD",
          "isin":"CA0679011084",
          "qty":10.0,
@@ -86,6 +90,7 @@
          "s_dividend_note":""
       },
       {
+         "report_template": "trade",
          "c_amount": 52.92,
          "c_amount_rub": 3373.19,
          "c_date": 1582117021,
@@ -124,6 +129,7 @@
          "symbol": "TEVA"
       },
       {
+         "report_template": "trade",
          "c_amount": 13.23,
          "c_amount_rub": 843.3,
          "c_date": 1582117021,
@@ -163,10 +169,97 @@
       }
    ],
    "Облигации":[
-      
+      {
+         "c_amount": 1600.0,
+         "c_amount_rub": 122009.92,
+         "c_date": 1604319194,
+         "c_fee": 2.0,
+         "c_fee_rub": 152.51,
+         "c_int": 16.89,
+         "c_int_rub": 1287.97,
+         "c_number": "2881234589",
+         "c_price": 80.0,
+         "c_qty": -2.0,
+         "c_rate": 76.2562,
+         "c_type": "Продажа",
+         "country_iso": "840",
+         "cs_date": 1604448000,
+         "cs_rate": 76.2562,
+         "income": 1600.0,
+         "income_rub": 123297.89,
+         "isin": "US912909AN84",
+         "o_amount": 1278.14,
+         "o_amount_rub": 97466.1,
+         "o_date": 1590587855,
+         "o_fee": 2.0,
+         "o_fee_rub": 152.51,
+         "o_int": 25.69,
+         "o_int_rub": 1959.02,
+         "o_number": "2881234567",
+         "o_price": 63.90700000000001,
+         "o_qty": 2.0,
+         "o_rate": 76.2562,
+         "o_type": "Покупка",
+         "os_date": 1590710400,
+         "os_rate": 76.2562,
+         "principal": 1000,
+         "profit": 317.8599999999999,
+         "profit_rub": 23567.75,
+         "qty": 2.0,
+         "spending": 1282.14,
+         "spending_rub": 99730.14,
+         "symbol": "X 6 1/4 03/15/26"
+      },
+      {
+         "country_iso": "840",
+         "empty": "",
+         "income_rub": 4766.01,
+         "interest": 62.5,
+         "interest_rub": 4766.01,
+         "isin": "US912909AN84",
+         "number": "",
+         "o_date": 1600128000,
+         "rate": 76.2562,
+         "symbol": "X 6 1/4 03/15/26",
+         "type": "Выплата купона"
+      }
    ],
    "ПФИ":[
-      
+      {
+         "c_amount": 131.0,
+         "c_amount_rub": 8775.81,
+         "c_date": 1582886521,
+         "c_fee": 1.0938,
+         "c_fee_rub": 71.76,
+         "c_number": "2716375310",
+         "c_price": 1.31,
+         "c_qty": 100.0,
+         "c_rate": 65.6097,
+         "c_type": "Покупка",
+         "country_iso": "840",
+         "cs_date": 1583107200,
+         "cs_rate": 66.9909,
+         "income": 294.0,
+         "income_rub": 18061.24,
+         "o_amount": 294.0,
+         "o_amount_rub": 18061.24,
+         "o_date": 1579097059,
+         "o_fee": 0.8018858,
+         "o_fee_rub": 49.25,
+         "o_number": "2661844383",
+         "o_price": 2.94,
+         "o_qty": -100.0,
+         "o_rate": 61.414,
+         "o_type": "Продажа",
+         "os_date": 1579132800,
+         "os_rate": 61.4328,
+         "profit": 161.1043142,
+         "profit_rub": 9164.420000000002,
+         "qty": -100.0,
+         "spending": 132.8956858,
+         "spending_rub": 8896.82,
+         "symbol": "AAL   210115C00030000"
+      }
    ],
    "Корп.события":[
       
