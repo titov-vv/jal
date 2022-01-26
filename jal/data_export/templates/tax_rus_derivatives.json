@@ -21,8 +21,8 @@
     {"name": "Сумма сделки, RUB", "width": 12},
     {"name": "Комиссия, {parameters[currency]}", "width": 12},
     {"name": "Комиссия, RUB", "width": 9},
-    {"name": "Доход, RUB (код 1530)", "width": 12},
-    {"name": "Расход, RUB (код 201)", "width": 12},
+    {"name": "Доход, RUB (код 1532)", "width": 12},
+    {"name": "Расход, RUB (код 206)", "width": 12},
     {"name": "Финансовый результат, RUB", "width": 12},
     {"name": "Финансовый результат, {parameters[currency]}", "width": 12}
   ],
