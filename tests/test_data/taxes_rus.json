@@ -241,6 +241,7 @@
    ],
    "ПФИ":[
       {
+         "report_template": "trade",
          "c_amount": 131.0,
          "c_amount_rub": 8775.81,
          "c_date": 1582886521,
@@ -274,6 +275,13 @@
          "spending": 132.8956858,
          "spending_rub": 8896.82,
          "symbol": "AAL   210115C00030000"
+      },
+      {
+         "report_template": "totals",
+         "income_rub": 18061.24,
+         "spending_rub": 8896.82,
+         "profit": 161.1043142,
+         "profit_rub": 9164.420000000002
       }
    ],
    "Корп.события":[

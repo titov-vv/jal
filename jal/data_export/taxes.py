@@ -311,7 +311,8 @@ class TaxesRus:
         self.reports_xls = XLSX(taxes_file.replace(".xlsx", "_new.xlsx"))
         templates = {
             "Дивиденды": "tax_rus_dividends.json",
-            "Акции": "tax_rus_trades.json"
+            "Акции": "tax_rus_trades.json",
+            "ПФИ": "tax_rus_derivatives.json"
         }
         for section in tax_report:
             if section not in templates:
@@ -758,6 +759,7 @@ class TaxesRus:
 
             self.add_report_row(row, deal, even_odd=data_row)
             self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
+            deal['report_template'] = "trade"
             derivatives.append(deal)
 
             if self.statement is not None:
@@ -776,6 +778,7 @@ class TaxesRus:
         row = start_row + (data_row * 2)
 
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [12, 13, 14, 15, 16])
+        derivatives.append(self.make_totals(derivatives, ["income_rub", "spending_rub", "profit_rub", "profit"]))
         return row + 1, derivatives
 
     # -----------------------------------------------------------------------------------------------------------------------

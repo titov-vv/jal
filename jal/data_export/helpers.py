@@ -220,7 +220,8 @@ class xslxFormat:
         return self.wbk.add_format({'font_size': self.text_font_size,
                                     'border': 1,
                                     'valign': 'vcenter',
-                                    'bg_color': bg_color})
+                                    'bg_color': bg_color,
+                                    'text_wrap': True})
 
     def CommentText(self):
         return self.wbk.add_format({'font_size': self.text_font_size, 'valign': 'vcenter'})
