@@ -1,0 +1,88 @@
+{
+  "page": "Облигации",
+  "title": "Отчет по сделкам с облигациями, завершённым в отчетном периоде, и полученным купонам",
+  "headers": [
+      "Документ-основание: ",
+      "Период: {parameters[period]}",
+      "ФИО: ",
+      "Номер счета: {parameters[account]}"
+    ],
+  "columns": [  
+    {"name": "Ценная бумага", "width": 12},
+    {"name": "ISIN", "width": 11},
+    {"name": "Кол-во", "width": 8},
+    {"name": "Номинал, {parameters[currency]}", "width": 7},
+    {"name": "Тип операции", "width": 8},
+    {"name": "Дата операции", "width": 10},
+    {"name": "Номер операции", "width": 10},
+    {"name": "Курс {parameters[currency]}/RUB на дату операции", "width": 9},
+    {"name": "Дата расчётов", "width": 10},
+    {"name": "Курс {parameters[currency]}/RUB на дату расчётов", "width": 9},
+    {"name": "Цена, %", "width": 12},
+    {"name": "Сумма сделки, {parameters[currency]}", "width": 12},
+    {"name": "Сумма сделки, RUB", "width": 12},
+    {"name": "НКД, {parameters[currency]}", "width": 10},
+    {"name": "НКД, RUB", "width": 8},
+    {"name": "Комиссия, {parameters[currency]}", "width": 12},
+    {"name": "Комиссия, RUB", "width": 9},
+    {"name": "Доход, RUB (код 1530)", "width": 12},
+    {"name": "Расход, RUB (код 201)", "width": 12},
+    {"name": "Финансовый результат, RUB", "width": 12},
+    {"name": "Финансовый результат, {parameters[currency]}", "width": 12}
+  ],
+  "columns_numbered": true,
+  "bond_trade": {
+    "rows": [
+      ["symbol", "isin", "qty", "principal", "o_type", "o_date", "o_number", "o_rate", "os_date", "os_rate", "o_price", "o_amount", "o_amount_rub", "o_int", "c_int_rub", "o_fee", "o_fee_rub", "income_rub", "spending_rub", "profit_rub", "profit"],
+      [null,     null,   null,  null,        "c_type", "c_date", "c_number", "c_rate", "cs_date", "cs_rate", "c_price", "c_amount", "c_amount_rub", "c_int", "c_int_rub", "c_fee", "c_fee_rub", null,         null,           null,         null]
+    ],
+    "formats": [
+      ["T", "T", "N:0", "N:0", "T", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:2", "N:2", "N:6", "N:2", "N:2", "N:2", "N:2", "N:2"],
+      [null, null, null, null, "T", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:2", "N:2", "N:6", "N:2", null, null, null, null]
+    ],
+    "span": [
+      [{"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, null, null, null, null, null, null, null, null, null, null, null, null, null, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]
+    ]
+  },
+  "bond_interest": {
+    "rows": [
+      ["symbol", "isin", "", "", "type", "o_date", "number", "rate", "", "", "", "", "", "interest", "interest_rub", "", "", "income_rub", "spending_rub", "profit_rub", "profit"]
+    ],
+    "formats": [
+      ["T", "T", null, null, "T", "D", "T", "N:4", null, null, null, null, null, "N:2", "N:2", null, null, "N:2", "N:2", "N:2", "N:2"]
+    ]
+  },
+  "totals": {
+    "rows": [
+      [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "ИТОГО", "income_rub", "spending_rub", "profit_rub", "profit"]
+    ],
+    "formats": [
+      [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "F", "F", "F", "F", "F"]
+    ]
+  },
+  "footers": [
+    "Описание данных в столбцах таблицы",
+    "1 - Краткое наименование ценной бумаги",
+    "2 - Международный идентификационный код ценной бумаги",
+    "3 - Количество ЦБ в сделке",
+    "4 - Номинал облигации",
+    "5 - Направление сделки (покупка или продажа)",
+    "6 - Дата заключения сделки, уплаты комиссии(столбец 16) и НКД(столбец 14)",
+    "7 - Номер операции в торговой системе",
+    "8 - Официальный курс валюты,  установленный ЦБ РФ на дату заключения сделки",
+    "9 - Дата расчётов по сделке / Дата поставки ценных бумаг",
+    "10 - Официальный курс валюты,  установленный ЦБ РФ на дату поставки ЦБ / расчётов по сделке",
+    "11 - Цена одной облигации в процентах от номинала",
+    "12 - Сумма сделки в валюте счета",
+    "13 - Сумма сделки в рублях",
+    "14 - Накопленный купонный доход в валюте счета",
+    "15 - Накопленный купонный доход в рублях ( = Столбец 14 * Столбец 8)",
+    "16 - Комиссия брокера за совершение сделки в валюте счета",
+    "17 - Комиссия брокера за совершение сделки в рублях  ( = Столбец 16 * Столбец 8)",
+    "18 - Доход, полученных от продажи ценных бумаг (равен сумме сделки продажи из столбца 13 + НКД из столбца 15)",
+    "19 - Расходы, понесённые на покупку ценных бумаг и уплату комиссий (равны сумме сделки покупки из столбца 13 + комиссии из столбца 17 + НКД из столбца 15)",
+    "20 - Финансовый результат сделки в рублях (= Столбец 18 - Столбец 19)",
+    "21 - Финансовый результат сделки в валюте счета"
+  ]
+}

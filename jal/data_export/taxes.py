@@ -312,6 +312,7 @@ class TaxesRus:
         templates = {
             "Дивиденды": "tax_rus_dividends.json",
             "Акции": "tax_rus_trades.json",
+            "Облигации": "tax_rus_bonds.json",
             "ПФИ": "tax_rus_derivatives.json"
         }
         for section in tax_report:
@@ -647,6 +648,7 @@ class TaxesRus:
 
             self.add_report_row(row, deal, even_odd=data_row)
             self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
+            deal['report_template'] = "bond_trade"
             bonds.append(deal)
 
             if self.statement is not None:
@@ -680,11 +682,14 @@ class TaxesRus:
                             (":type_interest", DividendSubtype.BondInterest)])
         while query.next():
             interest = readSQLrecord(query, named=True)
-            interest['type'] = "Выплата купона"
+            interest['type'] = "Купон"
             interest['empty'] = ''  # to keep cell borders drawn
             interest['interest_rub'] = round(interest['interest'] * interest['rate'], 2) if interest['rate'] else 0
-            interest['income_rub'] = interest['interest_rub']
+            interest['income_rub'] = interest['profit_rub'] = interest['interest_rub']
+            interest['spending_rub'] = 0.0
+            interest['profit'] = interest['interest']
             self.add_report_row(row, interest, even_odd=data_row, alternative=2)
+            interest['report_template'] = "bond_interest"
             bonds.append(interest)
 
             if self.statement is not None:
@@ -700,6 +705,7 @@ class TaxesRus:
             row += 1
 
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [16, 17, 18, 19, 20])
+        bonds.append(self.make_totals(bonds, ["income_rub", "spending_rub", "profit_rub", "profit"]))
         return row + 1, bonds
 
     # -----------------------------------------------------------------------------------------------------------------------
