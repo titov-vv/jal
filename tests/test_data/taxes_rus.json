@@ -301,11 +301,25 @@
    ],
    "Комиссии":[
       {
+         "report_template": "fee",
+         "payment_date": 1604343555,
+         "amount": 10.0,
+         "amount_rub": 793.32,
+         "note": "BALANCE OF MONTHLY MINIMUM FEE FOR OCT 2020",
+         "rate": 79.3323
+      },
+      {
+         "report_template": "fee",
          "payment_date":1605039600,
          "amount":1.0,
          "note":"ERIC(294821608) ADR Fee USD 0.02 PER SHARE - FEE",
          "rate":76.9515,
          "amount_rub":76.95
+      },
+      {
+         "report_template": "totals",
+         "amount": 11.0,
+         "amount_rub": 870.2700000000001
       }
    ],
    "Проценты":[

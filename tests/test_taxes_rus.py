@@ -64,8 +64,12 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
     ]
     create_trades(1, trades)
 
-    # insert fee
-    create_actions([(1605039600, 1, 1, [(5, -1.0, "ERIC(294821608) ADR Fee USD 0.02 PER SHARE - FEE")])])
+    # insert fees
+    fees = [
+        (1604343555, 1, 1, [(5, -10.0, "BALANCE OF MONTHLY MINIMUM FEE FOR OCT 2020")]),
+        (1605039600, 1, 1, [(5, -1.0, "ERIC(294821608) ADR Fee USD 0.02 PER SHARE - FEE")])
+    ]
+    create_actions(fees)
 
     ledger = Ledger()    # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)
