@@ -111,7 +111,7 @@ class XLSX:
                 row_template = template[row_template_name]
             except KeyError:
                 raise RuntimeError(self.tr("Report row template not found: ") + row_template_name)
-            row += self.add_data_row(sheet, row, values, row_template, even_odd=i)
+            row += self.add_data_row(sheet, row, values, row_template, even_odd=i + 1)
         self.add_report_footers(sheet, template['footers'], start_row=row + 1)
 
     # Put bold title in cell A1
@@ -146,7 +146,7 @@ class XLSX:
                 try:
                     value = values[column_key]
                 except KeyError:
-                    value = '{' + column_key + '}'
+                    value = column_key   # Use original text if there are no such key
                 try:
                     value, value_format = self.apply_format(value, template['formats'][row][col], even_odd)
                 except KeyError:
@@ -169,6 +169,8 @@ class XLSX:
             return value, self.formats.Text(even_odd)
         elif format_string[0] == 'N':
             return value, self.formats.Number(even_odd, tolerance=int(format_string[2:]))
+        elif format_string[0] == 'F':
+            return value, self.formats.ColumnFooter()
         else:
             logging.warning(self.tr("Unrecognized format string: ") + format_string)
             return value, self.formats.Text(even_odd)

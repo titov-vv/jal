@@ -429,7 +429,15 @@ class TaxesRus:
                        "WHERE ref_id IS NOT NULL "
                        "GROUP BY ref_id", [(":account_id", self.account_id)], commit=True)
 
-    # -----------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    # Create a totals row from provided list of dictionaries
+    # it calculates sum for each field in fields and adds it to return dictionary
+    def make_totals(self, list_of_values, fields):
+        totals = { "report_template": "totals" }
+        for field in fields:
+            totals[field] = sum([x[field] for x in list_of_values])
+        return totals
+
     def prepare_dividends(self):
         dividends = []
         query = executeSQL("SELECT d.timestamp AS payment_date, s.name AS symbol, s.full_name AS full_name, "
@@ -478,6 +486,7 @@ class TaxesRus:
             row += 1
 
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [4, 5, 6, 7, 8, 9])
+        dividends.append(self.make_totals(dividends, ["amount", "amount_rub", "tax", "tax_rub", "tax2pay"]))
         return row+1, dividends
 
     # -----------------------------------------------------------------------------------------------------------------------
@@ -567,6 +576,7 @@ class TaxesRus:
         row = start_row + (data_row * 2)
 
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [13, 14, 15, 16, 17])
+        deals.append(self.make_totals(deals, ["income_rub", "spending_rub", "profit_rub", "profit"]))
         return row + 1, deals
 
     # -----------------------------------------------------------------------------------------------------------------------

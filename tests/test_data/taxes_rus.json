@@ -47,6 +47,14 @@
          "amount_rub":285.2,
          "tax_rub":85.41,
          "tax2pay":0
+      },
+      {
+         "report_template": "totals",
+         "amount": 21.68,
+         "amount_rub": 1410.79,
+         "tax": 1.2200000000000002,
+         "tax_rub": 91.59,
+         "tax2pay": 140.14
       }
    ],
    "Акции":[
@@ -166,6 +174,13 @@
          "spending": 16.216231466,
          "spending_rub": 1060.51,
          "symbol": "TEVA"
+      },
+      {
+         "report_template": "totals",
+         "income_rub": 17570.289999999997,
+         "spending_rub": 18039.62,
+         "profit": -3.322920030000013,
+         "profit_rub": -469.3300000000013
       }
    ],
    "Облигации":[
