@@ -111,7 +111,8 @@ class XLSX:
                 row_template = template[row_template_name]
             except KeyError:
                 raise RuntimeError(self.tr("Report row template not found: ") + row_template_name)
-            row += self.add_data_row(sheet, row, values, row_template, even_odd=i + 1)
+            even_odd = values['report_group'] if "report_group" in values else (i + 1)
+            row += self.add_data_row(sheet, row, values, row_template, even_odd=even_odd)
         self.add_report_footers(sheet, template['footers'], start_row=row + 1)
 
     # Put bold title in cell A1
@@ -163,7 +164,10 @@ class XLSX:
         if format_string is None:
             return value, self.formats.Text(even_odd)
         if format_string[0] == 'T':
-            return value, self.formats.Text(even_odd)
+            if format_string[2:] == 'B':
+                return value, self.formats.Bold()
+            else:
+                return value, self.formats.Text(even_odd)
         elif format_string[0] == 'D':
             value = datetime.utcfromtimestamp(value).strftime('%d.%m.%Y')
             return value, self.formats.Text(even_odd)

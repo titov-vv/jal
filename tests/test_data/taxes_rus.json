@@ -298,7 +298,13 @@
    ],
    "Корп.события":[
       {
+         "report_template": "symbol_header",
+         "report_group": 0,
+         "description": "Сделки по бумаге: VTRS - VIATRIS INC"
+      },
+      {
          "report_template": "trade",
+         "report_group": 1,
          "amount": 885.5,
          "amount_rub": 65013.5,
          "basis_ratio": 100.0,
@@ -321,6 +327,7 @@
       },
       {
          "report_template": "action",
+         "report_group": 1,
          "action_date": 1605528000,
          "action_number": "",
          "basis_ratio": 1.0,
@@ -337,6 +344,7 @@
       },
       {
          "report_template": "trade",
+         "report_group": 1,
          "amount": 795.0,
          "amount_rub": 56047.42,
          "basis_ratio": 100.0,
@@ -355,6 +363,11 @@
          "t_rate": 70.4413,
          "trade_id": 10,
          "trade_number": "1118233222"
+      },
+      {
+         "report_template": "totals",
+         "income_rub": 65013.5,
+         "spending_rub": 56097.59
       }
    ],
    "Комиссии":[

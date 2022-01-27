@@ -396,7 +396,7 @@ class TaxesRus:
         self.reports_xls.write_row(self.current_sheet, row, data_row)
 
     def add_report_footer(self, row):
-        row += 1 # Skip one row from previous table
+        row += 1  # Skip one row from previous table
         self.current_sheet.write(row, 0, "Описание данных в стобцах таблицы",
                                  self.reports_xls.formats.CommentText())
         row += 1
@@ -439,7 +439,7 @@ class TaxesRus:
     def make_totals(self, list_of_values, fields):
         totals = { "report_template": "totals" }
         for field in fields:
-            totals[field] = sum([x[field] for x in list_of_values])
+            totals[field] = sum([x[field] for x in list_of_values if field in x])
         return totals
 
     def prepare_dividends(self):
@@ -844,7 +844,7 @@ class TaxesRus:
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_corporate_actions(self):
-        actions = []
+        corp_actions = []
         # get list of all deals that were opened with corp.action and closed by normal trade
         query = executeSQL("SELECT d.open_op_id AS operation_id, s.name AS symbol, d.qty AS qty, t.number AS trade_number, "
                            "t.timestamp AS t_date, qt.quote AS t_rate, t.settlement AS s_date, qts.quote AS s_rate, "
@@ -867,6 +867,7 @@ class TaxesRus:
         previous_symbol = ""
         while query.next():
             start_row = row
+            actions = []
             sale = readSQLrecord(query, named=True)
             if previous_symbol != sale['symbol']:
                 # Clean processed qty records if symbol have changed
@@ -874,6 +875,9 @@ class TaxesRus:
                 if sale["s_date"] >= self.year_begin:  # Don't put sub-header of operation is out of scope
                     self.current_sheet.write(row, 0, f"Сделки по бумаге: {sale['symbol']} - {sale['full_name']}",
                                              self.reports_xls.formats.Bold())
+                    corp_actions.append({'report_template': "symbol_header",
+                                    'report_group': 0,
+                                    'description': f"Сделки по бумаге: {sale['symbol']} - {sale['full_name']}"})
                     previous_symbol = sale['symbol']
                     row += 1
             sale['operation'] = "Продажа"
@@ -895,14 +899,17 @@ class TaxesRus:
             else:
                 self.add_report_row(row, sale, even_odd=even_odd)
                 sale['report_template'] = "trade"
+                sale['report_group'] = even_odd
                 actions.append(sale)
                 row += 1
                 row = self.proceed_corporate_action(actions, sale['operation_id'], sale['symbol'], sale['qty'], basis, 1, row, even_odd)
                 self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [14, 15, 16])
                 row += 1
 
+            actions.append(self.make_totals(actions, ["income_rub", "spending_rub"]))
+            corp_actions += actions
             even_odd = even_odd + 1
-        return row, actions
+        return row, corp_actions
 
     def proceed_corporate_action(self, actions, operation_id, symbol, qty, basis, level, row, even_odd):
         row, qty, symbol, basis = self.output_corp_action(actions, operation_id, symbol, qty, basis, level, row, even_odd)
@@ -968,6 +975,7 @@ class TaxesRus:
         if level >= 0:  # Don't output if level==-1, i.e. corp action is out of report scope
             self.add_report_row(row, purchase, even_odd=even_odd)
             purchase['report_template'] = "trade"
+            purchase['report_group'] = even_odd
             actions.append(purchase)
             row += 1
         return row, proceed_qty - purchase['qty']
@@ -1011,6 +1019,7 @@ class TaxesRus:
         if level >= 0:  # Don't output if level==-1, i.e. corp action is out of report scope
             self.add_report_row(row, action, even_odd=even_odd, alternative=1)
             action['report_template'] = "action"
+            action['report_group'] = even_odd
             actions.append(action)
             row += 1
         return row, qty_before, action['symbol'], basis

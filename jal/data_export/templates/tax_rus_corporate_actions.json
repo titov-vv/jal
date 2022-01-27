@@ -27,6 +27,17 @@
     {"name": "Расход, RUB (код 201)", "width": 12}
   ],
   "columns_numbered": true,
+  "symbol_header": {
+    "rows": [
+      ["description"]
+    ],
+    "formats": [
+      ["T:B"]
+    ],
+    "span": [
+      [{"h": 16, "v": 0}]
+    ]
+  },
   "trade": {
     "rows": [
       ["operation", "t_date", "trade_number", "symbol", "isin", "qty", "t_rate", "s_date", "s_rate", "price", "amount", "amount_rub", "fee", "fee_rub", "basis_ratio", "income_rub", "spending_rub"]
@@ -48,10 +59,10 @@
   },
   "totals": {
     "rows": [
-      [null, null, null, null, null, null, null, null, null, null, null, null, null, "ИТОГО", "income_rub", "spending_rub", "profit_rub", "profit", null]
+      [null, null, null, null, null, null, null, null, null, null, null, null, null, null, "ИТОГО", "income_rub", "spending_rub"]
     ],
     "formats": [
-      [null, null, null, null, null, null, null, null, null, null, null, null, null, "F", "F", "F", "F", "F", null]
+      [null, null, null, null, null, null, null, null, null, null, null, null, null, null, "F", "F", "F"]
     ]
   },
   "footers": [
