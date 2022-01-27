@@ -3,7 +3,8 @@ import json
 
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
-from tests.helpers import create_assets, create_quotes, create_dividends, create_coupons, create_trades, create_actions
+from tests.helpers import create_assets, create_quotes, create_dividends, create_coupons, create_trades, \
+    create_actions, create_corporate_actions
 from jal.db.ledger import Ledger
 from jal.data_export.taxes import TaxesRus
 
@@ -20,7 +21,9 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
         ("GOLD", "Barrick Gold Corp", "CA0679011084", 2, 6),
         ("TEVA", "Teva Pharma Industries Ltd ADR", "US8816242098", 2, 0),
         ("X 6 1/4 03/15/26", "X 6 1/4 03/15/26", "US912909AN84", 3, 2),
-        ("AAL   210115C00030000", "AAL 15JAN21 30.0 C", "", 6, 0)
+        ("AAL   210115C00030000", "AAL 15JAN21 30.0 C", "", 6, 0),
+        ("MYL", "MYLAN NV", "NL0011031208", 2, 0),
+        ("VTRS", "VIATRIS INC", "US92556V1061", 2, 0)
     ]
     create_assets(assets)
     usd_rates = [
@@ -32,6 +35,8 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
         (1582934400, 66.9909), (1582848000, 65.6097), (1582761600, 65.5177), (1582675200, 64.9213),
         (1590710400, 71.1012), (1590624000, 71.0635), (1590537600, 71.1408), (1590451200, 71.5962),
         (1604448000, 80.0006), (1604361600, 80.5749), (1604102400, 79.3323), (1604016000, 78.8699),
+        (1593820800, 70.4999), (1593734400, 70.5198), (1593648000, 70.4413), (1593561600, 70.4413),
+        (1608163200, 73.4201), (1608076800, 73.4453), (1607990400, 72.9272), (1607731200, 73.1195),
         (1579910400, 61.8031),
         (1581033600, 62.7977),
         (1587513600, 76.2562),
@@ -61,7 +66,9 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
         (1579097059, 1579132800, 10, -100, 2.94, 0.8018858, "2661844383"),
         (1582886521, 1583107200, 10, 100, 1.31, 1.0938, "2716375310"),
         (1590587855, 1590710400, 9, 2, 639.07, 2, "2881234567"),
-        (1604319194, 1604448000, 9, -2, 800, 2, "2881234589")
+        (1604319194, 1604448000, 9, -2, 800, 2, "2881234589"),
+        (1593604800, 1593993600, 11, 50, 15.9, 0.35, "1118233222"),
+        (1608044400, 1608163200, 12, -50, 17.71, 0.35, "2227095222")
     ]
     create_trades(1, trades)
 
@@ -72,6 +79,8 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
         (1591142400, 1, 1, [(8, 1.5, "RUB CREDIT INT FOR MAY-2020")])
     ]
     create_actions(operations)
+
+    create_corporate_actions(1, [(1605528000, 3, 11, 50, 12, 50, 1, "Symbol change MYL->VTRS")])
 
     ledger = Ledger()    # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)

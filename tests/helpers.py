@@ -79,7 +79,7 @@ def create_coupons(coupons):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Create trades in database: actions is a list of trades as tuples
+# Create trades for given account_id in database: trades is a list of trades as tuples
 # (timestamp, settlement, asset_id, qty, price, fee, [number])
 def create_trades(account_id, trades):
     for trade in trades:
@@ -89,3 +89,17 @@ def create_trades(account_id, trades):
                           [(":timestamp", trade[0]), (":settlement", trade[1]), (":account_id", account_id),
                            (":asset", trade[2]), (":qty", trade[3]), (":price", trade[4]), (":fee", trade[5]),
                            (":number", number)], commit=True) is not None
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Create corporate actions for given account_id in database: actions is a list of tuples
+# (timestamp, type, asset_old, qty_old, asset_new, qty_new, basis, note)
+def create_corporate_actions(account_id, actions):
+    for action in actions:
+        assert executeSQL("INSERT INTO corp_actions (timestamp, account_id, type, asset_id, qty, asset_id_new, "
+                          "qty_new, basis_ratio, note) VALUES (:timestamp, :account_id, :type, :asset_id, :qty, "
+                          ":asset_id_new, :qty_new, :basis, :note)",
+                          [(":timestamp", action[0]), (":account_id", account_id), (":type", action[1]),
+                           (":asset_id", action[2]), (":qty", action[3]), (":asset_id_new", action[4]),
+                           (":qty_new", action[5]), (":basis", action[6]), (":note", action[7])],
+                          commit=True) is not None

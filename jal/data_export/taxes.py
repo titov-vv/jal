@@ -268,7 +268,6 @@ class TaxesRus:
             tax_report = self.save2file(dialog.xls_filename, dialog.year, dialog.account, dlsg_update=dialog.update_dlsg,
                                         dlsg_in=dialog.dlsg_in_filename, dlsg_out=dialog.dlsg_out_filename,
                                         dlsg_dividends_only=dialog.dlsg_dividends_only)
-        print(tax_report)
         return tax_report
 
     def save2file(self, taxes_file, year, account_id,
@@ -314,6 +313,7 @@ class TaxesRus:
             "Акции": "tax_rus_trades.json",
             "Облигации": "tax_rus_bonds.json",
             "ПФИ": "tax_rus_derivatives.json",
+            "Корп.события": "tax_rus_corporate_actions.json",
             "Комиссии": "tax_rus_fees.json",
             "Проценты": "tax_rus_interests.json"
         }
@@ -891,25 +891,27 @@ class TaxesRus:
             sale['spending_rub'] = sale['fee_rub']
 
             if sale["t_date"] < self.year_begin:    # Don't show deal that is before report year (level = -1)
-                row = self.proceed_corporate_action(sale['operation_id'], sale['symbol'], sale['qty'], basis, -1, row, even_odd)
+                row = self.proceed_corporate_action(actions, sale['operation_id'], sale['symbol'], sale['qty'], basis, -1, row, even_odd)
             else:
                 self.add_report_row(row, sale, even_odd=even_odd)
+                sale['report_template'] = "trade"
+                actions.append(sale)
                 row += 1
-                row = self.proceed_corporate_action(sale['operation_id'], sale['symbol'], sale['qty'], basis, 1, row, even_odd)
+                row = self.proceed_corporate_action(actions, sale['operation_id'], sale['symbol'], sale['qty'], basis, 1, row, even_odd)
                 self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [14, 15, 16])
                 row += 1
 
             even_odd = even_odd + 1
         return row, actions
 
-    def proceed_corporate_action(self, operation_id, symbol, qty, basis, level, row, even_odd):
-        row, qty, symbol, basis = self.output_corp_action(operation_id, symbol, qty, basis, level, row, even_odd)
+    def proceed_corporate_action(self, actions, operation_id, symbol, qty, basis, level, row, even_odd):
+        row, qty, symbol, basis = self.output_corp_action(actions, operation_id, symbol, qty, basis, level, row, even_odd)
         next_level = -1 if level == -1 else (level + 1)
-        row = self.next_corporate_action(operation_id, symbol, qty, basis, next_level, row, even_odd)
+        row = self.next_corporate_action(actions, operation_id, symbol, qty, basis, next_level, row, even_odd)
         return row
 
     # operation_id - id of corporate action
-    def next_corporate_action(self, operation_id, symbol, qty, basis, level, row, even_odd):
+    def next_corporate_action(self, actions, operation_id, symbol, qty, basis, level, row, even_odd):
         # get list of deals that were closed as result of current corporate action
         open_query = executeSQL("SELECT open_op_id AS open_op_id, open_op_type AS op_type "
                                 "FROM deals "
@@ -920,15 +922,15 @@ class TaxesRus:
             open_id, open_type = readSQLrecord(open_query)
 
             if open_type == TransactionType.Trade:
-                row, qty = self.output_purchase(open_id, qty, basis, level, row, even_odd)
+                row, qty = self.output_purchase(actions, open_id, qty, basis, level, row, even_odd)
             elif open_type == TransactionType.CorporateAction:
-                row = self.proceed_corporate_action(open_id, symbol, qty, basis, level, row, even_odd)
+                row = self.proceed_corporate_action(actions, open_id, symbol, qty, basis, level, row, even_odd)
             else:
                 assert False
         return row
 
     # operation_id - id of buy operation
-    def output_purchase(self, operation_id, proceed_qty, basis, level, row, even_odd):
+    def output_purchase(self, actions, operation_id, proceed_qty, basis, level, row, even_odd):
         if proceed_qty <= 0:
             return row, proceed_qty
 
@@ -965,10 +967,12 @@ class TaxesRus:
                        [(":trade_id", purchase['trade_id']), (":qty", purchase['qty'])])
         if level >= 0:  # Don't output if level==-1, i.e. corp action is out of report scope
             self.add_report_row(row, purchase, even_odd=even_odd)
+            purchase['report_template'] = "trade"
+            actions.append(purchase)
             row += 1
         return row, proceed_qty - purchase['qty']
 
-    def output_corp_action(self, operation_id, symbol, proceed_qty, basis, level, row, even_odd):
+    def output_corp_action(self, actions, operation_id, symbol, proceed_qty, basis, level, row, even_odd):
         if proceed_qty <= 0:
             return row, proceed_qty
 
@@ -1006,5 +1010,7 @@ class TaxesRus:
                                                                                before=qty_before, after=qty_after)
         if level >= 0:  # Don't output if level==-1, i.e. corp action is out of report scope
             self.add_report_row(row, action, even_odd=even_odd, alternative=1)
+            action['report_template'] = "action"
+            actions.append(action)
             row += 1
         return row, qty_before, action['symbol'], basis

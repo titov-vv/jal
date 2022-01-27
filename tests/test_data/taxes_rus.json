@@ -297,7 +297,65 @@
       }
    ],
    "Корп.события":[
-      
+      {
+         "report_template": "trade",
+         "amount": 885.5,
+         "amount_rub": 65013.5,
+         "basis_ratio": 100.0,
+         "fee": 0.35,
+         "fee_rub": 25.52,
+         "full_name": "VIATRIS INC",
+         "income_rub": 65013.5,
+         "isin": "US92556V1061",
+         "operation": "Продажа",
+         "operation_id": 1,
+         "price": 17.71,
+         "qty": 50.0,
+         "s_date": 1608163200,
+         "s_rate": 73.4201,
+         "spending_rub": 25.52,
+         "symbol": "VTRS",
+         "t_date": 1608044400,
+         "t_rate": 72.9272,
+         "trade_number": "2227095222"
+      },
+      {
+         "report_template": "action",
+         "action_date": 1605528000,
+         "action_number": "",
+         "basis_ratio": 1.0,
+         "description": "Смена символа 50.0 MYL (NL0011031208) -> 50.0 VTRS (US92556V1061)",
+         "isin": "NL0011031208",
+         "isin_new": "US92556V1061",
+         "note": "Symbol change MYL->VTRS",
+         "operation": "   Корп. действие",
+         "qty": 50.0,
+         "qty_new": 50.0,
+         "symbol": "MYL",
+         "symbol_new": "VTRS",
+         "type": 3
+      },
+      {
+         "report_template": "trade",
+         "amount": 795.0,
+         "amount_rub": 56047.42,
+         "basis_ratio": 100.0,
+         "fee": 0.35,
+         "fee_rub": 24.65,
+         "income_rub": 0,
+         "isin": "NL0011031208",
+         "operation": "      Покупка",
+         "price": 15.9,
+         "qty": 50.0,
+         "s_date": 1593993600,
+         "s_rate": 70.4999,
+         "spending_rub": 56072.07,
+         "symbol": "MYL",
+         "t_date": 1593604800,
+         "t_rate": 70.4413,
+         "trade_id": 10,
+         "trade_number": "1118233222"
+      }
    ],
    "Комиссии":[
       {
