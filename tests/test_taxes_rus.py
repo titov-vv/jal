@@ -68,7 +68,10 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
         (1590587855, 1590710400, 9, 2, 639.07, 2, "2881234567"),
         (1604319194, 1604448000, 9, -2, 800, 2, "2881234589"),
         (1593604800, 1593993600, 11, 50, 15.9, 0.35, "1118233222"),
-        (1608044400, 1608163200, 12, -50, 17.71, 0.35, "2227095222")
+        (1608044400, 1608163200, 12, -50, 17.71, 0.35, "2227095222"),
+        (1593604800, 1593993600, 5, 10, 10.0, 0.35, "A"),
+        (1608044400, 1608163200, 5, -25, 3.0, 0.35, "B1"),
+        (1608044400, 1608163200, 5, -25, 2.5, 0.35, "B2")
     ]
     create_trades(1, trades)
 
@@ -80,7 +83,11 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
     ]
     create_actions(operations)
 
-    create_corporate_actions(1, [(1605528000, 3, 11, 50, 12, 50, 1, "Symbol change MYL->VTRS")])
+    corporate_actions = [
+        (1605528000, 3, 11, 50, 12, 50, 1, "Symbol change MYL->VTRS"),
+        (1604448000, 4, 5, 10, 5, 50, 1, "Split 5:1 of TLT")
+    ]
+    create_corporate_actions(1, corporate_actions)
 
     ledger = Ledger()    # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)
