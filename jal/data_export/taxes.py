@@ -436,11 +436,13 @@ class TaxesRus:
     # ------------------------------------------------------------------------------------------------------------------
     # Create a totals row from provided list of dictionaries
     # it calculates sum for each field in fields and adds it to return dictionary
-    def make_totals(self, list_of_values, fields):
-        totals = { "report_template": "totals" }
+    def insert_totals(self, list_of_values, fields):
+        if not list_of_values:
+            return
+        totals = {"report_template": "totals"}
         for field in fields:
             totals[field] = sum([x[field] for x in list_of_values if field in x])
-        return totals
+        list_of_values.append(totals)
 
     def prepare_dividends(self):
         dividends = []
@@ -490,7 +492,7 @@ class TaxesRus:
             row += 1
 
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [4, 5, 6, 7, 8, 9])
-        dividends.append(self.make_totals(dividends, ["amount", "amount_rub", "tax", "tax_rub", "tax2pay"]))
+        self.insert_totals(dividends, ["amount", "amount_rub", "tax", "tax_rub", "tax2pay"])
         return row+1, dividends
 
     # -----------------------------------------------------------------------------------------------------------------------
@@ -580,7 +582,7 @@ class TaxesRus:
         row = start_row + (data_row * 2)
 
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [13, 14, 15, 16, 17])
-        deals.append(self.make_totals(deals, ["income_rub", "spending_rub", "profit_rub", "profit"]))
+        self.insert_totals(deals, ["income_rub", "spending_rub", "profit_rub", "profit"])
         return row + 1, deals
 
     # -----------------------------------------------------------------------------------------------------------------------
@@ -707,7 +709,7 @@ class TaxesRus:
             row += 1
 
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [16, 17, 18, 19, 20])
-        bonds.append(self.make_totals(bonds, ["income_rub", "spending_rub", "profit_rub", "profit"]))
+        self.insert_totals(bonds, ["income_rub", "spending_rub", "profit_rub", "profit"])
         return row + 1, bonds
 
     # -----------------------------------------------------------------------------------------------------------------------
@@ -786,7 +788,7 @@ class TaxesRus:
         row = start_row + (data_row * 2)
 
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [12, 13, 14, 15, 16])
-        derivatives.append(self.make_totals(derivatives, ["income_rub", "spending_rub", "profit_rub", "profit"]))
+        self.insert_totals(derivatives, ["income_rub", "spending_rub", "profit_rub", "profit"])
         return row + 1, derivatives
 
     # -----------------------------------------------------------------------------------------------------------------------
@@ -812,7 +814,7 @@ class TaxesRus:
             fees.append(fee)
             row += 1
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [0, 1, 4])
-        fees.append(self.make_totals(fees, ["amount", "amount_rub"]))
+        self.insert_totals(fees, ["amount", "amount_rub"])
         return row + 1, fees
 
     # -----------------------------------------------------------------------------------------------------------------------
@@ -839,7 +841,7 @@ class TaxesRus:
             interests.append(interest)
             row += 1
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [0, 1, 4, 5])
-        interests.append(self.make_totals(interests, ["amount", "amount_rub", "tax_rub"]))
+        self.insert_totals(interests, ["amount", "amount_rub", "tax_rub"])
         return row + 1, interests
 
     # -----------------------------------------------------------------------------------------------------------------------
@@ -906,7 +908,7 @@ class TaxesRus:
                 self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [14, 15, 16])
                 row += 1
 
-            actions.append(self.make_totals(actions, ["income_rub", "spending_rub"]))
+            self.insert_totals(actions, ["income_rub", "spending_rub"])
             corp_actions += actions
             even_odd = even_odd + 1
         return row, corp_actions

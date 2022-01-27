@@ -95,7 +95,7 @@ class XLSX:
 
     def output_data(self, data, template_file, parameters):
         template = self.load_template(template_file)
-        if template is None:
+        if template is None or not data:
             return
         sheet = self.workbook.add_worksheet(template['page'])
         self.add_report_title(sheet, template['title'])
