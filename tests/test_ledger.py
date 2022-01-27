@@ -117,10 +117,6 @@ def test_buy_sell_change(prepare_db_fifo):
 
     assert readSQL("SELECT COUNT(*) FROM open_trades") == 1
     assert readSQL("SELECT COUNT(*) FROM ledger WHERE timestamp>=1609729200") == 0
-    print("----------------")
-    print(readSQL("SELECT * FROM open_trades"))
-    print(readSQL("SELECT COUNT(*) FROM deals"))
-    print("----------------")
     # Re-build ledger from last actual data
     ledger.rebuild()
 
