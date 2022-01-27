@@ -314,7 +314,8 @@ class TaxesRus:
             "Акции": "tax_rus_trades.json",
             "Облигации": "tax_rus_bonds.json",
             "ПФИ": "tax_rus_derivatives.json",
-            "Комиссии": "tax_rus_fees.json"
+            "Комиссии": "tax_rus_fees.json",
+            "Проценты": "tax_rus_interests.json"
         }
         for section in tax_report:
             if section not in templates:
@@ -834,9 +835,11 @@ class TaxesRus:
             interest['amount_rub'] = round(interest['amount'] * interest['rate'], 2) if interest['rate'] else 0
             interest['tax_rub'] = round(0.13 * interest['amount_rub'], 2)
             self.add_report_row(row, interest, even_odd=row)
+            interest['report_template'] = "interest"
             interests.append(interest)
             row += 1
         self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [0, 1, 4, 5])
+        interests.append(self.make_totals(interests, ["amount", "amount_rub", "tax_rub"]))
         return row + 1, interests
 
     # -----------------------------------------------------------------------------------------------------------------------

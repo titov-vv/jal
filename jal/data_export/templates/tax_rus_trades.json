@@ -35,7 +35,7 @@
       [null,     null,   null,  "c_type", "c_date", "c_number", "c_rate", "cs_date", "cs_rate", "c_price", "c_amount", "c_amount_rub", "c_fee", "c_fee_rub", null,         null,           null,         null,     null]
     ],
     "formats": [
-      ["T", "T", "N:0", "T", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:6", "N:2", "N:2", "N:2", "N:2", "N:2", "text"],
+      ["T", "T", "N:0", "T", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:6", "N:2", "N:2", "N:2", "N:2", "N:2", "T"],
       [null, null, null, "T", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:6", "N:2", null, null, null, null, null]
     ],
     "span": [

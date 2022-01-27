@@ -323,6 +323,20 @@
       }
    ],
    "Проценты":[
-      
+      {
+         "report_template": "interest",
+         "payment_date": 1591142400,
+         "amount": 1.5,
+         "amount_rub": 103.47,
+         "note": "RUB CREDIT INT FOR MAY-2020",
+         "rate": 68.9831,
+         "tax_rub": 13.45
+      },
+      {
+         "report_template": "totals",
+         "amount": 1.5,
+         "amount_rub": 103.47,
+         "tax_rub": 13.45
+      }
    ]
 }

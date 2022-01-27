@@ -36,7 +36,8 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
         (1581033600, 62.7977),
         (1587513600, 76.2562),
         (1605039600, 76.9515),
-        (1600128000, 74.7148)
+        (1600128000, 74.7148),
+        (1591142400, 68.9831)
     ]
     create_quotes(2, usd_rates)
     dividends = [
@@ -64,12 +65,13 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
     ]
     create_trades(1, trades)
 
-    # insert fees
-    fees = [
+    # insert fees and interest
+    operations = [
         (1604343555, 1, 1, [(5, -10.0, "BALANCE OF MONTHLY MINIMUM FEE FOR OCT 2020")]),
-        (1605039600, 1, 1, [(5, -1.0, "ERIC(294821608) ADR Fee USD 0.02 PER SHARE - FEE")])
+        (1605039600, 1, 1, [(5, -1.0, "ERIC(294821608) ADR Fee USD 0.02 PER SHARE - FEE")]),
+        (1591142400, 1, 1, [(8, 1.5, "RUB CREDIT INT FOR MAY-2020")])
     ]
-    create_actions(fees)
+    create_actions(operations)
 
     ledger = Ledger()    # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)

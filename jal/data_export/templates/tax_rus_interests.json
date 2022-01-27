@@ -1,6 +1,6 @@
 {
-  "page": "Комиссии",
-  "title": "Отчет по комиссиям и прочим платежам в отчетном периоде",
+  "page": "Проценты",
+  "title": "Отчет по процентам, выплаченным в отчетном периоде",
   "headers": [
       "Документ-основание: ",
       "Период: {parameters[period]}",
@@ -9,26 +9,27 @@
     ],
   "columns": [  
     {"name": "Описание", "width": 50},
-    {"name": "Дата оплаты", "width": 10},
-    {"name": "Курс {parameters[currency]}/RUB на дату оплаты", "width": 10},
+    {"name": "Дата выплаты", "width": 10},
+    {"name": "Курс {parameters[currency]}/RUB на дату выплаты", "width": 10},
     {"name": "Сумма, {parameters[currency]}", "width": 10},
-    {"name": "Сумма, RUB", "width": 10}
+    {"name": "Доход, RUB (код 1011)", "width": 10},
+    {"name": "Налог, RUB", "width": 10}
   ],
   "columns_numbered": true,
-  "fee": {
+  "interest": {
     "rows": [
-      ["note", "payment_date", "rate", "amount", "amount_rub"]
+      ["note", "payment_date", "rate", "amount", "amount_rub", "tax_rub"]
     ],
     "formats": [
-      ["T", "D", "N:4", "N:2", "N:2"]
+      ["T", "D", "N:4", "N:2", "N:2", "N:2"]
     ]
   },
   "totals": {
     "rows": [
-      [null, null, "ИТОГО", "amount", "amount_rub"]
+      [null, null, "ИТОГО", "amount", "amount_rub", "tax_rub"]
     ],
     "formats": [
-      [null, null, "F", "F", "F"]
+      [null, null, "F", "F", "F", "F"]
     ]
   },
   "footers": [
@@ -37,6 +38,7 @@
     "2 - Дата платежа",
     "3 - Официальный курс валюты,  установленный ЦБ РФ на дату платежа",
     "4 - Сумма платежа в валюте счёта",
-    "5 - Сумма платежа в рублях (= Столбец 2 * Столбец 4)"
+    "5 - Сумма дохода в рублях (= Столбец 3 * Столбец 4)",
+    "6 - Сумма налога к уплате (13% от столбца 5)"
   ]
 }
