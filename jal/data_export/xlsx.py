@@ -44,45 +44,6 @@ class XLSX:
         except:
             logging.error(self.tr("Can't save report into file ") + f"'{self.filename}'")
 
-    def add_report_sheet(self, name):
-        return self.workbook.add_worksheet(name)
-
-    # all parameters are zero-based integer indices
-    # Function does following:
-    # 1) puts self.totals caption into cell at (footer_row, columns_list[0]) if columns_list[0] is not None
-    # 2) puts formula =SUM(start_row+1, footer_row) into all other cells at (footer_row, columns_list[1:])
-    # 3) puts 0 instead of SUM if there are no data to make totals
-    def add_totals_footer(self, sheet, start_row, footer_row, columns_list):
-        if columns_list[0] is not None:
-            sheet.write(footer_row, columns_list[0], self.totals, self.formats.ColumnFooter())
-        if footer_row > start_row:  # Don't put formulas with pre-definded errors
-            for i in columns_list[1:]:
-                if i > 25:
-                    raise ValueError
-                formula = f"=SUM({chr(ord('A')+i)}{start_row + 1}:{chr(ord('A')+i)}{footer_row})"
-                sheet.write_formula(footer_row, i, formula, self.formats.ColumnFooter())
-        else:
-            self.write_zeros(sheet, [footer_row], columns_list[1:], self.formats.ColumnFooter())
-
-    # Fills rectangular area defined by rows and columns with 0 values
-    def write_zeros(self, sheet, rows, columns, format):
-        for i in rows:
-            for j in columns:
-                sheet.write(i, j, 0, format)
-
-    def write_row(self, sheet, row, columns, height=None):
-        if height:
-            sheet.set_row(row, height)
-        for column in columns:
-            cd = columns[column]
-            if len(cd) != 2:
-                if cd[self.ROW_WIDTH]:
-                    sheet.set_column(column, column, cd[self.ROW_WIDTH])
-                if cd[self.ROW_SPAN_H] or cd[self.ROW_SPAN_V]:
-                    sheet.merge_range(row, column, row + cd[self.ROW_SPAN_V], column + cd[self.ROW_SPAN_H],
-                                        cd[self.ROW_DATA], cd[self.ROW_FORMAT])
-            sheet.write(row, column, cd[self.ROW_DATA], cd[self.ROW_FORMAT])
-
     def load_template(self, file):
         template = None
         file_path = get_app_path()+ Setup.EXPORT_PATH + os.sep + Setup.TEMPLATE_PATH + os.sep + file

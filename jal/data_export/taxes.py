@@ -4,7 +4,7 @@ import logging
 import sys
 
 from jal.constants import Setup, TransactionType, CorporateAction, PredefinedAsset, PredefinedCategory, DividendSubtype
-from jal.data_export.helpers import XLSX
+from jal.data_export.xlsx import XLSX
 from jal.data_export.dlsg import DLSG
 from jal.db.helpers import executeSQL, readSQLrecord, readSQL
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog
@@ -86,17 +86,7 @@ if "pytest" not in sys.modules:
 
 # -----------------------------------------------------------------------------------------------------------------------
 class TaxesRus:
-    BOND_PRINCIPAL = 1000 # TODO We may keep bond principal in 'assets' table or somewhere in database
-
-    RPT_METHOD = 0
-    RPT_TITLE = 1
-    RPT_COLUMNS = 2
-    RPT_DATA_ROWS = 3
-
-    COL_TITLE = 0
-    COL_WIDTH = 1
-    COL_FIELD = 2
-    COL_DESCR = -1
+    BOND_PRINCIPAL = 1000  # TODO We may keep bond principal in 'assets' table or somewhere in database
 
     CorpActionText = {
         CorporateAction.SymbolChange: "Смена символа {before} {old} -> {after} {new}",
@@ -115,145 +105,15 @@ class TaxesRus:
         self.broker_name = ''
         self.broker_as_income = True
         self.use_settlement = True
-        self.current_report = None
-        self.data_start_row = 9
-        self.reports_xls = None
         self.statement = None
-        self.current_sheet = None
         self.reports = {
-            "Дивиденды": (self.prepare_dividends,
-                          "Отчет по дивидендам, полученным в отчетном периоде",
-                          {
-                              0: ("Дата выплаты", 10, ("payment_date", "date"), "Дата, в которую дивиденд был зачислен на счет согласно отчету брокера"),
-                              1: ("Ценная бумага", 8, ("symbol", "text"), "Краткое наименование ценной бумаги"),
-                              2: ("ISIN", 11, ("isin", "text"), "Международный идентификационный код ценной бумаги"),
-                              3: ("Полное наименование", 40, ("full_name", "text"), "Полное наименование ценной бумаги"),
-                              4: ("Курс {currency}/RUB на дату выплаты", 16, ("rate", "number", 4), "Официальный курс валюты выплаты, установленный ЦБ РФ на дату выплаты дивиденда"),
-                              5: ("Доход, {currency}", 12, ("amount", "number", 2), "Сумма выплаченного дивиденда в валюте счета"),
-                              6: ("Доход, RUB (код 1010)", 12, ("amount_rub", "number", 2), "Сумма выплаченного дивиденда в рублях по курсу ЦБ РФ на дату выплаты (= Столбец 5 x Столбец 6)"),
-                              7: ("Налог упл., {currency}", 12, ("tax", "number", 2), "Сумма налога, удержанная эмитентом, в валюте счета"),
-                              8: ("Налог упл., RUB", 12, ("tax_rub", "number", 2), "Сумма налога, удержанная эмитентом, в рублях по курсу ЦБ РФ на дату удержания (= Столбец 5 x Столбец 8)"),
-                              9: ("Налог к уплате, RUB", 12, ("tax2pay", "number", 2), "Сумма налога, подлежащая уплате в РФ (= 13% от Столбца 7 - Столбец 9)"),
-                              10: ("Страна", 20, ("country", "text"), "Страна регистрации эмитента ценной бумаги "),
-                              11: ("СОИДН", 7, ("tax_treaty", "bool", ("Нет", "Да")), "Наличие у Российской Федерации договора об избежании двойного налогообложения со страной эмитента")
-                          }, 1
-                          ),
-            "Акции": (self.prepare_stocks_and_etf,
-                      "Отчет по сделкам с акциями и паями, завершённым в отчетном периоде",
-                      {
-                          0: ("Ценная бумага", 8, ("symbol", "text", 0, 0, 1), None, "Краткое наименование ценной бумаги"),
-                          1: ("ISIN", 11, ("isin", "text", 0, 0, 1), None, "Международный идентификационный код ценной бумаги"),
-                          2: ("Кол-во", 8, ("qty", "number", 0, 0, 1), None, "Количество ЦБ в сделке"),
-                          3: ("Тип операции", 8, ("o_type", "text"), ("c_type", "text"), "Направление сделки (покупка или продажа)"),
-                          4: ("Дата операции", 10, ("o_date", "date"), ("c_date", "date"), "Дата заключения сделки (и уплаты комиссии из столбца 13)"),
-                          5: ("Номер операции", 10, ("o_number", "text"), ("c_number", "text"), "Номер операции в торговой системе"),
-                          6: ("Курс {currency}/RUB на дату операции", 9, ("o_rate", "number", 4), ("c_rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату заключения сделки"),
-                          7: ("Дата расчётов", 10, ("os_date", "date"), ("cs_date", "date"), "Дата рачетов по сделке / Дата поставки ценных бумаг"),
-                          8: ("Курс {currency}/RUB на дату расчётов", 9, ("os_rate", "number", 4), ("cs_rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату поставки ЦБ / расчётов по сделке"),
-                          9: ("Цена, {currency}", 12, ("o_price", "number", 6), ("c_price", "number", 6), "Цена одной ценной бумаги в валюте счета"),
-                          10: ("Сумма сделки, {currency}", 12, ("o_amount", "number", 2), ("c_amount", "number", 2), "Сумма сделки в валюте счета (= Столбец 3 * Столбец 10)"),
-                          11: ("Сумма сделки, RUB", 12, ("o_amount_rub", "number", 2), ("c_amount_rub", "number", 2), "Сумма сделки в рублях (= Столбец 11 * Столбец 9)"),
-                          12: ("Комиссия, {currency}", 12, ("o_fee", "number", 6), ("c_fee", "number", 6), "Комиссия брокера за совершение сделки в валюте счета"),
-                          13: ("Комиссия, RUB", 9, ("o_fee_rub", "number", 2), ("c_fee_rub", "number", 2), "Комиссия брокера за совершение сделки в рублях ( = Столбец 13 * Столбец 7)"),
-                          14: ("Доход, RUB (код 1530)", 12, ("income_rub", "number", 2, 0, 1), None, "Доход, полученных от продажи ценных бумаг (равен сумме сделки продажи из столбца 12)"),
-                          15: ("Расход, RUB (код 201)", 12, ("spending_rub", "number", 2, 0, 1), None, "Расходы, понесённые на покупку ценных бумаг и уплату комиссий (равны сумме сделки покупки из столбца 12 + комиссии из столбца 14)"),
-                          16: ("Финансовый результат, RUB", 12, ("profit_rub", "number", 2, 0, 1), None, "Финансовый результат сделки в рублях (= Столбец 15 - Столбец 16)"),
-                          17: ("Финансовый результат, {currency}", 12, ("profit", "number", 2, 0, 1), None, "Финансовый результат сделки в валюте счета"),
-                          18: ("Примечания", 12, ("s_dividend_note", "text", 0, 0, 1), None, "Дополнительная информация")
-                      }, 2
-                      ),
-            "Облигации": (self.prepare_bonds,
-                          "Отчет по сделкам с облигациями, завершённым в отчетном периоде, и полученным купонам",
-                          {
-                              0: ("Ценная бумага", 8, ("symbol", "text", 0, 0, 1), None, ("symbol", "text"), "Краткое наименование ценной бумаги"),
-                              1: ("ISIN", 11, ("isin", "text", 0, 0, 1), None, ("isin", "text"), "Международный идентификационный код ценной бумаги"),
-                              2: ("Кол-во", 8, ("qty", "number", 0, 0, 1), None, ("empty", "text"), "Количество ЦБ в сделке"),
-                              3: ("Номинал, {currency}", 7, ("principal", "number", 0, 0, 1), None, ("empty", "text"), "Номинал облигации"),
-                              4: ("Тип операции", 8, ("o_type", "text"), ("c_type", "text"), ("type", "text"), "Направление сделки (покупка или продажа)"),
-                              5: ("Дата операции", 10, ("o_date", "date"), ("c_date", "date"), ("o_date", "date"), "Дата заключения сделки, уплаты комиссии(столбец 16) и НКД(столбец 14)"),
-                              6: ("Номер операции", 10, ("o_number", "text"), ("c_number", "text"), ("number", "text"), "Номер операции в торговой системе"),
-                              7: ("Курс {currency}/RUB на дату операции", 9, ("o_rate", "number", 4), ("c_rate", "number", 4), ("rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату заключения сделки"),
-                              8: ("Дата расчётов", 10, ("os_date", "date"), ("cs_date", "date"), ("empty", "text"), "Дата рачетов по сделке / Дата поставки ценных бумаг"),
-                              9: ("Курс {currency}/RUB на дату расчётов", 9, ("os_rate", "number", 4), ("cs_rate", "number", 4), ("empty", "text"), "Официальный курс валюты,  установленный ЦБ РФ на дату поставки ЦБ / расчётов по сделке"),
-                              10: ("Цена, %", 12, ("o_price", "number", 6), ("c_price", "number", 6), ("empty", "text"), "Цена одной облигации в процентах от номинала"),
-                              11: ("Сумма сделки, {currency}", 12, ("o_amount", "number", 2), ("c_amount", "number", 2), ("interest", "number", 2), "Сумма сделки в валюте счета (= Столбец 3 * Столбец 10)"),
-                              12: ("Сумма сделки, RUB", 12, ("o_amount_rub", "number", 2), ("c_amount_rub", "number", 2), ("interest_rub", "number", 2), "Сумма сделки в рублях (= Столбец 11 * Столбец 9)"),
-                              13: ("НКД, {currency}", 8, ("o_int", "number", 2), ("c_int", "number", 2), ("empty", "text"), "Накопленный купонный доход в валюте счета"),
-                              14: ("НКД, RUB", 8, ("o_int_rub", "number", 2), ("c_int_rub", "number", 2), ("empty", "text"), "Накопленный купонный доход в рублях ( = Столбец 14 * Столбец 8)"),
-                              15: ("Комиссия, {currency}", 12, ("o_fee", "number", 6), ("c_fee", "number", 6), ("empty", "text"), "Комиссия брокера за совершение сделки в валюте счета"),
-                              16: ("Комиссия, RUB", 9, ("o_fee_rub", "number", 2), ("c_fee_rub", "number", 2), ("empty", "text"), "Комиссия брокера за совершение сделки в рублях ( = Столбец 16 * Столбец 8)"),
-                              17: ("Доход, RUB (код 1530)", 12, ("income_rub", "number", 2, 0, 1), None, ("income_rub", "number", 2), "Доход, полученных от продажи ценных бумаг (равен сумме сделки продажи из столбца 13 + НКД из столбца 15)"),
-                              18: ("Расход, RUB (код 201)", 12, ("spending_rub", "number", 2, 0, 1), None, ("empty", "text"), "Расходы, понесённые на покупку ценных бумаг и уплату комиссий (равны сумме сделки покупки из столбца 13 + комиссии из столбца 17 + НКД из столбца 15)"),
-                              19: ("Финансовый результат, RUB", 12, ("profit_rub", "number", 2, 0, 1), None, ("empty", "text"), "Финансовый результат сделки в рублях (= Столбец 18 - Столбец 19)"),
-                              20: ("Финансовый результат, {currency}", 12, ("profit", "number", 2, 0, 1), None, ("interest", "number", 2), "Финансовый результат сделки в валюте счета")
-                          }, 2
-                          ),
-            "ПФИ": (self.prepare_derivatives,
-                    "Отчет по сделкам с производными финансовыми инструментами, завершённым в отчетном периоде",
-                    {
-                        0: ("Ценная бумага", 8, ("symbol", "text", 0, 0, 1), None, "Краткое наименование контракта"),
-                        1: ("Кол-во", 8, ("qty", "number", 0, 0, 1), None, "Количество ЦБ в сделке"),
-                        2: ("Тип операции", 8, ("o_type", "text"), ("c_type", "text"), "Направление сделки (покупка или продажа)"),
-                        3: ("Дата операции", 10, ("o_date", "date"), ("c_date", "date"), "Дата заключения сделки (и уплаты комиссии из столбца 12)"),
-                        4: ("Номер операции", 10, ("o_number", "text"), ("c_number", "text"), "Номер операции в торговой системе"),
-                        5: ("Курс {currency}/RUB на дату операции", 9, ("o_rate", "number", 4), ("c_rate", "number", 4), "Официальный курс валюты, установленный ЦБ РФ на дату заключения сделки"),
-                        6: ("Дата расчётов", 10, ("os_date", "date"), ("cs_date", "date"), "Дата рачетов по сделке"),
-                        7: ("Курс {currency}/RUB на дату расчётов", 9, ("os_rate", "number", 4), ("cs_rate", "number", 4), "Официальный курс валюты, установленный ЦБ РФ на дату расчётов по сделке"),
-                        8: ("Цена, {currency}", 12, ("o_price", "number", 6), ("c_price", "number", 6), "Цена одной ценной бумаги в валюте счета"),
-                        9: ("Сумма сделки, {currency}", 12, ("o_amount", "number", 2), ("c_amount", "number", 2), "Сумма сделки в валюте счета (= Столбец 2 * Столбец 9)"),
-                        10: ("Сумма сделки, RUB", 12, ("o_amount_rub", "number", 2), ("c_amount_rub", "number", 2), "Сумма сделки в рублях (= Столбец 9 * Столбец 8)"),
-                        11: ("Комиссия, {currency}", 12, ("o_fee", "number", 6), ("c_fee", "number", 6), "Комиссия брокера за совершение сделки в валюте счета"),
-                        12: ("Комиссия, RUB", 9, ("o_fee_rub", "number", 2), ("c_fee_rub", "number", 2), "Комиссия брокера за совершение сделки в рублях ( = Столбец 12 * Столбец 6)"),
-                        13: ("Доход, RUB (код 1532)", 12, ("income_rub", "number", 2, 0, 1), None, "Доход, полученных от продажи ценных бумаг (равен сумме сделки продажи из столбца 11)"),
-                        14: ("Расход, RUB (код 206)", 12, ("spending_rub", "number", 2, 0, 1), None, "Расходы, понесённые на покупку ценных бумаг и уплату комиссий (равны сумме стелки покупки из столбца 11 + комиссии из столбца 13)"),
-                        15: ("Финансовый результат, RUB", 12, ("profit_rub", "number", 2, 0, 1), None, "Финансовый результат сделки в рублях (= Столбец 14 - Столбец 15)"),
-                        16: ("Финансовый результат, {currency}", 12, ("profit", "number", 2, 0, 1), None, "Финансовый результат сделки в валюте счета")
-                    }, 2
-                    ),
-            "Корп.события": (self.prepare_corporate_actions,
-                             "Отчет по сделкам с ценными бумагами, завершённым в отчетном периоде "
-                             "с предшествовавшими корпоративными событиями",
-                             {
-                                 0: ("Тип операции", 20, ("operation", "text"), ("operation", "text"), "Описание типа операции"),
-                                 1: ("Дата операции", 10, ("t_date", "date"), ("action_date", "date"), "Дата совершения операции (и уплаты комиссии из столбца 13)"),
-                                 2: ("Номер операции", 10, ("trade_number", "text"), ("action_number", "text"), "Номер операции в торговой системе"),
-                                 3: ("Ценная бумага", 8, ("symbol", "text"), ("description", "text", 0, 13, 0), "Краткое наименование ценной бумаги"),
-                                 4: ("ISIN", 11, ("isin", "text"), None, "Международный идентификационный код ценной бумаги"),
-                                 5: ("Кол-во", 8, ("qty", "number", 4), None, "Количество ЦБ в сделке"),
-                                 6: ("Курс {currency}/RUB на дату операции", 9, ("t_rate", "number", 4), None, "Официальный курс валюты, установленный ЦБ РФ на дату операции"),
-                                 7: ("Дата расчётов", 10, ("s_date", "date"), None, "Дата рачетов по сделке / Дата поставки ценных бумаг"),
-                                 8: ("Курс {currency}/RUB на дату расчётов", 9, ("s_rate", "number", 4), None, "Официальный курс валюты, установленный ЦБ РФ на дату расчётов по операции"),
-                                 9: ("Цена, {currency}", 12, ("price", "number", 6), None, "Цена одной ценной бумаги в валюте счета"),
-                                 10: ("Сумма сделки, {currency}", 12, ("amount", "number", 2), None, "Сумма сделки в валюте счета (= Столбец 6 * Столбец 10)"),
-                                 11: ("Сумма сделки, RUB", 12, ("amount_rub", "number", 2), None, "Сумма сделки в рублях (= Столбец 11 * Столбец 8)"),
-                                 12: ("Комиссия, {currency}", 12, ("fee", "number", 6), None, "Комиссия брокера за совершение сделки в валюте счета"),
-                                 13: ("Комиссия, RUB", 9, ("fee_rub", "number", 2), None, "Комиссия брокера за совершение сделки в рублях ( = Столбец 13 * Столбец 7)"),
-                                 14: ("Доля к учёту, %", 9, ("basis_ratio", "number", 2), None, "Доля затрат к учёту при корпоративном собыии"),
-                                 15: ("Доход, RUB (код 1530)", 12, ("income_rub", "number", 2), None, "Доход, полученных от продажи ценных бумаг"),
-                                 16: ("Расход, RUB (код 201)", 12, ("spending_rub", "number", 2), None, "Расходы, понесённые на покупку ценных бумаг и уплату комиссий"),
-                             }
-                             ),
-            "Комиссии": (self.prepare_broker_fees,
-                         "Отчет по комиссиям и прочим платежам в отчетном периоде",
-                         {
-                             0: ("Описание", 50, ("note", "text"), "Описание платежа"),
-                             1: ("Сумма, {currency}", 8, ("amount", "number", 2), "Сумма платежа в валюте счёта"),
-                             2: ("Дата оплаты", 10, ("payment_date", "date"), "Дата платежа"),
-                             3: ("Курс {currency}/RUB на дату оплаты", 10, ("rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату платежа"),
-                             4: ("Сумма, RUB", 10, ("amount_rub", "number", 2), "Сумма платежа в рублях (= Столбец 2 * Столбец 4)")
-                         }, 1
-                         ),
-            "Проценты": (self.prepare_broker_interest,
-                         "Отчет по процентам, выплаченным в отчетном периоде",
-                         {
-                             0: ("Описание", 50, ("note", "text"), "Описание платежа"),
-                             1: ("Сумма, {currency}", 8, ("amount", "number", 2), "Сумма платежа в валюте счёта"),
-                             2: ("Дата выплаты", 10, ("payment_date", "date"), "Дата платежа"),
-                             3: ("Курс {currency}/RUB на дату выплаты", 10, ("rate", "number", 4), "Официальный курс валюты,  установленный ЦБ РФ на дату платежа"),
-                             4: ("Доход, RUB (код 1011)", 10, ("amount_rub", "number", 2), "Сумма дохода в рублях (= Столбец 2 * Столбец 4)"),
-                             5: ("Налог, RUB", 10, ("tax_rub", "number", 2), "Сумма налога к уплате (13% от столбца 5)")
-                         }, 1
-                         )
+            "Дивиденды": self.prepare_dividends,
+            "Акции": self.prepare_stocks_and_etf,
+            "Облигации": self.prepare_bonds,
+            "ПФИ": self.prepare_derivatives,
+            "Корп.события": self.prepare_corporate_actions,
+            "Комиссии": self.prepare_broker_fees,
+            "Проценты": self.prepare_broker_interest
         }
 
     def tr(self, text):
@@ -284,8 +144,6 @@ class TaxesRus:
         self.year_begin = int(datetime.strptime(f"{year}", "%Y").replace(tzinfo=timezone.utc).timestamp())
         self.year_end = int(datetime.strptime(f"{year + 1}", "%Y").replace(tzinfo=timezone.utc).timestamp())
 
-        self.reports_xls = XLSX(taxes_file)
-
         self.statement = None
         if dlsg_update:
             self.statement = DLSG(only_dividends=dlsg_dividends_only)
@@ -297,17 +155,9 @@ class TaxesRus:
 
         self.prepare_exchange_rate_dates()
         for report in self.reports:
-            self.current_report = report
-            self.current_sheet = self.reports_xls.add_report_sheet(report)
-            self.add_report_header()
-            report_description = self.reports[self.current_report]
-            next_row, report_section = report_description[self.RPT_METHOD]()
-            tax_report[report] = report_section
-            self.add_report_footer(next_row)
+            tax_report[report] = self.reports[report]()
 
-        self.reports_xls.save()
-
-        self.reports_xls = XLSX(taxes_file.replace(".xlsx", "_new.xlsx"))
+        reports_xls = XLSX(taxes_file)
         templates = {
             "Дивиденды": "tax_rus_dividends.json",
             "Акции": "tax_rus_trades.json",
@@ -326,8 +176,8 @@ class TaxesRus:
                 "account": f"{self.account_number} ({self.account_currency})",
                 "currency": self.account_currency
             }
-            self.reports_xls.output_data(tax_report[section], templates[section], parameters)
-        self.reports_xls.save()
+            reports_xls.output_data(tax_report[section], templates[section], parameters)
+        reports_xls.save()
 
         if dlsg_update:
             try:
@@ -337,77 +187,6 @@ class TaxesRus:
 
         logging.info(self.tr("Tax report saved to file ") + f"'{taxes_file}'")
         return tax_report
-
-    # This method puts header on each report sheet
-    def add_report_header(self):
-        report = self.reports[self.current_report]
-        self.current_sheet.write(0, 0, report[self.RPT_TITLE], self.reports_xls.formats.Bold())
-        self.current_sheet.write(2, 0, "Документ-основание:", self.reports_xls.formats.CommentText())
-        self.current_sheet.write(3, 0, f"Период: {datetime.utcfromtimestamp(self.year_begin).strftime('%d.%m.%Y')}"
-                                       f" - {datetime.utcfromtimestamp(self.year_end - 1).strftime('%d.%m.%Y')}",
-                                 self.reports_xls.formats.CommentText())
-        self.current_sheet.write(4, 0, "ФИО:", self.reports_xls.formats.CommentText())
-        self.current_sheet.write(5, 0, f"Номер счета: {self.account_number} ({self.account_currency})",
-                                 self.reports_xls.formats.CommentText())
-
-        header_row = {}
-        numbers_row = {}  # Put column numbers for reference
-        for column in report[self.RPT_COLUMNS]:
-            # make tuple for each column i: ("Column_Title", xlsx.formats.ColumnHeader(), Column_Width, 0, 0)
-            title = report[self.RPT_COLUMNS][column][self.COL_TITLE].format(currency=self.account_currency)
-            width = report[self.RPT_COLUMNS][column][self.COL_WIDTH]
-            header_row[column] = (title, self.reports_xls.formats.ColumnHeader(), width, 0, 0)
-            numbers_row[column] = (f"({column + 1})", self.reports_xls.formats.ColumnHeader())
-        self.reports_xls.write_row(self.current_sheet, 7, header_row, 60)
-        self.reports_xls.write_row(self.current_sheet, 8, numbers_row)
-
-    def add_report_row(self, row, data, even_odd=1, alternative=0):
-        KEY_NAME = 0
-        VALUE_FMT = 1
-        FMT_DETAILS = 2
-        H_SPAN = 3
-        V_SPAN = 4
-
-        report = self.reports[self.current_report]
-        data_row = {}
-        idx = self.COL_FIELD + alternative
-        for column in report[self.RPT_COLUMNS]:
-            field_dscr = report[self.RPT_COLUMNS][column][idx]
-            if field_dscr is not None:
-                value = data[field_dscr[KEY_NAME]]
-                format_as = field_dscr[VALUE_FMT]
-                if format_as == "text":
-                    fmt = self.reports_xls.formats.Text(even_odd)
-                elif format_as == "number":
-                    precision = field_dscr[FMT_DETAILS]
-                    fmt = self.reports_xls.formats.Number(even_odd, tolerance=precision)
-                elif format_as == "date":
-                    value = datetime.utcfromtimestamp(value).strftime('%d.%m.%Y')
-                    fmt = self.reports_xls.formats.Text(even_odd)
-                elif format_as == "bool":
-                    value = field_dscr[FMT_DETAILS][value]
-                    fmt = self.reports_xls.formats.Text(even_odd)
-                else:
-                    raise ValueError
-                if len(field_dscr) == 5:  # There are horizontal or vertical span defined
-                    data_row[column] = (value, fmt, 0, field_dscr[H_SPAN], field_dscr[V_SPAN])
-                else:
-                    data_row[column] = (value, fmt)
-        self.reports_xls.write_row(self.current_sheet, row, data_row)
-
-    def add_report_footer(self, row):
-        row += 1  # Skip one row from previous table
-        self.current_sheet.write(row, 0, "Описание данных в стобцах таблицы",
-                                 self.reports_xls.formats.CommentText())
-        row += 1
-        self.current_sheet.write(row, 0, "Номер столбца", self.reports_xls.formats.CommentText())
-        self.current_sheet.write(row, 2, "Описание", self.reports_xls.formats.CommentText())
-        report = self.reports[self.current_report]
-        for column in report[self.RPT_COLUMNS]:
-            row += 1
-            self.current_sheet.write(row, 0, column + 1, self.reports_xls.formats.CommentText())
-            self.current_sheet.write(row, 2, report[self.RPT_COLUMNS][column][self.COL_DESCR],
-                                     self.reports_xls.formats.CommentText())
 
     # Exchange rates are present in database not for every date (and not every possible timestamp)
     # As any action has exact timestamp it won't match rough timestamp of exchange rate most probably
@@ -459,7 +238,6 @@ class TaxesRus:
                            " AND d.amount>0 AND d.type=:type_dividend ORDER BY d.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end),
                             (":account_id", self.account_id), (":type_dividend", DividendSubtype.Dividend)])
-        row = start_row = self.data_start_row
         while query.next():
             dividend = readSQLrecord(query, named=True)
             dividend["amount_rub"] = round(dividend["amount"] * dividend["rate"], 2) if dividend["rate"] else 0
@@ -470,7 +248,7 @@ class TaxesRus:
                     dividend["tax2pay"] = dividend["tax2pay"] - dividend["tax_rub"]
                 else:
                     dividend["tax2pay"] = 0
-            self.add_report_row(row, dividend, even_odd=row)
+            dividend['tax_treaty'] = "Да" if dividend['tax_treaty'] else "Нет"
             dividend['report_template'] = "dividend"
             dividends.append(dividend)
 
@@ -489,11 +267,8 @@ class TaxesRus:
                     DLSG.DIVIDEND_INCOME, dividend['payment_date'], dividend["country_iso"], self.account_currency,
                     dividend['rate'], dividend['amount'], dividend['amount_rub'], dividend['tax'], dividend['tax_rub'],
                     income_source)
-            row += 1
-
-        self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [4, 5, 6, 7, 8, 9])
         self.insert_totals(dividends, ["amount", "amount_rub", "tax", "tax_rub", "tax2pay"])
-        return row+1, dividends
+        return dividends
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_stocks_and_etf(self):
@@ -529,13 +304,10 @@ class TaxesRus:
                            "ORDER BY s.name, o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
                             (":stock", PredefinedAsset.Stock), (":fund", PredefinedAsset.ETF)])
-        start_row = self.data_start_row
-        data_row = 0
         while query.next():
             deal = readSQLrecord(query, named=True)
             if not deal['symbol']:   # there will be row of NULLs if no deals are present (due to SUM aggregation)
                 continue
-            row = start_row + (data_row * 2)
             if not self.use_settlement:
                 deal['os_rate'] = deal['o_rate']
                 deal['cs_rate'] = deal['c_rate']
@@ -561,9 +333,6 @@ class TaxesRus:
                 deal['s_dividend_note'] = f"Удержанный дивиденд: {deal['s_dividend']:.2f} RUB"
             else:
                 deal['s_dividend_note'] = ''
-
-            self.add_report_row(row, deal, even_odd=data_row)
-            self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
             deal['report_template'] = "trade"
             deals.append(deal)
 
@@ -578,12 +347,9 @@ class TaxesRus:
                 self.statement.add_foreign_income(
                     DLSG.STOCK_INCOME, deal['cs_date'], deal['country_iso'], self.account_currency, deal['cs_rate'],
                     deal['income'], deal['income_rub'], 0.0, 0.0, income_source, spending_rub=deal['spending_rub'])
-            data_row = data_row + 1
-        row = start_row + (data_row * 2)
 
-        self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [13, 14, 15, 16, 17])
         self.insert_totals(deals, ["income_rub", "spending_rub", "profit_rub", "profit"])
-        return row + 1, deals
+        return deals
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_bonds(self):
@@ -615,11 +381,8 @@ class TaxesRus:
                            "ORDER BY s.name, o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
                             (":bond", PredefinedAsset.Bond)])
-        start_row = self.data_start_row
-        data_row = 0
         while query.next():
             deal = readSQLrecord(query, named=True)
-            row = start_row + (data_row * 2)
             deal['principal'] = self.BOND_PRINCIPAL
             if not self.use_settlement:
                 deal['os_rate'] = deal['o_rate']
@@ -649,9 +412,6 @@ class TaxesRus:
             deal['spending'] = deal['spending'] + deal['o_fee'] + deal['c_fee']
             deal['profit_rub'] = deal['income_rub'] - deal['spending_rub']
             deal['profit'] = deal['income'] - deal['spending']
-
-            self.add_report_row(row, deal, even_odd=data_row)
-            self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
             deal['report_template'] = "bond_trade"
             bonds.append(deal)
 
@@ -666,8 +426,6 @@ class TaxesRus:
                 self.statement.add_foreign_income(
                     DLSG.STOCK_INCOME, deal['cs_date'], deal['country_iso'], self.account_currency, deal['cs_rate'],
                     deal['income'], deal['income_rub'], 0.0, 0.0, income_source, spending_rub=deal['spending_rub'])
-            data_row = data_row + 1
-        row = start_row + (data_row * 2)
 
         # Second - take all bond interest payments not linked with buy/sell transactions
         query = executeSQL("SELECT b.name AS symbol, b.isin AS isin, i.timestamp AS o_date, i.number AS number, "
@@ -692,7 +450,6 @@ class TaxesRus:
             interest['income_rub'] = interest['profit_rub'] = interest['interest_rub']
             interest['spending_rub'] = 0.0
             interest['profit'] = interest['interest']
-            self.add_report_row(row, interest, even_odd=data_row, alternative=2)
             interest['report_template'] = "bond_interest"
             bonds.append(interest)
 
@@ -700,17 +457,13 @@ class TaxesRus:
                 if self.broker_as_income:
                     income_source = self.broker_name
                 else:
-                    income_source = f"Купонный доход от {deal['symbol']} ({deal['isin']})"
+                    income_source = f"Купонный доход от {interest['symbol']} ({interest['isin']})"
                 self.statement.add_foreign_income(
                     DLSG.STOCK_INCOME, interest['o_date'], interest['country_iso'], self.account_currency,
                     interest['rate'], interest['interest'], interest['interest_rub'], 0.0, 0.0, income_source)
 
-            data_row = data_row + 1
-            row += 1
-
-        self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [16, 17, 18, 19, 20])
         self.insert_totals(bonds, ["income_rub", "spending_rub", "profit_rub", "profit"])
-        return row + 1, bonds
+        return bonds
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_derivatives(self):
@@ -740,11 +493,8 @@ class TaxesRus:
                            "ORDER BY s.name, o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
                             (":derivative", PredefinedAsset.Derivative)])
-        start_row = self.data_start_row
-        data_row = 0
         while query.next():
             deal = readSQLrecord(query, named=True)
-            row = start_row + (data_row * 2)
             if not self.use_settlement:
                 deal['os_rate'] = deal['o_rate']
                 deal['cs_rate'] = deal['c_rate']
@@ -766,9 +516,6 @@ class TaxesRus:
             deal['spending'] = deal['spending'] + deal['o_fee'] + deal['c_fee']
             deal['profit_rub'] = deal['income_rub'] - deal['spending_rub']
             deal['profit'] = deal['income'] - deal['spending']
-
-            self.add_report_row(row, deal, even_odd=data_row)
-            self.add_report_row(row + 1, deal, even_odd=data_row, alternative=1)
             deal['report_template'] = "trade"
             derivatives.append(deal)
 
@@ -784,12 +531,8 @@ class TaxesRus:
                     DLSG.DERIVATIVE_INCOME, deal['cs_date'], deal['country_iso'], self.account_currency,
                     deal['cs_rate'], deal['income'], deal['income_rub'], 0.0, 0.0, income_source,
                     spending_rub=deal['spending_rub'])
-            data_row = data_row + 1
-        row = start_row + (data_row * 2)
-
-        self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [12, 13, 14, 15, 16])
         self.insert_totals(derivatives, ["income_rub", "spending_rub", "profit_rub", "profit"])
-        return row + 1, derivatives
+        return derivatives
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_fees(self):
@@ -804,18 +547,14 @@ class TaxesRus:
                            "AND a.account_id=:account_id AND d.category_id=:fee",
                            [(":begin", self.year_begin), (":end", self.year_end),
                             (":account_id", self.account_id), (":fee", PredefinedCategory.Fees)])
-        row = start_row = self.data_start_row
         while query.next():
             fee = readSQLrecord(query, named=True)
             fee['amount'] = -fee['amount']
             fee['amount_rub'] = round(fee['amount'] * fee['rate'], 2) if fee['rate'] else 0
-            self.add_report_row(row, fee, even_odd=row)
             fee['report_template'] = "fee"
             fees.append(fee)
-            row += 1
-        self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [0, 1, 4])
         self.insert_totals(fees, ["amount", "amount_rub"])
-        return row + 1, fees
+        return fees
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_interest(self):
@@ -830,19 +569,15 @@ class TaxesRus:
                            "AND a.account_id=:account_id AND d.category_id=:fee",
                            [(":begin", self.year_begin), (":end", self.year_end),
                             (":account_id", self.account_id), (":fee", PredefinedCategory.Interest)])
-        row = start_row = self.data_start_row
         while query.next():
             interest = readSQLrecord(query, named=True)
             interest['amount'] = interest['amount']
             interest['amount_rub'] = round(interest['amount'] * interest['rate'], 2) if interest['rate'] else 0
             interest['tax_rub'] = round(0.13 * interest['amount_rub'], 2)
-            self.add_report_row(row, interest, even_odd=row)
             interest['report_template'] = "interest"
             interests.append(interest)
-            row += 1
-        self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [0, 1, 4, 5])
         self.insert_totals(interests, ["amount", "amount_rub", "tax_rub"])
-        return row + 1, interests
+        return interests
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_corporate_actions(self):
@@ -863,25 +598,20 @@ class TaxesRus:
                            "ORDER BY s.name, t.timestamp",
                            [(":end", self.year_end), (":account_id", self.account_id),
                             (":corp_action", TransactionType.CorporateAction)])
-        row = self.data_start_row
-        even_odd = 1
+        group = 1
         basis = 1
         previous_symbol = ""
         while query.next():
-            start_row = row
             actions = []
             sale = readSQLrecord(query, named=True)
             if previous_symbol != sale['symbol']:
                 # Clean processed qty records if symbol have changed
                 _ = executeSQL("DELETE FROM t_last_assets")
                 if sale["s_date"] >= self.year_begin:  # Don't put sub-header of operation is out of scope
-                    self.current_sheet.write(row, 0, f"Сделки по бумаге: {sale['symbol']} - {sale['full_name']}",
-                                             self.reports_xls.formats.Bold())
                     corp_actions.append({'report_template': "symbol_header",
                                     'report_group': 0,
                                     'description': f"Сделки по бумаге: {sale['symbol']} - {sale['full_name']}"})
                     previous_symbol = sale['symbol']
-                    row += 1
             sale['operation'] = "Продажа"
             sale['basis_ratio'] = 100.0 * basis
             sale['amount'] = round(sale['price'] * sale['qty'], 2)
@@ -897,30 +627,25 @@ class TaxesRus:
             sale['spending_rub'] = sale['fee_rub']
 
             if sale["t_date"] < self.year_begin:    # Don't show deal that is before report year (level = -1)
-                row = self.proceed_corporate_action(actions, sale['operation_id'], sale['symbol'], sale['qty'], basis, -1, row, even_odd)
+                self.proceed_corporate_action(actions, sale['operation_id'], sale['symbol'], sale['qty'], basis, -1, group)
             else:
-                self.add_report_row(row, sale, even_odd=even_odd)
                 sale['report_template'] = "trade"
-                sale['report_group'] = even_odd
+                sale['report_group'] = group
                 actions.append(sale)
-                row += 1
-                row = self.proceed_corporate_action(actions, sale['operation_id'], sale['symbol'], sale['qty'], basis, 1, row, even_odd)
-                self.reports_xls.add_totals_footer(self.current_sheet, start_row, row, [14, 15, 16])
-                row += 1
+                self.proceed_corporate_action(actions, sale['operation_id'], sale['symbol'], sale['qty'], basis, 1, group)
 
             self.insert_totals(actions, ["income_rub", "spending_rub"])
             corp_actions += actions
-            even_odd = even_odd + 1
-        return row, corp_actions
+            group += 1
+        return corp_actions
 
-    def proceed_corporate_action(self, actions, operation_id, symbol, qty, basis, level, row, even_odd):
-        row, qty, symbol, basis = self.output_corp_action(actions, operation_id, symbol, qty, basis, level, row, even_odd)
+    def proceed_corporate_action(self, actions, operation_id, symbol, qty, basis, level, group):
+        qty, symbol, basis = self.output_corp_action(actions, operation_id, symbol, qty, basis, level, group)
         next_level = -1 if level == -1 else (level + 1)
-        row = self.next_corporate_action(actions, operation_id, symbol, qty, basis, next_level, row, even_odd)
-        return row
+        self.next_corporate_action(actions, operation_id, symbol, qty, basis, next_level, group)
 
     # operation_id - id of corporate action
-    def next_corporate_action(self, actions, operation_id, symbol, qty, basis, level, row, even_odd):
+    def next_corporate_action(self, actions, operation_id, symbol, qty, basis, level, group):
         # get list of deals that were closed as result of current corporate action
         open_query = executeSQL("SELECT open_op_id AS open_op_id, open_op_type AS op_type "
                                 "FROM deals "
@@ -931,17 +656,16 @@ class TaxesRus:
             open_id, open_type = readSQLrecord(open_query)
 
             if open_type == TransactionType.Trade:
-                row, qty = self.output_purchase(actions, open_id, qty, basis, level, row, even_odd)
+                qty = self.output_purchase(actions, open_id, qty, basis, level, group)
             elif open_type == TransactionType.CorporateAction:
-                row = self.proceed_corporate_action(actions, open_id, symbol, qty, basis, level, row, even_odd)
+                self.proceed_corporate_action(actions, open_id, symbol, qty, basis, level, group)
             else:
                 assert False
-        return row
 
     # operation_id - id of buy operation
-    def output_purchase(self, actions, operation_id, proceed_qty, basis, level, row, even_odd):
+    def output_purchase(self, actions, operation_id, proceed_qty, basis, level, group):
         if proceed_qty <= 0:
-            return row, proceed_qty
+            return proceed_qty
 
         purchase = readSQL("SELECT t.id AS trade_id, s.name AS symbol, s.isin AS isin, "
                            "coalesce(d.qty-SUM(lq.total_value), d.qty) AS qty, "
@@ -959,7 +683,7 @@ class TaxesRus:
                            "WHERE t.id = :operation_id",
                            [(":operation_id", operation_id)], named=True)
         if purchase['qty'] <= (2 * Setup.CALC_TOLERANCE):
-            return row, proceed_qty  # This trade was fully mached before
+            return proceed_qty  # This trade was fully mached before
 
         purchase['operation'] = ' ' * level * 3 + "Покупка"
         purchase['basis_ratio'] = 100.0 * basis
@@ -975,16 +699,14 @@ class TaxesRus:
         _ = executeSQL("INSERT INTO t_last_assets (id, total_value) VALUES (:trade_id, :qty)",
                        [(":trade_id", purchase['trade_id']), (":qty", purchase['qty'])])
         if level >= 0:  # Don't output if level==-1, i.e. corp action is out of report scope
-            self.add_report_row(row, purchase, even_odd=even_odd)
             purchase['report_template'] = "trade"
-            purchase['report_group'] = even_odd
+            purchase['report_group'] = group
             actions.append(purchase)
-            row += 1
-        return row, proceed_qty - purchase['qty']
+        return proceed_qty - purchase['qty']
 
-    def output_corp_action(self, actions, operation_id, symbol, proceed_qty, basis, level, row, even_odd):
+    def output_corp_action(self, actions, operation_id, symbol, proceed_qty, basis, level, group):
         if proceed_qty <= 0:
-            return row, proceed_qty
+            return proceed_qty
 
         action = readSQL("SELECT a.timestamp AS action_date, a.number AS action_number, a.type, "
                          "s1.name AS symbol, s1.isin AS isin, a.qty AS qty, "
@@ -1019,9 +741,7 @@ class TaxesRus:
             action['description'] = self.CorpActionText[action['type']].format(old=old_asset, new=new_asset,
                                                                                before=qty_before, after=qty_after)
         if level >= 0:  # Don't output if level==-1, i.e. corp action is out of report scope
-            self.add_report_row(row, action, even_odd=even_odd, alternative=1)
             action['report_template'] = "action"
-            action['report_group'] = even_odd
+            action['report_group'] = group
             actions.append(action)
-            row += 1
-        return row, qty_before, action['symbol'], basis
+        return qty_before, action['symbol'], basis

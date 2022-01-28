@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QFileDialog, QMessageBox
 from PySide6.QtCore import Qt, QObject
 from jal.constants import Setup
 from jal.db.helpers import get_app_path
-from jal.data_export.helpers import XLSX
+from jal.data_export.xlsx import XLSX
 
 
 class Reports(QObject):
@@ -59,18 +59,18 @@ class Reports(QObject):
             return
 
         report = XLSX(filename)
-        sheet = report.add_report_sheet(self.tr("Report"))
-
-        model = self.table_view.model()
-        headers = {}
-        for col in range(model.columnCount()):
-            headers[col] = (model.headerData(col, Qt.Horizontal), report.formats.ColumnHeader())
-        report.write_row(sheet, 0, headers)
-
-        for row in range(model.rowCount()):
-            data_row = {}
-            for col in range(model.columnCount()):
-                data_row[col] = (model.data(model.index(row, col)), report.formats.Text(row))
-            report.write_row(sheet, row+1, data_row)
+        # sheet = report.add_report_sheet(self.tr("Report"))
+        #
+        # model = self.table_view.model()
+        # headers = {}
+        # for col in range(model.columnCount()):
+        #     headers[col] = (model.headerData(col, Qt.Horizontal), report.formats.ColumnHeader())
+        # report.write_row(sheet, 0, headers)
+        #
+        # for row in range(model.rowCount()):
+        #     data_row = {}
+        #     for col in range(model.columnCount()):
+        #         data_row[col] = (model.data(model.index(row, col)), report.formats.Text(row))
+        #     report.write_row(sheet, row+1, data_row)
 
         report.save()
