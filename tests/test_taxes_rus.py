@@ -1,4 +1,3 @@
-import os
 import json
 
 
@@ -93,8 +92,5 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
     ledger.rebuild(from_timestamp=0)
 
     taxes = TaxesRus()
-    excel_file = str(tmp_path) + os.sep + 'taxes.xlsx'
-    tax_report = taxes.save2file(excel_file, 2020, 1)
+    tax_report = taxes.prepare_tax_report(2020, 1)
     assert tax_report == report
-
-    os.remove(excel_file)  # cleanup

@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QMdiArea, QMenu, QMessa
 from jal import __version__
 from jal.ui.ui_main_window import Ui_JAL_MainWindow
 from jal.widgets.operations_widget import OperationsWidget
+from jal.widgets.tax_widget import TaxWidget
 from jal.widgets.helpers import dependency_present
 from jal.widgets.reference_dialogs import AccountTypeListDialog, AccountListDialog, AssetListDialog, TagsListDialog,\
     CategoryListDialog, CountryListDialog, QuotesListDialog, PeerListDialog
@@ -21,7 +22,6 @@ from jal.db.settings import JalSettings
 from jal.net.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
 from jal.data_import.statements import Statements
-from jal.data_export.taxes import TaxesRus
 from jal.reports.reports import Reports
 from jal.data_import.slips import ImportSlipDialog
 
@@ -51,7 +51,6 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.currentLanguage = language
 
         self.downloader = QuoteDownloader()
-        self.taxes = TaxesRus()
         self.statements = Statements(self)
         self.reports = Reports(self, self.mdiArea)
         self.backup = JalBackup(self, get_dbfilename(get_app_path()))
@@ -98,7 +97,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.actionTags.triggered.connect(partial(self.onDataDialog, "tags"))
         self.actionCountries.triggered.connect(partial(self.onDataDialog, "countries"))
         self.actionQuotes.triggered.connect(partial(self.onDataDialog, "quotes"))
-        self.PrepareTaxForms.triggered.connect(partial(self.taxes.showTaxesDialog, self))
+        self.PrepareTaxForms.triggered.connect(partial(self.mdiArea.addSubWindow, TaxWidget(self), maximized=True))
         self.downloader.download_completed.connect(self.updateWidgets)
         self.ledger.updated.connect(self.updateWidgets)
         self.statements.load_completed.connect(self.onStatementImport)

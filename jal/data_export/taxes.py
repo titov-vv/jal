@@ -1,87 +1,9 @@
-from functools import partial
 from datetime import datetime, timezone
 import logging
-import sys
 
+from PySide6.QtWidgets import QApplication
 from jal.constants import Setup, TransactionType, CorporateAction, PredefinedAsset, PredefinedCategory, DividendSubtype
-from jal.data_export.xlsx import XLSX
-from jal.data_export.dlsg import DLSG
 from jal.db.helpers import executeSQL, readSQLrecord, readSQL
-from PySide6.QtWidgets import QApplication, QDialog, QFileDialog
-from PySide6.QtCore import Property, Slot
-if "pytest" not in sys.modules:
-    from jal.ui.ui_tax_export_dlg import Ui_TaxExportDlg
-
-    class TaxExportDialog(QDialog, Ui_TaxExportDlg):
-        def __init__(self, parent):
-            QDialog.__init__(self)
-            self.setupUi(self)
-
-            self.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, 'XLS-OUT'))
-            self.InitialSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG-IN'))
-            self.OutputSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG-OUT'))
-
-            # center dialog with respect to parent window
-            x = parent.x() + parent.width() / 2 - self.width() / 2
-            y = parent.y() + parent.height() / 2 - self.height() / 2
-            self.setGeometry(x, y, self.width(), self.height())
-
-        @Slot()
-        def OnFileBtn(self, type):
-            selector = {
-                'XLS-OUT': (self.tr("Save tax reports to:"), self.tr("Excel files (*.xlsx)"), '.xlsx', self.XlsFileName),
-                'DLSG-IN': (self.tr("Get tax form template from:"), self.tr("Tax form 2020 (*.dc0)"),
-                            '.dc0', self.DlsgInFileName),
-                'DLSG-OUT': (self.tr("Save tax form to:"), self.tr("Tax form 2020 (*.dc0)"), '.dc0', self.DlsgOutFileName)
-            }
-            if type[-3:] == '-IN':
-                filename = QFileDialog.getOpenFileName(self, selector[type][0], ".", selector[type][1])
-            elif type[-4:] == '-OUT':
-                filename = QFileDialog.getSaveFileName(self, selector[type][0], ".", selector[type][1])
-            else:
-                raise ValueError
-            if filename[0]:
-                if filename[1] == selector[type][1] and filename[0][-len(selector[type][2]):] != selector[type][2]:
-                    selector[type][3].setText(filename[0] + selector[type][2])
-                else:
-                    selector[type][3].setText(filename[0])
-
-        def getYear(self):
-            return self.Year.value()
-
-        def getXlsFilename(self):
-            return self.XlsFileName.text()
-
-        def getAccount(self):
-            return self.AccountWidget.selected_id
-
-        def getDlsgState(self):
-            return self.DlsgGroup.isChecked()
-
-        def getDslgInFilename(self):
-            return self.DlsgInFileName.text()
-
-        def getDslgOutFilename(self):
-            return self.DlsgOutFileName.text()
-
-        def getBrokerAsIncomeName(self):
-            return self.IncomeSourceBroker.isChecked()
-
-        def getDividendsOnly(self):
-            return self.DividendsOnly.isChecked()
-
-        def getNoSettlement(self):
-            return self.NoSettlement.isChecked()
-
-        year = Property(int, fget=getYear)
-        xls_filename = Property(str, fget=getXlsFilename)
-        account = Property(int, fget=getAccount)
-        update_dlsg = Property(bool, fget=getDlsgState)
-        dlsg_in_filename = Property(str, fget=getDslgInFilename)
-        dlsg_out_filename = Property(str, fget=getDslgOutFilename)
-        dlsg_broker_as_income = Property(bool, fget=getBrokerAsIncomeName)
-        dlsg_dividends_only = Property(bool, fget=getDividendsOnly)
-        no_settelement = Property(bool, fget=getNoSettlement)
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -119,74 +41,31 @@ class TaxesRus:
     def tr(self, text):
         return QApplication.translate("TaxesRus", text)
 
-    def showTaxesDialog(self, parent):
-        dialog = TaxExportDialog(parent)
-        tax_report = None
-        if dialog.exec():
-            self.use_settlement = not dialog.no_settelement
-            self.broker_as_income = dialog.dlsg_broker_as_income
-            tax_report = self.save2file(dialog.xls_filename, dialog.year, dialog.account, dlsg_update=dialog.update_dlsg,
-                                        dlsg_in=dialog.dlsg_in_filename, dlsg_out=dialog.dlsg_out_filename,
-                                        dlsg_dividends_only=dialog.dlsg_dividends_only)
-        return tax_report
-
-    def save2file(self, taxes_file, year, account_id,
-                  dlsg_update=False, dlsg_in=None, dlsg_out=None, dlsg_dividends_only=False):
+    def prepare_tax_report(self, year, account_id):
         tax_report = {}
         self.account_id = account_id
         self.account_number, self.account_currency = \
             readSQL("SELECT a.number, c.name FROM accounts AS a "
                     "LEFT JOIN assets AS c ON a.currency_id = c.id WHERE a.id=:account",
                     [(":account", account_id)])
-        self.broker_name = readSQL("SELECT b.name FROM accounts AS a "
-                                   "LEFT JOIN agents AS b ON a.organization_id = b.id WHERE a.id=:account",
-                                   [(":account", account_id)])
         self.year_begin = int(datetime.strptime(f"{year}", "%Y").replace(tzinfo=timezone.utc).timestamp())
         self.year_end = int(datetime.strptime(f"{year + 1}", "%Y").replace(tzinfo=timezone.utc).timestamp())
-
-        self.statement = None
-        if dlsg_update:
-            self.statement = DLSG(only_dividends=dlsg_dividends_only)
-            try:
-                self.statement.read_file(dlsg_in)
-            except:
-                logging.error(self.tr("Can't open tax form file ") + f"'{dlsg_in}'")
-                return tax_report
 
         self.prepare_exchange_rate_dates()
         for report in self.reports:
             tax_report[report] = self.reports[report]()
 
-        reports_xls = XLSX(taxes_file)
-        templates = {
-            "Дивиденды": "tax_rus_dividends.json",
-            "Акции": "tax_rus_trades.json",
-            "Облигации": "tax_rus_bonds.json",
-            "ПФИ": "tax_rus_derivatives.json",
-            "Корп.события": "tax_rus_corporate_actions.json",
-            "Комиссии": "tax_rus_fees.json",
-            "Проценты": "tax_rus_interests.json"
-        }
-        for section in tax_report:
-            if section not in templates:
-                continue
-            parameters = {
-                "period": f"{datetime.utcfromtimestamp(self.year_begin).strftime('%d.%m.%Y')}"
-                          f" - {datetime.utcfromtimestamp(self.year_end - 1).strftime('%d.%m.%Y')}",
-                "account": f"{self.account_number} ({self.account_currency})",
-                "currency": self.account_currency
-            }
-            reports_xls.output_data(tax_report[section], templates[section], parameters)
-        reports_xls.save()
-
-        if dlsg_update:
-            try:
-                self.statement.write_file(dlsg_out)
-            except:
-                logging.error(self.tr("Can't write tax form into file ") + f"'{dlsg_out}'")
-
-        logging.info(self.tr("Tax report saved to file ") + f"'{taxes_file}'")
         return tax_report
+
+        #     self.use_settlement = not dialog.no_settelement
+        #     self.broker_as_income = dialog.dlsg_broker_as_income
+        #     tax_report = self.save2file(dialog.xls_filename, dialog.year, dialog.account, dlsg_update=dialog.update_dlsg,
+        #                                 dlsg_in=dialog.dlsg_in_filename, dlsg_out=dialog.dlsg_out_filename,
+        #                                 dlsg_dividends_only=dialog.dlsg_dividends_only)
+        #
+        # self.broker_name = readSQL("SELECT b.name FROM accounts AS a "
+        #                            "LEFT JOIN agents AS b ON a.organization_id = b.id WHERE a.id=:account",
+        #                            [(":account", account_id)])
 
     # Exchange rates are present in database not for every date (and not every possible timestamp)
     # As any action has exact timestamp it won't match rough timestamp of exchange rate most probably

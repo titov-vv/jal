@@ -323,3 +323,6 @@ class DLSG:
 
         with open(filename, "w", encoding='cp1251') as taxes:
             taxes.write(raw_data)
+
+    def update_taxes(self, tax_report):
+        pass
