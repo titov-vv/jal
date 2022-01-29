@@ -9,10 +9,63 @@ SIZE_LENGTH = 4
 FOOTER = '\0'
 SECTION_PREFIX = '@'
 
+form_3nfl_template = {
+    2020: {
+        "header": "DLSG            Decl20200102FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+        "sections": {
+            "@DeclInfo": ('', '', 0, 0, datetime(2022, 1, 29), 0, 5, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, '', '', 0),
+            "@PersonName": ('', '', '', '', '', 0),
+            "@PersonDocument": (0, '', '', datetime(1990, 1, 1), datetime(1977, 1, 1), '', '', 0),
+            "@Foreigner": ('', "РОССИЯ", '', 643),
+            "@PhoneForeignerHome": ('', ''),
+            "@PhoneForeignerWork": ('', ''),
+            "@PersonAddress": (0, '', 0, '', '', '', '', '', '', '', '', ''),
+            "@HomePhone": ('', ''),
+            "@WorkPhone": ('', ''),
+            "@DeclInquiry": (0, 0, 0, 0, 0),
+            "@DeclForeign": {
+                # "@CurrencyIncome000": (13, 1530, "(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)", "IBKR", 840,
+                #                        datetime(2020, 1, 30), datetime(2020, 1, 30), 1, 840, 6239.34, 100, 6239.34, 100,
+                #                        "Доллар США", 123, 7674.39, 11, 686.33, 201, 321, 0, 0, '', 0)
+            },
+            "@StandartDeduct": (0, ),
+            "@SocialDeduct": (0, ),
+            "@ConstructionDeduct": (0, ),
+            "@CBDeduct": (0, ),
+            "@InvDeduct": (0, )
+        }
+    },
+    2021: {
+        "header": "DLSG            Decl20210103FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+        "sections": {
+            "@DeclInfo": ('', '', 0, 0, datetime(2022, 1, 29), 0, 5, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, '', '', 0),
+            "@PersonName": ('', '', '', '', '', 0),
+            "@PersonDocument": (0, '', '', datetime(1990, 1, 1), datetime(1977, 1, 1), '', '', 0),
+            "@Foreigner": ('', "РОССИЯ", '', 643),
+            "@PhoneForeignerHome": ('', ''),
+            "@PhoneForeignerWork": ('', ''),
+            "@PersonAddress": (0, '', 0, '', '', '', '', '', '', '', '', ''),
+            "@HomePhone": ('', ''),
+            "@WorkPhone": ('', ''),
+            "@DeclInquiry": (0, 0, 0, 0, 0, 0),
+            "@DeclForeign": {
+                # "@CurrencyIncome0000": (0, 1530, "(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)", "IBKR", 324,
+                #     840, datetime(2021, 1, 29), datetime(2021, 1, 29), 1, 840, 7618.54, 100, 7618.54, 100, "Доллар США",
+                #     123, 9370.8, 11, 838.04, 201, 321, 0, 0, 0, '', 0,)
+            },
+            "@StandartDeduct": (0, ),
+            "@SocialDeduct": (0, ),
+            "@ConstructionDeduct": (0, ),
+            "@CBDeduct": (0, ),
+            "@InvDeduct": (0, )
+        }
+    }
+}
 
 class DLSGrecord:
     def __init__(self):
         self.name = ''
+
 
 class DLSGsection:
     def __init__(self, tag, records):
@@ -62,7 +115,7 @@ class DLSGCurrencyIncome:
             self.country_code = records.pop(0)
             self.income_date = int(records.pop(0))
             self.tax_payment_date = int(records.pop(0))
-            self.auto_currency_rate = records.pop(0)   # '0' = no auto currency rates
+            self.auto_currency_rate = records.pop(0)  # '0' = no auto currency rates
             self.currency_code = records.pop(0)
             self.income_rate = float(records.pop(0))
             self.income_units = int(records.pop(0))
@@ -157,8 +210,6 @@ class DLSGDeclForeign(DLSGsection):
 
 
 class DLSG:
-    header_pattern = "DLSG            Decl(\d{4})0102FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
-    header = "DLSG            Decl{:04d}0102FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
     DIVIDEND_INCOME = 'dividend'
     STOCK_INCOME = 'stock'
     DERIVATIVE_INCOME = 'derivative'
@@ -199,17 +250,23 @@ class DLSG:
         'JPY': {'code': '392', 'name': 'Иена', 'multiplier': 10000}
     }
 
-    def __init__(self, only_dividends=False):
-        self._only_dividends=only_dividends
-        self._year = 0              # year of declaration
+    def __init__(self, year, only_dividends=False):
+        if year not in form_3nfl_template:
+            raise ValueError(self.tr("3-NDFL form isn't supoorted for year: ") + f"{year}")
+        self._only_dividends = only_dividends
+        self._year = year
+        self._tax_form = form_3nfl_template[year]
+
         self._records = []
         self._sections = {}
-        self._footer_len = 0        # if file ends with _footer_len 0x00 bytes
+        self._footer_len = 0  # if file ends with _footer_len 0x00 bytes
 
         self.codes = {
             self.DIVIDEND_INCOME: ('14', '1010', 'Дивиденды', '0'),
             self.STOCK_INCOME: ('13', '1530', '(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)', '201'),
-            self.DERIVATIVE_INCOME: ('13', '1532', '(06)Доходы по оп-циям с ПФИ (обращ-ся на орг. рынке ЦБ), баз. ак. по которым являются ЦБ', '206')
+            self.DERIVATIVE_INCOME: (
+            '13', '1532', '(06)Доходы по оп-циям с ПФИ (обращ-ся на орг. рынке ЦБ), баз. ак. по которым являются ЦБ',
+            '206')
         }
 
     def tr(self, text):
@@ -228,7 +285,7 @@ class DLSG:
         try:
             tax_codes = self.codes[type]
         except KeyError:
-            raise(self.tr("Unknown income type for russian tax form: ") + type)
+            raise (self.tr("Unknown income type for russian tax form: ") + type)
         try:
             currency_data = self.currencies[currency]
         except KeyError:
@@ -258,7 +315,14 @@ class DLSG:
         if not parts:
             logging.error(self.tr("Unexpected declaration file header:") + f" {self.header}")
             raise ValueError
-        self._year = int(parts.group(1))
+        self._year = -1
+        for year in self.versions:
+            if parts.group(1) == self.versions[year]:
+                self._year = year
+                break
+        if self._year < 0:
+            logging.error(self.tr("Unsupported declaration file version:") + f" {parts.group(1)}")
+            raise ValueError
         logging.info(self.tr("Declaration file is for year:") + f" {self._year}")
 
         self.split_records(raw_data[HEADER_LENGTH:])
@@ -269,7 +333,7 @@ class DLSG:
         pos = 0
 
         while pos < len(data):
-            length_field = data[pos : pos + SIZE_LENGTH]
+            length_field = data[pos: pos + SIZE_LENGTH]
 
             if length_field == (FOOTER * len(length_field)):
                 self._footer_len = len(length_field)
@@ -279,7 +343,7 @@ class DLSG:
                 length = int(length_field)
             except Exception as e:
                 logging.error(self.tr("Invalid record size at position")
-                              + f" {pos+HEADER_LENGTH}: '{length_field}'")
+                              + f" {pos + HEADER_LENGTH}: '{length_field}'")
                 raise ValueError
             pos += SIZE_LENGTH
             self._records.append(data[pos: pos + length])
@@ -326,3 +390,35 @@ class DLSG:
 
     def update_taxes(self, tax_report):
         pass
+
+    def save(self, filename):
+        raw_data = self._tax_form['header']
+        for section in self._tax_form['sections']:
+            raw_data += self.convert_section(section, self._tax_form['sections'][section])
+        with open(filename, "w", encoding='cp1251') as taxes:
+            taxes.write(raw_data)
+
+    def convert_section(self, section_name, section_data):
+        data = self.convert_item(section_name)
+        if type(section_data) == tuple:
+            for item in section_data:
+                data += self.convert_item(item)
+        elif type(section_data) == dict:
+            # Here is a subsection - need to put length and then process elements
+            subitems_number = str(len(section_data))
+            data += "{:04d}{}".format(len(subitems_number), subitems_number)
+            for sub_item in section_data:
+                data += self.convert_section(sub_item, section_data[sub_item])
+        return data
+
+    def convert_item(self, value):
+        if type(value) == str:
+            prepared_value = value
+        elif type(value) == int:
+            prepared_value = str(value)
+        elif type(value) == datetime:
+            prepared_value = str((value.date() - date(1899, 12, 30)).days)
+        else:
+            raise TypeError(f"Unsupported type: {type(value)}")
+        data = "{:04d}{}".format(len(prepared_value), prepared_value)
+        return data

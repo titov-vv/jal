@@ -114,12 +114,12 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
         if self.update_dlsg:
             tax_forms = DLSG(only_dividends=self.dlsg_dividends_only)
             try:
-                self.statement.read_file(self.dlsg_in_filename)
+                tax_forms.read_file(self.dlsg_in_filename)
             except:
                 logging.error(self.tr("Can't open tax form file ") + f"'{self.dlsg_in_filename}'")
                 return
             tax_forms.update_taxes(tax_report)
             try:
-                self.statement.write_file(self.dlsg_out_filename)
+                tax_forms.write_file(self.dlsg_out_filename)
             except:
                 logging.error(self.tr("Can't write tax form into file ") + f"'{self.dlsg_out_filename}'")
