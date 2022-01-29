@@ -101,7 +101,9 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
             "period": f"{datetime.utcfromtimestamp(taxes.year_begin).strftime('%d.%m.%Y')}"
                       f" - {datetime.utcfromtimestamp(taxes.year_end - 1).strftime('%d.%m.%Y')}",
             "account": f"{taxes.account_number} ({taxes.account_currency})",
-            "currency": taxes.account_currency
+            "currency": taxes.account_currency,
+            "broker_name": taxes.broker_name,
+            "broker_iso_country": taxes.broker_iso_cc
         }
         for section in tax_report:
             if section not in templates:
@@ -112,14 +114,10 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
         logging.info(self.tr("Tax report saved to file ") + f"'{self.xls_filename}'")
 
         if self.update_dlsg:
-            tax_forms = DLSG(only_dividends=self.dlsg_dividends_only)
+            tax_forms = DLSG(self.year, broker_as_income=self.dlsg_broker_as_income,
+                             only_dividends=self.dlsg_dividends_only)
+            tax_forms.update_taxes(tax_report, parameters)
             try:
-                tax_forms.read_file(self.dlsg_in_filename)
-            except:
-                logging.error(self.tr("Can't open tax form file ") + f"'{self.dlsg_in_filename}'")
-                return
-            tax_forms.update_taxes(tax_report)
-            try:
-                tax_forms.write_file(self.dlsg_out_filename)
+                tax_forms.save(self.dlsg_out_filename)
             except:
                 logging.error(self.tr("Can't write tax form into file ") + f"'{self.dlsg_out_filename}'")

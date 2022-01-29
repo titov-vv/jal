@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-import logging
 
 from PySide6.QtWidgets import QApplication
 from jal.constants import Setup, TransactionType, CorporateAction, PredefinedAsset, PredefinedCategory, DividendSubtype
@@ -25,7 +24,7 @@ class TaxesRus:
         self.account_currency = ''
         self.account_number = ''
         self.broker_name = ''
-        self.broker_as_income = True
+        self.broker_iso_cc = "000"
         self.use_settlement = True
         self.statement = None
         self.reports = {
@@ -50,22 +49,17 @@ class TaxesRus:
                     [(":account", account_id)])
         self.year_begin = int(datetime.strptime(f"{year}", "%Y").replace(tzinfo=timezone.utc).timestamp())
         self.year_end = int(datetime.strptime(f"{year + 1}", "%Y").replace(tzinfo=timezone.utc).timestamp())
+        self.broker_name, self.broker_iso_cc = readSQL("SELECT b.name AS broker_name, c.iso_code AS country_iso_code "
+                                                       "FROM accounts AS a "
+                                                       "LEFT JOIN agents AS b ON a.organization_id = b.id "
+                                                       "LEFT JOIN countries AS c ON a.country_id = c.id "
+                                                       "WHERE a.id=71=:account", [(":account", account_id)])
 
         self.prepare_exchange_rate_dates()
         for report in self.reports:
             tax_report[report] = self.reports[report]()
 
         return tax_report
-
-        #     self.use_settlement = not dialog.no_settelement
-        #     self.broker_as_income = dialog.dlsg_broker_as_income
-        #     tax_report = self.save2file(dialog.xls_filename, dialog.year, dialog.account, dlsg_update=dialog.update_dlsg,
-        #                                 dlsg_in=dialog.dlsg_in_filename, dlsg_out=dialog.dlsg_out_filename,
-        #                                 dlsg_dividends_only=dialog.dlsg_dividends_only)
-        #
-        # self.broker_name = readSQL("SELECT b.name FROM accounts AS a "
-        #                            "LEFT JOIN agents AS b ON a.organization_id = b.id WHERE a.id=:account",
-        #                            [(":account", account_id)])
 
     # Exchange rates are present in database not for every date (and not every possible timestamp)
     # As any action has exact timestamp it won't match rough timestamp of exchange rate most probably
@@ -130,22 +124,6 @@ class TaxesRus:
             dividend['tax_treaty'] = "Да" if dividend['tax_treaty'] else "Нет"
             dividend['report_template'] = "dividend"
             dividends.append(dividend)
-
-            if dividend["country_iso"] == '000':
-                dividend["country_iso"] = readSQL("SELECT c.iso_code FROM accounts AS a LEFT JOIN countries AS c "
-                                                   "ON c.id = a.country_id WHERE a.id=:account_id",
-                                                   [(":account_id", self.account_id)])
-                logging.warning(self.tr("Account country will be used for 3-NDFL as country is not set for asset ")
-                                + f"'{dividend['symbol']}'")
-            if self.statement is not None:
-                if self.broker_as_income:
-                    income_source = self.broker_name
-                else:
-                    income_source = f"Дивиденд от {dividend['symbol']} ({dividend['full_name']})"
-                self.statement.add_foreign_income(
-                    DLSG.DIVIDEND_INCOME, dividend['payment_date'], dividend["country_iso"], self.account_currency,
-                    dividend['rate'], dividend['amount'], dividend['amount_rub'], dividend['tax'], dividend['tax_rub'],
-                    income_source)
         self.insert_totals(dividends, ["amount", "amount_rub", "tax", "tax_rub", "tax2pay"])
         return dividends
 
