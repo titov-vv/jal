@@ -433,17 +433,17 @@
     <message>
         <location filename="../data_export/dlsg.py" line="102"/>
         <source>3-NDFL form isn&apos;t supoorted for year: </source>
-        <translation type="unfinished"></translation>
+        <translation>Форма 3-НДФЛ для этого года не поддерживается: </translation>
     </message>
     <message>
         <location filename="../data_export/dlsg.py" line="131"/>
         <source>Currency is not supported for 3-NDFL </source>
-        <translation type="unfinished"></translation>
+        <translation>Валюта не поддерживается для формы 3-НДФЛ </translation>
     </message>
     <message>
         <location filename="../data_export/dlsg.py" line="191"/>
         <source>Account country is not set for asset, dividend isn&apos;t include in 3-NDFL </source>
-        <translation type="unfinished"></translation>
+        <translation>Страна ЦБ не задана, дивиденд не будет включён в декларацию 3-НФДЛ </translation>
     </message>
 </context>
 <context>
@@ -3337,124 +3337,124 @@ do you want to save it?</source>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="14"/>
         <source>Taxes</source>
-        <translation type="unfinished"></translation>
+        <translation>Налоги</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="34"/>
         <source>Year:</source>
-        <translation type="unfinished">Год:</translation>
+        <translation>Год:</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="20"/>
         <source>Account:</source>
-        <translation type="unfinished">Счет:</translation>
+        <translation>Счет:</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="27"/>
         <source>Foreign account to prepare tax report for</source>
-        <translation type="unfinished">Зарубежный счёт для которого нужно подготовить отчёт</translation>
+        <translation>Зарубежный счёт для которого нужно подготовить отчёт</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="86"/>
         <source>Create tax form in &quot;Декларация&quot; program format (*.dcX)</source>
-        <translation type="unfinished"></translation>
+        <translation>Создать файл 3-НФДЛ в формате программы &quot;Декларация&quot; (*.dcX)</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="160"/>
         <source>Excel file:</source>
-        <translation type="unfinished">Файл Excel:</translation>
+        <translation>Файл Excel:</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="173"/>
         <source>File where to store tax report in Excel format</source>
-        <translation type="unfinished">Файл для сохранения расчёта в формате Excel</translation>
+        <translation>Файл для сохранения расчёта в формате Excel</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="216"/>
         <source>Save Report</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить Отчёт</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="140"/>
         <location filename="../ui/tax_export_widget.ui" line="186"/>
         <source>Select file</source>
-        <translation type="unfinished">Выберит файл</translation>
+        <translation>Выберит файл</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="189"/>
         <source>...</source>
-        <translation type="unfinished">...</translation>
+        <translation>...</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="228"/>
         <source>Below functions are experimental - use it with care</source>
-        <translation type="unfinished">Ниже расположены экспериментальные функции - используйте с осторожностью</translation>
+        <translation>Ниже расположены экспериментальные функции - используйте с осторожностью</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="150"/>
         <source>File where to store russian tax form</source>
-        <translation type="unfinished">Файл для сохранения декларации 3-НДФЛ</translation>
+        <translation>Файл для сохранения декларации 3-НДФЛ</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="116"/>
         <source>Output file:</source>
-        <translation type="unfinished">Файл с результатом:</translation>
+        <translation>Файл с результатом:</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="133"/>
         <source>Update only information about dividends</source>
-        <translation type="unfinished">Обновить только информацию о дивидендах</translation>
+        <translation>Обновить только информацию о дивидендах</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="143"/>
         <source> ... </source>
-        <translation type="unfinished"> ... </translation>
+        <translation> ... </translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="123"/>
         <source>Use broker name as income source</source>
-        <translation type="unfinished">Использовать название брокера как источник выплаты</translation>
+        <translation>Использовать название брокера как источник выплаты</translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="209"/>
         <source>Do not use settlement date for currency rates</source>
-        <translation type="unfinished">Не использовать дату поставки для курсов валют</translation>
+        <translation>Не использовать дату поставки для курсов валют</translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="32"/>
         <source>Save tax reports to:</source>
-        <translation type="unfinished">Сохранить налоговый отчёт в:</translation>
+        <translation>Сохранить налоговый отчёт в:</translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="32"/>
         <source>Excel files (*.xlsx)</source>
-        <translation type="unfinished">Файлы Excel (*.xslx)</translation>
+        <translation>Файлы Excel (*.xslx)</translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="33"/>
         <source>Get tax form template from:</source>
-        <translation type="unfinished">Взять шаблон 3-НДФЛ из:</translation>
+        <translation>Взять шаблон 3-НДФЛ из:</translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="33"/>
         <location filename="../widgets/tax_widget.py" line="35"/>
         <source>Tax form 2020 (*.dc0)</source>
-        <translation type="unfinished">3-НДФЛ 2020 ((*.dc0)</translation>
+        <translation>3-НДФЛ 2020 ((*.dc0)</translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="35"/>
         <source>Save tax form to:</source>
-        <translation type="unfinished">Сохранить 3-НДФЛ в:</translation>
+        <translation>Сохранить 3-НДФЛ в:</translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="114"/>
         <source>Tax report saved to file </source>
-        <translation type="unfinished">Налоговый отчёт сохранён в файл </translation>
+        <translation>Налоговый отчёт сохранён в файл </translation>
     </message>
     <message>
         <location filename="../widgets/tax_widget.py" line="123"/>
         <source>Can&apos;t write tax form into file </source>
-        <translation type="unfinished">Невозможно записать 3-НДФЛ в файл </translation>
+        <translation>Невозможно записать 3-НДФЛ в файл </translation>
     </message>
 </context>
 <context>
@@ -3584,32 +3584,32 @@ do you want to save it?</source>
     <message>
         <location filename="../data_export/xlsx.py" line="45"/>
         <source>Can&apos;t save report into file </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно сохранить отчёт в файл </translation>
     </message>
     <message>
         <location filename="../data_export/xlsx.py" line="54"/>
         <source>Can&apos;t load report template from file </source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно прочитать шаблон отчёта из файла </translation>
     </message>
     <message>
         <location filename="../data_export/xlsx.py" line="70"/>
         <source>No report row template set</source>
-        <translation type="unfinished"></translation>
+        <translation>Не задан шаблон для данных отчёта</translation>
     </message>
     <message>
         <location filename="../data_export/xlsx.py" line="74"/>
         <source>Report row template not found: </source>
-        <translation type="unfinished"></translation>
+        <translation>Шаблон для данных не найден: </translation>
     </message>
     <message>
         <location filename="../data_export/xlsx.py" line="115"/>
         <source>Format is missing for report field: </source>
-        <translation type="unfinished"></translation>
+        <translation>Не указан формат для поля отчёта: </translation>
     </message>
     <message>
         <location filename="../data_export/xlsx.py" line="140"/>
         <source>Unrecognized format string: </source>
-        <translation type="unfinished"></translation>
+        <translation>Неизвестная строка форматирования: </translation>
     </message>
 </context>
 </TS>
