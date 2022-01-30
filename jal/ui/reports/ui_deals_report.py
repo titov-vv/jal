@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'deals_report.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.2.2
+## Created by: Qt User Interface Compiler version 6.2.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -17,7 +17,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QFrame, QHBoxLayout,
     QHeaderView, QLabel, QSizePolicy, QSpacerItem,
-    QTableView, QVBoxLayout, QWidget, QAbstractItemView)
+    QTableView, QVBoxLayout, QWidget)
 
 from jal.widgets.account_select import AccountButton
 from jal.widgets.date_range_selector import DateRangeSelector

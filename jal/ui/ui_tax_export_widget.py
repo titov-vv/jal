@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'tax_export_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.2.2
+## Created by: Qt User Interface Compiler version 6.2.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -77,46 +77,31 @@ class Ui_TaxWidget(object):
         self.gridLayout_2.setSpacing(2)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.gridLayout_2.setContentsMargins(6, 6, 6, 6)
+        self.DlsgFileLbl = QLabel(self.DlsgGroup)
+        self.DlsgFileLbl.setObjectName(u"DlsgFileLbl")
+
+        self.gridLayout_2.addWidget(self.DlsgFileLbl, 0, 0, 1, 1)
+
         self.IncomeSourceBroker = QCheckBox(self.DlsgGroup)
         self.IncomeSourceBroker.setObjectName(u"IncomeSourceBroker")
         self.IncomeSourceBroker.setChecked(True)
 
-        self.gridLayout_2.addWidget(self.IncomeSourceBroker, 2, 0, 1, 3)
-
-        self.InitialFileLbl = QLabel(self.DlsgGroup)
-        self.InitialFileLbl.setObjectName(u"InitialFileLbl")
-
-        self.gridLayout_2.addWidget(self.InitialFileLbl, 0, 0, 1, 1)
-
-        self.InitialSelectBtn = QPushButton(self.DlsgGroup)
-        self.InitialSelectBtn.setObjectName(u"InitialSelectBtn")
-
-        self.gridLayout_2.addWidget(self.InitialSelectBtn, 0, 2, 1, 1)
+        self.gridLayout_2.addWidget(self.IncomeSourceBroker, 1, 0, 1, 3)
 
         self.DividendsOnly = QCheckBox(self.DlsgGroup)
         self.DividendsOnly.setObjectName(u"DividendsOnly")
 
-        self.gridLayout_2.addWidget(self.DividendsOnly, 3, 0, 1, 3)
+        self.gridLayout_2.addWidget(self.DividendsOnly, 2, 0, 1, 3)
 
-        self.OutputFileLbl = QLabel(self.DlsgGroup)
-        self.OutputFileLbl.setObjectName(u"OutputFileLbl")
+        self.DlsgSelectBtn = QPushButton(self.DlsgGroup)
+        self.DlsgSelectBtn.setObjectName(u"DlsgSelectBtn")
 
-        self.gridLayout_2.addWidget(self.OutputFileLbl, 1, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.DlsgSelectBtn, 0, 2, 1, 1)
 
-        self.OutputSelectBtn = QPushButton(self.DlsgGroup)
-        self.OutputSelectBtn.setObjectName(u"OutputSelectBtn")
+        self.DlsgFileName = QLineEdit(self.DlsgGroup)
+        self.DlsgFileName.setObjectName(u"DlsgFileName")
 
-        self.gridLayout_2.addWidget(self.OutputSelectBtn, 1, 2, 1, 1)
-
-        self.DlsgOutFileName = QLineEdit(self.DlsgGroup)
-        self.DlsgOutFileName.setObjectName(u"DlsgOutFileName")
-
-        self.gridLayout_2.addWidget(self.DlsgOutFileName, 1, 1, 1, 1)
-
-        self.DlsgInFileName = QLineEdit(self.DlsgGroup)
-        self.DlsgInFileName.setObjectName(u"DlsgInFileName")
-
-        self.gridLayout_2.addWidget(self.DlsgInFileName, 0, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.DlsgFileName, 0, 1, 1, 1)
 
 
         self.gridLayout.addWidget(self.DlsgGroup, 5, 0, 1, 3)
@@ -155,18 +140,18 @@ class Ui_TaxWidget(object):
 
         self.gridLayout.addWidget(self.NoSettlement, 6, 0, 1, 4)
 
+        self.SaveButton = QPushButton(TaxWidget)
+        self.SaveButton.setObjectName(u"SaveButton")
+
+        self.gridLayout.addWidget(self.SaveButton, 7, 2, 1, 1)
+
         self.WarningLbl = QLabel(TaxWidget)
         self.WarningLbl.setObjectName(u"WarningLbl")
         font = QFont()
         font.setItalic(True)
         self.WarningLbl.setFont(font)
 
-        self.gridLayout.addWidget(self.WarningLbl, 4, 0, 1, 4)
-
-        self.SaveButton = QPushButton(TaxWidget)
-        self.SaveButton.setObjectName(u"SaveButton")
-
-        self.gridLayout.addWidget(self.SaveButton, 7, 2, 1, 1)
+        self.gridLayout.addWidget(self.WarningLbl, 4, 0, 1, 3)
 
 
         self.retranslateUi(TaxWidget)
@@ -182,24 +167,16 @@ class Ui_TaxWidget(object):
 #endif // QT_CONFIG(tooltip)
         self.YearLbl.setText(QCoreApplication.translate("TaxWidget", u"Year:", None))
         self.Year.setSuffix("")
-        self.DlsgGroup.setTitle(QCoreApplication.translate("TaxWidget", u"Update file \"\u0414\u0435\u043a\u043b\u0430\u0440\u0430\u0446\u0438\u044f\" (*.dc0)", None))
+        self.DlsgGroup.setTitle(QCoreApplication.translate("TaxWidget", u"Create tax form in \"\u0414\u0435\u043a\u043b\u0430\u0440\u0430\u0446\u0438\u044f\" program format (*.dcX)", None))
+        self.DlsgFileLbl.setText(QCoreApplication.translate("TaxWidget", u"Output file:", None))
         self.IncomeSourceBroker.setText(QCoreApplication.translate("TaxWidget", u"Use broker name as income source", None))
-        self.InitialFileLbl.setText(QCoreApplication.translate("TaxWidget", u"Initial file:", None))
-#if QT_CONFIG(tooltip)
-        self.InitialSelectBtn.setToolTip(QCoreApplication.translate("TaxWidget", u"Select file", None))
-#endif // QT_CONFIG(tooltip)
-        self.InitialSelectBtn.setText(QCoreApplication.translate("TaxWidget", u" ... ", None))
         self.DividendsOnly.setText(QCoreApplication.translate("TaxWidget", u"Update only information about dividends", None))
-        self.OutputFileLbl.setText(QCoreApplication.translate("TaxWidget", u"Output file:", None))
 #if QT_CONFIG(tooltip)
-        self.OutputSelectBtn.setToolTip(QCoreApplication.translate("TaxWidget", u"Select file", None))
+        self.DlsgSelectBtn.setToolTip(QCoreApplication.translate("TaxWidget", u"Select file", None))
 #endif // QT_CONFIG(tooltip)
-        self.OutputSelectBtn.setText(QCoreApplication.translate("TaxWidget", u" ... ", None))
+        self.DlsgSelectBtn.setText(QCoreApplication.translate("TaxWidget", u" ... ", None))
 #if QT_CONFIG(tooltip)
-        self.DlsgOutFileName.setToolTip(QCoreApplication.translate("TaxWidget", u"File where to store russian tax form", None))
-#endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
-        self.DlsgInFileName.setToolTip(QCoreApplication.translate("TaxWidget", u"File to use as a template for russian tax form", None))
+        self.DlsgFileName.setToolTip(QCoreApplication.translate("TaxWidget", u"File where to store russian tax form", None))
 #endif // QT_CONFIG(tooltip)
         self.XlsFileLbl.setText(QCoreApplication.translate("TaxWidget", u"Excel file:", None))
 #if QT_CONFIG(tooltip)
@@ -210,7 +187,7 @@ class Ui_TaxWidget(object):
 #endif // QT_CONFIG(tooltip)
         self.XlsSelectBtn.setText(QCoreApplication.translate("TaxWidget", u"...", None))
         self.NoSettlement.setText(QCoreApplication.translate("TaxWidget", u"Do not use settlement date for currency rates", None))
-        self.WarningLbl.setText(QCoreApplication.translate("TaxWidget", u"Below functions are experimental - use it with care", None))
         self.SaveButton.setText(QCoreApplication.translate("TaxWidget", u"Save Report", None))
+        self.WarningLbl.setText(QCoreApplication.translate("TaxWidget", u"Below functions are experimental - use it with care", None))
     # retranslateUi
 

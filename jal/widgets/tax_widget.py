@@ -16,9 +16,8 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
         MdiWidget.__init__(self)
         self.setupUi(self)
 
-        self.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, 'XLS-OUT'))
-        self.InitialSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG-IN'))
-        self.OutputSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG-OUT'))
+        self.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, 'XLS'))
+        self.DlsgSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG'))
         self.SaveButton.pressed.connect(self.SaveReport)
 
         # center dialog with respect to parent window
@@ -28,23 +27,20 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
 
     @Slot()
     def OnFileBtn(self, type):
-        selector = {
-            'XLS-OUT': (self.tr("Save tax reports to:"), self.tr("Excel files (*.xlsx)"), '.xlsx', self.XlsFileName),
-            'DLSG-IN': (self.tr("Get tax form template from:"), self.tr("Tax form 2020 (*.dc0)"),
-                        '.dc0', self.DlsgInFileName),
-            'DLSG-OUT': (self.tr("Save tax form to:"), self.tr("Tax form 2020 (*.dc0)"), '.dc0', self.DlsgOutFileName)
-        }
-        if type[-3:] == '-IN':
-            filename = QFileDialog.getOpenFileName(self, selector[type][0], ".", selector[type][1])
-        elif type[-4:] == '-OUT':
-            filename = QFileDialog.getSaveFileName(self, selector[type][0], ".", selector[type][1])
+        if type == 'XLS':
+            selector = (self.tr("Save tax reports to:"), self.tr("Excel files (*.xlsx)"), '.xlsx', self.XlsFileName)
+        elif type == 'DLSG':
+            last_digit = self.year % 10
+            selector = (self.tr("Save tax form to:"), self.tr(f"Tax form (*.dc{last_digit})"),
+                        f".dc{last_digit}", self.DlsgFileName)
         else:
             raise ValueError
+        filename = QFileDialog.getSaveFileName(self, selector[0], ".", selector[1])
         if filename[0]:
-            if filename[1] == selector[type][1] and filename[0][-len(selector[type][2]):] != selector[type][2]:
-                selector[type][3].setText(filename[0] + selector[type][2])
+            if filename[1] == selector[1] and filename[0][-len(selector[2]):] != selector[2]:
+                selector[3].setText(filename[0] + selector[2])
             else:
-                selector[type][3].setText(filename[0])
+                selector[3].setText(filename[0])
 
     def getYear(self):
         return self.Year.value()
@@ -58,11 +54,8 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
     def getDlsgState(self):
         return self.DlsgGroup.isChecked()
 
-    def getDslgInFilename(self):
-        return self.DlsgInFileName.text()
-
-    def getDslgOutFilename(self):
-        return self.DlsgOutFileName.text()
+    def getDslgFilename(self):
+        return self.DlsgFileName.text()
 
     def getBrokerAsIncomeName(self):
         return self.IncomeSourceBroker.isChecked()
@@ -77,8 +70,7 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
     xls_filename = Property(str, fget=getXlsFilename)
     account = Property(int, fget=getAccount)
     update_dlsg = Property(bool, fget=getDlsgState)
-    dlsg_in_filename = Property(str, fget=getDslgInFilename)
-    dlsg_out_filename = Property(str, fget=getDslgOutFilename)
+    dlsg_filename = Property(str, fget=getDslgFilename)
     dlsg_broker_as_income = Property(bool, fget=getBrokerAsIncomeName)
     dlsg_dividends_only = Property(bool, fget=getDividendsOnly)
     no_settelement = Property(bool, fget=getNoSettlement)
@@ -118,6 +110,6 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
                              only_dividends=self.dlsg_dividends_only)
             tax_forms.update_taxes(tax_report, parameters)
             try:
-                tax_forms.save(self.dlsg_out_filename)
+                tax_forms.save(self.dlsg_filename)
             except:
-                logging.error(self.tr("Can't write tax form into file ") + f"'{self.dlsg_out_filename}'")
+                logging.error(self.tr("Can't write tax form into file ") + f"'{self.dlsg_filename}'")
