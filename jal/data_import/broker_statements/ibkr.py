@@ -640,17 +640,13 @@ class StatementIBKR(StatementXML):
             raise Statement_ImportError(self.tr("Split description miss some data ") + f"'{action}'")
         if parts['isin_old'] == parts['id']:  # Simple split without ISIN change
             qty_delta = action['quantity']
-            if qty_delta >= 0:  # Forward split (X>Y)
-                qty_old = qty_delta / (int(split['X']) - int(split['Y']))
-                qty_new = int(split['X']) * qty_delta / (int(split['X']) - int(split['Y']))
-            else:  # Reverse split (X<Y)
-                qty_new = qty_delta / (int(split['X']) - int(split['Y']))
-                qty_old = int(split['Y']) * qty_delta / (int(split['X']) - int(split['Y']))
+            qty_old = qty_delta / (int(split['X']) / int(split['Y']) - 1)
+            qty_new = qty_old + qty_delta
             action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
             action['cost_basis'] = 1.0
             action['asset'] = [action['asset'], action['asset']]
             action['quantity'] = [qty_old, qty_new]
-            self.drop_extra_fields(action, ["code", "asset_type", "jal_processed"])
+            self.drop_extra_fields(action, ["proceeds", "code", "asset_type", "jal_processed"])
             self._data[FOF.CORP_ACTIONS].append(action)
             return 1
         else:  # Split together with ISIN change and there should be 2nd record available
