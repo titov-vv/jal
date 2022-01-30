@@ -52,7 +52,7 @@ class TaxesRus:
                                                        "FROM accounts AS a "
                                                        "LEFT JOIN agents AS b ON a.organization_id = b.id "
                                                        "LEFT JOIN countries AS c ON a.country_id = c.id "
-                                                       "WHERE a.id=71=:account", [(":account", account_id)])
+                                                       "WHERE a.id=:account", [(":account", account_id)])
 
         self.prepare_exchange_rate_dates()
         for report in self.reports:
