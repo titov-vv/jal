@@ -108,7 +108,8 @@ class DLSG:
         self.broker_iso_country = "000"
         self._tax_form = form_3nfl_template[year]
         self.stored_data = {
-            "Дивиденды": {"template": "dividend", "method": self.append_dividend}
+            "Дивиденды": {"template": "dividend", "method": self.append_dividend},
+            "Акции": {"template": "trade", "method": self.append_stock_trade},
         }
 
         self._records = []
@@ -171,6 +172,16 @@ class DLSG:
         data = "{:04d}{}".format(len(prepared_value), prepared_value)
         return data
 
+    def currency_rates_record(self, rate):
+        currency_record = (0,  # Auto currency rate
+                           self.currency['code'],
+                           rate * self.currency['multiplier'],  # Currency rate for income
+                           self.currency['multiplier'],  # Currency rate multiplier for income
+                           rate * self.currency['multiplier'],  # Currency rate for tax
+                           self.currency['multiplier'],  # Currency rate multiplier for tax
+                           self.currency['name'])
+        return currency_record
+
     def append_dividend(self, dividend):
         if dividend["country_iso"] == '000':
             logging.error(self.tr(
@@ -187,15 +198,9 @@ class DLSG:
         else:
             income = (0, '1010', 'Дивиденды', income_source, income_iso_country, self.broker_iso_country,)
         income += (datetime.utcfromtimestamp(dividend['payment_date']),  # Income date
-                   datetime.utcfromtimestamp(dividend['payment_date']),  # Tax payment date
-                   0,  # Auto currency rate
-                   self.currency['code'],
-                   dividend['rate'] * self.currency['multiplier'],  # Currency rate for income
-                   self.currency['multiplier'],  # Currency rate multiplier for income
-                   dividend['rate'] * self.currency['multiplier'],  # Currency rate for tax
-                   self.currency['multiplier'],  # Currency rate multiplier for tax
-                   self.currency['name'],
-                   dividend['amount'], dividend['amount_rub'], dividend['tax'], dividend['tax_rub'])
+                   datetime.utcfromtimestamp(dividend['payment_date']))  # Tax payment date
+        income += self.currency_rates_record(dividend['rate'])
+        income += (dividend['amount'], dividend['amount_rub'], dividend['tax'], dividend['tax_rub'])
         if self._year == 2020:
             income += ('0', 0, 0, 0, '', 0)
             items_number = len(self._tax_form['sections']['@DeclForeign'])
@@ -206,9 +211,40 @@ class DLSG:
             next_label = "@CurrencyIncome{:04d}".format(items_number)
         self._tax_form['sections']['@DeclForeign'][next_label] = income
 
+    def append_stock_trade(self, trade):
+        if trade['qty'] < 0:  # short position - swap close/open dates/rates
+            trade['cs_date'] = trade['os_date']
+            trade['cs_rate'] = trade['os_rate']
+        if self._broker_as_income:
+            income_source = self.broker_name
+        else:
+            income_source = f"Доход от сделки с {trade['symbol']} ({trade['isin']})"
+        income_iso_country = self.broker_iso_country
+
+        if self._year == 2020:
+            income = (13, '1530', '(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)',
+                      income_source, income_iso_country)
+        else:
+            income = (0, '1530', '(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)',
+                      income_source, income_iso_country, income_iso_country)
+        income += (datetime.utcfromtimestamp(trade['cs_date']),  # Income date
+                   datetime.utcfromtimestamp(trade['cs_date']))  # Tax payment date
+        income += self.currency_rates_record(trade['cs_rate'])
+        income += (trade['income'], trade['income_rub'], 0, 0, '201', trade['spending_rub'])
+        if self._year == 2020:
+            income += (0, 0, '', 0)
+            items_number = len(self._tax_form['sections']['@DeclForeign'])
+            next_label = "@CurrencyIncome{:03d}".format(items_number)
+        else:
+            income += (0, 0, 0, '', 0)
+            items_number = len(self._tax_form['sections']['@DeclForeign'])
+            next_label = "@CurrencyIncome{:04d}".format(items_number)
+        self._tax_form['sections']['@DeclForeign'][next_label] = income
+
         # self.codes = {
         #     self.STOCK_INCOME: (13, '1530', '(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)', '201'),
         #     self.DERIVATIVE_INCOME: (
         #     13, '1532', '(06)Доходы по оп-циям с ПФИ (обращ-ся на орг. рынке ЦБ), баз. ак. по которым являются ЦБ',
         #     '206')
+        # @CurrencyIncome000000010000448000011Иные доходы0004IBRK VS OLD @CurrencyIncome000000213000448000011Иные доходы0004IBKR
         # }
