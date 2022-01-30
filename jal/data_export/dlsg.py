@@ -108,8 +108,9 @@ class DLSG:
         self.broker_iso_country = "000"
         self._tax_form = form_3nfl_template[year]
         self.stored_data = {
-            "Дивиденды": {"template": "dividend", "method": self.append_dividend},
-            "Акции": {"template": "trade", "method": self.append_stock_trade},
+            "Дивиденды": {"dividend": self.append_dividend},
+            "Акции": {"trade": self.append_stock_trade},
+            "Облигации": {"bond_trade": self.append_stock_trade, "bond_interest": self.append_bond_interest}
         }
 
         self._records = []
@@ -130,10 +131,10 @@ class DLSG:
         self.broker_iso_country = parameters['broker_iso_country']
         for section in tax_report:
             if section in self.stored_data:
-                template = self.stored_data[section]['template']
-                for item in tax_report[section]:
-                    if item['report_template'] == template:
-                        self.stored_data[section]['method'](item)
+                for template in self.stored_data[section]:
+                    for item in tax_report[section]:
+                        if item['report_template'] == template:
+                            self.stored_data[section][template](item)
 
     # Save tax form in file format of russian tax software "Декларация" with given filename
     def save(self, filename):
@@ -196,7 +197,7 @@ class DLSG:
         if self._year == 2020:
             income = (14, '1010', 'Дивиденды', income_source, income_iso_country)
         else:
-            income = (0, '1010', 'Дивиденды', income_source, income_iso_country, self.broker_iso_country,)
+            income = (0, '1010', 'Дивиденды', income_source, income_iso_country, self.broker_iso_country)
         income += (datetime.utcfromtimestamp(dividend['payment_date']),  # Income date
                    datetime.utcfromtimestamp(dividend['payment_date']))  # Tax payment date
         income += self.currency_rates_record(dividend['rate'])
@@ -237,6 +238,32 @@ class DLSG:
             next_label = "@CurrencyIncome{:03d}".format(items_number)
         else:
             income += (0, 0, 0, '', 0)
+            items_number = len(self._tax_form['sections']['@DeclForeign'])
+            next_label = "@CurrencyIncome{:04d}".format(items_number)
+        self._tax_form['sections']['@DeclForeign'][next_label] = income
+
+    def append_bond_interest(self, interest):
+        if self._broker_as_income:
+            income_source = self.broker_name
+        else:
+            income_source = f"Купонный доход от {interest['symbol']} ({interest['isin']})"
+        income_iso_country = self.broker_iso_country
+        if self._year == 2020:
+            income = (13, '1530', '(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)',
+                      income_source, income_iso_country)
+        else:
+            income = (0, '1530', '(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)',
+                      income_source, income_iso_country, income_iso_country)
+        income += (datetime.utcfromtimestamp(interest['o_date']),  # Income date
+                   datetime.utcfromtimestamp(interest['o_date']))  # Tax payment date
+        income += self.currency_rates_record(interest['rate'])
+        income += (interest['interest'], interest['interest_rub'])
+        if self._year == 2020:
+            income += (0, 0, '0', 0, 0, 0, '', 0)
+            items_number = len(self._tax_form['sections']['@DeclForeign'])
+            next_label = "@CurrencyIncome{:03d}".format(items_number)
+        else:
+            income += (0, 0, '0', 0, 0, 0, 0, '', 0)
             items_number = len(self._tax_form['sections']['@DeclForeign'])
             next_label = "@CurrencyIncome{:04d}".format(items_number)
         self._tax_form['sections']['@DeclForeign'][next_label] = income

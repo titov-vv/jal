@@ -259,18 +259,6 @@ class TaxesRus:
             deal['report_template'] = "bond_trade"
             bonds.append(deal)
 
-            if self.statement is not None:
-                if deal['qty'] < 0:  # short position - swap close/open dates/rates
-                    deal['cs_date'] = deal['os_date']
-                    deal['cs_rate'] = deal['os_rate']
-                if self.broker_as_income:
-                    income_source = self.broker_name
-                else:
-                    income_source = f"Доход от сделки с {deal['symbol']} ({deal['isin']})"
-                self.statement.add_foreign_income(
-                    DLSG.STOCK_INCOME, deal['cs_date'], deal['country_iso'], self.account_currency, deal['cs_rate'],
-                    deal['income'], deal['income_rub'], 0.0, 0.0, income_source, spending_rub=deal['spending_rub'])
-
         # Second - take all bond interest payments not linked with buy/sell transactions
         query = executeSQL("SELECT b.name AS symbol, b.isin AS isin, i.timestamp AS o_date, i.number AS number, "
                            "i.amount AS interest, r.quote AS rate, cc.iso_code AS country_iso "
@@ -296,16 +284,6 @@ class TaxesRus:
             interest['profit'] = interest['interest']
             interest['report_template'] = "bond_interest"
             bonds.append(interest)
-
-            if self.statement is not None:
-                if self.broker_as_income:
-                    income_source = self.broker_name
-                else:
-                    income_source = f"Купонный доход от {interest['symbol']} ({interest['isin']})"
-                self.statement.add_foreign_income(
-                    DLSG.STOCK_INCOME, interest['o_date'], interest['country_iso'], self.account_currency,
-                    interest['rate'], interest['interest'], interest['interest_rub'], 0.0, 0.0, income_source)
-
         self.insert_totals(bonds, ["income_rub", "spending_rub", "profit_rub", "profit"])
         return bonds
 
