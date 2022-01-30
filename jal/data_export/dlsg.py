@@ -183,39 +183,25 @@ class DLSG:
             income_source = f"Дивиденд от {dividend['symbol']} ({dividend['full_name']})"
             income_iso_country = dividend["country_iso"]
         if self._year == 2020:
-            income = (14, '1010', 'Дивиденды', income_source, income_iso_country,
-                      datetime.utcfromtimestamp(dividend['payment_date']),  # Income date
-                      datetime.utcfromtimestamp(dividend['payment_date']),  # Tax payment date
-                      0,  # Auto currency rate
-                      self.currency['code'],
-                      dividend['rate'] * self.currency['multiplier'],  # Currency rate for income
-                      self.currency['multiplier'],  # Currency rate multiplier for income
-                      dividend['rate'] * self.currency['multiplier'],  # Currency rate for tax
-                      self.currency['multiplier'],  # Currency rate multiplier for tax
-                      self.currency['name'],
-                      dividend['amount'],
-                      dividend['amount_rub'],
-                      dividend['tax'],
-                      dividend['tax_rub'],
-                      '0', 0, 0, 0, '', 0)
+            income = (14, '1010', 'Дивиденды', income_source, income_iso_country)
+        else:
+            income = (0, '1010', 'Дивиденды', income_source, income_iso_country, self.broker_iso_country,)
+        income += (datetime.utcfromtimestamp(dividend['payment_date']),  # Income date
+                   datetime.utcfromtimestamp(dividend['payment_date']),  # Tax payment date
+                   0,  # Auto currency rate
+                   self.currency['code'],
+                   dividend['rate'] * self.currency['multiplier'],  # Currency rate for income
+                   self.currency['multiplier'],  # Currency rate multiplier for income
+                   dividend['rate'] * self.currency['multiplier'],  # Currency rate for tax
+                   self.currency['multiplier'],  # Currency rate multiplier for tax
+                   self.currency['name'],
+                   dividend['amount'], dividend['amount_rub'], dividend['tax'], dividend['tax_rub'])
+        if self._year == 2020:
+            income += ('0', 0, 0, 0, '', 0)
             items_number = len(self._tax_form['sections']['@DeclForeign'])
             next_label = "@CurrencyIncome{:03d}".format(items_number)
         else:
-            income = (0, '1010', 'Дивиденды', income_source, income_iso_country, self.broker_iso_country,
-                      datetime.utcfromtimestamp(dividend['payment_date']),  # Income date
-                      datetime.utcfromtimestamp(dividend['payment_date']),  # Tax payment date
-                      0,  # Auto currency rate
-                      self.currency['code'],
-                      dividend['rate'] * self.currency['multiplier'],  # Currency rate for income
-                      self.currency['multiplier'],  # Currency rate multiplier for income
-                      dividend['rate'] * self.currency['multiplier'],  # Currency rate for tax
-                      self.currency['multiplier'],  # Currency rate multiplier for tax
-                      self.currency['name'],
-                      dividend['amount'],
-                      dividend['amount_rub'],
-                      dividend['tax'],
-                      dividend['tax_rub'],
-                      '0', 0, 0, 0, 0, '', 0)
+            income += ('0', 0, 0, 0, 0, '', 0)
             items_number = len(self._tax_form['sections']['@DeclForeign'])
             next_label = "@CurrencyIncome{:04d}".format(items_number)
         self._tax_form['sections']['@DeclForeign'][next_label] = income
