@@ -26,7 +26,6 @@ class TaxesRus:
         self.broker_name = ''
         self.broker_iso_cc = "000"
         self.use_settlement = True
-        self.statement = None
         self.reports = {
             "Дивиденды": self.prepare_dividends,
             "Акции": self.prepare_stocks_and_etf,
@@ -340,19 +339,6 @@ class TaxesRus:
             deal['profit'] = deal['income'] - deal['spending']
             deal['report_template'] = "trade"
             derivatives.append(deal)
-
-            if self.statement is not None:
-                if deal['qty'] < 0:  # short position - swap close/open dates/rates
-                    deal['cs_date'] = deal['os_date']
-                    deal['cs_rate'] = deal['os_rate']
-                if self.broker_as_income:
-                    income_source = self.broker_name
-                else:
-                    income_source = f"Доход от сделки с {deal['symbol']}"
-                self.statement.add_foreign_income(
-                    DLSG.DERIVATIVE_INCOME, deal['cs_date'], deal['country_iso'], self.account_currency,
-                    deal['cs_rate'], deal['income'], deal['income_rub'], 0.0, 0.0, income_source,
-                    spending_rub=deal['spending_rub'])
         self.insert_totals(derivatives, ["income_rub", "spending_rub", "profit_rub", "profit"])
         return derivatives
 

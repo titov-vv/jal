@@ -110,7 +110,9 @@ class DLSG:
         self.stored_data = {
             "Дивиденды": {"dividend": self.append_dividend},
             "Акции": {"trade": self.append_stock_trade},
-            "Облигации": {"bond_trade": self.append_stock_trade, "bond_interest": self.append_bond_interest}
+            "Облигации": {"bond_trade": self.append_stock_trade, "bond_interest": self.append_bond_interest},
+            "ПФИ": {"trade": self.append_derivative_trade},
+            "Проценты": {"interest": self.append_other_income}
         }
 
         self._records = []
@@ -221,7 +223,6 @@ class DLSG:
         else:
             income_source = f"Доход от сделки с {trade['symbol']} ({trade['isin']})"
         income_iso_country = self.broker_iso_country
-
         if self._year == 2020:
             income = (13, '1530', '(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)',
                       income_source, income_iso_country)
@@ -268,10 +269,54 @@ class DLSG:
             next_label = "@CurrencyIncome{:04d}".format(items_number)
         self._tax_form['sections']['@DeclForeign'][next_label] = income
 
-        # self.codes = {
-        #     self.STOCK_INCOME: (13, '1530', '(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)', '201'),
-        #     self.DERIVATIVE_INCOME: (
-        #     13, '1532', '(06)Доходы по оп-циям с ПФИ (обращ-ся на орг. рынке ЦБ), баз. ак. по которым являются ЦБ',
-        #     '206')
-        # @CurrencyIncome000000010000448000011Иные доходы0004IBRK VS OLD @CurrencyIncome000000213000448000011Иные доходы0004IBKR
-        # }
+    def append_derivative_trade(self, trade):
+        if trade['qty'] < 0:  # short position - swap close/open dates/rates
+            trade['cs_date'] = trade['os_date']
+            trade['cs_rate'] = trade['os_rate']
+        if self._broker_as_income:
+            income_source = self.broker_name
+        else:
+            income_source = f"Доход от сделки с {trade['symbol']}"
+        income_iso_country = self.broker_iso_country
+        if self._year == 2020:
+            income = (13, '1532',
+                      '(06)Доходы по оп-циям с ПФИ (обращ-ся на орг. рынке ЦБ), баз. ак. по которым являются ЦБ',
+                      income_source, income_iso_country)
+        else:
+            income = (0, '1532',
+                      '(06)Доходы по оп-циям с ПФИ (обращ-ся на орг. рынке ЦБ), баз. ак. по которым являются ЦБ',
+                      income_source, income_iso_country, income_iso_country)
+        income += (datetime.utcfromtimestamp(trade['cs_date']),  # Income date
+                   datetime.utcfromtimestamp(trade['cs_date']))  # Tax payment date
+        income += self.currency_rates_record(trade['cs_rate'])
+        income += (trade['income'], trade['income_rub'], 0, 0, '206', trade['spending_rub'])
+        if self._year == 2020:
+            income += (0, 0, '', 0)
+            items_number = len(self._tax_form['sections']['@DeclForeign'])
+            next_label = "@CurrencyIncome{:03d}".format(items_number)
+        else:
+            income += (0, 0, 0, '', 0)
+            items_number = len(self._tax_form['sections']['@DeclForeign'])
+            next_label = "@CurrencyIncome{:04d}".format(items_number)
+        self._tax_form['sections']['@DeclForeign'][next_label] = income
+
+    def append_other_income(self, payment):
+        income_source = self.broker_name
+        income_iso_country = self.broker_iso_country
+        if self._year == 2020:
+            income = (13, '4800', 'Иные доходы', income_source, income_iso_country)
+        else:
+            income = (0, '4800', 'Иные доходы', income_source, income_iso_country, income_iso_country)
+        income += (datetime.utcfromtimestamp(payment['payment_date']),  # Income date
+                   datetime.utcfromtimestamp(payment['payment_date']))  # Tax payment date
+        income += self.currency_rates_record(payment['rate'])
+        income += (payment['amount'], payment['amount_rub'])
+        if self._year == 2020:
+            income += (0, 0, '0', 0, 0, 0, '', 0)
+            items_number = len(self._tax_form['sections']['@DeclForeign'])
+            next_label = "@CurrencyIncome{:03d}".format(items_number)
+        else:
+            income += (0, 0, '0', 0, 0, 0, 0, '', 0)
+            items_number = len(self._tax_form['sections']['@DeclForeign'])
+            next_label = "@CurrencyIncome{:04d}".format(items_number)
+        self._tax_form['sections']['@DeclForeign'][next_label] = income
