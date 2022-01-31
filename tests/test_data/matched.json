@@ -38,6 +38,7 @@
     {"id": 28, "type": "stock", "symbol": "VLO", "name": "VALERO ENERGY CORP", "isin": "US91913Y1001", "reg_code": "91913Y100", "exchange": "NYSE"},
     {"id": -3, "type": "money", "symbol": "EUR"},
     {"id": 30, "type": "stock", "symbol": "MAC", "name": "", "isin": "US5543821012", "reg_code": "554382101", "exchange": "NYSE"},
+    {"id": 31, "type": "bond", "symbol": "F 8 1/2 04/21/23", "name": "", "isin": "US345370CV02", "reg_code": "345370CV0", "exchange": ""},
     {"id": -5, "type": "stock", "symbol": "EDV", "name": "", "reg_code": "921910709", "exchange": "ARCA", "country": "us"}
   ],
   "trades": [
@@ -52,7 +53,8 @@
     {"id": 9, "number": "2931083780", "timestamp": 1592575273, "settlement": 1592784000, "account": -1, "asset": 27, "quantity": -100.0, "price": 4.54, "fee": 1.1058334},
     {"id": 10, "number": "2997636969", "timestamp": 1595607600, "settlement": 1595808000, "account": -1, "asset": 27, "quantity": 100.0, "price": 0.0, "fee": 0.0, "note": "Option assignment"},
     {"id": 11, "number": "2997636973", "timestamp": 1595607600, "settlement": 1595607600, "account": -1, "asset": 28, "quantity": 100.0, "price": 64.0, "fee": 0.0, "note": "Option assignment/exercise"},
-    {"id": 12, "number": "3183801882", "timestamp": 1603882231, "settlement": 1604016000, "account": -1, "asset": 20, "quantity": 500000.0, "price": 0.0001, "fee": 0.7503675}
+    {"id": 12, "number": "3183801882", "timestamp": 1603882231, "settlement": 1604016000, "account": -1, "asset": 20, "quantity": 500000.0, "price": 0.0001, "fee": 0.7503675},
+    {"id": 13, "number": "18694975077", "timestamp": 1638822300, "settlement": 1638822300, "account": -1, "asset": 31, "quantity": -8.0, "price": 1103.06815, "fee": 0.0, "note": "(US345370CV02) FULL CALL / EARLY REDEMPTION FOR USD 1.10306815 PER BOND (F 8 1/2 04/21/23, F 8 1/2 04/21/23, US345370CV02)"}
   ],
   "income_spending": [
     {"id": 1, "timestamp": 1604089500, "account": 5, "peer": 0, "lines": [{"amount": 42.4, "category": -8, "description":  "LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)"}]},

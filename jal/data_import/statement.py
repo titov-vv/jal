@@ -39,6 +39,7 @@ class FOF:
     ACTION_SPINOFF = "spin-off"
     ACTION_SYMBOL_CHANGE = "symbol_change"
     ACTION_STOCK_DIVIDEND = "stock_dividend"
+    ACTION_BOND_MATURITY = "bond_maturity"    # Isn't used in reality as will be put as ordinary sell operation
 
     PAYMENT_DIVIDEND = "dividend"
     PAYMENT_INTEREST = "interest"

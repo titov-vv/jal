@@ -38,7 +38,8 @@
     {"id": 28, "type": "stock", "symbol": "VLO", "name": "VALERO ENERGY CORP", "isin": "US91913Y1001", "reg_code": "91913Y100", "exchange": "NYSE"},
     {"id": 29, "type": "money", "symbol": "EUR"},
     {"id": 30, "type": "stock", "symbol": "MAC", "name": "", "isin": "US5543821012", "reg_code": "554382101", "exchange": "NYSE"},
-    {"id": 31, "type": "stock", "symbol": "EDV", "name": "", "reg_code": "921910709", "exchange": "ARCA", "country": "us"}
+    {"id": 31, "type": "bond", "symbol": "F 8 1/2 04/21/23", "name": "", "isin": "US345370CV02", "reg_code": "345370CV0", "exchange": ""},
+    {"id": 32, "type": "stock", "symbol": "EDV", "name": "", "reg_code": "921910709", "exchange": "ARCA", "country": "us"}
   ],
   "trades": [
     {"id": 1, "number": "", "timestamp": 1548447900, "settlement": 1548447900, "account": 2, "asset": 7, "quantity": 0.567, "price": 69.2215, "fee": 0.0, "cancelled": true},
@@ -52,7 +53,8 @@
     {"id": 9, "number": "2931083780", "timestamp": 1592575273, "settlement": 1592784000, "account": 2, "asset": 27, "quantity": -100.0, "price": 4.54, "fee": 1.1058334},
     {"id": 10, "number": "2997636969", "timestamp": 1595607600, "settlement": 1595808000, "account": 2, "asset": 27, "quantity": 100.0, "price": 0.0, "fee": 0.0, "note": "Option assignment"},
     {"id": 11, "number": "2997636973", "timestamp": 1595607600, "settlement": 1595607600, "account": 2, "asset": 28, "quantity": 100.0, "price": 64.0, "fee": 0.0, "note": "Option assignment/exercise"},
-    {"id": 12, "number": "3183801882", "timestamp": 1603882231, "settlement": 1604016000, "account": 2, "asset": 20, "quantity": 500000.0, "price": 0.0001, "fee": 0.7503675}
+    {"id": 12, "number": "3183801882", "timestamp": 1603882231, "settlement": 1604016000, "account": 2, "asset": 20, "quantity": 500000.0, "price": 0.0001, "fee": 0.7503675},
+    {"id": 13, "number": "18694975077", "timestamp": 1638822300, "settlement": 1638822300, "account": 2, "asset": 31, "quantity": -8.0, "price": 1103.06815, "fee": 0.0, "note": "(US345370CV02) FULL CALL / EARLY REDEMPTION FOR USD 1.10306815 PER BOND (F 8 1/2 04/21/23, F 8 1/2 04/21/23, US345370CV02)"}
   ],
   "income_spending": [
     {"id": 1, "timestamp": 1604089500, "account": 5, "peer": 0, "lines": [{"amount": 42.4, "category": -8, "description":  "LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)"}]},
@@ -85,7 +87,7 @@
     {"id": 1, "type": "dividend", "account": 2, "timestamp": 1578082800, "number": "", "asset": 21, "amount": 60.2, "tax": 6.02, "description": "ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)"},
     {"id": 2, "type": "interest", "account": 2, "timestamp": 1590595065, "number": "2882737839", "asset": 9, "amount": -25.69, "description": "PURCHASE ACCRUED INT X 6 1/4 03/15/26"},
     {"id": 3, "type": "interest", "account": 2, "timestamp": 1600128000, "number": "", "asset": 9, "amount": 62.5, "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26)"},
-    {"id": -1, "type": "dividend", "account": 2, "timestamp": 1529612400, "number": "", "asset": 31, "amount": 16.76, "tax": 0, "description": "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"},
-    {"id": -2, "type": "dividend", "account": 2, "timestamp": 1533673200, "number": "", "asset": 31, "amount": 20.35, "tax": 0.54, "description": "EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)"}
+    {"id": -1, "type": "dividend", "account": 2, "timestamp": 1529612400, "number": "", "asset": 32, "amount": 16.76, "tax": 0, "description": "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"},
+    {"id": -2, "type": "dividend", "account": 2, "timestamp": 1533673200, "number": "", "asset": 32, "amount": 20.35, "tax": 0.54, "description": "EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)"}
   ]
 }

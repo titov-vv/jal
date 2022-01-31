@@ -51,7 +51,8 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [28, 'AAPL', PredefinedAsset.Stock, 'APPLE INC', 'US0378331005', 0, 2, 0],
         [29, 'VLO   200724P00064000', 6, 'VLO 24JUL20 64.0 P', '', 0, -1, 0],
         [30, 'VLO', PredefinedAsset.Stock, 'VALERO ENERGY CORP', 'US91913Y1001', 0, 2, 0],
-        [31, 'MAC', PredefinedAsset.Stock, '', 'US5543821012', 0, 2, 0]
+        [31, 'MAC', PredefinedAsset.Stock, '', 'US5543821012', 0, 2, 0],
+        [32, 'F 8 1/2 04/21/23', PredefinedAsset.Bond, '', 'US345370CV02', 0, -1, 0]
     ]
     assert readSQL("SELECT COUNT(*) FROM assets") == len(test_assets)
     for i, asset in enumerate(test_assets):
@@ -112,7 +113,8 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [6, 3, 1592575273, 1592784000, '2931083780', 1, 29, -100.0, 4.54, 1.1058334, ''],
         [7, 3, 1595607600, 1595808000, '2997636969', 1, 29, 100.0, 0.0, 0.0, 'Option assignment'],
         [8, 3, 1595607600, 1595607600, '2997636973', 1, 30, 100.0, 64.0, 0.0, 'Option assignment/exercise'],
-        [9, 3, 1603882231, 1604016000, '3183801882', 1, 22, 500000.0, 0.0001, 0.7503675, '']
+        [9, 3, 1603882231, 1604016000, '3183801882', 1, 22, 500000.0, 0.0001, 0.7503675, ''],
+        [10, 3, 1638822300, 1638822300, '18694975077', 1, 32, -8.0, 1103.06815, 0.0, '(US345370CV02) FULL CALL / EARLY REDEMPTION FOR USD 1.10306815 PER BOND (F 8 1/2 04/21/23, F 8 1/2 04/21/23, US345370CV02)']
     ]
     assert readSQL("SELECT COUNT(*) FROM trades") == len(test_trades)
     for i, trade in enumerate(test_trades):

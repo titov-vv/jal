@@ -61,7 +61,8 @@ class IBKR_CorpActionType:
         'IC': FOF.ACTION_SYMBOL_CHANGE,
         'HI': FOF.ACTION_STOCK_DIVIDEND,
         'FS': FOF.ACTION_SPLIT,
-        'RS': FOF.ACTION_SPLIT
+        'RS': FOF.ACTION_SPLIT,
+        'BM': FOF.ACTION_BOND_MATURITY    # No separate value as will be converte to ordinary bond sell operation
     }
 
     def __init__(self, action_type):
@@ -286,7 +287,7 @@ class StatementIBKR(StatementXML):
     def tr(self, text):
         return QApplication.translate("IBKR", text)
 
-        # Convert attribute 'attr_name' value into json open-format asset type
+    # Convert attribute 'attr_name' value into json open-format asset type
     @staticmethod
     def attr_asset_type(xml_element, attr_name, default_value):
         if attr_name not in xml_element.attrib:
@@ -295,9 +296,12 @@ class StatementIBKR(StatementXML):
         return IBKR_AssetType(xml_element.attrib[attr_name], sub_type).type
 
     # Convert attribute 'attr_name' value into JAL corporate action
-    @staticmethod
-    def attr_corp_action_type(xml_element, attr_name, default_value):
+    def attr_corp_action_type(self, xml_element, attr_name, default_value):
         if attr_name not in xml_element.attrib:
+            return default_value
+        asset_category = self.attr_asset_type(xml_element, 'assetCategory', None)
+        if asset_category != FOF.ASSET_STOCK and asset_category != FOF.ASSET_BOND:
+            logging.error(self.tr("Corporate actions are supported for stocks or bonds only"))
             return default_value
         return IBKR_CorpActionType(xml_element.attrib[attr_name]).type
 
@@ -488,16 +492,14 @@ class StatementIBKR(StatementXML):
             FOF.ACTION_SPINOFF: self.load_spinoff,
             FOF.ACTION_SYMBOL_CHANGE: self.load_symbol_change,
             FOF.ACTION_STOCK_DIVIDEND: self.load_stock_dividend,
-            FOF.ACTION_SPLIT: self.load_split
+            FOF.ACTION_SPLIT: self.load_split,
+            FOF.ACTION_BOND_MATURITY: self.load_bond_maturity
         }
 
         cnt = 0
         if any(action['code'] == StatementIBKR.CancelledFlag for action in actions):
             actions = [action for action in actions if action['code'] != StatementIBKR.CancelledFlag]
             logging.warning(self.tr("Statement contains cancelled corporate actions. They were skipped."))
-        if any(action['asset_type'] != FOF.ASSET_STOCK for action in actions):
-            actions = [action for action in actions if action['asset_type'] == FOF.ASSET_STOCK]
-            logging.warning(self.tr("Corporate actions are supported for stocks only, other assets were skipped"))
 
         # If stocks were bought/sold on a corporate action day IBKR may put several records for one corporate
         # action. So first step is to aggregate quantity.
@@ -661,6 +663,18 @@ class StatementIBKR(StatementXML):
             self._data[FOF.CORP_ACTIONS].append(action)
             paired_record[0]['jal_processed'] = True
             return 2
+
+    # Bond maturity is processed as ordinary bond
+    def load_bond_maturity(self, action, parts_b) -> int:
+        action['id'] = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
+        action['quantity'] = action['quantity'] / IBKR_Asset.BondPrincipal
+        action['price'] = action['proceeds'] / (-action['quantity'])  # Quantity is negative, bonds are withdrawn
+        action['settlement'] = action['timestamp']                    # Settled by the same date
+        action['note'] = action['description']
+        action['fee'] = 0.0
+        self.drop_extra_fields(action, ["description", "proceeds", "type", "code", "asset_type", "jal_processed"])
+        self._data[FOF.TRADES].append(action)
+        return 1
 
     def load_cash_transactions(self, cash):
         cnt = 0
