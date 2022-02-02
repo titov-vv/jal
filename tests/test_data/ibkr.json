@@ -39,8 +39,11 @@
     {"id": 29, "type": "stock", "symbol": "VLO", "name": "VALERO ENERGY CORP", "isin": "US91913Y1001", "reg_code": "91913Y100", "exchange": "NYSE"},
     {"id": 30, "type": "money", "symbol": "EUR"},
     {"id": 31, "type": "stock", "symbol": "MAC", "name": "", "isin": "US5543821012", "reg_code": "554382101", "exchange": "NYSE"},
-    {"id": 32, "type": "bond", "symbol": "F 8 1/2 04/21/23", "name": "", "isin": "US345370CV02", "reg_code": "345370CV0", "exchange": ""},
-    {"id": 33, "type": "stock", "symbol": "EDV", "name": "", "reg_code": "921910709", "exchange": "ARCA", "country": "us"}
+    {"id": 32, "type": "bond", "symbol": "F 8 1/2 04/21/23", "name": "", "isin": "US345370CV02", "reg_code": "345370CV0"},
+    {"id": 33, "type": "stock", "symbol": "BAM", "name": "", "isin": "CA1125851040", "reg_code": "112585104", "exchange": "NYSE"},
+    {"id": 34, "type": "stock", "symbol": "BPYPM", "name": "", "isin": "BMG1624R1079", "exchange": "NASDAQ"},
+    {"id": 35, "type": "stock", "symbol": "BPYU", "name": "", "isin": "US11282X1037", "reg_code": "11282X103"},
+    {"id": 36, "type": "stock", "symbol": "EDV", "name": "", "reg_code": "921910709", "exchange": "ARCA", "country": "us"}
   ],
   "trades": [
     {"id": 1, "number": "", "timestamp": 1548447900, "settlement": 1548447900, "account": 2, "asset": 7, "quantity": 0.567, "price": 69.2215, "fee": 0.0, "cancelled": true},
@@ -59,10 +62,11 @@
   ],
   "income_spending": [
     {"id": 1, "timestamp": 1604089500, "account": 5, "peer": 0, "lines": [{"amount": 42.4, "category": -8, "description":  "LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)"}]},
-    {"id": 2, "timestamp": 1578073286, "account": 2, "peer": 0, "lines": [{"amount": -7.96, "category": -5, "description": "BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019"}]},
-    {"id": 3, "timestamp": 1601462520, "account": 2, "peer": 0, "lines": [{"amount": 0.6905565, "category": -5, "description": "COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)"}]},
-    {"id": 4, "timestamp": 1591142400, "account": 1, "peer": 0, "lines": [{"amount": 0.5, "category": -8, "description": "RUB CREDIT INT FOR MAY-2020"}]},
-    {"id": 5, "timestamp": 1549843200, "account": 2, "peer": 0, "lines": [{"amount": -0.249018, "category": -6, "description": "BABA (ALIBABA GROUP HOLDING-SP ADR) - French Transaction Tax"}]}
+    {"id": 2, "timestamp": 1627331100, "account": 2, "peer": 0, "lines": [{"amount": 7554.3909201, "category": -8, "description": "BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BAM, BROOKFIELD ASSET MANAGE-CL A, CA1125851040)"}]},
+    {"id": 3, "timestamp": 1578073286, "account": 2, "peer": 0, "lines": [{"amount": -7.96, "category": -5, "description": "BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019"}]},
+    {"id": 4, "timestamp": 1601462520, "account": 2, "peer": 0, "lines": [{"amount": 0.6905565, "category": -5, "description": "COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)"}]},
+    {"id": 5, "timestamp": 1591142400, "account": 1, "peer": 0, "lines": [{"amount": 0.5, "category": -8, "description": "RUB CREDIT INT FOR MAY-2020"}]},
+    {"id": 6, "timestamp": 1549843200, "account": 2, "peer": 0, "lines": [{"amount": -0.249018, "category": -6, "description": "BABA (ALIBABA GROUP HOLDING-SP ADR) - French Transaction Tax"}]}
   ],
   "transfers": [
     {"id": 1, "account": [5, 2, 2], "number": "2674343226","asset": [30, 2], "timestamp": 1580443370, "withdrawal": 890.47, "deposit": 1000.0, "fee": 3.0, "description": "IDEALFX"},
@@ -83,13 +87,15 @@
     {"id": 9, "type": "merger", "account": 2, "timestamp": 1604089500, "number": "14147163475", "asset": [22, 23], "quantity": [10.0, 5.92], "cost_basis": 1.0, "description": "LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)"},
     {"id": 10, "type": "merger", "account": 2, "timestamp": 1611260700, "number": "15015004953", "asset": [25, 24], "quantity": [200.0, 200.0], "cost_basis": 1.0, "description": "LUMN.OLD(US1567001060) MERGED(Acquisition) WITH US5502411037 1 FOR 1 (LUMN, LUMEN TECHNOLOGIES INC, US5502411037)"},
     {"id": 11, "type": "merger", "account": 2, "timestamp": 1630007100, "number": "17569476329", "asset": [9, 26], "quantity": [2.0, 2.0], "cost_basis": 1.0, "description": "X 6 1/4 03/15/26(US912909AN84) TENDERED TO US912CALAN84 1 FOR 1 (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)"},
-    {"id": 12, "type": "stock_dividend", "account": 2, "timestamp": 1591215600, "number": "12882908488", "asset": 31, "quantity": 2.0, "cost_basis": 0.0, "description": "MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000 (MAC, MACERICH CO/THE, US5543821012)"}
+    {"id": 12, "type": "stock_dividend", "account": 2, "timestamp": 1591215600, "number": "12882908488", "asset": 31, "quantity": 2.0, "cost_basis": 0.0, "description": "MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000 (MAC, MACERICH CO/THE, US5543821012)"},
+    {"id": 13, "type": "spin-off", "account": 2, "timestamp": 1627331100, "number": "17200082800", "asset": [35, 33], "quantity": [610.0, 55.7151], "cost_basis": 1.0, "description": "BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BAM, BROOKFIELD ASSET MANAGE-CL A, CA1125851040)"},
+    {"id": 14, "type": "merger","account": 2, "timestamp": 1627331100, "number": "17200082811", "asset": [35, 34], "quantity": [610.0, 40.0895], "cost_basis": 1.0, "description": "BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BPYPM, NEW LP PREFERRED UNITS, BMG1624R1079)"}
   ],
   "asset_payments": [
     {"id": 1, "type": "dividend", "account": 2, "timestamp": 1578082800, "number": "", "asset": 21, "amount": 60.2, "tax": 6.02, "description": "ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)"},
     {"id": 2, "type": "interest", "account": 2, "timestamp": 1590595065, "number": "2882737839", "asset": 9, "amount": -25.69, "description": "PURCHASE ACCRUED INT X 6 1/4 03/15/26"},
     {"id": 3, "type": "interest", "account": 2, "timestamp": 1600128000, "number": "", "asset": 9, "amount": 62.5, "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26)"},
-    {"id": -1, "type": "dividend", "account": 2, "timestamp": 1529612400, "number": "", "asset": 33, "amount": 16.76, "tax": 0, "description": "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"},
-    {"id": -2, "type": "dividend", "account": 2, "timestamp": 1533673200, "number": "", "asset": 33, "amount": 20.35, "tax": 0.54, "description": "EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)"}
+    {"id": -1, "type": "dividend", "account": 2, "timestamp": 1529612400, "number": "", "asset": 36, "amount": 16.76, "tax": 0, "description": "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"},
+    {"id": -2, "type": "dividend", "account": 2, "timestamp": 1533673200, "number": "", "asset": 36, "amount": 20.35, "tax": 0.54, "description": "EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)"}
   ]
 }

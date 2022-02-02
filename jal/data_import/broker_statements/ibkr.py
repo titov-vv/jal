@@ -112,11 +112,13 @@ class IBKR_Asset:
                 logging.warning(self.tr("Asset type isn't supported: ") + f"'{category}' ({symbol})")
             return
         self.id = max([0] + [x['id'] for x in assets_list]) + 1
-        asset = {"id": self.id, "symbol": symbol, 'name': name, 'type': category, 'exchange': exchange}
+        asset = {"id": self.id, "symbol": symbol, 'name': name, 'type': category}
         if isin:
             asset['isin'] = isin
         if cusip:
             asset['reg_code'] = cusip
+        if exchange and exchange != "VALUE":   # store exchange only if it is valuable
+            asset['exchange'] = exchange
         assets_list.append(asset)
 
     def tr(self, text):
@@ -560,6 +562,7 @@ class StatementIBKR(StatementXML):
         MergerPatterns = [
             r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +MERGED\(\w+\) +WITH +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
             r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +CASH and STOCK MERGER +\(\w+\) +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +AND +(?P<currency>\w+) +(\d+(\.\d+)?) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
+            r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +CASH and STOCK MERGER +\(\w+\) +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+), +(?P<isin_new2>\w+) +(?P<X2>\d+) +FOR +(?P<Y2>\d+) +AND +(?P<currency>\w+) +(\d+(\.\d+)?) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
             r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +TENDERED TO +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), +(?P<name>.*), +(?P<id>.*)\)$"
             ]
 
@@ -577,9 +580,11 @@ class StatementIBKR(StatementXML):
         description_b = action['description'][:parts.span('symbol')[0]] + merger_a['symbol_old']
         asset_b = self.locate_asset(merger_a['symbol_old'], merger_a['isin_old'])
         paired_record = self.find_corp_action_pair(asset_b, description_b, action, parts_b)
-        if pattern_id == 1:
+        if (pattern_id == 1 or pattern_id == 2) and (not paired_record[0]['jal_processed']):
             self.add_merger_payment(action['timestamp'], action['account'], paired_record[0]['proceeds'],
                                     parts['currency'], action['description'])
+        if pattern_id == 2 and (not paired_record[0]['jal_processed']):
+            action['type'] = FOF.ACTION_SPINOFF   # FIXME it is temporary workaround to keep 2 outgoing assets - one as from spin-off, another from merger
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
         action['cost_basis'] = 1.0
         action['asset'] = [paired_record[0]['asset'], action['asset']]
