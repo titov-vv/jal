@@ -78,7 +78,7 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
 
     def SaveReport(self):
         taxes = TaxesRus()
-        tax_report = taxes.prepare_tax_report(self.year, self.account)
+        tax_report = taxes.prepare_tax_report(self.year, self.account, use_settlement=(not self.no_settelement))
 
         reports_xls = XLSX(self.xls_filename)
         templates = {

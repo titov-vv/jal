@@ -39,7 +39,7 @@ class TaxesRus:
     def tr(self, text):
         return QApplication.translate("TaxesRus", text)
 
-    def prepare_tax_report(self, year, account_id):
+    def prepare_tax_report(self, year, account_id, **kwargs):
         tax_report = {}
         self.account_id = account_id
         self.account_number, self.account_currency = \
@@ -53,6 +53,8 @@ class TaxesRus:
                                                        "LEFT JOIN agents AS b ON a.organization_id = b.id "
                                                        "LEFT JOIN countries AS c ON a.country_id = c.id "
                                                        "WHERE a.id=:account", [(":account", account_id)])
+        if 'use_settlement' in kwargs:
+            self.use_settlement = kwargs['use_settlement']
 
         self.prepare_exchange_rate_dates()
         for report in self.reports:
