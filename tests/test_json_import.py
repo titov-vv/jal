@@ -48,11 +48,12 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [25, 'TDOC', PredefinedAsset.Stock, 'TELADOC HEALTH INC', 'US87918A1051', 0, 2, 0],
         [26, 'LUMN', PredefinedAsset.Stock, 'LUMEN TECHNOLOGIES INC', 'US5502411037', 0, 2, 0],
         [27, 'LUMN', PredefinedAsset.Stock, 'CENTURYLINK INC', 'US1567001060', 0, 2, 0],
-        [28, 'AAPL', PredefinedAsset.Stock, 'APPLE INC', 'US0378331005', 0, 2, 0],
-        [29, 'VLO   200724P00064000', 6, 'VLO 24JUL20 64.0 P', '', 0, -1, 0],
-        [30, 'VLO', PredefinedAsset.Stock, 'VALERO ENERGY CORP', 'US91913Y1001', 0, 2, 0],
-        [31, 'MAC', PredefinedAsset.Stock, '', 'US5543821012', 0, 2, 0],
-        [32, 'F 8 1/2 04/21/23', PredefinedAsset.Bond, '', 'US345370CV02', 0, -1, 0]
+        [28, 'X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26', 3, 'X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26', 'US912CALAN84', 0, -1, 1773532800],
+        [29, 'AAPL', PredefinedAsset.Stock, 'APPLE INC', 'US0378331005', 0, 2, 0],
+        [30, 'VLO   200724P00064000', 6, 'VLO 24JUL20 64.0 P', '', 0, -1, 0],
+        [31, 'VLO', PredefinedAsset.Stock, 'VALERO ENERGY CORP', 'US91913Y1001', 0, 2, 0],
+        [32, 'MAC', PredefinedAsset.Stock, '', 'US5543821012', 0, 2, 0],
+        [33, 'F 8 1/2 04/21/23', PredefinedAsset.Bond, '', 'US345370CV02', 0, -1, 0]
     ]
     assert readSQL("SELECT COUNT(*) FROM assets") == len(test_assets)
     for i, asset in enumerate(test_assets):
@@ -108,13 +109,13 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [1, 3, 1553545500, 1553545500, '', 1, 8, -0.777, 168.37, 0.0, ''],
         [2, 3, 1579094694, 1579219200, '2661774904', 1, 21, 45000.0, 0.0012, 0.54, ''],
         [3, 3, 1580215513, 1580215513, '2674740000', 1, 4, -1240.0, 54.84, 7.75519312, ''],
-        [4, 3, 1580215566, 1580342400, '2674740000', 1, 28, -148.0, 316.68, -1.987792848, ''],
+        [4, 3, 1580215566, 1580342400, '2674740000', 1, 29, -148.0, 316.68, -1.987792848, ''],
         [5, 3, 1590595065, 1590710400, '2882737839', 1, 11, 2.0, 637.09, 2.0, ''],
-        [6, 3, 1592575273, 1592784000, '2931083780', 1, 29, -100.0, 4.54, 1.1058334, ''],
-        [7, 3, 1595607600, 1595808000, '2997636969', 1, 29, 100.0, 0.0, 0.0, 'Option assignment'],
-        [8, 3, 1595607600, 1595607600, '2997636973', 1, 30, 100.0, 64.0, 0.0, 'Option assignment/exercise'],
+        [6, 3, 1592575273, 1592784000, '2931083780', 1, 30, -100.0, 4.54, 1.1058334, ''],
+        [7, 3, 1595607600, 1595808000, '2997636969', 1, 30, 100.0, 0.0, 0.0, 'Option assignment'],
+        [8, 3, 1595607600, 1595607600, '2997636973', 1, 31, 100.0, 64.0, 0.0, 'Option assignment/exercise'],
         [9, 3, 1603882231, 1604016000, '3183801882', 1, 22, 500000.0, 0.0001, 0.7503675, ''],
-        [10, 3, 1638822300, 1638822300, '18694975077', 1, 32, -8.0, 1103.06815, 0.0, '(US345370CV02) FULL CALL / EARLY REDEMPTION FOR USD 1.10306815 PER BOND (F 8 1/2 04/21/23, F 8 1/2 04/21/23, US345370CV02)']
+        [10, 3, 1638822300, 1638822300, '18694975077', 1, 33, -8.0, 1103.06815, 0.0, '(US345370CV02) FULL CALL / EARLY REDEMPTION FOR USD 1.10306815 PER BOND (F 8 1/2 04/21/23, F 8 1/2 04/21/23, US345370CV02)']
     ]
     assert readSQL("SELECT COUNT(*) FROM trades") == len(test_trades)
     for i, trade in enumerate(test_trades):
@@ -144,7 +145,8 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [8, 5, 1581452700, '12029570527', 1, 4, 21, 45000.0, 22, 900.0, 1.0, 'EWLL(US30051D1063) SPLIT 1 FOR 50 (EWLLD, EWELLNESS HEALTHCARE CORP, US30051D2053)'],
         [9, 5, 1604089500, '14147163475', 1, 1, 24, 10.0, 25, 5.92, 1.0, 'LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)'],
         [10, 5, 1611260700, '15015004953', 1, 1, 27, 200.0, 26, 200.0, 1.0, 'LUMN.OLD(US1567001060) MERGED(Acquisition) WITH US5502411037 1 FOR 1 (LUMN, LUMEN TECHNOLOGIES INC, US5502411037)'],
-        [11, 5, 1591215600, '12882908488', 1, 5, 31, -1.0, 31, 2.0, 0.0, 'MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000 (MAC, MACERICH CO/THE, US5543821012)'],
+        [11, 5, 1630007100, '17569476329', 1, 1, 11, 2.0, 28, 2.0, 1.0, 'X 6 1/4 03/15/26(US912909AN84) TENDERED TO US912CALAN84 1 FOR 1 (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)'],
+        [12, 5, 1591215600, '12882908488', 1, 5, 32, -1.0, 32, 2.0, 0.0, 'MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000 (MAC, MACERICH CO/THE, US5543821012)'],
     ]
     assert readSQL("SELECT COUNT(*) FROM corp_actions") == len(test_corp_actons)
     for i, action in enumerate(test_corp_actons):

@@ -33,12 +33,13 @@
     {"id": 23, "type": "stock", "symbol": "TDOC", "name": "TELADOC HEALTH INC", "isin": "US87918A1051", "reg_code": "87918A105", "exchange": "NYSE"},
     {"id": 24, "type": "stock", "symbol": "LUMN", "name": "LUMEN TECHNOLOGIES INC", "isin": "US5502411037", "reg_code": "550241103", "exchange": "NYSE"},
     {"id": 25, "type": "stock", "symbol": "LUMN", "name": "CENTURYLINK INC", "isin": "US1567001060", "reg_code": "156700106","exchange": "NYSE"},
-    {"id": 26, "type": "stock", "symbol": "AAPL", "name": "APPLE INC", "isin": "US0378331005", "reg_code": "037833100", "exchange": "NASDAQ"},
-    {"id": 27, "type": "option", "symbol": "VLO   200724P00064000", "name": "VLO 24JUL20 64.0 P", "exchange": "CBOE"},
-    {"id": 28, "type": "stock", "symbol": "VLO", "name": "VALERO ENERGY CORP", "isin": "US91913Y1001", "reg_code": "91913Y100", "exchange": "NYSE"},
+    {"id": 26, "type": "bond", "symbol": "X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26", "expiry": 1773532800, "name": "X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26", "isin": "US912CALAN84", "reg_code": "912CALAN8"},
+    {"id": 27, "type": "stock", "symbol": "AAPL", "name": "APPLE INC", "isin": "US0378331005", "reg_code": "037833100", "exchange": "NASDAQ"},
+    {"id": 28, "type": "option", "symbol": "VLO   200724P00064000", "name": "VLO 24JUL20 64.0 P", "exchange": "CBOE"},
+    {"id": 29, "type": "stock", "symbol": "VLO", "name": "VALERO ENERGY CORP", "isin": "US91913Y1001", "reg_code": "91913Y100", "exchange": "NYSE"},
     {"id": -3, "type": "money", "symbol": "EUR"},
-    {"id": 30, "type": "stock", "symbol": "MAC", "name": "", "isin": "US5543821012", "reg_code": "554382101", "exchange": "NYSE"},
-    {"id": 31, "type": "bond", "symbol": "F 8 1/2 04/21/23", "name": "", "isin": "US345370CV02", "reg_code": "345370CV0", "exchange": ""},
+    {"id": 31, "type": "stock", "symbol": "MAC", "name": "", "isin": "US5543821012", "reg_code": "554382101", "exchange": "NYSE"},
+    {"id": 32, "type": "bond", "symbol": "F 8 1/2 04/21/23", "name": "", "isin": "US345370CV02", "reg_code": "345370CV0", "exchange": ""},
     {"id": -5, "type": "stock", "symbol": "EDV", "name": "", "reg_code": "921910709", "exchange": "ARCA", "country": "us"}
   ],
   "trades": [
@@ -48,13 +49,13 @@
     {"id": 4, "number": "", "timestamp": 1553545500, "settlement": 1553545500, "account": -1, "asset": 6, "quantity": -0.777, "price": 168.37, "fee": 0.0},
     {"id": 5, "number": "2661774904", "timestamp": 1579094694, "settlement": 1579219200, "account": -1, "asset": 19, "quantity": 45000.0, "price": 0.0012, "fee": 0.54},
     {"id": 6, "number": "2674740000", "timestamp": 1580215513, "settlement": 1580215513, "account": -1, "asset": -4, "quantity": -1240.0, "price": 54.84, "fee": 7.75519312},
-    {"id": 7, "number": "2674740000", "timestamp": 1580215566, "settlement": 1580342400, "account": -1, "asset": 26, "quantity": -148.0, "price": 316.68, "fee": -1.987792848},
+    {"id": 7, "number": "2674740000", "timestamp": 1580215566, "settlement": 1580342400, "account": -1, "asset": 27, "quantity": -148.0, "price": 316.68, "fee": -1.987792848},
     {"id": 8, "number": "2882737839", "timestamp": 1590595065, "settlement": 1590710400, "account": -1, "asset": 9, "quantity": 2.0, "price": 637.09, "fee": 2.0},
-    {"id": 9, "number": "2931083780", "timestamp": 1592575273, "settlement": 1592784000, "account": -1, "asset": 27, "quantity": -100.0, "price": 4.54, "fee": 1.1058334},
-    {"id": 10, "number": "2997636969", "timestamp": 1595607600, "settlement": 1595808000, "account": -1, "asset": 27, "quantity": 100.0, "price": 0.0, "fee": 0.0, "note": "Option assignment"},
-    {"id": 11, "number": "2997636973", "timestamp": 1595607600, "settlement": 1595607600, "account": -1, "asset": 28, "quantity": 100.0, "price": 64.0, "fee": 0.0, "note": "Option assignment/exercise"},
+    {"id": 9, "number": "2931083780", "timestamp": 1592575273, "settlement": 1592784000, "account": -1, "asset": 28, "quantity": -100.0, "price": 4.54, "fee": 1.1058334},
+    {"id": 10, "number": "2997636969", "timestamp": 1595607600, "settlement": 1595808000, "account": -1, "asset": 28, "quantity": 100.0, "price": 0.0, "fee": 0.0, "note": "Option assignment"},
+    {"id": 11, "number": "2997636973", "timestamp": 1595607600, "settlement": 1595607600, "account": -1, "asset": 29, "quantity": 100.0, "price": 64.0, "fee": 0.0, "note": "Option assignment/exercise"},
     {"id": 12, "number": "3183801882", "timestamp": 1603882231, "settlement": 1604016000, "account": -1, "asset": 20, "quantity": 500000.0, "price": 0.0001, "fee": 0.7503675},
-    {"id": 13, "number": "18694975077", "timestamp": 1638822300, "settlement": 1638822300, "account": -1, "asset": 31, "quantity": -8.0, "price": 1103.06815, "fee": 0.0, "note": "(US345370CV02) FULL CALL / EARLY REDEMPTION FOR USD 1.10306815 PER BOND (F 8 1/2 04/21/23, F 8 1/2 04/21/23, US345370CV02)"}
+    {"id": 13, "number": "18694975077", "timestamp": 1638822300, "settlement": 1638822300, "account": -1, "asset": 32, "quantity": -8.0, "price": 1103.06815, "fee": 0.0, "note": "(US345370CV02) FULL CALL / EARLY REDEMPTION FOR USD 1.10306815 PER BOND (F 8 1/2 04/21/23, F 8 1/2 04/21/23, US345370CV02)"}
   ],
   "income_spending": [
     {"id": 1, "timestamp": 1604089500, "account": 5, "peer": 0, "lines": [{"amount": 42.4, "category": -8, "description":  "LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)"}]},
@@ -81,7 +82,8 @@
     {"id": 8, "type": "split", "account": -1, "timestamp": 1581452700, "number": "12029570527", "asset": [19, 20], "quantity": [45000.0, 900.0], "cost_basis": 1.0, "description": "EWLL(US30051D1063) SPLIT 1 FOR 50 (EWLLD, EWELLNESS HEALTHCARE CORP, US30051D2053)"},
     {"id": 9, "type": "merger", "account": -1, "timestamp": 1604089500, "number": "14147163475", "asset": [22, 23], "quantity": [10.0, 5.92], "cost_basis": 1.0, "description": "LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)"},
     {"id": 10, "type": "merger", "account": -1, "timestamp": 1611260700, "number": "15015004953", "asset": [25, 24], "quantity": [200.0, 200.0], "cost_basis": 1.0, "description": "LUMN.OLD(US1567001060) MERGED(Acquisition) WITH US5502411037 1 FOR 1 (LUMN, LUMEN TECHNOLOGIES INC, US5502411037)"},
-    {"id": 11, "type": "stock_dividend", "account": -1, "timestamp": 1591215600, "number": "12882908488", "asset": 30, "quantity": 2.0, "cost_basis": 0.0, "description": "MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000 (MAC, MACERICH CO/THE, US5543821012)"}
+    {"id": 11, "type": "merger", "account": -1, "timestamp": 1630007100, "number": "17569476329", "asset": [9, 26], "quantity": [2.0, 2.0], "cost_basis": 1.0, "description": "X 6 1/4 03/15/26(US912909AN84) TENDERED TO US912CALAN84 1 FOR 1 (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)"},
+    {"id": 12, "type": "stock_dividend", "account": -1, "timestamp": 1591215600, "number": "12882908488", "asset": 31, "quantity": 2.0, "cost_basis": 0.0, "description": "MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000 (MAC, MACERICH CO/THE, US5543821012)"}
   ],
   "asset_payments": [
     {"id": 1, "type": "dividend", "account": -1, "timestamp": 1578082800, "number": "", "asset": 21, "amount": 60.2, "tax": 6.02, "description": "ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)"},

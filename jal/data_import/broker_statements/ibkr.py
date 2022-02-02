@@ -62,7 +62,8 @@ class IBKR_CorpActionType:
         'HI': FOF.ACTION_STOCK_DIVIDEND,
         'FS': FOF.ACTION_SPLIT,
         'RS': FOF.ACTION_SPLIT,
-        'BM': FOF.ACTION_BOND_MATURITY    # No separate value as will be converte to ordinary bond sell operation
+        'BM': FOF.ACTION_BOND_MATURITY,    # No separate value as will be converted to ordinary bond sell operation
+        'TO': FOF.ACTION_MERGER            # Voluntary conversion of one asset into another
     }
 
     def __init__(self, action_type):
@@ -543,7 +544,8 @@ class StatementIBKR(StatementXML):
     def load_merger(self, action, parts_b) -> int:
         MergerPatterns = [
             r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +MERGED\(\w+\) +WITH +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
-            r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +CASH and STOCK MERGER +\(\w+\) +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +AND +(?P<currency>\w+) +(\d+(\.\d+)?) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$"
+            r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +CASH and STOCK MERGER +\(\w+\) +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +AND +(?P<currency>\w+) +(\d+(\.\d+)?) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
+            r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +TENDERED TO +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), +(?P<name>.*), +(?P<id>.*)\)$"
             ]
 
         parts = None
@@ -566,7 +568,11 @@ class StatementIBKR(StatementXML):
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
         action['cost_basis'] = 1.0
         action['asset'] = [paired_record[0]['asset'], action['asset']]
-        action['quantity'] = [-paired_record[0]['quantity'], action['quantity']]
+        if action['asset_type'] == FOF.ASSET_BOND:  # Adjust number of bonds
+            action['quantity'] = [-paired_record[0]['quantity']/IBKR_Asset.BondPrincipal,
+                                  action['quantity']/IBKR_Asset.BondPrincipal]
+        else:
+            action['quantity'] = [-paired_record[0]['quantity'], action['quantity']]
         self.drop_extra_fields(action, ["proceeds", "code", "asset_type", "jal_processed"])
         self._data[FOF.CORP_ACTIONS].append(action)
         paired_record[0]['jal_processed'] = True
