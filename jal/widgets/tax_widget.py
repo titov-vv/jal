@@ -16,6 +16,7 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
         MdiWidget.__init__(self)
         self.setupUi(self)
 
+        self.Year.setValue(datetime.now().year - 1)   # Set previous year by default
         self.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, 'XLS'))
         self.DlsgSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG'))
         self.SaveButton.pressed.connect(self.SaveReport)
