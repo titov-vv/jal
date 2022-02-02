@@ -498,9 +498,7 @@ class StatementIBKR(StatementXML):
         }
 
         cnt = 0
-        if any(action['code'] == StatementIBKR.CancelledFlag for action in actions):
-            actions = [action for action in actions if action['code'] != StatementIBKR.CancelledFlag]
-            logging.warning(self.tr("Statement contains cancelled corporate actions. They were skipped."))
+        self.remove_cancelled_corporate_actions(actions)
 
         # If stocks were bought/sold on a corporate action day IBKR may put several records for one corporate
         # action. So first step is to aggregate quantity.
@@ -540,6 +538,23 @@ class StatementIBKR(StatementXML):
         if len(paired_record) != 1:
             raise Statement_ImportError(self.tr("Can't find paired record for ") + f"{action}")
         return paired_record
+
+    # Takes cancelled corporate actions and tries to find and remove original one form actions list
+    def remove_cancelled_corporate_actions(self, actions):
+        delete_elements = []
+        cancelled_actions = [(idx, action) for idx, action in enumerate(actions) if action['code'] == StatementIBKR.CancelledFlag]
+        for c_id, c_action in cancelled_actions:
+            matched = [idx for (idx, action) in enumerate(actions) if
+                       action["type"] == c_action["type"] and action["account"] == c_action["account"] and
+                       action["asset"] == c_action["asset"] and action["timestamp"] == c_action["timestamp"] and
+                       action["description"] == c_action["description"] and action["quantity"] == -c_action["quantity"]]
+            if len(matched) == 1:
+                delete_elements += [c_id, matched[0]]
+        for idx in sorted(delete_elements, reverse=True):
+            del actions[idx]
+        for action in actions:
+            if action['code'] == StatementIBKR.CancelledFlag:
+                raise Statement_ImportError(self.tr("Can't process cancelled corporate action") + f" '{action}'")
 
     def load_merger(self, action, parts_b) -> int:
         MergerPatterns = [
