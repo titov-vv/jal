@@ -17,7 +17,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QFrame, QGridLayout, QHeaderView,
     QLabel, QSizePolicy, QSpacerItem, QTableView,
-    QVBoxLayout, QWidget)
+    QVBoxLayout, QWidget, QAbstractItemView)
 
 from jal.widgets.date_range_selector import DateRangeSelector
 from jal.widgets.reference_selector import CategorySelector
