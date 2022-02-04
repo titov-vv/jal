@@ -323,9 +323,8 @@ class Ledger(QObject):
         # Get asset amount accumulated before current operation
         asset_amount = self.getAmount(BookAccount.Assets, asset_id)
         if asset_amount < (qty - 2*Setup.CALC_TOLERANCE):
-            logging.fatal(self.tr("Asset amount is not enough for corporate action processing. Date: ")
-                          + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
-            return
+            raise ValueError(self.tr("Asset amount is not enough for corporate action processing. Date: ")
+                             + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
 
         # Get a list of all previous not matched trades or corporate actions
         query = executeSQL("SELECT timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty "
@@ -450,6 +449,8 @@ class Ledger(QObject):
             if fast_and_dirty:
                 _ = executeSQL("PRAGMA synchronous = ON")
             db_triggers_enable()
+            if self.progress_bar is not None:
+                self.main_window.showProgressBar(False)
         # Fill ledger totals values
         _ = executeSQL("INSERT INTO ledger_totals"
                        "(op_type, operation_id, timestamp, book_account, asset_id, account_id, amount_acc, value_acc) "
@@ -458,9 +459,6 @@ class Ledger(QObject):
                        "WHERE id IN ("
                        "SELECT MAX(id) FROM ledger WHERE timestamp >= :frontier "
                        "GROUP BY op_type, operation_id, book_account, account_id)", [(":frontier", frontier)])
-
-        if self.progress_bar is not None:
-            self.main_window.showProgressBar(False)
         JalSettings().setValue('RebuildDB', 0)
         logging.info(self.tr("Ledger is complete. Elapsed time: ") + f"{datetime.now() - start_time}" +
                      self.tr(", new frontier: ") + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
