@@ -584,6 +584,7 @@ class StatementIBKR(StatementXML):
             self.add_merger_payment(action['timestamp'], action['account'], paired_record[0]['proceeds'],
                                     parts['currency'], action['description'])
         if pattern_id == 2 and (not paired_record[0]['jal_processed']):
+            action['timestamp'] -= 1
             action['type'] = FOF.ACTION_SPINOFF   # FIXME it is temporary workaround to keep 2 outgoing assets - one as from spin-off, another from merger
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
         action['cost_basis'] = 1.0
