@@ -56,16 +56,19 @@ class JalBackup:
         return True
 
     def do_backup(self):
-        db_con = sqlite3.connect(self.file)
         with TemporaryDirectory(prefix=self.tmp_prefix) as tmp_path:
             with open(tmp_path + os.sep + 'label', 'w') as label:
                 label.write(f"{self.backup_label}{datetime.now().replace(tzinfo=tz.tzlocal()).strftime(self.date_fmt)}")
-            backup_con = sqlite3.connect(tmp_path + os.sep + Setup.DB_PATH)
-            db_con.backup(backup_con)
+            # Copy database file
+            original_db_connection = sqlite3.connect(self.file)
+            backup_db_connection = sqlite3.connect(tmp_path + os.sep + Setup.DB_PATH)
+            original_db_connection.backup(backup_db_connection)
+            original_db_connection.close()
+            backup_db_connection.close()
+            # Pack files
             with tarfile.open(self.backup_name, "w:gz") as tar:
                 tar.add(tmp_path + os.sep + 'label', arcname='label')
                 tar.add(tmp_path + os.sep + Setup.DB_PATH, arcname=Setup.DB_PATH)
-        db_con.close()
 
     def do_restore(self):
         with TemporaryDirectory(prefix=self.tmp_prefix) as tmp_path:
