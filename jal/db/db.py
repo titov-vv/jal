@@ -233,11 +233,12 @@ class JalDB:
                            [(":new_reg", reg_code), (":asset_id", asset_id)])
         return asset_id
 
-    def add_dividend(self, subtype, timestamp, account_id, asset_id, amount, note, trade_number='', tax=0.0):
-        id = readSQL("SELECT id FROM dividends WHERE timestamp=:timestamp AND account_id=:account_id "
+    def add_dividend(self, subtype, timestamp, account_id, asset_id, amount, note, trade_number='',
+                     tax=0.0, price=None):
+        id = readSQL("SELECT id FROM dividends WHERE timestamp=:timestamp AND type=:subtype AND account_id=:account_id "
                      "AND asset_id=:asset_id AND amount=:amount AND note=:note",
-                     [(":timestamp", timestamp), (":account_id", account_id), (":asset_id", asset_id),
-                      (":amount", amount), (":note", note)])
+                     [(":timestamp", timestamp), (":subtype", subtype), (":account_id", account_id),
+                      (":asset_id", asset_id), (":amount", amount), (":note", note)])
         if id:
             logging.info(self.tr("Dividend already exists: ") + f"{note}")
             return
@@ -247,6 +248,10 @@ class JalDB:
                         (":account_id", account_id), (":asset_id", asset_id), (":amount", amount),
                         (":tax", tax), (":note", note)],
                        commit=True)
+        if price is not None:
+            _ = executeSQL("INSERT OR REPLACE INTO quotes(timestamp, asset_id, quote) "
+                           "VALUES (:timestamp, :asset_id, :quote)",
+                           [(":timestamp", timestamp), (":asset_id", asset_id), (":quote", price)])
 
     def update_dividend_tax(self, dividend_id, new_tax):
         _ = executeSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",

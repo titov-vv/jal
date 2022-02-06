@@ -654,6 +654,13 @@ class StatementIBKR(StatementXML):
         return 2
 
     def load_stock_dividend(self, action, parts_b) -> int:
+        StockDividendPattern = r"^(?P<description>.*) +(?P<tail>\(.*\))$"
+
+        parts = re.match(StockDividendPattern, action['description'], re.IGNORECASE)
+        if parts is None:
+            raise Statement_ImportError(self.tr("Can't parse Stock Dividend description ") + f"'{action}'")
+        action['description'] = parts.groupdict()['description']
+
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
         action['amount'] = action['quantity']
         action['price'] = action['value'] / action['quantity']

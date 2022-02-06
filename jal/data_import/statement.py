@@ -348,6 +348,13 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 JalDB().add_dividend(DividendSubtype.BondInterest, payment['timestamp'], -payment['account'],
                                      -payment['asset'], payment['amount'], payment['description'], payment['number'],
                                      tax=tax)
+            elif payment['type'] == FOF.ACTION_STOCK_DIVIDEND:
+                if payment['id'] > 0:  # New dividend
+                    JalDB().add_dividend(DividendSubtype.StockDividend, payment['timestamp'], -payment['account'],
+                                         -payment['asset'], payment['amount'], payment['description'],
+                                         payment['number'], tax=tax, price=payment['price'])
+                else:  # Dividend exists, only tax to be updated
+                    JalDB().update_dividend_tax(-payment['id'], payment['tax'])
             else:
                 raise Statement_ImportError(self.tr("Unsupported payment type: ") + f"{payment}")
 
