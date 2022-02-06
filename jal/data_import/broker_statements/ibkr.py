@@ -292,6 +292,14 @@ class StatementIBKR(StatementXML):
     def tr(self, text):
         return QApplication.translate("IBKR", text)
 
+    def validate_file_header_attributes(self, attributes):
+        if 'type' not in attributes:
+            raise Statement_ImportError(self.tr("Interactive Brokers report type not found"))
+        if attributes['type'] == "TCF":
+            raise Statement_ImportError(self.tr("You try to import Trade confimation report, not Activity report"))
+        if attributes['type'] != 'AF':
+            raise Statement_ImportError(self.tr("Unknown Interactive Brokers report type: ") + f"{attributes['type']}")
+
     # Convert attribute 'attr_name' value into json open-format asset type
     @staticmethod
     def attr_asset_type(xml_element, attr_name, default_value):

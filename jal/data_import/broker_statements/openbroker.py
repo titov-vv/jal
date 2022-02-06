@@ -176,6 +176,12 @@ class StatementOpenBroker(StatementXML):
                 }
         }
 
+    def validate_file_header_attributes(self, attributes):
+        if 'title' not in attributes:
+            raise Statement_ImportError(self.tr("Open broker report title not found"))
+        if not attributes['title'].startswith("Отчет АО «Открытие Брокер»"):
+            raise Statement_ImportError(self.tr("Unexpected Open broker report header: ") + f"{attributes['title']}")
+
     # Convert attribute 'attr_name' value into json open-format asset type
     @staticmethod
     def attr_asset_type(xml_element, attr_name, default_value):
