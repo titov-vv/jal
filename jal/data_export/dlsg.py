@@ -1,4 +1,5 @@
 import logging
+from copy import deepcopy
 from datetime import date, datetime
 from PySide6.QtWidgets import QApplication
 
@@ -106,7 +107,7 @@ class DLSG:
         self.currency = None
         self.broker_name = ''
         self.broker_iso_country = "000"
-        self._tax_form = form_3nfl_template[year]
+        self._tax_form = deepcopy(form_3nfl_template[year])
         self.stored_data = {
             "Дивиденды": {"dividend": self.append_dividend},
             "Акции": {"trade": self.append_stock_trade},
