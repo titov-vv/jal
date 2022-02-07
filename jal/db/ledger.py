@@ -335,7 +335,7 @@ class Ledger(QObject):
         while query.next():
             opening_trade = readSQLrecord(query, named=True)
             next_deal_qty = opening_trade['remaining_qty']
-            if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
+            if (processed_qty + next_deal_qty) > (qty + 2*Setup.CALC_TOLERANCE):  # We can't close all trades with current operation
                 raise ValueError(self.tr("Unhandled case: Corporate action covers not full open position. Date: ")
                                  + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}, "
                                  + f"Processed: {processed_qty}, Next: {next_deal_qty}, Qty: {qty}, Operation: {self.current}")
