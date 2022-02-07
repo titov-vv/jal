@@ -324,8 +324,8 @@ class Ledger(QObject):
         asset_amount = self.getAmount(BookAccount.Assets, asset_id)
         if asset_amount < (qty - 2*Setup.CALC_TOLERANCE):
             raise ValueError(self.tr("Asset amount is not enough for corporate action processing. Date: ")
-                             + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
-
+                             + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}, "
+                             + f"Asset amount: {asset_amount}, Qty required: {qty}, Operation: {self.current}")
         # Get a list of all previous not matched trades or corporate actions
         query = executeSQL("SELECT timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty "
                            "FROM open_trades "
@@ -335,11 +335,13 @@ class Ledger(QObject):
         while query.next():
             opening_trade = readSQLrecord(query, named=True)
             next_deal_qty = opening_trade['remaining_qty']
-            if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
-                raise ValueError(self.tr("Unhandled case: Corporate action covers not full open position"))
+            if (processed_qty + next_deal_qty) > (qty + 2*Setup.CALC_TOLERANCE):  # We can't close all trades with current operation
+                raise ValueError(self.tr("Unhandled case: Corporate action covers not full open position. Date: ")
+                                 + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}, "
+                                 + f"Processed: {processed_qty}, Next: {next_deal_qty}, Qty: {qty}, Operation: {self.current}")
             _ = executeSQL("UPDATE open_trades SET remaining_qty=0 "
                            "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
-                           [(":op_type", opening_trade['op_type']),(":id", opening_trade['operation_id']),
+                           [(":op_type", opening_trade['op_type']), (":id", opening_trade['operation_id']),
                             (":asset_id", asset_id)])
 
             # Create a deal with relevant sign of quantity (-1 for short, +1 for long)
