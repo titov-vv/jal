@@ -295,25 +295,7 @@ class Ledger(QObject):
             logging.error(self.tr("Unexpected data in transfer transaction"))
             return
 
-    def updateStockDividendAssets(self):
-        asset_amount = self.getAmount(BookAccount.Assets, self.current['asset'])
-        self.current['price'] = self.current['price'] + asset_amount
-        self.current['amount'] = asset_amount
-        asset = JalDB().get_asset_name(self.current['asset'])
-        QMessageBox().information(None, self.tr("Confirmation"),
-                                  self.tr("Stock dividend for was updated for ") + asset +
-                                  f" @{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d.%m.%Y')}\n" +
-                                  self.tr("Please check that quantity is correct."),
-                                  QMessageBox.Ok)
-        _ = executeSQL("UPDATE corp_actions SET qty=:qty, qty_new=:qty_new WHERE id=:id",
-                       [(":id", self.current['id']),
-                        (":qty", self.current['amount']), (":qty_new", self.current['price'])])
-
     def processCorporateAction(self):
-        # Stock dividends are imported without initial stock amounts -> correction happens here
-        if self.current['subtype'] == CorporateAction.StockDividend and self.current['amount'] < 0:
-            self.updateStockDividendAssets()
-
         account_id = self.current['account']
         asset_id = self.current['asset']
         qty = self.current['amount']
