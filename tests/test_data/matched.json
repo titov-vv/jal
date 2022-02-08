@@ -43,6 +43,7 @@
     {"id": 33, "type": "stock", "symbol": "BAM", "name": "", "isin": "CA1125851040", "reg_code": "112585104", "exchange": "NYSE"},
     {"id": 34, "type": "stock", "symbol": "BPYPM", "name": "", "isin": "BMG1624R1079", "exchange": "NASDAQ"},
     {"id": 35, "type": "stock", "symbol": "BPYU", "name": "", "isin": "US11282X1037", "reg_code": "11282X103"},
+    {"id": 36, "type": "stock", "symbol": "SLVM", "name": "", "isin": "US8713321029", "reg_code": "871332102", "exchange": "NYSE"},
     {"id": -5, "type": "stock", "symbol": "EDV", "name": "", "reg_code": "921910709", "exchange": "ARCA", "country": "us"}
   ],
   "trades": [
@@ -87,7 +88,8 @@
     {"id": 9, "type": "merger", "account": -1, "timestamp": 1611260700, "number": "15015004953", "asset": [25, 24], "quantity": [200.0, 200.0], "cost_basis": 1.0, "description": "LUMN.OLD(US1567001060) MERGED(Acquisition) WITH US5502411037 1 FOR 1 (LUMN, LUMEN TECHNOLOGIES INC, US5502411037)"},
     {"id": 10, "type": "merger", "account": -1, "timestamp": 1630007100, "number": "17569476329", "asset": [9, 26], "quantity": [2.0, 2.0], "cost_basis": 1.0, "description": "X 6 1/4 03/15/26(US912909AN84) TENDERED TO US912CALAN84 1 FOR 1 (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)"},
     {"id": 11, "type": "spin-off", "account": -1, "timestamp": 1627331099, "number": "17200082800", "asset": [35, 33], "quantity": [610.0, 55.7151], "cost_basis": 1.0, "description": "BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BAM, BROOKFIELD ASSET MANAGE-CL A, CA1125851040)"},
-    {"id": 12, "type": "merger","account": -1, "timestamp": 1627331100, "number": "17200082811", "asset": [35, 34], "quantity": [610.0, 40.0895], "cost_basis": 1.0, "description": "BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BPYPM, NEW LP PREFERRED UNITS, BMG1624R1079)"}
+    {"id": 12, "type": "merger","account": -1, "timestamp": 1627331100, "number": "17200082811", "asset": [35, 34], "quantity": [610.0, 40.0895], "cost_basis": 1.0, "description": "BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BPYPM, NEW LP PREFERRED UNITS, BMG1624R1079)"},
+    {"id": 13, "type": "spin-off", "account": -1, "timestamp": 1633033500, "number": "17897699521", "asset": [18, 36], "quantity": [320.0, 29.0909], "cost_basis": 0.0, "description": "GE(US3696041033) SPINOFF  1 FOR 11 (SLVM, SYLVAMO CORP, US8713321029)"}
   ],
   "asset_payments": [
     {"id": 1, "type": "stock_dividend", "account": -1, "timestamp": 1633033200, "number": "16054321038", "asset": -4, "amount": 5.887, "price": 25.73, "tax": 15.0, "description": "VUG (US9229087369) Stock Dividend US9229087369 196232339 for 10000000000"},

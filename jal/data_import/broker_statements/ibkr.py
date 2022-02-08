@@ -632,6 +632,9 @@ class StatementIBKR(StatementXML):
         if not asset_old:
             raise Statement_ImportError(self.tr("Spin-off initial asset not found ") + f"'{action}'")
         qty_old = int(spinoff['Y']) * action['quantity'] / int(spinoff['X'])
+        if abs(round(qty_old) - qty_old) > 0.01:
+            raise Statement_ImportError(self.tr("Spin-off rounding error is too big ") + f"'{action}'")
+        qty_old = round(qty_old)
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
         action['cost_basis'] = 0.0
         action['asset'] = [asset_old, action['asset']]

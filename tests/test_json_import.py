@@ -56,7 +56,8 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [33, 'F 8 1/2 04/21/23', PredefinedAsset.Bond, '', 'US345370CV02', 0, -1, 0],
         [34, 'BAM', 2, '', 'CA1125851040', 0, 2, 0],
         [35, 'BPYPM', 2, '', 'BMG1624R1079', 0, 2, 0],
-        [36, 'BPYU', 2, '', 'US11282X1037', 0, -1, 0]
+        [36, 'BPYU', 2, '', 'US11282X1037', 0, -1, 0],
+        [37, 'SLVM', 2, '', 'US8713321029', 0, 2, 0]
     ]
     assert readSQL("SELECT COUNT(*) FROM assets") == len(test_assets)
     for i, asset in enumerate(test_assets):
@@ -164,7 +165,8 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [9, 5, 1611260700, '15015004953', 1, 1, 27, 200.0, 26, 200.0, 1.0, 'LUMN.OLD(US1567001060) MERGED(Acquisition) WITH US5502411037 1 FOR 1 (LUMN, LUMEN TECHNOLOGIES INC, US5502411037)'],
         [10, 5, 1630007100, '17569476329', 1, 1, 11, 2.0, 28, 2.0, 1.0, 'X 6 1/4 03/15/26(US912909AN84) TENDERED TO US912CALAN84 1 FOR 1 (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)'],
         [11, 5, 1627331099, '17200082800', 1, 2, 36, 610.0, 34, 55.7151, 1.0, 'BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BAM, BROOKFIELD ASSET MANAGE-CL A, CA1125851040)'],
-        [12, 5, 1627331100, '17200082811', 1, 1, 36, 610.0, 35, 40.0895, 1.0, 'BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BPYPM, NEW LP PREFERRED UNITS, BMG1624R1079)']
+        [12, 5, 1627331100, '17200082811', 1, 1, 36, 610.0, 35, 40.0895, 1.0, 'BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BPYPM, NEW LP PREFERRED UNITS, BMG1624R1079)'],
+        [13, 5, 1633033500, '17897699521', 1, 2, 20, 320.0, 37, 29.0909, 0.0, 'GE(US3696041033) SPINOFF  1 FOR 11 (SLVM, SYLVAMO CORP, US8713321029)']
     ]
     assert readSQL("SELECT COUNT(*) FROM corp_actions") == len(test_corp_actons)
     for i, action in enumerate(test_corp_actons):
