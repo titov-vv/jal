@@ -58,11 +58,11 @@ class IBKR_CorpActionType:
     _corporate_action_types = {
         'BM': FOF.ACTION_BOND_MATURITY,    # No separate value as will be converted to ordinary bond sell operation
         'FS': FOF.ACTION_SPLIT,            # Forward split
-        'HI': FOF.ACTION_STOCK_DIVIDEND,   # Choice dividend
+        'HI': FOF.PAYMENT_STOCK_DIVIDEND,  # Choice dividend
         'IC': FOF.ACTION_SYMBOL_CHANGE,    # Issue change
         'RS': FOF.ACTION_SPLIT,            # Reverse split
-        'SO': FOF.ACTION_SPINOFF,
-        'SD': FOF.ACTION_STOCK_DIVIDEND,
+        'SO': FOF.ACTION_SPINOFF,          # Spin-off of new company
+        'SD': FOF.PAYMENT_STOCK_DIVIDEND,  # Dividend paid in stocks
         'TC': FOF.ACTION_MERGER,           # Conversion of one stock into another
         'TO': FOF.ACTION_MERGER            # Voluntary conversion of one asset into another
     }
@@ -504,7 +504,7 @@ class StatementIBKR(StatementXML):
             FOF.ACTION_MERGER: self.load_merger,
             FOF.ACTION_SPINOFF: self.load_spinoff,
             FOF.ACTION_SYMBOL_CHANGE: self.load_symbol_change,
-            FOF.ACTION_STOCK_DIVIDEND: self.load_stock_dividend,
+            FOF.PAYMENT_STOCK_DIVIDEND: self.load_stock_dividend,
             FOF.ACTION_SPLIT: self.load_split,
             FOF.ACTION_BOND_MATURITY: self.load_bond_maturity
         }
@@ -838,7 +838,7 @@ class StatementIBKR(StatementXML):
         DividendNotePattern = r"^(?P<symbol>.*\w) ?\((?P<isin>\w+)\)(?P<prefix>( \w*)+) +(?P<amount>\d+\.\d+)?(?P<suffix>.*) \(.*\)$"
 
         dividends = [x for x in self._data[FOF.ASSET_PAYMENTS] if
-                     (x['type'] == FOF.PAYMENT_DIVIDEND or x['type'] == FOF.ACTION_STOCK_DIVIDEND)
+                     (x['type'] == FOF.PAYMENT_DIVIDEND or x['type'] == FOF.PAYMENT_STOCK_DIVIDEND)
                      and x['asset'] == asset_id and x['account'] == account_id]
         account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
         currency = [x for x in self._data[FOF.ASSETS] if x["id"] == account['currency']][0]

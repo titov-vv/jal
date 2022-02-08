@@ -1809,7 +1809,7 @@ Application will be terminated now</source>
     <message>
         <location filename="../net/helpers.py" line="45"/>
         <source> failed: </source>
-        <translation>неуспешный запрос: </translation>
+        <translation> неуспешный запрос: </translation>
     </message>
 </context>
 <context>
@@ -2764,7 +2764,7 @@ do you want to save it?</source>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="594"/>
         <source>Spin-off initial asset not found </source>
-        <translation>Исходная ЦБ для выделения компании не найдена</translation>
+        <translation>Исходная ЦБ для выделения компании не найдена </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="609"/>
@@ -2907,7 +2907,7 @@ do you want to save it?</source>
     <message>
         <location filename="../data_import/broker_statements/openbroker.py" line="316"/>
         <source>Can&apos;t detect bond name from description </source>
-        <translation>Невозможно распознать название облигации в описании</translation>
+        <translation>Невозможно распознать название облигации в описании </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/openbroker.py" line="338"/>
@@ -3132,7 +3132,7 @@ do you want to save it?</source>
     <message>
         <location filename="../data_import/statement_xls.py" line="69"/>
         <source>Statement loaded successfully: </source>
-        <translation>Отчёт загружен успешно</translation>
+        <translation>Отчёт загружен успешно: </translation>
     </message>
     <message>
         <location filename="../data_import/statement_xls.py" line="104"/>

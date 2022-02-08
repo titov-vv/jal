@@ -38,11 +38,11 @@ class FOF:
     ACTION_SPLIT = "split"
     ACTION_SPINOFF = "spin-off"
     ACTION_SYMBOL_CHANGE = "symbol_change"
-    ACTION_STOCK_DIVIDEND = "stock_dividend"
     ACTION_BOND_MATURITY = "bond_maturity"    # Isn't used in reality as will be put as ordinary sell operation
 
     PAYMENT_DIVIDEND = "dividend"
     PAYMENT_INTEREST = "interest"
+    PAYMENT_STOCK_DIVIDEND = "stock_dividend"
 
     def __init__(self):
         pass
@@ -79,7 +79,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         FOF.ACTION_SPLIT: CorporateAction.Split,
         FOF.ACTION_SPINOFF: CorporateAction.SpinOff,
         FOF.ACTION_SYMBOL_CHANGE: CorporateAction.SymbolChange,
-        FOF.ACTION_STOCK_DIVIDEND: CorporateAction.StockDividend
+        FOF.PAYMENT_STOCK_DIVIDEND: CorporateAction.StockDividend
     }
     _sources = {
         'NYSE': MarketDataFeed.US,
@@ -348,7 +348,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 JalDB().add_dividend(DividendSubtype.BondInterest, payment['timestamp'], -payment['account'],
                                      -payment['asset'], payment['amount'], payment['description'], payment['number'],
                                      tax=tax)
-            elif payment['type'] == FOF.ACTION_STOCK_DIVIDEND:
+            elif payment['type'] == FOF.PAYMENT_STOCK_DIVIDEND:
                 if payment['id'] > 0:  # New dividend
                     JalDB().add_dividend(DividendSubtype.StockDividend, payment['timestamp'], -payment['account'],
                                          -payment['asset'], payment['amount'], payment['description'],
