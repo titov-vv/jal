@@ -43,7 +43,8 @@
     {"id": 33, "type": "stock", "symbol": "BAM", "name": "", "isin": "CA1125851040", "reg_code": "112585104", "exchange": "NYSE"},
     {"id": 34, "type": "stock", "symbol": "BPYPM", "name": "", "isin": "BMG1624R1079", "exchange": "NASDAQ"},
     {"id": 35, "type": "stock", "symbol": "BPYU", "name": "", "isin": "US11282X1037", "reg_code": "11282X103"},
-    {"id": 36, "type": "stock", "symbol": "EDV", "name": "", "reg_code": "921910709", "exchange": "ARCA", "country": "us"}
+    {"id": 36, "type": "stock", "symbol": "SLVM", "name": "", "isin": "US8713321029", "reg_code": "871332102", "exchange": "NYSE"},
+    {"id": 37, "type": "stock", "symbol": "EDV", "name": "", "reg_code": "921910709", "exchange": "ARCA", "country": "us"}
   ],
   "trades": [
     {"id": 1, "number": "", "timestamp": 1548447900, "settlement": 1548447900, "account": 2, "asset": 7, "quantity": 0.567, "price": 69.2215, "fee": 0.0, "cancelled": true},
@@ -79,7 +80,7 @@
     {"id": 1, "type": "split", "account": 2, "timestamp": 1618345500, "number": "16074977038", "asset": [4, 4], "quantity": [217.0, 271.25], "cost_basis": 1.0, "description": "AMZN(US0231351067) SPLIT 5 FOR 4 (AMZN, AMAZON.COM INC, US0231351067)"},
     {"id": 2, "type": "merger", "account": 2, "timestamp": 1605731100, "number": "10162291403", "asset": [8, 7], "quantity": [70.0, 17.444], "cost_basis": 1.0, "description": "DM(US2574541080) MERGED(Acquisition) WITH US25746U1097 2492 FOR 10000 (D, DOMINION ENERGY INC, 25746U109)"},
     {"id": 3, "type": "symbol_change", "account": 2, "timestamp": 1605558300, "number": "14302257657", "asset": [12, 13], "quantity": [5.0, 5.0], "cost_basis": 1.0, "description": "MYL(NL0011031208) CUSIP/ISIN CHANGE TO (US92556V1061) (VTRS, VIATRIS INC-W/I, US92556V1061)"},
-    {"id": 4, "type": "spin-off", "account": 2, "timestamp": 1605817500, "number": "10302900848", "asset": [18, 14], "quantity": [100.0 ,0.5371], "cost_basis": 0.0, "description": "GE(US3696041033) SPINOFF  5371 FOR 1000000 (WAB, WABTEC CORP, 929740108)"},
+    {"id": 4, "type": "spin-off", "account": 2, "timestamp": 1605817500, "number": "10302900848", "asset": [18, 14], "quantity": [100 ,0.5371], "cost_basis": 0.0, "description": "GE(US3696041033) SPINOFF  5371 FOR 1000000 (WAB, WABTEC CORP, 929740108)"},
     {"id": 5, "type": "stock_dividend", "account": 2, "timestamp": 1595017200, "number": "13259965038", "asset": 15, "quantity": 3.0, "cost_basis": 0.0, "description": "TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000 (TEF, TELEFONICA SA-SPON ADR, US8793822086)"},
     {"id": 6, "type": "merger", "account": 2, "timestamp": 1592339100, "number": "13006963996", "asset": [16, 17], "quantity": [70.0, 170.8], "cost_basis": 1.0, "description": "EQM(US26885B1008) MERGED(Acquisition) WITH US2946001011 244 FOR 100 (ETRN, EQUITRANS MIDSTREAM CORP, US2946001011)"},
     {"id": 7, "type": "split", "account": 2, "timestamp": 1627676700, "number": "17240033443", "asset": [18, 18], "quantity": [104.0, 13.0], "cost_basis": 1.0, "description": "GE(US3696041033) SPLIT 1 FOR 8 (GE, GENERAL ELECTRIC CO, US3696043013)"},
@@ -88,14 +89,15 @@
     {"id": 10, "type": "merger", "account": 2, "timestamp": 1611260700, "number": "15015004953", "asset": [25, 24], "quantity": [200.0, 200.0], "cost_basis": 1.0, "description": "LUMN.OLD(US1567001060) MERGED(Acquisition) WITH US5502411037 1 FOR 1 (LUMN, LUMEN TECHNOLOGIES INC, US5502411037)"},
     {"id": 11, "type": "merger", "account": 2, "timestamp": 1630007100, "number": "17569476329", "asset": [9, 26], "quantity": [2.0, 2.0], "cost_basis": 1.0, "description": "X 6 1/4 03/15/26(US912909AN84) TENDERED TO US912CALAN84 1 FOR 1 (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)"},
     {"id": 12, "type": "stock_dividend", "account": 2, "timestamp": 1591215600, "number": "12882908488", "asset": 31, "quantity": 2.0, "cost_basis": 0.0, "description": "MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000 (MAC, MACERICH CO/THE, US5543821012)"},
-    {"id": 13, "type": "spin-off", "account": 2, "timestamp": 1627331100, "number": "17200082800", "asset": [35, 33], "quantity": [610.0, 55.7151], "cost_basis": 1.0, "description": "BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BAM, BROOKFIELD ASSET MANAGE-CL A, CA1125851040)"},
-    {"id": 14, "type": "merger","account": 2, "timestamp": 1627331100, "number": "17200082811", "asset": [35, 34], "quantity": [610.0, 40.0895], "cost_basis": 1.0, "description": "BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BPYPM, NEW LP PREFERRED UNITS, BMG1624R1079)"}
+    {"id": 13, "type": "spin-off", "account": 2, "timestamp": 1627331099, "number": "17200082800", "asset": [35, 33], "quantity": [610.0, 55.7151], "cost_basis": 1.0, "description": "BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BAM, BROOKFIELD ASSET MANAGE-CL A, CA1125851040)"},
+    {"id": 14, "type": "merger","account": 2, "timestamp": 1627331100, "number": "17200082811", "asset": [35, 34], "quantity": [610.0, 40.0895], "cost_basis": 1.0, "description": "BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BPYPM, NEW LP PREFERRED UNITS, BMG1624R1079)"},
+    {"id": 15, "type": "spin-off", "account": 2, "timestamp": 1633033500, "number": "17897699521", "asset": [18, 36], "quantity": [320.0, 29.0909], "cost_basis": 0.0, "description": "GE(US3696041033) SPINOFF  1 FOR 11 (SLVM, SYLVAMO CORP, US8713321029)"}
   ],
   "asset_payments": [
     {"id": 1, "type": "dividend", "account": 2, "timestamp": 1578082800, "number": "", "asset": 21, "amount": 60.2, "tax": 6.02, "description": "ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)"},
     {"id": 2, "type": "interest", "account": 2, "timestamp": 1590595065, "number": "2882737839", "asset": 9, "amount": -25.69, "description": "PURCHASE ACCRUED INT X 6 1/4 03/15/26"},
     {"id": 3, "type": "interest", "account": 2, "timestamp": 1600128000, "number": "", "asset": 9, "amount": 62.5, "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26)"},
-    {"id": -1, "type": "dividend", "account": 2, "timestamp": 1529612400, "number": "", "asset": 36, "amount": 16.76, "tax": 0, "description": "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"},
-    {"id": -2, "type": "dividend", "account": 2, "timestamp": 1533673200, "number": "", "asset": 36, "amount": 20.35, "tax": 0.54, "description": "EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)"}
+    {"id": -1, "type": "dividend", "account": 2, "timestamp": 1529612400, "number": "", "asset": 37, "amount": 16.76, "tax": 0, "description": "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"},
+    {"id": -2, "type": "dividend", "account": 2, "timestamp": 1533673200, "number": "", "asset": 37, "amount": 20.35, "tax": 0.54, "description": "EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)"}
   ]
 }
