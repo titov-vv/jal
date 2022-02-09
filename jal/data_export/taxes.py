@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timezone
 
 from PySide6.QtWidgets import QApplication
@@ -98,8 +99,8 @@ class TaxesRus:
 
     def prepare_dividends(self):
         dividends = []
-        query = executeSQL("SELECT d.timestamp AS payment_date, s.name AS symbol, s.full_name AS full_name, "
-                           "s.isin AS isin, d.amount AS amount, d.tax AS tax, q.quote AS rate , "
+        query = executeSQL("SELECT d.type, d.timestamp AS payment_date, s.name AS symbol, s.full_name AS full_name, "
+                           "s.isin AS isin, d.amount AS amount, d.tax AS tax, q.quote AS rate, p.quote AS price, "
                            "c.name AS country, c.iso_code AS country_iso, c.tax_treaty AS tax_treaty "
                            "FROM dividends AS d "
                            "LEFT JOIN assets AS s ON s.id = d.asset_id "
@@ -107,12 +108,22 @@ class TaxesRus:
                            "LEFT JOIN countries AS c ON s.country_id = c.id "
                            "LEFT JOIN t_last_dates AS ld ON d.timestamp=ld.ref_id "
                            "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND a.currency_id=q.asset_id "
+                           "LEFT JOIN quotes AS p ON d.timestamp=p.timestamp AND d.asset_id=p.asset_id "
                            "WHERE d.timestamp>=:begin AND d.timestamp<:end AND d.account_id=:account_id "
-                           " AND d.amount>0 AND d.type=:type_dividend ORDER BY d.timestamp",
-                           [(":begin", self.year_begin), (":end", self.year_end),
-                            (":account_id", self.account_id), (":type_dividend", DividendSubtype.Dividend)])
+                           " AND d.amount>0 AND (d.type=:type_dividend OR d.type=:type_stock_dividend) "
+                           "ORDER BY d.timestamp",
+                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
+                            (":type_dividend", DividendSubtype.Dividend),
+                            (":type_stock_dividend", DividendSubtype.StockDividend)])
         while query.next():
             dividend = readSQLrecord(query, named=True)
+            dividend["note"] = ''
+            if dividend["type"] == DividendSubtype.StockDividend:
+                if not dividend["price"]:
+                    logging.error(self.tr("No price data for stock dividend: ") + f"{dividend}")
+                    continue
+                dividend["amount"] = dividend["amount"] * dividend["price"]
+                dividend["note"] = "Дивиденд выплачен в натуральной форме (ценными бумагами)"
             dividend["amount_rub"] = round(dividend["amount"] * dividend["rate"], 2) if dividend["rate"] else 0
             dividend["tax_rub"] = round(dividend["tax"] * dividend["rate"], 2) if dividend["rate"] else 0
             dividend["tax2pay"] = round(0.13 * dividend["amount_rub"], 2)
@@ -123,6 +134,8 @@ class TaxesRus:
                     dividend["tax2pay"] = 0
             dividend['tax_treaty'] = "Да" if dividend['tax_treaty'] else "Нет"
             dividend['report_template'] = "dividend"
+            del dividend['type']
+            del dividend['price']
             dividends.append(dividend)
         self.insert_totals(dividends, ["amount", "amount_rub", "tax", "tax_rub", "tax2pay"])
         return dividends

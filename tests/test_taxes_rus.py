@@ -3,7 +3,7 @@ import json
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from tests.helpers import create_assets, create_quotes, create_dividends, create_coupons, create_trades, \
-    create_actions, create_corporate_actions
+    create_actions, create_corporate_actions, create_stock_dividends
 from jal.db.ledger import Ledger
 from jal.data_export.taxes import TaxesRus
 
@@ -41,7 +41,8 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
         (1587513600, 76.2562),
         (1605039600, 76.9515),
         (1600128000, 74.7148),
-        (1591142400, 68.9831)
+        (1591142400, 68.9831),
+        (1593129600, 69.4660)
     ]
     create_quotes(2, usd_rates)
     dividends = [
@@ -50,6 +51,10 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
         (1587586800, 1, 6, 3.74, 1.12, "ERIC(US2948216088) CASH DIVIDEND USD 0.074728 PER SHARE (Ordinary Dividend)")
     ]
     create_dividends(dividends)
+    stock_dividends = [
+        (1593205200, 1, 4, 2.0, 53.4, 10.68, 'GE (US3696041033) Stock Dividend US3696041033 196232339 for 10000000000')
+    ]
+    create_stock_dividends(stock_dividends)
     coupons = [
         (1590587855, 1, 9, -25.69, 0, "PURCHASE ACCRUED INT X 6 1/4 03/15/26", "2881234567"),
         (1600128000, 1, 9, 62.5, 0, "BOND COUPON PAYMENT (X 6 1/4 03/15/26)", ""),

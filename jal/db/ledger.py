@@ -222,7 +222,7 @@ class Ledger(QObject):
         qty = self.current['amount']
         tax_amount = self.current['fee_tax']
         asset_amount = self.getAmount(BookAccount.Assets, asset_id)
-        if asset_amount < Setup.CALC_TOLERANCE:
+        if asset_amount < -Setup.CALC_TOLERANCE:
             raise NotImplemented(self.tr("Not supported action: stock dividend closes short trade.") +
                                  f" Operation: {self.current}")
         quote = JalDB().get_quote(asset_id, self.current['timestamp'])
