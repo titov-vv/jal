@@ -182,7 +182,10 @@ class OperationsModel(QAbstractTableModel):
             if self._data[row]['type'] == TransactionType.Trade:
                 return [self._data[row]['amount'], self._data[row]['qty_trid']]
             elif self._data[row]['type'] == TransactionType.Dividend:
-                return [self._data[row]['amount'], -self._data[row]['fee_tax']]
+                if self._data[row]['fee_tax']:
+                    return [self._data[row]['amount'], -self._data[row]['fee_tax']]
+                else:
+                    return [self._data[row]['amount'], None]
             elif self._data[row]['type'] == TransactionType.Action:
                 if self._data[row]['asset'] != '':
                     return [self._data[row]['amount'], self._data[row]['price']]
