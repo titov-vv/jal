@@ -62,7 +62,6 @@ class CorporateAction:   # CORPORATE ACTIONS FOR ASSETS
     SpinOff = 2
     SymbolChange = 3
     Split = 4
-    StockDividend = 5
 
 
 class PredefindedAccountType:

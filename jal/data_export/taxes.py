@@ -13,8 +13,7 @@ class TaxesRus:
         CorporateAction.SymbolChange: "Смена символа {before} {old} -> {after} {new}",
         CorporateAction.Split: "Сплит {old} {before} в {after}",
         CorporateAction.SpinOff: "Выделение компании {after} {new} из {before:.6f} {old}; доля выделяемого актива {ratio:.2f}%",
-        CorporateAction.Merger: "Слияние компании, конвертация {before} {old} в {after} {new}",
-        CorporateAction.StockDividend: "Допэмиссия акций: {after} {new}"
+        CorporateAction.Merger: "Слияние компании, конвертация {before} {old} в {after} {new}"
     }
 
     def __init__(self):
@@ -541,10 +540,6 @@ class TaxesRus:
             else:
                 basis = basis * (1 - action['basis_ratio'])
                 qty_before = action['qty']
-        elif action['type'] == CorporateAction.StockDividend:
-            qty_before = action['qty'] * proceed_qty / action['qty_new']
-            qty_after = proceed_qty - qty_before
-            action['description'] = self.CorpActionText[action['type']].format(new=new_asset, after=qty_after)
         else:
             qty_before = action['qty'] * proceed_qty / action['qty_new']
             qty_after = proceed_qty

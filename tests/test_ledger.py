@@ -1,7 +1,7 @@
 from pytest import approx
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo, prepare_db_ledger
-from tests.helpers import create_stocks, create_actions, create_trades
+from tests.helpers import create_stocks, create_actions, create_trades, create_corporate_actions, create_stock_dividends
 from constants import TransactionType, BookAccount
 from jal.db.ledger import Ledger
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
@@ -147,22 +147,19 @@ def test_fifo(prepare_db_fifo):
     create_stocks(test_assets)
 
     test_corp_actions = [
-        (1, 1606899600, 3, 10, 100.0, 11, 100.0, 1.0, 'Symbol change G1 -> G2'),
-        (2, 1606986000, 2, 11, 100.0, 12, 20.0, 0.8, 'Spin-off H from G2'),
-        (3, 1607763600, 4, 14, 15.0, 14, 30.0, 1.0, 'Split L 15 -> 30'),
-        (4, 1607850000, 3, 13, 5.0, 15, 5.0, 1.0, 'Another symbol change K -> M'),
-        (5, 1607936412, 1, 14, 30.0, 15, 20.0, 1.0, 'Merger 30 L into 20 M'),
-        (6, 1608022800, 4, 15, 25.0, 15, 5.0, 1.0, 'Split M 25 -> 5'),
-        (7, 1608368400, 5, 16, 5.0, 16, 6.0, 1.0, 'Stock dividend +1 N')
-    ]    
-    for action in test_corp_actions:
-        assert executeSQL(
-            "INSERT INTO corp_actions "
-            "(id, timestamp, account_id, type, asset_id, qty, asset_id_new, qty_new, basis_ratio, note) "
-            "VALUES (:id, :timestamp, 1, :type, :a_o, :q_o, :a_n, :q_n, :ratio, :note)",
-            [(":id", action[0]), (":timestamp", action[1]), (":type", action[2]),
-             (":a_o", action[3]), (":q_o", action[4]), (":a_n", action[5]), (":q_n", action[6]),
-             (":ratio", action[7]), (":note", action[8])], commit=True) is not None
+        (1606899600, 3, 10, 100.0, 11, 100.0, 1.0, 'Symbol change G1 -> G2'),
+        (1606986000, 2, 11, 100.0, 12, 20.0, 0.8, 'Spin-off H from G2'),
+        (1607763600, 4, 14, 15.0, 14, 30.0, 1.0, 'Split L 15 -> 30'),
+        (1607850000, 3, 13, 5.0, 15, 5.0, 1.0, 'Another symbol change K -> M'),
+        (1607936412, 1, 14, 30.0, 15, 20.0, 1.0, 'Merger 30 L into 20 M'),
+        (1608022800, 4, 15, 25.0, 15, 5.0, 1.0, 'Split M 25 -> 5')
+    ]
+    create_corporate_actions(1, test_corp_actions)
+
+    stock_dividends = [
+        (1608368400, 1, 16, 1.0, 1050.0, 0.0, 'Stock dividend +1 N')
+    ]
+    create_stock_dividends(stock_dividends)
 
     test_trades = [
         (1609567200, 1609653600, 4, 10.0, 100.0, 1.0),
@@ -271,9 +268,9 @@ def test_fifo(prepare_db_fifo):
 
     # Stock dividend
     assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=16") == 3
-    assert readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=16") == approx(1500)
-    assert readSQL("SELECT profit FROM deals_ext WHERE asset_id=16 AND close_timestamp=1608454800") == approx(166.666667)
-    assert readSQL("SELECT profit FROM deals_ext WHERE asset_id=16 AND close_timestamp=1608541200") == approx(1333.333333)
+    assert readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=16") == approx(450)
+    assert readSQL("SELECT profit FROM deals_ext WHERE asset_id=16 AND close_timestamp=1608454800") == approx(0)
+    assert readSQL("SELECT profit FROM deals_ext WHERE asset_id=16 AND open_timestamp=1608368400") == approx(50)
 
     # Order of buy/sell
     assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=17") == 2
@@ -285,7 +282,7 @@ def test_fifo(prepare_db_fifo):
     # totals
     assert readSQL("SELECT COUNT(*) FROM deals") == 41
     assert readSQL("SELECT COUNT(*) FROM deals WHERE open_op_type=:trade AND close_op_type=:trade",
-                  [(":trade", TransactionType.Trade)]) == 27
+                  [(":trade", TransactionType.Trade)]) == 29
     assert readSQL("SELECT COUNT(*) FROM deals WHERE open_op_type!=:corp_action OR close_op_type!=:corp_action",
                   [(":corp_action", TransactionType.CorporateAction)]) == 37
     assert readSQL("SELECT COUNT(*) FROM deals WHERE open_op_type=:corp_action AND close_op_type=:corp_action",

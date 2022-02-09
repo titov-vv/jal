@@ -183,6 +183,13 @@ class Ledger(QObject):
             self.processActionDetails()
 
     def processDividend(self):
+        if not self.current['subtype'] in [v for n, v in vars(DividendSubtype).items() if not n.startswith('_')]:
+            raise ValueError(self.tr("Unsupported dividend type.") + f" Operation: {self.current}")
+
+        if self.current['subtype'] == DividendSubtype.StockDividend:
+            self.processStockDividend()
+            return
+
         if self.current['subtype'] == DividendSubtype.Dividend:
             self.current['category'] = PredefinedCategory.Dividends
         elif self.current['subtype'] == DividendSubtype.BondInterest:
@@ -205,6 +212,29 @@ class Ledger(QObject):
             if credit_taken < -dividend_amount:
                 self.appendTransaction(BookAccount.Money, dividend_amount + credit_taken)
             self.appendTransaction(BookAccount.Costs, -dividend_amount)
+        if tax_amount:
+            self.appendTransaction(BookAccount.Money, -tax_amount)
+            self.current['category'] = PredefinedCategory.Taxes
+            self.appendTransaction(BookAccount.Costs, tax_amount)
+
+    def processStockDividend(self):
+        asset_id = self.current['asset']
+        qty = self.current['amount']
+        tax_amount = self.current['fee_tax']
+        asset_amount = self.getAmount(BookAccount.Assets, asset_id)
+        if asset_amount < Setup.CALC_TOLERANCE:
+            raise NotImplemented(self.tr("Not supported action: stock dividend closes short trade.") +
+                                 f" Operation: {self.current}")
+        quote = readSQL("SELECT quote FROM quotes WHERE asset_id=:asset_id AND timestamp=:timestamp",
+                        [(":asset_id", asset_id), (":timestamp", self.current['timestamp'])])
+        if quote is None:
+            raise ValueError(self.tr("No stock quote for stock dividend.") + f" Operation: {self.current}")
+        _ = executeSQL("INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
+                       "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
+                       [(":timestamp", self.current['timestamp']), (":type", TransactionType.Dividend),
+                        (":operation_id", self.current['id']), (":account_id", self.current['account']),
+                        (":asset_id", asset_id), (":price", quote), (":remaining_qty", qty)])
+        self.appendTransaction(BookAccount.Assets, qty, qty*quote)
         if tax_amount:
             self.appendTransaction(BookAccount.Money, -tax_amount)
             self.current['category'] = PredefinedCategory.Taxes
@@ -245,10 +275,15 @@ class Ledger(QObject):
                                "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
                                [(":qty", next_deal_qty), (":op_type", opening_trade['op_type']),
                                 (":id", opening_trade['operation_id']), (":asset_id", asset_id)])
-                _ = executeSQL("INSERT INTO deals(account_id, asset_id, open_op_type, open_op_id, open_timestamp, close_op_type, close_op_id, close_timestamp, qty) "
-                               "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :close_op_type, :close_op_id, :close_timestamp, :qty)",
-                               [(":account_id", account_id), (":asset_id", asset_id), (":open_op_type", opening_trade['op_type']), (":open_op_id", opening_trade['operation_id']), (":open_timestamp", opening_trade['timestamp']),
-                                (":close_op_type", TransactionType.Trade), (":close_op_id", self.current['id']), (":close_timestamp", self.current['timestamp']), (":qty", (-type)*next_deal_qty)])
+                _ = executeSQL("INSERT INTO deals(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
+                               "close_op_type, close_op_id, close_timestamp, close_price, qty) "
+                               "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :open_price, "
+                               ":close_op_type, :close_op_id, :close_timestamp, :close_price, :qty)",
+                               [(":account_id", account_id), (":asset_id", asset_id),
+                                (":open_op_type", opening_trade['op_type']), (":open_op_id", opening_trade['operation_id']),
+                                (":open_timestamp", opening_trade['timestamp']), (":open_price", opening_trade['price']),
+                                (":close_op_type", TransactionType.Trade), (":close_op_id", self.current['id']),
+                                (":close_timestamp", self.current['timestamp']), (":close_price", price), (":qty", (-type)*next_deal_qty)])
                 processed_qty += next_deal_qty
                 processed_value += (next_deal_qty * opening_trade['price'])
                 if processed_qty == qty:
@@ -275,6 +310,9 @@ class Ledger(QObject):
             self.appendTransaction(BookAccount.Costs, self.current['fee_tax'])
 
     def processTransfer(self):
+        if not self.current['subtype'] in [v for n, v in vars(TransferSubtype).items() if not n.startswith('_')]:
+            raise ValueError(self.tr("Unsupported transfer type.") + f" Operation: {self.current}")
+
         if self.current['subtype'] == TransferSubtype.Outgoing:
             credit_taken = self.takeCredit(self.current['amount'])
             self.appendTransaction(BookAccount.Money, -(self.current['amount'] - credit_taken))
@@ -299,6 +337,8 @@ class Ledger(QObject):
         account_id = self.current['account']
         asset_id = self.current['asset']
         qty = self.current['amount']
+        if not self.current['subtype'] in [v for n, v in vars(CorporateAction).items() if not n.startswith('_')]:
+            raise ValueError(self.tr("Unsupported corporate action type.") + f" Operation: {self.current}")
 
         processed_qty = 0
         processed_value = 0
@@ -326,24 +366,30 @@ class Ledger(QObject):
                            [(":op_type", opening_trade['op_type']), (":id", opening_trade['operation_id']),
                             (":asset_id", asset_id)])
 
-            # Create a deal with relevant sign of quantity (-1 for short, +1 for long)
-            _ = executeSQL("INSERT INTO deals(account_id, asset_id, open_op_type, open_op_id, open_timestamp, close_op_type, close_op_id, close_timestamp, qty) "
-                           "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :close_op_type, :close_op_id, :close_timestamp, :qty)",
-                           [(":account_id", account_id), (":asset_id", asset_id), (":open_op_type", opening_trade['op_type']),(":open_op_id", opening_trade['operation_id']), (":open_timestamp", opening_trade['timestamp']),
-                            (":close_op_type", TransactionType.CorporateAction), (":close_op_id", self.current['id']), (":close_timestamp", self.current['timestamp']), (":qty", next_deal_qty)])
+            # Deal have the same open and close prices as corportate action doesn't create profit, but redistributes value
+            _ = executeSQL("INSERT INTO deals(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
+                           " close_op_type, close_op_id, close_timestamp, close_price, qty) "
+                           "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :open_price, "
+                           ":close_op_type, :close_op_id, :close_timestamp, :close_price, :qty)",
+                           [(":account_id", account_id), (":asset_id", asset_id),
+                            (":open_op_type", opening_trade['op_type']), (":open_op_id", opening_trade['operation_id']),
+                            (":open_timestamp", opening_trade['timestamp']), (":open_price", opening_trade['price']),
+                            (":close_op_type", TransactionType.CorporateAction), (":close_op_id", self.current['id']),
+                            (":close_timestamp", self.current['timestamp']), (":close_price", opening_trade['price']),
+                            (":qty", next_deal_qty)])
             processed_qty += next_deal_qty
             processed_value += (next_deal_qty * opening_trade['price'])
             if processed_qty == qty:
                 break
         # Asset allocations for different corporate actions:
-        # +-----------------+-------+-----+------------+-----------+----------+---------------+--------------------+
-        # |                 | Asset | Qty | cost basis | Asset new | Qty new  | cost basis    | The same algo for: |
-        # +-----------------+-------+-----+------------+-----------+----------+---------------+--------------------+
-        # | Symbol Change   |   A   |  N  |  100 %     |     B     |    N     |   100%        |                    |
-        # | (R-)Split       |   A   |  N  |  100 %     |     A     |    M     |   100%        | Stock Dividend     |
-        # | Merger          |   A   |  N  |  100 %     |     B     |    M     |   100%        |                    |
-        # | Spin-Off        |   A   |  N  |  100 %     |   A & B   | AxN, BxM | X% & (100-X)% |                    |
-        # +-----------------+-------+-----+------------+-----------+----------+---------------+--------------------+
+        # +-----------------+-------+-----+------------+-----------+----------+---------------+
+        # |                 | Asset | Qty | cost basis | Asset new | Qty new  | cost basis    |
+        # +-----------------+-------+-----+------------+-----------+----------+---------------+
+        # | Symbol Change   |   A   |  N  |  100 %     |     B     |    N     |   100%        |
+        # | (R-)Split       |   A   |  N  |  100 %     |     A     |    M     |   100%        |
+        # | Merger          |   A   |  N  |  100 %     |     B     |    M     |   100%        |
+        # | Spin-Off        |   A   |  N  |  100 %     |   A & B   | AxN, BxM | X% & (100-X)% |
+        # +-----------------+-------+-----+------------+-----------+----------+---------------+
         # Withdraw value with old quantity of old asset as it common for all corporate action
         self.appendTransaction(BookAccount.Assets, -processed_qty, -processed_value)
 

@@ -78,8 +78,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         FOF.ACTION_MERGER: CorporateAction.Merger,
         FOF.ACTION_SPLIT: CorporateAction.Split,
         FOF.ACTION_SPINOFF: CorporateAction.SpinOff,
-        FOF.ACTION_SYMBOL_CHANGE: CorporateAction.SymbolChange,
-        FOF.PAYMENT_STOCK_DIVIDEND: CorporateAction.StockDividend
+        FOF.ACTION_SYMBOL_CHANGE: CorporateAction.SymbolChange
     }
     _sources = {
         'NYSE': MarketDataFeed.US,
