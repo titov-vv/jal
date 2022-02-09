@@ -3,9 +3,9 @@ import base64
 import logging
 from functools import partial
 
-from PySide6.QtCore import Qt, Slot, QDateTime, QDir, QLocale, QMetaObject
+from PySide6.QtCore import Qt, Slot, QDir, QLocale, QMetaObject
 from PySide6.QtGui import QIcon, QActionGroup, QAction
-from PySide6.QtWidgets import QApplication, QMainWindow, QMdiArea, QMenu, QMessageBox, QProgressBar
+from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QProgressBar
 
 from jal import __version__
 from jal.ui.ui_main_window import Ui_JAL_MainWindow

@@ -21,6 +21,7 @@ class OperationsModel(QAbstractTableModel):
         (TransactionType.Action, +1): ('+', CustomColor.DarkGreen),
         (TransactionType.Dividend, DividendSubtype.Dividend): ('Δ', CustomColor.DarkGreen),
         (TransactionType.Dividend, DividendSubtype.BondInterest): ('%', CustomColor.DarkGreen),
+        (TransactionType.Dividend, DividendSubtype.StockDividend): ('+Δ', CustomColor.DarkGreen),
         (TransactionType.Trade, -1): ('S', CustomColor.DarkRed),
         (TransactionType.Trade, +1): ('B', CustomColor.DarkGreen),
         (TransactionType.Transfer, TransferSubtype.Outgoing): ('<', CustomColor.DarkBlue),
@@ -29,8 +30,7 @@ class OperationsModel(QAbstractTableModel):
         (TransactionType.CorporateAction, CorporateAction.Merger): ('⭃', CustomColor.Black),
         (TransactionType.CorporateAction, CorporateAction.SpinOff): ('⎇', CustomColor.DarkGreen),
         (TransactionType.CorporateAction, CorporateAction.Split): ('ᗕ', CustomColor.Black),
-        (TransactionType.CorporateAction, CorporateAction.SymbolChange): ('🡘', CustomColor.Black),
-        (TransactionType.CorporateAction, CorporateAction.StockDividend): ('Δ\ns', CustomColor.DarkGreen)
+        (TransactionType.CorporateAction, CorporateAction.SymbolChange): ('🡘', CustomColor.Black)
     }
 
     def __init__(self, parent_view):
@@ -41,8 +41,7 @@ class OperationsModel(QAbstractTableModel):
             CorporateAction.SymbolChange: self.tr("Symbol change {old} -> {new}"),
             CorporateAction.Split: self.tr("Split {old} {before} into {after}"),
             CorporateAction.SpinOff: self.tr("Spin-off {after} {new} from {before} {old}"),
-            CorporateAction.Merger: self.tr("Merger {before} {old} into {after} {new}"),
-            CorporateAction.StockDividend: self.tr("Stock dividend: {after} {new}")
+            CorporateAction.Merger: self.tr("Merger {before} {old} into {after} {new}")
         }
         self._view = parent_view
         self._amount_delegate = None
@@ -171,10 +170,7 @@ class OperationsModel(QAbstractTableModel):
                 return text
             elif self._data[row]['type'] == TransactionType.CorporateAction:
                 basis = 100.0 * self._data[row]['price']
-                if self._data[row]['subtype'] == CorporateAction.StockDividend:
-                    qty_after = self._data[row]['qty_trid'] - self._data[row]['amount']
-                else:
-                    qty_after = self._data[row]['qty_trid']
+                qty_after = self._data[row]['qty_trid']
                 text = self.CorpActionNames[self._data[row]['subtype']].format(old=self._data[row]['asset'], new=self._data[row]['note'],
                                                                     before=self._data[row]['amount'], after=qty_after)
                 if self._data[row]['subtype'] == CorporateAction.SpinOff:
@@ -195,7 +191,7 @@ class OperationsModel(QAbstractTableModel):
             elif self._data[row]['type'] == TransactionType.Transfer:
                 return [self._data[row]['amount']]
             elif self._data[row]['type'] == TransactionType.CorporateAction:
-                if self._data[row]['subtype'] == CorporateAction.SpinOff or self._data[row]['subtype'] == CorporateAction.StockDividend:
+                if self._data[row]['subtype'] == CorporateAction.SpinOff:
                     return [None, self._data[row]['qty_trid'] - self._data[row]['amount']]
                 else:
                     return [-self._data[row]['amount'], self._data[row]['qty_trid']]
@@ -206,11 +202,8 @@ class OperationsModel(QAbstractTableModel):
             lower_part = f"{self._data[row]['t_qty']:,.2f}" if self._data[row]['t_qty'] != '' else ''
             if self._data[row]['type'] == TransactionType.CorporateAction:
                 qty_before = self._data[row]['amount'] if self._data[row]['subtype'] == CorporateAction.SpinOff else 0
-                qty_after = self._data[row]['t_qty'] if self._data[row]['subtype'] == CorporateAction.StockDividend else self._data[row]['qty_trid']
-                if self._data[row]['subtype'] == CorporateAction.StockDividend:
-                    text = f"\n{qty_after:,.2f}" if qty_after != '' else "\n-.--"
-                else:
-                    text = f"{qty_before:,.2f}\n{qty_after:,.2f}"
+                qty_after = self._data[row]['qty_trid']
+                text = f"{qty_before:,.2f}\n{qty_after:,.2f}"
                 return text
             elif self._data[row]['type'] == TransactionType.Action or self._data[row]['type'] == TransactionType.Transfer:
                 return upper_part
@@ -218,7 +211,7 @@ class OperationsModel(QAbstractTableModel):
                 return upper_part + "\n" + lower_part
         elif column == 6:
             if self._data[row]['type'] == TransactionType.CorporateAction:
-                asset_before = self._data[row]['asset'] if self._data[row]['subtype'] != CorporateAction.StockDividend else ""
+                asset_before = self._data[row]['asset']
                 return f" {asset_before}\n {self._data[row]['note']}"
             else:
                 if self._data[row]['asset'] != '':
