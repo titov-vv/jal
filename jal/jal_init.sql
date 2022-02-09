@@ -598,12 +598,13 @@ CREATE VIEW all_operations AS
                       NULL AS qty_trid,
                       NULL AS price,
                       d.tax AS fee_tax,
-                      NULL AS t_qty,
+                      l.amount_acc AS t_qty,
                       d.note AS note,
                       c.name AS note2
                  FROM dividends AS d
                       LEFT JOIN assets AS a ON d.asset_id = a.id
                       LEFT JOIN countries AS c ON a.country_id = c.id
+                      LEFT JOIN ledger_totals AS l ON l.op_type=d.op_type AND l.operation_id=d.id AND l.book_account = 4
                 GROUP BY d.id
                UNION ALL
                SELECT ca.op_type AS type,

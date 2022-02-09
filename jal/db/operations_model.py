@@ -210,12 +210,25 @@ class OperationsModel(QAbstractTableModel):
                 return text
             elif self._data[row]['type'] == TransactionType.Action or self._data[row]['type'] == TransactionType.Transfer:
                 return upper_part
+            elif self._data[row]['type'] == TransactionType.Dividend and self._data[row]['subtype'] == DividendSubtype.StockDividend:
+                if self._data[row]['fee_tax']:
+                    return lower_part + "\n" + upper_part
+                else:
+                    return lower_part
             else:
                 return upper_part + "\n" + lower_part
         elif column == 6:
             if self._data[row]['type'] == TransactionType.CorporateAction:
                 asset_before = self._data[row]['asset']
                 return f" {asset_before}\n {self._data[row]['note']}"
+            elif self._data[row]['type'] == TransactionType.Dividend:
+                if self._data[row]['subtype'] == DividendSubtype.StockDividend:
+                    if self._data[row]['fee_tax']:
+                        return f" {self._data[row]['asset']}\n {self._data[row]['currency']}"
+                    else:
+                        return f" {self._data[row]['asset']}"
+                else:
+                    return f" {self._data[row]['currency']}\n {self._data[row]['asset']}"
             else:
                 if self._data[row]['asset'] != '':
                     return f" {self._data[row]['currency']}\n {self._data[row]['asset']}"
