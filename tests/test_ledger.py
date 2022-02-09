@@ -157,7 +157,7 @@ def test_fifo(prepare_db_fifo):
     create_corporate_actions(1, test_corp_actions)
 
     stock_dividends = [
-        (1608368400, 1, 16, 1.0, 1050.0, 0.0, 'Stock dividend +1 N')
+        (1608368400, 1, 16, 1.0, 1050.0, 60.0, 'Stock dividend +1 N')
     ]
     create_stock_dividends(stock_dividends)
 
@@ -295,7 +295,7 @@ def test_fifo(prepare_db_fifo):
     while query.next():
         row = readSQLrecord(query, named=True)
         if row['asset_id'] == 2:  # Checking money amount
-            assert row['amount_acc'] == 16760
+            assert row['amount_acc'] == 16700
         else:
             assert row['amount_acc'] == 0
         assert row['value_acc'] == 0
