@@ -111,8 +111,7 @@ class CorporateActionWidget(AbstractOperationDetails):
                                              self.tr("Merger"),
                                              self.tr("Spin-Off"),
                                              self.tr("Symbol change"),
-                                             self.tr("Split"),
-                                             self.tr("Stock dividend")])
+                                             self.tr("Split")])
         self.type.setModel(self.combo_model)
 
         self.mapper.setItemDelegate(CorporateActionWidgetDelegate(self.mapper))
