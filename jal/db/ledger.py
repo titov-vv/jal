@@ -225,8 +225,7 @@ class Ledger(QObject):
         if asset_amount < Setup.CALC_TOLERANCE:
             raise NotImplemented(self.tr("Not supported action: stock dividend closes short trade.") +
                                  f" Operation: {self.current}")
-        quote = readSQL("SELECT quote FROM quotes WHERE asset_id=:asset_id AND timestamp=:timestamp",
-                        [(":asset_id", asset_id), (":timestamp", self.current['timestamp'])])
+        quote = JalDB().get_quote(asset_id, self.current['timestamp'])
         if quote is None:
             raise ValueError(self.tr("No stock quote for stock dividend.") + f" Operation: {self.current}")
         _ = executeSQL("INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "

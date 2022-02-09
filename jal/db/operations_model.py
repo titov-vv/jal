@@ -21,7 +21,7 @@ class OperationsModel(QAbstractTableModel):
         (TransactionType.Action, +1): ('+', CustomColor.DarkGreen),
         (TransactionType.Dividend, DividendSubtype.Dividend): ('Δ', CustomColor.DarkGreen),
         (TransactionType.Dividend, DividendSubtype.BondInterest): ('%', CustomColor.DarkGreen),
-        (TransactionType.Dividend, DividendSubtype.StockDividend): ('+Δ', CustomColor.DarkGreen),
+        (TransactionType.Dividend, DividendSubtype.StockDividend): ('Δ\n+', CustomColor.DarkGreen),
         (TransactionType.Trade, -1): ('S', CustomColor.DarkRed),
         (TransactionType.Trade, +1): ('B', CustomColor.DarkGreen),
         (TransactionType.Transfer, TransferSubtype.Outgoing): ('<', CustomColor.DarkBlue),

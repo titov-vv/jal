@@ -28,7 +28,6 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.name = "Income/Spending"
         self.operation_type = TransactionType.Action
 
-        self.details_model = None
         self.category_delegate = CategorySelectorDelegate()
         self.tag_delegate = TagSelectorDelegate()
         self.float_delegate = FloatDelegate(2)

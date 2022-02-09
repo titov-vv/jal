@@ -202,6 +202,10 @@ class JalDB:
             _ = executeSQL("UPDATE assets SET expiry=:expiry WHERE id=:asset_id",
                            [(":expiry", expiry), (":asset_id", asset_id)])
 
+    def get_quote(self, asset_id, timestamp):
+        return readSQL("SELECT quote FROM quotes WHERE asset_id=:asset_id AND timestamp=:timestamp",
+                       [(":asset_id", asset_id), (":timestamp", timestamp)])
+
     def update_quote(self, asset_id, timestamp, quote):
         if (timestamp is None) or (quote is None):
             return
@@ -249,9 +253,7 @@ class JalDB:
                         (":tax", tax), (":note", note)],
                        commit=True)
         if price is not None:
-            _ = executeSQL("INSERT OR REPLACE INTO quotes(timestamp, asset_id, quote) "
-                           "VALUES (:timestamp, :asset_id, :quote)",
-                           [(":timestamp", timestamp), (":asset_id", asset_id), (":quote", price)])
+            self.update_quote(asset_id, timestamp, price)
 
     def update_dividend_tax(self, dividend_id, new_tax):
         _ = executeSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
