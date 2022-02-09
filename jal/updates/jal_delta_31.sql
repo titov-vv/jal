@@ -2,6 +2,7 @@ BEGIN TRANSACTION;
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 0;
 --------------------------------------------------------------------------------
+DELETE FROM ledger;  -- to rebuild all as we cleaning deals
 -- Add open/close prices in deals table
 DROP TABLE deals;
 CREATE TABLE deals (
