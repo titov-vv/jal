@@ -276,7 +276,7 @@ class TaxesRus:
         query = executeSQL("SELECT b.name AS symbol, b.isin AS isin, i.timestamp AS o_date, i.number AS number, "
                            "i.amount AS interest, r.quote AS rate, cc.iso_code AS country_iso "
                            "FROM dividends AS i "
-                           "LEFT JOIN trades AS t ON i.account_id=1 AND i.number=t.number "
+                           "LEFT JOIN trades AS t ON i.account_id=t.account_id AND i.number=t.number "
                            "AND i.timestamp=t.timestamp AND i.asset_id=t.asset_id "
                            "LEFT JOIN assets AS b ON i.asset_id = b.id "
                            "LEFT JOIN accounts AS a ON a.id = :account_id "
@@ -284,7 +284,7 @@ class TaxesRus:
                            "LEFT JOIN t_last_dates AS ld ON i.timestamp=ld.ref_id "
                            "LEFT JOIN quotes AS r ON ld.timestamp=r.timestamp AND a.currency_id=r.asset_id "
                            "WHERE i.timestamp>=:begin AND i.timestamp<:end AND i.account_id=:account_id "
-                           "AND type = :type_interest AND t.id IS NULL",
+                           "AND i.type = :type_interest AND t.id IS NULL",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
                             (":type_interest", DividendSubtype.BondInterest)])
         while query.next():
