@@ -2,7 +2,8 @@ from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex
 from PySide6.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate
 from PySide6.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection, executeSQL, readSQL
-from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate, PeerSelectorDelegate
+from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate, \
+    PeerSelectorDelegate, AssetSelectorDelegate
 from jal.widgets.reference_data import ReferenceDataDialog
 from jal.widgets.delegates import GridLinesDelegate
 
@@ -695,9 +696,8 @@ class QuotesListModel(AbstractReferenceListModel):
                          ("quote", self.tr("Quote"))]
         self._hidden = ["id"]
         self._default_name = "quote"
-        self._lookup_delegate = None
+        self._asset_delegate = None
         self._timestamp_delegate = None
-        self.setRelation(self.fieldIndex("asset_id"), QSqlRelation("assets", "id", "name"))
 
     def configureView(self):
         super().configureView()
@@ -705,8 +705,8 @@ class QuotesListModel(AbstractReferenceListModel):
                                   self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.1)
         self._view.setColumnWidth(self.fieldIndex("quote"), 100)
 
-        self._lookup_delegate = QSqlRelationalDelegate(self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("asset_id"), self._lookup_delegate)
+        self._asset_delegate = AssetSelectorDelegate()
+        self._view.setItemDelegateForColumn(self.fieldIndex("asset_id"), self._asset_delegate)
         self._timestamp_delegate = TimestampDelegate(parent=self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("timestamp"), self._timestamp_delegate)
 
@@ -722,7 +722,7 @@ class QuotesListDialog(ReferenceDataDialog):
         super()._init_completed()
 
     def setup_ui(self):
-        self.search_field = "name"
+        self.search_field = "asset_id-assets-id-name"
         self.SearchFrame.setVisible(True)
         self.setWindowTitle(self.tr("Quotes"))
         self.Toggle.setVisible(False)

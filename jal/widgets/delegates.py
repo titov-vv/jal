@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTime
 from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QTime
 from PySide6.QtGui import QDoubleValidator, QBrush, QKeyEvent
 from jal.constants import CustomColor
-from jal.widgets.reference_selector import PeerSelector, CategorySelector, TagSelector
+from jal.widgets.reference_selector import AssetSelector, PeerSelector, CategorySelector, TagSelector
 from jal.db.helpers import readSQL
 
 
@@ -231,11 +231,12 @@ class GridLinesDelegate(QStyledItemDelegate):
 
 
 # -----------------------------------------------------------------------------------------------------------------------
-# Base class for lookup delegate that allows Peer, Category and Tag selection
+# Base class for lookup delegate that allows Asset, Peer, Category and Tag selection
 class LookupSelectorDelegate(QStyledItemDelegate):
     Category = 1
     Tag = 2
     Peer = 3
+    Asset = 4
 
     def __init__(self, parent=None):
         QStyledItemDelegate.__init__(self, parent)
@@ -251,6 +252,8 @@ class LookupSelectorDelegate(QStyledItemDelegate):
             selector = TagSelector(aParent)
         elif self._type == self.Peer:
             selector = PeerSelector(aParent)
+        elif self._type == self.Asset:
+            selector = AssetSelector(aParent)
         else:
             raise ValueError
         return selector
@@ -283,5 +286,13 @@ class PeerSelectorDelegate(LookupSelectorDelegate):
         LookupSelectorDelegate.__init__(self, parent)
         self._type = LookupSelectorDelegate.Peer
         self._table = "agents"
+        self._field = "name"
+
+
+class AssetSelectorDelegate(LookupSelectorDelegate):
+    def __init__(self, parent=None):
+        LookupSelectorDelegate.__init__(self, parent)
+        self._type = LookupSelectorDelegate.Asset
+        self._table = "assets"
         self._field = "name"
 # -----------------------------------------------------------------------------------------------------------------------
