@@ -107,6 +107,14 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
 def test_taxes_rus_bonds(tmp_path, project_root, data_path, prepare_db_taxes):
     with open(data_path + 'ibkr_bond.json', 'r') as json_file:
         statement = json.load(json_file)
+    with open(data_path + 'taxes_bond_rus.json', 'r') as json_file:
+        report = json.load(json_file)
+
+    usd_rates = [
+        (1632441600, 72.7245), (1629936000, 73.7428), (1631664000, 72.7171), (1622073600, 73.4737),
+        (1621987200, 73.3963), (1621900800, 73.5266), (1621641600, 73.5803), (1632528000, 73.0081)
+    ]
+    create_quotes(2, usd_rates)
 
     IBKR = StatementIBKR()
     IBKR.load(data_path + 'ibkr_bond.xml')
@@ -121,27 +129,22 @@ def test_taxes_rus_bonds(tmp_path, project_root, data_path, prepare_db_taxes):
 
     taxes = TaxesRus()
     tax_report = taxes.prepare_tax_report(2021, 1)
-    # assert tax_report == {}
+    assert tax_report == report
 
-    reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
-    templates = {
-        "Дивиденды": "tax_rus_dividends.json",
-        "Акции": "tax_rus_trades.json",
-        "Облигации": "tax_rus_bonds.json",
-        "ПФИ": "tax_rus_derivatives.json",
-        "Корп.события": "tax_rus_corporate_actions.json",
-        "Комиссии": "tax_rus_fees.json",
-        "Проценты": "tax_rus_interests.json"
-    }
-    parameters = {
-        "period": "01.01.2021 - 31.12.2021",
-        "account": "TEST U7654321 (USD)",
-        "currency": "USD",
-        "broker_name": "IBKR",
-        "broker_iso_country": "840"
-    }
-    for section in tax_report:
-        if section not in templates:
-            continue
-        reports_xls.output_data(tax_report[section], templates[section], parameters)
-    reports_xls.save()
+    # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
+    # templates = {
+    #     "Облигации": "tax_rus_bonds.json",
+    #     "Корп.события": "tax_rus_corporate_actions.json"
+    # }
+    # parameters = {
+    #     "period": "01.01.2021 - 31.12.2021",
+    #     "account": "TEST U7654321 (USD)",
+    #     "currency": "USD",
+    #     "broker_name": "IBKR",
+    #     "broker_iso_country": "840"
+    # }
+    # for section in tax_report:
+    #     if section not in templates:
+    #         continue
+    #     reports_xls.output_data(tax_report[section], templates[section], parameters)
+    # reports_xls.save()
