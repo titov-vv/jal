@@ -199,7 +199,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
                 # search[3] is a name in lookup table which is used for searching.
                 # I.e. self.search_field has format: f_key-lookup_table_name-lookup_id-lookup_field
                 conditions.append(f"{search[0]} IN (SELECT {search[2]} FROM {search[1]} "
-                                  "WHERE {search[3]} LIKE '%{self.search_text}%')")
+                                  f"WHERE {search[3]} LIKE '%{self.search_text}%')")
             else:
                 assert False, f"Unsupported format of search field: {self.search_field}"
         if self.group_id:
