@@ -29,6 +29,12 @@ INSERT INTO ledger_totals(op_type, operation_id, timestamp, book_account, asset_
 SELECT op_type, operation_id, timestamp, book_account, asset_id, account_id, amount_acc, value_acc FROM ledger
 WHERE id IN (SELECT MAX(id) FROM ledger GROUP BY op_type, operation_id, book_account, account_id);
 
+------------------------------------------------------------------------------------------------------------------------
+-- Move stock dividends from corporate actions to dividends table
+INSERT INTO dividends (op_type, timestamp, number, type, account_id, asset_id, amount, tax, note)
+SELECT 2, timestamp, number, 3, account_id, asset_id, qty_new-qty, 0, note FROM corp_actions WHERE type=5;
+DELETE FROM corp_actions WHERE type=5;
+------------------------------------------------------------------------------------------------------------------------
 -- View: all_operations
 DROP VIEW IF EXISTS all_operations;
 CREATE VIEW all_operations AS
