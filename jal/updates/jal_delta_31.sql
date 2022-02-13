@@ -3,6 +3,12 @@ BEGIN TRANSACTION;
 PRAGMA foreign_keys = 0;
 --------------------------------------------------------------------------------
 DELETE FROM ledger;  -- to rebuild all as we cleaning deals
+------------------------------------------------------------------------------------------------------------------------
+-- Move stock dividends from corporate actions to dividends table
+INSERT INTO dividends (op_type, timestamp, number, type, account_id, asset_id, amount, tax, note)
+SELECT 2, timestamp, number, 3, account_id, asset_id, qty_new-qty, 0, note FROM corp_actions WHERE type=5;
+DELETE FROM corp_actions WHERE type=5;
+------------------------------------------------------------------------------------------------------------------------
 -- Add open/close prices in deals table
 DROP TABLE deals;
 CREATE TABLE deals (
