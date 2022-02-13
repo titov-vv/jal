@@ -1,7 +1,8 @@
 from pytest import approx
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo, prepare_db_ledger
-from tests.helpers import create_stocks, create_actions, create_trades
+from tests.helpers import create_stocks, create_actions, create_trades, create_quotes, \
+    create_corporate_actions, create_stock_dividends
 from constants import TransactionType, BookAccount
 from jal.db.ledger import Ledger
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
@@ -125,6 +126,53 @@ def test_buy_sell_change(prepare_db_fifo):
     assert readSQL("SELECT qty FROM deals WHERE asset_id=4") == 8.0
 
 
+def test_stock_dividend_change(prepare_db_fifo):
+    # Prepare single stock
+    create_stocks([(4, 'A', 'A SHARE')])
+
+    test_trades = [
+        (1628852820, 1629158400, 4, 2.0, 53.13, 0.34645725),
+        (1628852820, 1629158400, 4, 8.0, 53.13, -0.0152),
+        (1643628654, 1643760000, 4, 5.0, 47.528, 0.35125725),
+        (1644351123, 1644523923, 4, -17.0, 60.0, 0.0)
+    ]
+    create_trades(1, test_trades)
+
+    # Insert a stock dividend between trades
+    stock_dividends = [
+        (1643907900, 1, 4, 2.0, 54.0, 0.0, 'Stock dividend +2 A')
+    ]
+    create_stock_dividends(stock_dividends)
+
+    # insert action between trades and stock dividend to shift frontier
+    create_actions([(1643746000, 1, 1, [(7, 100.0)])])
+
+    # Build ledger
+    ledger = Ledger()
+    ledger.rebuild(from_timestamp=0)
+
+    # Validate initial deal quantity
+    assert readSQL("SELECT COUNT(*) FROM deals WHERE asset_id=4") == 4
+
+    # Modify stock dividend
+    executeSQL("UPDATE dividends SET amount=3.0 WHERE asset_id=4")
+
+    # Re-build ledger from last actual data
+    ledger.rebuild()
+
+    # Check that deal quantity remains correct
+    assert readSQL("SELECT COUNT(*) FROM deals WHERE asset_id=4") == 4
+
+    # Put quotation back and rebuild
+    create_quotes(4, [(1643907900, 54.0)])
+
+    # Re-build ledger from last actual data
+    ledger.rebuild()
+
+    # Check that deal quantity remains correct
+    assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 4
+
+
 def test_fifo(prepare_db_fifo):
     # Prepare trades and corporate actions setup
     test_assets = [
@@ -147,22 +195,19 @@ def test_fifo(prepare_db_fifo):
     create_stocks(test_assets)
 
     test_corp_actions = [
-        (1, 1606899600, 3, 10, 100.0, 11, 100.0, 1.0, 'Symbol change G1 -> G2'),
-        (2, 1606986000, 2, 11, 100.0, 12, 20.0, 0.8, 'Spin-off H from G2'),
-        (3, 1607763600, 4, 14, 15.0, 14, 30.0, 1.0, 'Split L 15 -> 30'),
-        (4, 1607850000, 3, 13, 5.0, 15, 5.0, 1.0, 'Another symbol change K -> M'),
-        (5, 1607936412, 1, 14, 30.0, 15, 20.0, 1.0, 'Merger 30 L into 20 M'),
-        (6, 1608022800, 4, 15, 25.0, 15, 5.0, 1.0, 'Split M 25 -> 5'),
-        (7, 1608368400, 5, 16, 5.0, 16, 6.0, 1.0, 'Stock dividend +1 N')
-    ]    
-    for action in test_corp_actions:
-        assert executeSQL(
-            "INSERT INTO corp_actions "
-            "(id, timestamp, account_id, type, asset_id, qty, asset_id_new, qty_new, basis_ratio, note) "
-            "VALUES (:id, :timestamp, 1, :type, :a_o, :q_o, :a_n, :q_n, :ratio, :note)",
-            [(":id", action[0]), (":timestamp", action[1]), (":type", action[2]),
-             (":a_o", action[3]), (":q_o", action[4]), (":a_n", action[5]), (":q_n", action[6]),
-             (":ratio", action[7]), (":note", action[8])], commit=True) is not None
+        (1606899600, 3, 10, 100.0, 11, 100.0, 1.0, 'Symbol change G1 -> G2'),
+        (1606986000, 2, 11, 100.0, 12, 20.0, 0.8, 'Spin-off H from G2'),
+        (1607763600, 4, 14, 15.0, 14, 30.0, 1.0, 'Split L 15 -> 30'),
+        (1607850000, 3, 13, 5.0, 15, 5.0, 1.0, 'Another symbol change K -> M'),
+        (1607936412, 1, 14, 30.0, 15, 20.0, 1.0, 'Merger 30 L into 20 M'),
+        (1608022800, 4, 15, 25.0, 15, 5.0, 1.0, 'Split M 25 -> 5')
+    ]
+    create_corporate_actions(1, test_corp_actions)
+
+    stock_dividends = [
+        (1608368400, 1, 16, 1.0, 1050.0, 60.0, 'Stock dividend +1 N')
+    ]
+    create_stock_dividends(stock_dividends)
 
     test_trades = [
         (1609567200, 1609653600, 4, 10.0, 100.0, 1.0),
@@ -271,9 +316,9 @@ def test_fifo(prepare_db_fifo):
 
     # Stock dividend
     assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=16") == 3
-    assert readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=16") == approx(1500)
-    assert readSQL("SELECT profit FROM deals_ext WHERE asset_id=16 AND close_timestamp=1608454800") == approx(166.666667)
-    assert readSQL("SELECT profit FROM deals_ext WHERE asset_id=16 AND close_timestamp=1608541200") == approx(1333.333333)
+    assert readSQL("SELECT SUM(profit) FROM deals_ext WHERE asset_id=16") == approx(450)
+    assert readSQL("SELECT profit FROM deals_ext WHERE asset_id=16 AND close_timestamp=1608454800") == approx(0)
+    assert readSQL("SELECT profit FROM deals_ext WHERE asset_id=16 AND open_timestamp=1608368400") == approx(50)
 
     # Order of buy/sell
     assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=17") == 2
@@ -285,7 +330,7 @@ def test_fifo(prepare_db_fifo):
     # totals
     assert readSQL("SELECT COUNT(*) FROM deals") == 41
     assert readSQL("SELECT COUNT(*) FROM deals WHERE open_op_type=:trade AND close_op_type=:trade",
-                  [(":trade", TransactionType.Trade)]) == 27
+                  [(":trade", TransactionType.Trade)]) == 29
     assert readSQL("SELECT COUNT(*) FROM deals WHERE open_op_type!=:corp_action OR close_op_type!=:corp_action",
                   [(":corp_action", TransactionType.CorporateAction)]) == 37
     assert readSQL("SELECT COUNT(*) FROM deals WHERE open_op_type=:corp_action AND close_op_type=:corp_action",
@@ -298,7 +343,7 @@ def test_fifo(prepare_db_fifo):
     while query.next():
         row = readSQLrecord(query, named=True)
         if row['asset_id'] == 2:  # Checking money amount
-            assert row['amount_acc'] == 16760
+            assert row['amount_acc'] == 16700
         else:
             assert row['amount_acc'] == 0
         assert row['value_acc'] == 0

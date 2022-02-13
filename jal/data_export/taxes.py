@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timezone
 
 from PySide6.QtWidgets import QApplication
@@ -13,8 +14,7 @@ class TaxesRus:
         CorporateAction.SymbolChange: "Смена символа {before} {old} -> {after} {new}",
         CorporateAction.Split: "Сплит {old} {before} в {after}",
         CorporateAction.SpinOff: "Выделение компании {after} {new} из {before:.6f} {old}; доля выделяемого актива {ratio:.2f}%",
-        CorporateAction.Merger: "Слияние компании, конвертация {before} {old} в {after} {new}",
-        CorporateAction.StockDividend: "Допэмиссия акций: {after} {new}"
+        CorporateAction.Merger: "Слияние компании, конвертация {before} {old} в {after} {new}"
     }
 
     def __init__(self):
@@ -99,8 +99,8 @@ class TaxesRus:
 
     def prepare_dividends(self):
         dividends = []
-        query = executeSQL("SELECT d.timestamp AS payment_date, s.name AS symbol, s.full_name AS full_name, "
-                           "s.isin AS isin, d.amount AS amount, d.tax AS tax, q.quote AS rate , "
+        query = executeSQL("SELECT d.type, d.timestamp AS payment_date, s.name AS symbol, s.full_name AS full_name, "
+                           "s.isin AS isin, d.amount AS amount, d.tax AS tax, q.quote AS rate, p.quote AS price, "
                            "c.name AS country, c.iso_code AS country_iso, c.tax_treaty AS tax_treaty "
                            "FROM dividends AS d "
                            "LEFT JOIN assets AS s ON s.id = d.asset_id "
@@ -108,12 +108,22 @@ class TaxesRus:
                            "LEFT JOIN countries AS c ON s.country_id = c.id "
                            "LEFT JOIN t_last_dates AS ld ON d.timestamp=ld.ref_id "
                            "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND a.currency_id=q.asset_id "
+                           "LEFT JOIN quotes AS p ON d.timestamp=p.timestamp AND d.asset_id=p.asset_id "
                            "WHERE d.timestamp>=:begin AND d.timestamp<:end AND d.account_id=:account_id "
-                           " AND d.amount>0 AND d.type=:type_dividend ORDER BY d.timestamp",
-                           [(":begin", self.year_begin), (":end", self.year_end),
-                            (":account_id", self.account_id), (":type_dividend", DividendSubtype.Dividend)])
+                           " AND d.amount>0 AND (d.type=:type_dividend OR d.type=:type_stock_dividend) "
+                           "ORDER BY d.timestamp",
+                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
+                            (":type_dividend", DividendSubtype.Dividend),
+                            (":type_stock_dividend", DividendSubtype.StockDividend)])
         while query.next():
             dividend = readSQLrecord(query, named=True)
+            dividend["note"] = ''
+            if dividend["type"] == DividendSubtype.StockDividend:
+                if not dividend["price"]:
+                    logging.error(self.tr("No price data for stock dividend: ") + f"{dividend}")
+                    continue
+                dividend["amount"] = dividend["amount"] * dividend["price"]
+                dividend["note"] = "Дивиденд выплачен в натуральной форме (ценными бумагами)"
             dividend["amount_rub"] = round(dividend["amount"] * dividend["rate"], 2) if dividend["rate"] else 0
             dividend["tax_rub"] = round(dividend["tax"] * dividend["rate"], 2) if dividend["rate"] else 0
             dividend["tax2pay"] = round(0.13 * dividend["amount_rub"], 2)
@@ -124,6 +134,8 @@ class TaxesRus:
                     dividend["tax2pay"] = 0
             dividend['tax_treaty'] = "Да" if dividend['tax_treaty'] else "Нет"
             dividend['report_template'] = "dividend"
+            del dividend['type']
+            del dividend['price']
             dividends.append(dividend)
         self.insert_totals(dividends, ["amount", "amount_rub", "tax", "tax_rub", "tax2pay"])
         return dividends
@@ -264,15 +276,15 @@ class TaxesRus:
         query = executeSQL("SELECT b.name AS symbol, b.isin AS isin, i.timestamp AS o_date, i.number AS number, "
                            "i.amount AS interest, r.quote AS rate, cc.iso_code AS country_iso "
                            "FROM dividends AS i "
-                           "LEFT JOIN trades AS t ON i.account_id=1 AND i.number=t.number "
+                           "LEFT JOIN trades AS t ON i.account_id=t.account_id AND i.number=t.number "
                            "AND i.timestamp=t.timestamp AND i.asset_id=t.asset_id "
                            "LEFT JOIN assets AS b ON i.asset_id = b.id "
-                           "LEFT JOIN accounts AS a ON a.id = :account_id "
+                           "LEFT JOIN accounts AS a ON a.id = i.account_id "
                            "LEFT JOIN countries AS cc ON cc.id = a.country_id "
                            "LEFT JOIN t_last_dates AS ld ON i.timestamp=ld.ref_id "
                            "LEFT JOIN quotes AS r ON ld.timestamp=r.timestamp AND a.currency_id=r.asset_id "
                            "WHERE i.timestamp>=:begin AND i.timestamp<:end AND i.account_id=:account_id "
-                           "AND type = :type_interest AND t.id IS NULL",
+                           "AND i.type = :type_interest AND t.id IS NULL",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
                             (":type_interest", DividendSubtype.BondInterest)])
         while query.next():
@@ -393,9 +405,10 @@ class TaxesRus:
     def prepare_corporate_actions(self):
         corp_actions = []
         # get list of all deals that were opened with corp.action and closed by normal trade
-        query = executeSQL("SELECT d.open_op_id AS operation_id, s.name AS symbol, d.qty AS qty, t.number AS trade_number, "
-                           "t.timestamp AS t_date, qt.quote AS t_rate, t.settlement AS s_date, qts.quote AS s_rate, "
-                           "t.price AS price, t.fee AS fee, s.full_name AS full_name, s.isin AS isin "
+        query = executeSQL("SELECT d.open_op_id AS operation_id, s.name AS symbol, d.qty AS qty, "
+                           "t.number AS trade_number, t.timestamp AS t_date, qt.quote AS t_rate, "
+                           "t.settlement AS s_date, qts.quote AS s_rate, t.price AS price, t.fee AS fee, "
+                           "s.full_name AS full_name, s.isin AS isin, s.type_id AS type_id "
                            "FROM deals AS d "
                            "JOIN trades AS t ON t.id=d.close_op_id AND t.op_type=d.close_op_type "
                            "LEFT JOIN assets AS s ON t.asset_id=s.id "
@@ -442,6 +455,8 @@ class TaxesRus:
                 sale['report_template'] = "trade"
                 sale['report_group'] = group
                 actions.append(sale)
+                if sale['type_id'] == PredefinedAsset.Bond:
+                    self.output_accrued_interest(actions, sale['trade_number'], 1, 0)
                 self.proceed_corporate_action(actions, sale['operation_id'], sale['symbol'], sale['qty'], basis, 1, group)
 
             self.insert_totals(actions, ["income_rub", "spending_rub"])
@@ -477,7 +492,7 @@ class TaxesRus:
         if proceed_qty <= 0:
             return proceed_qty
 
-        purchase = readSQL("SELECT t.id AS trade_id, s.name AS symbol, s.isin AS isin, "
+        purchase = readSQL("SELECT t.id AS trade_id, s.name AS symbol, s.isin AS isin, s.type_id AS type_id, "
                            "coalesce(d.qty-SUM(lq.total_value), d.qty) AS qty, "
                            "t.timestamp AS t_date, qt.quote AS t_rate, t.number AS trade_number, "
                            "t.settlement AS s_date, qts.quote AS s_rate, t.price AS price, t.fee AS fee "
@@ -512,6 +527,9 @@ class TaxesRus:
             purchase['report_template'] = "trade"
             purchase['report_group'] = group
             actions.append(purchase)
+        if purchase['type_id'] == PredefinedAsset.Bond:
+            share = purchase['qty'] / deal_qty if purchase['qty'] < deal_qty else 1
+            self.output_accrued_interest(actions, purchase['trade_number'], share, level)
         return proceed_qty - purchase['qty']
 
     def output_corp_action(self, actions, operation_id, symbol, proceed_qty, basis, level, group):
@@ -541,10 +559,6 @@ class TaxesRus:
             else:
                 basis = basis * (1 - action['basis_ratio'])
                 qty_before = action['qty']
-        elif action['type'] == CorporateAction.StockDividend:
-            qty_before = action['qty'] * proceed_qty / action['qty_new']
-            qty_after = proceed_qty - qty_before
-            action['description'] = self.CorpActionText[action['type']].format(new=new_asset, after=qty_after)
         else:
             qty_before = action['qty'] * proceed_qty / action['qty_new']
             qty_after = proceed_qty
@@ -555,3 +569,32 @@ class TaxesRus:
             action['report_group'] = group
             actions.append(action)
         return qty_before, action['symbol'], basis
+
+    def output_accrued_interest(self, actions, trade_number, share, level):
+        interest = readSQL("SELECT b.name AS symbol, b.isin AS isin, i.timestamp AS o_date, i.number AS number, "
+                           "i.amount AS interest, r.quote AS rate, cc.iso_code AS country_iso "
+                           "FROM dividends AS i "
+                           "LEFT JOIN assets AS b ON i.asset_id = b.id "
+                           "LEFT JOIN accounts AS a ON a.id = i.account_id "
+                           "LEFT JOIN countries AS cc ON cc.id = a.country_id "
+                           "LEFT JOIN t_last_dates AS ld ON i.timestamp=ld.ref_id "
+                           "LEFT JOIN quotes AS r ON ld.timestamp=r.timestamp AND a.currency_id=r.asset_id "
+                           "WHERE i.account_id=:account_id AND i.type=:interest AND i.number=:trade_number",
+                           [(":account_id", self.account_id), (":interest", DividendSubtype.BondInterest),
+                            (":trade_number", trade_number)], named=True)
+        if interest is None:
+            return
+        interest['empty'] = ''
+        interest['interest'] = interest['interest'] if share == 1 else share * interest['interest']
+        interest['interest_rub'] = abs(round(interest['interest'] * interest['rate'], 2)) if interest['rate'] else 0
+        if interest['interest'] < 0:  # Accrued interest paid for purchase
+            interest['interest'] = -interest['interest']
+            interest['operation'] = ' ' * level * 3 + "НКД уплачен"
+            interest['spending_rub'] = interest['interest_rub']
+            interest['income_rub'] = 0.0
+        else:                         # Accrued interest received for sale
+            interest['operation'] = ' ' * level * 3 + "НКД получен"
+            interest['income_rub'] = interest['interest_rub']
+            interest['spending_rub'] = 0.0
+        interest['report_template'] = "bond_interest"
+        actions.append(interest)

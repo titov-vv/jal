@@ -190,9 +190,18 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
     def setFilter(self):
         conditions = []
-        if self.search_text:
-            conditions.append(f"{self.search_field} LIKE '%{self.search_text}%'")
-
+        if self.search_text and self.search_field is not None:
+            search = self.search_field.split('-')
+            if len(search) == 1:    # Simple search by given text field
+                conditions.append(f"{self.search_field} LIKE '%{self.search_text}%'")
+            elif len(search) == 4:  # Complex search by relation from another table
+                # Here search[0] is a field in current table that binds with search[2] field in lookup table search[1]
+                # search[3] is a name in lookup table which is used for searching.
+                # I.e. self.search_field has format: f_key-lookup_table_name-lookup_id-lookup_field
+                conditions.append(f"{search[0]} IN (SELECT {search[2]} FROM {search[1]} "
+                                  f"WHERE {search[3]} LIKE '%{self.search_text}%')")
+            else:
+                assert False, f"Unsupported format of search field: {self.search_field}"
         if self.group_id:
             conditions.append(f"{self.table}.{self.group_key_field}={self.group_id}")
 

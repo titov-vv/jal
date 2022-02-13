@@ -78,6 +78,7 @@ class StatementXML(Statement):
             xml_root = etree.parse(filename)
         except etree.XMLSyntaxError as e:
             raise Statement_ImportError(self.tr("Can't parse XML file: ") + e.msg)
+        self.validate_file_header_attributes(xml_root.findall('.')[0].attrib)
         statements = xml_root.findall(self.statements_path)
         for statement in statements:
             if statement.tag != self.statement_tag:
@@ -95,6 +96,9 @@ class StatementXML(Statement):
                         return
                     self._sections[section]['loader'](section_data)
         logging.info(self.statement_name + self.tr(" loaded successfully"))
+
+    def validate_file_header_attributes(self, xml_data):
+        return
 
     def get_section_data(self, section):
         if section.tag == self.statement_tag:  # This is header section

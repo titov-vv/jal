@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, Signal, Slot, QObject
+from PySide6.QtCore import Qt, Slot, QObject
 from PySide6.QtSql import QSqlTableModel
 from jal.ui.reports.ui_deals_report import Ui_DealsReportWidget
 from jal.db.helpers import db_connection, executeSQL
@@ -22,11 +22,12 @@ class DealsReportModel(QSqlTableModel):
                          ("profit", self.tr("P/L")),
                          ("rel_profit", self.tr("P/L, %")),
                          ("corp_action", self.tr("Note"))]
-        self.ca_names = {CorporateAction.SymbolChange: self.tr("Symbol change"),
-                         CorporateAction.Split: self.tr("Split"),
-                         CorporateAction.SpinOff: self.tr("Spin-off"),
-                         CorporateAction.Merger: self.tr("Merger"),
-                         CorporateAction.StockDividend: self.tr("Stock dividend")}
+        self.ca_names = {
+            CorporateAction.SymbolChange: self.tr("Symbol change"),
+            CorporateAction.Split: self.tr("Split"),
+            CorporateAction.SpinOff: self.tr("Spin-off"),
+            CorporateAction.Merger: self.tr("Merger")
+        }
         self._view = parent_view
         self._begin = 0
         self._end = 0

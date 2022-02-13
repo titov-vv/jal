@@ -15,7 +15,7 @@ class Setup:
     STATEMENT_PATH = "broker_statements"
     TEMPLATE_PATH = "templates"
     UPDATE_PREFIX = 'jal_delta_'
-    TARGET_SCHEMA = 30
+    TARGET_SCHEMA = 31
     CALC_TOLERANCE = 1e-10
     DISP_TOLERANCE = 1e-4
 
@@ -53,6 +53,7 @@ class DividendSubtype:   # Subtype to distinguish dividend, bond interest etc.
     Fee = 0
     Dividend = 1
     BondInterest = 2
+    StockDividend = 3
 
 
 class CorporateAction:   # CORPORATE ACTIONS FOR ASSETS
@@ -61,7 +62,6 @@ class CorporateAction:   # CORPORATE ACTIONS FOR ASSETS
     SpinOff = 2
     SymbolChange = 3
     Split = 4
-    StockDividend = 5
 
 
 class PredefindedAccountType:

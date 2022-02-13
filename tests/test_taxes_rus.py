@@ -1,11 +1,13 @@
 import json
-
+import os
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
+from data_import.broker_statements.ibkr import StatementIBKR
 from tests.helpers import create_assets, create_quotes, create_dividends, create_coupons, create_trades, \
-    create_actions, create_corporate_actions
+    create_actions, create_corporate_actions, create_stock_dividends
 from jal.db.ledger import Ledger
 from jal.data_export.taxes import TaxesRus
+from jal.data_export.xlsx import XLSX
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -41,7 +43,8 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
         (1587513600, 76.2562),
         (1605039600, 76.9515),
         (1600128000, 74.7148),
-        (1591142400, 68.9831)
+        (1591142400, 68.9831),
+        (1593129600, 69.4660)
     ]
     create_quotes(2, usd_rates)
     dividends = [
@@ -50,6 +53,10 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
         (1587586800, 1, 6, 3.74, 1.12, "ERIC(US2948216088) CASH DIVIDEND USD 0.074728 PER SHARE (Ordinary Dividend)")
     ]
     create_dividends(dividends)
+    stock_dividends = [
+        (1593205200, 1, 4, 2.0, 53.4, 10.68, 'GE (US3696041033) Stock Dividend US3696041033 196232339 for 10000000000')
+    ]
+    create_stock_dividends(stock_dividends)
     coupons = [
         (1590587855, 1, 9, -25.69, 0, "PURCHASE ACCRUED INT X 6 1/4 03/15/26", "2881234567"),
         (1600128000, 1, 9, 62.5, 0, "BOND COUPON PAYMENT (X 6 1/4 03/15/26)", ""),
@@ -94,3 +101,50 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
     taxes = TaxesRus()
     tax_report = taxes.prepare_tax_report(2020, 1)
     assert tax_report == report
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_taxes_rus_bonds(tmp_path, project_root, data_path, prepare_db_taxes):
+    with open(data_path + 'ibkr_bond.json', 'r') as json_file:
+        statement = json.load(json_file)
+    with open(data_path + 'taxes_bond_rus.json', 'r') as json_file:
+        report = json.load(json_file)
+
+    usd_rates = [
+        (1632441600, 72.7245), (1629936000, 73.7428), (1631664000, 72.7171), (1622073600, 73.4737),
+        (1621987200, 73.3963), (1621900800, 73.5266), (1621641600, 73.5803), (1632528000, 73.0081)
+    ]
+    create_quotes(2, usd_rates)
+
+    IBKR = StatementIBKR()
+    IBKR.load(data_path + 'ibkr_bond.xml')
+    assert IBKR._data == statement
+
+    IBKR.validate_format()
+    IBKR.match_db_ids(verbal=False)
+    IBKR.import_into_db()
+
+    ledger = Ledger()  # Build ledger to have FIFO deals table
+    ledger.rebuild(from_timestamp=0)
+
+    taxes = TaxesRus()
+    tax_report = taxes.prepare_tax_report(2021, 1)
+    assert tax_report == report
+
+    # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
+    # templates = {
+    #     "Облигации": "tax_rus_bonds.json",
+    #     "Корп.события": "tax_rus_corporate_actions.json"
+    # }
+    # parameters = {
+    #     "period": "01.01.2021 - 31.12.2021",
+    #     "account": "TEST U7654321 (USD)",
+    #     "currency": "USD",
+    #     "broker_name": "IBKR",
+    #     "broker_iso_country": "840"
+    # }
+    # for section in tax_report:
+    #     if section not in templates:
+    #         continue
+    #     reports_xls.output_data(tax_report[section], templates[section], parameters)
+    # reports_xls.save()

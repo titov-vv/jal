@@ -24,10 +24,10 @@
   "columns_numbered": true,
   "dividend": {
     "rows": [
-      ["payment_date", "symbol", "isin", "full_name", "rate", "amount", "amount_rub", "tax", "tax_rub", "tax2pay", "country", "tax_treaty"]
+      ["payment_date", "symbol", "isin", "full_name", "rate", "amount", "amount_rub", "tax", "tax_rub", "tax2pay", "country", "tax_treaty", "note"]
     ],
     "formats": [
-      ["D", "T", "T", "T", "N:4", "N:2", "N:2", "N:2", "N:2", "N:2", "T", "T"]
+      ["D", "T", "T", "T", "N:4", "N:2", "N:2", "N:2", "N:2", "N:2", "T", "T", "-"]
     ]
   },
   "totals": {

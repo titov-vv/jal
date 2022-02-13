@@ -136,6 +136,8 @@ class XLSX:
             return value, self.formats.Number(even_odd, tolerance=int(format_string[2:]))
         elif format_string[0] == 'F':
             return value, self.formats.ColumnFooter()
+        elif format_string[0] == '-':
+            return value, self.formats.NoFormat()
         else:
             logging.warning(self.tr("Unrecognized format string: ") + format_string)
             return value, self.formats.Text(even_odd)
@@ -176,6 +178,9 @@ class xslxFormat:
                                     'bg_color': '#808080',
                                     'font_color': '#FFFFFF',
                                     'border': 1})
+
+    def NoFormat(self):
+        return self.wbk.add_format({'font_size': self.text_font_size})
 
     def Text(self, even_odd_value=1):
         if even_odd_value % 2:

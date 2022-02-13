@@ -2,6 +2,7 @@ import logging
 from jal.constants import CustomColor
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QApplication, QPlainTextEdit, QLabel, QPushButton
+from PySide6.QtGui import QBrush
 
 
 class LogViewer(QPlainTextEdit, logging.Handler):
@@ -18,24 +19,38 @@ class LogViewer(QPlainTextEdit, logging.Handler):
         self.expanded_text = self.tr("▲ logs")
 
     def emit(self, record, **kwargs):
+        predefinded_colors = {
+            logging.DEBUG: CustomColor.Grey,
+            logging.INFO: self.clear_color,
+            logging.WARNING: CustomColor.LightYellow,
+            logging.ERROR: CustomColor.LightRed,
+            logging.CRITICAL: CustomColor.LightRed
+        }
+        try:
+            msg_color = predefinded_colors[record.levelno]
+        except KeyError:
+            self.appendPlainText(self.tr("Unknown logging level provided: ") + f"{record.levelno}")
+            msg_color = CustomColor.LightRed
+
         # Store message in log window
         msg = self.format(record)
+        tf = self.currentCharFormat()
+        tf.setForeground(QBrush(msg_color))
+        self.setCurrentCharFormat(tf)
         self.appendPlainText(msg)
 
         # Show in status bar
         if self.notification:
             palette = self.notification.palette()
-            if record.levelno <= logging.INFO:
-                palette.setColor(self.notification.backgroundRole(), self.clear_color)
-            elif record.levelno <= logging.WARNING:
-                palette.setColor(self.notification.backgroundRole(), CustomColor.LightYellow)
-            else:
-                palette.setColor(self.notification.backgroundRole(), CustomColor.LightRed)
+            palette.setColor(self.notification.foregroundRole(), msg_color)
             self.notification.setPalette(palette)
-
             msg = msg.replace('\n', "; ")  # Get rid of new lines in error message
             elided_text = self.notification.fontMetrics().elidedText(msg, Qt.ElideRight, self.get_available_width())
             self.notification.setText(elided_text)
+        # Set button color
+        if self.expandButton:
+            palette = self.expandButton.palette()
+            palette.setColor(self.expandButton.foregroundRole(), msg_color)
 
         self.app.processEvents()
 
@@ -56,7 +71,7 @@ class LogViewer(QPlainTextEdit, logging.Handler):
         self.notification = QLabel(self)
         self.status_bar.addWidget(self.notification)
         self.notification.setAutoFillBackground(True)
-        self.clear_color = self.notification.palette().color(self.notification.backgroundRole())
+        self.clear_color = self.expandButton.palette().color(self.notification.foregroundRole())
         self.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 
     def removeStatusBar(self):
@@ -65,7 +80,7 @@ class LogViewer(QPlainTextEdit, logging.Handler):
 
     def cleanNotification(self):
         palette = self.notification.palette()
-        palette.setColor(self.notification.backgroundRole(), self.clear_color)
+        palette.setColor(self.notification.foregroundRole(), self.clear_color)
         self.notification.setPalette(palette)
         self.notification.setText("")
 

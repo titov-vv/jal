@@ -11,15 +11,15 @@
     {"name": "Тип операции", "width": 20},
     {"name": "Дата операции", "width": 10},
     {"name": "Номер операции", "width": 10},
-    {"name": "Ценная бумага", "width": 8},
+    {"name": "Ценная бумага", "width": 15},
     {"name": "ISIN", "width": 11},
     {"name": "Кол-во", "width": 8},
     {"name": "Курс {parameters[currency]}/RUB на дату операции", "width": 9},
     {"name": "Дата расчётов", "width": 10},
     {"name": "Курс {parameters[currency]}/RUB на дату расчётов", "width": 9},
     {"name": "Цена, {parameters[currency]}", "width": 12},
-    {"name": "Сумма сделки, {parameters[currency]}", "width": 12},
-    {"name": "Сумма сделки, RUB", "width": 12},
+    {"name": "Сумма операции, {parameters[currency]}", "width": 12},
+    {"name": "Сумма операции, RUB", "width": 12},
     {"name": "Комиссия, {parameters[currency]}", "width": 12},
     {"name": "Комиссия, RUB", "width": 9},
     {"name": "Доля к учёту, %", "width": 9},
@@ -55,6 +55,14 @@
     ],
     "span": [
       [null, null, null, {"h": 13, "v": 0}]
+    ]
+  },
+  "bond_interest": {
+    "rows": [
+      ["operation", "o_date", "number", "symbol", "isin", "empty", "rate", "empty", "empty", "empty", "interest", "interest_rub", "empty", "empty", "empty", "income_rub", "spending_rub"]
+    ],
+    "formats": [
+      ["T", "D", "T", "T", "T", "T", "N:4", "T", "T", "T", "N:2", "N:2", "T", "T", "T", "N:2", "N:2"]
     ]
   },
   "totals": {

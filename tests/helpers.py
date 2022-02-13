@@ -79,6 +79,19 @@ def create_coupons(coupons):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Create dividends in database: dividends is a list of dividends as tuples
+# (timestamp, account, asset_id, qty, quote, tax, note)
+def create_stock_dividends(dividends):
+    for dividend in dividends:
+        create_quotes(dividend[2], [(dividend[0], dividend[4])])
+        assert executeSQL("INSERT INTO dividends (timestamp, type, account_id, asset_id, amount, tax, note) "
+                          "VALUES (:timestamp, :div_type, :account_id, :asset_id, :amount, :tax, :note)",
+                          [(":timestamp", dividend[0]), (":div_type", DividendSubtype.StockDividend),
+                           (":account_id", dividend[1]), (":asset_id", dividend[2]), (":amount", dividend[3]),
+                           (":tax", dividend[5]), (":note", dividend[6])], commit=True) is not None
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # Create trades for given account_id in database: trades is a list of trades as tuples
 # (timestamp, settlement, asset_id, qty, price, fee, [number])
 def create_trades(account_id, trades):

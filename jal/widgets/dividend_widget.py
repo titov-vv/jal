@@ -1,12 +1,13 @@
 from datetime import datetime
 from dateutil import tz
 
-from PySide6.QtCore import Qt, QStringListModel, QByteArray
+from PySide6.QtCore import Qt, Slot, QStringListModel, QByteArray
 from PySide6.QtWidgets import QLabel, QDateTimeEdit, QDateEdit, QLineEdit, QComboBox
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
-from jal.constants import TransactionType
+from jal.constants import TransactionType, DividendSubtype
+from jal.db.db import JalDB
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -34,6 +35,7 @@ class DividendWidget(AbstractOperationDetails):
         self.account_label = QLabel(self)
         self.symbol_label = QLabel(self)
         self.amount_label = QLabel(self)
+        self.price_label = QLabel(self)
         self.tax_label = QLabel(self)
         self.comment_label = QLabel(self)
 
@@ -45,6 +47,7 @@ class DividendWidget(AbstractOperationDetails):
         self.account_label.setText(self.tr("Account"))
         self.symbol_label.setText(self.tr("Asset"))
         self.amount_label.setText(self.tr("Dividend"))
+        self.price_label.setText(self.tr("Price"))
         self.tax_label.setText(self.tr("Tax"))
         self.comment_label.setText(self.tr("Note"))
 
@@ -63,6 +66,9 @@ class DividendWidget(AbstractOperationDetails):
         self.asset_widget = AssetSelector(self)
         self.dividend_edit = QLineEdit(self)
         self.dividend_edit.setAlignment(Qt.AlignRight)
+        self.price_edit = QLineEdit(self)
+        self.price_edit.setAlignment(Qt.AlignRight)
+        self.price_edit.setReadOnly(True)
         self.tax_edit = QLineEdit(self)
         self.tax_edit.setAlignment(Qt.AlignRight)
         self.number = QLineEdit(self)
@@ -90,7 +96,10 @@ class DividendWidget(AbstractOperationDetails):
         self.layout.addWidget(self.tax_edit, 3, 6, 1, 1)
 
         self.layout.addWidget(self.number_label, 1, 7, 1, 1, Qt.AlignRight)
+        self.layout.addWidget(self.price_label, 2, 7, 1, 1, Qt.AlignRight)
+
         self.layout.addWidget(self.number, 1, 8, 1, 1)
+        self.layout.addWidget(self.price_edit, 2, 8, 1, 1)
 
         self.layout.addWidget(self.commit_button, 0, 9, 1, 1)
         self.layout.addWidget(self.revert_button, 0, 10, 1, 1)
@@ -101,13 +110,16 @@ class DividendWidget(AbstractOperationDetails):
         super()._init_db("dividends")
         self.combo_model = QStringListModel([self.tr("N/A"),
                                              self.tr("Dividend"),
-                                             self.tr("Bond Interest")])
+                                             self.tr("Bond Interest"),
+                                             self.tr("Stock Dividend")])
         self.type.setModel(self.combo_model)
 
         self.mapper.setItemDelegate(DividendWidgetDelegate(self.mapper))
 
         self.account_widget.changed.connect(self.mapper.submit)
-        self.asset_widget.changed.connect(self.mapper.submit)
+        self.asset_widget.changed.connect(self.assetChanged)
+        self.type.currentIndexChanged.connect(self.typeChanged)
+        self.timestamp_editor.dateTimeChanged.connect(self.refreshAssetPrice)
 
         self.mapper.addMapping(self.timestamp_editor, self.model.fieldIndex("timestamp"))
         self.mapper.addMapping(self.ex_date_editor, self.model.fieldIndex("ex_date"))
@@ -120,6 +132,31 @@ class DividendWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.comment, self.model.fieldIndex("note"))
 
         self.model.select()
+
+    @Slot()
+    def assetChanged(self):
+        self.mapper.submit()
+        self.refreshAssetPrice()
+
+    @Slot()
+    def typeChanged(self, dividend_type_id):
+        self.price_label.setVisible(dividend_type_id == DividendSubtype.StockDividend)
+        self.price_edit.setVisible(dividend_type_id == DividendSubtype.StockDividend)
+        self.refreshAssetPrice()
+
+    def refreshAssetPrice(self):
+        if self.type.currentIndex() == DividendSubtype.StockDividend:
+            price = JalDB().get_quote(self.asset_widget.selected_id,
+                                      self.timestamp_editor.dateTime().toSecsSinceEpoch())
+            if price is not None:
+                self.price_edit.setText(str(price))
+                self.price_edit.setStyleSheet('')
+                self.price_edit.setToolTip("")
+            else:
+                self.price_edit.setText(self.tr("No quote"))
+                self.price_edit.setStyleSheet("color: red")
+                self.price_edit.setToolTip(
+                    self.tr("You should set quote via Data->Quotes menu for Date/Time of the dividend"))
 
     def prepareNew(self, account_id):
         new_record = super().prepareNew(account_id)

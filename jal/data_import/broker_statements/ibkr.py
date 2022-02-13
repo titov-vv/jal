@@ -56,13 +56,14 @@ class IBKR_AssetType:
 class IBKR_CorpActionType:
     NotSupported = -1
     _corporate_action_types = {
-        'TC': FOF.ACTION_MERGER,
-        'SO': FOF.ACTION_SPINOFF,
-        'IC': FOF.ACTION_SYMBOL_CHANGE,
-        'HI': FOF.ACTION_STOCK_DIVIDEND,
-        'FS': FOF.ACTION_SPLIT,
-        'RS': FOF.ACTION_SPLIT,
         'BM': FOF.ACTION_BOND_MATURITY,    # No separate value as will be converted to ordinary bond sell operation
+        'FS': FOF.ACTION_SPLIT,            # Forward split
+        'HI': FOF.PAYMENT_STOCK_DIVIDEND,  # Choice dividend
+        'IC': FOF.ACTION_SYMBOL_CHANGE,    # Issue change
+        'RS': FOF.ACTION_SPLIT,            # Reverse split
+        'SO': FOF.ACTION_SPINOFF,          # Spin-off of new company
+        'SD': FOF.PAYMENT_STOCK_DIVIDEND,  # Dividend paid in stocks
+        'TC': FOF.ACTION_MERGER,           # Conversion of one stock into another
         'TO': FOF.ACTION_MERGER            # Voluntary conversion of one asset into another
     }
 
@@ -262,6 +263,7 @@ class StatementIBKR(StatementXML):
                                             ('transactionID', 'number', str, ''),
                                             ('description', 'description', str, None),
                                             ('quantity', 'quantity', float, None),
+                                            ('value', 'value', float, None),
                                             ('proceeds', 'proceeds', float, None),
                                             ('code', 'code', str, '')],
                                  'loader': self.load_corporate_actions},
@@ -289,6 +291,14 @@ class StatementIBKR(StatementXML):
 
     def tr(self, text):
         return QApplication.translate("IBKR", text)
+
+    def validate_file_header_attributes(self, attributes):
+        if 'type' not in attributes:
+            raise Statement_ImportError(self.tr("Interactive Brokers report type not found"))
+        if attributes['type'] == "TCF":
+            raise Statement_ImportError(self.tr("You try to import Trade confimation report, not Activity report"))
+        if attributes['type'] != 'AF':
+            raise Statement_ImportError(self.tr("Unknown Interactive Brokers report type: ") + f"{attributes['type']}")
 
     # Convert attribute 'attr_name' value into json open-format asset type
     @staticmethod
@@ -494,7 +504,7 @@ class StatementIBKR(StatementXML):
             FOF.ACTION_MERGER: self.load_merger,
             FOF.ACTION_SPINOFF: self.load_spinoff,
             FOF.ACTION_SYMBOL_CHANGE: self.load_symbol_change,
-            FOF.ACTION_STOCK_DIVIDEND: self.load_stock_dividend,
+            FOF.PAYMENT_STOCK_DIVIDEND: self.load_stock_dividend,
             FOF.ACTION_SPLIT: self.load_split,
             FOF.ACTION_BOND_MATURITY: self.load_bond_maturity
         }
@@ -594,7 +604,7 @@ class StatementIBKR(StatementXML):
                                   action['quantity']/IBKR_Asset.BondPrincipal]
         else:
             action['quantity'] = [-paired_record[0]['quantity'], action['quantity']]
-        self.drop_extra_fields(action, ["proceeds", "code", "asset_type", "jal_processed"])
+        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
         self._data[FOF.CORP_ACTIONS].append(action)
         paired_record[0]['jal_processed'] = True
         return 2
@@ -629,7 +639,7 @@ class StatementIBKR(StatementXML):
         action['cost_basis'] = 0.0
         action['asset'] = [asset_old, action['asset']]
         action['quantity'] = [qty_old, action['quantity']]
-        self.drop_extra_fields(action, ["proceeds", "code", "asset_type", "jal_processed"])
+        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
         self._data[FOF.CORP_ACTIONS].append(action)
         return 1
 
@@ -649,16 +659,25 @@ class StatementIBKR(StatementXML):
         action['cost_basis'] = 1.0
         action['asset'] = [paired_record[0]['asset'], action['asset']]
         action['quantity'] = [-paired_record[0]['quantity'], action['quantity']]
-        self.drop_extra_fields(action, ["proceeds", "code", "asset_type", "jal_processed"])
+        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
         self._data[FOF.CORP_ACTIONS].append(action)
         paired_record[0]['jal_processed'] = True
         return 2
 
     def load_stock_dividend(self, action, parts_b) -> int:
-        action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
-        action['cost_basis'] = 0.0
-        self.drop_extra_fields(action, ["proceeds", "code", "asset_type", "jal_processed"])
-        self._data[FOF.CORP_ACTIONS].append(action)
+        StockDividendPattern = r"^(?P<description>.*) +(?P<tail>\(.*\))$"
+
+        parts = re.match(StockDividendPattern, action['description'], re.IGNORECASE)
+        if parts is None:
+            raise Statement_ImportError(self.tr("Can't parse Stock Dividend description ") + f"'{action}'")
+        action['description'] = parts.groupdict()['description']
+
+        action['id'] = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
+        action['amount'] = action['quantity']
+        action['price'] = action['value'] / action['quantity']
+        action['tax'] = 0
+        self.drop_extra_fields(action, ["quantity", "value", "proceeds", "code", "asset_type", "jal_processed"])
+        self._data[FOF.ASSET_PAYMENTS].append(action)
         return 1
 
     def load_split(self, action, parts_b) -> int:
@@ -678,7 +697,7 @@ class StatementIBKR(StatementXML):
             action['cost_basis'] = 1.0
             action['asset'] = [action['asset'], action['asset']]
             action['quantity'] = [qty_old, qty_new]
-            self.drop_extra_fields(action, ["proceeds", "code", "asset_type", "jal_processed"])
+            self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
             self._data[FOF.CORP_ACTIONS].append(action)
             return 1
         else:  # Split together with ISIN change and there should be 2nd record available
@@ -689,7 +708,7 @@ class StatementIBKR(StatementXML):
             action['cost_basis'] = 1.0
             action['asset'] = [paired_record[0]['asset'], action['asset']]
             action['quantity'] = [-paired_record[0]['quantity'], action['quantity']]
-            self.drop_extra_fields(action, ["proceeds", "code", "asset_type", "jal_processed"])
+            self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
             self._data[FOF.CORP_ACTIONS].append(action)
             paired_record[0]['jal_processed'] = True
             return 2
@@ -702,7 +721,8 @@ class StatementIBKR(StatementXML):
         action['settlement'] = action['timestamp']                    # Settled by the same date
         action['note'] = action['description']
         action['fee'] = 0.0
-        self.drop_extra_fields(action, ["description", "proceeds", "type", "code", "asset_type", "jal_processed"])
+        self.drop_extra_fields(action, ["description", "value", "proceeds", "type", "code", "asset_type",
+                                        "jal_processed"])
         self._data[FOF.TRADES].append(action)
         return 1
 
@@ -818,7 +838,8 @@ class StatementIBKR(StatementXML):
         DividendNotePattern = r"^(?P<symbol>.*\w) ?\((?P<isin>\w+)\)(?P<prefix>( \w*)+) +(?P<amount>\d+\.\d+)?(?P<suffix>.*) \(.*\)$"
 
         dividends = [x for x in self._data[FOF.ASSET_PAYMENTS] if
-                     x['type'] == FOF.PAYMENT_DIVIDEND and x['asset'] == asset_id and x['account'] == account_id]
+                     (x['type'] == FOF.PAYMENT_DIVIDEND or x['type'] == FOF.PAYMENT_STOCK_DIVIDEND)
+                     and x['asset'] == asset_id and x['account'] == account_id]
         account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
         currency = [x for x in self._data[FOF.ASSETS] if x["id"] == account['currency']][0]
         db_account = JalDB().get_account_id(account['number'], currency['symbol'])

@@ -1,0 +1,26 @@
+{
+  "period": [1609459200, 1640995199],
+  "accounts": [
+    {"id": 1, "number": "U7654321", "currency": 1, "cash_begin": 12.345, "cash_end": 1234567.249966388, "cash_end_settled": 1234567.89}
+  ],
+  "assets": [
+    {"id": 1, "symbol": "USD", "type": "money"},
+    {"id": 2, "symbol": "X 6 1/4 03/15/26", "type": "bond", "name": "X 6 1/4 03/15/26", "isin": "US912909AN84", "reg_code": "912909AN8", "expiry": 1773532800},
+    {"id": 3, "symbol": "X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26", "type": "bond", "name": "X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26", "isin": "US912CALAN84", "reg_code": "912CALAN8", "expiry": 1773532800}
+  ],
+  "trades": [
+    {"id": 1, "number": "2882737839", "timestamp": 1622131065, "settlement": 1622246400, "account": 1, "asset": 2, "quantity": 2.0, "price": 637.09, "fee": 2.0},
+    {"id": 2, "number": "17849517124", "timestamp": 1632515100, "settlement": 1632515100, "account": 1, "asset": 3, "quantity": -2.0, "price": 1031.25, "fee": 0.0, "note": "(US912CALAN84) BOND MATURITY FOR USD 1.03125 PER BOND (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)"}
+  ],
+  "corporate_actions": [
+    {"id": 1, "type": "merger", "account": 1, "timestamp": 1630007100, "number": "17569476329", "asset": [2, 3], "quantity": [2.0, 2.0], "cost_basis": 1.0, "description": "X 6 1/4 03/15/26(US912909AN84) TENDERED TO US912CALAN84 1 FOR 1 (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)"}
+  ],
+ "asset_payments": [
+   {"id": 1, "type": "interest", "account": 1, "timestamp": 1622131065, "number": "2882737839", "asset": 2, "amount": -25.69, "description": "PURCHASE ACCRUED INT X 6 1/4 03/15/26"},
+   {"id": 2, "type": "interest", "account": 1, "timestamp": 1631664000, "number": "", "asset": 2, "amount": 62.0, "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26)"},
+   {"id": 3, "type": "interest", "account": 1, "timestamp": 1631664000, "number": "", "asset": 2, "amount": 0.5, "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26)"},
+   {"id": 4, "type": "interest", "account": 1, "timestamp": 1632700800, "number": "", "asset": 3, "amount": 3.82, "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26)"}
+ ],
+ "income_spending": [],
+ "transfers": []
+}
