@@ -45,17 +45,17 @@
 <context>
     <name>AccountListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="202"/>
+        <location filename="../widgets/reference_dialogs.py" line="203"/>
         <source>Accounts</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="206"/>
+        <location filename="../widgets/reference_dialogs.py" line="207"/>
         <source>Show inactive</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="209"/>
+        <location filename="../widgets/reference_dialogs.py" line="210"/>
         <source>Account type:</source>
         <translation></translation>
     </message>
@@ -63,37 +63,37 @@
 <context>
     <name>AccountListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="140"/>
+        <location filename="../widgets/reference_dialogs.py" line="141"/>
         <source>Name</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="141"/>
+        <location filename="../widgets/reference_dialogs.py" line="142"/>
         <source>Currency</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="142"/>
+        <location filename="../widgets/reference_dialogs.py" line="143"/>
         <source>Act.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="143"/>
+        <location filename="../widgets/reference_dialogs.py" line="144"/>
         <source>Account #</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="144"/>
+        <location filename="../widgets/reference_dialogs.py" line="145"/>
         <source>Reconciled @</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="145"/>
+        <location filename="../widgets/reference_dialogs.py" line="146"/>
         <source>Bank/Broker</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="146"/>
+        <location filename="../widgets/reference_dialogs.py" line="147"/>
         <source>CC</source>
         <translation></translation>
     </message>
@@ -101,7 +101,7 @@
 <context>
     <name>AccountTypeListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="129"/>
+        <location filename="../widgets/reference_dialogs.py" line="130"/>
         <source>Account Types</source>
         <translation></translation>
     </message>
@@ -109,7 +109,7 @@
 <context>
     <name>AccountTypeListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="112"/>
+        <location filename="../widgets/reference_dialogs.py" line="113"/>
         <source>Account Type</source>
         <translation></translation>
     </message>
@@ -150,12 +150,12 @@
 <context>
     <name>AssetListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="284"/>
+        <location filename="../widgets/reference_dialogs.py" line="285"/>
         <source>Assets</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="289"/>
+        <location filename="../widgets/reference_dialogs.py" line="290"/>
         <source>Asset type:</source>
         <translation></translation>
     </message>
@@ -163,32 +163,32 @@
 <context>
     <name>AssetListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="233"/>
+        <location filename="../widgets/reference_dialogs.py" line="234"/>
         <source>Symbol</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="235"/>
+        <location filename="../widgets/reference_dialogs.py" line="236"/>
         <source>Name</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="236"/>
+        <location filename="../widgets/reference_dialogs.py" line="237"/>
         <source>ISIN</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="237"/>
+        <location filename="../widgets/reference_dialogs.py" line="238"/>
         <source>Country</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="238"/>
+        <location filename="../widgets/reference_dialogs.py" line="239"/>
         <source>Data source</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="239"/>
+        <location filename="../widgets/reference_dialogs.py" line="240"/>
         <source>Expiry</source>
         <translation></translation>
     </message>
@@ -219,7 +219,7 @@
 <context>
     <name>CategoryListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="602"/>
+        <location filename="../widgets/reference_dialogs.py" line="603"/>
         <source>Categories</source>
         <translation></translation>
     </message>
@@ -276,12 +276,12 @@
 <context>
     <name>CategoryTreeModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="573"/>
+        <location filename="../widgets/reference_dialogs.py" line="574"/>
         <source>Name</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="574"/>
+        <location filename="../widgets/reference_dialogs.py" line="575"/>
         <source>Often</source>
         <translation></translation>
     </message>
@@ -372,7 +372,7 @@
 <context>
     <name>CountryListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="684"/>
+        <location filename="../widgets/reference_dialogs.py" line="685"/>
         <source>Countries</source>
         <translation></translation>
     </message>
@@ -380,22 +380,22 @@
 <context>
     <name>CountryListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="653"/>
+        <location filename="../widgets/reference_dialogs.py" line="654"/>
         <source>Country</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="654"/>
+        <location filename="../widgets/reference_dialogs.py" line="655"/>
         <source>Code</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="655"/>
+        <location filename="../widgets/reference_dialogs.py" line="656"/>
         <source>ISO code</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="656"/>
+        <location filename="../widgets/reference_dialogs.py" line="657"/>
         <source>Tax Treaty</source>
         <translation></translation>
     </message>
@@ -502,7 +502,7 @@
 <context>
     <name>DealsReport</name>
     <message>
-        <location filename="../reports/deals.py" line="147"/>
+        <location filename="../reports/deals.py" line="148"/>
         <source>Deals by Account</source>
         <translation type="unfinished"></translation>
     </message>
@@ -560,37 +560,32 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="25"/>
+        <location filename="../reports/deals.py" line="26"/>
         <source>Symbol change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="26"/>
+        <location filename="../reports/deals.py" line="27"/>
         <source>Split</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="27"/>
+        <location filename="../reports/deals.py" line="28"/>
         <source>Spin-off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="28"/>
+        <location filename="../reports/deals.py" line="31"/>
         <source>Merger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="30"/>
-        <source>Stock dividend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../reports/deals.py" line="60"/>
+        <location filename="../reports/deals.py" line="61"/>
         <source> Opened with </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="62"/>
+        <location filename="../reports/deals.py" line="63"/>
         <source> Closed with </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1562,22 +1557,27 @@ Application will be terminated now</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="446"/>
+        <location filename="../db/ledger.py" line="447"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="447"/>
+        <location filename="../db/ledger.py" line="448"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="492"/>
+        <location filename="../db/ledger.py" line="497"/>
+        <source>Exception happened. Ledger is incomplete. Please correct errors listed in log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/ledger.py" line="499"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="493"/>
+        <location filename="../db/ledger.py" line="501"/>
         <source>, new frontier: </source>
         <translation></translation>
     </message>
@@ -1622,12 +1622,12 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="452"/>
+        <location filename="../db/ledger.py" line="453"/>
         <source>Leger is empty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="458"/>
+        <location filename="../db/ledger.py" line="459"/>
         <source>Re-building ledger since: </source>
         <translation></translation>
     </message>
@@ -1655,13 +1655,18 @@ Application will be terminated now</source>
 <context>
     <name>LogViewer</name>
     <message>
-        <location filename="../widgets/log_viewer.py" line="18"/>
+        <location filename="../widgets/log_viewer.py" line="19"/>
         <source>▶ logs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/log_viewer.py" line="20"/>
+        <location filename="../widgets/log_viewer.py" line="21"/>
         <source>▲ logs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/log_viewer.py" line="32"/>
+        <source>Unknown logging level provided: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2059,7 +2064,7 @@ do you want to save it?</source>
 <context>
     <name>PeerListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="562"/>
+        <location filename="../widgets/reference_dialogs.py" line="563"/>
         <source>Peers</source>
         <translation></translation>
     </message>
@@ -2067,17 +2072,17 @@ do you want to save it?</source>
 <context>
     <name>PeerTreeModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="519"/>
+        <location filename="../widgets/reference_dialogs.py" line="520"/>
         <source>Name</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="520"/>
+        <location filename="../widgets/reference_dialogs.py" line="521"/>
         <source>Location</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="521"/>
+        <location filename="../widgets/reference_dialogs.py" line="522"/>
         <source>Docs count</source>
         <translation></translation>
     </message>
@@ -2231,17 +2236,17 @@ do you want to save it?</source>
 <context>
     <name>QuotesListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="693"/>
+        <location filename="../widgets/reference_dialogs.py" line="694"/>
         <source>Date</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="694"/>
+        <location filename="../widgets/reference_dialogs.py" line="695"/>
         <source>Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="695"/>
+        <location filename="../widgets/reference_dialogs.py" line="696"/>
         <source>Quote</source>
         <translation></translation>
     </message>
@@ -3290,7 +3295,7 @@ do you want to save it?</source>
 <context>
     <name>TagListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="613"/>
+        <location filename="../widgets/reference_dialogs.py" line="614"/>
         <source>Tag</source>
         <translation></translation>
     </message>
@@ -3298,7 +3303,7 @@ do you want to save it?</source>
 <context>
     <name>TagsListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="639"/>
+        <location filename="../widgets/reference_dialogs.py" line="640"/>
         <source>Tags</source>
         <translation></translation>
     </message>
