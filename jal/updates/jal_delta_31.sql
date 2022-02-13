@@ -22,6 +22,17 @@ CREATE TABLE deals (
     qty             REAL    NOT NULL
 );
 
+CREATE TRIGGER on_deal_delete
+         AFTER DELETE
+            ON deals
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
+BEGIN
+    UPDATE open_trades
+       SET remaining_qty = remaining_qty + OLD.qty
+     WHERE op_type=OLD.open_op_type AND operation_id=OLD.open_op_id AND account_id=OLD.account_id AND asset_id = OLD.asset_id;
+END;
+
 --------------------------------------------------------------------------------
 -- Simplify deals_ext view
 DROP VIEW deals_ext;

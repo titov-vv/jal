@@ -497,7 +497,8 @@ class Ledger(QObject):
             logging.error(self.tr("Exception happened. Ledger is incomplete. Please correct errors listed in log"))
         else:
             logging.info(self.tr("Ledger is complete. Elapsed time: ") + f"{datetime.now() - start_time}" +
-                        self.tr(", new frontier: ") + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
+                         self.tr(", new frontier: ") +
+                         f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
 
         self.updated.emit()
 

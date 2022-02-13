@@ -1,7 +1,8 @@
 from pytest import approx
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo, prepare_db_ledger
-from tests.helpers import create_stocks, create_actions, create_trades, create_corporate_actions, create_stock_dividends
+from tests.helpers import create_stocks, create_actions, create_trades, create_quotes, \
+    create_corporate_actions, create_stock_dividends
 from constants import TransactionType, BookAccount
 from jal.db.ledger import Ledger
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
@@ -123,6 +124,53 @@ def test_buy_sell_change(prepare_db_fifo):
     # Check that deal quantity remains correct
     assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
     assert readSQL("SELECT qty FROM deals WHERE asset_id=4") == 8.0
+
+
+def test_stock_dividend_change(prepare_db_fifo):
+    # Prepare single stock
+    create_stocks([(4, 'A', 'A SHARE')])
+
+    test_trades = [
+        (1628852820, 1629158400, 4, 2.0, 53.13, 0.34645725),
+        (1628852820, 1629158400, 4, 8.0, 53.13, -0.0152),
+        (1643628654, 1643760000, 4, 5.0, 47.528, 0.35125725),
+        (1644351123, 1644523923, 4, -17.0, 60.0, 0.0)
+    ]
+    create_trades(1, test_trades)
+
+    # Insert a stock dividend between trades
+    stock_dividends = [
+        (1643907900, 1, 4, 2.0, 54.0, 0.0, 'Stock dividend +2 A')
+    ]
+    create_stock_dividends(stock_dividends)
+
+    # insert action between trades and stock dividend to shift frontier
+    create_actions([(1643746000, 1, 1, [(7, 100.0)])])
+
+    # Build ledger
+    ledger = Ledger()
+    ledger.rebuild(from_timestamp=0)
+
+    # Validate initial deal quantity
+    assert readSQL("SELECT COUNT(*) FROM deals WHERE asset_id=4") == 4
+
+    # Modify stock dividend
+    executeSQL("UPDATE dividends SET amount=3.0 WHERE asset_id=4")
+
+    # Re-build ledger from last actual data
+    ledger.rebuild()
+
+    # Check that deal quantity remains correct
+    assert readSQL("SELECT COUNT(*) FROM deals WHERE asset_id=4") == 4
+
+    # Put quotation back and rebuild
+    create_quotes(4, [(1643907900, 54.0)])
+
+    # Re-build ledger from last actual data
+    ledger.rebuild()
+
+    # Check that deal quantity remains correct
+    assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 4
 
 
 def test_fifo(prepare_db_fifo):
