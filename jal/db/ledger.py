@@ -432,6 +432,7 @@ class Ledger(QObject):
             TransactionType.CorporateAction: self.processCorporateAction
         }
 
+        exception_happened = False
         self.amounts.clear()
         self.values.clear()
         if from_timestamp >= 0:
@@ -474,6 +475,9 @@ class Ledger(QObject):
                 operationProcess[self.current['type']]()
                 if self.progress_bar is not None:
                     self.progress_bar.setValue(query.at())
+        except Exception as e:
+            exception_happened = True
+            logging.error(f"{e}")
         finally:
             if fast_and_dirty:
                 _ = executeSQL("PRAGMA synchronous = ON")
@@ -489,8 +493,11 @@ class Ledger(QObject):
                        "SELECT MAX(id) FROM ledger WHERE timestamp >= :frontier "
                        "GROUP BY op_type, operation_id, book_account, account_id)", [(":frontier", frontier)])
         JalSettings().setValue('RebuildDB', 0)
-        logging.info(self.tr("Ledger is complete. Elapsed time: ") + f"{datetime.now() - start_time}" +
-                     self.tr(", new frontier: ") + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
+        if exception_happened:
+            logging.error(self.tr("Exception happened. Ledger is incomplete. Please correct errors listed in log"))
+        else:
+            logging.info(self.tr("Ledger is complete. Elapsed time: ") + f"{datetime.now() - start_time}" +
+                        self.tr(", new frontier: ") + f"{datetime.utcfromtimestamp(self.current['timestamp']).strftime('%d/%m/%Y %H:%M:%S')}")
 
         self.updated.emit()
 
