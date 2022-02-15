@@ -3,11 +3,12 @@ from datetime import datetime
 from math import copysign
 from PySide6.QtCore import Signal, QObject, QDate
 from PySide6.QtWidgets import QDialog, QMessageBox
-from jal.constants import Setup, BookAccount, TransactionType, TransferSubtype, ActionSubtype, DividendSubtype, \
+from jal.constants import Setup, BookAccount, TransactionType, ActionSubtype, DividendSubtype, \
     CorporateAction, PredefinedCategory, PredefinedPeer
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord, db_triggers_disable, db_triggers_enable
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
+from jal.db.operations import Transfer
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
 
 
@@ -309,28 +310,24 @@ class Ledger(QObject):
             self.appendTransaction(BookAccount.Costs, self.current['fee_tax'])
 
     def processTransfer(self):
-        if not self.current['subtype'] in [v for n, v in vars(TransferSubtype).items() if not n.startswith('_')]:
-            raise ValueError(self.tr("Unsupported transfer type.") + f" Operation: {self.current}")
-
-        if self.current['subtype'] == TransferSubtype.Outgoing:
+        if self.current['subtype'] == Transfer.Outgoing:
             credit_taken = self.takeCredit(self.current['amount'])
             self.appendTransaction(BookAccount.Money, -(self.current['amount'] - credit_taken))
             self.appendTransaction(BookAccount.Transfers, self.current['amount'])
-        elif self.current['subtype'] == TransferSubtype.Fee:
+        elif self.current['subtype'] == Transfer.Fee:
             credit_taken = self.takeCredit(self.current['amount'])
             self.current['peer'] = PredefinedPeer.Financial
             self.current['category'] = PredefinedCategory.Fees
             self.appendTransaction(BookAccount.Money, -(self.current['amount'] - credit_taken))
             self.appendTransaction(BookAccount.Costs, self.current['amount'])
             self.appendTransaction(BookAccount.Transfers, self.current['amount'])
-        elif self.current['subtype'] == TransferSubtype.Incoming:
+        elif self.current['subtype'] == Transfer.Incoming:
             credit_returned = self.returnCredit(self.current['amount'])
             if credit_returned < self.current['amount']:
                 self.appendTransaction(BookAccount.Money, (self.current['amount'] - credit_returned))
             self.appendTransaction(BookAccount.Transfers, -self.current['amount'])
         else:   # TODO implement assets transfer
-            logging.error(self.tr("Unexpected data in transfer transaction"))
-            return
+            raise ValueError(self.tr("Unsupported transfer type.") + f" Operation: {self.current}")
 
     def processCorporateAction(self):
         account_id = self.current['account']

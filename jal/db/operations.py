@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QApplication
-from jal.constants import BookAccount, DividendSubtype, TransferSubtype, CustomColor
+from jal.constants import BookAccount, DividendSubtype, CustomColor
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
 from jal.db.db import JalDB
 
@@ -282,11 +282,15 @@ class Trade(LedgerTransaction):
 
 
 class Transfer(LedgerTransaction):
+    Fee = 0
+    Outgoing = -1
+    Incoming = 1
+
     def __init__(self, operation_id=None, display_type=None):
         labels = {
-            TransferSubtype.Outgoing: ('<', CustomColor.DarkBlue),
-            TransferSubtype.Incoming: ('>', CustomColor.DarkBlue),
-            TransferSubtype.Fee: ('=', CustomColor.DarkRed),
+            Transfer.Outgoing: ('<', CustomColor.DarkBlue),
+            Transfer.Incoming: ('>', CustomColor.DarkBlue),
+            Transfer.Fee: ('=', CustomColor.DarkRed),
         }
         super().__init__(operation_id)
         self.table = "transfers"
@@ -311,28 +315,28 @@ class Transfer(LedgerTransaction):
         self._fee = data['fee']
         self._label, self._label_color = labels[display_type]
         self._note = data['note']
-        if self._display_type == TransferSubtype.Outgoing:
+        if self._display_type == Transfer.Outgoing:
             self._reconciled = JalDB().account_reconciliation_timestamp(self._withdrawal_account) >= self._timestamp
-        elif self._display_type == TransferSubtype.Incoming:
+        elif self._display_type == Transfer.Incoming:
             self._reconciled = JalDB().account_reconciliation_timestamp(self._deposit_account) >= self._timestamp
-        elif self._display_type == TransferSubtype.Fee:
+        elif self._display_type == Transfer.Fee:
             self._reconciled = JalDB().account_reconciliation_timestamp(self._fee_account) >= self._timestamp
         else:
             assert True, "Unknown transfer type"
 
 
     def timestamp(self):
-        if self._display_type == TransferSubtype.Incoming:
+        if self._display_type == Transfer.Incoming:
             return self._deposit_timestamp
         else:
             return self._withdrawal_timestamp
 
     def account(self):
-        if self._display_type == TransferSubtype.Fee:
+        if self._display_type == Transfer.Fee:
             return self._fee_account_name
-        elif self._display_type == TransferSubtype.Outgoing:
+        elif self._display_type == Transfer.Outgoing:
             return self._withdrawal_account_name + " -> " + self._deposit_account_name
-        elif self._display_type == TransferSubtype.Incoming:
+        elif self._display_type == Transfer.Incoming:
             return self._deposit_account_name + " <- " + self._withdrawal_account_name
         else:
             assert True, "Unknown transfer type"
@@ -357,32 +361,32 @@ class Transfer(LedgerTransaction):
             return self._note
 
     def value_change(self) -> list:
-        if self._display_type == TransferSubtype.Outgoing:
+        if self._display_type == Transfer.Outgoing:
             return [-self._withdrawal]
-        elif self._display_type == TransferSubtype.Incoming:
+        elif self._display_type == Transfer.Incoming:
             return [self._deposit]
-        elif self._display_type == TransferSubtype.Fee:
+        elif self._display_type == Transfer.Fee:
             return [-self._fee]
         else:
             assert True, "Unknown transfer type"
 
     def value_currency(self) -> str:
-        if self._display_type == TransferSubtype.Outgoing:
+        if self._display_type == Transfer.Outgoing:
             return self._withdrawal_currency
-        elif self._display_type == TransferSubtype.Incoming:
+        elif self._display_type == Transfer.Incoming:
             return self._deposit_currency
-        elif self._display_type == TransferSubtype.Fee:
+        elif self._display_type == Transfer.Fee:
             return self._fee_currency
         else:
             assert True, "Unknown transfer type"
 
     def value_total(self) -> str:
         amount = None
-        if self._display_type == TransferSubtype.Outgoing:
+        if self._display_type == Transfer.Outgoing:
             amount = self._money_total(self._withdrawal_account)
-        elif self._display_type == TransferSubtype.Incoming:
+        elif self._display_type == Transfer.Incoming:
             amount = self._money_total(self._deposit_account)
-        elif self._display_type == TransferSubtype.Fee:
+        elif self._display_type == Transfer.Fee:
             amount = self._money_total(self._fee_account)
         else:
             assert True, "Unknown transfer type"

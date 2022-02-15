@@ -43,12 +43,6 @@ class ActionSubtype:
     SingleSpending = -1
 
 
-class TransferSubtype:   # TRANSFER SUB-TYPES
-    Fee = 0
-    Outgoing = -1
-    Incoming = 1
-
-
 class DividendSubtype:   # Subtype to distinguish dividend, bond interest etc.
     Fee = 0
     Dividend = 1
