@@ -3,7 +3,10 @@ from jal.constants import BookAccount, CustomColor
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
 from jal.db.db import JalDB
 
+
+# ----------------------------------------------------------------------------------------------------------------------
 class LedgerTransaction:
+    NA = 0                  # Transaction types - these are aligned with tabs in main window
     IncomeSpending = 1
     Dividend = 2
     Trade = 3
@@ -102,6 +105,7 @@ class LedgerTransaction:
         return self._reconciled
 
 
+# ----------------------------------------------------------------------------------------------------------------------
 class IncomeSpending(LedgerTransaction):
     def __init__(self, operation_id=None):
         super().__init__(operation_id)
@@ -166,6 +170,7 @@ class IncomeSpending(LedgerTransaction):
             return super().value_total()
 
 
+# ----------------------------------------------------------------------------------------------------------------------
 class Dividend(LedgerTransaction):
     Dividend = 1
     BondInterest = 2
@@ -238,6 +243,7 @@ class Dividend(LedgerTransaction):
             return super().value_total()
 
 
+# ----------------------------------------------------------------------------------------------------------------------
 class Trade(LedgerTransaction):
     def __init__(self, operation_id=None):
         super().__init__(operation_id)
@@ -285,6 +291,7 @@ class Trade(LedgerTransaction):
             return f"{amount:,.2f}\n{qty:,.2f}"
 
 
+# ----------------------------------------------------------------------------------------------------------------------
 class Transfer(LedgerTransaction):
     Fee = 0
     Outgoing = -1
@@ -400,6 +407,7 @@ class Transfer(LedgerTransaction):
             return f"{amount:,.2f}"
 
 
+# ----------------------------------------------------------------------------------------------------------------------
 class CorporateAction(LedgerTransaction):
     Merger = 1
     SpinOff = 2

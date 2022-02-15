@@ -5,12 +5,12 @@ from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QMessageBox
 from jal.ui.ui_operations_widget import Ui_OperationsWidget
 from jal.widgets.mdi import MdiWidget
-from jal.constants import TransactionType
 from jal.db.helpers import load_icon
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
 from jal.db.balances_model import BalancesModel
 from jal.db.operations_model import OperationsModel
+from jal.db.operations import LedgerTransaction
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -65,7 +65,7 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
         self.BalanceDate.setDateTime(current_time)
         self.BalancesCurrencyCombo.setIndex(JalSettings().getValue('BaseCurrency'))
 
-        self.OperationsTabs.setCurrentIndex(TransactionType.NA)
+        self.OperationsTabs.setCurrentIndex(LedgerTransaction.NA)
         self.OperationsTableView.selectRow(0)
         self.DateRange.setCurrentIndex(0)
 
@@ -106,7 +106,7 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
     @Slot()
     def copyOperation(self):
         operation_type = self.OperationsTabs.currentIndex()
-        if operation_type == TransactionType.NA:
+        if operation_type == LedgerTransaction.NA:
             return
         self.checkForUncommittedChanges()
         self.OperationsTabs.widget(operation_type).copyNew()
@@ -124,7 +124,7 @@ class OperationsWidget(MdiWidget, Ui_OperationsWidget):
         self.checkForUncommittedChanges()
 
         if len(self.OperationsTableView.selectionModel().selectedRows()) != 1:
-            self.OperationsTabs.setCurrentIndex(TransactionType.NA)
+            self.OperationsTabs.setCurrentIndex(LedgerTransaction.NA)
         else:
             idx = selected.indexes()
             if idx:

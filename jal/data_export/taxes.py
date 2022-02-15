@@ -2,9 +2,9 @@ import logging
 from datetime import datetime, timezone
 
 from PySide6.QtWidgets import QApplication
-from jal.constants import Setup, TransactionType, PredefinedAsset, PredefinedCategory
+from jal.constants import Setup, PredefinedAsset, PredefinedCategory
 from jal.db.helpers import executeSQL, readSQLrecord, readSQL
-from jal.db.operations import Dividend, CorporateAction
+from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -421,7 +421,7 @@ class TaxesRus:
                            "WHERE t.settlement<:end AND d.account_id=:account_id AND d.open_op_type=:corp_action "
                            "ORDER BY s.name, t.timestamp",
                            [(":end", self.year_end), (":account_id", self.account_id),
-                            (":corp_action", TransactionType.CorporateAction)])
+                            (":corp_action", LedgerTransaction.CorporateAction)])
         group = 1
         basis = 1
         previous_symbol = ""
@@ -477,13 +477,13 @@ class TaxesRus:
                                 "FROM deals "
                                 "WHERE close_op_id=:close_op_id AND close_op_type=:corp_action "
                                 "ORDER BY id",
-                                [(":close_op_id", operation_id), (":corp_action", TransactionType.CorporateAction)])
+                                [(":close_op_id", operation_id), (":corp_action", LedgerTransaction.CorporateAction)])
         while open_query.next():
             open_id, open_type = readSQLrecord(open_query)
 
-            if open_type == TransactionType.Trade:
+            if open_type == LedgerTransaction.Trade:
                 qty = self.output_purchase(actions, open_id, qty, basis, level, group)
-            elif open_type == TransactionType.CorporateAction:
+            elif open_type == LedgerTransaction.CorporateAction:
                 self.proceed_corporate_action(actions, open_id, symbol, qty, basis, level, group)
             else:
                 assert False

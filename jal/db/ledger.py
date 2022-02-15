@@ -3,11 +3,11 @@ from datetime import datetime
 from math import copysign
 from PySide6.QtCore import Signal, QObject, QDate
 from PySide6.QtWidgets import QDialog, QMessageBox
-from jal.constants import Setup, BookAccount, TransactionType, PredefinedCategory, PredefinedPeer
+from jal.constants import Setup, BookAccount, PredefinedCategory, PredefinedPeer
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord, db_triggers_disable, db_triggers_enable
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
-from jal.db.operations import Transfer, Dividend, CorporateAction
+from jal.db.operations import LedgerTransaction, Transfer, Dividend, CorporateAction
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
 
 
@@ -231,7 +231,7 @@ class Ledger(QObject):
             raise ValueError(self.tr("No stock quote for stock dividend.") + f" Operation: {self.current}")
         _ = executeSQL("INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
                        "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
-                       [(":timestamp", self.current['timestamp']), (":type", TransactionType.Dividend),
+                       [(":timestamp", self.current['timestamp']), (":type", LedgerTransaction.Dividend),
                         (":operation_id", self.current['id']), (":account_id", self.current['account']),
                         (":asset_id", asset_id), (":price", quote), (":remaining_qty", qty)])
         self.appendTransaction(BookAccount.Assets, qty, qty*quote)
@@ -282,7 +282,7 @@ class Ledger(QObject):
                                [(":account_id", account_id), (":asset_id", asset_id),
                                 (":open_op_type", opening_trade['op_type']), (":open_op_id", opening_trade['operation_id']),
                                 (":open_timestamp", opening_trade['timestamp']), (":open_price", opening_trade['price']),
-                                (":close_op_type", TransactionType.Trade), (":close_op_id", self.current['id']),
+                                (":close_op_type", LedgerTransaction.Trade), (":close_op_id", self.current['id']),
                                 (":close_timestamp", self.current['timestamp']), (":close_price", price), (":qty", (-type)*next_deal_qty)])
                 processed_qty += next_deal_qty
                 processed_value += (next_deal_qty * opening_trade['price'])
@@ -302,7 +302,7 @@ class Ledger(QObject):
         if processed_qty < qty:  # We have reminder that opens a new position
             _ = executeSQL("INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
                            "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
-                           [(":timestamp", self.current['timestamp']), (":type", TransactionType.Trade), (":operation_id", self.current['id']),
+                           [(":timestamp", self.current['timestamp']), (":type", LedgerTransaction.Trade), (":operation_id", self.current['id']),
                             (":account_id", account_id), (":asset_id", asset_id), (":price", price), (":remaining_qty", qty - processed_qty)])
             self.appendTransaction(BookAccount.Assets, type*(qty - processed_qty), type*(qty - processed_qty) * price)
         if self.current['fee_tax']:
@@ -370,7 +370,7 @@ class Ledger(QObject):
                            [(":account_id", account_id), (":asset_id", asset_id),
                             (":open_op_type", opening_trade['op_type']), (":open_op_id", opening_trade['operation_id']),
                             (":open_timestamp", opening_trade['timestamp']), (":open_price", opening_trade['price']),
-                            (":close_op_type", TransactionType.CorporateAction), (":close_op_id", self.current['id']),
+                            (":close_op_type", LedgerTransaction.CorporateAction), (":close_op_id", self.current['id']),
                             (":close_timestamp", self.current['timestamp']), (":close_price", opening_trade['price']),
                             (":qty", next_deal_qty)])
             processed_qty += next_deal_qty
@@ -401,7 +401,7 @@ class Ledger(QObject):
             _ = executeSQL(
                 "INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
                 "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
-                [(":timestamp", self.current['timestamp']), (":type", TransactionType.CorporateAction),
+                [(":timestamp", self.current['timestamp']), (":type", LedgerTransaction.CorporateAction),
                  (":operation_id", self.current['id']),
                  (":account_id", account_id), (":asset_id", self.current['asset']), (":price", price), (":remaining_qty", self.current['amount'])])
         # Create value for new asset
@@ -409,7 +409,7 @@ class Ledger(QObject):
         new_price = new_value / new_qty
         _ = executeSQL("INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
                        "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
-                       [(":timestamp", self.current['timestamp']), (":type", TransactionType.CorporateAction),
+                       [(":timestamp", self.current['timestamp']), (":type", LedgerTransaction.CorporateAction),
                         (":operation_id", self.current['id']),
                         (":account_id", account_id), (":asset_id", new_asset), (":price", new_price), (":remaining_qty", new_qty)])
         self.appendTransaction(BookAccount.Assets, new_qty, new_value)
@@ -422,11 +422,11 @@ class Ledger(QObject):
     # any - re-build all operations after given timestamp
     def rebuild(self, from_timestamp=-1, fast_and_dirty=False):
         operationProcess = {
-            TransactionType.Action: self.processAction,
-            TransactionType.Dividend: self.processDividend,
-            TransactionType.Trade: self.processTrade,
-            TransactionType.Transfer: self.processTransfer,
-            TransactionType.CorporateAction: self.processCorporateAction
+            LedgerTransaction.IncomeSpending: self.processAction,
+            LedgerTransaction.Dividend: self.processDividend,
+            LedgerTransaction.Trade: self.processTrade,
+            LedgerTransaction.Transfer: self.processTransfer,
+            LedgerTransaction.CorporateAction: self.processCorporateAction
         }
 
         exception_happened = False

@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QLabel, QDateTimeEdit, QDateEdit, QLineEdit
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
-from jal.constants import TransactionType
+from jal.db.operations import LedgerTransaction
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -25,7 +25,7 @@ class TradeWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
         self.name = "Trade"
-        self.operation_type = TransactionType.Trade
+        self.operation_type = LedgerTransaction.Trade
 
         self.date_label = QLabel(self)
         self.settlement_label = QLabel()

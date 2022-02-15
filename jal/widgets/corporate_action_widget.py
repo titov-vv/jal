@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QComboBox
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
-from jal.constants import TransactionType
+from jal.db.operations import LedgerTransaction
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -24,7 +24,7 @@ class CorporateActionWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
         self.name = "Corporate action"
-        self.operation_type = TransactionType.CorporateAction
+        self.operation_type = LedgerTransaction.CorporateAction
         self.combo_model = None
 
         self.date_label = QLabel(self)

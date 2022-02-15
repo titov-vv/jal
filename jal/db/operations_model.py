@@ -2,18 +2,18 @@ from datetime import datetime
 from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QDate
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QStyledItemDelegate, QHeaderView
-from jal.constants import CustomColor, TransactionType
+from jal.constants import CustomColor
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.operations import LedgerTransaction
 
 
 class OperationsModel(QAbstractTableModel):
     _tables = {
-        TransactionType.Action: "actions",
-        TransactionType.Dividend: "dividends",
-        TransactionType.Trade: "trades",
-        TransactionType.Transfer: "transfers",
-        TransactionType.CorporateAction: "corp_actions"
+        LedgerTransaction.IncomeSpending: "actions",
+        LedgerTransaction.Dividend: "dividends",
+        LedgerTransaction.Trade: "trades",
+        LedgerTransaction.Transfer: "transfers",
+        LedgerTransaction.CorporateAction: "corp_actions"
     }
 
     def __init__(self, parent_view):

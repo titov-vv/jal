@@ -29,15 +29,6 @@ class BookAccount:  # PREDEFINED BOOK ACCOUNTS
     Transfers = 6
 
 
-class TransactionType:   # PREDEFINED TRANSACTION TYPES - these are aligned with tabs in main window
-    NA = 0
-    Action = 1
-    Dividend = 2
-    Trade = 3
-    Transfer = 4
-    CorporateAction = 5
-
-
 class PredefindedAccountType:
     Cash = 1
     Bank = 2

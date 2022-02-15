@@ -9,8 +9,8 @@ from PySide6.QtSql import QSqlTableModel
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, PeerSelector
 from jal.widgets.account_select import OptionalCurrencyComboBox
-from jal.constants import TransactionType
 from jal.db.helpers import db_connection, executeSQL, load_icon
+from jal.db.operations import LedgerTransaction
 from jal.widgets.delegates import WidgetMapperDelegateBase, FloatDelegate, CategorySelectorDelegate, TagSelectorDelegate
 
 
@@ -26,7 +26,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
         self.name = "Income/Spending"
-        self.operation_type = TransactionType.Action
+        self.operation_type = LedgerTransaction.IncomeSpending
 
         self.category_delegate = CategorySelectorDelegate()
         self.tag_delegate = TagSelectorDelegate()

@@ -3,8 +3,9 @@ from pytest import approx
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo, prepare_db_ledger
 from tests.helpers import create_stocks, create_actions, create_trades, create_quotes, \
     create_corporate_actions, create_stock_dividends
-from constants import TransactionType, BookAccount
+from constants import BookAccount
 from jal.db.ledger import Ledger
+from jal.db.operations import LedgerTransaction
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
 
 
@@ -330,11 +331,11 @@ def test_fifo(prepare_db_fifo):
     # totals
     assert readSQL("SELECT COUNT(*) FROM deals") == 41
     assert readSQL("SELECT COUNT(*) FROM deals WHERE open_op_type=:trade AND close_op_type=:trade",
-                  [(":trade", TransactionType.Trade)]) == 29
+                  [(":trade", LedgerTransaction.Trade)]) == 29
     assert readSQL("SELECT COUNT(*) FROM deals WHERE open_op_type!=:corp_action OR close_op_type!=:corp_action",
-                  [(":corp_action", TransactionType.CorporateAction)]) == 37
+                  [(":corp_action", LedgerTransaction.CorporateAction)]) == 37
     assert readSQL("SELECT COUNT(*) FROM deals WHERE open_op_type=:corp_action AND close_op_type=:corp_action",
-                  [(":corp_action", TransactionType.CorporateAction)]) == 4
+                  [(":corp_action", LedgerTransaction.CorporateAction)]) == 4
 
     # validate final amounts
     query = executeSQL("SELECT MAX(id) AS mid, asset_id, amount_acc, value_acc FROM ledger "

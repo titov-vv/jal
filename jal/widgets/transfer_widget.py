@@ -7,7 +7,7 @@ from jal.constants import Setup
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
-from jal.constants import TransactionType
+from jal.db.operations import LedgerTransaction
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -26,7 +26,7 @@ class TransferWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         AbstractOperationDetails.__init__(self, parent)
         self.name = "Transfer"
-        self.operation_type = TransactionType.Transfer
+        self.operation_type = LedgerTransaction.Transfer
 
         self.from_date_label = QLabel(self)
         self.from_account_label = QLabel(self)
