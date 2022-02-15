@@ -3,13 +3,17 @@ from datetime import datetime
 from math import copysign
 from PySide6.QtCore import Signal, QObject, QDate
 from PySide6.QtWidgets import QDialog, QMessageBox
-from jal.constants import Setup, BookAccount, TransactionType, ActionSubtype, CorporateAction, \
-    PredefinedCategory, PredefinedPeer
+from jal.constants import Setup, BookAccount, TransactionType, CorporateAction,  PredefinedCategory, PredefinedPeer
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord, db_triggers_disable, db_triggers_enable
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
 from jal.db.operations import Transfer, Dividend
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
+
+
+class ActionSubtype:
+    SingleIncome = 1
+    SingleSpending = -1
 
 
 class RebuildDialog(QDialog, Ui_ReBuildDialog):

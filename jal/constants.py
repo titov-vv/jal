@@ -38,11 +38,6 @@ class TransactionType:   # PREDEFINED TRANSACTION TYPES - these are aligned with
     CorporateAction = 5
 
 
-class ActionSubtype:
-    SingleIncome = 1
-    SingleSpending = -1
-
-
 class CorporateAction:   # CORPORATE ACTIONS FOR ASSETS
     NA = 0
     Merger = 1
