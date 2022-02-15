@@ -66,11 +66,18 @@ class JalDB:
     def get_language_code(self, language_id):
         return readSQL("SELECT language FROM languages WHERE id = :language_id", [(':language_id', language_id)])
 
-    def get_asset_name(self, asset_id):
-        return readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
+    def get_asset_name(self, asset_id, full=False):
+        if full:
+            return readSQL("SELECT full_name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
+        else:
+            return readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
 
     def get_asset_type(self, asset_id):
         return readSQL("SELECT type_id FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
+
+    def get_asset_country(self, asset_id):
+        return readSQL("SELECT c.name FROM assets AS a LEFT JOIN countries AS c ON c.id=a.country_id "
+                       "WHERE a.id=:asset_id", [(":asset_id", asset_id)])
 
     def get_account_name(self, account_id):
         return readSQL("SELECT name FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
@@ -338,6 +345,13 @@ class JalDB:
     def reconcile_account(self, account_id, timestamp):
         _ = executeSQL("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
                        [(":timestamp", timestamp), (":account_id", account_id)])
+
+    def account_reconciliation_timestamp(self, account_id):
+        timestamp = readSQL("SELECT reconciled_on FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
+        if timestamp is None:
+            return 0
+        else:
+            return timestamp
 
     def get_asset_amount(self, timestamp, account_id, asset_id):
         return readSQL("SELECT amount_acc FROM ledger "

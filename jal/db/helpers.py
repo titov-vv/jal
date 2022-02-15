@@ -255,7 +255,7 @@ def update_asset_country(asset_id, country_id):
 
 # -------------------------------------------------------------------------------------------------------------------
 def account_last_date(account_id):
-    last_timestamp = readSQL("SELECT MAX(o.timestamp) FROM all_operations AS o "
+    last_timestamp = readSQL("SELECT MAX(o.timestamp) FROM operation_sequence AS o "
                              "LEFT JOIN accounts AS a ON o.account_id=a.id WHERE a.id=:account_id",
                              [(":account_id", account_id)])
     last_timestamp = 0 if last_timestamp == '' else last_timestamp
