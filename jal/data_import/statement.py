@@ -8,10 +8,11 @@ from datetime import datetime, timezone
 from collections import defaultdict
 
 from PySide6.QtCore import QObject
-from PySide6.QtWidgets import QApplication, QDialog, QMessageBox
-from jal.constants import Setup, MarketDataFeed, PredefinedAsset, DividendSubtype, CorporateAction
+from PySide6.QtWidgets import QDialog, QMessageBox
+from jal.constants import Setup, MarketDataFeed, PredefinedAsset, CorporateAction
 from jal.db.helpers import account_last_date, get_app_path
 from jal.db.db import JalDB
+from jal.db.operations import Dividend
 from jal.widgets.account_select import SelectAccountDialog
 
 
@@ -337,19 +338,19 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             tax = payment['tax'] if 'tax' in payment else 0
             if payment['type'] == FOF.PAYMENT_DIVIDEND:
                 if payment['id'] > 0:  # New dividend
-                    JalDB().add_dividend(DividendSubtype.Dividend, payment['timestamp'], -payment['account'],
+                    JalDB().add_dividend(Dividend.Dividend, payment['timestamp'], -payment['account'],
                                          -payment['asset'], payment['amount'], payment['description'], tax=tax)
                 else:  # Dividend exists, only tax to be updated
                     JalDB().update_dividend_tax(-payment['id'], payment['tax'])
             elif payment['type'] == FOF.PAYMENT_INTEREST:
                 if 'number' not in payment:
                     payment['number'] = ''
-                JalDB().add_dividend(DividendSubtype.BondInterest, payment['timestamp'], -payment['account'],
+                JalDB().add_dividend(Dividend.BondInterest, payment['timestamp'], -payment['account'],
                                      -payment['asset'], payment['amount'], payment['description'], payment['number'],
                                      tax=tax)
             elif payment['type'] == FOF.PAYMENT_STOCK_DIVIDEND:
                 if payment['id'] > 0:  # New dividend
-                    JalDB().add_dividend(DividendSubtype.StockDividend, payment['timestamp'], -payment['account'],
+                    JalDB().add_dividend(Dividend.StockDividend, payment['timestamp'], -payment['account'],
                                          -payment['asset'], payment['amount'], payment['description'],
                                          payment['number'], tax=tax, price=payment['price'])
                 else:  # Dividend exists, only tax to be updated

@@ -8,8 +8,8 @@ import re
 import pandas
 from datetime import datetime, timezone
 from PySide6.QtWidgets import QApplication
-from jal.constants import DividendSubtype
 from jal.db.db import JalDB
+from jal.db.operations import Dividend
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -104,6 +104,6 @@ class Quik:
             bond_interest = float(row[self.Coupon])
             JalDB().add_trade(account_id, asset_id, timestamp, settlement, number, qty, price, fee)
             if bond_interest != 0:
-                JalDB().add_dividend(DividendSubtype.BondInterest, timestamp, account_id, asset_id,
+                JalDB().add_dividend(Dividend.BondInterest, timestamp, account_id, asset_id,
                                      bond_interest, "НКД", number)
         return True

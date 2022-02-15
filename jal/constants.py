@@ -43,13 +43,6 @@ class ActionSubtype:
     SingleSpending = -1
 
 
-class DividendSubtype:   # Subtype to distinguish dividend, bond interest etc.
-    Fee = 0
-    Dividend = 1
-    BondInterest = 2
-    StockDividend = 3
-
-
 class CorporateAction:   # CORPORATE ACTIONS FOR ASSETS
     NA = 0
     Merger = 1

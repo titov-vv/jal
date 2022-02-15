@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QApplication
-from jal.constants import BookAccount, DividendSubtype, CustomColor
+from jal.constants import BookAccount, CustomColor
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
 from jal.db.db import JalDB
 
@@ -167,11 +167,15 @@ class IncomeSpending(LedgerTransaction):
 
 
 class Dividend(LedgerTransaction):
+    Dividend = 1
+    BondInterest = 2
+    StockDividend = 3
+
     def __init__(self, operation_id=None):
         labels = {
-            DividendSubtype.Dividend: ('Δ', CustomColor.DarkGreen),
-            DividendSubtype.BondInterest: ('%', CustomColor.DarkGreen),
-            DividendSubtype.StockDividend: ('Δ\n+', CustomColor.DarkGreen),
+            Dividend.Dividend: ('Δ', CustomColor.DarkGreen),
+            Dividend.BondInterest: ('%', CustomColor.DarkGreen),
+            Dividend.StockDividend: ('Δ\n+', CustomColor.DarkGreen),
         }
         super().__init__(operation_id)
         self._table = "dividends"
@@ -210,7 +214,7 @@ class Dividend(LedgerTransaction):
             return [self._amount, None]
 
     def value_currency(self) -> str:
-        if self._subtype == DividendSubtype.StockDividend:
+        if self._subtype == Dividend.StockDividend:
             if self._tax:
                 return f" {self._asset_symbol}\n {self._account_currency}"
             else:
@@ -220,7 +224,7 @@ class Dividend(LedgerTransaction):
 
     def value_total(self) -> str:
         amount = self._money_total(self._account)
-        if self._subtype == DividendSubtype.StockDividend:
+        if self._subtype == Dividend.StockDividend:
             qty = self._asset_total(self._account, self._asset)
             if qty is None:
                 return super().value_total()

@@ -1,5 +1,6 @@
 from jal.db.helpers import executeSQL
-from constants import PredefinedAsset, DividendSubtype
+from jal.db.operations import Dividend
+from constants import PredefinedAsset
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -61,7 +62,7 @@ def create_dividends(dividends):
     for dividend in dividends:
         assert executeSQL("INSERT INTO dividends (timestamp, type, account_id, asset_id, amount, tax, note) "
                           "VALUES (:timestamp, :div_type, :account_id, :asset_id, :amount, :tax, :note)",
-                          [(":timestamp", dividend[0]), (":div_type", DividendSubtype.Dividend),
+                          [(":timestamp", dividend[0]), (":div_type", Dividend.Dividend),
                            (":account_id", dividend[1]), (":asset_id", dividend[2]), (":amount", dividend[3]),
                            (":tax", dividend[4]), (":note", dividend[5])], commit=True) is not None
 
@@ -73,7 +74,7 @@ def create_coupons(coupons):
     for coupon in coupons:
         assert executeSQL("INSERT INTO dividends (timestamp, type, account_id, asset_id, amount, tax, note, number) "
                           "VALUES (:timestamp, :div_type, :account_id, :asset_id, :amount, :tax, :note, :number)",
-                          [(":timestamp", coupon[0]), (":div_type", DividendSubtype.BondInterest),
+                          [(":timestamp", coupon[0]), (":div_type", Dividend.BondInterest),
                            (":account_id", coupon[1]), (":asset_id", coupon[2]), (":amount", coupon[3]),
                            (":tax", coupon[4]), (":note", coupon[5]), (":number", coupon[6])], commit=True) is not None
 
@@ -86,7 +87,7 @@ def create_stock_dividends(dividends):
         create_quotes(dividend[2], [(dividend[0], dividend[4])])
         assert executeSQL("INSERT INTO dividends (timestamp, type, account_id, asset_id, amount, tax, note) "
                           "VALUES (:timestamp, :div_type, :account_id, :asset_id, :amount, :tax, :note)",
-                          [(":timestamp", dividend[0]), (":div_type", DividendSubtype.StockDividend),
+                          [(":timestamp", dividend[0]), (":div_type", Dividend.StockDividend),
                            (":account_id", dividend[1]), (":asset_id", dividend[2]), (":amount", dividend[3]),
                            (":tax", dividend[5]), (":note", dividend[6])], commit=True) is not None
 

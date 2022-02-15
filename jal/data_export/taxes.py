@@ -2,8 +2,9 @@ import logging
 from datetime import datetime, timezone
 
 from PySide6.QtWidgets import QApplication
-from jal.constants import Setup, TransactionType, CorporateAction, PredefinedAsset, PredefinedCategory, DividendSubtype
+from jal.constants import Setup, TransactionType, CorporateAction, PredefinedAsset, PredefinedCategory
 from jal.db.helpers import executeSQL, readSQLrecord, readSQL
+from jal.db.operations import Dividend
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -113,12 +114,12 @@ class TaxesRus:
                            " AND d.amount>0 AND (d.type=:type_dividend OR d.type=:type_stock_dividend) "
                            "ORDER BY d.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
-                            (":type_dividend", DividendSubtype.Dividend),
-                            (":type_stock_dividend", DividendSubtype.StockDividend)])
+                            (":type_dividend", Dividend.Dividend),
+                            (":type_stock_dividend", Dividend.StockDividend)])
         while query.next():
             dividend = readSQLrecord(query, named=True)
             dividend["note"] = ''
-            if dividend["type"] == DividendSubtype.StockDividend:
+            if dividend["type"] == Dividend.StockDividend:
                 if not dividend["price"]:
                     logging.error(self.tr("No price data for stock dividend: ") + f"{dividend}")
                     continue
@@ -286,7 +287,7 @@ class TaxesRus:
                            "WHERE i.timestamp>=:begin AND i.timestamp<:end AND i.account_id=:account_id "
                            "AND i.type = :type_interest AND t.id IS NULL",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
-                            (":type_interest", DividendSubtype.BondInterest)])
+                            (":type_interest", Dividend.BondInterest)])
         while query.next():
             interest = readSQLrecord(query, named=True)
             interest['type'] = "Купон"
@@ -580,7 +581,7 @@ class TaxesRus:
                            "LEFT JOIN t_last_dates AS ld ON i.timestamp=ld.ref_id "
                            "LEFT JOIN quotes AS r ON ld.timestamp=r.timestamp AND a.currency_id=r.asset_id "
                            "WHERE i.account_id=:account_id AND i.type=:interest AND i.number=:trade_number",
-                           [(":account_id", self.account_id), (":interest", DividendSubtype.BondInterest),
+                           [(":account_id", self.account_id), (":interest", Dividend.BondInterest),
                             (":trade_number", trade_number)], named=True)
         if interest is None:
             return

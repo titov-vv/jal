@@ -4,10 +4,11 @@ from datetime import datetime
 from itertools import groupby
 
 from PySide6.QtWidgets import QApplication
-from jal.constants import PredefinedCategory, DividendSubtype
+from jal.constants import PredefinedCategory
 from jal.widgets.helpers import ManipulateDate
 from jal.db.db import JalDB
 from jal.db.helpers import executeSQL, readSQLrecord
+from jal.db.operations import Dividend
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xml import StatementXML
 
@@ -851,7 +852,7 @@ class StatementIBKR(StatementXML):
                 "SELECT -id AS id, -account_id AS account, timestamp, number, "
                 "-asset_id AS asset, amount, tax, note as description FROM dividends "
                 "WHERE type=:div AND account_id=:account_id AND asset_id=:asset_id",
-                [(":div", DividendSubtype.Dividend), (":account_id", db_account), (":asset_id", db_asset)],
+                [(":div", Dividend.Dividend), (":account_id", db_account), (":asset_id", db_asset)],
                 forward_only=True)
             while query.next():
                 db_dividend = readSQLrecord(query, named=True)

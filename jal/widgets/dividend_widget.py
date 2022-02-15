@@ -6,8 +6,9 @@ from PySide6.QtWidgets import QLabel, QDateTimeEdit, QDateEdit, QLineEdit, QComb
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
-from jal.constants import TransactionType, DividendSubtype
+from jal.constants import TransactionType
 from jal.db.db import JalDB
+from jal.db.operations import Dividend
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -140,12 +141,12 @@ class DividendWidget(AbstractOperationDetails):
 
     @Slot()
     def typeChanged(self, dividend_type_id):
-        self.price_label.setVisible(dividend_type_id == DividendSubtype.StockDividend)
-        self.price_edit.setVisible(dividend_type_id == DividendSubtype.StockDividend)
+        self.price_label.setVisible(dividend_type_id == Dividend.StockDividend)
+        self.price_edit.setVisible(dividend_type_id == Dividend.StockDividend)
         self.refreshAssetPrice()
 
     def refreshAssetPrice(self):
-        if self.type.currentIndex() == DividendSubtype.StockDividend:
+        if self.type.currentIndex() == Dividend.StockDividend:
             price = JalDB().get_quote(self.asset_widget.selected_id,
                                       self.timestamp_editor.dateTime().toSecsSinceEpoch())
             if price is not None:

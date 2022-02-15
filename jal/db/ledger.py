@@ -3,12 +3,12 @@ from datetime import datetime
 from math import copysign
 from PySide6.QtCore import Signal, QObject, QDate
 from PySide6.QtWidgets import QDialog, QMessageBox
-from jal.constants import Setup, BookAccount, TransactionType, ActionSubtype, DividendSubtype, \
-    CorporateAction, PredefinedCategory, PredefinedPeer
+from jal.constants import Setup, BookAccount, TransactionType, ActionSubtype, CorporateAction, \
+    PredefinedCategory, PredefinedPeer
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord, db_triggers_disable, db_triggers_enable
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
-from jal.db.operations import Transfer
+from jal.db.operations import Transfer, Dividend
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
 
 
@@ -184,20 +184,16 @@ class Ledger(QObject):
             self.processActionDetails()
 
     def processDividend(self):
-        if not self.current['subtype'] in [v for n, v in vars(DividendSubtype).items() if not n.startswith('_')]:
-            raise ValueError(self.tr("Unsupported dividend type.") + f" Operation: {self.current}")
-
-        if self.current['subtype'] == DividendSubtype.StockDividend:
+        if self.current['subtype'] == Dividend.StockDividend:
             self.processStockDividend()
             return
 
-        if self.current['subtype'] == DividendSubtype.Dividend:
+        if self.current['subtype'] == Dividend.Dividend:
             self.current['category'] = PredefinedCategory.Dividends
-        elif self.current['subtype'] == DividendSubtype.BondInterest:
+        elif self.current['subtype'] == Dividend.BondInterest:
             self.current['category'] = PredefinedCategory.Interest
         else:
-            logging.error(self.tr("Can't process dividend with N/A type"))
-            return
+            raise ValueError(self.tr("Unsupported dividend type.") + f" Operation: {self.current}")
         if self.current['peer'] == '':
             logging.error(self.tr("Can't process dividend as bank isn't set for investment account"))
             return
