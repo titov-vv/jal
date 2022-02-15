@@ -38,14 +38,6 @@ class TransactionType:   # PREDEFINED TRANSACTION TYPES - these are aligned with
     CorporateAction = 5
 
 
-class CorporateAction:   # CORPORATE ACTIONS FOR ASSETS
-    NA = 0
-    Merger = 1
-    SpinOff = 2
-    SymbolChange = 3
-    Split = 4
-
-
 class PredefindedAccountType:
     Cash = 1
     Bank = 2

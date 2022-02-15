@@ -2,7 +2,7 @@ from PySide6.QtCore import Qt, Slot, QObject
 from PySide6.QtSql import QSqlTableModel
 from jal.ui.reports.ui_deals_report import Ui_DealsReportWidget
 from jal.db.helpers import db_connection, executeSQL
-from jal.constants import CorporateAction
+from jal.db.operations import CorporateAction
 from jal.widgets.delegates import TimestampDelegate, FloatDelegate
 from jal.widgets.mdi import MdiWidget
 

@@ -2,9 +2,9 @@ import logging
 from datetime import datetime, timezone
 
 from PySide6.QtWidgets import QApplication
-from jal.constants import Setup, TransactionType, CorporateAction, PredefinedAsset, PredefinedCategory
+from jal.constants import Setup, TransactionType, PredefinedAsset, PredefinedCategory
 from jal.db.helpers import executeSQL, readSQLrecord, readSQL
-from jal.db.operations import Dividend
+from jal.db.operations import Dividend, CorporateAction
 
 
 # -----------------------------------------------------------------------------------------------------------------------

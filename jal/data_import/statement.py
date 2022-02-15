@@ -9,10 +9,10 @@ from collections import defaultdict
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QDialog, QMessageBox
-from jal.constants import Setup, MarketDataFeed, PredefinedAsset, CorporateAction
+from jal.constants import Setup, MarketDataFeed, PredefinedAsset
 from jal.db.helpers import account_last_date, get_app_path
 from jal.db.db import JalDB
-from jal.db.operations import Dividend
+from jal.db.operations import Dividend, CorporateAction
 from jal.widgets.account_select import SelectAccountDialog
 
 
