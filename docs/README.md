@@ -10,6 +10,8 @@ It was designed to keep records of personal incomes/spendings and investments wi
 ### Support, Feedback
 If you want to ask a question, report a bug, provide help or support an author - you may use email [jal@gmx.ru](mailto:jal@gmx.ru?subject=%5BJAL%5D%20Help) or [Telegram](https://t.me/jal_support) ([Issues](https://github.com/titov-vv/jal/issues) on GitHub are always welcome also).
 
+###[FAQ](https://github.com/titov-vv/jal/blob/master/docs/FAQ.md)
+
 ### Main features
 - Multiple accounts with different currencies (base currency is russian rouble but might be changed in future versions)
 - 5 types of transactions: 
