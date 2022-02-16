@@ -45,7 +45,7 @@ Database will be initialized automatically with minimal required set of data and
 <sup>*</sup> - entry point location is platform dependable. Eg. on Linux it might be in `~/.local/run`, on Windows - `Scripts` directory of your python installation.
 
 ### Upgrades
-If you upgrade to newer version from Git repository after 9 October 2021 you need to upgrade PySide (Qt) from version 5 to version 6.2 or above.
+If you installed *jal* via *pip* then you may upgrade it to newer version with help of command `pip install jal -U`
 
 
 ### Screenshots
