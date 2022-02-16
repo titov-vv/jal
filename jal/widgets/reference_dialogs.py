@@ -98,7 +98,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         assert self.removeRow(row)
 
     def locateItem(self, item_id, use_filter=''):
-        raise NotImplementedError("locateItem() method is not defined in subclass of AbstractReferenceListModel")
+        raise NotImplementedError(f"locateItem() method is not defined  in {type(self).__name__} class")
 
     def updateItemType(self, index, new_type):
         id = self.getId(index)

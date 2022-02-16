@@ -4,8 +4,12 @@ PRAGMA foreign_keys = 0;
 --------------------------------------------------------------------------------
 CREATE INDEX details_by_pid ON action_details (pid);
 --------------------------------------------------------------------------------
+-- Data cleanup
+UPDATE action_details SET amount_alt=0 WHERE amount_alt='';
+--------------------------------------------------------------------------------
 -- Simplify view and handle logic in code
 DROP VIEW IF EXISTS all_operations;
+DROP VIEW IF EXISTS all_transactions;
 DROP VIEW IF EXISTS operation_sequence;
 CREATE VIEW operation_sequence AS
 SELECT m.op_type, m.id, m.timestamp, m.account_id, subtype
