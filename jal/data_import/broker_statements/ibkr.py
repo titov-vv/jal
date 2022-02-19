@@ -573,7 +573,8 @@ class StatementIBKR(StatementXML):
             r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +MERGED\(\w+\) +WITH +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
             r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +CASH and STOCK MERGER +\(\w+\) +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +AND +(?P<currency>\w+) +(\d+(\.\d+)?) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
             r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +CASH and STOCK MERGER +\(\w+\) +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+), +(?P<isin_new2>\w+) +(?P<X2>\d+) +FOR +(?P<Y2>\d+) +AND +(?P<currency>\w+) +(\d+(\.\d+)?) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
-            r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +TENDERED TO +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), +(?P<name>.*), +(?P<id>.*)\)$"
+            r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +TENDERED TO +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), +(?P<name>.*), +(?P<id>.*)\)$",
+            r"^(?P<symbol_old>\w+)\.(?P<tender_suff>\w+)\((?P<isin_old>\w+)\) +MERGED\(Voluntary Offer Allocation\) +FOR (?P<currency>\w+) (?P<price>\d+\.\d+) PER SHARE +\((?P<symbol>\w+)\.(?P<tender_suff_dup>\w+), (?P<name>.*) - TENDER ODD LOT, (?P<isin_old_dup>\w+)\)$",
             ]
 
         parts = None
@@ -582,13 +583,40 @@ class StatementIBKR(StatementXML):
             parts = re.match(pattern, action['description'], re.IGNORECASE)
             if parts:
                 break
+
         if parts is None:
             raise Statement_ImportError(self.tr("Can't parse Merger description ") + f"'{action}'")
         merger_a = parts.groupdict()
+
         if len(merger_a) != MergerPatterns[pattern_id].count("(?P<"):  # check expected number of matches
             raise Statement_ImportError(self.tr("Merger description miss some data ") + f"'{action}'")
+
         description_b = action['description'][:parts.span('symbol')[0]] + merger_a['symbol_old']
         asset_b = self.locate_asset(merger_a['symbol_old'], merger_a['isin_old'])
+
+        if pattern_id == 4:
+            # create sell trade equivalent to offer allocation
+            trade = {
+                'type': 'stock',
+                'asset': action['asset'],
+                'account': action['account'],
+                'timestamp': action['timestamp'],
+                'settlement': action['timestamp'],
+                'price': action['proceeds'] / (-action['quantity']),
+                'quantity': action['quantity'],
+                'proceeds': action['proceeds'],
+                'multiplier': 1,
+                'fee': 0,
+                'number': action['number'],
+                'exchange': 'CORPACT',
+                'notes': 'Voluntary Offer Allocation'
+            }
+
+            self.load_trades([trade])
+            self._data[FOF.TRADES] = sorted(self._data[FOF.TRADES], key=lambda x: x['timestamp'])
+
+            return 1
+
         paired_record = self.find_corp_action_pair(asset_b, description_b, action, parts_b)
         if (pattern_id == 1 or pattern_id == 2) and (not paired_record[0]['jal_processed']):
             self.add_merger_payment(action['timestamp'], action['account'], paired_record[0]['proceeds'],
@@ -606,7 +634,9 @@ class StatementIBKR(StatementXML):
             action['quantity'] = [-paired_record[0]['quantity'], action['quantity']]
         self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
         self._data[FOF.CORP_ACTIONS].append(action)
+
         paired_record[0]['jal_processed'] = True
+
         return 2
 
     def add_merger_payment(self, timestamp, account_id, amount, currency, description):
