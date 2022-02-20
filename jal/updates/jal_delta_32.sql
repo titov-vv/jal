@@ -2,6 +2,10 @@ BEGIN TRANSACTION;
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 0;
 --------------------------------------------------------------------------------
+-- Add extra type to split ETFs and Funds
+UPDATE asset_types SET name='ETFs' WHERE id=4;
+INSERT INTO asset_types (id, name) VALUES (8, 'Funds');
+--------------------------------------------------------------------------------
 CREATE INDEX details_by_pid ON action_details (pid);
 --------------------------------------------------------------------------------
 -- Data cleanup

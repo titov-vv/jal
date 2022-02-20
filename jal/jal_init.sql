@@ -879,10 +879,11 @@ INSERT INTO books (id, name) VALUES (6, 'Transfers');
 INSERT INTO asset_types (id, name) VALUES (1, 'Money');
 INSERT INTO asset_types (id, name) VALUES (2, 'Shares');
 INSERT INTO asset_types (id, name) VALUES (3, 'Bonds');
-INSERT INTO asset_types (id, name) VALUES (4, 'Funds');
+INSERT INTO asset_types (id, name) VALUES (4, 'ETFs');
 INSERT INTO asset_types (id, name) VALUES (5, 'Commodities');
 INSERT INTO asset_types (id, name) VALUES (6, 'Derivatives');
 INSERT INTO asset_types (id, name) VALUES (7, 'Forex');
+INSERT INTO asset_types (id, name) VALUES (8, 'Funds');
 
 -- Initialize some account types
 INSERT INTO account_types (id, name) VALUES (1, 'Cash');

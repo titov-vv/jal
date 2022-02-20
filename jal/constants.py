@@ -51,7 +51,7 @@ class PredefinedCategory:
     Profit = 9
 
 
-class PredefinedAsset:
+class PredefinedAsset:   # Aligned with 'asset_types' table
     Money = 1
     Stock = 2
     Bond = 3
@@ -59,6 +59,7 @@ class PredefinedAsset:
     Commodity = 5
     Derivative = 6
     Forex = 7
+    Fund = 8
 
 
 class PredefinedPeer:
