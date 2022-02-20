@@ -394,7 +394,7 @@ class QuoteDownloader(QObject):
                 if data:
                     if asset['full_name'] != data['name']:
                         logging.info(self.tr("New full name found for:  ")
-                                     + f"{self.get_asset_name(asset['id'])}: {asset['full_name']} -> {data['name']}")
+                                     + f"{JalDB().get_asset_name(asset['id'])}: {asset['full_name']} -> {data['name']}")
                     isin = data['isin'] if not asset['isin'] and 'isin' in data and data['isin'] else ''
                     expiry = data['expiry'] if 'expiry' in data and data['expiry'] != asset['expiry'] else 0
                     JalDB().update_asset_data(asset_id=asset['id'], new_isin=isin, expiry=expiry)
