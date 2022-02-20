@@ -9,6 +9,7 @@ from jal.db.helpers import db_connection, readSQL
 from jal.widgets.reference_dialogs import AccountListDialog
 from jal.ui.ui_select_account_dlg import Ui_SelectAccountDlg
 
+
 ########################################################################################################################
 #  UI Button to choose accounts
 ########################################################################################################################

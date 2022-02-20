@@ -32,6 +32,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.search_field = None
         self.search_text = ""
         self.tree_view = False
+        self.toolbar = None
 
         self.AddChildBtn.setVisible(False)
         self.GroupLbl.setVisible(False)
