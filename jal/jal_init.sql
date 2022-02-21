@@ -21,28 +21,15 @@ CREATE TABLE account_types (
 DROP TABLE IF EXISTS accounts;
 
 CREATE TABLE accounts (
-    id              INTEGER   PRIMARY KEY
-                              UNIQUE
-                              NOT NULL,
-    type_id         INTEGER   REFERENCES account_types (id) ON DELETE RESTRICT
-                                                            ON UPDATE CASCADE
-                              NOT NULL,
-    name            TEXT (64) NOT NULL
-                              UNIQUE,
-    currency_id     INTEGER   REFERENCES assets (id) ON DELETE RESTRICT
-                                                      ON UPDATE CASCADE
-                              NOT NULL,
-    active          INTEGER   DEFAULT (1)
-                              NOT NULL ON CONFLICT REPLACE,
+    id              INTEGER   PRIMARY KEY UNIQUE NOT NULL,
+    type_id         INTEGER   REFERENCES account_types (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
+    name            TEXT (64) NOT NULL UNIQUE,
+    currency_id     INTEGER   REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
+    active          INTEGER   DEFAULT (1) NOT NULL ON CONFLICT REPLACE,
     number          TEXT (32),
-    reconciled_on   INTEGER   DEFAULT (0)
-                              NOT NULL ON CONFLICT REPLACE,
-    organization_id INTEGER   REFERENCES agents (id) ON DELETE SET NULL
-                                                     ON UPDATE CASCADE,
-    country_id      INTEGER   REFERENCES countries (id) ON DELETE CASCADE
-                                                        ON UPDATE CASCADE
-                              DEFAULT (0)
-                              NOT NULL
+    reconciled_on   INTEGER   DEFAULT (0) NOT NULL ON CONFLICT REPLACE,
+    organization_id INTEGER   REFERENCES agents (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    country_id      INTEGER   REFERENCES countries (id) ON DELETE CASCADE ON UPDATE CASCADE DEFAULT (0) NOT NULL
 );
 
 
@@ -90,58 +77,49 @@ CREATE TABLE actions (
 
 -- Table: asset_types
 DROP TABLE IF EXISTS asset_types;
-
 CREATE TABLE asset_types (
-    id   INTEGER   PRIMARY KEY
-                   UNIQUE
-                   NOT NULL,
+    id   INTEGER   PRIMARY KEY UNIQUE NOT NULL,
     name TEXT (32) NOT NULL
 );
 
+-- Types of extra data for assets
+DROP TABLE IF EXISTS asset_datatypes;
+CREATE TABLE asset_datatypes (
+    id       INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    datatype TEXT    NOT NULL UNIQUE
+);
 
 -- Table: assets
 DROP TABLE IF EXISTS assets;
 
 CREATE TABLE assets (
-    id         INTEGER    PRIMARY KEY
-                          UNIQUE
-                          NOT NULL,
-    name       TEXT (32)  NOT NULL,
-    type_id    INTEGER    REFERENCES asset_types (id) ON DELETE RESTRICT
-                                                      ON UPDATE CASCADE
-                          NOT NULL,
+    id         INTEGER    PRIMARY KEY UNIQUE NOT NULL,
+    type_id    INTEGER    REFERENCES asset_types (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
     full_name  TEXT (128) NOT NULL,
-    isin       TEXT (12)  DEFAULT ('')
-                          NOT NULL,
-    country_id INTEGER    REFERENCES countries (id) ON DELETE CASCADE
-                                                    ON UPDATE CASCADE
-                          NOT NULL
-                          DEFAULT (0),
-    src_id     INTEGER    REFERENCES data_sources (id) ON DELETE SET NULL
-                                                       ON UPDATE CASCADE
-                          NOT NULL
-                          DEFAULT ( -1),
-    expiry     INTEGER    NOT NULL
-                          DEFAULT (0)
+    isin       TEXT (12)  DEFAULT ('') NOT NULL,
+    country_id INTEGER    REFERENCES countries (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL DEFAULT (0),
+    base_asset INTEGER    REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-
-CREATE UNIQUE INDEX asset_name_isin_idx ON assets (
-    name ASC,
-    isin ASC,
-    expiry ASC
+-- Table to keep asset symbols
+DROP TABLE IF EXISTS asset_tickers;
+CREATE TABLE asset_tickers (
+    id           INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    asset_id     INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    symbol       TEXT    NOT NULL,
+    currency_id  INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    description  TEXT    NOT NULL,
+    quote_source INTEGER REFERENCES data_sources (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    active       INTEGER NOT NULL DEFAULT (1)
 );
 
--- Table: asset_reg_id
-DROP TABLE IF EXISTS asset_reg_id;
-
-CREATE TABLE asset_reg_id (
-    asset_id INTEGER      PRIMARY KEY
-                          UNIQUE
-                          NOT NULL
-                          REFERENCES assets (id) ON DELETE CASCADE
-                                                 ON UPDATE CASCADE,
-    reg_code VARCHAR (20) NOT NULL
+-- Table to keep extra asset data
+DROP TABLE IF EXISTS asset_data;
+CREATE TABLE asset_data (
+    id       INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    asset_id INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    datatype INTEGER NOT NULL REFERENCES asset_datatypes (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    value    TEXT    NOT NULL
 );
 
 -- Table: agents
@@ -597,10 +575,10 @@ WITH RECURSIVE tree (
 -- View: currencies
 DROP VIEW IF EXISTS currencies;
 CREATE VIEW currencies AS
-    SELECT id,
-           name
-      FROM assets
-     WHERE type_id = 1;
+SELECT a.id, s.symbol
+FROM assets AS a
+LEFT JOIN asset_tickers AS s ON s.asset_id = a.id AND  s.active = 1
+WHERE a.type_id = 1;
 
 
 -- View: frontier
@@ -614,7 +592,7 @@ CREATE VIEW deals_ext AS
     SELECT d.account_id,
            ac.name AS account,
            d.asset_id,
-           at.name AS asset,
+           at.symbol AS asset,
            open_timestamp,
            close_timestamp,
            open_price,
@@ -635,7 +613,7 @@ CREATE VIEW deals_ext AS
            LEFT JOIN corp_actions AS cca ON cca.id=d.close_op_id AND cca.op_type=d.close_op_type
           -- "Decode" account and asset
            LEFT JOIN accounts AS ac ON d.account_id = ac.id
-           LEFT JOIN assets AS at ON d.asset_id = at.id
+           LEFT JOIN asset_tickers AS at ON d.asset_id = at.asset_id AND ac.currency_id=at.currency_id
      -- drop cases where deal was opened and closed with corporate action
      WHERE NOT (d.open_op_type = 5 AND d.close_op_type = 5)
      ORDER BY close_timestamp, open_timestamp;
@@ -852,7 +830,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 31);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 32);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
@@ -884,6 +862,10 @@ INSERT INTO asset_types (id, name) VALUES (5, 'Commodities');
 INSERT INTO asset_types (id, name) VALUES (6, 'Derivatives');
 INSERT INTO asset_types (id, name) VALUES (7, 'Forex');
 INSERT INTO asset_types (id, name) VALUES (8, 'Funds');
+
+-- Initialize asset data types
+INSERT INTO asset_datatypes (id, datatype) VALUES (1, 'reg.code');
+INSERT INTO asset_datatypes (id, datatype) VALUES (2, 'expiry');
 
 -- Initialize some account types
 INSERT INTO account_types (id, name) VALUES (1, 'Cash');
