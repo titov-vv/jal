@@ -18,7 +18,8 @@ class OpenBroker_AssetType:
         '': -1,
         'Денежные средства': FOF.ASSET_MONEY,
         'Акции': FOF.ASSET_STOCK,
-        'Облигации': FOF.ASSET_BOND
+        'Облигации': FOF.ASSET_BOND,
+        'ADR': FOF.ASSET_ADR
     }
 
     def __init__(self, asset_type):
