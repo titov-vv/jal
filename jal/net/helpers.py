@@ -1,14 +1,19 @@
 import requests
 import logging
 import platform
+from time import sleep
 from PySide6.QtWidgets import QApplication
 from jal import __version__
 
 
 # ===================================================================================================================
 # Function returns custom User Agent for web requests
-def make_user_agent() -> str:
-    return f"JAL/{__version__} ({platform.system()} {platform.release()})"
+def make_user_agent(url='') -> str:
+    if "www.cbr.ru" in url:
+        sleep(5)    # Workaround for DDoS-GUARD activation on www.cbr.ru
+        return "curl/7.77.0"
+    else:
+        return f"JAL/{__version__} ({platform.system()} {platform.release()})"
 
 
 # ===================================================================================================================
@@ -26,7 +31,7 @@ def isEnglish(text):
 # Retrieve URL from web with given method and params
 def request_url(method, url, params=None, json_params=None):
     session = requests.Session()
-    session.headers['User-Agent'] = make_user_agent()
+    session.headers['User-Agent'] = make_user_agent(url=url)
     if method == "GET":
         response = session.get(url)
     elif method == "POST":
