@@ -10,7 +10,7 @@ from jal import __version__
 # Function returns custom User Agent for web requests
 def make_user_agent(url='') -> str:
     if "www.cbr.ru" in url:
-        sleep(5)    # Workaround for DDoS-GUARD activation on www.cbr.ru
+        sleep(1)    # Workaround for DDoS-GUARD activation on www.cbr.ru
         return "curl/7.77.0"
     else:
         return f"JAL/{__version__} ({platform.system()} {platform.release()})"
