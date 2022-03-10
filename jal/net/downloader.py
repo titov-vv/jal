@@ -133,7 +133,11 @@ class QuoteDownloader(QObject):
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%d/%m/%Y')
         # add 1 day to end_timestamp as CBR sets rate are a day ahead
         date2 = (datetime.utcfromtimestamp(end_timestamp) + timedelta(days=1)).strftime('%d/%m/%Y')
-        code = str(self.CBR_codes.loc[self.CBR_codes["ISO_name"] == currency_code, "CBR_code"].values[0]).strip()
+        try:
+            code = str(self.CBR_codes.loc[self.CBR_codes["ISO_name"] == currency_code, "CBR_code"].values[0]).strip()
+        except IndexError:
+            logging.error(self.tr("Failed to get CBR data for: " + f"{currency_code}"))
+            return None
         url = f"http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1={date1}&date_req2={date2}&VAL_NM_RQ={code}"
         xml_root = xml_tree.fromstring(get_web_data(url))
         rows = []
@@ -380,3 +384,21 @@ class QuoteDownloader(QObject):
         close = data.set_index("Date")
         close.sort_index(inplace=True)
         return close
+
+    def updataData(self):
+        query = executeSQL("SELECT * FROM assets WHERE src_id!=:NA",
+                           [(":NA", MarketDataFeed.NA)])
+        while query.next():
+            asset = readSQLrecord(query, named=True)
+            if asset['type_id'] in [PredefinedAsset.Money, PredefinedAsset.Commodity, PredefinedAsset.Forex]:
+                continue
+            if asset['src_id'] == MarketDataFeed.RU:
+                logging.info(self.tr("Checking MOEX data for: ") + asset['name'])
+                data = self.MOEX_info(symbol=asset['name'], isin=asset['isin'])
+                if data:
+                    if asset['full_name'] != data['name']:
+                        logging.info(self.tr("New full name found for:  ")
+                                     + f"{JalDB().get_asset_name(asset['id'])}: {asset['full_name']} -> {data['name']}")
+                    isin = data['isin'] if not asset['isin'] and 'isin' in data and data['isin'] else ''
+                    expiry = data['expiry'] if 'expiry' in data and data['expiry'] != asset['expiry'] else 0
+                    JalDB().update_asset_data(asset_id=asset['id'], new_isin=isin, expiry=expiry)

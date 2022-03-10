@@ -69,9 +69,8 @@ class StatementXML(Statement):
             else:
                 return default_value
         except ValueError:
-            logging.error(QApplication.translate("StatementXML", "Unsupported date/time format: ")
-                          + f"{xml_element.attrib[attr_name]}")
-            return None
+            raise Statement_ImportError(QApplication.translate("StatementXML", "Unsupported date/time format: ")
+                                        + f"{xml_element.attrib[attr_name]}")
 
     def load(self, filename: str) -> None:
         try:
@@ -122,9 +121,7 @@ class StatementXML(Statement):
         for attr_name, key_name, attr_type, attr_default in self._sections[section_tag]['values']:
             attr_value = self.attr_loader[attr_type](element, attr_name, attr_default)
             if attr_value is None:
-                logging.error(
-                    self.tr("Failed to load attribute: ") + f"{attr_name} / {element.attrib}")
-                return None
+                raise Statement_ImportError(self.tr("Failed to load attribute: ") + f"{attr_name} / {element.attrib}")
             tag_dictionary[key_name] = attr_value
         return tag_dictionary
 

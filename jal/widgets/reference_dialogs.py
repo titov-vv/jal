@@ -1,11 +1,12 @@
 from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex
 from PySide6.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate
-from PySide6.QtWidgets import QHeaderView
+from PySide6.QtWidgets import QHeaderView, QToolBar
 from jal.db.helpers import db_connection, executeSQL, readSQL
 from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate, \
     PeerSelectorDelegate, AssetSelectorDelegate
 from jal.widgets.reference_data import ReferenceDataDialog
 from jal.widgets.delegates import GridLinesDelegate
+from jal.net.downloader import QuoteDownloader
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -297,6 +298,12 @@ class AssetListDialog(ReferenceDataDialog):
         self.GroupCombo.setModelColumn(relation_model.fieldIndex("name"))
         self.group_id = relation_model.data(relation_model.index(0, relation_model.fieldIndex(self.group_fkey_field)))
 
+        self.toolbar = QToolBar(self)
+        self.search_layout.addWidget(self.toolbar)
+        action = self.toolbar.addAction(self.tr("Update data"))
+        action.setToolTip(self.tr("Update assets data from their exchanges"))
+        action.triggered.connect(self.updateExchangeData)
+
     def locateItem(self, item_id):
         type_id = self.model.getAssetType(item_id)
         if type_id == 0:
@@ -304,6 +311,9 @@ class AssetListDialog(ReferenceDataDialog):
         self.GroupCombo.setCurrentIndex(type_id-1)
         item_idx = self.model.locateItem(item_id, use_filter=self._filter_text)
         self.DataView.setCurrentIndex(item_idx)
+
+    def updateExchangeData(self):
+        QuoteDownloader().updataData()
 
 
 # ----------------------------------------------------------------------------------------------------------------------

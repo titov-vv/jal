@@ -22,7 +22,7 @@ class LogViewer(QPlainTextEdit, logging.Handler):
         predefinded_colors = {
             logging.DEBUG: CustomColor.Grey,
             logging.INFO: self.clear_color,
-            logging.WARNING: CustomColor.LightYellow,
+            logging.WARNING: CustomColor.LightRed,
             logging.ERROR: CustomColor.LightRed,
             logging.CRITICAL: CustomColor.LightRed
         }
