@@ -26,7 +26,7 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [3, 'EUR', PredefinedAsset.Money, 'Евро', '', 0, 0, 0],
         [4, 'VUG', PredefinedAsset.ETF, 'Growth ETF', 'US9229087369', 2, 0, 0],
         [5, 'EDV', PredefinedAsset.ETF, 'VANGUARD EXTENDED DUR TREAS', '', 2, 0, 0],
-        [6, 'CAD', PredefinedAsset.Money, '', '', 0, -1, 0],
+        [6, 'CAD', PredefinedAsset.Money, '', '', 0, 0, 0],
         [7, 'AMZN', PredefinedAsset.Stock, 'AMAZON.COM INC', 'US0231351067', 0, 2, 0],
         [8, 'BABA', PredefinedAsset.Stock, 'ALIBABA GROUP HOLDING-SP ADR', 'US01609W1027', 0, 2, 0],
         [9, 'D', PredefinedAsset.Stock, 'DOMINION ENERGY INC', '', 0, 2, 0],
@@ -57,7 +57,9 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [34, 'BAM', 2, '', 'CA1125851040', 0, 2, 0],
         [35, 'BPYPM', 2, '', 'BMG1624R1079', 0, 2, 0],
         [36, 'BPYU', 2, '', 'US11282X1037', 0, -1, 0],
-        [37, 'SLVM', 2, '', 'US8713321029', 0, 2, 0]
+        [37, 'SLVM', 2, '', 'US8713321029', 0, 2, 0],
+        [38, 'CORT', 2, '', 'US2183521028', 0, 2, 0],
+        [39, 'CORT.OD2', 2, '', 'US218NSPODD6', 0, -1, 0]
     ]
     assert readSQL("SELECT COUNT(*) FROM assets") == len(test_assets)
     for i, asset in enumerate(test_assets):
@@ -120,7 +122,8 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [7, 3, 1595607600, 1595808000, '2997636969', 1, 30, 100.0, 0.0, 0.0, 'Option assignment'],
         [8, 3, 1595607600, 1595607600, '2997636973', 1, 31, 100.0, 64.0, 0.0, 'Option assignment/exercise'],
         [9, 3, 1603882231, 1604016000, '3183801882', 1, 22, 500000.0, 0.0001, 0.7503675, ''],
-        [10, 3, 1638822300, 1638822300, '18694975077', 1, 33, -8.0, 1103.06815, 0.0, '(US345370CV02) FULL CALL / EARLY REDEMPTION FOR USD 1.10306815 PER BOND (F 8 1/2 04/21/23, F 8 1/2 04/21/23, US345370CV02)']
+        [10, 3, 1638822300, 1638822300, '18694975077', 1, 33, -8.0, 1103.06815, 0.0, '(US345370CV02) FULL CALL / EARLY REDEMPTION FOR USD 1.10306815 PER BOND (F 8 1/2 04/21/23, F 8 1/2 04/21/23, US345370CV02)'],
+        [11, 3, 1640031900, 1640031900, '18882610202', 1, 39, -99.0, 20.75, 0.0, 'CORT.OD2(US218NSPODD6) MERGED(Voluntary Offer Allocation) FOR USD 20.75 PER SHARE (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)']
     ]
     assert readSQL("SELECT COUNT(*) FROM trades") == len(test_trades)
     for i, trade in enumerate(test_trades):
@@ -158,7 +161,7 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [2, 5, 1605731100, '10162291403', 1, 1, 10, 70.0, 9, 17.444, 1.0, 'DM(US2574541080) MERGED(Acquisition) WITH US25746U1097 2492 FOR 10000 (D, DOMINION ENERGY INC, 25746U109)'],
         [3, 5, 1605558300, '14302257657', 1, 3, 14, 5.0, 15, 5.0, 1.0, 'MYL(NL0011031208) CUSIP/ISIN CHANGE TO (US92556V1061) (VTRS, VIATRIS INC-W/I, US92556V1061)'],
         [4, 5, 1605817500, '10302900848', 1, 2, 20, 100.0, 16, 0.5371, 0.0, 'GE(US3696041033) SPINOFF  5371 FOR 1000000 (WAB, WABTEC CORP, 929740108)'],
-        [5, 5, 1592339100, '13006963996', 1, 1, 18, 70.0, 19, 170.8, 1.0, 'EQM(US26885B1008) MERGED(Acquisition) WITH US2946001011 244 FOR 100 (ETRN, EQUITRANS MIDSTREAM CORP, US2946001011)'],
+        [5, 5, 1592339100, '13006963996', 1, 1, 18, 70.0, 19, 170.8, 1.0, 'EQM(US26885B1008) MERGED(Voluntary Offer Allocation) WITH US2946001011 244 FOR 100 (ETRN, EQUITRANS MIDSTREAM CORP, US2946001011)'],
         [6, 5, 1627676700, '17240033443', 1, 4, 20, 104.0, 20, 13.0, 1.0, 'GE(US3696041033) SPLIT 1 FOR 8 (GE, GENERAL ELECTRIC CO, US3696043013)'],
         [7, 5, 1581452700, '12029570527', 1, 4, 21, 45000.0, 22, 900.0, 1.0, 'EWLL(US30051D1063) SPLIT 1 FOR 50 (EWLLD, EWELLNESS HEALTHCARE CORP, US30051D2053)'],
         [8, 5, 1604089500, '14147163475', 1, 1, 24, 10.0, 25, 5.92, 1.0, 'LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)'],
@@ -166,7 +169,8 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [10, 5, 1630007100, '17569476329', 1, 1, 11, 2.0, 28, 2.0, 1.0, 'X 6 1/4 03/15/26(US912909AN84) TENDERED TO US912CALAN84 1 FOR 1 (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)'],
         [11, 5, 1627331099, '17200082800', 1, 2, 36, 610.0, 34, 55.7151, 1.0, 'BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BAM, BROOKFIELD ASSET MANAGE-CL A, CA1125851040)'],
         [12, 5, 1627331100, '17200082811', 1, 1, 36, 610.0, 35, 40.0895, 1.0, 'BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BPYPM, NEW LP PREFERRED UNITS, BMG1624R1079)'],
-        [13, 5, 1633033500, '17897699521', 1, 2, 20, 320.0, 37, 29.0909, 0.0, 'GE(US3696041033) SPINOFF  1 FOR 11 (SLVM, SYLVAMO CORP, US8713321029)']
+        [13, 5, 1633033500, '17897699521', 1, 2, 20, 320.0, 37, 29.0909, 0.0, 'GE(US3696041033) SPINOFF  1 FOR 11 (SLVM, SYLVAMO CORP, US8713321029)'],
+        [14, 5, 1639597500, '18787960371', 1, 1, 38, 99.0, 39, 99.0, 1.0, 'CORT(US2183521028) TENDERED TO US218NSPODD6 1 FOR 1 (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)']
     ]
     assert readSQL("SELECT COUNT(*) FROM corp_actions") == len(test_corp_actons)
     for i, action in enumerate(test_corp_actons):
