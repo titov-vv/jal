@@ -574,7 +574,7 @@ class StatementIBKR(StatementXML):
             r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +CASH and STOCK MERGER +\([\w ]+\) +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +AND +(?P<currency>\w+) +(\d+(\.\d+)?) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
             r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +CASH and STOCK MERGER +\([\w ]+\) +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+), +(?P<isin_new2>\w+) +(?P<X2>\d+) +FOR +(?P<Y2>\d+) +AND +(?P<currency>\w+) +(\d+(\.\d+)?) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
             r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +TENDERED TO +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), +(?P<name>.*), +(?P<id>.*)\)$",
-            r"^(?P<symbol_old>\w+)\.(?P<tender_suff>\w+)\((?P<isin_old>\w+)\) +MERGED\([\w ]+\) +FOR (?P<currency>\w+) (?P<price>\d+\.\d+) PER SHARE +\((?P<symbol>\w+)\.(?P<tender_suff_dup>\w+), (?P<name>.*) - TENDER ODD LOT, (?P<isin_old_dup>\w+)\)$",
+            r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +MERGED\([\w ]+\) +FOR (?P<currency>\w+) (?P<price>\d+\.\d+) PER SHARE +\((?P<symbol>.*), (?P<name>.*) - TENDER ODD LOT, (?P<id>\w+)\)$"
             ]
 
         parts = None
@@ -594,27 +594,14 @@ class StatementIBKR(StatementXML):
         description_b = action['description'][:parts.span('symbol')[0]] + merger_a['symbol_old']
         asset_b = self.locate_asset(merger_a['symbol_old'], merger_a['isin_old'])
 
-        if pattern_id == 4:
-            # create sell trade equivalent to offer allocation
-            trade = {
-                'type': 'stock',
-                'asset': action['asset'],
-                'account': action['account'],
-                'timestamp': action['timestamp'],
-                'settlement': action['timestamp'],
-                'price': action['proceeds'] / (-action['quantity']),
-                'quantity': action['quantity'],
-                'proceeds': action['proceeds'],
-                'multiplier': 1,
-                'fee': 0,
-                'number': action['number'],
-                'exchange': 'CORPACT',
-                'notes': 'Voluntary Offer Allocation'
-            }
-
-            self.load_trades([trade])
-            self._data[FOF.TRADES] = sorted(self._data[FOF.TRADES], key=lambda x: x['timestamp'])
-
+        if pattern_id == 4:  # Asset converted to money -> we store it as a sell trade
+            action['id'] = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
+            action['settlement'] = action['timestamp']
+            action['price'] = action['proceeds'] / (-action['quantity'])
+            action['note'] = action.pop('description')
+            action['fee'] = 0.0
+            self.drop_extra_fields(action, ["type", "value", "proceeds", "code", "asset_type", "jal_processed"])
+            self._data[FOF.TRADES].append(action)
             return 1
 
         paired_record = self.find_corp_action_pair(asset_b, description_b, action, parts_b)
