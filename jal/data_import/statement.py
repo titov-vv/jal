@@ -231,10 +231,15 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             name = asset['name'] if 'name' in asset else ''
             country_code = asset['country'] if 'country' in asset else ''
             expiry = asset['expiry'] if 'expiry' in asset else 0
-            try:
-                source = self._sources[asset['exchange']]
-            except KeyError:
-                source = MarketDataFeed.NA
+
+            if asset['type'] == FOF.ASSET_MONEY:
+                source = MarketDataFeed.CBR
+            else:
+                try:
+                    source = self._sources[asset['exchange']]
+                except KeyError:
+                    source = MarketDataFeed.NA
+
             asset_id = JalDB().add_asset(asset['symbol'], name, self._asset_types[asset['type']], isin, expiry=expiry,
                                          data_source=source, reg_code=reg_code, country_code=country_code)
             if asset_id:

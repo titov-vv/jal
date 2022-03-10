@@ -570,10 +570,11 @@ class StatementIBKR(StatementXML):
 
     def load_merger(self, action, parts_b) -> int:
         MergerPatterns = [
-            r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +MERGED\(\w+\) +WITH +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
-            r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +CASH and STOCK MERGER +\(\w+\) +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +AND +(?P<currency>\w+) +(\d+(\.\d+)?) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
-            r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +CASH and STOCK MERGER +\(\w+\) +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+), +(?P<isin_new2>\w+) +(?P<X2>\d+) +FOR +(?P<Y2>\d+) +AND +(?P<currency>\w+) +(\d+(\.\d+)?) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
-            r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +TENDERED TO +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), +(?P<name>.*), +(?P<id>.*)\)$"
+            r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +MERGED\([\w ]+\) +WITH +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
+            r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +CASH and STOCK MERGER +\([\w ]+\) +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +AND +(?P<currency>\w+) +(\d+(\.\d+)?) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
+            r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +CASH and STOCK MERGER +\([\w ]+\) +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+), +(?P<isin_new2>\w+) +(?P<X2>\d+) +FOR +(?P<Y2>\d+) +AND +(?P<currency>\w+) +(\d+(\.\d+)?) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
+            r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +TENDERED TO +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), +(?P<name>.*), +(?P<id>.*)\)$",
+            r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +MERGED\([\w ]+\) +FOR (?P<currency>\w+) (?P<price>\d+\.\d+) PER SHARE +\((?P<symbol>.*), (?P<name>.*) - TENDER ODD LOT, (?P<id>\w+)\)$"
             ]
 
         parts = None
@@ -582,13 +583,27 @@ class StatementIBKR(StatementXML):
             parts = re.match(pattern, action['description'], re.IGNORECASE)
             if parts:
                 break
+
         if parts is None:
             raise Statement_ImportError(self.tr("Can't parse Merger description ") + f"'{action}'")
         merger_a = parts.groupdict()
+
         if len(merger_a) != MergerPatterns[pattern_id].count("(?P<"):  # check expected number of matches
             raise Statement_ImportError(self.tr("Merger description miss some data ") + f"'{action}'")
+
         description_b = action['description'][:parts.span('symbol')[0]] + merger_a['symbol_old']
         asset_b = self.locate_asset(merger_a['symbol_old'], merger_a['isin_old'])
+
+        if pattern_id == 4:  # Asset converted to money -> we store it as a sell trade
+            action['id'] = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
+            action['settlement'] = action['timestamp']
+            action['price'] = action['proceeds'] / (-action['quantity'])
+            action['note'] = action.pop('description')
+            action['fee'] = 0.0
+            self.drop_extra_fields(action, ["type", "value", "proceeds", "code", "asset_type", "jal_processed"])
+            self._data[FOF.TRADES].append(action)
+            return 1
+
         paired_record = self.find_corp_action_pair(asset_b, description_b, action, parts_b)
         if (pattern_id == 1 or pattern_id == 2) and (not paired_record[0]['jal_processed']):
             self.add_merger_payment(action['timestamp'], action['account'], paired_record[0]['proceeds'],
@@ -606,7 +621,9 @@ class StatementIBKR(StatementXML):
             action['quantity'] = [-paired_record[0]['quantity'], action['quantity']]
         self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
         self._data[FOF.CORP_ACTIONS].append(action)
+
         paired_record[0]['jal_processed'] = True
+
         return 2
 
     def add_merger_payment(self, timestamp, account_id, amount, currency, description):
