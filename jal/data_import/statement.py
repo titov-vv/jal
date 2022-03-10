@@ -232,7 +232,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             country_code = asset['country'] if 'country' in asset else ''
             expiry = asset['expiry'] if 'expiry' in asset else 0
 
-            if asset['type'] == 'money':
+            if asset['type'] == FOF.ASSET_MONEY:
                 source = MarketDataFeed.CBR
             else:
                 try:
