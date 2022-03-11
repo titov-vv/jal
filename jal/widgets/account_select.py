@@ -108,13 +108,13 @@ class CurrencyComboBox(QComboBox):
         self.activated.connect(self.OnUserSelection)
 
         self.query = QSqlQuery(db=db_connection())
-        self.query.prepare(f"SELECT id, name FROM assets WHERE type_id={PredefinedAsset.Money}")
+        self.query.prepare(f"SELECT id, symbol FROM currencies")
         self.query.exec()
         self.model = QSqlTableModel(db=db_connection())
         self.model.setQuery(self.query)
         self.model.select()
         self.setModel(self.model)
-        self.setModelColumn(self.model.fieldIndex("name"))
+        self.setModelColumn(self.model.fieldIndex("symbol"))
 
     def isCustom(self):
         return True
@@ -126,7 +126,7 @@ class CurrencyComboBox(QComboBox):
         if self.p_selected_id == new_id:
             return
         self.p_selected_id = new_id
-        name = readSQL("SELECT name FROM currencies WHERE id = :id", [(":id", self.p_selected_id)])
+        name = readSQL("SELECT symbol FROM currencies WHERE id=:id", [(":id", self.p_selected_id)])
         if self.currentIndex() == self.findText(name):
             return
         self.setCurrentIndex(self.findText(name))
