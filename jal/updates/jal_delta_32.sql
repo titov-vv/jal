@@ -177,7 +177,7 @@ LEFT JOIN asset_tickers AS s ON s.asset_id = a.id AND  s.active = 1
 WHERE a.type_id = 1;
 
 -- Link asset symbol from asset_tickers, no assets
-DROP VIEW deals_ext;
+DROP VIEW IF EXISTS deals_ext;
 CREATE VIEW deals_ext AS
     SELECT d.account_id,
            ac.name AS account,
@@ -214,6 +214,19 @@ ALTER TABLE assets DROP COLUMN src_id;
 ALTER TABLE assets DROP COLUMN expiry;
 ALTER TABLE assets DROP COLUMN name;
 ALTER TABLE assets ADD COLUMN base_asset INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE;
+--------------------------------------------------------------------------------
+DROP VIEW IF EXISTS assets_ext;
+CREATE VIEW assets_ext AS
+    SELECT a.id,
+           a.type_id,
+           a.full_name,
+           t.symbol,
+           t.currency_id
+      FROM assets a
+           LEFT JOIN
+           asset_tickers t ON a.id = t.asset_id
+     WHERE t.active = 1 AND a.type_id != 1
+     ORDER BY a.id;
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 1;
 --------------------------------------------------------------------------------

@@ -15,6 +15,7 @@ class TradeWidgetDelegate(WidgetMapperDelegateBase):
         WidgetMapperDelegateBase.__init__(self, parent)
         self.delegates = {'timestamp': self.timestamp_delegate,
                           'settlement': self.timestamp_delegate,
+                          'asset_id': self.symbol_delegate,
                           'qty': self.float_delegate,
                           'price': self.float_delegate,
                           'fee': self.float_delegate}

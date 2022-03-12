@@ -52,6 +52,9 @@ class AbstractReferenceSelector(QWidget):
 
     selected_id = Property(int, getId, setId, notify=changed, user=True)
 
+    def setFilter(self, filter_value):
+        self.dialog.model.applyFilter(filter_value)
+
     def on_button_clicked(self):
         ref_point = self.mapToGlobal(self.name.geometry().bottomLeft())
         self.dialog.setGeometry(ref_point.x(), ref_point.y(), self.dialog.width(), self.dialog.height())
@@ -80,8 +83,8 @@ class AccountSelector(AbstractReferenceSelector):
 
 class AssetSelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
-        self.table = "assets"
-        self.selector_field = "name"
+        self.table = "assets_ext"
+        self.selector_field = "symbol"
         self.details_field = "full_name"
         self.dialog = ui_dialogs.AssetListDialog()
         AbstractReferenceSelector.__init__(self, parent)

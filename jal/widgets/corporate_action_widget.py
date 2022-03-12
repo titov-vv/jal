@@ -14,7 +14,9 @@ class CorporateActionWidgetDelegate(WidgetMapperDelegateBase):
     def __init__(self, parent=None):
         WidgetMapperDelegateBase.__init__(self, parent)
         self.delegates = {'timestamp': self.timestamp_delegate,
+                          'asset_id': self.symbol_delegate,
                           'qty': self.float_delegate,
+                          'asset_id_new': self.symbol_delegate,
                           'qty_new': self.float_delegate,
                           'basis_ratio': self.float_delegate}
 

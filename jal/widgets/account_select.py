@@ -2,7 +2,7 @@ from PySide6.QtCore import Signal, Slot, Property
 from PySide6.QtWidgets import QApplication, QDialog, QWidget, QPushButton, QComboBox, QMenu, QHBoxLayout, QCheckBox, \
     QMessageBox
 from PySide6.QtSql import QSqlQuery, QSqlTableModel
-from jal.constants import Setup, PredefinedAsset
+from jal.constants import Setup
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
 from jal.db.helpers import db_connection, readSQL

@@ -22,6 +22,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         self._default_name = "name"
         self._group_by = None
         self._sort_by = None
+        self._filter_by = None
         self._hidden = []
         self._stretch = None
         self._default_values = {}   # To fill in default values for fields allowed to be NULL
@@ -63,6 +64,12 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
     def setSorting(self):
         if self._sort_by:
             self.setSort(self.fieldIndex(self._sort_by), Qt.AscendingOrder)
+
+    def applyFilter(self, filter_value):
+        if self._filter_by is None:
+            return
+        self.setFilter(f"{self._filter_by} = {filter_value}")
+        self._completion_model.setFilter(f"{self._filter_by} = {filter_value}")
 
     def hideColumns(self):
         for column_name in self._hidden:
@@ -241,6 +248,7 @@ class AssetListModel(AbstractReferenceListModel):
                          ("expiry", self.tr("Expiry"))]
         self._sort_by = "name"
         self._group_by = "type_id"
+        self._filter_by = "currency_id"
         self._hidden = ["id", "type_id"]
         self._stretch = "full_name"
         self._lookup_delegate = None
@@ -274,7 +282,7 @@ class AssetListModel(AbstractReferenceListModel):
 class AssetListDialog(ReferenceDataDialog):
     def __init__(self):
         ReferenceDataDialog.__init__(self)
-        self.table = "assets"
+        self.table = "assets_ext"
         self.model = AssetListModel(self.table, self.DataView)
         self.DataView.setModel(self.model)
         self.model.configureView()
@@ -282,7 +290,7 @@ class AssetListDialog(ReferenceDataDialog):
         super()._init_completed()
 
     def setup_ui(self):
-        self.search_field = "assets.full_name"
+        self.search_field = "assets_ext.full_name"
         self.setWindowTitle(self.tr("Assets"))
         self.SearchFrame.setVisible(True)
         self.Toggle.setVisible(False)

@@ -6,6 +6,7 @@ from PySide6.QtGui import QDoubleValidator, QBrush, QKeyEvent
 from jal.constants import CustomColor
 from jal.widgets.reference_selector import AssetSelector, PeerSelector, CategorySelector, TagSelector
 from jal.db.helpers import readSQL
+from jal.db.db import JalDB
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -17,6 +18,7 @@ class WidgetMapperDelegateBase(QStyledItemDelegate):
 
         self.timestamp_delegate = TimestampDelegate()
         self.float_delegate = FloatDelegate(2)
+        self.symbol_delegate = SymbolDelegate()
         self.default = QStyledItemDelegate()
 
         self.delegates = {}
@@ -170,6 +172,16 @@ class FloatDelegate(QStyledItemDelegate):
             painter.setPen(pen)
             painter.drawRect(option.rect)
             painter.restore()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Delegate to apply currency filter for AssetSelector widgets based on current account
+class SymbolDelegate(QStyledItemDelegate):
+    def setEditorData(self, editor, index):
+        account_currency = JalDB().get_account_currency(
+            index.model().data(index.sibling(index.row(), index.model().fieldIndex('account_id')), Qt.EditRole))
+        editor.setFilter(account_currency)
+        QStyledItemDelegate.setEditorData(self, editor, index)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
