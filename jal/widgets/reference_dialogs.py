@@ -163,7 +163,7 @@ class AccountListModel(AbstractReferenceListModel):
         self._bool_delegate = None
         self._default_values = {'active': 1, 'reconciled_on': 0, 'country_id': 0}
         self.setRelation(self.fieldIndex("type_id"), QSqlRelation("account_types", "id", "name"))
-        self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "name"))
+        self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
         self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "code"))
 
     def configureView(self):
@@ -189,7 +189,8 @@ class AccountListModel(AbstractReferenceListModel):
         return type_id
 
     def locateItem(self, item_id, use_filter=''):
-        row = readSQL(f"SELECT row_number FROM (SELECT ROW_NUMBER() OVER (ORDER BY name) AS row_number, id "
+        row = readSQL(f"SELECT row_number FROM ("
+                      f"SELECT ROW_NUMBER() OVER (ORDER BY {self._default_name}) AS row_number, id "
                       f"FROM {self._table} WHERE {use_filter}) WHERE id=:id", [(":id", item_id)])
         if row is None:
             return QModelIndex()
@@ -239,32 +240,33 @@ class AssetListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
         AbstractReferenceListModel.__init__(self, table, parent_view)
         self._columns = [("id", ''),
-                         ("name", self.tr("Symbol")),
                          ("type_id", ''),
+                         ("symbol", self.tr("Symbol")),
                          ("full_name", self.tr("Name")),
                          ("isin", self.tr("ISIN")),
+                         ("currency_id", ''),
                          ("country_id", self.tr("Country")),
-                         ("src_id", self.tr("Data source")),
-                         ("expiry", self.tr("Expiry"))]
-        self._sort_by = "name"
+                         ("quote_source", self.tr("Data source"))]
+        self._default_name = "symbol"
+        self._sort_by = "symbol"
         self._group_by = "type_id"
         self._filter_by = "currency_id"
-        self._hidden = ["id", "type_id"]
+        self._hidden = ["id", "type_id", "currency_id"]
         self._stretch = "full_name"
         self._lookup_delegate = None
         self._timestamp_delegate = None
-        self._default_values = {'isin': '', 'country_id': 0, 'src_id': -1, 'expiry': 0}
+        self._default_values = {'isin': '', 'country_id': 0, 'quote_source': -1}
         self.setRelation(self.fieldIndex("type_id"), QSqlRelation("asset_types", "id", "name"))
         self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "name"))
-        self.setRelation(self.fieldIndex("src_id"), QSqlRelation("data_sources", "id", "name"))
+        self.setRelation(self.fieldIndex("quote_source"), QSqlRelation("data_sources", "id", "name"))
 
     def configureView(self):
         super().configureView()
         self._lookup_delegate = QSqlRelationalDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
-        self._view.setItemDelegateForColumn(self.fieldIndex("src_id"), self._lookup_delegate)
-        self._timestamp_delegate = TimestampDelegate(parent=self._view, display_format='%d/%m/%Y')
-        self._view.setItemDelegateForColumn(self.fieldIndex("expiry"), self._timestamp_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("quote_source"), self._lookup_delegate)
+        # self._timestamp_delegate = TimestampDelegate(parent=self._view, display_format='%d/%m/%Y')
+        # self._view.setItemDelegateForColumn(self.fieldIndex("expiry"), self._timestamp_delegate)
 
     def getAssetType(self, item_id: int) -> int:
         type_id = readSQL(f"SELECT type_id FROM {self._table} WHERE id=:id", [(":id", item_id)])
@@ -272,7 +274,8 @@ class AssetListModel(AbstractReferenceListModel):
         return type_id
 
     def locateItem(self, item_id, use_filter=''):
-        row = readSQL(f"SELECT row_number FROM (SELECT ROW_NUMBER() OVER (ORDER BY name) AS row_number, id "
+        row = readSQL(f"SELECT row_number FROM ("
+                      f"SELECT ROW_NUMBER() OVER (ORDER BY {self._default_name}) AS row_number, id "
                       f"FROM {self._table} WHERE {use_filter}) WHERE id=:id", [(":id", item_id)])
         if row is None:
             return QModelIndex()

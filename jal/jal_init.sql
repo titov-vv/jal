@@ -624,14 +624,16 @@ DROP VIEW IF EXISTS assets_ext;
 CREATE VIEW assets_ext AS
     SELECT a.id,
            a.type_id,
-           a.full_name,
            t.symbol,
-           t.currency_id
-      FROM assets a
-           LEFT JOIN
-           asset_tickers t ON a.id = t.asset_id
-     WHERE t.active = 1 AND a.type_id != 1
-     ORDER BY a.id;
+           a.full_name,
+           a.isin,
+           t.currency_id,
+           a.country_id,
+           t.quote_source
+    FROM assets a
+    LEFT JOIN asset_tickers t ON a.id = t.asset_id
+    WHERE t.active = 1 AND a.type_id != 1
+    ORDER BY a.id;
 
 
 -- Trigger: action_details_after_delete
