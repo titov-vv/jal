@@ -19,6 +19,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.setupUi(self)
 
         self.model = None
+        self._previous_row = -1
         self.selected_id = 0
         self.p_selected_name = ''
         self._filter_text = ''
@@ -250,7 +251,11 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     def OnClicked(self, index):
         if self.custom_editor is None:
             return
-        self.custom_editor.exec()
+        if self._previous_row == index.row():
+            self.custom_editor.selected_id = self.selected_id
+            self.custom_editor.exec()
+        else:
+            self._previous_row = index.row()
 
     @Slot()
     def OnDoubleClicked(self, index):
