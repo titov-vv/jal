@@ -27,6 +27,8 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.group_key_field = None
         self.group_key_index = None
         self.group_fkey_field = None
+        self.filter_field = None
+        self._filter_value = ''
         self.toggle_state = False
         self.toggle_field = None
         self.search_field = None
@@ -186,6 +188,12 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)
 
+    def setFilterValue(self, filter_value):
+        if self.filter_field is None:
+            return
+        self._filter_value = filter_value
+        self.setFilter()
+
     def resetFilter(self):
         self.model.setFilter("")
 
@@ -203,8 +211,14 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
                                   f"WHERE {search[3]} LIKE '%{self.search_text}%')")
             else:
                 assert False, f"Unsupported format of search field: {self.search_field}"
+
         if self.group_id:
             conditions.append(f"{self.table}.{self.group_key_field}={self.group_id}")
+
+        if self.filter_field is not None and self._filter_value:
+            conditions.append(f"{self.table}.{self.filter_field} = {self._filter_value}")
+            # completion model needs only this filter, others are for dialog
+            self.model.completion_model.setFilter(f"{self.table}.{self.filter_field} = {self._filter_value}")
 
         if self.toggle_field:
             if not self.toggle_state:

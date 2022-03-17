@@ -180,7 +180,7 @@ class SymbolDelegate(QStyledItemDelegate):
     def setEditorData(self, editor, index):
         account_currency = JalDB().get_account_currency(
             index.model().data(index.sibling(index.row(), index.model().fieldIndex('account_id')), Qt.EditRole))
-        editor.setFilter(account_currency)
+        editor.setFilterValue(account_currency)
         QStyledItemDelegate.setEditorData(self, editor, index)
 
 

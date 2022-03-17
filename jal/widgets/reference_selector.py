@@ -52,8 +52,8 @@ class AbstractReferenceSelector(QWidget):
 
     selected_id = Property(int, getId, setId, notify=changed, user=True)
 
-    def setFilter(self, filter_value):
-        self.dialog.model.applyFilter(filter_value)
+    def setFilterValue(self, filter_value):
+        self.dialog.setFilterValue(filter_value)
 
     def on_button_clicked(self):
         ref_point = self.mapToGlobal(self.name.geometry().bottomLeft())
