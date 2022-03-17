@@ -1,10 +1,11 @@
 from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex
 from PySide6.QtSql import QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRelationalDelegate
-from PySide6.QtWidgets import QHeaderView, QToolBar
+from PySide6.QtWidgets import QHeaderView, QToolBar, QAbstractItemView
 from jal.db.helpers import db_connection, executeSQL, readSQL
 from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate, \
     PeerSelectorDelegate, AssetSelectorDelegate
 from jal.widgets.reference_data import ReferenceDataDialog
+from jal.widgets.asset_dialog import AssetDialog
 from jal.widgets.delegates import GridLinesDelegate
 from jal.net.downloader import QuoteDownloader
 
@@ -289,6 +290,9 @@ class AssetListDialog(ReferenceDataDialog):
         self.setWindowTitle(self.tr("Assets"))
         self.SearchFrame.setVisible(True)
         self.Toggle.setVisible(False)
+
+        self.custom_editor = AssetDialog()
+        self.DataView.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.GroupLbl.setVisible(True)
         self.GroupLbl.setText(self.tr("Asset type:"))

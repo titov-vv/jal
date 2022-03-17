@@ -35,6 +35,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.search_text = ""
         self.tree_view = False
         self.toolbar = None
+        self.custom_editor = None
 
         self.AddChildBtn.setVisible(False)
         self.GroupLbl.setVisible(False)
@@ -56,7 +57,9 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.CommitBtn.clicked.connect(self.OnCommit)
         self.RevertBtn.clicked.connect(self.OnRevert)
         self.DataView.doubleClicked.connect(self.OnDoubleClicked)
+        self.DataView.clicked.connect(self.OnClicked)
         self.TreeView.doubleClicked.connect(self.OnDoubleClicked)
+        self.TreeView.clicked.connect(self.OnClicked)
 
     def _init_completed(self):
         self.DataView.setVisible(not self.tree_view)
@@ -242,6 +245,12 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         if idx:
             self.selected_id = self.model.getId(idx[0])
             self.p_selected_name = self.model.getName(idx[0])
+
+    @Slot()
+    def OnClicked(self, index):
+        if self.custom_editor is None:
+            return
+        self.custom_editor.exec()
 
     @Slot()
     def OnDoubleClicked(self, index):

@@ -104,7 +104,7 @@ def executeSQL(sql_text, params=[], forward_only=True, commit=False):
 def readSQL(sql_text, params=None, named=False, check_unique=False):
     if params is None:
         params = []
-    query = QSqlQuery(db_connection())
+    query = QSqlQuery(db_connection())   # TODO reimplement via ExecuteSQL() call in order to get rid of duplicated code
     query.setForwardOnly(True)
     if not query.prepare(sql_text):
         logging.error(f"SQL prep: '{query.lastError().text()}' for query '{sql_text}' | '{params}'")
