@@ -135,20 +135,11 @@ WHERE a.type_id!=1
 GROUP BY asset_id, currency_id;
 
 --------------------------------------------------------------------------------
-DROP TABLE IF EXISTS asset_datatypes;
--- Move symbols extra data to separate table
-CREATE TABLE asset_datatypes (
-    id       INTEGER PRIMARY KEY UNIQUE NOT NULL,
-    datatype TEXT    NOT NULL UNIQUE
-);
-INSERT INTO asset_datatypes (id, datatype) VALUES (1, 'reg.code');
-INSERT INTO asset_datatypes (id, datatype) VALUES (2, 'expiry');
-
 DROP TABLE IF EXISTS asset_data;
 CREATE TABLE asset_data (
     id       INTEGER PRIMARY KEY UNIQUE NOT NULL,
     asset_id INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    datatype INTEGER NOT NULL REFERENCES asset_datatypes (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    datatype INTEGER NOT NULL,
     value    TEXT    NOT NULL
 );
 

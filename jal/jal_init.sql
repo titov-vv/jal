@@ -82,13 +82,6 @@ CREATE TABLE asset_types (
     name TEXT (32) NOT NULL
 );
 
--- Types of extra data for assets
-DROP TABLE IF EXISTS asset_datatypes;
-CREATE TABLE asset_datatypes (
-    id       INTEGER PRIMARY KEY UNIQUE NOT NULL,
-    datatype TEXT    NOT NULL UNIQUE
-);
-
 -- Table: assets
 DROP TABLE IF EXISTS assets;
 
@@ -118,7 +111,7 @@ DROP TABLE IF EXISTS asset_data;
 CREATE TABLE asset_data (
     id       INTEGER PRIMARY KEY UNIQUE NOT NULL,
     asset_id INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    datatype INTEGER NOT NULL REFERENCES asset_datatypes (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    datatype INTEGER NOT NULL,
     value    TEXT    NOT NULL
 );
 
@@ -879,10 +872,6 @@ INSERT INTO asset_types (id, name) VALUES (5, 'Commodities');
 INSERT INTO asset_types (id, name) VALUES (6, 'Derivatives');
 INSERT INTO asset_types (id, name) VALUES (7, 'Forex');
 INSERT INTO asset_types (id, name) VALUES (8, 'Funds');
-
--- Initialize asset data types
-INSERT INTO asset_datatypes (id, datatype) VALUES (1, 'reg.code');
-INSERT INTO asset_datatypes (id, datatype) VALUES (2, 'expiry');
 
 -- Initialize some account types
 INSERT INTO account_types (id, name) VALUES (1, 'Cash');
