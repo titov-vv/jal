@@ -34,15 +34,35 @@ class Ui_AssetDialog(object):
         self.gridLayout.setSpacing(2)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(2, 2, 2, 2)
-        self.isinLbl = QLabel(AssetDialog)
-        self.isinLbl.setObjectName(u"isinLbl")
+        self.ButtonsFrame = QFrame(AssetDialog)
+        self.ButtonsFrame.setObjectName(u"ButtonsFrame")
+        self.ButtonsFrame.setFrameShape(QFrame.NoFrame)
+        self.ButtonsFrame.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout = QHBoxLayout(self.ButtonsFrame)
+        self.horizontalLayout.setSpacing(2)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.gridLayout.addWidget(self.isinLbl, 1, 0, 1, 1)
+        self.horizontalLayout.addItem(self.horizontalSpacer)
+
+        self.CancelButton = QPushButton(self.ButtonsFrame)
+        self.CancelButton.setObjectName(u"CancelButton")
+
+        self.horizontalLayout.addWidget(self.CancelButton)
+
+        self.OkButton = QPushButton(self.ButtonsFrame)
+        self.OkButton.setObjectName(u"OkButton")
+
+        self.horizontalLayout.addWidget(self.OkButton)
+
+
+        self.gridLayout.addWidget(self.ButtonsFrame, 10, 0, 1, 5)
 
         self.BaseLbl = QLabel(AssetDialog)
         self.BaseLbl.setObjectName(u"BaseLbl")
 
-        self.gridLayout.addWidget(self.BaseLbl, 4, 0, 1, 1)
+        self.gridLayout.addWidget(self.BaseLbl, 2, 0, 1, 1)
 
         self.NameLbl = QLabel(AssetDialog)
         self.NameLbl.setObjectName(u"NameLbl")
@@ -52,22 +72,7 @@ class Ui_AssetDialog(object):
         self.BaseAssetSelector = AssetSelector(AssetDialog)
         self.BaseAssetSelector.setObjectName(u"BaseAssetSelector")
 
-        self.gridLayout.addWidget(self.BaseAssetSelector, 4, 1, 1, 3)
-
-        self.TypeLbl = QLabel(AssetDialog)
-        self.TypeLbl.setObjectName(u"TypeLbl")
-
-        self.gridLayout.addWidget(self.TypeLbl, 1, 2, 1, 1)
-
-        self.NameEdit = QLineEdit(AssetDialog)
-        self.NameEdit.setObjectName(u"NameEdit")
-
-        self.gridLayout.addWidget(self.NameEdit, 0, 1, 1, 3)
-
-        self.TypeCombo = AssetTypeCombo(AssetDialog)
-        self.TypeCombo.setObjectName(u"TypeCombo")
-
-        self.gridLayout.addWidget(self.TypeCombo, 1, 3, 1, 1)
+        self.gridLayout.addWidget(self.BaseAssetSelector, 2, 1, 1, 1)
 
         self.frame = QFrame(AssetDialog)
         self.frame.setObjectName(u"frame")
@@ -204,37 +209,36 @@ class Ui_AssetDialog(object):
         self.horizontalLayout_3.addWidget(self.splitter)
 
 
-        self.gridLayout.addWidget(self.frame, 2, 0, 1, 4)
+        self.gridLayout.addWidget(self.frame, 3, 0, 1, 5)
 
-        self.ButtonsFrame = QFrame(AssetDialog)
-        self.ButtonsFrame.setObjectName(u"ButtonsFrame")
-        self.ButtonsFrame.setFrameShape(QFrame.NoFrame)
-        self.ButtonsFrame.setFrameShadow(QFrame.Raised)
-        self.horizontalLayout = QHBoxLayout(self.ButtonsFrame)
-        self.horizontalLayout.setSpacing(2)
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.isinLbl = QLabel(AssetDialog)
+        self.isinLbl.setObjectName(u"isinLbl")
 
-        self.horizontalLayout.addItem(self.horizontalSpacer)
+        self.gridLayout.addWidget(self.isinLbl, 1, 0, 1, 1)
 
-        self.CancelButton = QPushButton(self.ButtonsFrame)
-        self.CancelButton.setObjectName(u"CancelButton")
+        self.TypeCombo = AssetTypeCombo(AssetDialog)
+        self.TypeCombo.setObjectName(u"TypeCombo")
 
-        self.horizontalLayout.addWidget(self.CancelButton)
+        self.gridLayout.addWidget(self.TypeCombo, 1, 4, 1, 1)
 
-        self.OkButton = QPushButton(self.ButtonsFrame)
-        self.OkButton.setObjectName(u"OkButton")
+        self.TypeLbl = QLabel(AssetDialog)
+        self.TypeLbl.setObjectName(u"TypeLbl")
 
-        self.horizontalLayout.addWidget(self.OkButton)
-
-
-        self.gridLayout.addWidget(self.ButtonsFrame, 9, 0, 1, 4)
+        self.gridLayout.addWidget(self.TypeLbl, 1, 3, 1, 1)
 
         self.isinEdit = QLineEdit(AssetDialog)
         self.isinEdit.setObjectName(u"isinEdit")
 
         self.gridLayout.addWidget(self.isinEdit, 1, 1, 1, 1)
+
+        self.NameEdit = QLineEdit(AssetDialog)
+        self.NameEdit.setObjectName(u"NameEdit")
+
+        self.gridLayout.addWidget(self.NameEdit, 0, 1, 1, 4)
+
+        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.gridLayout.addItem(self.horizontalSpacer_4, 1, 2, 1, 1)
 
 
         self.retranslateUi(AssetDialog)
@@ -244,17 +248,17 @@ class Ui_AssetDialog(object):
 
     def retranslateUi(self, AssetDialog):
         AssetDialog.setWindowTitle(QCoreApplication.translate("AssetDialog", u"Asset", None))
-        self.isinLbl.setText(QCoreApplication.translate("AssetDialog", u"ISIN:", None))
+        self.CancelButton.setText(QCoreApplication.translate("AssetDialog", u"Cancel", None))
+        self.OkButton.setText(QCoreApplication.translate("AssetDialog", u"OK", None))
         self.BaseLbl.setText(QCoreApplication.translate("AssetDialog", u"Base asset:", None))
         self.NameLbl.setText(QCoreApplication.translate("AssetDialog", u"Name:", None))
-        self.TypeLbl.setText(QCoreApplication.translate("AssetDialog", u"Type:", None))
         self.SymbolsLabel.setText(QCoreApplication.translate("AssetDialog", u"Symbols", None))
         self.AddSymbolButton.setText("")
         self.RemoveSymbolButton.setText("")
         self.DataLbl.setText(QCoreApplication.translate("AssetDialog", u"Extra data", None))
         self.AddDataButton.setText("")
         self.RemoveDataButton.setText("")
-        self.CancelButton.setText(QCoreApplication.translate("AssetDialog", u"Cancel", None))
-        self.OkButton.setText(QCoreApplication.translate("AssetDialog", u"OK", None))
+        self.isinLbl.setText(QCoreApplication.translate("AssetDialog", u"ISIN:", None))
+        self.TypeLbl.setText(QCoreApplication.translate("AssetDialog", u"Type:", None))
     # retranslateUi
 

@@ -23,6 +23,7 @@ class AssetDialog(QDialog, Ui_AssetDialog):
         self._mapper.addMapping(self.NameEdit, self._model.fieldIndex("full_name"))
         self._mapper.addMapping(self.isinEdit, self._model.fieldIndex("isin"))
         self._mapper.addMapping(self.TypeCombo, self._model.fieldIndex("type_id"))
+        self._mapper.addMapping(self.BaseAssetSelector, self._model.fieldIndex("base_asset"))
 
         self._model.select()
 
