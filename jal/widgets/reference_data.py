@@ -36,7 +36,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self.search_text = ""
         self.tree_view = False
         self.toolbar = None
-        self.custom_editor = None
+        self.custom_editor = False
 
         self.AddChildBtn.setVisible(False)
         self.GroupLbl.setVisible(False)
@@ -249,13 +249,13 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
     @Slot()
     def OnClicked(self, index):
-        if self.custom_editor is None:
-            return
-        if self._previous_row == index.row():
-            self.custom_editor.selected_id = self.selected_id
-            self.custom_editor.exec()
-        else:
-            self._previous_row = index.row()
+        if self.custom_editor:
+            if self._previous_row == index.row():
+                editor = self.customEditor()
+                editor.selected_id = self.selected_id
+                editor.exec()
+            else:
+                self._previous_row = index.row()
 
     @Slot()
     def OnDoubleClicked(self, index):

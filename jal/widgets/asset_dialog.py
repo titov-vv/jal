@@ -34,6 +34,8 @@ class AssetDialog(QDialog, Ui_AssetDialog):
         self.RemoveSymbolButton.setIcon(load_icon("delete.png"))
         self.AddDataButton.setIcon(load_icon("add.png"))
         self.RemoveDataButton.setIcon(load_icon("delete.png"))
+        self.OkButton.setIcon(load_icon("accept.png"))
+        self.CancelButton.setIcon(load_icon("cancel.png"))
 
     def getSelectedId(self):
         return self._asset_id

@@ -194,7 +194,7 @@ class AssetListDialog(ReferenceDataDialog):
         self.SearchFrame.setVisible(True)
         self.Toggle.setVisible(False)
 
-        self.custom_editor = AssetDialog()
+        self.custom_editor = True
         self.DataView.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.GroupLbl.setVisible(True)
@@ -225,6 +225,9 @@ class AssetListDialog(ReferenceDataDialog):
 
     def updateExchangeData(self):
         QuoteDownloader().updataData()
+
+    def customEditor(self):
+        return AssetDialog()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
