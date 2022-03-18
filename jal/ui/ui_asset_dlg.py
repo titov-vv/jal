@@ -15,10 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDialog, QFrame, QGridLayout,
-    QGroupBox, QHBoxLayout, QHeaderView, QLabel,
-    QLineEdit, QPushButton, QSizePolicy, QSpacerItem,
-    QTableView, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QDialog, QFrame,
+    QGridLayout, QGroupBox, QHBoxLayout, QHeaderView,
+    QLabel, QLineEdit, QPushButton, QSizePolicy,
+    QSpacerItem, QTableView, QVBoxLayout, QWidget)
 
 from jal.widgets.db_lookup_combobox import AssetTypeCombo
 
@@ -98,6 +98,12 @@ class Ui_AssetDialog(object):
 
         self.SymbolsTable = QTableView(self.SymbolsBox)
         self.SymbolsTable.setObjectName(u"SymbolsTable")
+        self.SymbolsTable.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.EditKeyPressed|QAbstractItemView.SelectedClicked)
+        self.SymbolsTable.setAlternatingRowColors(True)
+        self.SymbolsTable.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.SymbolsTable.verticalHeader().setVisible(False)
+        self.SymbolsTable.verticalHeader().setMinimumSectionSize(20)
+        self.SymbolsTable.verticalHeader().setDefaultSectionSize(20)
 
         self.verticalLayout.addWidget(self.SymbolsTable)
 
