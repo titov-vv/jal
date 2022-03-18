@@ -49,10 +49,10 @@ class Ui_AssetDialog(object):
 
         self.gridLayout.addWidget(self.NameLbl, 0, 0, 1, 1)
 
-        self.widget = AssetSelector(AssetDialog)
-        self.widget.setObjectName(u"widget")
+        self.BaseAssetSelector = AssetSelector(AssetDialog)
+        self.BaseAssetSelector.setObjectName(u"BaseAssetSelector")
 
-        self.gridLayout.addWidget(self.widget, 4, 1, 1, 3)
+        self.gridLayout.addWidget(self.BaseAssetSelector, 4, 1, 1, 3)
 
         self.TypeLbl = QLabel(AssetDialog)
         self.TypeLbl.setObjectName(u"TypeLbl")
@@ -90,28 +90,28 @@ class Ui_AssetDialog(object):
         sizePolicy1.setHeightForWidth(self.splitter.sizePolicy().hasHeightForWidth())
         self.splitter.setSizePolicy(sizePolicy1)
         self.splitter.setOrientation(Qt.Horizontal)
-        self.frame_2 = QFrame(self.splitter)
-        self.frame_2.setObjectName(u"frame_2")
+        self.SymbolsFrame = QFrame(self.splitter)
+        self.SymbolsFrame.setObjectName(u"SymbolsFrame")
         sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy2.setHorizontalStretch(5)
         sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.frame_2.sizePolicy().hasHeightForWidth())
-        self.frame_2.setSizePolicy(sizePolicy2)
-        self.frame_2.setFrameShape(QFrame.NoFrame)
-        self.frame_2.setFrameShadow(QFrame.Raised)
-        self.verticalLayout = QVBoxLayout(self.frame_2)
+        sizePolicy2.setHeightForWidth(self.SymbolsFrame.sizePolicy().hasHeightForWidth())
+        self.SymbolsFrame.setSizePolicy(sizePolicy2)
+        self.SymbolsFrame.setFrameShape(QFrame.NoFrame)
+        self.SymbolsFrame.setFrameShadow(QFrame.Raised)
+        self.verticalLayout = QVBoxLayout(self.SymbolsFrame)
         self.verticalLayout.setSpacing(2)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.frame_3 = QFrame(self.frame_2)
-        self.frame_3.setObjectName(u"frame_3")
-        self.frame_3.setFrameShape(QFrame.NoFrame)
-        self.frame_3.setFrameShadow(QFrame.Raised)
-        self.horizontalLayout_5 = QHBoxLayout(self.frame_3)
+        self.SymbolsCaptionFrame = QFrame(self.SymbolsFrame)
+        self.SymbolsCaptionFrame.setObjectName(u"SymbolsCaptionFrame")
+        self.SymbolsCaptionFrame.setFrameShape(QFrame.NoFrame)
+        self.SymbolsCaptionFrame.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_5 = QHBoxLayout(self.SymbolsCaptionFrame)
         self.horizontalLayout_5.setSpacing(2)
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
-        self.SymbolsLabel = QLabel(self.frame_3)
+        self.SymbolsLabel = QLabel(self.SymbolsCaptionFrame)
         self.SymbolsLabel.setObjectName(u"SymbolsLabel")
 
         self.horizontalLayout_5.addWidget(self.SymbolsLabel)
@@ -120,20 +120,20 @@ class Ui_AssetDialog(object):
 
         self.horizontalLayout_5.addItem(self.horizontalSpacer_2)
 
-        self.AddSymbolButton = QPushButton(self.frame_3)
+        self.AddSymbolButton = QPushButton(self.SymbolsCaptionFrame)
         self.AddSymbolButton.setObjectName(u"AddSymbolButton")
 
         self.horizontalLayout_5.addWidget(self.AddSymbolButton)
 
-        self.RemoveSymbolButton = QPushButton(self.frame_3)
+        self.RemoveSymbolButton = QPushButton(self.SymbolsCaptionFrame)
         self.RemoveSymbolButton.setObjectName(u"RemoveSymbolButton")
 
         self.horizontalLayout_5.addWidget(self.RemoveSymbolButton)
 
 
-        self.verticalLayout.addWidget(self.frame_3)
+        self.verticalLayout.addWidget(self.SymbolsCaptionFrame)
 
-        self.SymbolsTable = QTableView(self.frame_2)
+        self.SymbolsTable = QTableView(self.SymbolsFrame)
         self.SymbolsTable.setObjectName(u"SymbolsTable")
         self.SymbolsTable.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.EditKeyPressed|QAbstractItemView.SelectedClicked)
         self.SymbolsTable.setAlternatingRowColors(True)
@@ -144,29 +144,29 @@ class Ui_AssetDialog(object):
 
         self.verticalLayout.addWidget(self.SymbolsTable)
 
-        self.splitter.addWidget(self.frame_2)
-        self.frame_4 = QFrame(self.splitter)
-        self.frame_4.setObjectName(u"frame_4")
+        self.splitter.addWidget(self.SymbolsFrame)
+        self.DataFrame = QFrame(self.splitter)
+        self.DataFrame.setObjectName(u"DataFrame")
         sizePolicy3 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy3.setHorizontalStretch(2)
         sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.frame_4.sizePolicy().hasHeightForWidth())
-        self.frame_4.setSizePolicy(sizePolicy3)
-        self.frame_4.setFrameShape(QFrame.NoFrame)
-        self.frame_4.setFrameShadow(QFrame.Raised)
-        self.verticalLayout_2 = QVBoxLayout(self.frame_4)
+        sizePolicy3.setHeightForWidth(self.DataFrame.sizePolicy().hasHeightForWidth())
+        self.DataFrame.setSizePolicy(sizePolicy3)
+        self.DataFrame.setFrameShape(QFrame.NoFrame)
+        self.DataFrame.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_2 = QVBoxLayout(self.DataFrame)
         self.verticalLayout_2.setSpacing(2)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.frame_5 = QFrame(self.frame_4)
-        self.frame_5.setObjectName(u"frame_5")
-        self.frame_5.setFrameShape(QFrame.NoFrame)
-        self.frame_5.setFrameShadow(QFrame.Raised)
-        self.horizontalLayout_2 = QHBoxLayout(self.frame_5)
+        self.DataCaptionFrame = QFrame(self.DataFrame)
+        self.DataCaptionFrame.setObjectName(u"DataCaptionFrame")
+        self.DataCaptionFrame.setFrameShape(QFrame.NoFrame)
+        self.DataCaptionFrame.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_2 = QHBoxLayout(self.DataCaptionFrame)
         self.horizontalLayout_2.setSpacing(2)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.DataLbl = QLabel(self.frame_5)
+        self.DataLbl = QLabel(self.DataCaptionFrame)
         self.DataLbl.setObjectName(u"DataLbl")
 
         self.horizontalLayout_2.addWidget(self.DataLbl)
@@ -175,25 +175,31 @@ class Ui_AssetDialog(object):
 
         self.horizontalLayout_2.addItem(self.horizontalSpacer_3)
 
-        self.AddDataButton = QPushButton(self.frame_5)
+        self.AddDataButton = QPushButton(self.DataCaptionFrame)
         self.AddDataButton.setObjectName(u"AddDataButton")
 
         self.horizontalLayout_2.addWidget(self.AddDataButton)
 
-        self.RemoveDataButton = QPushButton(self.frame_5)
+        self.RemoveDataButton = QPushButton(self.DataCaptionFrame)
         self.RemoveDataButton.setObjectName(u"RemoveDataButton")
 
         self.horizontalLayout_2.addWidget(self.RemoveDataButton)
 
 
-        self.verticalLayout_2.addWidget(self.frame_5)
+        self.verticalLayout_2.addWidget(self.DataCaptionFrame)
 
-        self.DataTable = QTableView(self.frame_4)
+        self.DataTable = QTableView(self.DataFrame)
         self.DataTable.setObjectName(u"DataTable")
+        self.DataTable.setEditTriggers(QAbstractItemView.AnyKeyPressed|QAbstractItemView.EditKeyPressed|QAbstractItemView.SelectedClicked)
+        self.DataTable.setAlternatingRowColors(True)
+        self.DataTable.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.DataTable.verticalHeader().setVisible(False)
+        self.DataTable.verticalHeader().setMinimumSectionSize(20)
+        self.DataTable.verticalHeader().setDefaultSectionSize(20)
 
         self.verticalLayout_2.addWidget(self.DataTable)
 
-        self.splitter.addWidget(self.frame_4)
+        self.splitter.addWidget(self.DataFrame)
 
         self.horizontalLayout_3.addWidget(self.splitter)
 

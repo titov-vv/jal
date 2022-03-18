@@ -57,7 +57,7 @@
     </widget>
    </item>
    <item row="4" column="1" colspan="3">
-    <widget class="AssetSelector" name="widget" native="true"/>
+    <widget class="AssetSelector" name="BaseAssetSelector" native="true"/>
    </item>
    <item row="1" column="2">
     <widget class="QLabel" name="TypeLbl">
@@ -113,7 +113,7 @@
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
-        <widget class="QFrame" name="frame_2">
+        <widget class="QFrame" name="SymbolsFrame">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>5</horstretch>
@@ -143,7 +143,7 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QFrame" name="frame_3">
+           <widget class="QFrame" name="SymbolsCaptionFrame">
             <property name="frameShape">
              <enum>QFrame::NoFrame</enum>
             </property>
@@ -227,7 +227,7 @@
           </item>
          </layout>
         </widget>
-        <widget class="QFrame" name="frame_4">
+        <widget class="QFrame" name="DataFrame">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>2</horstretch>
@@ -257,7 +257,7 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QFrame" name="frame_5">
+           <widget class="QFrame" name="DataCaptionFrame">
             <property name="frameShape">
              <enum>QFrame::NoFrame</enum>
             </property>
@@ -318,7 +318,26 @@
            </widget>
           </item>
           <item>
-           <widget class="QTableView" name="DataTable"/>
+           <widget class="QTableView" name="DataTable">
+            <property name="editTriggers">
+             <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::EditKeyPressed|QAbstractItemView::SelectedClicked</set>
+            </property>
+            <property name="alternatingRowColors">
+             <bool>true</bool>
+            </property>
+            <property name="selectionBehavior">
+             <enum>QAbstractItemView::SelectRows</enum>
+            </property>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="verticalHeaderMinimumSectionSize">
+             <number>20</number>
+            </attribute>
+            <attribute name="verticalHeaderDefaultSectionSize">
+             <number>20</number>
+            </attribute>
+           </widget>
           </item>
          </layout>
         </widget>

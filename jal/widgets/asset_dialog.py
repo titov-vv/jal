@@ -23,12 +23,17 @@ class AssetDialog(QDialog, Ui_AssetDialog):
         self._mapper.addMapping(self.isinEdit, self._model.fieldIndex("isin"))
         self._mapper.addMapping(self.TypeCombo, self._model.fieldIndex("type_id"))
 
+        self._model.select()
+
         self._symbols_model = SymbolsListModel("asset_tickers", self.SymbolsTable)
         self.SymbolsTable.setModel(self._symbols_model)
-
-        self._model.select()
         self._symbols_model.select()
         self._symbols_model.configureView()
+
+        self._data_model = ExtraDataModel("asset_data", self.DataTable)
+        self.DataTable.setModel(self._data_model)
+        self._data_model.select()
+        self._data_model.configureView()
 
         self.AddSymbolButton.setIcon(load_icon("add.png"))
         self.RemoveSymbolButton.setIcon(load_icon("delete.png"))
@@ -45,6 +50,7 @@ class AssetDialog(QDialog, Ui_AssetDialog):
         self._model.setFilter(f"id={self._asset_id}")
         self._mapper.toFirst()
         self._symbols_model.selectAsset(asset_id)
+        self._data_model.selectAsset(asset_id)
 
     selected_id = Property(str, getSelectedId, setSelectedId)
 
@@ -76,6 +82,29 @@ class SymbolsListModel(AbstractReferenceListModel):
         self._view.setItemDelegateForColumn(self.fieldIndex("quote_source"), self._lookup_delegate)
         self._bool_delegate = BoolDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("active"), self._bool_delegate)
+
+    def selectAsset(self, asset_id):
+        self.setFilter(f"{self._table}.asset_id = {asset_id}")
+
+
+class ExtraDataModel(AbstractReferenceListModel):
+    def __init__(self, table, parent_view):
+        AbstractReferenceListModel.__init__(self, table, parent_view)
+        self._columns = [("id", ''),
+                         ("asset_id", ''),
+                         ("datatype", self.tr("Property")),
+                         ("value", self.tr("Value"))]
+        self._default_name = "datatype"
+        self._sort_by = "datatype"
+        self._hidden = ["id", "asset_id"]
+        self._stretch = "value"
+        self._lookup_delegate = None
+        self.setRelation(self.fieldIndex("datatype"), QSqlRelation("asset_datatypes", "id", "datatype"))
+
+    def configureView(self):
+        super().configureView()
+        self._lookup_delegate = QSqlRelationalDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("datatype"), self._lookup_delegate)
 
     def selectAsset(self, asset_id):
         self.setFilter(f"{self._table}.asset_id = {asset_id}")
