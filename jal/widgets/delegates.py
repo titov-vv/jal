@@ -69,7 +69,7 @@ class TimestampDelegate(QStyledItemDelegate):
         self._format = display_format
 
     def displayText(self, value, locale):
-        if isinstance(value, str):  # in case of SQL aggregates int value comes here in form of string
+        if isinstance(value, str):  # int value comes here in form of string in case of SQL aggregate function results
             value = int(value)
         text = datetime.utcfromtimestamp(value).strftime(self._format) if value else ''
         return text

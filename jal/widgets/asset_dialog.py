@@ -1,9 +1,10 @@
-from PySide6.QtCore import Property
+from datetime import datetime
+from PySide6.QtCore import Qt, Property, QDateTime
 from PySide6.QtSql import QSqlTableModel, QSqlRelation, QSqlRelationalDelegate
-from PySide6.QtWidgets import QDialog, QDataWidgetMapper
+from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, QComboBox, QLineEdit
 from jal.ui.ui_asset_dlg import Ui_AssetDialog
 from jal.db.helpers import db_connection, load_icon
-from jal.widgets.delegates import BoolDelegate
+from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate
 from jal.db.reference_models import AbstractReferenceListModel
 
 
@@ -87,6 +88,84 @@ class SymbolsListModel(AbstractReferenceListModel):
         self.setFilter(f"{self._table}.asset_id = {asset_id}")
 
 
+# Delegate class that allows to choose data type in 'key_field' and edit data in 'value_field' (both are integer
+# indices). Editors are created based on data type associated with 'key_field' via self.types dictionary
+class DataDelegate(QStyledItemDelegate):
+    def __init__(self, key_field, value_field, parent=None):
+        QStyledItemDelegate.__init__(self, parent)
+        self._key = key_field
+        self._value = value_field
+        self.types = {
+            1: (self.tr("reg.code"), "str"),
+            2: (self.tr("expiry"), "date")
+        }
+
+    def type(self, index):
+        return self.types[index][0]
+
+    def display_value(self, type_index, value):
+        datatype = self.types[type_index][1]
+        if datatype == "str":
+            return value
+        elif datatype == "date":
+            return datetime.utcfromtimestamp(int(value)).strftime("%d/%m/%Y")
+        else:
+            assert False, "Unknown data type of asset data"
+
+    def createEditor(self, aParent, option, index):
+        if index.column() == self._key:
+            editor = QComboBox(aParent)
+            for idx in self.types:
+                editor.addItem(self.types[idx][0], userData=idx)
+        elif index.column() == self._value:
+            type_idx = index.model().data(index.sibling(index.row(), self._key), role=Qt.EditRole)
+            if self.types[type_idx][1] == "str":
+                editor = QLineEdit(aParent)
+            elif self.types[type_idx][1] == "date":
+                editor = DateTimeEditWithReset(aParent)
+                editor.setTimeSpec(Qt.UTC)
+                editor.setDisplayFormat("dd/MM/yyyy")
+            else:
+                assert False, f"Unknown data type '{self.types[type_idx][1]}' in DataDelegate.createEditor()"
+        else:
+            assert False, f"Delegate DataDelegate.createEditor() called for not-initialized column {index.column()}"
+        return editor
+
+    def setEditorData(self, editor, index):
+        if index.column() == self._key:
+            editor.setCurrentIndex(editor.findData(index.model().data(index, Qt.EditRole)))
+        elif index.column() == self._value:
+            type_idx = index.model().data(index.sibling(index.row(), self._key), role=Qt.EditRole)
+            if self.types[type_idx][1] == "str":
+                editor.setText(index.model().data(index, Qt.EditRole))
+            elif self.types[type_idx][1] == "date":
+                timestamp = int(index.model().data(index, Qt.EditRole))
+                if timestamp == '':
+                    QStyledItemDelegate.setEditorData(self, editor, index)
+                else:
+                    editor.setDateTime(QDateTime.fromSecsSinceEpoch(timestamp, spec=Qt.UTC))
+            else:
+                assert False, f"Unknown data type '{self.types[type_idx][1]}' in DataDelegate.setEditorData()"
+        else:
+            assert False, f"Delegate DataDelegate.setEditorData() called for not-initialized column {index.column()}"
+
+    def setModelData(self, editor, model, index):
+        if index.column() == self._key:
+            model.setData(index, editor.currentData())
+            model.setData(index.sibling(index.row(), self._value), '')  # Reset data value on type change
+        elif index.column() == self._value:
+            type_idx = index.model().data(index.sibling(index.row(), self._key), role=Qt.EditRole)
+            if self.types[type_idx][1] == "str":
+                model.setData(index, editor.text())
+            elif self.types[type_idx][1] == "date":
+                timestamp = editor.dateTime().toSecsSinceEpoch()
+                model.setData(index, str(timestamp))
+            else:
+                assert False, f"Unknown data type '{self.types[type_idx][1]}' in DataDelegate.setModelData()"
+        else:
+            assert False, f"Delegate DataDelegate.setModelData() called for not-initialized column {index.column()}"
+
+
 class ExtraDataModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
         AbstractReferenceListModel.__init__(self, table, parent_view)
@@ -98,13 +177,22 @@ class ExtraDataModel(AbstractReferenceListModel):
         self._sort_by = "datatype"
         self._hidden = ["id", "asset_id"]
         self._stretch = "value"
-        self._lookup_delegate = None
-        self.setRelation(self.fieldIndex("datatype"), QSqlRelation("asset_datatypes", "id", "datatype"))
+        self._data_delegate = None
 
     def configureView(self):
         super().configureView()
-        self._lookup_delegate = QSqlRelationalDelegate(self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex("datatype"), self._lookup_delegate)
+        self._data_delegate = DataDelegate(self.fieldIndex("datatype"), self.fieldIndex("value"), self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("datatype"), self._data_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex("value"), self._data_delegate)
 
     def selectAsset(self, asset_id):
         self.setFilter(f"{self._table}.asset_id = {asset_id}")
+
+    def data(self, index, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole:
+            if index.column() == self.fieldIndex("datatype"):
+                return self._data_delegate.type(super().data(index, role))
+            elif index.column() == self.fieldIndex("value"):
+                datatype = super().data(index.sibling(index.row(), self.fieldIndex("datatype")), role)
+                return self._data_delegate.display_value(datatype, super().data(index, role))
+        return super().data(index, role)
