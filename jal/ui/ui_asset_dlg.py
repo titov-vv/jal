@@ -15,10 +15,12 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QDialog, QFrame,
-    QGridLayout, QGroupBox, QHBoxLayout, QHeaderView,
-    QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QSpacerItem, QTableView, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QDialog, QFrame, QGridLayout,
+    QGroupBox, QHBoxLayout, QHeaderView, QLabel,
+    QLineEdit, QPushButton, QSizePolicy, QSpacerItem,
+    QTableView, QVBoxLayout, QWidget)
+
+from jal.widgets.db_lookup_combobox import AssetTypeCombo
 
 class Ui_AssetDialog(object):
     def setupUi(self, AssetDialog):
@@ -36,7 +38,7 @@ class Ui_AssetDialog(object):
 
         self.gridLayout.addWidget(self.TypeLbl, 1, 2, 1, 1)
 
-        self.TypeCombo = QComboBox(AssetDialog)
+        self.TypeCombo = AssetTypeCombo(AssetDialog)
         self.TypeCombo.setObjectName(u"TypeCombo")
 
         self.gridLayout.addWidget(self.TypeCombo, 1, 3, 1, 1)

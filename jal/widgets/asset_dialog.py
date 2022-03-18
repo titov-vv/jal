@@ -13,18 +13,13 @@ class AssetDialog(QDialog, Ui_AssetDialog):
         self._model = QSqlTableModel(parent=self, db=db_connection())
         self._model.setTable("assets")
 
-        self.type_model = QSqlTableModel(parent=self, db=db_connection())
-        self.type_model.setTable('asset_types')
-        self.type_model.select()
-        self.TypeCombo.setModel(self.type_model)
-        self.TypeCombo.setModelColumn(self.type_model.fieldIndex("name"))
-
         self._mapper = QDataWidgetMapper(self._model)
         self._mapper.setModel(self._model)
         self._mapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
 
         self._mapper.addMapping(self.NameEdit, self._model.fieldIndex("full_name"))
         self._mapper.addMapping(self.isinEdit, self._model.fieldIndex("isin"))
+        self._mapper.addMapping(self.TypeCombo, self._model.fieldIndex("type_id"))
 
         self._model.select()
 

@@ -43,7 +43,7 @@
     </widget>
    </item>
    <item row="1" column="3">
-    <widget class="QComboBox" name="TypeCombo"/>
+    <widget class="AssetTypeCombo" name="TypeCombo"/>
    </item>
    <item row="0" column="0">
     <widget class="QLabel" name="NameLbl">
@@ -294,6 +294,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>AssetTypeCombo</class>
+   <extends>QComboBox</extends>
+   <header>jal/widgets/db_lookup_combobox.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

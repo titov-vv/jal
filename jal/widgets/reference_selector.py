@@ -72,6 +72,7 @@ class AbstractReferenceSelector(QWidget):
     def isCustom(self):
         return True
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 class AccountSelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
@@ -81,6 +82,7 @@ class AccountSelector(AbstractReferenceSelector):
         self.dialog = ui_dialogs.AccountListDialog()
         AbstractReferenceSelector.__init__(self, parent)
 
+
 class AssetSelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
         self.table = "assets_ext"
@@ -88,6 +90,7 @@ class AssetSelector(AbstractReferenceSelector):
         self.details_field = "full_name"
         self.dialog = ui_dialogs.AssetListDialog()
         AbstractReferenceSelector.__init__(self, parent)
+
 
 class PeerSelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
@@ -97,6 +100,7 @@ class PeerSelector(AbstractReferenceSelector):
         self.dialog = ui_dialogs.PeerListDialog()
         AbstractReferenceSelector.__init__(self, parent)
 
+
 class CategorySelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
         self.table = "categories"
@@ -104,6 +108,7 @@ class CategorySelector(AbstractReferenceSelector):
         self.details_field = None
         self.dialog = ui_dialogs.CategoryListDialog()
         AbstractReferenceSelector.__init__(self, parent)
+
 
 class TagSelector(AbstractReferenceSelector):
     def __init__(self, parent=None):
