@@ -1,5 +1,6 @@
 from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex
 from PySide6.QtSql import QSqlTableModel, QSqlRelationalTableModel
+from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QHeaderView
 from jal.db.helpers import db_connection, executeSQL, readSQL
 
@@ -14,6 +15,7 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         self._view = parent_view
         self._table = table
         self._columns = []
+        self._deleted_rows = []
         self._default_name = "name"
         self._group_by = None
         self._sort_by = None
@@ -46,6 +48,15 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
             if role == Qt.DisplayRole:
                 return self._columns[section][1]
         return None
+
+    def data(self, index, role=Qt.DisplayRole):
+        if not index.isValid():
+            return None
+        if role == Qt.FontRole and (index.row() in self._deleted_rows):  # Strike-out deleted items
+            font = QFont()
+            font.setStrikeOut(True)
+            return font
+        return super().data(index, role)
 
     def configureView(self):
         self.setSorting()
@@ -92,6 +103,17 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         else:
             return
         assert self.removeRow(row)
+        self._deleted_rows.append(row)
+
+    def submitAll(self):
+        result = super().submitAll()
+        if result:
+            self._deleted_rows = []
+        return result
+
+    def revertAll(self):
+        self._deleted_rows = []
+        super().revertAll()
 
     def locateItem(self, item_id, use_filter=''):
         raise NotImplementedError(f"locateItem() method is not defined  in {type(self).__name__} class")

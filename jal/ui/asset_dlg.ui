@@ -432,5 +432,38 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>OkButton</sender>
+   <signal>clicked()</signal>
+   <receiver>AssetDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>884</x>
+     <y>307</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>463</x>
+     <y>161</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>CancelButton</sender>
+   <signal>clicked()</signal>
+   <receiver>AssetDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>802</x>
+     <y>307</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>463</x>
+     <y>161</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

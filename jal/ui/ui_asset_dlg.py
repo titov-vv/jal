@@ -242,6 +242,8 @@ class Ui_AssetDialog(object):
 
 
         self.retranslateUi(AssetDialog)
+        self.OkButton.clicked.connect(AssetDialog.accept)
+        self.CancelButton.clicked.connect(AssetDialog.reject)
 
         QMetaObject.connectSlotsByName(AssetDialog)
     # setupUi

@@ -3,6 +3,7 @@ from PySide6.QtCore import Qt, Property, QDateTime
 from PySide6.QtSql import QSqlTableModel, QSqlRelation, QSqlRelationalDelegate
 from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, QComboBox, QLineEdit
 from jal.ui.ui_asset_dlg import Ui_AssetDialog
+from jal.constants import PredefinedAsset
 from jal.db.helpers import db_connection, load_icon
 from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate
 from jal.db.reference_models import AbstractReferenceListModel
@@ -44,6 +45,12 @@ class AssetDialog(QDialog, Ui_AssetDialog):
         self.OkButton.setIcon(load_icon("accept.png"))
         self.CancelButton.setIcon(load_icon("cancel.png"))
 
+        self.TypeCombo.currentIndexChanged.connect(self.onTypeUpdate)
+        self.AddSymbolButton.clicked.connect(self.onAddSymbol)
+        self.RemoveSymbolButton.clicked.connect(self.onRemoveSymbol)
+        self.AddDataButton.clicked.connect(self.onAddData)
+        self.RemoveDataButton.clicked.connect(self.onRemoveData)
+
     def getSelectedId(self):
         return self._asset_id
 
@@ -53,8 +60,45 @@ class AssetDialog(QDialog, Ui_AssetDialog):
         self._mapper.toFirst()
         self._symbols_model.selectAsset(asset_id)
         self._data_model.selectAsset(asset_id)
+        self.onTypeUpdate(0)   # need to update manually as it isn't triggered from mapper
 
     selected_id = Property(str, getSelectedId, setSelectedId)
+
+    def accept(self) -> None:
+        super().accept()
+
+    def reject(self) -> None:
+        super().reject()
+
+    def onTypeUpdate(self, _index):
+        if self.TypeCombo.key == PredefinedAsset.Derivative:
+            self.BaseAssetSelector.setEnabled(True)
+            self.isinEdit.setEnabled(False)
+        elif self.TypeCombo.key == PredefinedAsset.Money or self.TypeCombo.key == PredefinedAsset.Commodity:
+            self.BaseAssetSelector.setEnabled(False)
+            self.isinEdit.setEnabled(False)
+        else:
+            self.BaseAssetSelector.setEnabled(False)
+            self.isinEdit.setEnabled(True)
+
+    def onAddSymbol(self):
+        idx = self.SymbolsTable.selectionModel().selection().indexes()
+        current_index = idx[0] if idx else self._symbols_model.index(0, 0)
+        self._symbols_model.addElement(current_index)
+
+    def onRemoveSymbol(self):
+        idx = self.SymbolsTable.selectionModel().selection().indexes()
+        current_index = idx[0] if idx else self._symbols_model.index(0, 0)
+        self._symbols_model.removeElement(current_index)
+
+    def onAddData(self):
+        idx = self.DataTable.selectionModel().selection().indexes()
+        current_index = idx[0] if idx else self._data_model.index(0, 0)
+        self._data_model.addElement(current_index)
+    def onRemoveData(self):
+        idx = self.DataTable.selectionModel().selection().indexes()
+        current_index = idx[0] if idx else self._data_model.index(0, 0)
+        self._data_model.removeElement(current_index)
 
 
 class SymbolsListModel(AbstractReferenceListModel):
@@ -179,6 +223,7 @@ class ExtraDataModel(AbstractReferenceListModel):
         self._hidden = ["id", "asset_id"]
         self._stretch = "value"
         self._data_delegate = None
+        self._default_values = {'datatype': 1, 'value': ''}
 
     def configureView(self):
         super().configureView()
