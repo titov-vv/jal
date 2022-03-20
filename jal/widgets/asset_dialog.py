@@ -9,13 +9,24 @@ from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate
 from jal.db.reference_models import AbstractReferenceListModel
 
 
+class AssetsListModel(AbstractReferenceListModel):
+    def __init__(self, table, parent_view):
+        AbstractReferenceListModel.__init__(self, table, parent_view)
+        self._columns = [("id", ''),
+                         ("type_id", 'Asset type'),
+                         ("full_name", self.tr("Asset name")),
+                         ("isin", self.tr("ISIN")),
+                         ("country_id", self.tr("Country")),
+                         ("base_asset", self.tr("Base asset"))]
+
+
 class AssetDialog(QDialog, Ui_AssetDialog):
     def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)
         self._asset_id = -1
-        self._model = QSqlTableModel(parent=self, db=db_connection())
-        self._model.setTable("assets")
+        # Custom model to allow common submit errors handling and error message display
+        self._model = AssetsListModel("assets", self)
 
         self._mapper = QDataWidgetMapper(self._model)
         self._mapper.setModel(self._model)
@@ -24,6 +35,7 @@ class AssetDialog(QDialog, Ui_AssetDialog):
         self._mapper.addMapping(self.NameEdit, self._model.fieldIndex("full_name"))
         self._mapper.addMapping(self.isinEdit, self._model.fieldIndex("isin"))
         self._mapper.addMapping(self.TypeCombo, self._model.fieldIndex("type_id"))
+        self._mapper.addMapping(self.CountryCombo, self._model.fieldIndex("country_id"))
         self._mapper.addMapping(self.BaseAssetSelector, self._model.fieldIndex("base_asset"))
 
         self._model.select()
@@ -58,14 +70,32 @@ class AssetDialog(QDialog, Ui_AssetDialog):
         self._asset_id = asset_id
         self._model.setFilter(f"id={self._asset_id}")
         self._mapper.toFirst()
-        self._symbols_model.filterBy("asset_id", asset_id)
-        self._data_model.filterBy("asset_id", asset_id)
+        self._symbols_model.filterBy("asset_id", self._asset_id)
+        self._data_model.filterBy("asset_id", self._asset_id)
         self.onTypeUpdate(0)   # need to update manually as it isn't triggered from mapper
 
     selected_id = Property(str, getSelectedId, setSelectedId)
 
+    def createNewRecord(self):
+        self._asset_id = 0
+        self._model.setFilter(f"id={self._asset_id}")
+        new_record = self._model.record()
+        new_record.setNull("id")
+        assert self._model.insertRows(0, 1)
+        self._model.setRecord(0, new_record)
+        self._mapper.toLast()
+        self._symbols_model.filterBy("asset_id", self._asset_id)
+        self._data_model.filterBy("asset_id", self._asset_id)
+
     def accept(self) -> None:
-        for model in [self._data_model, self._symbols_model, self._model]:
+        if not self._model.submitAll():
+            return
+        asset_id = self._model.data(self._model.index(0, self._model.fieldIndex("id")))
+        if asset_id is None:  # we just have saved new asset record and need last inserted id
+            asset_id = self._model.query().lastInsertId()
+        for model in [self._data_model, self._symbols_model]:
+            for row in range(model.rowCount()):
+                model.setData(model.index(row, model.fieldIndex("asset_id")), asset_id)
             if not model.submitAll():
                 return
         super().accept()

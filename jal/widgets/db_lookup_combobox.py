@@ -46,3 +46,10 @@ class AssetTypeCombo(DbLookupComboBox):
     def __init__(self, parent=None):
         DbLookupComboBox.__init__(self, parent)
         self.setupDb("asset_types", "id", "name")
+
+# Provides country lookup combobox
+# It is based on "countries" db table and uses 'id' field as a key displaying 'name' field in combo list
+class CountryCombo(DbLookupComboBox):
+    def __init__(self, parent=None):
+        DbLookupComboBox.__init__(self, parent)
+        self.setupDb("countries", "id", "name")

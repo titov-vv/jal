@@ -35,76 +35,18 @@
    <property name="spacing">
     <number>2</number>
    </property>
-   <item row="10" column="0" colspan="5">
-    <widget class="QFrame" name="ButtonsFrame">
-     <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
+   <item row="1" column="2">
+    <spacer name="horizontalSpacer_4">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <property name="spacing">
-       <number>2</number>
-      </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QPushButton" name="CancelButton">
-        <property name="text">
-         <string>Cancel</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="OkButton">
-        <property name="text">
-         <string>OK</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="BaseLbl">
-     <property name="text">
-      <string>Base asset:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="NameLbl">
-     <property name="text">
-      <string>Name:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="AssetSelector" name="BaseAssetSelector" native="true"/>
+    </spacer>
    </item>
    <item row="3" column="0" colspan="5">
     <widget class="QFrame" name="frame">
@@ -380,6 +322,13 @@
      </layout>
     </widget>
    </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="NameLbl">
+     <property name="text">
+      <string>Name:</string>
+     </property>
+    </widget>
+   </item>
    <item row="1" column="0">
     <widget class="QLabel" name="isinLbl">
      <property name="text">
@@ -387,34 +336,95 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="4">
-    <widget class="AssetTypeCombo" name="TypeCombo"/>
+   <item row="2" column="1">
+    <widget class="AssetSelector" name="BaseAssetSelector" native="true"/>
+   </item>
+   <item row="10" column="0" colspan="5">
+    <widget class="QFrame" name="ButtonsFrame">
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="spacing">
+       <number>2</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="CancelButton">
+        <property name="text">
+         <string>Cancel</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="OkButton">
+        <property name="text">
+         <string>OK</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="BaseLbl">
+     <property name="text">
+      <string>Base asset:</string>
+     </property>
+    </widget>
    </item>
    <item row="1" column="3">
     <widget class="QLabel" name="TypeLbl">
      <property name="text">
-      <string>Type:</string>
+      <string>Type: </string>
      </property>
     </widget>
    </item>
    <item row="1" column="1">
     <widget class="QLineEdit" name="isinEdit"/>
    </item>
+   <item row="2" column="3">
+    <widget class="QLabel" name="CountryLbl">
+     <property name="text">
+      <string>Country: </string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="4">
+    <widget class="CountryCombo" name="CountryCombo"/>
+   </item>
+   <item row="1" column="4">
+    <widget class="AssetTypeCombo" name="TypeCombo"/>
+   </item>
    <item row="0" column="1" colspan="4">
     <widget class="QLineEdit" name="NameEdit"/>
-   </item>
-   <item row="1" column="2">
-    <spacer name="horizontalSpacer_4">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>40</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
    </item>
   </layout>
  </widget>
@@ -429,6 +439,11 @@
    <extends>QWidget</extends>
    <header>jal/widgets/reference_selector.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CountryCombo</class>
+   <extends>QComboBox</extends>
+   <header>jal/widgets/db_lookup_combobox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

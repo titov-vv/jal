@@ -139,14 +139,20 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
 
     @Slot()
     def OnAdd(self):
-        if self.tree_view:
-            idx = self.TreeView.selectionModel().selection().indexes()
+        if self.custom_editor:
+            editor = self.customEditor()
+            editor.createNewRecord()
+            editor.exec()
+            self.model.select()   # TODO better to make self.beginInsertRows/endInsertRows
         else:
-            idx = self.DataView.selectionModel().selection().indexes()
-        current_index = idx[0] if idx else self.model.index(0, 0)
-        self.model.addElement(current_index, in_group=self.group_id)
-        self.CommitBtn.setEnabled(True)
-        self.RevertBtn.setEnabled(True)
+            if self.tree_view:
+                idx = self.TreeView.selectionModel().selection().indexes()
+            else:
+                idx = self.DataView.selectionModel().selection().indexes()
+            current_index = idx[0] if idx else self.model.index(0, 0)
+            self.model.addElement(current_index, in_group=self.group_id)
+            self.CommitBtn.setEnabled(True)
+            self.RevertBtn.setEnabled(True)
 
     @Slot()
     def OnChildAdd(self):
