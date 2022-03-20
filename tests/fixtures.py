@@ -7,7 +7,7 @@ from constants import Setup, PredefinedCategory, PredefinedAsset
 from jal.db.helpers import init_and_check_db, LedgerInitError
 from jal.db.db import JalDB
 from jal.db.helpers import executeSQL, get_dbfilename
-from tests.helpers import create_assets
+from tests.helpers import create_assets, create_dividends
 
 
 @pytest.fixture
@@ -55,15 +55,16 @@ def prepare_db_ibkr(prepare_db):
     assert executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'IB')") is not None
     assert executeSQL("INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id) "
                       "VALUES (4, 'Inv. Account', 2, 1, 'U7654321', 1)") is not None
-    assert executeSQL("INSERT INTO assets (id, name, type_id, full_name, src_id) "
-                      "VALUES (4, 'VUG', 4, 'Growth ETF', 0), "
-                      "(5, 'EDV', 4, 'VANGUARD EXTENDED DUR TREAS', 0)") is not None
-    assert executeSQL("INSERT INTO dividends (id, timestamp, type, account_id, asset_id, amount, tax, note) "
-                      "VALUES (1, 1529612400, 1, 1, 5, 16.76, 1.68, "
-                      "'EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'), "
-                      "(2, 1533673200, 1, 1, 5, 20.35, 2.04, "
-                      "'EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)')") is not None
-
+    test_assets = [
+        (4, 'VUG', 'Growth ETF', '', 2, PredefinedAsset.Stock, 0),
+        (5, 'EDV', 'VANGUARD EXTENDED DUR TREAS', '', 2, PredefinedAsset.Stock, 0)
+    ]
+    create_assets(test_assets)
+    dividends = [
+        (1529612400, 1, 5, 16.76, 1.68, "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"),
+        (1533673200, 1, 5, 20.35, 2.04, "EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)")
+    ]
+    create_dividends(dividends)
     yield
 
 
@@ -81,9 +82,7 @@ def prepare_db_fifo(prepare_db):
 
 @pytest.fixture
 def prepare_db_xls(prepare_db):
-    assert executeSQL("INSERT INTO assets (id, name, type_id, full_name, isin, src_id) "
-                      "VALUES (4, 'AFLT', :stock, 'АО Аэрофлот', 'RU0009062285', 0)",
-                      [(":stock", PredefinedAsset.Stock)]) is not None
+    create_assets([(4, 'AFLT', 'АО Аэрофлот', 'RU0009062285', 1, PredefinedAsset.Stock, 0)])
     yield
 
 

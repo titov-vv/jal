@@ -88,14 +88,13 @@ class JalDB:
     def get_account_id(self, accountNumber, accountCurrency=''):
         if accountCurrency:
             account_id = readSQL("SELECT a.id FROM accounts AS a "
-                                 "LEFT JOIN assets AS c ON c.id=a.currency_id "
-                                 "WHERE a.number=:account_number AND c.name=:currency_name",
+                                 "LEFT JOIN currencies AS c ON c.id=a.currency_id "
+                                 "WHERE a.number=:account_number AND c.symbol=:currency_name",
                                  [(":account_number", accountNumber), (":currency_name", accountCurrency)],
                                  check_unique=True)
         else:
-            account_id = readSQL("SELECT a.id FROM accounts AS a "
-                                 "LEFT JOIN assets AS c ON c.id=a.currency_id "
-                                 "WHERE a.number=:account_number", [(":account_number", accountNumber)],
+            account_id = readSQL("SELECT a.id FROM accounts AS a WHERE a.number=:account_number",
+                                 [(":account_number", accountNumber)],
                                  check_unique=True)
         return account_id
 
@@ -154,16 +153,18 @@ class JalDB:
         if isin:
             asset_id = readSQL("SELECT id FROM assets WHERE isin=:isin", [(":isin", isin)])
             if asset_id is None:
-                asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol COLLATE NOCASE AND coalesce(isin, '')=''",
-                                   [(":symbol", symbol)])
+                asset_id = readSQL("SELECT id FROM assets_ext WHERE symbol=:symbol COLLATE NOCASE "
+                                   "AND coalesce(isin, '')=''", [(":symbol", symbol)])
         if asset_id is None:
             if reg_code:
-                asset_id = readSQL("SELECT asset_id FROM asset_reg_id WHERE reg_code=:reg_code",
-                                   [(":reg_code", reg_code)])
+                asset_id = readSQL("SELECT asset_id FROM asset_data WHERE datatype=:datatype AND value=:reg_code",
+                                   [(":datatype", AssetData.RegistrationCode), (":reg_code", reg_code)])
             if asset_id is None:
-                asset_id = readSQL("SELECT id FROM assets WHERE name=:symbol AND "
-                                   "((expiry=:expiry AND type_id=:derivative) OR type_id<>:derivative) COLLATE NOCASE",
-                                   [(":symbol", symbol), (":expiry", expiry),
+                asset_id = readSQL("SELECT a.id FROM assets_ext AS a "
+                                   "LEFT JOIN asset_data AS d ON d.asset_id=a.id AND d.datatype=:datatype "
+                                   "WHERE symbol=:symbol COLLATE NOCASE AND "
+                                   "((d.value=:expiry AND a.type_id=:derivative) OR a.type_id<>:derivative)",
+                                   [(":symbol", symbol), (":datatype", AssetData.ExpiryDate), (":expiry", expiry),
                                     (":derivative", PredefinedAsset.Derivative)])
         if asset_id is None and dialog_new:
             dialog = AddAssetDialog(symbol, isin=isin, name=name)
