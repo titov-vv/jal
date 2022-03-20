@@ -1,8 +1,10 @@
+import logging
 from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex
 from PySide6.QtSql import QSqlTableModel, QSqlRelationalTableModel
 from PySide6.QtGui import QFont
-from PySide6.QtWidgets import QHeaderView
+from PySide6.QtWidgets import QHeaderView, QMessageBox
 from jal.db.helpers import db_connection, executeSQL, readSQL
+from jal.widgets.helpers import decodeError
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -18,6 +20,8 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         self._deleted_rows = []
         self._default_name = "name"
         self._group_by = None
+        self._filter_by = ''
+        self._filter_value = None
         self._sort_by = None
         self._hidden = []
         self._stretch = None
@@ -95,6 +99,8 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
             new_record.setValue(self.fieldIndex(self._group_by), in_group)   # by index as it is lookup field
         for field in self._default_values:
             new_record.setValue(self.fieldIndex(field), self._default_values[field])
+        if self._filter_by:
+            new_record.setValue(self.fieldIndex(self._filter_by), self._filter_value)
         self.setRecord(row, new_record)
 
     def removeElement(self, index):
@@ -109,6 +115,16 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         result = super().submitAll()
         if result:
             self._deleted_rows = []
+        else:
+            if self.lastError().nativeErrorCode() == '1299':
+                prefix = "NOT NULL constraint failed: " + self.tableName() + "."
+                if self.lastError().databaseText().startswith(prefix):
+                    field_name = self.lastError().databaseText()[len(prefix):]
+                    header_title = self.tableName() + ":" + self.headerData(self.fieldIndex(field_name))
+                    QMessageBox().warning(self._view, self.tr("Data are incomplete"),
+                                          self.tr("Column has no valid value: " + header_title), QMessageBox.Ok)
+                    return
+            logging.fatal(self.tr("Submit failed: ") + decodeError(self.lastError().text()))
         return result
 
     def revertAll(self):
@@ -122,6 +138,11 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         id = self.getId(index)
         executeSQL(f"UPDATE {self._table} SET {self._group_by}=:new_type WHERE id=:id",
                    [(":new_type", new_type), (":id", id)])
+
+    def filterBy(self, field_name, value):
+        self._filter_by = field_name
+        self._filter_value = value
+        self.setFilter(f"{self._table}.{field_name} = {value}")
 
 
 # ----------------------------------------------------------------------------------------------------------------------

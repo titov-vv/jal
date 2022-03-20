@@ -1,11 +1,9 @@
-import logging
 from functools import partial
 
 from PySide6.QtCore import Qt, Signal, Property, Slot
 from PySide6.QtWidgets import QDialog, QMessageBox, QMenu, QWidgetAction, QLabel
 
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
-from jal.widgets.helpers import decodeError
 from jal.db.helpers import load_icon
 
 
@@ -173,15 +171,6 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     @Slot()
     def OnCommit(self):
         if not self.model.submitAll():
-            if self.model.lastError().nativeErrorCode() == '1299':
-                prefix = "NOT NULL constraint failed: " + self.model.tableName() + "."
-                if self.model.lastError().databaseText().startswith(prefix):
-                    field_name = self.model.lastError().databaseText()[len(prefix):]
-                    header_title = self.model.headerData(self.model.fieldIndex(field_name))
-                    QMessageBox().warning(self, self.tr("Data are incomplete"),
-                                          self.tr("Column has no valid value: " + header_title), QMessageBox.Ok)
-                    return
-            logging.fatal(self.tr("Submit failed: ") + decodeError(self.model.lastError().text()))
             return
         self.CommitBtn.setEnabled(False)
         self.RevertBtn.setEnabled(False)

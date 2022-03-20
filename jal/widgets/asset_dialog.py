@@ -58,16 +58,21 @@ class AssetDialog(QDialog, Ui_AssetDialog):
         self._asset_id = asset_id
         self._model.setFilter(f"id={self._asset_id}")
         self._mapper.toFirst()
-        self._symbols_model.selectAsset(asset_id)
-        self._data_model.selectAsset(asset_id)
+        self._symbols_model.filterBy("asset_id", asset_id)
+        self._data_model.filterBy("asset_id", asset_id)
         self.onTypeUpdate(0)   # need to update manually as it isn't triggered from mapper
 
     selected_id = Property(str, getSelectedId, setSelectedId)
 
     def accept(self) -> None:
+        for model in [self._data_model, self._symbols_model, self._model]:
+            if not model.submitAll():
+                return
         super().accept()
 
     def reject(self) -> None:
+        for model in [self._data_model, self._symbols_model, self._model]:
+            model.revertAll()
         super().reject()
 
     def onTypeUpdate(self, _index):
@@ -128,9 +133,6 @@ class SymbolsListModel(AbstractReferenceListModel):
         self._view.setItemDelegateForColumn(self.fieldIndex("quote_source"), self._lookup_delegate)
         self._bool_delegate = BoolDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("active"), self._bool_delegate)
-
-    def selectAsset(self, asset_id):
-        self.setFilter(f"{self._table}.asset_id = {asset_id}")
 
 
 # Delegate class that allows to choose data type in 'key_field' and edit data in 'value_field' (both are integer
@@ -230,9 +232,6 @@ class ExtraDataModel(AbstractReferenceListModel):
         self._data_delegate = DataDelegate(self.fieldIndex("datatype"), self.fieldIndex("value"), self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("datatype"), self._data_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("value"), self._data_delegate)
-
-    def selectAsset(self, asset_id):
-        self.setFilter(f"{self._table}.asset_id = {asset_id}")
 
     def data(self, index, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
