@@ -286,8 +286,9 @@ class QuoteDownloader(QObject):
         isin = asset['isin'] if 'isin' in asset else ''
         reg_code = asset['reg_code'] if 'reg_code' in asset else ''
         expiry = asset['expiry'] if 'expiry' in asset else 0
+        principal = asset['principal'] if 'principal' in asset else 0
         if update_symbol:
-            JalDB().update_asset_data(asset_id, new_isin=isin, new_reg=reg_code, expiry=expiry)
+            JalDB().update_asset_data(asset_id, new_isin=isin, new_reg=reg_code, expiry=expiry, principal=principal)
 
         # Get price history
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d')

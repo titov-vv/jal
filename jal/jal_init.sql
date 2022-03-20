@@ -115,6 +115,9 @@ CREATE TABLE asset_data (
     value    TEXT    NOT NULL
 );
 
+DROP INDEX IF EXISTS asset_data_uniqueness;
+CREATE UNIQUE INDEX asset_data_uniqueness ON asset_data ( asset_id, datatype);
+
 -- Table: agents
 DROP TABLE IF EXISTS agents;
 

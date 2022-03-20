@@ -23,13 +23,18 @@ def create_stocks(assets, currency_id):
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Create assets in database with PredefinedAsset.Stock type : assets is a list of tuples
-# (symbol, full_name, isin, asset_type, country_id)
+# (id, symbol, full_name, isin, currency_id, asset_type, country_id)
 def create_assets(assets):
     for asset in assets:
-        assert executeSQL("INSERT INTO assets (name, full_name, isin, type_id, country_id) "
-                          "VALUES (:name, :full_name, :isin, :type_id, :country_id)",
-                          [(":name", asset[0]), (":full_name", asset[1]), (":isin", asset[2]),
-                           (":type_id", asset[3]), (":country_id", asset[4])], commit=True) is not None
+        query = executeSQL("INSERT INTO assets (id, type_id, full_name, isin, country_id) "
+                           "VALUES (:id, :type, :full_name, :isin, :country_id)",
+                           [(":id", asset[0]), (":type", asset[5]), (":full_name", asset[2]),
+                            (":isin", asset[3]), (":country_id", asset[6])], commit=True)
+        asset_id = query.lastInsertId()
+        assert executeSQL("INSERT INTO asset_tickers (asset_id, symbol, currency_id) "
+                          "VALUES (:asset_id, :symbol, :currency_id)",
+                          [(":asset_id", asset_id), (":symbol", asset[1]), (":currency_id", asset[4])],
+                          commit=True) is not None
 
 
 # ----------------------------------------------------------------------------------------------------------------------

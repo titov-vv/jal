@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QApplication, QDialog
 from PySide6.QtSql import QSqlTableModel
 
 from jal.ui.ui_add_asset_dlg import Ui_AddAssetDialog
-from jal.constants import Setup, BookAccount, PredefindedAccountType, PredefinedAsset
+from jal.constants import Setup, BookAccount, PredefindedAccountType, PredefinedAsset, AssetData
 from jal.db.helpers import db_connection, executeSQL, readSQL, get_country_by_code
 
 
@@ -171,7 +171,7 @@ class JalDB:
             asset_id = dialog.asset_id
         return asset_id
 
-    def update_asset_data(self, asset_id, new_symbol='', new_isin='', new_reg='', new_country_code='', expiry=0):  # TODO Change params to **kwargs
+    def update_asset_data(self, asset_id, new_symbol='', new_isin='', new_reg='', new_country_code='', expiry=0, principal=0):  # TODO Change params to **kwargs
         if new_symbol:
             symbol = readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
             if new_symbol.upper() != symbol.upper():
@@ -190,10 +190,13 @@ class JalDB:
                 logging.warning(self.tr("ISIN mismatch for ")
                                 + f"{self.get_asset_name(asset_id)}: {isin} != {new_isin}")
         if new_reg:
-            reg = readSQL("SELECT reg_code FROM asset_reg_id WHERE asset_id=:asset_id", [(":asset_id", asset_id)])
+            reg = readSQL("SELECT value FROM asset_data WHERE datatype=:datatype AND asset_id=:asset_id",
+                          [(":datatype", AssetData.RegistrationCode), (":asset_id", asset_id)])
             if new_reg != reg:
-                _ = executeSQL("INSERT OR REPLACE INTO asset_reg_id(asset_id, reg_code) VALUES(:asset_id, :new_reg)",
-                               [(":new_reg", new_reg), (":asset_id", asset_id)])
+                _ = executeSQL("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
+                               "VALUES(:asset_id, :datatype, :reg_number)",
+                               [(":asset_id", asset_id), (":datatype", AssetData.RegistrationCode),
+                                (":reg_number", new_reg)])
                 logging.info(self.tr("Reg.number updated for ")
                              + f"{self.get_asset_name(asset_id)}: {reg} -> {new_reg}")
         if new_country_code:
@@ -207,8 +210,15 @@ class JalDB:
                     logging.info(self.tr("Country updated for ")
                                  + f"{self.get_asset_name(asset_id)}: {country_code} -> {new_country_code}")
         if expiry:
-            _ = executeSQL("UPDATE assets SET expiry=:expiry WHERE id=:asset_id",
-                           [(":expiry", expiry), (":asset_id", asset_id)])
+            _ = executeSQL("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
+                           "VALUES(:asset_id, :datatype, :expiry)",
+                           [(":asset_id", asset_id), (":datatype", AssetData.ExpiryDate),
+                            (":expiry", expiry)])
+        if principal:
+            _ = executeSQL("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
+                           "VALUES(:asset_id, :datatype, :principal)",
+                           [(":asset_id", asset_id), (":datatype", AssetData.PrincipalValue),
+                            (":principal", principal)])
 
     def get_quote(self, asset_id, timestamp):
         return readSQL("SELECT quote FROM quotes WHERE asset_id=:asset_id AND timestamp=:timestamp",

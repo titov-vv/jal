@@ -7,6 +7,7 @@ from constants import Setup, PredefinedCategory, PredefinedAsset
 from jal.db.helpers import init_and_check_db, LedgerInitError
 from jal.db.db import JalDB
 from jal.db.helpers import executeSQL, get_dbfilename
+from tests.helpers import create_assets
 
 
 @pytest.fixture
@@ -87,19 +88,14 @@ def prepare_db_xls(prepare_db):
 
 
 @pytest.fixture
-def prepare_db_moex(prepare_db):   # Create SBER stock in database to be updated from www.moex.com
-    assert executeSQL("INSERT INTO assets (id, name, type_id, full_name, isin, src_id) "
-                      "VALUES (4, 'SBER', :stock, '', '', 0)",
-                      [(":stock", PredefinedAsset.Stock)]) is not None
-    assert executeSQL("INSERT INTO assets (id, name, type_id, full_name, isin, src_id) "
-                      "VALUES (5, 'SiZ1', :derivative, 'Si-12.11 Контракт на курс доллар-рубль', '', 0)",
-                      [(":derivative", PredefinedAsset.Derivative)]) is not None
-    assert executeSQL("INSERT INTO assets (id, name, type_id, full_name, isin, src_id) "
-                      "VALUES (6, 'SU26238RMFS4', :bond, '', 'RU000A1038V6', 0)",
-                      [(":bond", PredefinedAsset.Bond)]) is not None
-    assert executeSQL("INSERT INTO assets (id, name, type_id, full_name, isin, src_id) "
-                      "VALUES (7, 'МКБ 1P2', :bond, '', 'RU000A1014H6', 0)",
-                      [(":bond", PredefinedAsset.Bond)]) is not None
+def prepare_db_moex(prepare_db):   # Create assets in database to be updated from www.moex.com
+    test_assets = [
+        (4, 'SBER', '', 'RU0009029540', 1, PredefinedAsset.Stock, 0),
+        (5, 'SiZ1', '', '', 1, PredefinedAsset.Derivative, 0),
+        (6, 'SU26238RMFS4', '', 'RU000A1038V6', 1, PredefinedAsset.Bond, 0),
+        (7, 'МКБ 1P2', '', 'RU000A1014H6', 1, PredefinedAsset.Bond, 0)
+    ]
+    create_assets(test_assets)
     yield
 
 @pytest.fixture

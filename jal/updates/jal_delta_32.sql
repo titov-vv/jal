@@ -143,6 +143,10 @@ CREATE TABLE asset_data (
     value    TEXT    NOT NULL
 );
 
+DROP INDEX IF EXISTS asset_data_uniqueness;
+CREATE UNIQUE INDEX asset_data_uniqueness ON asset_data ( asset_id, datatype);
+
+
 -- Insert registration codes
 INSERT INTO asset_data (asset_id, datatype, value)
 SELECT asset_id, 1 AS datatype, reg_code AS value
