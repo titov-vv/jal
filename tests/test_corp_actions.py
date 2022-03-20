@@ -2,6 +2,7 @@ from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from constants import PredefinedAsset
 from jal.db.ledger import Ledger
 from jal.db.helpers import readSQL, executeSQL
+from tests.helpers import create_stocks
 
 
 def test_spin_off(prepare_db_fifo):
@@ -10,11 +11,7 @@ def test_spin_off(prepare_db_fifo):
         (4, 'A', 'A SHARE'),
         (5, 'B', 'B SHARE')
     ]
-    for asset in test_assets:
-        assert executeSQL("INSERT INTO assets (id, name, type_id, full_name) "
-                          "VALUES (:id, :name, :type, :full_name)",
-                          [(":id", asset[0]), (":name", asset[1]),
-                           (":type", PredefinedAsset.Stock), (":full_name", asset[2])], commit=True) is not None
+    create_stocks(test_assets, currency_id=2)
 
     test_corp_actions = [
         (1, 1622548800, 2, 4, 100.0, 5, 5.0, 1.0, 'Spin-off 5 B from 100 A'),   # 01/06/2021, cost basis 0.0
@@ -70,11 +67,7 @@ def test_symbol_change(prepare_db_fifo):
         (4, 'A', 'A SHARE'),
         (5, 'B', 'B SHARE')
     ]
-    for asset in test_assets:
-        assert executeSQL("INSERT INTO assets (id, name, type_id, full_name) "
-                          "VALUES (:id, :name, :type, :full_name)",
-                          [(":id", asset[0]), (":name", asset[1]),
-                           (":type", PredefinedAsset.Stock), (":full_name", asset[2])], commit=True) is not None
+    create_stocks(test_assets, currency_id=2)
 
     test_corp_actions = [
         (1, 1622548800, 3, 4, 100.0, 5, 100.0, 1.0, 'Symbol change 100 A -> 100 B')
