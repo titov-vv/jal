@@ -68,7 +68,7 @@ def test_ledger(prepare_db_ledger):
 
 def test_buy_sell_change(prepare_db_fifo):
     # Prepare single stock
-    create_stocks([(4, 'A', 'A SHARE')])
+    create_stocks([(4, 'A', 'A SHARE')], currency_id=2)
 
     test_trades = [
         (1, 1609567200, 1609653600, 4, 10.0, 100.0, 1.0),
@@ -129,7 +129,7 @@ def test_buy_sell_change(prepare_db_fifo):
 
 def test_stock_dividend_change(prepare_db_fifo):
     # Prepare single stock
-    create_stocks([(4, 'A', 'A SHARE')])
+    create_stocks([(4, 'A', 'A SHARE')], currency_id=2)
 
     test_trades = [
         (1628852820, 1629158400, 4, 2.0, 53.13, 0.34645725),
@@ -193,7 +193,7 @@ def test_fifo(prepare_db_fifo):
         (17, 'O', 'O SHARE'),
         (18, 'P', 'P SHARE'),
     ]
-    create_stocks(test_assets)
+    create_stocks(test_assets, currency_id=2)
 
     test_corp_actions = [
         (1606899600, 3, 10, 100.0, 11, 100.0, 1.0, 'Symbol change G1 -> G2'),

@@ -101,8 +101,8 @@ CREATE TABLE asset_tickers (
     asset_id     INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     symbol       TEXT    NOT NULL,
     currency_id  INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    description  TEXT    NOT NULL,
-    quote_source INTEGER REFERENCES data_sources (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    description  TEXT    NOT NULL DEFAULT (''),
+    quote_source INTEGER REFERENCES data_sources (id) ON DELETE SET NULL ON UPDATE CASCADE DEFAULT (-1),
     active       INTEGER NOT NULL DEFAULT (1)
 );
 

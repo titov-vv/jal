@@ -9,12 +9,16 @@ from constants import PredefinedAsset
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Create assets in database with PredefinedAsset.Stock type : assets is a list of tuples (asset_id, symbol, full_name)
-def create_stocks(assets):
+def create_stocks(assets, currency_id):
     for asset in assets:
-        assert executeSQL("INSERT INTO assets (id, name, type_id, full_name) "
-                          "VALUES (:id, :name, :type, :full_name)",
-                          [(":id", asset[0]), (":name", asset[1]),
-                           (":type", PredefinedAsset.Stock), (":full_name", asset[2])], commit=True) is not None
+        query = executeSQL("INSERT INTO assets (id, type_id, full_name) VALUES (:id, :type, :full_name)",
+                           [(":id", asset[0]), (":type", PredefinedAsset.Stock),
+                            (":full_name", asset[2])], commit=True)
+        asset_id = query.lastInsertId()
+        assert executeSQL("INSERT INTO asset_tickers (asset_id, symbol, currency_id) "
+                          "VALUES (:asset_id, :symbol, :currency_id)",
+                          [(":asset_id", asset_id), (":symbol", asset[1]), (":currency_id", currency_id)],
+                          commit=True) is not None
 
 
 # ----------------------------------------------------------------------------------------------------------------------
