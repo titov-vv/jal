@@ -249,7 +249,7 @@ def update_asset_country(asset_id, country_id):
         return
     old_country = readSQL("SELECT name FROM countries WHERE id=:country_id", [(":country_id", old_id)])
     new_country = readSQL("SELECT name FROM countries WHERE id=:country_id", [(":country_id", country_id)])
-    asset_name = readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":country_id", asset_id)])
+    asset_name = readSQL("SELECT symbol FROM assets_ext WHERE id=:asset_id", [(":asset_id", asset_id)])
     logging.warning(QApplication.translate('DB', "Country was changed for asset ") +
                     f"{asset_name}: f{old_country} -> {new_country}")
 
