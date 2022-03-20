@@ -116,15 +116,22 @@ class AbstractReferenceListModel(QSqlRelationalTableModel):
         if result:
             self._deleted_rows = []
         else:
-            if self.lastError().nativeErrorCode() == '1299':
+            error_code = self.lastError().nativeErrorCode()
+            if error_code == '1299':
                 prefix = "NOT NULL constraint failed: " + self.tableName() + "."
                 if self.lastError().databaseText().startswith(prefix):
                     field_name = self.lastError().databaseText()[len(prefix):]
                     header_title = self.tableName() + ":" + self.headerData(self.fieldIndex(field_name))
                     QMessageBox().warning(self._view, self.tr("Data are incomplete"),
                                           self.tr("Column has no valid value: " + header_title), QMessageBox.Ok)
-                    return
-            logging.fatal(self.tr("Submit failed: ") + decodeError(self.lastError().text()))
+                else:
+                    logging.fatal(self.tr("Submit failed: ") + decodeError(self.lastError().text()))
+            elif error_code == '1811':   # Foreign key constraint failed
+                QMessageBox().warning(self._view, self.tr("Data are in use"),
+                                      self.tr("Data are referenced in another place and can't be modified"),
+                                      QMessageBox.Ok)
+            else:
+                logging.fatal(self.tr("Submit failed: ") + decodeError(self.lastError().text()))
         return result
 
     def revertAll(self):

@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt, QModelIndex
-from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate
+from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate, QSqlIndex
 from PySide6.QtWidgets import QToolBar, QAbstractItemView
 from jal.db.helpers import readSQL
 from jal.db.reference_models import AbstractReferenceListModel, SqlTreeModel
@@ -136,6 +136,9 @@ class AccountListDialog(ReferenceDataDialog):
 class AssetListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
         AbstractReferenceListModel.__init__(self, table, parent_view)
+        pk = QSqlIndex()   # Manual primary key setup is required as we use underlying sql view instead of sql table
+        pk.append(self.record().field("id"))
+        self.setPrimaryKey(pk)
         self._columns = [("id", ''),
                          ("type_id", ''),
                          ("symbol", self.tr("Symbol")),
@@ -161,8 +164,6 @@ class AssetListModel(AbstractReferenceListModel):
         self._lookup_delegate = QSqlRelationalDelegate(self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("country_id"), self._lookup_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex("quote_source"), self._lookup_delegate)
-        # self._timestamp_delegate = TimestampDelegate(parent=self._view, display_format='%d/%m/%Y')
-        # self._view.setItemDelegateForColumn(self.fieldIndex("expiry"), self._timestamp_delegate)
 
     def getAssetType(self, item_id: int) -> int:
         type_id = readSQL(f"SELECT type_id FROM {self._table} WHERE id=:id", [(":id", item_id)])

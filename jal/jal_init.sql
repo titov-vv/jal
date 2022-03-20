@@ -629,6 +629,15 @@ CREATE VIEW assets_ext AS
     ORDER BY a.id;
 
 
+-- Deletion should happen on base table
+DROP TRIGGER IF EXISTS on_asset_ext_delete;
+CREATE TRIGGER on_asset_ext_delete
+    INSTEAD OF DELETE ON assets_ext FOR EACH ROW
+BEGIN
+    DELETE FROM assets WHERE id = OLD.id;
+END;
+
+
 -- Trigger: action_details_after_delete
 DROP TRIGGER IF EXISTS action_details_after_delete;
 CREATE TRIGGER action_details_after_delete

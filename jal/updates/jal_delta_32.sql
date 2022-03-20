@@ -220,6 +220,14 @@ CREATE VIEW assets_ext AS
     LEFT JOIN asset_tickers t ON a.id = t.asset_id
     WHERE t.active = 1
     ORDER BY a.id;
+
+-- Deletion should happen on base table
+DROP TRIGGER IF EXISTS on_asset_ext_delete;
+CREATE TRIGGER on_asset_ext_delete
+    INSTEAD OF DELETE ON assets_ext FOR EACH ROW
+BEGIN
+    DELETE FROM assets WHERE id = OLD.id;
+END;
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 1;
 --------------------------------------------------------------------------------
