@@ -218,7 +218,7 @@ CREATE VIEW assets_ext AS
            t.quote_source
     FROM assets a
     LEFT JOIN asset_tickers t ON a.id = t.asset_id
-    WHERE t.active = 1 AND a.type_id != 1
+    WHERE t.active = 1
     ORDER BY a.id;
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 1;
