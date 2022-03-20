@@ -911,9 +911,12 @@ INSERT INTO categories (id, pid, name, often, special) VALUES (8, 3, 'Interest',
 INSERT INTO categories (id, pid, name, often, special) VALUES (9, 3, 'Results of investments', 0, 1);
 
 -- Initialize common currencies
-INSERT INTO assets (id, name, type_id, full_name, src_id) VALUES (1, 'RUB', 1, 'Российский Рубль', -1);
-INSERT INTO assets (id, name, type_id, full_name, src_id) VALUES (2, 'USD', 1, 'Доллар США', 0);
-INSERT INTO assets (id, name, type_id, full_name, src_id) VALUES (3, 'EUR', 1, 'Евро', 0);
+INSERT INTO assets (id, type_id, full_name) VALUES (1, 1, 'Российский Рубль');
+INSERT INTO asset_tickers (id, asset_id, symbol, currency_id, description, quote_source, active) VALUES (1, 1, 'RUB', 1, 'Российский Рубль', -1, 1);
+INSERT INTO assets (id, type_id, full_name) VALUES (2, 1, 'Доллар США');
+INSERT INTO asset_tickers (id, asset_id, symbol, currency_id, description, quote_source, active) VALUES (2, 2, 'USD', 1, 'Доллар США (Банк России)', 0, 1);
+INSERT INTO assets (id, type_id, full_name) VALUES (3, 1, 'Евро');
+INSERT INTO asset_tickers (id, asset_id, symbol, currency_id, description, quote_source, active) VALUES (3, 3, 'EUR', 1, 'Евро (Банк России)', 0, 1);
 
 -- Initialize some pre-defined countries
 INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (0, 'N/A', 'xx', '000', 0);
