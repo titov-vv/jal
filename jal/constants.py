@@ -62,6 +62,12 @@ class PredefinedAsset:   # Aligned with 'asset_types' table
     Fund = 8
 
 
+class AssetData:
+    RegistrationCode = 1
+    ExpiryDate = 2
+    PrincipalValue = 3
+
+
 class PredefinedPeer:
     Financial = 1
 

@@ -1,11 +1,12 @@
 from datetime import datetime
-from PySide6.QtCore import Qt, Property, QDateTime
-from PySide6.QtSql import QSqlTableModel, QSqlRelation, QSqlRelationalDelegate
+import decimal
+from PySide6.QtCore import Qt, Property, QDateTime, QLocale
+from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate
 from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, QComboBox, QLineEdit
 from jal.ui.ui_asset_dlg import Ui_AssetDialog
-from jal.constants import PredefinedAsset
-from jal.db.helpers import db_connection, load_icon
-from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate
+from jal.constants import PredefinedAsset, AssetData
+from jal.db.helpers import load_icon
+from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate, FloatDelegate
 from jal.db.reference_models import AbstractReferenceListModel
 
 
@@ -167,14 +168,15 @@ class SymbolsListModel(AbstractReferenceListModel):
 
 # Delegate class that allows to choose data type in 'key_field' and edit data in 'value_field' (both are integer
 # indices). Editors are created based on data type associated with 'key_field' via self.types dictionary
-class DataDelegate(QStyledItemDelegate):
+class DataDelegate(QStyledItemDelegate):    # Code doubles with pieces from delegates.py
     def __init__(self, key_field, value_field, parent=None):
         QStyledItemDelegate.__init__(self, parent)
         self._key = key_field
         self._value = value_field
         self.types = {
-            1: (self.tr("reg.code"), "str"),
-            2: (self.tr("expiry"), "date")
+            AssetData.RegistrationCode: (self.tr("reg.code"), "str"),
+            AssetData.ExpiryDate: (self.tr("expiry"), "date"),
+            AssetData.PrincipalValue: (self.tr("principal"), "float")
         }
 
     def type(self, index):
@@ -182,12 +184,17 @@ class DataDelegate(QStyledItemDelegate):
 
     def display_value(self, type_index, value):
         datatype = self.types[type_index][1]
-        if datatype == "str":
-            return value
-        elif datatype == "date":
-            return datetime.utcfromtimestamp(int(value)).strftime("%d/%m/%Y")
-        else:
-            assert False, "Unknown data type of asset data"
+        try:
+            if datatype == "str":
+                return value
+            elif datatype == "date":
+                return datetime.utcfromtimestamp(int(value)).strftime("%d/%m/%Y")
+            elif datatype == "float":
+                return f"{value:.2f}"
+            else:
+                assert False, "Unknown data type of asset data"
+        except ValueError:
+            return ''
 
     def createEditor(self, aParent, option, index):
         if index.column() == self._key:
@@ -196,7 +203,7 @@ class DataDelegate(QStyledItemDelegate):
                 editor.addItem(self.types[idx][0], userData=idx)
         elif index.column() == self._value:
             type_idx = index.model().data(index.sibling(index.row(), self._key), role=Qt.EditRole)
-            if self.types[type_idx][1] == "str":
+            if self.types[type_idx][1] == "str" or self.types[type_idx][1] == "float":
                 editor = QLineEdit(aParent)
             elif self.types[type_idx][1] == "date":
                 editor = DateTimeEditWithReset(aParent)
@@ -221,6 +228,15 @@ class DataDelegate(QStyledItemDelegate):
                     QStyledItemDelegate.setEditorData(self, editor, index)
                 else:
                     editor.setDateTime(QDateTime.fromSecsSinceEpoch(timestamp, spec=Qt.UTC))
+            elif self.types[type_idx][1] == "float":
+                try:
+                    amount = float(index.model().data(index, Qt.EditRole))
+                except (ValueError, TypeError):
+                    amount = 0.0
+                # QLocale().toString works in a bit weird way with float formatting - garbage appears after 5-6 decimal digits
+                # if too long precision is specified for short number. So we need to be more precise setting precision.
+                decimal_places = -decimal.Decimal(str(amount).rstrip('0')).as_tuple().exponent
+                editor.setText(QLocale().toString(amount, 'f', decimal_places))
             else:
                 assert False, f"Unknown data type '{self.types[type_idx][1]}' in DataDelegate.setEditorData()"
         else:
@@ -237,6 +253,9 @@ class DataDelegate(QStyledItemDelegate):
             elif self.types[type_idx][1] == "date":
                 timestamp = editor.dateTime().toSecsSinceEpoch()
                 model.setData(index, str(timestamp))
+            elif self.types[type_idx][1] == "float":
+                value = QLocale().toDouble(editor.text())[0]
+                model.setData(index, value)
             else:
                 assert False, f"Unknown data type '{self.types[type_idx][1]}' in DataDelegate.setModelData()"
         else:
