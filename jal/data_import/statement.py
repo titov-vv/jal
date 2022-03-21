@@ -10,6 +10,7 @@ from collections import defaultdict
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QDialog, QMessageBox
 from jal.constants import Setup, MarketDataFeed, PredefinedAsset
+from jal.db.settings import JalSettings
 from jal.db.helpers import account_last_date, get_app_path
 from jal.db.db import JalDB
 from jal.db.operations import Dividend, CorporateAction
@@ -20,6 +21,7 @@ class FOF:
     PERIOD = "period"
     ACCOUNTS = "accounts"
     ASSETS = "assets"
+    SYMBOLS = "symbols"
     TRADES = "trades"
     TRANSFERS = "transfers"
     CORP_ACTIONS = "corporate_actions"
@@ -398,3 +400,33 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if dialog.store_account:
                 self._previous_accounts[JalDB().get_account_currency(dialog.account_id)] = dialog.account_id
             return dialog.account_id
+
+    # Returns asset dictionary by asset id
+    def _asset(self, asset_id) -> dict:
+        match = [x for x in self._data[FOF.ASSETS] if x['id'] == asset_id]
+        if match:
+            if len(match) == 1:
+                return match[0]
+            else:
+                raise Statement_ImportError(self.tr("Ambiguous asset id ") + f"{asset_id}")
+        else:
+            raise Statement_ImportError(self.tr("Asset id not found") + f"{asset_id}")
+
+    # Method finds currency in current statement data. New currency is created if no currency was found.
+    # Returns currency id
+    def currency_id(self, currency_symbol) -> int:
+        match = [x for x in self._data[FOF.SYMBOLS] if
+                 x['symbol'] == currency_symbol and self._asset(x['asset_id'])['type'] == FOF.ASSET_MONEY]
+        if match:
+            if len(match) == 1:
+                return match[0]["asset_id"]
+            else:
+                raise Statement_ImportError(self.tr("Multiple currency match for ") + f"{currency_symbol}")
+        else:
+            asset_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
+            self._data[FOF.ASSETS].append({"id": asset_id, "type": "money", "name": ""})
+            symbol_id = max([0] + [x['id'] for x in self._data[FOF.SYMBOLS]]) + 1
+            currency = {"id": symbol_id, "asset_id": asset_id, "symbol": currency_symbol,
+                        "currency": -JalSettings().getValue('BaseCurrency')}
+            self._data[FOF.SYMBOLS].append(currency)
+            return asset_id

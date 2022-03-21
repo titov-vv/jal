@@ -8,9 +8,9 @@
     {"id": 5, "number": "U7654321", "currency": 30}
   ],
   "assets": [
-    {"id": 1, "type": "money", "symbol": "RUB"},
-    {"id": 2, "type": "money", "symbol": "USD"},
-    {"id": 3, "type": "money", "symbol": "CAD"},
+    {"id": 1, "type": "money", "name":  ""},
+    {"id": 2, "type": "money", "name":  ""},
+    {"id": 3, "type": "money", "name":  ""},
     {"id": 4, "type": "stock", "symbol": "AMZN", "name": "AMAZON.COM INC", "isin": "US0231351067", "reg_code": "023135106", "exchange":  "NASDAQ"},
     {"id": 5, "type": "etf", "symbol": "VUG", "name": "VANGUARD GROWTH ETF", "isin": "US9229087369", "reg_code": "922908736", "exchange":  "ARCA", "country":  "us"},
     {"id": 6, "type": "adr", "symbol": "BABA", "name": "ALIBABA GROUP HOLDING-SP ADR", "isin": "US01609W1027", "reg_code": "01609W102", "exchange":  "NYSE"},
@@ -37,7 +37,7 @@
     {"id": 27, "type": "stock", "symbol": "AAPL", "name": "APPLE INC", "isin": "US0378331005", "reg_code": "037833100", "exchange": "NASDAQ"},
     {"id": 28, "type": "option", "symbol": "VLO   200724P00064000", "name": "VLO 24JUL20 64.0 P", "exchange": "CBOE"},
     {"id": 29, "type": "stock", "symbol": "VLO", "name": "VALERO ENERGY CORP", "isin": "US91913Y1001", "reg_code": "91913Y100", "exchange": "NYSE"},
-    {"id": 30, "type": "money", "symbol": "EUR"},
+    {"id": 30, "type": "money", "name":  ""},
     {"id": 31, "type": "stock", "symbol": "MAC", "name": "", "isin": "US5543821012", "reg_code": "554382101", "exchange": "NYSE"},
     {"id": 32, "type": "bond", "symbol": "F 8 1/2 04/21/23", "name": "", "isin": "US345370CV02", "reg_code": "345370CV0"},
     {"id": 33, "type": "stock", "symbol": "BAM", "name": "", "isin": "CA1125851040", "reg_code": "112585104", "exchange": "NYSE"},
@@ -47,6 +47,12 @@
     {"id": 37, "type": "stock", "symbol": "CORT", "name": "", "isin": "US2183521028", "reg_code": "218352102", "exchange": "NASDAQ"},
     {"id": 38, "type": "stock", "symbol": "CORT.OD2", "name": "", "isin": "US218NSPODD6", "reg_code": "218NSPODD", "exchange": "CORPACT"},
     {"id": 39, "type": "stock", "symbol": "EDV", "name": "", "reg_code": "921910709", "exchange": "ARCA", "country": "us"}
+  ],
+  "symbols": [
+    {"id": 1, "asset_id": 1, "symbol": "RUB", "currency": -1},
+    {"id": 2, "asset_id": 2, "symbol": "USD", "currency": -1},
+    {"id": 3, "asset_id": 3, "symbol": "CAD", "currency": -1},
+    {"id": 4, "asset_id": 30, "symbol": "EUR", "currency": -1}
   ],
   "trades": [
     {"id": 1, "number": "", "timestamp": 1548447900, "settlement": 1548447900, "account": 2, "asset": 7, "quantity": 0.567, "price": 69.2215, "fee": 0.0, "cancelled": true},
@@ -83,7 +89,7 @@
     {"id": 1, "type": "split", "account": 2, "timestamp": 1618345500, "number": "16074977038", "asset": [4, 4], "quantity": [217.0, 271.25], "cost_basis": 1.0, "description": "AMZN(US0231351067) SPLIT 5 FOR 4 (AMZN, AMAZON.COM INC, US0231351067)"},
     {"id": 2, "type": "merger", "account": 2, "timestamp": 1605731100, "number": "10162291403", "asset": [8, 7], "quantity": [70.0, 17.444], "cost_basis": 1.0, "description": "DM(US2574541080) MERGED(Acquisition) WITH US25746U1097 2492 FOR 10000 (D, DOMINION ENERGY INC, 25746U109)"},
     {"id": 3, "type": "symbol_change", "account": 2, "timestamp": 1605558300, "number": "14302257657", "asset": [12, 13], "quantity": [5.0, 5.0], "cost_basis": 1.0, "description": "MYL(NL0011031208) CUSIP/ISIN CHANGE TO (US92556V1061) (VTRS, VIATRIS INC-W/I, US92556V1061)"},
-    {"id": 4, "type": "spin-off", "account": 2, "timestamp": 1605817500, "number": "10302900848", "asset": [18, 14], "quantity": [100.0 ,0.5371], "cost_basis": 0.0, "description": "GE(US3696041033) SPINOFF  5371 FOR 1000000 (WAB, WABTEC CORP, 929740108)"},
+    {"id": 4, "type": "spin-off", "account": 2, "timestamp": 1605817500, "number": "10302900848", "asset": [18, 14], "quantity": [100 ,0.5371], "cost_basis": 0.0, "description": "GE(US3696041033) SPINOFF  5371 FOR 1000000 (WAB, WABTEC CORP, 929740108)"},
     {"id": 5, "type": "merger", "account": 2, "timestamp": 1592339100, "number": "13006963996", "asset": [16, 17], "quantity": [70.0, 170.8], "cost_basis": 1.0, "description": "EQM(US26885B1008) MERGED(Voluntary Offer Allocation) WITH US2946001011 244 FOR 100 (ETRN, EQUITRANS MIDSTREAM CORP, US2946001011)"},
     {"id": 6, "type": "split", "account": 2, "timestamp": 1627676700, "number": "17240033443", "asset": [18, 18], "quantity": [104.0, 13.0], "cost_basis": 1.0, "description": "GE(US3696041033) SPLIT 1 FOR 8 (GE, GENERAL ELECTRIC CO, US3696043013)"},
     {"id": 7, "type": "split", "account": 2, "timestamp": 1581452700, "number": "12029570527", "asset": [19, 20], "quantity": [45000.0, 900.0], "cost_basis": 1.0, "description": "EWLL(US30051D1063) SPLIT 1 FOR 50 (EWLLD, EWELLNESS HEALTHCARE CORP, US30051D2053)"},
@@ -92,7 +98,7 @@
     {"id": 10, "type": "merger", "account": 2, "timestamp": 1630007100, "number": "17569476329", "asset": [9, 26], "quantity": [2.0, 2.0], "cost_basis": 1.0, "description": "X 6 1/4 03/15/26(US912909AN84) TENDERED TO US912CALAN84 1 FOR 1 (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)"},
     {"id": 11, "type": "spin-off", "account": 2, "timestamp": 1627331099, "number": "17200082800", "asset": [35, 33], "quantity": [610.0, 55.7151], "cost_basis": 1.0, "description": "BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BAM, BROOKFIELD ASSET MANAGE-CL A, CA1125851040)"},
     {"id": 12, "type": "merger","account": 2, "timestamp": 1627331100, "number": "17200082811", "asset": [35, 34], "quantity": [610.0, 40.0895], "cost_basis": 1.0, "description": "BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BPYPM, NEW LP PREFERRED UNITS, BMG1624R1079)"},
-    {"id": 13, "type": "spin-off", "account": 2, "timestamp": 1633033500, "number": "17897699521", "asset": [18, 36], "quantity": [320.0, 29.0909], "cost_basis": 0.0, "description": "GE(US3696041033) SPINOFF  1 FOR 11 (SLVM, SYLVAMO CORP, US8713321029)"},
+    {"id": 13, "type": "spin-off", "account": 2, "timestamp": 1633033500, "number": "17897699521", "asset": [18, 36], "quantity": [320, 29.0909], "cost_basis": 0.0, "description": "GE(US3696041033) SPINOFF  1 FOR 11 (SLVM, SYLVAMO CORP, US8713321029)"},
     {"id": 14, "type": "merger", "account": 2, "timestamp": 1639597500, "number": "18787960371", "asset": [37, 38], "quantity": [99.0, 99.0], "cost_basis": 1.0, "description": "CORT(US2183521028) TENDERED TO US218NSPODD6 1 FOR 1 (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)"}
   ],
   "asset_payments": [

@@ -78,19 +78,7 @@ class IBKR_CorpActionType:
 
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKR_Currency:
-    def __init__(self, assets_list, code):
-        self.id = None
-        match = [x for x in assets_list if x['symbol'] == code and x['type'] == FOF.ASSET_MONEY]
-        if match:
-            if len(match) == 1:
-                self.id = match[0]["id"]
-            else:
-                logging.error(QApplication.translate("IBKR", "Multiple match for ") + f"{code}")
-        else:
-            self.id = max([0] + [x['id'] for x in assets_list]) + 1
-            currency = {"id": self.id, "type": "money", "symbol": code}
-            assets_list.append(currency)
-
+    pass
 
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKR_Asset:
@@ -322,7 +310,7 @@ class StatementIBKR(StatementXML):
     def attr_currency(self, xml_element, attr_name, default_value):
         if attr_name not in xml_element.attrib:
             return default_value
-        currency_id = IBKR_Currency(self._data[FOF.ASSETS], xml_element.attrib[attr_name]).id
+        currency_id = self.currency_id(xml_element.attrib[attr_name])
         if currency_id is None:
             return default_value
         else:
@@ -334,7 +322,7 @@ class StatementIBKR(StatementXML):
         asset_category = self.attr_asset_type(xml_element, 'assetCategory', None)
         if xml_element.tag == 'Trade' and asset_category == FOF.ASSET_MONEY:
             currency = xml_element.attrib[attr_name].split('.')
-            asset_id = [IBKR_Currency(self._data[FOF.ASSETS], code).id for code in currency]
+            asset_id = [self.currency_id(code) for code in currency]
             if not asset_id:
                 return default_value
         else:
@@ -366,7 +354,7 @@ class StatementIBKR(StatementXML):
                     logging.error(self.tr("Can't get account currency for account: ") + f"{xml_element}")
                 return default_value
             currency = [xml_element.attrib['currency']]
-        currency_ids = [IBKR_Currency(self._data[FOF.ASSETS], code).id for code in currency]
+        currency_ids = [self.currency_id(code) for code in currency]
         account_id = IBKR_Account(self._data[FOF.ACCOUNTS], xml_element.attrib[attr_name], currency_ids).id
         if account_id is None:
             return default_value
@@ -628,7 +616,7 @@ class StatementIBKR(StatementXML):
         return 2
 
     def add_merger_payment(self, timestamp, account_id, amount, currency, description):
-        currency_id = IBKR_Currency(self._data[FOF.ASSETS], currency).id
+        currency_id = self.currency_id(currency)
         account = [x for x in self._data[FOF.ACCOUNTS] if x['id'] == account_id][0]
         if account['currency'] != currency_id:
             account_id = IBKR_Account(self._data[FOF.ACCOUNTS], account['number'], [currency_id]).id
@@ -860,7 +848,8 @@ class StatementIBKR(StatementXML):
                      and x['asset'] == asset_id and x['account'] == account_id]
         account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
         currency = [x for x in self._data[FOF.ASSETS] if x["id"] == account['currency']][0]
-        db_account = JalDB().get_account_id(account['number'], currency['symbol'])
+        currency_symbol = [x for x in self._data[FOF.SYMBOLS] if x["asset_id"] == currency['id']][0]
+        db_account = JalDB().get_account_id(account['number'], currency_symbol['symbol'])
         asset = [x for x in self._data[FOF.ASSETS] if x["id"] == asset_id][0]
         isin = asset['isin'] if 'isin' in asset else ''
         db_asset = JalDB().get_asset_id(asset['symbol'], isin=isin, dialog_new=False)

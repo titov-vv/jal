@@ -20,6 +20,7 @@ class StatementXML(Statement):
             FOF.PERIOD: [None, None],
             FOF.ACCOUNTS: [],
             FOF.ASSETS: [],
+            FOF.SYMBOLS: [],
             FOF.TRADES: [],
             FOF.TRANSFERS: [],
             FOF.CORP_ACTIONS: [],
