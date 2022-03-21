@@ -21,6 +21,7 @@ class StatementXML(Statement):
             FOF.ACCOUNTS: [],
             FOF.ASSETS: [],
             FOF.SYMBOLS: [],
+            FOF.ASSETS_DATA: [],
             FOF.TRADES: [],
             FOF.TRANSFERS: [],
             FOF.CORP_ACTIONS: [],

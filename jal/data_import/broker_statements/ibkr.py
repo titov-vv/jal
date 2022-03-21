@@ -84,61 +84,6 @@ class IBKR_Currency:
 class IBKR_Asset:
     BondPrincipal = 1000
 
-    def __init__(self, assets_list, symbol, category, name, isin, cusip, exchange=''):
-        self.id = None
-        self.assets = assets_list
-
-        if symbol.endswith('.OLD'):
-            symbol = symbol[:-len('.OLD')]
-
-        if self.match_and_update('isin', isin, {'symbol': symbol, 'reg_code': cusip}):
-            return
-        if self.match_and_update('reg_code', cusip, {'symbol': symbol, 'isin': isin}):
-            return
-        if self.match_and_update('symbol', symbol, {'isin': isin, 'reg_code': cusip}):
-            return
-        if category == IBKR_AssetType.NotSupported:
-            if symbol:
-                logging.warning(self.tr("Asset type isn't supported: ") + f"'{category}' ({symbol})")
-            return
-        self.id = max([0] + [x['id'] for x in assets_list]) + 1
-        asset = {"id": self.id, "symbol": symbol, 'name': name, 'type': category}
-        if isin:
-            asset['isin'] = isin
-        if cusip:
-            asset['reg_code'] = cusip
-        if exchange and exchange != "VALUE":   # store exchange only if it is valuable
-            asset['exchange'] = exchange
-        assets_list.append(asset)
-
-    def tr(self, text):
-        return QApplication.translate("IBKR", text)
-
-    # search in self.assets['match_key'] for value match_value
-    # iterate through key:value pairs of updates to update self.assets['key'] with 'value'
-    # assign self.id if asset was found and returns True, otherwise returns False
-    def match_and_update(self, match_key, match_value, updates):
-        if not match_value:
-            return False
-        try:
-            match = [x for x in self.assets if match_key in x and x[match_key] == match_value]
-        except KeyError:
-            match = []
-        if match:
-            if len(match) == 1:
-                asset = match[0]
-                for key in updates:
-                    if updates[key]:
-                        if (key == 'symbol') and (asset[key] + 'D' == updates[key] or asset[key] + 'Q' == updates[key]):
-                            continue  # Don't update symbols due to known bankruptcy or new issue patterns
-                        if asset[key] != updates[key]:
-                            asset[key] = updates[key]
-                self.id = asset['id']
-                return True
-            else:
-                logging.error(self.tr("Multiple asset match for ") + f"'{match_key}':'{match_value}', {updates}")
-                return False
-
 
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKR_Account:
@@ -204,10 +149,11 @@ class StatementIBKR(StatementXML):
             'SecuritiesInfo': {'tag': 'SecurityInfo',
                                'level': '',
                                'values': [('symbol', 'symbol', str, None),
+                                          ('currency', 'currency', IBKR_Currency, None),
                                           ('assetCategory', 'type', IBKR_AssetType, IBKR_AssetType.NotSupported),
                                           ('description', 'name', str, None),
                                           ('isin', 'isin', str, ''),
-                                          ('cusip', 'reg_code', str, ''),
+                                          ('cusip', 'reg_number', str, ''),
                                           ('expiry', 'expiry', datetime, 0),
                                           ('maturity', 'maturity', datetime, 0),
                                           ('listingExchange', 'exchange', str, '')],
@@ -246,8 +192,7 @@ class StatementIBKR(StatementXML):
                                  'values': [('type', 'type', IBKR_CorpActionType, IBKR_CorpActionType.NotSupported),
                                             ('accountId', 'account', IBKR_Account, None),
                                             ('symbol', 'asset', IBKR_Asset, None),
-                                            (
-                                            'assetCategory', 'asset_type', IBKR_AssetType, IBKR_AssetType.NotSupported),
+                                            ('assetCategory', 'asset_type', IBKR_AssetType, IBKR_AssetType.NotSupported),
                                             ('dateTime', 'timestamp', datetime, None),
                                             ('transactionID', 'number', str, ''),
                                             ('description', 'description', str, None),
@@ -319,23 +264,36 @@ class StatementIBKR(StatementXML):
     def attr_asset(self, xml_element, attr_name, default_value):
         if attr_name not in xml_element.attrib:
             return default_value
-        asset_category = self.attr_asset_type(xml_element, 'assetCategory', None)
+        if xml_element.attrib[attr_name] == '':
+            return default_value
+        if xml_element.tag == 'CashTransaction' and attr_name == 'currency':
+            asset_category = FOF.ASSET_MONEY
+        else:
+            asset_category = self.attr_asset_type(xml_element, 'assetCategory', None)
         if xml_element.tag == 'Trade' and asset_category == FOF.ASSET_MONEY:
             currency = xml_element.attrib[attr_name].split('.')
             asset_id = [self.currency_id(code) for code in currency]
             if not asset_id:
                 return default_value
         else:
-            name = ''
-            if xml_element.tag not in ['CorporateAction', 'CashTransaction']:
-                name = xml_element.attrib['description'] if 'description' in xml_element.attrib else ''
-            isin = xml_element.attrib['isin'] if 'isin' in xml_element.attrib else ''
-            cusip = xml_element.attrib['cusip'] if 'cusip' in xml_element.attrib else ''
-            exchange = xml_element.attrib['listingExchange'] if 'listingExchange' in xml_element.attrib else ''
-            asset_id = IBKR_Asset(self._data[FOF.ASSETS], xml_element.attrib[attr_name], asset_category,
-                                  name, isin, cusip, exchange).id
-            if asset_id is None:
-                return default_value
+            symbol = xml_element.attrib[attr_name]
+            if symbol.endswith('.OLD'):
+                symbol = symbol[:-len('.OLD')]
+            if asset_category == IBKR_AssetType.NotSupported:
+                raise Statement_ImportError(self.tr("Asset type isn't supported: ") + f"'{asset_category}' ({symbol})")
+            asset_data = {'symbol': symbol, 'type': asset_category}
+            if xml_element.tag not in ['CorporateAction', 'CashTransaction'] and 'description' in xml_element.attrib:
+                asset_data['name'] = xml_element.attrib['description']
+            if asset_category != FOF.ASSET_MONEY:
+                asset_data['currency'] = self.currency_id(xml_element.attrib['currency'])
+            if 'isin' in xml_element.attrib and xml_element.attrib['isin']:
+                asset_data['isin'] = xml_element.attrib['isin']
+            if 'cusip' in xml_element.attrib and xml_element.attrib['cusip']:
+                asset_data['reg_number'] = xml_element.attrib['cusip']
+            if 'listingExchange' in xml_element.attrib and xml_element.attrib['listingExchange'] \
+                    and xml_element.attrib['listingExchange'] != 'VALUE':  # don't store 'VALUE' or empty exchange
+                asset_data['note'] = xml_element.attrib['listingExchange']
+            asset_id = self.asset_id(asset_data)
         return asset_id
 
     def attr_account(self, xml_element, attr_name, default_value):
@@ -365,9 +323,9 @@ class StatementIBKR(StatementXML):
         candidates = [x for x in self._data[FOF.ASSETS] if 'isin' in x and x['isin'] == isin]
         if len(candidates) == 1:
             return candidates[0]["id"]
-        candidates = [x for x in self._data[FOF.ASSETS] if 'symbol' in x and x['symbol'] == symbol]
+        candidates = [x for x in self._data[FOF.SYMBOLS] if 'symbol' in x and x['symbol'] == symbol]
         if len(candidates) == 1:
-            return candidates[0]["id"]
+            return candidates[0]["asset_id"]
         return 0
 
     def set_asset_counry(self, asset_id, country):
@@ -390,29 +348,21 @@ class StatementIBKR(StatementXML):
 
     def load_assets(self, assets):
         asset_count = 0
-        stored = set()
-        base = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
         for asset in assets:
             if asset['type'] == IBKR_AssetType.NotSupported:   # Skip not supported type of asset
                 continue
-
-            asset_data = tuple(asset.items())
-            if asset_data in stored:  # Skip duplicated assets
-                continue
-            stored.add(asset_data)
-
-            asset['id'] = base + asset_count
             # IB may use '.OLD' suffix if asset is being replaced
             asset['symbol'] = asset['symbol'][:-len('.OLD')] if asset['symbol'].endswith('.OLD') else asset['symbol']
-            if asset['exchange'] == '' or asset['exchange'] == 'VALUE':  # don't store 'VALUE' or empty exchange
-                asset.pop('exchange')
+            if asset['exchange'] and asset['exchange'] != 'VALUE':  # don't store 'VALUE' or empty exchange
+                asset['note'] = asset['exchange']
             if asset['maturity']:
                 asset['expiry'] = asset['maturity']
             if asset['expiry'] == 0:
                 asset.pop('expiry')
             asset.pop('maturity')
+            asset.pop('exchange')
+            self.asset_id(asset)
             asset_count += 1
-            self._data[FOF.ASSETS].append(asset)
         logging.info(self.tr("Securities loaded: ") + f"{asset_count} ({len(assets)})")
 
     def load_ib_trades(self, ib_trades):
@@ -852,7 +802,8 @@ class StatementIBKR(StatementXML):
         db_account = JalDB().get_account_id(account['number'], currency_symbol['symbol'])
         asset = [x for x in self._data[FOF.ASSETS] if x["id"] == asset_id][0]
         isin = asset['isin'] if 'isin' in asset else ''
-        db_asset = JalDB().get_asset_id(asset['symbol'], isin=isin, dialog_new=False)
+        symbols = [x for x in self._data[FOF.SYMBOLS] if x["asset_id"] == asset_id]
+        db_asset = JalDB().get_asset_id(symbols[0]['symbol'], isin=isin, dialog_new=False)
         if db_account is not None and db_asset is not None:
             query = executeSQL(
                 "SELECT -id AS id, -account_id AS account, timestamp, number, "
