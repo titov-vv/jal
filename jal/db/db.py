@@ -69,8 +69,8 @@ class JalDB:
     def get_asset_name(self, asset_id, full=False):
         if full:
             return readSQL("SELECT full_name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
-        else:
-            return readSQL("SELECT symbol FROM assets AS a LEFT JOIN asset_tickers AS s "
+        else:   # FIXME Below query may return several symbols
+            return readSQL("SELECT symbol FROM assets AS a LEFT JOIN asset_tickers AS s "   
                            "ON s.asset_id=a.id AND s.active=1 WHERE a.id=:asset_id", [(":asset_id", asset_id)])
 
     def get_asset_type(self, asset_id):
@@ -172,16 +172,17 @@ class JalDB:
             asset_id = dialog.asset_id
         return asset_id
 
-    def update_asset_data(self, asset_id, new_symbol='', new_isin='', new_reg='', new_country_code='', expiry=0, principal=0):  # TODO Change params to **kwargs
+    def update_asset_data(self, asset_id, currency_id=None, new_symbol='', new_isin='', new_reg='', new_country_code='', expiry=0, principal=0):  # TODO Change params to **kwargs
         if new_symbol:
-            symbol = readSQL("SELECT name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
-            if new_symbol.upper() != symbol.upper():
-                _ = executeSQL("UPDATE assets SET name=:symbol WHERE id=:asset_id",
-                               [(":symbol", new_symbol), (":asset_id", asset_id)])
-                # Show warning only if symbol was changed not due known bankruptcy or new issue pattern
-                if not (((symbol == new_symbol[:-1]) and (new_symbol[-1] == 'D' or new_symbol[-1] == 'Q')) or
-                        ((symbol[:-1] == new_symbol) and (symbol[-1] == 'D' or symbol[-1] == 'Q'))):
-                    logging.info(self.tr("Symbol updated ") + f"{symbol} -> {new_symbol}")
+            symbol = readSQL("SELECT symbol FROM assets_ext WHERE id=:asset_id AND symbol=:symbol COLLATE NOCASE",
+                             [(":asset_id", asset_id), (":symbol", new_symbol)])
+            if symbol is None:
+                assert currency_id is not None
+                _ = executeSQL("INSERT INTO asset_tickers (asset_id, symbol, currency_id) "
+                               "VALUES(:asset_id, :symbol, :currency_id)",
+                               [(":asset_id", asset_id), (":symbol", new_symbol), (":currency_id", currency_id)])
+                logging.info(self.tr("New symbol ticker added for ")
+                             + f"{self.get_asset_name(asset_id)} -> {new_symbol}")
         if new_isin:
             isin = readSQL("SELECT isin FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
             if isin == '':
@@ -241,19 +242,30 @@ class JalDB:
         logging.info(self.tr("Quote loaded: ") + f"{self.get_asset_name(asset_id)} " 
                      f"@ {datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")
 
-    def add_asset(self, symbol, name, asset_type, isin, data_source=-1, reg_code=None, country_code='', expiry=0):  # TODO Change params to **kwargs
+    def add_asset(self, symbol, name, asset_type, isin, currency_id=None, data_source=-1, reg_code=None, country_code='', expiry=0):  # TODO Change params to **kwargs
+        assert currency_id is not None
         country_id = get_country_by_code(country_code)
-        query = executeSQL("INSERT INTO assets(name, type_id, full_name, isin, src_id, country_id, expiry) "
-                           "VALUES(:symbol, :type, :full_name, :isin, :data_src, :country_id, :expiry)",
-                           [(":symbol", symbol), (":type", asset_type), (":full_name", name),
-                            (":isin", isin), (":data_src", data_source), (":country_id", country_id),
-                            (":expiry", expiry)], commit=True)
+        query = executeSQL("INSERT INTO assets (type_id, full_name, isin, country_id) "
+                           "VALUES (:type, :full_name, :isin, :country_id)",
+                           [(":type", asset_type), (":full_name", name),
+                            (":isin", isin), (":country_id", country_id)], commit=True)
         asset_id = query.lastInsertId()
         if asset_id is None:
             logging.error(self.tr("Failed to add new asset: ") + f"{symbol}")
-        if reg_code is not None:
-            _ = executeSQL("INSERT INTO asset_reg_id(asset_id, reg_code) VALUES(:asset_id, :new_reg)",
-                           [(":new_reg", reg_code), (":asset_id", asset_id)])
+        _ = executeSQL("INSERT INTO asset_tickers (asset_id, symbol, currency_id, quote_source) "
+                       "VALUES (:asset_id, :symbol, :currency_id, :quote_source)",
+                       [(":asset_id", asset_id), (":symbol", symbol), (":currency_id", currency_id),
+                        (":quote_source", data_source)], commit=True) is not None
+        if reg_code is not None:  # FIXME similar code in update_asset_data()
+            _ = executeSQL("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
+                           "VALUES(:asset_id, :datatype, :reg_number)",
+                           [(":asset_id", asset_id), (":datatype", AssetData.RegistrationCode),
+                            (":reg_number", reg_code)])
+        if expiry:   # FIXME the same code in update_asset_data()
+            _ = executeSQL("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
+                           "VALUES(:asset_id, :datatype, :expiry)",
+                           [(":asset_id", asset_id), (":datatype", AssetData.ExpiryDate),
+                            (":expiry", expiry)])
         return asset_id
 
     def add_dividend(self, subtype, timestamp, account_id, asset_id, amount, note, trade_number='',

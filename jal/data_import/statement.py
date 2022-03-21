@@ -153,7 +153,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             asset_id = JalDB().get_asset_id(asset['symbol'], isin=isin, reg_code=reg_code, name=name, expiry=expiry,
                                             dialog_new=verbal)
             if asset_id is not None:
-                JalDB().update_asset_data(asset_id, asset['symbol'], isin, reg_code, country_code)
+                JalDB().update_asset_data(asset_id, new_symbol=asset['symbol'], new_isin=isin, new_reg=reg_code, new_country_code=country_code)
                 old_id, asset['id'] = asset['id'], -asset_id
                 self._update_id("asset", old_id, asset_id)
                 if asset['type'] == FOF.ASSET_MONEY:
