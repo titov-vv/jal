@@ -32,43 +32,12 @@ class OpenBroker_AssetType:
 
 # ----------------------------------------------------------------------------------------------------------------------
 class OpenBroker_Asset:
-    def __init__(self, assets_list, symbol, reg_code=''):
-        self.id = None
+    pass
 
-        # Try to find asset in list first by reg.code, next by symbol and as last resort by alt_symbol if it exists
-        if reg_code:
-            match = [x for x in assets_list if
-                     ('symbol' in x and 'reg_code' in x) and (x['symbol'] == symbol and x['reg_code'] == reg_code)]
-            if match:
-                if len(match) == 1:
-                    self.id = match[0]['id']
-                    return
-                else:
-                    logging.error(QApplication.translate("OpenBroker", "Multiple asset match for ")
-                                  + f"'{symbol}':'{reg_code}'")
-                    return
-        match = [x for x in assets_list if 'symbol' in x and x['symbol'] == symbol]
-        if match:
-            if len(match) == 1:
-                self.id = match[0]['id']
-                return
-            else:
-                logging.error(QApplication.translate("OpenBroker", "Multiple asset match for ") + f"'{symbol}'")
-        match = [x for x in assets_list if 'alt_symbol' in x and x['alt_symbol'] == symbol]
-        if match:
-            if len(match) == 1:
-                self.id = match[0]['id']
-                return
-            else:
-                logging.error(QApplication.translate("OpenBroker", "Multiple asset match for ") + f"'{symbol}'")
 
 # ----------------------------------------------------------------------------------------------------------------------
 class OpenBroker_Currency:
-    def __init__(self, assets_list, symbol):
-        self.id = None
-        match = [x for x in assets_list if 'symbol' in x and x['symbol'] == symbol and x['type'] == FOF.ASSET_MONEY]
-        if match and len(match) == 1:
-            self.id = match[0]['id']
+    pass
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -124,7 +93,8 @@ class StatementOpenBroker(StatementXML):
                                ('security_type', 'type', OpenBroker_AssetType, OpenBroker_AssetType.NotSupported),
                                ('security_name', 'name', str, None),
                                ('isin', 'isin', str, ''),
-                               ('security_grn_code', 'reg_code', str, ''),
+                               ('security_grn_code', 'reg_number', str, ''),
+                               ('nominal_curr', 'currency', OpenBroker_Currency, None),
                                ('board_name', 'exchange', OpenBroker_Exchange, '')],
                     'loader': self.load_assets
                 },
@@ -194,30 +164,31 @@ class StatementOpenBroker(StatementXML):
         if attr_name not in xml_element.attrib:
             return default_value
         asset_category = self.attr_asset_type(xml_element, 'asset_type', None)  # only for 'spot_assets'
+        asset_data = {'type': asset_category}
         if asset_category == FOF.ASSET_MONEY:
-            symbol = xml_element.attrib['asset_code'].strip()
-            reg_code = ''
+            asset_data['symbol'] = xml_element.attrib['asset_code'].strip()
         else:
-            symbol = xml_element.attrib[attr_name].strip()
+            if 'price_currency' in xml_element.attrib:
+                asset_data['currency'] = self.currency_id(xml_element.attrib['price_currency'])
+            elif 'price_currency_code' in xml_element.attrib:
+                asset_data['currency'] = self.currency_id(xml_element.attrib['price_currency_code'])
+            asset_data['symbol'] = xml_element.attrib[attr_name].strip()
             if xml_element.getparent().tag == 'spot_assets':   # need to check in which group we are now
-                reg_code = xml_element.attrib['asset_code'] if 'asset_code' in xml_element.attrib else ''
+                asset_data['reg_number'] = xml_element.attrib['asset_code'] if 'asset_code' in xml_element.attrib else ''
             else:
-                reg_code = xml_element.attrib['security_grn_code'] if 'security_grn_code' in xml_element.attrib else ''
-        asset_id = OpenBroker_Asset(self._data[FOF.ASSETS], symbol, reg_code).id
-        if asset_id is None:
-            if asset_category == FOF.ASSET_MONEY:
-                asset_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
-                asset = {'id': asset_id, 'type': asset_category, 'symbol': symbol}
-                self._data[FOF.ASSETS].append(asset)
-            else:
-                return default_value
+                asset_data['reg_number'] = xml_element.attrib['security_grn_code'] if 'security_grn_code' in xml_element.attrib else ''
+        asset_id = self.asset_id(asset_data)
         return asset_id
 
     # convert 'attr_name' currency code value into asset_id
     def attr_currency(self, xml_element, attr_name, default_value):
         if attr_name not in xml_element.attrib:
             return default_value
-        return OpenBroker_Currency(self._data[FOF.ASSETS], xml_element.attrib[attr_name]).id
+        currency_id = self.currency_id(xml_element.attrib[attr_name])
+        if currency_id is None:
+            return default_value
+        else:
+            return currency_id
 
     # Convert attribute 'attr_name' value into json open-format exchange name
     @staticmethod
@@ -244,24 +215,20 @@ class StatementOpenBroker(StatementXML):
 
     def load_assets(self, assets):
         cnt = 0
-        base = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
-        for i, asset in enumerate(assets):
+        for asset in assets:
             if asset['type'] == OpenBroker_AssetType.NotSupported:   # Skip not supported type of asset
                 continue
-            asset['id'] = base + i
             if asset['exchange'] == "MOEX":
-                broker_name = asset['name']   # store how symbol was named in broker statement
                 asset_info = QuoteDownloader.MOEX_info(symbol=asset['symbol'], isin=asset['isin'],
-                                                       regnumber=asset['reg_code'])
+                                                       regnumber=asset['reg_number'])
                 if asset_info:
                     asset.update(asset_info)
                     asset['type'] = FOF.convert_predefined_asset_type(asset['type'])
-                if asset['symbol'] != broker_name:
-                    asset['alt_symbol'] = broker_name
-            if asset['exchange'] == '':  # don't store empty exchange
-                asset.pop('exchange')
+            if asset['exchange'] != '':  # don't store empty exchange
+                asset['note'] = asset['exchange']
+            asset.pop('exchange')
+            self.asset_id(asset)
             cnt += 1
-            self._data[FOF.ASSETS].append(asset)
         logging.info(self.tr("Securities loaded: ") + f"{cnt} ({len(assets)})")
 
     def load_balances(self, balances):
@@ -307,7 +274,7 @@ class StatementOpenBroker(StatementXML):
 
     # this method loads only asset cancellations and puts it in self.asset_withdrawal for use in 'load_cash_operations'
     def load_asset_operations(self, asset_operations):
-        # Asset name is stored as 'alt_symbol' in self.assets[] and self.asset_withdrawal[]
+        # Asset name is stored as alternative symbol and in self.asset_withdrawal[]
         bond_repayment_pattern = r"^.*Снятие ЦБ с учета\. Погашение облигаций - (?P<asset_name>.*)$"
         for operation in asset_operations:
             if "Снятие ЦБ с учета. Погашение облигаций" not in operation['description']:
@@ -321,13 +288,15 @@ class StatementOpenBroker(StatementXML):
             if len(repayment_note) != bond_repayment_pattern.count("(?P<"):  # check expected number of matches
                 raise Statement_ImportError(
                     self.tr("Can't detect bond name from description ") + f"'{repayment_note}'")
-            asset = [x for x in self._data[FOF.ASSETS] if 'id' in x and x['id'] == operation['asset']][0]
-            if asset['symbol'] != repayment_note['asset_name']:    # Store alternative depositary name
-                asset['alt_symbol'] = repayment_note['asset_name']
+            ticker = self._find_in_list(self._data[FOF.SYMBOLS], 'asset_id', operation['asset'])
+            if ticker['symbol'] != repayment_note['asset_name']:  # Store alternative depositary name
+                ticker = ticker.copy()
+                ticker['id'] = max([0] + [x['id'] for x in self._data[FOF.SYMBOLS]]) + 1
+                ticker['symbol'] = repayment_note['asset_name']
+                self._data[FOF.SYMBOLS].append(ticker)
             new_id = max([0] + [x['id'] for x in self.asset_withdrawal]) + 1
             record = {"id": new_id, "timestamp": operation['timestamp'], "asset": operation['asset'],
-                      "symbol": asset['symbol'], "alt_symbol": repayment_note['asset_name'],
-                      "quantity": operation['quantity'], "note": operation['description']}
+                      "symbol": ticker['symbol'], "quantity": operation['quantity'], "note": operation['description']}
             self.asset_withdrawal.append(record)
 
     def load_cash_operations(self, cash_operations):
@@ -384,7 +353,7 @@ class StatementOpenBroker(StatementXML):
         interest = parts.groupdict()
         if len(interest) != intrest_pattern.count("(?P<"):  # check expected number of matches
             raise Statement_ImportError(self.tr("Interest description miss some data ") + f"'{description}'")
-        asset_id = OpenBroker_Asset(self._data[FOF.ASSETS], interest['symbol']).id
+        asset_id = self.asset_id({'symbol': interest['symbol']})
         if asset_id is None:
             raise Statement_ImportError(self.tr("Can't find asset for bond interest ")
                                         + f"'{interest['symbol']}'")
@@ -404,9 +373,7 @@ class StatementOpenBroker(StatementXML):
         if len(repayment) != repayment_pattern.count("(?P<"):  # check expected number of matches
             raise Statement_ImportError(self.tr("Bond repayment description miss some data ")
                                         + f"'{description}'")
-        match = [x for x in self.asset_withdrawal
-                 if (x['symbol'] == repayment['asset'] or x['alt_symbol'] == repayment['asset'])
-                    and x['timestamp'] == timestamp]
+        match = [x for x in self.asset_withdrawal if x['symbol'] == repayment['asset'] and x['timestamp'] == timestamp]
         if not match:
             raise Statement_ImportError(self.tr("Can't find asset cancellation record for ")
                                         + f"'{description}'")

@@ -446,8 +446,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         asset_info = {k: v for k, v in asset_info.items() if v}  # drop keys with empty values
         if 'isin' in asset_info:
             asset = self._find_in_list(self._data[FOF.ASSETS], 'isin', asset_info['isin'])
-        if asset is None and 'reg_code' in asset_info:
-            asset_data = self._find_in_list(self._data[FOF.ASSETS_DATA], 'reg_code', asset_info['reg_code'])
+        if asset is None and 'reg_number' in asset_info:
+            asset_data = self._find_in_list(self._data[FOF.ASSETS_DATA], 'reg_number', asset_info['reg_number'])
             if asset_data is not None:
                 asset = self._find_in_list(self._data[FOF.ASSETS], 'id', asset_data['asset_id'])
         if asset is None and 'symbol' in asset_info:
@@ -467,14 +467,15 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 self._uppend_keys_from(symbol, asset_info, ['symbol', 'currency', 'note'])
                 self._data[FOF.SYMBOLS].append(symbol)
             data = {}
-            self._uppend_keys_from(data, asset_info, ['reg_number', 'expiry'])
+            self._uppend_keys_from(data, asset_info, ['reg_number', 'expiry', 'principal'])
             if data:
                 data_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS_DATA]]) + 1
                 data['id'] = data_id
                 data['asset_id'] = asset_id
                 self._data[FOF.ASSETS_DATA].append(data)
         else:
-            self.update_asset_data(asset['id'], asset_info)
+            if asset['type'] != FOF.ASSET_MONEY:
+                self.update_asset_data(asset['id'], asset_info)
         return asset['id']
 
     # takes key from keys one by one and copies it from src to dst if it exists in src
@@ -486,10 +487,24 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     def update_asset_data(self, asset_id, asset_info):
         asset = self._find_in_list(self._data[FOF.ASSETS], "id", asset_id)
         self._uppend_keys_from(asset, asset_info, ['name', 'isin', 'country'])
-        symbol = self._find_in_list(self._data[FOF.SYMBOLS], "asset_id", asset_id)
+        # Add new asset symbol if information provided
+        if 'symbol' in asset_info:
+            symbol_exists = False
+            symbols = [x for x in self._data[FOF.SYMBOLS] if "asset_id" in x and x["asset_id"] == asset_id]
+            if symbols:
+                for symbol in symbols:
+                    if symbol['symbol'] == asset_info['symbol'] and (
+                            'currency' not in asset_info or symbol['currency'] == asset_info['currency']):
+                        symbol_exists = True
+            if not symbol_exists:
+                symbol_id = max([0] + [x['id'] for x in self._data[FOF.SYMBOLS]]) + 1
+                symbol = {"id": symbol_id, "asset_id": asset_id}
+                self._uppend_keys_from(symbol, asset_info, ['symbol', 'currency', 'note', 'alt_symbol'])
+                self._data[FOF.SYMBOLS].append(symbol)
+        # Update the rest of asset data
         asset_data = self._find_in_list(self._data[FOF.ASSETS_DATA], "asset_id", asset_id)
         if asset_data is None:
-            if {'reg_number', 'expiry'}.intersection(set(asset_info)):  # if keys are present in info
+            if {'reg_number', 'expiry', 'principal'}.intersection(set(asset_info)):  # if keys are present in info
                 asset_data = {}
                 data_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS_DATA]]) + 1
                 asset_data['id'] = data_id
