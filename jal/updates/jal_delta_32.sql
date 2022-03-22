@@ -34,9 +34,6 @@ FROM
     SELECT op_type, 5 AS seq, id, deposit_timestamp AS timestamp, deposit_account AS account_id, 1 AS subtype FROM transfers
 ) AS m
 ORDER BY m.timestamp, m.seq, m.subtype, m.id;
---------------------------------------------------------------------------------
--- Delete unused assets
-DELETE FROM assets WHERE id IN (SELECT a.id FROM assets AS a LEFT JOIN trades AS t ON a.id=t.asset_id WHERE a.type_id!=1 AND t.id IS NULL);
 
 --------------------------------------------------------------------------------
 DROP TABLE IF EXISTS asset_tickers;
@@ -65,21 +62,12 @@ SELECT doubles.mid AS asset_id, old.name AS symbol, ac.currency_id AS currency_i
 FROM (SELECT MAX(a.id) AS mid, isin, COUNT(a.id) c FROM assets AS a WHERE a.isin!='' GROUP BY a.isin HAVING c > 1) AS doubles
 LEFT JOIN assets AS old ON doubles.isin=old.isin AND old.id<doubles.mid
 LEFT JOIN data_sources AS s ON old.src_id=s.id
-LEFT JOIN trades AS t ON t.asset_id=old.id
+LEFT JOIN (SELECT asset_id, account_id FROM trades UNION ALL SELECT asset_id, account_id FROM dividends) AS t ON t.asset_id=old.id
 LEFT JOIN accounts AS ac ON ac.id=t.account_id
 GROUP BY asset_id, currency_id
 HAVING currency_id IS NOT NULL;
 
 -- Update duplicated symbols
-UPDATE asset_tickers SET asset_id=d.mid
-FROM
-(
-SELECT old.id AS id, mid
-FROM (SELECT MAX(a.id) AS mid, isin, COUNT(a.id) c FROM assets AS a WHERE a.isin!='' GROUP BY a.isin HAVING c > 1) AS doubles
-LEFT JOIN assets AS old ON doubles.isin=old.isin AND old.id<doubles.mid
-) AS d
-WHERE d.id=asset_id;
-
 UPDATE dividends SET asset_id=d.mid
 FROM
 (
@@ -123,6 +111,13 @@ SELECT old.id AS id
 FROM (SELECT MAX(a.id) AS mid, isin, COUNT(a.id) c FROM assets AS a WHERE a.isin!='' GROUP BY a.isin HAVING c > 1) AS doubles
 LEFT JOIN assets AS old ON doubles.isin=old.isin AND old.id<doubles.mid
 );
+
+-- Delete symbols that were duplicated and already added to asset_tickers
+DELETE FROM assets WHERE id IN (
+SELECT a.id FROM assets AS a
+LEFT JOIN trades AS t ON a.id=t.asset_id
+LEFT JOIN dividends AS d ON a.id=d.asset_id
+WHERE a.type_id!=1 AND t.id IS NULL AND d.id IS NULL);
 
 -- Insert symbols other than currencies
 INSERT INTO asset_tickers (asset_id, symbol, currency_id, description, quote_source, active)
