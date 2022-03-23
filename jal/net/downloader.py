@@ -240,33 +240,31 @@ class QuoteDownloader(QObject):
                 break
         return asset
 
-    # Searches for asset info on http://www.moex.com by given reg.number or isin
+    # Searches for asset info on http://www.moex.com by given reg_number or isin
     # Returns 'secid' if asset was found and empty string otherwise
     @staticmethod
     def MOEX_find_secid(**kwargs) -> str:
         secid = ''
-        try:
-            search_key = kwargs['reg_number'] if 'reg_number' in kwargs else kwargs['isin']
-        except KeyError:
-            return secid
-        if not search_key:
-            return secid
-        url = f"https://iss.moex.com/iss/securities.json?q={search_key}&iss.meta=off&limit=10"
-        asset_data = json.loads(get_web_data(url))
-        securities = asset_data['securities']
-        columns = securities['columns']
+        data = []
         if 'reg_number' in kwargs:
-            # Take only records that have given regnumber to get rid of additional issues
+            url = f"https://iss.moex.com/iss/securities.json?q={kwargs['reg_number']}&iss.meta=off&limit=10"
+            asset_data = json.loads(get_web_data(url))
+            securities = asset_data['securities']
+            columns = securities['columns']
             data = [x for x in securities['data'] if
-                    x[columns.index('regnumber')] == search_key or x[columns.index('regnumber')] is None]
-        else:
+                    x[columns.index('regnumber')] == kwargs['reg_number'] or x[columns.index('regnumber')] is None]
+        if not data and 'isin' in kwargs:
+            url = f"https://iss.moex.com/iss/securities.json?q={kwargs['isin']}&iss.meta=off&limit=10"
+            asset_data = json.loads(get_web_data(url))
+            securities = asset_data['securities']
+            columns = securities['columns']
             data = securities['data']  # take the whole list if we search by isin
         if data:
             if len(data) > 1:
                 # remove not traded assets if there are any outdated doubles present
                 data = [x for x in data if x[columns.index('is_traded')] == 1]
             if len(data) > 1:  # and then check again
-                logging.info(QApplication.translate("MOEX", "Multiple MOEX assets found for reg.number: ") + search_key)
+                logging.info(QApplication.translate("MOEX", "Multiple MOEX assets found for: ") + f"{kwargs}")
                 return secid
             asset_data = dict(zip(columns, data[0]))
             secid = asset_data['secid'] if 'secid' in asset_data else ''
