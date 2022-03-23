@@ -68,11 +68,14 @@ class StatementPSB(StatementXLS):
                         self._statement[self.HeaderCol][row] == '':
                     break
                 deal_number = self._statement[headers['number']][row]
-                isin = self._statement[headers['isin']][row]
-                reg_number = self._statement[headers['reg_number']][row]
-                asset_id = self._find_asset_id(isin=isin, reg_number=reg_number)
-                if not asset_id:
-                    asset_id = self._add_asset(isin, reg_number, '')
+                deal_currency = self._statement[headers['currency']][row].split('/')[0].strip()    # <- 'deal / payment'
+                try:
+                    code = self.currency_id(self.currency_substitutions[deal_currency])
+                except KeyError:
+                    code = self.currency_id(deal_currency)
+                asset_id = self.asset_id({'isin': self._statement[headers['isin']][row],
+                                          'reg_number': self._statement[headers['reg_number']][row],
+                                          'currency': code, 'search_online': "MOEX"})
                 if self._statement[headers['B/S']][row] == 'покупка':
                     qty = self._statement[headers['qty']][row]
                     bond_interest = -self._statement[headers['accrued_int']][row]
@@ -210,11 +213,13 @@ class StatementPSB(StatementXLS):
             amount = float(self._statement[headers['coupon']][row])
             tax = float(self._statement[headers['tax']][row])
             account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
-            isin = self._statement[headers['isin']][row]
-            reg_number = self._statement[headers['reg_number']][row]
-            asset_id = self._find_asset_id(isin=isin, reg_number=reg_number)
-            if not asset_id:
-                asset_id = self._add_asset(isin=isin, reg_number=reg_number)
+            try:
+                code = self.currency_id(self.currency_substitutions[self._statement[headers['currency']][row]])
+            except KeyError:
+                code = self.currency_id(self._statement[headers['currency']][row])
+            asset_id = self.asset_id({'isin': self._statement[headers['isin']][row],
+                                      'reg_number': self._statement[headers['reg_number']][row],
+                                      'currency': code, 'search_online': "MOEX"})
             note = self._statement[headers['operation']][row] + " " + self._statement[headers['asset_name']][row]
             new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
             payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
@@ -247,11 +252,13 @@ class StatementPSB(StatementXLS):
             amount = float(self._statement[headers['amount']][row])
             tax = float(self._statement[headers['tax']][row])
             account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
-            isin = self._statement[headers['isin']][row]
-            reg_number = self._statement[headers['reg_number']][row]
-            asset_id = self._find_asset_id(isin=isin, reg_number=reg_number)
-            if not asset_id:
-                asset_id = self._add_asset(isin=isin, reg_number=reg_number)
+            try:
+                code = self.currency_id(self.currency_substitutions[self._statement[headers['currency']][row]])
+            except KeyError:
+                code = self.currency_id(self._statement[headers['currency']][row])
+            asset_id = self.asset_id({'isin': self._statement[headers['isin']][row],
+                                      'reg_number': self._statement[headers['reg_number']][row],
+                                      'currency': code, 'search_online': "MOEX"})
             new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
             payment = {"id": new_id, "type": FOF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
                        "asset": asset_id, "amount": amount, "tax": tax, "description": ''}

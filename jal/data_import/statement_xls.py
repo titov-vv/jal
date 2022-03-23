@@ -228,55 +228,6 @@ class StatementXLS(Statement):
             row += 1
         logging.info(self.tr("Securities loaded: ") + f"{cnt}")
 
-    # Adds assets to self._data[FOF.ASSETS] by ISIN and registration code
-    # Asset symbol and other parameters are loaded from MOEX exchange as class targets russian brokers
-    # Returns True if asset was added successfully and false otherwise
-    def _add_asset(self, isin, reg_number, symbol=''):
-        print("*** THIS FUNCTION CALL SHOULD BE REPLACED WITH self.asset_id() CALL ***")
-        if self._find_asset_id(symbol, isin, reg_number) != 0:
-            raise Statement_ImportError(
-                self.tr("Attempt to recreate existing asset: ") + f"{isin}/{reg_number}")
-        asset_id = JalDB().get_asset_id('', isin=isin, reg_number=reg_number, dialog_new=False)
-        if asset_id is None:
-            asset = QuoteDownloader.MOEX_info(symbol=symbol, isin=isin, regnumber=reg_number)
-            if asset:
-                asset['id'] = asset_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
-                asset['exchange'] = "MOEX"
-                asset['type'] = FOF.convert_predefined_asset_type(asset['type'])
-            else:
-                raise Statement_ImportError(self.tr("Can't import asset: ") + f"{isin}/{reg_number}")
-        else:
-            asset = {"id": -asset_id, "symbol": JalDB().get_asset_name(asset_id),
-                     "type": FOF.convert_predefined_asset_type(JalDB().get_asset_type(asset_id)),
-                     'name': '', "isin": isin, "reg_number": reg_number}
-            asset_id = -asset_id
-        self._data[FOF.ASSETS].append(asset)
-        return asset_id
-
-    def _find_asset_id(self, symbol='', isin='', reg_number=''):
-        print("*** THIS FUNCTION CALL SHOULD BE REPLACED WITH self.asset_id() CALL ***")
-        if isin:
-            try:
-                match = [x for x in self._data[FOF.ASSETS] if 'isin' in x and x['isin'] == isin]
-            except KeyError:
-                match = []
-        elif reg_number:
-            try:
-                match = [x for x in self._data[FOF.ASSETS] if 'reg_number' in x and x['reg_number'] == reg_number]
-            except KeyError:
-                match = []
-        else:   # make match by symbol
-            try:
-                match = [x for x in self._data[FOF.ASSETS] if 'symbol' in x and x['symbol'] == symbol]
-            except KeyError:
-                match = []
-        if match:
-            if len(match) == 1:
-                return match[0]['id']
-            else:
-                logging.error(self.tr("Multiple asset match for ") + f"'{isin}'")
-        return 0
-
     def _find_account_id(self, number, currency):
         try:
             code = self.currency_substitutions[currency]
