@@ -41,6 +41,8 @@ class StatementXLS(Statement):
             FOF.PERIOD: [None, None],
             FOF.ACCOUNTS: [],
             FOF.ASSETS: [],
+            FOF.SYMBOLS: [],
+            FOF.ASSETS_DATA: [],
             FOF.TRADES: [],
             FOF.TRANSFERS: [],
             FOF.CORP_ACTIONS: [],
@@ -174,15 +176,7 @@ class StatementXLS(Statement):
                     code = self.currency_substitutions[currency]
                 except KeyError:
                     code = currency
-                self._add_currency(code)
-
-    def _add_currency(self, currency_code):
-        match = [x for x in self._data[FOF.ASSETS] if x['symbol'] == currency_code and x['type'] == FOF.ASSET_MONEY]
-        if match:
-            return
-        id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
-        currency = {"id": id, "type": "money", "symbol": currency_code}
-        self._data[FOF.ASSETS].append(currency)
+                self.currency_id(code)
 
     def _load_accounts(self):
         currencies = [x for x in self._data[FOF.ASSETS] if x['type'] == FOF.ASSET_MONEY]
@@ -224,8 +218,12 @@ class StatementXLS(Statement):
         while row < self._statement.shape[0]:
             if self._statement[self.HeaderCol][row].startswith('Итого') or self._statement[self.HeaderCol][row] == '':
                 break
-            self._add_asset(self._statement[headers['isin']][row], self._statement[headers['reg_code']][row],
-                            self._statement[headers['name']][row])
+            #if not 'currency' in headers:        # Reports that don't have currency in assets table are defaulted to RUB
+            currency_code = self.currency_id('RUB')
+            self.asset_id({'isin': self._statement[headers['isin']][row],
+                           'symbol': self._statement[headers['name']][row],
+                           'reg_number': self._statement[headers['reg_number']][row],
+                           'currency': currency_code, 'search_online': "MOEX"})
             cnt += 1
             row += 1
         logging.info(self.tr("Securities loaded: ") + f"{cnt}")
@@ -233,36 +231,38 @@ class StatementXLS(Statement):
     # Adds assets to self._data[FOF.ASSETS] by ISIN and registration code
     # Asset symbol and other parameters are loaded from MOEX exchange as class targets russian brokers
     # Returns True if asset was added successfully and false otherwise
-    def _add_asset(self, isin, reg_code, symbol=''):
-        if self._find_asset_id(symbol, isin, reg_code) != 0:
+    def _add_asset(self, isin, reg_number, symbol=''):
+        print("*** THIS FUNCTION CALL SHOULD BE REPLACED WITH self.asset_id() CALL ***")
+        if self._find_asset_id(symbol, isin, reg_number) != 0:
             raise Statement_ImportError(
-                self.tr("Attempt to recreate existing asset: ") + f"{isin}/{reg_code}")
-        asset_id = JalDB().get_asset_id('', isin=isin, reg_code=reg_code, dialog_new=False)
+                self.tr("Attempt to recreate existing asset: ") + f"{isin}/{reg_number}")
+        asset_id = JalDB().get_asset_id('', isin=isin, reg_number=reg_number, dialog_new=False)
         if asset_id is None:
-            asset = QuoteDownloader.MOEX_info(symbol=symbol, isin=isin, regnumber=reg_code)
+            asset = QuoteDownloader.MOEX_info(symbol=symbol, isin=isin, regnumber=reg_number)
             if asset:
                 asset['id'] = asset_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
                 asset['exchange'] = "MOEX"
                 asset['type'] = FOF.convert_predefined_asset_type(asset['type'])
             else:
-                raise Statement_ImportError(self.tr("Can't import asset: ") + f"{isin}/{reg_code}")
+                raise Statement_ImportError(self.tr("Can't import asset: ") + f"{isin}/{reg_number}")
         else:
             asset = {"id": -asset_id, "symbol": JalDB().get_asset_name(asset_id),
                      "type": FOF.convert_predefined_asset_type(JalDB().get_asset_type(asset_id)),
-                     'name': '', "isin": isin, "reg_code": reg_code}
+                     'name': '', "isin": isin, "reg_number": reg_number}
             asset_id = -asset_id
         self._data[FOF.ASSETS].append(asset)
         return asset_id
 
-    def _find_asset_id(self, symbol='', isin='', reg_code=''):
+    def _find_asset_id(self, symbol='', isin='', reg_number=''):
+        print("*** THIS FUNCTION CALL SHOULD BE REPLACED WITH self.asset_id() CALL ***")
         if isin:
             try:
                 match = [x for x in self._data[FOF.ASSETS] if 'isin' in x and x['isin'] == isin]
             except KeyError:
                 match = []
-        elif reg_code:
+        elif reg_number:
             try:
-                match = [x for x in self._data[FOF.ASSETS] if 'reg_code' in x and x['reg_code'] == reg_code]
+                match = [x for x in self._data[FOF.ASSETS] if 'reg_number' in x and x['reg_number'] == reg_number]
             except KeyError:
                 match = []
         else:   # make match by symbol
@@ -282,17 +282,7 @@ class StatementXLS(Statement):
             code = self.currency_substitutions[currency]
         except KeyError:
             code = currency
-        match = [x for x in self._data[FOF.ASSETS] if
-                 'symbol' in x and x['symbol'] == code and x['type'] == FOF.ASSET_MONEY]
-        if match:
-            if len(match) == 1:
-                currency_id = match[0]['id']
-            else:
-                raise Statement_ImportError(self.tr("Multiple currency found: ") + f"{currency}")
-        else:
-            currency_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
-            new_currency = {"id": currency_id, "symbol": code, 'name': '', 'type': FOF.ASSET_MONEY}
-            self._data[FOF.ASSETS].append(new_currency)
+        currency_id = self.currency_id(code)
         match = [x for x in self._data[FOF.ACCOUNTS] if
                  'number' in x and x['number'] == number and x['currency'] == currency_id]
         if match:

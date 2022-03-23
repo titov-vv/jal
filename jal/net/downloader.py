@@ -154,7 +154,7 @@ class QuoteDownloader(QObject):
 
     # Get asset data from http://www.moex.com
     # Accepts parameters:
-    #     symbol, isin, regcode - to identify asset
+    #     symbol, isin, reg_number - to identify asset
     #     special - if 'engine', 'market' and 'board' should be returned as part of result
     # Returns asset data or empty dictionary if nothing found
     @staticmethod
@@ -168,8 +168,8 @@ class QuoteDownloader(QObject):
         if not data and 'isin' in kwargs:
             data = QuoteDownloader.MOEX_download_info(kwargs['isin'])
         # If not found try to use search API with regnumber or isin
-        if not data and 'regnumber' in kwargs:
-            data = QuoteDownloader.MOEX_download_info(QuoteDownloader.MOEX_find_secid(regcode=kwargs['regnumber']))
+        if not data and 'reg_number' in kwargs:
+            data = QuoteDownloader.MOEX_download_info(QuoteDownloader.MOEX_find_secid(reg_number=kwargs['reg_number']))
         if not data and 'isin' in kwargs:
             data = QuoteDownloader.MOEX_download_info(QuoteDownloader.MOEX_find_secid(isin=kwargs['isin']))
         if 'special' not in kwargs:
@@ -189,7 +189,7 @@ class QuoteDownloader(QObject):
             'NAME': 'name',
             'SHORTNAME': 'short_name',
             'ISIN': 'isin',
-            'REGNUMBER': 'reg_code',
+            'REGNUMBER': 'reg_number',
             'FACEVALUE': 'principal',
             'MATDATE': 'expiry',
             'LSTDELDATE': 'expiry',
@@ -246,7 +246,7 @@ class QuoteDownloader(QObject):
     def MOEX_find_secid(**kwargs) -> str:
         secid = ''
         try:
-            search_key = kwargs['regcode'] if 'regcode' in kwargs else kwargs['isin']
+            search_key = kwargs['reg_number'] if 'reg_number' in kwargs else kwargs['isin']
         except KeyError:
             return secid
         if not search_key:
@@ -255,7 +255,7 @@ class QuoteDownloader(QObject):
         asset_data = json.loads(get_web_data(url))
         securities = asset_data['securities']
         columns = securities['columns']
-        if 'regcode' in kwargs:
+        if 'reg_number' in kwargs:
             # Take only records that have given regnumber to get rid of additional issues
             data = [x for x in securities['data'] if
                     x[columns.index('regnumber')] == search_key or x[columns.index('regnumber')] is None]
@@ -284,11 +284,11 @@ class QuoteDownloader(QObject):
             asset_code = isin   # ETFs are quoted by ISIN
 
         isin = asset['isin'] if 'isin' in asset else ''
-        reg_code = asset['reg_code'] if 'reg_code' in asset else ''
+        reg_number = asset['reg_number'] if 'reg_number' in asset else ''
         expiry = asset['expiry'] if 'expiry' in asset else 0
         principal = asset['principal'] if 'principal' in asset else 0
         if update_symbol:
-            JalDB().update_asset_data(asset_id, new_isin=isin, new_reg=reg_code, expiry=expiry, principal=principal)
+            JalDB().update_asset_data(asset_id, new_isin=isin, new_reg=reg_number, expiry=expiry, principal=principal)
 
         # Get price history
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d')

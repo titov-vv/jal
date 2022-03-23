@@ -148,7 +148,7 @@ class JalDB:
     # If found - tries to update data if some is empty in database
     # If asset not found and 'dialog_new' is True - pops up a window for asset creation
     # Returns: asset_id or None if new asset creation failed
-    def get_asset_id(self, symbol, isin='', reg_code='', name='', expiry=0, dialog_new=True):  # TODO Change params to **kwargs
+    def get_asset_id(self, symbol, isin='', reg_number='', name='', expiry=0, dialog_new=True):  # TODO Change params to **kwargs
         asset_id = None
         if isin:
             asset_id = readSQL("SELECT id FROM assets WHERE isin=:isin", [(":isin", isin)])
@@ -156,9 +156,9 @@ class JalDB:
                 asset_id = readSQL("SELECT id FROM assets_ext WHERE symbol=:symbol COLLATE NOCASE "
                                    "AND coalesce(isin, '')=''", [(":symbol", symbol)])
         if asset_id is None:
-            if reg_code:
-                asset_id = readSQL("SELECT asset_id FROM asset_data WHERE datatype=:datatype AND value=:reg_code",
-                                   [(":datatype", AssetData.RegistrationCode), (":reg_code", reg_code)])
+            if reg_number:
+                asset_id = readSQL("SELECT asset_id FROM asset_data WHERE datatype=:datatype AND value=:reg_number",
+                                   [(":datatype", AssetData.RegistrationCode), (":reg_number", reg_number)])
             if asset_id is None:
                 asset_id = readSQL("SELECT a.id FROM assets_ext AS a "
                                    "LEFT JOIN asset_data AS d ON d.asset_id=a.id AND d.datatype=:datatype "
@@ -242,7 +242,7 @@ class JalDB:
         logging.info(self.tr("Quote loaded: ") + f"{self.get_asset_name(asset_id)} " 
                      f"@ {datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")
 
-    def add_asset(self, symbol, name, asset_type, isin, currency_id=None, data_source=-1, reg_code=None, country_code='', expiry=0):  # TODO Change params to **kwargs
+    def add_asset(self, symbol, name, asset_type, isin, currency_id=None, data_source=-1, reg_number=None, country_code='', expiry=0):  # TODO Change params to **kwargs
         assert currency_id is not None
         country_id = get_country_by_code(country_code)
         query = executeSQL("INSERT INTO assets (type_id, full_name, isin, country_id) "
@@ -256,11 +256,11 @@ class JalDB:
                        "VALUES (:asset_id, :symbol, :currency_id, :quote_source)",
                        [(":asset_id", asset_id), (":symbol", symbol), (":currency_id", currency_id),
                         (":quote_source", data_source)], commit=True) is not None
-        if reg_code is not None:  # FIXME similar code in update_asset_data()
+        if reg_number is not None:  # FIXME similar code in update_asset_data()
             _ = executeSQL("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
                            "VALUES(:asset_id, :datatype, :reg_number)",
                            [(":asset_id", asset_id), (":datatype", AssetData.RegistrationCode),
-                            (":reg_number", reg_code)])
+                            (":reg_number", reg_number)])
         if expiry:   # FIXME the same code in update_asset_data()
             _ = executeSQL("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
                            "VALUES(:asset_id, :datatype, :expiry)",

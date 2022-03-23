@@ -40,7 +40,7 @@ class StatementUKFU(StatementXLS):
     asset_columns = {
         "name": "Наименование ЦБ",
         "isin": "ISIN",
-        "reg_code": "Номер гос. регистрации / CFI код"
+        "reg_number": "Номер гос. регистрации / CFI код"
     }
 
     def __init__(self):
@@ -93,10 +93,12 @@ class StatementUKFU(StatementXLS):
             except ValueError:
                 row += 1
                 continue
-            isin = self._statement[headers['isin']][row]
-            asset_id = self._find_asset_id(isin=isin)
-            if not asset_id:
-                asset_id = self._add_asset(isin, '', '')
+            try:
+                code = self.currency_id(self.currency_substitutions[self._statement[headers['currency']][row]])
+            except KeyError:
+                code = self.currency_id(self._statement[headers['currency']][row])
+            asset_id = self.asset_id({'isin': self._statement[headers['isin']][row],
+                                      'currency': code, 'search_online': "MOEX"})
             if self._statement[headers['B/S']][row] == 'Покупка':
                 qty = self._statement[headers['qty']][row]
                 bond_interest = -self._statement[headers['accrued_int']][row]
@@ -166,11 +168,12 @@ class StatementUKFU(StatementXLS):
             except ValueError:
                 row += 1
                 continue
-
-            symbol = self._statement[headers['symbol']][row]
-            asset_id = self._find_asset_id(symbol=symbol)
-            if not asset_id:
-                asset_id = self._add_asset('', '', symbol=symbol)
+            try:
+                code = self.currency_id(self.currency_substitutions[self._statement[headers['currency']][row]])
+            except KeyError:
+                code = self.currency_id(self._statement[headers['currency']][row])
+            asset_id = self.asset_id({'symbol': self._statement[headers['symbol']][row],
+                                      'currency': code, 'search_online': "MOEX"})
             if self._statement[headers['B/S']][row] == 'Покупка':
                 qty = self._statement[headers['qty']][row]
             elif self._statement[headers['B/S']][row] == 'Продажа':
@@ -205,7 +208,7 @@ class StatementUKFU(StatementXLS):
             "date": "Дата",
             "type": "Тип операции",
             "asset": "Наименование ЦБ",
-            "reg_code": r"Номер гос\. регистрации",
+            "reg_number": r"Номер гос\. регистрации",
             "qty": "Количество ЦБ",
             "note": "Комментарий"
         }
@@ -221,11 +224,7 @@ class StatementUKFU(StatementXLS):
                 row += 1
                 continue
 
-            reg_code = self._statement[headers['reg_code']][row]
-            asset_id = self._find_asset_id(reg_code=reg_code)
-            if not asset_id:
-                asset_id = self._add_asset('', reg_code)
-
+            asset_id = self.asset_id({'reg_number': self._statement[headers['reg_number']][row], 'search_online': "MOEX"})
             number = self._statement[headers['number']][row]
             timestamp = int(datetime.strptime(self._statement[headers['date']][row],
                                               "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
@@ -321,22 +320,21 @@ class StatementUKFU(StatementXLS):
         self._data[FOF.TRANSFERS].append(transfer)
 
     def dividend(self, timestamp, number, account_id, amount, description):
-        DividendPattern = r"> (?P<DESCR1>.*) \((?P<REG_CODE>.*)\)((?P<DESCR2> .*)?(?P<TAX_TEXT> налог (в размере (?P<TAX>\d+\.\d\d) )?.*удержан))?\. НДС не облагается\."
+        DividendPattern = r"> (?P<DESCR1>.*) \((?P<REG_NUMBER>.*)\)((?P<DESCR2> .*)?(?P<TAX_TEXT> налог (в размере (?P<TAX>\d+\.\d\d) )?.*удержан))?\. НДС не облагается\."
         ISINPattern = r"[A-Z]{2}.{9}\d"
 
         parts = re.match(DividendPattern, description, re.IGNORECASE)
         if parts is None:
             raise Statement_ImportError(self.tr("Can't parse dividend description ") + f"'{description}'")
         dividend_data = parts.groupdict()
-        isin_match = re.match(ISINPattern, dividend_data['REG_CODE'])
+        isin_match = re.match(ISINPattern, dividend_data['REG_NUMBER'])
+        currency_code = self.currency_id('RUB')
         if isin_match:
-            asset_id = self._find_asset_id(isin=dividend_data['REG_CODE'])
-            if not asset_id:
-                asset_id = self._add_asset(isin=dividend_data['REG_CODE'], reg_code='')
+            asset_id = self.asset_id({'isin': dividend_data['REG_NUMBER'],
+                                      'currency': currency_code, 'search_online': "MOEX"})
         else:
-            asset_id = self._find_asset_id(reg_code=dividend_data['REG_CODE'])
-            if not asset_id:
-                asset_id = self._add_asset(isin='', reg_code=dividend_data['REG_CODE'])
+            asset_id = self.asset_id({'reg_number': dividend_data['REG_NUMBER'],
+                                      'currency': currency_code, 'search_online': "MOEX"})
         if dividend_data['DESCR2']:
             short_description = dividend_data['DESCR1'] + ' ' + dividend_data['DESCR2'].strip()
         else:
@@ -364,9 +362,7 @@ class StatementUKFU(StatementXLS):
             logging.error(self.tr("Can't parse bond interest description ") + f"'{description}'")
             return
         interest_data = parts.groupdict()
-        asset_id = self._find_asset_id(symbol=interest_data['NAME'])
-        if asset_id is None:
-            raise Statement_ImportError(self.tr("Can't find asset for bond interest ") + f"'{description}'")
+        asset_id = self.asset_id({'symbol': interest_data['NAME'], 'should_exist': True})
         new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
         payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
                    "number": number, "asset": asset_id, "amount": amount, "description": description}
@@ -380,9 +376,7 @@ class StatementUKFU(StatementXLS):
             logging.error(self.tr("Can't parse bond repayment description ") + f"'{description}'")
             return
         interest_data = parts.groupdict()
-        asset_id = self._find_asset_id(symbol=interest_data['NAME'])
-        if not asset_id:
-            raise Statement_ImportError(self.tr("Can't find asset for bond repayment ") + f"'{description}'")
+        asset_id = self.asset_id({'symbol': interest_data['NAME'], 'should_exist': True})
         match = [x for x in self.asset_withdrawal if x['asset'] == asset_id and x['timestamp'] == timestamp]
         if not match:
             logging.error(self.tr("Can't find asset cancellation record for ") + f"'{description}'")

@@ -21,10 +21,10 @@ def test_INN_resolution():
     assert name == 'ПАО СБЕРБАНК'
 
 def test_MOEX_details():
-    assert QuoteDownloader.MOEX_find_secid(regcode='') == ''
+    assert QuoteDownloader.MOEX_find_secid(reg_number='') == ''
     assert QuoteDownloader.MOEX_find_secid(isin='TEST') == ''
-    assert QuoteDownloader.MOEX_find_secid(regcode='2770') == 'RU000A1013V9'
-    assert QuoteDownloader.MOEX_find_secid(regcode='1-01-00010-A') == 'AFLT'
+    assert QuoteDownloader.MOEX_find_secid(reg_number='2770') == 'RU000A1013V9'
+    assert QuoteDownloader.MOEX_find_secid(reg_number='1-01-00010-A') == 'AFLT'
     assert QuoteDownloader.MOEX_find_secid(isin='IE00B8XB7377') == 'FXGD'
     assert QuoteDownloader.MOEX_find_secid(isin='JE00B6T5S470') == 'POLY'
     assert QuoteDownloader.MOEX_find_secid(isin='RU000A1038V6') == 'SU26238RMFS4'
@@ -35,7 +35,7 @@ def test_MOEX_details():
                                                                       'isin': 'RU0009062285',
                                                                       'name': 'Аэрофлот-росс.авиалин(ПАО)ао',
                                                                       'principal': 1.0,
-                                                                      'reg_code': '1-01-00010-A',
+                                                                      'reg_number': '1-01-00010-A',
                                                                       'engine': 'stock',
                                                                       'market': 'shares',
                                                                       'board': 'TQBR',
@@ -44,7 +44,7 @@ def test_MOEX_details():
                                                                             'isin': 'RU000A0JWUE9',
                                                                             'name': 'Сбербанк ПАО БО-37',
                                                                             'principal': 1000.0,
-                                                                            'reg_code': '4B023701481B',
+                                                                            'reg_number': '4B023701481B',
                                                                             'expiry': 1632960000,
                                                                             'engine': 'stock',
                                                                             'market': 'bonds',
@@ -57,16 +57,16 @@ def test_MOEX_details():
                                                                                'market': 'forts',
                                                                                'board': 'RFUD',
                                                                                'type': PredefinedAsset.Derivative}
-    assert QuoteDownloader.MOEX_info(symbol='', regnumber='2770') == {'symbol': 'ЗПИФ ПНК',
+    assert QuoteDownloader.MOEX_info(symbol='', reg_number='2770') == {'symbol': 'ЗПИФ ПНК',
                                                                       'isin': 'RU000A1013V9',
                                                                       'name': 'ЗПИФ Фонд ПНК-Рентал',
-                                                                      'reg_code': '2770',
+                                                                      'reg_number': '2770',
                                                                       'type': PredefinedAsset.ETF}
-    assert QuoteDownloader.MOEX_info(isin='IE00B8XB7377', regnumber='IE00B8XB7377', symbol='FXGD ETF') == {'symbol': 'FXGD',
+    assert QuoteDownloader.MOEX_info(isin='IE00B8XB7377', reg_number='IE00B8XB7377', symbol='FXGD ETF') == {'symbol': 'FXGD',
                                                                                                            'isin': 'IE00B8XB7377',
                                                                                                            'name': 'FinEx Gold ETF USD',
                                                                                                            'type': PredefinedAsset.ETF}
-    assert QuoteDownloader.MOEX_info(isin='JE00B6T5S470', regnumber='', symbol='') == {'symbol': 'POLY',
+    assert QuoteDownloader.MOEX_info(isin='JE00B6T5S470', reg_number='', symbol='') == {'symbol': 'POLY',
                                                                                        'isin': 'JE00B6T5S470',
                                                                                        'name': 'Polymetal International plc',
                                                                                        'type': PredefinedAsset.Stock}
@@ -74,9 +74,17 @@ def test_MOEX_details():
                                                               'isin': 'RU000A1038V6',
                                                               'name': 'ОФЗ-ПД 26238 15/05/2041',
                                                               'principal': 1000.0,
-                                                              'reg_code': '26238RMFS',
+                                                              'reg_number': '26238RMFS',
                                                               'expiry': 2252188800,
                                                               'type': PredefinedAsset.Bond}
+
+    assert QuoteDownloader.MOEX_info(**{'isin': 'RU0009062285',
+                                        'reg_number': '1-01-00010-A',
+                                        'symbol': 'Аэрофлот'}) == {'symbol': 'RU0009062285',
+                                                                   'name': 'ОАО "Аэрофлот-росс.авл " (2 в)',
+                                                                   'reg_number': '1-02-00010-A',
+                                                                   'principal': 1.0,
+                                                                   'type': PredefinedAsset.Stock}
 
 def test_CBR_downloader():
     codes = pd.DataFrame({'ISO_name': ['AUD', 'ATS'], 'CBR_code': ['R01010', 'R01015']})

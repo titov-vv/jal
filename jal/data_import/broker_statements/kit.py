@@ -19,7 +19,7 @@ class StatementKIT(StatementXLS):
     asset_columns = {
         "name": "Наименование\nЦБ ",
         "isin": "ISIN",
-        "reg_code": "Код гос. регистрации"
+        "reg_number": "Код гос. регистрации"
     }
 
     def __init__(self):

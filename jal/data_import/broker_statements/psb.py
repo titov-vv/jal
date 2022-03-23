@@ -26,7 +26,7 @@ class StatementPSB(StatementXLS):
     asset_columns = {
         "name": r"Наименование эмитента, вид, категория \(тип\), выпуск, транш ЦБ",
         "isin": "ISIN",
-        "reg_code": r"Номер гос\.регистрации"
+        "reg_number": r"Номер гос\.регистрации"
     }
 
     def __init__(self):
@@ -47,7 +47,7 @@ class StatementPSB(StatementXLS):
             "*settlement": r".*ая дата исполнения сделки",
             "number": "Номер сделки в ТС",
             "isin": "ISIN",
-            "reg_code": r"Номер гос\. регистрации",
+            "reg_number": r"Номер гос\. регистрации",
             "B/S": r"Вид сделки \(покупка\/продажа\)",
             "qty": r"Кол-во ЦБ, шт\.",
             "currency": r"Валюта сделки \/ Валюта платежа",
@@ -69,10 +69,10 @@ class StatementPSB(StatementXLS):
                     break
                 deal_number = self._statement[headers['number']][row]
                 isin = self._statement[headers['isin']][row]
-                reg_code = self._statement[headers['reg_code']][row]
-                asset_id = self._find_asset_id(isin=isin, reg_code=reg_code)
+                reg_number = self._statement[headers['reg_number']][row]
+                asset_id = self._find_asset_id(isin=isin, reg_number=reg_number)
                 if not asset_id:
-                    asset_id = self._add_asset(isin, reg_code, '')
+                    asset_id = self._add_asset(isin, reg_number, '')
                 if self._statement[headers['B/S']][row] == 'покупка':
                     qty = self._statement[headers['qty']][row]
                     bond_interest = -self._statement[headers['accrued_int']][row]
@@ -189,7 +189,7 @@ class StatementPSB(StatementXLS):
             "operation": "Вид операции",
             "asset_name": r"Наименование эмитента, вид, категория \(тип\), выпуск, транш ЦБ",
             "isin": "ISIN",
-            "reg_code": "Регистрационный номер ЦБ",
+            "reg_number": "Регистрационный номер ЦБ",
             "currency": "Валюта Выплаты",
             "coupon": "НКД",
             "tax": r"Сумма удержанного налога, руб.*"
@@ -211,10 +211,10 @@ class StatementPSB(StatementXLS):
             tax = float(self._statement[headers['tax']][row])
             account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
             isin = self._statement[headers['isin']][row]
-            reg_code = self._statement[headers['reg_code']][row]
-            asset_id = self._find_asset_id(isin=isin, reg_code=reg_code)
+            reg_number = self._statement[headers['reg_number']][row]
+            asset_id = self._find_asset_id(isin=isin, reg_number=reg_number)
             if not asset_id:
-                asset_id = self._add_asset(isin=isin, reg_code=reg_code)
+                asset_id = self._add_asset(isin=isin, reg_number=reg_number)
             note = self._statement[headers['operation']][row] + " " + self._statement[headers['asset_name']][row]
             new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
             payment = {"id": new_id, "type": FOF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
@@ -229,7 +229,7 @@ class StatementPSB(StatementXLS):
         columns = {
             "date": "Дата операции",
             "isin": "ISIN",
-            "reg_code": r"Номер гос\. регистрации",
+            "reg_number": r"Номер гос\. регистрации",
             "currency": "Валюта Выплаты",
             "amount": "Сумма дивидендов",
             "tax": "Сумма удержанного налога"
@@ -248,10 +248,10 @@ class StatementPSB(StatementXLS):
             tax = float(self._statement[headers['tax']][row])
             account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
             isin = self._statement[headers['isin']][row]
-            reg_code = self._statement[headers['reg_code']][row]
-            asset_id = self._find_asset_id(isin=isin, reg_code=reg_code)
+            reg_number = self._statement[headers['reg_number']][row]
+            asset_id = self._find_asset_id(isin=isin, reg_number=reg_number)
             if not asset_id:
-                asset_id = self._add_asset(isin=isin, reg_code=reg_code)
+                asset_id = self._add_asset(isin=isin, reg_number=reg_number)
             new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
             payment = {"id": new_id, "type": FOF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
                        "asset": asset_id, "amount": amount, "tax": tax, "description": ''}

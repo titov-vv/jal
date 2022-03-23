@@ -15,6 +15,7 @@ from jal.db.helpers import account_last_date, get_app_path
 from jal.db.db import JalDB
 from jal.db.operations import Dividend, CorporateAction
 from jal.widgets.account_select import SelectAccountDialog
+from jal.net.downloader import QuoteDownloader
 
 
 class FOF:
@@ -149,14 +150,14 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     def _match_asset_ids(self, verbal):
         for asset in self._data[FOF.ASSETS]:
             isin = asset['isin'] if 'isin' in asset else ''
-            reg_code = asset['reg_code'] if 'reg_code' in asset else ''
+            reg_number = asset['reg_number'] if 'reg_number' in asset else ''
             name = asset['name'] if 'name' in asset else ''
             country_code = asset['country'] if 'country' in asset else ''
             expiry = asset['expiry'] if 'expiry' in asset else 0
-            asset_id = JalDB().get_asset_id(asset['symbol'], isin=isin, reg_code=reg_code, name=name, expiry=expiry,
+            asset_id = JalDB().get_asset_id(asset['symbol'], isin=isin, reg_number=reg_number, name=name, expiry=expiry,
                                             dialog_new=verbal)
             if asset_id is not None:
-                JalDB().update_asset_data(asset_id, new_symbol=asset['symbol'], new_isin=isin, new_reg=reg_code, new_country_code=country_code)
+                JalDB().update_asset_data(asset_id, new_symbol=asset['symbol'], new_isin=isin, new_reg=reg_number, new_country_code=country_code)
                 old_id, asset['id'] = asset['id'], -asset_id
                 self._update_id("asset", old_id, asset_id)
                 if asset['type'] == FOF.ASSET_MONEY:
@@ -231,7 +232,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if asset['id'] < 0:
                 continue
             isin = asset['isin'] if 'isin' in asset else ''
-            reg_code = asset['reg_code'] if 'reg_code' in asset else ''
+            reg_number = asset['reg_number'] if 'reg_number' in asset else ''
             name = asset['name'] if 'name' in asset else ''
             country_code = asset['country'] if 'country' in asset else ''
             expiry = asset['expiry'] if 'expiry' in asset else 0
@@ -245,7 +246,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     source = MarketDataFeed.NA
 
             asset_id = JalDB().add_asset(asset['symbol'], name, self._asset_types[asset['type']], isin, expiry=expiry,
-                                         data_source=source, reg_code=reg_code, country_code=country_code)
+                                         data_source=source, reg_number=reg_number, country_code=country_code)
             if asset_id:
                 old_id, asset['id'] = asset['id'], -asset_id
                 self._update_id("asset", old_id, asset_id)
@@ -456,7 +457,23 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 asset = self._find_in_list(self._data[FOF.ASSETS], 'id', symbol['asset_id'])
                 if 'isin' in asset and 'isin' in asset_info and asset['isin'] != asset_info['isin']:
                     asset = None
+        if asset is None and 'search_online' in asset_info:
+            if asset_info['search_online'] == "MOEX":
+                search_data = {}
+                self._uppend_keys_from(search_data, asset_info, ['isin', 'reg_number'])
+                symbol = QuoteDownloader.MOEX_find_secid(**search_data)
+                if not symbol and 'symbol' in asset_info:
+                    symbol = asset_info['symbol']
+                currency = asset_info['currency'] if 'currency' in asset_info else None  # Keep currency
+                asset_info = QuoteDownloader.MOEX_info(symbol=symbol)
+                asset_info['type'] = FOF.convert_predefined_asset_type(asset_info['type'])
+                if currency is not None:
+                    asset_info['currency'] = currency
+                asset_info['note'] = "MOEX"
+                return self.asset_id(asset_info)  # Call itself once again to cross-check downloaded data
         if asset is None:
+            if 'should_exist' in asset_info and asset_info['should_exist']:
+                raise Statement_ImportError(self.tr("Can't locate asset in statement data: ") + f"'{asset_info}'")
             asset_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
             asset = {"id": asset_id}
             self._uppend_keys_from(asset, asset_info, ['type', 'name', 'isin', 'country'])
@@ -474,7 +491,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 data['asset_id'] = asset_id
                 self._data[FOF.ASSETS_DATA].append(data)
         else:
-            if asset['type'] != FOF.ASSET_MONEY:
+            if 'type' in asset and asset['type'] != FOF.ASSET_MONEY:
                 self.update_asset_data(asset['id'], asset_info)
         return asset['id']
 
