@@ -53,10 +53,12 @@ class StatementKIT(StatementXLS):
         while row < self._statement.shape[0]:
             if self._statement[0][row] == '' and self._statement[0][row + 1] == '':
                 break
-            isin = self._statement[headers['isin']][row]
-            asset_id = self._find_asset_id(isin=self._statement[headers['isin']][row])
-            if not asset_id:
-                asset_id = self._add_asset(isin, '', '')
+            try:
+                code = self.currency_id(self.currency_substitutions[self._statement[headers['currency']][row]])
+            except KeyError:
+                code = self.currency_id(self._statement[headers['currency']][row])
+            asset_id = self.asset_id({'isin': self._statement[headers['isin']][row],
+                                      'currency': code, 'search_online': "MOEX"})
             if self._statement[headers['B/S']][row] == 'Покупка':
                 amount = -self._statement[headers['amount']][row]
                 qty = self._statement[headers['qty']][row]
