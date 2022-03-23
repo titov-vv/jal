@@ -138,7 +138,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         if unsupported_sections:
             for section in unsupported_sections:
                 self._data.pop(section)
-            logging.warning(self.tr("Some sections are not supported: ") + unsupported_sections)
+            logging.warning(self.tr("Some sections are not supported: ") + f"{unsupported_sections}")
 
     # check are assets and accounts from self._data present in database
     # replace IDs in self._data with IDs from database (DB IDs will be negative, initial IDs will be positive)

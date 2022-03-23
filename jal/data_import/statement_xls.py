@@ -3,10 +3,7 @@ import re
 import pandas
 from datetime import datetime, timezone
 from zipfile import ZipFile
-
-from jal.db.db import JalDB
 from jal.data_import.statement import Statement, FOF, Statement_ImportError
-from jal.net.downloader import QuoteDownloader
 
 
 # -----------------------------------------------------------------------------------------------------------------------
