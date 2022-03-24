@@ -63,7 +63,7 @@ class QuoteDownloader(QObject):
             self.UpdateQuotes(dialog.getStartDate(), dialog.getEndDate())
             self.download_completed.emit()
 
-    # FIXME This method make work incorrectly for assets with multiple symbols
+    # FIXME This method may work incorrectly for assets with multiple symbols
     def UpdateQuotes(self, start_timestamp, end_timestamp):
         self.PrepareRussianCBReader()
         jal_db = JalDB()
@@ -386,19 +386,18 @@ class QuoteDownloader(QObject):
         return close
 
     def updataData(self):
-        query = executeSQL("SELECT * FROM assets WHERE src_id!=:NA",
+        query = executeSQL("SELECT * FROM assets_ext WHERE quote_source!=:NA",
                            [(":NA", MarketDataFeed.NA)])
         while query.next():
             asset = readSQLrecord(query, named=True)
             if asset['type_id'] in [PredefinedAsset.Money, PredefinedAsset.Commodity, PredefinedAsset.Forex]:
                 continue
-            if asset['src_id'] == MarketDataFeed.RU:
-                logging.info(self.tr("Checking MOEX data for: ") + asset['name'])
-                data = self.MOEX_info(symbol=asset['name'], isin=asset['isin'])
+            if asset['quote_source'] == MarketDataFeed.RU:
+                logging.info(self.tr("Checking MOEX data for: ") + asset['symbol'])
+                data = self.MOEX_info(symbol=asset['symbol'], isin=asset['isin'])
                 if data:
                     if asset['full_name'] != data['name']:
                         logging.info(self.tr("New full name found for:  ")
                                      + f"{JalDB().get_asset_name(asset['id'])}: {asset['full_name']} -> {data['name']}")
                     isin = data['isin'] if not asset['isin'] and 'isin' in data and data['isin'] else ''
-                    expiry = data['expiry'] if 'expiry' in data and data['expiry'] != asset['expiry'] else 0
-                    JalDB().update_asset_data(asset['id'], {'isin': isin, 'expiry': expiry})
+                    JalDB().update_asset_data(asset['id'], {'isin': isin})
