@@ -280,13 +280,13 @@ class QuoteDownloader(QObject):
             asset_code = isin   # Corporate bonds are quoted by ISIN
         if (asset['market'] == 'shares') and (asset['board'] == 'TQIF'):
             asset_code = isin   # ETFs are quoted by ISIN
-
-        isin = asset['isin'] if 'isin' in asset else ''
-        reg_number = asset['reg_number'] if 'reg_number' in asset else ''
-        expiry = asset['expiry'] if 'expiry' in asset else 0
-        principal = asset['principal'] if 'principal' in asset else 0
         if update_symbol:
-            JalDB().update_asset_data(asset_id, new_isin=isin, new_reg=reg_number, expiry=expiry, principal=principal)
+            isin = asset['isin'] if 'isin' in asset else ''
+            reg_number = asset['reg_number'] if 'reg_number' in asset else ''
+            expiry = asset['expiry'] if 'expiry' in asset else 0
+            principal = asset['principal'] if 'principal' in asset else 0
+            details = {'isin': isin, 'reg_number': reg_number, 'expiry': expiry, 'principal': principal}
+            JalDB().update_asset_data(asset_id, details)
 
         # Get price history
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d')
@@ -400,4 +400,4 @@ class QuoteDownloader(QObject):
                                      + f"{JalDB().get_asset_name(asset['id'])}: {asset['full_name']} -> {data['name']}")
                     isin = data['isin'] if not asset['isin'] and 'isin' in data and data['isin'] else ''
                     expiry = data['expiry'] if 'expiry' in data and data['expiry'] != asset['expiry'] else 0
-                    JalDB().update_asset_data(asset_id=asset['id'], new_isin=isin, expiry=expiry)
+                    JalDB().update_asset_data(asset['id'], {'isin': isin, 'expiry': expiry})

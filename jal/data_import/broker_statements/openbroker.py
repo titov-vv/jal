@@ -288,7 +288,7 @@ class StatementOpenBroker(StatementXML):
             if len(repayment_note) != bond_repayment_pattern.count("(?P<"):  # check expected number of matches
                 raise Statement_ImportError(
                     self.tr("Can't detect bond name from description ") + f"'{repayment_note}'")
-            ticker = self._find_in_list(self._data[FOF.SYMBOLS], 'asset_id', operation['asset'])
+            ticker = self._find_in_list(self._data[FOF.SYMBOLS], 'asset', operation['asset'])
             if ticker['symbol'] != repayment_note['asset_name']:  # Store alternative depositary name
                 ticker = ticker.copy()
                 ticker['id'] = max([0] + [x['id'] for x in self._data[FOF.SYMBOLS]]) + 1

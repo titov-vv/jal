@@ -24,7 +24,7 @@ def create_stocks(assets, currency_id):
 # ----------------------------------------------------------------------------------------------------------------------
 # Create assets in database with PredefinedAsset.Stock type : assets is a list of tuples
 # (id, symbol, full_name, isin, currency_id, asset_type, country_id)
-def create_assets(assets):
+def create_assets(assets, data=[]):
     for asset in assets:
         query = executeSQL("INSERT INTO assets (id, type_id, full_name, isin, country_id) "
                            "VALUES (:id, :type, :full_name, :isin, :country_id)",
@@ -35,7 +35,10 @@ def create_assets(assets):
                           "VALUES (:asset_id, :symbol, :currency_id)",
                           [(":asset_id", asset_id), (":symbol", asset[1]), (":currency_id", asset[4])],
                           commit=True) is not None
-
+    for item in data:
+        assert executeSQL("INSERT INTO asset_data (asset_id, datatype, value) VALUES (:asset_id, :datatype, :value)",
+                          [(":asset_id", item[0]), (":datatype", item[1]), (":value", item[2])],
+                          commit=True) is not None
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Insert quotes for asset_id into database. Quotes is a list of (timestamp, quote) tuples

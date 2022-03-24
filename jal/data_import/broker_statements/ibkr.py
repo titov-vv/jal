@@ -4,7 +4,7 @@ from datetime import datetime
 from itertools import groupby
 
 from PySide6.QtWidgets import QApplication
-from jal.constants import PredefinedCategory
+from jal.constants import PredefinedCategory, PredefinedAsset
 from jal.widgets.helpers import ManipulateDate
 from jal.db.db import JalDB
 from jal.db.helpers import executeSQL, readSQLrecord
@@ -325,7 +325,7 @@ class StatementIBKR(StatementXML):
             return candidates[0]["id"]
         candidates = [x for x in self._data[FOF.SYMBOLS] if 'symbol' in x and x['symbol'] == symbol]
         if len(candidates) == 1:
-            return candidates[0]["asset_id"]
+            return candidates[0]["asset"]
         return 0
 
     def set_asset_counry(self, asset_id, country):
@@ -798,12 +798,12 @@ class StatementIBKR(StatementXML):
                      and x['asset'] == asset_id and x['account'] == account_id]
         account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
         currency = [x for x in self._data[FOF.ASSETS] if x["id"] == account['currency']][0]
-        currency_symbol = [x for x in self._data[FOF.SYMBOLS] if x["asset_id"] == currency['id']][0]
+        currency_symbol = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == currency['id']][0]
         db_account = JalDB().get_account_id(account['number'], currency_symbol['symbol'])
         asset = [x for x in self._data[FOF.ASSETS] if x["id"] == asset_id][0]
         isin = asset['isin'] if 'isin' in asset else ''
-        symbols = [x for x in self._data[FOF.SYMBOLS] if x["asset_id"] == asset_id]
-        db_asset = JalDB().get_asset_id(symbols[0]['symbol'], isin=isin, dialog_new=False)
+        symbols = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == asset_id]
+        db_asset = JalDB().get_asset_id({'isin': isin, 'symbol': symbols[0]['symbol']})
         if db_account is not None and db_asset is not None:
             query = executeSQL(
                 "SELECT -id AS id, -account_id AS account, timestamp, number, "

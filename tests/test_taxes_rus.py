@@ -121,7 +121,7 @@ def test_taxes_rus_bonds(tmp_path, project_root, data_path, prepare_db_taxes):
     assert IBKR._data == statement
 
     IBKR.validate_format()
-    IBKR.match_db_ids(verbal=False)
+    IBKR.match_db_ids()
     IBKR.import_into_db()
 
     ledger = Ledger()  # Build ledger to have FIFO deals table

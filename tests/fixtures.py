@@ -3,7 +3,7 @@ import os
 from shutil import copyfile
 from PySide6.QtSql import QSqlDatabase
 
-from constants import Setup, PredefinedCategory, PredefinedAsset
+from constants import Setup, PredefinedCategory, PredefinedAsset, AssetData
 from jal.db.helpers import init_and_check_db, LedgerInitError
 from jal.db.db import JalDB
 from jal.db.helpers import executeSQL, get_dbfilename
@@ -56,10 +56,11 @@ def prepare_db_ibkr(prepare_db):
     assert executeSQL("INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id) "
                       "VALUES (4, 'Inv. Account', 2, 1, 'U7654321', 1)") is not None
     test_assets = [
-        (4, 'VUG', 'Growth ETF', '', 2, PredefinedAsset.Stock, 0),
-        (5, 'EDV', 'VANGUARD EXTENDED DUR TREAS', '', 2, PredefinedAsset.Stock, 0)
+        (4, 'VUG', 'Growth ETF', '', 2, PredefinedAsset.ETF, 0),
+        (5, 'EDV', 'VANGUARD EXTENDED DUR TREAS', '', 2, PredefinedAsset.ETF, 0),
+        (6, 'ZROZ', '', 'US72201R8824', 2, PredefinedAsset.ETF, 0)
     ]
-    create_assets(test_assets)
+    create_assets(test_assets, data=[(5, AssetData.RegistrationCode, "921910709")])
     dividends = [
         (1529612400, 1, 5, 16.76, 1.68, "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"),
         (1533673200, 1, 5, 20.35, 2.04, "EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)")

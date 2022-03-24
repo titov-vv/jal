@@ -61,7 +61,7 @@ class Statements(QObject):
         try:
             statement.load(statement_file)
             statement.validate_format()
-            statement.match_db_ids(verbal=False)
+            statement.match_db_ids()
             totals = statement.import_into_db()
         except Statement_ImportError as e:
             logging.error(self.tr("Import failed: ") + str(e))

@@ -13,16 +13,16 @@
     {"id": 6, "type": "stock", "name": "Polymetal International plc", "isin": "JE00B6T5S470"}
   ],
   "symbols": [
-    {"id": 1, "asset_id": 1, "symbol": "RUB", "currency": -1},
-    {"id": 2, "asset_id": 2, "symbol": "USD", "currency": -1},
-    {"id": 3, "asset_id": 3, "symbol": "AFLT", "currency": 1, "note": "MOEX"},
-    {"id": 4, "asset_id": 4, "symbol": "FXGD", "currency": 1, "note": "MOEX"},
-    {"id": 5, "asset_id": 5, "symbol": "ТинькоффБ7", "currency": 1, "note": "MOEX"},
-    {"id": 6, "asset_id": 6, "symbol": "POLY", "currency": 1, "note": "MOEX"}
+    {"id": 1, "asset": 1, "symbol": "RUB", "currency": -1},
+    {"id": 2, "asset": 2, "symbol": "USD", "currency": -1},
+    {"id": 3, "asset": 3, "symbol": "AFLT", "currency": 1, "note": "MOEX"},
+    {"id": 4, "asset": 4, "symbol": "FXGD", "currency": 1, "note": "MOEX"},
+    {"id": 5, "asset": 5, "symbol": "ТинькоффБ7", "currency": 1, "note": "MOEX"},
+    {"id": 6, "asset": 6, "symbol": "POLY", "currency": 1, "note": "MOEX"}
   ],
   "assets_data": [
-    {"id": 1, "asset_id": 3, "reg_number": "1-01-00010-A", "principal": 1.0},
-    {"id": 2, "asset_id": 5, "reg_number": "4B020702673B", "principal": 1000.0, "expiry": 1624492800}
+    {"id": 1, "asset": 3, "reg_number": "1-01-00010-A", "principal": 1.0},
+    {"id": 2, "asset": 5, "reg_number": "4B020702673B", "principal": 1000.0, "expiry": 1624492800}
   ],
   "trades": [
     {"id": 1, "number": "3312348787", "timestamp": 1615647620, "settlement": 1615766400, "account": 1, "asset": 4, "quantity": 10, "price": 987.65, "fee": 6.9},

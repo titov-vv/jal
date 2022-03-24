@@ -103,6 +103,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         self._section_loaders = {
             FOF.PERIOD: self._check_period,
             FOF.ASSETS: self._import_assets,
+            FOF.SYMBOLS: self._import_symbol_tickers,
+            FOF.ASSETS_DATA: self._import_asset_data,
             FOF.ACCOUNTS: self._import_accounts,
             FOF.INCOME_SPENDING: self._import_imcomes_and_spendings,
             FOF.TRANSFERS: self._import_transfers,
@@ -142,26 +144,61 @@ class Statement(QObject):   # derived from QObject to have proper string transla
 
     # check are assets and accounts from self._data present in database
     # replace IDs in self._data with IDs from database (DB IDs will be negative, initial IDs will be positive)
-    def match_db_ids(self, verbal=True):
-        self._match_asset_ids(verbal)
+    def match_db_ids(self):
+        self._match_currencies()
+        self._match_asset_isin()
+        self._match_asset_reg_number()
+        self._match_asset_symbol()
         self._match_account_ids()
 
-    # Check and replace IDs for Assets
-    def _match_asset_ids(self, verbal):
+    def _match_currencies(self):
         for asset in self._data[FOF.ASSETS]:
-            isin = asset['isin'] if 'isin' in asset else ''
-            reg_number = asset['reg_number'] if 'reg_number' in asset else ''
-            name = asset['name'] if 'name' in asset else ''
-            country_code = asset['country'] if 'country' in asset else ''
-            expiry = asset['expiry'] if 'expiry' in asset else 0
-            asset_id = JalDB().get_asset_id(asset['symbol'], isin=isin, reg_number=reg_number, name=name, expiry=expiry,
-                                            dialog_new=verbal)
+            if asset['type'] != FOF.ASSET_MONEY:
+                continue
+            symbol = self._find_in_list(self._data[FOF.SYMBOLS], "asset", asset['id'])
+            asset_id = JalDB().get_asset_id({'symbol': symbol['symbol'], 'type': self._asset_types[asset['type']]})
             if asset_id is not None:
-                JalDB().update_asset_data(asset_id, new_symbol=asset['symbol'], new_isin=isin, new_reg=reg_number, new_country_code=country_code)
+                symbol['asset'] = -asset_id
+                old_id, asset['id'] = asset['id'], -asset_id
+                self._update_id("currency", old_id, asset_id)
+                self._update_id("asset", old_id, asset_id)     # TRANSFERS section may have currency in asset list
+
+    # Check and replace IDs for Assets matched by isin
+    def _match_asset_isin(self):
+        for asset in self._data[FOF.ASSETS]:
+            if asset['id'] < 0:  # already matched
+                continue
+            if 'isin' in asset:
+                asset_id = JalDB().get_asset_id({'isin': asset['isin']})
+                if asset_id is not None:
+                    old_id, asset['id'] = asset['id'], -asset_id
+                    self._update_id("asset", old_id, asset_id)
+
+    # Check and replace IDs for Assets matched by reg_number
+    def _match_asset_reg_number(self):
+        for asset in self._data[FOF.ASSETS_DATA]:
+            if asset['asset'] < 0:  # already matched
+                continue
+            if 'reg_number' in asset:
+                asset_id = JalDB().get_asset_id({'reg_number': asset['reg_number']})
+                if asset_id is not None:
+                    asset = self._find_in_list(self._data[FOF.ASSETS], "id", asset['asset'])
+                    old_id, asset['id'] = asset['id'], -asset_id
+                    self._update_id("asset", old_id, asset_id)
+
+    def _match_asset_symbol(self):
+        for symbol in self._data[FOF.SYMBOLS]:
+            if symbol['asset'] < 0:  # already matched
+                continue
+            asset = self._find_in_list(self._data[FOF.ASSETS], "id", symbol['asset'])
+            search_data = {'symbol': symbol['symbol'], 'type': self._asset_types[asset['type']]}
+            data = self._find_in_list(self._data[FOF.ASSETS_DATA], "asset", symbol['asset'])
+            if data is not None:
+                self._uppend_keys_from(search_data, data, ['expiry'])
+            asset_id = JalDB().get_asset_id(search_data)
+            if asset_id is not None:
                 old_id, asset['id'] = asset['id'], -asset_id
                 self._update_id("asset", old_id, asset_id)
-                if asset['type'] == FOF.ASSET_MONEY:
-                    self._update_id("currency", old_id, asset_id)
 
     # Check and replace IDs for Accounts
     def _match_account_ids(self):
@@ -173,8 +210,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
 
     # Replace 'old_value' with 'new_value' in keys 'tag_name' of sections listed in mutable_sections
     def _update_id(self, tag_name, old_value, new_value):
-        mutable_sections = [FOF.ACCOUNTS, FOF.ASSETS, FOF.TRADES, FOF.TRANSFERS, FOF.CORP_ACTIONS, FOF.ASSET_PAYMENTS,
-                            FOF.INCOME_SPENDING]
+        mutable_sections = [FOF.ACCOUNTS, FOF.ASSETS, FOF.SYMBOLS, FOF.ASSETS_DATA, FOF.TRADES, FOF.TRANSFERS,
+                            FOF.CORP_ACTIONS, FOF.ASSET_PAYMENTS, FOF.INCOME_SPENDING]
         for section in mutable_sections:
             for element in self._data[section]:
                 for tag in element:
@@ -229,24 +266,13 @@ class Statement(QObject):   # derived from QObject to have proper string transla
 
     def _import_assets(self, assets):
         for asset in assets:
-            if asset['id'] < 0:
-                continue
             isin = asset['isin'] if 'isin' in asset else ''
-            reg_number = asset['reg_number'] if 'reg_number' in asset else ''
             name = asset['name'] if 'name' in asset else ''
             country_code = asset['country'] if 'country' in asset else ''
-            expiry = asset['expiry'] if 'expiry' in asset else 0
-
-            if asset['type'] == FOF.ASSET_MONEY:
-                source = MarketDataFeed.CBR
-            else:
-                try:
-                    source = self._sources[asset['exchange']]
-                except KeyError:
-                    source = MarketDataFeed.NA
-
-            asset_id = JalDB().add_asset(asset['symbol'], name, self._asset_types[asset['type']], isin, expiry=expiry,
-                                         data_source=source, reg_number=reg_number, country_code=country_code)
+            if asset['id'] < 0:
+                JalDB().update_asset_data(-asset['id'], {'isin': isin, 'name': name, 'country': country_code})
+                continue
+            asset_id = JalDB().add_asset(self._asset_types[asset['type']], name, isin, country_code=country_code)
             if asset_id:
                 old_id, asset['id'] = asset['id'], -asset_id
                 self._update_id("asset", old_id, asset_id)
@@ -254,6 +280,29 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     self._update_id("currency", old_id, asset_id)
             else:
                 raise Statement_ImportError(self.tr("Can't create asset: ") + f"{asset}")
+
+    def _import_symbol_tickers(self, symbols):
+        for symbol in symbols:
+            if symbol['asset'] > 0:
+                raise Statement_ImportError(self.tr("Symbol ticker isn't linked to asset: ") + f"{symbol}")
+            if symbol['currency'] > 0:
+                raise Statement_ImportError(self.tr("Symbol currency isn't linked to asset: ") + f"{symbol}")
+            asset = self._find_in_list(self._data[FOF.ASSETS], "id", symbol['asset'])
+            note = symbol['note'] if 'note' in symbol else ''
+            if asset['type'] == FOF.ASSET_MONEY:
+                source = MarketDataFeed.CBR
+            else:
+                try:
+                    source = self._sources[symbol['note']]
+                except KeyError:
+                    source = MarketDataFeed.NA
+            JalDB().add_symbol(-symbol['asset'], symbol['symbol'], -symbol['currency'], note, data_source=source)
+
+    def _import_asset_data(self, data):
+        for detail in data:
+            if detail['asset'] > 0:
+                raise Statement_ImportError(self.tr("Asset data aren't linked to asset: ") + f"{detail}")
+            JalDB().update_asset_data(-detail['asset'], detail)
     
     def _import_accounts(self, accounts):
         for account in accounts:
@@ -425,17 +474,17 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     # Returns currency id
     def currency_id(self, currency_symbol) -> int:
         match = [x for x in self._data[FOF.SYMBOLS] if
-                 x['symbol'] == currency_symbol and self._asset(x['asset_id'])['type'] == FOF.ASSET_MONEY]
+                 x['symbol'] == currency_symbol and self._asset(x['asset'])['type'] == FOF.ASSET_MONEY]
         if match:
             if len(match) == 1:
-                return match[0]["asset_id"]
+                return match[0]["asset"]
             else:
                 raise Statement_ImportError(self.tr("Multiple currency match for ") + f"{currency_symbol}")
         else:
             asset_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS]]) + 1
             self._data[FOF.ASSETS].append({"id": asset_id, "type": "money", "name": ""})
             symbol_id = max([0] + [x['id'] for x in self._data[FOF.SYMBOLS]]) + 1
-            currency = {"id": symbol_id, "asset_id": asset_id, "symbol": currency_symbol,
+            currency = {"id": symbol_id, "asset": asset_id, "symbol": currency_symbol,
                         "currency": -JalSettings().getValue('BaseCurrency')}
             self._data[FOF.SYMBOLS].append(currency)
             return asset_id
@@ -450,11 +499,11 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         if asset is None and 'reg_number' in asset_info:
             asset_data = self._find_in_list(self._data[FOF.ASSETS_DATA], 'reg_number', asset_info['reg_number'])
             if asset_data is not None:
-                asset = self._find_in_list(self._data[FOF.ASSETS], 'id', asset_data['asset_id'])
+                asset = self._find_in_list(self._data[FOF.ASSETS], 'id', asset_data['asset'])
         if asset is None and 'symbol' in asset_info:
             symbol = self._find_in_list(self._data[FOF.SYMBOLS], 'symbol', asset_info['symbol'])
             if symbol is not None:
-                asset = self._find_in_list(self._data[FOF.ASSETS], 'id', symbol['asset_id'])
+                asset = self._find_in_list(self._data[FOF.ASSETS], 'id', symbol['asset'])
                 if 'isin' in asset and 'isin' in asset_info and asset['isin'] != asset_info['isin']:
                     asset = None
         if asset is None and 'search_online' in asset_info:
@@ -480,7 +529,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             self._data[FOF.ASSETS].append(asset)
             if 'symbol' in asset_info:
                 symbol_id = max([0] + [x['id'] for x in self._data[FOF.SYMBOLS]]) + 1
-                symbol = {"id": symbol_id, "asset_id": asset_id}
+                symbol = {"id": symbol_id, "asset": asset_id}
                 self._uppend_keys_from(symbol, asset_info, ['symbol', 'currency', 'note'])
                 self._data[FOF.SYMBOLS].append(symbol)
             data = {}
@@ -488,7 +537,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if data:
                 data_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS_DATA]]) + 1
                 data['id'] = data_id
-                data['asset_id'] = asset_id
+                data['asset'] = asset_id
                 self._data[FOF.ASSETS_DATA].append(data)
         else:
             if 'type' in asset and asset['type'] != FOF.ASSET_MONEY:
@@ -507,7 +556,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         # Add new asset symbol if information provided
         if 'symbol' in asset_info:
             symbol_exists = False
-            symbols = [x for x in self._data[FOF.SYMBOLS] if "asset_id" in x and x["asset_id"] == asset_id]
+            symbols = [x for x in self._data[FOF.SYMBOLS] if "asset" in x and x["asset"] == asset_id]
             if symbols:
                 for symbol in symbols:
                     if symbol['symbol'] == asset_info['symbol'] and (
@@ -515,17 +564,17 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                         symbol_exists = True
             if not symbol_exists:
                 symbol_id = max([0] + [x['id'] for x in self._data[FOF.SYMBOLS]]) + 1
-                symbol = {"id": symbol_id, "asset_id": asset_id}
+                symbol = {"id": symbol_id, "asset": asset_id}
                 self._uppend_keys_from(symbol, asset_info, ['symbol', 'currency', 'note', 'alt_symbol'])
                 self._data[FOF.SYMBOLS].append(symbol)
         # Update the rest of asset data
-        asset_data = self._find_in_list(self._data[FOF.ASSETS_DATA], "asset_id", asset_id)
+        asset_data = self._find_in_list(self._data[FOF.ASSETS_DATA], "asset", asset_id)
         if asset_data is None:
             if {'reg_number', 'expiry', 'principal'}.intersection(set(asset_info)):  # if keys are present in info
                 asset_data = {}
                 data_id = max([0] + [x['id'] for x in self._data[FOF.ASSETS_DATA]]) + 1
                 asset_data['id'] = data_id
-                asset_data['asset_id'] = asset_id
+                asset_data['asset'] = asset_id
                 self._data[FOF.ASSETS_DATA].append(asset_data)
             else:
                 return
