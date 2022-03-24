@@ -5,6 +5,7 @@ from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from data_import.broker_statements.ibkr import StatementIBKR
 from tests.helpers import create_assets, create_quotes, create_dividends, create_coupons, create_trades, \
     create_actions, create_corporate_actions, create_stock_dividends
+from constants import PredefinedAsset
 from jal.db.ledger import Ledger
 from jal.data_export.taxes import TaxesRus
 from jal.data_export.xlsx import XLSX
@@ -16,15 +17,15 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
         report = json.load(json_file)
 
     assets = [
-        ("GE", "General Electric Company", "US3696043013", 2, 2),
-        ("TLT", "iShares 20+ Year Treasury Bond ETF", "US4642874329", 4, 2),
-        ("ERIC", "Telefonaktiebolaget LM Ericsson B ADR", "US2948216088", 2, 7),
-        ("GOLD", "Barrick Gold Corp", "CA0679011084", 2, 6),
-        ("TEVA", "Teva Pharma Industries Ltd ADR", "US8816242098", 2, 0),
-        ("X 6 1/4 03/15/26", "X 6 1/4 03/15/26", "US912909AN84", 3, 2),
-        ("AAL   210115C00030000", "AAL 15JAN21 30.0 C", "", 6, 0),
-        ("MYL", "MYLAN NV", "NL0011031208", 2, 0),
-        ("VTRS", "VIATRIS INC", "US92556V1061", 2, 0)
+        (4, "GE", "General Electric Company", "US3696043013", 2, PredefinedAsset.Stock, 2),
+        (5, "TLT", "iShares 20+ Year Treasury Bond ETF", "US4642874329", 2, PredefinedAsset.ETF, 2),
+        (6, "ERIC", "Telefonaktiebolaget LM Ericsson B ADR", "US2948216088", 2, PredefinedAsset.ETF, 7),
+        (7, "GOLD", "Barrick Gold Corp", "CA0679011084", 2, PredefinedAsset.ETF, 6),
+        (8, "TEVA", "Teva Pharma Industries Ltd ADR", "US8816242098", 2, PredefinedAsset.Stock, 0),
+        (9, "X 6 1/4 03/15/26", "X 6 1/4 03/15/26", "US912909AN84", 2, PredefinedAsset.Bond, 2),
+        (10, "AAL   210115C00030000", "AAL 15JAN21 30.0 C", "", 2, PredefinedAsset.Derivative, 0),
+        (11, "MYL", "MYLAN NV", "NL0011031208", 2, PredefinedAsset.Stock, 0),
+        (12, "VTRS", "VIATRIS INC", "US92556V1061", 2, PredefinedAsset.Stock, 0)
     ]
     create_assets(assets)
     usd_rates = [

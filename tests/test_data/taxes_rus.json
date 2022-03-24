@@ -343,7 +343,8 @@
          "symbol": "TLT",
          "t_date": 1608044400,
          "t_rate": 72.9272,
-         "trade_number": "B1"
+         "trade_number": "B1",
+         "type_id": 4
       },
       {
          "action_date": 1604448000,
@@ -382,7 +383,8 @@
          "t_date": 1593604800,
          "t_rate": 70.4413,
          "trade_id": 12,
-         "trade_number": "A"
+         "trade_number": "A",
+         "type_id": 4
       },
       {
          "income_rub": 5506.51,
@@ -410,7 +412,8 @@
          "symbol": "TLT",
          "t_date": 1608044400,
          "t_rate": 72.9272,
-         "trade_number": "B2"
+         "trade_number": "B2",
+         "type_id": 4
       },
       {
          "action_date": 1604448000,
@@ -449,7 +452,8 @@
          "t_date": 1593604800,
          "t_rate": 70.4413,
          "trade_id": 12,
-         "trade_number": "A"
+         "trade_number": "A",
+         "type_id": 4
       },
       {
          "income_rub": 4588.76,
@@ -482,7 +486,8 @@
          "symbol": "VTRS",
          "t_date": 1608044400,
          "t_rate": 72.9272,
-         "trade_number": "2227095222"
+         "trade_number": "2227095222",
+         "type_id": 2
       },
       {
          "report_template": "action",
@@ -521,7 +526,8 @@
          "t_date": 1593604800,
          "t_rate": 70.4413,
          "trade_id": 10,
-         "trade_number": "1118233222"
+         "trade_number": "1118233222",
+         "type_id": 2
       },
       {
          "report_template": "totals",

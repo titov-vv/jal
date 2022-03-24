@@ -9,7 +9,7 @@ from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
 
 # -----------------------------------------------------------------------------------------------------------------------
 class TaxesRus:
-    BOND_PRINCIPAL = 1000  # TODO We may keep bond principal in 'assets' table or somewhere in database
+    BOND_PRINCIPAL = 1000  # TODO Principal should be used from 'asset_data' table
 
     CorpActionText = {
         CorporateAction.SymbolChange: "Смена символа {before} {old} -> {after} {new}",
@@ -44,8 +44,8 @@ class TaxesRus:
         tax_report = {}
         self.account_id = account_id
         self.account_number, self.account_currency = \
-            readSQL("SELECT a.number, c.name FROM accounts AS a "
-                    "LEFT JOIN assets AS c ON a.currency_id = c.id WHERE a.id=:account",
+            readSQL("SELECT a.number, c.symbol FROM accounts AS a "
+                    "LEFT JOIN currencies c ON a.currency_id = c.id WHERE a.id=:account",
                     [(":account", account_id)])
         self.year_begin = int(datetime.strptime(f"{year}", "%Y").replace(tzinfo=timezone.utc).timestamp())
         self.year_end = int(datetime.strptime(f"{year + 1}", "%Y").replace(tzinfo=timezone.utc).timestamp())
@@ -100,12 +100,12 @@ class TaxesRus:
 
     def prepare_dividends(self):
         dividends = []
-        query = executeSQL("SELECT d.type, d.timestamp AS payment_date, s.name AS symbol, s.full_name AS full_name, "
+        query = executeSQL("SELECT d.type, d.timestamp AS payment_date, s.symbol, s.full_name AS full_name, "
                            "s.isin AS isin, d.amount AS amount, d.tax AS tax, q.quote AS rate, p.quote AS price, "
                            "c.name AS country, c.iso_code AS country_iso, c.tax_treaty AS tax_treaty "
                            "FROM dividends AS d "
-                           "LEFT JOIN assets AS s ON s.id = d.asset_id "
                            "LEFT JOIN accounts AS a ON d.account_id = a.id "
+                           "LEFT JOIN assets_ext AS s ON s.id = d.asset_id AND s.currency_id=a.currency_id "
                            "LEFT JOIN countries AS c ON s.country_id = c.id "
                            "LEFT JOIN t_last_dates AS ld ON d.timestamp=ld.ref_id "
                            "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND a.currency_id=q.asset_id "
@@ -145,7 +145,7 @@ class TaxesRus:
     def prepare_stocks_and_etf(self):
         deals = []
         # Take all actions without conversion
-        query = executeSQL("SELECT s.name AS symbol, s.isin AS isin, d.qty AS qty, cc.iso_code AS country_iso, "
+        query = executeSQL("SELECT s.symbol AS symbol, s.isin AS isin, d.qty AS qty, cc.iso_code AS country_iso, "
                            "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, o.number AS o_number, "
                            "qos.quote AS os_rate, o.price AS o_price, o.qty AS o_qty, o.fee AS o_fee, "
                            "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, c.number AS c_number, "
@@ -154,8 +154,8 @@ class TaxesRus:
                            "FROM deals AS d "
                            "JOIN trades AS o ON o.id=d.open_op_id AND o.op_type=d.open_op_type "
                            "JOIN trades AS c ON c.id=d.close_op_id AND c.op_type=d.close_op_type "
-                           "LEFT JOIN assets AS s ON o.asset_id=s.id "
                            "LEFT JOIN accounts AS a ON a.id = :account_id "
+                           "LEFT JOIN assets_ext AS s ON s.id = o.asset_id AND s.currency_id=a.currency_id "
                            "LEFT JOIN countries AS cc ON cc.id = a.country_id "
                            "LEFT JOIN t_last_dates AS ldo ON o.timestamp=ldo.ref_id "
                            "LEFT JOIN quotes AS qo ON ldo.timestamp=qo.timestamp AND a.currency_id=qo.asset_id "
@@ -172,7 +172,7 @@ class TaxesRus:
                            "WHERE c.settlement>=:begin AND c.settlement<:end AND d.account_id=:account_id "
                            "AND (s.type_id = :stock OR s.type_id = :fund) "
                            "GROUP BY d.rowid "  # to prevent collapse to 1 line if 'sd' values are NULL
-                           "ORDER BY s.name, o.timestamp, c.timestamp",
+                           "ORDER BY s.symbol, o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
                             (":stock", PredefinedAsset.Stock), (":fund", PredefinedAsset.ETF)])
         while query.next():
@@ -213,7 +213,7 @@ class TaxesRus:
     def prepare_bonds(self):
         bonds = []
         # First put all closed deals with bonds
-        query = executeSQL("SELECT s.name AS symbol, s.isin AS isin, d.qty AS qty, cc.iso_code AS country_iso, "
+        query = executeSQL("SELECT s.symbol AS symbol, s.isin AS isin, d.qty AS qty, cc.iso_code AS country_iso, "
                            "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, o.number AS o_number, "
                            "qos.quote AS os_rate, o.price AS o_price, o.qty AS o_qty, o.fee AS o_fee, -oi.amount AS o_int, "
                            "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, c.number AS c_number, "
@@ -223,8 +223,8 @@ class TaxesRus:
                            "LEFT JOIN dividends AS oi ON oi.account_id=:account_id AND oi.number=o.number AND oi.timestamp=o.timestamp AND oi.asset_id=o.asset_id "
                            "JOIN trades AS c ON c.id=d.close_op_id AND c.op_type=d.close_op_type "
                            "LEFT JOIN dividends AS ci ON ci.account_id=:account_id AND ci.number=c.number AND ci.timestamp=c.timestamp AND ci.asset_id=c.asset_id "
-                           "LEFT JOIN assets AS s ON o.asset_id=s.id "
                            "LEFT JOIN accounts AS a ON a.id = :account_id "
+                           "LEFT JOIN assets_ext AS s ON s.id = o.asset_id AND s.currency_id=a.currency_id "
                            "LEFT JOIN countries AS cc ON cc.id = a.country_id "
                            "LEFT JOIN t_last_dates AS ldo ON o.timestamp=ldo.ref_id "
                            "LEFT JOIN quotes AS qo ON ldo.timestamp=qo.timestamp AND a.currency_id=qo.asset_id "
@@ -236,7 +236,7 @@ class TaxesRus:
                            "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
                            "WHERE c.settlement>=:begin AND c.settlement<:end AND d.account_id=:account_id "
                            "AND s.type_id = :bond "
-                           "ORDER BY s.name, o.timestamp, c.timestamp",
+                           "ORDER BY s.symbol, o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
                             (":bond", PredefinedAsset.Bond)])
         while query.next():
@@ -274,13 +274,13 @@ class TaxesRus:
             bonds.append(deal)
 
         # Second - take all bond interest payments not linked with buy/sell transactions
-        query = executeSQL("SELECT b.name AS symbol, b.isin AS isin, i.timestamp AS o_date, i.number AS number, "
+        query = executeSQL("SELECT b.symbol AS symbol, b.isin AS isin, i.timestamp AS o_date, i.number AS number, "
                            "i.amount AS interest, r.quote AS rate, cc.iso_code AS country_iso "
                            "FROM dividends AS i "
                            "LEFT JOIN trades AS t ON i.account_id=t.account_id AND i.number=t.number "
                            "AND i.timestamp=t.timestamp AND i.asset_id=t.asset_id "
-                           "LEFT JOIN assets AS b ON i.asset_id = b.id "
                            "LEFT JOIN accounts AS a ON a.id = i.account_id "
+                           "LEFT JOIN assets_ext AS b ON b.id = i.asset_id AND b.currency_id=a.currency_id "
                            "LEFT JOIN countries AS cc ON cc.id = a.country_id "
                            "LEFT JOIN t_last_dates AS ld ON i.timestamp=ld.ref_id "
                            "LEFT JOIN quotes AS r ON ld.timestamp=r.timestamp AND a.currency_id=r.asset_id "
@@ -305,7 +305,7 @@ class TaxesRus:
     def prepare_derivatives(self):
         derivatives = []
         # Take all actions without conversion
-        query = executeSQL("SELECT s.name AS symbol, d.qty AS qty, cc.iso_code AS country_iso, "
+        query = executeSQL("SELECT s.symbol, d.qty AS qty, cc.iso_code AS country_iso, "
                            "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, o.number AS o_number, "
                            "qos.quote AS os_rate, o.price AS o_price, o.qty AS o_qty, o.fee AS o_fee, "
                            "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, c.number AS c_number, "
@@ -313,8 +313,8 @@ class TaxesRus:
                            "FROM deals AS d "
                            "JOIN trades AS o ON o.id=d.open_op_id AND o.op_type=d.open_op_type "
                            "JOIN trades AS c ON c.id=d.close_op_id AND c.op_type=d.close_op_type "
-                           "LEFT JOIN assets AS s ON o.asset_id=s.id "
                            "LEFT JOIN accounts AS a ON a.id = :account_id "
+                           "LEFT JOIN assets_ext AS s ON s.id = o.asset_id AND s.currency_id=a.currency_id "
                            "LEFT JOIN countries AS cc ON cc.id = a.country_id "
                            "LEFT JOIN t_last_dates AS ldo ON o.timestamp=ldo.ref_id "
                            "LEFT JOIN quotes AS qo ON ldo.timestamp=qo.timestamp AND a.currency_id=qo.asset_id "
@@ -326,7 +326,7 @@ class TaxesRus:
                            "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
                            "WHERE c.settlement>=:begin AND c.settlement<:end AND d.account_id=:account_id "
                            "AND s.type_id = :derivative "
-                           "ORDER BY s.name, o.timestamp, c.timestamp",
+                           "ORDER BY s.symbol, o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
                             (":derivative", PredefinedAsset.Derivative)])
         while query.next():
@@ -406,20 +406,20 @@ class TaxesRus:
     def prepare_corporate_actions(self):
         corp_actions = []
         # get list of all deals that were opened with corp.action and closed by normal trade
-        query = executeSQL("SELECT d.open_op_id AS operation_id, s.name AS symbol, d.qty AS qty, "
+        query = executeSQL("SELECT d.open_op_id AS operation_id, s.symbol, d.qty AS qty, "
                            "t.number AS trade_number, t.timestamp AS t_date, qt.quote AS t_rate, "
                            "t.settlement AS s_date, qts.quote AS s_rate, t.price AS price, t.fee AS fee, "
                            "s.full_name AS full_name, s.isin AS isin, s.type_id AS type_id "
                            "FROM deals AS d "
                            "JOIN trades AS t ON t.id=d.close_op_id AND t.op_type=d.close_op_type "
-                           "LEFT JOIN assets AS s ON t.asset_id=s.id "
                            "LEFT JOIN accounts AS a ON a.id = :account_id "
+                           "LEFT JOIN assets_ext AS s ON s.id = t.asset_id AND s.currency_id=a.currency_id "
                            "LEFT JOIN t_last_dates AS ldt ON t.timestamp=ldt.ref_id "
                            "LEFT JOIN quotes AS qt ON ldt.timestamp=qt.timestamp AND a.currency_id=qt.asset_id "
                            "LEFT JOIN t_last_dates AS ldts ON t.settlement=ldts.ref_id "
                            "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id "
                            "WHERE t.settlement<:end AND d.account_id=:account_id AND d.open_op_type=:corp_action "
-                           "ORDER BY s.name, t.timestamp",
+                           "ORDER BY s.symbol, t.timestamp",
                            [(":end", self.year_end), (":account_id", self.account_id),
                             (":corp_action", LedgerTransaction.CorporateAction)])
         group = 1
@@ -493,14 +493,14 @@ class TaxesRus:
         if proceed_qty <= 0:
             return proceed_qty
 
-        purchase = readSQL("SELECT t.id AS trade_id, s.name AS symbol, s.isin AS isin, s.type_id AS type_id, "
+        purchase = readSQL("SELECT t.id AS trade_id, s.symbol, s.isin AS isin, s.type_id AS type_id, "
                            "coalesce(d.qty-SUM(lq.total_value), d.qty) AS qty, "
                            "t.timestamp AS t_date, qt.quote AS t_rate, t.number AS trade_number, "
                            "t.settlement AS s_date, qts.quote AS s_rate, t.price AS price, t.fee AS fee "
                            "FROM trades AS t "
                            "JOIN deals AS d ON t.id=d.open_op_id AND t.op_type=d.open_op_type "
-                           "LEFT JOIN assets AS s ON t.asset_id=s.id "
                            "LEFT JOIN accounts AS a ON a.id = t.account_id "
+                           "LEFT JOIN assets_ext AS s ON s.id = t.asset_id AND s.currency_id=a.currency_id "
                            "LEFT JOIN t_last_dates AS ldt ON t.timestamp=ldt.ref_id "
                            "LEFT JOIN quotes AS qt ON ldt.timestamp=qt.timestamp AND a.currency_id=qt.asset_id "
                            "LEFT JOIN t_last_dates AS ldts ON t.settlement=ldts.ref_id "
@@ -537,14 +537,15 @@ class TaxesRus:
         if proceed_qty <= 0:
             return proceed_qty
 
-        action = readSQL("SELECT a.timestamp AS action_date, a.number AS action_number, a.type, "
-                         "s1.name AS symbol, s1.isin AS isin, a.qty AS qty, "
-                         "s2.name AS symbol_new, s2.isin AS isin_new, a.qty_new AS qty_new, "
-                         "a.note AS note, a.basis_ratio "
-                         "FROM corp_actions AS a "
-                         "LEFT JOIN assets AS s1 ON a.asset_id=s1.id "
-                         "LEFT JOIN assets AS s2 ON a.asset_id_new=s2.id "
-                         "WHERE a.id = :operation_id ",
+        action = readSQL("SELECT c.timestamp AS action_date, c.number AS action_number, c.type, "
+                         "s1.symbol AS symbol, s1.isin AS isin, c.qty AS qty, "
+                         "s2.symbol AS symbol_new, s2.isin AS isin_new, c.qty_new AS qty_new, "
+                         "c.note AS note, c.basis_ratio "
+                         "FROM corp_actions  c "
+                         "LEFT JOIN accounts a ON c.account_id=a.id "
+                         "LEFT JOIN assets_ext  s1 ON c.asset_id=s1.id AND s1.currency_id=a.currency_id "
+                         "LEFT JOIN assets_ext  s2 ON c.asset_id_new=s2.id AND s1.currency_id=a.currency_id "
+                         "WHERE c.id = :operation_id ",
                          [(":operation_id", operation_id)], named=True)
         action['operation'] = ' ' * level * 3 + "Корп. действие"
         old_asset = f"{action['symbol']} ({action['isin']})"
@@ -572,11 +573,11 @@ class TaxesRus:
         return qty_before, action['symbol'], basis
 
     def output_accrued_interest(self, actions, trade_number, share, level):
-        interest = readSQL("SELECT b.name AS symbol, b.isin AS isin, i.timestamp AS o_date, i.number AS number, "
+        interest = readSQL("SELECT b.symbol AS symbol, b.isin AS isin, i.timestamp AS o_date, i.number AS number, "
                            "i.amount AS interest, r.quote AS rate, cc.iso_code AS country_iso "
                            "FROM dividends AS i "
-                           "LEFT JOIN assets AS b ON i.asset_id = b.id "
                            "LEFT JOIN accounts AS a ON a.id = i.account_id "
+                           "LEFT JOIN assets_ext AS b ON b.id = i.asset_id AND b.currency_id=a.currency_id "
                            "LEFT JOIN countries AS cc ON cc.id = a.country_id "
                            "LEFT JOIN t_last_dates AS ld ON i.timestamp=ld.ref_id "
                            "LEFT JOIN quotes AS r ON ld.timestamp=r.timestamp AND a.currency_id=r.asset_id "
