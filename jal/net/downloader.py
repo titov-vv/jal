@@ -63,6 +63,7 @@ class QuoteDownloader(QObject):
             self.UpdateQuotes(dialog.getStartDate(), dialog.getEndDate())
             self.download_completed.emit()
 
+    # FIXME This method make work incorrectly for assets with multiple symbols
     def UpdateQuotes(self, start_timestamp, end_timestamp):
         self.PrepareRussianCBReader()
         jal_db = JalDB()
@@ -81,13 +82,13 @@ class QuoteDownloader(QObject):
                            "WHERE (l.book_account = :money_book OR l.book_account = :liabilities_book) "
                            "AND l.timestamp >= :start_timestamp AND l.timestamp <= :end_timestamp "
                            ") "
-                           "SELECT h.asset AS asset_id, a.name AS name, a.src_id AS feed_id, a.isin AS isin, "
+                           "SELECT h.asset AS asset_id, a.symbol AS name, a.quote_source AS feed_id, a.isin AS isin, "
                            "MIN(q.timestamp) AS first_timestamp, MAX(q.timestamp) AS last_timestamp "
                            "FROM _holdings AS h "
-                           "LEFT JOIN assets AS a ON a.id=h.asset "
+                           "LEFT JOIN assets_ext AS a ON a.id=h.asset "
                            "LEFT JOIN quotes AS q ON q.asset_id=h.asset "
                            "GROUP BY h.asset "
-                           "ORDER BY a.src_id",
+                           "ORDER BY feed_id",
                            [(":start_timestamp", start_timestamp), (":end_timestamp", end_timestamp),
                             (":assets_book", BookAccount.Assets), (":money_book", BookAccount.Money),
                             (":liabilities_book", BookAccount.Liabilities), (":tolerance", Setup.CALC_TOLERANCE)])
