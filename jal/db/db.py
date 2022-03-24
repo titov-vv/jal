@@ -1,52 +1,9 @@
 import logging
 from datetime import datetime
-from PySide6.QtWidgets import QApplication, QDialog
-from PySide6.QtSql import QSqlTableModel
+from PySide6.QtWidgets import QApplication
 
-from jal.ui.ui_add_asset_dlg import Ui_AddAssetDialog
 from jal.constants import Setup, BookAccount, PredefindedAccountType, PredefinedAsset, AssetData
 from jal.db.helpers import db_connection, executeSQL, readSQL, get_country_by_code
-
-
-# -----------------------------------------------------------------------------------------------------------------------
-class AddAssetDialog(QDialog, Ui_AddAssetDialog):
-    def __init__(self, symbol, isin='', name=''):
-        QDialog.__init__(self)
-        self.setupUi(self)
-        self.asset_id = None
-
-        self.SymbolEdit.setText(symbol)
-        self.isinEdit.setText(isin)
-        self.NameEdit.setText(name)
-
-        self.type_model = QSqlTableModel(db=db_connection())
-        self.type_model.setTable('asset_types')
-        self.type_model.select()
-        self.TypeCombo.setModel(self.type_model)
-        self.TypeCombo.setModelColumn(1)
-
-        self.data_src_model = QSqlTableModel(db=db_connection())
-        self.data_src_model.setTable('data_sources')
-        self.data_src_model.select()
-        self.DataSrcCombo.setModel(self.data_src_model)
-        self.DataSrcCombo.setModelColumn(1)
-
-        # center dialog with respect to main application window
-        parent = None
-        for widget in QApplication.topLevelWidgets():
-            if widget.objectName() == Setup.MAIN_WND_NAME:
-                parent = widget
-        if parent:
-            x = parent.x() + parent.width() / 2 - self.width() / 2
-            y = parent.y() + parent.height() / 2 - self.height() / 2
-            self.setGeometry(x, y, self.width(), self.height())
-
-    def accept(self):
-        self.asset_id = JalDB().add_asset(self.SymbolEdit.text(), self.NameEdit.text(),
-                                          self.type_model.record(self.TypeCombo.currentIndex()).value("id"),
-                                          self.isinEdit.text(),
-                                          self.data_src_model.record(self.DataSrcCombo.currentIndex()).value("id"))
-        super().accept()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -166,10 +123,6 @@ class JalDB:
                                    "((d.value=:expiry AND a.type_id=:derivative) OR a.type_id<>:derivative)",
                                    [(":symbol", symbol), (":datatype", AssetData.ExpiryDate), (":expiry", expiry),
                                     (":derivative", PredefinedAsset.Derivative)])
-        if asset_id is None and dialog_new:
-            dialog = AddAssetDialog(symbol, isin=isin, name=name)
-            dialog.exec()
-            asset_id = dialog.asset_id
         return asset_id
 
     def update_asset_data(self, asset_id, currency_id=None, new_symbol='', new_isin='', new_reg='', new_country_code='', expiry=0, principal=0):  # TODO Change params to **kwargs
