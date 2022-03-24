@@ -275,22 +275,60 @@ def test_ukfu_json_import(tmp_path, project_root, data_path, prepare_db_moex):
 
     # validate assets
     test_assets = [
-        [1, 'RUB', 1, 'Российский Рубль', '', 0, -1, 0],
-        [2, 'USD', 1, 'Доллар США', '', 0, 0, 0],
-        [3, 'EUR', 1, 'Евро', '', 0, 0, 0],
-        [4, 'SBER', 2, '', '', 0, 0, 0],
-        [5, 'SiZ1', 6, 'Si-12.11 Контракт на курс доллар-рубль', '', 0, 0, 0],
-        [6, 'SU26238RMFS4', 3, '', 'RU000A1038V6', 0, 0, 0],
-        [7, 'МКБ 1P2', 3, '', 'RU000A1014H6', 0, 0, 0],
-        [8, 'FXGD', 4, 'FinEx Gold ETF USD', 'IE00B8XB7377', 0, 1, 0],
-        [9, 'ТинькоффБ7', 3, 'АО "Тинькофф Банк" БО-07', 'RU000A0JWM31', 0, 1, 1624492800],
-        [10, 'ЗПИФ ПНК', 4, 'ЗПИФ Фонд ПНК-Рентал', 'RU000A1013V9', 0, 1, 0],
-        [11, 'VTBR', 2, 'ао ПАО Банк ВТБ', 'RU000A0JP5V6', 0, 1, 0],
-        [12, 'POLY', 2, 'Polymetal International plc', 'JE00B6T5S470', 0, 1, 0],
-        [13, 'SiZ1', 6, 'Фьючерсный контракт Si-12.21', '', 0, 1, 1639612800],
-        [14, 'MOEX', 2, 'ПАО Московская Биржа', 'RU000A0JR4A1', 0, 1, 0],
-        [15, 'CHMF', 2, 'Северсталь (ПАО)ао', 'RU0009046510', 0, 1, 0]
+        [1, PredefinedAsset.Money, 'Российский Рубль', '', 0, ''],
+        [2, PredefinedAsset.Money, 'Доллар США', '', 0, ''],
+        [3, PredefinedAsset.Money, 'Евро', '', 0, ''],
+        [4, PredefinedAsset.Stock, '', 'RU0009029540', 0, ''],
+        [5, PredefinedAsset.Derivative, 'Si-12.11 Контракт на курс доллар-рубль', '', 0, ''],
+        [6, PredefinedAsset.Bond, '', 'RU000A1038V6', 0, ''],
+        [7, PredefinedAsset.Bond, '', 'RU000A1014H6', 0, ''],
+        [8, PredefinedAsset.Stock, 'Аэрофлот-росс.авиалин(ПАО)ао', 'RU0009062285', 0, ''],
+        [9, PredefinedAsset.ETF, 'FinEx Gold ETF USD', 'IE00B8XB7377', 0, ''],
+        [10, PredefinedAsset.Bond, 'АО "Тинькофф Банк" БО-07', 'RU000A0JWM31', 0, ''],
+        [11, PredefinedAsset.ETF, 'ЗПИФ Фонд ПНК-Рентал', 'RU000A1013V9', 0, ''],
+        [12, PredefinedAsset.Stock, 'ао ПАО Банк ВТБ', 'RU000A0JP5V6', 0, ''],
+        [13, PredefinedAsset.Stock, 'Polymetal International plc', 'JE00B6T5S470', 0, ''],
+        [14, PredefinedAsset.Derivative, 'Фьючерсный контракт Si-12.21', '', 0, ''],
+        [15, PredefinedAsset.Stock, 'ПАО Московская Биржа', 'RU000A0JR4A1', 0, ''],
+        [16, PredefinedAsset.Stock, 'Северсталь (ПАО)ао', 'RU0009046510', 0, '']
     ]
     assert readSQL("SELECT COUNT(*) FROM assets") == len(test_assets)
     for i, asset in enumerate(test_assets):
         assert readSQL("SELECT * FROM assets WHERE id=:id", [(":id", i + 1)]) == asset
+
+    # validate assets
+    test_symbols = [
+        [1, 1, 'RUB', 1, 'Российский Рубль', 0, 1],
+        [2, 2, 'USD', 1, 'Доллар США (Банк России)', 0, 1],
+        [3, 3, 'EUR', 1, 'Евро (Банк России)', 0, 1],
+        [4, 4, 'SBER', 1, '', -1, 1],
+        [5, 5, 'SiZ1', 1, '', -1, 1],
+        [6, 6, 'SU26238RMFS4', 1, '', -1, 1],
+        [7, 7, 'МКБ 1P2', 1, '', -1, 1],
+        [8, 8, 'AFLT', 1, 'MOEX', 1, 1],
+        [9, 9, 'FXGD', 1, 'MOEX', 1, 1],
+        [10, 10, 'ТинькоффБ7', 1, 'MOEX', 1, 1],
+        [11, 11, 'ЗПИФ ПНК', 1, 'MOEX', 1, 1],
+        [12, 12, 'VTBR', 1, 'MOEX', 1, 1],
+        [13, 13, 'POLY', 1, 'MOEX', 1, 1],
+        [14, 14, 'SiZ1', 1, 'MOEX', 1, 1],
+        [15, 15, 'MOEX', 1, 'MOEX', 1, 1],
+        [16, 16, 'CHMF', 1, 'MOEX', 1, 1]
+    ]
+    assert readSQL("SELECT COUNT(*) FROM asset_tickers") == len(test_symbols)
+    for i, symbol in enumerate(test_symbols):
+        assert readSQL("SELECT * FROM asset_tickers WHERE id=:id", [(":id", i + 1)]) == symbol
+
+    # validate assets
+    test_data = [
+        [1, 8, 1, '1-01-00010-A'],
+        [2, 10, 1, '4B020702673B'], [3, 10, 2, '1624492800'], [4, 10, 3, '1000.0'],
+        [5, 11, 1, '2770'],
+        [6, 12, 1, '10401000B'],
+        [7, 14, 2, '1639612800'],
+        [8, 15, 1, '1-05-08443-H'],
+        [9, 16, 1, '1-02-00143-A']
+    ]
+    assert readSQL("SELECT COUNT(*) FROM asset_data") == len(test_data)
+    for i, data in enumerate(test_data):
+        assert readSQL("SELECT * FROM asset_data WHERE id=:id", [(":id", i + 1)]) == data

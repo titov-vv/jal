@@ -91,7 +91,7 @@ def prepare_db_xls(prepare_db):
 def prepare_db_moex(prepare_db):   # Create assets in database to be updated from www.moex.com
     test_assets = [
         (4, 'SBER', '', 'RU0009029540', 1, PredefinedAsset.Stock, 0),
-        (5, 'SiZ1', '', '', 1, PredefinedAsset.Derivative, 0),
+        (5, 'SiZ1', 'Si-12.11 Контракт на курс доллар-рубль', '', 1, PredefinedAsset.Derivative, 0),
         (6, 'SU26238RMFS4', '', 'RU000A1038V6', 1, PredefinedAsset.Bond, 0),
         (7, 'МКБ 1P2', '', 'RU000A1014H6', 1, PredefinedAsset.Bond, 0)
     ]
