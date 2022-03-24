@@ -4,7 +4,7 @@ from datetime import datetime
 from PySide6.QtCore import Qt, Slot, QAbstractItemModel, QDate, QModelIndex, QLocale
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
-from jal.constants import Setup, CustomColor, BookAccount, PredefindedAccountType
+from jal.constants import Setup, CustomColor, BookAccount, PredefindedAccountType, AssetData
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.db import JalDB
 from jal.widgets.delegates import GridLinesDelegate
@@ -249,9 +249,10 @@ class HoldingsModel(QAbstractItemModel):
             "GROUP BY a.id"
             ") "
             "GROUP BY id HAVING ABS(total_value) > :tolerance) "
-            "SELECT h.currency_id, c.name AS currency, h.account_id, h.account, h.asset_id, "
-            "c.name=a.name AS asset_is_currency, a.name AS asset, a.full_name AS asset_name, a.expiry, "
-            "h.qty, h.value AS value_i, h.quote, h.quote_a, h.total FROM ("
+            "SELECT h.currency_id, c.symbol AS currency, h.account_id, h.account, h.asset_id, "
+            "c.symbol=a.symbol AS asset_is_currency, a.symbol AS asset, a.full_name AS asset_name, ad.value AS expiry, "
+            "h.qty, h.value AS value_i, h.quote, h.quote_a, h.total "
+            "FROM ("
             "SELECT a.currency_id, l.account_id, a.name AS account, l.asset_id, sum(l.amount) AS qty, "
             "sum(l.value) AS value, q.quote, q.quote*cur_q.quote/cur_adj_q.quote AS quote_a, t.total_value AS total "
             "FROM ledger AS l "
@@ -276,13 +277,14 @@ class HoldingsModel(QAbstractItemModel):
             "GROUP BY l.account_id, l.asset_id "
             "HAVING ABS(qty) > :tolerance "
             ") AS h "
-            "LEFT JOIN assets AS c ON c.id=h.currency_id "
-            "LEFT JOIN assets AS a ON a.id=h.asset_id "
+            "LEFT JOIN assets_ext AS c ON c.id=h.currency_id "
+            "LEFT JOIN assets_ext AS a ON a.id=h.asset_id "  # TODO Here should be selection of a symbol for correct currency
+            "LEFT JOIN asset_data AS ad ON ad.asset_id=a.id AND ad.datatype=:expiry "
             "ORDER BY currency, account, asset_is_currency, asset",
             [(":base_currency", self._currency), (":money_book", BookAccount.Money),
              (":assets_book", BookAccount.Assets), (":liabilities_book", BookAccount.Liabilities),
              (":holdings_timestamp", self._date), (":investments", PredefindedAccountType.Investment),
-             (":tolerance", Setup.DISP_TOLERANCE)], forward_only=True)
+             (":tolerance", Setup.DISP_TOLERANCE), (":expiry", AssetData.ExpiryDate)], forward_only=True)
         # Load data from SQL to tree
         self._root = TreeItem({})
         currency = 0
