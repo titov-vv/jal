@@ -70,8 +70,8 @@ class JalDB:
                           "LEFT JOIN assets_ext c ON c.id=a.currency_id WHERE a.number=:number LIMIT 1",
                           [(":number", account_number)], named=True)
         if account:  # Account with the same number but different currency exists
-            if account['name'][:-len(account['currency'])] == account['currency']:
-                new_name = account['name'][:-len(account['currency'])] + '.' + currency
+            if account['name'][-len(account['currency']):] == account['currency']:
+                new_name = account['name'][:-len(account['currency'])] + currency
             else:
                 new_name = account['name'] + '.' + currency
             query = executeSQL(

@@ -158,9 +158,10 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
     test_accounts = [
         [1, 4, 'Inv. Account', 2, 1, 'U7654321', 0, 1, 0],
         [2, 4, 'Inv. Account.RUB', 1, 1, 'U7654321', 0, 1, 0],
-        [3, 4, 'Inv. Account.CAD', 7, 1, 'U7654321', 0, 1, 0],
-        [4, 4, 'TEST_ACC.CAD', 7, 1, 'TEST_ACC', 0, 2, 0],
-        [5, 4, 'Inv. Account.EUR', 3, 1, 'U7654321', 0, 1, 0],
+        [3, 4, 'TEST_ACC.USD', 2, 1, 'TEST_ACC', 0, 2, 0],
+        [4, 4, 'Inv. Account.CAD', 7, 1, 'U7654321', 0, 1, 0],
+        [5, 4, 'TEST_ACC.CAD', 7, 1, 'TEST_ACC', 0, 2, 0],
+        [6, 4, 'Inv. Account.EUR', 3, 1, 'U7654321', 0, 1, 0]
     ]
     assert readSQL("SELECT COUNT(*) FROM accounts") == len(test_accounts)
     for i, account in enumerate(test_accounts):
@@ -190,7 +191,7 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
 
     # validate transfers
     test_transfers = [
-        [1, 4, 1580443370, 5, 890.47, 1580443370, 1, 1000.0, 1, 3.0, '', 'IDEALFX'],
+        [1, 4, 1580443370, 6, 890.47, 1580443370, 1, 1000.0, 1, 3.0, '', 'IDEALFX'],
         [2, 4, 1581322108, 2, 78986.6741, 1581322108, 1, 1234.0, 1, 2.0, '', 'IDEALFX'],
         [3, 4, 1590522832, 2, 44.07, 1590522832, 1, 0.621778209, '', '', '', 'IDEALFX'],
         [4, 4, 1600374600, 1, 123456.78, 1600374600, 2, 123456.78, '', '', '', 'CASH RECEIPTS / ELECTRONIC FUND TRANSFERS'],

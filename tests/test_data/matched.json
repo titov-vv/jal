@@ -3,9 +3,10 @@
   "accounts": [
     {"id": 1, "number": "U7654321", "currency": -1, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
     {"id": -1, "number": "U7654321", "currency": -2, "cash_begin": 12.345, "cash_end": 1234567.249966388, "cash_end_settled": 1234567.89},
-    {"id": 3, "number": "U7654321", "currency": 3, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
-    {"id": 4, "number": "TEST_ACC", "currency": 3, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
-    {"id": 5, "number": "U7654321", "currency": -3}
+    {"id": 3, "number": "TEST_ACC", "currency": -2, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
+    {"id": 4, "number": "U7654321", "currency": 3, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
+    {"id": 5, "number": "TEST_ACC", "currency": 3, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
+    {"id": 6, "number": "U7654321", "currency": -3}
   ],
   "assets": [
     {"id": -1, "type": "money", "name":  ""},
@@ -144,7 +145,7 @@
     {"id": 14, "number": "18882610202", "timestamp": 1640031900, "settlement": 1640031900, "account": -1, "asset": 39, "quantity": -99.0, "price": 20.75, "fee": 0.0, "note": "CORT.OD2(US218NSPODD6) MERGED(Voluntary Offer Allocation) FOR USD 20.75 PER SHARE (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)"}
   ],
   "income_spending": [
-    {"id": 1, "timestamp": 1604089500, "account": 5, "peer": 0, "lines": [{"amount": 42.4, "category": -8, "description":  "LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)"}]},
+    {"id": 1, "timestamp": 1604089500, "account": 6, "peer": 0, "lines": [{"amount": 42.4, "category": -8, "description":  "LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)"}]},
     {"id": 2, "timestamp": 1627331100, "account": -1, "peer": 0, "lines": [{"amount": 7554.3909201, "category": -8, "description": "BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BAM, BROOKFIELD ASSET MANAGE-CL A, CA1125851040)"}]},
     {"id": 3, "timestamp": 1578073286, "account": -1, "peer": 0, "lines": [{"amount": -7.96, "category": -5, "description": "BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019"}]},
     {"id": 4, "timestamp": 1601462520, "account": -1, "peer": 0, "lines": [{"amount": 0.6905565, "category": -5, "description": "COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)"}]},
@@ -152,7 +153,7 @@
     {"id": 6, "timestamp": 1549843200, "account": -1, "peer": 0, "lines": [{"amount": -0.249018, "category": -6, "description": "BABA (ALIBABA GROUP HOLDING-SP ADR) - French Transaction Tax"}]}
   ],
   "transfers": [
-    {"id": 1, "account": [5, -1, -1], "number": "2674343226","asset": [-3, -2], "timestamp": 1580443370, "withdrawal": 890.47, "deposit": 1000.0, "fee": 3.0, "description": "IDEALFX"},
+    {"id": 1, "account": [6, -1, -1], "number": "2674343226","asset": [-3, -2], "timestamp": 1580443370, "withdrawal": 890.47, "deposit": 1000.0, "fee": 3.0, "description": "IDEALFX"},
     {"id": 2, "account": [1, -1, -1], "number": "2645393202", "asset": [-1, -2], "timestamp": 1581322108, "withdrawal": 78986.6741, "deposit": 1234.0, "fee": 2.0, "description": "IDEALFX"},
     {"id": 3, "account": [1, -1, -1], "number": "2845906676", "asset": [-1, -2], "timestamp": 1590522832, "withdrawal": 44.07, "deposit": 0.621778209, "fee": 0.0, "description": "IDEALFX"},
     {"id": 4, "account": [0, 1, 0], "number": "", "asset": [-1, -1], "timestamp": 1600374600, "withdrawal": 123456.78, "deposit": 123456.78, "fee": 0.0, "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS"},
