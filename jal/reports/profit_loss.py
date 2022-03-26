@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, Signal, Slot, QObject
+from PySide6.QtCore import Qt, Slot, QObject
 from PySide6.QtSql import QSqlTableModel
 from jal.ui.reports.ui_profit_loss_report import Ui_ProfitLossReportWidget
 from jal.db.helpers import db_connection, executeSQL
@@ -84,7 +84,8 @@ class ProfitLossReportModel(QSqlTableModel):
             "  WHERE m_start < :end "
             ") "
             "SELECT m_start FROM months) AS m "
-            "LEFT JOIN quotes AS q ON q.timestamp<=m.m_start AND q.asset_id=l.asset_id "
+            "LEFT JOIN accounts AS a ON l.account_id=a.id "
+            "LEFT JOIN quotes AS q ON q.timestamp<=m.m_start AND q.asset_id=l.asset_id AND q.currency_id=a.currency_id "
             "WHERE l.timestamp>=:begin AND l.timestamp<=:end AND l.account_id=:account_id "
             "GROUP BY m.m_start, l.asset_id "
             "ORDER BY m.m_start, l.asset_id ) "
@@ -104,7 +105,8 @@ class ProfitLossReportModel(QSqlTableModel):
             "  SELECT ma.month, SUM(l.amount*q.quote) AS assets "
             "  FROM _months AS ma "
             "  LEFT JOIN ledger AS l ON l.timestamp<=ma.month AND l.asset_id=ma.asset_id "
-            "  LEFT JOIN quotes AS q ON ma.last_timestamp=q.timestamp AND ma.asset_id=q.asset_id "
+            "  LEFT JOIN accounts AS a ON l.account_id=a.id "
+            "  LEFT JOIN quotes AS q ON ma.last_timestamp=q.timestamp AND ma.asset_id=q.asset_id AND q.currency_id=a.currency_id "
             "  WHERE l.account_id =:account_id AND (l.book_account=:book_money OR l.book_account=:book_assets) "
             "  GROUP BY ma.month "
             ") AS a ON a.month = m.month "

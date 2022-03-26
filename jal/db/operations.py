@@ -317,7 +317,7 @@ class Dividend(LedgerTransaction):
         if asset_amount < -Setup.CALC_TOLERANCE:
             raise NotImplemented(self.tr("Not supported action: stock dividend closes short trade.") +
                                  f" Operation: {self.dump()}")
-        quote = JalDB().get_quote(self._asset, self._timestamp)
+        quote = JalDB().get_quote(self._asset, JalDB().get_account_currency(self._account), self._timestamp)
         if quote is None:
             raise ValueError(self.tr("No stock quote for stock dividend.") + f" Operation: {self.dump()}")
         _ = executeSQL(

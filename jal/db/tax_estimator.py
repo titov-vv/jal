@@ -5,6 +5,7 @@ from PySide6.QtCore import Qt, QAbstractTableModel
 from PySide6.QtGui import QFont
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord
 from jal.db.db import JalDB
+from jal.db.settings import JalSettings
 from jal.ui.reports.ui_tax_estimation import Ui_TaxEstimationDialog
 from jal.widgets.mdi import MdiWidget
 
@@ -99,16 +100,18 @@ class TaxEstimator(MdiWidget, Ui_TaxEstimationDialog):
                        "SELECT t.settlement AS ref_id FROM trades AS t "
                        "WHERE t.account_id=:account_id AND t.asset_id=:asset_id "
                        ") LEFT JOIN accounts AS a ON a.id = :account_id "
-                       "LEFT JOIN quotes AS q ON ref_id >= q.timestamp AND a.currency_id=q.asset_id "
+                       "LEFT JOIN quotes AS q ON ref_id >= q.timestamp AND a.currency_id=q.asset_id AND q.currency_id=:base_currency "
                        "WHERE ref_id IS NOT NULL "
                        "GROUP BY ref_id ORDER BY ref_id",
-                       [(":account_id", self.account_id), (":asset_id", self.asset_id)])
+                       [(":account_id", self.account_id), (":asset_id", self.asset_id),
+                        (":base_currency", JalSettings().getValue('BaseCurrency'))])
         _ = executeSQL("INSERT INTO t_last_quotes(timestamp, asset_id, quote) "
                        "SELECT MAX(timestamp) AS timestamp, asset_id, quote "
                        "FROM quotes AS q LEFT JOIN accounts AS a ON a.id = :account_id "
-                       "WHERE q.asset_id = :asset_id OR q.asset_id = a.currency_id "
+                       "WHERE q.asset_id = :asset_id OR q.asset_id = a.currency_id  AND q.currency_id=:base_currency "
                        "GROUP BY asset_id",
-                       [(":account_id", self.account_id), (":asset_id", self.asset_id)])
+                       [(":account_id", self.account_id), (":asset_id", self.asset_id),
+                        (":base_currency", JalSettings().getValue('BaseCurrency'))])
 
         self.quote = readSQL("SELECT quote FROM t_last_quotes WHERE asset_id=:asset_id",
                              [(":asset_id", self.asset_id)])
@@ -128,11 +131,12 @@ class TaxEstimator(MdiWidget, Ui_TaxEstimationDialog):
                            "t.qty AS qty, t.price AS o_price, oq.quote AS o_rate FROM trades AS t "
                            "LEFT JOIN accounts AS ac ON ac.id = :account_id "
                            "LEFT JOIN t_last_dates AS od ON od.ref_id = IIF(t.settlement=0, t.timestamp, t.settlement) "
-                           "LEFT JOIN quotes AS oq ON ac.currency_id=oq.asset_id AND oq.timestamp=od.timestamp "
+                           "LEFT JOIN quotes AS oq ON ac.currency_id=oq.asset_id AND oq.currency_id=:base_currency "
+                           "AND oq.timestamp=od.timestamp "
                            "WHERE t.account_id=:account_id AND t.asset_id=:asset_id AND t.qty*(:total_qty)>0 "
                            "ORDER BY t.timestamp DESC, t.id DESC",
                            [(":account_id", self.account_id), (":asset_id", self.asset_id),
-                            (":total_qty", self.asset_qty)])
+                            (":total_qty", self.asset_qty), (":base_currency", JalSettings().getValue('BaseCurrency'))])
         table = []
         remainder = self.asset_qty
         profit = 0

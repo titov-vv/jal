@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QApplication
 from jal.constants import Setup, PredefinedAsset, PredefinedCategory
 from jal.db.helpers import executeSQL, readSQLrecord, readSQL
 from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
+from jal.db.settings import JalSettings
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -83,9 +84,11 @@ class TaxesRus:
                        "(c.id=d.open_op_id AND c.op_type=d.open_op_type) OR (c.id=d.close_op_id AND c.op_type=d.close_op_type) "
                        "WHERE d.account_id = :account_id) "
                        "LEFT JOIN accounts AS a ON a.id = :account_id "
-                       "LEFT JOIN quotes AS q ON ref_id >= q.timestamp AND a.currency_id=q.asset_id "
-                       "WHERE ref_id IS NOT NULL "
-                       "GROUP BY ref_id", [(":account_id", self.account_id)], commit=True)
+                       "LEFT JOIN quotes AS q ON ref_id >= q.timestamp "
+                       "AND a.currency_id=q.asset_id AND q.currency_id=:base_currency "
+                       "WHERE ref_id IS NOT NULL "    
+                       "GROUP BY ref_id", [(":account_id", self.account_id),
+                                           (":base_currency", JalSettings().getValue('BaseCurrency'))], commit=True)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Create a totals row from provided list of dictionaries
@@ -108,14 +111,14 @@ class TaxesRus:
                            "LEFT JOIN assets_ext AS s ON s.id = d.asset_id AND s.currency_id=a.currency_id "
                            "LEFT JOIN countries AS c ON s.country_id = c.id "
                            "LEFT JOIN t_last_dates AS ld ON d.timestamp=ld.ref_id "
-                           "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND a.currency_id=q.asset_id "
-                           "LEFT JOIN quotes AS p ON d.timestamp=p.timestamp AND d.asset_id=p.asset_id "
+                           "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND a.currency_id=q.asset_id AND q.currency_id=:base_currency "
+                           "LEFT JOIN quotes AS p ON d.timestamp=p.timestamp AND d.asset_id=p.asset_id AND p.currency_id=a.currency_id "                           
                            "WHERE d.timestamp>=:begin AND d.timestamp<:end AND d.account_id=:account_id "
                            " AND d.amount>0 AND (d.type=:type_dividend OR d.type=:type_stock_dividend) "
                            "ORDER BY d.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
-                            (":type_dividend", Dividend.Dividend),
-                            (":type_stock_dividend", Dividend.StockDividend)])
+                            (":base_currency", JalSettings().getValue('BaseCurrency')),
+                            (":type_dividend", Dividend.Dividend), (":type_stock_dividend", Dividend.StockDividend)])
         while query.next():
             dividend = readSQLrecord(query, named=True)
             dividend["note"] = ''
@@ -158,22 +161,23 @@ class TaxesRus:
                            "LEFT JOIN assets_ext AS s ON s.id = o.asset_id AND s.currency_id=a.currency_id "
                            "LEFT JOIN countries AS cc ON cc.id = a.country_id "
                            "LEFT JOIN t_last_dates AS ldo ON o.timestamp=ldo.ref_id "
-                           "LEFT JOIN quotes AS qo ON ldo.timestamp=qo.timestamp AND a.currency_id=qo.asset_id "
+                           "LEFT JOIN quotes AS qo ON ldo.timestamp=qo.timestamp AND a.currency_id=qo.asset_id AND qo.currency_id=:base_currency "
                            "LEFT JOIN t_last_dates AS ldos ON o.settlement=ldos.ref_id "
-                           "LEFT JOIN quotes AS qos ON ldos.timestamp=qos.timestamp AND a.currency_id=qos.asset_id "
+                           "LEFT JOIN quotes AS qos ON ldos.timestamp=qos.timestamp AND a.currency_id=qos.asset_id AND qos.currency_id=:base_currency "
                            "LEFT JOIN t_last_dates AS ldc ON c.timestamp=ldc.ref_id "
-                           "LEFT JOIN quotes AS qc ON ldc.timestamp=qc.timestamp AND a.currency_id=qc.asset_id "
+                           "LEFT JOIN quotes AS qc ON ldc.timestamp=qc.timestamp AND a.currency_id=qc.asset_id AND qc.currency_id=:base_currency "
                            "LEFT JOIN t_last_dates AS ldcs ON c.settlement=ldcs.ref_id "
-                           "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
+                           "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id AND qcs.currency_id=:base_currency "
                            "LEFT JOIN dividends AS sd ON d.asset_id=sd.asset_id AND sd.amount<0 "  # Include dividends paid from short positions
                            "AND sd.ex_date>=o_date AND sd.ex_date<=c_date "
                            "LEFT JOIN t_last_dates AS ldsd ON sd.timestamp=ldsd.ref_id "
-                           "LEFT JOIN quotes AS qsd ON ldsd.timestamp=qsd.timestamp AND a.currency_id=qsd.asset_id "
+                           "LEFT JOIN quotes AS qsd ON ldsd.timestamp=qsd.timestamp AND a.currency_id=qsd.asset_id AND qsd.currency_id=:base_currency "
                            "WHERE c.settlement>=:begin AND c.settlement<:end AND d.account_id=:account_id "
                            "AND (s.type_id = :stock OR s.type_id = :fund) "
                            "GROUP BY d.rowid "  # to prevent collapse to 1 line if 'sd' values are NULL
                            "ORDER BY s.symbol, o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
+                            (":base_currency", JalSettings().getValue('BaseCurrency')),
                             (":stock", PredefinedAsset.Stock), (":fund", PredefinedAsset.ETF)])
         while query.next():
             deal = readSQLrecord(query, named=True)
@@ -227,17 +231,18 @@ class TaxesRus:
                            "LEFT JOIN assets_ext AS s ON s.id = o.asset_id AND s.currency_id=a.currency_id "
                            "LEFT JOIN countries AS cc ON cc.id = a.country_id "
                            "LEFT JOIN t_last_dates AS ldo ON o.timestamp=ldo.ref_id "
-                           "LEFT JOIN quotes AS qo ON ldo.timestamp=qo.timestamp AND a.currency_id=qo.asset_id "
+                           "LEFT JOIN quotes AS qo ON ldo.timestamp=qo.timestamp AND a.currency_id=qo.asset_id AND qo.currency_id=:base_currency "
                            "LEFT JOIN t_last_dates AS ldos ON o.settlement=ldos.ref_id "
-                           "LEFT JOIN quotes AS qos ON ldos.timestamp=qos.timestamp AND a.currency_id=qos.asset_id "
+                           "LEFT JOIN quotes AS qos ON ldos.timestamp=qos.timestamp AND a.currency_id=qos.asset_id AND qos.currency_id=:base_currency "
                            "LEFT JOIN t_last_dates AS ldc ON c.timestamp=ldc.ref_id "
-                           "LEFT JOIN quotes AS qc ON ldc.timestamp=qc.timestamp AND a.currency_id=qc.asset_id "
+                           "LEFT JOIN quotes AS qc ON ldc.timestamp=qc.timestamp AND a.currency_id=qc.asset_id AND qc.currency_id=:base_currency "
                            "LEFT JOIN t_last_dates AS ldcs ON c.settlement=ldcs.ref_id "
-                           "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
+                           "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id AND qcs.currency_id=:base_currency "
                            "WHERE c.settlement>=:begin AND c.settlement<:end AND d.account_id=:account_id "
                            "AND s.type_id = :bond "
                            "ORDER BY s.symbol, o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
+                            (":base_currency", JalSettings().getValue('BaseCurrency')),
                             (":bond", PredefinedAsset.Bond)])
         while query.next():
             deal = readSQLrecord(query, named=True)
@@ -283,10 +288,11 @@ class TaxesRus:
                            "LEFT JOIN assets_ext AS b ON b.id = i.asset_id AND b.currency_id=a.currency_id "
                            "LEFT JOIN countries AS cc ON cc.id = a.country_id "
                            "LEFT JOIN t_last_dates AS ld ON i.timestamp=ld.ref_id "
-                           "LEFT JOIN quotes AS r ON ld.timestamp=r.timestamp AND a.currency_id=r.asset_id "
+                           "LEFT JOIN quotes AS r ON ld.timestamp=r.timestamp AND a.currency_id=r.asset_id AND r.currency_id=:base_currency "
                            "WHERE i.timestamp>=:begin AND i.timestamp<:end AND i.account_id=:account_id "
                            "AND i.type = :type_interest AND t.id IS NULL",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
+                            (":base_currency", JalSettings().getValue('BaseCurrency')),
                             (":type_interest", Dividend.BondInterest)])
         while query.next():
             interest = readSQLrecord(query, named=True)
@@ -317,17 +323,18 @@ class TaxesRus:
                            "LEFT JOIN assets_ext AS s ON s.id = o.asset_id AND s.currency_id=a.currency_id "
                            "LEFT JOIN countries AS cc ON cc.id = a.country_id "
                            "LEFT JOIN t_last_dates AS ldo ON o.timestamp=ldo.ref_id "
-                           "LEFT JOIN quotes AS qo ON ldo.timestamp=qo.timestamp AND a.currency_id=qo.asset_id "
+                           "LEFT JOIN quotes AS qo ON ldo.timestamp=qo.timestamp AND a.currency_id=qo.asset_id AND qo.currency_id=:base_currency "
                            "LEFT JOIN t_last_dates AS ldos ON o.settlement=ldos.ref_id "
-                           "LEFT JOIN quotes AS qos ON ldos.timestamp=qos.timestamp AND a.currency_id=qos.asset_id "
+                           "LEFT JOIN quotes AS qos ON ldos.timestamp=qos.timestamp AND a.currency_id=qos.asset_id AND qos.currency_id=:base_currency "
                            "LEFT JOIN t_last_dates AS ldc ON c.timestamp=ldc.ref_id "
-                           "LEFT JOIN quotes AS qc ON ldc.timestamp=qc.timestamp AND a.currency_id=qc.asset_id "
+                           "LEFT JOIN quotes AS qc ON ldc.timestamp=qc.timestamp AND a.currency_id=qc.asset_id AND qc.currency_id=:base_currency "
                            "LEFT JOIN t_last_dates AS ldcs ON c.settlement=ldcs.ref_id "
-                           "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id "
+                           "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id AND qcs.currency_id=:base_currency "
                            "WHERE c.settlement>=:begin AND c.settlement<:end AND d.account_id=:account_id "
                            "AND s.type_id = :derivative "
                            "ORDER BY s.symbol, o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
+                            (":base_currency", JalSettings().getValue('BaseCurrency')),
                             (":derivative", PredefinedAsset.Derivative)])
         while query.next():
             deal = readSQLrecord(query, named=True)
@@ -365,11 +372,12 @@ class TaxesRus:
                            "LEFT JOIN action_details AS d ON d.pid=a.id "
                            "LEFT JOIN accounts AS c ON c.id = :account_id "
                            "LEFT JOIN t_last_dates AS ld ON a.timestamp=ld.ref_id "
-                           "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND c.currency_id=q.asset_id "
+                           "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND c.currency_id=q.asset_id AND q.currency_id=:base_currency "
                            "WHERE a.timestamp>=:begin AND a.timestamp<:end "
                            "AND a.account_id=:account_id AND d.category_id=:fee",
                            [(":begin", self.year_begin), (":end", self.year_end),
-                            (":account_id", self.account_id), (":fee", PredefinedCategory.Fees)])
+                            (":account_id", self.account_id), (":fee", PredefinedCategory.Fees),
+                            (":base_currency", JalSettings().getValue('BaseCurrency'))])
         while query.next():
             fee = readSQLrecord(query, named=True)
             fee['amount'] = -fee['amount']
@@ -387,11 +395,12 @@ class TaxesRus:
                            "LEFT JOIN action_details AS d ON d.pid=a.id "
                            "LEFT JOIN accounts AS c ON c.id = :account_id "
                            "LEFT JOIN t_last_dates AS ld ON a.timestamp=ld.ref_id "
-                           "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND c.currency_id=q.asset_id "
+                           "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND c.currency_id=q.asset_id AND q.currency_id=:base_currency "
                            "WHERE a.timestamp>=:begin AND a.timestamp<:end "
                            "AND a.account_id=:account_id AND d.category_id=:fee",
                            [(":begin", self.year_begin), (":end", self.year_end),
-                            (":account_id", self.account_id), (":fee", PredefinedCategory.Interest)])
+                            (":account_id", self.account_id), (":fee", PredefinedCategory.Interest),
+                            (":base_currency", JalSettings().getValue('BaseCurrency'))])
         while query.next():
             interest = readSQLrecord(query, named=True)
             interest['amount'] = interest['amount']
@@ -415,13 +424,14 @@ class TaxesRus:
                            "LEFT JOIN accounts AS a ON a.id = :account_id "
                            "LEFT JOIN assets_ext AS s ON s.id = t.asset_id AND s.currency_id=a.currency_id "
                            "LEFT JOIN t_last_dates AS ldt ON t.timestamp=ldt.ref_id "
-                           "LEFT JOIN quotes AS qt ON ldt.timestamp=qt.timestamp AND a.currency_id=qt.asset_id "
+                           "LEFT JOIN quotes AS qt ON ldt.timestamp=qt.timestamp AND a.currency_id=qt.asset_id AND qt.currency_id=:base_currency "
                            "LEFT JOIN t_last_dates AS ldts ON t.settlement=ldts.ref_id "
-                           "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id "
+                           "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id AND qts.currency_id=:base_currency "
                            "WHERE t.settlement<:end AND d.account_id=:account_id AND d.open_op_type=:corp_action "
                            "ORDER BY s.symbol, t.timestamp",
                            [(":end", self.year_end), (":account_id", self.account_id),
-                            (":corp_action", LedgerTransaction.CorporateAction)])
+                            (":corp_action", LedgerTransaction.CorporateAction),
+                            (":base_currency", JalSettings().getValue('BaseCurrency'))])
         group = 1
         basis = 1
         previous_symbol = ""
@@ -502,12 +512,13 @@ class TaxesRus:
                            "LEFT JOIN accounts AS a ON a.id = t.account_id "
                            "LEFT JOIN assets_ext AS s ON s.id = t.asset_id AND s.currency_id=a.currency_id "
                            "LEFT JOIN t_last_dates AS ldt ON t.timestamp=ldt.ref_id "
-                           "LEFT JOIN quotes AS qt ON ldt.timestamp=qt.timestamp AND a.currency_id=qt.asset_id "
+                           "LEFT JOIN quotes AS qt ON ldt.timestamp=qt.timestamp AND a.currency_id=qt.asset_id AND qt.currency_id=:base_currency "
                            "LEFT JOIN t_last_dates AS ldts ON t.settlement=ldts.ref_id "
-                           "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id "
+                           "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id AND qts.currency_id=:base_currency "
                            "LEFT JOIN t_last_assets AS lq ON lq.id = t.id "
-                           "WHERE t.id = :operation_id",
-                           [(":operation_id", operation_id)], named=True)
+                           "WHERE t.id = :operation_id", [(":operation_id", operation_id),
+                                                          (":base_currency", JalSettings().getValue('BaseCurrency'))],
+                           named=True)
         if purchase['qty'] <= (2 * Setup.CALC_TOLERANCE):
             return proceed_qty  # This trade was fully mached before
 
@@ -580,10 +591,11 @@ class TaxesRus:
                            "LEFT JOIN assets_ext AS b ON b.id = i.asset_id AND b.currency_id=a.currency_id "
                            "LEFT JOIN countries AS cc ON cc.id = a.country_id "
                            "LEFT JOIN t_last_dates AS ld ON i.timestamp=ld.ref_id "
-                           "LEFT JOIN quotes AS r ON ld.timestamp=r.timestamp AND a.currency_id=r.asset_id "
+                           "LEFT JOIN quotes AS r ON ld.timestamp=r.timestamp AND a.currency_id=r.asset_id AND r.currency_id=:base_currency "
                            "WHERE i.account_id=:account_id AND i.type=:interest AND i.number=:trade_number",
                            [(":account_id", self.account_id), (":interest", Dividend.BondInterest),
-                            (":trade_number", trade_number)], named=True)
+                            (":trade_number", trade_number),
+                            (":base_currency", JalSettings().getValue('BaseCurrency'))], named=True)
         if interest is None:
             return
         interest['empty'] = ''

@@ -126,9 +126,10 @@ class JalDB:
                                    [(":symbol", search_data['symbol'])])
         return asset_id
 
-    def get_quote(self, asset_id, timestamp):
-        return readSQL("SELECT quote FROM quotes WHERE asset_id=:asset_id AND timestamp=:timestamp",
-                       [(":asset_id", asset_id), (":timestamp", timestamp)])
+    def get_quote(self, asset_id, currency_id, timestamp):
+        return readSQL("SELECT quote FROM quotes WHERE asset_id=:asset_id "
+                       "AND currency_id=:currency_id AND timestamp=:timestamp",
+                       [(":asset_id", asset_id), (":currency_id", currency_id), (":timestamp", timestamp)])
 
     # Set quotations for given asset_id and currency_id
     # quotations is a list of {'timestamp', 'quote'} values

@@ -148,6 +148,7 @@ class DividendWidget(AbstractOperationDetails):
     def refreshAssetPrice(self):
         if self.type.currentIndex() == Dividend.StockDividend:
             price = JalDB().get_quote(self.asset_widget.selected_id,
+                                      JalDB().get_account_currency(self.account_widget.selected_id),
                                       self.timestamp_editor.dateTime().toSecsSinceEpoch())
             if price is not None:
                 self.price_edit.setText(str(price))

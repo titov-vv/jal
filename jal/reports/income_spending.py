@@ -1,9 +1,10 @@
 from datetime import datetime
-from PySide6.QtCore import Qt, Signal, Slot, QObject, QAbstractItemModel, QModelIndex
+from PySide6.QtCore import Qt, QObject, QAbstractItemModel, QModelIndex
 from PySide6.QtGui import QBrush
 from jal.ui.reports.ui_income_spending_report import Ui_IncomeSpendingReportWidget
 from jal.constants import BookAccount, PredefinedAsset, CustomColor
 from jal.db.helpers import executeSQL
+from jal.db.settings import JalSettings
 from jal.widgets.delegates import GridLinesDelegate
 from jal.widgets.mdi import MdiWidget
 
@@ -260,6 +261,7 @@ class IncomeSpendingReportModel(QAbstractItemModel):
                            "FROM ledger AS t "
                            "LEFT JOIN _months AS d ON month_start = d.month AND t.asset_id = d.asset_id "
                            "LEFT JOIN quotes AS q ON d.last_timestamp = q.timestamp AND t.asset_id = q.asset_id "
+                           "AND q.currency_id=:base_currency "
                            "WHERE (t.book_account=:book_costs OR t.book_account=:book_incomes) "
                            "AND t.timestamp>=:begin AND t.timestamp<=:end "
                            "GROUP BY month_start, category_id) "
@@ -270,8 +272,8 @@ class IncomeSpendingReportModel(QAbstractItemModel):
                            "LEFT JOIN categories AS c ON ct.id=c.id "
                            "ORDER BY path, month_start",
                            [(":asset_money", PredefinedAsset.Money), (":book_costs", BookAccount.Costs),
-                            (":book_incomes", BookAccount.Incomes), (":begin", self._begin), (":end", self._end)],
-                           forward_only=True)
+                            (":book_incomes", BookAccount.Incomes), (":begin", self._begin), (":end", self._end),
+                            (":base_currency", JalSettings().getValue('BaseCurrency'))], forward_only=True)
         self._root = ReportTreeItem(self._begin, self._end, -1, "ROOT")  # invisible root
         self._root.appendChild(ReportTreeItem(self._begin, self._end, 0, self.tr("TOTAL")))  # visible root
         indexes = range(query.record().count())

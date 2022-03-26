@@ -47,7 +47,7 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
         (1591142400, 68.9831),
         (1593129600, 69.4660)
     ]
-    create_quotes(2, usd_rates)
+    create_quotes(2, 1, usd_rates)
     dividends = [
         (1580156400, 1, 4, 1.0, 0.1, "GE(US3696041033) CASH DIVIDEND USD 0.01 PER SHARE (Ordinary Dividend)"),
         (1581106800, 1, 5, 16.94, 0, "TLT(US4642874329) CASH DIVIDEND USD 0.241966 PER SHARE (Ordinary Dividend)"),
@@ -115,7 +115,7 @@ def test_taxes_rus_bonds(tmp_path, project_root, data_path, prepare_db_taxes):
         (1632441600, 72.7245), (1629936000, 73.7428), (1631664000, 72.7171), (1622073600, 73.4737),
         (1621987200, 73.3963), (1621900800, 73.5266), (1621641600, 73.5803), (1632528000, 73.0081)
     ]
-    create_quotes(2, usd_rates)
+    create_quotes(2, 1, usd_rates)
 
     IBKR = StatementIBKR()
     IBKR.load(data_path + 'ibkr_bond.xml')
