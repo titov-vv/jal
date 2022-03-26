@@ -41,11 +41,13 @@ def create_assets(assets, data=[]):
                           commit=True) is not None
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Insert quotes for asset_id into database. Quotes is a list of (timestamp, quote) tuples
-def create_quotes(asset_id, quotes):
+# Insert quotes for asset_id, currency_id into database. Quotes is a list of (timestamp, quote) tuples
+def create_quotes(asset_id, currency_id, quotes):
     for quote in quotes:
-        assert executeSQL("INSERT INTO quotes (timestamp, asset_id, quote) VALUES (:timestamp, :asset_id, :quote)",
-                          [(":timestamp", quote[0]), (":asset_id", asset_id), (":quote", quote[1])],
+        assert executeSQL("INSERT OR REPLACE INTO quotes (asset_id, currency_id, timestamp, quote) "
+                          "VALUES (:asset_id, :currency_id, :timestamp, :quote)",
+                          [(":asset_id", asset_id), (":currency_id", currency_id),
+                           (":timestamp", quote[0]), (":quote", quote[1])],
                           commit=True) is not None
 
 
@@ -93,15 +95,15 @@ def create_coupons(coupons):
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Create dividends in database: dividends is a list of dividends as tuples
-# (timestamp, account, asset_id, qty, quote, tax, note)
+# (timestamp, account, asset_id, qty, currency_id, quote, tax, note)
 def create_stock_dividends(dividends):
     for dividend in dividends:
-        create_quotes(dividend[2], [(dividend[0], dividend[4])])
+        create_quotes(dividend[2], dividend[4], [(dividend[0], dividend[5])])
         assert executeSQL("INSERT INTO dividends (timestamp, type, account_id, asset_id, amount, tax, note) "
                           "VALUES (:timestamp, :div_type, :account_id, :asset_id, :amount, :tax, :note)",
                           [(":timestamp", dividend[0]), (":div_type", Dividend.StockDividend),
                            (":account_id", dividend[1]), (":asset_id", dividend[2]), (":amount", dividend[3]),
-                           (":tax", dividend[5]), (":note", dividend[6])], commit=True) is not None
+                           (":tax", dividend[6]), (":note", dividend[7])], commit=True) is not None
 
 
 # ----------------------------------------------------------------------------------------------------------------------

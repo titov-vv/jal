@@ -1,8 +1,7 @@
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
-from constants import PredefinedAsset
 from jal.db.ledger import Ledger
 from jal.db.helpers import readSQL, executeSQL
-from tests.helpers import create_stocks
+from tests.helpers import create_stocks, create_quotes
 
 
 def test_spin_off(prepare_db_fifo):
@@ -38,17 +37,10 @@ def test_spin_off(prepare_db_fifo):
             [(":id", trade[0]), (":timestamp", trade[1]), (":settlement", trade[2]), (":asset", trade[3]),
              (":qty", trade[4]), (":price", trade[5]), (":fee", trade[6])]) is not None
 
-    quotes = [
-        (2, 1614600000, 2, 70.0),
-        (3, 1617278400, 4, 15.0),
-        (4, 1617278400, 5, 2.0),
-        (5, 1628683200, 4, 100.0)
-    ]
-    for quote in quotes:
-        assert executeSQL("INSERT INTO quotes (id, timestamp, asset_id, quote) "
-                          "VALUES (:id, :timestamp, :asset, :quote)",
-                          [(":id", quote[0]), (":timestamp", quote[1]),
-                           (":asset", quote[2]), (":quote", quote[3])]) is not None
+    create_quotes(2, 2, [(1614600000, 70.0)])
+    create_quotes(4, 2, [(1617278400, 15.0)])
+    create_quotes(5, 2, [(1617278400, 2.0)])
+    create_quotes(4, 2, [(1628683200, 100.0)])
 
     # Build ledgerye
     ledger = Ledger()

@@ -55,7 +55,7 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
     ]
     create_dividends(dividends)
     stock_dividends = [
-        (1593205200, 1, 4, 2.0, 53.4, 10.68, 'GE (US3696041033) Stock Dividend US3696041033 196232339 for 10000000000')
+        (1593205200, 1, 4, 2.0, 2, 53.4, 10.68, 'GE (US3696041033) Stock Dividend US3696041033 196232339 for 10000000000')
     ]
     create_stock_dividends(stock_dividends)
     coupons = [
