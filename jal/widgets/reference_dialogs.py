@@ -144,18 +144,19 @@ class AssetListModel(AbstractReferenceListModel):
                          ("symbol", self.tr("Symbol")),
                          ("full_name", self.tr("Name")),
                          ("isin", self.tr("ISIN")),
-                         ("currency_id", ''),
+                         ("currency_id", self.tr("Currency")),
                          ("country_id", self.tr("Country")),
                          ("quote_source", self.tr("Data source"))]
         self._default_name = "symbol"
         self._sort_by = "symbol"
         self._group_by = "type_id"
-        self._hidden = ["id", "type_id", "currency_id"]
+        self._hidden = ["id", "type_id"]
         self._stretch = "full_name"
         self._lookup_delegate = None
         self._timestamp_delegate = None
         self._default_values = {'isin': '', 'country_id': 0, 'quote_source': -1}
         self.setRelation(self.fieldIndex("type_id"), QSqlRelation("asset_types", "id", "name"))
+        self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
         self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "name"))
         self.setRelation(self.fieldIndex("quote_source"), QSqlRelation("data_sources", "id", "name"))
 
