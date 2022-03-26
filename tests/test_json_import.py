@@ -237,10 +237,10 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
 
     # Verify that asset prices were loaded for stock dividends
     stock_quotes = [
-        [1, 946684800, 1, 1.0],
-        [2, 1633033200, 4, 25.73],
-        [3, 1595017200, 18, 4.7299999999999995],
-        [4, 1591215600, 32, 8.59]
+        [1, 946684800, 1, 1, 1.0],
+        [2, 1633033200, 4, 2, 25.73],
+        [3, 1595017200, 18, 2, 4.7299999999999995],
+        [4, 1591215600, 32, 2, 8.59]
     ]
     for i, quote in enumerate(stock_quotes):
         assert readSQL("SELECT * FROM quotes WHERE id=:id", [(":id", i + 1)]) == quote

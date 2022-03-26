@@ -244,7 +244,7 @@ class JalDB:
                        commit=True)
         if price is not None:
             self.update_quotes(asset_id, self.get_account_currency(account_id),
-                               [{'timestamp': timestamp, 'price': price}])
+                               [{'timestamp': timestamp, 'quote': price}])
 
     def update_dividend_tax(self, dividend_id, new_tax):
         _ = executeSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
