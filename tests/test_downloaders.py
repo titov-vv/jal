@@ -103,7 +103,7 @@ def test_CBR_downloader():
     downloader = QuoteDownloader()
     downloader.PrepareRussianCBReader()
     assert_frame_equal(codes, downloader.CBR_codes.head(2))
-    rates_downloaded = downloader.CBR_DataReader(0, 'USD', '', 1618272000, 1618358400)
+    rates_downloaded = downloader.CBR_DataReader(0, 'USD', 1, '', 1618272000, 1618358400)
     assert_frame_equal(rates, rates_downloaded)
 
 def test_MOEX_downloader(prepare_db_moex):
