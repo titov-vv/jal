@@ -130,21 +130,22 @@ class JalDB:
         return readSQL("SELECT quote FROM quotes WHERE asset_id=:asset_id AND timestamp=:timestamp",
                        [(":asset_id", asset_id), (":timestamp", timestamp)])
 
-    def update_quote(self, asset_id, timestamp, quote):
-        if (timestamp is None) or (quote is None):
-            return
-        old_id = 0
-        query = executeSQL("SELECT id FROM quotes WHERE asset_id = :asset_id AND timestamp = :timestamp",
-                           [(":asset_id", asset_id), (":timestamp", timestamp)])
-        if query.next():
-            old_id = query.value(0)
-        if old_id:
-            executeSQL("UPDATE quotes SET quote=:quote WHERE id=:old_id", [(":quote", quote), (":old_id", old_id), ])
-        else:
-            executeSQL("INSERT INTO quotes(timestamp, asset_id, quote) VALUES (:timestamp, :asset_id, :quote)",
-                       [(":timestamp", timestamp), (":asset_id", asset_id), (":quote", quote)])
-        logging.info(self.tr("Quote loaded: ") + f"{self.get_asset_name(asset_id)} " 
-                     f"@ {datetime.utcfromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S')} = {quote}")
+    # Set quotations for given asset_id and currency_id
+    # quotations is a list of {'timestamp', 'quote'} values
+    def update_quotes(self, asset_id, currency_id, quotations):
+        data = [x for x in quotations if x['timestamp'] is not None and x['quote'] is not None]  # Drop Nones
+        if data:
+            for quote in quotations:
+                _ = executeSQL("INSERT OR REPLACE INTO quotes (asset_id, currency_id, timestamp, quote) "
+                               "VALUES(:asset_id, :currency_id, :timestamp, :quote)",
+                               [(":asset_id", asset_id), (":currency_id", currency_id),
+                                (":timestamp", quote['timestamp']), (":quote", quote['quote'])])
+            begin = min(data, key=lambda x: x['timestamp'])['timestamp']
+            end = max(data, key=lambda x: x['timestamp'])['timestamp']
+            logging.info(self.tr("Quotations were updated: ") +
+                         f"{self.get_asset_name(asset_id)} ({self.get_asset_name(asset_id)}) " 
+                         f"{datetime.utcfromtimestamp(begin).strftime('%d/%m/%Y')} - "
+                         f"{datetime.utcfromtimestamp(end).strftime('%d/%m/%Y')}")
 
     def add_asset(self, asset_type, name, isin, country_code=''):
         country_id = get_country_by_code(country_code)
@@ -242,7 +243,8 @@ class JalDB:
                         (":tax", tax), (":note", note)],
                        commit=True)
         if price is not None:
-            self.update_quote(asset_id, timestamp, price)
+            self.update_quotes(asset_id, self.get_account_currency(account_id),
+                               [{'timestamp': timestamp, 'price': price}])
 
     def update_dividend_tax(self, dividend_id, new_tax):
         _ = executeSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",

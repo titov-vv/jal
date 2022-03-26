@@ -67,6 +67,13 @@ def test_MOEX_details():
                                                                                                            'isin': 'IE00B8XB7377',
                                                                                                            'name': 'FinEx Gold ETF USD',
                                                                                                            'type': PredefinedAsset.ETF}
+    assert QuoteDownloader.MOEX_info(symbol='FXGD', currency='USD', special=True) == {"symbol": "FXGD",
+                                                                                      "isin": "IE00B8XB7377",
+                                                                                      "name": "FinEx Gold ETF USD",
+                                                                                      "board": "TQTD",
+                                                                                      "engine": "stock",
+                                                                                      "market": "shares",
+                                                                                      "type": PredefinedAsset.ETF}
     assert QuoteDownloader.MOEX_info(isin='JE00B6T5S470', reg_number='', symbol='') == {'symbol': 'POLY',
                                                                                        'isin': 'JE00B6T5S470',
                                                                                        'name': 'Polymetal International plc',
@@ -114,27 +121,37 @@ def test_MOEX_downloader(prepare_db_moex):
     etf_quotes = etf_quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.MOEX_DataReader(4, 'SBER', 'RU0009029540', 1618272000, 1618358400)
+    quotes_downloaded = downloader.MOEX_DataReader(4, 'SBER', 1, 'RU0009029540', 1618272000, 1618358400)
     assert_frame_equal(stock_quotes, quotes_downloaded)
     assert readSQL("SELECT * FROM assets_ext WHERE id=4") == [4, PredefinedAsset.Stock, 'SBER', '', 'RU0009029540', 1, 0, -1]
     assert readSQL("SELECT value FROM asset_data WHERE asset_id=4 AND datatype=1") == '10301481B'
 
-    quotes_downloaded = downloader.MOEX_DataReader(6, 'SU26238RMFS4', 'RU000A1038V6', 1626912000, 1626998400)
+    quotes_downloaded = downloader.MOEX_DataReader(6, 'SU26238RMFS4', 1, 'RU000A1038V6', 1626912000, 1626998400)
     assert_frame_equal(bond_quotes, quotes_downloaded)
     assert readSQL("SELECT * FROM assets_ext WHERE id=6") == [6, PredefinedAsset.Bond, 'SU26238RMFS4', '', 'RU000A1038V6', 1, 0, -1]
     assert readSQL("SELECT value FROM asset_data WHERE asset_id=6 AND datatype=1") == '26238RMFS'
     assert readSQL("SELECT value FROM asset_data WHERE asset_id=6 AND datatype=2") == '2252188800'
     assert readSQL("SELECT value FROM asset_data WHERE asset_id=6 AND datatype=3") == '1000.0'
 
-    quotes_downloaded = downloader.MOEX_DataReader(7, 'МКБ 1P2', 'RU000A1014H6', 1626912000, 1626998400)
+    quotes_downloaded = downloader.MOEX_DataReader(7, 'МКБ 1P2', 1, 'RU000A1014H6', 1626912000, 1626998400)
     assert_frame_equal(corp_quotes, quotes_downloaded)
     assert readSQL("SELECT * FROM assets_ext WHERE id=7") == [7, PredefinedAsset.Bond, 'МКБ 1P2', '', 'RU000A1014H6', 1, 0, -1]
     assert readSQL("SELECT value FROM asset_data WHERE asset_id=7 AND datatype=1") == '4B020901978B001P'
     assert readSQL("SELECT value FROM asset_data WHERE asset_id=7 AND datatype=2") == '1638230400'
     assert readSQL("SELECT value FROM asset_data WHERE asset_id=7 AND datatype=3") == '1000.0'
 
-    quotes_downloaded = downloader.MOEX_DataReader(8, 'ЗПИФ ПНК', 'RU000A1013V9', 1639353600, 1639440000, update_symbol=False)
+    quotes_downloaded = downloader.MOEX_DataReader(8, 'ЗПИФ ПНК', 1, 'RU000A1013V9', 1639353600, 1639440000, update_symbol=False)
     assert_frame_equal(etf_quotes, quotes_downloaded)
+
+
+def test_MOEX_downloader_USD(prepare_db_moex):
+    usd_quotes = pd.DataFrame({'Close': [12.02, 11.90],
+                               'Date': [datetime(2021, 12, 13), datetime(2021, 12, 14)]})
+    usd_quotes = usd_quotes.set_index('Date')
+    downloader = QuoteDownloader()
+    quotes_downloaded = downloader.MOEX_DataReader(8, 'FXGD', 2, 'IE00B8XB7377', 1639353600, 1639440000, update_symbol=False)
+    assert_frame_equal(usd_quotes, quotes_downloaded)
+
 
 def test_Yahoo_downloader():
     quotes = pd.DataFrame({'Close': [134.429993, 132.029999],
@@ -142,8 +159,9 @@ def test_Yahoo_downloader():
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.Yahoo_Downloader(0, 'AAPL', '', 1618272000, 1618444800)
+    quotes_downloaded = downloader.Yahoo_Downloader(0, 'AAPL', 2, '', 1618272000, 1618444800)
     assert_frame_equal(quotes, quotes_downloaded)
+
 
 def test_Euronext_downloader():
     quotes = pd.DataFrame({'Close': [3.4945, 3.5000, 3.4995],
@@ -151,8 +169,9 @@ def test_Euronext_downloader():
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.Euronext_DataReader(0, '', 'FI0009000681', 1618272000, 1618444800)
+    quotes_downloaded = downloader.Euronext_DataReader(0, '', 3, 'FI0009000681', 1618272000, 1618444800)
     assert_frame_equal(quotes, quotes_downloaded)
+
 
 def test_TMX_downloader():
     quotes = pd.DataFrame({'Close': [117.18, 117.34, 118.02],
@@ -160,5 +179,5 @@ def test_TMX_downloader():
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.TMX_Downloader(0, 'RY', '', 1618272000, 1618444800)
+    quotes_downloaded = downloader.TMX_Downloader(0, 'RY', 3, '', 1618272000, 1618444800)
     assert_frame_equal(quotes, quotes_downloaded)

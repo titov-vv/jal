@@ -238,6 +238,8 @@ BEGIN
 END;
 --------------------------------------------------------------------------------
 -- Update quotes table
+-- Remove duplicated quotes
+DELETE FROM quotes WHERE rowid NOT IN (SELECT MAX(rowid) FROM quotes GROUP BY asset_id, timestamp);
 CREATE TABLE _temp_quotes_table AS SELECT * FROM quotes WHERE NOT quote IS NULL;
 
 CREATE TABLE _temp_currency_table AS
@@ -254,6 +256,7 @@ CREATE TABLE quotes (
     currency_id INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     quote       REAL    NOT NULL DEFAULT (0)
 );
+CREATE UNIQUE INDEX unique_quotations ON quotes (asset_id, currency_id, timestamp);
 
 INSERT INTO quotes (id, timestamp, asset_id, currency_id, quote)
 SELECT q.id, q.timestamp, q.asset_id, coalesce(c.currency_id, 1), q.quote

@@ -334,6 +334,7 @@ CREATE TABLE quotes (
     currency_id INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     quote       REAL    NOT NULL DEFAULT (0)
 );
+CREATE UNIQUE INDEX unique_quotations ON quotes (asset_id, currency_id, timestamp);
 
 
 -- Table: settings

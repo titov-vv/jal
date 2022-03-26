@@ -68,26 +68,28 @@ class QuoteDownloader(QObject):
         self.PrepareRussianCBReader()
         jal_db = JalDB()
         query = executeSQL("WITH _holdings AS ( "
-                           "SELECT l.asset_id AS asset FROM ledger AS l "
-                           "WHERE l.book_account = 4 AND l.timestamp <= :end_timestamp "
+                           "SELECT l.asset_id AS asset, l.account_id FROM ledger AS l "
+                           "WHERE l.book_account = :assets_book AND l.timestamp <= :end_timestamp "
                            "GROUP BY l.asset_id "
                            "HAVING SUM(l.amount) > :tolerance "
                            "UNION "
-                           "SELECT DISTINCT l.asset_id AS asset FROM ledger AS l "
+                           "SELECT DISTINCT l.asset_id AS asset, l.account_id FROM ledger AS l "
                            "WHERE l.book_account = :assets_book AND l.timestamp >= :start_timestamp "
                            "AND l.timestamp <= :end_timestamp "
                            "UNION "
-                           "SELECT DISTINCT a.currency_id AS asset FROM ledger AS l "
+                           "SELECT DISTINCT a.currency_id AS asset, NULL FROM ledger AS l "
                            "LEFT JOIN accounts AS a ON a.id = l.account_id "
                            "WHERE (l.book_account = :money_book OR l.book_account = :liabilities_book) "
                            "AND l.timestamp >= :start_timestamp AND l.timestamp <= :end_timestamp "
                            ") "
-                           "SELECT h.asset AS asset_id, a.symbol AS name, a.quote_source AS feed_id, a.isin AS isin, "
+                           "SELECT h.asset AS asset_id, coalesce(ac.currency_id, 1) AS currency_id, "
+                           "a.symbol AS name, a.quote_source AS feed_id, a.isin AS isin, "
                            "MIN(q.timestamp) AS first_timestamp, MAX(q.timestamp) AS last_timestamp "
                            "FROM _holdings AS h "
-                           "LEFT JOIN assets_ext AS a ON a.id=h.asset "
+                           "LEFT JOIN accounts AS ac ON ac.id=h.account_id "
+                           "LEFT JOIN assets_ext AS a ON a.id=h.asset AND a.currency_id=coalesce(ac.currency_id, 1) "
                            "LEFT JOIN quotes AS q ON q.asset_id=h.asset "
-                           "GROUP BY h.asset "
+                           "GROUP BY h.asset, ac.currency_id "
                            "ORDER BY feed_id",
                            [(":start_timestamp", start_timestamp), (":end_timestamp", end_timestamp),
                             (":assets_book", BookAccount.Assets), (":money_book", BookAccount.Money),
@@ -103,14 +105,16 @@ class QuoteDownloader(QObject):
             if end_timestamp < from_timestamp:
                 continue
             try:
-                data = self.data_loaders[asset['feed_id']](asset['asset_id'], asset['name'], asset['isin'],
-                                                           from_timestamp, end_timestamp)
+                data = self.data_loaders[asset['feed_id']](asset['asset_id'], asset['name'], asset['currency_id'],
+                                                           asset['isin'], from_timestamp, end_timestamp)
             except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
                 logging.warning(self.tr("No data were downloaded for ") + f"{asset}")
                 continue
             if data is not None:
+                quotations = []
                 for date, quote in data.iterrows():  # Date in pandas dataset is in UTC by default
-                    jal_db.update_quote(asset['asset_id'], int(date.timestamp()), float(quote[0]))
+                    quotations.append({'timestamp': int(date.timestamp()), 'quote': float(quote[0])})
+                jal_db.update_quotes(asset['asset_id'], asset['currency_id'], quotations)
         jal_db.commit()
         logging.info(self.tr("Download completed"))
 
@@ -127,10 +131,10 @@ class QuoteDownloader(QObject):
         self.CBR_codes = pd.DataFrame(rows, columns=["ISO_name", "CBR_code"])
 
     # Empty method to make a unified call for any asset
-    def Dummy_DataReader(self, _asset_id, _symbol, _isin, _start_timestamp, _end_timestamp):
+    def Dummy_DataReader(self, _asset_id, _symbol, _currency, _isin, _start_timestamp, _end_timestamp):
         return None
 
-    def CBR_DataReader(self, _asset_id, currency_code, _isin, start_timestamp, end_timestamp):
+    def CBR_DataReader(self, _asset_id, currency_code, _currency, _isin, start_timestamp, end_timestamp):
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%d/%m/%Y')
         # add 1 day to end_timestamp as CBR sets rate are a day ahead
         date2 = (datetime.utcfromtimestamp(end_timestamp) + timedelta(days=1)).strftime('%d/%m/%Y')
@@ -163,11 +167,12 @@ class QuoteDownloader(QObject):
         data = {}
         if 'symbol' in kwargs and not isEnglish(kwargs['symbol']):
             del kwargs['symbol']
+        currency = kwargs['currency'] if 'currency' in kwargs else ''
         # First try to load with symbol or isin from asset details API
         if 'symbol' in kwargs:
-            data = QuoteDownloader.MOEX_download_info(kwargs['symbol'])
+            data = QuoteDownloader.MOEX_download_info(kwargs['symbol'], currency=currency)
         if not data and 'isin' in kwargs:
-            data = QuoteDownloader.MOEX_download_info(kwargs['isin'])
+            data = QuoteDownloader.MOEX_download_info(kwargs['isin'], currency=currency)
         # If not found try to use search API with regnumber or isin
         if not data and 'reg_number' in kwargs:
             data = QuoteDownloader.MOEX_download_info(QuoteDownloader.MOEX_find_secid(reg_number=kwargs['reg_number']))
@@ -184,7 +189,7 @@ class QuoteDownloader(QObject):
     # Searches for asset info on http://www.moex.com by symbol or ISIN provided as asset_code parameter
     # Returns disctionary with asset data: {symbol, isin, regnumber, engine, market, board, pricipal, expiry, etc}
     @staticmethod
-    def MOEX_download_info(asset_code) -> dict:
+    def MOEX_download_info(asset_code, currency='') -> dict:
         mapping = {
             'SECID': 'symbol',
             'NAME': 'name',
@@ -233,12 +238,20 @@ class QuoteDownloader(QObject):
             logging.error(QApplication.translate("MOEX", "Unsupported MOEX security type: ") + f"{asset['type']}")
             return {}
 
-        for board in boards:
-            if board.attrib['is_primary'] == '1':
-                asset.update({'engine': board.attrib['engine'],
-                              'market': board.attrib['market'],
-                              'board': board.attrib['boardid']})
-                break
+        boards_list = [board.attrib for board in boards]
+        primary_board = [x for x in boards_list if "is_primary" in x and x["is_primary"] == '1']
+        if primary_board:
+            if currency == 'USD':
+                board_id = primary_board[0]['boardid'][:-1] + 'D'
+            elif currency == 'EUR':
+                board_id = primary_board[0]['boardid'][:-1] + 'E'
+            else:
+                board_id = primary_board[0]['boardid']
+            board = [x for x in boards_list if "boardid" in x and x["boardid"] == board_id]
+            if board:
+                asset.update({'engine': board[0]['engine'],
+                              'market': board[0]['market'],
+                              'board': board[0]['boardid']})
         return asset
 
     # Searches for asset info on http://www.moex.com by given reg_number or isin
@@ -272,8 +285,9 @@ class QuoteDownloader(QObject):
         return secid
 
     # noinspection PyMethodMayBeStatic
-    def MOEX_DataReader(self, asset_id, asset_code, isin, start_timestamp, end_timestamp, update_symbol=True):
-        asset = self.MOEX_info(symbol=asset_code, isin=isin, special=True)
+    def MOEX_DataReader(self, asset_id, asset_code, currency, isin, start_timestamp, end_timestamp, update_symbol=True):
+        currency = JalDB().get_asset_name(currency)
+        asset = self.MOEX_info(symbol=asset_code, isin=isin, currency=currency, special=True)
         if (asset['engine'] is None) or (asset['market'] is None) or (asset['board'] is None):
             logging.warning(f"Failed to find {asset_code} on moex.com")
             return None
@@ -311,7 +325,7 @@ class QuoteDownloader(QObject):
         return close
 
     # noinspection PyMethodMayBeStatic
-    def Yahoo_Downloader(self, _asset_id, asset_code, _isin, start_timestamp, end_timestamp):
+    def Yahoo_Downloader(self, _asset_id, asset_code, _currency, _isin, start_timestamp, end_timestamp):
         url = f"https://query1.finance.yahoo.com/v7/finance/download/{asset_code}?" \
               f"period1={start_timestamp}&period2={end_timestamp}&interval=1d&events=history"
         file = StringIO(get_web_data(url))
@@ -325,7 +339,7 @@ class QuoteDownloader(QObject):
         return close
 
     # noinspection PyMethodMayBeStatic
-    def Euronext_DataReader(self, _asset_id, _asset_code, isin, start_timestamp, end_timestamp):
+    def Euronext_DataReader(self, _asset_id, _asset_code, _currency, isin, start_timestamp, end_timestamp):
         params = {'format': 'csv', 'decimal_separator': '.', 'date_form': 'd/m/Y', 'op': '', 'adjusted': '',
                   'base100': '', 'startdate': datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d'),
                   'enddate': datetime.utcfromtimestamp(end_timestamp).strftime('%Y-%m-%d')}
@@ -354,7 +368,7 @@ class QuoteDownloader(QObject):
         return close
 
     # noinspection PyMethodMayBeStatic
-    def TMX_Downloader(self, _asset_id, asset_code, _isin, start_timestamp, end_timestamp):
+    def TMX_Downloader(self, _asset_id, asset_code, _currency, _isin, start_timestamp, end_timestamp):
         url = 'https://app-money.tmx.com/graphql'
         params = {
             "operationName": "getCompanyPriceHistoryForDownload",
