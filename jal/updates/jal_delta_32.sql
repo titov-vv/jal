@@ -86,6 +86,15 @@ LEFT JOIN assets AS old ON doubles.isin=old.isin AND old.id<doubles.mid
 ) AS d
 WHERE d.id=asset_id;
 
+UPDATE quotes SET asset_id=d.mid
+FROM
+(
+SELECT old.id AS id, mid
+FROM (SELECT MAX(a.id) AS mid, isin, COUNT(a.id) c FROM assets AS a WHERE a.isin!='' GROUP BY a.isin HAVING c > 1) AS doubles
+LEFT JOIN assets AS old ON doubles.isin=old.isin AND old.id<doubles.mid
+) AS d
+WHERE d.id=asset_id;
+
 UPDATE corp_actions SET asset_id=d.mid
 FROM
 (
@@ -227,6 +236,32 @@ CREATE TRIGGER on_asset_ext_delete
 BEGIN
     DELETE FROM assets WHERE id = OLD.id;
 END;
+--------------------------------------------------------------------------------
+-- Update quotes table
+CREATE TABLE _temp_quotes_table AS SELECT * FROM quotes WHERE NOT quote IS NULL;
+
+CREATE TABLE _temp_currency_table AS
+SELECT DISTINCT t.asset_id, a.currency_id FROM
+(SELECT asset_id, account_id FROM trades) t
+LEFT JOIN accounts a ON t.account_id=a.id
+ORDER BY asset_id;
+
+DROP TABLE quotes;
+CREATE TABLE quotes (
+    id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    timestamp   INTEGER NOT NULL,
+    asset_id    INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    currency_id INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    quote       REAL    NOT NULL DEFAULT (0)
+);
+
+INSERT INTO quotes (id, timestamp, asset_id, currency_id, quote)
+SELECT q.id, q.timestamp, q.asset_id, coalesce(c.currency_id, 1), q.quote
+FROM _temp_quotes_table q
+LEFT JOIN _temp_currency_table c ON q.asset_id=c.asset_id;
+
+DROP TABLE _temp_quotes_table;
+DROP TABLE _temp_currency_table;
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 1;
 --------------------------------------------------------------------------------

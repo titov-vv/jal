@@ -411,11 +411,16 @@ class QuotesListModel(AbstractReferenceListModel):
         self._columns = [("id", ''),
                          ("timestamp", self.tr("Date")),
                          ("asset_id", self.tr("Asset")),
+                         ("currency_id", self.tr("Currency")),
                          ("quote", self.tr("Quote"))]
         self._hidden = ["id"]
         self._default_name = "quote"
+        self._sort_by = "timestamp"
+        self._stretch = "asset_id"
         self._asset_delegate = None
         self._timestamp_delegate = None
+        self._lookup_delegate = None
+        self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
 
     def configureView(self):
         super().configureView()
@@ -427,6 +432,8 @@ class QuotesListModel(AbstractReferenceListModel):
         self._view.setItemDelegateForColumn(self.fieldIndex("asset_id"), self._asset_delegate)
         self._timestamp_delegate = TimestampDelegate(parent=self._view)
         self._view.setItemDelegateForColumn(self.fieldIndex("timestamp"), self._timestamp_delegate)
+        self._lookup_delegate = QSqlRelationalDelegate(self._view)
+        self._view.setItemDelegateForColumn(self.fieldIndex("currency_id"), self._lookup_delegate)
 
 
 class QuotesListDialog(ReferenceDataDialog):
@@ -440,7 +447,7 @@ class QuotesListDialog(ReferenceDataDialog):
         super()._init_completed()
 
     def setup_ui(self):
-        self.search_field = "asset_id-assets-id-name"
+        self.search_field = "asset_id-assets_ext-id-symbol"
         self.SearchFrame.setVisible(True)
         self.setWindowTitle(self.tr("Quotes"))
         self.Toggle.setVisible(False)

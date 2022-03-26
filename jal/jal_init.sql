@@ -327,28 +327,20 @@ CREATE TABLE open_trades (
 
 -- Table: quotes
 DROP TABLE IF EXISTS quotes;
-
 CREATE TABLE quotes (
-    id        INTEGER PRIMARY KEY
-                      UNIQUE
-                      NOT NULL,
-    timestamp INTEGER NOT NULL,
-    asset_id INTEGER REFERENCES assets (id) ON DELETE CASCADE
-                                              ON UPDATE CASCADE
-                      NOT NULL,
-    quote     REAL
+    id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    timestamp   INTEGER NOT NULL,
+    asset_id    INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    currency_id INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    quote       REAL    NOT NULL DEFAULT (0)
 );
 
 
 -- Table: settings
 DROP TABLE IF EXISTS settings;
-
 CREATE TABLE settings (
-    id    INTEGER   PRIMARY KEY
-                    NOT NULL
-                    UNIQUE,
-    name  TEXT (32) NOT NULL
-                    UNIQUE,
+    id    INTEGER   PRIMARY KEY NOT NULL UNIQUE,
+    name  TEXT (32) NOT NULL UNIQUE,
     value INTEGER
 );
 
@@ -1172,7 +1164,7 @@ INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (246, 'Zambi
 INSERT INTO countries (id, name, code, iso_code, tax_treaty) VALUES (247, 'Zimbabwe', 'zw', '716', 0);
 
 -- Initialize rate for base currency
-INSERT INTO quotes (id, timestamp, asset_id, quote) VALUES (1, 946684800, 1, 1.0);
+INSERT INTO quotes (id, timestamp, asset_id, currency_id, quote) VALUES (1, 946684800, 1, 1, 1.0);
 
 COMMIT TRANSACTION;
 PRAGMA foreign_keys = on;
