@@ -44,6 +44,7 @@ class FOF:
     ACTION_SPINOFF = "spin-off"
     ACTION_SYMBOL_CHANGE = "symbol_change"
     ACTION_BOND_MATURITY = "bond_maturity"    # Isn't used in reality as will be put as ordinary sell operation
+    ACTION_DELISTING = "delisting"
 
     PAYMENT_DIVIDEND = "dividend"
     PAYMENT_INTEREST = "interest"
@@ -83,7 +84,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         FOF.ACTION_MERGER: CorporateAction.Merger,
         FOF.ACTION_SPLIT: CorporateAction.Split,
         FOF.ACTION_SPINOFF: CorporateAction.SpinOff,
-        FOF.ACTION_SYMBOL_CHANGE: CorporateAction.SymbolChange
+        FOF.ACTION_SYMBOL_CHANGE: CorporateAction.SymbolChange,
+        FOF.ACTION_DELISTING: CorporateAction.Delisting
     }
     _sources = {
         'NYSE': MarketDataFeed.US,

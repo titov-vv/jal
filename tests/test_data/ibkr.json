@@ -50,7 +50,8 @@
     {"id": 39, "type": "stock", "isin": "US8713321029"},
     {"id": 40, "type": "stock", "isin": "US2183521028"},
     {"id": 41, "type": "stock", "isin": "US218NSPODD6"},
-    {"id": 42, "type": "stock", "country": "us"}
+    {"id": 42, "type": "stock", "isin": "CA6295231014"},
+    {"id": 43, "type": "stock", "country": "us"}
   ],
   "symbols": [
     {"id": 1, "asset": 1, "symbol": "RUB", "currency": -1},
@@ -96,7 +97,8 @@
     {"id": 41, "asset": 39, "symbol": "SLVM", "currency": 2, "note": "NYSE"},
     {"id": 42, "asset": 40, "symbol": "CORT", "currency": 2, "note": "NASDAQ"},
     {"id": 43, "asset": 41, "symbol": "CORT.OD2", "currency": 2, "note": "CORPACT"},
-    {"id": 44, "asset": 42, "symbol": "EDV", "currency": 2, "note": "ARCA"}
+    {"id": 44, "asset": 42, "currency": 2, "symbol": "NABIF"},
+    {"id": 45, "asset": 43, "symbol": "EDV", "currency": 2, "note": "ARCA"}
   ],
   "assets_data": [
     {"id": 1, "asset": 4, "reg_number": "023135106"},
@@ -133,7 +135,8 @@
     {"id": 32, "asset": 39, "reg_number": "871332102"},
     {"id": 33, "asset": 40, "reg_number": "218352102"},
     {"id": 34, "asset": 41, "reg_number": "218NSPODD"},
-    {"id": 35, "asset": 42, "reg_number": "921910709"}
+    {"id": 35, "asset": 42, "reg_number": "629523101"},
+    {"id": 36, "asset": 43, "reg_number": "921910709"}
   ],
   "trades": [
     {"id": 1, "number": "", "timestamp": 1548447900, "settlement": 1548447900, "account": 2, "asset": 7, "quantity": 0.567, "price": 69.2215, "fee": 0.0, "cancelled": true},
@@ -182,7 +185,8 @@
     {"id": 12, "type": "spin-off", "account": 2, "timestamp": 1627331099, "number": "17200082800", "asset": [38, 36], "quantity": [610.0, 55.7151], "cost_basis": 1.0, "description": "BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BAM, BROOKFIELD ASSET MANAGE-CL A, CA1125851040)"},
     {"id": 13, "type": "merger","account": 2, "timestamp": 1627331100, "number": "17200082811", "asset": [38, 37], "quantity": [610.0, 40.0895], "cost_basis": 1.0, "description": "BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BPYPM, NEW LP PREFERRED UNITS, BMG1624R1079)"},
     {"id": 14, "type": "spin-off", "account": 2, "timestamp": 1633033500, "number": "17897699521", "asset": [18, 39], "quantity": [320, 29.0909], "cost_basis": 0.0, "description": "GE(US3696041033) SPINOFF  1 FOR 11 (SLVM, SYLVAMO CORP, US8713321029)"},
-    {"id": 15, "type": "merger", "account": 2, "timestamp": 1639597500, "number": "18787960371", "asset": [40, 41], "quantity": [99.0, 99.0], "cost_basis": 1.0, "description": "CORT(US2183521028) TENDERED TO US218NSPODD6 1 FOR 1 (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)"}
+    {"id": 15, "type": "merger", "account": 2, "timestamp": 1639597500, "number": "18787960371", "asset": [40, 41], "quantity": [99.0, 99.0], "cost_basis": 1.0, "description": "CORT(US2183521028) TENDERED TO US218NSPODD6 1 FOR 1 (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)"},
+    {"id": 16, "type": "delisting", "account": 2, "timestamp": 1612470300, "number": "15238437826", "asset": [42, 42], "quantity": [20000.0, 0.0], "cost_basis": 1.0, "description": "(CA6295231014) DELISTED (NABIF, NABIS HOLDINGS INC, CA6295231014)"}
   ],
   "asset_payments": [
     {"id": 1, "type": "stock_dividend", "account": 2, "timestamp": 1633033200, "number": "16054321038", "asset": 5, "amount": 5.887, "price": 25.73, "tax": 15.0, "description": "VUG (US9229087369) Stock Dividend US9229087369 196232339 for 10000000000"},
@@ -192,7 +196,7 @@
     {"id": 5, "type": "dividend", "account": 2, "timestamp": 1633033200, "number": "", "asset": 5, "amount": 158.6, "tax": 15.86, "description": "VUG (US9229087369) CASH DIVIDEND USD 0.52 (Ordinary Dividend)"},
     {"id": 6, "type": "interest", "account": 2, "timestamp": 1590595065, "number": "2882737839", "asset": 9, "amount": -25.69, "description": "PURCHASE ACCRUED INT X 6 1/4 03/15/26"},
     {"id": 7, "type": "interest", "account": 2, "timestamp": 1600128000, "number": "", "asset": 9, "amount": 62.5, "description": "BOND COUPON PAYMENT (X 6 1/4 03/15/26)"},
-    {"id": -1, "type": "dividend", "account": 2, "timestamp": 1529612400, "number": "", "asset": 42, "amount": 16.76, "tax": 0, "description": "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"},
-    {"id": -2, "type": "dividend", "account": 2, "timestamp": 1533673200, "number": "", "asset": 42, "amount": 20.35, "tax": 0.54, "description": "EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)"}
+    {"id": -1, "type": "dividend", "account": 2, "timestamp": 1529612400, "number": "", "asset": 43, "amount": 16.76, "tax": 0, "description": "EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)"},
+    {"id": -2, "type": "dividend", "account": 2, "timestamp": 1533673200, "number": "", "asset": 43, "amount": 20.35, "tax": 0.54, "description": "EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)"}
   ]
 }

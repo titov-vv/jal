@@ -462,7 +462,7 @@ class Transfer(LedgerTransaction):
         labels = {
             Transfer.Outgoing: ('<', CustomColor.DarkBlue),
             Transfer.Incoming: ('>', CustomColor.DarkBlue),
-            Transfer.Fee: ('=', CustomColor.DarkRed),
+            Transfer.Fee: ('=', CustomColor.DarkRed)
         }
         super().__init__(operation_id)
         self.table = "transfers"
@@ -602,19 +602,22 @@ class CorporateAction(LedgerTransaction):
     SpinOff = 2
     SymbolChange = 3
     Split = 4
+    Delisting = 5
 
     def __init__(self, operation_id=None):
         labels = {
             CorporateAction.Merger: ('⭃', CustomColor.Black),
             CorporateAction.SpinOff: ('⎇', CustomColor.DarkGreen),
             CorporateAction.Split: ('ᗕ', CustomColor.Black),
-            CorporateAction.SymbolChange:  ('🡘', CustomColor.Black)
+            CorporateAction.SymbolChange:  ('🡘', CustomColor.Black),
+            CorporateAction.Delisting: ('✖', CustomColor.DarkRed)
         }
         self.CorpActionNames = {
             CorporateAction.SymbolChange: self.tr("Symbol change {old} -> {new}"),
             CorporateAction.Split: self.tr("Split {old} {before} into {after}"),
             CorporateAction.SpinOff: self.tr("Spin-off {after} {new} from {before} {old}"),
-            CorporateAction.Merger: self.tr("Merger {before} {old} into {after} {new}")
+            CorporateAction.Merger: self.tr("Merger {before} {old} into {after} {new}"),
+            CorporateAction.Delisting: self.tr("Delisting of {before} {old}")
         }
         super().__init__(operation_id)
         self._table = "corp_actions"
@@ -640,6 +643,7 @@ class CorporateAction(LedgerTransaction):
         self._qty_after = self._data['qty_new']
         self._number = self._data['number']
         self._basis = self._data['basis_ratio']
+        self._broker = JalDB().get_account_bank(self._account)
 
     def description(self) -> str:
         basis = 100.0 * self._basis
@@ -718,10 +722,15 @@ class CorporateAction(LedgerTransaction):
         # | (R-)Split       |   A   |  N  |  100 %     |     A     |    M     |   100%        |
         # | Merger          |   A   |  N  |  100 %     |     B     |    M     |   100%        |
         # | Spin-Off        |   A   |  N  |  100 %     |   A & B   | AxN, BxM | X% & (100-X)% |
+        # | Delisting       |   A   |  N  |  100 %     |   None    |   None   |    0 %        |
         # +-----------------+-------+-----+------------+-----------+----------+---------------+
         # Withdraw value with old quantity of old asset as it common for all corporate action
         ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
                                  asset_id=self._asset, value=-processed_value)
+        if self._subtype == CorporateAction.Delisting:  # Map value to costs
+            ledger.appendTransaction(self, BookAccount.Costs, processed_value,
+                                     category=PredefinedCategory.Profit, peer=self._broker)
+            return
         new_value = processed_value
         if self._subtype == CorporateAction.SpinOff:
             new_value = processed_value * (1 - self._basis)

@@ -58,6 +58,7 @@ class IBKR_CorpActionType:
     NotSupported = -1
     _corporate_action_types = {
         'BM': FOF.ACTION_BOND_MATURITY,    # No separate value as will be converted to ordinary bond sell operation
+        'DW': FOF.ACTION_DELISTING,        # Delisting with loss of value
         'FS': FOF.ACTION_SPLIT,            # Forward split
         'HI': FOF.PAYMENT_STOCK_DIVIDEND,  # Choice dividend
         'IC': FOF.ACTION_SYMBOL_CHANGE,    # Issue change
@@ -445,7 +446,8 @@ class StatementIBKR(StatementXML):
             FOF.ACTION_SYMBOL_CHANGE: self.load_symbol_change,
             FOF.PAYMENT_STOCK_DIVIDEND: self.load_stock_dividend,
             FOF.ACTION_SPLIT: self.load_split,
-            FOF.ACTION_BOND_MATURITY: self.load_bond_maturity
+            FOF.ACTION_BOND_MATURITY: self.load_bond_maturity,
+            FOF.ACTION_DELISTING: self.load_delisting
         }
 
         cnt = 0
@@ -680,6 +682,15 @@ class StatementIBKR(StatementXML):
         self.drop_extra_fields(action, ["description", "value", "proceeds", "type", "code", "asset_type",
                                         "jal_processed"])
         self._data[FOF.TRADES].append(action)
+        return 1
+
+    def load_delisting(self, action, parts_b) -> int:
+        action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
+        action['asset'] = [action['asset'], action['asset']]
+        action['quantity'] = [-action['quantity'], 0.0]
+        action['cost_basis'] = 1.0
+        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
+        self._data[FOF.CORP_ACTIONS].append(action)
         return 1
 
     def load_cash_transactions(self, cash):

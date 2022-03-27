@@ -62,7 +62,8 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [39, PredefinedAsset.Stock, '', 'US11282X1037', 0, ''],
         [40, PredefinedAsset.Stock, '', 'US8713321029', 0, ''],
         [41, PredefinedAsset.Stock, '', 'US2183521028', 0, ''],
-        [42, PredefinedAsset.Stock, '', 'US218NSPODD6', 0, '']
+        [42, PredefinedAsset.Stock, '', 'US218NSPODD6', 0, ''],
+        [43, PredefinedAsset.Stock, '', 'CA6295231014', 0, '']
     ]
     assert readSQL("SELECT COUNT(*) FROM assets") == len(test_assets)
     for i, asset in enumerate(test_assets):
@@ -113,7 +114,8 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [41, 39, 'BPYU', 2, '', -1, 1],
         [42, 40, 'SLVM', 2, 'NYSE', 2, 1],
         [43, 41, 'CORT', 2, 'NASDAQ', 2, 1],
-        [44, 42, 'CORT.OD2', 2, 'CORPACT', -1, 1]
+        [44, 42, 'CORT.OD2', 2, 'CORPACT', -1, 1],
+        [45, 43, 'NABIF', 2, '', -1, 1]
     ]
     assert readSQL("SELECT COUNT(*) FROM asset_tickers") == len(test_symbols)
     for i, symbol in enumerate(test_symbols):
@@ -155,7 +157,8 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [36, 39, 1, '11282X103'],
         [37, 40, 1, '871332102'],
         [38, 41, 1, '218352102'],
-        [39, 42, 1, '218NSPODD']
+        [39, 42, 1, '218NSPODD'],
+        [40, 43, 1, '629523101']
     ]
     assert readSQL("SELECT COUNT(*) FROM asset_data") == len(test_asset_data)
     for i, data in enumerate(test_asset_data):
@@ -269,7 +272,8 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [12, 5, 1627331099, '17200082800', 1, 2, 39, 610.0, 37, 55.7151, 1.0, 'BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BAM, BROOKFIELD ASSET MANAGE-CL A, CA1125851040)'],
         [13, 5, 1627331100, '17200082811', 1, 1, 39, 610.0, 38, 40.0895, 1.0, 'BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BPYPM, NEW LP PREFERRED UNITS, BMG1624R1079)'],
         [14, 5, 1633033500, '17897699521', 1, 2, 21, 320.0, 40, 29.0909, 0.0, 'GE(US3696041033) SPINOFF  1 FOR 11 (SLVM, SYLVAMO CORP, US8713321029)'],
-        [15, 5, 1639597500, '18787960371', 1, 1, 41, 99.0, 42, 99.0, 1.0, 'CORT(US2183521028) TENDERED TO US218NSPODD6 1 FOR 1 (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)']
+        [15, 5, 1639597500, '18787960371', 1, 1, 41, 99.0, 42, 99.0, 1.0, 'CORT(US2183521028) TENDERED TO US218NSPODD6 1 FOR 1 (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)'],
+        [16, 5, 1612470300, '15238437826', 1, 5, 43, 20000.0, 43, 0.0, 1.0, '(CA6295231014) DELISTED (NABIF, NABIS HOLDINGS INC, CA6295231014)']
     ]
     assert readSQL("SELECT COUNT(*) FROM corp_actions") == len(test_corp_actons)
     for i, action in enumerate(test_corp_actons):

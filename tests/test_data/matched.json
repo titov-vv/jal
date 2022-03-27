@@ -50,6 +50,7 @@
     {"id": 39, "type": "stock", "isin": "US8713321029"},
     {"id": 40, "type": "stock", "isin": "US2183521028"},
     {"id": 41, "type": "stock", "isin": "US218NSPODD6"},
+    {"id": 42, "type": "stock", "isin": "CA6295231014"},
     {"id": -5, "type": "stock", "country": "us"}
   ],
   "symbols": [
@@ -96,7 +97,8 @@
     {"id": 41, "asset": 39, "symbol": "SLVM", "currency": -2, "note": "NYSE"},
     {"id": 42, "asset": 40, "symbol": "CORT", "currency": -2, "note": "NASDAQ"},
     {"id": 43, "asset": 41, "symbol": "CORT.OD2", "currency": -2, "note": "CORPACT"},
-    {"id": 44, "asset": -5, "symbol": "EDV", "currency": -2, "note": "ARCA"}
+    {"id": 44, "asset": 42, "currency": -2, "symbol": "NABIF"},
+    {"id": 45, "asset": -5, "symbol": "EDV", "currency": -2, "note": "ARCA"}
   ],
   "assets_data": [
     {"id": 1, "asset": 4, "reg_number": "023135106"},
@@ -133,7 +135,8 @@
     {"id": 32, "asset": 39, "reg_number": "871332102"},
     {"id": 33, "asset": 40, "reg_number": "218352102"},
     {"id": 34, "asset": 41, "reg_number": "218NSPODD"},
-    {"id": 35, "asset": -5, "reg_number": "921910709"}
+    {"id": 35, "asset": 42, "reg_number": "629523101"},
+    {"id": 36, "asset": -5, "reg_number": "921910709"}
   ],
   "trades": [
     {"id": 1, "number": "", "timestamp": 1548447900, "settlement": 1548447900, "account": -1, "asset": 7, "quantity": 0.567, "price": 69.2215, "fee": 0.0, "cancelled": true},
@@ -171,7 +174,7 @@
     {"id": 1, "type": "split", "account": -1, "timestamp": 1618345500, "number": "16074977038", "asset": [4, 4], "quantity": [217.0, 271.25], "cost_basis": 1.0, "description": "AMZN(US0231351067) SPLIT 5 FOR 4 (AMZN, AMAZON.COM INC, US0231351067)"},
     {"id": 2, "type": "merger", "account": -1, "timestamp": 1605731100, "number": "10162291403", "asset": [8, 7], "quantity": [70.0, 17.444], "cost_basis": 1.0, "description": "DM(US2574541080) MERGED(Acquisition) WITH US25746U1097 2492 FOR 10000 (D, DOMINION ENERGY INC, 25746U109)"},
     {"id": 3, "type": "symbol_change", "account": -1, "timestamp": 1605558300, "number": "14302257657", "asset": [12, 13], "quantity": [5.0, 5.0], "cost_basis": 1.0, "description": "MYL(NL0011031208) CUSIP/ISIN CHANGE TO (US92556V1061) (VTRS, VIATRIS INC-W/I, US92556V1061)"},
-    {"id": 4, "type": "spin-off", "account": -1, "timestamp": 1605817500, "number": "10302900848", "asset": [18, 14], "quantity": [100 ,0.5371], "cost_basis": 0.0, "description": "GE(US3696041033) SPINOFF  5371 FOR 1000000 (WAB, WABTEC CORP, 929740108)"},
+    {"id": 4, "type": "spin-off", "account": -1, "timestamp": 1605817500, "number": "10302900848", "asset": [18, 14], "quantity": [100, 0.5371], "cost_basis": 0.0, "description": "GE(US3696041033) SPINOFF  5371 FOR 1000000 (WAB, WABTEC CORP, 929740108)"},
     {"id": 5, "type": "merger", "account": -1, "timestamp": 1592339100, "number": "13006963996", "asset": [16, 17], "quantity": [70.0, 170.8], "cost_basis": 1.0, "description": "EQM(US26885B1008) MERGED(Voluntary Offer Allocation) WITH US2946001011 244 FOR 100 (ETRN, EQUITRANS MIDSTREAM CORP, US2946001011)"},
     {"id": 6, "type": "split", "account": -1, "timestamp": 1581452700, "number": "12029570527", "asset": [19, 20], "quantity": [45000.0, 900.0], "cost_basis": 1.0, "description": "EWLL(US30051D1063) SPLIT 1 FOR 50 (EWLLD, EWELLNESS HEALTHCARE CORP, US30051D2053)"},
     {"id": 7, "type": "merger", "account": -1, "timestamp": 1604089500, "number": "14147163475", "asset": [22, 23], "quantity": [10.0, 5.92], "cost_basis": 1.0, "description": "LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)"},
@@ -182,7 +185,8 @@
     {"id": 12, "type": "spin-off", "account": -1, "timestamp": 1627331099, "number": "17200082800", "asset": [38, 36], "quantity": [610.0, 55.7151], "cost_basis": 1.0, "description": "BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BAM, BROOKFIELD ASSET MANAGE-CL A, CA1125851040)"},
     {"id": 13, "type": "merger","account": -1, "timestamp": 1627331100, "number": "17200082811", "asset": [38, 37], "quantity": [610.0, 40.0895], "cost_basis": 1.0, "description": "BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BPYPM, NEW LP PREFERRED UNITS, BMG1624R1079)"},
     {"id": 14, "type": "spin-off", "account": -1, "timestamp": 1633033500, "number": "17897699521", "asset": [18, 39], "quantity": [320, 29.0909], "cost_basis": 0.0, "description": "GE(US3696041033) SPINOFF  1 FOR 11 (SLVM, SYLVAMO CORP, US8713321029)"},
-    {"id": 15, "type": "merger", "account": -1, "timestamp": 1639597500, "number": "18787960371", "asset": [40, 41], "quantity": [99.0, 99.0], "cost_basis": 1.0, "description": "CORT(US2183521028) TENDERED TO US218NSPODD6 1 FOR 1 (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)"}
+    {"id": 15, "type": "merger", "account": -1, "timestamp": 1639597500, "number": "18787960371", "asset": [40, 41], "quantity": [99.0, 99.0], "cost_basis": 1.0, "description": "CORT(US2183521028) TENDERED TO US218NSPODD6 1 FOR 1 (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)"},
+    {"id": 16, "type": "delisting", "account": -1, "timestamp": 1612470300, "number": "15238437826", "asset": [42, 42], "quantity": [20000.0, 0.0], "cost_basis": 1.0, "description": "(CA6295231014) DELISTED (NABIF, NABIS HOLDINGS INC, CA6295231014)"}
   ],
   "asset_payments": [
     {"id": 1, "type": "stock_dividend", "account": -1, "timestamp": 1633033200, "number": "16054321038", "asset": -4, "amount": 5.887, "price": 25.73, "tax": 15.0, "description": "VUG (US9229087369) Stock Dividend US9229087369 196232339 for 10000000000"},

@@ -7,6 +7,7 @@ from tests.helpers import create_assets, create_quotes, create_dividends, create
     create_actions, create_corporate_actions, create_stock_dividends
 from constants import PredefinedAsset
 from jal.db.ledger import Ledger
+from jal.db.operations import CorporateAction
 from jal.data_export.taxes import TaxesRus
 from jal.data_export.xlsx import XLSX
 
@@ -25,7 +26,8 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
         (9, "X 6 1/4 03/15/26", "X 6 1/4 03/15/26", "US912909AN84", 2, PredefinedAsset.Bond, 2),
         (10, "AAL   210115C00030000", "AAL 15JAN21 30.0 C", "", 2, PredefinedAsset.Derivative, 0),
         (11, "MYL", "MYLAN NV", "NL0011031208", 2, PredefinedAsset.Stock, 0),
-        (12, "VTRS", "VIATRIS INC", "US92556V1061", 2, PredefinedAsset.Stock, 0)
+        (12, "VTRS", "VIATRIS INC", "US92556V1061", 2, PredefinedAsset.Stock, 0),
+        (13, "DEL", "DELISTED STOCK", "US12345X0000", 2, PredefinedAsset.Stock, 0)
     ]
     create_assets(assets)
     usd_rates = [
@@ -78,7 +80,8 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
         (1608044400, 1608163200, 12, -50, 17.71, 0.35, "2227095222"),
         (1593604800, 1593993600, 5, 10, 10.0, 0.35, "A"),
         (1608044400, 1608163200, 5, -25, 3.0, 0.35, "B1"),
-        (1608044400, 1608163200, 5, -25, 2.5, 0.35, "B2")
+        (1608044400, 1608163200, 5, -25, 2.5, 0.35, "B2"),
+        (1607871600, 1608044400, 13, 10, 11, 0.5, "1000000001"),
     ]
     create_trades(1, trades)
 
@@ -91,8 +94,9 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
     create_actions(operations)
 
     corporate_actions = [
-        (1605528000, 3, 11, 50, 12, 50, 1, "Symbol change MYL->VTRS"),
-        (1604448000, 4, 5, 10, 5, 50, 1, "Split 5:1 of TLT")
+        (1605528000, CorporateAction.SymbolChange, 11, 50, 12, 50, 1, "Symbol change MYL->VTRS"),
+        (1604448000, CorporateAction.Split, 5, 10, 5, 50, 1, "Split 5:1 of TLT"),
+        (1608217200, CorporateAction.Delisting, 13, 10, 13, 0, 1, "Delisting of DEL")
     ]
     create_corporate_actions(1, corporate_actions)
 
