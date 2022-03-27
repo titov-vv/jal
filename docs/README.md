@@ -24,7 +24,7 @@ If you want to ask a question, report a bug, provide help or support an author -
     1. monthly incomes/spendings splitted by category
     2. profit/loss report for investments accounts
     3. closed deals report 
-- Stock/ETF quotes updates for US (Yahoo), EU (Euronext), CA (TSX) and RU (MOEX) exchanges traded stocks
+- Stock/ETF prices are updated for NYSE, Nasdaq, LSE, Frankfurt (Yahoo), Euronext, TSX and MOEX exchanges traded stocks
 - Broker statement import:
     1. Russian brokers: Uralsib broker (zipped xls), KIT Finance (xlsx), PSB broker (xls), Open broker (xml).
     2. US brokers: Interactive Brokers Flex statement (xml).
