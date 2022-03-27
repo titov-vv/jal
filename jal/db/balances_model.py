@@ -132,7 +132,7 @@ class BalancesModel(QAbstractTableModel):
             "a.active AS active "
             "FROM ledger AS l "
             "LEFT JOIN accounts AS a ON l.account_id = a.id "
-            "LEFT JOIN asset_tickers AS c ON c.id = a.currency_id AND c.active=1 "
+            "LEFT JOIN assets_ext AS c ON c.id = a.currency_id AND c.currency_id = :base_currency "
             "LEFT JOIN account_types AS t ON a.type_id = t.id "
             "LEFT JOIN _last_quotes AS q ON l.asset_id = q.asset_id AND q.currency_id = a.currency_id "
             "LEFT JOIN _last_quotes AS r ON a.currency_id = r.asset_id AND r.currency_id = :base_currency "
