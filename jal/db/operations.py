@@ -656,18 +656,24 @@ class CorporateAction(LedgerTransaction):
     def value_change(self) -> list:
         if self._subtype == CorporateAction.SpinOff:
             return [None, self._qty_after - self._qty]
+        elif self._subtype == CorporateAction.Delisting:
+            return [-self._qty, None]
         else:
             return [-self._qty, self._qty_after]
 
     def value_currency(self) -> str:
         if self._subtype == CorporateAction.SpinOff:
             return f" {self._asset_symbol}\n {self._asset_new_symbol}"
+        elif self._subtype == CorporateAction.Delisting:
+            return f" {self._asset_symbol}\n"
         else:
             return f"\n {self._asset_new_symbol}"
 
     def value_total(self) -> str:
         if self._subtype == CorporateAction.SpinOff:
             return f"{self._qty:,.2f}\n{self._qty_after:,.2f}"
+        elif self._subtype == CorporateAction.Delisting:
+            return f"{self._qty_after:,.2f}\n"
         else:
             return f"\n{self._qty_after:,.2f}"
 
