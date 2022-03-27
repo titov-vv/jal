@@ -71,7 +71,7 @@ class OperationsModel(QAbstractTableModel):
                     return QBrush(CustomColor.Blue)
         if role == Qt.TextAlignmentRole:
             if index.column() == 0:
-                return int(Qt.AlignRight | Qt.AlignVCenter)  #
+                return int(Qt.AlignCenter | Qt.AlignVCenter)
             if index.column() == 4 or index.column() == 5:
                 return int(Qt.AlignRight)
             return int(Qt.AlignLeft)
