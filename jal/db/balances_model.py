@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QHeaderView
 from jal.constants import Setup, CustomColor, BookAccount
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.db import JalDB
+from jal.db.settings import JalSettings
 
 
 class BalancesModel(QAbstractTableModel):
@@ -118,34 +119,34 @@ class BalancesModel(QAbstractTableModel):
     def calculateBalances(self):
         query = executeSQL(
             "WITH "
-            "_last_quotes AS (SELECT MAX(timestamp) AS timestamp, asset_id, quote "
-            "FROM quotes WHERE timestamp <= :balances_timestamp GROUP BY asset_id), "
+            "_last_quotes AS (SELECT MAX(timestamp) AS timestamp, asset_id, currency_id, quote "
+            "FROM quotes WHERE timestamp <= :balances_timestamp GROUP BY asset_id, currency_id), "
             "_last_dates AS (SELECT account_id AS ref_id, MAX(timestamp) AS timestamp "
             "FROM ledger WHERE timestamp <= :balances_timestamp GROUP BY ref_id) "
             "SELECT a.type_id AS account_type, t.name AS type_name, l.account_id AS account, "
             "a.name AS account_name, a.currency_id AS currency, c.symbol AS currency_name, "
-            "SUM(CASE WHEN l.book_account=:assets_book THEN l.amount*act_q.quote ELSE l.amount END) AS balance, "
-            "SUM(CASE WHEN l.book_account=:assets_book THEN l.amount*coalesce(act_q.quote*cur_q.quote/cur_adj_q.quote, 0) "
-            "ELSE l.amount*coalesce(cur_q.quote/cur_adj_q.quote, 0) END) AS balance_a, "
+            "SUM(CASE WHEN l.book_account=:assets_book THEN l.amount*q.quote ELSE l.amount END) AS balance, "
+            "SUM(CASE WHEN l.book_account=:assets_book THEN l.amount*coalesce(q.quote*r.quote/ra.quote, 0) "
+            "ELSE l.amount*coalesce(r.quote/ra.quote, 0) END) AS balance_a, "
             "(d.timestamp - coalesce(a.reconciled_on, 0))/86400 AS unreconciled, "
             "a.active AS active "
             "FROM ledger AS l "
             "LEFT JOIN accounts AS a ON l.account_id = a.id "
             "LEFT JOIN asset_tickers AS c ON c.id = a.currency_id AND c.active=1 "
             "LEFT JOIN account_types AS t ON a.type_id = t.id "
-            "LEFT JOIN _last_quotes AS act_q ON l.asset_id = act_q.asset_id "
-            "LEFT JOIN _last_quotes AS cur_q ON a.currency_id = cur_q.asset_id "
-            "LEFT JOIN _last_quotes AS cur_adj_q ON cur_adj_q.asset_id = :base_currency "
+            "LEFT JOIN _last_quotes AS q ON l.asset_id = q.asset_id AND q.currency_id = a.currency_id "
+            "LEFT JOIN _last_quotes AS r ON a.currency_id = r.asset_id AND r.currency_id = :base_currency "
+            "LEFT JOIN _last_quotes AS ra ON ra.asset_id = :currency AND ra.currency_id = :base_currency "
             "LEFT JOIN _last_dates AS d ON l.account_id = d.ref_id "
             "WHERE (book_account=:money_book OR book_account=:assets_book OR book_account=:liabilities_book) "
             "AND l.timestamp <= :balances_timestamp "
             "GROUP BY l.account_id "
             "HAVING ABS(balance)>:tolerance "
             "ORDER BY account_type",
-            [(":base_currency", self._currency), (":money_book", BookAccount.Money),
+            [(":currency", self._currency), (":money_book", BookAccount.Money),
              (":assets_book", BookAccount.Assets), (":liabilities_book", BookAccount.Liabilities),
-             (":balances_timestamp", self._date), (":tolerance", Setup.DISP_TOLERANCE)],
-            forward_only=True)
+             (":balances_timestamp", self._date), (":tolerance", Setup.DISP_TOLERANCE),
+             (":base_currency", JalSettings().getValue('BaseCurrency'))], forward_only=True)
         self._data = []
         current_type = 0
         current_type_name = ''
