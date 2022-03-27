@@ -49,18 +49,20 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [26, PredefinedAsset.Stock, 'LUMEN TECHNOLOGIES INC', 'US5502411037', 0, ''],
         [27, PredefinedAsset.Stock, 'CENTURYLINK INC', 'US1567001060', 0, ''],
         [28, PredefinedAsset.Bond, 'X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26', 'US912CALAN84', 0, ''],
-        [29, PredefinedAsset.Stock, 'APPLE INC', 'US0378331005', 0, ''],
-        [30, PredefinedAsset.Derivative, 'VLO 24JUL20 64.0 P', '', 0, ''],
-        [31, PredefinedAsset.Stock, 'VALERO ENERGY CORP', 'US91913Y1001', 0, ''],
-        [32, PredefinedAsset.Stock, '', 'US5543821012', 0, ''],
-        [33, PredefinedAsset.Stock, '', 'US3696043013', 0, ''],
-        [34, PredefinedAsset.Bond, '', 'US345370CV02', 0, ''],
-        [35, PredefinedAsset.Stock, '', 'CA1125851040', 0, ''],
-        [36, PredefinedAsset.Stock, '', 'BMG1624R1079', 0, ''],
-        [37, PredefinedAsset.Stock, '', 'US11282X1037', 0, ''],
-        [38, PredefinedAsset.Stock, '', 'US8713321029', 0, ''],
-        [39, PredefinedAsset.Stock, '', 'US2183521028', 0, ''],
-        [40, PredefinedAsset.Stock, '', 'US218NSPODD6', 0, '']
+        [29, PredefinedAsset.Derivative, 'BKSY 30DEC24 11.5 C', 'US68839R1207', 0, ''],
+        [30, PredefinedAsset.Derivative, 'BKSY 30DEC24 11.5 C', 'US09263B1162', 0, ''],
+        [31, PredefinedAsset.Stock, 'APPLE INC', 'US0378331005', 0, ''],
+        [32, PredefinedAsset.Derivative, 'VLO 24JUL20 64.0 P', '', 0, ''],
+        [33, PredefinedAsset.Stock, 'VALERO ENERGY CORP', 'US91913Y1001', 0, ''],
+        [34, PredefinedAsset.Stock, '', 'US5543821012', 0, ''],
+        [35, PredefinedAsset.Stock, '', 'US3696043013', 0, ''],
+        [36, PredefinedAsset.Bond, '', 'US345370CV02', 0, ''],
+        [37, PredefinedAsset.Stock, '', 'CA1125851040', 0, ''],
+        [38, PredefinedAsset.Stock, '', 'BMG1624R1079', 0, ''],
+        [39, PredefinedAsset.Stock, '', 'US11282X1037', 0, ''],
+        [40, PredefinedAsset.Stock, '', 'US8713321029', 0, ''],
+        [41, PredefinedAsset.Stock, '', 'US2183521028', 0, ''],
+        [42, PredefinedAsset.Stock, '', 'US218NSPODD6', 0, '']
     ]
     assert readSQL("SELECT COUNT(*) FROM assets") == len(test_assets)
     for i, asset in enumerate(test_assets):
@@ -97,19 +99,21 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [27, 26, 'LUMN', 2, 'NYSE', 2, 1],
         [28, 27, 'LUMN', 2, 'NYSE', 2, 1],
         [29, 28, 'X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26', 2, '', -1, 1],
-        [30, 29, 'AAPL', 2, 'NASDAQ', 2, 1],
-        [31, 30, 'VLO   200724P00064000', 2, 'CBOE', -1, 1],
-        [32, 31, 'VLO', 2, 'NYSE', 2, 1],
-        [33, 32, 'MAC', 2, 'NYSE', 2, 1],
-        [34, 23, 'EWLLD', 2, 'PINK', -1, 1],
-        [35, 33, 'GE', 2, 'NYSE', 2, 1],
-        [36, 34, 'F 8 1/2 04/21/23', 2, '', -1, 1],
-        [37, 35, 'BAM', 2, 'NYSE', 2, 1],
-        [38, 36, 'BPYPM', 2, 'NASDAQ', 2, 1],
-        [39, 37, 'BPYU', 2, '', -1, 1],
-        [40, 38, 'SLVM', 2, 'NYSE', 2, 1],
-        [41, 39, 'CORT', 2, 'NASDAQ', 2, 1],
-        [42, 40, 'CORT.OD2', 2, 'CORPACT', -1, 1]
+        [30, 29, 'SFTW WS', 2, 'NYSE', 2, 1],
+        [31, 30, 'BKSY WS', 2, 'NYSE', 2, 1],
+        [32, 31, 'AAPL', 2, 'NASDAQ', 2, 1],
+        [33, 32, 'VLO   200724P00064000', 2, 'CBOE', -1, 1],
+        [34, 33, 'VLO', 2, 'NYSE', 2, 1],
+        [35, 34, 'MAC', 2, 'NYSE', 2, 1],
+        [36, 23, 'EWLLD', 2, 'PINK', -1, 1],
+        [37, 35, 'GE', 2, 'NYSE', 2, 1],
+        [38, 36, 'F 8 1/2 04/21/23', 2, '', -1, 1],
+        [39, 37, 'BAM', 2, 'NYSE', 2, 1],
+        [40, 38, 'BPYPM', 2, 'NASDAQ', 2, 1],
+        [41, 39, 'BPYU', 2, '', -1, 1],
+        [42, 40, 'SLVM', 2, 'NYSE', 2, 1],
+        [43, 41, 'CORT', 2, 'NASDAQ', 2, 1],
+        [44, 42, 'CORT.OD2', 2, 'CORPACT', -1, 1]
     ]
     assert readSQL("SELECT COUNT(*) FROM asset_tickers") == len(test_symbols)
     for i, symbol in enumerate(test_symbols):
@@ -139,17 +143,19 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [22, 26, 1, '550241103'],
         [23, 27, 1, '156700106'],
         [24, 28, 1, '912CALAN8'], [25, 28, 2, '1773532800'],
-        [26, 29, 1, '037833100'],
-        [27, 4, 1, '922908736'],
-        [28, 31, 1, '91913Y100'],
-        [29, 32, 1, '554382101'],
-        [30, 33, 1, '369604301'],
-        [31, 34, 1, '345370CV0'],
-        [32, 35, 1, '112585104'],
-        [33, 37, 1, '11282X103'],
-        [34, 38, 1, '871332102'],
-        [35, 39, 1, '218352102'],
-        [36, 40, 1, '218NSPODD']
+        [26, 29, 1, '68839R120'], [27, 29, 2, '1735516800'],
+        [28, 30, 2, '1735516800'],
+        [29, 31, 1, '037833100'],
+        [30, 4, 1, '922908736'],
+        [31, 33, 1, '91913Y100'],
+        [32, 34, 1, '554382101'],
+        [33, 35, 1, '369604301'],
+        [34, 36, 1, '345370CV0'],
+        [35, 37, 1, '112585104'],
+        [36, 39, 1, '11282X103'],
+        [37, 40, 1, '871332102'],
+        [38, 41, 1, '218352102'],
+        [39, 42, 1, '218NSPODD']
     ]
     assert readSQL("SELECT COUNT(*) FROM asset_data") == len(test_asset_data)
     for i, data in enumerate(test_asset_data):
@@ -207,14 +213,14 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [1, 3, 1553545500, 1553545500, '', 1, 9, -0.777, 168.37, 0.0, ''],
         [2, 3, 1579094694, 1579219200, '2661774904', 1, 22, 45000.0, 0.0012, 0.54, ''],
         [3, 3, 1580215513, 1580215513, '2674740000', 1, 4, -1240.0, 54.84, 7.75519312, ''],
-        [4, 3, 1580215566, 1580342400, '2674740000', 1, 29, -148.0, 316.68, -1.987792848, ''],
+        [4, 3, 1580215566, 1580342400, '2674740000', 1, 31, -148.0, 316.68, -1.987792848, ''],
         [5, 3, 1590595065, 1590710400, '2882737839', 1, 12, 2.0, 637.09, 2.0, ''],
-        [6, 3, 1592575273, 1592784000, '2931083780', 1, 30, -100.0, 4.54, 1.1058334, ''],
-        [7, 3, 1595607600, 1595808000, '2997636969', 1, 30, 100.0, 0.0, 0.0, 'Option assignment'],
-        [8, 3, 1595607600, 1595607600, '2997636973', 1, 31, 100.0, 64.0, 0.0, 'Option assignment/exercise'],
+        [6, 3, 1592575273, 1592784000, '2931083780', 1, 32, -100.0, 4.54, 1.1058334, ''],
+        [7, 3, 1595607600, 1595808000, '2997636969', 1, 32, 100.0, 0.0, 0.0, 'Option assignment'],
+        [8, 3, 1595607600, 1595607600, '2997636973', 1, 33, 100.0, 64.0, 0.0, 'Option assignment/exercise'],
         [9, 3, 1603882231, 1604016000, '3183801882', 1, 23, 500000.0, 0.0001, 0.7503675, ''],
-        [10, 3, 1638822300, 1638822300, '18694975077', 1, 34, -8.0, 1103.06815, 0.0, '(US345370CV02) FULL CALL / EARLY REDEMPTION FOR USD 1.10306815 PER BOND (F 8 1/2 04/21/23, F 8 1/2 04/21/23, US345370CV02)'],
-        [11, 3, 1640031900, 1640031900, '18882610202', 1, 40, -99.0, 20.75, 0.0, 'CORT.OD2(US218NSPODD6) MERGED(Voluntary Offer Allocation) FOR USD 20.75 PER SHARE (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)']
+        [10, 3, 1638822300, 1638822300, '18694975077', 1, 36, -8.0, 1103.06815, 0.0, '(US345370CV02) FULL CALL / EARLY REDEMPTION FOR USD 1.10306815 PER BOND (F 8 1/2 04/21/23, F 8 1/2 04/21/23, US345370CV02)'],
+        [11, 3, 1640031900, 1640031900, '18882610202', 1, 42, -99.0, 20.75, 0.0, 'CORT.OD2(US218NSPODD6) MERGED(Voluntary Offer Allocation) FOR USD 20.75 PER SHARE (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)']
     ]
     assert readSQL("SELECT COUNT(*) FROM trades") == len(test_trades)
     for i, trade in enumerate(test_trades):
@@ -226,7 +232,7 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [2, 2, 1533673200, '', '', 1, 1, 5, 20.35, 0.54, 'EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)'],
         [3, 2, 1633033200, '', '16054321038', 3, 1, 4, 5.887, 15.0, 'VUG (US9229087369) Stock Dividend US9229087369 196232339 for 10000000000'],
         [4, 2, 1595017200, '', '13259965038', 3, 1, 18, 3.0, 0.0, 'TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000'],
-        [5, 2, 1591215600, '', '12882908488', 3, 1, 32, 3.0, 0.0, 'MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000'],
+        [5, 2, 1591215600, '', '12882908488', 3, 1, 34, 3.0, 0.0, 'MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000'],
         [6, 2, 1578082800, '', '', 1, 1, 6, 60.2, 6.02, 'ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)'],
         [7, 2, 1633033200, '', '', 1, 1, 4, 158.6, 15.86, 'VUG (US9229087369) CASH DIVIDEND USD 0.52 (Ordinary Dividend)'],
         [8, 2, 1590595065, '', '2882737839', 2, 1, 12, -25.69, 0.0, 'PURCHASE ACCRUED INT X 6 1/4 03/15/26'],
@@ -241,7 +247,7 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [1, 946684800, 1, 1, 1.0],
         [2, 1633033200, 4, 2, 25.73],
         [3, 1595017200, 18, 2, 4.7299999999999995],
-        [4, 1591215600, 32, 2, 8.59]
+        [4, 1591215600, 34, 2, 8.59]
     ]
     for i, quote in enumerate(stock_quotes):
         assert readSQL("SELECT * FROM quotes WHERE id=:id", [(":id", i + 1)]) == quote
@@ -257,11 +263,12 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [7, 5, 1604089500, '14147163475', 1, 1, 24, 10.0, 25, 5.92, 1.0, 'LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)'],
         [8, 5, 1611260700, '15015004953', 1, 1, 27, 200.0, 26, 200.0, 1.0, 'LUMN.OLD(US1567001060) MERGED(Acquisition) WITH US5502411037 1 FOR 1 (LUMN, LUMEN TECHNOLOGIES INC, US5502411037)'],
         [9, 5, 1630007100, '17569476329', 1, 1, 12, 2.0, 28, 2.0, 1.0, 'X 6 1/4 03/15/26(US912909AN84) TENDERED TO US912CALAN84 1 FOR 1 (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)'],
-        [10, 5, 1627676700, '17240033443', 1, 4, 21, 104.0, 33, 13.0, 1.0, 'GE(US3696041033) SPLIT 1 FOR 8 (GE, GENERAL ELECTRIC CO, US3696043013)'],
-        [11, 5, 1627331099, '17200082800', 1, 2, 37, 610.0, 35, 55.7151, 1.0, 'BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BAM, BROOKFIELD ASSET MANAGE-CL A, CA1125851040)'],
-        [12, 5, 1627331100, '17200082811', 1, 1, 37, 610.0, 36, 40.0895, 1.0, 'BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BPYPM, NEW LP PREFERRED UNITS, BMG1624R1079)'],
-        [13, 5, 1633033500, '17897699521', 1, 2, 21, 320.0, 38, 29.0909, 0.0, 'GE(US3696041033) SPINOFF  1 FOR 11 (SLVM, SYLVAMO CORP, US8713321029)'],
-        [14, 5, 1639597500, '18787960371', 1, 1, 39, 99.0, 40, 99.0, 1.0, 'CORT(US2183521028) TENDERED TO US218NSPODD6 1 FOR 1 (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)']
+        [10, 5, 1631219100, '17667047189', 1, 3, 29, 20.0, 30, 20.0, 1.0, 'SFTW WS(US68839R1207) CUSIP/ISIN CHANGE TO (US09263B1162) (BKSY WS, BKSY 30OCT24 11.5 C, US09263B1162)'],
+        [11, 5, 1627676700, '17240033443', 1, 4, 21, 104.0, 35, 13.0, 1.0, 'GE(US3696041033) SPLIT 1 FOR 8 (GE, GENERAL ELECTRIC CO, US3696043013)'],
+        [12, 5, 1627331099, '17200082800', 1, 2, 39, 610.0, 37, 55.7151, 1.0, 'BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BAM, BROOKFIELD ASSET MANAGE-CL A, CA1125851040)'],
+        [13, 5, 1627331100, '17200082811', 1, 1, 39, 610.0, 38, 40.0895, 1.0, 'BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BPYPM, NEW LP PREFERRED UNITS, BMG1624R1079)'],
+        [14, 5, 1633033500, '17897699521', 1, 2, 21, 320.0, 40, 29.0909, 0.0, 'GE(US3696041033) SPINOFF  1 FOR 11 (SLVM, SYLVAMO CORP, US8713321029)'],
+        [15, 5, 1639597500, '18787960371', 1, 1, 41, 99.0, 42, 99.0, 1.0, 'CORT(US2183521028) TENDERED TO US218NSPODD6 1 FOR 1 (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)']
     ]
     assert readSQL("SELECT COUNT(*) FROM corp_actions") == len(test_corp_actons)
     for i, action in enumerate(test_corp_actons):

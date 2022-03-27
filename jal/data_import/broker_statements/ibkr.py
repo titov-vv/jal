@@ -600,7 +600,7 @@ class StatementIBKR(StatementXML):
         return 1
 
     def load_symbol_change(self, action, parts_b) -> int:
-        SymbolChangePattern = r"^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +CUSIP\/ISIN CHANGE TO +\((?P<isin_new>\w+)\) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
+        SymbolChangePattern = r"^(?P<symbol_old>[\w ]+)\((?P<isin_old>\w+)\) +CUSIP\/ISIN CHANGE TO +\((?P<isin_new>\w+)\) +\((?P<symbol>[\w ]+), (?P<name>.*), (?P<id>\w+)\)$"
 
         parts = re.match(SymbolChangePattern, action['description'], re.IGNORECASE)
         if parts is None:
