@@ -269,6 +269,7 @@ DROP TABLE _temp_currency_table;
 --------------------------------------------------------------------------------
 -- Create new data source
 INSERT INTO data_sources (id, name) VALUES (5, 'LSE');
+INSERT INTO data_sources (id, name) VALUES (6, 'Frankfurt Borse');
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 1;
 --------------------------------------------------------------------------------

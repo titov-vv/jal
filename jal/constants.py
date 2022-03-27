@@ -80,6 +80,7 @@ class MarketDataFeed:
     EU = 3
     CA = 4
     GB = 5
+    FRA = 6
 
 
 class CustomColor:

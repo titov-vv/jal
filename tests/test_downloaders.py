@@ -191,3 +191,13 @@ def test_TMX_downloader():
     downloader = QuoteDownloader()
     quotes_downloaded = downloader.TMX_Downloader(0, 'RY', 3, '', 1618272000, 1618444800)
     assert_frame_equal(quotes, quotes_downloaded)
+
+
+def test_Frankfurt_downloader():
+    quotes = pd.DataFrame({'Close': [233.40, 234.25],
+                           'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14)]})
+    quotes = quotes.set_index('Date')
+
+    downloader = QuoteDownloader()
+    quotes_downloaded = downloader.YahooFRA_Downloader(0, 'VOW3', 3, '', 1618272000, 1618444800)
+    assert_frame_equal(quotes, quotes_downloaded)
