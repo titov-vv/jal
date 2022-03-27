@@ -54,7 +54,8 @@ class QuoteDownloader(QObject):
             MarketDataFeed.RU: self.MOEX_DataReader,
             MarketDataFeed.EU: self.Euronext_DataReader,
             MarketDataFeed.US: self.Yahoo_Downloader,
-            MarketDataFeed.CA: self.TMX_Downloader
+            MarketDataFeed.CA: self.TMX_Downloader,
+            MarketDataFeed.GB: self.YahooLSE_Downloader
         }
 
     def showQuoteDownloadDialog(self, parent):
@@ -337,6 +338,10 @@ class QuoteDownloader(QObject):
         data = data.drop(columns=['Open', 'High', 'Low', 'Adj Close', 'Volume'])
         close = data.set_index("Date")
         return close
+
+    # The same as Yahoo_Downloader but it adds ".L" suffix to asset_code and returns prices in GBP
+    def YahooLSE_Downloader(self, asset_id, asset_code, currency, _isin, start_timestamp, end_timestamp):
+        return self.Yahoo_Downloader(asset_id, asset_code + '.L', currency, _isin, start_timestamp, end_timestamp)
 
     # noinspection PyMethodMayBeStatic
     def Euronext_DataReader(self, _asset_id, _asset_code, _currency, isin, start_timestamp, end_timestamp):

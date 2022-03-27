@@ -265,6 +265,10 @@ LEFT JOIN _temp_currency_table c ON q.asset_id=c.asset_id;
 
 DROP TABLE _temp_quotes_table;
 DROP TABLE _temp_currency_table;
+
+--------------------------------------------------------------------------------
+-- Create new data source
+INSERT INTO data_sources (id, name) VALUES (5, 'LSE');
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 1;
 --------------------------------------------------------------------------------

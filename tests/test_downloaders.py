@@ -153,13 +153,23 @@ def test_MOEX_downloader_USD(prepare_db_moex):
     assert_frame_equal(usd_quotes, quotes_downloaded)
 
 
-def test_Yahoo_downloader():
+def test_NYSE_downloader():
     quotes = pd.DataFrame({'Close': [134.429993, 132.029999],
                            'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14)]})
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
     quotes_downloaded = downloader.Yahoo_Downloader(0, 'AAPL', 2, '', 1618272000, 1618444800)
+    assert_frame_equal(quotes, quotes_downloaded)
+
+
+def test_LSE_downloader():
+    quotes = pd.DataFrame({'Close': [73.5, 75.5],
+                           'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14)]})
+    quotes = quotes.set_index('Date')
+
+    downloader = QuoteDownloader()
+    quotes_downloaded = downloader.YahooLSE_Downloader(0, 'TSL', 3, '', 1618272000, 1618444800)
     assert_frame_equal(quotes, quotes_downloaded)
 
 

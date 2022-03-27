@@ -894,6 +894,7 @@ INSERT INTO data_sources (id, name) VALUES (1, 'MOEX');
 INSERT INTO data_sources (id, name) VALUES (2, 'NYSE/Nasdaq');
 INSERT INTO data_sources (id, name) VALUES (3, 'Euronext');
 INSERT INTO data_sources (id, name) VALUES (4, 'TMX TSX');
+INSERT INTO data_sources (id, name) VALUES (5, 'LSE');
 
 -- Initialize predefinded categories
 INSERT INTO categories (id, pid, name, often, special) VALUES (1, 0, 'Income', 0, 1);

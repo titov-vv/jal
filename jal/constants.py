@@ -79,6 +79,7 @@ class MarketDataFeed:
     US = 2
     EU = 3
     CA = 4
+    GB = 5
 
 
 class CustomColor:
