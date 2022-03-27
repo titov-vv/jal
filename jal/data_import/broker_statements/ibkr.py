@@ -247,8 +247,8 @@ class StatementIBKR(StatementXML):
         if attr_name not in xml_element.attrib:
             return default_value
         asset_category = self.attr_asset_type(xml_element, 'assetCategory', None)
-        if asset_category != FOF.ASSET_STOCK and asset_category != FOF.ASSET_BOND:
-            logging.error(self.tr("Corporate actions are supported for stocks or bonds only"))
+        if asset_category not in [FOF.ASSET_STOCK, FOF.ASSET_BOND, FOF.ASSET_WARRANT]:
+            logging.error(self.tr("Corporate action isn't supported for asset type: ") + f"'{asset_category}'")
             return default_value
         return IBKR_CorpActionType(xml_element.attrib[attr_name]).type
 
@@ -474,7 +474,7 @@ class StatementIBKR(StatementXML):
                 cnt += action_loaders[action['type']](action, parts_b)
             else:
                 raise Statement_ImportError(
-                    self.tr("Corporate action type is not supported: ") + f"{action['type']}")
+                    self.tr("Corporate action type is not supported: ") + f"{action}")
         logging.info(self.tr("Corporate actions loaded: ") + f"{cnt} ({len(actions)})")
 
     # Find record in list 'parts_b' (second parts of corporate actions) which matches
