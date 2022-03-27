@@ -34,7 +34,7 @@ class TaxEstimatorModel(QAbstractTableModel):
                 else:
                     return str(self._data.iloc[index.row(), index.column()])
             elif role == Qt.TextAlignmentRole:
-                return Qt.AlignRight
+                return int(Qt.AlignRight)
             elif role == Qt.FontRole:
                 if index.row() == (self._data.shape[0] - 1):
                     bold = QFont()

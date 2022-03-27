@@ -42,9 +42,9 @@ class BalancesModel(QAbstractTableModel):
             return self.data_background(index.row(), index.column(), self._view.isEnabled())
         if role == Qt.TextAlignmentRole:
             if index.column() == 0 or index.column() == 2:
-                return Qt.AlignLeft
+                return int(Qt.AlignLeft)
             else:
-                return Qt.AlignRight
+                return int(Qt.AlignRight)
         return None
 
     def data_text(self, row, column):

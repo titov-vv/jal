@@ -71,10 +71,10 @@ class OperationsModel(QAbstractTableModel):
                     return QBrush(CustomColor.Blue)
         if role == Qt.TextAlignmentRole:
             if index.column() == 0:
-                return Qt.AlignCenter
+                return int(Qt.AlignRight | Qt.AlignVCenter)  #
             if index.column() == 4 or index.column() == 5:
-                return Qt.AlignRight
-            return Qt.AlignLeft
+                return int(Qt.AlignRight)
+            return int(Qt.AlignLeft)
         if role == Qt.UserRole:  # return underlying data for given field extra parameter
             return self._data[index.row()][field]
 

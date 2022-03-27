@@ -169,7 +169,7 @@ class IncomeSpendingReportModel(QAbstractItemModel):
                         col_name = self.month_name[month-1]
                 return col_name
             if role == Qt.TextAlignmentRole:
-                return Qt.AlignCenter
+                return int(Qt.AlignCenter)
         return None
 
     def index(self, row, column, parent=None):
@@ -208,9 +208,9 @@ class IncomeSpendingReportModel(QAbstractItemModel):
                     return QBrush(CustomColor.Grey)
         if role == Qt.TextAlignmentRole:
             if index.column() == 0:
-                return Qt.AlignLeft
+                return int(Qt.AlignLeft)
             else:
-                return Qt.AlignRight
+                return int(Qt.AlignRight)
         return None
 
     def configureView(self):

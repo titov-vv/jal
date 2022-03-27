@@ -108,9 +108,9 @@ class HoldingsModel(QAbstractItemModel):
             return self.data_background(item.data, index.column(), self._view.isEnabled())
         if role == Qt.TextAlignmentRole:
             if index.column() < 2:
-                return Qt.AlignLeft
+                return int(Qt.AlignLeft)
             else:
-                return Qt.AlignRight
+                return int(Qt.AlignRight)
         return None
 
     def data_text(self, data, column):
