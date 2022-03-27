@@ -4,7 +4,7 @@ from datetime import datetime
 from itertools import groupby
 
 from PySide6.QtWidgets import QApplication
-from jal.constants import PredefinedCategory, PredefinedAsset
+from jal.constants import PredefinedCategory
 from jal.widgets.helpers import ManipulateDate
 from jal.db.db import JalDB
 from jal.db.helpers import executeSQL, readSQLrecord
@@ -509,9 +509,9 @@ class StatementIBKR(StatementXML):
 
     def load_merger(self, action, parts_b) -> int:
         MergerPatterns = [
-            r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +MERGED\([\w ]+\) +WITH +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
-            r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +CASH and STOCK MERGER +\([\w ]+\) +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +AND +(?P<currency>\w+) +(\d+(\.\d+)?) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
-            r"^(?P<symbol_old>\w+)(.OLD)?\((?P<isin_old>\w+)\) +CASH and STOCK MERGER +\([\w ]+\) +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+), +(?P<isin_new2>\w+) +(?P<X2>\d+) +FOR +(?P<Y2>\d+) +AND +(?P<currency>\w+) +(\d+(\.\d+)?) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
+            r"^(?P<symbol_old>.*)(.OLD)?\((?P<isin_old>\w+)\) +MERGED\([\w ]+\) +WITH +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
+            r"^(?P<symbol_old>.*)(.OLD)?\((?P<isin_old>\w+)\) +CASH and STOCK MERGER +\([\w ]+\) +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +AND +(?P<currency>.*) +(\d+(\.\d+)?) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
+            r"^(?P<symbol_old>.*)(.OLD)?\((?P<isin_old>\w+)\) +CASH and STOCK MERGER +\([\w ]+\) +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+), +(?P<isin_new2>.*) +(?P<X2>\d+) +FOR +(?P<Y2>\d+) +AND +(?P<currency>\w+) +(\d+(\.\d+)?) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
             r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +TENDERED TO +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), +(?P<name>.*), +(?P<id>.*)\)$",
             r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +MERGED\([\w ]+\) +FOR (?P<currency>\w+) (?P<price>\d+\.\d+) PER SHARE +\((?P<symbol>.*), (?P<name>.*) - TENDER ODD LOT, (?P<id>\w+)\)$"
             ]
@@ -576,7 +576,7 @@ class StatementIBKR(StatementXML):
         self._data[FOF.INCOME_SPENDING].append(payment)
 
     def load_spinoff(self, action, _parts_b) -> int:
-        SpinOffPattern = r"^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +SPINOFF +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
+        SpinOffPattern = r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +SPINOFF +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), (?P<name>.*), (?P<id>\w+)\)$"
 
         parts = re.match(SpinOffPattern, action['description'], re.IGNORECASE)
         if parts is None:
@@ -600,7 +600,7 @@ class StatementIBKR(StatementXML):
         return 1
 
     def load_symbol_change(self, action, parts_b) -> int:
-        SymbolChangePattern = r"^(?P<symbol_old>[\w ]+)\((?P<isin_old>\w+)\) +CUSIP\/ISIN CHANGE TO +\((?P<isin_new>\w+)\) +\((?P<symbol>[\w ]+), (?P<name>.*), (?P<id>\w+)\)$"
+        SymbolChangePattern = r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +CUSIP\/ISIN CHANGE TO +\((?P<isin_new>\w+)\) +\((?P<symbol>.*), (?P<name>.*), (?P<id>\w+)\)$"
 
         parts = re.match(SymbolChangePattern, action['description'], re.IGNORECASE)
         if parts is None:
@@ -637,7 +637,7 @@ class StatementIBKR(StatementXML):
         return 1
 
     def load_split(self, action, parts_b) -> int:
-        SplitPattern = r"^(?P<symbol_old>\w+)\((?P<isin_old>\w+)\) +SPLIT +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>\w+), (?P<name>.*), (?P<id>\w+)\)$"
+        SplitPattern = r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +SPLIT +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), (?P<name>.*), (?P<id>\w+)\)$"
 
         parts = re.match(SplitPattern, action['description'], re.IGNORECASE)
         if parts is None:
