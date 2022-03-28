@@ -1,6 +1,7 @@
 import os
 import logging
 import sqlite3
+import sqlparse
 from PySide6.QtSql import QSql, QSqlDatabase, QSqlQuery
 from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtGui import QIcon
@@ -195,23 +196,27 @@ def update_db_schema(db_path):
                              QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
         return LedgerInitError(LedgerInitError.OutdatedDbSchema)
 
-    db = sqlite3.connect(get_dbfilename(db_path))
-    cursor = db.cursor()
+    db = db_connection()
+    db.open()
+    version = readSQL("SELECT value FROM settings WHERE name='SchemaVersion'")
     try:
-        cursor.execute("SELECT value FROM settings WHERE name='SchemaVersion'")
-    except:
+        schema_version = int(version)
+    except ValueError:
         return LedgerInitError(LedgerInitError.DbInitFailure)
-
-    schema_version = cursor.fetchone()[0]
     for step in range(schema_version, Setup.TARGET_SCHEMA):
         delta_file = db_path + Setup.UPDATES_PATH + os.sep + Setup.UPDATE_PREFIX + f"{step+1}.sql"
         logging.info(f"Applying delta schema {step}->{step+1} from {delta_file}")
         try:
             with open(delta_file) as delta_sql:
-                try:
-                    cursor.executescript(delta_sql.read())
-                except sqlite3.OperationalError as e:
-                    return LedgerInitError(LedgerInitError.SQLFailure, e.args[0])
+                statements = sqlparse.split(delta_sql)
+                for statement in statements:
+                    clean_statement = sqlparse.format(statement, strip_comments=True)
+                    if executeSQL(clean_statement, commit=False) is None:
+                        _ = executeSQL("ROLLBACK")
+                        db.close()
+                        return LedgerInitError(LedgerInitError.SQLFailure, f"FAILED: {clean_statement}")
+                    else:
+                        logging.debug(f"EXECUTED OK:\n{clean_statement}")
         except FileNotFoundError:
             return LedgerInitError(LedgerInitError.NoDeltaFile, delta_file)
     db.close()
