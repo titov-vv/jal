@@ -223,11 +223,11 @@ class DataDelegate(QStyledItemDelegate):    # Code doubles with pieces from dele
             if self.types[type_idx][1] == "str":
                 editor.setText(index.model().data(index, Qt.EditRole))
             elif self.types[type_idx][1] == "date":
-                timestamp = int(index.model().data(index, Qt.EditRole))
-                if timestamp == '':
-                    QStyledItemDelegate.setEditorData(self, editor, index)
-                else:
+                try:
+                    timestamp = int(index.model().data(index, Qt.EditRole))
                     editor.setDateTime(QDateTime.fromSecsSinceEpoch(timestamp, spec=Qt.UTC))
+                except ValueError:
+                    QStyledItemDelegate.setEditorData(self, editor, index)
             elif self.types[type_idx][1] == "float":
                 try:
                     amount = float(index.model().data(index, Qt.EditRole))

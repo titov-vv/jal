@@ -124,7 +124,7 @@ class HoldingsModel(QAbstractItemModel):
         elif column == 1:
             expiry_text = ""
             if data['expiry']:
-                expiry_date = datetime.utcfromtimestamp(data['expiry'])
+                expiry_date = datetime.utcfromtimestamp(int(data['expiry']))
                 expiry_header = self.tr("Exp:")
                 expiry_text = f" [{expiry_header} {expiry_date.strftime('%d.%m.%Y')}]"
             return data['asset_name'] + expiry_text
@@ -165,7 +165,7 @@ class HoldingsModel(QAbstractItemModel):
             return font
         else:
             if column == 1 and data['expiry']:
-                expiry_date = datetime.utcfromtimestamp(data['expiry'])
+                expiry_date = datetime.utcfromtimestamp(int(data['expiry']))
                 days_remaining = int((expiry_date - datetime.utcnow()).total_seconds() / 86400)
                 if days_remaining <= 10:
                     font = QFont()
