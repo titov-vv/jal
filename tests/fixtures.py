@@ -4,8 +4,7 @@ from shutil import copyfile
 from PySide6.QtSql import QSqlDatabase
 
 from constants import Setup, PredefinedCategory, PredefinedAsset, AssetData
-from jal.db.helpers import init_and_check_db, LedgerInitError
-from jal.db.db import JalDB
+from jal.db.db import JalDB, JalDBError
 from jal.db.helpers import executeSQL, get_dbfilename
 from tests.helpers import create_assets, create_dividends
 
@@ -28,10 +27,10 @@ def prepare_db(project_root, tmp_path, data_path):
     copyfile(src_path, target_path)
 
     # Activate db connection
-    error = init_and_check_db(str(tmp_path) + os.sep)
-    assert error.code == LedgerInitError.EmptyDbInitialized
-    error = init_and_check_db(str(tmp_path) + os.sep)
-    assert error.code == LedgerInitError.DbInitSuccess
+    error = JalDB().init_db(str(tmp_path) + os.sep)
+    assert error.code == JalDBError.EmptyDbInitialized
+    error = JalDB().init_db(str(tmp_path) + os.sep)
+    assert error.code == JalDBError.DbInitSuccess
     db = QSqlDatabase.database(Setup.DB_CONNECTION)
     assert db.isValid()
     lang_id = JalDB().get_language_id('en')

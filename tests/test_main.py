@@ -4,7 +4,8 @@ import sqlite3
 
 from tests.fixtures import project_root
 from constants import Setup
-from jal.db.helpers import init_and_check_db, get_dbfilename, LedgerInitError
+from jal.db.db import JalDB, JalDBError
+from jal.db.helpers import get_dbfilename
 from jal.db.backup_restore import JalBackup
 
 
@@ -15,13 +16,13 @@ def test_db_creation(tmp_path, project_root):
     target_path = str(tmp_path) + os.sep + Setup.INIT_SCRIPT_PATH
     copyfile(src_path, target_path)
 
-    error = init_and_check_db(str(tmp_path) + os.sep)
+    error = JalDB().init_db(str(tmp_path) + os.sep)
 
     # Check that sqlite db file was created
     result_path = str(tmp_path) + os.sep + Setup.DB_PATH
     assert os.path.exists(result_path)
     assert os.path.getsize(result_path) > 0
-    assert error.code == LedgerInitError.EmptyDbInitialized
+    assert error.code == JalDBError.NoError
 
     os.remove(target_path)  # Clean db init script
     os.remove(get_dbfilename(str(tmp_path) + os.sep))  # Clean db file
@@ -32,7 +33,7 @@ def test_invalid_backup(tmp_path, project_root):
     src_path = project_root + os.sep + 'jal' + os.sep + Setup.INIT_SCRIPT_PATH
     target_path = str(tmp_path) + os.sep + Setup.INIT_SCRIPT_PATH
     copyfile(src_path, target_path)
-    init_and_check_db(str(tmp_path) + os.sep)
+    JalDB().init_db(str(tmp_path) + os.sep)
 
     # Here backup is created without parent window - need to use with care
     db_file_name = get_dbfilename(str(tmp_path) + os.sep)
@@ -50,7 +51,7 @@ def test_backup_load(tmp_path, project_root):
     src_path = project_root + os.sep + 'jal' + os.sep + Setup.INIT_SCRIPT_PATH
     target_path = str(tmp_path) + os.sep + Setup.INIT_SCRIPT_PATH
     copyfile(src_path, target_path)
-    init_and_check_db(str(tmp_path) + os.sep)
+    JalDB().init_db(str(tmp_path) + os.sep)
 
     # Here backup is created without parent window - need to use with care
     db_file_name = get_dbfilename(str(tmp_path) + os.sep)

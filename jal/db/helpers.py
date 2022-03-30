@@ -1,40 +1,12 @@
 import os
 import logging
-import sqlite3
-import sqlparse
-from PySide6.QtSql import QSql, QSqlDatabase, QSqlQuery
-from PySide6.QtWidgets import QApplication, QMessageBox
+from PySide6.QtSql import QSqlDatabase, QSqlQuery
+from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
 from jal.constants import Setup
-from jal.db.settings import JalSettings
 
 
-# No translation of the file because these routines might be used before QApplication initialization
-class LedgerInitError:
-    DbInitSuccess = 0
-    DbInitFailure = 1
-    EmptyDbInitialized = 2
-    OutdatedDbSchema = 3
-    NewerDbSchema = 4
-    DbDriverFailure = 5
-    NoDeltaFile = 6
-    SQLFailure = 7
-    _messages = {
-        0: "No error",
-        1: "Database initialization failure.",
-        2: "Database was initialized. You need to start application again.",
-        3: "Database schema version is outdated. Please update it or use older application version.",
-        4: "Unsupported database schema. Please update the application.",
-        5: "Sqlite driver initialization failed.",
-        6: "DB delta file not found.",
-        7: "SQL command was executed with error."
-    }
-
-    def __init__(self, code, details=''):
-        self.code = code
-        self.message = self._messages[code]
-        self.details = details
-
+# FIXME all database calls should be via JalDB (or mate) class. Get rid of SQL calls from other code
 
 # -------------------------------------------------------------------------------------------------------------------
 # Returns absolute path to a folder from where application was started
@@ -142,93 +114,16 @@ def readSQLrecord(query, named=False):
     else:
         return None
 
-# -------------------------------------------------------------------------------------------------------------------
-# This function:
-# 1) checks that DB file is present and contains some data
-#    if not - it will initialize DB with help of SQL-script
-# 2) checks that DB looks like a valid one:
-#    if schema version is invalid it will close DB
-# Returns: LedgerInitError(code = 0 if db was initialized successfully)
-def init_and_check_db(db_path):
-    db = QSqlDatabase.addDatabase("QSQLITE", Setup.DB_CONNECTION)
-    if not db.isValid():
-        return LedgerInitError(LedgerInitError.DbDriverFailure)
-    db.setDatabaseName(get_dbfilename(db_path))
-    db.setConnectOptions("QSQLITE_ENABLE_REGEXP=1")
-    db.open()
-    tables = db.tables(QSql.Tables)
-    if not tables:
-        db.close()
-        connection_name = db.connectionName()
-        init_db_from_sql(get_dbfilename(db_path), db_path + Setup.INIT_SCRIPT_PATH)
-        QSqlDatabase.removeDatabase(connection_name)
-        return LedgerInitError(LedgerInitError.EmptyDbInitialized)
-
-    schema_version = JalSettings().getValue('SchemaVersion')
-    if schema_version < Setup.TARGET_SCHEMA:
-        db.close()
-        return LedgerInitError(LedgerInitError.OutdatedDbSchema)
-    elif schema_version > Setup.TARGET_SCHEMA:
-        db.close()
-        return LedgerInitError(LedgerInitError.NewerDbSchema)
-
-    _ = executeSQL("PRAGMA foreign_keys = ON")
-    db_triggers_enable()
-
-    return LedgerInitError(LedgerInitError.DbInitSuccess)
-
-
-# -------------------------------------------------------------------------------------------------------------------
-def init_db_from_sql(db_file, sql_file):
-    with open(sql_file, 'r', encoding='utf-8') as sql_file:
-        sql_text = sql_file.read()
-    db = sqlite3.connect(db_file)
-    cursor = db.cursor()
-    cursor.executescript(sql_text)
-    db.commit()
-    db.close()
-
-
-# -------------------------------------------------------------------------------------------------------------------
-def update_db_schema(db_path):
-    if QMessageBox().warning(None, QApplication.translate('DB', "Database format is outdated"),
-                             QApplication.translate('DB', "Do you agree to upgrade your data to newer format?"),
-                             QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
-        return LedgerInitError(LedgerInitError.OutdatedDbSchema)
-
-    db = db_connection()
-    db.open()
-    version = readSQL("SELECT value FROM settings WHERE name='SchemaVersion'")
-    try:
-        schema_version = int(version)
-    except ValueError:
-        return LedgerInitError(LedgerInitError.DbInitFailure)
-    for step in range(schema_version, Setup.TARGET_SCHEMA):
-        delta_file = db_path + Setup.UPDATES_PATH + os.sep + Setup.UPDATE_PREFIX + f"{step+1}.sql"
-        logging.info(f"Applying delta schema {step}->{step+1} from {delta_file}")
-        try:
-            with open(delta_file) as delta_sql:
-                statements = sqlparse.split(delta_sql)
-                for statement in statements:
-                    clean_statement = sqlparse.format(statement, strip_comments=True)
-                    if executeSQL(clean_statement, commit=False) is None:
-                        _ = executeSQL("ROLLBACK")
-                        db.close()
-                        return LedgerInitError(LedgerInitError.SQLFailure, f"FAILED: {clean_statement}")
-                    else:
-                        logging.debug(f"EXECUTED OK:\n{clean_statement}")
-        except FileNotFoundError:
-            return LedgerInitError(LedgerInitError.NoDeltaFile, delta_file)
-    db.close()
-    return LedgerInitError(LedgerInitError.DbInitSuccess)
 
 # -------------------------------------------------------------------------------------------------------------------
 def get_category_name(category_id):
     return readSQL("SELECT c.name FROM categories AS c WHERE c.id=:category_id", [(":category_id", category_id)])
 
+
 # -------------------------------------------------------------------------------------------------------------------
 def get_account_name(account_id):
     return readSQL("SELECT name FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
+
 
 # -------------------------------------------------------------------------------------------------------------------
 def get_country_by_code(country_code):
@@ -239,6 +134,7 @@ def get_country_by_code(country_code):
         country_id = 0
         logging.warning(QApplication.translate('DB', "Unknown country code: ") + f"'{country_code}'")
     return country_id
+
 
 # -------------------------------------------------------------------------------------------------------------------
 def account_last_date(account_id):

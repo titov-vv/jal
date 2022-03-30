@@ -1,9 +1,42 @@
+import os
 import logging
+import sqlparse
 from datetime import datetime
-from PySide6.QtWidgets import QApplication
+from pkg_resources import parse_version
+from PySide6.QtWidgets import QApplication, QMessageBox
+from PySide6.QtSql import QSql, QSqlDatabase
 
 from jal.constants import Setup, BookAccount, PredefindedAccountType, AssetData, MarketDataFeed, PredefinedAsset
-from jal.db.helpers import db_connection, executeSQL, readSQL, get_country_by_code
+from jal.db.helpers import db_connection, executeSQL, readSQL, get_country_by_code, get_dbfilename, db_triggers_enable
+from jal.db.settings import JalSettings
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# No translation of the file because these routines might be used before QApplication initialization
+class JalDBError:
+    NoError = 0
+    DbInitFailure = 1
+    OutdatedSqlite = 2
+    OutdatedDbSchema = 3
+    NewerDbSchema = 4
+    DbDriverFailure = 5
+    NoDeltaFile = 6
+    SQLFailure = 7
+    _messages = {
+        0: "No error",
+        1: "Database initialization failure.",
+        2: "You need SQLite version >= " + Setup.SQLITE_MIN_VERSION,
+        3: "Database schema version is outdated. Please update it or use older application version.",
+        4: "Unsupported database schema. Please update the application.",
+        5: "Sqlite driver initialization failed.",
+        6: "DB delta file not found.",
+        7: "SQL command was executed with error."
+    }
+
+    def __init__(self, code, details=''):
+        self.code = code
+        self.message = self._messages[code]
+        self.details = details
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -13,6 +46,81 @@ class JalDB:
 
     def tr(self, text):
         return QApplication.translate("JalDB", text)
+
+    # -------------------------------------------------------------------------------------------------------------------
+    # This function:
+    # 1) checks that DB file is present and contains some data
+    #    if not - it will initialize DB with help of SQL-script
+    # 2) checks that DB looks like a valid one:
+    #    if schema version is invalid it will close DB
+    # Returns: LedgerInitError(code == NoError(0) if db was initialized successfully)
+    def init_db(self, db_path) -> JalDBError:
+        db = QSqlDatabase.addDatabase("QSQLITE", Setup.DB_CONNECTION)
+        if not db.isValid():
+            return JalDBError(JalDBError.DbDriverFailure)
+        db.setDatabaseName(get_dbfilename(db_path))
+        db.setConnectOptions("QSQLITE_ENABLE_REGEXP=1")
+        db.open()
+        sqlite_version = readSQL("SELECT sqlite_version()")
+        if parse_version(sqlite_version) < parse_version(Setup.SQLITE_MIN_VERSION):
+            db.close()
+            return JalDBError(JalDBError.OutdatedSqlite)
+        tables = db.tables(QSql.Tables)
+        if not tables:
+            logging.info("Loading DB initialization script")
+            error = self.run_sql_script(db_path + Setup.INIT_SCRIPT_PATH)
+            if error.code != JalDBError.NoError:
+                return error
+        schema_version = JalSettings().getValue('SchemaVersion')
+        if schema_version < Setup.TARGET_SCHEMA:
+            db.close()
+            return JalDBError(JalDBError.OutdatedDbSchema)
+        elif schema_version > Setup.TARGET_SCHEMA:
+            db.close()
+            return JalDBError(JalDBError.NewerDbSchema)
+
+        _ = executeSQL("PRAGMA foreign_keys = ON")
+        db_triggers_enable()
+
+        return JalDBError(JalDBError.NoError)
+
+    # Method loads sql script into database
+    def run_sql_script(self, script_file) -> JalDBError:
+        try:
+            with open(script_file) as sql_script:
+                statements = sqlparse.split(sql_script)
+                for statement in statements:
+                    clean_statement = sqlparse.format(statement, strip_comments=True)
+                    if executeSQL(clean_statement, commit=False) is None:
+                        _ = executeSQL("ROLLBACK")
+                        db_connection().close()
+                        return JalDBError(JalDBError.SQLFailure, f"FAILED: {clean_statement}")
+                    else:
+                        logging.debug(f"EXECUTED OK:\n{clean_statement}")
+        except FileNotFoundError:
+            return JalDBError(JalDBError.NoDeltaFile, script_file)
+        return JalDBError(JalDBError.NoError)
+
+    # updates current db schema to the latest available with help of scripts in 'updates' folder
+    def update_db_schema(self, db_path) -> JalDBError:
+        if QMessageBox().warning(None, QApplication.translate('DB', "Database format is outdated"),
+                                 QApplication.translate('DB', "Do you agree to upgrade your data to newer format?"),
+                                 QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:
+            return JalDBError(JalDBError.OutdatedDbSchema)
+        db = db_connection()
+        version = readSQL("SELECT value FROM settings WHERE name='SchemaVersion'")
+        try:
+            schema_version = int(version)
+        except ValueError:
+            return JalDBError(JalDBError.DbInitFailure)
+        for step in range(schema_version, Setup.TARGET_SCHEMA):
+            delta_file = db_path + Setup.UPDATES_PATH + os.sep + Setup.UPDATE_PREFIX + f"{step + 1}.sql"
+            logging.info(f"Applying delta schema {step}->{step + 1} from {delta_file}")
+            error = self.run_sql_script(delta_file)
+            if error.code != JalDBError.NoError:
+                db.close()
+                return error
+        return JalDBError(JalDBError.NoError)
 
     def commit(self):
         db_connection().commit()

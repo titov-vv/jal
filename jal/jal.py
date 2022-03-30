@@ -6,9 +6,9 @@ from PySide6.QtCore import Qt, QTranslator
 from PySide6.QtWidgets import QApplication, QMessageBox
 from jal.constants import Setup
 from jal.widgets.main_window import MainWindow
-from jal.db.db import JalDB
+from jal.db.db import JalDB, JalDBError
 from jal.db.settings import JalSettings
-from jal.db.helpers import get_app_path, init_and_check_db, LedgerInitError, update_db_schema
+from jal.db.helpers import get_app_path
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -23,10 +23,7 @@ def main():
     sys.excepthook = exception_logger
     os.environ['QT_MAC_WANTS_LAYER'] = '1'    # Workaround for https://bugreports.qt.io/browse/QTBUG-87014
 
-    error = init_and_check_db(get_app_path())
-
-    if error.code == LedgerInitError.EmptyDbInitialized:  # If DB was just created from SQL - initialize it again
-        error = init_and_check_db(get_app_path())
+    error = JalDB().init_db(get_app_path())
 
     app = QApplication([])
     language = JalDB().get_language_code(JalSettings().getValue('Language', default=1))
@@ -35,12 +32,10 @@ def main():
     translator.load(language_file)
     app.installTranslator(translator)
 
-    if error.code == LedgerInitError.OutdatedDbSchema:
-        error = update_db_schema(get_app_path())
-        if error.code == LedgerInitError.DbInitSuccess:
-            error = init_and_check_db(get_app_path())
+    if error.code == JalDBError.OutdatedDbSchema:
+        error = JalDB().update_db_schema(get_app_path())
 
-    if error.code != LedgerInitError.DbInitSuccess:
+    if error.code != JalDBError.NoError:
         window = QMessageBox()
         window.setAttribute(Qt.WA_DeleteOnClose)
         window.setWindowTitle("JAL: Start-up aborted")

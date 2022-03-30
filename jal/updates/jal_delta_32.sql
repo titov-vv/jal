@@ -232,7 +232,7 @@ CREATE VIEW assets_ext AS
 -- Deletion should happen on base table
 DROP TRIGGER IF EXISTS on_asset_ext_delete;
 CREATE TRIGGER on_asset_ext_delete
-    INSTEAD OF DELETE ON assets_ext FOR EACH ROW
+    INSTEAD OF DELETE ON assets_ext FOR EACH ROW WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM assets WHERE id = OLD.id;
 END;
