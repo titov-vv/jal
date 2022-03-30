@@ -470,7 +470,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if len(filtered) == 1:
                 return filtered[0]
             else:
-                raise Statement_ImportError(self.tr("Multiple match for ") + f"'{key}'='{value}'")
+                raise Statement_ImportError(self.tr("Multiple match for ") + f"'{key}'='{value}': {filtered}")
 
     # Method finds currency in current statement data. New currency is created if no currency was found.
     # Returns currency id
