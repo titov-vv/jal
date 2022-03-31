@@ -215,7 +215,7 @@ class Ledger(QObject):
                        "asset_id, account_id, amount_acc, value_acc FROM ledger "
                        "WHERE id IN ("
                        "SELECT MAX(id) FROM ledger WHERE timestamp >= :frontier "
-                       "GROUP BY op_type, operation_id, book_account, account_id)", [(":frontier", frontier)])
+                       "GROUP BY op_type, operation_id, book_account, account_id, asset_id)", [(":frontier", frontier)])
         JalSettings().setValue('RebuildDB', 0)
         if exception_happened:
             logging.error(self.tr("Exception happened. Ledger is incomplete. Please correct errors listed in log"))
