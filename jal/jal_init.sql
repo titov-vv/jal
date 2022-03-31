@@ -602,7 +602,7 @@ CREATE VIEW deals_ext AS
            LEFT JOIN corp_actions AS cca ON cca.id=d.close_op_id AND cca.op_type=d.close_op_type
           -- "Decode" account and asset
            LEFT JOIN accounts AS ac ON d.account_id = ac.id
-           LEFT JOIN asset_tickers AS at ON d.asset_id = at.asset_id AND ac.currency_id=at.currency_id
+           LEFT JOIN asset_tickers AS at ON d.asset_id = at.asset_id AND ac.currency_id=at.currency_id AND at.active=1
      -- drop cases where deal was opened and closed with corporate action
      WHERE NOT (d.open_op_type = 5 AND d.close_op_type = 5)
      ORDER BY close_timestamp, open_timestamp;

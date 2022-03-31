@@ -272,7 +272,9 @@ class JalDB:
         existing = readSQL("SELECT id, symbol, description, quote_source FROM asset_tickers "
                            "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id=:currency",
                            [(":asset_id", asset_id), (":symbol", symbol), (":currency", currency)], named=True)
-        if existing is None:   # Create new symbol
+        if existing is None:   # Deactivate old symbols and create a new one
+            _ = executeSQL("UPDATE asset_tickers SET active=0 WHERE asset_id=:asset_id AND currency_id=:currency",
+                           [(":asset_id", asset_id), (":currency", currency)])
             _ = executeSQL("INSERT INTO asset_tickers (asset_id, symbol, currency_id, description, quote_source) "
                            "VALUES (:asset_id, :symbol, :currency, :note, :data_source)",
                            [(":asset_id", asset_id), (":symbol", symbol), (":currency", currency),

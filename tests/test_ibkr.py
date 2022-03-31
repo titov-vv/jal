@@ -83,7 +83,7 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
         [2, 2, 'USD', 1, 'Доллар США (Банк России)', 0, 1],
         [3, 3, 'EUR', 1, 'Евро (Банк России)', 0, 1],
         [4, 4, 'PEIX', 2, 'NASDAQ', 2, 1],
-        [5, 5, 'ALTO', 2, 'NASDAQ', 2, 1],
+        [5, 5, 'ALTO', 2, 'NASDAQ', 2, 0],
         [6, 5, 'PEIX', 2, 'NASDAQ', 2, 1]
     ]
     assert readSQL("SELECT COUNT(*) FROM asset_tickers") == len(test_symbols)
@@ -125,6 +125,4 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
     assert readSQL("SELECT amount_acc, value_acc FROM ledger WHERE asset_id=5 ORDER BY id DESC LIMIT 1") == [0.0, 0.0]
 
     # Check correct number of deals
-    # assert readSQL("SELECT COUNT(*) FROM deals_ext") == 4
-
-
+    assert readSQL("SELECT COUNT(*) FROM deals_ext") == 4
