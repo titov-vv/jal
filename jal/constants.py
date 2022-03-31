@@ -16,7 +16,7 @@ class Setup:
     STATEMENT_PATH = "broker_statements"
     TEMPLATE_PATH = "templates"
     UPDATE_PREFIX = 'jal_delta_'
-    TARGET_SCHEMA = 32
+    TARGET_SCHEMA = 33
     CALC_TOLERANCE = 1e-10
     DISP_TOLERANCE = 1e-4
 
