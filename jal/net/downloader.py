@@ -12,7 +12,7 @@ from PySide6.QtWidgets import QApplication, QDialog
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from jal.constants import Setup, MarketDataFeed, BookAccount, PredefinedAsset
 from jal.db.helpers import executeSQL, readSQLrecord
-from jal.db.db import JalDB
+from jal.db.db import JalDB, JalSettings
 from jal.net.helpers import get_web_data, post_web_data, isEnglish
 
 
@@ -98,6 +98,8 @@ class QuoteDownloader(QObject):
                             (":liabilities_book", BookAccount.Liabilities), (":tolerance", Setup.CALC_TOLERANCE)])
         while query.next():
             asset = readSQLrecord(query, named=True)
+            if asset['asset_id'] == int(JalSettings().getValue('BaseCurrency')):
+                continue
             first_timestamp = asset['first_timestamp'] if asset['first_timestamp'] != '' else 0
             last_timestamp = asset['last_timestamp'] if asset['last_timestamp'] != '' else 0
             if start_timestamp < first_timestamp:

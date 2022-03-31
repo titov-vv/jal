@@ -256,7 +256,7 @@ class JalDB:
             begin = min(data, key=lambda x: x['timestamp'])['timestamp']
             end = max(data, key=lambda x: x['timestamp'])['timestamp']
             logging.info(self.tr("Quotations were updated: ") +
-                         f"{self.get_asset_name(asset_id)} ({self.get_asset_name(asset_id)}) " 
+                         f"{self.get_asset_name(asset_id)} ({self.get_asset_name(currency_id)}) " 
                          f"{datetime.utcfromtimestamp(begin).strftime('%d/%m/%Y')} - "
                          f"{datetime.utcfromtimestamp(end).strftime('%d/%m/%Y')}")
 
