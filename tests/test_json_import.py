@@ -94,7 +94,7 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [21, 20, 'ETRN', 2, 'NYSE', 2, 1],
         [22, 21, 'GE', 2, 'NYSE', 2, 1],
         [23, 22, 'EWLL', 2, 'PINK', -1, 1],
-        [24, 23, 'EWLL', 2, 'PINK', -1, 1],
+        [24, 23, 'EWLL', 2, 'PINK', -1, 0],
         [25, 24, 'LVGO', 2, '', -1, 1],
         [26, 25, 'TDOC', 2, 'NYSE', 2, 1],
         [27, 26, 'LUMN', 2, 'NYSE', 2, 1],
