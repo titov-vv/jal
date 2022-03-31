@@ -58,11 +58,12 @@ class ChartWidget(QWidget):
 
 
 class ChartWindow(MdiWidget):
-    def __init__(self, account_id, asset_id, _asset_qty, parent=None):
+    def __init__(self, account_id, asset_id, currency_id, _asset_qty, parent=None):
         super().__init__(parent)
 
         self.account_id = account_id
         self.asset_id = asset_id
+        self.currency_id = currency_id
         self.asset_name = JalDB().get_asset_name(self.asset_id)
         self.quotes = []
         self.trades = []
@@ -94,36 +95,40 @@ class ChartWindow(MdiWidget):
                              "AND book_account=:assets_book AND amount_acc!=0)",
                              [(":account_id", self.account_id), (":asset_id", self.asset_id),
                               (":assets_book", BookAccount.Assets)])
-        # Get quotes quotes
-        query = executeSQL("SELECT timestamp, quote FROM quotes WHERE asset_id=:asset_id AND timestamp>:last",
-                           [(":asset_id", self.asset_id), (":last", start_time)])
+        # Get asset quotes
+        query = executeSQL("SELECT timestamp, quote FROM quotes "
+                           "WHERE asset_id=:asset_id AND currency_id=:currency_id AND timestamp>:last",
+                           [(":asset_id", self.asset_id), (":currency_id", self.currency_id), (":last", start_time)])
         while query.next():
             quote = readSQLrecord(query, named=True)
             self.quotes.append({'timestamp': quote['timestamp'] * 1000, 'quote': quote['quote']})  # timestamp to ms
-        min_price = min([x['quote'] for x in self.quotes])
-        max_price = max([x['quote'] for x in self.quotes])
-        min_ts = min([x['timestamp'] for x in self.quotes]) / 1000
-        max_ts = max([x['timestamp'] for x in self.quotes]) / 1000
-
-        # Get deals quotes
+        # Get deals prices
         query = executeSQL("SELECT timestamp, price, qty FROM trades "
                            "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp>=:last",
                            [(":account_id", self.account_id), (":asset_id", self.asset_id), (":last", start_time)])
         while query.next():
             trade = readSQLrecord(query, named=True)
             self.trades.append({'timestamp': trade['timestamp'] * 1000, 'price': trade['price'], 'qty': trade['qty']})
-        min_price = min(min_price, min([x['price'] for x in self.trades]))
-        max_price = max(max_price, max([x['price'] for x in self.trades]))
-        min_ts = min(min_ts, min([x['timestamp'] for x in self.trades]) / 1000)
-        max_ts = max(max_ts, max([x['timestamp'] for x in self.trades]) / 1000)
-
+        if self.quotes or self.trades:
+            min_price = min([x['quote'] for x in self.quotes] + [x['price'] for x in self.trades])
+            max_price = max([x['quote'] for x in self.quotes] + [x['price'] for x in self.trades])
+            min_ts = min([x['timestamp'] for x in self.quotes] + [x['timestamp'] for x in self.trades]) / 1000
+            max_ts = max([x['timestamp'] for x in self.quotes] + [x['timestamp'] for x in self.trades]) / 1000
+        else:
+            self.range = [0, 0, 0, 0]
+            return
+        # push range apart if we have too close points
+        if min_price == max_price:
+            min_price = 0.95 * min_price
+            max_price = 1.05 * max_price
+        if min_ts == max_ts:
+            min_ts = 0.95 * min_ts
+            max_ts = 1.05 * max_ts
         # Round min/max values to near "round" values in order to have 10 nice intervals
         step = 10 ** floor(log10(max_price - min_price))
         min_price = floor(min_price / step) * step
         max_price = ceil(max_price / step) * step
-
         # Add a gap at the beginning and end
         min_ts = int(min_ts - 86400 * 3)
         max_ts = int(max_ts + 86400 * 3)
-
         self.range = [min_ts, max_ts, min_price, max_price]

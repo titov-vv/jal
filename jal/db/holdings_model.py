@@ -221,7 +221,7 @@ class HoldingsModel(QAbstractItemModel):
         if not index.isValid():
             return None
         item = index.internalPointer()
-        return item.data['account_id'], item.data['asset_id'], item.data['qty']
+        return item.data['account_id'], item.data['asset_id'], item.data['currency_id'], item.data['qty']
 
     def update(self):
         self.calculateHoldings()

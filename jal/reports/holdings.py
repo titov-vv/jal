@@ -61,11 +61,11 @@ class HoldingsReportWindow(MdiWidget, Ui_HoldingsWidget):
     @Slot()
     def showPriceChart(self, index):
         model = index.model()
-        account, asset, asset_qty = model.get_data_for_tax(index)
-        self.parent_mdi.addSubWindow(ChartWindow(account, asset, asset_qty))
+        account, asset, currency, asset_qty = model.get_data_for_tax(index)
+        self.parent_mdi.addSubWindow(ChartWindow(account, asset, currency, asset_qty))
 
     @Slot()
     def estimateRussianTax(self, index):
         model = index.model()
-        account, asset, asset_qty = model.get_data_for_tax(index)
+        account, asset, currency, asset_qty = model.get_data_for_tax(index)
         self.parent_mdi.addSubWindow(TaxEstimator(account, asset, asset_qty))
