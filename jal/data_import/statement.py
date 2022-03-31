@@ -194,6 +194,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 continue
             asset = self._find_in_list(self._data[FOF.ASSETS], "id", symbol['asset'])
             search_data = {'symbol': symbol['symbol'], 'type': self._asset_types[asset['type']]}
+            self._uppend_keys_from(search_data, asset, ['isin'])
             data = self._find_in_list(self._data[FOF.ASSETS_DATA], "asset", symbol['asset'])
             if data is not None:
                 self._uppend_keys_from(search_data, data, ['expiry'])

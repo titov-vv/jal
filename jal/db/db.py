@@ -213,7 +213,11 @@ class JalDB:
     def get_asset_id(self, search_data):
         asset_id = None
         if 'isin' in search_data and search_data['isin']:
-            asset_id = readSQL("SELECT id FROM assets WHERE isin=:isin", [(":isin", search_data['isin'])])
+            if 'symbol' in search_data and search_data['symbol']:
+                return readSQL("SELECT id FROM assets_ext WHERE (isin=:isin OR isin='') AND symbol=:symbol",
+                               [(":isin", search_data['isin']), (":symbol", search_data['symbol'])])
+            else:
+                return readSQL("SELECT id FROM assets WHERE isin=:isin", [(":isin", search_data['isin'])])
         if asset_id is None and 'reg_number' in search_data and search_data['reg_number']:
             asset_id = readSQL("SELECT asset_id FROM asset_data WHERE datatype=:datatype AND value=:reg_number",
                                [(":datatype", AssetData.RegistrationCode), (":reg_number", search_data['reg_number'])])
