@@ -34,6 +34,22 @@ CREATE VIEW deals_ext AS
      WHERE NOT (d.open_op_type = 5 AND d.close_op_type = 5)
      ORDER BY close_timestamp, open_timestamp;
 --------------------------------------------------------------------------------
+-- Add again coutries that are probably escaped from sequential updates
+INSERT OR IGNORE INTO countries (id, name, code, iso_code, tax_treaty) VALUES (8, 'Italy', 'it', '380', 1);
+INSERT OR IGNORE INTO countries (id, name, code, iso_code, tax_treaty) VALUES (9, 'Spain', 'es', '724', 1);
+INSERT OR IGNORE INTO countries (id, name, code, iso_code, tax_treaty) VALUES (10, 'Australia', 'au', '036', 1);
+INSERT OR IGNORE INTO countries (id, name, code, iso_code, tax_treaty) VALUES (11, 'Austria', 'at', '040', 1);
+INSERT OR IGNORE INTO countries (id, name, code, iso_code, tax_treaty) VALUES (12, 'Belgium', 'be', '056', 1);
+INSERT OR IGNORE INTO countries (id, name, code, iso_code, tax_treaty) VALUES (13, 'United Kingdom', 'gb', '826', 1);
+INSERT OR IGNORE INTO countries (id, name, code, iso_code, tax_treaty) VALUES (14, 'Germany', 'de', '276', 1);
+INSERT OR IGNORE INTO countries (id, name, code, iso_code, tax_treaty) VALUES (15, 'China', 'cn', '156', 1);
+INSERT OR IGNORE INTO countries (id, name, code, iso_code, tax_treaty) VALUES (16, 'Netherlands', 'nl', '528', 1);
+INSERT OR IGNORE INTO countries (id, name, code, iso_code, tax_treaty) VALUES (17, 'Greece', 'gr', '300', 1);
+INSERT OR IGNORE INTO countries (id, name, code, iso_code, tax_treaty) VALUES (18, 'Bermuda', 'bm', '060', 0);
+INSERT OR IGNORE INTO countries (id, name, code, iso_code, tax_treaty) VALUES (19, 'Finland', 'fi', '246', 1);
+INSERT OR IGNORE INTO countries (id, name, code, iso_code, tax_treaty) VALUES (20, 'Brazil', 'br', '076', 0);
+INSERT OR IGNORE INTO countries (id, name, code, iso_code, tax_treaty) VALUES (21, 'Jersey', 'je', '832', 0);
+--------------------------------------------------------------------------------
 PRAGMA foreign_keys = 1;
 --------------------------------------------------------------------------------
 -- Set new DB schema version
