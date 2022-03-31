@@ -126,17 +126,21 @@ DELETE FROM assets WHERE id IN (
 SELECT a.id FROM assets AS a
 LEFT JOIN trades AS t ON a.id=t.asset_id
 LEFT JOIN dividends AS d ON a.id=d.asset_id
-WHERE a.type_id!=1 AND t.id IS NULL AND d.id IS NULL);
+LEFT JOIN corp_actions AS c1 ON a.id=c1.asset_id
+LEFT JOIN corp_actions AS c2 ON a.id=c2.asset_id_new
+WHERE a.type_id!=1 AND t.id IS NULL AND d.id IS NULL AND c1.id IS NULL AND c2.id IS NULL);
 
 -- Insert symbols other than currencies
 INSERT INTO asset_tickers (asset_id, symbol, currency_id, description, quote_source, active)
-SELECT a.id AS asset_id, a.name AS symbol, ac.currency_id AS currency_id, s.name AS description, a.src_id AS quote_source, 1 AS active
+SELECT a.id, a.name, coalesce(ac.currency_id, ac2.currency_id) AS currency, s.name, a.src_id, 1
 FROM assets AS a
 LEFT JOIN data_sources AS s ON a.src_id=s.id
 LEFT JOIN trades AS t ON t.asset_id=a.id
 LEFT JOIN accounts AS ac ON ac.id=t.account_id
+LEFT JOIN corp_actions AS c ON c.asset_id=a.id OR c.asset_id_new=a.id
+LEFT JOIN accounts AS ac2 ON ac2.id=c.account_id
 WHERE a.type_id!=1
-GROUP BY asset_id, currency_id;
+GROUP BY a.id, currency;
 
 --------------------------------------------------------------------------------
 DROP TABLE IF EXISTS asset_data;
