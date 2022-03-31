@@ -65,7 +65,6 @@ class QuoteDownloader(QObject):
             self.UpdateQuotes(dialog.getStartDate(), dialog.getEndDate())
             self.download_completed.emit()
 
-    # FIXME This method may work incorrectly for assets with multiple symbols
     def UpdateQuotes(self, start_timestamp, end_timestamp):
         self.PrepareRussianCBReader()
         jal_db = JalDB()
@@ -79,10 +78,7 @@ class QuoteDownloader(QObject):
                            "WHERE l.book_account = :assets_book AND l.timestamp >= :start_timestamp "
                            "AND l.timestamp <= :end_timestamp "
                            "UNION "
-                           "SELECT DISTINCT a.currency_id AS asset, NULL FROM ledger AS l "
-                           "LEFT JOIN accounts AS a ON a.id = l.account_id "
-                           "WHERE (l.book_account = :money_book OR l.book_account = :liabilities_book) "
-                           "AND l.timestamp >= :start_timestamp AND l.timestamp <= :end_timestamp "
+                           "SELECT c.id, NULL FROM currencies c "
                            ") "
                            "SELECT h.asset AS asset_id, coalesce(ac.currency_id, 1) AS currency_id, "
                            "a.symbol AS name, a.quote_source AS feed_id, a.isin AS isin, "
