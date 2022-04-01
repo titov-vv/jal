@@ -63,7 +63,7 @@ class ChartWindow(MdiWidget):
 
         self.account_id = account_id
         self.asset_id = asset_id
-        self.currency_id = currency_id
+        self.currency_id = currency_id if asset_id != currency_id else 1  # Check whether we have currency or asset
         self.asset_name = JalDB().get_asset_name(self.asset_id)
         self.quotes = []
         self.trades = []
