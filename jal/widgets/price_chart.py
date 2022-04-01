@@ -12,6 +12,8 @@ from jal.widgets.mdi import MdiWidget
 class ChartWidget(QWidget):
     def __init__(self, parent, quotes, trades, data_range, currency_name):
         QWidget.__init__(self, parent)
+        self.setMinimumWidth(600)
+        self.setMinimumHeight(400)
 
         self.quotes_series = QLineSeries()
         for point in quotes:            # Conversion to 'float' in order not to get 'int' overflow on some platforms
