@@ -5,7 +5,7 @@ from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QPushButton
 from jal.constants import Setup
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
-from jal.widgets.reference_selector import AccountSelector
+from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.db.operations import LedgerTransaction
 
@@ -37,6 +37,7 @@ class TransferWidget(AbstractOperationDetails):
         self.fee_account_label = QLabel(self)
         self.fee_amount_label = QLabel(self)
         self.comment_label = QLabel(self)
+        self.asset_label = QLabel(self)
         self.arrow_account = QLabel(self)
         self.copy_date_btn = QPushButton(self)
         self.copy_amount_btn = QPushButton(self)
@@ -51,6 +52,7 @@ class TransferWidget(AbstractOperationDetails):
         self.fee_account_label.setText(self.tr("Fee from"))
         self.fee_amount_label.setText(self.tr("Fee amount"))
         self.comment_label.setText(self.tr("Note"))
+        self.asset_label.setText(self.tr("Asset"))
         self.arrow_account.setText(" ➜ ")
         self.copy_date_btn.setText("➜")
         self.copy_date_btn.setFixedWidth(self.copy_date_btn.fontMetrics().horizontalAdvance("XXXX"))
@@ -76,17 +78,20 @@ class TransferWidget(AbstractOperationDetails):
         self.deposit.setAlignment(Qt.AlignRight)
         self.fee = QLineEdit(self)
         self.fee.setAlignment(Qt.AlignRight)
+        self.asset_widget = AssetSelector(self)
         self.comment = QLineEdit(self)
 
         self.layout.addWidget(self.from_date_label, 1, 0, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.from_account_label, 2, 0, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.from_amount_label, 3, 0, 1, 1, Qt.AlignLeft)
-        self.layout.addWidget(self.comment_label, 5, 0, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.asset_label, 5, 0, 1, 1, Qt.AlignLeft)
+        self.layout.addWidget(self.comment_label, 6, 0, 1, 1, Qt.AlignLeft)
         
         self.layout.addWidget(self.withdrawal_timestamp, 1, 1, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.from_account_widget, 2, 1, 1, 1, Qt.AlignLeft)
         self.layout.addWidget(self.withdrawal, 3, 1, 1, 1, Qt.AlignLeft)
-        self.layout.addWidget(self.comment, 5, 1, 1, 4)
+        self.layout.addWidget(self.asset_widget, 5, 1, 1, 4)
+        self.layout.addWidget(self.comment, 6, 1, 1, 4)
 
         self.layout.addWidget(self.copy_date_btn, 1, 2, 1, 1)
         self.layout.addWidget(self.arrow_account, 2, 2, 1, 1, Qt.AlignCenter)
@@ -107,7 +112,7 @@ class TransferWidget(AbstractOperationDetails):
         self.layout.addWidget(self.commit_button, 0, 6, 1, 1)
         self.layout.addWidget(self.revert_button, 0, 7, 1, 1)
 
-        self.layout.addItem(self.verticalSpacer, 6, 0, 1, 1)
+        self.layout.addItem(self.verticalSpacer, 7, 0, 1, 1)
         self.layout.addItem(self.horizontalSpacer, 1, 5, 1, 1)
 
         self.copy_date_btn.clicked.connect(self.onCopyDate)
@@ -119,6 +124,7 @@ class TransferWidget(AbstractOperationDetails):
         self.from_account_widget.changed.connect(self.mapper.submit)
         self.to_account_widget.changed.connect(self.mapper.submit)
         self.fee_account_widget.changed.connect(self.mapper.submit)
+        self.asset_widget.changed.connect(self.mapper.submit)
 
         self.mapper.addMapping(self.withdrawal_timestamp, self.model.fieldIndex("withdrawal_timestamp"))
         self.mapper.addMapping(self.from_account_widget, self.model.fieldIndex("withdrawal_account"))
@@ -128,6 +134,7 @@ class TransferWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.deposit, self.model.fieldIndex("deposit"))
         self.mapper.addMapping(self.fee_account_widget, self.model.fieldIndex("fee_account"))
         self.mapper.addMapping(self.fee, self.model.fieldIndex("fee"))
+        self.mapper.addMapping(self.asset_widget, self.model.fieldIndex("asset"))
         self.mapper.addMapping(self.comment, self.model.fieldIndex("note"))
 
         self.model.select()

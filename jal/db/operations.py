@@ -498,8 +498,6 @@ class Transfer(LedgerTransaction):
         self._label, self._label_color = labels[display_type]
         if self._data['asset']:
             self._asset = self._data['asset']
-            self._asset_symbol = JalDB().get_asset_name(self._asset)
-            self._asset_name = JalDB().get_asset_name(self._asset, full=True)
             self._account = self._withdrawal_account
         else:
             self._asset = None
@@ -571,9 +569,15 @@ class Transfer(LedgerTransaction):
 
     def value_currency(self) -> str:
         if self._display_type == Transfer.Outgoing:
-            return self._withdrawal_currency
+            if self._asset:
+                return JalDB().get_asset_name(self._asset)
+            else:
+                return self._withdrawal_currency
         elif self._display_type == Transfer.Incoming:
-            return self._deposit_currency
+            if self._asset:
+                return JalDB().get_asset_name(self._asset)
+            else:
+                return self._deposit_currency
         elif self._display_type == Transfer.Fee:
             return self._fee_currency
         else:
@@ -582,9 +586,15 @@ class Transfer(LedgerTransaction):
     def value_total(self) -> str:
         amount = None
         if self._display_type == Transfer.Outgoing:
-            amount = self._money_total(self._withdrawal_account)
+            if self._asset:
+                amount = self._asset_total(self._withdrawal_account, self._asset)
+            else:
+                amount = self._money_total(self._withdrawal_account)
         elif self._display_type == Transfer.Incoming:
-            amount = self._money_total(self._deposit_account)
+            if self._asset:
+                amount = self._asset_total(self._deposit_account, self._asset)
+            else:
+                amount = self._money_total(self._deposit_account)
         elif self._display_type == Transfer.Fee:
             amount = self._money_total(self._fee_account)
         else:
