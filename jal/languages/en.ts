@@ -266,7 +266,7 @@
 <context>
     <name>ChartWindow</name>
     <message>
-        <location filename="../widgets/price_chart.py" line="81"/>
+        <location filename="../widgets/price_chart.py" line="84"/>
         <source>Price chart for </source>
         <translation></translation>
     </message>
@@ -385,17 +385,17 @@
 <context>
     <name>DB</name>
     <message>
-        <location filename="../db/helpers.py" line="193"/>
+        <location filename="../db/db.py" line="106"/>
         <source>Database format is outdated</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/helpers.py" line="194"/>
+        <location filename="../db/db.py" line="107"/>
         <source>Do you agree to upgrade your data to newer format?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/helpers.py" line="235"/>
+        <location filename="../db/helpers.py" line="135"/>
         <source>Unknown country code: </source>
         <translation></translation>
     </message>
@@ -1453,57 +1453,57 @@ Application will be terminated now</source>
 <context>
     <name>JalDB</name>
     <message>
-        <location filename="../db/db.py" line="214"/>
+        <location filename="../db/db.py" line="335"/>
         <source>Reg.number updated for </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="238"/>
+        <location filename="../db/db.py" line="359"/>
         <source>Dividend already exists: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="261"/>
+        <location filename="../db/db.py" line="382"/>
         <source>Trade already exists: #</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="284"/>
+        <location filename="../db/db.py" line="405"/>
         <source>Transfer/Exchange already exists: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="309"/>
+        <location filename="../db/db.py" line="430"/>
         <source>Corporate action already exists: #</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="66"/>
+        <location filename="../db/db.py" line="174"/>
         <source>Account already exists: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="147"/>
+        <location filename="../db/db.py" line="266"/>
         <source>Quotations were updated: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="180"/>
+        <location filename="../db/db.py" line="301"/>
         <source>Asset not found for update: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="186"/>
+        <location filename="../db/db.py" line="307"/>
         <source>Unexpected attempt to update ISIN for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="203"/>
+        <location filename="../db/db.py" line="324"/>
         <source>Country updated for </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="85"/>
+        <location filename="../db/db.py" line="193"/>
         <source>Bank for #</source>
         <translation></translation>
     </message>
@@ -1684,12 +1684,12 @@ Application will be terminated now</source>
 <context>
     <name>MOEX</name>
     <message>
-        <location filename="../net/downloader.py" line="240"/>
+        <location filename="../net/downloader.py" line="238"/>
         <source>Unsupported MOEX security type: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="283"/>
+        <location filename="../net/downloader.py" line="281"/>
         <source>Multiple MOEX assets found for: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2057,47 +2057,47 @@ do you want to save it?</source>
 <context>
     <name>QuoteDownloader</name>
     <message>
-        <location filename="../net/downloader.py" line="113"/>
+        <location filename="../net/downloader.py" line="111"/>
         <source>No data were downloaded for </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="121"/>
+        <location filename="../net/downloader.py" line="119"/>
         <source>Download completed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="146"/>
+        <location filename="../net/downloader.py" line="144"/>
         <source>Failed to get CBR data for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="360"/>
+        <location filename="../net/downloader.py" line="358"/>
         <source>Euronext quotes history reply is too short: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="363"/>
+        <location filename="../net/downloader.py" line="361"/>
         <source>Euronext quotes header not found in: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="366"/>
+        <location filename="../net/downloader.py" line="364"/>
         <source>Euronext quotes ISIN mismatch in: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="403"/>
+        <location filename="../net/downloader.py" line="401"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="420"/>
+        <location filename="../net/downloader.py" line="418"/>
         <source>Checking MOEX data for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="425"/>
+        <location filename="../net/downloader.py" line="423"/>
         <source>New full name found for:  </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2385,162 +2385,162 @@ do you want to save it?</source>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="140"/>
-        <location filename="../data_import/statement.py" line="235"/>
+        <location filename="../data_import/statement.py" line="236"/>
         <source>Failed to read file: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="284"/>
+        <location filename="../data_import/statement.py" line="285"/>
         <source>Can&apos;t create asset: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="289"/>
+        <location filename="../data_import/statement.py" line="290"/>
         <source>Symbol ticker isn&apos;t linked to asset: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="291"/>
+        <location filename="../data_import/statement.py" line="292"/>
         <source>Symbol currency isn&apos;t linked to asset: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="306"/>
+        <location filename="../data_import/statement.py" line="307"/>
         <source>Asset data aren&apos;t linked to asset: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="314"/>
+        <location filename="../data_import/statement.py" line="315"/>
         <source>Unmatched currency for account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="320"/>
+        <location filename="../data_import/statement.py" line="321"/>
         <source>Can&apos;t create account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="325"/>
+        <location filename="../data_import/statement.py" line="326"/>
         <source>Unmatched account for income/spending: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="327"/>
+        <location filename="../data_import/statement.py" line="328"/>
         <source>Unmatched peer for income/spending: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="330"/>
+        <location filename="../data_import/statement.py" line="331"/>
         <source>Unsupported income/spending: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="334"/>
+        <location filename="../data_import/statement.py" line="335"/>
         <source>Unmatched category for income/spending: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="342"/>
+        <location filename="../data_import/statement.py" line="343"/>
         <source>Unmatched account for transfer: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="345"/>
+        <location filename="../data_import/statement.py" line="346"/>
         <source>Unmatched asset for transfer: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="350"/>
+        <location filename="../data_import/statement.py" line="351"/>
         <source>Deposit of </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="354"/>
+        <location filename="../data_import/statement.py" line="355"/>
         <source>Select account to withdraw from:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="356"/>
+        <location filename="../data_import/statement.py" line="357"/>
         <source>Withdrawal of </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="360"/>
+        <location filename="../data_import/statement.py" line="361"/>
         <source>Select account to deposit to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="366"/>
+        <location filename="../data_import/statement.py" line="367"/>
         <source>Account not selected</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="381"/>
+        <location filename="../data_import/statement.py" line="382"/>
         <source>Unmatched account for trade: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="383"/>
+        <location filename="../data_import/statement.py" line="384"/>
         <source>Unmatched asset for trade: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="395"/>
+        <location filename="../data_import/statement.py" line="396"/>
         <source>Unmatched account for payment: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="397"/>
+        <location filename="../data_import/statement.py" line="398"/>
         <source>Unmatched asset for payment: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="419"/>
+        <location filename="../data_import/statement.py" line="420"/>
         <source>Unsupported payment type: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="424"/>
+        <location filename="../data_import/statement.py" line="425"/>
         <source>Unmatched account for corporate action: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="431"/>
+        <location filename="../data_import/statement.py" line="432"/>
         <source>Unmatched asset for corporate action: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="441"/>
+        <location filename="../data_import/statement.py" line="442"/>
         <source>Unsupported corporate action: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="461"/>
+        <location filename="../data_import/statement.py" line="462"/>
         <source>Asset id not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="473"/>
+        <location filename="../data_import/statement.py" line="474"/>
         <source>Multiple match for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="484"/>
+        <location filename="../data_import/statement.py" line="485"/>
         <source>Multiple currency match for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="527"/>
+        <location filename="../data_import/statement.py" line="528"/>
         <source>Can&apos;t locate asset in statement data: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="267"/>
+        <location filename="../data_import/statement.py" line="268"/>
         <source>Statement import was cancelled</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="257"/>
+        <location filename="../data_import/statement.py" line="258"/>
         <source>Statement period is invalid</source>
         <translation></translation>
     </message>
@@ -2550,22 +2550,22 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="233"/>
+        <location filename="../data_import/statement.py" line="234"/>
         <source>Failed to read JSON schema from: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="239"/>
+        <location filename="../data_import/statement.py" line="240"/>
         <source>Statement validation failed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="264"/>
+        <location filename="../data_import/statement.py" line="265"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="265"/>
+        <location filename="../data_import/statement.py" line="266"/>
         <source>Statement period starts before last recorded operation for the account. Continue import?</source>
         <translation></translation>
     </message>
@@ -3448,46 +3448,51 @@ do you want to save it?</source>
 <context>
     <name>TransferWidget</name>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="44"/>
+        <location filename="../widgets/transfer_widget.py" line="45"/>
         <source>Transfer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="45"/>
-        <location filename="../widgets/transfer_widget.py" line="48"/>
+        <location filename="../widgets/transfer_widget.py" line="46"/>
+        <location filename="../widgets/transfer_widget.py" line="49"/>
         <source>Date/Time</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="46"/>
+        <location filename="../widgets/transfer_widget.py" line="47"/>
         <source>From</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="47"/>
-        <location filename="../widgets/transfer_widget.py" line="50"/>
+        <location filename="../widgets/transfer_widget.py" line="48"/>
+        <location filename="../widgets/transfer_widget.py" line="51"/>
         <source>Amount</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="49"/>
+        <location filename="../widgets/transfer_widget.py" line="50"/>
         <source>To</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="51"/>
+        <location filename="../widgets/transfer_widget.py" line="52"/>
         <source>Fee from</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="52"/>
+        <location filename="../widgets/transfer_widget.py" line="53"/>
         <source>Fee amount</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/transfer_widget.py" line="53"/>
+        <location filename="../widgets/transfer_widget.py" line="54"/>
         <source>Note</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../widgets/transfer_widget.py" line="55"/>
+        <source>Asset</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
