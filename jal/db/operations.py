@@ -79,26 +79,29 @@ class LedgerTransaction:
 
     # Performs FIFO deals match in ledger: takes current open positions from 'open_trades' table and converts
     # them into deals in 'deals' table while supplied qty is enough.
+    # deal_sign = +1 if closing deal is Buy operation and -1 if it is Sell operation.
+    # qty - quantity of asset that closes previous open positions
+    # price is None if we process corporate action or transfer where we keep initial value and don't have profit or loss
     # Returns total qty, value of deals created.
     def _close_deals_fifo(self, deal_sign, qty, price):
         processed_qty = 0
         processed_value = 0
         # Get a list of all previous not matched trades or corporate actions
-        query = executeSQL(
-            "SELECT timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty "
-            "FROM open_trades "
-            "WHERE account_id=:account_id AND asset_id=:asset_id AND remaining_qty!=0 "
-            "ORDER BY timestamp, op_type DESC",
-            [(":account_id", self._account), (":asset_id", self._asset)])
+        query = executeSQL("SELECT timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty "
+                           "FROM open_trades "
+                           "WHERE account_id=:account_id AND asset_id=:asset_id AND remaining_qty!=0 "
+                           "ORDER BY timestamp, op_type DESC",
+                           [(":account_id", self._account), (":asset_id", self._asset)])
         while query.next():
             opening_trade = readSQLrecord(query, named=True)
             next_deal_qty = opening_trade['remaining_qty']
             if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
-                next_deal_qty = qty - processed_qty  # If it happens - just process the remainder of the trade
+                next_deal_qty = qty - processed_qty    # If it happens - just process the remainder of the trade
             _ = executeSQL("UPDATE open_trades SET remaining_qty=remaining_qty-:qty "
                            "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
                            [(":qty", next_deal_qty), (":op_type", opening_trade['op_type']),
                             (":id", opening_trade['operation_id']), (":asset_id", self._asset)])
+            close_price = opening_trade['price'] if price is None else price
             _ = executeSQL(
                 "INSERT INTO deals(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
                 "close_op_type, close_op_id, close_timestamp, close_price, qty) "
@@ -108,7 +111,7 @@ class LedgerTransaction:
                  (":open_op_type", opening_trade['op_type']), (":open_op_id", opening_trade['operation_id']),
                  (":open_timestamp", opening_trade['timestamp']), (":open_price", opening_trade['price']),
                  (":close_op_type", self._otype), (":close_op_id", self._oid),
-                 (":close_timestamp", self._timestamp), (":close_price", price),
+                 (":close_timestamp", self._timestamp), (":close_price", close_price),
                  (":qty", (-deal_sign) * next_deal_qty)])
             processed_qty += next_deal_qty
             processed_value += (next_deal_qty * opening_trade['price'])
@@ -159,7 +162,6 @@ class LedgerTransaction:
         return self._reconciled
 
     def processLedger(self, ledger):
-        return
         raise NotImplementedError(f"processLedger() method is not defined in {type(self).__name__} class")
 
 
@@ -322,12 +324,10 @@ class Dividend(LedgerTransaction):
     def processLedger(self, ledger):
         if self._broker is None:
             raise ValueError(
-                self.tr("Can't process trade as bank isn't set for investment account: ") + self._account_name)
-        
+                self.tr("Can't process dividend as bank isn't set for investment account: ") + self._account_name)
         if self._subtype == Dividend.StockDividend:
             self.processStockDividend(ledger)
             return
-
         if self._subtype == Dividend.Dividend:
             income_category = PredefinedCategory.Dividends
         elif self._subtype == Dividend.BondInterest:
@@ -687,48 +687,17 @@ class CorporateAction(LedgerTransaction):
             return f"\n{self._qty_after:,.2f}"
 
     def processLedger(self, ledger):
-        processed_qty = 0
-        processed_value = 0
         # Get asset amount accumulated before current operation
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account, self._asset)
         if asset_amount < (self._qty - 2 * Setup.CALC_TOLERANCE):
             raise ValueError(self.tr("Asset amount is not enough for corporate action processing. Date: ")
                              + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
                              + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
-        # Get a list of all previous not matched trades or corporate actions
-        query = executeSQL("SELECT timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty "
-                           "FROM open_trades "
-                           "WHERE account_id=:account_id AND asset_id=:asset_id  AND remaining_qty!=0 "
-                           "ORDER BY timestamp, op_type DESC",
-                           [(":account_id", self._account), (":asset_id", self._asset)])
-        while query.next():
-            opening_trade = readSQLrecord(query, named=True)
-            next_deal_qty = opening_trade['remaining_qty']
-            if (processed_qty + next_deal_qty) > (self._qty + 2 * Setup.CALC_TOLERANCE):  # We can't close all trades with current operation
-                raise ValueError(self.tr("Unhandled case: Corporate action covers not full open position. Date: ")
-                                 + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
-                                 + f"Processed: {processed_qty}, Next: {next_deal_qty}, Operation: {self.dump()}")
-            _ = executeSQL("UPDATE open_trades SET remaining_qty=0 "  # FIXME - is it true to have here 0? (i.e. if we have not a full match)
-                           "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
-                           [(":op_type", opening_trade['op_type']), (":id", opening_trade['operation_id']),
-                            (":asset_id", self._asset)])
-
-            # Deal have the same open and close prices as corportate action doesn't create profit, but redistributes value
-            _ = executeSQL(
-                "INSERT INTO deals(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
-                " close_op_type, close_op_id, close_timestamp, close_price, qty) "
-                "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :open_price, "
-                ":close_op_type, :close_op_id, :close_timestamp, :close_price, :qty)",
-                [(":account_id", self._account), (":asset_id", self._asset),
-                 (":open_op_type", opening_trade['op_type']), (":open_op_id", opening_trade['operation_id']),
-                 (":open_timestamp", opening_trade['timestamp']), (":open_price", opening_trade['price']),
-                 (":close_op_type", self._otype), (":close_op_id", self._oid),
-                 (":close_timestamp", self._timestamp), (":close_price", opening_trade['price']),
-                 (":qty", next_deal_qty)])
-            processed_qty += next_deal_qty
-            processed_value += (next_deal_qty * opening_trade['price'])
-            if processed_qty == self._qty:
-                break
+        if asset_amount > (self._qty + 2 * Setup.CALC_TOLERANCE):
+            raise ValueError(self.tr("Unhandled case: Corporate action covers not full open position. Date: ")
+                             + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
+                             + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
+        processed_qty, processed_value = self._close_deals_fifo(-1, self._qty, None)
         # Asset allocations for different corporate actions:
         # +-----------------+-------+-----+------------+-----------+----------+---------------+
         # |                 | Asset | Qty | cost basis | Asset new | Qty new  | cost basis    |
