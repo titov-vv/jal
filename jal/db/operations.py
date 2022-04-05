@@ -77,6 +77,45 @@ class LedgerTransaction:
                        [(":op_type", self._otype), (":oid", self._oid), (":account_id", account_id),
                         (":asset_id", asset_id), (":book", BookAccount.Assets)])
 
+    # Performs FIFO deals match in ledger: takes current open positions from 'open_trades' table and converts
+    # them into deals in 'deals' table while supplied qty is enough.
+    # Returns total qty, value of deals created.
+    def _close_deals_fifo(self, deal_sign, qty, price):
+        processed_qty = 0
+        processed_value = 0
+        # Get a list of all previous not matched trades or corporate actions
+        query = executeSQL(
+            "SELECT timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty "
+            "FROM open_trades "
+            "WHERE account_id=:account_id AND asset_id=:asset_id AND remaining_qty!=0 "
+            "ORDER BY timestamp, op_type DESC",
+            [(":account_id", self._account), (":asset_id", self._asset)])
+        while query.next():
+            opening_trade = readSQLrecord(query, named=True)
+            next_deal_qty = opening_trade['remaining_qty']
+            if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
+                next_deal_qty = qty - processed_qty  # If it happens - just process the remainder of the trade
+            _ = executeSQL("UPDATE open_trades SET remaining_qty=remaining_qty-:qty "
+                           "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
+                           [(":qty", next_deal_qty), (":op_type", opening_trade['op_type']),
+                            (":id", opening_trade['operation_id']), (":asset_id", self._asset)])
+            _ = executeSQL(
+                "INSERT INTO deals(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
+                "close_op_type, close_op_id, close_timestamp, close_price, qty) "
+                "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :open_price, "
+                ":close_op_type, :close_op_id, :close_timestamp, :close_price, :qty)",
+                [(":account_id", self._account), (":asset_id", self._asset),
+                 (":open_op_type", opening_trade['op_type']), (":open_op_id", opening_trade['operation_id']),
+                 (":open_timestamp", opening_trade['timestamp']), (":open_price", opening_trade['price']),
+                 (":close_op_type", self._otype), (":close_op_id", self._oid),
+                 (":close_timestamp", self._timestamp), (":close_price", price),
+                 (":qty", (-deal_sign) * next_deal_qty)])
+            processed_qty += next_deal_qty
+            processed_value += (next_deal_qty * opening_trade['price'])
+            if processed_qty == qty:
+                break
+        return processed_qty, processed_value
+
     def type(self):
         return self._otype
 
@@ -387,56 +426,26 @@ class Trade(LedgerTransaction):
             raise ValueError(
                 self.tr("Can't process trade as bank isn't set for investment account: ") + self._account_name)
 
-        type = copysign(1, self._qty)  # 1 is buy, -1 is sell
+        deal_sign = copysign(1, self._qty)  # 1 is buy, -1 is sell
         qty = abs(self._qty)
-        trade_value = round(self._price * qty, 2) + type * self._fee
+        trade_value = round(self._price * qty, 2) + deal_sign * self._fee
         processed_qty = 0
         processed_value = 0
         # Get asset amount accumulated before current operation
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account, self._asset)
-        if ((-type) * asset_amount) > 0:  # Process deal match if we have asset that is opposite to operation
-            # Get a list of all previous not matched trades or corporate actions
-            query = executeSQL(
-                "SELECT timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty "
-                "FROM open_trades "
-                "WHERE account_id=:account_id AND asset_id=:asset_id AND remaining_qty!=0 "
-                "ORDER BY timestamp, op_type DESC",
-                [(":account_id", self._account), (":asset_id", self._asset)])
-            while query.next():
-                opening_trade = readSQLrecord(query, named=True)
-                next_deal_qty = opening_trade['remaining_qty']
-                if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
-                    next_deal_qty = qty - processed_qty  # If it happens - just process the remainder of the trade
-                _ = executeSQL("UPDATE open_trades SET remaining_qty=remaining_qty-:qty "
-                               "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
-                               [(":qty", next_deal_qty), (":op_type", opening_trade['op_type']),
-                                (":id", opening_trade['operation_id']), (":asset_id", self._asset)])
-                _ = executeSQL(
-                    "INSERT INTO deals(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
-                    "close_op_type, close_op_id, close_timestamp, close_price, qty) "
-                    "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :open_price, "
-                    ":close_op_type, :close_op_id, :close_timestamp, :close_price, :qty)",
-                    [(":account_id", self._account), (":asset_id", self._asset),
-                     (":open_op_type", opening_trade['op_type']), (":open_op_id", opening_trade['operation_id']),
-                     (":open_timestamp", opening_trade['timestamp']), (":open_price", opening_trade['price']),
-                     (":close_op_type", self._otype), (":close_op_id", self._oid),
-                     (":close_timestamp", self._timestamp), (":close_price", self._price),
-                     (":qty", (-type) * next_deal_qty)])
-                processed_qty += next_deal_qty
-                processed_value += (next_deal_qty * opening_trade['price'])
-                if processed_qty == qty:
-                    break
-        if type > 0:
+        if ((-deal_sign) * asset_amount) > 0:  # Process deal match if we have asset that is opposite to operation
+            processed_qty, processed_value = self._close_deals_fifo(deal_sign, qty, self._price)
+        if deal_sign > 0:
             credit_value = ledger.takeCredit(self, self._account, trade_value)
         else:
             credit_value = ledger.returnCredit(self, self._account, trade_value)
         if credit_value < trade_value:
-            ledger.appendTransaction(self, BookAccount.Money, (-type) * (trade_value - credit_value))
+            ledger.appendTransaction(self, BookAccount.Money, (-deal_sign) * (trade_value - credit_value))
         if processed_qty > 0:  # Add result of closed deals
             # decrease (for sell) or increase (for buy) amount of assets in ledger
-            ledger.appendTransaction(self, BookAccount.Assets, type * processed_qty,
-                                     asset_id=self._asset, value=type * processed_value)
-            ledger.appendTransaction(self, BookAccount.Incomes, type * ((self._price * processed_qty) - processed_value),
+            ledger.appendTransaction(self, BookAccount.Assets, deal_sign * processed_qty,
+                                     asset_id=self._asset, value=deal_sign * processed_value)
+            ledger.appendTransaction(self, BookAccount.Incomes, deal_sign * ((self._price * processed_qty) - processed_value),
                                      category=PredefinedCategory.Profit, peer=self._broker)
         if processed_qty < qty:  # We have reminder that opens a new position
             _ = executeSQL(
@@ -445,8 +454,8 @@ class Trade(LedgerTransaction):
                 [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
                  (":account_id", self._account), (":asset_id", self._asset), (":price", self._price),
                  (":remaining_qty", qty - processed_qty)])
-            ledger.appendTransaction(self, BookAccount.Assets, type * (qty - processed_qty), asset_id=self._asset,
-                                     value=type * (qty - processed_qty) * self._price)
+            ledger.appendTransaction(self, BookAccount.Assets, deal_sign * (qty - processed_qty), asset_id=self._asset,
+                                     value=deal_sign * (qty - processed_qty) * self._price)
         if self._fee:
             ledger.appendTransaction(self, BookAccount.Costs, self._fee,
                                      category=PredefinedCategory.Fees, peer=self._broker)
