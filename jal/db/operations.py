@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QApplication
 from jal.constants import Setup, BookAccount, CustomColor, PredefinedPeer, PredefinedCategory
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
 from jal.db.db import JalDB
+from jal.db.settings import JalSettings
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -495,6 +496,13 @@ class Transfer(LedgerTransaction):
         self._fee_account_name = JalDB().get_account_name(self._fee_account)
         self._fee = self._data['fee']
         self._label, self._label_color = labels[display_type]
+        if self._data['asset']:
+            self._asset = self._data['asset']
+            self._asset_symbol = JalDB().get_asset_name(self._asset)
+            self._asset_name = JalDB().get_asset_name(self._asset, full=True)
+            self._account = self._withdrawal_account
+        else:
+            self._asset = None
         self._note = self._data['note']
         if self._display_type == Transfer.Outgoing:
             self._reconciled = JalDB().account_reconciliation_timestamp(self._withdrawal_account) >= self._timestamp
@@ -503,7 +511,7 @@ class Transfer(LedgerTransaction):
         elif self._display_type == Transfer.Fee:
             self._reconciled = JalDB().account_reconciliation_timestamp(self._fee_account) >= self._timestamp
         else:
-            assert True, "Unknown transfer type"
+            assert False, "Unknown transfer type"
 
 
     def timestamp(self):
@@ -520,7 +528,7 @@ class Transfer(LedgerTransaction):
         elif self._display_type == Transfer.Incoming:
             return self._deposit_account_name + " <- " + self._withdrawal_account_name
         else:
-            assert True, "Unknown transfer type"
+            assert False, "Unknown transfer type"
 
     def account_id(self):
         if self._display_type == Transfer.Fee:
@@ -530,7 +538,7 @@ class Transfer(LedgerTransaction):
         elif self._display_type == Transfer.Incoming:
             return self._deposit_account
         else:
-            assert True, "Unknown transfer type"
+            assert False, "Unknown transfer type"
 
     def description(self) -> str:
         try:
@@ -559,7 +567,7 @@ class Transfer(LedgerTransaction):
         elif self._display_type == Transfer.Fee:
             return [-self._fee]
         else:
-            assert True, "Unknown transfer type"
+            assert False, "Unknown transfer type"
 
     def value_currency(self) -> str:
         if self._display_type == Transfer.Outgoing:
@@ -569,7 +577,7 @@ class Transfer(LedgerTransaction):
         elif self._display_type == Transfer.Fee:
             return self._fee_currency
         else:
-            assert True, "Unknown transfer type"
+            assert False, "Unknown transfer type"
 
     def value_total(self) -> str:
         amount = None
@@ -580,7 +588,7 @@ class Transfer(LedgerTransaction):
         elif self._display_type == Transfer.Fee:
             amount = self._money_total(self._fee_account)
         else:
-            assert True, "Unknown transfer type"
+            assert False, "Unknown transfer type"
         if amount is None:
             return super().value_total()
         else:
@@ -588,22 +596,76 @@ class Transfer(LedgerTransaction):
 
     def processLedger(self, ledger):
         if self._display_type == Transfer.Outgoing:
-            credit_taken = ledger.takeCredit(self, self._withdrawal_account, self._withdrawal)
-            ledger.appendTransaction(self, BookAccount.Money, -(self._withdrawal - credit_taken))
-            ledger.appendTransaction(self, BookAccount.Transfers, self._withdrawal)
+            if self._asset is not None:
+                self.processAssetTransfer(ledger)
+            else:
+                credit_taken = ledger.takeCredit(self, self._withdrawal_account, self._withdrawal)
+                ledger.appendTransaction(self, BookAccount.Money, -(self._withdrawal - credit_taken))
+                ledger.appendTransaction(self, BookAccount.Transfers, self._withdrawal)
         elif self._display_type == Transfer.Fee:
             credit_taken = ledger.takeCredit(self, self._fee_account, self._fee)
             ledger.appendTransaction(self, BookAccount.Money, -(self._fee - credit_taken))
             ledger.appendTransaction(self, BookAccount.Costs, self._fee,
                                     category=PredefinedCategory.Fees, peer=PredefinedPeer.Financial)
         elif self._display_type == Transfer.Incoming:
-            credit_returned = ledger.returnCredit(self, self._deposit_account, self._deposit)
-            if credit_returned < self._deposit:
-                ledger.appendTransaction(self, BookAccount.Money, self._deposit - credit_returned)
-            ledger.appendTransaction(self, BookAccount.Transfers, -self._deposit)
-        else:  # TODO implement assets transfer
-            assert True, "Unknown transfer type"
+            if self._asset is not None:
+                self.processAssetTransfer(ledger)
+            else:
+                credit_returned = ledger.returnCredit(self, self._deposit_account, self._deposit)
+                if credit_returned < self._deposit:
+                    ledger.appendTransaction(self, BookAccount.Money, self._deposit - credit_returned)
+                ledger.appendTransaction(self, BookAccount.Transfers, -self._deposit)
+        else:
+            assert False, "Unknown transfer type"
 
+    def processAssetTransfer(self, ledger):
+        if self._display_type == Transfer.Outgoing:   # Withdraw asset from source account
+            asset_amount = ledger.getAmount(BookAccount.Assets, self._withdrawal_account, self._asset)
+            if asset_amount < (self._withdrawal - 2 * Setup.CALC_TOLERANCE):
+                raise ValueError(self.tr("Asset amount is not enough for asset transfer processing. Date: ")
+                                 + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
+                                 + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
+            processed_qty, processed_value = self._close_deals_fifo(-1, self._withdrawal, None)
+            if processed_qty < (self._withdrawal - 2 * Setup.CALC_TOLERANCE):
+                raise ValueError(self.tr("Processed asset amount is less than transfer amount. Date: ")
+                                 + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
+                                 + f"Processed amount: {asset_amount}, Operation: {self.dump()}")
+            if self._withdrawal_currency == JalSettings().getValue('BaseCurrency'):
+                currency_rate = 1
+            else:
+                currency_rate = JalDB().get_quote(JalDB().get_account_currency(self._withdrawal_account),
+                                                  JalSettings().getValue('BaseCurrency'),
+                                                  self._withdrawal_timestamp, exact=False)
+            ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
+                                     asset_id=self._asset, value=-processed_value)
+            ledger.appendTransaction(self, BookAccount.Transfers, self._withdrawal,
+                                     asset_id=self._asset, value=processed_value*currency_rate)
+        elif self._display_type == Transfer.Incoming:
+            # get value of withdrawn asset
+            value = readSQL("SELECT value FROM ledger WHERE "
+                            "book_account=:book_transfers AND op_type=:op_type AND operation_id=:id",
+                            [(":book_transfers", BookAccount.Transfers), (":op_type", self._otype), (":id", self._oid)],
+                            check_unique=True)
+            if not value:
+                raise ValueError(self.tr("Asset withdrawal not found for transfer.") + f" Operation:  {self.dump()}")
+            if self._deposit_currency == JalSettings().getValue('BaseCurrency'):
+                currency_rate = 1
+            else:
+                currency_rate = JalDB().get_quote(JalDB().get_account_currency(self._deposit_account),
+                                                  JalSettings().getValue('BaseCurrency'),
+                                                  self._deposit_timestamp, exact=False)
+            price = value*currency_rate / self._deposit
+            _ = executeSQL(
+                "INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
+                "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
+                [(":timestamp", self._deposit_timestamp), (":type", self._otype), (":operation_id", self._oid),
+                 (":account_id", self._deposit_account), (":asset_id", self._asset), (":price", price),
+                 (":remaining_qty", self._deposit)])
+            ledger.appendTransaction(self, BookAccount.Transfers, -self._deposit, asset_id=self._asset, value=-value)
+            ledger.appendTransaction(self, BookAccount.Assets, self._deposit,
+                                     asset_id=self._asset, value=value*currency_rate)
+        else:
+            assert False, "Unknown transfer type for asset transfer"
 
 # ----------------------------------------------------------------------------------------------------------------------
 class CorporateAction(LedgerTransaction):

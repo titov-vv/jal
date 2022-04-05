@@ -131,3 +131,15 @@ def create_corporate_actions(account_id, actions):
                            (":asset_id", action[2]), (":qty", action[3]), (":asset_id_new", action[4]),
                            (":qty_new", action[5]), (":basis", action[6]), (":note", action[7])],
                           commit=True) is not None
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Create transfers in database: transfers is a list of transfers as tuples
+# (timestamp, withdrawal_account, withdrawal, deposit_account, deposit, asset_id)
+def create_transfers(transfers):
+    for transfer in transfers:
+        assert executeSQL("INSERT INTO transfers (withdrawal_timestamp, withdrawal_account, withdrawal, "
+                          "deposit_timestamp, deposit_account, deposit, asset) "
+                          "VALUES (:timestamp, :from, :withdrawal, :timestamp, :to, :deposit, :asset_id)",
+                          [(":timestamp", transfer[0]), (":from", transfer[1]), (":withdrawal", transfer[2]),
+                           (":to", transfer[3]), (":deposit", transfer[4]), (":asset_id", transfer[5])],
+                          commit=True) is not None
