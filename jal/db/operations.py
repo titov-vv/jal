@@ -254,12 +254,14 @@ class Dividend(LedgerTransaction):
     Dividend = 1
     BondInterest = 2
     StockDividend = 3
+    StockVesting = 4
 
     def __init__(self, operation_id=None):
         labels = {
             Dividend.Dividend: ('Δ', CustomColor.DarkGreen),
             Dividend.BondInterest: ('%', CustomColor.DarkGreen),
             Dividend.StockDividend: ('Δ\n+', CustomColor.DarkGreen),
+            Dividend.StockVesting: ('Δ\n+', CustomColor.DarkBlue)
         }
         super().__init__(operation_id)
         self._table = "dividends"
@@ -326,8 +328,8 @@ class Dividend(LedgerTransaction):
         if self._broker is None:
             raise ValueError(
                 self.tr("Can't process dividend as bank isn't set for investment account: ") + self._account_name)
-        if self._subtype == Dividend.StockDividend:
-            self.processStockDividend(ledger)
+        if self._subtype == Dividend.StockDividend or self._subtype == Dividend.StockVesting:
+            self.processStockDividendOrVesting(ledger)
             return
         if self._subtype == Dividend.Dividend:
             income_category = PredefinedCategory.Dividends
@@ -352,14 +354,14 @@ class Dividend(LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Costs, self._tax,
                                      category=PredefinedCategory.Taxes, peer=self._broker)
 
-    def processStockDividend(self, ledger):
+    def processStockDividendOrVesting(self, ledger):
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account, self._asset)
         if asset_amount < -Setup.CALC_TOLERANCE:
-            raise NotImplemented(self.tr("Not supported action: stock dividend closes short trade.") +
+            raise NotImplemented(self.tr("Not supported action: stock dividend or vesting closes short trade.") +
                                  f" Operation: {self.dump()}")
         quote = JalDB().get_quote(self._asset, JalDB().get_account_currency(self._account), self._timestamp)
         if quote is None:
-            raise ValueError(self.tr("No stock quote for stock dividend.") + f" Operation: {self.dump()}")
+            raise ValueError(self.tr("No stock quote for stock dividend or vesting.") + f" Operation: {self.dump()}")
         _ = executeSQL(
             "INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
             "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",

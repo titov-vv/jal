@@ -215,6 +215,15 @@ class StatementIBKR(StatementXML):
                                             ('tradeID', 'number', str, ''),
                                             ('description', 'description', str, None)],
                                  'loader': self.load_cash_transactions},
+            'StockGrantActivities': {'tag': 'StockGrantActivity',
+                                     'level': '',
+                                     'values': [('accountId', 'account', IBKR_Account, None),
+                                                ('symbol', 'asset', IBKR_Asset, None),
+                                                ('awardDate', 'timestamp', datetime, None),
+                                                ('activityDescription', 'description', str, None),
+                                                ('quantity', 'amount', float, None),
+                                                ('price', 'price', float, None)],
+                                     'loader': self.load_vestings},
             'TransactionTaxes': {'tag': 'TransactionTax',
                                  'level': 'SUMMARY',
                                  'values': [('accountId', 'account', IBKR_Account, None),
@@ -704,9 +713,19 @@ class StatementIBKR(StatementXML):
         self._data[FOF.CORP_ACTIONS].append(action)
         return 1
 
+    def load_vestings(self, vestings):
+        cnt = 0
+        asset_payments_base = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
+        for i, vesting in enumerate(vestings):
+            vesting['id'] = asset_payments_base + i
+            vesting['type'] = FOF.PAYMENT_STOCK_VESTING
+            # self.drop_extra_fields(action, ["quantity", "value", "proceeds", "code", "asset_type", "jal_processed"])
+            self._data[FOF.ASSET_PAYMENTS].append(vesting)
+            cnt += 1
+        logging.info(self.tr("Stock vestings loaded: ") + f"{cnt} ({len(vestings)})")
+
     def load_cash_transactions(self, cash):
         cnt = 0
-
         dividends = list(filter(lambda tr: tr['type'] in ['Dividends', 'Payment In Lieu Of Dividends'], cash))
         asset_payments_base = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
         for i, dividend in enumerate(dividends):
@@ -715,7 +734,6 @@ class StatementIBKR(StatementXML):
             self.drop_extra_fields(dividend, ["currency"])
             self._data[FOF.ASSET_PAYMENTS].append(dividend)
             cnt += 1
-
         asset_payments_base += cnt
         bond_interests = list(filter(lambda tr: tr['type'] in ['Bond Interest Paid', 'Bond Interest Received'], cash))
         for i, bond_interest in enumerate(bond_interests):

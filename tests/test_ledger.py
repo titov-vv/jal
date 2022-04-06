@@ -5,7 +5,7 @@ from tests.helpers import create_stocks, create_actions, create_trades, create_q
     create_corporate_actions, create_stock_dividends, create_transfers
 from constants import BookAccount
 from jal.db.ledger import Ledger
-from jal.db.operations import LedgerTransaction
+from jal.db.operations import LedgerTransaction, Dividend
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
 
 
@@ -141,7 +141,7 @@ def test_stock_dividend_change(prepare_db_fifo):
 
     # Insert a stock dividend between trades
     stock_dividends = [
-        (1643907900, 1, 4, 2.0, 2, 54.0, 0.0, 'Stock dividend +2 A')
+        (Dividend.StockDividend, 1643907900, 1, 4, 2.0, 2, 54.0, 0.0, 'Stock dividend +2 A')
     ]
     create_stock_dividends(stock_dividends)
 
@@ -206,7 +206,7 @@ def test_fifo(prepare_db_fifo):
     create_corporate_actions(1, test_corp_actions)
 
     stock_dividends = [
-        (1608368400, 1, 16, 1.0, 2, 1050.0, 60.0, 'Stock dividend +1 N')
+        (Dividend.StockDividend, 1608368400, 1, 16, 1.0, 2, 1050.0, 60.0, 'Stock dividend +1 N')
     ]
     create_stock_dividends(stock_dividends)
 

@@ -4,7 +4,6 @@
     {"id": 1, "number": "U1234567", "currency": 1, "cash_begin": 0.0, "cash_end": 10659.073152, "cash_end_settled": -81667.430698},
     {"id": 2, "number": "U1234567", "currency": 2, "cash_begin": 0.0, "cash_end": -935.800878369, "cash_end_settled": -935.800878369}
   ],
- "asset_payments": [],
  "assets": [{"id": 1, "name": "", "type": "money"},
             {"id": 2, "name": "", "type": "money"},
             {"id": 3, "type": "stock", "name": "TONGDA GROUP HOLDINGS LTD", "isin": "KYG8917X1218"},
@@ -19,6 +18,10 @@
              {"id": 3, "asset": 3, "currency": 1, "symbol": "698", "note": "SEHK"},
              {"id": 5, "asset": 5, "currency": 2, "symbol": "IBKR", "note": "NASDAQ"},
              {"id": 6, "asset": 6, "currency": 1, "symbol": "2965", "note": "CORPACT"}
+ ],
+ "asset_payments": [
+    {"id": 1, "type": "stock_vesting", "account": 2, "timestamp": 1620345600, "asset": 5, "amount": 0.677, "price": 69.62, "description": "Stock Award Grant for Cash Deposit" },
+    {"id": 2, "type": "stock_vesting", "account": 2, "timestamp": 1630886400, "asset": 5, "amount": 0.2129, "price": 64.5, "description": "Stock Award Grant for Cash Deposit" }
  ],
  "corporate_actions": [
  ],

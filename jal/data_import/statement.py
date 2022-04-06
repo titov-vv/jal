@@ -51,6 +51,7 @@ class FOF:
     PAYMENT_DIVIDEND = "dividend"
     PAYMENT_INTEREST = "interest"
     PAYMENT_STOCK_DIVIDEND = "stock_dividend"
+    PAYMENT_STOCK_VESTING = 'stock_vesting'
 
     def __init__(self):
         pass
@@ -437,6 +438,10 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                                          payment['number'], tax=tax, price=payment['price'])
                 else:  # Dividend exists, only tax to be updated
                     JalDB().update_dividend_tax(-payment['id'], payment['tax'])
+            elif payment['type'] == FOF.PAYMENT_STOCK_VESTING:
+                JalDB().add_dividend(Dividend.StockVesting, payment['timestamp'], -payment['account'],
+                                     -payment['asset'], payment['amount'], payment['description'],
+                                     price=payment['price'])
             else:
                 raise Statement_ImportError(self.tr("Unsupported payment type: ") + f"{payment}")
 

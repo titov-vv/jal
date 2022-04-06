@@ -240,19 +240,22 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [6, 2, 1578082800, '', '', 1, 1, 6, 60.2, 6.02, 'ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)'],
         [7, 2, 1633033200, '', '', 1, 1, 4, 158.6, 15.86, 'VUG (US9229087369) CASH DIVIDEND USD 0.52 (Ordinary Dividend)'],
         [8, 2, 1590595065, '', '2882737839', 2, 1, 12, -25.69, 0.0, 'PURCHASE ACCRUED INT X 6 1/4 03/15/26'],
-        [9, 2, 1600128000, '', '', 2, 1, 12, 62.5, 0.0, 'BOND COUPON PAYMENT (X 6 1/4 03/15/26)']
+        [9, 2, 1600128000, '', '', 2, 1, 12, 62.5, 0.0, 'BOND COUPON PAYMENT (X 6 1/4 03/15/26)'],
+        [10, 2, 1620345600, '', '', 4, 1, 8, 2.0, 0.0, 'Stock Award Grant for Cash Deposit']
     ]
     assert readSQL("SELECT COUNT(*) FROM dividends") == len(test_payments)
     for i, payment in enumerate(test_payments):
         assert readSQL("SELECT * FROM dividends WHERE id=:id", [(":id", i + 1)]) == payment
 
-    # Verify that asset prices were loaded for stock dividends
+    # Verify that asset prices were loaded for stock dividends and vestings
     stock_quotes = [
         [1, 946684800, 1, 1, 1.0],
         [2, 1633033200, 4, 2, 25.73],
         [3, 1595017200, 18, 2, 4.7299999999999995],
-        [4, 1591215600, 34, 2, 8.59]
+        [4, 1591215600, 34, 2, 8.59],
+        [5, 1620345600, 8, 2, 678.0]
     ]
+    assert readSQL("SELECT COUNT(*) FROM quotes") == len(stock_quotes)
     for i, quote in enumerate(stock_quotes):
         assert readSQL("SELECT * FROM quotes WHERE id=:id", [(":id", i + 1)]) == quote
 
