@@ -301,7 +301,7 @@ class Dividend(LedgerTransaction):
             return [self._amount, None]
 
     def value_currency(self) -> str:
-        if self._subtype == Dividend.StockDividend:
+        if self._subtype == Dividend.StockDividend or self._subtype == Dividend.StockVesting:
             if self._tax:
                 return f" {self._asset_symbol}\n {self._account_currency}"
             else:
@@ -311,7 +311,7 @@ class Dividend(LedgerTransaction):
 
     def value_total(self) -> str:
         amount = self._money_total(self._account)
-        if self._subtype == Dividend.StockDividend:
+        if self._subtype == Dividend.StockDividend or self._subtype == Dividend.StockVesting:
             qty = self._asset_total(self._account, self._asset)
             if qty is None:
                 return super().value_total()

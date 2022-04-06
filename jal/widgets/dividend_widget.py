@@ -112,7 +112,8 @@ class DividendWidget(AbstractOperationDetails):
         self.combo_model = QStringListModel([self.tr("N/A"),
                                              self.tr("Dividend"),
                                              self.tr("Bond Interest"),
-                                             self.tr("Stock Dividend")])
+                                             self.tr("Stock Dividend"),
+                                             self.tr("Stock Vesting")])
         self.type.setModel(self.combo_model)
 
         self.mapper.setItemDelegate(DividendWidgetDelegate(self.mapper))
@@ -141,12 +142,14 @@ class DividendWidget(AbstractOperationDetails):
 
     @Slot()
     def typeChanged(self, dividend_type_id):
-        self.price_label.setVisible(dividend_type_id == Dividend.StockDividend)
-        self.price_edit.setVisible(dividend_type_id == Dividend.StockDividend)
+        self.price_label.setVisible(
+            dividend_type_id == Dividend.StockDividend or dividend_type_id == Dividend.StockVesting)
+        self.price_edit.setVisible(
+            dividend_type_id == Dividend.StockDividend or dividend_type_id == Dividend.StockVesting)
         self.refreshAssetPrice()
 
     def refreshAssetPrice(self):
-        if self.type.currentIndex() == Dividend.StockDividend:
+        if self.type.currentIndex() == Dividend.StockDividend or self.type.currentIndex() == Dividend.StockVesting:
             price = JalDB().get_quote(self.asset_widget.selected_id,
                                       JalDB().get_account_currency(self.account_widget.selected_id),
                                       self.timestamp_editor.dateTime().toSecsSinceEpoch())
