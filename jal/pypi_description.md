@@ -6,8 +6,8 @@ It was designed to keep records of personal incomes/spendings and investments wi
 ### Main features
 - multiple accounts with different currencies (base currency is russian rouble but might be changed in future versions)
 - 5 types of transactions: 
-    1. Generic income/spending operations that may be splitted into several categories
-    2. Transfers of money between different accounts and currencies
+    1. Generic income/spending operations that may be split into several categories
+    2. Asset and money transfers between accounts (with currency conversion if required)
     3. Buy/Sell operation for securities (jal supports stocks, ETFs, options, partial support of bonds and futures)
     4. Dividend for stocks and Interest payments for bonds
     5. Corporate actions for stocks (Split, Symbol change, Merger, Spin-Off, Stock dividend)
