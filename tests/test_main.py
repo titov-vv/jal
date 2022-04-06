@@ -3,7 +3,7 @@ from shutil import copyfile
 import sqlite3
 
 from tests.fixtures import project_root
-from constants import Setup
+from jal.constants import Setup
 from jal.db.db import JalDB, JalDBError
 from jal.db.helpers import get_dbfilename
 from jal.db.backup_restore import JalBackup

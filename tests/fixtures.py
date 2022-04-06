@@ -3,7 +3,7 @@ import os
 from shutil import copyfile
 from PySide6.QtSql import QSqlDatabase
 
-from constants import Setup, PredefinedCategory, PredefinedAsset, AssetData
+from jal.constants import Setup, PredefinedCategory, PredefinedAsset, AssetData
 from jal.db.db import JalDB, JalDBError
 from jal.db.helpers import executeSQL, get_dbfilename
 from tests.helpers import create_assets, create_dividends

@@ -1,5 +1,5 @@
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
-from data_import.broker_statements.ibkr import StatementIBKR
+from jal.data_import.broker_statements.ibkr import StatementIBKR
 from jal.db.ledger import Ledger
 from jal.db.helpers import readSQL
 from jal.constants import PredefinedAsset

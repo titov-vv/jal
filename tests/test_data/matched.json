@@ -145,7 +145,7 @@
     {"id": 4, "number": "", "timestamp": 1553545500, "settlement": 1553545500, "account": -1, "asset": 6, "quantity": -0.777, "price": 168.37, "fee": 0.0},
     {"id": 5, "number": "2661774904", "timestamp": 1579094694, "settlement": 1579219200, "account": -1, "asset": 19, "quantity": 45000.0, "price": 0.0012, "fee": 0.54},
     {"id": 6, "number": "2674740000", "timestamp": 1580215513, "settlement": 1580215513, "account": -1, "asset": -4, "quantity": -1240.0, "price": 54.84, "fee": 7.75519312},
-    {"id": 7, "number": "2674740000", "timestamp": 1580215566, "settlement": 1580342400, "account": -1, "asset": 29, "quantity": -148.0, "price": 316.68, "fee": -1.987792848},
+    {"id": 7, "number": "2674740000", "timestamp": 1580215566, "settlement": 1580342400, "account": -1, "asset": 29, "quantity": -148.0, "price": 316.68, "fee": -0.987792848},
     {"id": 8, "number": "2882737839", "timestamp": 1590595065, "settlement": 1590710400, "account": -1, "asset": 9, "quantity": 2.0, "price": 637.09, "fee": 2.0},
     {"id": 9, "number": "2931083780", "timestamp": 1592575273, "settlement": 1592784000, "account": -1, "asset": 30, "quantity": -100.0, "price": 4.54, "fee": 1.1058334},
     {"id": 10, "number": "2997636969", "timestamp": 1595607600, "settlement": 1595808000, "account": -1, "asset": 30, "quantity": 100.0, "price": 0.0, "fee": 0.0, "note": "Option assignment"},

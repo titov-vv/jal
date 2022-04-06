@@ -3,7 +3,7 @@ from pytest import approx
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo, prepare_db_ledger
 from tests.helpers import create_stocks, create_actions, create_trades, create_quotes, \
     create_corporate_actions, create_stock_dividends
-from constants import BookAccount
+from jal.constants import BookAccount
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord

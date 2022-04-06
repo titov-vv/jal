@@ -170,6 +170,7 @@ class StatementIBKR(StatementXML):
                                   ('quantity', 'quantity', float, None),
                                   ('proceeds', 'proceeds', float, None),
                                   ('multiplier', 'multiplier', float, None),
+                                  ('taxes', 'tax_fee', float, 0),
                                   ('ibCommission', 'fee', float, None),
                                   ('tradeID', 'number', str, ''),
                                   ('exchange', 'exchange', str, ''),
@@ -387,10 +388,11 @@ class StatementIBKR(StatementXML):
             if asset['type'] == FOF.ASSET_BOND:
                 trade['quantity'] = trade['quantity'] / IBKR_Asset.BondPrincipal
                 trade['price'] = trade['price'] * IBKR_Asset.BondPrincipal / 100.0  # Bonds are priced in percents of principal
+            trade['fee'] = trade['fee'] + trade['tax_fee']
             trade['fee'] = -trade['fee'] if trade['fee'] != 0 else 0.0  # otherwise we may have negative 0.0
             if trade['notes'] == StatementIBKR.CancelledFlag:
                 trade['cancelled'] = True
-            self.drop_extra_fields(trade, ["type", "proceeds", "multiplier", "exchange", "notes"])
+            self.drop_extra_fields(trade, ["type", "proceeds", "multiplier", "exchange", "notes", "tax_fee"])
             self._data[FOF.TRADES].append(trade)
             cnt += 1
         return cnt
@@ -408,7 +410,9 @@ class StatementIBKR(StatementXML):
             transfer['deposit'] = abs(transfer.pop('proceeds'))
             transfer['fee'] = -transfer['fee'] if transfer['fee'] != 0 else 0.0  # otherwise we may have negative 0.0
             transfer['description'] = transfer['exchange']
-            self.drop_extra_fields(transfer, ["type", "settlement", "price", "multiplier", "exchange", "notes"])
+            self.drop_extra_fields(
+                transfer, ["type", "settlement", "price", "multiplier", "exchange", "notes", "tax_fee"]
+            )
             self._data[FOF.TRANSFERS].append(transfer)
             cnt += 1
         return cnt

@@ -2,10 +2,10 @@ import json
 import os
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
-from data_import.broker_statements.ibkr import StatementIBKR
+from jal.data_import.broker_statements.ibkr import StatementIBKR
 from tests.helpers import create_assets, create_quotes, create_dividends, create_coupons, create_trades, \
     create_actions, create_corporate_actions, create_stock_dividends
-from constants import PredefinedAsset
+from jal.constants import PredefinedAsset
 from jal.db.ledger import Ledger
 from jal.db.operations import CorporateAction
 from jal.data_export.taxes import TaxesRus

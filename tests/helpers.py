@@ -1,6 +1,6 @@
 from jal.db.helpers import executeSQL
 from jal.db.operations import Dividend
-from constants import PredefinedAsset
+from jal.constants import PredefinedAsset
 
 
 # ----------------------------------------------------------------------------------------------------------------------
