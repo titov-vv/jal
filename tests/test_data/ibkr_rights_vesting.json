@@ -1,0 +1,27 @@
+{
+  "period": [1609459200, 1640995199],
+  "accounts": [
+    {"id": 1, "number": "U1234567", "currency": 1, "cash_begin": 0.0, "cash_end": 10659.073152, "cash_end_settled": -81667.430698},
+    {"id": 2, "number": "U1234567", "currency": 2, "cash_begin": 0.0, "cash_end": -935.800878369, "cash_end_settled": -935.800878369}
+  ],
+ "asset_payments": [],
+ "assets": [{"id": 1, "name": "", "type": "money"},
+            {"id": 2, "name": "", "type": "money"},
+            {"id": 3, "type": "stock", "name": "TONGDA GROUP HOLDINGS LTD", "isin": "KYG8917X1218"},
+            {"id": 5, "type": "stock", "name": "INTERACTIVE BROKERS GRO-CL A", "isin": "US45841N1072" },
+            {"id": 6, "type": "stock", "isin": "KYG8917X1RTS"}
+ ],
+ "assets_data": [
+   {"asset": 5, "id": 1, "reg_number": "45841N107"}
+ ],
+ "symbols": [{"id": 1, "asset": 1, "currency": -1, "symbol": "HKD"},
+             {"id": 2, "asset": 2, "currency": -1, "symbol": "USD"},
+             {"id": 3, "asset": 3, "currency": 1, "symbol": "698", "note": "SEHK"},
+             {"id": 5, "asset": 5, "currency": 2, "symbol": "IBKR", "note": "NASDAQ"},
+             {"id": 6, "asset": 6, "currency": 1, "symbol": "2965", "note": "CORPACT"}
+ ],
+ "corporate_actions": [
+ ],
+ "income_spending": [],
+ "trades": [],
+ "transfers": []}

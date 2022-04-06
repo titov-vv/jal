@@ -10,11 +10,18 @@ from data_import.broker_statements.openbroker import StatementOpenBroker
 
 # ----------------------------------------------------------------------------------------------------------------------
 def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_ibkr):
+    # Test big major things
     with open(data_path + 'ibkr.json', 'r') as json_file:
         statement = json.load(json_file)
-
     IBKR = StatementIBKR()
     IBKR.load(data_path + 'ibkr.xml')
+    assert IBKR._data == statement
+
+    # Test rights issue and vesting
+    with open(data_path + 'ibkr_rights_vesting.json', 'r') as json_file:
+        statement = json.load(json_file)
+    IBKR = StatementIBKR()
+    IBKR.load(data_path + 'ibkr_rights_vesting.xml')
     assert IBKR._data == statement
 
 

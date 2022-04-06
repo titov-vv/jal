@@ -38,6 +38,7 @@ class FOF:
     ASSET_FUTURES = "futures"
     ASSET_OPTION = "option"
     ASSET_WARRANT = "warrant"
+    ASSET_RIGHTS = "right"
 
     ACTION_MERGER = "merger"
     ACTION_SPLIT = "split"
@@ -45,6 +46,7 @@ class FOF:
     ACTION_SYMBOL_CHANGE = "symbol_change"
     ACTION_BOND_MATURITY = "bond_maturity"    # Isn't used in reality as will be put as ordinary sell operation
     ACTION_DELISTING = "delisting"
+    ACTION_RIGHTS_ISSUE = "rights_issue"      # Not in use as doesn't create any financial consequences
 
     PAYMENT_DIVIDEND = "dividend"
     PAYMENT_INTEREST = "interest"
@@ -217,12 +219,31 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                             FOF.CORP_ACTIONS, FOF.ASSET_PAYMENTS, FOF.INCOME_SPENDING]
         for section in mutable_sections:
             for element in self._data[section]:
-                for tag in element:
-                    if tag == tag_name:
-                        if type(element[tag]) == list:
-                            element[tag] = [-new_value if x == old_value else x for x in element[tag]]
-                        else:
-                            element[tag] = -new_value if element[tag] == old_value else element[tag]
+                if self._key_match(element, tag_name, old_value):
+                    if type(element[tag_name]) == list:
+                        element[tag_name] = [-new_value if x == old_value else x for x in element[tag_name]]
+                    else:
+                        element[tag_name] = -new_value if element[tag_name] == old_value else element[tag_name]
+
+    # Deletes element if it's 'tag_name' key matches 'value'
+    def _delete_with_id(self, tag_name, value):
+        mutable_sections = [FOF.ACCOUNTS, FOF.ASSETS, FOF.SYMBOLS, FOF.ASSETS_DATA, FOF.TRADES, FOF.TRANSFERS,
+                            FOF.CORP_ACTIONS, FOF.ASSET_PAYMENTS, FOF.INCOME_SPENDING]
+        for section in mutable_sections:
+            self._data[section] = [x for x in self._data[section] if not self._key_match(x, tag_name, value)]
+
+    # returns True if dictionary 'element' has 'key' that matches 'value' or is a list with 'value'
+    def _key_match(self, element, key, value):
+        for tag in element:
+            if tag == key:
+                if type(element[tag]) == list:
+                    for x in element[tag]:
+                        if x == value:
+                            return True
+                else:
+                    if element[tag] == value:
+                        return True
+        return False
 
     def validate_format(self):
         schema_name = get_app_path() + Setup.IMPORT_PATH + os.sep + Setup.IMPORT_SCHEMA_NAME
@@ -582,3 +603,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             else:
                 return
         self._uppend_keys_from(asset_data, asset_info, ['reg_number', 'expiry'])
+
+    # Removes asset and all links to it from self._data
+    def remove_asset(self, asset_id):
+        self._delete_with_id("asset", asset_id)
+        self._data[FOF.ASSETS] = [x for x in self._data[FOF.ASSETS] if x['id'] != asset_id]
