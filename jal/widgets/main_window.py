@@ -249,4 +249,4 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
                         account = JalDB().get_account_name(account_id)
                         asset = JalDB().get_asset_name(asset_id)
                         logging.warning(self.tr("Statement ending balance doesn't match: ") +
-                                        f"{account} / {asset} / {amount} <> {totals[account_id][asset_id]}")
+                                        f"{account} / {asset} / {amount} (act) <> {totals[account_id][asset_id]} (exp)")

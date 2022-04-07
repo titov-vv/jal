@@ -462,7 +462,8 @@ class JalDB:
     def get_asset_amount(self, timestamp, account_id, asset_id):
         return readSQL("SELECT amount_acc FROM ledger "
                        "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp<=:timestamp "
-                       "AND (book_account=:money OR book_account=:assets)"
+                       "AND (book_account=:money OR book_account=:assets OR book_account=:liabilities) "
                        "ORDER BY id DESC LIMIT 1",
                        [(":account_id", account_id), (":asset_id", asset_id), (":timestamp", timestamp),
-                        (":money", BookAccount.Money), (":assets", BookAccount.Assets)])
+                        (":money", BookAccount.Money), (":assets", BookAccount.Assets),
+                        (":liabilities", BookAccount.Liabilities)])
