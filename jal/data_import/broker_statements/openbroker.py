@@ -3,7 +3,7 @@ import re
 from datetime import datetime
 
 from PySide6.QtWidgets import QApplication
-from jal.constants import Setup
+from jal.constants import Setup, PredefinedCategory
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xml import StatementXML
 from jal.net.downloader import QuoteDownloader
@@ -305,7 +305,8 @@ class StatementOpenBroker(StatementXML):
             'Комиссия Брокера / ': None,              # These operations are included of trade's data
             'Удержан налог на купонный доход': None,  # Tax information is included into interest payment data
             'Поставлены на торги средства клиента': self.transfer_in,
-            'Выплата дохода': self.asset_payment
+            'Выплата дохода': self.asset_payment,
+            'Возврат излишне удержанного налога': self.tax_refund
         }
 
         for cash in cash_operations:
@@ -344,6 +345,12 @@ class StatementOpenBroker(StatementXML):
             payment_operations[parts.groupdict()['type']](timestamp, account_id, amount, description)
         except KeyError:
             raise Statement_ImportError(self.tr("Unknown payment type: ") + f"'{parts.groupdict()['type']}'")
+
+    def tax_refund(self, timestamp, account_id, amount, description):
+        new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
+        payment = {'id': new_id, 'account': account_id, 'timestamp': timestamp, 'peer': 0,
+                   'lines': [{'amount': amount, 'category': -PredefinedCategory.Taxes, 'description': description}]}
+        self._data[FOF.INCOME_SPENDING].append(payment)
 
     def interest_payment(self, timestamp, account_id, amount, description):
         intrest_pattern = r"^Выплата дохода клиент (?P<account>\w+) \((?P<type>\w+) (?P<number>\d+) (?P<symbol>.*)\) налог.* (?P<tax>\d+\.\d+) рубл.*$"
