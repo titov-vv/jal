@@ -332,25 +332,25 @@ class Dividend(LedgerTransaction):
             self.processStockDividendOrVesting(ledger)
             return
         if self._subtype == Dividend.Dividend:
-            income_category = PredefinedCategory.Dividends
+            category = PredefinedCategory.Dividends
         elif self._subtype == Dividend.BondInterest:
-            income_category = PredefinedCategory.Interest
+            category = PredefinedCategory.Interest
         else:
             raise ValueError(self.tr("Unsupported dividend type.") + f" Operation: {self.dump()}")
-        if self._amount > 0:
-            credit_returned = ledger.returnCredit(self, self._account, self._amount - self._tax)
-            if credit_returned < (self._amount - self._tax):
-                ledger.appendTransaction(self, BookAccount.Money, self._amount - credit_returned)  # tax will be deducted separately
-            ledger.appendTransaction(self, BookAccount.Incomes, -self._amount,
-                                     category=income_category, peer=self._broker)
+        operation_value = (self._amount - self._tax)
+        if operation_value > 0:
+            credit_returned = ledger.returnCredit(self, self._account, operation_value)
+            if credit_returned < operation_value:
+                ledger.appendTransaction(self, BookAccount.Money, operation_value - credit_returned)
         else:   # This branch is valid for accrued bond interest payments for bond buying trades
-            credit_taken = ledger.takeCredit(self, self._account, -self._amount - self._tax)  # tax always positive
-            if credit_taken < -self._amount:
-                ledger.appendTransaction(self, BookAccount.Money, self._amount + credit_taken)  # tax will be deducted separately
-            ledger.appendTransaction(self, BookAccount.Costs, -self._amount,
-                                     category=income_category, peer=self._broker)
+            credit_taken = ledger.takeCredit(self, self._account, -operation_value)
+            if credit_taken < -operation_value:
+                ledger.appendTransaction(self, BookAccount.Money, operation_value + credit_taken)
+        if self._amount > 0:
+            ledger.appendTransaction(self, BookAccount.Incomes, -self._amount, category=category, peer=self._broker)
+        else:   # This branch is valid for accrued bond interest payments for bond buying trades
+            ledger.appendTransaction(self, BookAccount.Costs, -self._amount, category=category, peer=self._broker)
         if self._tax:
-            ledger.appendTransaction(self, BookAccount.Money, -self._tax)
             ledger.appendTransaction(self, BookAccount.Costs, self._tax,
                                      category=PredefinedCategory.Taxes, peer=self._broker)
 
