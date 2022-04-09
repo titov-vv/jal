@@ -96,6 +96,7 @@ class StatementXML(Statement):
                     if section_data is None:
                         return
                     self._sections[section]['loader'](section_data)
+        self.strip_unused_data()
         logging.info(self.statement_name + self.tr(" loaded successfully"))
 
     def validate_file_header_attributes(self, xml_data):
@@ -132,3 +133,7 @@ class StatementXML(Statement):
         for key in extra_keys_list:
             if key in operation_dict:
                 del operation_dict[key]
+
+    # Drop any unused data that shouldn't be in output json
+    def strip_unused_data(self):
+        pass

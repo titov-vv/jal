@@ -595,8 +595,6 @@ CREATE VIEW deals_ext AS
           -- Get more information about trade/corp.action that opened the deal
            LEFT JOIN trades AS ot ON ot.id=d.open_op_id AND ot.op_type=d.open_op_type
            LEFT JOIN corp_actions AS oca ON oca.id=d.open_op_id AND oca.op_type=d.open_op_type
-          -- Collect value of stock that was accumulated before corporate action
-           LEFT JOIN ledger AS ols ON ols.op_type=d.open_op_type AND ols.operation_id=d.open_op_id AND ols.asset_id = d.asset_id AND ols.value_acc != 0
           -- Get more information about trade/corp.action that opened the deal
            LEFT JOIN trades AS ct ON ct.id=d.close_op_id AND ct.op_type=d.close_op_type
            LEFT JOIN corp_actions AS cca ON cca.id=d.close_op_id AND cca.op_type=d.close_op_type
@@ -845,7 +843,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 33);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 34);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);

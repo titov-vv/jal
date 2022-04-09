@@ -14,7 +14,7 @@
 На появившейся странице *Reports* нужно выбрать закладку *Flex Queries*. В разделе *Activity Flex Query* нужно нажать *'+'*, чтобы создать новый отчёт.
 Далее необходимо выполнить настройку отчета:
     - *Query name* - нужно указать уникальное имя отчёта
-    - *Sections* - нужно отменить необходимые секции отчета. Минимально необходимы: *Account Information, Cash Transactions, Corporate Actions, Financial Instrument Information, Trades, Transactions Fees, Transfers* (*Option Exercises, Assignments and Expirations* - если торгуете опционами)
+    - *Sections* - нужно отменить необходимые секции отчета. Минимально необходимы: *Account Information, Cash Transactions, Corporate Actions, Financial Instrument Information, Trades, Transactions Fees, Transfers, Stock Grant Activity* (*Option Exercises, Assignments and Expirations* - если торгуете опционами)
     - *Format* - XML
     - *Date Format* - yyyyMMdd
     - *Time Format* - HHmmss

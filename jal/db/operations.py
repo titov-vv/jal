@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QApplication
 from jal.constants import Setup, BookAccount, CustomColor, PredefinedPeer, PredefinedCategory
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
 from jal.db.db import JalDB
+from jal.db.settings import JalSettings
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -77,6 +78,48 @@ class LedgerTransaction:
                        [(":op_type", self._otype), (":oid", self._oid), (":account_id", account_id),
                         (":asset_id", asset_id), (":book", BookAccount.Assets)])
 
+    # Performs FIFO deals match in ledger: takes current open positions from 'open_trades' table and converts
+    # them into deals in 'deals' table while supplied qty is enough.
+    # deal_sign = +1 if closing deal is Buy operation and -1 if it is Sell operation.
+    # qty - quantity of asset that closes previous open positions
+    # price is None if we process corporate action or transfer where we keep initial value and don't have profit or loss
+    # Returns total qty, value of deals created.
+    def _close_deals_fifo(self, deal_sign, qty, price):
+        processed_qty = 0
+        processed_value = 0
+        # Get a list of all previous not matched trades or corporate actions
+        query = executeSQL("SELECT timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty "
+                           "FROM open_trades "
+                           "WHERE account_id=:account_id AND asset_id=:asset_id AND remaining_qty!=0 "
+                           "ORDER BY timestamp, op_type DESC",
+                           [(":account_id", self._account), (":asset_id", self._asset)])
+        while query.next():
+            opening_trade = readSQLrecord(query, named=True)
+            next_deal_qty = opening_trade['remaining_qty']
+            if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
+                next_deal_qty = qty - processed_qty    # If it happens - just process the remainder of the trade
+            _ = executeSQL("UPDATE open_trades SET remaining_qty=remaining_qty-:qty "
+                           "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
+                           [(":qty", next_deal_qty), (":op_type", opening_trade['op_type']),
+                            (":id", opening_trade['operation_id']), (":asset_id", self._asset)])
+            close_price = opening_trade['price'] if price is None else price
+            _ = executeSQL(
+                "INSERT INTO deals(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
+                "close_op_type, close_op_id, close_timestamp, close_price, qty) "
+                "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :open_price, "
+                ":close_op_type, :close_op_id, :close_timestamp, :close_price, :qty)",
+                [(":account_id", self._account), (":asset_id", self._asset),
+                 (":open_op_type", opening_trade['op_type']), (":open_op_id", opening_trade['operation_id']),
+                 (":open_timestamp", opening_trade['timestamp']), (":open_price", opening_trade['price']),
+                 (":close_op_type", self._otype), (":close_op_id", self._oid),
+                 (":close_timestamp", self._timestamp), (":close_price", close_price),
+                 (":qty", (-deal_sign) * next_deal_qty)])
+            processed_qty += next_deal_qty
+            processed_value += (next_deal_qty * opening_trade['price'])
+            if processed_qty == qty:
+                break
+        return processed_qty, processed_value
+
     def type(self):
         return self._otype
 
@@ -120,7 +163,6 @@ class LedgerTransaction:
         return self._reconciled
 
     def processLedger(self, ledger):
-        return
         raise NotImplementedError(f"processLedger() method is not defined in {type(self).__name__} class")
 
 
@@ -212,12 +254,14 @@ class Dividend(LedgerTransaction):
     Dividend = 1
     BondInterest = 2
     StockDividend = 3
+    StockVesting = 4
 
     def __init__(self, operation_id=None):
         labels = {
             Dividend.Dividend: ('Δ', CustomColor.DarkGreen),
             Dividend.BondInterest: ('%', CustomColor.DarkGreen),
             Dividend.StockDividend: ('Δ\n+', CustomColor.DarkGreen),
+            Dividend.StockVesting: ('Δ\n+', CustomColor.DarkBlue)
         }
         super().__init__(operation_id)
         self._table = "dividends"
@@ -257,7 +301,7 @@ class Dividend(LedgerTransaction):
             return [self._amount, None]
 
     def value_currency(self) -> str:
-        if self._subtype == Dividend.StockDividend:
+        if self._subtype == Dividend.StockDividend or self._subtype == Dividend.StockVesting:
             if self._tax:
                 return f" {self._asset_symbol}\n {self._account_currency}"
             else:
@@ -267,7 +311,7 @@ class Dividend(LedgerTransaction):
 
     def value_total(self) -> str:
         amount = self._money_total(self._account)
-        if self._subtype == Dividend.StockDividend:
+        if self._subtype == Dividend.StockDividend or self._subtype == Dividend.StockVesting:
             qty = self._asset_total(self._account, self._asset)
             if qty is None:
                 return super().value_total()
@@ -283,43 +327,41 @@ class Dividend(LedgerTransaction):
     def processLedger(self, ledger):
         if self._broker is None:
             raise ValueError(
-                self.tr("Can't process trade as bank isn't set for investment account: ") + self._account_name)
-        
-        if self._subtype == Dividend.StockDividend:
-            self.processStockDividend(ledger)
+                self.tr("Can't process dividend as bank isn't set for investment account: ") + self._account_name)
+        if self._subtype == Dividend.StockDividend or self._subtype == Dividend.StockVesting:
+            self.processStockDividendOrVesting(ledger)
             return
-
         if self._subtype == Dividend.Dividend:
-            income_category = PredefinedCategory.Dividends
+            category = PredefinedCategory.Dividends
         elif self._subtype == Dividend.BondInterest:
-            income_category = PredefinedCategory.Interest
+            category = PredefinedCategory.Interest
         else:
             raise ValueError(self.tr("Unsupported dividend type.") + f" Operation: {self.dump()}")
-        if self._amount > 0:
-            credit_returned = ledger.returnCredit(self, self._account, self._amount - self._tax)
-            if credit_returned < (self._amount - self._tax):
-                ledger.appendTransaction(self, BookAccount.Money, self._amount - credit_returned)  # tax will be deducted separately
-            ledger.appendTransaction(self, BookAccount.Incomes, -self._amount,
-                                     category=income_category, peer=self._broker)
+        operation_value = (self._amount - self._tax)
+        if operation_value > 0:
+            credit_returned = ledger.returnCredit(self, self._account, operation_value)
+            if credit_returned < operation_value:
+                ledger.appendTransaction(self, BookAccount.Money, operation_value - credit_returned)
         else:   # This branch is valid for accrued bond interest payments for bond buying trades
-            credit_taken = ledger.takeCredit(self, self._account, -self._amount - self._tax)  # tax always positive
-            if credit_taken < -self._amount:
-                ledger.appendTransaction(self, BookAccount.Money, self._amount + credit_taken)  # tax will be deducted separately
-            ledger.appendTransaction(self, BookAccount.Costs, -self._amount,
-                                     category=income_category, peer=self._broker)
+            credit_taken = ledger.takeCredit(self, self._account, -operation_value)
+            if credit_taken < -operation_value:
+                ledger.appendTransaction(self, BookAccount.Money, operation_value + credit_taken)
+        if self._amount > 0:
+            ledger.appendTransaction(self, BookAccount.Incomes, -self._amount, category=category, peer=self._broker)
+        else:   # This branch is valid for accrued bond interest payments for bond buying trades
+            ledger.appendTransaction(self, BookAccount.Costs, -self._amount, category=category, peer=self._broker)
         if self._tax:
-            ledger.appendTransaction(self, BookAccount.Money, -self._tax)
             ledger.appendTransaction(self, BookAccount.Costs, self._tax,
                                      category=PredefinedCategory.Taxes, peer=self._broker)
 
-    def processStockDividend(self, ledger):
+    def processStockDividendOrVesting(self, ledger):
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account, self._asset)
         if asset_amount < -Setup.CALC_TOLERANCE:
-            raise NotImplemented(self.tr("Not supported action: stock dividend closes short trade.") +
+            raise NotImplemented(self.tr("Not supported action: stock dividend or vesting closes short trade.") +
                                  f" Operation: {self.dump()}")
         quote = JalDB().get_quote(self._asset, JalDB().get_account_currency(self._account), self._timestamp)
         if quote is None:
-            raise ValueError(self.tr("No stock quote for stock dividend.") + f" Operation: {self.dump()}")
+            raise ValueError(self.tr("No stock quote for stock dividend or vesting.") + f" Operation: {self.dump()}")
         _ = executeSQL(
             "INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
             "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
@@ -387,56 +429,26 @@ class Trade(LedgerTransaction):
             raise ValueError(
                 self.tr("Can't process trade as bank isn't set for investment account: ") + self._account_name)
 
-        type = copysign(1, self._qty)  # 1 is buy, -1 is sell
+        deal_sign = copysign(1, self._qty)  # 1 is buy, -1 is sell
         qty = abs(self._qty)
-        trade_value = round(self._price * qty, 2) + type * self._fee
+        trade_value = round(self._price * qty, 2) + deal_sign * self._fee
         processed_qty = 0
         processed_value = 0
         # Get asset amount accumulated before current operation
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account, self._asset)
-        if ((-type) * asset_amount) > 0:  # Process deal match if we have asset that is opposite to operation
-            # Get a list of all previous not matched trades or corporate actions
-            query = executeSQL(
-                "SELECT timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty "
-                "FROM open_trades "
-                "WHERE account_id=:account_id AND asset_id=:asset_id AND remaining_qty!=0 "
-                "ORDER BY timestamp, op_type DESC",
-                [(":account_id", self._account), (":asset_id", self._asset)])
-            while query.next():
-                opening_trade = readSQLrecord(query, named=True)
-                next_deal_qty = opening_trade['remaining_qty']
-                if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
-                    next_deal_qty = qty - processed_qty  # If it happens - just process the remainder of the trade
-                _ = executeSQL("UPDATE open_trades SET remaining_qty=remaining_qty-:qty "
-                               "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
-                               [(":qty", next_deal_qty), (":op_type", opening_trade['op_type']),
-                                (":id", opening_trade['operation_id']), (":asset_id", self._asset)])
-                _ = executeSQL(
-                    "INSERT INTO deals(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
-                    "close_op_type, close_op_id, close_timestamp, close_price, qty) "
-                    "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :open_price, "
-                    ":close_op_type, :close_op_id, :close_timestamp, :close_price, :qty)",
-                    [(":account_id", self._account), (":asset_id", self._asset),
-                     (":open_op_type", opening_trade['op_type']), (":open_op_id", opening_trade['operation_id']),
-                     (":open_timestamp", opening_trade['timestamp']), (":open_price", opening_trade['price']),
-                     (":close_op_type", self._otype), (":close_op_id", self._oid),
-                     (":close_timestamp", self._timestamp), (":close_price", self._price),
-                     (":qty", (-type) * next_deal_qty)])
-                processed_qty += next_deal_qty
-                processed_value += (next_deal_qty * opening_trade['price'])
-                if processed_qty == qty:
-                    break
-        if type > 0:
+        if ((-deal_sign) * asset_amount) > 0:  # Process deal match if we have asset that is opposite to operation
+            processed_qty, processed_value = self._close_deals_fifo(deal_sign, qty, self._price)
+        if deal_sign > 0:
             credit_value = ledger.takeCredit(self, self._account, trade_value)
         else:
             credit_value = ledger.returnCredit(self, self._account, trade_value)
         if credit_value < trade_value:
-            ledger.appendTransaction(self, BookAccount.Money, (-type) * (trade_value - credit_value))
+            ledger.appendTransaction(self, BookAccount.Money, (-deal_sign) * (trade_value - credit_value))
         if processed_qty > 0:  # Add result of closed deals
             # decrease (for sell) or increase (for buy) amount of assets in ledger
-            ledger.appendTransaction(self, BookAccount.Assets, type * processed_qty,
-                                     asset_id=self._asset, value=type * processed_value)
-            ledger.appendTransaction(self, BookAccount.Incomes, type * ((self._price * processed_qty) - processed_value),
+            ledger.appendTransaction(self, BookAccount.Assets, deal_sign * processed_qty,
+                                     asset_id=self._asset, value=deal_sign * processed_value)
+            ledger.appendTransaction(self, BookAccount.Incomes, deal_sign * ((self._price * processed_qty) - processed_value),
                                      category=PredefinedCategory.Profit, peer=self._broker)
         if processed_qty < qty:  # We have reminder that opens a new position
             _ = executeSQL(
@@ -445,8 +457,8 @@ class Trade(LedgerTransaction):
                 [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
                  (":account_id", self._account), (":asset_id", self._asset), (":price", self._price),
                  (":remaining_qty", qty - processed_qty)])
-            ledger.appendTransaction(self, BookAccount.Assets, type * (qty - processed_qty), asset_id=self._asset,
-                                     value=type * (qty - processed_qty) * self._price)
+            ledger.appendTransaction(self, BookAccount.Assets, deal_sign * (qty - processed_qty), asset_id=self._asset,
+                                     value=deal_sign * (qty - processed_qty) * self._price)
         if self._fee:
             ledger.appendTransaction(self, BookAccount.Costs, self._fee,
                                      category=PredefinedCategory.Fees, peer=self._broker)
@@ -486,6 +498,11 @@ class Transfer(LedgerTransaction):
         self._fee_account_name = JalDB().get_account_name(self._fee_account)
         self._fee = self._data['fee']
         self._label, self._label_color = labels[display_type]
+        if self._data['asset']:
+            self._asset = self._data['asset']
+            self._account = self._withdrawal_account
+        else:
+            self._asset = None
         self._note = self._data['note']
         if self._display_type == Transfer.Outgoing:
             self._reconciled = JalDB().account_reconciliation_timestamp(self._withdrawal_account) >= self._timestamp
@@ -494,7 +511,7 @@ class Transfer(LedgerTransaction):
         elif self._display_type == Transfer.Fee:
             self._reconciled = JalDB().account_reconciliation_timestamp(self._fee_account) >= self._timestamp
         else:
-            assert True, "Unknown transfer type"
+            assert False, "Unknown transfer type"
 
 
     def timestamp(self):
@@ -511,7 +528,7 @@ class Transfer(LedgerTransaction):
         elif self._display_type == Transfer.Incoming:
             return self._deposit_account_name + " <- " + self._withdrawal_account_name
         else:
-            assert True, "Unknown transfer type"
+            assert False, "Unknown transfer type"
 
     def account_id(self):
         if self._display_type == Transfer.Fee:
@@ -521,7 +538,7 @@ class Transfer(LedgerTransaction):
         elif self._display_type == Transfer.Incoming:
             return self._deposit_account
         else:
-            assert True, "Unknown transfer type"
+            assert False, "Unknown transfer type"
 
     def description(self) -> str:
         try:
@@ -550,28 +567,40 @@ class Transfer(LedgerTransaction):
         elif self._display_type == Transfer.Fee:
             return [-self._fee]
         else:
-            assert True, "Unknown transfer type"
+            assert False, "Unknown transfer type"
 
     def value_currency(self) -> str:
         if self._display_type == Transfer.Outgoing:
-            return self._withdrawal_currency
+            if self._asset:
+                return JalDB().get_asset_name(self._asset)
+            else:
+                return self._withdrawal_currency
         elif self._display_type == Transfer.Incoming:
-            return self._deposit_currency
+            if self._asset:
+                return JalDB().get_asset_name(self._asset)
+            else:
+                return self._deposit_currency
         elif self._display_type == Transfer.Fee:
             return self._fee_currency
         else:
-            assert True, "Unknown transfer type"
+            assert False, "Unknown transfer type"
 
     def value_total(self) -> str:
         amount = None
         if self._display_type == Transfer.Outgoing:
-            amount = self._money_total(self._withdrawal_account)
+            if self._asset:
+                amount = self._asset_total(self._withdrawal_account, self._asset)
+            else:
+                amount = self._money_total(self._withdrawal_account)
         elif self._display_type == Transfer.Incoming:
-            amount = self._money_total(self._deposit_account)
+            if self._asset:
+                amount = self._asset_total(self._deposit_account, self._asset)
+            else:
+                amount = self._money_total(self._deposit_account)
         elif self._display_type == Transfer.Fee:
             amount = self._money_total(self._fee_account)
         else:
-            assert True, "Unknown transfer type"
+            assert False, "Unknown transfer type"
         if amount is None:
             return super().value_total()
         else:
@@ -579,22 +608,76 @@ class Transfer(LedgerTransaction):
 
     def processLedger(self, ledger):
         if self._display_type == Transfer.Outgoing:
-            credit_taken = ledger.takeCredit(self, self._withdrawal_account, self._withdrawal)
-            ledger.appendTransaction(self, BookAccount.Money, -(self._withdrawal - credit_taken))
-            ledger.appendTransaction(self, BookAccount.Transfers, self._withdrawal)
+            if self._asset is not None:
+                self.processAssetTransfer(ledger)
+            else:
+                credit_taken = ledger.takeCredit(self, self._withdrawal_account, self._withdrawal)
+                ledger.appendTransaction(self, BookAccount.Money, -(self._withdrawal - credit_taken))
+                ledger.appendTransaction(self, BookAccount.Transfers, self._withdrawal)
         elif self._display_type == Transfer.Fee:
             credit_taken = ledger.takeCredit(self, self._fee_account, self._fee)
             ledger.appendTransaction(self, BookAccount.Money, -(self._fee - credit_taken))
             ledger.appendTransaction(self, BookAccount.Costs, self._fee,
                                     category=PredefinedCategory.Fees, peer=PredefinedPeer.Financial)
         elif self._display_type == Transfer.Incoming:
-            credit_returned = ledger.returnCredit(self, self._deposit_account, self._deposit)
-            if credit_returned < self._deposit:
-                ledger.appendTransaction(self, BookAccount.Money, self._deposit - credit_returned)
-            ledger.appendTransaction(self, BookAccount.Transfers, -self._deposit)
-        else:  # TODO implement assets transfer
-            assert True, "Unknown transfer type"
+            if self._asset is not None:
+                self.processAssetTransfer(ledger)
+            else:
+                credit_returned = ledger.returnCredit(self, self._deposit_account, self._deposit)
+                if credit_returned < self._deposit:
+                    ledger.appendTransaction(self, BookAccount.Money, self._deposit - credit_returned)
+                ledger.appendTransaction(self, BookAccount.Transfers, -self._deposit)
+        else:
+            assert False, "Unknown transfer type"
 
+    def processAssetTransfer(self, ledger):
+        if self._display_type == Transfer.Outgoing:   # Withdraw asset from source account
+            asset_amount = ledger.getAmount(BookAccount.Assets, self._withdrawal_account, self._asset)
+            if asset_amount < (self._withdrawal - 2 * Setup.CALC_TOLERANCE):
+                raise ValueError(self.tr("Asset amount is not enough for asset transfer processing. Date: ")
+                                 + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
+                                 + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
+            processed_qty, processed_value = self._close_deals_fifo(-1, self._withdrawal, None)
+            if processed_qty < (self._withdrawal - 2 * Setup.CALC_TOLERANCE):
+                raise ValueError(self.tr("Processed asset amount is less than transfer amount. Date: ")
+                                 + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
+                                 + f"Processed amount: {asset_amount}, Operation: {self.dump()}")
+            if self._withdrawal_currency == JalSettings().getValue('BaseCurrency'):
+                currency_rate = 1
+            else:
+                currency_rate = JalDB().get_quote(JalDB().get_account_currency(self._withdrawal_account),
+                                                  JalSettings().getValue('BaseCurrency'),
+                                                  self._withdrawal_timestamp, exact=False)
+            ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
+                                     asset_id=self._asset, value=-processed_value)
+            ledger.appendTransaction(self, BookAccount.Transfers, self._withdrawal,
+                                     asset_id=self._asset, value=processed_value*currency_rate)
+        elif self._display_type == Transfer.Incoming:
+            # get value of withdrawn asset
+            value = readSQL("SELECT value FROM ledger WHERE "
+                            "book_account=:book_transfers AND op_type=:op_type AND operation_id=:id",
+                            [(":book_transfers", BookAccount.Transfers), (":op_type", self._otype), (":id", self._oid)],
+                            check_unique=True)
+            if not value:
+                raise ValueError(self.tr("Asset withdrawal not found for transfer.") + f" Operation:  {self.dump()}")
+            if self._deposit_currency == JalSettings().getValue('BaseCurrency'):
+                currency_rate = 1
+            else:
+                currency_rate = JalDB().get_quote(JalDB().get_account_currency(self._deposit_account),
+                                                  JalSettings().getValue('BaseCurrency'),
+                                                  self._deposit_timestamp, exact=False)
+            price = value*currency_rate / self._deposit
+            _ = executeSQL(
+                "INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
+                "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
+                [(":timestamp", self._deposit_timestamp), (":type", self._otype), (":operation_id", self._oid),
+                 (":account_id", self._deposit_account), (":asset_id", self._asset), (":price", price),
+                 (":remaining_qty", self._deposit)])
+            ledger.appendTransaction(self, BookAccount.Transfers, -self._deposit, asset_id=self._asset, value=-value)
+            ledger.appendTransaction(self, BookAccount.Assets, self._deposit,
+                                     asset_id=self._asset, value=value*currency_rate)
+        else:
+            assert False, "Unknown transfer type for asset transfer"
 
 # ----------------------------------------------------------------------------------------------------------------------
 class CorporateAction(LedgerTransaction):
@@ -678,48 +761,17 @@ class CorporateAction(LedgerTransaction):
             return f"\n{self._qty_after:,.2f}"
 
     def processLedger(self, ledger):
-        processed_qty = 0
-        processed_value = 0
         # Get asset amount accumulated before current operation
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account, self._asset)
         if asset_amount < (self._qty - 2 * Setup.CALC_TOLERANCE):
             raise ValueError(self.tr("Asset amount is not enough for corporate action processing. Date: ")
                              + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
                              + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
-        # Get a list of all previous not matched trades or corporate actions
-        query = executeSQL("SELECT timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty "
-                           "FROM open_trades "
-                           "WHERE account_id=:account_id AND asset_id=:asset_id  AND remaining_qty!=0 "
-                           "ORDER BY timestamp, op_type DESC",
-                           [(":account_id", self._account), (":asset_id", self._asset)])
-        while query.next():
-            opening_trade = readSQLrecord(query, named=True)
-            next_deal_qty = opening_trade['remaining_qty']
-            if (processed_qty + next_deal_qty) > (self._qty + 2 * Setup.CALC_TOLERANCE):  # We can't close all trades with current operation
-                raise ValueError(self.tr("Unhandled case: Corporate action covers not full open position. Date: ")
-                                 + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
-                                 + f"Processed: {processed_qty}, Next: {next_deal_qty}, Operation: {self.dump()}")
-            _ = executeSQL("UPDATE open_trades SET remaining_qty=0 "  # FIXME - is it true to have here 0? (i.e. if we have not a full match)
-                           "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
-                           [(":op_type", opening_trade['op_type']), (":id", opening_trade['operation_id']),
-                            (":asset_id", self._asset)])
-
-            # Deal have the same open and close prices as corportate action doesn't create profit, but redistributes value
-            _ = executeSQL(
-                "INSERT INTO deals(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
-                " close_op_type, close_op_id, close_timestamp, close_price, qty) "
-                "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :open_price, "
-                ":close_op_type, :close_op_id, :close_timestamp, :close_price, :qty)",
-                [(":account_id", self._account), (":asset_id", self._asset),
-                 (":open_op_type", opening_trade['op_type']), (":open_op_id", opening_trade['operation_id']),
-                 (":open_timestamp", opening_trade['timestamp']), (":open_price", opening_trade['price']),
-                 (":close_op_type", self._otype), (":close_op_id", self._oid),
-                 (":close_timestamp", self._timestamp), (":close_price", opening_trade['price']),
-                 (":qty", next_deal_qty)])
-            processed_qty += next_deal_qty
-            processed_value += (next_deal_qty * opening_trade['price'])
-            if processed_qty == self._qty:
-                break
+        if asset_amount > (self._qty + 2 * Setup.CALC_TOLERANCE):
+            raise ValueError(self.tr("Unhandled case: Corporate action covers not full open position. Date: ")
+                             + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
+                             + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
+        processed_qty, processed_value = self._close_deals_fifo(-1, self._qty, None)
         # Asset allocations for different corporate actions:
         # +-----------------+-------+-----+------------+-----------+----------+---------------+
         # |                 | Asset | Qty | cost basis | Asset new | Qty new  | cost basis    |

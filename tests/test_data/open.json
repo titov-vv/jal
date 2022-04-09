@@ -33,7 +33,9 @@
     {"id": 5, "number": "20210901-1", "timestamp": 1630454400, "settlement": 1630454400, "account": 1, "asset": 3, "quantity": -60.0, "price": 1000.0, "fee": 0.0, "note": "Отчет депозитария б/н от 01.09.2021. Снятие ЦБ с учета. Погашение облигаций - МТС 1P-05"},
     {"id": 6, "number": "20210903-2", "timestamp": 1630627200, "settlement": 1630627200, "account": 1, "asset": 2, "quantity": -75.0, "price": 400.0, "fee": 0.0, "note": "Отчет депозитария б/н от 03.09.2021. Снятие ЦБ с учета. Погашение облигаций - Мордовия-обл-03"}
   ],
-  "income_spending": [],
+  "income_spending": [
+    {"id": 1, "timestamp": 1647993600, "account": 1, "peer": 0, "lines": [{"amount": 100.0, "category": -6, "description": "Возврат излишне удержанного налога с клиента  12345 за 2021 год"}]}
+  ],
   "transfers": [
     {"id": 1, "account": [0, 1, 0], "asset": [1, 1], "timestamp": 1622073600, "withdrawal": 100000.0, "deposit": 100000.0, "fee": 0.0, "description": "Поставлены на торги средства клиента 12345"}
   ],

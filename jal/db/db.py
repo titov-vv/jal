@@ -238,10 +238,17 @@ class JalDB:
                                    [(":symbol", search_data['symbol'])])
         return asset_id
 
-    def get_quote(self, asset_id, currency_id, timestamp):
-        return readSQL("SELECT quote FROM quotes WHERE asset_id=:asset_id "
-                       "AND currency_id=:currency_id AND timestamp=:timestamp",
-                       [(":asset_id", asset_id), (":currency_id", currency_id), (":timestamp", timestamp)])
+    # get asset quotation for given currency and timestamp
+    # if exact is False get's last available quotation before timestamp
+    def get_quote(self, asset_id, currency_id, timestamp, exact=True):
+        if exact:
+            return readSQL("SELECT quote FROM quotes WHERE asset_id=:asset_id "
+                           "AND currency_id=:currency_id AND timestamp=:timestamp",
+                           [(":asset_id", asset_id), (":currency_id", currency_id), (":timestamp", timestamp)])
+        else:
+            return readSQL("SELECT quote FROM quotes WHERE asset_id=:asset_id AND currency_id=:currency_id "
+                           "AND timestamp<=:timestamp ORDER BY timestamp DESC LIMIT 1",
+                           [(":asset_id", asset_id), (":currency_id", currency_id), (":timestamp", timestamp)])
 
     # Set quotations for given asset_id and currency_id
     # quotations is a list of {'timestamp', 'quote'} values
@@ -455,7 +462,8 @@ class JalDB:
     def get_asset_amount(self, timestamp, account_id, asset_id):
         return readSQL("SELECT amount_acc FROM ledger "
                        "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp<=:timestamp "
-                       "AND (book_account=:money OR book_account=:assets)"
+                       "AND (book_account=:money OR book_account=:assets OR book_account=:liabilities) "
                        "ORDER BY id DESC LIMIT 1",
                        [(":account_id", account_id), (":asset_id", asset_id), (":timestamp", timestamp),
-                        (":money", BookAccount.Money), (":assets", BookAccount.Assets)])
+                        (":money", BookAccount.Money), (":assets", BookAccount.Assets),
+                        (":liabilities", BookAccount.Liabilities)])

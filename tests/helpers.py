@@ -95,15 +95,16 @@ def create_coupons(coupons):
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Create dividends in database: dividends is a list of dividends as tuples
-# (timestamp, account, asset_id, qty, currency_id, quote, tax, note)
+# (type, timestamp, account, asset_id, qty, currency_id, quote, tax, note)
+# Type = StockDividend or StockVesting
 def create_stock_dividends(dividends):
     for dividend in dividends:
-        create_quotes(dividend[2], dividend[4], [(dividend[0], dividend[5])])
+        create_quotes(dividend[3], dividend[5], [(dividend[1], dividend[6])])
         assert executeSQL("INSERT INTO dividends (timestamp, type, account_id, asset_id, amount, tax, note) "
                           "VALUES (:timestamp, :div_type, :account_id, :asset_id, :amount, :tax, :note)",
-                          [(":timestamp", dividend[0]), (":div_type", Dividend.StockDividend),
-                           (":account_id", dividend[1]), (":asset_id", dividend[2]), (":amount", dividend[3]),
-                           (":tax", dividend[6]), (":note", dividend[7])], commit=True) is not None
+                          [(":timestamp", dividend[1]), (":div_type", dividend[0]),
+                           (":account_id", dividend[2]), (":asset_id", dividend[3]), (":amount", dividend[4]),
+                           (":tax", dividend[7]), (":note", dividend[8])], commit=True) is not None
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -130,4 +131,16 @@ def create_corporate_actions(account_id, actions):
                           [(":timestamp", action[0]), (":account_id", account_id), (":type", action[1]),
                            (":asset_id", action[2]), (":qty", action[3]), (":asset_id_new", action[4]),
                            (":qty_new", action[5]), (":basis", action[6]), (":note", action[7])],
+                          commit=True) is not None
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Create transfers in database: transfers is a list of transfers as tuples
+# (timestamp, withdrawal_account, withdrawal, deposit_account, deposit, asset_id)
+def create_transfers(transfers):
+    for transfer in transfers:
+        assert executeSQL("INSERT INTO transfers (withdrawal_timestamp, withdrawal_account, withdrawal, "
+                          "deposit_timestamp, deposit_account, deposit, asset) "
+                          "VALUES (:timestamp, :from, :withdrawal, :timestamp, :to, :deposit, :asset_id)",
+                          [(":timestamp", transfer[0]), (":from", transfer[1]), (":withdrawal", transfer[2]),
+                           (":to", transfer[3]), (":deposit", transfer[4]), (":asset_id", transfer[5])],
                           commit=True) is not None

@@ -37,7 +37,8 @@ class IBKR_AssetType:
         'BOND': FOF.ASSET_BOND,
         'OPT': FOF.ASSET_OPTION,
         'FUT': FOF.ASSET_FUTURES,
-        'WAR': FOF.ASSET_WARRANT
+        'WAR': FOF.ASSET_WARRANT,
+        'RIGHT': FOF.ASSET_RIGHTS
     }
 
     def __init__(self, asset_type, subtype):
@@ -62,6 +63,7 @@ class IBKR_CorpActionType:
         'FS': FOF.ACTION_SPLIT,            # Forward split
         'HI': FOF.PAYMENT_STOCK_DIVIDEND,  # Choice dividend
         'IC': FOF.ACTION_SYMBOL_CHANGE,    # Issue change
+        'RI': FOF.ACTION_RIGHTS_ISSUE,     # Subscribable Rights Issue
         'RS': FOF.ACTION_SPLIT,            # Reverse split
         'SO': FOF.ACTION_SPINOFF,          # Spin-off of new company
         'SD': FOF.PAYMENT_STOCK_DIVIDEND,  # Dividend paid in stocks
@@ -214,6 +216,15 @@ class StatementIBKR(StatementXML):
                                             ('tradeID', 'number', str, ''),
                                             ('description', 'description', str, None)],
                                  'loader': self.load_cash_transactions},
+            'StockGrantActivities': {'tag': 'StockGrantActivity',
+                                     'level': '',
+                                     'values': [('accountId', 'account', IBKR_Account, None),
+                                                ('symbol', 'asset', IBKR_Asset, None),
+                                                ('awardDate', 'timestamp', datetime, None),
+                                                ('activityDescription', 'description', str, None),
+                                                ('quantity', 'amount', float, None),
+                                                ('price', 'price', float, None)],
+                                     'loader': self.load_vestings},
             'TransactionTaxes': {'tag': 'TransactionTax',
                                  'level': 'SUMMARY',
                                  'values': [('accountId', 'account', IBKR_Account, None),
@@ -451,7 +462,8 @@ class StatementIBKR(StatementXML):
             FOF.PAYMENT_STOCK_DIVIDEND: self.load_stock_dividend,
             FOF.ACTION_SPLIT: self.load_split,
             FOF.ACTION_BOND_MATURITY: self.load_bond_maturity,
-            FOF.ACTION_DELISTING: self.load_delisting
+            FOF.ACTION_DELISTING: self.load_delisting,
+            FOF.ACTION_RIGHTS_ISSUE: self.load_none
         }
 
         cnt = 0
@@ -512,6 +524,10 @@ class StatementIBKR(StatementXML):
         for action in actions:
             if action['code'] == StatementIBKR.CancelledFlag:
                 raise Statement_ImportError(self.tr("Can't process cancelled corporate action") + f" '{action}'")
+
+    # Dummy loader to skip some corporate actions
+    def load_none(self, action, parts_b) -> int:
+        return 0
 
     def load_merger(self, action, parts_b) -> int:
         MergerPatterns = [
@@ -689,6 +705,10 @@ class StatementIBKR(StatementXML):
         return 1
 
     def load_delisting(self, action, parts_b) -> int:
+        # There might be delisting for issued rights - we don't need to store it as it isn't a real asset
+        asset = [x for x in self._data[FOF.ASSETS] if x['id'] == action['asset']][0]
+        if asset['type'] == FOF.ASSET_RIGHTS:
+            return 0
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
         action['asset'] = [action['asset'], action['asset']]
         action['quantity'] = [-action['quantity'], 0.0]
@@ -697,9 +717,19 @@ class StatementIBKR(StatementXML):
         self._data[FOF.CORP_ACTIONS].append(action)
         return 1
 
+    def load_vestings(self, vestings):
+        cnt = 0
+        asset_payments_base = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
+        for i, vesting in enumerate(vestings):
+            vesting['id'] = asset_payments_base + i
+            vesting['type'] = FOF.PAYMENT_STOCK_VESTING
+            # self.drop_extra_fields(action, ["quantity", "value", "proceeds", "code", "asset_type", "jal_processed"])
+            self._data[FOF.ASSET_PAYMENTS].append(vesting)
+            cnt += 1
+        logging.info(self.tr("Stock vestings loaded: ") + f"{cnt} ({len(vestings)})")
+
     def load_cash_transactions(self, cash):
         cnt = 0
-
         dividends = list(filter(lambda tr: tr['type'] in ['Dividends', 'Payment In Lieu Of Dividends'], cash))
         asset_payments_base = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
         for i, dividend in enumerate(dividends):
@@ -708,7 +738,6 @@ class StatementIBKR(StatementXML):
             self.drop_extra_fields(dividend, ["currency"])
             self._data[FOF.ASSET_PAYMENTS].append(dividend)
             cnt += 1
-
         asset_payments_base += cnt
         bond_interests = list(filter(lambda tr: tr['type'] in ['Bond Interest Paid', 'Bond Interest Received'], cash))
         for i, bond_interest in enumerate(bond_interests):
@@ -896,3 +925,10 @@ class StatementIBKR(StatementXML):
         if len(dividends) == 1:
             return dividends[0]
         return None
+
+    # Removes data that was used during XML processing but isn't needed in final output:
+    # Drop any assets with type 'right' as JAL won't import them
+    def strip_unused_data(self):
+        rights_id = [x['id'] for x in self._data[FOF.ASSETS] if x['type'] == FOF.ASSET_RIGHTS]
+        for asset_id in rights_id:
+            self.remove_asset(asset_id)

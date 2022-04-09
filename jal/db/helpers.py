@@ -90,7 +90,7 @@ def readSQL(sql_text, params=None, named=False, check_unique=False):
     if query.next():
         res = readSQLrecord(query, named=named)
         if check_unique and query.next():
-            return None  # More then one record in result when only one expected
+            return None  # More than one record in result when only one expected
         return res
     else:
         return None

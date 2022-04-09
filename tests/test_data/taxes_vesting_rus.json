@@ -1,0 +1,82 @@
+{
+ "Акции": [
+   {
+     "c_amount": 298.54,
+     "c_amount_rub": 21950.63,
+     "c_date": 1632528000,
+     "c_fee": 1.0,
+     "c_fee_rub": 73.4,
+     "c_number": "",
+     "c_price": 27.14,
+     "c_qty": -11.0,
+     "c_rate": 73.3963,
+     "c_type": "Продажа",
+     "country_iso": "840",
+     "cs_date": 1632700800,
+     "cs_rate": 73.5266,
+     "income": 298.54,
+     "income_rub": 21950.63,
+     "isin": "US92556V1061",
+     "o_amount": 247.83,
+     "o_amount_rub": 18235.41,
+     "o_date": 1621641600,
+     "o_fee": 0.0,
+     "o_fee_rub": 0.0,
+     "o_number": "",
+     "o_price": 22.53,
+     "o_qty": 11.0,
+     "o_rate": 73.5803,
+     "o_type": "Покупка",
+     "os_date": 1621641600,
+     "os_rate": 73.5803,
+     "profit": 49.71000000000001,
+     "profit_rub": 3641.8199999999997,
+     "qty": 11.0,
+     "report_template": "trade",
+     "s_dividend": 0,
+     "s_dividend_note": "",
+     "spending": 248.83,
+     "spending_rub": 18308.81,
+     "symbol": "VTRS"
+   },
+   {
+     "income_rub": 21950.63,
+     "profit": 49.71000000000001,
+     "profit_rub": 3641.8199999999997,
+     "report_template": "totals",
+     "spending_rub": 18308.81
+   }
+ ],
+ "Дивиденды": [
+  {
+    "amount": 247.83,
+    "amount_rub": 18235.41,
+    "country": "N/A",
+    "country_iso": "000",
+    "full_name": "VIATRIS INC",
+    "isin": "US92556V1061",
+    "note": "Доход получен в натуральной форме (ценными бумагами)",
+    "payment_date": 1621641600,
+    "rate": 73.5803,
+    "report_template": "dividend",
+    "symbol": "VTRS",
+    "tax": 0.0,
+    "tax2pay": 2370.60,
+    "tax_rub": 0.0,
+    "tax_treaty": "Нет"
+  },
+  {
+    "amount": 247.83,
+    "amount_rub": 18235.41,
+    "report_template": "totals",
+    "tax": 0.0,
+    "tax2pay": 2370.60,
+    "tax_rub": 0.0
+  }
+ ],
+ "Комиссии": [],
+ "Корп.события": [],
+ "Облигации": [],
+ "ПФИ": [],
+ "Проценты": []
+}

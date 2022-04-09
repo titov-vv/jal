@@ -114,11 +114,12 @@ class TaxesRus:
                            "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND a.currency_id=q.asset_id AND q.currency_id=:base_currency "
                            "LEFT JOIN quotes AS p ON d.timestamp=p.timestamp AND d.asset_id=p.asset_id AND p.currency_id=a.currency_id "                           
                            "WHERE d.timestamp>=:begin AND d.timestamp<:end AND d.account_id=:account_id "
-                           " AND d.amount>0 AND (d.type=:type_dividend OR d.type=:type_stock_dividend) "
+                           " AND d.amount>0 AND (d.type=:type_dividend OR d.type=:type_stock_dividend OR d.type=:type_vesting) "
                            "ORDER BY d.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
                             (":base_currency", JalSettings().getValue('BaseCurrency')),
-                            (":type_dividend", Dividend.Dividend), (":type_stock_dividend", Dividend.StockDividend)])
+                            (":type_dividend", Dividend.Dividend), (":type_stock_dividend", Dividend.StockDividend),
+                            (":type_vesting", Dividend.StockVesting)])
         while query.next():
             dividend = readSQLrecord(query, named=True)
             dividend["note"] = ''
@@ -128,6 +129,12 @@ class TaxesRus:
                     continue
                 dividend["amount"] = dividend["amount"] * dividend["price"]
                 dividend["note"] = "Дивиденд выплачен в натуральной форме (ценными бумагами)"
+            if dividend["type"] == Dividend.StockVesting:
+                if not dividend["price"]:
+                    logging.error(self.tr("No price data for stock vesting: ") + f"{dividend}")
+                    continue
+                dividend["amount"] = dividend["amount"] * dividend["price"]
+                dividend["note"] = "Доход получен в натуральной форме (ценными бумагами)"
             dividend["amount_rub"] = round(dividend["amount"] * dividend["rate"], 2) if dividend["rate"] else 0
             dividend["tax_rub"] = round(dividend["tax"] * dividend["rate"], 2) if dividend["rate"] else 0
             dividend["tax2pay"] = round(0.13 * dividend["amount_rub"], 2)
@@ -155,7 +162,14 @@ class TaxesRus:
                            "qcs.quote AS cs_rate, c.price AS c_price, c.qty AS c_qty, c.fee AS c_fee, "
                            "SUM(coalesce(-sd.amount*qsd.quote, 0)) AS s_dividend "  # Dividend paid for short position
                            "FROM deals AS d "
-                           "JOIN trades AS o ON o.id=d.open_op_id AND o.op_type=d.open_op_type "
+                           "JOIN ("
+                           " SELECT id, op_type, timestamp, settlement, number, account_id, asset_id, qty, price, fee FROM trades "
+                           " UNION ALL "
+                           " SELECT d.id, op_type, d.timestamp, d.timestamp, d.number, account_id, d.asset_id, amount, q.quote, 0 FROM dividends d "
+                           " LEFT JOIN accounts a ON a.id=d.account_id "
+                           " LEFT JOIN quotes q ON d.timestamp=q.timestamp AND d.asset_id=q.asset_id AND a.currency_id=q.currency_id "
+                           " WHERE type=:stock_dividend OR type=:stock_vesting "
+                           ") AS o ON o.id=d.open_op_id AND o.op_type=d.open_op_type "
                            "JOIN trades AS c ON c.id=d.close_op_id AND c.op_type=d.close_op_type "
                            "LEFT JOIN accounts AS a ON a.id = :account_id "
                            "LEFT JOIN assets_ext AS s ON s.id = o.asset_id AND s.currency_id=a.currency_id "
@@ -178,7 +192,8 @@ class TaxesRus:
                            "ORDER BY s.symbol, o.timestamp, c.timestamp",
                            [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
                             (":base_currency", JalSettings().getValue('BaseCurrency')),
-                            (":stock", PredefinedAsset.Stock), (":fund", PredefinedAsset.ETF)])
+                            (":stock", PredefinedAsset.Stock), (":fund", PredefinedAsset.ETF),
+                            (":stock_dividend", Dividend.StockDividend), (":stock_vesting", Dividend.StockVesting)])
         while query.next():
             deal = readSQLrecord(query, named=True)
             if not deal['symbol']:   # there will be row of NULLs if no deals are present (due to SUM aggregation)

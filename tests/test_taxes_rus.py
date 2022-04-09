@@ -1,5 +1,6 @@
 import json
 import os
+from pytest import approx
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from jal.data_import.broker_statements.ibkr import StatementIBKR
@@ -7,7 +8,8 @@ from tests.helpers import create_assets, create_quotes, create_dividends, create
     create_actions, create_corporate_actions, create_stock_dividends
 from jal.constants import PredefinedAsset
 from jal.db.ledger import Ledger
-from jal.db.operations import CorporateAction
+from jal.db.helpers import readSQL
+from jal.db.operations import CorporateAction, Dividend
 from jal.data_export.taxes import TaxesRus
 from jal.data_export.xlsx import XLSX
 
@@ -57,7 +59,7 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
     ]
     create_dividends(dividends)
     stock_dividends = [
-        (1593205200, 1, 4, 2.0, 2, 53.4, 10.68, 'GE (US3696041033) Stock Dividend US3696041033 196232339 for 10000000000')
+        (Dividend.StockDividend, 1593205200, 1, 4, 2.0, 2, 53.4, 10.68, 'GE (US3696041033) Stock Dividend US3696041033 196232339 for 10000000000')
     ]
     create_stock_dividends(stock_dividends)
     coupons = [
@@ -153,3 +155,34 @@ def test_taxes_rus_bonds(tmp_path, project_root, data_path, prepare_db_taxes):
     #         continue
     #     reports_xls.output_data(tax_report[section], templates[section], parameters)
     # reports_xls.save()
+
+
+def test_taxes_stock_vesting(data_path, prepare_db_taxes):
+    with open(data_path + 'taxes_vesting_rus.json', 'r') as json_file:
+        report = json.load(json_file)
+    assets = [
+        (4, "VTRS", "VIATRIS INC", "US92556V1061", 2, PredefinedAsset.Stock, 0)
+    ]
+    create_assets(assets)
+    stock_dividends = [
+        (Dividend.StockVesting, 1621641600, 1, 4, 11.0, 2, 22.53, 0.0, 'Stock vesting')
+    ]
+    create_stock_dividends(stock_dividends)
+    test_trades = [
+        (1632528000, 1632700800, 4, -11.0, 27.14, 1.0)  # Sell vested stocks
+    ]
+    create_trades(1, test_trades)
+    usd_rates = [
+        (1621641600, 73.5803), (1632528000, 73.3963), (1632700800, 73.5266)
+    ]
+    create_quotes(2, 1, usd_rates)
+
+    ledger = Ledger()  # Build ledger to have FIFO deals table
+    ledger.rebuild(from_timestamp=0)
+
+    assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
+    assert readSQL("SELECT profit FROM deals_ext WHERE asset_id=4") == approx(49.71)
+
+    taxes = TaxesRus()
+    tax_report = taxes.prepare_tax_report(2021, 1)
+    assert tax_report == report
