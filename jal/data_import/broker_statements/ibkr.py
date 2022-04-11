@@ -147,7 +147,7 @@ class StatementIBKR(StatementXML):
                            'values': [('accountId', 'number', str, None),
                                       ('currency', 'currency', IBKR_Currency, None),
                                       ('startingCash', 'cash_begin', float, None),
-                                      ('endingCash', 'cash_end', float, None),    # -- this is planned
+                                      ('endingCash', 'cash_end', float, None),                   # -- this is planned
                                       ('endingSettledCash', 'cash_end_settled', float, None)],   # -- this is now
                            'loader': self.load_accounts},
             'SecuritiesInfo': {'tag': 'SecurityInfo',
