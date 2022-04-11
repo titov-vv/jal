@@ -117,6 +117,7 @@ class IBKR_Account:
 class StatementIBKR(StatementXML):
     statements_path = '/*/FlexStatement'
     statement_tag = 'FlexStatement'
+    level_tag = 'levelOfDetail'
     CancelledFlag = 'Ca'
 
     def __init__(self):

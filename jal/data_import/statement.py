@@ -366,6 +366,10 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             for asset in transfer['asset']:
                 if asset > 0:
                     raise Statement_ImportError(self.tr("Unmatched asset for transfer: ") + f"{transfer}")
+            asset_types = [JalDB().get_asset_type(-x) for x in transfer['asset']]
+            if asset_types[0] != asset_types[1]:
+                raise Statement_ImportError(self.tr("Impossible to convert asset type in transfer: ") + f"{transfer}")
+            asset = -transfer['asset'][0] if asset_types[0] != PredefinedAsset.Money else None
             if transfer['account'][0] == 0 or transfer['account'][1] == 0:
                 text = ''
                 pair_account = 1
@@ -392,11 +396,10 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     transfer['account'][0] = -chosen_account
                 if transfer['account'][1] == 0:
                     transfer['account'][1] = -chosen_account
-
             description = transfer['description'] if 'description' in transfer else ''
             JalDB().add_transfer(transfer['timestamp'], -transfer['account'][0], transfer['withdrawal'],
                                  -transfer['account'][1], transfer['deposit'],
-                                 -transfer['account'][2], transfer['fee'], description)
+                                 -transfer['account'][2], transfer['fee'], description, asset)
 
     def _import_trades(self, trades):
         for trade in trades:

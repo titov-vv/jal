@@ -395,29 +395,40 @@ class JalDB:
                        [(":timestamp", timestamp), (":asset", asset_id), (":account", account_id),
                         (":number", number), (":qty", -qty), (":price", price)], commit=True)
 
-    def add_transfer(self, timestamp, f_acc_id, f_amount, t_acc_id, t_amount, fee_acc_id, fee, note):
-        transfer_id = readSQL("SELECT id FROM transfers WHERE withdrawal_timestamp=:timestamp "
-                              "AND withdrawal_account=:from_acc_id AND deposit_account=:to_acc_id "
-                              "AND withdrawal=:f_amount AND deposit=:t_amount",
-                              [(":timestamp", timestamp), (":from_acc_id", f_acc_id), (":to_acc_id", t_acc_id),
-                               (":f_amount", f_amount), (":t_amount", t_amount)])
-        if transfer_id:
-            logging.info(self.tr("Transfer/Exchange already exists: ") + f"{f_amount}->{t_amount}")
-            return
+    def add_transfer(self, timestamp, f_acc_id, f_amount, t_acc_id, t_amount, fee_acc_id, fee, note, asset=None):
+        if asset is not None:
+            transfer_id = readSQL("SELECT id FROM transfers WHERE withdrawal_timestamp=:timestamp "
+                                  "AND withdrawal_account=:from_acc_id AND deposit_account=:to_acc_id "
+                                  "AND withdrawal=:f_amount AND deposit=:t_amount AND asset=:asset",
+                                  [(":timestamp", timestamp), (":from_acc_id", f_acc_id), (":to_acc_id", t_acc_id),
+                                   (":f_amount", f_amount), (":t_amount", t_amount), (":asset", asset)])
+            if transfer_id:
+                logging.info(self.tr("Transfer/Exchange already exists: ") + f"{f_amount}->{t_amount}")
+                return
+        else:
+            transfer_id = readSQL("SELECT id FROM transfers WHERE withdrawal_timestamp=:timestamp "
+                                  "AND withdrawal_account=:from_acc_id AND deposit_account=:to_acc_id "
+                                  "AND withdrawal=:f_amount AND deposit=:t_amount",
+                                  [(":timestamp", timestamp), (":from_acc_id", f_acc_id), (":to_acc_id", t_acc_id),
+                                   (":f_amount", f_amount), (":t_amount", t_amount)])
+            if transfer_id:
+                logging.info(self.tr("Transfer/Exchange already exists: ") + f"{f_amount}->{t_amount}")
+                return
         if abs(fee) > Setup.CALC_TOLERANCE:
             _ = executeSQL("INSERT INTO transfers (withdrawal_timestamp, withdrawal_account, withdrawal, "
-                           "deposit_timestamp, deposit_account, deposit, fee_account, fee, note) "
+                           "deposit_timestamp, deposit_account, deposit, fee_account, fee, note, asset) "
                            "VALUES (:timestamp, :f_acc_id, :f_amount, :timestamp, :t_acc_id, :t_amount, "
-                           ":fee_acc_id, :fee_amount, :note)",
+                           ":fee_acc_id, :fee_amount, :note, :asset)",
                            [(":timestamp", timestamp), (":f_acc_id", f_acc_id), (":t_acc_id", t_acc_id),
                             (":f_amount", f_amount), (":t_amount", t_amount), (":fee_acc_id", fee_acc_id),
-                            (":fee_amount", fee), (":note", note)], commit=True)
+                            (":fee_amount", fee), (":note", note), (":asset", asset)], commit=True)
         else:
             _ = executeSQL("INSERT INTO transfers (withdrawal_timestamp, withdrawal_account, withdrawal, "
-                           "deposit_timestamp, deposit_account, deposit, note) "
-                           "VALUES (:timestamp, :f_acc_id, :f_amount, :timestamp, :t_acc_id, :t_amount, :note)",
+                           "deposit_timestamp, deposit_account, deposit, note, asset) "
+                           "VALUES (:timestamp, :f_acc_id, :f_amount, :timestamp, :t_acc_id, :t_amount, :note, :asset)",
                            [(":timestamp", timestamp), (":f_acc_id", f_acc_id), (":t_acc_id", t_acc_id),
-                            (":f_amount", f_amount), (":t_amount", t_amount), (":note", note)], commit=True)
+                            (":f_amount", f_amount), (":t_amount", t_amount), (":note", note), (":asset", asset)],
+                           commit=True)
 
     def add_corporate_action(self, account_id, type, timestamp, number,
                              asset_id_old, qty_old, asset_id_new, qty_new, basis_ratio, note):

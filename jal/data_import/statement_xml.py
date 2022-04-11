@@ -10,6 +10,7 @@ from jal.data_import.statement import Statement, FOF, Statement_ImportError
 class StatementXML(Statement):
     statements_path = ''    # Where in XML structure search for statements
     statement_tag = ''      # Tag of the statement in XML (there might be several statements in one XML)
+    level_tag = ''          # Tag to filter out some records
     STATEMENT_ROOT = '<statement_root>'
 
     def __init__(self):
@@ -119,7 +120,7 @@ class StatementXML(Statement):
     def parse_attributes(self, section_tag, element):
         tag_dictionary = {}
         if self._sections[section_tag]['level']:  # Skip extra lines (SUMMARY, etc)
-            if self.attr_string(element, 'levelOfDetail', '') != self._sections[section_tag]['level']:
+            if self.attr_string(element, self.level_tag, '') != self._sections[section_tag]['level']:
                 return None
         for attr_name, key_name, attr_type, attr_default in self._sections[section_tag]['values']:
             attr_value = self.attr_loader[attr_type](element, attr_name, attr_default)
