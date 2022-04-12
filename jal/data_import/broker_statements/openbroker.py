@@ -367,6 +367,7 @@ class StatementOpenBroker(StatementXML):
             'Комиссия Брокера / ': None,              # These operations are included of trade's data
             'Удержан налог на купонный доход': None,  # Tax information is included into interest payment data
             'Поставлены на торги средства клиента': self.transfer_in,
+            'Списаны средства клиента': self.transfer_out,
             'Выплата дохода': self.asset_payment,
             'Возврат излишне удержанного налога': self.tax_refund,
             'Проценты по предоставленным займам ЦБ': None,   # Loan payments are loaded in self.load_loans
@@ -394,6 +395,14 @@ class StatementOpenBroker(StatementXML):
         new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
         transfer = {"id": new_id, "account": [0, account_id, 0], "asset": [account['currency'], account['currency']],
                     "timestamp": timestamp, "withdrawal": amount, "deposit": amount, "fee": 0.0,
+                    "description": description}
+        self._data[FOF.TRANSFERS].append(transfer)
+
+    def transfer_out(self, timestamp, account_id, amount, description):
+        account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
+        new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+        transfer = {"id": new_id, "account": [account_id, 0, 0], "asset": [account['currency'], account['currency']],
+                    "timestamp": timestamp, "withdrawal": -amount, "deposit": -amount, "fee": 0.0,
                     "description": description}
         self._data[FOF.TRANSFERS].append(transfer)
 

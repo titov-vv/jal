@@ -50,7 +50,8 @@
   "transfers": [
     {"id": 1, "account": [1, 0, 0], "asset": [7, 7], "timestamp": 1645488000, "withdrawal": 20.0, "deposit": 20.0, "fee": 0.0, "description": "Отчет депозитария б/н от 22.02.2022. Перевод ЦБ в портфель ФР Classica"},
     {"id": 2, "account": [1, 0, 0], "asset": [8, 8], "timestamp": 1645488000, "withdrawal": 3.0, "deposit": 3.0, "fee": 0.0, "description": "Отчет депозитария б/н от 22.02.2022. Перевод ЦБ в портфель ФР Classica"},
-    {"id": 3, "account": [0, 1, 0], "asset": [1, 1], "timestamp": 1622073600, "withdrawal": 100000.0, "deposit": 100000.0, "fee": 0.0, "description": "Поставлены на торги средства клиента 12345"}
+    {"id": 3, "account": [0, 1, 0], "asset": [1, 1], "timestamp": 1622073600, "withdrawal": 100000.0, "deposit": 100000.0, "fee": 0.0, "description": "Поставлены на торги средства клиента 12345"},
+    {"id": 4, "account": [1, 0, 0], "asset": [1, 1], "timestamp": 1622073600, "withdrawal": 50000.0, "deposit": 50000.0, "fee": 0.0, "description": "Списаны средства клиента 12345 для возврата на расчетный счет"}
   ],
   "corporate_actions": [],
   "asset_payments": [

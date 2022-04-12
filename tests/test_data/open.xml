@@ -414,6 +414,7 @@
 <spot_non_trade_money_operations>
 <item operation_date="2021-05-27T00:00:00" currency_code="RUB" amount="-283.62" comment="Комиссия Брокера / Доп. комиссия Брокера &quot;Сборы ТС&quot; за заключение сделок 27.07.2021 на Фондовый Рынок Московской биржи по счету 12345" />
 <item operation_date="2021-05-27T00:00:00" currency_code="RUB" amount="100000.00" comment="Поставлены на торги средства клиента 12345" />
+<item operation_date="2021-05-27T00:00:00" currency_code="RUB" amount="-50000.00" comment="Списаны средства клиента 12345 для возврата на расчетный счет" />
 <item operation_date="2021-09-01T00:00:00" currency_code="RUB" amount="-197.00" comment="Удержан налог на купонный доход  по МТС 1P-05 с клиента 12345" />
 <item operation_date="2021-09-01T00:00:00" currency_code="RUB" amount="204.00" comment="Выплата дохода клиент 12345 (НКД 7 МТС 1P-05) налог к удержанию 197.00 рублей" />
 <item operation_date="2021-09-01T00:00:00" currency_code="RUB" amount="60000.00" comment="Выплата дохода клиент 12345 (Погашение МТС 1P-05) налог не удерживается" />
