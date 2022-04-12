@@ -3,7 +3,7 @@ from datetime import datetime
 import logging
 
 from PySide6.QtCore import Property, Slot
-from PySide6.QtWidgets import QFileDialog
+from PySide6.QtWidgets import QFileDialog, QMessageBox
 from jal.ui.ui_tax_export_widget import Ui_TaxWidget
 from jal.widgets.mdi import MdiWidget
 from jal.data_export.taxes import TaxesRus
@@ -77,6 +77,10 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
     no_settelement = Property(bool, fget=getNoSettlement)
 
     def SaveReport(self):
+        if not self.account:
+            QMessageBox().warning(self, self.tr("Data are incomplete"),
+                                  self.tr("You haven't selected an account for tax report"), QMessageBox.Ok)
+            return
         taxes = TaxesRus()
         tax_report = taxes.prepare_tax_report(self.year, self.account, use_settlement=(not self.no_settelement))
 
