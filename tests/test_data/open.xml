@@ -402,6 +402,9 @@
 <item asset_id="28900" asset_type_id="1" asset_type="ADR" asset_name="OZON-адр  " asset_code="" opening_position_fact="3.00000000" opening_position_plan="3.00000000" period_change_position_fact="-3.00000000" period_change_position_plan="-3.00000000" closing_position_fact="0.00000000" closing_position_plan="0.00000000" blocked_for_out="0.00000000" price_currency="RUB" currency_course="1.000000" settlement_price="1203.000000" settlement_fact="0.00000000" settlement_plan="0.00000000" position_weight="0.000000000000000000" />
 <item asset_id="810" asset_type_id="2" asset_type="Денежные средства" asset_name="Рубль РФ" asset_code="RUB" opening_position_fact="0.00000000" opening_position_plan="0.00000000" period_change_position_fact="599716.38000000" period_change_position_plan="16766.13000000" closing_position_fact="599716.38000000" closing_position_plan="16766.13000000" blocked_for_out="0.00000000" settlement_price="1.000000" settlement_fact="99716.38000000" settlement_plan="16766.13000000" position_weight="2.796058130000000000" />
 </spot_assets>
+<spot_loan_deals_executed>
+<item instrument="OZON-адр  " operation_date="2022-03-01T00:00:00" operation_number="3330448008210" conclusion_date="2022-02-28T00:00:00" loan_return_qty="7.00000000" market_value="7021.00" repayment="7.00000000" repayment_renewal="0.00000000" currency="RUB" profit="0.11" brokers_fee="0.07" personal_account="" />
+</spot_loan_deals_executed>
 <spot_main_deals_conclusion>
 <item security_name="Мордовия03" security_grn_code="RU34003MOR0" request_no="25027245823" deal_no="4196406008" conclusion_date="2021-05-27T00:00:00" conclusion_time="2021-05-27T14:53:49" execution_date="2021-05-28T00:00:00" buy_qnty="50.00000000" price_currency_code="RUB" price="100.400000" nkd="346.000000" accounting_currency_code="RUB" volume_currency="20426.00" volume_rur="20426.00" broker_commission="10.04" board_name="ПАО Московская биржа Т+" broker_ref="12345/" broker_commission_currency_code="RUB" />
 <item security_name="МТС 1P-05 " security_grn_code="4B02-05-04715-A-001P" request_no="25032575278" deal_no="4196915558" conclusion_date="2021-05-27T00:00:00" conclusion_time="2021-05-27T17:15:23" execution_date="2021-05-28T00:00:00" buy_qnty="5.00000000" price_currency_code="RUB" price="100.150000" nkd="142.950000" accounting_currency_code="RUB" volume_currency="5150.45" volume_rur="5150.45" broker_commission="2.50" board_name="ПАО Московская биржа Т+" broker_ref="12345/" broker_commission_currency_code="RUB" />
@@ -418,6 +421,7 @@
 <item operation_date="2021-09-03T00:00:00" currency_code="RUB" amount="834.00" comment="Выплата дохода клиент 12345 (НКД 20 Мордовия-обл-03) налог к удержанию 108.00 рублей" />
 <item operation_date="2021-09-03T00:00:00" currency_code="RUB" amount="30000.00" comment="Выплата дохода клиент 12345 (Погашение Мордовия-обл-03) налог не удерживается" />
 <item operation_date="2022-03-23T00:00:00" currency_code="RUB" amount="100.00" comment="Возврат излишне удержанного налога с клиента  12345 за 2021 год" />
+<item operation_date="2022-03-01T00:00:00" currency_code="RUB" amount="0.11" comment="Проценты по предоставленным займам ЦБ за 01.03.2022" />
 </spot_non_trade_money_operations>
 <spot_non_trade_security_operations>
 <item operation_date="2021-09-01T00:00:00" security_name="МТС 1P-05 " grn_code="4B02-05-04715-A-001P" quantity="-60.00000000" comment="Отчет депозитария б/н от 01.09.2021. Снятие ЦБ с учета. Погашение облигаций - МТС 1P-05" board_name="Фондовый Рынок Московской биржи (ФР МБ)" />

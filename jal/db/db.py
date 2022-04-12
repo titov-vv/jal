@@ -449,15 +449,18 @@ class JalDB:
                         (":asset", asset_id_old), (":qty", float(qty_old)), (":asset_new", asset_id_new),
                         (":qty_new", float(qty_new)), (":basis_ratio", basis_ratio), (":note", note)], commit=True)
 
-    def add_cash_transaction(self, account_id, broker_id, timestamp, amount, category_id, description):
+    def add_cash_transaction(self, account_id, broker_id, timestamp, lines):
+        if not lines:
+            return   # No transaction details
         query = executeSQL("INSERT INTO actions (timestamp, account_id, peer_id) "
                            "VALUES (:timestamp, :account_id, :bank_id)",
                            [(":timestamp", timestamp), (":account_id", account_id), (":bank_id", broker_id)])
         pid = query.lastInsertId()
-        _ = executeSQL("INSERT INTO action_details (pid, category_id, amount, note) "
-                       "VALUES (:pid, :category_id, :amount, :note)",
-                       [(":pid", pid), (":category_id", category_id), (":amount", amount),
-                        (":note", description)], commit=True)
+        for line in lines:
+            _ = executeSQL("INSERT INTO action_details (pid, category_id, amount, note) "
+                           "VALUES (:pid, :category_id, :amount, :note)",
+                           [(":pid", pid), (":category_id", line['category']), (":amount", line['amount']),
+                            (":note", line['note'])], commit=True)
 
     def reconcile_account(self, account_id, timestamp):
         _ = executeSQL("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",

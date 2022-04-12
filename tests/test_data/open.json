@@ -39,7 +39,11 @@
     {"id": 6, "number": "20210903-2", "timestamp": 1630627200, "settlement": 1630627200, "account": 1, "asset": 3, "quantity": -75.0, "price": 400.0, "fee": 0.0, "note": "Отчет депозитария б/н от 03.09.2021. Снятие ЦБ с учета. Погашение облигаций - Мордовия-обл-03"}
   ],
   "income_spending": [
-    {"id": 1, "timestamp": 1647993600, "account": 1, "peer": 0, "lines": [{"amount": 100.0, "category": -6, "description": "Возврат излишне удержанного налога с клиента  12345 за 2021 год"}]}
+    {"id": 1, "timestamp": 1647993600, "account": 1, "peer": 0, "lines": [{"amount": 100.0, "category": -6, "description": "Возврат излишне удержанного налога с клиента  12345 за 2021 год"}]},
+    {"id": 2, "timestamp": 1646092800, "account": 1, "peer": 0, "lines": [
+      {"amount": 0.11, "category": -8, "description": "Доход по сделке займа #3330448008210: 7.0 x OZON-адр"},
+      {"amount": -0.07, "category": -5, "description": "Комиссия за сделку займа #3330448008210: 7.0 x OZON-адр"}
+    ]}
   ],
   "transfers": [
     {"id": 1, "account": [1, 0, 0], "asset": [7, 7], "timestamp": 1645488000, "withdrawal": 20.0, "deposit": 20.0, "fee": 0.0, "description": "Отчет депозитария б/н от 22.02.2022. Перевод ЦБ в портфель ФР Classica"},

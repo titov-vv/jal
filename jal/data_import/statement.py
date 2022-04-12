@@ -349,14 +349,12 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if action['peer'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched peer for income/spending: ") + f"{action}")
             peer = JalDB().get_account_bank(-action['account']) if action['peer'] == 0 else -action['peer']
-            if len(action['lines']) != 1:   # FIXME - need support for multilines here
-                raise Statement_ImportError(self.tr("Unsupported income/spending: ") + f"{action}")
-            amount = action['lines'][0]['amount']
-            category = -action['lines'][0]['category']
-            if category <= 0:
-                raise Statement_ImportError(self.tr("Unmatched category for income/spending: ") + f"{action}")
-            description = action['lines'][0]['description']
-            JalDB().add_cash_transaction(-action['account'], peer, action['timestamp'], amount, category, description)
+            lines = []
+            for line in action['lines']:
+                if line['category'] >= 0:
+                    raise Statement_ImportError(self.tr("Unmatched category for income/spending: ") + f"{action}")
+                lines.append({'amount': line['amount'], 'category': -line['category'], 'note': line['description']})
+            JalDB().add_cash_transaction(-action['account'], peer, action['timestamp'], lines)
     
     def _import_transfers(self, transfers):
         for transfer in transfers:

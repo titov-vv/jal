@@ -151,6 +151,19 @@ class StatementOpenBroker(StatementXML):
                                ('amount', 'amount', float, None),
                                ('comment', 'description', str, '')],
                     'loader': self.load_cash_operations
+                },
+            'spot_loan_deals_executed':
+                {
+                    'tag': 'item',
+                    'level': '',
+                    'values': [('operation_date', 'timestamp', datetime, None),
+                               ('operation_number', 'number', str, ''),
+                               ('instrument', 'ticker', str, None),
+                               ('loan_return_qty', 'qty', float, None),
+                               ('currency', 'currency', OpenBroker_Currency, None),
+                               ('profit', 'profit', float, None),
+                               ('brokers_fee', 'fee', float, None)],
+                    'loader': self.load_loans
                 }
         }
 
@@ -355,7 +368,8 @@ class StatementOpenBroker(StatementXML):
             'Удержан налог на купонный доход': None,  # Tax information is included into interest payment data
             'Поставлены на торги средства клиента': self.transfer_in,
             'Выплата дохода': self.asset_payment,
-            'Возврат излишне удержанного налога': self.tax_refund
+            'Возврат излишне удержанного налога': self.tax_refund,
+            'Проценты по предоставленным займам ЦБ': None   # Loan payments are loaded in self.load_loans
         }
 
         for cash in cash_operations:
@@ -445,6 +459,19 @@ class StatementOpenBroker(StatementXML):
                  "asset": asset_cancel['asset'], "quantity": qty, "price": price, "fee": 0.0,
                  "note": asset_cancel['note']}
         self._data[FOF.TRADES].append(trade)
+
+    def load_loans(self, loans):
+        for loan in loans:
+            new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
+            account_id = self.account_by_currency(loan['currency'])
+            note = f"Доход по сделке займа #{loan['number']}: {loan['qty']} x {loan['ticker']}"
+            fee_note = f"Комиссия за сделку займа #{loan['number']}: {loan['qty']} x {loan['ticker']}"
+            payment = {'id': new_id, 'account': account_id, 'timestamp': loan['timestamp'], 'peer': 0,
+                       'lines': [
+                           {'amount': loan['profit'], 'category': -PredefinedCategory.Interest, 'description': note},
+                           {'amount': -loan['fee'], 'category': -PredefinedCategory.Fees, 'description': fee_note}
+                       ]}
+            self._data[FOF.INCOME_SPENDING].append(payment)
 
     # Removes data that was used during XML processing but isn't needed in final output:
     # Drop any symbols with type "broker_symbol" as they are auxiliary for statement import only
