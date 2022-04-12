@@ -422,6 +422,8 @@
 <item operation_date="2021-09-03T00:00:00" currency_code="RUB" amount="30000.00" comment="Выплата дохода клиент 12345 (Погашение Мордовия-обл-03) налог не удерживается" />
 <item operation_date="2022-03-23T00:00:00" currency_code="RUB" amount="100.00" comment="Возврат излишне удержанного налога с клиента  12345 за 2021 год" />
 <item operation_date="2022-03-01T00:00:00" currency_code="RUB" amount="0.11" comment="Проценты по предоставленным займам ЦБ за 01.03.2022" />
+<item operation_date="2022-04-01T00:00:00" currency_code="RUB" amount="-1.00" comment="Удержан налог на прочий доход с клиента 12345" />
+<item operation_date="2022-04-01T00:00:00" currency_code="RUB" amount="5.89" comment="Плата за остаток на счете на ФР МБ, остаток в рублях 17913.63 за 01.04.2022" />
 </spot_non_trade_money_operations>
 <spot_non_trade_security_operations>
 <item operation_date="2021-09-01T00:00:00" security_name="МТС 1P-05 " grn_code="4B02-05-04715-A-001P" quantity="-60.00000000" comment="Отчет депозитария б/н от 01.09.2021. Снятие ЦБ с учета. Погашение облигаций - МТС 1P-05" board_name="Фондовый Рынок Московской биржи (ФР МБ)" />

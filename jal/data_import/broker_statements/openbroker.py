@@ -369,7 +369,9 @@ class StatementOpenBroker(StatementXML):
             'Поставлены на торги средства клиента': self.transfer_in,
             'Выплата дохода': self.asset_payment,
             'Возврат излишне удержанного налога': self.tax_refund,
-            'Проценты по предоставленным займам ЦБ': None   # Loan payments are loaded in self.load_loans
+            'Проценты по предоставленным займам ЦБ': None,   # Loan payments are loaded in self.load_loans
+            'Удержан налог на прочий доход': self.cash_tax,
+            'Плата за остаток на счете': self.cash_interest
         }
 
         for cash in cash_operations:
@@ -413,6 +415,18 @@ class StatementOpenBroker(StatementXML):
         new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
         payment = {'id': new_id, 'account': account_id, 'timestamp': timestamp, 'peer': 0,
                    'lines': [{'amount': amount, 'category': -PredefinedCategory.Taxes, 'description': description}]}
+        self._data[FOF.INCOME_SPENDING].append(payment)
+
+    def cash_tax(self, timestamp, account_id, amount, description):
+        new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
+        payment = {'id': new_id, 'account': account_id, 'timestamp': timestamp, 'peer': 0,
+                   'lines': [{'amount': amount, 'category': -PredefinedCategory.Taxes, 'description': description}]}
+        self._data[FOF.INCOME_SPENDING].append(payment)
+
+    def cash_interest(self, timestamp, account_id, amount, description):
+        new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
+        payment = {'id': new_id, 'account': account_id, 'timestamp': timestamp, 'peer': 0,
+                   'lines': [{'amount': amount, 'category': -PredefinedCategory.Interest, 'description': description}]}
         self._data[FOF.INCOME_SPENDING].append(payment)
 
     def interest_payment(self, timestamp, account_id, amount, description):
