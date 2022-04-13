@@ -48,8 +48,9 @@
     {"id": 6, "number": "N/210624/7579904", "timestamp": 1624492800, "settlement": 1624492800, "account": 1, "asset": 5, "quantity": -12, "price": 1000.0, "fee": 0.0,"note": "Погашение номинала ТинькоффБ7, Отчет вышестоящего депозитария CO2106247591 от 24.06.2021"}
   ],
   "income_spending": [
-    {"id": 1, "timestamp": 1621555199, "account": 1, "peer": 0, "lines": [{"amount": -11.22, "category": -5, "description": "комиссия Брокера"}]},
-    {"id": 2, "timestamp": 1621555199, "account": 2, "peer": 0, "lines": [{"amount": -1.23, "category": -5, "description": "комиссия иных Депозитариев"}]}
+    {"id": 1, "timestamp": 1649721600, "account": 1, "peer": 0, "lines": [{"amount": -30.97, "category": -5, "description": "Комиссия за обслуживание ГДР X5 Retail Group N.V. ORD SHS US98387E2054"}]},
+    {"id": 2, "timestamp": 1621555199, "account": 1, "peer": 0, "lines": [{"amount": -11.22, "category": -5, "description": "комиссия Брокера"}]},
+    {"id": 3, "timestamp": 1621555199, "account": 2, "peer": 0, "lines": [{"amount": -1.23, "category": -5, "description": "комиссия иных Депозитариев"}]}
   ],
   "transfers": [],
   "corporate_actions": [],

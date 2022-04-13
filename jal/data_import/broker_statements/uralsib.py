@@ -256,7 +256,8 @@ class StatementUKFU(StatementXLS):
             'Списано по сделке': None,   # These operations are results of trades
             'Получено по сделке': None,
             "Вариационная маржа": None,  # These are non-trade operations for derivatives
-            "Заблокировано средств ГО": None
+            "Заблокировано средств ГО": None,
+            "Депозитарные сборы других депозитариев": self.fee
         }
 
         row, headers = self.find_section_start("ДВИЖЕНИЕ ДЕНЕЖНЫХ СРЕДСТВ ЗА ОТЧЕТНЫЙ ПЕРИОД",  columns)
@@ -398,6 +399,12 @@ class StatementUKFU(StatementXLS):
         new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
         tax = {"id": new_id, "timestamp": timestamp, "account": account_id, "peer": 0,
                "lines": [{"amount": amount, "category": -PredefinedCategory.Taxes, "description": description}]}
+        self._data[FOF.INCOME_SPENDING].append(tax)
+
+    def fee(self, timestamp, _number, account_id, amount, description):
+        new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
+        tax = {"id": new_id, "timestamp": timestamp, "account": account_id, "peer": 0,
+               "lines": [{"amount": amount, "category": -PredefinedCategory.Fees, "description": description}]}
         self._data[FOF.INCOME_SPENDING].append(tax)
 
     def load_broker_fee(self):
