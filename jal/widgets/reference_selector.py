@@ -15,6 +15,7 @@ class AbstractReferenceSelector(QWidget):
 
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(1)
         self.name = QLineEdit()
         self.name.setText("")
         self.layout.addWidget(self.name)
