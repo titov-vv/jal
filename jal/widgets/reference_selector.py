@@ -1,6 +1,7 @@
 from PySide6.QtCore import Qt, Signal, Property, Slot, QModelIndex
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QLabel, QPushButton, QCompleter
 import jal.widgets.reference_dialogs as ui_dialogs
+from jal.db.helpers import load_icon
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -21,8 +22,8 @@ class AbstractReferenceSelector(QWidget):
         self.details.setText("")
         self.details.setVisible(False)
         self.layout.addWidget(self.details)
-        self.button = QPushButton("...")
-        self.button.setFixedWidth(self.button.fontMetrics().horizontalAdvance("XXXX"))
+        self.button = QPushButton()
+        self.button.setIcon(load_icon("meatballs.png"))
         self.layout.addWidget(self.button)
         self.setLayout(self.layout)
 
