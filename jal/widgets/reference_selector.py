@@ -25,11 +25,15 @@ class AbstractReferenceSelector(QWidget):
         self.button = QPushButton()
         self.button.setIcon(load_icon("meatballs.png"))
         self.layout.addWidget(self.button)
+        self.clean_button = QPushButton()
+        self.clean_button.setIcon(load_icon("broom.png"))
+        self.layout.addWidget(self.clean_button)
         self.setLayout(self.layout)
 
         self.setFocusProxy(self.name)
 
         self.button.clicked.connect(self.on_button_clicked)
+        self.clean_button.clicked.connect(self.on_clean_button_clicked)
 
         if self.details_field:
             self.name.setFixedWidth(self.name.fontMetrics().horizontalAdvance("X") * 15)
@@ -63,6 +67,9 @@ class AbstractReferenceSelector(QWidget):
         if res:
             self.selected_id = self.dialog.selected_id
             self.changed.emit()
+
+    def on_clean_button_clicked(self):
+        self.selected_id = 0
 
     @Slot(QModelIndex)
     def on_completion(self, index):
