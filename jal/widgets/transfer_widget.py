@@ -149,6 +149,8 @@ class TransferWidget(AbstractOperationDetails):
         if abs(float(fee_amount)) < Setup.CALC_TOLERANCE:
             self.model.setData(self.model.index(0, self.model.fieldIndex("fee_account")), None)
             self.model.setData(self.model.index(0, self.model.fieldIndex("fee")), None)
+        if record.value(self.model.fieldIndex("asset")) == 0:   # Store None if asset isn't selected
+            self.model.setData(self.model.index(0, self.model.fieldIndex("asset")), None)
         super().saveChanges()
 
     def prepareNew(self, account_id):
