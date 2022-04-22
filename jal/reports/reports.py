@@ -2,8 +2,8 @@ import os
 import logging
 import importlib
 
-from PySide6.QtWidgets import QFileDialog, QMessageBox
-from PySide6.QtCore import Qt, QObject
+from PySide6.QtWidgets import QFileDialog
+from PySide6.QtCore import QObject
 from jal.constants import Setup
 from jal.db.helpers import get_app_path
 from jal.data_export.xlsx import XLSX

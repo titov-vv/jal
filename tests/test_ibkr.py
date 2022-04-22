@@ -1,3 +1,5 @@
+import json
+
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from data_import.broker_statements.ibkr import StatementIBKR
 from jal.db.ledger import Ledger
@@ -126,3 +128,13 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
 
     # Check correct number of deals
     assert readSQL("SELECT COUNT(*) FROM deals_ext") == 4
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_ibkr_warrants(tmp_path, project_root, data_path, prepare_db_taxes):
+    with open(data_path + 'ibkr_warrants.json', 'r') as json_file:
+        statement = json.load(json_file)
+
+    IBKR = StatementIBKR()
+    IBKR.load(data_path + 'ibkr_warrants.xml')
+    assert IBKR._data == statement

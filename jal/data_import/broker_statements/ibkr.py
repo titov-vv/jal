@@ -532,7 +532,8 @@ class StatementIBKR(StatementXML):
             r"^(?P<symbol_old>.*)(.OLD)?\((?P<isin_old>\w+)\) +CASH and STOCK MERGER +\([\w ]+\) +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +AND +(?P<currency>.*) +(\d+(\.\d+)?) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
             r"^(?P<symbol_old>.*)(.OLD)?\((?P<isin_old>\w+)\) +CASH and STOCK MERGER +\([\w ]+\) +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+), +(?P<isin_new2>.*) +(?P<X2>\d+) +FOR +(?P<Y2>\d+) +AND +(?P<currency>\w+) +(\d+(\.\d+)?) +\((?P<symbol>\w+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
             r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +TENDERED TO +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), +(?P<name>.*), +(?P<id>.*)\)$",
-            r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +MERGED\([\w ]+\) +FOR (?P<currency>\w+) (?P<price>\d+\.\d+) PER SHARE +\((?P<symbol>.*), (?P<name>.*)( - TENDER ODD LOT)?, (?P<id>\w+)\)$"  # "TENDER ODD LOT" part is optional
+            r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +MERGED\([\w ]+\) +FOR (?P<currency>\w+) (?P<price>\d+\.\d+) PER SHARE +\((?P<symbol>.*), (?P<name>.*)( - TENDER ODD LOT)?, (?P<id>\w+)\)$",  # "TENDER ODD LOT" part is optional
+            r"^(?P<symbol_old>.*)(.OLD)?\((?P<isin_old>\w+)\) +MERGED\([\w ]+\) +WITH +(?P<isin_new>.*) +(?P<X>\d+) +FOR +(?P<Y>\d+), +(?P<isin_new2>.*) +(?P<X2>\d+) +FOR +(?P<Y2>\d+) +\((?P<symbol>.*)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$"
             ]
 
         parts = None
@@ -563,10 +564,12 @@ class StatementIBKR(StatementXML):
             return 1
 
         paired_record = self.find_corp_action_pair(asset_b, description_b, action, parts_b)
+        # Process cash payment if it is present as part of corporate action
         if (pattern_id == 1 or pattern_id == 2) and (not paired_record[0]['jal_processed']):
             self.add_merger_payment(action['timestamp'], action['account'], paired_record[0]['proceeds'],
                                     parts['currency'], action['description'])
-        if pattern_id == 2 and (not paired_record[0]['jal_processed']):
+        # Special processing if 1 asset is converted into two other assets
+        if (pattern_id == 2 or pattern_id == 5) and (not paired_record[0]['jal_processed']):
             action['timestamp'] -= 1
             action['type'] = FOF.ACTION_SPINOFF   # FIXME it is temporary workaround to keep 2 outgoing assets - one as from spin-off, another from merger
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
