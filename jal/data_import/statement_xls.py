@@ -92,7 +92,7 @@ class StatementXLS(Statement):
             return start_row, column_indices
         for col in range(self._statement.shape[1]):                 # Load section headers from next row
             for row in range(header_height):
-                headers[self._statement[col][start_row+row]] = col  # store column number per header
+                headers[str(self._statement[col][start_row+row])] = col  # store column number per header name
         for column in columns:
             for header in headers:
                 if re.search(columns[column], header):

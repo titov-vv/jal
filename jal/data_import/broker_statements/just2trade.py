@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timezone
 
 from jal.data_import.statement import FOF
 from jal.data_import.statement_xls import StatementXLS
@@ -61,6 +62,10 @@ class StatementJ2T(StatementXLS):
             if asset_name.endswith('*'):    # strip ending star if required
                 asset_name = asset_name[:-1]
             currency_code = self.currency_id('USD')      # FIXME put account currency here
+            if not self._statement[headers['isin']][row]:
+                logging.warning(self.tr("Skipping asset with no details: ") + asset_name)
+                row += 1
+                continue
             if self._statement[headers['symbol']][row]:
                 self.asset_id({'type': FOF.ASSET_STOCK, 'isin': self._statement[headers['isin']][row],
                                'symbol': self._statement[headers['symbol']][row],
@@ -73,7 +78,64 @@ class StatementJ2T(StatementXLS):
         logging.info(self.tr("Securities loaded: ") + f"{cnt}")
 
     def _load_deals(self):
-        pass
+        cnt = 0
+        columns = {
+            "number": "Номер сделки",
+            "timestamp": "Дата сделки",
+            "settlement": "Дата расчетов",
+            "asset_name": "Наименование",
+            "isin": "ISIN",
+            "asset": "Symbol",
+            "B/S": "Тип сделки",
+            "qty": "Кол-во",
+            "fee": "Комиссия брокера в валюте счета",
+            "amount": "Итого в валюте счета",
+            "fee_ex": "Прочие комиссии в валюте счета"
+        }
+
+        row, headers = self.find_section_start("Сделки с Акциями, Паями, Депозитарными расписками ", columns,
+                                               header_height=3)
+        if row < 0:
+            return
+        while row < self._statement.shape[0]:
+            if self._statement[self.HeaderCol][row] == '':
+                break
+            try:
+                ts_string = self._statement[headers['timestamp']][row]
+                timestamp = int(datetime.strptime(ts_string,
+                                                  "%d.%m.%Y %H:%M:%S, %Z%z").replace(tzinfo=timezone.utc).timestamp())
+            except ValueError:  # Skip 'Итого' and similar lines
+                row += 1
+                continue
+            deal_number = str(self._statement[headers['number']][row])
+            asset_id = self.asset_id({'type': FOF.ASSET_STOCK, 'isin': self._statement[headers['isin']][row],
+                                      'symbol': self._statement[headers['asset']][row],
+                                      'name': self._statement[headers['asset_name']][row],
+                                      'currency': self.currency_id('USD')})  # FIXME - replace hardcoded 'USD'
+            if self._statement[headers['B/S']][row] == 'Купля':
+                qty = self._statement[headers['qty']][row]
+            elif self._statement[headers['B/S']][row] == 'Продажа':
+                qty = -self._statement[headers['qty']][row]
+            else:
+                row += 1
+                logging.warning(self.tr("Unknown trade type: ") + self._statement[headers['B/S']][row])
+                continue
+            if self._statement[headers['fee_ex']][row]:
+                fee = self._statement[headers['fee']][row] + self._statement[headers['fee_ex']][row]
+            else:
+                fee = self._statement[headers['fee']][row]
+            amount = self._statement[headers['amount']][row]
+            price = (amount - fee) / abs(qty)
+            # Settlement is stored as date in Excel report file
+            settlement = int(self._statement[headers['settlement']][row].replace(tzinfo=timezone.utc).timestamp())
+            account_id = self._find_account_id(self._account_number, 'USD')   # FIXME - replace hardcoded 'USD'
+            new_id = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
+            trade = {"id": new_id, "number": deal_number, "timestamp": timestamp, "settlement": settlement,
+                     "account": account_id, "asset": asset_id, "quantity": qty, "price": price, "fee": fee}
+            self._data[FOF.TRADES].append(trade)
+            cnt += 1
+            row += 1
+        logging.info(self.tr("Trades loaded: ") + f"{cnt}")
 
     def _load_cash_transactions(self):
         pass
