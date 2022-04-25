@@ -6,6 +6,7 @@ from data_import.broker_statements.uralsib import StatementUKFU
 from data_import.broker_statements.kit import StatementKIT
 from data_import.broker_statements.psb import StatementPSB
 from data_import.broker_statements.openbroker import StatementOpenBroker
+from data_import.broker_statements.just2trade import StatementJ2T
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -54,6 +55,7 @@ def test_statement_psb(tmp_path, project_root, data_path, prepare_db_xls):
     PSB.load(data_path + 'psb.xlsx')
     assert PSB._data == statement
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 def test_statement_open(tmp_path, project_root, data_path, prepare_db_xls):
     with open(data_path + 'open.json', 'r') as json_file:
@@ -62,3 +64,13 @@ def test_statement_open(tmp_path, project_root, data_path, prepare_db_xls):
     OpenBroker = StatementOpenBroker()
     OpenBroker.load(data_path + 'open.xml')
     assert OpenBroker._data == statement
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_statement_just2trade(tmp_path, project_root, data_path, prepare_db_xls):
+    with open(data_path + 'j2t.json', 'r') as json_file:
+        statement = json.load(json_file)
+
+    J2T = StatementJ2T()
+    J2T.load(data_path + 'j2t.xlsx')
+    assert J2T._data == statement

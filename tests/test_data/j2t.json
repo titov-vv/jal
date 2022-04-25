@@ -1,0 +1,29 @@
+{
+  "period": [1614729600, 1615420799],
+  "accounts": [
+    {"id": 1, "currency": 1, "number": "JT222222", "cash_begin": 0, "cash_end": 0, "cash_end_settled": 20290.14}
+  ],
+  "assets": [
+    {"id": 1, "type": "money", "name": ""},
+    {"id": 2, "type": "stock", "name": "Abbott Laboratories", "isin": "US0028241000"},
+    {"id": 3, "type": "stock", "name": "АФК \"Система\" ПАО ао", "isin": "RU000A0DQZE3"},
+    {"id": 4, "type": "stock", "name": "United Company RUSAL PLC", "isin": "JE00B5BCW814"},
+    {"id": 5, "type": "stock", "name": "Zoom Video Communications Inc", "isin": "US98980L1017"}
+  ],
+  "symbols": [
+    {"id": 1, "asset": 1, "symbol": "USD", "currency": -1},
+    {"id": 2, "asset": 2, "symbol": "ABT", "currency": 1},
+    {"id": 3, "asset": 3, "symbol": "AFKS", "currency": 1, "note": "MOEX"},
+    {"id": 4, "asset": 4, "symbol": "486-ME", "currency": 1, "note": "MOEX"},
+    {"id": 5, "asset": 5, "symbol": "ZM", "currency": 1}
+  ],
+  "assets_data": [
+    {"id": 1, "asset": 3, "principal": 0.09, "reg_number": "1-05-01669-A"},
+    {"id": 2, "asset": 4, "principal": 0.01}
+  ],
+  "trades": [],
+  "income_spending": [],
+  "transfers": [],
+  "corporate_actions": [],
+  "asset_payments": []
+}
