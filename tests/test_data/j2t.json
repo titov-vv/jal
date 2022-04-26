@@ -24,9 +24,10 @@
     {"id": 2, "asset": 4, "principal": 0.01}
   ],
   "trades": [
-    {"id": 1, "number": "TR264656807", "timestamp": 1614772579, "settlement": 1614902400, "account": 1, "asset": 4, "price": 0.5512, "quantity": -50, "fee": 0.01},
-    {"id": 2, "number": "TR264657748", "timestamp": 1614782596, "settlement": 1614902400, "account": 1, "asset": 5, "price": -368.01, "quantity": 1, "fee": 1.52},
-    {"id": 3, "number": "TR264860704", "timestamp": 1614853841, "settlement": 1615161600, "account": 1, "asset": 6, "price": 78.845625, "quantity": -16, "fee": 3.8}
+    {"id": 1, "number": "TR264656807", "timestamp": 1614772579, "settlement": 1614902400, "account": 1, "asset": 4, "price": 0.5516000000000001, "quantity": -50, "fee": 0.01},
+    {"id": 2, "number": "TR264657748", "timestamp": 1614782596, "settlement": 1614902400, "account": 1, "asset": 5, "price": 364.97, "quantity": 1, "fee": 1.52},
+    {"id": 3, "number": "TR265763834", "timestamp": 1615386986, "settlement": 1615507200, "account": 1, "asset": 5, "price": 348.89, "quantity": -1, "fee": 1.52},
+    {"id": 4, "number": "TR264860704", "timestamp": 1614853841, "settlement": 1615161600, "account": 1, "asset": 6, "price": 79.32062499999999, "quantity": -16, "fee": 3.8}
   ],
   "income_spending": [],
   "transfers": [],

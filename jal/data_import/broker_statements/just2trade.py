@@ -125,7 +125,7 @@ class StatementJ2T(StatementXLS):
             else:
                 fee = self._statement[headers['fee']][row]
             amount = self._statement[headers['amount']][row]
-            price = (amount - fee) / abs(qty)
+            price = -(amount + fee) / qty
             # Settlement is stored as date in Excel report file
             settlement = int(self._statement[headers['settlement']][row].replace(tzinfo=timezone.utc).timestamp())
             account_id = self._find_account_id(self._account_number, 'USD')   # FIXME - replace hardcoded 'USD'
