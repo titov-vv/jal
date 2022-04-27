@@ -119,12 +119,14 @@ class StatementJ2T(StatementXLS):
                 row += 1
                 logging.warning(self.tr("Unknown trade type: ") + self._statement[headers['B/S']][row])
                 continue
+            # Collect fees
+            fee = self._statement[headers['fee']][row] if self._statement[headers['fee']][row] else 0.0
             if self._statement[headers['fee_ex']][row]:
-                fee = self._statement[headers['fee']][row] + self._statement[headers['fee_ex']][row]
-            else:
-                fee = self._statement[headers['fee']][row]
+                fee += self._statement[headers['fee_ex']][row]
+            # Calculate price in account currency
             amount = self._statement[headers['amount']][row]
             price = -(amount + fee) / qty
+            assert price > 0.0
             # Settlement is stored as date in Excel report file
             settlement = int(self._statement[headers['settlement']][row].replace(tzinfo=timezone.utc).timestamp())
             account_id = self._find_account_id(self._account_number, 'USD')   # FIXME - replace hardcoded 'USD'
