@@ -1,8 +1,10 @@
 import logging
+import re
 from datetime import datetime, timezone
 
-from jal.data_import.statement import FOF
+from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xls import StatementXLS
+from jal.db.db import JalDB
 
 JAL_STATEMENT_CLASS = "StatementJ2T"
 
@@ -197,4 +199,90 @@ class StatementJ2T(StatementXLS):
         logging.info(self.tr("Crypto trades loaded: ") + f"{cnt}")
 
     def _load_cash_transactions(self):
-        pass
+        self._load_dividends()
+
+    def _load_dividends(self):
+        columns = {
+            "date": "Дата",
+            "type": "Зачисление/списание",
+            "amount": "Сумма",
+            "description": "Описание",
+            "note": "Комментарий"
+        }
+
+        start_row, headers = self.find_section_start("Движение денежных средств", columns)
+        if start_row < 0:
+            return
+
+        cnt = 0
+        base = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
+        row = start_row   # Process dividend rows
+        DividendPattern = r"Дивиденды;\s+Инструмент\s+(?P<asset>.*);\s+Дата отсечки\s+(?P<date>.*)"
+        while row < self._statement.shape[0]:
+            if self._statement[self.HeaderCol][row] == '':
+                break
+            if self._statement[headers['description']][row] != "Корпоративные действия::Дивиденды":
+                row += 1
+                continue
+            assert self._statement[headers['type']][row] == 'IN'  # Should be incoming flow
+            note = self._statement[headers['note']][row]
+            parts = re.match(DividendPattern, note, re.IGNORECASE)   # FIXME - below code used in ibkr.py as well
+            if parts is None:
+                raise Statement_ImportError(self.tr("Can't parse Dividend description ") + f"'{note}'")
+            dividend = parts.groupdict()
+            if len(dividend) != DividendPattern.count("(?P<"):  # check that expected number of groups was matched
+                raise Statement_ImportError(self.tr("Dividend description miss some data ") + f"'{note}'")
+            asset_id = self._find_asset_by_name(dividend['asset'])
+            timestamp = int(self._statement[headers['date']][row].replace(tzinfo=timezone.utc).timestamp())
+            ex_date = int(datetime.strptime(dividend['date'], "%d/%m/%Y").replace(tzinfo=timezone.utc).timestamp())
+            amount = self._statement[headers['amount']][row]
+            account_id = self._find_account_id(self._account_number, 'USD')  # FIXME - replace hardcoded 'USD'
+            payment = {"id": base+cnt, "type": FOF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
+                       "ex-date": ex_date, "asset": asset_id, "amount": amount, "description": note}
+            self._data[FOF.ASSET_PAYMENTS].append(payment)
+            cnt += 1
+            row += 1
+
+        row = start_row  # Process tax rows
+        TaxPattern = r"Налог на дивиденды;\s+Инструмент\s+(?P<asset>.*);\s+Дата отсечки\s+(?P<date>.*)"
+        while row < self._statement.shape[0]:
+            if self._statement[self.HeaderCol][row] == '':
+                break
+            if self._statement[headers['description']][row] != "Внешние затраты::Комиссия внешнего брокера::Удержанный налог":
+                row += 1
+                continue
+            assert self._statement[headers['type']][row] == 'OUT'  # Should be outgoing flow
+            note = self._statement[headers['note']][row]
+            parts = re.match(TaxPattern, note, re.IGNORECASE)  # FIXME - below code used in ibkr.py as well
+            if parts is None:
+                raise Statement_ImportError(self.tr("Can't parse Dividend description ") + f"'{note}'")
+            tax = parts.groupdict()
+            if len(tax) != TaxPattern.count("(?P<"):  # check that expected number of groups was matched
+                raise Statement_ImportError(self.tr("Dividend description miss some data ") + f"'{note}'")
+            asset_id = self._find_asset_by_name(tax['asset'])
+            timestamp = int(self._statement[headers['date']][row].replace(tzinfo=timezone.utc).timestamp())
+            ex_date = int(datetime.strptime(tax['date'], "%d/%m/%Y").replace(tzinfo=timezone.utc).timestamp())
+            dividend_record = self._locate_dividend(asset_id, timestamp, ex_date)
+            if dividend_record is None:
+                raise Statement_ImportError(self.tr("Dividend for tax was not found ") + f"'{note}'")
+            else:
+                dividend_record['tax'] = self._statement[headers['amount']][row]
+            row += 1
+        logging.info(self.tr("Dividends loaded: ") + f"{cnt}")
+
+    def _find_asset_by_name(self, asset_name) -> int:
+        candidates = [x for x in self._data[FOF.ASSETS] if 'name' in x and x['name'] == asset_name]
+        if len(candidates) == 1:
+            return candidates[0]["id"]
+        asset_id = JalDB().get_asset_id({'name': asset_name})
+        if asset_id is None:
+            return 0
+        else:
+            return -asset_id  # Negative value to indicate that asset was found in db
+
+    def _locate_dividend(self, asset_id, timestamp, ex_date):
+        for dividend in self._data[FOF.ASSET_PAYMENTS]:
+            if dividend['type'] == FOF.PAYMENT_DIVIDEND and dividend['timestamp'] == timestamp and \
+                    dividend['ex-date'] == ex_date and dividend['asset'] == asset_id:
+                return dividend
+        return None

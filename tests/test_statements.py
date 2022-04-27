@@ -8,6 +8,9 @@ from data_import.broker_statements.psb import StatementPSB
 from data_import.broker_statements.openbroker import StatementOpenBroker
 from data_import.broker_statements.just2trade import StatementJ2T
 
+from constants import PredefinedAsset
+from tests.helpers import create_assets
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_ibkr):
@@ -68,6 +71,8 @@ def test_statement_open(tmp_path, project_root, data_path, prepare_db_xls):
 
 # ----------------------------------------------------------------------------------------------------------------------
 def test_statement_just2trade(tmp_path, project_root, data_path, prepare_db_xls):
+    create_assets([(5, 'JNJ', 'JOHNSON & JOHNSON', 'US4781601046', 1, PredefinedAsset.Stock, 0)])
+
     with open(data_path + 'j2t.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
 

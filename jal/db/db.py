@@ -236,6 +236,9 @@ class JalDB:
             else:
                 asset_id = readSQL("SELECT id FROM assets_ext WHERE symbol=:symbol COLLATE NOCASE",
                                    [(":symbol", search_data['symbol'])])
+        if asset_id is None and 'name' in search_data and search_data['name']:
+            asset_id = readSQL("SELECT id FROM assets_ext WHERE full_name=:name COLLATE NOCASE",
+                               [(":name", search_data['name'])])
         return asset_id
 
     # get asset quotation for given currency and timestamp
