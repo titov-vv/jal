@@ -63,10 +63,9 @@ class StatementJ2T(StatementXLS):
                 asset_name = asset_name[:-1]
             currency_code = self.currency_id('USD')      # FIXME put account currency here
             if not self._statement[headers['isin']][row]:
-                logging.warning(self.tr("Skipping asset with no details: ") + asset_name)
-                row += 1
-                continue
-            if self._statement[headers['symbol']][row]:
+                self.asset_id({'type': FOF.ASSET_CRYPTO, 'symbol': asset_name,
+                               'name': asset_name, 'currency': currency_code})
+            elif self._statement[headers['symbol']][row]:
                 self.asset_id({'type': FOF.ASSET_STOCK, 'isin': self._statement[headers['isin']][row],
                                'symbol': self._statement[headers['symbol']][row],
                                'name': asset_name, 'currency': currency_code})

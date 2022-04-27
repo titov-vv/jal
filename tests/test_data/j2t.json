@@ -9,7 +9,8 @@
     {"id": 3, "type": "stock", "name": "АФК \"Система\" ПАО ао", "isin": "RU000A0DQZE3"},
     {"id": 4, "type": "stock", "name": "United Company RUSAL PLC, А", "isin": "JE00B5BCW814"},
     {"id": 5, "type": "stock", "name": "Zoom Video Communications Inc", "isin": "US98980L1017"},
-    {"id": 6, "type": "stock", "name": "Ubisoft Entertainment SA", "isin": "FR0000054470"}
+    {"id": 6, "type": "crypto", "name": "Bitcoin"},
+    {"id": 7, "type": "stock", "name": "Ubisoft Entertainment SA", "isin": "FR0000054470"}
   ],
   "symbols": [
     {"id": 1, "asset": 1, "symbol": "USD", "currency": -1},
@@ -17,7 +18,8 @@
     {"id": 3, "asset": 3, "symbol": "AFKS", "currency": 1, "note": "MOEX"},
     {"id": 4, "asset": 4, "symbol": "486-ME", "currency": 1, "note": "MOEX"},
     {"id": 5, "asset": 5, "symbol": "ZM", "currency": 1},
-    {"id": 6, "asset": 6, "symbol": "UBI.XPAR", "currency": 1}
+    {"id": 6, "asset": 6, "symbol": "Bitcoin", "currency": 1},
+    {"id": 7, "asset": 7, "symbol": "UBI.XPAR", "currency": 1}
   ],
   "assets_data": [
     {"id": 1, "asset": 3, "principal": 0.09, "reg_number": "1-05-01669-A"},
@@ -27,7 +29,7 @@
     {"id": 1, "number": "TR264656807", "timestamp": 1614772579, "settlement": 1614902400, "account": 1, "asset": 4, "price": 0.5516000000000001, "quantity": -50, "fee": 0.01},
     {"id": 2, "number": "TR264657748", "timestamp": 1614782596, "settlement": 1614902400, "account": 1, "asset": 5, "price": 364.97, "quantity": 1, "fee": 1.52},
     {"id": 3, "number": "TR265763834", "timestamp": 1615386986, "settlement": 1615507200, "account": 1, "asset": 5, "price": 348.89, "quantity": -1, "fee": 1.52},
-    {"id": 4, "number": "TR264860704", "timestamp": 1614853841, "settlement": 1615161600, "account": 1, "asset": 6, "price": 79.32062499999999, "quantity": -16, "fee": 3.8}
+    {"id": 4, "number": "TR264860704", "timestamp": 1614853841, "settlement": 1615161600, "account": 1, "asset": 7, "price": 79.32062499999999, "quantity": -16, "fee": 3.8}
   ],
   "income_spending": [],
   "transfers": [],
