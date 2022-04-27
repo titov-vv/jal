@@ -12,14 +12,14 @@ from data_import.broker_statements.just2trade import StatementJ2T
 # ----------------------------------------------------------------------------------------------------------------------
 def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_ibkr):
     # Test big major things
-    with open(data_path + 'ibkr.json', 'r') as json_file:
+    with open(data_path + 'ibkr.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
     IBKR = StatementIBKR()
     IBKR.load(data_path + 'ibkr.xml')
     assert IBKR._data == statement
 
     # Test rights issue and vesting
-    with open(data_path + 'ibkr_rights_vesting.json', 'r') as json_file:
+    with open(data_path + 'ibkr_rights_vesting.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
     IBKR = StatementIBKR()
     IBKR.load(data_path + 'ibkr_rights_vesting.xml')
@@ -28,7 +28,7 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_ibkr):
 
 # ----------------------------------------------------------------------------------------------------------------------
 def test_statement_uralsib(tmp_path, project_root, data_path, prepare_db_xls):
-    with open(data_path + 'ukfu.json', 'r') as json_file:
+    with open(data_path + 'ukfu.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
 
     UKFU = StatementUKFU()
@@ -38,7 +38,7 @@ def test_statement_uralsib(tmp_path, project_root, data_path, prepare_db_xls):
 
 # ----------------------------------------------------------------------------------------------------------------------
 def test_statement_kit(tmp_path, project_root, data_path, prepare_db_xls):
-    with open(data_path + 'kit.json', 'r') as json_file:
+    with open(data_path + 'kit.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
 
     KIT = StatementKIT()
@@ -48,7 +48,7 @@ def test_statement_kit(tmp_path, project_root, data_path, prepare_db_xls):
 
 # ----------------------------------------------------------------------------------------------------------------------
 def test_statement_psb(tmp_path, project_root, data_path, prepare_db_xls):
-    with open(data_path + 'psb.json', 'r') as json_file:
+    with open(data_path + 'psb.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
 
     PSB = StatementPSB()
@@ -58,7 +58,7 @@ def test_statement_psb(tmp_path, project_root, data_path, prepare_db_xls):
 
 # ----------------------------------------------------------------------------------------------------------------------
 def test_statement_open(tmp_path, project_root, data_path, prepare_db_xls):
-    with open(data_path + 'open.json', 'r') as json_file:
+    with open(data_path + 'open.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
 
     OpenBroker = StatementOpenBroker()
@@ -68,7 +68,7 @@ def test_statement_open(tmp_path, project_root, data_path, prepare_db_xls):
 
 # ----------------------------------------------------------------------------------------------------------------------
 def test_statement_just2trade(tmp_path, project_root, data_path, prepare_db_xls):
-    with open(data_path + 'j2t.json', 'r') as json_file:
+    with open(data_path + 'j2t.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
 
     J2T = StatementJ2T()

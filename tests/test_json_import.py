@@ -12,7 +12,7 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
     statement.validate_format()
     statement.match_db_ids()
 
-    with open(data_path + 'matched.json', 'r') as json_file:
+    with open(data_path + 'matched.json', 'r', encoding='utf-8') as json_file:
         expected_result = json.load(json_file)
 
     assert statement._data == expected_result
