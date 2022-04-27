@@ -2,6 +2,7 @@ import logging
 import re
 from datetime import datetime, timezone
 
+from jal.constants import  PredefinedCategory
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xls import StatementXLS
 from jal.db.db import JalDB
@@ -200,6 +201,7 @@ class StatementJ2T(StatementXLS):
 
     def _load_cash_transactions(self):
         self._load_dividends()
+        self._load_fees()
 
     def _load_dividends(self):
         columns = {
@@ -270,6 +272,7 @@ class StatementJ2T(StatementXLS):
             row += 1
         logging.info(self.tr("Dividends loaded: ") + f"{cnt}")
 
+    # Locate asset by its full name either in loaded JSON data (first) or in JAL database (next)
     def _find_asset_by_name(self, asset_name) -> int:
         candidates = [x for x in self._data[FOF.ASSETS] if 'name' in x and x['name'] == asset_name]
         if len(candidates) == 1:
@@ -280,9 +283,37 @@ class StatementJ2T(StatementXLS):
         else:
             return -asset_id  # Negative value to indicate that asset was found in db
 
+    # This methods finds dividend with given parameters in already loaded JSON data
     def _locate_dividend(self, asset_id, timestamp, ex_date):
         for dividend in self._data[FOF.ASSET_PAYMENTS]:
             if dividend['type'] == FOF.PAYMENT_DIVIDEND and dividend['timestamp'] == timestamp and \
                     dividend['ex-date'] == ex_date and dividend['asset'] == asset_id:
                 return dividend
         return None
+
+    def _load_fees(self):
+        cnt = 0
+        columns = {
+            "date": "Дата",
+            "amount": "Сумма",
+            "currency": "Валюта",
+            "note": "Комментарий"
+        }
+        base = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
+        row, headers = self.find_section_start("Брокерская комиссия, удержанная за период", columns)
+        if row < 0:
+            return
+        while row < self._statement.shape[0]:
+            if self._statement[self.HeaderCol][row] == '':
+                break
+            try:
+                timestamp = int(self._statement[headers['date']][row].replace(tzinfo=timezone.utc).timestamp())
+            except TypeError:
+                break   # Stop processing if we encounter invalid date (supposed to be "Итого:" line)
+            account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
+            fee = {"id": base+cnt, "timestamp": timestamp, "account": account_id, "peer": 0,
+                   "lines": [{"amount": -self._statement[headers['amount']][row], "category": -PredefinedCategory.Fees,
+                              "description": self._statement[headers['note']][row]}]}
+            self._data[FOF.INCOME_SPENDING].append(fee)
+            cnt += 1
+            row += 1

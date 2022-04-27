@@ -37,7 +37,11 @@
     {"id": 5, "number": "TR265176832", "timestamp": 1615159775, "settlement": 1615161600, "account": 1, "asset": 9, "price": 1714.0, "quantity": -0.4, "fee": 2.4},
     {"id": 6, "number": "TR265517274", "timestamp": 1615297612, "settlement": 1615248000, "account": 1, "asset": 6, "price": 54615.0, "quantity": -0.01, "fee": 1.91}
   ],
-  "income_spending": [],
+  "income_spending": [
+    {"id": 1, "timestamp": 1614729322, "account": 1, "peer": 0, "lines": [{"amount": -0.26, "category": -5, "description": "Комиссия компании::Комиссия брокерская::За перенос позиции. Deal: #60622104"}]},
+    {"id": 2, "timestamp": 1614729599, "account": 1, "peer": 0, "lines": [{"amount": -0.5, "category": -5, "description": "Комиссия компании::Комиссия брокерская. Deal: #60631857"}]},
+    {"id": 3, "timestamp": 1614729600, "account": 1, "peer": 0, "lines": [{"amount": -2.92, "category": -5, "description": "Комиссия компании::Комиссия брокерская::За выплату доходов по ЦБ. Комиссия за выплату дивидендов; Инструмент ConocoPhillips; Дата отсечки 12/02/2021"}]}
+  ],
   "transfers": [],
   "corporate_actions": [],
   "asset_payments": [

@@ -403,9 +403,9 @@ class StatementUKFU(StatementXLS):
 
     def fee(self, timestamp, _number, account_id, amount, description):
         new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
-        tax = {"id": new_id, "timestamp": timestamp, "account": account_id, "peer": 0,
+        fee = {"id": new_id, "timestamp": timestamp, "account": account_id, "peer": 0,
                "lines": [{"amount": amount, "category": -PredefinedCategory.Fees, "description": description}]}
-        self._data[FOF.INCOME_SPENDING].append(tax)
+        self._data[FOF.INCOME_SPENDING].append(fee)
 
     def load_broker_fee(self):
         header_row = self.find_row(self.SummaryHeader) + 1
