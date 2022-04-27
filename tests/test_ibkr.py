@@ -132,7 +132,7 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
 
 # ----------------------------------------------------------------------------------------------------------------------
 def test_ibkr_warrants(tmp_path, project_root, data_path, prepare_db_taxes):
-    with open(data_path + 'ibkr_warrants.json', 'r') as json_file:
+    with open(data_path + 'ibkr_warrants.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
 
     IBKR = StatementIBKR()

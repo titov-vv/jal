@@ -1,4 +1,5 @@
 import os
+from PySide6.QtSql import QSqlDatabase
 from shutil import copyfile
 import sqlite3
 
@@ -24,6 +25,9 @@ def test_db_creation(tmp_path, project_root):
     assert os.path.getsize(result_path) > 0
     assert error.code == JalDBError.NoError
 
+    # Clean up db
+    db = QSqlDatabase.database(Setup.DB_CONNECTION)
+    db.close()
     os.remove(target_path)  # Clean db init script
     os.remove(get_dbfilename(str(tmp_path) + os.sep))  # Clean db file
 
@@ -42,6 +46,9 @@ def test_invalid_backup(tmp_path, project_root):
     invalid_backup.backup_name = project_root + os.sep + "tests" + os.sep + "test_data" + os.sep + "invalid_backup.tgz"
     assert not invalid_backup.validate_backup()
 
+    # Clean up db
+    db = QSqlDatabase.database(Setup.DB_CONNECTION)
+    db.close()
     os.remove(target_path)  # Clean db init script
     os.remove(get_dbfilename(str(tmp_path) + os.sep))  # Clean db file
 
@@ -71,5 +78,8 @@ def test_backup_load(tmp_path, project_root):
     assert cursor.fetchone()[0] == 7
     db.close()
 
+    # Clean up db
+    db2 = QSqlDatabase.database(Setup.DB_CONNECTION)
+    db2.close()
     os.remove(target_path)  # Clean db init script
     os.remove(get_dbfilename(str(tmp_path) + os.sep))  # Clean db file

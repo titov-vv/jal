@@ -134,7 +134,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     def load(self, filename: str) -> None:
         self._data = {}
         try:
-            with open(filename, 'r') as exchange_file:
+            with open(filename, 'r', encoding='utf-8') as exchange_file:
                 try:
                     self._data = json.load(exchange_file)
                 except json.JSONDecodeError:

@@ -29,8 +29,6 @@ def prepare_db(project_root, tmp_path, data_path):
     # Activate db connection
     error = JalDB().init_db(str(tmp_path) + os.sep)
     assert error.code == JalDBError.NoError
-    error = JalDB().init_db(str(tmp_path) + os.sep)
-    assert error.code == JalDBError.NoError
     db = QSqlDatabase.database(Setup.DB_CONNECTION)
     assert db.isValid()
     lang_id = JalDB().get_language_id('en')
@@ -38,6 +36,7 @@ def prepare_db(project_root, tmp_path, data_path):
 
     yield
 
+    db.close()
     os.remove(target_path)  # Clean db init script
     os.remove(get_dbfilename(str(tmp_path) + os.sep))  # Clean db file
 

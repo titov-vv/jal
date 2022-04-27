@@ -16,7 +16,7 @@ from jal.data_export.xlsx import XLSX
 
 # ----------------------------------------------------------------------------------------------------------------------
 def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
-    with open(data_path + 'taxes_rus.json', 'r') as json_file:
+    with open(data_path + 'taxes_rus.json', 'r', encoding='utf-8') as json_file:
         report = json.load(json_file)
 
     assets = [
@@ -112,9 +112,9 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
 
 # ----------------------------------------------------------------------------------------------------------------------
 def test_taxes_rus_bonds(tmp_path, project_root, data_path, prepare_db_taxes):
-    with open(data_path + 'ibkr_bond.json', 'r') as json_file:
+    with open(data_path + 'ibkr_bond.json', 'r', encoding='utf-8') as json_file:
         statement = json.load(json_file)
-    with open(data_path + 'taxes_bond_rus.json', 'r') as json_file:
+    with open(data_path + 'taxes_bond_rus.json', 'r', encoding='utf-8') as json_file:
         report = json.load(json_file)
 
     usd_rates = [
@@ -158,7 +158,7 @@ def test_taxes_rus_bonds(tmp_path, project_root, data_path, prepare_db_taxes):
 
 
 def test_taxes_stock_vesting(data_path, prepare_db_taxes):
-    with open(data_path + 'taxes_vesting_rus.json', 'r') as json_file:
+    with open(data_path + 'taxes_vesting_rus.json', 'r', encoding='utf-8') as json_file:
         report = json.load(json_file)
     assets = [
         (4, "VTRS", "VIATRIS INC", "US92556V1061", 2, PredefinedAsset.Stock, 0)

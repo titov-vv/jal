@@ -31,7 +31,7 @@ def test_full_dlsg(tmp_path, project_root, data_path):
         tax_form = DLSG(year)
         assert tax_form._year == year
 
-        with open(data_path + 'taxes_rus.json', 'r') as json_file:
+        with open(data_path + 'taxes_rus.json', 'r', encoding='utf-8') as json_file:
             tax_report = json.load(json_file)
         tax_form.update_taxes(tax_report, {"currency": "USD", "broker_name": "IBKR", "broker_iso_country": "840"})
 
