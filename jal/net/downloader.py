@@ -149,11 +149,15 @@ class QuoteDownloader(QObject):
         for node in xml_root:
             s_date = node.attrib['Date'] if node is not None else None
             s_val = node.find("Value").text if node is not None else None
-            rows.append({"Date": s_date, "Rate": s_val})
-        data = pd.DataFrame(rows, columns=["Date", "Rate"])
+            s_multiplier = node.find("Nominal").text if node is not None else 1
+            rows.append({"Date": s_date, "Rate": s_val, "Multiplier": s_multiplier})
+        data = pd.DataFrame(rows, columns=["Date", "Rate", "Multiplier"])
         data['Date'] = pd.to_datetime(data['Date'], format="%d.%m.%Y")
         data['Rate'] = [x.replace(',', '.') for x in data['Rate']]
         data['Rate'] = data['Rate'].astype(float)
+        data['Multiplier'] = data['Multiplier'].astype(float)
+        data['Rate'] = data['Rate'] / data['Multiplier']
+        data.drop('Multiplier', axis=1, inplace=True)
         rates = data.set_index("Date")
         return rates
 

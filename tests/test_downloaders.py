@@ -96,15 +96,22 @@ def test_MOEX_details():
 
 def test_CBR_downloader():
     codes = pd.DataFrame({'ISO_name': ['AUD', 'ATS'], 'CBR_code': ['R01010', 'R01015']})
-    rates = pd.DataFrame({'Rate': [77.5104, 77.2535, 75.6826],
-                         'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14), datetime(2021, 4, 15)]})
-    rates = rates.set_index('Date')
 
     downloader = QuoteDownloader()
     downloader.PrepareRussianCBReader()
     assert_frame_equal(codes, downloader.CBR_codes.head(2))
+
+    rates_usd = pd.DataFrame({'Rate': [77.5104, 77.2535, 75.6826],
+                          'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14), datetime(2021, 4, 15)]})
+    rates_usd = rates_usd.set_index('Date')
     rates_downloaded = downloader.CBR_DataReader(0, 'USD', 1, '', 1618272000, 1618358400)
-    assert_frame_equal(rates, rates_downloaded)
+    assert_frame_equal(rates_usd, rates_downloaded)
+
+    rates_try = pd.DataFrame({'Rate': [9.45087, 9.49270, 9.37234],
+                              'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14), datetime(2021, 4, 15)]})
+    rates_try = rates_try.set_index('Date')
+    rates_downloaded = downloader.CBR_DataReader(0, 'TRY', 1, '', 1618272000, 1618358400)
+    assert_frame_equal(rates_try, rates_downloaded)
 
 def test_MOEX_downloader(prepare_db_moex):
     stock_quotes = pd.DataFrame({'Close': [287.95, 287.18],
