@@ -211,42 +211,44 @@ class StatementJ2T(StatementXLS):
             "description": "Описание",
             "note": "Комментарий"
         }
+        operations = {
+            '': None,
+            'Переоценка': None,
+            'Корпоративные действия::Дивиденды': self.dividend,
+            'Внешние затраты::Комиссия внешнего брокера::Удержанный налог': None,  # Loaded in 2nd loop later
+            'Внешние затраты::Комиссия внешнего депозитария': self.fee
+        }
 
         start_row, headers = self.find_section_start("Движение денежных средств", columns)
         if start_row < 0:
             return
-
         cnt = 0
-        base = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
         row = start_row   # Process dividend rows
-        DividendPattern = r"Дивиденды;\s+(Начисление дивидендов полученных по счету.*\.\s+)?Инструмент\s+(?P<asset>.*);\s+Дата отсечки\s+(?P<date>.*)"
         while row < self._statement.shape[0]:
             if self._statement[self.HeaderCol][row] == '':
                 break
-            if self._statement[headers['description']][row] != "Корпоративные действия::Дивиденды":
+            try:
+                timestamp = int(self._statement[headers['date']][row].replace(tzinfo=timezone.utc).timestamp())
+            except TypeError:  # Skip 'Итого' and similar lines
                 row += 1
                 continue
-            assert self._statement[headers['type']][row] == 'IN'  # Should be incoming flow
-            note = self._statement[headers['note']][row]
-            parts = re.match(DividendPattern, note, re.IGNORECASE)   # FIXME - below code used in ibkr.py as well
-            if parts is None:
-                raise Statement_ImportError(self.tr("Can't parse Dividend description ") + f"'{note}'")
-            dividend = parts.groupdict()
-            if len(dividend) != DividendPattern.count("(?P<"):  # check that expected number of groups was matched
-                raise Statement_ImportError(self.tr("Dividend description miss some data ") + f"'{note}'")
-            asset_id = self._find_asset_by_name(dividend['asset'])
-            timestamp = int(self._statement[headers['date']][row].replace(tzinfo=timezone.utc).timestamp())
-            ex_date = int(datetime.strptime(dividend['date'], "%d/%m/%Y").replace(tzinfo=timezone.utc).timestamp())
-            amount = self._statement[headers['amount']][row]
+            operation = self._statement[headers['description']][row]
+            if operation not in operations:
+                raise Statement_ImportError(self.tr("Unsuppported cash transaction ") + f"'{operation}'")
             account_id = self._find_account_id(self._account_number, 'USD')  # FIXME - replace hardcoded 'USD'
-            payment = {"id": base+cnt, "type": FOF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
-                       "ex-date": ex_date, "asset": asset_id, "amount": amount, "description": note}
-            self._data[FOF.ASSET_PAYMENTS].append(payment)
+            if self._statement[headers['type']][row] == 'IN':
+                amount = self._statement[headers['amount']][row]
+            elif self._statement[headers['type']][row] == 'OUT':
+                amount = -self._statement[headers['amount']][row]
+            else:
+                raise Statement_ImportError(self.tr("Unknown cash transaction type ") +
+                                            f"'{self._statement[headers['type']][row]}'")
+            if operations[operation] is not None:
+                operations[operation](timestamp, account_id, amount, self._statement[headers['note']][row])
             cnt += 1
             row += 1
 
-        row = start_row  # Process tax rows
-        TaxPattern = r"Налог на дивиденды;\s+(Начисление дивидендов полученных по счету.*\.\s+)?Инструмент\s+(?P<asset>.*);\s+Дата отсечки\s+(?P<date>.*)"
+        row = start_row  # Process tax rows - should be done separately after all dividends
         while row < self._statement.shape[0]:
             if self._statement[self.HeaderCol][row] == '':
                 break
@@ -254,23 +256,12 @@ class StatementJ2T(StatementXLS):
                 row += 1
                 continue
             assert self._statement[headers['type']][row] == 'OUT'  # Should be outgoing flow
-            note = self._statement[headers['note']][row]
-            parts = re.match(TaxPattern, note, re.IGNORECASE)  # FIXME - below code used in ibkr.py as well
-            if parts is None:
-                raise Statement_ImportError(self.tr("Can't parse Dividend description ") + f"'{note}'")
-            tax = parts.groupdict()
-            if len(tax) != TaxPattern.count("(?P<"):  # check that expected number of groups was matched
-                raise Statement_ImportError(self.tr("Dividend description miss some data ") + f"'{note}'")
-            asset_id = self._find_asset_by_name(tax['asset'])
             timestamp = int(self._statement[headers['date']][row].replace(tzinfo=timezone.utc).timestamp())
-            ex_date = int(datetime.strptime(tax['date'], "%d/%m/%Y").replace(tzinfo=timezone.utc).timestamp())
-            dividend_record = self._locate_dividend(asset_id, timestamp, ex_date)
-            if dividend_record is None:
-                raise Statement_ImportError(self.tr("Dividend for tax was not found ") + f"'{note}'")
-            else:
-                dividend_record['tax'] = self._statement[headers['amount']][row]
+            amount = self._statement[headers['amount']][row]
+            self.tax(timestamp, amount, self._statement[headers['note']][row])
+            cnt += 1
             row += 1
-        logging.info(self.tr("Dividends loaded: ") + f"{cnt}")
+        logging.info(self.tr("Cash operations loaded: ") + f"{cnt}")
 
     # Locate asset by its full name either in loaded JSON data (first) or in JAL database (next)
     def _find_asset_by_name(self, asset_name) -> int:
@@ -299,7 +290,6 @@ class StatementJ2T(StatementXLS):
             "currency": "Валюта",
             "note": "Комментарий"
         }
-        base = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
         row, headers = self.find_section_start("Брокерская комиссия, удержанная за период", columns)
         if row < 0:
             return
@@ -311,9 +301,44 @@ class StatementJ2T(StatementXLS):
             except TypeError:
                 break   # Stop processing if we encounter invalid date (supposed to be "Итого:" line)
             account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
-            fee = {"id": base+cnt, "timestamp": timestamp, "account": account_id, "peer": 0,
-                   "lines": [{"amount": -self._statement[headers['amount']][row], "category": -PredefinedCategory.Fees,
-                              "description": self._statement[headers['note']][row]}]}
-            self._data[FOF.INCOME_SPENDING].append(fee)
+            self.fee(timestamp, account_id, -self._statement[headers['amount']][row],
+                     self._statement[headers['note']][row])
             cnt += 1
             row += 1
+
+    def dividend(self, timestamp, account_id, amount, note):
+        DividendPattern = r"Дивиденды;\s+(Начисление дивидендов полученных по счету.*\.\s+)?Инструмент\s+(?P<asset>.*);\s+Дата отсечки\s+(?P<date>.*)"
+        parts = re.match(DividendPattern, note, re.IGNORECASE)  # FIXME - below code used in ibkr.py as well
+        if parts is None:
+            raise Statement_ImportError(self.tr("Can't parse Dividend description ") + f"'{note}'")
+        dividend = parts.groupdict()
+        if len(dividend) != DividendPattern.count("(?P<"):  # check that expected number of groups was matched
+            raise Statement_ImportError(self.tr("Dividend description miss some data ") + f"'{note}'")
+        asset_id = self._find_asset_by_name(dividend['asset'])
+        ex_date = int(datetime.strptime(dividend['date'], "%d/%m/%Y").replace(tzinfo=timezone.utc).timestamp())
+        new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
+        payment = {"id": new_id, "type": FOF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
+                   "ex-date": ex_date, "asset": asset_id, "amount": amount, "description": note}
+        self._data[FOF.ASSET_PAYMENTS].append(payment)
+
+    def tax(self, timestamp, amount, note):
+        TaxPattern = r"Налог на дивиденды;\s+(Начисление дивидендов полученных по счету.*\.\s+)?Инструмент\s+(?P<asset>.*);\s+Дата отсечки\s+(?P<date>.*)"
+        parts = re.match(TaxPattern, note, re.IGNORECASE)  # FIXME - below code used in ibkr.py as well
+        if parts is None:
+            raise Statement_ImportError(self.tr("Can't parse Dividend description ") + f"'{note}'")
+        tax = parts.groupdict()
+        if len(tax) != TaxPattern.count("(?P<"):  # check that expected number of groups was matched
+            raise Statement_ImportError(self.tr("Dividend description miss some data ") + f"'{note}'")
+        asset_id = self._find_asset_by_name(tax['asset'])
+        ex_date = int(datetime.strptime(tax['date'], "%d/%m/%Y").replace(tzinfo=timezone.utc).timestamp())
+        dividend_record = self._locate_dividend(asset_id, timestamp, ex_date)
+        if dividend_record is None:
+            raise Statement_ImportError(self.tr("Dividend for tax was not found ") + f"'{note}'")
+        else:
+            dividend_record['tax'] = amount
+
+    def fee(self, timestamp, account_id, amount, note):
+        new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
+        fee = {"id": new_id, "timestamp": timestamp, "account": account_id, "peer": 0,
+               "lines": [{"amount": amount, "category": -PredefinedCategory.Fees, "description": note}]}
+        self._data[FOF.INCOME_SPENDING].append(fee)
