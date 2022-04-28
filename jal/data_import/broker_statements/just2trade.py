@@ -219,7 +219,7 @@ class StatementJ2T(StatementXLS):
         cnt = 0
         base = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
         row = start_row   # Process dividend rows
-        DividendPattern = r"Дивиденды;\s+Инструмент\s+(?P<asset>.*);\s+Дата отсечки\s+(?P<date>.*)"
+        DividendPattern = r"Дивиденды;\s+(Начисление дивидендов полученных по счету.*\.\s+)?Инструмент\s+(?P<asset>.*);\s+Дата отсечки\s+(?P<date>.*)"
         while row < self._statement.shape[0]:
             if self._statement[self.HeaderCol][row] == '':
                 break
@@ -246,7 +246,7 @@ class StatementJ2T(StatementXLS):
             row += 1
 
         row = start_row  # Process tax rows
-        TaxPattern = r"Налог на дивиденды;\s+Инструмент\s+(?P<asset>.*);\s+Дата отсечки\s+(?P<date>.*)"
+        TaxPattern = r"Налог на дивиденды;\s+(Начисление дивидендов полученных по счету.*\.\s+)?Инструмент\s+(?P<asset>.*);\s+Дата отсечки\s+(?P<date>.*)"
         while row < self._statement.shape[0]:
             if self._statement[self.HeaderCol][row] == '':
                 break
