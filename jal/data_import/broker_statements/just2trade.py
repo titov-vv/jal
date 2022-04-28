@@ -216,7 +216,9 @@ class StatementJ2T(StatementXLS):
             'Переоценка': None,
             'Корпоративные действия::Дивиденды': self.dividend,
             'Внешние затраты::Комиссия внешнего брокера::Удержанный налог': None,  # Loaded in 2nd loop later
-            'Внешние затраты::Комиссия внешнего депозитария': self.fee
+            'Внешние затраты::Комиссия внешнего депозитария': self.fee,
+            'Перевод на ТП': self.transfer_in,
+            'Списание c ТП': self.transfer_out
         }
 
         start_row, headers = self.find_section_start("Движение денежных средств", columns)
@@ -342,3 +344,19 @@ class StatementJ2T(StatementXLS):
         fee = {"id": new_id, "timestamp": timestamp, "account": account_id, "peer": 0,
                "lines": [{"amount": amount, "category": -PredefinedCategory.Fees, "description": note}]}
         self._data[FOF.INCOME_SPENDING].append(fee)
+
+    def transfer_in(self, timestamp, account_id, amount, note):
+        account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
+        new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+        transfer = {"id": new_id, "account": [0, account_id, 0],
+                    "asset": [account['currency'], account['currency']], "timestamp": timestamp,
+                    "withdrawal": amount, "deposit": amount, "fee": 0.0, "description": note}
+        self._data[FOF.TRANSFERS].append(transfer)
+
+    def transfer_out(self, timestamp, account_id, amount, note):
+        account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
+        new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+        transfer = {"id": new_id, "account": [account_id, 0, 0],
+                    "asset": [account['currency'], account['currency']], "timestamp": timestamp,
+                    "withdrawal": -amount, "deposit": -amount, "fee": 0.0, "description": note}
+        self._data[FOF.TRANSFERS].append(transfer)

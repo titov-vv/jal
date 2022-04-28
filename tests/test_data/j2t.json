@@ -43,7 +43,10 @@
     {"id": 3, "timestamp": 1614729599, "account": 1, "peer": 0, "lines": [{"amount": -0.5, "category": -5, "description": "Комиссия компании::Комиссия брокерская. Deal: #60631857"}]},
     {"id": 4, "timestamp": 1614729600, "account": 1, "peer": 0, "lines": [{"amount": -2.92, "category": -5, "description": "Комиссия компании::Комиссия брокерская::За выплату доходов по ЦБ. Комиссия за выплату дивидендов; Инструмент ConocoPhillips; Дата отсечки 12/02/2021"}]}
   ],
-  "transfers": [],
+  "transfers": [
+    {"id": 1, "account": [0, 1, 0], "asset": [1, 1], "timestamp": 1605744000, "withdrawal": 100, "deposit": 100, "fee": 0.0, "description": ""},
+    {"id": 2, "account": [1, 0, 0], "asset": [1, 1], "timestamp": 1622592000, "withdrawal": 200, "deposit": 200, "fee": 0.0, "description": " "}
+  ],
   "corporate_actions": [],
   "asset_payments": [
     {"id": 1, "type": "dividend", "account": 1, "timestamp": 1615248000, "ex-date": 1611878400, "asset": 7, "amount": 9.75, "tax": 1.46, "description": "Дивиденды; Инструмент PFIZER Inc; Дата отсечки 29/01/2021"},
