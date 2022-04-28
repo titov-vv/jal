@@ -200,10 +200,10 @@ class StatementJ2T(StatementXLS):
         logging.info(self.tr("Crypto trades loaded: ") + f"{cnt}")
 
     def _load_cash_transactions(self):
-        self._load_dividends()
+        self._load_money_table()
         self._load_fees()
 
-    def _load_dividends(self):
+    def _load_money_table(self):
         columns = {
             "date": "Дата",
             "type": "Зачисление/списание",
