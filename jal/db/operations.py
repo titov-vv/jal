@@ -34,7 +34,7 @@ class LedgerTransaction:
         self._reconciled = False
 
     def tr(self, text):
-        return QApplication.translate("IBKR", text)
+        return QApplication.translate("LedgerTransaction", text)
 
     def dump(self):
         return f"{self._data}"
@@ -63,14 +63,13 @@ class LedgerTransaction:
                         "account_id = :account_id AND book_account=:book",
                         [(":op_type", self._otype), (":oid", self._oid),
                          (":account_id", account_id), (":book", BookAccount.Money)])
+        money = 0 if money is None else money
         debt = readSQL("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
                        "account_id = :account_id AND book_account=:book",
                        [(":op_type", self._otype), (":oid", self._oid),
                         (":account_id", account_id), (":book", BookAccount.Liabilities)])
-        if money is not None:
-            return money
-        else:
-            return debt
+        debt = 0 if debt is None else debt
+        return money + debt
 
     def _asset_total(self, account_id, asset_id) -> float:
         return readSQL("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "

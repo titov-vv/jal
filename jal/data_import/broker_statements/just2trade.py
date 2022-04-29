@@ -2,7 +2,7 @@ import logging
 import re
 from datetime import datetime, timezone
 
-from jal.constants import  PredefinedCategory
+from jal.constants import PredefinedCategory
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xls import StatementXLS
 from jal.db.db import JalDB
