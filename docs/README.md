@@ -30,8 +30,8 @@ And while I can't name every one of them I would like to confirm my appreciation
     3. closed deals report 
 - Stock/ETF prices are updated for NYSE, Nasdaq, LSE, Frankfurt (Yahoo), Euronext, TSX and MOEX exchanges traded stocks
 - Broker statement import:
-    1. Russian brokers: Uralsib broker (zipped xls), KIT Finance (xlsx), PSB broker (xls), Open broker (xml).
-    2. US brokers: Interactive Brokers Flex statement (xml).
+    1. Russian: Uralsib broker (zipped xls), KIT Finance (xlsx), PSB broker (xls), Open broker (xml).
+    2. International: Interactive Brokers Flex statement (xml), Just2Trade (xls).
 - Tax report preparation for foreign investments according to Russian Tax Code (![manual](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/taxes.md)).  
 Russian tax estimation for open positions.
 - *experimental* Download russian electronic slips from russian tax authority (FNS). This function requires authorization and additional dependencies to use these function - packages `pyzbar` and `Pillow`.  

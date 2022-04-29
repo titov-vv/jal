@@ -17,8 +17,8 @@ It was designed to keep records of personal incomes/spendings and investments wi
     3. closed deals report 
 - stock/ETF quotes updates for US (Yahoo), EU (Euronext), CA (TSX) and RU (MOEX) exchanges traded stocks
 - Broker statement import:
-    1. Russian brokers: Uralsib broker (zipped xls), KIT Finance (xlsx), PSB broker (xls), Open broker (xml).
-    2. US brokers: Interactive Brokers Flex statement (xml).
+    1. Russian: Uralsib broker (zipped xls), KIT Finance (xlsx), PSB broker (xls), Open broker (xml).
+    2. International: Interactive Brokers Flex statement (xml), Just2Trade (xls).
 - Tax report preparation for foreign investments according to Russian Tax Code (![manual](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/taxes.md)).  
 Russian tax estimation for open positions.
 - *experimental* Download russian electronic slips from russian tax authority (FNS). This function requires authorization and additional dependencies to use these function - packages `pyzbar` and `Pillow`.  
