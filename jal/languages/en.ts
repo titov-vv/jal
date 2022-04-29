@@ -25,6 +25,35 @@
     </message>
 </context>
 <context>
+    <name>AbstractReferenceListModel</name>
+    <message>
+        <location filename="../db/reference_models.py" line="125"/>
+        <source>Data are incomplete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/reference_models.py" line="126"/>
+        <source>Column has no valid value: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/reference_models.py" line="128"/>
+        <location filename="../db/reference_models.py" line="134"/>
+        <source>Submit failed: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/reference_models.py" line="130"/>
+        <source>Data are in use</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/reference_models.py" line="131"/>
+        <source>Data are referenced in another place and can&apos;t be modified</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>AccountButton</name>
     <message>
         <location filename="../widgets/account_select.py" line="24"/>
@@ -115,6 +144,59 @@
     </message>
 </context>
 <context>
+    <name>AssetDialog</name>
+    <message>
+        <location filename="../ui/asset_dlg.ui" line="17"/>
+        <source>Asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/asset_dlg.ui" line="148"/>
+        <source>Symbols</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/asset_dlg.ui" line="262"/>
+        <source>Extra data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/asset_dlg.ui" line="328"/>
+        <source>Name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/asset_dlg.ui" line="335"/>
+        <source>ISIN:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/asset_dlg.ui" line="382"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/asset_dlg.ui" line="389"/>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/asset_dlg.ui" line="399"/>
+        <source>Base asset:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/asset_dlg.ui" line="406"/>
+        <source>Type: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/asset_dlg.ui" line="416"/>
+        <source>Country: </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>AssetListDialog</name>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="195"/>
@@ -168,6 +250,29 @@
         <location filename="../widgets/reference_dialogs.py" line="149"/>
         <source>Data source</source>
         <translation></translation>
+    </message>
+</context>
+<context>
+    <name>AssetsListModel</name>
+    <message>
+        <location filename="../widgets/asset_dialog.py" line="18"/>
+        <source>Asset name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_dialog.py" line="19"/>
+        <source>ISIN</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_dialog.py" line="20"/>
+        <source>Country</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_dialog.py" line="21"/>
+        <source>Base asset</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -269,6 +374,49 @@
         <location filename="../widgets/price_chart.py" line="84"/>
         <source>Price chart for </source>
         <translation></translation>
+    </message>
+</context>
+<context>
+    <name>CorporateAction</name>
+    <message>
+        <location filename="../db/operations.py" line="698"/>
+        <source>Symbol change {old} -&gt; {new}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="699"/>
+        <source>Split {old} {before} into {after}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="700"/>
+        <source>Spin-off {after} {new} from {before} {old}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="701"/>
+        <source>Merger {before} {old} into {after} {new}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="704"/>
+        <source>Delisting of {before} {old}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="735"/>
+        <source> cost basis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="767"/>
+        <source>Asset amount is not enough for corporate action processing. Date: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="771"/>
+        <source>Unhandled case: Corporate action covers not full open position. Date: </source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -415,6 +563,24 @@
     <message>
         <location filename="../data_export/dlsg.py" line="192"/>
         <source>Account country is not set for asset, dividend isn&apos;t include in 3-NDFL </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DataDelegate</name>
+    <message>
+        <location filename="../widgets/asset_dialog.py" line="177"/>
+        <source>reg.code</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_dialog.py" line="178"/>
+        <source>expiry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_dialog.py" line="179"/>
+        <source>principal</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -609,6 +775,34 @@
     </message>
 </context>
 <context>
+    <name>Dividend</name>
+    <message>
+        <location filename="../db/operations.py" line="294"/>
+        <source>Tax: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="329"/>
+        <source>Can&apos;t process dividend as bank isn&apos;t set for investment account: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="338"/>
+        <source>Unsupported dividend type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="360"/>
+        <source>Not supported action: stock dividend or vesting closes short trade.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="363"/>
+        <source>No stock quote for stock dividend or vesting.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DividendWidget</name>
     <message>
         <location filename="../widgets/dividend_widget.py" line="43"/>
@@ -704,6 +898,19 @@
         <location filename="../widgets/helpers.py" line="8"/>
         <source>Investment account should have associated broker assigned</source>
         <translation></translation>
+    </message>
+</context>
+<context>
+    <name>ExtraDataModel</name>
+    <message>
+        <location filename="../widgets/asset_dialog.py" line="270"/>
+        <source>Property</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_dialog.py" line="271"/>
+        <source>Value</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1087,6 +1294,19 @@
     </message>
 </context>
 <context>
+    <name>IncomeSpending</name>
+    <message>
+        <location filename="../db/operations.py" line="209"/>
+        <source>Rate: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="237"/>
+        <source>Can&apos;t process operation without details</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>IncomeSpendingReport</name>
     <message>
         <location filename="../reports/income_spending.py" line="300"/>
@@ -1458,27 +1678,28 @@ Application will be terminated now</source>
 <context>
     <name>JalDB</name>
     <message>
-        <location filename="../db/db.py" line="335"/>
+        <location filename="../db/db.py" line="338"/>
         <source>Reg.number updated for </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="359"/>
+        <location filename="../db/db.py" line="362"/>
         <source>Dividend already exists: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="382"/>
+        <location filename="../db/db.py" line="385"/>
         <source>Trade already exists: #</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="405"/>
+        <location filename="../db/db.py" line="409"/>
+        <location filename="../db/db.py" line="418"/>
         <source>Transfer/Exchange already exists: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="430"/>
+        <location filename="../db/db.py" line="444"/>
         <source>Corporate action already exists: #</source>
         <translation></translation>
     </message>
@@ -1488,22 +1709,22 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="266"/>
+        <location filename="../db/db.py" line="269"/>
         <source>Quotations were updated: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="301"/>
+        <location filename="../db/db.py" line="304"/>
         <source>Asset not found for update: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="307"/>
+        <location filename="../db/db.py" line="310"/>
         <source>Unexpected attempt to update ISIN for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="324"/>
+        <location filename="../db/db.py" line="327"/>
         <source>Country updated for </source>
         <translation></translation>
     </message>
@@ -1689,12 +1910,12 @@ Application will be terminated now</source>
 <context>
     <name>MOEX</name>
     <message>
-        <location filename="../net/downloader.py" line="238"/>
+        <location filename="../net/downloader.py" line="243"/>
         <source>Unsupported MOEX security type: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="281"/>
+        <location filename="../net/downloader.py" line="286"/>
         <source>Multiple MOEX assets found for: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -1760,12 +1981,12 @@ Application will be terminated now</source>
 <context>
     <name>OpenBroker</name>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="30"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="31"/>
         <source>Asset type isn&apos;t supported: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="55"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="60"/>
         <source>Exchange isn&apos;t supported: </source>
         <translation></translation>
     </message>
@@ -2077,32 +2298,32 @@ do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="358"/>
+        <location filename="../net/downloader.py" line="363"/>
         <source>Euronext quotes history reply is too short: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="361"/>
+        <location filename="../net/downloader.py" line="366"/>
         <source>Euronext quotes header not found in: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="364"/>
+        <location filename="../net/downloader.py" line="369"/>
         <source>Euronext quotes ISIN mismatch in: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="401"/>
+        <location filename="../net/downloader.py" line="406"/>
         <source>Can&apos;t parse data for TSX quotes: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="418"/>
+        <location filename="../net/downloader.py" line="423"/>
         <source>Checking MOEX data for: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/downloader.py" line="423"/>
+        <location filename="../net/downloader.py" line="428"/>
         <source>New full name found for:  </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2384,59 +2605,54 @@ do you want to save it?</source>
 <context>
     <name>Statement</name>
     <message>
-        <location filename="../data_import/statement.py" line="141"/>
+        <location filename="../data_import/statement.py" line="143"/>
         <source>Failed to read JSON from file: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="143"/>
-        <location filename="../data_import/statement.py" line="258"/>
+        <location filename="../data_import/statement.py" line="145"/>
+        <location filename="../data_import/statement.py" line="260"/>
         <source>Failed to read file: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="307"/>
+        <location filename="../data_import/statement.py" line="309"/>
         <source>Can&apos;t create asset: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="312"/>
+        <location filename="../data_import/statement.py" line="314"/>
         <source>Symbol ticker isn&apos;t linked to asset: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="314"/>
+        <location filename="../data_import/statement.py" line="316"/>
         <source>Symbol currency isn&apos;t linked to asset: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="329"/>
+        <location filename="../data_import/statement.py" line="331"/>
         <source>Asset data aren&apos;t linked to asset: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="337"/>
+        <location filename="../data_import/statement.py" line="339"/>
         <source>Unmatched currency for account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="343"/>
+        <location filename="../data_import/statement.py" line="345"/>
         <source>Can&apos;t create account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="348"/>
+        <location filename="../data_import/statement.py" line="350"/>
         <source>Unmatched account for income/spending: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="350"/>
+        <location filename="../data_import/statement.py" line="352"/>
         <source>Unmatched peer for income/spending: </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../data_import/statement.py" line="353"/>
-        <source>Unsupported income/spending: </source>
         <translation></translation>
     </message>
     <message>
@@ -2455,122 +2671,127 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="373"/>
+        <location filename="../data_import/statement.py" line="371"/>
+        <source>Impossible to convert asset type in transfer: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/statement.py" line="377"/>
         <source>Deposit of </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="377"/>
+        <location filename="../data_import/statement.py" line="381"/>
         <source>Select account to withdraw from:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="379"/>
+        <location filename="../data_import/statement.py" line="383"/>
         <source>Withdrawal of </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="383"/>
+        <location filename="../data_import/statement.py" line="387"/>
         <source>Select account to deposit to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="389"/>
+        <location filename="../data_import/statement.py" line="393"/>
         <source>Account not selected</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="404"/>
+        <location filename="../data_import/statement.py" line="407"/>
         <source>Unmatched account for trade: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="406"/>
+        <location filename="../data_import/statement.py" line="409"/>
         <source>Unmatched asset for trade: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="418"/>
+        <location filename="../data_import/statement.py" line="421"/>
         <source>Unmatched account for payment: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="420"/>
+        <location filename="../data_import/statement.py" line="423"/>
         <source>Unmatched asset for payment: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="446"/>
+        <location filename="../data_import/statement.py" line="449"/>
         <source>Unsupported payment type: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="451"/>
+        <location filename="../data_import/statement.py" line="454"/>
         <source>Unmatched account for corporate action: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="458"/>
+        <location filename="../data_import/statement.py" line="461"/>
         <source>Unmatched asset for corporate action: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="468"/>
+        <location filename="../data_import/statement.py" line="471"/>
         <source>Unsupported corporate action: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="488"/>
+        <location filename="../data_import/statement.py" line="491"/>
         <source>Asset id not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="500"/>
+        <location filename="../data_import/statement.py" line="503"/>
         <source>Multiple match for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="511"/>
+        <location filename="../data_import/statement.py" line="514"/>
         <source>Multiple currency match for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="554"/>
+        <location filename="../data_import/statement.py" line="557"/>
         <source>Can&apos;t locate asset in statement data: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="290"/>
+        <location filename="../data_import/statement.py" line="292"/>
         <source>Statement import was cancelled</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="280"/>
+        <location filename="../data_import/statement.py" line="282"/>
         <source>Statement period is invalid</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="148"/>
+        <location filename="../data_import/statement.py" line="150"/>
         <source>Some sections are not supported: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="256"/>
+        <location filename="../data_import/statement.py" line="258"/>
         <source>Failed to read JSON schema from: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="262"/>
+        <location filename="../data_import/statement.py" line="264"/>
         <source>Statement validation failed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="287"/>
+        <location filename="../data_import/statement.py" line="289"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="288"/>
+        <location filename="../data_import/statement.py" line="290"/>
         <source>Statement period starts before last recorded operation for the account. Continue import?</source>
         <translation></translation>
     </message>
@@ -2578,213 +2799,289 @@ do you want to save it?</source>
 <context>
     <name>StatementIBKR</name>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="263"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="264"/>
         <source>Corporate action isn&apos;t supported for asset type: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="295"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="296"/>
         <source>Asset type isn&apos;t supported: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="317"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="318"/>
         <source>Can&apos;t get currencies for currency exchange: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="324"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="325"/>
         <source>Can&apos;t get account currency for account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="353"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="354"/>
         <source>Load IB Flex-statement for account </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="378"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="379"/>
         <source>Securities loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="387"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="388"/>
         <source>Trades loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="429"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="430"/>
         <source>Option assignment</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="430"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="431"/>
         <source>Option exercise</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="431"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="432"/>
         <source>Option expiration</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="432"/>
         <location filename="../data_import/broker_statements/ibkr.py" line="433"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="434"/>
         <source>Option assignment/exercise</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="442"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="443"/>
         <source>Option E&amp;A&amp;E action isn&apos;t implemented: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="449"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="450"/>
         <source>Original trade not found for Option E&amp;A&amp;E operation: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="451"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="452"/>
         <source>Options E&amp;A&amp;E loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="491"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="492"/>
         <source>Corporate action type is not supported: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="492"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="493"/>
         <source>Corporate actions loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="545"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="547"/>
         <source>Can&apos;t parse Merger description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="549"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="551"/>
         <source>Merger description miss some data </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="504"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="505"/>
         <source>Can&apos;t find paired record for </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="125"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="126"/>
         <source>Interactive Brokers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="128"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="129"/>
         <source>IBKR flex-query (*.xml)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="243"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="244"/>
         <source>Interactive Brokers report type not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="245"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="246"/>
         <source>You try to import Trade confimation report, not Activity report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="247"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="248"/>
         <source>Unknown Interactive Brokers report type: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="522"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="523"/>
         <source>Can&apos;t process cancelled corporate action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="601"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="605"/>
         <source>Can&apos;t parse Spin-off description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="604"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="628"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="608"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="632"/>
         <source>Spin-off description miss some data </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="607"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="611"/>
         <source>Spin-off initial asset not found </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="610"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="614"/>
         <source>Spin-off rounding error is too big </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="625"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="629"/>
         <source>Can&apos;t parse Symbol Change description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="646"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="650"/>
         <source>Can&apos;t parse Stock Dividend description </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="662"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="666"/>
         <source>Can&apos;t parse Split description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="665"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="669"/>
         <source>Split description miss some data </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="725"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="729"/>
         <source>Stock vestings loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="783"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="787"/>
         <source>Cash transactions loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="796"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="800"/>
         <source>Taxes loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="806"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="885"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="899"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="810"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="889"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="903"/>
         <source>*** MANUAL ENTRY REQUIRED ***</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="807"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="811"/>
         <source>Unhandled tax country pattern found: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="817"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="821"/>
         <source>Dividend not found for withholding tax: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="886"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="890"/>
         <source>Unhandled tax pattern found: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="900"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="904"/>
         <source>Unhandled dividend pattern found: </source>
         <translation></translation>
+    </message>
+</context>
+<context>
+    <name>StatementJ2T</name>
+    <message>
+        <location filename="../data_import/broker_statements/just2trade.py" line="35"/>
+        <source>Just2Trade</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/just2trade.py" line="37"/>
+        <source>Just2Trade statement (*.xlsx)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/just2trade.py" line="54"/>
+        <source>Cash balances loaded: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/just2trade.py" line="80"/>
+        <source>Securities loaded: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/just2trade.py" line="127"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="183"/>
+        <source>Unknown trade type: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/just2trade.py" line="146"/>
+        <source>Stock trades loaded: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/just2trade.py" line="200"/>
+        <source>Crypto trades loaded: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/just2trade.py" line="240"/>
+        <source>Unsuppported cash transaction </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/just2trade.py" line="248"/>
+        <source>Unknown cash transaction type </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/just2trade.py" line="267"/>
+        <source>Cash operations loaded: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/just2trade.py" line="316"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="331"/>
+        <source>Can&apos;t parse Dividend description </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/just2trade.py" line="319"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="334"/>
+        <source>Dividend description miss some data </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/just2trade.py" line="339"/>
+        <source>Dividend for tax was not found </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/just2trade.py" line="366"/>
+        <source>Import skipped of transaction: </source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2828,122 +3125,132 @@ do you want to save it?</source>
 <context>
     <name>StatementOpenBroker</name>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="66"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="72"/>
         <source>Open Broker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="69"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="75"/>
         <source>Open Broker statement (*.xml)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="152"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="172"/>
         <source>Open broker report title not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="154"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="174"/>
         <source>Unexpected Open broker report header: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="213"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="212"/>
+        <source>Multiple match for broker symbol: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/openbroker.py" line="219"/>
+        <source>Multiple match for symbol: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/openbroker.py" line="253"/>
         <source>Load Open Broker statement for account </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="232"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="279"/>
         <source>Securities loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="245"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="292"/>
         <source>Accounts loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="254"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="301"/>
         <source>Can&apos;t find account for trade: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="256"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="303"/>
         <source>Can&apos;t determine trade type/quantity: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="282"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="330"/>
         <source>Unknown non-trade operation: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="286"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="338"/>
         <source>Can&apos;t parse bond repayment description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="290"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="342"/>
         <source>Can&apos;t detect bond name from description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="314"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="381"/>
         <source>Operation not supported: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="321"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="388"/>
         <source>Can&apos;t find account for cash operation: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="324"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="391"/>
         <source>Cash operations loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="342"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="417"/>
         <source>Unknown payment description: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="346"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="421"/>
         <source>Unknown payment type: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="352"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="445"/>
         <source>Can&apos;t parse Interest description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="355"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="448"/>
         <source>Interest description miss some data </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="359"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="452"/>
         <source>Can&apos;t find asset for bond interest </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="371"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="464"/>
         <source>Can&apos;t parse Bond Mature description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="375"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="468"/>
         <source>Bond repayment description miss some data </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="379"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="472"/>
         <source>Can&apos;t find asset cancellation record for </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/openbroker.py" line="382"/>
+        <location filename="../data_import/broker_statements/openbroker.py" line="475"/>
         <source>Multiple asset cancellation match for </source>
         <translation></translation>
     </message>
@@ -3035,57 +3342,57 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="271"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="272"/>
         <source>Unsuppported cash transaction </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="282"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="283"/>
         <source>Cash operations loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="290"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="291"/>
         <source>Can&apos;t parse transfer description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="293"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="294"/>
         <source>Transfer description miss some data </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="328"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="329"/>
         <source>Can&apos;t parse dividend description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="346"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="347"/>
         <source>Failed to convert dividend tax </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="362"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="363"/>
         <source>Can&apos;t parse bond interest description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="376"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="377"/>
         <source>Can&apos;t parse bond repayment description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="382"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="383"/>
         <source>Can&apos;t find asset cancellation record for </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="385"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="386"/>
         <source>Multiple asset cancellation match for </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/uralsib.py" line="406"/>
+        <location filename="../data_import/broker_statements/uralsib.py" line="413"/>
         <source>Can&apos;t get header to find fees</source>
         <translation></translation>
     </message>
@@ -3141,22 +3448,22 @@ do you want to save it?</source>
 <context>
     <name>StatementXML</name>
     <message>
-        <location filename="../data_import/statement_xml.py" line="75"/>
+        <location filename="../data_import/statement_xml.py" line="76"/>
         <source>Unsupported date/time format: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xml.py" line="81"/>
+        <location filename="../data_import/statement_xml.py" line="82"/>
         <source>Can&apos;t parse XML file: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xml.py" line="100"/>
+        <location filename="../data_import/statement_xml.py" line="101"/>
         <source> loaded successfully</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_xml.py" line="127"/>
+        <location filename="../data_import/statement_xml.py" line="128"/>
         <source>Failed to load attribute: </source>
         <translation></translation>
     </message>
@@ -3176,6 +3483,34 @@ do you want to save it?</source>
     <message>
         <location filename="../data_import/statements.py" line="67"/>
         <source>Import failed: </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SymbolsListModel</name>
+    <message>
+        <location filename="../widgets/asset_dialog.py" line="145"/>
+        <source>Symbol</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_dialog.py" line="146"/>
+        <source>Currency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_dialog.py" line="147"/>
+        <source>Description</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_dialog.py" line="148"/>
+        <source>Quotes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/asset_dialog.py" line="149"/>
+        <source>Act.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3384,12 +3719,22 @@ do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="107"/>
+        <location filename="../widgets/tax_widget.py" line="81"/>
+        <source>Data are incomplete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_widget.py" line="82"/>
+        <source>You haven&apos;t selected an account for tax report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_widget.py" line="111"/>
         <source>Tax report saved to file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="116"/>
+        <location filename="../widgets/tax_widget.py" line="120"/>
         <source>Can&apos;t write tax form into file </source>
         <translation type="unfinished"></translation>
     </message>
@@ -3404,6 +3749,14 @@ do you want to save it?</source>
     <message>
         <location filename="../data_export/taxes.py" line="134"/>
         <source>No price data for stock vesting: </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Trade</name>
+    <message>
+        <location filename="../db/operations.py" line="429"/>
+        <source>Can&apos;t process trade as bank isn&apos;t set for investment account: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3458,6 +3811,29 @@ do you want to save it?</source>
         <location filename="../widgets/trade_widget.py" line="50"/>
         <source>Note</source>
         <translation></translation>
+    </message>
+</context>
+<context>
+    <name>Transfer</name>
+    <message>
+        <location filename="../db/operations.py" line="558"/>
+        <source>Error. Zero rate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="637"/>
+        <source>Asset amount is not enough for asset transfer processing. Date: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="642"/>
+        <source>Processed asset amount is less than transfer amount. Date: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="661"/>
+        <source>Asset withdrawal not found for transfer.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
