@@ -504,11 +504,11 @@ class Transfer(LedgerTransaction):
             self._asset = None
         self._note = self._data['note']
         if self._display_type == Transfer.Outgoing:
-            self._reconciled = JalDB().account_reconciliation_timestamp(self._withdrawal_account) >= self._timestamp
+            self._reconciled = JalDB().account_reconciliation_timestamp(self._withdrawal_account) >= self._withdrawal_timestamp
         elif self._display_type == Transfer.Incoming:
-            self._reconciled = JalDB().account_reconciliation_timestamp(self._deposit_account) >= self._timestamp
+            self._reconciled = JalDB().account_reconciliation_timestamp(self._deposit_account) >= self._deposit_timestamp
         elif self._display_type == Transfer.Fee:
-            self._reconciled = JalDB().account_reconciliation_timestamp(self._fee_account) >= self._timestamp
+            self._reconciled = JalDB().account_reconciliation_timestamp(self._fee_account) >= self._withdrawal_timestamp
         else:
             assert False, "Unknown transfer type"
 
