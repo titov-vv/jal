@@ -227,7 +227,8 @@ class QuoteDownloader(QObject):
         if 'isin' in asset:
             # replace symbol with short name if we have isin in place of symbol
             asset['symbol'] = asset['short_name'] if asset['symbol'] == asset['isin'] else asset['symbol']
-        del asset['short_name']  # drop short name as we won't use it further
+        if 'short_name' in asset:
+            del asset['short_name']  # drop short name as we won't use it further
         if 'principal' in asset:  # Convert principal into float if possible or drop otherwise
             try:
                 asset['principal'] = float(asset['principal'])

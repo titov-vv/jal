@@ -1,11 +1,10 @@
 import os
-from PySide6.QtSql import QSqlDatabase
 from shutil import copyfile
 import sqlite3
 
 from tests.fixtures import project_root
 from constants import Setup
-from jal.db.db import JalDB, JalDBError
+from jal.db.db import JalDB, JalDBError, db_connection
 from jal.db.helpers import get_dbfilename
 from jal.db.backup_restore import JalBackup
 
@@ -26,8 +25,7 @@ def test_db_creation(tmp_path, project_root):
     assert error.code == JalDBError.NoError
 
     # Clean up db
-    db = QSqlDatabase.database(Setup.DB_CONNECTION)
-    db.close()
+    db_connection().close()
     os.remove(target_path)  # Clean db init script
     os.remove(get_dbfilename(str(tmp_path) + os.sep))  # Clean db file
 
@@ -47,8 +45,7 @@ def test_invalid_backup(tmp_path, project_root):
     assert not invalid_backup.validate_backup()
 
     # Clean up db
-    db = QSqlDatabase.database(Setup.DB_CONNECTION)
-    db.close()
+    db_connection().close()
     os.remove(target_path)  # Clean db init script
     os.remove(get_dbfilename(str(tmp_path) + os.sep))  # Clean db file
 
@@ -79,7 +76,6 @@ def test_backup_load(tmp_path, project_root):
     db.close()
 
     # Clean up db
-    db2 = QSqlDatabase.database(Setup.DB_CONNECTION)
-    db2.close()
+    db_connection().close()
     os.remove(target_path)  # Clean db init script
     os.remove(get_dbfilename(str(tmp_path) + os.sep))  # Clean db file
