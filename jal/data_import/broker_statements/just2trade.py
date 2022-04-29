@@ -218,7 +218,8 @@ class StatementJ2T(StatementXLS):
             'Внешние затраты::Комиссия внешнего брокера::Удержанный налог': None,  # Loaded in 2nd loop later
             'Внешние затраты::Комиссия внешнего депозитария': self.fee,
             'Перевод на ТП': self.transfer_in,
-            'Списание c ТП': self.transfer_out
+            'Списание c ТП': self.transfer_out,
+            'Корпоративные действия::Компенсации': self.skip_warning
         }
 
         start_row, headers = self.find_section_start("Движение денежных средств", columns)
@@ -360,3 +361,6 @@ class StatementJ2T(StatementXLS):
                     "asset": [account['currency'], account['currency']], "timestamp": timestamp,
                     "withdrawal": -amount, "deposit": -amount, "fee": 0.0, "description": note}
         self._data[FOF.TRANSFERS].append(transfer)
+
+    def skip_warning(self, _timestamp, _account_id, amount, note):
+        logging.warning(self.tr("Import skipped of transaction: ") + f"'{note}' ({amount})")
