@@ -87,7 +87,7 @@ class JalDB:
     # Method loads sql script into database
     def run_sql_script(self, script_file) -> JalDBError:
         try:
-            with open(script_file) as sql_script:
+            with open(script_file, 'r', encoding='utf-8') as sql_script:
                 statements = sqlparse.split(sql_script)
                 for statement in statements:
                     clean_statement = sqlparse.format(statement, strip_comments=True)

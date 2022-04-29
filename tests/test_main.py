@@ -6,6 +6,7 @@ from tests.fixtures import project_root
 from constants import Setup
 from jal.db.db import JalDB, JalDBError, db_connection
 from jal.db.helpers import get_dbfilename
+from jal.db.helpers import readSQL
 from jal.db.backup_restore import JalBackup
 
 
@@ -23,6 +24,8 @@ def test_db_creation(tmp_path, project_root):
     assert os.path.exists(result_path)
     assert os.path.getsize(result_path) > 0
     assert error.code == JalDBError.NoError
+    # Verify db encoding
+    assert readSQL("SELECT full_name FROM assets WHERE id=1") == 'Российский Рубль'
 
     # Clean up db
     db_connection().close()
