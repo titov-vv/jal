@@ -479,7 +479,8 @@ class StatementIBKR(StatementXML):
             actions_aggregated.append(part)
             cnt += len(group_list) - 1
         # Now split in 2 parts: A for new stocks deposit, B for old stocks withdrawal
-        parts_a = [action for action in actions_aggregated if action['quantity'] >= 0]
+        # There might be 0 quantity value - it should be ignored
+        parts_a = [action for action in actions_aggregated if action['quantity'] > 0]
         parts_b = [action for action in actions_aggregated if action['quantity'] < 0]
         # Process sequentially '+' and '-', 'jal_processed' will set True when '+' has pair record in '-'
         for action in parts_a + parts_b:
