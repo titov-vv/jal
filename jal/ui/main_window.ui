@@ -73,12 +73,6 @@
     <property name="title">
      <string>&amp;Data</string>
     </property>
-    <widget class="QMenu" name="menuPredefined_data">
-     <property name="title">
-      <string>Predefined data</string>
-     </property>
-     <addaction name="actionAccountTypes"/>
-    </widget>
     <addaction name="separator"/>
     <addaction name="actionAccounts"/>
     <addaction name="actionAssets"/>
@@ -87,7 +81,6 @@
     <addaction name="actionTags"/>
     <addaction name="actionCountries"/>
     <addaction name="actionQuotes"/>
-    <addaction name="menuPredefined_data"/>
     <addaction name="separator"/>
     <addaction name="actionBackup"/>
     <addaction name="actionRestore"/>
@@ -152,11 +145,6 @@
   <action name="actionImportStatement">
    <property name="text">
     <string>&amp;Broker statement...</string>
-   </property>
-  </action>
-  <action name="actionAccountTypes">
-   <property name="text">
-    <string>Account &amp;Types</string>
    </property>
   </action>
   <action name="actionAccounts">

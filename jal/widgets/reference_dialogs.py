@@ -12,32 +12,6 @@ from jal.net.downloader import QuoteDownloader
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class AccountTypeListModel(AbstractReferenceListModel):
-    def __init__(self, table, parent_view):
-        AbstractReferenceListModel.__init__(self, table, parent_view)
-        self._columns = [("id", ''), ("name", self.tr("Account Type"))]
-        self._sort_by = "name"
-        self._hidden = ["id"]
-        self._stretch = "name"
-
-    def configureView(self):
-        super().configureView()
-
-
-class AccountTypeListDialog(ReferenceDataDialog):
-    def __init__(self):
-        ReferenceDataDialog.__init__(self)
-        self.table = "account_types"
-        self.model = AccountTypeListModel(self.table, self.DataView)
-        self.DataView.setModel(self.model)
-        self.model.configureView()
-
-        self.setWindowTitle(self.tr("Account Types"))
-        self.Toggle.setVisible(False)
-        super()._init_completed()
-
-
-# ----------------------------------------------------------------------------------------------------------------------
 class AccountListModel(AbstractReferenceListModel):
     def __init__(self, table, parent_view):
         AbstractReferenceListModel.__init__(self, table, parent_view)

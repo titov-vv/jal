@@ -12,7 +12,7 @@ from jal.ui.ui_main_window import Ui_JAL_MainWindow
 from jal.widgets.operations_widget import OperationsWidget
 from jal.widgets.tax_widget import TaxWidget
 from jal.widgets.helpers import dependency_present
-from jal.widgets.reference_dialogs import AccountTypeListDialog, AccountListDialog, AssetListDialog, TagsListDialog,\
+from jal.widgets.reference_dialogs import AccountListDialog, AssetListDialog, TagsListDialog,\
     CategoryListDialog, CountryListDialog, QuotesListDialog, PeerListDialog
 from jal.constants import Setup
 from jal.db.backup_restore import JalBackup
@@ -89,7 +89,6 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.actionBackup.triggered.connect(self.backup.create)
         self.actionRestore.triggered.connect(self.backup.restore)
         self.action_Re_build_Ledger.triggered.connect(partial(self.ledger.showRebuildDialog, self))
-        self.actionAccountTypes.triggered.connect(partial(self.onDataDialog, "account_types"))
         self.actionAccounts.triggered.connect(partial(self.onDataDialog, "accounts"))
         self.actionAssets.triggered.connect(partial(self.onDataDialog, "assets"))
         self.actionPeers.triggered.connect(partial(self.onDataDialog, "agents"))
@@ -211,9 +210,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
     @Slot()
     def onDataDialog(self, dlg_type):
-        if dlg_type == "account_types":
-            AccountTypeListDialog().exec()
-        elif dlg_type == "accounts":
+        if dlg_type == "accounts":
             AccountListDialog().exec()
         elif dlg_type == "assets":
             AssetListDialog().exec()
@@ -228,7 +225,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         elif dlg_type == "quotes":
             QuotesListDialog().exec()
         else:
-            assert False
+            assert False, f"Unexpected dialog call: '{dlg_type}'"
 
     @Slot()
     def updateWidgets(self):
