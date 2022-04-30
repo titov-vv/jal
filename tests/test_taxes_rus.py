@@ -29,7 +29,8 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
         (10, "AAL   210115C00030000", "AAL 15JAN21 30.0 C", "", 2, PredefinedAsset.Derivative, 0),
         (11, "MYL", "MYLAN NV", "NL0011031208", 2, PredefinedAsset.Stock, 0),
         (12, "VTRS", "VIATRIS INC", "US92556V1061", 2, PredefinedAsset.Stock, 0),
-        (13, "DEL", "DELISTED STOCK", "US12345X0000", 2, PredefinedAsset.Stock, 0)
+        (13, "DEL", "DELISTED STOCK", "US12345X0000", 2, PredefinedAsset.Stock, 0),
+        (14, "BTC", "Bitcoin", "", 2, PredefinedAsset.Crypto, 0)
     ]
     create_assets(assets)
     usd_rates = [
@@ -84,6 +85,8 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
         (1608044400, 1608163200, 5, -25, 3.0, 0.35, "B1"),
         (1608044400, 1608163200, 5, -25, 2.5, 0.35, "B2"),
         (1607871600, 1608044400, 13, 10, 11, 0.5, "1000000001"),
+        (1607871600, 1608044400, 14, 0.001, 35123, 0, "crypto-buy"),
+        (1608044400, 1608163200, 14, -0.001, 36321, 0, "crypto-sell")
     ]
     create_trades(1, trades)
 

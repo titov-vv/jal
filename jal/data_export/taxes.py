@@ -33,6 +33,7 @@ class TaxesRus:
             "Акции": self.prepare_stocks_and_etf,
             "Облигации": self.prepare_bonds,
             "ПФИ": self.prepare_derivatives,
+            "Криптовалюты": self.prepare_crypto,
             "Корп.события": self.prepare_corporate_actions,
             "Комиссии": self.prepare_broker_fees,
             "Проценты": self.prepare_broker_interest
@@ -378,6 +379,63 @@ class TaxesRus:
             derivatives.append(deal)
         self.insert_totals(derivatives, ["income_rub", "spending_rub", "profit_rub", "profit"])
         return derivatives
+
+    # -----------------------------------------------------------------------------------------------------------------------
+    def prepare_crypto(self):
+        crypto = []
+        # Take all actions without conversion
+        query = executeSQL("SELECT s.symbol, d.qty AS qty, cc.iso_code AS country_iso, "
+                           "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, o.number AS o_number, "
+                           "qos.quote AS os_rate, o.price AS o_price, o.qty AS o_qty, o.fee AS o_fee, "
+                           "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, c.number AS c_number, "
+                           "qcs.quote AS cs_rate, c.price AS c_price, c.qty AS c_qty, c.fee AS c_fee "
+                           "FROM deals AS d "
+                           "JOIN trades AS o ON o.id=d.open_op_id AND o.op_type=d.open_op_type "
+                           "JOIN trades AS c ON c.id=d.close_op_id AND c.op_type=d.close_op_type "
+                           "LEFT JOIN accounts AS a ON a.id = :account_id "
+                           "LEFT JOIN assets_ext AS s ON s.id = o.asset_id AND s.currency_id=a.currency_id "
+                           "LEFT JOIN countries AS cc ON cc.id = a.country_id "
+                           "LEFT JOIN t_last_dates AS ldo ON o.timestamp=ldo.ref_id "
+                           "LEFT JOIN quotes AS qo ON ldo.timestamp=qo.timestamp AND a.currency_id=qo.asset_id AND qo.currency_id=:base_currency "
+                           "LEFT JOIN t_last_dates AS ldos ON o.settlement=ldos.ref_id "
+                           "LEFT JOIN quotes AS qos ON ldos.timestamp=qos.timestamp AND a.currency_id=qos.asset_id AND qos.currency_id=:base_currency "
+                           "LEFT JOIN t_last_dates AS ldc ON c.timestamp=ldc.ref_id "
+                           "LEFT JOIN quotes AS qc ON ldc.timestamp=qc.timestamp AND a.currency_id=qc.asset_id AND qc.currency_id=:base_currency "
+                           "LEFT JOIN t_last_dates AS ldcs ON c.settlement=ldcs.ref_id "
+                           "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id AND qcs.currency_id=:base_currency "
+                           "WHERE c.settlement>=:begin AND c.settlement<:end AND d.account_id=:account_id "
+                           "AND s.type_id = :derivative "
+                           "ORDER BY s.symbol, o.timestamp, c.timestamp",
+                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
+                            (":base_currency", JalSettings().getValue('BaseCurrency')),
+                            (":derivative", PredefinedAsset.Crypto)])
+        while query.next():
+            deal = readSQLrecord(query, named=True)
+            if not self.use_settlement:
+                deal['os_rate'] = deal['o_rate']
+                deal['cs_rate'] = deal['c_rate']
+            deal['o_type'] = "Покупка" if deal['qty'] >= 0 else "Продажа"
+            deal['c_type'] = "Продажа" if deal['qty'] >= 0 else "Покупка"
+            deal['o_amount'] = round(deal['o_price'] * abs(deal['qty']), 2)
+            deal['o_amount_rub'] = round(deal['o_amount'] * deal['os_rate'], 2) if deal['os_rate'] else 0
+            deal['c_amount'] = round(deal['c_price'] * abs(deal['qty']), 2)
+            deal['c_amount_rub'] = round(deal['c_amount'] * deal['cs_rate'], 2) if deal['cs_rate'] else 0
+            deal['o_fee'] = deal['o_fee'] * abs(deal['qty'] / deal['o_qty'])
+            deal['c_fee'] = deal['c_fee'] * abs(deal['qty'] / deal['c_qty'])
+            deal['o_fee_rub'] = round(deal['o_fee'] * deal['o_rate'], 2) if deal['o_rate'] else 0
+            deal['c_fee_rub'] = round(deal['c_fee'] * deal['c_rate'], 2) if deal['c_rate'] else 0
+            deal['income_rub'] = deal['c_amount_rub'] if deal['qty'] >= 0 else deal['o_amount_rub']
+            deal['income'] = deal['c_amount'] if deal['qty'] >= 0 else deal['o_amount']
+            deal['spending_rub'] = deal['o_amount_rub'] if deal['qty'] >= 0 else deal['c_amount_rub']
+            deal['spending_rub'] = deal['spending_rub'] + deal['o_fee_rub'] + deal['c_fee_rub']
+            deal['spending'] = deal['o_amount'] if deal['qty'] >= 0 else deal['c_amount']
+            deal['spending'] = deal['spending'] + deal['o_fee'] + deal['c_fee']
+            deal['profit_rub'] = deal['income_rub'] - deal['spending_rub']
+            deal['profit'] = deal['income'] - deal['spending']
+            deal['report_template'] = "trade"
+            crypto.append(deal)
+        self.insert_totals(crypto, ["income_rub", "spending_rub", "profit_rub", "profit"])
+        return crypto
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_fees(self):

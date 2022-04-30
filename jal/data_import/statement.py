@@ -83,7 +83,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         FOF.ASSET_FUTURES: PredefinedAsset.Derivative,
         FOF.ASSET_OPTION: PredefinedAsset.Derivative,
         FOF.ASSET_WARRANT: PredefinedAsset.Derivative,
-        FOF.ASSET_CRYPTO: PredefinedAsset.Forex
+        FOF.ASSET_CRYPTO: PredefinedAsset.Crypto
     }
     _corp_actions = {
         FOF.ACTION_MERGER: CorporateAction.Merger,

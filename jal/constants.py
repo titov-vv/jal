@@ -88,6 +88,7 @@ class PredefinedAsset:
     Derivative = 6
     Forex = 7
     Fund = 8
+    Crypto = 9
 
     def __init__(self):
         self._names = {
@@ -98,7 +99,8 @@ class PredefinedAsset:
             self.Commodity: self.tr("Commodities"),
             self.Derivative: self.tr("Derivatives"),
             self.Forex: self.tr("Forex"),
-            self.Fund: self.tr("Funds")
+            self.Fund: self.tr("Funds"),
+            self.Crypto: self.tr("Crypto-currency")
         }
 
     def tr(self, text):
