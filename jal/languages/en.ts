@@ -2190,43 +2190,48 @@ do you want to save it?</source>
 <context>
     <name>PredefinedAsset</name>
     <message>
-        <location filename="../constants.py" line="94"/>
+        <location filename="../constants.py" line="95"/>
         <source>Money</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="95"/>
+        <location filename="../constants.py" line="96"/>
         <source>Shares</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="96"/>
+        <location filename="../constants.py" line="97"/>
         <source>Bonds</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="97"/>
+        <location filename="../constants.py" line="98"/>
         <source>ETFs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="98"/>
+        <location filename="../constants.py" line="99"/>
         <source>Commodities</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="99"/>
+        <location filename="../constants.py" line="100"/>
         <source>Derivatives</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="100"/>
+        <location filename="../constants.py" line="101"/>
         <source>Forex</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="104"/>
+        <location filename="../constants.py" line="102"/>
         <source>Funds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="106"/>
+        <source>Crypto-currency</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2925,27 +2930,27 @@ do you want to save it?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="492"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="493"/>
         <source>Corporate action type is not supported: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="493"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="494"/>
         <source>Corporate actions loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="547"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="548"/>
         <source>Can&apos;t parse Merger description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="551"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="552"/>
         <source>Merger description miss some data </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="505"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="506"/>
         <source>Can&apos;t find paired record for </source>
         <translation></translation>
     </message>
@@ -2975,90 +2980,90 @@ do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="523"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="524"/>
         <source>Can&apos;t process cancelled corporate action</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="605"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="606"/>
         <source>Can&apos;t parse Spin-off description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="608"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="632"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="609"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="633"/>
         <source>Spin-off description miss some data </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="611"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="612"/>
         <source>Spin-off initial asset not found </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="614"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="615"/>
         <source>Spin-off rounding error is too big </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="629"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="630"/>
         <source>Can&apos;t parse Symbol Change description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="650"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="651"/>
         <source>Can&apos;t parse Stock Dividend description </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="666"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="667"/>
         <source>Can&apos;t parse Split description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="669"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="670"/>
         <source>Split description miss some data </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="729"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="730"/>
         <source>Stock vestings loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="787"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="788"/>
         <source>Cash transactions loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="800"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="801"/>
         <source>Taxes loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="810"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="889"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="903"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="811"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="890"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="904"/>
         <source>*** MANUAL ENTRY REQUIRED ***</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="811"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="812"/>
         <source>Unhandled tax country pattern found: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="821"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="822"/>
         <source>Dividend not found for withholding tax: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="890"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="891"/>
         <source>Unhandled tax pattern found: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="904"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="905"/>
         <source>Unhandled dividend pattern found: </source>
         <translation></translation>
     </message>
@@ -3784,12 +3789,12 @@ do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="111"/>
+        <location filename="../widgets/tax_widget.py" line="112"/>
         <source>Tax report saved to file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="120"/>
+        <location filename="../widgets/tax_widget.py" line="121"/>
         <source>Can&apos;t write tax form into file </source>
         <translation type="unfinished"></translation>
     </message>
@@ -3797,12 +3802,12 @@ do you want to save it?</source>
 <context>
     <name>TaxesRus</name>
     <message>
-        <location filename="../data_export/taxes.py" line="128"/>
+        <location filename="../data_export/taxes.py" line="129"/>
         <source>No price data for stock dividend: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="134"/>
+        <location filename="../data_export/taxes.py" line="135"/>
         <source>No price data for stock vesting: </source>
         <translation type="unfinished"></translation>
     </message>

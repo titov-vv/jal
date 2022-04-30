@@ -2157,80 +2157,85 @@ do you want to save it?</source>
     <message>
         <location filename="../constants.py" line="46"/>
         <source>Cash</source>
-        <translation type="unfinished"></translation>
+        <translation>Наличные</translation>
     </message>
     <message>
         <location filename="../constants.py" line="47"/>
         <source>Bank accounts</source>
-        <translation type="unfinished"></translation>
+        <translation>Счета в банке</translation>
     </message>
     <message>
         <location filename="../constants.py" line="48"/>
         <source>Cards</source>
-        <translation type="unfinished"></translation>
+        <translation>Карты</translation>
     </message>
     <message>
         <location filename="../constants.py" line="49"/>
         <source>Investments</source>
-        <translation type="unfinished"></translation>
+        <translation>Инвестиции</translation>
     </message>
     <message>
         <location filename="../constants.py" line="50"/>
         <source>Savings</source>
-        <translation type="unfinished"></translation>
+        <translation>Сбережения</translation>
     </message>
     <message>
         <location filename="../constants.py" line="51"/>
         <source>Debts / Loans</source>
-        <translation type="unfinished"></translation>
+        <translation>Кредиты / Долги</translation>
     </message>
     <message>
         <location filename="../constants.py" line="55"/>
         <source>e-Wallets</source>
-        <translation type="unfinished"></translation>
+        <translation>e-Кошельки</translation>
     </message>
 </context>
 <context>
     <name>PredefinedAsset</name>
     <message>
-        <location filename="../constants.py" line="94"/>
-        <source>Money</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../constants.py" line="95"/>
-        <source>Shares</source>
-        <translation type="unfinished"></translation>
+        <source>Money</source>
+        <translation>Валюты</translation>
     </message>
     <message>
         <location filename="../constants.py" line="96"/>
-        <source>Bonds</source>
-        <translation type="unfinished"></translation>
+        <source>Shares</source>
+        <translation>Акции</translation>
     </message>
     <message>
         <location filename="../constants.py" line="97"/>
-        <source>ETFs</source>
-        <translation type="unfinished"></translation>
+        <source>Bonds</source>
+        <translation>Облигации</translation>
     </message>
     <message>
         <location filename="../constants.py" line="98"/>
-        <source>Commodities</source>
-        <translation type="unfinished"></translation>
+        <source>ETFs</source>
+        <translation>БПИФ</translation>
     </message>
     <message>
         <location filename="../constants.py" line="99"/>
-        <source>Derivatives</source>
-        <translation type="unfinished"></translation>
+        <source>Commodities</source>
+        <translation>Товары</translation>
     </message>
     <message>
         <location filename="../constants.py" line="100"/>
-        <source>Forex</source>
-        <translation type="unfinished"></translation>
+        <source>Derivatives</source>
+        <translation>Деривативы</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="104"/>
+        <location filename="../constants.py" line="101"/>
+        <source>Forex</source>
+        <translation>Форекс</translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="102"/>
         <source>Funds</source>
-        <translation type="unfinished"></translation>
+        <translation>Фонды</translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="106"/>
+        <source>Crypto-currency</source>
+        <translation>Криптовалюты</translation>
     </message>
 </context>
 <context>
@@ -2928,27 +2933,27 @@ do you want to save it?</source>
         <translation>Действия с опционами загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="492"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="493"/>
         <source>Corporate action type is not supported: </source>
         <translation>Тип корпоративного действия не поддерживается: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="493"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="494"/>
         <source>Corporate actions loaded: </source>
         <translation>Корпоративные действия загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="547"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="548"/>
         <source>Can&apos;t parse Merger description </source>
         <translation>Невозможно распознать описание Объединения компаний </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="551"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="552"/>
         <source>Merger description miss some data </source>
         <translation>Недостаточно данных об Объединении компаний </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="505"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="506"/>
         <source>Can&apos;t find paired record for </source>
         <translation>Невозможно найти парную запись для </translation>
     </message>
@@ -2978,90 +2983,90 @@ do you want to save it?</source>
         <translation>Неизвестный тип отчёта Interactive Brokers: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="523"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="524"/>
         <source>Can&apos;t process cancelled corporate action</source>
         <translation>Невозможно обработать отменённое корпоративное действие</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="605"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="606"/>
         <source>Can&apos;t parse Spin-off description </source>
         <translation>Невозможно распознать описание Выделения компании </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="608"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="632"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="609"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="633"/>
         <source>Spin-off description miss some data </source>
         <translation>Недостаточно данных для Выделения компании </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="611"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="612"/>
         <source>Spin-off initial asset not found </source>
         <translation>Исходная ЦБ для выделения компании не найдена </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="614"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="615"/>
         <source>Spin-off rounding error is too big </source>
         <translation>Ошибка округления Spin-off слишком большая </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="629"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="630"/>
         <source>Can&apos;t parse Symbol Change description </source>
         <translation>Невозможно распознать описание Смены символа </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="650"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="651"/>
         <source>Can&apos;t parse Stock Dividend description </source>
         <translation>Невозможно распознать описание Дивиденда акциями </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="666"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="667"/>
         <source>Can&apos;t parse Split description </source>
         <translation>Невозможно распознать описание Сплита </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="669"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="670"/>
         <source>Split description miss some data </source>
         <translation>Недостаточно данных для Сплита </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="729"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="730"/>
         <source>Stock vestings loaded: </source>
         <translation>Зачисление акций загружено: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="787"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="788"/>
         <source>Cash transactions loaded: </source>
         <translation>Денежные транзакции загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="800"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="801"/>
         <source>Taxes loaded: </source>
         <translation>Налоги загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="810"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="889"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="903"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="811"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="890"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="904"/>
         <source>*** MANUAL ENTRY REQUIRED ***</source>
         <translation>*** НЕОБХОДИМА РУЧНАЯ ПРОВЕРКА ***</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="811"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="812"/>
         <source>Unhandled tax country pattern found: </source>
         <translation>Неподдерживаемый формат страны налога: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="821"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="822"/>
         <source>Dividend not found for withholding tax: </source>
         <translation>Дивиденд не найден для удержанного налога: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="890"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="891"/>
         <source>Unhandled tax pattern found: </source>
         <translation>Неподдерживаемый формат описания налога: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="904"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="905"/>
         <source>Unhandled dividend pattern found: </source>
         <translation>Неподдерживаемый формат описания дивиденда: </translation>
     </message>
@@ -3787,12 +3792,12 @@ do you want to save it?</source>
         <translation>Вы не выбрали счёт для налогового отчёта</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="111"/>
+        <location filename="../widgets/tax_widget.py" line="112"/>
         <source>Tax report saved to file </source>
         <translation>Налоговый отчёт сохранён в файл </translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="120"/>
+        <location filename="../widgets/tax_widget.py" line="121"/>
         <source>Can&apos;t write tax form into file </source>
         <translation>Невозможно записать 3-НДФЛ в файл </translation>
     </message>
@@ -3800,12 +3805,12 @@ do you want to save it?</source>
 <context>
     <name>TaxesRus</name>
     <message>
-        <location filename="../data_export/taxes.py" line="128"/>
+        <location filename="../data_export/taxes.py" line="129"/>
         <source>No price data for stock dividend: </source>
         <translation>Нет котировки цены для дивиденда акциями: </translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="134"/>
+        <location filename="../data_export/taxes.py" line="135"/>
         <source>No price data for stock vesting: </source>
         <translation>Нет котировки цены для зачисленной акции: </translation>
     </message>
