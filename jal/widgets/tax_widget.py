@@ -90,6 +90,7 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
             "Акции": "tax_rus_trades.json",
             "Облигации": "tax_rus_bonds.json",
             "ПФИ": "tax_rus_derivatives.json",
+            "Криптовалюты": "tax_rus_crypto.json",
             "Корп.события": "tax_rus_corporate_actions.json",
             "Комиссии": "tax_rus_fees.json",
             "Проценты": "tax_rus_interests.json"
