@@ -1,6 +1,7 @@
 from PySide6.QtCore import Qt, QModelIndex
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate, QSqlIndex
 from PySide6.QtWidgets import QToolBar, QAbstractItemView
+from jal.constants import PredefindedAccountType, PredefinedAsset
 from jal.db.helpers import readSQL
 from jal.db.reference_models import AbstractReferenceListModel, SqlTreeModel
 from jal.widgets.delegates import TimestampDelegate, BoolDelegate, FloatDelegate, \
@@ -33,7 +34,6 @@ class AccountListModel(AbstractReferenceListModel):
         self._timestamp_delegate = None
         self._bool_delegate = None
         self._default_values = {'active': 1, 'reconciled_on': 0, 'country_id': 0}
-        self.setRelation(self.fieldIndex("type_id"), QSqlRelation("account_types", "id", "name"))
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
         self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "code"))
 
@@ -89,13 +89,9 @@ class AccountListDialog(ReferenceDataDialog):
         self.GroupLbl.setVisible(True)
         self.GroupLbl.setText(self.tr("Account type:"))
         self.GroupCombo.setVisible(True)
-        self.group_key_field = self.model.group_by
-        self.group_key_index = self.model.fieldIndex(self.model.group_by)
-        self.group_fkey_field = "id"
-        relation_model = self.model.relationModel(self.group_key_index)
-        self.GroupCombo.setModel(relation_model)
-        self.GroupCombo.setModelColumn(relation_model.fieldIndex("name"))
-        self.group_id = relation_model.data(relation_model.index(0, relation_model.fieldIndex(self.group_fkey_field)))
+        self.group_field = self.model.group_by
+        PredefindedAccountType().load2combo(self.GroupCombo)
+        self.group_id = 1
 
     def locateItem(self, item_id):
         type_id = self.model.getAccountType(item_id)
@@ -129,7 +125,6 @@ class AssetListModel(AbstractReferenceListModel):
         self._lookup_delegate = None
         self._timestamp_delegate = None
         self._default_values = {'isin': '', 'country_id': 0, 'quote_source': -1}
-        self.setRelation(self.fieldIndex("type_id"), QSqlRelation("asset_types", "id", "name"))
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
         self.setRelation(self.fieldIndex("country_id"), QSqlRelation("countries", "id", "name"))
         self.setRelation(self.fieldIndex("quote_source"), QSqlRelation("data_sources", "id", "name"))
@@ -176,14 +171,9 @@ class AssetListDialog(ReferenceDataDialog):
         self.GroupLbl.setVisible(True)
         self.GroupLbl.setText(self.tr("Asset type:"))
         self.GroupCombo.setVisible(True)
-        self.group_key_field = self.model.group_by
-        self.group_key_index = self.model.fieldIndex(self.model.group_by)
-        self.group_fkey_field = "id"
-        self.filter_field = "currency_id"
-        relation_model = self.model.relationModel(self.group_key_index)
-        self.GroupCombo.setModel(relation_model)
-        self.GroupCombo.setModelColumn(relation_model.fieldIndex("name"))
-        self.group_id = relation_model.data(relation_model.index(0, relation_model.fieldIndex(self.group_fkey_field)))
+        self.group_field = self.model.group_by
+        PredefinedAsset().load2combo(self.GroupCombo)
+        self.group_id = 1
 
         self.toolbar = QToolBar(self)
         self.search_layout.addWidget(self.toolbar)

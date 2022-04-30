@@ -23,9 +23,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         self._filter_text = ''
         self.selection_enabled = False
         self.group_id = None
-        self.group_key_field = None
-        self.group_key_index = None
-        self.group_fkey_field = None
+        self.group_field = None
         self.filter_field = None
         self._filter_value = ''
         self.toggle_state = False
@@ -83,10 +81,9 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
         contextMenu = QMenu(self.DataView)
         contextMenu.addAction(menu_title)
         contextMenu.addSeparator()
-        combo_model = self.GroupCombo.model()
         for i in range(self.GroupCombo.count()):
-            type_id = combo_model.data(combo_model.index(i, combo_model.fieldIndex(self.group_fkey_field)))
-            contextMenu.addAction(self.GroupCombo.itemText(i), partial(self.updateItemType, index, type_id))
+            contextMenu.addAction(self.GroupCombo.itemText(i),
+                                  partial(self.updateItemType, index, self.GroupCombo.itemData(i)))
         contextMenu.popup(self.DataView.viewport().mapToGlobal(pos))
 
     @Slot()
@@ -212,7 +209,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
                 assert False, f"Unsupported format of search field: {self.search_field}"
 
         if self.group_id:
-            conditions.append(f"{self.table}.{self.group_key_field}={self.group_id}")
+            conditions.append(f"{self.table}.{self.group_field}={self.group_id}")
 
         if self.filter_field is not None and self._filter_value:
             conditions.append(f"{self.table}.{self.filter_field} = {self._filter_value}")
@@ -263,9 +260,7 @@ class ReferenceDataDialog(QDialog, Ui_ReferenceDataDialog):
     @Slot()
     def OnGroupChange(self, list_id):
         self.OnRevert()  # Discard all possible changes
-
-        model = self.GroupCombo.model()
-        self.group_id = model.data(model.index(list_id, model.fieldIndex(self.group_fkey_field)))
+        self.group_id = self.GroupCombo.itemData(list_id)
         self.setFilter()
 
     @Slot()

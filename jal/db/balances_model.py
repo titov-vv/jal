@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QDate
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
-from jal.constants import Setup, CustomColor, BookAccount
+from jal.constants import Setup, CustomColor, BookAccount, PredefindedAccountType
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
@@ -52,7 +52,7 @@ class BalancesModel(QAbstractTableModel):
             if self._data[row]['level'] == 0:
                 return self._data[row]['account_name']
             else:
-                return self._data[row]['type_name']
+                return PredefindedAccountType().get_name(self._data[row]['account_type'], default=self.tr("Total"))
         elif column == 1:
             return f"{self._data[row]['balance']:,.2f}" if self._data[row]['balance'] != 0 else ''
         elif column == 2:
@@ -123,7 +123,7 @@ class BalancesModel(QAbstractTableModel):
             "FROM quotes WHERE timestamp <= :balances_timestamp GROUP BY asset_id, currency_id), "
             "_last_dates AS (SELECT account_id AS ref_id, MAX(timestamp) AS timestamp "
             "FROM ledger WHERE timestamp <= :balances_timestamp GROUP BY ref_id) "
-            "SELECT a.type_id AS account_type, t.name AS type_name, l.account_id AS account, "
+            "SELECT a.type_id AS account_type, l.account_id AS account, "
             "a.name AS account_name, a.currency_id AS currency, c.symbol AS currency_name, "
             "SUM(CASE WHEN l.book_account=:assets_book THEN l.amount*q.quote ELSE l.amount END) AS balance, "
             "SUM(CASE WHEN l.book_account=:assets_book THEN l.amount*coalesce(q.quote*r.quote/ra.quote, 0) "
@@ -133,7 +133,6 @@ class BalancesModel(QAbstractTableModel):
             "FROM ledger AS l "
             "LEFT JOIN accounts AS a ON l.account_id = a.id "
             "LEFT JOIN assets_ext AS c ON c.id = a.currency_id AND c.currency_id = :base_currency "
-            "LEFT JOIN account_types AS t ON a.type_id = t.id "
             "LEFT JOIN _last_quotes AS q ON l.asset_id = q.asset_id AND q.currency_id = a.currency_id "
             "LEFT JOIN _last_quotes AS r ON a.currency_id = r.asset_id AND r.currency_id = :base_currency "
             "LEFT JOIN _last_quotes AS ra ON ra.asset_id = :currency AND ra.currency_id = :base_currency "
@@ -149,7 +148,6 @@ class BalancesModel(QAbstractTableModel):
              (":base_currency", JalSettings().getValue('BaseCurrency'))], forward_only=True)
         self._data = []
         current_type = 0
-        current_type_name = ''
         field_names = list(map(query.record().fieldName, range(query.record().count()))) + ['level']
         while query.next():
             values = readSQLrecord(query, named=True)
@@ -159,17 +157,12 @@ class BalancesModel(QAbstractTableModel):
             if values['account_type'] != current_type:
                 if current_type != 0:
                     sub_total = sum([row['balance_a'] for row in self._data if row['account_type'] == current_type])
-                    self._data.append(dict(zip(field_names,
-                                               [current_type, current_type_name, 0, '', 0, '', 0, sub_total, 0, 1, 1])))
+                    self._data.append(dict(zip(field_names, [current_type, 0, '', 0, '', 0, sub_total, 0, 1, 1])))
                 current_type = values['account_type']
-                current_type_name = values['type_name']
             self._data.append(values)
         if current_type != 0:
             sub_total = sum([row['balance_a'] for row in self._data if row['account_type'] == current_type])
-            self._data.append(dict(zip(field_names,
-                                       [current_type, current_type_name, 0, '', 0, '', 0, sub_total, 0, 1, 1])))
+            self._data.append(dict(zip(field_names, [current_type, 0, '', 0, '', 0, sub_total, 0, 1, 1])))
         total_sum = sum([row['balance_a'] for row in self._data if row['level'] == 0])
-        self._data.append(dict(zip(field_names,
-                                   [0, self.tr("Total"), 0, '', 0, '', 0, total_sum, 0, 1, 2])))
+        self._data.append(dict(zip(field_names, [0, 0, '', 0, '', 0, total_sum, 0, 1, 2])))
         self.modelReset.emit()
-

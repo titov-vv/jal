@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, Q
 from jal.ui.ui_asset_dlg import Ui_AssetDialog
 from jal.constants import PredefinedAsset, AssetData
 from jal.db.helpers import load_icon
-from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate, FloatDelegate
+from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate
 from jal.db.reference_models import AbstractReferenceListModel
 
 
@@ -21,7 +21,7 @@ class AssetsListModel(AbstractReferenceListModel):
                          ("base_asset", self.tr("Base asset"))]
 
 
-class AssetDialog(QDialog, Ui_AssetDialog):
+class AssetDialog(QDialog, Ui_AssetDialog):   # FIXME Dialog crashes with segmentation violation after 2-3 sequential calls
     def __init__(self):
         QDialog.__init__(self)
         self.setupUi(self)

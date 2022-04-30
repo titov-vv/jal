@@ -74,17 +74,17 @@
 <context>
     <name>AccountListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="109"/>
+        <location filename="../widgets/reference_dialogs.py" line="83"/>
         <source>Accounts</source>
         <translation>Счета</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="113"/>
+        <location filename="../widgets/reference_dialogs.py" line="87"/>
         <source>Show inactive</source>
         <translation>Показывать неактивные</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="116"/>
+        <location filename="../widgets/reference_dialogs.py" line="90"/>
         <source>Account type:</source>
         <translation>Тип счета:</translation>
     </message>
@@ -92,55 +92,39 @@
 <context>
     <name>AccountListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="46"/>
+        <location filename="../widgets/reference_dialogs.py" line="21"/>
         <source>Name</source>
         <translation>Наименование</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="47"/>
+        <location filename="../widgets/reference_dialogs.py" line="22"/>
         <source>Currency</source>
         <translation>Валюта</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="48"/>
+        <location filename="../widgets/reference_dialogs.py" line="23"/>
         <source>Act.</source>
         <translation>Акт.</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="49"/>
+        <location filename="../widgets/reference_dialogs.py" line="24"/>
         <source>Account #</source>
         <translation>№ счета</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="50"/>
+        <location filename="../widgets/reference_dialogs.py" line="25"/>
         <source>Reconciled @</source>
         <translation>Сверен @</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="51"/>
+        <location filename="../widgets/reference_dialogs.py" line="26"/>
         <source>Bank/Broker</source>
         <translation>Банк/Брокер</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="52"/>
+        <location filename="../widgets/reference_dialogs.py" line="27"/>
         <source>CC</source>
         <translation>КС</translation>
-    </message>
-</context>
-<context>
-    <name>AccountTypeListDialog</name>
-    <message>
-        <location filename="../widgets/reference_dialogs.py" line="35"/>
-        <source>Account Types</source>
-        <translation>Типы счетов</translation>
-    </message>
-</context>
-<context>
-    <name>AccountTypeListModel</name>
-    <message>
-        <location filename="../widgets/reference_dialogs.py" line="18"/>
-        <source>Account Type</source>
-        <translation>Тип счета</translation>
     </message>
 </context>
 <context>
@@ -199,22 +183,22 @@
 <context>
     <name>AssetListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="195"/>
+        <location filename="../widgets/reference_dialogs.py" line="164"/>
         <source>Assets</source>
         <translation>Ценные бумаги</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="203"/>
+        <location filename="../widgets/reference_dialogs.py" line="172"/>
         <source>Asset type:</source>
         <translation>Тип ЦБ:</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="216"/>
+        <location filename="../widgets/reference_dialogs.py" line="180"/>
         <source>Update data</source>
         <translation>Обновить данные</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="217"/>
+        <location filename="../widgets/reference_dialogs.py" line="181"/>
         <source>Update assets data from their exchanges</source>
         <translation>Обновить данные ЦБ с соответствующей площадки</translation>
     </message>
@@ -222,32 +206,32 @@
 <context>
     <name>AssetListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="144"/>
+        <location filename="../widgets/reference_dialogs.py" line="114"/>
         <source>Symbol</source>
         <translation>Символ</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="145"/>
+        <location filename="../widgets/reference_dialogs.py" line="115"/>
         <source>Name</source>
         <translation>Наименование</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="146"/>
+        <location filename="../widgets/reference_dialogs.py" line="116"/>
         <source>ISIN</source>
         <translation>ISIN</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="147"/>
+        <location filename="../widgets/reference_dialogs.py" line="117"/>
         <source>Currency</source>
         <translation>Валюта</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="148"/>
+        <location filename="../widgets/reference_dialogs.py" line="118"/>
         <source>Country</source>
         <translation>Страна</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="149"/>
+        <location filename="../widgets/reference_dialogs.py" line="119"/>
         <source>Data source</source>
         <translation>Ист.котировок</translation>
     </message>
@@ -293,7 +277,7 @@
         <translation>Баланс, </translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="173"/>
+        <location filename="../db/balances_model.py" line="55"/>
         <source>Total</source>
         <translation>Итого</translation>
     </message>
@@ -301,7 +285,7 @@
 <context>
     <name>CategoryListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="322"/>
+        <location filename="../widgets/reference_dialogs.py" line="286"/>
         <source>Categories</source>
         <translation>Категории</translation>
     </message>
@@ -358,12 +342,12 @@
 <context>
     <name>CategoryTreeModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="293"/>
+        <location filename="../widgets/reference_dialogs.py" line="257"/>
         <source>Name</source>
         <translation>Наименование</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="294"/>
+        <location filename="../widgets/reference_dialogs.py" line="258"/>
         <source>Often</source>
         <translation>Частая</translation>
     </message>
@@ -502,7 +486,7 @@
 <context>
     <name>CountryListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="404"/>
+        <location filename="../widgets/reference_dialogs.py" line="368"/>
         <source>Countries</source>
         <translation>Страны</translation>
     </message>
@@ -510,22 +494,22 @@
 <context>
     <name>CountryListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="373"/>
+        <location filename="../widgets/reference_dialogs.py" line="337"/>
         <source>Country</source>
         <translation>Страна</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="374"/>
+        <location filename="../widgets/reference_dialogs.py" line="338"/>
         <source>Code</source>
         <translation>Код</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="375"/>
+        <location filename="../widgets/reference_dialogs.py" line="339"/>
         <source>ISO code</source>
         <translation>Код ISO</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="376"/>
+        <location filename="../widgets/reference_dialogs.py" line="340"/>
         <source>Tax Treaty</source>
         <translation>СОИДН</translation>
     </message>
@@ -1468,97 +1452,92 @@
         <translation>&amp;Основное</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="136"/>
+        <location filename="../ui/main_window.ui" line="129"/>
         <source>&amp;Exit</source>
         <translation>&amp;Выход</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="144"/>
+        <location filename="../ui/main_window.ui" line="137"/>
         <source>Re-build &amp;Ledger...</source>
         <translation>Пересчитать &amp;итоги...</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="154"/>
+        <location filename="../ui/main_window.ui" line="147"/>
         <source>&amp;Broker statement...</source>
         <translation>&amp;Брокерский отчет...</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="159"/>
-        <source>Account &amp;Types</source>
-        <translation>&amp;Типы счетов</translation>
-    </message>
-    <message>
-        <location filename="../ui/main_window.ui" line="164"/>
+        <location filename="../ui/main_window.ui" line="152"/>
         <source>&amp;Accounts</source>
         <translation>&amp;Счета</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="169"/>
+        <location filename="../ui/main_window.ui" line="157"/>
         <source>A&amp;ssets</source>
         <translation>&amp;Ценные бумаги</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="174"/>
+        <location filename="../ui/main_window.ui" line="162"/>
         <source>&amp;Peers</source>
         <translation>К&amp;онтрагенты</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="179"/>
+        <location filename="../ui/main_window.ui" line="167"/>
         <source>&amp;Categories</source>
         <translation>&amp;Категории</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="184"/>
+        <location filename="../ui/main_window.ui" line="172"/>
         <source>&amp;Backup...</source>
         <translation>&amp;Бэкап...</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="189"/>
+        <location filename="../ui/main_window.ui" line="177"/>
         <source>&amp;Restore...</source>
         <translation>&amp;Восстановление...</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="194"/>
+        <location filename="../ui/main_window.ui" line="182"/>
         <source>&amp;Tax report [RU]</source>
         <translation>&amp;Налоговый отчет [RU]</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="199"/>
+        <location filename="../ui/main_window.ui" line="187"/>
         <source>&amp;Deals report</source>
         <translation>Отчет &amp;Сделки</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="204"/>
+        <location filename="../ui/main_window.ui" line="192"/>
         <source>&amp;Tags</source>
         <translation>&amp;Тэги</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="209"/>
+        <location filename="../ui/main_window.ui" line="197"/>
         <source>&amp;Profit/Loss report</source>
         <translation>Отчет &amp;Прибыли/Убытки</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="214"/>
+        <location filename="../ui/main_window.ui" line="202"/>
         <source>&amp;Income/Spending report</source>
         <translation>Отчет &amp;Доходы/Расходы</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="219"/>
+        <location filename="../ui/main_window.ui" line="207"/>
         <source>Slip [RU]...</source>
         <translation>Чек [RU]...</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="224"/>
+        <location filename="../ui/main_window.ui" line="212"/>
         <source>C&amp;ountries</source>
         <translation>&amp;Страны</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="229"/>
+        <location filename="../ui/main_window.ui" line="217"/>
         <source>&amp;Quotes</source>
         <translation>&amp;Котировки</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="234"/>
+        <location filename="../ui/main_window.ui" line="222"/>
         <source>&amp;Operations</source>
         <translation>&amp;Операции</translation>
     </message>
@@ -1568,37 +1547,32 @@
         <translation>&amp;Данные</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="78"/>
-        <source>Predefined data</source>
-        <translation>Предопределенные</translation>
-    </message>
-    <message>
-        <location filename="../ui/main_window.ui" line="123"/>
+        <location filename="../ui/main_window.ui" line="116"/>
         <source>&amp;Reports</source>
         <translation>&amp;Отчеты</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="105"/>
+        <location filename="../ui/main_window.ui" line="98"/>
         <source>L&amp;anguage</source>
         <translation>&amp;Язык</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="110"/>
+        <location filename="../ui/main_window.ui" line="103"/>
         <source>&amp;Import</source>
         <translation>&amp;Импорт</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="114"/>
+        <location filename="../ui/main_window.ui" line="107"/>
         <source>&amp;Statement</source>
         <translation>&amp;Выписка</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="149"/>
+        <location filename="../ui/main_window.ui" line="142"/>
         <source>&amp;Quotes...</source>
         <translation>&amp;Котировки...</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="99"/>
+        <location filename="../ui/main_window.ui" line="92"/>
         <source>&amp;Export</source>
         <translation>&amp;Экспорт</translation>
     </message>
@@ -1925,50 +1899,50 @@ Application will be terminated now</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="148"/>
+        <location filename="../widgets/main_window.py" line="147"/>
         <source>Restart required</source>
         <translation>Требуется рестарт</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="150"/>
+        <location filename="../widgets/main_window.py" line="149"/>
         <source>Language was changed to </source>
         <translation>Язык был изменён на </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="152"/>
+        <location filename="../widgets/main_window.py" line="151"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation>Вы должны перезапустить приложение, чтобы применить изменения
 Приложение сейчас завершит свою работу</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="117"/>
+        <location filename="../widgets/main_window.py" line="116"/>
         <source>Ledger isn&apos;t complete. Rebuild it now?</source>
         <translation>Итоги транзакций неактуальны. Пересчитать сейчас?</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="117"/>
+        <location filename="../widgets/main_window.py" line="116"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
         <location filename="../widgets/main_window.py" line="62"/>
-        <location filename="../widgets/main_window.py" line="186"/>
+        <location filename="../widgets/main_window.py" line="185"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="252"/>
+        <location filename="../widgets/main_window.py" line="249"/>
         <source>Statement ending balance doesn&apos;t match: </source>
         <translation>Конечный баланс по отчёту не совпадает: </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="194"/>
+        <location filename="../widgets/main_window.py" line="193"/>
         <source>&lt;p&gt;More information, manuals and problem reports are at &lt;a href=https://github.com/titov-vv/jal&gt;github home page&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Questions, comments, help or donations:&lt;/p&gt;&lt;p&gt;&lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=https://t.me/jal_support&gt;Telegram&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&amp;lt;p&amp;gt;Дополнительная информация, инструкции, сообщения о проблемах - &amp;lt;a href=https://github.com/titov-vv/jal&amp;gt;github home page&amp;lt;/a&amp;gt;&amp;lt;/p&amp;gt;&amp;lt;p&amp;gt;Вопросы, комментарии, помощь или донаты:&amp;lt;/p&amp;gt;&amp;lt;p&amp;gt;&amp;lt;a href=mailto:jal@gmx.ru&amp;gt;jal@gmx.ru&amp;lt;/a&amp;gt;&amp;lt;/p&amp;gt;&amp;lt;p&amp;gt;&amp;lt;a href=https://t.me/jal_support&amp;gt;Telegram&amp;lt;/a&amp;gt;&amp;lt;/p&amp;gt;</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="187"/>
+        <location filename="../widgets/main_window.py" line="186"/>
         <source>&lt;h3&gt;JAL&lt;/h3&gt;&lt;p&gt;Just Another Ledger, version {version}&lt;/p&gt;</source>
         <translation>&amp;lt;h3&amp;gt;JAL&amp;lt;/h3&amp;gt;&amp;lt;p&amp;gt;Just Another Ledger, версия {version}&amp;lt;/p&amp;gt;</translation>
     </message>
@@ -2155,7 +2129,7 @@ do you want to save it?</source>
 <context>
     <name>PeerListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="282"/>
+        <location filename="../widgets/reference_dialogs.py" line="246"/>
         <source>Peers</source>
         <translation>Контрагенты</translation>
     </message>
@@ -2163,19 +2137,100 @@ do you want to save it?</source>
 <context>
     <name>PeerTreeModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="239"/>
+        <location filename="../widgets/reference_dialogs.py" line="203"/>
         <source>Name</source>
         <translation>Наименование</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="240"/>
+        <location filename="../widgets/reference_dialogs.py" line="204"/>
         <source>Location</source>
         <translation>Адрес</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="241"/>
+        <location filename="../widgets/reference_dialogs.py" line="205"/>
         <source>Docs count</source>
         <translation>Кол-во док.</translation>
+    </message>
+</context>
+<context>
+    <name>PredefindedAccountType</name>
+    <message>
+        <location filename="../constants.py" line="46"/>
+        <source>Cash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="47"/>
+        <source>Bank accounts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="48"/>
+        <source>Cards</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="49"/>
+        <source>Investments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="50"/>
+        <source>Savings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="51"/>
+        <source>Debts / Loans</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="55"/>
+        <source>e-Wallets</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>PredefinedAsset</name>
+    <message>
+        <location filename="../constants.py" line="94"/>
+        <source>Money</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="95"/>
+        <source>Shares</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="96"/>
+        <source>Bonds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="97"/>
+        <source>ETFs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="98"/>
+        <source>Commodities</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="99"/>
+        <source>Derivatives</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="100"/>
+        <source>Forex</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="104"/>
+        <source>Funds</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2334,7 +2389,7 @@ do you want to save it?</source>
 <context>
     <name>QuotesListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="453"/>
+        <location filename="../widgets/reference_dialogs.py" line="417"/>
         <source>Quotes</source>
         <translation>Котировки</translation>
     </message>
@@ -2342,22 +2397,22 @@ do you want to save it?</source>
 <context>
     <name>QuotesListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="413"/>
+        <location filename="../widgets/reference_dialogs.py" line="377"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="414"/>
+        <location filename="../widgets/reference_dialogs.py" line="378"/>
         <source>Asset</source>
         <translation>ЦБ</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="415"/>
+        <location filename="../widgets/reference_dialogs.py" line="379"/>
         <source>Currency</source>
         <translation>Валюта</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="416"/>
+        <location filename="../widgets/reference_dialogs.py" line="380"/>
         <source>Quote</source>
         <translation>Котировка</translation>
     </message>
@@ -2428,22 +2483,22 @@ do you want to save it?</source>
         <translation>Поиск:</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_data.py" line="123"/>
+        <location filename="../widgets/reference_data.py" line="120"/>
         <source>ANY</source>
         <translation>Любой</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_data.py" line="101"/>
+        <location filename="../widgets/reference_data.py" line="98"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_data.py" line="102"/>
+        <location filename="../widgets/reference_data.py" line="99"/>
         <source>You have uncommitted changes. Do you want to close?</source>
         <translation>У вас есть несохранённые данные. Всё равно закрыть?</translation>
     </message>
     <message>
-        <location filename="../widgets/reference_data.py" line="81"/>
+        <location filename="../widgets/reference_data.py" line="79"/>
         <source>Change type to:</source>
         <translation>Сменить тип на:</translation>
     </message>
@@ -3520,7 +3575,7 @@ do you want to save it?</source>
 <context>
     <name>TagListModel</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="333"/>
+        <location filename="../widgets/reference_dialogs.py" line="297"/>
         <source>Tag</source>
         <translation>Тэг</translation>
     </message>
@@ -3528,7 +3583,7 @@ do you want to save it?</source>
 <context>
     <name>TagsListDialog</name>
     <message>
-        <location filename="../widgets/reference_dialogs.py" line="359"/>
+        <location filename="../widgets/reference_dialogs.py" line="323"/>
         <source>Tags</source>
         <translation>Тэги</translation>
     </message>

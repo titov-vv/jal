@@ -40,16 +40,9 @@ class DbLookupComboBox(QComboBox):
         self.setModelColumn(field_idx)
 
 
-# Provides asset type lookup combobox
-# It is based on "asset_types" db table and uses 'id' field as a key displaying 'name' field in combo list
-class AssetTypeCombo(DbLookupComboBox):
-    def __init__(self, parent=None):
-        DbLookupComboBox.__init__(self, parent)
-        self.setupDb("asset_types", "id", "name")
-
 # Provides country lookup combobox
 # It is based on "countries" db table and uses 'id' field as a key displaying 'name' field in combo list
-class CountryCombo(DbLookupComboBox):
+class CountryCombo(DbLookupComboBox):     #TODO check if currency comboboxes may be done the same way
     def __init__(self, parent=None):
         DbLookupComboBox.__init__(self, parent)
         self.setupDb("countries", "id", "name")

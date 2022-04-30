@@ -6,23 +6,12 @@
 PRAGMA foreign_keys = off;
 BEGIN TRANSACTION;
 
--- Table: account_types
-DROP TABLE IF EXISTS account_types;
-
-CREATE TABLE account_types (
-    id   INTEGER   PRIMARY KEY
-                   UNIQUE
-                   NOT NULL,
-    name TEXT (32) NOT NULL
-);
-
-
 -- Table: accounts
 DROP TABLE IF EXISTS accounts;
 
 CREATE TABLE accounts (
     id              INTEGER   PRIMARY KEY UNIQUE NOT NULL,
-    type_id         INTEGER   REFERENCES account_types (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
+    type_id         INTEGER   NOT NULL,
     name            TEXT (64) NOT NULL UNIQUE,
     currency_id     INTEGER   REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
     active          INTEGER   DEFAULT (1) NOT NULL ON CONFLICT REPLACE,
@@ -75,19 +64,11 @@ CREATE TABLE actions (
                                                    ON UPDATE CASCADE
 );
 
--- Table: asset_types
-DROP TABLE IF EXISTS asset_types;
-CREATE TABLE asset_types (
-    id   INTEGER   PRIMARY KEY UNIQUE NOT NULL,
-    name TEXT (32) NOT NULL
-);
-
 -- Table: assets
 DROP TABLE IF EXISTS assets;
-
 CREATE TABLE assets (
     id         INTEGER    PRIMARY KEY UNIQUE NOT NULL,
-    type_id    INTEGER    REFERENCES asset_types (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
+    type_id    INTEGER    NOT NULL,
     full_name  TEXT (128) NOT NULL,
     isin       TEXT (12)  DEFAULT ('') NOT NULL,
     country_id INTEGER    REFERENCES countries (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL DEFAULT (0),
@@ -843,7 +824,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 34);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 35);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
@@ -865,25 +846,6 @@ INSERT INTO books (id, name) VALUES (3, 'Money');
 INSERT INTO books (id, name) VALUES (4, 'Assets');
 INSERT INTO books (id, name) VALUES (5, 'Liabilities');
 INSERT INTO books (id, name) VALUES (6, 'Transfers');
-
--- Initialize asset types values
-INSERT INTO asset_types (id, name) VALUES (1, 'Money');
-INSERT INTO asset_types (id, name) VALUES (2, 'Shares');
-INSERT INTO asset_types (id, name) VALUES (3, 'Bonds');
-INSERT INTO asset_types (id, name) VALUES (4, 'ETFs');
-INSERT INTO asset_types (id, name) VALUES (5, 'Commodities');
-INSERT INTO asset_types (id, name) VALUES (6, 'Derivatives');
-INSERT INTO asset_types (id, name) VALUES (7, 'Forex');
-INSERT INTO asset_types (id, name) VALUES (8, 'Funds');
-
--- Initialize some account types
-INSERT INTO account_types (id, name) VALUES (1, 'Cash');
-INSERT INTO account_types (id, name) VALUES (2, 'Bank accounts');
-INSERT INTO account_types (id, name) VALUES (3, 'Cards');
-INSERT INTO account_types (id, name) VALUES (4, 'Investment');
-INSERT INTO account_types (id, name) VALUES (5, 'Deposits');
-INSERT INTO account_types (id, name) VALUES (6, 'Debts');
-INSERT INTO account_types (id, name) VALUES (7, 'e-Wallets');
 
 -- Initialize sources of quotation data
 INSERT INTO data_sources (id, name) VALUES (-1, 'None');

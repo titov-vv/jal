@@ -20,7 +20,8 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QDialog, QFrame,
     QLineEdit, QPushButton, QSizePolicy, QSpacerItem,
     QSplitter, QTableView, QVBoxLayout, QWidget)
 
-from jal.widgets.db_lookup_combobox import (AssetTypeCombo, CountryCombo)
+from jal.constants import AssetTypeComboBox
+from jal.widgets.db_lookup_combobox import CountryCombo
 from jal.widgets.reference_selector import AssetSelector
 
 class Ui_AssetDialog(object):
@@ -240,7 +241,7 @@ class Ui_AssetDialog(object):
 
         self.gridLayout.addWidget(self.CountryCombo, 2, 4, 1, 1)
 
-        self.TypeCombo = AssetTypeCombo(AssetDialog)
+        self.TypeCombo = AssetTypeComboBox(AssetDialog)
         self.TypeCombo.setObjectName(u"TypeCombo")
 
         self.gridLayout.addWidget(self.TypeCombo, 1, 4, 1, 1)

@@ -1,4 +1,6 @@
+from PySide6.QtCore import Property
 from PySide6.QtGui import QColor
+from PySide6.QtWidgets import QApplication, QComboBox
 
 class Setup:
     DB_PATH = "jal.sqlite"
@@ -16,7 +18,7 @@ class Setup:
     STATEMENT_PATH = "broker_statements"
     TEMPLATE_PATH = "templates"
     UPDATE_PREFIX = 'jal_delta_'
-    TARGET_SCHEMA = 34
+    TARGET_SCHEMA = 35
     CALC_TOLERANCE = 1e-10
     DISP_TOLERANCE = 1e-4
 
@@ -30,7 +32,7 @@ class BookAccount:  # PREDEFINED BOOK ACCOUNTS
     Transfers = 6
 
 
-class PredefindedAccountType:
+class PredefindedAccountType:    # FIXME make a comman ancestor for constants classes
     Cash = 1
     Bank = 2
     Card = 3
@@ -38,6 +40,31 @@ class PredefindedAccountType:
     Savings = 5
     Loans = 6
     eWallet = 7
+
+    def __init__(self):
+        self._names = {
+            self.Cash: self.tr("Cash"),
+            self.Bank: self.tr("Bank accounts"),
+            self.Card: self.tr("Cards"),
+            self.Investment: self.tr("Investments"),
+            self.Savings: self.tr("Savings"),
+            self.Loans: self.tr("Debts / Loans"),
+            self.eWallet: self.tr("e-Wallets")
+        }
+
+    def tr(self, text):
+        return QApplication.translate("AccountType", text)
+
+    def get_name(self, id, default=''):
+        try:
+            return self._names[id]
+        except KeyError:
+            return default
+
+    def load2combo(self, combobox):
+        combobox.clear()
+        for item in self._names:
+            combobox.addItem(self._names[item], userData=item)
 
 
 class PredefinedCategory:
@@ -52,7 +79,7 @@ class PredefinedCategory:
     Profit = 9
 
 
-class PredefinedAsset:   # Aligned with 'asset_types' table
+class PredefinedAsset:
     Money = 1
     Stock = 2
     Bond = 3
@@ -61,6 +88,32 @@ class PredefinedAsset:   # Aligned with 'asset_types' table
     Derivative = 6
     Forex = 7
     Fund = 8
+
+    def __init__(self):
+        self._names = {
+            self.Money: self.tr("Money"),
+            self.Stock: self.tr("Shares"),
+            self.Bond: self.tr("Bonds"),
+            self.ETF: self.tr("ETFs"),
+            self.Commodity: self.tr("Commodities"),
+            self.Derivative: self.tr("Derivatives"),
+            self.Forex: self.tr("Forex"),
+            self.Fund: self.tr("Funds")
+        }
+
+    def tr(self, text):
+        return QApplication.translate("AssetType", text)
+
+    def get_name(self, id, default=''):
+        try:
+            return self._names[id]
+        except KeyError:
+            return default
+
+    def load2combo(self, combobox):
+        combobox.clear()
+        for item in self._names:
+            combobox.addItem(self._names[item], userData=item)
 
 
 class AssetData:
@@ -97,3 +150,16 @@ class CustomColor:
     LightRed = QColor(255, 127, 127)
     LightYellow = QColor(255, 255, 200)
 
+
+class AssetTypeComboBox(QComboBox):
+    def __init__(self, parent=None):
+        QComboBox.__init__(self, parent)
+        PredefinedAsset().load2combo(self)
+
+    def getKey(self):
+        return self.currentData()
+
+    def setKey(self, value):
+        self.setCurrentIndex(self.findData(value))
+
+    key = Property(int, getKey, setKey, user=True)

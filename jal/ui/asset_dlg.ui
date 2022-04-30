@@ -421,7 +421,7 @@
     <widget class="CountryCombo" name="CountryCombo"/>
    </item>
    <item row="1" column="4">
-    <widget class="AssetTypeCombo" name="TypeCombo"/>
+    <widget class="AssetTypeComboBox" name="TypeCombo"/>
    </item>
    <item row="0" column="1" colspan="4">
     <widget class="QLineEdit" name="NameEdit"/>
@@ -429,11 +429,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>AssetTypeCombo</class>
-   <extends>QComboBox</extends>
-   <header>jal/widgets/db_lookup_combobox.h</header>
-  </customwidget>
   <customwidget>
    <class>AssetSelector</class>
    <extends>QWidget</extends>
@@ -444,6 +439,11 @@
    <class>CountryCombo</class>
    <extends>QComboBox</extends>
    <header>jal/widgets/db_lookup_combobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>AssetTypeComboBox</class>
+   <extends>QComboBox</extends>
+   <header>jal/constants.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
