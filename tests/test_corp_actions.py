@@ -31,7 +31,7 @@ def test_spin_off(prepare_db_fifo):
     create_quotes(5, 2, [(1617278400, 2.0)])
     create_quotes(4, 2, [(1628683200, 100.0)])
 
-    # Build ledgerye
+    # Build ledger
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 

@@ -619,7 +619,7 @@ class TaxesRus:
 
     def output_corp_action(self, actions, operation_id, symbol, proceed_qty, basis, level, group):
         if proceed_qty <= 0:
-            return proceed_qty
+            return proceed_qty, symbol, basis
 
         action = readSQL("SELECT c.timestamp AS action_date, c.number AS action_number, c.type, "
                          "s1.symbol AS symbol, s1.isin AS isin, c.qty AS qty, "
@@ -634,17 +634,17 @@ class TaxesRus:
         action['operation'] = ' ' * level * 3 + "Корп. действие"
         old_asset = f"{action['symbol']} ({action['isin']})"
         new_asset = f"{action['symbol_new']} ({action['isin_new']})"
-        if action['type'] == CorporateAction.SpinOff:
+        if action['type'] == CorporateAction.SpinOff:   # TODO probably better to rename (possible confusion with type_id)
             action['description'] = self.CorpActionText[action['type']].format(old=old_asset, new=new_asset,
                                                                                before=action['qty'],
                                                                                after=action['qty_new'],
-                                                                               ratio=100.0 * action['basis_ratio'])
+                                                                               ratio=100.0 * (1-action['basis_ratio']))
             if symbol == action['symbol_new']:
-                basis = basis * action['basis_ratio']
+                basis = basis * (1 - action['basis_ratio'])
                 qty_before = action['qty'] * proceed_qty / action['qty_new']
             else:
-                basis = basis * (1 - action['basis_ratio'])
-                qty_before = action['qty']
+                basis = basis * action['basis_ratio']
+                qty_before = proceed_qty
         else:
             qty_before = action['qty'] * proceed_qty / action['qty_new']
             qty_after = proceed_qty

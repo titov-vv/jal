@@ -8,7 +8,7 @@ from tests.helpers import create_assets, create_quotes, create_dividends, create
     create_actions, create_corporate_actions, create_stock_dividends
 from constants import PredefinedAsset
 from jal.db.ledger import Ledger
-from jal.db.helpers import readSQL
+from jal.db.helpers import readSQL, executeSQL
 from jal.db.operations import CorporateAction, Dividend
 from jal.data_export.taxes import TaxesRus
 from jal.data_export.xlsx import XLSX
@@ -189,3 +189,52 @@ def test_taxes_stock_vesting(data_path, prepare_db_taxes):
     taxes = TaxesRus()
     tax_report = taxes.prepare_tax_report(2021, 1)
     assert tax_report == report
+
+
+def test_taxes_merger_complex(tmp_path, data_path, prepare_db_taxes):
+    with open(data_path + 'ibkr_merger_complex.json', 'r', encoding='utf-8') as json_file:
+        statement = json.load(json_file)
+    IBKR = StatementIBKR()
+    IBKR.load(data_path + 'ibkr_merger_complex.xml')
+    assert IBKR._data == statement
+
+    IBKR.validate_format()
+    IBKR.match_db_ids()
+    IBKR.import_into_db()
+
+    usd_rates = [
+        (1630972800, 72.9538), (1631145600, 73.4421), (1631491200, 72.7600), (1631664000, 72.7171),
+        (1632441600, 72.7245), (1632787200, 72.6613), (1633478400, 72.5686), (1633651200, 72.2854),
+        (1634601600, 71.1714), (1634774400, 71.0555)
+    ]
+    create_quotes(2, 1, usd_rates)
+
+    # Adjust cost basis for spin-off operation  (100% SRNGU -> 95% DNA + 5% DNA WS)
+    executeSQL("UPDATE corp_actions SET basis_ratio=0.95 WHERE id=1")
+
+    ledger = Ledger()  # Build ledger to have FIFO deals table
+    ledger.rebuild(from_timestamp=0)
+
+    taxes = TaxesRus()
+    tax_report = taxes.prepare_tax_report(2021, 1)
+
+    with open(data_path + 'taxes_merger_complex_rus.json', 'r', encoding='utf-8') as json_file:
+        report = json.load(json_file)
+    assert tax_report == report
+
+    # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
+    # templates = {
+    #     "Корп.события": "tax_rus_corporate_actions.json"
+    # }
+    # parameters = {
+    #     "period": "01.01.2021 - 31.12.2021",
+    #     "account": "TEST U7654321 (USD)",
+    #     "currency": "USD",
+    #     "broker_name": "IBKR",
+    #     "broker_iso_country": "840"
+    # }
+    # for section in tax_report:
+    #     if section not in templates:
+    #         continue
+    #     reports_xls.output_data(tax_report[section], templates[section], parameters)
+    # reports_xls.save()

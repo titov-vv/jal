@@ -1,0 +1,36 @@
+{
+  "period": [1609459200, 1640995199],
+  "accounts": [
+    {"id": 1, "number": "U7654321", "currency": 1, "cash_begin": 0.0, "cash_end": -935.800878369, "cash_end_settled": -935.800878369}
+  ],
+  "assets": [
+    {"id": 1, "type": "money", "name": ""},
+    {"id": 2, "type": "warrant", "name": "DNA 31DEC27 11.5 C", "isin": "US37611X1182"},
+    {"id": 3, "type": "stock", "name": "GINKGO BIOWORKS HOLDINGS INC", "isin": "US37611X1000"},
+    {"id": 4, "type": "stock", "name": "SOARING EAGLE ACQUISITION CO", "isin": "KYG8354H1002" }
+  ],
+  "symbols": [
+    {"id": 1, "asset": 1, "currency": -1, "symbol": "USD"},
+    {"id": 2, "asset": 2, "currency": 1, "symbol": "DNA WS", "note": "NYSE"},
+    {"id": 3, "asset": 3, "currency": 1, "symbol": "DNA", "note": "NYSE"},
+    {"id": 4, "asset": 4, "currency": 1, "symbol": "SRNGU"}
+  ],
+  "assets_data": [
+    {"id": 1, "asset": 2, "expiry": 1830211200},
+    {"id": 2, "asset": 3, "reg_number": "37611X100"}
+  ],
+  "corporate_actions": [
+    {"id": 1, "type": "spin-off", "account": 1, "timestamp": 1631823899, "number": "17747623336", "asset": [4, 2], "quantity": [111.0, 22.0], "cost_basis": 1.0, "description": "SRNGU(G8354H100) MERGED(Acquisition) WITH DNA WS 1 FOR 5, US37611X1000 1 FOR 1 (DNA WS, DNA 01AUG26 11.5 C, US37611X1182)"},
+    {"id": 2, "type": "merger", "account": 1, "timestamp": 1631823900, "number": "17747623335", "asset": [4, 3], "quantity": [111.0, 111.0], "cost_basis": 1.0, "description": "SRNGU(G8354H100) MERGED(Acquisition) WITH DNA WS 1 FOR 5, US37611X1000 1 FOR 1 (DNA, GINKGO BIOWORKS HOLDINGS INC, US37611X1000)"}
+  ],
+  "trades": [
+    {"id": 1, "account": 1, "timestamp": 1631008683, "settlement": 1631145600, "number": "4057396877", "asset": 4, "quantity": 61.0, "price": 10.388, "fee": 0.36245725},
+    {"id": 2, "account": 1, "timestamp": 1631534345, "settlement": 1631664000, "number": "4072660868", "asset": 4, "quantity": 50.0, "price": 9.86, "fee": 0.36025725},
+    {"id": 3, "account": 1, "timestamp": 1632483314, "settlement": 1632787200, "number": "4103255040", "asset": 2, "quantity": -22.0, "price": 3.94, "fee": 0.423717318},
+    {"id": 4, "account": 1, "timestamp": 1633533335, "settlement": 1633651200, "number": "4131958719", "asset": 3, "quantity": -60.0, "price": 10.05, "fee": 0.20447255},
+    {"id": 5, "account": 1, "timestamp": 1634655039, "settlement": 1634774400, "number": "4160926315", "asset": 3, "quantity": -51.0, "price": 14.35, "fee": 0.309058685}
+  ],
+  "income_spending": [],
+  "asset_payments": [],
+  "transfers": []
+}
