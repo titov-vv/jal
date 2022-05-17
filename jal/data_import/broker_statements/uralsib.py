@@ -295,7 +295,7 @@ class StatementUKFU(StatementXLS):
         if transfer['account_from'] == transfer['account_to']:  # It is a technical record for incoming transfer
             return
         currency_id = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]['currency']
-        currency_name = [x for x in self._data[FOF.ASSETS] if x["id"] == currency_id][0]['symbol']
+        currency_name = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == currency_id][0]['symbol']
         account_from = self._find_account_id(transfer['account_from'], currency_name)
         account_to = self._find_account_id(transfer['account_to'], currency_name)
         new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
