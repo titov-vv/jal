@@ -84,6 +84,7 @@ class DLSG:
         'NOK': {'code': '578', 'name': 'Норвежская крона', 'multiplier': 1000},
         'PLN': {'code': '985', 'name': 'Злотый', 'multiplier': 100},
         'RON': {'code': '946', 'name': 'Румынский лей', 'multiplier': 100},
+        'RUB': {'code': '648', 'name': 'Российский рубль', 'multiplier': 1},
         'SGD': {'code': '702', 'name': 'Сингапурский доллар', 'multiplier': 100},
         'TJS': {'code': '972', 'name': 'Сомони', 'multiplier': 1000},
         'TRY': {'code': '949', 'name': 'Турецкая лира', 'multiplier': 100},

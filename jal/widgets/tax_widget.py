@@ -86,6 +86,7 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
 
         reports_xls = XLSX(self.xls_filename)
         templates = {
+            "ОоДДС": "tax_rus_flow.json",
             "Дивиденды": "tax_rus_dividends.json",
             "Акции": "tax_rus_trades.json",
             "Облигации": "tax_rus_bonds.json",
