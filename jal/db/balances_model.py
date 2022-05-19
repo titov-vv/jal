@@ -117,10 +117,10 @@ class BalancesModel(QAbstractTableModel):
 
     # Populate table balances with data calculated for given parameters of model: _currency, _date, _active_only
     def calculateBalances(self):
+        JalDB().set_view_param("last_quotes", "timestamp", int, self._date)
+
         query = executeSQL(
             "WITH "
-            "_last_quotes AS (SELECT MAX(timestamp) AS timestamp, asset_id, currency_id, quote "
-            "FROM quotes WHERE timestamp <= :balances_timestamp GROUP BY asset_id, currency_id), "
             "_last_dates AS (SELECT account_id AS ref_id, MAX(timestamp) AS timestamp "
             "FROM ledger WHERE timestamp <= :balances_timestamp GROUP BY ref_id) "
             "SELECT a.type_id AS account_type, l.account_id AS account, "
@@ -133,9 +133,9 @@ class BalancesModel(QAbstractTableModel):
             "FROM ledger AS l "
             "LEFT JOIN accounts AS a ON l.account_id = a.id "
             "LEFT JOIN assets_ext AS c ON c.id = a.currency_id AND c.currency_id = :base_currency "
-            "LEFT JOIN _last_quotes AS q ON l.asset_id = q.asset_id AND q.currency_id = a.currency_id "
-            "LEFT JOIN _last_quotes AS r ON a.currency_id = r.asset_id AND r.currency_id = :base_currency "
-            "LEFT JOIN _last_quotes AS ra ON ra.asset_id = :currency AND ra.currency_id = :base_currency "
+            "LEFT JOIN last_quotes AS q ON l.asset_id = q.asset_id AND q.currency_id = a.currency_id "
+            "LEFT JOIN last_quotes AS r ON a.currency_id = r.asset_id AND r.currency_id = :base_currency "
+            "LEFT JOIN last_quotes AS ra ON ra.asset_id = :currency AND ra.currency_id = :base_currency "
             "LEFT JOIN _last_dates AS d ON l.account_id = d.ref_id "
             "WHERE (book_account=:money_book OR book_account=:assets_book OR book_account=:liabilities_book) "
             "AND l.timestamp <= :balances_timestamp "

@@ -1,7 +1,7 @@
 import logging
 
 import pandas as pd
-from PySide6.QtCore import Qt, QAbstractTableModel
+from PySide6.QtCore import Qt, QAbstractTableModel, QDate
 from PySide6.QtGui import QFont
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord
 from jal.db.db import JalDB
@@ -89,7 +89,6 @@ class TaxEstimator(MdiWidget, Ui_TaxEstimationDialog):
 
     def prepare_tax(self):
         _ = executeSQL("DELETE FROM t_last_dates")
-        _ = executeSQL("DELETE FROM t_last_quotes")
 
         _ = executeSQL("INSERT INTO t_last_dates(ref_id, timestamp) "
                        "SELECT ref_id, coalesce(MAX(q.timestamp), 0) AS timestamp "
@@ -100,29 +99,23 @@ class TaxEstimator(MdiWidget, Ui_TaxEstimationDialog):
                        "SELECT t.settlement AS ref_id FROM trades AS t "
                        "WHERE t.account_id=:account_id AND t.asset_id=:asset_id "
                        ") LEFT JOIN accounts AS a ON a.id = :account_id "
-                       "LEFT JOIN quotes AS q ON ref_id >= q.timestamp AND a.currency_id=q.asset_id AND q.currency_id=:base_currency "
+                       "LEFT JOIN quotes AS q ON ref_id >= q.timestamp "
+                       "AND a.currency_id=q.asset_id AND q.currency_id=:base_currency "
                        "WHERE ref_id IS NOT NULL "
                        "GROUP BY ref_id ORDER BY ref_id",
                        [(":account_id", self.account_id), (":asset_id", self.asset_id),
                         (":base_currency", JalSettings().getValue('BaseCurrency'))])
-        _ = executeSQL("INSERT INTO t_last_quotes(timestamp, asset_id, quote) "
-                       "SELECT MAX(timestamp) AS timestamp, asset_id, quote "
-                       "FROM quotes AS q LEFT JOIN accounts AS a ON a.id = :account_id "
-                       "WHERE q.asset_id = :asset_id OR q.asset_id = a.currency_id  AND q.currency_id=:base_currency "
-                       "GROUP BY asset_id",
-                       [(":account_id", self.account_id), (":asset_id", self.asset_id),
-                        (":base_currency", JalSettings().getValue('BaseCurrency'))])
-
-        self.quote = readSQL("SELECT quote FROM t_last_quotes WHERE asset_id=:asset_id",
-                             [(":asset_id", self.asset_id)])
+        JalDB().set_view_param("last_quotes", "timestamp", int, QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch())
+        account_currency = JalDB().get_account_currency(self.account_id)
+        self.currency_name = JalDB().get_asset_name(account_currency)
+        self.quote = readSQL("SELECT quote FROM last_quotes WHERE asset_id=:asset_id AND currency_id=:base_currency",
+                             [(":asset_id", self.asset_id), (":base_currency", account_currency)])
         if self.quote is None:
             logging.error(self.tr("Can't get current quote for ") + self.asset_name)
             return
-        self.currency_name = JalDB().get_asset_name(JalDB().get_account_currency(self.account_id))
-
-        self.rate = readSQL("SELECT quote FROM accounts AS a "
-                            "LEFT JOIN t_last_quotes AS q ON q.asset_id=a.currency_id WHERE id=:account_id",
-                            [(":account_id", self.account_id)])
+        self.rate = readSQL("SELECT quote FROM last_quotes WHERE asset_id=:currency AND currency_id=:base_currency",
+                             [(":currency", account_currency),
+                              (":base_currency", JalSettings().getValue('BaseCurrency'))])
         if self.rate is None:
             logging.error(self.tr("Can't get current rate for ") + self.currency_name)
             return

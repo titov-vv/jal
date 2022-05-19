@@ -228,64 +228,26 @@ class HoldingsModel(QAbstractItemModel):
 
     # Populate table 'holdings' with data calculated for given parameters of model: _currency, _date,
     def calculateHoldings(self):
+        JalDB().set_view_param("last_quotes", "timestamp", int, self._date)
+        JalDB().set_view_param("last_account_value", "timestamp", int, self._date)
+        JalDB().set_view_param("last_assets", "timestamp", int, self._date)
+
         query = executeSQL(
-            "WITH "
-            "_last_quotes AS (SELECT MAX(timestamp) AS timestamp, asset_id, currency_id, quote "
-            "FROM quotes WHERE timestamp <= :holdings_timestamp GROUP BY asset_id, currency_id), "
-            "_last_assets AS ("
-            "SELECT id, SUM(t_value) AS total_value "
-            "FROM "
-            "("
-            "SELECT a.id, SUM(l.amount) AS t_value "
-            "FROM ledger AS l "
-            "LEFT JOIN accounts AS a ON l.account_id = a.id "
-            "WHERE (l.book_account=:money_book OR l.book_account=:liabilities_book) "
-            "AND a.type_id = :investments AND l.timestamp <= :holdings_timestamp GROUP BY a.id "
-            "UNION ALL "
-            "SELECT a.id, SUM(l.amount*q.quote) AS t_value "
-            "FROM ledger AS l "
-            "LEFT JOIN accounts AS a ON l.account_id = a.id "
-            "LEFT JOIN _last_quotes AS q ON l.asset_id = q.asset_id AND q.currency_id = a.currency_id "
-            "WHERE l.book_account=:assets_book AND a.type_id = :investments AND l.timestamp <= :holdings_timestamp "
-            "GROUP BY a.id"
-            ") "
-            "GROUP BY id HAVING ABS(total_value) > :tolerance) "
-            "SELECT h.currency_id, c.symbol AS currency, h.account_id, h.account, h.asset_id, "
+            "SELECT h.currency_id, c.symbol AS currency, h.account_id, ac.name AS account, h.asset_id, "
             "h.currency_id=h.asset_id AS asset_is_currency, coalesce(a.symbol, c.symbol) AS asset, "
             "coalesce(a.full_name, c.full_name) AS asset_name, ad.value AS expiry, h.qty, h.value AS value_i, "
-            "h.quote, h.quote_a, h.total "
-            "FROM ("
-            "SELECT a.currency_id, l.account_id, a.name AS account, l.asset_id, sum(l.amount) AS qty, "
-            "sum(l.value) AS value, q.quote, q.quote*r.quote/ra.quote AS quote_a, t.total_value AS total "
-            "FROM ledger AS l "
-            "LEFT JOIN accounts AS a ON l.account_id = a.id "
-            "LEFT JOIN _last_quotes AS q ON l.asset_id = q.asset_id AND q.currency_id = a.currency_id "
-            "LEFT JOIN _last_quotes AS r ON a.currency_id = r.asset_id AND r.currency_id = :base_currency "
-            "LEFT JOIN _last_quotes AS ra ON ra.asset_id = :currency AND ra.currency_id = :base_currency "
-            "LEFT JOIN _last_assets AS t ON l.account_id = t.id "
-            "WHERE a.type_id = :investments AND l.book_account = :assets_book AND l.timestamp <= :holdings_timestamp "
-            "GROUP BY l.account_id, l.asset_id "
-            "HAVING ABS(qty) > :tolerance "
-            "UNION ALL "
-            "SELECT a.currency_id, l.account_id, a.name AS account, l.asset_id, sum(l.amount) AS qty, "
-            "0 AS value, 1, r.quote/ra.quote AS quote_a, t.total_value AS total "
-            "FROM ledger AS l "
-            "LEFT JOIN accounts AS a ON l.account_id = a.id "
-            "LEFT JOIN _last_quotes AS r ON a.currency_id = r.asset_id AND r.currency_id = :base_currency "
-            "LEFT JOIN _last_quotes AS ra ON ra.asset_id = :currency AND ra.currency_id = :base_currency "
-            "LEFT JOIN _last_assets AS t ON l.account_id = t.id "
-            "WHERE (l.book_account=:money_book OR l.book_account=:liabilities_book) "
-            "AND a.type_id = :investments AND l.timestamp <= :holdings_timestamp "
-            "GROUP BY l.account_id, l.asset_id "
-            "HAVING ABS(qty) > :tolerance "
-            ") AS h "
+            "h.quote, h.quote*r.quote/ra.quote AS quote_a, t.total_value AS total "
+            "FROM last_assets AS h "
+            "LEFT JOIN accounts AS ac ON h.account_id = ac.id "
+            "LEFT JOIN last_quotes AS r ON ac.currency_id = r.asset_id AND r.currency_id = :base_currency "
+            "LEFT JOIN last_quotes AS ra ON ra.asset_id = :currency AND ra.currency_id = :base_currency "
+            "LEFT JOIN last_account_value AS t ON h.account_id = t.account_id "
             "LEFT JOIN assets_ext AS c ON c.id=h.currency_id AND c.currency_id=:base_currency "
             "LEFT JOIN assets_ext AS a ON a.id=h.asset_id AND a.currency_id=h.currency_id " 
             "LEFT JOIN asset_data AS ad ON ad.asset_id=a.id AND ad.datatype=:expiry "
+            "WHERE ABS(h.qty) > :tolerance "
             "ORDER BY currency, account, asset_is_currency, asset",
-            [(":currency", self._currency), (":money_book", BookAccount.Money),
-             (":assets_book", BookAccount.Assets), (":liabilities_book", BookAccount.Liabilities),
-             (":holdings_timestamp", self._date), (":investments", PredefindedAccountType.Investment),
+            [(":currency", self._currency),
              (":tolerance", Setup.DISP_TOLERANCE), (":expiry", AssetData.ExpiryDate),
              (":base_currency", JalSettings().getValue('BaseCurrency'))], forward_only=True)
         # Load data from SQL to tree

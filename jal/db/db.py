@@ -125,6 +125,12 @@ class JalDB:
     def commit(self):
         db_connection().commit()
 
+    def set_view_param(self, view_name, param_name, param_type, value):
+        fields = {int: "value_i", float: "value_f", str: "value_t"}
+        field_name = fields[param_type]
+        sql = f"UPDATE view_params SET {field_name}=:value WHERE view_name=:view AND param_name=:param"
+        _ = executeSQL(sql, [(":value", value), (":view", view_name), (":param", param_name)])
+
     def get_language_id(self, language_code):
         return readSQL("SELECT id FROM languages WHERE language = :language_code", [(':language_code', language_code)])
 
