@@ -418,7 +418,7 @@ class Trade(LedgerTransaction):
     def value_total(self) -> str:
         amount = self._money_total(self._account)
         qty = self._asset_total(self._account, self._asset)
-        if amount is None:
+        if amount is None or qty is None:
             return super().value_total()
         else:
             return f"{amount:,.2f}\n{qty:,.2f}"
