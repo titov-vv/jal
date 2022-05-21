@@ -2,12 +2,10 @@ import logging
 from datetime import datetime, timezone
 
 from PySide6.QtWidgets import QApplication
-from jal.constants import Setup, PredefinedAsset, PredefinedCategory, BookAccount
-from jal.db.db import JalDB
+from jal.constants import Setup, PredefinedAsset, PredefinedCategory
 from jal.db.helpers import executeSQL, readSQLrecord, readSQL
 from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
 from jal.db.settings import JalSettings
-from jal.data_export.dlsg import DLSG
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -31,7 +29,6 @@ class TaxesRus:
         self.broker_iso_cc = "000"
         self.use_settlement = True
         self.reports = {
-            "ОоДДС": self.prepare_cash_asset_flow,
             "Дивиденды": self.prepare_dividends,
             "Акции": self.prepare_stocks_and_etf,
             "Облигации": self.prepare_bonds,
@@ -104,31 +101,6 @@ class TaxesRus:
         for field in fields:
             totals[field] = sum([x[field] for x in list_of_values if field in x])
         list_of_values.append(totals)
-
-    def prepare_cash_asset_flow(self):
-        flow = []
-        money = {'report_template': "money"}
-        account_currency = JalDB().get_account_currency(self.account_id)
-        currency_name = JalDB().get_asset_name(account_currency)
-        try:
-            currency_code = DLSG.currencies[currency_name]['code']
-        except KeyError:
-            currency_code = 'XXX'   # currency code isn't known
-        money['description'] = f"Денежные средства в {currency_name} ({currency_code})"
-        money['start'] = JalDB().get_asset_amount(self.year_begin, self.account_id, account_currency) / 1000
-        money['in'] = readSQL("SELECT SUM(amount) FROM ledger WHERE book_account=:money AND account_id=:account_id AND "
-                              "timestamp>=:begin AND timestamp<=:end AND asset_id=:currency AND amount>0",
-                              [(":money", BookAccount.Money), (":account_id", self.account_id),
-                               (":begin", self.year_begin), (":end", self.year_end),
-                               (":currency", account_currency)]) / 1000
-        money['out'] = readSQL("SELECT SUM(-amount) FROM ledger WHERE book_account=:money AND account_id=:account_id "
-                               "AND timestamp>=:begin AND timestamp<=:end AND asset_id=:currency AND amount<0",
-                               [(":money", BookAccount.Money), (":account_id", self.account_id),
-                                (":begin", self.year_begin), (":end", self.year_end),
-                                (":currency", account_currency)]) / 1000
-        money['end'] = JalDB().get_asset_amount(self.year_end, self.account_id, account_currency) / 1000
-        flow.append(money)
-        return flow
 
     def prepare_dividends(self):
         dividends = []

@@ -2,31 +2,32 @@
   "page": "ОоДДС",
   "title": "Отчет о движении средств и стоимости иных финансовых активов",
   "headers": [
-      "Период: {parameters[period]}",
-      "Номер счета: {parameters[account]}"
+      "Период: {parameters[period]}"
     ],
   "columns": [
-    {"name": "Описание", "width": 50},
+    {"name": "Номер счета", "width": 20},
+    {"name": "Валюта", "width": 20},
+    {"name": "Описание", "width": 20},
     {"name": "Остаток начало", "width": 10},
     {"name": "Зачислено", "width": 10},
     {"name": "Списано", "width": 10},
     {"name": "Остаток конец", "width": 10}
   ],
   "columns_numbered": true,
-  "money": {
+  "account_lines": {
     "rows": [
-      ["description", "start", "in", "out", "end"]
+      ["account", "currency", "money", "money_begin", "money_in", "money_out", "money_end"],
+      [null, null, "assets", "assets_begin", "assets_in", "assets_out", "assets_end"]
     ],
     "formats": [
-      ["T", "N:3", "N:3", "N:3", "N:3"]
+      ["T", "T", "T", "N:3", "N:3", "N:3", "N:3"],
+      [null, null, "T", "N:3", "N:3", "N:3", "N:3"]
+    ],
+    "span": [
+      [{"h": 0, "v":  1}, {"h": 0, "v":  1}, null, null, null, null, null],
+      [null, null, null, null, null, null, null]
     ]
   },
   "footers": [
-    "Описание данных в столбцах таблицы",
-    "1 - Описание сведений",
-    "2 - Остаток на начало отчетного периода в указанной валюте",
-    "3 - Зачисления за отчётный период в указанной валюте",
-    "4 - Списания за отчётный период в указанной валюте",
-    "5 - Остаток на конец отчетного периода в указанной валюте"
   ]
 }

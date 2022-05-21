@@ -92,6 +92,7 @@
      <string>&amp;Export</string>
     </property>
     <addaction name="PrepareTaxForms"/>
+    <addaction name="PrepareFlowReport"/>
    </widget>
    <widget class="QMenu" name="menuLanguage">
     <property name="title">
@@ -220,6 +221,11 @@
   <action name="actionOperations">
    <property name="text">
     <string>&amp;Operations</string>
+   </property>
+  </action>
+  <action name="PrepareFlowReport">
+   <property name="text">
+    <string>&amp;Flow report [RU]</string>
    </property>
   </action>
  </widget>

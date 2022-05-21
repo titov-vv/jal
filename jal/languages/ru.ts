@@ -535,17 +535,17 @@
 <context>
     <name>DLSG</name>
     <message>
-        <location filename="../data_export/dlsg.py" line="103"/>
+        <location filename="../data_export/dlsg.py" line="104"/>
         <source>3-NDFL form isn&apos;t supoorted for year: </source>
         <translation>Форма 3-НДФЛ для этого года не поддерживается: </translation>
     </message>
     <message>
-        <location filename="../data_export/dlsg.py" line="132"/>
+        <location filename="../data_export/dlsg.py" line="133"/>
         <source>Currency is not supported for 3-NDFL </source>
         <translation>Валюта не поддерживается для формы 3-НДФЛ </translation>
     </message>
     <message>
-        <location filename="../data_export/dlsg.py" line="192"/>
+        <location filename="../data_export/dlsg.py" line="193"/>
         <source>Account country is not set for asset, dividend isn&apos;t include in 3-NDFL </source>
         <translation>Страна ЦБ не задана, дивиденд не будет включён в декларацию 3-НФДЛ </translation>
     </message>
@@ -1452,94 +1452,99 @@
         <translation>&amp;Основное</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="129"/>
+        <location filename="../ui/main_window.ui" line="130"/>
         <source>&amp;Exit</source>
         <translation>&amp;Выход</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="137"/>
+        <location filename="../ui/main_window.ui" line="138"/>
         <source>Re-build &amp;Ledger...</source>
         <translation>Пересчитать &amp;итоги...</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="147"/>
+        <location filename="../ui/main_window.ui" line="148"/>
         <source>&amp;Broker statement...</source>
         <translation>&amp;Брокерский отчет...</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="152"/>
+        <location filename="../ui/main_window.ui" line="153"/>
         <source>&amp;Accounts</source>
         <translation>&amp;Счета</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="157"/>
+        <location filename="../ui/main_window.ui" line="158"/>
         <source>A&amp;ssets</source>
         <translation>&amp;Ценные бумаги</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="162"/>
+        <location filename="../ui/main_window.ui" line="163"/>
         <source>&amp;Peers</source>
         <translation>К&amp;онтрагенты</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="167"/>
+        <location filename="../ui/main_window.ui" line="168"/>
         <source>&amp;Categories</source>
         <translation>&amp;Категории</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="172"/>
+        <location filename="../ui/main_window.ui" line="173"/>
         <source>&amp;Backup...</source>
         <translation>&amp;Бэкап...</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="177"/>
+        <location filename="../ui/main_window.ui" line="178"/>
         <source>&amp;Restore...</source>
         <translation>&amp;Восстановление...</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="182"/>
+        <location filename="../ui/main_window.ui" line="183"/>
         <source>&amp;Tax report [RU]</source>
         <translation>&amp;Налоговый отчет [RU]</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="187"/>
+        <location filename="../ui/main_window.ui" line="188"/>
         <source>&amp;Deals report</source>
         <translation>Отчет &amp;Сделки</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="192"/>
+        <location filename="../ui/main_window.ui" line="193"/>
         <source>&amp;Tags</source>
         <translation>&amp;Тэги</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="197"/>
+        <location filename="../ui/main_window.ui" line="198"/>
         <source>&amp;Profit/Loss report</source>
         <translation>Отчет &amp;Прибыли/Убытки</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="202"/>
+        <location filename="../ui/main_window.ui" line="203"/>
         <source>&amp;Income/Spending report</source>
         <translation>Отчет &amp;Доходы/Расходы</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="207"/>
+        <location filename="../ui/main_window.ui" line="208"/>
         <source>Slip [RU]...</source>
         <translation>Чек [RU]...</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="212"/>
+        <location filename="../ui/main_window.ui" line="213"/>
         <source>C&amp;ountries</source>
         <translation>&amp;Страны</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="217"/>
+        <location filename="../ui/main_window.ui" line="218"/>
         <source>&amp;Quotes</source>
         <translation>&amp;Котировки</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="222"/>
+        <location filename="../ui/main_window.ui" line="223"/>
         <source>&amp;Operations</source>
         <translation>&amp;Операции</translation>
+    </message>
+    <message>
+        <location filename="../ui/main_window.ui" line="228"/>
+        <source>&amp;Flow report [RU]</source>
+        <translation>&amp;ОоДДС [RU]</translation>
     </message>
     <message>
         <location filename="../ui/main_window.ui" line="74"/>
@@ -1547,27 +1552,27 @@
         <translation>&amp;Данные</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="116"/>
+        <location filename="../ui/main_window.ui" line="117"/>
         <source>&amp;Reports</source>
         <translation>&amp;Отчеты</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="98"/>
+        <location filename="../ui/main_window.ui" line="99"/>
         <source>L&amp;anguage</source>
         <translation>&amp;Язык</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="103"/>
+        <location filename="../ui/main_window.ui" line="104"/>
         <source>&amp;Import</source>
         <translation>&amp;Импорт</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="107"/>
+        <location filename="../ui/main_window.ui" line="108"/>
         <source>&amp;Statement</source>
         <translation>&amp;Выписка</translation>
     </message>
     <message>
-        <location filename="../ui/main_window.ui" line="142"/>
+        <location filename="../ui/main_window.ui" line="143"/>
         <source>&amp;Quotes...</source>
         <translation>&amp;Котировки...</translation>
     </message>
@@ -1654,58 +1659,58 @@ Application will be terminated now</source>
 <context>
     <name>JalDB</name>
     <message>
-        <location filename="../db/db.py" line="338"/>
+        <location filename="../db/db.py" line="344"/>
         <source>Reg.number updated for </source>
         <translation>Регистрационный номер обновлён для </translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="362"/>
+        <location filename="../db/db.py" line="368"/>
         <source>Dividend already exists: </source>
         <translation>Дивиденд уже существует: </translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="385"/>
+        <location filename="../db/db.py" line="391"/>
         <source>Trade already exists: #</source>
         <translation>Сделка уже существует: #</translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="409"/>
-        <location filename="../db/db.py" line="418"/>
+        <location filename="../db/db.py" line="415"/>
+        <location filename="../db/db.py" line="424"/>
         <source>Transfer/Exchange already exists: </source>
         <translation>Перевод/Обмен уже существует: </translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="444"/>
+        <location filename="../db/db.py" line="450"/>
         <source>Corporate action already exists: #</source>
         <translation>Корпоративное действие уже существует: #</translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="174"/>
+        <location filename="../db/db.py" line="180"/>
         <source>Account already exists: </source>
         <translation>Счет уже существует: </translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="269"/>
+        <location filename="../db/db.py" line="275"/>
         <source>Quotations were updated: </source>
         <translation>Котировки обновлены: </translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="304"/>
+        <location filename="../db/db.py" line="310"/>
         <source>Asset not found for update: </source>
         <translation>ЦБ не найдена для обновления данных: </translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="310"/>
+        <location filename="../db/db.py" line="316"/>
         <source>Unexpected attempt to update ISIN for </source>
         <translation>Неожиданная попытка обновить ISIN для </translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="327"/>
+        <location filename="../db/db.py" line="333"/>
         <source>Country updated for </source>
         <translation>Страна обновлёна для </translation>
     </message>
     <message>
-        <location filename="../db/db.py" line="193"/>
+        <location filename="../db/db.py" line="199"/>
         <source>Bank for #</source>
         <translation>Банк для №</translation>
     </message>
@@ -1899,52 +1904,115 @@ Application will be terminated now</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="147"/>
+        <location filename="../widgets/main_window.py" line="148"/>
         <source>Restart required</source>
         <translation>Требуется рестарт</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="149"/>
+        <location filename="../widgets/main_window.py" line="150"/>
         <source>Language was changed to </source>
         <translation>Язык был изменён на </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="151"/>
+        <location filename="../widgets/main_window.py" line="152"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation>Вы должны перезапустить приложение, чтобы применить изменения
 Приложение сейчас завершит свою работу</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="116"/>
+        <location filename="../widgets/main_window.py" line="117"/>
         <source>Ledger isn&apos;t complete. Rebuild it now?</source>
         <translation>Итоги транзакций неактуальны. Пересчитать сейчас?</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="116"/>
+        <location filename="../widgets/main_window.py" line="117"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
         <location filename="../widgets/main_window.py" line="62"/>
-        <location filename="../widgets/main_window.py" line="185"/>
+        <location filename="../widgets/main_window.py" line="186"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="249"/>
+        <location filename="../widgets/main_window.py" line="250"/>
         <source>Statement ending balance doesn&apos;t match: </source>
         <translation>Конечный баланс по отчёту не совпадает: </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="193"/>
+        <location filename="../widgets/main_window.py" line="194"/>
         <source>&lt;p&gt;More information, manuals and problem reports are at &lt;a href=https://github.com/titov-vv/jal&gt;github home page&lt;/a&gt;&lt;/p&gt;&lt;p&gt;Questions, comments, help or donations:&lt;/p&gt;&lt;p&gt;&lt;a href=mailto:jal@gmx.ru&gt;jal@gmx.ru&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;a href=https://t.me/jal_support&gt;Telegram&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&amp;lt;p&amp;gt;Дополнительная информация, инструкции, сообщения о проблемах - &amp;lt;a href=https://github.com/titov-vv/jal&amp;gt;github home page&amp;lt;/a&amp;gt;&amp;lt;/p&amp;gt;&amp;lt;p&amp;gt;Вопросы, комментарии, помощь или донаты:&amp;lt;/p&amp;gt;&amp;lt;p&amp;gt;&amp;lt;a href=mailto:jal@gmx.ru&amp;gt;jal@gmx.ru&amp;lt;/a&amp;gt;&amp;lt;/p&amp;gt;&amp;lt;p&amp;gt;&amp;lt;a href=https://t.me/jal_support&amp;gt;Telegram&amp;lt;/a&amp;gt;&amp;lt;/p&amp;gt;</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="186"/>
+        <location filename="../widgets/main_window.py" line="187"/>
         <source>&lt;h3&gt;JAL&lt;/h3&gt;&lt;p&gt;Just Another Ledger, version {version}&lt;/p&gt;</source>
         <translation>&amp;lt;h3&amp;gt;JAL&amp;lt;/h3&amp;gt;&amp;lt;p&amp;gt;Just Another Ledger, версия {version}&amp;lt;/p&amp;gt;</translation>
+    </message>
+</context>
+<context>
+    <name>MoneyFlowWidget</name>
+    <message>
+        <location filename="../ui/flow_export_widget.ui" line="14"/>
+        <source>Money Flow</source>
+        <translation>ОоДДС</translation>
+    </message>
+    <message>
+        <location filename="../ui/flow_export_widget.ui" line="75"/>
+        <source>Save Report</source>
+        <translation>Сохранить Отчёт</translation>
+    </message>
+    <message>
+        <location filename="../ui/flow_export_widget.ui" line="49"/>
+        <source>Year:</source>
+        <translation>Год:</translation>
+    </message>
+    <message>
+        <location filename="../ui/flow_export_widget.ui" line="39"/>
+        <source>Select file</source>
+        <translation>Выберит файл</translation>
+    </message>
+    <message>
+        <location filename="../ui/flow_export_widget.ui" line="42"/>
+        <source>...</source>
+        <translation>...</translation>
+    </message>
+    <message>
+        <location filename="../ui/flow_export_widget.ui" line="26"/>
+        <source>File where to store tax report in Excel format</source>
+        <translation>Файл для сохранения расчёта в формате Excel</translation>
+    </message>
+    <message>
+        <location filename="../ui/flow_export_widget.ui" line="95"/>
+        <source>Excel file:</source>
+        <translation>Файл Excel:</translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_widget.py" line="134"/>
+        <source>Save tax reports to:</source>
+        <translation>Сохранить налоговый отчёт в:</translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_widget.py" line="134"/>
+        <source>Excel files (*.xlsx)</source>
+        <translation>Файлы Excel (*.xslx)</translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_widget.py" line="154"/>
+        <source>Data are incomplete</source>
+        <translation>Данные неполные</translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_widget.py" line="155"/>
+        <source>You haven&apos;t selected an account for tax report</source>
+        <translation>Вы не выбрали счёт для отчёта о движении денежных средств</translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_widget.py" line="175"/>
+        <source>Money flow report saved to file </source>
+        <translation>ОоДДС сохранён в файле </translation>
     </message>
 </context>
 <context>
@@ -3625,17 +3693,17 @@ do you want to save it?</source>
         <translation>Оценка налога для </translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="163"/>
+        <location filename="../db/tax_estimator.py" line="156"/>
         <source>TOTAL</source>
         <translation>ИТОГО</translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="119"/>
+        <location filename="../db/tax_estimator.py" line="114"/>
         <source>Can&apos;t get current quote for </source>
         <translation>Невозможно получить котировку для </translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="127"/>
+        <location filename="../db/tax_estimator.py" line="120"/>
         <source>Can&apos;t get current rate for </source>
         <translation>Невозможно получить курс валюты для </translation>
     </message>
@@ -3686,118 +3754,118 @@ do you want to save it?</source>
         <translation>Налоги</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="34"/>
+        <location filename="../ui/tax_export_widget.ui" line="128"/>
         <source>Year:</source>
         <translation>Год:</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="20"/>
+        <location filename="../ui/tax_export_widget.ui" line="107"/>
         <source>Account:</source>
         <translation>Счет:</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="27"/>
+        <location filename="../ui/tax_export_widget.ui" line="215"/>
         <source>Foreign account to prepare tax report for</source>
         <translation>Зарубежный счёт для которого нужно подготовить отчёт</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="86"/>
+        <location filename="../ui/tax_export_widget.ui" line="141"/>
         <source>Create tax form in &quot;Декларация&quot; program format (*.dcX)</source>
         <translation>Создать файл 3-НФДЛ в формате программы &quot;Декларация&quot; (*.dcX)</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="160"/>
+        <location filename="../ui/tax_export_widget.ui" line="114"/>
         <source>Excel file:</source>
         <translation>Файл Excel:</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="173"/>
+        <location filename="../ui/tax_export_widget.ui" line="88"/>
         <source>File where to store tax report in Excel format</source>
         <translation>Файл для сохранения расчёта в формате Excel</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="216"/>
+        <location filename="../ui/tax_export_widget.ui" line="27"/>
         <source>Save Report</source>
         <translation>Сохранить Отчёт</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="140"/>
-        <location filename="../ui/tax_export_widget.ui" line="186"/>
+        <location filename="../ui/tax_export_widget.ui" line="40"/>
+        <location filename="../ui/tax_export_widget.ui" line="195"/>
         <source>Select file</source>
         <translation>Выберит файл</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="189"/>
+        <location filename="../ui/tax_export_widget.ui" line="43"/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="228"/>
+        <location filename="../ui/tax_export_widget.ui" line="100"/>
         <source>Below functions are experimental - use it with care</source>
         <translation>Ниже расположены экспериментальные функции - используйте с осторожностью</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="150"/>
+        <location filename="../ui/tax_export_widget.ui" line="205"/>
         <source>File where to store russian tax form</source>
         <translation>Файл для сохранения декларации 3-НДФЛ</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="116"/>
+        <location filename="../ui/tax_export_widget.ui" line="171"/>
         <source>Output file:</source>
         <translation>Файл с результатом:</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="133"/>
+        <location filename="../ui/tax_export_widget.ui" line="188"/>
         <source>Update only information about dividends</source>
         <translation>Обновить только информацию о дивидендах</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="143"/>
+        <location filename="../ui/tax_export_widget.ui" line="198"/>
         <source> ... </source>
         <translation> ... </translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="123"/>
+        <location filename="../ui/tax_export_widget.ui" line="178"/>
         <source>Use broker name as income source</source>
         <translation>Использовать название брокера как источник выплаты</translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="209"/>
+        <location filename="../ui/tax_export_widget.ui" line="121"/>
         <source>Do not use settlement date for currency rates</source>
         <translation>Не использовать дату поставки для курсов валют</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="32"/>
+        <location filename="../widgets/tax_widget.py" line="29"/>
         <source>Save tax reports to:</source>
         <translation>Сохранить налоговый отчёт в:</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="32"/>
+        <location filename="../widgets/tax_widget.py" line="29"/>
         <source>Excel files (*.xlsx)</source>
         <translation>Файлы Excel (*.xslx)</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="35"/>
+        <location filename="../widgets/tax_widget.py" line="32"/>
         <source>Save tax form to:</source>
         <translation>Сохранить 3-НДФЛ в:</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="81"/>
+        <location filename="../widgets/tax_widget.py" line="79"/>
         <source>Data are incomplete</source>
         <translation>Данные неполные</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="82"/>
+        <location filename="../widgets/tax_widget.py" line="80"/>
         <source>You haven&apos;t selected an account for tax report</source>
         <translation>Вы не выбрали счёт для налогового отчёта</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="112"/>
+        <location filename="../widgets/tax_widget.py" line="111"/>
         <source>Tax report saved to file </source>
         <translation>Налоговый отчёт сохранён в файл </translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="121"/>
+        <location filename="../widgets/tax_widget.py" line="120"/>
         <source>Can&apos;t write tax form into file </source>
         <translation>Невозможно записать 3-НДФЛ в файл </translation>
     </message>
@@ -3805,12 +3873,12 @@ do you want to save it?</source>
 <context>
     <name>TaxesRus</name>
     <message>
-        <location filename="../data_export/taxes.py" line="129"/>
+        <location filename="../data_export/taxes.py" line="157"/>
         <source>No price data for stock dividend: </source>
         <translation>Нет котировки цены для дивиденда акциями: </translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="135"/>
+        <location filename="../data_export/taxes.py" line="163"/>
         <source>No price data for stock vesting: </source>
         <translation>Нет котировки цены для зачисленной акции: </translation>
     </message>

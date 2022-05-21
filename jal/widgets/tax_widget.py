@@ -5,14 +5,16 @@ import logging
 from PySide6.QtCore import Property, Slot
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 from jal.ui.ui_tax_export_widget import Ui_TaxWidget
+from jal.ui.ui_flow_export_widget import Ui_MoneyFlowWidget
 from jal.widgets.mdi import MdiWidget
 from jal.data_export.taxes import TaxesRus
+from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
 from jal.data_export.dlsg import DLSG
 
 
 class TaxWidget(MdiWidget, Ui_TaxWidget):
-    def __init__(self, parent):
+    def __init__(self):
         MdiWidget.__init__(self)
         self.setupUi(self)
 
@@ -20,11 +22,6 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
         self.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, 'XLS'))
         self.DlsgSelectBtn.pressed.connect(partial(self.OnFileBtn, 'DLSG'))
         self.SaveButton.pressed.connect(self.SaveReport)
-
-        # center dialog with respect to parent window
-        x = parent.x() + parent.width() / 2 - self.width() / 2
-        y = parent.y() + parent.height() / 2 - self.height() / 2
-        self.setGeometry(x, y, self.width(), self.height())
 
     @Slot()
     def OnFileBtn(self, type):
@@ -76,6 +73,7 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
     dlsg_dividends_only = Property(bool, fget=getDividendsOnly)
     no_settelement = Property(bool, fget=getNoSettlement)
 
+    @Slot()
     def SaveReport(self):
         if not self.account:
             QMessageBox().warning(self, self.tr("Data are incomplete"),
@@ -86,7 +84,6 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
 
         reports_xls = XLSX(self.xls_filename)
         templates = {
-            "ОоДДС": "tax_rus_flow.json",
             "Дивиденды": "tax_rus_dividends.json",
             "Акции": "tax_rus_trades.json",
             "Облигации": "tax_rus_bonds.json",
@@ -120,3 +117,47 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
                 tax_forms.save(self.dlsg_filename)
             except:
                 logging.error(self.tr("Can't write tax form into file ") + f"'{self.dlsg_filename}'")
+
+
+class MoneyFlowWidget(MdiWidget, Ui_MoneyFlowWidget):
+    def __init__(self):
+        MdiWidget.__init__(self)
+        self.setupUi(self)
+
+        self.Year.setValue(datetime.now().year - 1)  # Set previous year by default
+        self.XlsSelectBtn.pressed.connect(self.OnFileBtn)
+        self.SaveButton.pressed.connect(self.SaveReport)
+
+    @Slot()
+    def OnFileBtn(self):
+        selector = (self.tr("Save money flow report to:"), self.tr("Excel files (*.xlsx)"), '.xlsx', self.XlsFileName)
+        filename = QFileDialog.getSaveFileName(self, selector[0], ".", selector[1])
+        if filename[0]:
+            if filename[1] == selector[1] and filename[0][-len(selector[2]):] != selector[2]:
+                selector[3].setText(filename[0] + selector[2])
+            else:
+                selector[3].setText(filename[0])
+
+    def getYear(self):
+        return self.Year.value()
+
+    def getXlsFilename(self):
+        return self.XlsFileName.text()
+
+    year = Property(int, fget=getYear)
+    xls_filename = Property(str, fget=getXlsFilename)
+
+    @Slot()
+    def SaveReport(self):
+        taxes_flow = TaxesFlowRus()
+        flow_report = taxes_flow.prepare_flow_report(self.year)
+
+        reports_xls = XLSX(self.xls_filename)
+        parameters = {
+            "period": f"{datetime.utcfromtimestamp(taxes_flow.year_begin).strftime('%d.%m.%Y')}"
+                      f" - {datetime.utcfromtimestamp(taxes_flow.year_end - 1).strftime('%d.%m.%Y')}"
+        }
+        reports_xls.output_data(flow_report, "tax_rus_flow.json", parameters)
+        reports_xls.save()
+
+        logging.info(self.tr("Money flow report saved to file ") + f"'{self.xls_filename}'")

@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QProgressB
 from jal import __version__
 from jal.ui.ui_main_window import Ui_JAL_MainWindow
 from jal.widgets.operations_widget import OperationsWidget
-from jal.widgets.tax_widget import TaxWidget
+from jal.widgets.tax_widget import TaxWidget, MoneyFlowWidget
 from jal.widgets.helpers import dependency_present
 from jal.widgets.reference_dialogs import AccountListDialog, AssetListDialog, TagsListDialog,\
     CategoryListDialog, CountryListDialog, QuotesListDialog, PeerListDialog
@@ -96,7 +96,8 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
         self.actionTags.triggered.connect(partial(self.onDataDialog, "tags"))
         self.actionCountries.triggered.connect(partial(self.onDataDialog, "countries"))
         self.actionQuotes.triggered.connect(partial(self.onDataDialog, "quotes"))
-        self.PrepareTaxForms.triggered.connect(partial(self.mdiArea.addSubWindow, TaxWidget(self), maximized=True))
+        self.PrepareTaxForms.triggered.connect(partial(self.mdiArea.addSubWindow, TaxWidget()))
+        self.PrepareFlowReport.triggered.connect(partial(self.mdiArea.addSubWindow, MoneyFlowWidget()))
         self.downloader.download_completed.connect(self.updateWidgets)
         self.ledger.updated.connect(self.updateWidgets)
         self.statements.load_completed.connect(self.onStatementImport)

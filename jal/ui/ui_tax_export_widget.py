@@ -25,23 +25,34 @@ class Ui_TaxWidget(object):
     def setupUi(self, TaxWidget):
         if not TaxWidget.objectName():
             TaxWidget.setObjectName(u"TaxWidget")
-        TaxWidget.resize(696, 408)
+        TaxWidget.resize(698, 349)
         self.gridLayout = QGridLayout(TaxWidget)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.AccountLbl = QLabel(TaxWidget)
-        self.AccountLbl.setObjectName(u"AccountLbl")
+        self.line = QFrame(TaxWidget)
+        self.line.setObjectName(u"line")
+        self.line.setFrameShape(QFrame.HLine)
+        self.line.setFrameShadow(QFrame.Sunken)
 
-        self.gridLayout.addWidget(self.AccountLbl, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.line, 3, 0, 1, 3)
 
-        self.AccountWidget = AccountSelector(TaxWidget)
-        self.AccountWidget.setObjectName(u"AccountWidget")
+        self.SaveButton = QPushButton(TaxWidget)
+        self.SaveButton.setObjectName(u"SaveButton")
 
-        self.gridLayout.addWidget(self.AccountWidget, 1, 1, 1, 2)
+        self.gridLayout.addWidget(self.SaveButton, 7, 2, 1, 1)
 
-        self.YearLbl = QLabel(TaxWidget)
-        self.YearLbl.setObjectName(u"YearLbl")
+        self.XlsSelectBtn = QPushButton(TaxWidget)
+        self.XlsSelectBtn.setObjectName(u"XlsSelectBtn")
+        sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.XlsSelectBtn.sizePolicy().hasHeightForWidth())
+        self.XlsSelectBtn.setSizePolicy(sizePolicy)
 
-        self.gridLayout.addWidget(self.YearLbl, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.XlsSelectBtn, 2, 2, 1, 1)
+
+        self.verticalSpacer = QSpacerItem(20, 52, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout.addItem(self.verticalSpacer, 8, 0, 1, 1)
 
         self.Year = QSpinBox(TaxWidget)
         self.Year.setObjectName(u"Year")
@@ -52,24 +63,51 @@ class Ui_TaxWidget(object):
 
         self.gridLayout.addWidget(self.Year, 0, 1, 1, 2)
 
-        self.verticalSpacer = QSpacerItem(20, 52, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.XlsFileName = QLineEdit(TaxWidget)
+        self.XlsFileName.setObjectName(u"XlsFileName")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.XlsFileName.sizePolicy().hasHeightForWidth())
+        self.XlsFileName.setSizePolicy(sizePolicy1)
 
-        self.gridLayout.addItem(self.verticalSpacer, 8, 0, 1, 1)
+        self.gridLayout.addWidget(self.XlsFileName, 2, 1, 1, 1)
 
-        self.line = QFrame(TaxWidget)
-        self.line.setObjectName(u"line")
-        self.line.setFrameShape(QFrame.HLine)
-        self.line.setFrameShadow(QFrame.Sunken)
+        self.WarningLbl = QLabel(TaxWidget)
+        self.WarningLbl.setObjectName(u"WarningLbl")
+        font = QFont()
+        font.setItalic(True)
+        self.WarningLbl.setFont(font)
 
-        self.gridLayout.addWidget(self.line, 3, 0, 1, 3)
+        self.gridLayout.addWidget(self.WarningLbl, 4, 0, 1, 3)
+
+        self.AccountLbl = QLabel(TaxWidget)
+        self.AccountLbl.setObjectName(u"AccountLbl")
+
+        self.gridLayout.addWidget(self.AccountLbl, 1, 0, 1, 1)
+
+        self.XlsFileLbl = QLabel(TaxWidget)
+        self.XlsFileLbl.setObjectName(u"XlsFileLbl")
+
+        self.gridLayout.addWidget(self.XlsFileLbl, 2, 0, 1, 1)
+
+        self.NoSettlement = QCheckBox(TaxWidget)
+        self.NoSettlement.setObjectName(u"NoSettlement")
+
+        self.gridLayout.addWidget(self.NoSettlement, 6, 0, 1, 3)
+
+        self.YearLbl = QLabel(TaxWidget)
+        self.YearLbl.setObjectName(u"YearLbl")
+
+        self.gridLayout.addWidget(self.YearLbl, 0, 0, 1, 1)
 
         self.DlsgGroup = QGroupBox(TaxWidget)
         self.DlsgGroup.setObjectName(u"DlsgGroup")
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.DlsgGroup.sizePolicy().hasHeightForWidth())
-        self.DlsgGroup.setSizePolicy(sizePolicy)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.DlsgGroup.sizePolicy().hasHeightForWidth())
+        self.DlsgGroup.setSizePolicy(sizePolicy2)
         self.DlsgGroup.setFlat(False)
         self.DlsgGroup.setCheckable(True)
         self.DlsgGroup.setChecked(False)
@@ -106,52 +144,10 @@ class Ui_TaxWidget(object):
 
         self.gridLayout.addWidget(self.DlsgGroup, 5, 0, 1, 3)
 
-        self.XlsFileLbl = QLabel(TaxWidget)
-        self.XlsFileLbl.setObjectName(u"XlsFileLbl")
+        self.AccountWidget = AccountSelector(TaxWidget)
+        self.AccountWidget.setObjectName(u"AccountWidget")
 
-        self.gridLayout.addWidget(self.XlsFileLbl, 2, 0, 1, 1)
-
-        self.XlsFileName = QLineEdit(TaxWidget)
-        self.XlsFileName.setObjectName(u"XlsFileName")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.XlsFileName.sizePolicy().hasHeightForWidth())
-        self.XlsFileName.setSizePolicy(sizePolicy1)
-
-        self.gridLayout.addWidget(self.XlsFileName, 2, 1, 1, 1)
-
-        self.XlsSelectBtn = QPushButton(TaxWidget)
-        self.XlsSelectBtn.setObjectName(u"XlsSelectBtn")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.XlsSelectBtn.sizePolicy().hasHeightForWidth())
-        self.XlsSelectBtn.setSizePolicy(sizePolicy2)
-
-        self.gridLayout.addWidget(self.XlsSelectBtn, 2, 2, 1, 1)
-
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.gridLayout.addItem(self.horizontalSpacer, 5, 3, 1, 1)
-
-        self.NoSettlement = QCheckBox(TaxWidget)
-        self.NoSettlement.setObjectName(u"NoSettlement")
-
-        self.gridLayout.addWidget(self.NoSettlement, 6, 0, 1, 4)
-
-        self.SaveButton = QPushButton(TaxWidget)
-        self.SaveButton.setObjectName(u"SaveButton")
-
-        self.gridLayout.addWidget(self.SaveButton, 7, 2, 1, 1)
-
-        self.WarningLbl = QLabel(TaxWidget)
-        self.WarningLbl.setObjectName(u"WarningLbl")
-        font = QFont()
-        font.setItalic(True)
-        self.WarningLbl.setFont(font)
-
-        self.gridLayout.addWidget(self.WarningLbl, 4, 0, 1, 3)
+        self.gridLayout.addWidget(self.AccountWidget, 1, 1, 1, 2)
 
 
         self.retranslateUi(TaxWidget)
@@ -161,12 +157,20 @@ class Ui_TaxWidget(object):
 
     def retranslateUi(self, TaxWidget):
         TaxWidget.setWindowTitle(QCoreApplication.translate("TaxWidget", u"Taxes", None))
-        self.AccountLbl.setText(QCoreApplication.translate("TaxWidget", u"Account:", None))
+        self.SaveButton.setText(QCoreApplication.translate("TaxWidget", u"Save Report", None))
 #if QT_CONFIG(tooltip)
-        self.AccountWidget.setToolTip(QCoreApplication.translate("TaxWidget", u"Foreign account to prepare tax report for", None))
+        self.XlsSelectBtn.setToolTip(QCoreApplication.translate("TaxWidget", u"Select file", None))
 #endif // QT_CONFIG(tooltip)
-        self.YearLbl.setText(QCoreApplication.translate("TaxWidget", u"Year:", None))
+        self.XlsSelectBtn.setText(QCoreApplication.translate("TaxWidget", u"...", None))
         self.Year.setSuffix("")
+#if QT_CONFIG(tooltip)
+        self.XlsFileName.setToolTip(QCoreApplication.translate("TaxWidget", u"File where to store tax report in Excel format", None))
+#endif // QT_CONFIG(tooltip)
+        self.WarningLbl.setText(QCoreApplication.translate("TaxWidget", u"Below functions are experimental - use it with care", None))
+        self.AccountLbl.setText(QCoreApplication.translate("TaxWidget", u"Account:", None))
+        self.XlsFileLbl.setText(QCoreApplication.translate("TaxWidget", u"Excel file:", None))
+        self.NoSettlement.setText(QCoreApplication.translate("TaxWidget", u"Do not use settlement date for currency rates", None))
+        self.YearLbl.setText(QCoreApplication.translate("TaxWidget", u"Year:", None))
         self.DlsgGroup.setTitle(QCoreApplication.translate("TaxWidget", u"Create tax form in \"\u0414\u0435\u043a\u043b\u0430\u0440\u0430\u0446\u0438\u044f\" program format (*.dcX)", None))
         self.DlsgFileLbl.setText(QCoreApplication.translate("TaxWidget", u"Output file:", None))
         self.IncomeSourceBroker.setText(QCoreApplication.translate("TaxWidget", u"Use broker name as income source", None))
@@ -178,16 +182,8 @@ class Ui_TaxWidget(object):
 #if QT_CONFIG(tooltip)
         self.DlsgFileName.setToolTip(QCoreApplication.translate("TaxWidget", u"File where to store russian tax form", None))
 #endif // QT_CONFIG(tooltip)
-        self.XlsFileLbl.setText(QCoreApplication.translate("TaxWidget", u"Excel file:", None))
 #if QT_CONFIG(tooltip)
-        self.XlsFileName.setToolTip(QCoreApplication.translate("TaxWidget", u"File where to store tax report in Excel format", None))
+        self.AccountWidget.setToolTip(QCoreApplication.translate("TaxWidget", u"Foreign account to prepare tax report for", None))
 #endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
-        self.XlsSelectBtn.setToolTip(QCoreApplication.translate("TaxWidget", u"Select file", None))
-#endif // QT_CONFIG(tooltip)
-        self.XlsSelectBtn.setText(QCoreApplication.translate("TaxWidget", u"...", None))
-        self.NoSettlement.setText(QCoreApplication.translate("TaxWidget", u"Do not use settlement date for currency rates", None))
-        self.SaveButton.setText(QCoreApplication.translate("TaxWidget", u"Save Report", None))
-        self.WarningLbl.setText(QCoreApplication.translate("TaxWidget", u"Below functions are experimental - use it with care", None))
     # retranslateUi
 
