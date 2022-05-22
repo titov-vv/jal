@@ -1957,57 +1957,47 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/flow_export_widget.ui" line="75"/>
+        <location filename="../ui/flow_export_widget.ui" line="36"/>
         <source>Save Report</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/flow_export_widget.ui" line="49"/>
+        <location filename="../ui/flow_export_widget.ui" line="50"/>
         <source>Year:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/flow_export_widget.ui" line="39"/>
+        <location filename="../ui/flow_export_widget.ui" line="26"/>
         <source>Select file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/flow_export_widget.ui" line="42"/>
+        <location filename="../ui/flow_export_widget.ui" line="29"/>
         <source>...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/flow_export_widget.ui" line="26"/>
+        <location filename="../ui/flow_export_widget.ui" line="82"/>
         <source>File where to store tax report in Excel format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/flow_export_widget.ui" line="95"/>
+        <location filename="../ui/flow_export_widget.ui" line="43"/>
         <source>Excel file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="134"/>
-        <source>Save tax reports to:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/tax_widget.py" line="134"/>
+        <location filename="../widgets/tax_widget.py" line="133"/>
         <source>Excel files (*.xlsx)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="154"/>
-        <source>Data are incomplete</source>
+        <location filename="../widgets/tax_widget.py" line="133"/>
+        <source>Save money flow report to:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="155"/>
-        <source>You haven&apos;t selected an account for tax report</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/tax_widget.py" line="175"/>
+        <location filename="../widgets/tax_widget.py" line="163"/>
         <source>Money flow report saved to file </source>
         <translation type="unfinished"></translation>
     </message>
@@ -3857,12 +3847,12 @@ do you want to save it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="111"/>
+        <location filename="../widgets/tax_widget.py" line="110"/>
         <source>Tax report saved to file </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="120"/>
+        <location filename="../widgets/tax_widget.py" line="119"/>
         <source>Can&apos;t write tax form into file </source>
         <translation type="unfinished"></translation>
     </message>
@@ -3870,12 +3860,12 @@ do you want to save it?</source>
 <context>
     <name>TaxesRus</name>
     <message>
-        <location filename="../data_export/taxes.py" line="157"/>
+        <location filename="../data_export/taxes.py" line="129"/>
         <source>No price data for stock dividend: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="163"/>
+        <location filename="../data_export/taxes.py" line="135"/>
         <source>No price data for stock vesting: </source>
         <translation type="unfinished"></translation>
     </message>

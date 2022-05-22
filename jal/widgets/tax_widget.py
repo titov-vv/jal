@@ -161,3 +161,4 @@ class MoneyFlowWidget(MdiWidget, Ui_MoneyFlowWidget):
         reports_xls.save()
 
         logging.info(self.tr("Money flow report saved to file ") + f"'{self.xls_filename}'")
+        self.close()
