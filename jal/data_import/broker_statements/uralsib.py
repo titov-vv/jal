@@ -53,7 +53,7 @@ class StatementUKFU(StatementXLS):
     def _load_deals(self):
         self.load_stock_deals()
         self.load_futures_deals()
-        self.load_asset_cancellations()
+        self.load_asset_movements()
 
     def _load_cash_transactions(self):
         self.load_cash_transactions()
@@ -202,7 +202,8 @@ class StatementUKFU(StatementXLS):
             row += 1
         logging.info(self.tr("Futures trades loaded: ") + f"{cnt}")
 
-    def load_asset_cancellations(self):
+    def load_asset_movements(self):
+        cnt = 0
         columns = {
             "number": "№ операции",
             "date": "Дата",
@@ -212,28 +213,55 @@ class StatementUKFU(StatementXLS):
             "qty": "Количество ЦБ",
             "note": "Комментарий"
         }
+        operations = {
+            'Списание ЦБ после погашения': self.asset_cancellation,
+            'Перевод ЦБ': self.asset_transfer,
+            'Списано по сделке': None,  # These operations are results of trades
+            'Получено по сделке': None,
+        }
 
         row, headers = self.find_section_start("ДВИЖЕНИЕ ЦЕННЫХ БУМАГ ЗА ОТЧЕТНЫЙ ПЕРИОД", columns)
         if row < 0:
             return False
         while row < self._statement.shape[0]:
-            if self._statement[self.HeaderCol][row] == '' and self._statement[self.HeaderCol][row + 1] == '':
+            if self._statement[self.HeaderCol + 1][row] == '':  # Stop if there are no next date available
                 break
-
-            if self._statement[headers['type']][row] != "Списание ЦБ после погашения":
-                row += 1
-                continue
-
-            asset_id = self.asset_id({'reg_number': self._statement[headers['reg_number']][row], 'search_online': "MOEX"})
+            operation = self._statement[headers['type']][row]
+            if operation not in operations:
+                raise Statement_ImportError(self.tr("Unsuppported asset operation ") + f"'{operation}'")
             number = self._statement[headers['number']][row]
             timestamp = int(datetime.strptime(self._statement[headers['date']][row],
                                               "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
-            # Statement has negative value for cancellation - will be used to create sell trade
+            asset = self.asset_id({'reg_number': self._statement[headers['reg_number']][row], 'search_online': "MOEX"})
             qty = self._statement[headers['qty']][row]
-            note = self._statement[headers['note']][row]
-            record = {"timestamp": timestamp, "asset": asset_id, "number": number, "quantity": qty, "note": note}
-            self.asset_withdrawal.append(record)
+            description = self._statement[headers['note']][row]
+            if operations[operation] is not None:
+                operations[operation](timestamp, number, asset, qty, description)
+            cnt += 1
             row += 1
+        logging.info(self.tr("Asset operations loaded: ") + f"{cnt}")
+
+    def asset_cancellation(self, timestamp, number, asset, qty, description):
+        # Statement has negative value for cancellation - will be used to create sell trade
+        record = {"timestamp": timestamp, "asset": asset, "number": number, "quantity": qty, "note": description}
+        self.asset_withdrawal.append(record)
+
+    def asset_transfer(self, timestamp, number, asset, qty, description):
+        TransferPattern = r"^Перевод ЦБ на с\/с (?P<account_to>[\w|\/]+) с с\/с (?P<account_from>[\w|\/]+)\..*$"
+        parts = re.match(TransferPattern, description, re.IGNORECASE)
+        if parts is None:
+            raise Statement_ImportError(self.tr("Can't parse asset transfer description ") + f"'{description}'")
+        transfer = parts.groupdict()
+        if len(transfer) != TransferPattern.count("(?P<"):  # check that expected number of groups was matched
+            raise Statement_ImportError(self.tr("Asset transfer description miss some data ") + f"'{description}'")
+        currency_id = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == asset][0]['currency']
+        currency_name = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == currency_id][0]['symbol']
+        account_from = self._find_account_id(transfer['account_from'], currency_name)
+        account_to = self._find_account_id(transfer['account_to'], currency_name)
+        new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+        transfer = {"id": new_id, "account": [account_from, account_to, 0], "asset": [asset, asset],
+                    "timestamp": timestamp, "withdrawal": qty, "deposit": qty, "fee": 0.0, "description": description}
+        self._data[FOF.TRANSFERS].append(transfer)
 
     def load_cash_transactions(self):
         cnt = 0
@@ -265,7 +293,7 @@ class StatementUKFU(StatementXLS):
             return False
 
         while row < self._statement.shape[0]:
-            if self._statement[self.HeaderCol][row] == '' and self._statement[self.HeaderCol][row + 1] == '':
+            if self._statement[self.HeaderCol + 1][row] == '':  # Stop if there are no next date available
                 break
             operation = self._statement[headers['type']][row]
             if operation not in operations:
@@ -288,10 +316,10 @@ class StatementUKFU(StatementXLS):
             return
         parts = re.match(TransferPattern, description, re.IGNORECASE)
         if parts is None:
-            raise Statement_ImportError(self.tr("Can't parse transfer description ") + f"'{description}'")
+            raise Statement_ImportError(self.tr("Can't parse money transfer description ") + f"'{description}'")
         transfer = parts.groupdict()
         if len(transfer) != TransferPattern.count("(?P<"):  # check that expected number of groups was matched
-            raise Statement_ImportError(self.tr("Transfer description miss some data ") + f"'{description}'")
+            raise Statement_ImportError(self.tr("Money transfer description miss some data ") + f"'{description}'")
         if transfer['account_from'] == transfer['account_to']:  # It is a technical record for incoming transfer
             return
         currency_id = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]['currency']

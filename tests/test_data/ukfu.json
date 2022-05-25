@@ -2,7 +2,8 @@
   "period": [1617235200, 1621555199],
   "accounts": [
     {"id": 1, "currency": 1, "number": "12345", "cash_begin": 7636.65, "cash_end": 9804.85, "cash_end_settled": 9804.85},
-    {"id": 2, "currency": 2, "number": "12345", "cash_begin": 34.37, "cash_end": 34.37, "cash_end_settled": 34.37}
+    {"id": 2, "currency": 2, "number": "12345", "cash_begin": 34.37, "cash_end": 34.37, "cash_end_settled": 34.37},
+    {"id": 3, "currency": 1, "number": "54321"}
   ],
   "assets": [
     {"id": 1, "type": "money", "name":  ""},
@@ -52,7 +53,9 @@
     {"id": 2, "timestamp": 1621555199, "account": 1, "peer": 0, "lines": [{"amount": -11.22, "category": -5, "description": "комиссия Брокера"}]},
     {"id": 3, "timestamp": 1621555199, "account": 2, "peer": 0, "lines": [{"amount": -1.23, "category": -5, "description": "комиссия иных Депозитариев"}]}
   ],
-  "transfers": [],
+  "transfers": [
+    {"id": 1, "account": [3, 1, 0], "asset": [4, 4], "timestamp": 1652227200, "withdrawal": 10, "deposit": 10, "fee": 0.0, "description": "Перевод ЦБ на с/с 12345 с с/с 54321. Код клиента 12345."}
+  ],
   "corporate_actions": [],
   "asset_payments": [
     {"id": 1, "type": "interest", "account": 1, "timestamp": 1615909088, "number": "3720000652", "asset": 5, "amount": -16.83, "description": "НКД"},
