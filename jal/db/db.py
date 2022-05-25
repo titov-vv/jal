@@ -234,7 +234,7 @@ class JalDB:
                                        "LEFT JOIN asset_data d ON a.id=d.asset_id AND d.datatype=:datatype "
                                        "WHERE symbol=:symbol COLLATE NOCASE AND type_id=:type AND value=:value",
                                        [(":datatype", AssetData.ExpiryDate), (":symbol", search_data['symbol']),
-                                        (":type", search_data['type']), (":expiry", search_data['expiry'])])
+                                        (":type", search_data['type']), (":value", search_data['expiry'])])
                 else:
                     asset_id = readSQL("SELECT id FROM assets_ext "
                                        "WHERE symbol=:symbol COLLATE NOCASE and type_id=:type",
