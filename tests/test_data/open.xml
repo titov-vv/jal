@@ -425,6 +425,8 @@
 <item operation_date="2022-03-01T00:00:00" currency_code="RUB" amount="0.11" comment="Проценты по предоставленным займам ЦБ за 01.03.2022" />
 <item operation_date="2022-04-01T00:00:00" currency_code="RUB" amount="-1.00" comment="Удержан налог на прочий доход с клиента 12345" />
 <item operation_date="2022-04-01T00:00:00" currency_code="RUB" amount="5.89" comment="Плата за остаток на счете на ФР МБ, остаток в рублях 17913.63 за 01.04.2022" />
+<item operation_date="2022-04-25T00:00:00" currency_code="RUB" amount="-114.00" comment="Удержан налог на доход  по дивидендам Новатэк-ао-2 с клиента 12345" />
+<item operation_date="2022-04-25T00:00:00" currency_code="RUB" amount="875.40" comment="Выплата дохода клиент 12345 дивиденды Новатэк-ао-2 налог к удержанию 114.00 рублей" />
 </spot_non_trade_money_operations>
 <spot_non_trade_security_operations>
 <item operation_date="2021-09-01T00:00:00" security_name="МТС 1P-05 " grn_code="4B02-05-04715-A-001P" quantity="-60.00000000" comment="Отчет депозитария б/н от 01.09.2021. Снятие ЦБ с учета. Погашение облигаций - МТС 1P-05" board_name="Фондовый Рынок Московской биржи (ФР МБ)" />
@@ -439,5 +441,6 @@
 <item security_name="Сбербанк  " security_grn_code="10301481B" board_name="ПАО Московская биржа" issuer_name="ПАО Сбербанк" isin="RU0009029540" security_type="Акции" securyty_type_add="АО " nominal="3.000000" nominal_curr="RUB" lot_size="10" ticker="SBER" market_price="260.180000" />
 <item security_name="Yandex clA" security_grn_code="" board_name="ПАО Московская биржа" issuer_name="Yandex N.V." isin="NL0009805522" security_type="Акции" securyty_type_add="АО " nominal="0.010000" nominal_curr="EUR" lot_size="1" ticker="YNDX" market_price="1930.000000" />
 <item security_name="OZON-адр  " security_grn_code="" board_name="ПАО Московская биржа" issuer_name="BNY Mellon" isin="US69269L1044" security_type="ADR" securyty_type_add="AD " nominal="0.000000" lot_size="1" ticker="OZON" market_price="1083.000000" />
+<item security_name="Новатэк ао" security_grn_code="1-02-00268-E" board_name="ПАО Московская биржа" issuer_name="ПАО &quot;НОВАТЭК&quot;" isin="RU000A0DKVS5" security_type="Акции" securyty_type_add="АО " nominal="0.100000" nominal_curr="RUB" lot_size="1" ticker="NVTK" market_price="940.800000" />
 </spot_portfolio_security_params>
 </broker_report>

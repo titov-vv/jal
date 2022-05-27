@@ -1,5 +1,6 @@
 import logging
 import re
+import difflib
 from datetime import datetime
 
 from PySide6.QtWidgets import QApplication
@@ -365,6 +366,7 @@ class StatementOpenBroker(StatementXML):
         cnt = 0
         operations = {
             'Комиссия Брокера / ': None,              # These operations are included of trade's data
+            'Удержан налог на доход': None,           # Tax information is included into dividend payment data
             'Удержан налог на купонный доход': None,  # Tax information is included into interest payment data
             'Поставлены на торги средства клиента': self.transfer_in,
             'Списаны средства клиента': self.transfer_out,
@@ -414,11 +416,19 @@ class StatementOpenBroker(StatementXML):
         payment_pattern = r"^.*\((?P<type>\w+).*\).*$"
         parts = re.match(payment_pattern, description, re.IGNORECASE)
         if parts is None:
-            raise Statement_ImportError(self.tr("Unknown payment description: ") + f"'{description}'")
-        try:
-            payment_operations[parts.groupdict()['type']](timestamp, account_id, amount, description)
-        except KeyError:
-            raise Statement_ImportError(self.tr("Unknown payment type: ") + f"'{parts.groupdict()['type']}'")
+            payment_pattern = r"^Выплата дохода клиент (?P<type>\d+) дивиденды (?P<asset>.*) налог к удержанию (?P<tax>\d+\.\d+) рублей$"
+            parts = re.match(payment_pattern, description, re.IGNORECASE)
+            if parts is None:
+                raise Statement_ImportError(self.tr("Unknown payment description: ") + f"'{description}'")
+            dividend_data = parts.groupdict()
+            asset_id = self.find_most_probable_asset(dividend_data['asset'])
+            tax = float(dividend_data['tax'])
+            self.dividend(timestamp, account_id, asset_id, amount, tax, description)
+        else:
+            try:
+                payment_operations[parts.groupdict()['type']](timestamp, account_id, amount, description)
+            except KeyError:
+                raise Statement_ImportError(self.tr("Unknown payment type: ") + f"'{parts.groupdict()['type']}'")
 
     def tax_refund(self, timestamp, account_id, amount, description):
         new_id = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
@@ -437,6 +447,12 @@ class StatementOpenBroker(StatementXML):
         payment = {'id': new_id, 'account': account_id, 'timestamp': timestamp, 'peer': 0,
                    'lines': [{'amount': amount, 'category': -PredefinedCategory.Interest, 'description': description}]}
         self._data[FOF.INCOME_SPENDING].append(payment)
+
+    def dividend(self, timestamp, account_id, asset_id, amount, tax, description):
+        new_id = max([0] + [x['id'] for x in self._data[FOF.ASSET_PAYMENTS]]) + 1
+        payment = {"id": new_id, "type": FOF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
+                   "asset": asset_id, "amount": amount, "tax": tax, "description": description}
+        self._data[FOF.ASSET_PAYMENTS].append(payment)
 
     def interest_payment(self, timestamp, account_id, amount, description):
         intrest_pattern = r"^Выплата дохода клиент (?P<account>\w+) \((?P<type>\w+) (?P<number>\d+) (?P<symbol>.*)\) налог.* (?P<tax>\d+\.\d+) рубл.*$"
@@ -500,3 +516,13 @@ class StatementOpenBroker(StatementXML):
     # Drop any symbols with type "broker_symbol" as they are auxiliary for statement import only
     def strip_unused_data(self):
         self._data[FOF.SYMBOLS] = [x for x in self._data[FOF.SYMBOLS] if "broker_symbol" not in x]
+
+    # Broker report contains vague asset names in dividends
+    # This method tries to locate the best match in available assets
+    def find_most_probable_asset(self, asset_name):
+        match = difflib.get_close_matches(asset_name, [x['symbol'] for x in self._data[FOF.SYMBOLS]], 1)
+        if match:
+            asset = [x for x in self._data[FOF.SYMBOLS] if x['symbol'] == match[0]]
+            return asset[0]['asset']
+        else:
+            raise Statement_ImportError(self.tr("Can't match asset for ") + f"'{asset_name}'")
