@@ -285,6 +285,7 @@ class StatementUKFU(StatementXLS):
             'Получено по сделке': None,
             "Вариационная маржа": None,  # These are non-trade operations for derivatives
             "Заблокировано средств ГО": None,
+            "Разблокировано средств ГО": None,
             "Депозитарные сборы других депозитариев": self.fee
         }
 
