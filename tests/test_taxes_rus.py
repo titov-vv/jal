@@ -238,3 +238,54 @@ def test_taxes_merger_complex(tmp_path, data_path, prepare_db_taxes):
     #         continue
     #     reports_xls.output_data(tax_report[section], templates[section], parameters)
     # reports_xls.save()
+
+
+def test_taxes_over_years(tmp_path, project_root, data_path, prepare_db_taxes):
+    # Load first year
+    IBKR = StatementIBKR()
+    IBKR.load(data_path + 'ibkr_year0.xml')
+    IBKR.validate_format()
+    IBKR.match_db_ids()
+    IBKR.import_into_db()
+    # Load second year
+    IBKR = StatementIBKR()
+    IBKR.load(data_path + 'ibkr_year1.xml')
+    IBKR.validate_format()
+    IBKR.match_db_ids()
+    IBKR.import_into_db()
+
+    usd_rates = [
+        (1604880000, 77.1875), (1604966400, 76.9515), (1623196800, 72.8256), (1623283200, 72.0829),
+        (1607040000, 75.1996), (1607299200, 74.2529), (1620691200, 74.1373), (1620777600, 74.1567),
+        (1610582400, 73.5264), (1611014400, 73.9735), (1606435200, 75.4518), (1606780800, 76.1999),
+        (1612828800, 73.8453), (1613001600, 73.6059), (1606953600, 75.6151)
+    ]
+    create_quotes(2, 1, usd_rates)
+
+    ledger = Ledger()
+    ledger.rebuild(from_timestamp=0)
+
+    taxes = TaxesRus()
+    tax_report = taxes.prepare_tax_report(2021, 1)
+
+    with open(data_path + 'taxes_over_years_rus.json', 'r', encoding='utf-8') as json_file:
+        report = json.load(json_file)
+    assert tax_report == report
+
+    reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
+    templates = {
+        "Корп.события": "tax_rus_corporate_actions.json",
+        "ПФИ": "tax_rus_derivatives.json"
+    }
+    parameters = {
+        "period": "01.01.2021 - 31.12.2021",
+        "account": "TEST U7654321 (USD)",
+        "currency": "USD",
+        "broker_name": "IBKR",
+        "broker_iso_country": "840"
+    }
+    for section in tax_report:
+        if section not in templates:
+            continue
+        reports_xls.output_data(tax_report[section], templates[section], parameters)
+    reports_xls.save()
