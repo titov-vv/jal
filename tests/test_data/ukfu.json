@@ -54,7 +54,8 @@
     {"id": 3, "timestamp": 1621555199, "account": 2, "peer": 0, "lines": [{"amount": -1.23, "category": -5, "description": "комиссия иных Депозитариев"}]}
   ],
   "transfers": [
-    {"id": 1, "account": [3, 1, 0], "asset": [4, 4], "timestamp": 1652227200, "withdrawal": 10, "deposit": 10, "fee": 0.0, "description": "Перевод ЦБ на с/с 12345 с с/с 54321. Код клиента 12345."}
+    {"id": 1, "account": [3, 1, 0], "asset": [4, 4], "timestamp": 1652227200, "withdrawal": 10, "deposit": 10, "fee": 0.0, "description": "Перевод ЦБ на с/с 12345 с с/с 54321. Код клиента 12345."},
+    {"id": 2, "account": [0, 1, 0], "asset": [4, 4], "timestamp": 1654905600, "withdrawal": 20, "deposit": 20, "fee": 0.0, "description": "Ввод ЦБ. Код клиента 12345. Поручение №333111 от 10.06.2022."}
   ],
   "corporate_actions": [],
   "asset_payments": [

@@ -216,6 +216,7 @@ class StatementUKFU(StatementXLS):
         operations = {
             'Списание ЦБ после погашения': self.asset_cancellation,
             'Перевод ЦБ': self.asset_transfer,
+            'Ввод ЦБ': self.asset_transfer_in,
             'Списано по сделке': None,  # These operations are results of trades
             'Получено по сделке': None,
         }
@@ -260,6 +261,15 @@ class StatementUKFU(StatementXLS):
         account_to = self._find_account_id(transfer['account_to'], currency_name)
         new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
         transfer = {"id": new_id, "account": [account_from, account_to, 0], "asset": [asset, asset],
+                    "timestamp": timestamp, "withdrawal": qty, "deposit": qty, "fee": 0.0, "description": description}
+        self._data[FOF.TRANSFERS].append(transfer)
+
+    def asset_transfer_in(self, timestamp, number, asset, qty, description):
+        currency_id = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == asset][0]['currency']
+        currency_name = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == currency_id][0]['symbol']
+        account_id = self._find_account_id(self._account_number, currency_name)
+        new_id = max([0] + [x['id'] for x in self._data[FOF.TRANSFERS]]) + 1
+        transfer = {"id": new_id, "account": [0, account_id, 0], "asset": [asset, asset],
                     "timestamp": timestamp, "withdrawal": qty, "deposit": qty, "fee": 0.0, "description": description}
         self._data[FOF.TRANSFERS].append(transfer)
 
