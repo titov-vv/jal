@@ -1,13 +1,11 @@
-{"accounts": [{"id": 10,
-               "type": "investment",
-               "valuation": 297350.27,
-               "valuation-currency": "RUB"}],
- "assets": [{"exchange": "",
-             "id": 0,
-             "name": "Рубль",
-             "symbol": "RUB",
-             "type": "money"},
-            {"exchange": "",
+{
+  "period": [1528528500, 1656742002],
+  "accounts": [
+    {"id": 10, "currency": 0, "type": "investment"}
+  ],
+  "assets": [
+    {"id": 0, "type": "money", "name": "Рубль", "exchange": "", "symbol": "RUB"},
+    {"exchange": "",
              "id": 1,
              "name": "Доллар",
              "symbol": "USD",
@@ -78,7 +76,7 @@
              "name": "VTB Eur",
              "symbol": "XS0810596832",
              "type": "bond"}],
- "trades": [{"account": 10,
+  "trades": [{"account": 10,
              "accrued-interest": 0,
              "asset": 44,
              "count": 100,
@@ -301,4 +299,5 @@
              "summa": -1092,
              "timestamp": 1598907600,
              "trade-id": "6e14e76fd1c5c5e1b88f4487561e1210"}],
- "transfers": []}
+  "transfers": []
+}

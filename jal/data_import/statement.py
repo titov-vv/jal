@@ -279,8 +279,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
 
     def _check_period(self, period):
         if len(period) != 2:
-            logging.warning(self.tr("Statement period is invalid"))
-        if not FOF.ACCOUNTS in self._data:
+            raise Statement_ImportError(self.tr("Statement period is invalid"))
+        if FOF.ACCOUNTS not in self._data:
             return
         accounts = self._data[FOF.ACCOUNTS]
         for account in accounts:
