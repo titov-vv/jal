@@ -21,7 +21,12 @@ class StatementOpenPortfolio(Statement):
             "start": (True, self._skip_section),
             "end": (True, self._get_period),
             "generated": (False, self._remove_section),
-            "generated-by": (False, self._remove_section)
+            "generated-by": (False, self._remove_section),
+            "assets": (True, self._load_assets),
+            "accounts": (True, self._tweak_accounts),
+            "cash-balances": (False, self._remove_section),
+            "transfers": (False, self._remove_section),
+            "payments": (False, self._remove_section)
         }
 
     def load(self, filename: str) -> None:
@@ -57,3 +62,23 @@ class StatementOpenPortfolio(Statement):
         self._data[FOF.PERIOD] = [self._data["start"], self._data["end"]]
         self._data.pop("start")
         self._data.pop("end")
+
+    def _load_assets(self, section):
+        symbol_id = 1
+        self._data["symbols"] = []
+        for asset in self._data[section]:
+            if "id" not in asset:
+                raise Statement_ImportError(self.tr("Asset without id: ") + asset)
+            if "symbol" in asset:
+                symbol = {"id": symbol_id, "asset": asset['id'], "symbol": asset['symbol'], "note": asset['exchange']}
+                self._data["symbols"].append(symbol)
+                asset.pop("symbol")
+                asset.pop("exchange")
+                symbol_id += 1
+
+    def _tweak_accounts(self, section):
+        for account in self._data[section]:
+            currency = [x for x in self._data["symbols"] if x["symbol"] == account["valuation-currency"]][0]
+            account['currency'] = currency['asset']
+            account.pop("valuation-currency")
+            account.pop('valuation')
