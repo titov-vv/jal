@@ -7,6 +7,7 @@ from data_import.broker_statements.kit import StatementKIT
 from data_import.broker_statements.psb import StatementPSB
 from data_import.broker_statements.openbroker import StatementOpenBroker
 from data_import.broker_statements.just2trade import StatementJ2T
+from data_import.broker_statements.open_portfolio import StatementOpenPortfolio
 
 from constants import PredefinedAsset
 from tests.helpers import create_assets
@@ -79,3 +80,11 @@ def test_statement_just2trade(tmp_path, project_root, data_path, prepare_db_xls)
     J2T = StatementJ2T()
     J2T.load(data_path + 'j2t.xlsx')
     assert J2T._data == statement
+
+def test_statement_open_portfolio(tmp_path, project_root, data_path):
+    with open(data_path + 'pof_converted.json', 'r', encoding='utf-8') as json_file:
+        statement = json.load(json_file)
+
+    OpenPortfolio = StatementOpenPortfolio()
+    OpenPortfolio.load(data_path + 'pof.json')
+    assert OpenPortfolio._data == statement
