@@ -221,6 +221,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         mutable_sections = [FOF.ACCOUNTS, FOF.ASSETS, FOF.SYMBOLS, FOF.ASSETS_DATA, FOF.TRADES, FOF.TRANSFERS,
                             FOF.CORP_ACTIONS, FOF.ASSET_PAYMENTS, FOF.INCOME_SPENDING]
         for section in mutable_sections:
+            if section not in self._data:
+                continue
             for element in self._data[section]:
                 if self._key_match(element, tag_name, old_value):
                     if type(element[tag_name]) == list:
