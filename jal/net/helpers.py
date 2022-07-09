@@ -1,7 +1,6 @@
 import requests
 import logging
 import platform
-from time import sleep
 from PySide6.QtWidgets import QApplication
 from jal import __version__
 
@@ -10,8 +9,7 @@ from jal import __version__
 # Function returns custom User Agent for web requests
 def make_user_agent(url='') -> str:
     if "www.cbr.ru" in url:
-        sleep(1)    # Workaround for DDoS-GUARD activation on www.cbr.ru
-        return "curl/7.77.0"
+        return "curl/7.77.0"   # Workaround for DDoS-GUARD activation on www.cbr.ru
     else:
         return f"JAL/{__version__} ({platform.system()} {platform.release()})"
 
