@@ -351,31 +351,17 @@ CREATE TABLE tags (
 );
 
 
--- Table: corp_actions
-DROP TABLE IF EXISTS corp_actions;
-
-CREATE TABLE corp_actions (
-    id           INTEGER     PRIMARY KEY
-                             UNIQUE
-                             NOT NULL,
-    op_type      INTEGER     NOT NULL
-                             DEFAULT (5),
+-- Table: asset_actions
+DROP TABLE IF EXISTS asset_actions;
+CREATE TABLE asset_actions (
+    id           INTEGER     PRIMARY KEY UNIQUE NOT NULL,
+    op_type      INTEGER     NOT NULL DEFAULT (5),
     timestamp    INTEGER     NOT NULL,
     number       TEXT (32)   DEFAULT (''),
-    account_id   INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
-                                                      ON UPDATE CASCADE
-                             NOT NULL,
+    account_id   INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     type         INTEGER     NOT NULL,
-    asset_id     INTEGER     REFERENCES assets (id) ON DELETE RESTRICT
-                                                    ON UPDATE CASCADE
-                             NOT NULL,
+    asset_id     INTEGER     REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
     qty          REAL        NOT NULL,
-    asset_id_new INTEGER     REFERENCES assets (id) ON DELETE RESTRICT
-                                                    ON UPDATE CASCADE
-                             NOT NULL,
-    qty_new      REAL        NOT NULL,
-    basis_ratio  REAL        NOT NULL
-                             DEFAULT (1),
     note         TEXT (1024)
 );
 
@@ -483,7 +469,7 @@ FROM
     UNION ALL
     SELECT op_type, 2 AS seq, id, timestamp, account_id, type AS subtype FROM dividends
     UNION ALL
-    SELECT op_type, 3 AS seq, id, timestamp, account_id, type AS subtype FROM corp_actions
+    SELECT op_type, 3 AS seq, id, timestamp, account_id, type AS subtype FROM asset_actions
     UNION ALL
     SELECT op_type, 4 AS seq, id, timestamp, account_id, 0 AS subtype FROM trades
     UNION ALL
@@ -560,10 +546,10 @@ CREATE VIEW deals_ext AS
     FROM deals AS d
           -- Get more information about trade/corp.action that opened the deal
            LEFT JOIN trades AS ot ON ot.id=d.open_op_id AND ot.op_type=d.open_op_type
-           LEFT JOIN corp_actions AS oca ON oca.id=d.open_op_id AND oca.op_type=d.open_op_type
+           LEFT JOIN asset_actions AS oca ON oca.id=d.open_op_id AND oca.op_type=d.open_op_type
           -- Get more information about trade/corp.action that opened the deal
            LEFT JOIN trades AS ct ON ct.id=d.close_op_id AND ct.op_type=d.close_op_type
-           LEFT JOIN corp_actions AS cca ON cca.id=d.close_op_id AND cca.op_type=d.close_op_type
+           LEFT JOIN asset_actions AS cca ON cca.id=d.close_op_id AND cca.op_type=d.close_op_type
           -- "Decode" account and asset
            LEFT JOIN accounts AS ac ON d.account_id = ac.id
            LEFT JOIN asset_tickers AS at ON d.asset_id = at.asset_id AND ac.currency_id=at.currency_id AND at.active=1
@@ -787,9 +773,9 @@ BEGIN
     DELETE FROM open_trades WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
 
-DROP TRIGGER IF EXISTS corp_after_delete;
-CREATE TRIGGER corp_after_delete
-      AFTER DELETE ON corp_actions
+DROP TRIGGER IF EXISTS asset_action_after_delete;
+CREATE TRIGGER asset_action_after_delete
+      AFTER DELETE ON asset_actions
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
@@ -797,9 +783,9 @@ BEGIN
     DELETE FROM open_trades WHERE timestamp >= OLD.timestamp;
 END;
 
-DROP TRIGGER IF EXISTS corp_after_insert;
-CREATE TRIGGER corp_after_insert
-      AFTER INSERT ON corp_actions
+DROP TRIGGER IF EXISTS asset_action_after_insert;
+CREATE TRIGGER asset_action_after_insert
+      AFTER INSERT ON asset_actions
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
@@ -807,9 +793,9 @@ BEGIN
     DELETE FROM open_trades WHERE timestamp >= NEW.timestamp;
 END;
 
-DROP TRIGGER IF EXISTS corp_after_update;
-CREATE TRIGGER corp_after_update
-      AFTER UPDATE OF timestamp, account_id, type, asset_id, qty, asset_id_new, qty_new ON corp_actions
+DROP TRIGGER IF EXISTS asset_action_after_update;
+CREATE TRIGGER asset_action_after_update
+      AFTER UPDATE OF timestamp, account_id, type, asset_id, qty ON asset_actions
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
@@ -817,7 +803,36 @@ BEGIN
     DELETE FROM open_trades WHERE timestamp >= OLD.timestamp  OR timestamp >= NEW.timestamp;
 END;
 
--- Trigger: transfers_after_delete
+DROP TRIGGER IF EXISTS asset_result_after_delete;
+CREATE TRIGGER asset_result_after_delete
+      AFTER DELETE ON action_results
+      FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
+    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp;
+END;
+
+DROP TRIGGER IF EXISTS asset_result_after_insert;
+CREATE TRIGGER asset_result_after_insert
+      AFTER INSERT ON action_results
+      FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
+    DELETE FROM open_trades WHERE timestamp >= NEW.timestamp;
+END;
+
+DROP TRIGGER IF EXISTS asset_result_after_update;
+CREATE TRIGGER asset_result_after_update
+      AFTER UPDATE OF asset_id, qty, value_share ON action_results
+      FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp  OR timestamp >= NEW.timestamp;
+END;
+
 DROP TRIGGER IF EXISTS transfers_after_delete;
 CREATE TRIGGER transfers_after_delete
       AFTER DELETE ON transfers
@@ -827,7 +842,6 @@ BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp;
 END;
 
--- Trigger: transfers_after_insert
 DROP TRIGGER IF EXISTS transfers_after_insert;
 CREATE TRIGGER transfers_after_insert
       AFTER INSERT ON transfers
@@ -837,7 +851,6 @@ BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
 END;
 
--- Trigger: transfers_after_update
 DROP TRIGGER IF EXISTS transfers_after_update;
 CREATE TRIGGER transfers_after_update
       AFTER UPDATE OF withdrawal_timestamp, deposit_timestamp, withdrawal_account, deposit_account, fee_account,
@@ -874,7 +887,7 @@ END;
 
 
 -- Initialize default values for settings
-INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 36);
+INSERT INTO settings(id, name, value) VALUES (0, 'SchemaVersion', 37);
 INSERT INTO settings(id, name, value) VALUES (1, 'TriggersEnabled', 1);
 INSERT INTO settings(id, name, value) VALUES (2, 'BaseCurrency', 1);
 INSERT INTO settings(id, name, value) VALUES (3, 'Language', 1);
