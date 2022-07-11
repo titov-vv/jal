@@ -695,20 +695,22 @@ class CorporateAction(LedgerTransaction):
             CorporateAction.Delisting: ('✖', CustomColor.DarkRed)
         }
         self.CorpActionNames = {
-            CorporateAction.SymbolChange: self.tr("Symbol change {old} -> {new}"),
-            CorporateAction.Split: self.tr("Split {old} {before} into {after}"),
-            CorporateAction.SpinOff: self.tr("Spin-off {after} {new} from {before} {old}"),
-            CorporateAction.Merger: self.tr("Merger {before} {old} into {after} {new}"),
-            CorporateAction.Delisting: self.tr("Delisting of {before} {old}")
+            CorporateAction.SymbolChange: self.tr("Symbol change"),
+            CorporateAction.Split: self.tr("Split"),
+            CorporateAction.SpinOff: self.tr("Spin-off"),
+            CorporateAction.Merger: self.tr("Merger"),
+            CorporateAction.Delisting: self.tr("Delisting")
         }
         super().__init__(operation_id)
         self._table = "corp_actions"
         self._otype = LedgerTransaction.CorporateAction
-        self._view_rows = 2
-        self._data = readSQL("SELECT a.type, a.timestamp, a.number, a.account_id, "
-                             "a.qty, a.asset_id, a.qty_new, a.asset_id_new, a.basis_ratio, a.note "
-                             "FROM corp_actions AS a WHERE a.id=:oid", [(":oid", self._oid)], named=True)
+        self._view_rows = int(readSQL("SELECT COUNT(id) FROM action_results WHERE action_id=:oid",
+                                      [(":oid", self._oid)]))
+        self._data = readSQL("SELECT a.type, a.timestamp, a.number, a.account_id, a.qty, a.asset_id, a.note "
+                             "FROM asset_actions AS a WHERE a.id=:oid", [(":oid", self._oid)], named=True)
         self._subtype = self._data['type']
+        if self._subtype == CorporateAction.SpinOff or self._view_rows < 2:
+            self._view_rows = 2
         self._label, self._label_color = labels[self._subtype]
         self._timestamp = self._data['timestamp']
         self._account = self._data['account_id']
@@ -719,45 +721,54 @@ class CorporateAction(LedgerTransaction):
         self._asset_symbol = JalDB().get_asset_name(self._asset)
         self._asset_name = JalDB().get_asset_name(self._asset, full=True)
         self._qty = self._data['qty']
-        self._asset_new = self._data['asset_id_new']
-        self._asset_new_symbol = JalDB().get_asset_name(self._asset_new)
-        self._asset_name_new = JalDB().get_asset_name(self._asset_new, full=True)
-        self._qty_after = self._data['qty_new']
         self._number = self._data['number']
-        self._basis = self._data['basis_ratio']
         self._broker = JalDB().get_account_bank(self._account)
 
     def description(self) -> str:
-        basis = 100.0 * self._basis
-        text = self.CorpActionNames[self._subtype].format(old=self._asset_name, new=self._asset_name,
-                                                          before=self._qty, after=self._qty_after)
-        if self._subtype == CorporateAction.SpinOff:
-            text += f"; {basis:.2f}% " + self.tr(" cost basis") + "\n" + self._asset_name_new
-        return text
+        description = self.CorpActionNames[self._subtype]
+        query = executeSQL("SELECT asset_id, value_share FROM action_results WHERE action_id=:oid",
+                           [(":oid", self._oid)])
+        while query.next():
+            result = readSQLrecord(query, named=True)
+            if self._subtype == CorporateAction.SpinOff and result['asset_id'] == self._asset:
+                continue   # Don't display initial asset in list
+            description += "\n" + JalDB().get_asset_name(result['asset_id'], full=True)
+            if float(result['value_share']) < 1:
+                description += f" ({float(result['value_share'])*100.0} %)"
+        return description
 
     def value_change(self) -> list:
-        if self._subtype == CorporateAction.SpinOff:
-            return [None, self._qty_after - self._qty]
-        elif self._subtype == CorporateAction.Delisting:
-            return [-self._qty, None]
-        else:
-            return [-self._qty, self._qty_after]
+        result = []
+        if self._subtype != CorporateAction.SpinOff:
+            result.append(-self._qty)
+        query = executeSQL("SELECT qty FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
+        while query.next():
+            result.append(readSQLrecord(query))
+        if len(result) == 1:  # Need to feel at least 2 lines
+            result.append(None)
+        return result
 
     def value_currency(self) -> str:
-        if self._subtype == CorporateAction.SpinOff:
-            return f" {self._asset_symbol}\n {self._asset_new_symbol}"
-        elif self._subtype == CorporateAction.Delisting:
-            return f" {self._asset_symbol}\n"
+        if self._subtype != CorporateAction.SpinOff:
+            symbol = f" {self._asset_symbol}\n"
         else:
-            return f"\n {self._asset_new_symbol}"
+            symbol = ""
+        query = executeSQL("SELECT asset_id FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
+        while query.next():
+            symbol += f" {JalDB().get_asset_name(readSQLrecord(query))}\n"
+        return symbol[:-1]  # Crop ending line break
 
     def value_total(self) -> str:
-        if self._subtype == CorporateAction.SpinOff:
-            return f"{self._qty:,.2f}\n{self._qty_after:,.2f}"
-        elif self._subtype == CorporateAction.Delisting:
-            return f"{self._qty_after:,.2f}\n"
-        else:
-            return f"\n{self._qty_after:,.2f}"
+        balance = ""
+        changes = self.value_change()
+        for value in changes:
+            if value is None:
+                balance += "\n"
+            elif value < 0:
+                balance += f"{0.00:,.2f}\n"
+            else:
+                balance += f"{value:,.2f}\n"
+        return balance[:-1]  # Crop ending line break
 
     def processLedger(self, ledger):
         # Get asset amount accumulated before current operation

@@ -183,18 +183,13 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         painter.save()
         data = index.model().data(index)
-        if len(data) == 1:
-            self.draw_value(option.rect, painter, data[0])
-        elif len(data) == 2:
-            rect = option.rect
-            H = rect.height()
-            Y = rect.top()
-            rect.setHeight(H / 2)
-            self.draw_value(option.rect, painter, data[0])
-            rect.moveTop(Y + H / 2)
-            self.draw_value(option.rect, painter, data[1])
-        else:
-            assert False
+        rect = option.rect
+        H = rect.height()
+        Y = rect.top()
+        rect.setHeight(H / len(data))
+        for i, item in enumerate(data):
+            rect.moveTop(Y + i * (H / len(data)))
+            self.draw_value(option.rect, painter, item)
         painter.restore()
 
     def draw_value(self, rect, painter, value):
