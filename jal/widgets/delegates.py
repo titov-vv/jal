@@ -104,7 +104,7 @@ class TimestampDelegate(QStyledItemDelegate):
 class FloatDelegate(QStyledItemDelegate):
     DEFAULT_TOLERANCE = 6
 
-    def __init__(self, tolerance=None, allow_tail=True, colors=False, parent=None):
+    def __init__(self, tolerance=None, allow_tail=True, colors=False, percent=False, parent=None):
         self._parent = parent
         QStyledItemDelegate.__init__(self, parent)
         try:
@@ -114,11 +114,14 @@ class FloatDelegate(QStyledItemDelegate):
         self._allow_tail = allow_tail
         self._colors = colors
         self._color = None
+        self._percent = percent
         self._validator = QDoubleValidator()
         self._validator.setLocale(QLocale().system())
 
     def formatFloatLong(self, value):
         precision = self._tolerance
+        if self._percent:
+            value *= 100.0
         decimal_places = -decimal.Decimal(str(value).rstrip('0')).as_tuple().exponent
         if self._allow_tail and (decimal_places > self._tolerance):
             precision = decimal_places
@@ -146,6 +149,8 @@ class FloatDelegate(QStyledItemDelegate):
             amount = float(index.model().data(index, Qt.EditRole))
         except (ValueError, TypeError):
             amount = 0.0
+        if self._percent:
+            amount *= 100.0
         # QLocale().toString works in a bit weird way with float formatting - garbage appears after 5-6 decimal digits
         # if too long precision is specified for short number. So we need to be more precise setting precision.
         decimal_places = -decimal.Decimal(str(amount).rstrip('0')).as_tuple().exponent
@@ -153,6 +158,8 @@ class FloatDelegate(QStyledItemDelegate):
 
     def setModelData(self, editor, model, index):
         value = QLocale().toDouble(editor.text())[0]
+        if self._percent:
+            value /= 100.0
         model.setData(index, value)
 
     def initStyleOption(self, option, index):

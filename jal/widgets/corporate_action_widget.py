@@ -31,6 +31,7 @@ class CorporateActionWidget(AbstractOperationDetails):
 
         self.asset_delegate = AssetSelectorDelegate()
         self.float_delegate = FloatDelegate(2)
+        self.percent_delegate = FloatDelegate(2, percent=True)
 
         self.date_label = QLabel(self)
         self.account_label = QLabel(self)
@@ -128,7 +129,7 @@ class CorporateActionWidget(AbstractOperationDetails):
 
         self.results_table.setItemDelegateForColumn(2, self.asset_delegate)
         self.results_table.setItemDelegateForColumn(3, self.float_delegate)
-        self.results_table.setItemDelegateForColumn(4, self.float_delegate)
+        self.results_table.setItemDelegateForColumn(4, self.percent_delegate)
 
         self.model.select()
         self.results_model.select()
