@@ -1,14 +1,15 @@
+import logging
 from datetime import datetime
 from dateutil import tz
 
-from PySide6.QtCore import Qt, QStringListModel, QByteArray
-from PySide6.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QComboBox, QTableView, QHeaderView
+from PySide6.QtCore import Qt, Slot, QStringListModel, QByteArray
+from PySide6.QtWidgets import QLabel, QDateTimeEdit, QLineEdit, QComboBox, QTableView, QHeaderView, QPushButton
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtGui import QFont
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase, AssetSelectorDelegate, FloatDelegate
-from jal.db.helpers import db_connection
+from jal.db.helpers import db_connection, load_icon, executeSQL
 from jal.db.operations import LedgerTransaction
 
 
@@ -65,6 +66,10 @@ class CorporateActionWidget(AbstractOperationDetails):
         self.qty_edit = QLineEdit(self)
         self.number = QLineEdit(self)
         self.comment = QLineEdit(self)
+        self.add_button = QPushButton(load_icon("add.png"), '', self)
+        self.add_button.setToolTip(self.tr("Add asset"))
+        self.del_button = QPushButton(load_icon("remove.png"), '', self)
+        self.del_button.setToolTip(self.tr("Remove asset"))
         self.results_table = QTableView(self)
         self.results_table.horizontalHeader().setFont(self.bold_font)
         self.results_table.setAlternatingRowColors(True)
@@ -95,9 +100,14 @@ class CorporateActionWidget(AbstractOperationDetails):
 
         self.layout.addWidget(self.commit_button, 0, 7, 1, 1)
         self.layout.addWidget(self.revert_button, 0, 8, 1, 1)
+        self.layout.addWidget(self.add_button, 1, 7, 1, 1)
+        self.layout.addWidget(self.del_button, 1, 8, 1, 1)
 
         self.layout.addItem(self.verticalSpacer, 7, 5, 1, 1)
         self.layout.addItem(self.horizontalSpacer, 1, 6, 1, 1)
+
+        self.add_button.clicked.connect(self.addResult)
+        self.del_button.clicked.connect(self.delResult)
 
         super()._init_db("asset_actions")
         self.combo_model = QStringListModel([self.tr("N/A"),
@@ -139,6 +149,52 @@ class CorporateActionWidget(AbstractOperationDetails):
         super().setId(id)
         self.results_model.setFilter(f"action_results.action_id = {id}")
 
+    @Slot()
+    def addResult(self):
+        new_record = self.results_model.record()
+        new_record.setValue("qty", 0)
+        new_record.setValue("value_share", 0)
+        if not self.results_model.insertRecord(-1, new_record):
+            logging.fatal(self.tr("Failed to add new record: ") + self.results_model.lastError().text())
+            return
+
+    @Slot()
+    def delResult(self):
+        selection = self.results_table.selectionModel().selection().indexes()
+        for idx in selection:
+            self.results_model.removeRow(idx.row())
+            self.onDataChange(idx, idx, None)
+
+    @Slot()
+    def saveChanges(self):
+        if not self.model.submitAll():
+            logging.fatal(self.tr("Operation submit failed: ") + self.model.lastError().text())
+            return
+        oid = self.model.data(self.model.index(0, self.model.fieldIndex("id")))
+        if oid is None:  # we just have saved new action record and need last inserted id
+            oid = self.model.query().lastInsertId()
+        for row in range(self.results_model.rowCount()):
+            self.results_model.setData(self.results_model.index(row, self.results_model.fieldIndex("action_id")), oid)
+        if not self.results_model.submitAll():
+            logging.fatal(self.tr("Operation details submit failed: ") + self.results_model.lastError().text())
+            return
+        self.modified = False
+        self.commit_button.setEnabled(False)
+        self.revert_button.setEnabled(False)
+        self.dbUpdated.emit()
+
+    @Slot()
+    def revertChanges(self):
+        self.model.revertAll()
+        self.results_model.revertAll()
+        self.modified = False
+        self.commit_button.setEnabled(False)
+        self.revert_button.setEnabled(False)
+
+    def createNew(self, account_id=0):
+        super().createNew(account_id)
+        self.results_model.setFilter(f"action_results.action_id = 0")
+
     def prepareNew(self, account_id):
         new_record = super().prepareNew(account_id)
         new_record.setValue("timestamp", int(datetime.now().replace(tzinfo=tz.tzutc()).timestamp()))
@@ -149,6 +205,18 @@ class CorporateActionWidget(AbstractOperationDetails):
         new_record.setValue("qty", 0)
         new_record.setValue("note", None)
         return new_record
+
+    def copyNew(self):
+        old_id = self.model.record(self.mapper.currentIndex()).value(0)
+        super().copyNew()
+        self.results_model.setFilter(f"action_results.action_id = 0")
+        query = executeSQL("SELECT * FROM action_results WHERE action_id = :oid ORDER BY id DESC", [(":oid", old_id)])
+        while query.next():
+            new_record = query.record()
+            new_record.setNull("id")
+            new_record.setNull("action_id")
+            assert self.results_model.insertRows(0, 1)
+            self.results_model.setRecord(0, new_record)
 
     def copyToNew(self, row):
         new_record = self.model.record(row)
@@ -164,7 +232,7 @@ class ResultsModel(QSqlTableModel):
     def __init__(self, parent_view, db):
         super().__init__(parent=parent_view, db=db)
         self._columns = ["id", "action_id", self.tr("Asset"), self.tr("Qty"), self.tr("Share, %")]
-        self.deleted = []
+        self.deleted = []   # FIXME - this list isn't properly cleaned after deletion and change of an operation
         self._view = parent_view
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
@@ -198,8 +266,6 @@ class ResultsModel(QSqlTableModel):
     def configureView(self):
         self._view.setColumnHidden(0, True)
         self._view.setColumnHidden(1, True)
-        self._view.setColumnWidth(2, 100)
         self._view.setColumnWidth(3, 100)
         self._view.setColumnWidth(4, 100)
-        self._view.horizontalHeader().setSectionResizeMode(6, QHeaderView.Stretch)
-        self._view.horizontalHeader().moveSection(6, 0)
+        self._view.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
