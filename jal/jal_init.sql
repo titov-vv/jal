@@ -677,8 +677,7 @@ CREATE TRIGGER action_details_after_update
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger
-          WHERE timestamp >= (SELECT timestamp FROM actions WHERE id = OLD.pid );
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM actions WHERE id = OLD.pid );
 END;
 
 -- Trigger: actions_after_delete

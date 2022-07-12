@@ -57,31 +57,31 @@ BEGIN
     DELETE FROM open_trades WHERE timestamp >= OLD.timestamp  OR timestamp >= NEW.timestamp;
 END;
 
+DROP TRIGGER IF EXISTS asset_result_after_delete;
 CREATE TRIGGER asset_result_after_delete
       AFTER DELETE ON action_results
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp;
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE id = OLD.action_id);
 END;
 
+DROP TRIGGER IF EXISTS asset_result_after_insert;
 CREATE TRIGGER asset_result_after_insert
       AFTER INSERT ON action_results
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= NEW.timestamp;
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE id = NEW.action_id);
 END;
 
+DROP TRIGGER IF EXISTS asset_result_after_update;
 CREATE TRIGGER asset_result_after_update
       AFTER UPDATE OF asset_id, qty, value_share ON action_results
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp  OR timestamp >= NEW.timestamp;
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE id = OLD.action_id);
 END;
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 1;
