@@ -14,8 +14,8 @@ def test_spin_off(prepare_db_fifo):
     create_stocks(test_assets, currency_id=2)
 
     test_corp_actions = [
-        (1622548800, CorporateAction.SpinOff, 4, 100.0, 5, 5.0, 1.0, 'Spin-off 5 B from 100 A'),   # 01/06/2021, cost basis 0.0
-        (1627819200, CorporateAction.Split, 4, 104.0, 4, 13.0, 1.0, 'Split A 104 -> 13')           # 01/08/2021
+        (1622548800, CorporateAction.SpinOff, 4, 100.0, 'Spin-off 5 B from 100 A', [(4, 100.0, 1.0), (5, 5.0, 0.0)]),   # 01/06/2021
+        (1627819200, CorporateAction.Split, 4, 104.0, 'Split A 104 -> 13', [(4, 13.0, 1.0)])           # 01/08/2021
     ]
     create_corporate_actions(1, test_corp_actions)
 

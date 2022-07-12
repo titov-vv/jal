@@ -122,16 +122,20 @@ def create_trades(account_id, trades):
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Create corporate actions for given account_id in database: actions is a list of tuples
-# (timestamp, type, asset_old, qty_old, asset_new, qty_new, basis, note)
+# (timestamp, type, asset_old, qty_old, note, [(asset_new1, qty_new1, share1), (asset_new2, qty_new2, share2), ...])
 def create_corporate_actions(account_id, actions):
     for action in actions:
-        assert executeSQL("INSERT INTO corp_actions (timestamp, account_id, type, asset_id, qty, asset_id_new, "
-                          "qty_new, basis_ratio, note) VALUES (:timestamp, :account_id, :type, :asset_id, :qty, "
-                          ":asset_id_new, :qty_new, :basis, :note)",
+        query = executeSQL("INSERT INTO asset_actions (timestamp, account_id, type, asset_id, qty, note) "
+                           "VALUES (:timestamp, :account_id, :type, :asset_id, :qty, :note)",
                           [(":timestamp", action[0]), (":account_id", account_id), (":type", action[1]),
-                           (":asset_id", action[2]), (":qty", action[3]), (":asset_id_new", action[4]),
-                           (":qty_new", action[5]), (":basis", action[6]), (":note", action[7])],
-                          commit=True) is not None
+                           (":asset_id", action[2]), (":qty", action[3]), (":note", action[4])], commit=True)
+        assert query is not None
+        action_id = query.lastInsertId()
+        for result in action[5]:
+            assert executeSQL("INSERT INTO action_results (action_id, asset_id, qty, value_share) "
+                              "VALUES (:action_id, :asset_id, :qty, :value_share)",
+                              [(":action_id", action_id), (":asset_id", result[0]),
+                               (":qty", result[1]), (":value_share", result[2])], commit=True) is not None
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Create transfers in database: transfers is a list of transfers as tuples
