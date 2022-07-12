@@ -758,7 +758,7 @@ class CorporateAction(LedgerTransaction):
             symbol += f" {JalDB().get_asset_name(readSQLrecord(query))}\n"
         return symbol[:-1]  # Crop ending line break
 
-    def value_total(self) -> str:
+    def value_total(self) -> str:    # FIXME - Method may give incorrect result if 'outgoing' asset was present before operation
         balance = ""
         changes = self.value_change()
         for value in changes:
@@ -782,42 +782,23 @@ class CorporateAction(LedgerTransaction):
                              + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
                              + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
         processed_qty, processed_value = self._close_deals_fifo(-1, self._qty, None)
-        # Asset allocations for different corporate actions:
-        # +-----------------+-------+-----+------------+-----------+----------+---------------+
-        # |                 | Asset | Qty | cost basis | Asset new | Qty new  | cost basis    |
-        # +-----------------+-------+-----+------------+-----------+----------+---------------+
-        # | Symbol Change   |   A   |  N  |  100 %     |     B     |    N     |   100%        |
-        # | (R-)Split       |   A   |  N  |  100 %     |     A     |    M     |   100%        |
-        # | Merger          |   A   |  N  |  100 %     |     B     |    M     |   100%        |
-        # | Spin-Off        |   A   |  N  |  100 %     |   A & B   | AxN, BxM | X% & (100-X)% |
-        # | Delisting       |   A   |  N  |  100 %     |   None    |   None   |    0 %        |
-        # +-----------------+-------+-----+------------+-----------+----------+---------------+
-        # Withdraw value with old quantity of old asset as it common for all corporate action
+        # Withdraw value with old quantity of old asset
         ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
                                  asset_id=self._asset, value=-processed_value)
-        if self._subtype == CorporateAction.Delisting:  # Map value to costs
+        if self._subtype == CorporateAction.Delisting:  # Map value to costs and exit - nothing more for delisting
             ledger.appendTransaction(self, BookAccount.Costs, processed_value,
                                      category=PredefinedCategory.Profit, peer=self._broker)
             return
-        new_value = processed_value
-        if self._subtype == CorporateAction.SpinOff:
-            new_value = processed_value * (1 - self._basis)
-            price = (processed_value - new_value) / self._qty
-            # Modify value for old asset
-            ledger.appendTransaction(self, BookAccount.Assets, self._qty,
-                                     asset_id=self._asset, value=processed_value - new_value)
+        # Process assets after corporate action
+        query = executeSQL("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
+                           [(":oid", self._oid)])
+        while query.next():
+            asset, qty, share = readSQLrecord(query)
+            value = share * processed_value
+            price = value / qty
             _ = executeSQL(
                 "INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
                 "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
                 [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
-                 (":account_id", self._account), (":asset_id", self._asset), (":price", price),
-                 (":remaining_qty", self._qty)])
-        # Create value for new asset
-        new_price = new_value / self._qty_after
-        _ = executeSQL(
-            "INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
-            "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
-            [(":timestamp", self._timestamp), (":type",self._otype), (":operation_id", self._oid),
-             (":account_id", self._account), (":asset_id", self._asset_new), (":price", new_price),
-             (":remaining_qty", self._qty_after)])
-        ledger.appendTransaction(self, BookAccount.Assets, self._qty_after, asset_id=self._asset_new, value=new_value)
+                 (":account_id", self._account), (":asset_id", asset), (":price", price),(":remaining_qty", qty)])
+            ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset, value=value)
