@@ -369,7 +369,7 @@ CREATE TABLE asset_actions (
 DROP TABLE IF EXISTS action_results;
 CREATE TABLE action_results (
     id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
-    action_id   INTEGER NOT NULL REFERENCES corp_actions (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    action_id   INTEGER NOT NULL REFERENCES asset_actions (id) ON DELETE CASCADE ON UPDATE CASCADE,
     asset_id    INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     qty         REAL    NOT NULL,
     value_share REAL    NOT NULL
@@ -816,8 +816,7 @@ CREATE TRIGGER asset_result_after_delete
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp;
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE id = OLD.action_id);
 END;
 
 DROP TRIGGER IF EXISTS asset_result_after_insert;
@@ -826,8 +825,7 @@ CREATE TRIGGER asset_result_after_insert
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= NEW.timestamp;
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE id = NEW.action_id);
 END;
 
 DROP TRIGGER IF EXISTS asset_result_after_update;
@@ -836,8 +834,7 @@ CREATE TRIGGER asset_result_after_update
       FOR EACH ROW
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp  OR timestamp >= NEW.timestamp;
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM asset_actions WHERE id = OLD.action_id);
 END;
 
 DROP TRIGGER IF EXISTS transfers_after_delete;

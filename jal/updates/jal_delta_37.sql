@@ -2,11 +2,13 @@ BEGIN TRANSACTION;
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 0;
 --------------------------------------------------------------------------------
+ALTER TABLE corp_actions RENAME TO asset_actions;
+
 -- Make new structure for corporate actions
 DROP TABLE IF EXISTS action_results;
 CREATE TABLE action_results (
     id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
-    action_id   INTEGER NOT NULL REFERENCES corp_actions (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    action_id   INTEGER NOT NULL REFERENCES asset_actions (id) ON DELETE CASCADE ON UPDATE CASCADE,
     asset_id    INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     qty         REAL    NOT NULL,
     value_share REAL    NOT NULL
@@ -15,16 +17,15 @@ CREATE TABLE action_results (
 -- Populate new table with corporate actions' results
 INSERT INTO action_results (action_id, asset_id, qty, value_share)
 SELECT id, asset_id, qty, value_share FROM
-(SELECT id, asset_id_new AS asset_id, qty_new AS qty, basis_ratio AS value_share FROM corp_actions
+(SELECT id, asset_id_new AS asset_id, qty_new AS qty, basis_ratio AS value_share FROM asset_actions
 UNION ALL
-SELECT id, asset_id, qty, (1-basis_ratio) AS value_share FROM corp_actions WHERE basis_ratio<1)
+SELECT id, asset_id, qty, (1-basis_ratio) AS value_share FROM asset_actions WHERE basis_ratio<1)
 ORDER BY id;
 
--- Trim and rename initial corporate actions table
-ALTER TABLE corp_actions DROP COLUMN asset_id_new;
-ALTER TABLE corp_actions DROP COLUMN qty_new;
-ALTER TABLE corp_actions DROP COLUMN basis_ratio;
-ALTER TABLE corp_actions RENAME TO asset_actions;
+-- Trim initial corporate actions table
+ALTER TABLE asset_actions DROP COLUMN asset_id_new;
+ALTER TABLE asset_actions DROP COLUMN qty_new;
+ALTER TABLE asset_actions DROP COLUMN basis_ratio;
 
 -- Create triggers
 DROP TRIGGER IF EXISTS corp_after_delete;
