@@ -351,7 +351,7 @@ CREATE TABLE tags (
 );
 
 
--- Table: asset_actions
+-- Table to store about corporate actions that transform one asset into another
 DROP TABLE IF EXISTS asset_actions;
 CREATE TABLE asset_actions (
     id           INTEGER     PRIMARY KEY UNIQUE NOT NULL,
@@ -365,10 +365,18 @@ CREATE TABLE asset_actions (
     note         TEXT (1024)
 );
 
+-- Table to store information about assets that appear after corporate action
+DROP TABLE IF EXISTS action_results;
+CREATE TABLE action_results (
+    id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    action_id   INTEGER NOT NULL REFERENCES corp_actions (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    asset_id    INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    qty         REAL    NOT NULL,
+    value_share REAL    NOT NULL
+);
 
 -- Table: trades
 DROP TABLE IF EXISTS trades;
-
 CREATE TABLE trades (
     id         INTEGER     PRIMARY KEY
                            UNIQUE
