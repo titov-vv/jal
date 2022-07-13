@@ -51,7 +51,7 @@ def test_symbol_change(prepare_db_fifo):
     create_stocks(test_assets, currency_id=2)
 
     test_corp_actions = [
-        (1622548800, CorporateAction.SymbolChange, 4, 100.0, 5, 100.0, 1.0, 'Symbol change 100 A -> 100 B')
+        (1622548800, CorporateAction.SymbolChange, 4, 100.0, 'Symbol change 100 A -> 100 B', [(5, 100.0, 1.0)])
     ]
     create_corporate_actions(1, test_corp_actions)
 
@@ -73,7 +73,7 @@ def test_delisting(prepare_db_fifo):
     create_stocks([(4, 'A', 'A SHARE')], currency_id=2)
 
     test_corp_actions = [
-        (1622548800, CorporateAction.Delisting, 4, 100.0, 4, 0.0, 1.0, 'Delisting 100 A')
+        (1622548800, CorporateAction.Delisting, 4, 100.0, 'Delisting 100 A', [(4, 0.0, 1.0)])
     ]
     create_corporate_actions(1, test_corp_actions)
 
