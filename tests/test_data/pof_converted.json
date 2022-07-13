@@ -1,7 +1,7 @@
 {
   "period": [1528528500, 1656742002],
   "accounts": [
-    {"id": 10, "currency": 0, "type": "investment", "number": "Account #1"}
+    {"id": 10, "currency": 0, "type": "investment", "number": "Imported #1"}
   ],
   "assets": [
     {"id": 0, "type": "money", "name": "Рубль"},

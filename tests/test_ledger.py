@@ -196,12 +196,12 @@ def test_fifo(prepare_db_fifo):
     create_stocks(test_assets, currency_id=2)
 
     test_corp_actions = [
-        (1606899600, 3, 10, 100.0, 11, 100.0, 1.0, 'Symbol change G1 -> G2'),
-        (1606986000, 2, 11, 100.0, 12, 20.0, 0.8, 'Spin-off H from G2'),
-        (1607763600, 4, 14, 15.0, 14, 30.0, 1.0, 'Split L 15 -> 30'),
-        (1607850000, 3, 13, 5.0, 15, 5.0, 1.0, 'Another symbol change K -> M'),
-        (1607936412, 1, 14, 30.0, 15, 20.0, 1.0, 'Merger 30 L into 20 M'),
-        (1608022800, 4, 15, 25.0, 15, 5.0, 1.0, 'Split M 25 -> 5')
+        (1606899600, 3, 10, 100.0, 'Symbol change G1 -> G2', [(11, 100.0, 1.0)]),
+        (1606986000, 2, 11, 100.0, 'Spin-off H from G2', [(12, 20.0, 0.8)]),
+        (1607763600, 4, 14, 15.0, 'Split L 15 -> 30', [(14, 30.0, 1.0)]),
+        (1607850000, 3, 13, 5.0, 'Another symbol change K -> M', [(15, 5.0, 1.0)]),
+        (1607936412, 1, 14, 30.0, 'Merger 30 L into 20 M', [(15, 20.0, 1.0)]),
+        (1608022800, 4, 15, 25.0, 'Split M 25 -> 5', [(15, 5.0, 1.0)])
     ]
     create_corporate_actions(1, test_corp_actions)
 

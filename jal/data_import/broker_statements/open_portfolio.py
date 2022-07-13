@@ -88,7 +88,7 @@ class StatementOpenPortfolio(Statement):
             currency = [x for x in self._data["symbols"] if x["symbol"] == account["valuation-currency"]][0]
             account['currency'] = currency['asset']
             if "number" not in account:
-                account["number"] = self.tr("Imported") + str(account_number)
+                account["number"] = self.tr("Imported #") + str(account_number)
                 account_number += 1
             account.pop("valuation-currency")
             account.pop("valuation")
