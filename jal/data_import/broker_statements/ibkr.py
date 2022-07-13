@@ -554,7 +554,7 @@ class StatementIBKR(StatementXML):
         description_b = action['description'][:parts.span('symbol')[0]] + merger_a['symbol_old']
         asset_b = self.locate_asset(merger_a['symbol_old'], merger_a['isin_old'])
 
-        if pattern_id == 4:  # Asset converted to money -> we store it as a sell trade
+        if pattern_id == 4:  # Asset converted to money -> store it as a sell trade
             action['id'] = max([0] + [x['id'] for x in self._data[FOF.TRADES]]) + 1
             action['settlement'] = action['timestamp']
             action['price'] = action['proceeds'] / (-action['quantity'])
@@ -565,38 +565,40 @@ class StatementIBKR(StatementXML):
             return 1
 
         paired_record = self.find_corp_action_pair(asset_b, description_b, action, parts_b)
-        # Process cash payment if it is present as part of corporate action
-        if (pattern_id == 1 or pattern_id == 2) and (not paired_record[0]['jal_processed']):
-            self.add_merger_payment(action['timestamp'], action['account'], paired_record[0]['proceeds'],
-                                    parts['currency'], action['description'])
+        # Adjust quantity for bonds
+        adj_factor = IBKR_Asset.BondPrincipal if action['asset_type'] == FOF.ASSET_BOND else 1.0
+        existing_action = None
         # Special processing if 1 asset is converted into two other assets
-        if (pattern_id == 2 or pattern_id == 5) and (not paired_record[0]['jal_processed']):
-            action['timestamp'] -= 1
-            action['type'] = FOF.ACTION_SPINOFF   # FIXME it is temporary workaround to keep 2 outgoing assets - one as from spin-off, another from merger
-        action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
-        action['cost_basis'] = 1.0
-        action['asset'] = [paired_record[0]['asset'], action['asset']]
-        if action['asset_type'] == FOF.ASSET_BOND:  # Adjust number of bonds
-            action['quantity'] = [-paired_record[0]['quantity']/IBKR_Asset.BondPrincipal,
-                                  action['quantity']/IBKR_Asset.BondPrincipal]
+        if pattern_id == 2 or pattern_id == 5:
+            existing_action = self.locate_existing_merger(action['timestamp'],
+                                                          action['account'], paired_record[0]['asset'])
+        if existing_action is None:
+            action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
+            action['outcome'] = [{'asset': action['asset'], 'quantity': action['quantity']/adj_factor, 'share': 1.0}]
+            action['asset'] = paired_record[0]['asset']
+            action['quantity'] = -paired_record[0]['quantity']/adj_factor
+            # Process cash payment if it is present as part of corporate action
+            if pattern_id == 1 or pattern_id == 2:
+                payment = {'asset': self.currency_id(parts['currency']),
+                           'quantity': paired_record[0]['proceeds'], 'share': 0.0}
+                action['outcome'].insert(0, payment)
+            self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
+            self._data[FOF.CORP_ACTIONS].append(action)
         else:
-            action['quantity'] = [-paired_record[0]['quantity'], action['quantity']]
-        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
-        self._data[FOF.CORP_ACTIONS].append(action)
-
+            next_outcome = {'asset': action['asset'], 'quantity': action['quantity']/adj_factor, 'share': 0.0}
+            existing_action['outcome'].append(next_outcome)
         paired_record[0]['jal_processed'] = True
-
         return 2
 
-    def add_merger_payment(self, timestamp, account_id, amount, currency, description):
-        currency_id = self.currency_id(currency)
-        account = [x for x in self._data[FOF.ACCOUNTS] if x['id'] == account_id][0]
-        if account['currency'] != currency_id:
-            account_id = IBKR_Account(self._data[FOF.ACCOUNTS], account['number'], [currency_id]).id
-        payment_base = max([0] + [x['id'] for x in self._data[FOF.INCOME_SPENDING]]) + 1
-        payment = {'id': payment_base, 'account': account_id, 'timestamp': timestamp, 'peer': 0,
-                   'lines': [{'amount': amount, 'category': -PredefinedCategory.Interest, 'description': description}]}
-        self._data[FOF.INCOME_SPENDING].append(payment)
+    def locate_existing_merger(self, timestamp, account, asset):
+        existing_merger = list(filter(
+            lambda merger: merger['type'] == FOF.ACTION_MERGER and merger['timestamp'] == timestamp
+                           and merger['account'] == account and merger['asset'] == asset, self._data[FOF.CORP_ACTIONS]))
+        if len(existing_merger) == 0:
+            return None
+        if len(existing_merger) != 1:
+            raise Statement_ImportError(self.tr("Multiple merger records already exist at ") + f"{timestamp}")
+        return existing_merger[0]
 
     def load_spinoff(self, action, _parts_b) -> int:
         SpinOffPattern = r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +SPINOFF +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), (?P<name>.*), (?P<id>\w+)\)$"
@@ -615,9 +617,10 @@ class StatementIBKR(StatementXML):
             raise Statement_ImportError(self.tr("Spin-off rounding error is too big ") + f"'{action}'")
         qty_old = round(qty_old)
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
-        action['cost_basis'] = 0.0
-        action['asset'] = [asset_old, action['asset']]
-        action['quantity'] = [qty_old, action['quantity']]
+        action['outcome'] = [{'asset': asset_old, 'quantity': qty_old, 'share': 1.0},
+                             {'asset': action['asset'], 'quantity': action['quantity'], 'share': 0.0}]
+        action['asset'] = asset_old
+        action['quantity'] = qty_old
         self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
         self._data[FOF.CORP_ACTIONS].append(action)
         return 1
@@ -635,9 +638,9 @@ class StatementIBKR(StatementXML):
         asset_b = self.locate_asset(isin_change['symbol_old'], isin_change['isin_old'])
         paired_record = self.find_corp_action_pair(asset_b, description_b, action, parts_b)
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
-        action['cost_basis'] = 1.0
-        action['asset'] = [paired_record[0]['asset'], action['asset']]
-        action['quantity'] = [-paired_record[0]['quantity'], action['quantity']]
+        action['outcome'] = [{'asset': action['asset'], 'quantity': action['quantity'], 'share': 1.0}]
+        action['asset'] = paired_record[0]['asset']
+        action['quantity'] = -paired_record[0]['quantity']
         self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
         self._data[FOF.CORP_ACTIONS].append(action)
         paired_record[0]['jal_processed'] = True
@@ -673,9 +676,8 @@ class StatementIBKR(StatementXML):
             qty_old = qty_delta / (int(split['X']) / int(split['Y']) - 1)
             qty_new = qty_old + qty_delta
             action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
-            action['cost_basis'] = 1.0
-            action['asset'] = [action['asset'], action['asset']]
-            action['quantity'] = [qty_old, qty_new]
+            action['outcome'] = [{'asset': action['asset'], 'quantity': qty_new, 'share': 1.0}]
+            action['quantity'] = qty_old
             self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
             self._data[FOF.CORP_ACTIONS].append(action)
             return 1
@@ -684,9 +686,9 @@ class StatementIBKR(StatementXML):
             asset_b = self.locate_asset(split['symbol_old'], split['isin_old'])
             paired_record = self.find_corp_action_pair(asset_b, description_b, action, parts_b)
             action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
-            action['cost_basis'] = 1.0
-            action['asset'] = [paired_record[0]['asset'], action['asset']]
-            action['quantity'] = [-paired_record[0]['quantity'], action['quantity']]
+            action['outcome'] = [{'asset': action['asset'], 'quantity': action['quantity'], 'share': 1.0}]
+            action['asset'] = paired_record[0]['asset']
+            action['quantity'] = -paired_record[0]['quantity']
             self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
             self._data[FOF.CORP_ACTIONS].append(action)
             paired_record[0]['jal_processed'] = True
@@ -711,9 +713,9 @@ class StatementIBKR(StatementXML):
         if asset['type'] == FOF.ASSET_RIGHTS:
             return 0
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
-        action['asset'] = [action['asset'], action['asset']]
-        action['quantity'] = [-action['quantity'], 0.0]
-        action['cost_basis'] = 1.0
+        action['asset'] = action['asset']
+        action['quantity'] = -action['quantity']
+        action['outcome'] = []
         self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
         self._data[FOF.CORP_ACTIONS].append(action)
         return 1
