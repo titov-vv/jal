@@ -229,6 +229,10 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                         element[tag_name] = [-new_value if x == old_value else x for x in element[tag_name]]
                     else:
                         element[tag_name] = -new_value if element[tag_name] == old_value else element[tag_name]
+        for element in self._data[FOF.CORP_ACTIONS]:  # Corporate actions have 'outcome' subsection with assets
+            for item in element['outcome']:
+                if self._key_match(item, tag_name, old_value):
+                    item[tag_name] = -new_value if item[tag_name] == old_value else item[tag_name]
 
     # Deletes element if it's 'tag_name' key matches 'value'
     def _delete_with_id(self, tag_name, value):
@@ -452,28 +456,21 @@ class Statement(QObject):   # derived from QObject to have proper string transla
 
     def _import_corporate_actions(self, actions):
         for action in actions:
+            outcome = []
             if action['account'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched account for corporate action: ") + f"{action}")
-            if type(action['asset']) == list:
-                asset_old = -action['asset'][0]
-                asset_new = -action['asset'][1]
-            else:
-                asset_old = asset_new = -action['asset']
-            if asset_old < 0 or asset_new < 0:
+            if action['asset'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched asset for corporate action: ") + f"{action}")
-            if type(action['quantity']) == list:
-                qty_old = action['quantity'][0]
-                qty_new = action['quantity'][1]
-            else:
-                qty_old = -1
-                qty_new = action['quantity']
+            for item in action['outcome']:
+                if item['asset'] > 0:
+                    raise Statement_ImportError(self.tr("Unmatched asset for corporate action: ") + f"{action}")
+                outcome.append(item)
             try:
                 action_type = self._corp_actions[action['type']]
             except KeyError:
                 raise Statement_ImportError(self.tr("Unsupported corporate action: ") + f"{action}")
             JalDB().add_corporate_action(-action['account'], action_type, action['timestamp'], action['number'],
-                                         asset_old, qty_old, asset_new, qty_new,
-                                         action['cost_basis'], action['description'])
+                                         -action['asset'], action['quantity'], outcome, action['description'])
 
     def select_account(self, text, account_id, recent_account_id=0):
         if "pytest" in sys.modules:

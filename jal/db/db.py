@@ -439,24 +439,25 @@ class JalDB:
                             (":f_amount", f_amount), (":t_amount", t_amount), (":note", note), (":asset", asset)],
                            commit=True)
 
-    def add_corporate_action(self, account_id, type, timestamp, number,
-                             asset_id_old, qty_old, asset_id_new, qty_new, basis_ratio, note):
-        action_id = readSQL("SELECT id FROM corp_actions "
-                            "WHERE timestamp=:timestamp AND type = :type AND account_id = :account AND number = :number "
-                            "AND asset_id = :asset AND asset_id_new = :asset_new",
-                            [(":timestamp", timestamp), (":type", type), (":account", account_id), (":number", number),
-                             (":asset", asset_id_old), (":asset_new", asset_id_new)])
+    def add_corporate_action(self, account_id, type, timestamp, number, asset, qty, outcome, note):
+        action_id = readSQL("SELECT id FROM asset_actions "
+                            "WHERE timestamp=:timestamp AND type = :type AND account_id = :account "
+                            "AND number = :number AND asset_id = :asset",
+                            [(":timestamp", timestamp), (":type", type), (":account", account_id),
+                             (":number", number), (":asset", asset)])
         if action_id:
             logging.info(self.tr("Corporate action already exists: #") + f"{number}")
             return
-
-        _ = executeSQL("INSERT INTO corp_actions (timestamp, number, account_id, type, "
-                       "asset_id, qty, asset_id_new, qty_new, basis_ratio, note) "
-                       "VALUES (:timestamp, :number, :account, :type, "
-                       ":asset, :qty, :asset_new, :qty_new, :basis_ratio, :note)",
-                       [(":timestamp", timestamp), (":number", number), (":account", account_id), (":type", type),
-                        (":asset", asset_id_old), (":qty", float(qty_old)), (":asset_new", asset_id_new),
-                        (":qty_new", float(qty_new)), (":basis_ratio", basis_ratio), (":note", note)], commit=True)
+        query = executeSQL("INSERT INTO asset_actions (timestamp, number, account_id, type, asset_id, qty, note) "
+                           "VALUES (:timestamp, :number, :account, :type, :asset, :qty, :note)",
+                           [(":timestamp", timestamp), (":number", number), (":account", account_id), (":type", type),
+                            (":asset", asset), (":qty", float(qty)), (":note", note)], commit=True)
+        action_id = query.lastInsertId()
+        for item in outcome:
+            _ = executeSQL("INSERT INTO action_results (action_id, asset_id, qty, value_share) "
+                           "VALUES (:action_id, :asset_id, :qty, :value_share)",
+                           [(":action_id", action_id), (":asset_id", -item['asset']), (":qty", item['quantity']),
+                            (":value_share", item['share'])], commit=True)
 
     def add_cash_transaction(self, account_id, broker_id, timestamp, lines):
         if not lines:

@@ -792,7 +792,7 @@ class CorporateAction(LedgerTransaction):
         # Process assets after corporate action
         query = executeSQL("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
                            [(":oid", self._oid)])
-        while query.next():
+        while query.next():   # FIXME - add processing of currency records here - as ledger income
             asset, qty, share = readSQLrecord(query)
             value = share * processed_value
             price = value / qty
