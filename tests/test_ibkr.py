@@ -138,12 +138,19 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
         assert readSQL("SELECT * FROM trades WHERE id=:id", [(":id", i + 1)]) == trade
 
     # validate corp actions
-    test_corp_actons = [
-        [1, 5, 1610569500, '14909999818', 1, 3, 4, 140.0, 8, 140.0, 1.0, 'PEIX(US69423U3059) CUSIP/ISIN CHANGE TO (US0215131063) (PEIX, ALTO INGREDIENTS INC, US0215131063)']
+    test_asset_actions = [
+        [1, 5, 1610569500, '14909999818', 1, 3, 4, 140.0, 'PEIX(US69423U3059) CUSIP/ISIN CHANGE TO (US0215131063) (PEIX, ALTO INGREDIENTS INC, US0215131063)']
     ]
-    assert readSQL("SELECT COUNT(*) FROM corp_actions") == len(test_corp_actons)
-    for i, action in enumerate(test_corp_actons):
-        assert readSQL("SELECT * FROM corp_actions WHERE id=:id", [(":id", i + 1)]) == action
+    assert readSQL("SELECT COUNT(*) FROM asset_actions") == len(test_asset_actions)
+    for i, action in enumerate(test_asset_actions):
+        assert readSQL("SELECT * FROM asset_actions WHERE id=:id", [(":id", i + 1)]) == action
+
+    test_action_results = [
+        [1, 1, 8, 140.0, 1.0]
+    ]
+    assert readSQL("SELECT COUNT(*) FROM action_results") == len(test_action_results)
+    for i, result in enumerate(test_action_results):
+        assert readSQL("SELECT * FROM action_results WHERE id=:id", [(":id", i + 1)]) == result
 
     # Check that there are no remainders
     assert readSQL("SELECT amount_acc, value_acc FROM ledger_totals WHERE asset_id=4 ORDER BY id DESC LIMIT 1") == [0.0, 0.0]
