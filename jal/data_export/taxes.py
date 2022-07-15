@@ -16,7 +16,7 @@ class TaxesRus:
         CorporateAction.SymbolChange: "Смена символа {before} {old} -> {after} {new}",
         CorporateAction.Split: "Сплит {old} {before} в {after}",
         CorporateAction.SpinOff: "Выделение компании {after} {new} из {before:.6f} {old}; доля выделяемого актива {ratio:.2f}%",
-        CorporateAction.Merger: "Слияние компании, конвертация {before} {old} в {after} {new}",
+        CorporateAction.Merger: "Слияние компании, конвертация {share}% стоимости {before} {old} в {after} {new}",
         CorporateAction.Delisting: "Делистинг"
     }
 
@@ -645,7 +645,7 @@ class TaxesRus:
         qty_before = action['qty'] * proceed_qty / action['qty2']
         action['description'] = self.CorpActionText[action['type']].format(old=old_asset_name, new=new_asset_name,
                                                                            before=qty_before, after=proceed_qty,
-                                                                           ratio=100.0 * action['value_share'])
+                                                                           share=100.0 * action['value_share'])
         if level >= 0:  # Don't output if level==-1, i.e. corp action is out of report scope
             action['report_template'] = "action"
             action['report_group'] = group

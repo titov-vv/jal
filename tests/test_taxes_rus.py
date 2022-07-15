@@ -209,8 +209,9 @@ def test_taxes_merger_complex(tmp_path, data_path, prepare_db_taxes):
     ]
     create_quotes(2, 1, usd_rates)
 
-    # Adjust cost basis for spin-off operation  (100% SRNGU -> 95% DNA + 5% DNA WS)
-    executeSQL("UPDATE corp_actions SET basis_ratio=0.95 WHERE id=1")
+    # Adjust share of resulting assets: 100% SRNGU -> 95% DNA + 5% DNA WS
+    executeSQL("UPDATE action_results SET value_share=0.95 WHERE asset_id=5")
+    executeSQL("UPDATE action_results SET value_share=0.05 WHERE asset_id=4")
 
     ledger = Ledger()  # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)
