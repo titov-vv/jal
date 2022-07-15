@@ -694,7 +694,7 @@ class CorporateAction(LedgerTransaction):
             CorporateAction.SymbolChange:  ('🡘', CustomColor.Black),
             CorporateAction.Delisting: ('✖', CustomColor.DarkRed)
         }
-        self.CorpActionNames = {
+        self.names = {
             CorporateAction.SymbolChange: self.tr("Symbol change"),
             CorporateAction.Split: self.tr("Split"),
             CorporateAction.SpinOff: self.tr("Spin-off"),
@@ -725,7 +725,7 @@ class CorporateAction(LedgerTransaction):
         self._broker = JalDB().get_account_bank(self._account)
 
     def description(self) -> str:
-        description = self.CorpActionNames[self._subtype]
+        description = self.names[self._subtype]
         query = executeSQL("SELECT asset_id, value_share FROM action_results WHERE action_id=:oid",
                            [(":oid", self._oid)])
         while query.next():

@@ -22,7 +22,8 @@
     {"id": 2, "number": "17849517124", "timestamp": 1632515100, "settlement": 1632515100, "account": 1, "asset": 3, "quantity": -2.0, "price": 1031.25, "fee": 0.0, "note": "(US912CALAN84) BOND MATURITY FOR USD 1.03125 PER BOND (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)"}
   ],
   "corporate_actions": [
-    {"id": 1, "type": "merger", "account": 1, "timestamp": 1630007100, "number": "17569476329", "asset": [2, 3], "quantity": [2.0, 2.0], "cost_basis": 1.0, "description": "X 6 1/4 03/15/26(US912909AN84) TENDERED TO US912CALAN84 1 FOR 1 (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)"}
+    {"id": 1, "type": "merger", "account": 1, "timestamp": 1630007100, "number": "17569476329", "asset": 2, "quantity": 2.0,
+      "outcome": [{"asset": 3, "quantity": 2.0, "share": 1.0}],"description": "X 6 1/4 03/15/26(US912909AN84) TENDERED TO US912CALAN84 1 FOR 1 (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)"}
   ],
  "asset_payments": [
    {"id": 1, "type": "interest", "account": 1, "timestamp": 1622131065, "number": "2882737839", "asset": 2, "amount": -25.69, "description": "PURCHASE ACCRUED INT X 6 1/4 03/15/26"},

@@ -99,9 +99,9 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
     create_actions(operations)
 
     corporate_actions = [
-        (1605528000, CorporateAction.SymbolChange, 11, 50, 12, 50, 1, "Symbol change MYL->VTRS"),
-        (1604448000, CorporateAction.Split, 5, 10, 5, 50, 1, "Split 5:1 of TLT"),
-        (1608217200, CorporateAction.Delisting, 13, 10, 13, 0, 1, "Delisting of DEL")
+        (1605528000, CorporateAction.SymbolChange, 11, 50, "Symbol change MYL->VTRS", [(12, 50.0, 1.0)]),
+        (1604448000, CorporateAction.Split, 5, 10, "Split 5:1 of TLT", [(5, 50.0, 1.0)]),
+        (1608217200, CorporateAction.Delisting, 13, 10, "Delisting of DEL", [(13, 0.0, 1.0)])
     ]
     create_corporate_actions(1, corporate_actions)
 

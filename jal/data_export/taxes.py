@@ -16,7 +16,8 @@ class TaxesRus:
         CorporateAction.SymbolChange: "Смена символа {before} {old} -> {after} {new}",
         CorporateAction.Split: "Сплит {old} {before} в {after}",
         CorporateAction.SpinOff: "Выделение компании {after} {new} из {before:.6f} {old}; доля выделяемого актива {ratio:.2f}%",
-        CorporateAction.Merger: "Слияние компании, конвертация {before} {old} в {after} {new}"
+        CorporateAction.Merger: "Слияние компании, конвертация {before} {old} в {after} {new}",
+        CorporateAction.Delisting: "Делистинг"
     }
 
     def __init__(self):
@@ -41,6 +42,12 @@ class TaxesRus:
 
     def tr(self, text):
         return QApplication.translate("TaxesRus", text)
+
+    # Removes all keys listed in extra_keys_list from operation_dict
+    def drop_extra_fields(self, operation_dict, extra_keys_list):
+        for key in extra_keys_list:
+            if key in operation_dict:
+                del operation_dict[key]
 
     def prepare_tax_report(self, year, account_id, **kwargs):
         tax_report = {}
@@ -486,9 +493,9 @@ class TaxesRus:
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_corporate_actions(self):
-        corp_actions = []
+        corporate_actions = []
         # get list of all deals that were opened with corp.action and closed by normal trade
-        query = executeSQL("SELECT d.open_op_id AS operation_id, s.symbol, d.qty AS qty, "
+        query = executeSQL("SELECT d.open_op_id AS oid, t.asset_id, s.symbol, d.qty AS qty, "
                            "t.number AS trade_number, t.timestamp AS t_date, qt.quote AS t_rate, "
                            "t.settlement AS s_date, qts.quote AS s_rate, t.price AS price, t.fee AS fee, "
                            "s.full_name AS full_name, s.isin AS isin, s.type_id AS type_id "
@@ -506,7 +513,7 @@ class TaxesRus:
                             (":corp_action", LedgerTransaction.CorporateAction),
                             (":base_currency", JalSettings().getValue('BaseCurrency'))])
         group = 1
-        basis = 1
+        share = 1.0   # The whole sale is being processed - this is why it starts with 100.0%
         previous_symbol = ""
         while query.next():
             actions = []
@@ -515,12 +522,12 @@ class TaxesRus:
                 # Clean processed qty records if symbol have changed
                 _ = executeSQL("DELETE FROM t_last_assets")
                 if sale["s_date"] >= self.year_begin:  # Don't put sub-header of operation is out of scope
-                    corp_actions.append({'report_template': "symbol_header",
-                                    'report_group': 0,
-                                    'description': f"Сделки по бумаге: {sale['symbol']} - {sale['full_name']}"})
+                    corporate_actions.append(
+                        {'report_template': "symbol_header", 'report_group': 0,
+                         'description': f"Сделки по бумаге: {sale['symbol']} - {sale['full_name']}"})
                     previous_symbol = sale['symbol']
             sale['operation'] = "Продажа"
-            sale['basis_ratio'] = 100.0 * basis
+            sale['basis_ratio'] = 100.0 * share
             sale['amount'] = round(sale['price'] * sale['qty'], 2)
             if sale['s_rate']:
                 sale['amount_rub'] = round(sale['amount'] * sale['s_rate'], 2)
@@ -534,48 +541,50 @@ class TaxesRus:
             sale['spending_rub'] = sale['fee_rub']
 
             if sale["t_date"] < self.year_begin:    # Don't show deal that is before report year (level = -1)
-                self.proceed_corporate_action(actions, sale['operation_id'], sale['symbol'], sale['qty'], basis, -1, group)
+                self.proceed_corporate_action(actions, sale['oid'], sale['asset_id'], sale['qty'], share, -1, group)
             else:
                 sale['report_template'] = "trade"
                 sale['report_group'] = group
                 actions.append(sale)
                 if sale['type_id'] == PredefinedAsset.Bond:
                     self.output_accrued_interest(actions, sale['trade_number'], 1, 0)
-                self.proceed_corporate_action(actions, sale['operation_id'], sale['symbol'], sale['qty'], basis, 1, group)
-
+                self.proceed_corporate_action(actions, sale['oid'], sale['asset_id'], sale['qty'], share, 1, group)
             self.insert_totals(actions, ["income_rub", "spending_rub"])
-            corp_actions += actions
+            corporate_actions += actions
             group += 1
-        return corp_actions
+        return corporate_actions
 
-    def proceed_corporate_action(self, actions, operation_id, symbol, qty, basis, level, group):
-        qty, symbol, basis = self.output_corp_action(actions, operation_id, symbol, qty, basis, level, group)
+    # actions - mutable list of tax records to output into json-report
+    # oid - id of corporate action to process next
+    # qty - amount of asset to process
+    # share - value share that is being processed currently
+    # level - how deep we are in a chain of events (is used for correct indents)
+    # group - use for odd/even lines grouping in the report
+    def proceed_corporate_action(self, actions, oid, asset_id, qty, share, level, group):
+        asset_id, qty, share = self.output_corp_action(actions, oid, asset_id, qty, share, level, group)
         next_level = -1 if level == -1 else (level + 1)
-        self.next_corporate_action(actions, operation_id, symbol, qty, basis, next_level, group)
+        self.next_corporate_action(actions, oid, asset_id, qty, share, next_level, group)
 
-    # operation_id - id of corporate action
-    def next_corporate_action(self, actions, operation_id, symbol, qty, basis, level, group):
+    def next_corporate_action(self, actions, oid, asset_id, qty, share, level, group):
         # get list of deals that were closed as result of current corporate action
         open_query = executeSQL("SELECT open_op_id AS open_op_id, open_op_type AS op_type "
                                 "FROM deals "
                                 "WHERE close_op_id=:close_op_id AND close_op_type=:corp_action "
                                 "ORDER BY id",
-                                [(":close_op_id", operation_id), (":corp_action", LedgerTransaction.CorporateAction)])
+                                [(":close_op_id", oid), (":corp_action", LedgerTransaction.CorporateAction)])
         while open_query.next():
             open_id, open_type = readSQLrecord(open_query)
-
             if open_type == LedgerTransaction.Trade:
-                qty = self.output_purchase(actions, open_id, qty, basis, level, group)
+                qty = self.output_purchase(actions, open_id, qty, share, level, group)
             elif open_type == LedgerTransaction.CorporateAction:
-                self.proceed_corporate_action(actions, open_id, symbol, qty, basis, level, group)
+                self.proceed_corporate_action(actions, open_id, asset_id, qty, share, level, group)
             else:
                 assert False
 
-    # operation_id - id of buy operation
-    def output_purchase(self, actions, operation_id, proceed_qty, basis, level, group):
+    # oid - id of buy operation
+    def output_purchase(self, actions, oid, proceed_qty, share, level, group):
         if proceed_qty <= 0:
             return proceed_qty
-
         purchase = readSQL("SELECT t.id AS trade_id, s.symbol, s.isin AS isin, s.type_id AS type_id, "
                            "coalesce(d.qty-SUM(lq.total_value), d.qty) AS qty, "
                            "t.timestamp AS t_date, qt.quote AS t_rate, t.number AS trade_number, "
@@ -589,14 +598,13 @@ class TaxesRus:
                            "LEFT JOIN t_last_dates AS ldts ON t.settlement=ldts.ref_id "
                            "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id AND qts.currency_id=:base_currency "
                            "LEFT JOIN t_last_assets AS lq ON lq.id = t.id "
-                           "WHERE t.id = :operation_id", [(":operation_id", operation_id),
-                                                          (":base_currency", JalSettings().getValue('BaseCurrency'))],
+                           "WHERE t.id = :oid", [(":oid", oid),
+                                                 (":base_currency", JalSettings().getValue('BaseCurrency'))],
                            named=True)
         if purchase['qty'] <= (2 * Setup.CALC_TOLERANCE):
             return proceed_qty  # This trade was fully mached before
-
         purchase['operation'] = ' ' * level * 3 + "Покупка"
-        purchase['basis_ratio'] = 100.0 * basis
+        purchase['basis_ratio'] = 100.0 * share
         deal_qty = purchase['qty']
         purchase['qty'] = proceed_qty if proceed_qty < deal_qty else deal_qty
         purchase['amount'] = round(purchase['price'] * purchase['qty'], 2)
@@ -604,7 +612,7 @@ class TaxesRus:
         purchase['fee'] = purchase['fee'] * purchase['qty'] / deal_qty
         purchase['fee_rub'] = round(purchase['fee'] * purchase['t_rate'], 2) if purchase['t_rate'] else 0
         purchase['income_rub'] = 0
-        purchase['spending_rub'] = round(basis*(purchase['amount_rub'] + purchase['fee_rub']), 2)
+        purchase['spending_rub'] = round(share*(purchase['amount_rub'] + purchase['fee_rub']), 2)
 
         _ = executeSQL("INSERT INTO t_last_assets (id, total_value) VALUES (:trade_id, :qty)",
                        [(":trade_id", purchase['trade_id']), (":qty", purchase['qty'])])
@@ -617,44 +625,33 @@ class TaxesRus:
             self.output_accrued_interest(actions, purchase['trade_number'], share, level)
         return proceed_qty - purchase['qty']
 
-    def output_corp_action(self, actions, operation_id, symbol, proceed_qty, basis, level, group):
+    def output_corp_action(self, actions, oid, asset_id, proceed_qty, share, level, group):
         if proceed_qty <= 0:
-            return proceed_qty, symbol, basis
-
+            return proceed_qty, share
         action = readSQL("SELECT c.timestamp AS action_date, c.number AS action_number, c.type, "
-                         "s1.symbol AS symbol, s1.isin AS isin, c.qty AS qty, "
-                         "s2.symbol AS symbol_new, s2.isin AS isin_new, c.qty_new AS qty_new, "
-                         "c.note AS note, c.basis_ratio "
-                         "FROM corp_actions  c "
+                         "c.asset_id, s1.symbol AS symbol, s1.isin AS isin, c.qty AS qty, "
+                         "c.note AS note, r.qty AS qty2, r.value_share, s2.symbol AS symbol2, s2.isin AS isin2 "
+                         "FROM asset_actions  c "
                          "LEFT JOIN accounts a ON c.account_id=a.id "
-                         "LEFT JOIN assets_ext  s1 ON c.asset_id=s1.id AND s1.currency_id=a.currency_id "
-                         "LEFT JOIN assets_ext  s2 ON c.asset_id_new=s2.id AND s1.currency_id=a.currency_id "
-                         "WHERE c.id = :operation_id ",
-                         [(":operation_id", operation_id)], named=True)
+                         "LEFT JOIN action_results r ON c.id=r.action_id "
+                         "LEFT JOIN assets_ext s1 ON c.asset_id=s1.id AND s1.currency_id=a.currency_id "
+                         "LEFT JOIN assets_ext s2 ON r.asset_id=s2.id AND s2.currency_id=a.currency_id "
+                         "WHERE c.id = :oid AND r.asset_id = :new_asset", [(":oid", oid), (":new_asset", asset_id)],
+                         named=True)
         action['operation'] = ' ' * level * 3 + "Корп. действие"
-        old_asset = f"{action['symbol']} ({action['isin']})"
-        new_asset = f"{action['symbol_new']} ({action['isin_new']})"
-        if action['type'] == CorporateAction.SpinOff:   # TODO probably better to rename (possible confusion with type_id)
-            action['description'] = self.CorpActionText[action['type']].format(old=old_asset, new=new_asset,
-                                                                               before=action['qty'],
-                                                                               after=action['qty_new'],
-                                                                               ratio=100.0 * (1-action['basis_ratio']))
-            if symbol == action['symbol_new']:
-                basis = basis * (1 - action['basis_ratio'])
-                qty_before = action['qty'] * proceed_qty / action['qty_new']
-            else:
-                basis = basis * action['basis_ratio']
-                qty_before = proceed_qty
-        else:
-            qty_before = action['qty'] * proceed_qty / action['qty_new']
-            qty_after = proceed_qty
-            action['description'] = self.CorpActionText[action['type']].format(old=old_asset, new=new_asset,
-                                                                               before=qty_before, after=qty_after)
+        old_asset_name = f"{action['symbol']} ({action['isin']})"
+        new_asset_name = f"{action['symbol2']} ({action['isin2']})"
+        share = share * action['value_share']
+        qty_before = action['qty'] * proceed_qty / action['qty2']
+        action['description'] = self.CorpActionText[action['type']].format(old=old_asset_name, new=new_asset_name,
+                                                                           before=qty_before, after=proceed_qty,
+                                                                           ratio=100.0 * action['value_share'])
         if level >= 0:  # Don't output if level==-1, i.e. corp action is out of report scope
             action['report_template'] = "action"
             action['report_group'] = group
+            self.drop_extra_fields(action, ['oid', 'isin2', 'qty2', 'symbol2', 'value_share'])
             actions.append(action)
-        return qty_before, action['symbol'], basis
+        return action['asset_id'], qty_before, share
 
     def output_accrued_interest(self, actions, trade_number, share, level):
         interest = readSQL("SELECT b.symbol AS symbol, b.isin AS isin, i.timestamp AS o_date, i.number AS number, "
