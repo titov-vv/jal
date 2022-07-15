@@ -15,8 +15,8 @@ class TaxesRus:
     CorpActionText = {
         CorporateAction.SymbolChange: "Смена символа {before} {old} -> {after} {new}",
         CorporateAction.Split: "Сплит {old} {before} в {after}",
-        CorporateAction.SpinOff: "Выделение компании {after} {new} из {before:.6f} {old}; доля выделяемого актива {ratio:.2f}%",
-        CorporateAction.Merger: "Реорганизация компании, конвертация {share}% стоимости {before} {old} в {after} {new}",
+        CorporateAction.SpinOff: "Выделение компании {new} из {old}; доля выделяемого актива {share:.2f}%",
+        CorporateAction.Merger: "Реорганизация компании, конвертация {share:.2f}% стоимости {before} {old} в {after} {new}",
         CorporateAction.Delisting: "Делистинг"
     }
 
@@ -639,13 +639,27 @@ class TaxesRus:
                          "WHERE c.id = :oid AND r.asset_id = :new_asset", [(":oid", oid), (":new_asset", asset_id)],
                          named=True)
         action['operation'] = ' ' * level * 3 + "Корп. действие"
-        old_asset_name = f"{action['symbol']} ({action['isin']})"
-        new_asset_name = f"{action['symbol2']} ({action['isin2']})"
         share = share * action['value_share']
         qty_before = action['qty'] * proceed_qty / action['qty2']
+        if action['type'] == CorporateAction.SpinOff:
+            spinoff = readSQL("SELECT s1.symbol AS symbol, s1.isin AS isin, "
+                              "r.value_share, s2.symbol AS symbol2, s2.isin AS isin2 "
+                              "FROM asset_actions  c "
+                              "LEFT JOIN accounts a ON c.account_id=a.id "
+                              "LEFT JOIN action_results r ON c.id=r.action_id AND c.asset_id!=r.asset_id "
+                              "LEFT JOIN assets_ext s1 ON c.asset_id=s1.id AND s1.currency_id=a.currency_id "
+                              "LEFT JOIN assets_ext s2 ON r.asset_id=s2.id AND s2.currency_id=a.currency_id "
+                              "WHERE c.id = :oid", [(":oid", oid)], named=True)
+            old_asset_name = f"{spinoff['symbol']} ({spinoff['isin']})"
+            new_asset_name = f"{spinoff['symbol2']} ({spinoff['isin2']})"
+            display_share = 100.0 * spinoff['value_share']
+        else:
+            old_asset_name = f"{action['symbol']} ({action['isin']})"
+            new_asset_name = f"{action['symbol2']} ({action['isin2']})"
+            display_share = 100.0 * action['value_share']
         action['description'] = self.CorpActionText[action['type']].format(old=old_asset_name, new=new_asset_name,
                                                                            before=qty_before, after=proceed_qty,
-                                                                           share=100.0 * action['value_share'])
+                                                                           share=display_share)
         if level >= 0:  # Don't output if level==-1, i.e. corp action is out of report scope
             action['report_template'] = "action"
             action['report_group'] = group

@@ -1,0 +1,33 @@
+{
+  "period": [1609459200, 1640995199],
+  "accounts": [
+    {"id": 1, "number": "U7654321", "currency": 1, "cash_begin": 0.0, "cash_end": -935.800878369, "cash_end_settled": -935.800878369}
+  ],
+  "assets": [
+    {"id": 1, "type": "money", "name": ""},
+    {"id": 2, "type": "stock", "name": "GENERAL ELECTRIC CO", "isin": "US3696041033"},
+    {"id": 3, "type": "stock", "name": "WABTEC CORP"}
+  ],
+  "symbols": [
+    {"id": 1, "asset": 1, "currency": -1, "symbol": "USD"},
+    {"id": 2, "asset": 2, "currency": 1, "symbol": "GE", "note": "NYSE"},
+    {"id": 3, "asset": 3, "currency": 1, "symbol": "WAB", "note": "NYSE"}
+  ],
+  "assets_data": [
+    {"id": 1, "asset": 2, "reg_number": "369604103"},
+    {"id": 2, "asset": 3, "reg_number": "929740108"}
+  ],
+  "corporate_actions": [
+    {"id": 1, "type": "spin-off", "account": 1, "timestamp": 1637353500, "number": "10302900848", "asset": 2, "quantity": 100,
+      "outcome": [{"asset": 2, "quantity": 100, "share": 1.0}, {"asset": 3, "quantity": 0.5371, "share": 0.0}],
+      "description": "GE(US3696041033) SPINOFF  5371 FOR 1000000 (WAB, WABTEC CORP, 929740108)"}
+  ],
+  "trades": [
+    {"id": 1, "account": 1, "timestamp": 1635760683, "settlement": 1635897600, "number": "11111", "asset": 2, "quantity": 100.0, "price": 8.325, "fee": 0.35},
+    {"id": 2, "account": 1, "timestamp": 1637679039, "settlement": 1637798400, "number": "22222", "asset": 3, "quantity": -0.5371, "price": 1.2, "fee": 0.0},
+    {"id": 3, "account": 1, "timestamp": 1638370239, "settlement": 1638489600, "number": "33333", "asset": 2, "quantity": -100.0, "price": 7.95, "fee": 0.3}
+  ],
+  "income_spending": [],
+  "asset_payments": [],
+  "transfers": []
+}

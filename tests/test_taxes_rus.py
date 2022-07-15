@@ -241,6 +241,55 @@ def test_taxes_merger_complex(tmp_path, data_path, prepare_db_taxes):
     # reports_xls.save()
 
 
+def test_taxes_spinoff(tmp_path, data_path, prepare_db_taxes):
+    with open(data_path + 'ibkr_spinoff.json', 'r', encoding='utf-8') as json_file:
+        statement = json.load(json_file)
+    IBKR = StatementIBKR()
+    IBKR.load(data_path + 'ibkr_spinoff.xml')
+    assert IBKR._data == statement
+
+    IBKR.validate_format()
+    IBKR.match_db_ids()
+    IBKR.import_into_db()
+
+    usd_rates = [
+        (1635760683, 72.9538), (1635897600, 73.4421), (1637679039, 72.7600), (1637798400, 72.7171),
+        (1638370239, 72.7245), (1638489600, 72.6613)
+    ]
+    create_quotes(2, 1, usd_rates)
+
+    # Adjust share of resulting assets: 100% GE -> 90% GE + 10% WAB
+    executeSQL("UPDATE action_results SET value_share=0.9 WHERE asset_id=4")
+    executeSQL("UPDATE action_results SET value_share=0.1 WHERE asset_id=5")
+
+    ledger = Ledger()  # Build ledger to have FIFO deals table
+    ledger.rebuild(from_timestamp=0)
+
+    taxes = TaxesRus()
+    tax_report = taxes.prepare_tax_report(2021, 1)
+
+    with open(data_path + 'taxes_spinoff_rus.json', 'r', encoding='utf-8') as json_file:
+        report = json.load(json_file)
+    assert tax_report == report
+
+    # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
+    # templates = {
+    #     "Корп.события": "tax_rus_corporate_actions.json"
+    # }
+    # parameters = {
+    #     "period": "01.01.2021 - 31.12.2021",
+    #     "account": "TEST U7654321 (USD)",
+    #     "currency": "USD",
+    #     "broker_name": "IBKR",
+    #     "broker_iso_country": "840"
+    # }
+    # for section in tax_report:
+    #     if section not in templates:
+    #         continue
+    #     reports_xls.output_data(tax_report[section], templates[section], parameters)
+    # reports_xls.save()
+
+
 def test_taxes_over_years(tmp_path, project_root, data_path, prepare_db_taxes):
     # Load first year
     IBKR = StatementIBKR()
