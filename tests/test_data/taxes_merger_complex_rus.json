@@ -36,7 +36,7 @@
     {
       "action_date": 1631823900,
       "action_number": "17747623336",
-      "description": "Слияние компании, конвертация 95.0% стоимости 60.0 SRNGU (KYG8354H1002) в 60.0 DNA (US37611X1000)",
+      "description": "Реорганизация компании, конвертация 95.0% стоимости 60.0 SRNGU (KYG8354H1002) в 60.0 DNA (US37611X1000)",
       "asset_id": 6,
       "isin": "KYG8354H1002",
       "note": "SRNGU(G8354H100) MERGED(Acquisition) WITH DNA WS 1 FOR 5, US37611X1000 1 FOR 1 (DNA WS, DNA 01AUG26 11.5 C, US37611X1182)",
@@ -103,7 +103,7 @@
     {
       "action_date": 1631823900,
       "action_number": "17747623336",
-      "description": "Слияние компании, конвертация 95.0% стоимости 51.0 SRNGU (KYG8354H1002) в 51.0 DNA (US37611X1000)",
+      "description": "Реорганизация компании, конвертация 95.0% стоимости 51.0 SRNGU (KYG8354H1002) в 51.0 DNA (US37611X1000)",
       "asset_id": 6,
       "isin": "KYG8354H1002",
       "note": "SRNGU(G8354H100) MERGED(Acquisition) WITH DNA WS 1 FOR 5, US37611X1000 1 FOR 1 (DNA WS, DNA 01AUG26 11.5 C, US37611X1182)",
@@ -198,7 +198,7 @@
     {
       "action_date": 1631823900,
       "action_number": "17747623336",
-      "description": "Слияние компании, конвертация 5.0% стоимости 111.0 SRNGU (KYG8354H1002) в 22.0 DNA WS (US37611X1182)",
+      "description": "Реорганизация компании, конвертация 5.0% стоимости 111.0 SRNGU (KYG8354H1002) в 22.0 DNA WS (US37611X1182)",
       "asset_id": 6,
       "isin": "KYG8354H1002",
       "note": "SRNGU(G8354H100) MERGED(Acquisition) WITH DNA WS 1 FOR 5, US37611X1000 1 FOR 1 (DNA WS, DNA 01AUG26 11.5 C, US37611X1182)",

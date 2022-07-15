@@ -16,7 +16,7 @@ class TaxesRus:
         CorporateAction.SymbolChange: "Смена символа {before} {old} -> {after} {new}",
         CorporateAction.Split: "Сплит {old} {before} в {after}",
         CorporateAction.SpinOff: "Выделение компании {after} {new} из {before:.6f} {old}; доля выделяемого актива {ratio:.2f}%",
-        CorporateAction.Merger: "Слияние компании, конвертация {share}% стоимости {before} {old} в {after} {new}",
+        CorporateAction.Merger: "Реорганизация компании, конвертация {share}% стоимости {before} {old} в {after} {new}",
         CorporateAction.Delisting: "Делистинг"
     }
 
