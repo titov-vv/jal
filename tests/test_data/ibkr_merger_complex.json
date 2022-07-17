@@ -20,9 +20,9 @@
     {"id": 2, "asset": 3, "reg_number": "37611X100"}
   ],
   "corporate_actions": [
-    {"id": 1, "type": "merger", "account": 1, "timestamp": 1631823900, "number": "17747623336", "asset": 4, "quantity": 111,
-      "outcome": [{"asset": 2, "quantity": 22.0, "share": 1.0}, {"asset": 3, "quantity": 111, "share": 0.0}],
-      "description": "SRNGU(G8354H100) MERGED(Acquisition) WITH DNA WS 1 FOR 5, US37611X1000 1 FOR 1 (DNA WS, DNA 01AUG26 11.5 C, US37611X1182)"}
+    {"id": 1, "type": "merger", "account": 1, "timestamp": 1631823900, "number": "17747623336", "asset": 4, "quantity": 111.0,
+      "outcome": [{"asset": 1, "quantity": 136.53, "share": 0.0}, {"asset": 2, "quantity": 22.0, "share": 1.0}, {"asset": 3, "quantity": 111.0, "share": 0.0}],
+      "description": "SRNGU(G8354H100) CASH and STOCK MERGER (Acquisition) DNA WS 1 FOR 5, US37611X1000 1 FOR 1 AND USD 1.23 (DNA WS, DNA 01AUG26 11.5 C, US37611X1182)"}
   ],
   "trades": [
     {"id": 1, "account": 1, "timestamp": 1631008683, "settlement": 1631145600, "number": "4057396877", "asset": 4, "quantity": 61.0, "price": 10.388, "fee": 0.36245725},

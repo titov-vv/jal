@@ -1,7 +1,7 @@
 from math import copysign
 from datetime import datetime
 from PySide6.QtWidgets import QApplication
-from jal.constants import Setup, BookAccount, CustomColor, PredefinedPeer, PredefinedCategory
+from jal.constants import Setup, BookAccount, CustomColor, PredefinedPeer, PredefinedCategory, PredefinedAsset
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
@@ -792,13 +792,18 @@ class CorporateAction(LedgerTransaction):
         # Process assets after corporate action
         query = executeSQL("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
                            [(":oid", self._oid)])
-        while query.next():   # FIXME - add processing of currency records here - as ledger income
+        while query.next():
             asset, qty, share = readSQLrecord(query)
-            value = share * processed_value
-            price = value / qty
-            _ = executeSQL(
-                "INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
-                "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
-                [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
-                 (":account_id", self._account), (":asset_id", asset), (":price", price),(":remaining_qty", qty)])
-            ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset, value=value)
+            if JalDB().get_asset_type(asset) == PredefinedAsset.Money:
+                ledger.appendTransaction(self, BookAccount.Money, qty)
+                ledger.appendTransaction(self, BookAccount.Incomes, -qty,
+                                         category=PredefinedCategory.Interest, peer=self._broker)
+            else:
+                value = share * processed_value
+                price = value / qty
+                _ = executeSQL(
+                    "INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
+                    "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
+                    [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
+                     (":account_id", self._account), (":asset_id", asset), (":price", price),(":remaining_qty", qty)])
+                ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset, value=value)

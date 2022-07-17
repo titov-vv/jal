@@ -470,16 +470,25 @@ class TaxesRus:
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_interest(self):
         interests = []
-        query = executeSQL("SELECT a.timestamp AS payment_date, d.amount AS amount, d.note AS note, q.quote AS rate "
-                           "FROM actions AS a "
-                           "LEFT JOIN action_details AS d ON d.pid=a.id "
+        query = executeSQL("SELECT s.timestamp AS payment_date, s.amount AS amount, s.note AS note, q.quote AS rate "
+                           "FROM ("
+                           "  SELECT a.timestamp, d.amount, d.note "
+                           "  FROM actions AS a "
+                           "  LEFT JOIN action_details AS d ON d.pid=a.id "
+                           "  WHERE a.account_id=:account_id AND d.category_id=:interest "
+                           " UNION ALL"
+                           "  SELECT a.timestamp, r.qty, a.note "
+                           "  FROM asset_actions AS a "
+                           "  LEFT JOIN action_results AS r ON r.action_id=a.id "
+                           "  LEFT JOIN assets AS c ON c.id=r.asset_id "
+                           "  WHERE a.account_id=:account_id AND c.type_id=:currency"
+                           ") AS s "
                            "LEFT JOIN accounts AS c ON c.id = :account_id "
-                           "LEFT JOIN t_last_dates AS ld ON a.timestamp=ld.ref_id "
-                           "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND c.currency_id=q.asset_id AND q.currency_id=:base_currency "
-                           "WHERE a.timestamp>=:begin AND a.timestamp<:end "
-                           "AND a.account_id=:account_id AND d.category_id=:fee",
-                           [(":begin", self.year_begin), (":end", self.year_end),
-                            (":account_id", self.account_id), (":fee", PredefinedCategory.Interest),
+                           "LEFT JOIN t_last_dates AS ld ON s.timestamp=ld.ref_id "
+                           "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp "
+                           "AND c.currency_id=q.asset_id AND q.currency_id=:base_currency",
+                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
+                            (":interest", PredefinedCategory.Interest), (":currency", PredefinedAsset.Money),
                             (":base_currency", JalSettings().getValue('BaseCurrency'))])
         while query.next():
             interest = readSQLrecord(query, named=True)
@@ -487,7 +496,7 @@ class TaxesRus:
             interest['amount_rub'] = round(interest['amount'] * interest['rate'], 2) if interest['rate'] else 0
             interest['tax_rub'] = round(0.13 * interest['amount_rub'], 2)
             interest['report_template'] = "interest"
-            interests.append(interest)
+            interests.append (interest)
         self.insert_totals(interests, ["amount", "amount_rub", "tax_rub"])
         return interests
 
