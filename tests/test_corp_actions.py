@@ -73,7 +73,7 @@ def test_delisting(prepare_db_fifo):
     create_stocks([(4, 'A', 'A SHARE')], currency_id=2)
 
     test_corp_actions = [
-        (1622548800, CorporateAction.Delisting, 4, 100.0, 'Delisting 100 A', [(4, 0.0, 1.0)])
+        (1622548800, CorporateAction.Delisting, 4, 100.0, 'Delisting 100 A', [])
     ]
     create_corporate_actions(1, test_corp_actions)
 

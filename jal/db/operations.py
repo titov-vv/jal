@@ -781,6 +781,12 @@ class CorporateAction(LedgerTransaction):
             raise ValueError(self.tr("Unhandled case: Corporate action covers not full open position. Date: ")
                              + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
                              + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
+        total_allocation = readSQL("SELECT SUM(value_share) FROM action_results WHERE action_id=:oid",
+                                   [(":oid", self._oid)])   # total_allocation will be empty for Delisting
+        if total_allocation and (abs(float(total_allocation) - 1.0) > 2 * Setup.CALC_TOLERANCE):
+            raise ValueError(self.tr("Results value of corporate action doesn't match 100% of initial asset value. ")
+                                     + f"Date: {datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
+                                     + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
         processed_qty, processed_value = self._close_deals_fifo(-1, self._qty, None)
         # Withdraw value with old quantity of old asset
         ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,

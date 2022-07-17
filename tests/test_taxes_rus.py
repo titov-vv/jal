@@ -134,6 +134,9 @@ def test_taxes_rus_bonds(tmp_path, project_root, data_path, prepare_db_taxes):
     IBKR.match_db_ids()
     IBKR.import_into_db()
 
+    # Adjust share of result allocation to 100% of initial bond
+    executeSQL("UPDATE action_results SET value_share=1.0 WHERE asset_id=5")
+
     ledger = Ledger()  # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)
 

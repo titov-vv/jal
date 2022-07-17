@@ -19,7 +19,7 @@
   ],
   "corporate_actions": [
     {"id": 1, "type": "spin-off", "account": 1, "timestamp": 1637353500, "number": "10302900848", "asset": 2, "quantity": 100,
-      "outcome": [{"asset": 2, "quantity": 100, "share": 1.0}, {"asset": 3, "quantity": 0.5371, "share": 0.0}],
+      "outcome": [{"asset": 2, "quantity": 100, "share": 0.0}, {"asset": 3, "quantity": 0.5371, "share": 0.0}],
       "description": "GE(US3696041033) SPINOFF  5371 FOR 1000000 (WAB, WABTEC CORP, 929740108)"}
   ],
   "trades": [

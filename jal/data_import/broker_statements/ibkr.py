@@ -574,7 +574,7 @@ class StatementIBKR(StatementXML):
                                                           action['account'], paired_record[0]['asset'])
         if existing_action is None:
             action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
-            action['outcome'] = [{'asset': action['asset'], 'quantity': action['quantity']/adj_factor, 'share': 1.0}]
+            action['outcome'] = [{'asset': action['asset'], 'quantity': action['quantity']/adj_factor, 'share': 0.0}]
             action['asset'] = paired_record[0]['asset']
             action['quantity'] = -paired_record[0]['quantity']/adj_factor
             # Process cash payment if it is present as part of corporate action
@@ -617,7 +617,7 @@ class StatementIBKR(StatementXML):
             raise Statement_ImportError(self.tr("Spin-off rounding error is too big ") + f"'{action}'")
         qty_old = round(qty_old)
         action['id'] = max([0] + [x['id'] for x in self._data[FOF.CORP_ACTIONS]]) + 1
-        action['outcome'] = [{'asset': asset_old, 'quantity': qty_old, 'share': 1.0},
+        action['outcome'] = [{'asset': asset_old, 'quantity': qty_old, 'share': 0.0},
                              {'asset': action['asset'], 'quantity': action['quantity'], 'share': 0.0}]
         action['asset'] = asset_old
         action['quantity'] = qty_old
