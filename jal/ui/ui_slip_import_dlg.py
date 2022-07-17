@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'slip_import_dlg.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.3.0
+## Created by: Qt User Interface Compiler version 6.3.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################

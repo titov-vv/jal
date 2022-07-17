@@ -424,7 +424,7 @@ class QuoteDownloader(QObject):
                 data = self.MOEX_info(symbol=asset['symbol'], isin=asset['isin'])
                 if data:
                     if asset['full_name'] != data['name']:
-                        logging.info(self.tr("New full name found for:  ")
+                        logging.info(self.tr("New full name found for: ")
                                      + f"{JalDB().get_asset_name(asset['id'])}: {asset['full_name']} -> {data['name']}")
                     isin = data['isin'] if not asset['isin'] and 'isin' in data and data['isin'] else ''
                     JalDB().update_asset_data(asset['id'], {'isin': isin})
