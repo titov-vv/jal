@@ -17,9 +17,11 @@ CREATE TABLE action_results (
 -- Populate new table with corporate actions' results
 INSERT INTO action_results (action_id, asset_id, qty, value_share)
 SELECT id, asset_id, qty, value_share FROM
-(SELECT id, asset_id_new AS asset_id, qty_new AS qty, basis_ratio AS value_share FROM asset_actions
+(SELECT id, asset_id_new AS asset_id, qty_new AS qty, 1 AS value_share FROM asset_actions WHERE type=1 OR type=3 OR type=4
 UNION ALL
-SELECT id, asset_id, qty, (1-basis_ratio) AS value_share FROM asset_actions WHERE basis_ratio<1)
+SELECT id, asset_id_new AS asset_id, qty_new AS qty, (1-basis_ratio) AS value_share FROM asset_actions WHERE type=2
+UNION ALL
+SELECT id, asset_id, qty, basis_ratio AS value_share FROM asset_actions WHERE type=2)
 ORDER BY id;
 
 -- Trim initial corporate actions table
