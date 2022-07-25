@@ -201,6 +201,8 @@ class IncomeSpending(LedgerTransaction):
     def description(self) -> str:
         description = self._peer
         if self._currency:
+            if self._amount_alt == 0.0:
+                return description
             try:
                 rate = self._amount_alt / self._amount
             except ZeroDivisionError:
