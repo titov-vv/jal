@@ -30,17 +30,21 @@ def isEnglish(text):
 def request_url(method, url, params=None, json_params=None):
     session = requests.Session()
     session.headers['User-Agent'] = make_user_agent(url=url)
-    if method == "GET":
-        response = session.get(url)
-    elif method == "POST":
-        if params:
-            response = session.post(url, data=params)
-        elif json_params:
-            response = session.post(url, json=json_params)
+    try:
+        if method == "GET":
+            response = session.get(url)
+        elif method == "POST":
+            if params:
+                response = session.post(url, data=params)
+            elif json_params:
+                response = session.post(url, json=json_params)
+            else:
+                response = session.post(url)
         else:
-            response = session.post(url)
-    else:
-        raise ValueError("Unknown download method for URL")
+            raise ValueError("Unknown download method for URL")
+    except ConnectionError as e:
+        logging.error(f"URL {url}\nConnection error: {e}")
+        return ''
     if response.status_code == 200:
         return response.text
     else:
