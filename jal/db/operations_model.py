@@ -2,7 +2,7 @@ from datetime import datetime
 from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QDate
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QStyledItemDelegate, QHeaderView
-from jal.constants import CustomColor
+from jal.constants import CustomColor, Setup
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.operations import LedgerTransaction
 
@@ -100,7 +100,7 @@ class OperationsModel(QAbstractTableModel):
         elif column == 6:
             return operation.value_currency()
         else:
-            return True, "Unexpected column number"
+            assert False, "Unexpected column number"
 
     def configureView(self):
         self._view.setColumnWidth(0, 10)
@@ -204,5 +204,8 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
                     pen.setColor(CustomColor.DarkRed)
             painter.setPen(pen)
             painter.drawText(rect, Qt.AlignRight | Qt.AlignVCenter, f"{value:+,.2f}")
+            if abs(value - round(value, 2)) > Setup.CALC_TOLERANCE:  # Underline decimal part
+                shift = painter.fontMetrics().horizontalAdvance(f"{value:+,.2f}"[-2:])
+                painter.drawLine(rect.right() - shift, rect.bottom(), rect.right(), rect.bottom())
         except TypeError:
             pass
