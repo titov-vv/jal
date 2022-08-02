@@ -19,44 +19,26 @@ CREATE TABLE accounts (
 
 -- Table: action_details
 DROP TABLE IF EXISTS action_details;
-
 CREATE TABLE action_details (
-    id          INTEGER    PRIMARY KEY
-                           NOT NULL
-                           UNIQUE,
-    pid         INTEGER    REFERENCES actions (id) ON DELETE CASCADE
-                                                   ON UPDATE CASCADE
-                           NOT NULL,
-    category_id INTEGER    REFERENCES categories (id) ON DELETE CASCADE
-                                                      ON UPDATE CASCADE
-                           NOT NULL,
-    tag_id      INTEGER    REFERENCES tags (id) ON DELETE SET NULL
-                                                ON UPDATE CASCADE,
-    amount      REAL       NOT NULL,
-    amount_alt  REAL       DEFAULT (0)
-                           NOT NULL,
+    id          INTEGER    PRIMARY KEY NOT NULL UNIQUE,
+    pid         INTEGER    REFERENCES actions (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    category_id INTEGER    REFERENCES categories (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    tag_id      INTEGER    REFERENCES tags (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    amount      TEXT       NOT NULL,
+    amount_alt  TEXT       DEFAULT ('0.0') NOT NULL,
     note        TEXT (256) 
 );
 
 
 -- Table: actions
 DROP TABLE IF EXISTS actions;
-
 CREATE TABLE actions (
-    id              INTEGER PRIMARY KEY
-                            UNIQUE
-                            NOT NULL,
-    op_type         INTEGER NOT NULL
-                            DEFAULT (1),
+    id              INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    op_type         INTEGER NOT NULL DEFAULT (1),
     timestamp       INTEGER NOT NULL,
-    account_id      INTEGER REFERENCES accounts (id) ON DELETE CASCADE
-                                                     ON UPDATE CASCADE
-                            NOT NULL,
-    peer_id         INTEGER REFERENCES agents (id) ON DELETE CASCADE
-                                                   ON UPDATE CASCADE
-                            NOT NULL,
-    alt_currency_id INTEGER REFERENCES assets (id) ON DELETE RESTRICT
-                                                   ON UPDATE CASCADE
+    account_id      INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    peer_id         INTEGER REFERENCES agents (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    alt_currency_id INTEGER REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- Table: assets
