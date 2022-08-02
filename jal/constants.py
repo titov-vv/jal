@@ -2,6 +2,7 @@ from PySide6.QtCore import Property
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QApplication, QComboBox
 
+
 class Setup:
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
@@ -18,7 +19,7 @@ class Setup:
     STATEMENT_PATH = "broker_statements"
     TEMPLATE_PATH = "templates"
     UPDATE_PREFIX = 'jal_delta_'
-    TARGET_SCHEMA = 37
+    TARGET_SCHEMA = 38
     CALC_TOLERANCE = 1e-10
     DISP_TOLERANCE = 1e-4
 
