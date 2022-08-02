@@ -78,77 +78,43 @@ CREATE UNIQUE INDEX asset_data_uniqueness ON asset_data ( asset_id, datatype);
 
 -- Table: agents
 DROP TABLE IF EXISTS agents;
-
 CREATE TABLE agents (
-    id       INTEGER    PRIMARY KEY
-                        UNIQUE
-                        NOT NULL,
-    pid      INTEGER    NOT NULL
-                        DEFAULT (0),
-    name     TEXT (64)  UNIQUE
-                        NOT NULL,
+    id       INTEGER    PRIMARY KEYUNIQUE NOT NULL,
+    pid      INTEGER    NOT NULL DEFAULT (0),
+    name     TEXT (64)  UNIQUE NOT NULL,
     location TEXT (128) 
 );
 
-
--- Table: books
-DROP TABLE IF EXISTS books;
-
-CREATE TABLE books (
-    id   INTEGER   PRIMARY KEY
-                   NOT NULL
-                   UNIQUE,
-    name TEXT (32) NOT NULL
-);
-
-
 -- Table: categories
 DROP TABLE IF EXISTS categories;
-
 CREATE TABLE categories (
-    id      INTEGER   PRIMARY KEY
-                      UNIQUE
-                      NOT NULL,
-    pid     INTEGER   NOT NULL
-                      DEFAULT (0),
-    name    TEXT (64) UNIQUE
-                      NOT NULL,
+    id      INTEGER   PRIMARY KEY UNIQUE NOT NULL,
+    pid     INTEGER   NOT NULL DEFAULT (0),
+    name    TEXT (64) UNIQUE NOT NULL,
     often   INTEGER,
     special INTEGER
 );
 
 -- Create new table with list of countries
 DROP TABLE IF EXISTS countries;
-
 CREATE TABLE countries (
-    id           INTEGER      PRIMARY KEY
-                              UNIQUE
-                              NOT NULL,
-    name         VARCHAR (64) UNIQUE
-                              NOT NULL,
-    code         CHAR (3)     UNIQUE
-                              NOT NULL,
-    iso_code     CHAR (4)     UNIQUE
-                              NOT NULL,
-    tax_treaty   INTEGER      NOT NULL
-                              DEFAULT (0)
+    id           INTEGER      PRIMARY KEY UNIQUE NOT NULL,
+    name         VARCHAR (64) UNIQUE NOT NULL,
+    code         CHAR (3)     UNIQUE NOT NULL,
+    iso_code     CHAR (4)     UNIQUE NOT NULL,
+    tax_treaty   INTEGER      NOT NULL EFAULT (0)
 );
-
 
 -- Table: data_sources
 DROP TABLE IF EXISTS data_sources;
-
 CREATE TABLE data_sources (
-    id   INTEGER   PRIMARY KEY
-                   UNIQUE
-                   NOT NULL,
+    id   INTEGER   PRIMARY KEY UNIQUE NOT NULL,
     name TEXT (32) NOT NULL
 );
 
 
 -- Table: dividends
 DROP TABLE IF EXISTS dividends;
-
 CREATE TABLE dividends (
     id         INTEGER     PRIMARY KEY
                            UNIQUE
@@ -174,50 +140,34 @@ CREATE TABLE dividends (
 
 -- Table: languages
 DROP TABLE IF EXISTS languages;
-
 CREATE TABLE languages (
-    id       INTEGER  PRIMARY KEY AUTOINCREMENT
-                      UNIQUE
-                      NOT NULL,
-    language CHAR (2) UNIQUE
-                      NOT NULL
+    id       INTEGER  PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
+    language CHAR (2) UNIQUE NOT NULL
 );
 
 -- Table: ledger
 DROP TABLE IF EXISTS ledger;
 CREATE TABLE ledger (
-    id           INTEGER PRIMARY KEY
-                         NOT NULL
-                         UNIQUE,
+    id           INTEGER PRIMARY KEY NOT NULL UNIQUE,
     timestamp    INTEGER NOT NULL,
     op_type      INTEGER NOT NULL,
     operation_id INTEGER NOT NULL,
-    book_account INTEGER NOT NULL
-                         REFERENCES books (id) ON DELETE NO ACTION
-                                               ON UPDATE NO ACTION,
-    asset_id     INTEGER REFERENCES assets (id) ON DELETE SET NULL
-                                                ON UPDATE SET NULL,
-    account_id   INTEGER NOT NULL
-                         REFERENCES accounts (id) ON DELETE NO ACTION
-                                                  ON UPDATE NO ACTION,
+    book_account INTEGER NOT NULL,
+    asset_id     INTEGER REFERENCES assets (id) ON DELETE SET NULL ON UPDATE SET NULL,
+    account_id   INTEGER NOT NULL REFERENCES accounts (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     amount       REAL,
     value        REAL,
     amount_acc   REAL,
     value_acc    REAL,
-    peer_id      INTEGER REFERENCES agents (id) ON DELETE NO ACTION
-                                                ON UPDATE NO ACTION,
-    category_id  INTEGER REFERENCES categories (id) ON DELETE NO ACTION
-                                                    ON UPDATE NO ACTION,
-    tag_id       INTEGER REFERENCES tags (id) ON DELETE NO ACTION
-                                              ON UPDATE NO ACTION
+    peer_id      INTEGER REFERENCES agents (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    category_id  INTEGER REFERENCES categories (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    tag_id       INTEGER REFERENCES tags (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 
 -- Table: ledger_totals to keep last accumulated amount value for each transaction
 DROP TABLE IF EXISTS ledger_totals;
 CREATE TABLE ledger_totals (
-    id           INTEGER PRIMARY KEY
-                         UNIQUE
-                         NOT NULL,
+    id           INTEGER PRIMARY KEY UNIQUE NOT NULL,
     op_type      INTEGER NOT NULL,
     operation_id INTEGER NOT NULL,
     timestamp    INTEGER NOT NULL,
@@ -227,7 +177,6 @@ CREATE TABLE ledger_totals (
     amount_acc   REAL    NOT NULL,
     value_acc    REAL    NOT NULL
 );
-
 DROP INDEX IF EXISTS ledger_totals_by_timestamp;
 CREATE INDEX ledger_totals_by_timestamp ON ledger_totals (timestamp);
 DROP INDEX IF EXISTS ledger_totals_by_operation_book;
@@ -235,49 +184,31 @@ CREATE INDEX ledger_totals_by_operation_book ON ledger_totals (op_type, operatio
 
 -- Table: map_category
 DROP TABLE IF EXISTS map_category;
-
 CREATE TABLE map_category (
-    id        INTEGER        PRIMARY KEY
-                             UNIQUE
-                             NOT NULL,
+    id        INTEGER        PRIMARY KEY UNIQUE NOT NULL,
     value     VARCHAR (1024) NOT NULL,
-    mapped_to INTEGER        NOT NULL
-                             REFERENCES categories (id) ON DELETE CASCADE
-                                                        ON UPDATE CASCADE
+    mapped_to INTEGER        NOT NULL REFERENCES categories (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 
 -- Table: map_peer
 DROP TABLE IF EXISTS map_peer;
-
 CREATE TABLE map_peer (
-    id        INTEGER        PRIMARY KEY
-                             UNIQUE
-                             NOT NULL,
+    id        INTEGER        PRIMARY KEY UNIQUE NOT NULL,
     value     VARCHAR (1024) NOT NULL,
-    mapped_to INTEGER        REFERENCES agents (id) ON DELETE SET DEFAULT
-                                                    ON UPDATE CASCADE
-                             NOT NULL
-                             DEFAULT (0)
+    mapped_to INTEGER        REFERENCES agents (id) ON DELETE SET DEFAULT ON UPDATE CASCADE NOT NULL DEFAULT (0)
 );
 
 
 -- Table: open_trades
 DROP TABLE IF EXISTS open_trades;
-
 CREATE TABLE open_trades (
-    id            INTEGER PRIMARY KEY
-                          UNIQUE
-                          NOT NULL,
+    id            INTEGER PRIMARY KEY UNIQUE NOT NULL,
     timestamp     INTEGER NOT NULL,
     op_type       INTEGER NOT NULL,
     operation_id  INTEGER NOT NULL,
-    account_id    INTEGER REFERENCES accounts (id) ON DELETE CASCADE
-                                                   ON UPDATE CASCADE
-                          NOT NULL,
-    asset_id      INTEGER NOT NULL
-                          REFERENCES assets (id) ON DELETE CASCADE
-                                                 ON UPDATE CASCADE,
+    account_id    INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    asset_id      INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
     price         REAL    NOT NULL,
     remaining_qty REAL    NOT NULL
 );
@@ -887,14 +818,6 @@ INSERT INTO settings(id, name, value) VALUES (9, 'WindowState', '');
 -- Initialize available languages
 INSERT INTO languages (id, language) VALUES (1, 'en');
 INSERT INTO languages (id, language) VALUES (2, 'ru');
-
--- Initialize default values for books
-INSERT INTO books (id, name) VALUES (1, 'Costs');
-INSERT INTO books (id, name) VALUES (2, 'Incomes');
-INSERT INTO books (id, name) VALUES (3, 'Money');
-INSERT INTO books (id, name) VALUES (4, 'Assets');
-INSERT INTO books (id, name) VALUES (5, 'Liabilities');
-INSERT INTO books (id, name) VALUES (6, 'Transfers');
 
 -- Initialize sources of quotation data
 INSERT INTO data_sources (id, name) VALUES (-1, 'None');
