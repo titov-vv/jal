@@ -147,10 +147,10 @@ CREATE TABLE ledger (
     book_account INTEGER NOT NULL,
     asset_id     INTEGER REFERENCES assets (id) ON DELETE SET NULL ON UPDATE SET NULL,
     account_id   INTEGER NOT NULL REFERENCES accounts (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    amount       REAL,
-    value        REAL,
-    amount_acc   REAL,
-    value_acc    REAL,
+    amount       TEXT,
+    value        TEXT,
+    amount_acc   TEXT,
+    value_acc    TEXT,
     peer_id      INTEGER REFERENCES agents (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     category_id  INTEGER REFERENCES categories (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     tag_id       INTEGER REFERENCES tags (id) ON DELETE NO ACTION ON UPDATE NO ACTION
@@ -166,8 +166,8 @@ CREATE TABLE ledger_totals (
     book_account INTEGER NOT NULL,
     asset_id     INTEGER NOT NULL,
     account_id   INTEGER NOT NULL,
-    amount_acc   REAL    NOT NULL,
-    value_acc    REAL    NOT NULL
+    amount_acc   TEXT    NOT NULL,
+    value_acc    TEXT    NOT NULL
 );
 DROP INDEX IF EXISTS ledger_totals_by_timestamp;
 CREATE INDEX ledger_totals_by_timestamp ON ledger_totals (timestamp);

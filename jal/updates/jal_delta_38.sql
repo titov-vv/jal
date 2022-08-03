@@ -2,7 +2,7 @@ BEGIN TRANSACTION;
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 0;
 --------------------------------------------------------------------------------
--- Drop table books
+-- Drop table books and modify ledger table to use TEXT instead of REAL for decimal storage
 DROP TABLE IF EXISTS ledger;
 CREATE TABLE ledger (
     id           INTEGER PRIMARY KEY NOT NULL UNIQUE,
@@ -12,15 +12,34 @@ CREATE TABLE ledger (
     book_account INTEGER NOT NULL,
     asset_id     INTEGER REFERENCES assets (id) ON DELETE SET NULL ON UPDATE SET NULL,
     account_id   INTEGER NOT NULL REFERENCES accounts (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
-    amount       REAL,
-    value        REAL,
-    amount_acc   REAL,
-    value_acc    REAL,
+    amount       TEXT,
+    value        TEXT,
+    amount_acc   TEXT,
+    value_acc    TEXT,
     peer_id      INTEGER REFERENCES agents (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     category_id  INTEGER REFERENCES categories (id) ON DELETE NO ACTION ON UPDATE NO ACTION,
     tag_id       INTEGER REFERENCES tags (id) ON DELETE NO ACTION ON UPDATE NO ACTION
 );
 DROP TABLE IF EXISTS books;
+
+---------------------------------------------------------------------------------
+-- Modify ledger_totals table to use TEXT instead of REAL for decimal storage
+DROP TABLE IF EXISTS ledger_totals;
+CREATE TABLE ledger_totals (
+    id           INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    op_type      INTEGER NOT NULL,
+    operation_id INTEGER NOT NULL,
+    timestamp    INTEGER NOT NULL,
+    book_account INTEGER NOT NULL,
+    asset_id     INTEGER NOT NULL,
+    account_id   INTEGER NOT NULL,
+    amount_acc   TEXT    NOT NULL,
+    value_acc    TEXT    NOT NULL
+);
+DROP INDEX IF EXISTS ledger_totals_by_timestamp;
+CREATE INDEX ledger_totals_by_timestamp ON ledger_totals (timestamp);
+DROP INDEX IF EXISTS ledger_totals_by_operation_book;
+CREATE INDEX ledger_totals_by_operation_book ON ledger_totals (op_type, operation_id, book_account);
 
 ---------------------------------------------------------------------------------
 -- Conversion of action_details table from REAL to TEXT storage of decimal values

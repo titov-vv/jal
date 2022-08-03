@@ -246,8 +246,8 @@ class IncomeSpending(LedgerTransaction):
             if credit_returned < self._amount:
                 ledger.appendTransaction(self, BookAccount.Money, self._amount - credit_returned)
         for detail in self._details:
-            book = BookAccount.Costs if detail['amount'] < 0 else BookAccount.Incomes
-            ledger.appendTransaction(self, book, -detail['amount'],
+            book = BookAccount.Costs if Decimal(detail['amount']) < Decimal('0.0') else BookAccount.Incomes
+            ledger.appendTransaction(self, book, -Decimal(detail['amount']),
                                      category=detail['category_id'], peer=self._peer_id, tag=detail['tag_id'])
 
 

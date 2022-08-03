@@ -1,6 +1,7 @@
 import logging
 import traceback
 from datetime import datetime
+from decimal import Decimal
 from PySide6.QtCore import Signal, QObject, QDate
 from PySide6.QtWidgets import QDialog, QMessageBox
 from jal.constants import Setup, BookAccount
@@ -11,12 +12,14 @@ from jal.db.operations import LedgerTransaction
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# Class to display window with ledger rebuild configuration options
 class RebuildDialog(QDialog, Ui_ReBuildDialog):
     def __init__(self, parent, frontier):
         QDialog.__init__(self)
         self.setupUi(self)
 
-        self.LastRadioButton.toggle()
+        self.LastRadioButton.toggle()   # Set default option selection
         self.frontier = frontier
         frontier_text = datetime.utcfromtimestamp(frontier).strftime('%d/%m/%Y')
         self.FrontierDateLabel.setText(frontier_text)
@@ -46,7 +49,7 @@ class LedgerAmounts(dict):
     def __init__(self, total_field=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if total_field is None:
-            raise ValueError("Unitialized field in LedgerAmounts")
+            raise ValueError("Uninitialized field in LedgerAmounts")
         self.total_field = total_field
 
     def __getitem__(self, key):
@@ -62,7 +65,7 @@ class LedgerAmounts(dict):
                              "WHERE book_account = :book AND account_id = :account_id AND asset_id = :asset_id "
                              "ORDER BY id DESC LIMIT 1",
                              [(":book", key[BOOK]), (":account_id", key[ACCOUNT]), (":asset_id", key[ASSET])])
-            amount = float(amount) if amount is not None else 0.0
+            amount = Decimal(amount) if amount is not None else Decimal('0.0')
             super().__setitem__(key, amount)
             return amount
 
@@ -92,8 +95,7 @@ class Ledger(QObject):
 
     # Add one more transaction to 'book' of ledger.
     # If book is Assets and value is not None then amount contains Asset Quantity and Value contains amount
-    #    of money in current account currency. Otherwise Amount contains only money value.
-    # Method uses Account, Asset,Peer, Category and Tag values from current transaction
+    #    of money in current account currency. Otherwise, Amount contains only money value.
     def appendTransaction(self, operation, book, amount, asset_id=None, value=None, category=None, peer=None, tag=None):
         if book == BookAccount.Assets and asset_id is None:
             raise ValueError(self.tr("No asset defined for: ") + f"{operation.dump()}")
@@ -104,10 +106,10 @@ class Ledger(QObject):
         if (book == BookAccount.Costs or book == BookAccount.Incomes) and peer is None:
             raise ValueError(self.tr("No peer set for: ") + f"{operation.dump()}")
         tag = tag if tag else None  # Get rid of possible empty values
-        value = 0.0 if value is None else value
+        value = Decimal('0.0') if value is None else value
         self.amounts[(book, operation.account_id(), asset_id)] += amount
         self.values[(book, operation.account_id(), asset_id)] += value
-        if (abs(amount) + abs(value)) <= (4 * Setup.CALC_TOLERANCE):
+        if (abs(amount) + abs(value)) == Decimal('0.0'):
             return  # we have zero amount - no reason to put it into ledger
 
         _ = executeSQL("INSERT INTO ledger (timestamp, op_type, operation_id, book_account, asset_id, account_id, "
@@ -116,9 +118,9 @@ class Ledger(QObject):
                        ":amount, :value, :amount_acc, :value_acc, :peer_id, :category_id, :tag_id)",
                        [(":timestamp", operation.timestamp()), (":op_type", operation.type()),
                         (":operation_id", operation.oid()), (":book", book), (":asset_id", asset_id),
-                        (":account_id", operation.account_id()), (":amount", amount), (":value", value),
-                        (":amount_acc", self.amounts[(book, operation.account_id(), asset_id)]),
-                        (":value_acc", self.values[(book, operation.account_id(), asset_id)]),
+                        (":account_id", operation.account_id()), (":amount", str(amount)), (":value", str(value)),
+                        (":amount_acc", str(self.amounts[(book, operation.account_id(), asset_id)])),
+                        (":value_acc", str(self.values[(book, operation.account_id(), asset_id)])),
                         (":peer_id", peer), (":category_id", category), (":tag_id", tag)])
 
     # Returns Amount measured in current account currency or asset that 'book' has at current ledger frontier
@@ -129,21 +131,21 @@ class Ledger(QObject):
 
     def takeCredit(self, operation, account_id, operation_amount):
         money_available = self.getAmount(BookAccount.Money, account_id)
-        credit = 0
+        credit = Decimal('0.0')
         if money_available < operation_amount:
             credit = operation_amount - money_available
             self.appendTransaction(operation, BookAccount.Liabilities, -credit)
         return credit
 
     def returnCredit(self, operation, account_id, operation_amount):
-        current_credit_value = -1.0 * self.getAmount(BookAccount.Liabilities, account_id)
-        debit = 0
-        if current_credit_value > 0:
+        current_credit_value = -self.getAmount(BookAccount.Liabilities, account_id)
+        debit = Decimal('0.0')
+        if current_credit_value > Decimal('0.0'):
             if current_credit_value >= operation_amount:
                 debit = operation_amount
             else:
                 debit = current_credit_value
-        if debit > 0:
+        if debit > Decimal('0.0'):
             self.appendTransaction(operation, BookAccount.Liabilities, debit)
         return debit
 

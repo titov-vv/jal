@@ -29,7 +29,7 @@ def test_ledger(prepare_db_ledger):
     ledger.rebuild(from_timestamp=0)
 
     # validate book amounts
-    expected_book_values = [None, 130.0, -139.0, 9.0, None, 0.0]
+    expected_book_values = [None, '130.0', '-139.0', '9.0', None, '0.0']
     query = executeSQL("SELECT MAX(id) AS mid, book_account, amount_acc, value_acc "
                        "FROM ledger GROUP BY book_account")
     while query.next():
@@ -47,8 +47,8 @@ def test_ledger(prepare_db_ledger):
     ledger.rebuild()
 
     # validate book amounts and values
-    expected_book_amounts = [None, 164.0, -150.0, -0.0, None, -14.0]
-    expected_book_values = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    expected_book_amounts = [None, '164.0', '-150.0', '0.0', None, '-14.0']
+    expected_book_values = ['0.0', '0.0', '0.0', '0.0', '0.0', '0.0']
     query = executeSQL("SELECT MAX(id) AS mid, book_account, amount_acc, value_acc "
                        "FROM ledger GROUP BY book_account")
     while query.next():
