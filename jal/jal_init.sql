@@ -263,19 +263,18 @@ CREATE TABLE tags (
     tag TEXT (64) NOT NULL
 );
 
-
 -- Table to store about corporate actions that transform one asset into another
 DROP TABLE IF EXISTS asset_actions;
 CREATE TABLE asset_actions (
-    id           INTEGER     PRIMARY KEY UNIQUE NOT NULL,
-    op_type      INTEGER     NOT NULL DEFAULT (5),
-    timestamp    INTEGER     NOT NULL,
-    number       TEXT (32)   DEFAULT (''),
-    account_id   INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    type         INTEGER     NOT NULL,
-    asset_id     INTEGER     REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
-    qty          REAL        NOT NULL,
-    note         TEXT (1024)
+    id         INTEGER     PRIMARY KEY UNIQUE NOT NULL,
+    op_type    INTEGER     NOT NULL DEFAULT (5),
+    timestamp  INTEGER     NOT NULL,
+    number     TEXT        DEFAULT (''),
+    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    type       INTEGER     NOT NULL,
+    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
+    qty        TEXT        NOT NULL,
+    note       TEXT
 );
 
 -- Table to store information about assets that appear after corporate action
