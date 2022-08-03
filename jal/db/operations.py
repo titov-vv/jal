@@ -59,24 +59,26 @@ class LedgerTransaction:
     def view_rows(self) -> int:
         return self._view_rows
 
-    def _money_total(self, account_id) -> float:
+    def _money_total(self, account_id) -> Decimal:
         money = readSQL("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
                         "account_id = :account_id AND book_account=:book",
                         [(":op_type", self._otype), (":oid", self._oid),
                          (":account_id", account_id), (":book", BookAccount.Money)])
-        money = 0 if money is None else money
+        money = Decimal('0.0') if money is None else Decimal(money)
         debt = readSQL("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
                        "account_id = :account_id AND book_account=:book",
                        [(":op_type", self._otype), (":oid", self._oid),
                         (":account_id", account_id), (":book", BookAccount.Liabilities)])
-        debt = 0 if debt is None else debt
+        debt = Decimal('0.0') if debt is None else Decimal(debt)
         return money + debt
 
-    def _asset_total(self, account_id, asset_id) -> float:
-        return readSQL("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
-                       "account_id = :account_id AND asset_id AND book_account=:book",
-                       [(":op_type", self._otype), (":oid", self._oid), (":account_id", account_id),
-                        (":asset_id", asset_id), (":book", BookAccount.Assets)])
+    def _asset_total(self, account_id, asset_id) -> Decimal:
+        amount = readSQL("SELECT amount_acc FROM ledger_totals WHERE op_type=:op_type AND operation_id=:oid AND "
+                         "account_id = :account_id AND asset_id AND book_account=:book",
+                         [(":op_type", self._otype), (":oid", self._oid), (":account_id", account_id),
+                          (":asset_id", asset_id), (":book", BookAccount.Assets)])
+        amount = Decimal('0.0') if amount is None else Decimal(amount)
+        return amount
 
     # Performs FIFO deals match in ledger: takes current open positions from 'open_trades' table and converts
     # them into deals in 'deals' table while supplied qty is enough.
