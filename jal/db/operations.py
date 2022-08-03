@@ -1,5 +1,6 @@
 from math import copysign
 from datetime import datetime
+from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 from jal.constants import Setup, BookAccount, CustomColor, PredefinedPeer, PredefinedCategory, PredefinedAsset
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
@@ -191,12 +192,12 @@ class IncomeSpending(LedgerTransaction):
         self._details = []
         while details_query.next():
             self._details.append(readSQLrecord(details_query, named=True))
-        self._amount = sum(line['amount'] for line in self._details)
+        self._amount = sum(Decimal(line['amount']) for line in self._details)
         self._label, self._label_color = ('—', CustomColor.DarkRed) if self._amount < 0 else ('+', CustomColor.DarkGreen)
         if self._currency:
             self._view_rows = 2
             self._currency_name = JalDB().get_asset_name(self._currency)
-        self._amount_alt = sum(line['amount_alt'] for line in self._details)
+        self._amount_alt = sum(Decimal(line['amount_alt']) for line in self._details)
 
     def description(self) -> str:
         description = self._peer
@@ -287,8 +288,8 @@ class Dividend(LedgerTransaction):
         self._asset_symbol = JalDB().get_asset_name(self._asset)
         self._asset_name = JalDB().get_asset_name(self._asset, full=True)
         self._number = self._data['number']
-        self._amount = self._data['amount']
-        self._tax = self._data['tax']
+        self._amount = Decimal(self._data['amount'])
+        self._tax = Decimal(self._data['tax'])
         self._note = self._data['note']
         self._broker = JalDB().get_account_bank(self._account)
 
@@ -397,9 +398,9 @@ class Trade(LedgerTransaction):
         self._asset_symbol = JalDB().get_asset_name(self._asset)
         self._asset_name = JalDB().get_asset_name(self._asset, full=True)
         self._number = self._data['number']
-        self._qty = self._data['qty']
-        self._price = self._data['price']
-        self._fee = self._data['fee']
+        self._qty = Decimal(self._data['qty'])
+        self._price = Decimal(self._data['price'])
+        self._fee = Decimal(self._data['fee'])
         self._note = self._data['note']
         self._broker = JalDB().get_account_bank(self._account)
 
@@ -487,17 +488,17 @@ class Transfer(LedgerTransaction):
         self._withdrawal_account = self._data['withdrawal_account']
         self._withdrawal_account_name = JalDB().get_account_name(self._withdrawal_account)
         self._withdrawal_timestamp = self._data['withdrawal_timestamp']
-        self._withdrawal = self._data['withdrawal']
+        self._withdrawal = Decimal(self._data['withdrawal'])
         self._withdrawal_currency = JalDB().get_asset_name(JalDB().get_account_currency(self._withdrawal_account))
         self._deposit_account = self._data['deposit_account']
         self._deposit_account_name = JalDB().get_account_name(self._deposit_account)
-        self._deposit = self._data['deposit']
+        self._deposit = Decimal(self._data['deposit'])
         self._deposit_currency = JalDB().get_asset_name(JalDB().get_account_currency(self._deposit_account))
         self._deposit_timestamp = self._data['deposit_timestamp']
         self._fee_account = self._data['fee_account']
         self._fee_currency = JalDB().get_asset_name(JalDB().get_account_currency(self._fee_account))
         self._fee_account_name = JalDB().get_account_name(self._fee_account)
-        self._fee = self._data['fee']
+        self._fee = Decimal(self._data['fee']) if self._data['fee'] else Decimal('0.0')
         self._label, self._label_color = labels[display_type]
         if self._data['asset']:
             self._asset = self._data['asset']
@@ -722,7 +723,7 @@ class CorporateAction(LedgerTransaction):
         self._asset = self._data['asset_id']
         self._asset_symbol = JalDB().get_asset_name(self._asset)
         self._asset_name = JalDB().get_asset_name(self._asset, full=True)
-        self._qty = self._data['qty']
+        self._qty = Decimal(self._data['qty'])
         self._number = self._data['number']
         self._broker = JalDB().get_account_bank(self._account)
 
@@ -736,7 +737,7 @@ class CorporateAction(LedgerTransaction):
                 continue   # Don't display initial asset in list
             description += "\n" + JalDB().get_asset_name(result['asset_id'], full=True)
             if float(result['value_share']) < 1:
-                description += f" ({float(result['value_share'])*100.0} %)"
+                description += f" ({Decimal(result['value_share'])*100.0} %)"
         return description
 
     def value_change(self) -> list:
