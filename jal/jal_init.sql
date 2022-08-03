@@ -79,7 +79,7 @@ CREATE UNIQUE INDEX asset_data_uniqueness ON asset_data ( asset_id, datatype);
 -- Table: agents
 DROP TABLE IF EXISTS agents;
 CREATE TABLE agents (
-    id       INTEGER    PRIMARY KEYUNIQUE NOT NULL,
+    id       INTEGER    PRIMARY KEY UNIQUE NOT NULL,
     pid      INTEGER    NOT NULL DEFAULT (0),
     name     TEXT (64)  UNIQUE NOT NULL,
     location TEXT (128) 
@@ -102,7 +102,7 @@ CREATE TABLE countries (
     name         VARCHAR (64) UNIQUE NOT NULL,
     code         CHAR (3)     UNIQUE NOT NULL,
     iso_code     CHAR (4)     UNIQUE NOT NULL,
-    tax_treaty   INTEGER      NOT NULL EFAULT (0)
+    tax_treaty   INTEGER      NOT NULL DEFAULT (0)
 );
 
 -- Table: data_sources
