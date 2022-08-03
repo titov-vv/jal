@@ -212,6 +212,22 @@ CREATE TRIGGER dividends_after_update
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
+---------------------------------------------------------------------------------
+-- Conversion of quotes table from REAL to TEXT storage of decimal values
+CREATE TABLE old_quotes AS SELECT * FROM quotes;
+DROP TABLE IF EXISTS quotes;
+CREATE TABLE quotes (
+    id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    timestamp   INTEGER NOT NULL,
+    asset_id    INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    currency_id INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    quote       TEXT    NOT NULL DEFAULT ('0')
+);
+INSERT INTO quotes (id, timestamp, asset_id, currency_id, quote)
+  SELECT id, timestamp, asset_id, currency_id, CAST(ROUND(quote, 9) AS TEXT)
+   FROM old_quotes;
+DROP TABLE old_quotes;
+CREATE UNIQUE INDEX unique_quotations ON quotes (asset_id, currency_id, timestamp);
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 1;
 --------------------------------------------------------------------------------
