@@ -282,36 +282,23 @@ CREATE TABLE action_results (
 -- Table: trades
 DROP TABLE IF EXISTS trades;
 CREATE TABLE trades (
-    id         INTEGER     PRIMARY KEY
-                           UNIQUE
-                           NOT NULL,
-    op_type    INTEGER     NOT NULL
-                           DEFAULT (3),
+    id         INTEGER     PRIMARY KEY UNIQUE NOT NULL,
+    op_type    INTEGER     NOT NULL DEFAULT (3),
     timestamp  INTEGER     NOT NULL,
     settlement INTEGER     DEFAULT (0),
-    number     TEXT (32)   DEFAULT (''),
-    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
-                                                    ON UPDATE CASCADE
-                           NOT NULL,
-    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT
-                                                  ON UPDATE CASCADE
-                           NOT NULL,
-    qty        REAL        NOT NULL
-                           DEFAULT (0),
-    price      REAL        NOT NULL
-                           DEFAULT (0),
-    fee        REAL        DEFAULT (0),
-    note       TEXT (1024)
+    number     TEXT        DEFAULT (''),
+    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
+    qty        TEXT        NOT NULL DEFAULT ('0.0'),
+    price      TEXT        NOT NULL DEFAULT ('0.0'),
+    fee        TEXT        DEFAULT ('0.0'),
+    note       TEXT
 );
-
 
 -- Table: deals
 DROP TABLE IF EXISTS deals;
-
 CREATE TABLE deals (
-    id              INTEGER PRIMARY KEY
-                            UNIQUE
-                            NOT NULL,
+    id              INTEGER PRIMARY KEY UNIQUE NOT NULL,
     account_id      INTEGER NOT NULL,
     asset_id        INTEGER NOT NULL,
     open_op_type    INTEGER NOT NULL,
@@ -653,7 +640,6 @@ BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
 
--- Trigger: trades_after_delete
 DROP TRIGGER IF EXISTS trades_after_delete;
 CREATE TRIGGER trades_after_delete
          AFTER DELETE ON trades

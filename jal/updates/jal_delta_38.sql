@@ -182,7 +182,6 @@ INSERT INTO dividends (id, op_type, timestamp, ex_date, number, type, account_id
   FROM old_dividends;
 DROP TABLE old_dividends;
 
--- Trigger: dividends_after_delete
 DROP TRIGGER IF EXISTS dividends_after_delete;
 CREATE TRIGGER dividends_after_delete
       AFTER DELETE ON dividends
@@ -192,7 +191,6 @@ BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
 END;
 
--- Trigger: dividends_after_insert
 DROP TRIGGER IF EXISTS dividends_after_insert;
 CREATE TRIGGER dividends_after_insert
       AFTER INSERT ON dividends
@@ -202,7 +200,6 @@ BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
 END;
 
--- Trigger: dividends_after_update
 DROP TRIGGER IF EXISTS dividends_after_update;
 CREATE TRIGGER dividends_after_update
       AFTER UPDATE OF timestamp, account_id, asset_id, amount, tax ON dividends
@@ -227,6 +224,57 @@ INSERT INTO quotes (id, timestamp, asset_id, currency_id, quote)
    FROM old_quotes;
 DROP TABLE old_quotes;
 CREATE UNIQUE INDEX unique_quotations ON quotes (asset_id, currency_id, timestamp);
+---------------------------------------------------------------------------------
+-- Conversion of trades table from REAL to TEXT storage of decimal values
+CREATE TABLE old_trades AS SELECT * FROM trades;
+DROP TABLE IF EXISTS trades;
+CREATE TABLE trades (
+    id         INTEGER     PRIMARY KEY UNIQUE NOT NULL,
+    op_type    INTEGER     NOT NULL DEFAULT (3),
+    timestamp  INTEGER     NOT NULL,
+    settlement INTEGER     DEFAULT (0),
+    number     TEXT        DEFAULT (''),
+    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
+    qty        TEXT        NOT NULL DEFAULT ('0.0'),
+    price      TEXT        NOT NULL DEFAULT ('0.0'),
+    fee        TEXT        DEFAULT ('0.0'),
+    note       TEXT
+);
+INSERT INTO trades (id, op_type, timestamp, settlement, number, account_id, asset_id, qty, price, fee, note)
+  SELECT id, op_type, timestamp, settlement, number, account_id, asset_id, CAST(ROUND(qty, 9) AS TEXT), CAST(ROUND(price, 9) AS TEXT), CAST(ROUND(fee, 9) AS TEXT), note
+  FROM old_trades;
+DROP TABLE old_trades;
+
+DROP TRIGGER IF EXISTS trades_after_delete;
+CREATE TRIGGER trades_after_delete
+         AFTER DELETE ON trades
+      FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
+    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp;
+END;
+
+DROP TRIGGER IF EXISTS trades_after_insert;
+CREATE TRIGGER trades_after_insert
+      AFTER INSERT ON trades
+      FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
+    DELETE FROM open_trades WHERE timestamp >= NEW.timestamp;
+END;
+
+DROP TRIGGER IF EXISTS trades_after_update;
+CREATE TRIGGER trades_after_update
+      AFTER UPDATE OF timestamp, account_id, asset_id, qty, price, fee ON trades
+      FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+END;
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 1;
 --------------------------------------------------------------------------------
