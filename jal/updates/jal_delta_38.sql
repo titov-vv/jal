@@ -173,9 +173,8 @@ CREATE TABLE dividends (
     type       INTEGER     NOT NULL,
     account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
-    amount     TEXT        NOT NULL
-                           DEFAULT (0),
-    tax        TEXT        DEFAULT ('0'),
+    amount     TEXT        NOT NULL DEFAULT ('0.0'),
+    tax        TEXT        DEFAULT ('0.0'),
     note       TEXT
 );
 INSERT INTO dividends (id, op_type, timestamp, ex_date, number, type, account_id, asset_id, amount, tax, note)
@@ -221,7 +220,7 @@ CREATE TABLE quotes (
     timestamp   INTEGER NOT NULL,
     asset_id    INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     currency_id INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    quote       TEXT    NOT NULL DEFAULT ('0')
+    quote       TEXT    NOT NULL DEFAULT ('0.0')
 );
 INSERT INTO quotes (id, timestamp, asset_id, currency_id, quote)
   SELECT id, timestamp, asset_id, currency_id, CAST(ROUND(quote, 9) AS TEXT)
