@@ -326,36 +326,25 @@ END;
 
 -- Table: transfers
 DROP TABLE IF EXISTS transfers;
-
 CREATE TABLE transfers (
-    id                   INTEGER     PRIMARY KEY
-                                     UNIQUE
-                                     NOT NULL,
-    op_type              INTEGER     NOT NULL
-                                     DEFAULT (4),
+    id                   INTEGER     PRIMARY KEY UNIQUE NOT NULL,
+    op_type              INTEGER     NOT NULL DEFAULT (4),
     withdrawal_timestamp INTEGER     NOT NULL,
-    withdrawal_account   INTEGER     NOT NULL
-                                     REFERENCES accounts (id) ON DELETE CASCADE
-                                                              ON UPDATE CASCADE,
-    withdrawal           REAL        NOT NULL,
+    withdrawal_account   INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    withdrawal           TEXT        NOT NULL,
     deposit_timestamp    INTEGER     NOT NULL,
-    deposit_account      INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
-                                                              ON UPDATE CASCADE
-                                     NOT NULL,
-    deposit              REAL        NOT NULL,
-    fee_account          INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
-                                                              ON UPDATE CASCADE,
-    fee                  REAL,
-    asset                INTEGER     REFERENCES assets (id) ON DELETE CASCADE
-                                                            ON UPDATE CASCADE,
-    note                 TEXT (1024)
+    deposit_account      INTEGER     NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    deposit              TEXT        NOT NULL,
+    fee_account          INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    fee                  TEXT,
+    asset                INTEGER     REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    note                 TEXT
 );
 
 
 -- Index: agents_by_name_idx
 DROP INDEX IF EXISTS agents_by_name_idx;
 CREATE INDEX agents_by_name_idx ON agents (name);
-
 
 
 -- View: operation_sequence
