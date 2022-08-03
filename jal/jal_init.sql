@@ -116,25 +116,18 @@ CREATE TABLE data_sources (
 -- Table: dividends
 DROP TABLE IF EXISTS dividends;
 CREATE TABLE dividends (
-    id         INTEGER     PRIMARY KEY
-                           UNIQUE
-                           NOT NULL,
-    op_type    INTEGER     NOT NULL
-                           DEFAULT (2),
+    id         INTEGER     PRIMARY KEY UNIQUE NOT NULL,
+    op_type    INTEGER     NOT NULL DEFAULT (2),
     timestamp  INTEGER     NOT NULL,
     ex_date    INTEGER,
-    number     TEXT (32)   DEFAULT (''),
+    number     TEXT        DEFAULT (''),
     type       INTEGER     NOT NULL,
-    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE
-                                                    ON UPDATE CASCADE
-                           NOT NULL,
-    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT
-                                                  ON UPDATE CASCADE
-                           NOT NULL,
-    amount     REAL        NOT NULL
+    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
+    amount     TEXT        NOT NULL
                            DEFAULT (0),
-    tax        REAL        DEFAULT (0),
-    note       TEXT (1024)
+    tax        TEXT        DEFAULT ('0'),
+    note       TEXT
 );
 
 

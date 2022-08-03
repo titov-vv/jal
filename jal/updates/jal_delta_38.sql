@@ -160,6 +160,58 @@ BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM open_trades WHERE timestamp >= OLD.timestamp  OR timestamp >= NEW.timestamp;
 END;
+---------------------------------------------------------------------------------
+-- Conversion of dividends table from REAL to TEXT storage of decimal values
+CREATE TABLE old_dividends AS SELECT * FROM dividends;
+DROP TABLE IF EXISTS dividends;
+CREATE TABLE dividends (
+    id         INTEGER     PRIMARY KEY UNIQUE NOT NULL,
+    op_type    INTEGER     NOT NULL DEFAULT (2),
+    timestamp  INTEGER     NOT NULL,
+    ex_date    INTEGER,
+    number     TEXT        DEFAULT (''),
+    type       INTEGER     NOT NULL,
+    account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
+    amount     TEXT        NOT NULL
+                           DEFAULT (0),
+    tax        TEXT        DEFAULT ('0'),
+    note       TEXT
+);
+INSERT INTO dividends (id, op_type, timestamp, ex_date, number, type, account_id, asset_id, amount, tax, note)
+  SELECT id, op_type, timestamp, ex_date, number, type, account_id, asset_id, CAST(ROUND(amount, 9) AS TEXT), CAST(ROUND(tax, 9) AS TEXT), note
+  FROM old_dividends;
+DROP TABLE old_dividends;
+
+-- Trigger: dividends_after_delete
+DROP TRIGGER IF EXISTS dividends_after_delete;
+CREATE TRIGGER dividends_after_delete
+      AFTER DELETE ON dividends
+      FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
+END;
+
+-- Trigger: dividends_after_insert
+DROP TRIGGER IF EXISTS dividends_after_insert;
+CREATE TRIGGER dividends_after_insert
+      AFTER INSERT ON dividends
+      FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
+END;
+
+-- Trigger: dividends_after_update
+DROP TRIGGER IF EXISTS dividends_after_update;
+CREATE TRIGGER dividends_after_update
+      AFTER UPDATE OF timestamp, account_id, asset_id, amount, tax ON dividends
+      FOR EACH ROW
+      WHEN (SELECT value FROM settings WHERE id = 1)
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+END;
 --------------------------------------------------------------------------------
 PRAGMA foreign_keys = 1;
 --------------------------------------------------------------------------------
