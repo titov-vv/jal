@@ -26,7 +26,7 @@ CREATE TABLE action_details (
     tag_id      INTEGER    REFERENCES tags (id) ON DELETE SET NULL ON UPDATE CASCADE,
     amount      TEXT       NOT NULL,
     amount_alt  TEXT       DEFAULT ('0.0') NOT NULL,
-    note        TEXT (256) 
+    note        TEXT
 );
 
 
@@ -284,8 +284,8 @@ CREATE TABLE action_results (
     id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
     action_id   INTEGER NOT NULL REFERENCES asset_actions (id) ON DELETE CASCADE ON UPDATE CASCADE,
     asset_id    INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    qty         REAL    NOT NULL,
-    value_share REAL    NOT NULL
+    qty         TEXT    NOT NULL,
+    value_share TEXT    NOT NULL
 );
 
 -- Table: trades
