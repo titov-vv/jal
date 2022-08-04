@@ -4,7 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from PySide6.QtCore import Signal, QObject, QDate
 from PySide6.QtWidgets import QDialog, QMessageBox
-from jal.constants import Setup, BookAccount
+from jal.constants import BookAccount
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord, db_triggers_disable, db_triggers_enable
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
@@ -183,10 +183,10 @@ class Ledger(QObject):
         logging.info(self.tr("Re-building ledger since: ") +
                      f"{datetime.utcfromtimestamp(frontier).strftime('%d/%m/%Y %H:%M:%S')}")
         start_time = datetime.now()
-        _ = executeSQL("DELETE FROM deals WHERE close_timestamp >= :frontier", [(":frontier", frontier)])
+        _ = executeSQL("DELETE FROM trades_closed WHERE close_timestamp >= :frontier", [(":frontier", frontier)])
         _ = executeSQL("DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
         _ = executeSQL("DELETE FROM ledger_totals WHERE timestamp >= :frontier", [(":frontier", frontier)])
-        _ = executeSQL("DELETE FROM open_trades WHERE timestamp >= :frontier", [(":frontier", frontier)])
+        _ = executeSQL("DELETE FROM trades_opened WHERE timestamp >= :frontier", [(":frontier", frontier)])
 
         db_triggers_disable()
         if fast_and_dirty:  # For 30k operations difference of execution time is - with 0:02:41 / without 0:11:44

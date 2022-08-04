@@ -2,6 +2,7 @@ import os
 import logging
 import sqlparse
 from datetime import datetime
+from decimal import Decimal
 from pkg_resources import parse_version
 from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtSql import QSql, QSqlDatabase
@@ -249,15 +250,16 @@ class JalDB:
 
     # get asset quotation for given currency and timestamp
     # if exact is False get's last available quotation before timestamp
-    def get_quote(self, asset_id, currency_id, timestamp, exact=True):
+    def get_quote(self, asset_id, currency_id, timestamp, exact=True) -> Decimal:
         if exact:
-            return readSQL("SELECT quote FROM quotes WHERE asset_id=:asset_id "
-                           "AND currency_id=:currency_id AND timestamp=:timestamp",
-                           [(":asset_id", asset_id), (":currency_id", currency_id), (":timestamp", timestamp)])
+            quote = readSQL("SELECT quote FROM quotes WHERE asset_id=:asset_id "
+                            "AND currency_id=:currency_id AND timestamp=:timestamp",
+                            [(":asset_id", asset_id), (":currency_id", currency_id), (":timestamp", timestamp)])
         else:
-            return readSQL("SELECT quote FROM quotes WHERE asset_id=:asset_id AND currency_id=:currency_id "
-                           "AND timestamp<=:timestamp ORDER BY timestamp DESC LIMIT 1",
-                           [(":asset_id", asset_id), (":currency_id", currency_id), (":timestamp", timestamp)])
+            quote = readSQL("SELECT quote FROM quotes WHERE asset_id=:asset_id AND currency_id=:currency_id "
+                            "AND timestamp<=:timestamp ORDER BY timestamp DESC LIMIT 1",
+                            [(":asset_id", asset_id), (":currency_id", currency_id), (":timestamp", timestamp)])
+        return Decimal(quote)
 
     # Set quotations for given asset_id and currency_id
     # quotations is a list of {'timestamp', 'quote'} values

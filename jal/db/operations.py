@@ -1,8 +1,7 @@
-from math import copysign
 from datetime import datetime
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
-from jal.constants import Setup, BookAccount, CustomColor, PredefinedPeer, PredefinedCategory, PredefinedAsset
+from jal.constants import BookAccount, CustomColor, PredefinedPeer, PredefinedCategory, PredefinedAsset
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
@@ -38,7 +37,7 @@ class LedgerTransaction:
         return QApplication.translate("LedgerTransaction", text)
 
     def dump(self):
-        return f"{self._data}"
+        return str(self._data)
 
     @staticmethod
     def get_operation(operation_type, operation_id, display_type=None):
@@ -87,37 +86,39 @@ class LedgerTransaction:
     # price is None if we process corporate action or transfer where we keep initial value and don't have profit or loss
     # Returns total qty, value of deals created.
     def _close_deals_fifo(self, deal_sign, qty, price):
-        processed_qty = 0
-        processed_value = 0
+        processed_qty = Decimal('0.0')
+        processed_value = Decimal('0.0')
         # Get a list of all previous not matched trades or corporate actions
         query = executeSQL("SELECT timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty "
-                           "FROM open_trades "
+                           "FROM trades_opened "
                            "WHERE account_id=:account_id AND asset_id=:asset_id AND remaining_qty!=0 "
                            "ORDER BY timestamp, op_type DESC",
                            [(":account_id", self._account), (":asset_id", self._asset)])
         while query.next():
             opening_trade = readSQLrecord(query, named=True)
-            next_deal_qty = opening_trade['remaining_qty']
+            next_deal_qty = Decimal(opening_trade['remaining_qty'])
             if (processed_qty + next_deal_qty) > qty:  # We can't close all trades with current operation
                 next_deal_qty = qty - processed_qty    # If it happens - just process the remainder of the trade
-            _ = executeSQL("UPDATE open_trades SET remaining_qty=remaining_qty-:qty "
+            remaining_qty = Decimal(opening_trade['remaining_qty']) - next_deal_qty
+            _ = executeSQL("UPDATE trades_opened SET remaining_qty=:new_remaining_qty "
                            "WHERE op_type=:op_type AND operation_id=:id AND asset_id=:asset_id",
-                           [(":qty", next_deal_qty), (":op_type", opening_trade['op_type']),
+                           [(":new_remaining_qty", str(remaining_qty)), (":op_type", opening_trade['op_type']),
                             (":id", opening_trade['operation_id']), (":asset_id", self._asset)])
-            close_price = opening_trade['price'] if price is None else price
+            open_price = Decimal(opening_trade['price'])
+            close_price = Decimal(opening_trade['price']) if price is None else price
             _ = executeSQL(
-                "INSERT INTO deals(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
+                "INSERT INTO trades_closed(account_id, asset_id, open_op_type, open_op_id, open_timestamp, open_price, "
                 "close_op_type, close_op_id, close_timestamp, close_price, qty) "
                 "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :open_price, "
                 ":close_op_type, :close_op_id, :close_timestamp, :close_price, :qty)",
                 [(":account_id", self._account), (":asset_id", self._asset),
                  (":open_op_type", opening_trade['op_type']), (":open_op_id", opening_trade['operation_id']),
-                 (":open_timestamp", opening_trade['timestamp']), (":open_price", opening_trade['price']),
+                 (":open_timestamp", opening_trade['timestamp']), (":open_price", str(open_price)),
                  (":close_op_type", self._otype), (":close_op_id", self._oid),
-                 (":close_timestamp", self._timestamp), (":close_price", close_price),
-                 (":qty", (-deal_sign) * next_deal_qty)])
+                 (":close_timestamp", self._timestamp), (":close_price", str(close_price)),
+                 (":qty", str((-deal_sign) * next_deal_qty))])
             processed_qty += next_deal_qty
-            processed_value += (next_deal_qty * opening_trade['price'])
+            processed_value += (next_deal_qty * open_price)
             if processed_qty == qty:
                 break
         return processed_qty, processed_value
@@ -204,7 +205,7 @@ class IncomeSpending(LedgerTransaction):
     def description(self) -> str:
         description = self._peer
         if self._currency:
-            if self._amount_alt == 0.0:
+            if self._amount_alt == Decimal('0.0'):
                 return description
             try:
                 rate = self._amount_alt / self._amount
@@ -240,7 +241,7 @@ class IncomeSpending(LedgerTransaction):
         if len(self._details) == 0:
             self.dump()
             raise ValueError(self.tr("Can't process operation without details"))
-        if self._amount < 0:
+        if self._amount < Decimal('0.0'):
             credit_taken = ledger.takeCredit(self, self._account, -self._amount)
             ledger.appendTransaction(self, BookAccount.Money, -(-self._amount - credit_taken))
         else:
@@ -342,7 +343,7 @@ class Dividend(LedgerTransaction):
         else:
             raise ValueError(self.tr("Unsupported dividend type.") + f" Operation: {self.dump()}")
         operation_value = (self._amount - self._tax)
-        if operation_value > 0:
+        if operation_value > Decimal('0.0'):
             credit_returned = ledger.returnCredit(self, self._account, operation_value)
             if credit_returned < operation_value:
                 ledger.appendTransaction(self, BookAccount.Money, operation_value - credit_returned)
@@ -350,7 +351,7 @@ class Dividend(LedgerTransaction):
             credit_taken = ledger.takeCredit(self, self._account, -operation_value)
             if credit_taken < -operation_value:
                 ledger.appendTransaction(self, BookAccount.Money, operation_value + credit_taken)
-        if self._amount > 0:
+        if self._amount > Decimal('0.0'):
             ledger.appendTransaction(self, BookAccount.Incomes, -self._amount, category=category, peer=self._broker)
         else:   # This branch is valid for accrued bond interest payments for bond buying trades
             ledger.appendTransaction(self, BookAccount.Costs, -self._amount, category=category, peer=self._broker)
@@ -360,18 +361,18 @@ class Dividend(LedgerTransaction):
 
     def processStockDividendOrVesting(self, ledger):
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account, self._asset)
-        if asset_amount < -Setup.CALC_TOLERANCE:
+        if asset_amount < Decimal('0.0'):
             raise NotImplemented(self.tr("Not supported action: stock dividend or vesting closes short trade.") +
                                  f" Operation: {self.dump()}")
         quote = JalDB().get_quote(self._asset, JalDB().get_account_currency(self._account), self._timestamp)
         if quote is None:
             raise ValueError(self.tr("No stock quote for stock dividend or vesting.") + f" Operation: {self.dump()}")
         _ = executeSQL(
-            "INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
+            "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
             "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
             [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
-             (":account_id", self._account), (":asset_id", self._asset), (":price", quote),
-             (":remaining_qty", self._amount)])
+             (":account_id", self._account), (":asset_id", self._asset), (":price", str(quote)),
+             (":remaining_qty", str(self._amount))])
         ledger.appendTransaction(self, BookAccount.Assets, self._amount,
                                  asset_id=self._asset, value=self._amount * quote)
         if self._tax:
@@ -389,7 +390,6 @@ class Trade(LedgerTransaction):
         self._view_rows = 2
         self._data = readSQL("SELECT t.timestamp, t.number, t.account_id, t.asset_id, t.qty, t.price AS price, "
                              "t.fee, t.note FROM trades AS t WHERE t.id=:oid", [(":oid", self._oid)], named=True)
-        self._label, self._label_color = ('S', CustomColor.DarkRed) if self._data['qty'] < 0 else ('B', CustomColor.DarkGreen)
         self._timestamp = self._data['timestamp']
         self._account = JalDB().get_account_name(self._data['account_id'])
         self._account = self._data['account_id']
@@ -405,9 +405,13 @@ class Trade(LedgerTransaction):
         self._fee = Decimal(self._data['fee'])
         self._note = self._data['note']
         self._broker = JalDB().get_account_bank(self._account)
+        if self._qty < Decimal('0.0'):
+            self._label, self._label_color = ('S', CustomColor.DarkRed)
+        else:
+            self._label, self._label_color = ('B', CustomColor.DarkGreen)
 
     def description(self) -> str:
-        if self._fee != 0:
+        if self._fee != Decimal('0.0'):
             text = f"{self._qty:+.2f} @ {self._price:.4f}\n({self._fee:.2f}) "
         else:
             text = f"{self._qty:+.2f} @ {self._price:.4f}\n"
@@ -433,14 +437,14 @@ class Trade(LedgerTransaction):
             raise ValueError(
                 self.tr("Can't process trade as bank isn't set for investment account: ") + self._account_name)
 
-        deal_sign = copysign(1, self._qty)  # 1 is buy, -1 is sell
+        deal_sign = Decimal('1.0').copy_sign(self._qty)  # 1 is buy and -1 is sell operation
         qty = abs(self._qty)
         trade_value = round(self._price * qty, 2) + deal_sign * self._fee
-        processed_qty = 0
-        processed_value = 0
+        processed_qty = Decimal('0.0')
+        processed_value = Decimal('0.0')
         # Get asset amount accumulated before current operation
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account, self._asset)
-        if ((-deal_sign) * asset_amount) > 0:  # Process deal match if we have asset that is opposite to operation
+        if ((-deal_sign) * asset_amount) > Decimal('0.0'):  # Match trade if we have asset that is opposite to operation
             processed_qty, processed_value = self._close_deals_fifo(deal_sign, qty, self._price)
         if deal_sign > 0:
             credit_value = ledger.takeCredit(self, self._account, trade_value)
@@ -449,18 +453,18 @@ class Trade(LedgerTransaction):
         if credit_value < trade_value:
             ledger.appendTransaction(self, BookAccount.Money, (-deal_sign) * (trade_value - credit_value))
         if processed_qty > 0:  # Add result of closed deals
-            # decrease (for sell) or increase (for buy) amount of assets in ledger
+            # decrease (sell operation) or increase (buy operation) amount of assets in ledger
             ledger.appendTransaction(self, BookAccount.Assets, deal_sign * processed_qty,
                                      asset_id=self._asset, value=deal_sign * processed_value)
             ledger.appendTransaction(self, BookAccount.Incomes, deal_sign * ((self._price * processed_qty) - processed_value),
                                      category=PredefinedCategory.Profit, peer=self._broker)
-        if processed_qty < qty:  # We have reminder that opens a new position
+        if processed_qty < qty:  # We have a reminder that opens a new position
             _ = executeSQL(
-                "INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
+                "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
                 "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
                 [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
-                 (":account_id", self._account), (":asset_id", self._asset), (":price", self._price),
-                 (":remaining_qty", qty - processed_qty)])
+                 (":account_id", self._account), (":asset_id", self._asset), (":price", str(self._price)),
+                 (":remaining_qty", str(qty - processed_qty))])
             ledger.appendTransaction(self, BookAccount.Assets, deal_sign * (qty - processed_qty), asset_id=self._asset,
                                      value=deal_sign * (qty - processed_qty) * self._price)
         if self._fee:
@@ -548,13 +552,13 @@ class Transfer(LedgerTransaction):
         try:
             rate = self._withdrawal / self._deposit
         except ZeroDivisionError:
-            rate = 0
+            rate = Decimal('0.0')
         if self._withdrawal_currency != self._deposit_currency:
-            if rate != 0:
-                if rate > 1:
+            if rate != Decimal('0.0'):
+                if rate > Decimal('1.0'):
                     return self._note + f" [1 {self._deposit_currency} = {rate:.4f} {self._withdrawal_currency}]"
-                elif rate < 1:
-                    rate = 1 / rate
+                elif rate < Decimal('1.0'):
+                    rate = Decimal('1.0') / rate
                     return self._note + f" [{rate:.4f} {self._deposit_currency} = 1 {self._withdrawal_currency}]"
                 else:
                     return self._note
@@ -590,7 +594,6 @@ class Transfer(LedgerTransaction):
             assert False, "Unknown transfer type"
 
     def value_total(self) -> str:
-        amount = None
         if self._display_type == Transfer.Outgoing:
             if self._asset:
                 amount = self._asset_total(self._withdrawal_account, self._asset)
@@ -637,17 +640,17 @@ class Transfer(LedgerTransaction):
     def processAssetTransfer(self, ledger):
         if self._display_type == Transfer.Outgoing:   # Withdraw asset from source account
             asset_amount = ledger.getAmount(BookAccount.Assets, self._withdrawal_account, self._asset)
-            if asset_amount < (self._withdrawal - 2 * Setup.CALC_TOLERANCE):
+            if asset_amount < self._withdrawal:
                 raise ValueError(self.tr("Asset amount is not enough for asset transfer processing. Date: ")
                                  + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
                                  + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
-            processed_qty, processed_value = self._close_deals_fifo(-1, self._withdrawal, None)
-            if processed_qty < (self._withdrawal - 2 * Setup.CALC_TOLERANCE):
+            processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._withdrawal, None)
+            if processed_qty < self._withdrawal:
                 raise ValueError(self.tr("Processed asset amount is less than transfer amount. Date: ")
                                  + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
                                  + f"Processed amount: {asset_amount}, Operation: {self.dump()}")
             if self._withdrawal_currency == JalSettings().getValue('BaseCurrency'):
-                currency_rate = 1
+                currency_rate = Decimal('1.0')
             else:
                 currency_rate = JalDB().get_quote(JalDB().get_account_currency(self._withdrawal_account),
                                                   JalSettings().getValue('BaseCurrency'),
@@ -664,19 +667,21 @@ class Transfer(LedgerTransaction):
                             check_unique=True)
             if not value:
                 raise ValueError(self.tr("Asset withdrawal not found for transfer.") + f" Operation:  {self.dump()}")
+            else:
+                value = Decimal(value)
             if self._deposit_currency == JalSettings().getValue('BaseCurrency'):
-                currency_rate = 1
+                currency_rate = Decimal('1.0')
             else:
                 currency_rate = JalDB().get_quote(JalDB().get_account_currency(self._deposit_account),
                                                   JalSettings().getValue('BaseCurrency'),
                                                   self._deposit_timestamp, exact=False)
-            price = value*currency_rate / self._deposit
+            price = value * currency_rate / self._deposit
             _ = executeSQL(
-                "INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
+                "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
                 "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
                 [(":timestamp", self._deposit_timestamp), (":type", self._otype), (":operation_id", self._oid),
-                 (":account_id", self._deposit_account), (":asset_id", self._asset), (":price", price),
-                 (":remaining_qty", self._deposit)])
+                 (":account_id", self._deposit_account), (":asset_id", self._asset), (":price", str(price)),
+                 (":remaining_qty", str(self._deposit))])
             ledger.appendTransaction(self, BookAccount.Transfers, -self._deposit, asset_id=self._asset, value=-value)
             ledger.appendTransaction(self, BookAccount.Assets, self._deposit,
                                      asset_id=self._asset, value=value*currency_rate)
@@ -738,17 +743,17 @@ class CorporateAction(LedgerTransaction):
             if self._subtype == CorporateAction.SpinOff and result['asset_id'] == self._asset:
                 continue   # Don't display initial asset in list
             description += "\n" + JalDB().get_asset_name(result['asset_id'], full=True)
-            if float(result['value_share']) < 1:
-                description += f" ({Decimal(result['value_share'])*100.0} %)"
+            if Decimal(result['value_share']) < Decimal('1.0'):
+                description += f" ({Decimal(result['value_share']) * Decimal('100.0')} %)"
         return description
 
     def value_change(self) -> list:
         result = []
         if self._subtype != CorporateAction.SpinOff:
-            result.append(-self._qty)
+            result.append(Decimal(-self._qty))
         query = executeSQL("SELECT qty FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
         while query.next():
-            result.append(readSQLrecord(query))
+            result.append(Decimal(readSQLrecord(query)))
         if len(result) == 1:  # Need to feel at least 2 lines
             result.append(None)
         return result
@@ -778,21 +783,24 @@ class CorporateAction(LedgerTransaction):
     def processLedger(self, ledger):
         # Get asset amount accumulated before current operation
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account, self._asset)
-        if asset_amount < (self._qty - 2 * Setup.CALC_TOLERANCE):
+        if asset_amount < self._qty:
             raise ValueError(self.tr("Asset amount is not enough for corporate action processing. Date: ")
                              + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
                              + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
-        if asset_amount > (self._qty + 2 * Setup.CALC_TOLERANCE):
+        if asset_amount > self._qty:
             raise ValueError(self.tr("Unhandled case: Corporate action covers not full open position. Date: ")
                              + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
                              + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
-        total_allocation = readSQL("SELECT SUM(value_share) FROM action_results WHERE action_id=:oid",
-                                   [(":oid", self._oid)])   # total_allocation will be empty for Delisting
-        if total_allocation and (abs(float(total_allocation) - 1.0) > 2 * Setup.CALC_TOLERANCE):
+        # Calculate total asset allocation after corporate action and verify it equals 100%
+        allocation = Decimal('0.0')
+        query = executeSQL("SELECT value_share FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
+        while query.next():
+            allocation += Decimal(readSQLrecord(query))
+        if allocation != Decimal('1.0'):
             raise ValueError(self.tr("Results value of corporate action doesn't match 100% of initial asset value. ")
                                      + f"Date: {datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
                                      + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
-        processed_qty, processed_value = self._close_deals_fifo(-1, self._qty, None)
+        processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._qty, None)
         # Withdraw value with old quantity of old asset
         ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
                                  asset_id=self._asset, value=-processed_value)
@@ -805,6 +813,8 @@ class CorporateAction(LedgerTransaction):
                            [(":oid", self._oid)])
         while query.next():
             asset, qty, share = readSQLrecord(query)
+            qty = Decimal(qty)
+            share = Decimal(share)
             if JalDB().get_asset_type(asset) == PredefinedAsset.Money:
                 ledger.appendTransaction(self, BookAccount.Money, qty)
                 ledger.appendTransaction(self, BookAccount.Incomes, -qty,
@@ -813,8 +823,10 @@ class CorporateAction(LedgerTransaction):
                 value = share * processed_value
                 price = value / qty
                 _ = executeSQL(
-                    "INSERT INTO open_trades(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
+                    "INSERT INTO trades_opened(timestamp, op_type, operation_id, "
+                    "account_id, asset_id, price, remaining_qty) "
                     "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
                     [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
-                     (":account_id", self._account), (":asset_id", asset), (":price", price),(":remaining_qty", qty)])
+                     (":account_id", self._account), (":asset_id", asset), (":price", str(price)),
+                     (":remaining_qty", str(qty))])
                 ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset, value=value)
