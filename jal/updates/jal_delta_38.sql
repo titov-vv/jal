@@ -42,6 +42,79 @@ DROP INDEX IF EXISTS ledger_totals_by_operation_book;
 CREATE INDEX ledger_totals_by_operation_book ON ledger_totals (op_type, operation_id, book_account);
 
 ---------------------------------------------------------------------------------
+-- Rename of open_trades table to trades_opened and conversion from REAL to TEXT storage of decimal values
+DROP TABLE IF EXISTS open_trades;
+CREATE TABLE trades_opened (
+    id            INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    timestamp     INTEGER NOT NULL,
+    op_type       INTEGER NOT NULL,
+    operation_id  INTEGER NOT NULL,
+    account_id    INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    asset_id      INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    price         TEXT    NOT NULL,
+    remaining_qty TEXT    NOT NULL
+);
+
+---------------------------------------------------------------------------------
+-- Rename of deals table to trades_closed and conversion from REAL to TEXT storage of decimal values
+DROP TABLE IF EXISTS deals;
+CREATE TABLE trades_closed (
+    id              INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    account_id      INTEGER NOT NULL,
+    asset_id        INTEGER NOT NULL,
+    open_op_type    INTEGER NOT NULL,
+    open_op_id      INTEGER NOT NULL,
+    open_timestamp  INTEGER NOT NULL,
+    open_price      TEXT    NOT NULL,
+    close_op_type   INTEGER NOT NULL,
+    close_op_id     INTEGER NOT NULL,
+    close_timestamp INTEGER NOT NULL,
+    close_price     TEXT    NOT NULL,
+    qty             TEXT    NOT NULL
+);
+
+DROP TRIGGER IF EXISTS on_deal_delete;
+CREATE TRIGGER on_closed_trade_delete
+    AFTER DELETE ON trades_closed
+    FOR EACH ROW
+    WHEN (SELECT value FROM settings WHERE id = 1)
+BEGIN
+    UPDATE trades_opened
+    SET remaining_qty = remaining_qty + OLD.qty
+    WHERE op_type=OLD.open_op_type AND operation_id=OLD.open_op_id AND account_id=OLD.account_id AND asset_id = OLD.asset_id;
+END;
+
+-- View: deals_ext
+DROP VIEW IF EXISTS deals_ext;
+CREATE VIEW deals_ext AS
+    SELECT d.account_id,
+           ac.name AS account,
+           d.asset_id,
+           at.symbol AS asset,
+           open_timestamp,
+           close_timestamp,
+           open_price,
+           close_price,
+           d.qty AS qty,
+           coalesce(ot.fee * abs(d.qty / ot.qty), 0) + coalesce(ct.fee * abs(d.qty / ct.qty), 0) AS fee,
+           d.qty * (close_price - open_price ) - (coalesce(ot.fee * abs(d.qty / ot.qty), 0) + coalesce(ct.fee * abs(d.qty / ct.qty), 0) ) AS profit,
+           coalesce(100 * (d.qty * (close_price - open_price ) - (coalesce(ot.fee * abs(d.qty / ot.qty), 0) + coalesce(ct.fee * abs(d.qty / ct.qty), 0) ) ) / abs(d.qty * open_price ), 0) AS rel_profit,
+           coalesce(oca.type, -cca.type) AS corp_action
+    FROM trades_closed AS d
+          -- Get more information about trade/corp.action that opened the deal
+           LEFT JOIN trades AS ot ON ot.id=d.open_op_id AND ot.op_type=d.open_op_type
+           LEFT JOIN asset_actions AS oca ON oca.id=d.open_op_id AND oca.op_type=d.open_op_type
+          -- Get more information about trade/corp.action that opened the deal
+           LEFT JOIN trades AS ct ON ct.id=d.close_op_id AND ct.op_type=d.close_op_type
+           LEFT JOIN asset_actions AS cca ON cca.id=d.close_op_id AND cca.op_type=d.close_op_type
+          -- "Decode" account and asset
+           LEFT JOIN accounts AS ac ON d.account_id = ac.id
+           LEFT JOIN asset_tickers AS at ON d.asset_id = at.asset_id AND ac.currency_id=at.currency_id AND at.active=1
+     -- drop cases where deal was opened and closed with corporate action
+     WHERE NOT (d.open_op_type = 5 AND d.close_op_type = 5)
+     ORDER BY close_timestamp, open_timestamp;
+
+---------------------------------------------------------------------------------
 -- Conversion of action_details table from REAL to TEXT storage of decimal values
 CREATE TABLE old_details AS SELECT * FROM action_details;
 DROP TABLE IF EXISTS action_details;
@@ -157,7 +230,7 @@ CREATE TRIGGER asset_action_after_delete
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS asset_action_after_insert;
@@ -167,7 +240,7 @@ CREATE TRIGGER asset_action_after_insert
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS asset_action_after_update;
@@ -177,7 +250,7 @@ CREATE TRIGGER asset_action_after_update
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp  OR timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp  OR timestamp >= NEW.timestamp;
 END;
 ---------------------------------------------------------------------------------
 -- Conversion of dividends table from REAL to TEXT storage of decimal values
@@ -272,7 +345,7 @@ CREATE TRIGGER trades_after_delete
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS trades_after_insert;
@@ -282,7 +355,7 @@ CREATE TRIGGER trades_after_insert
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS trades_after_update;
@@ -292,7 +365,7 @@ CREATE TRIGGER trades_after_update
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
 ---------------------------------------------------------------------------------
 -- Conversion of transfers table from REAL to TEXT storage of decimal values

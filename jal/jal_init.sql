@@ -193,16 +193,16 @@ CREATE TABLE map_peer (
 
 
 -- Table: open_trades
-DROP TABLE IF EXISTS open_trades;
-CREATE TABLE open_trades (
+DROP TABLE IF EXISTS trades_opened;
+CREATE TABLE trades_opened (
     id            INTEGER PRIMARY KEY UNIQUE NOT NULL,
     timestamp     INTEGER NOT NULL,
     op_type       INTEGER NOT NULL,
     operation_id  INTEGER NOT NULL,
     account_id    INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     asset_id      INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    price         REAL    NOT NULL,
-    remaining_qty REAL    NOT NULL
+    price         TEXT    NOT NULL,
+    remaining_qty TEXT    NOT NULL
 );
 
 
@@ -295,33 +295,32 @@ CREATE TABLE trades (
     note       TEXT
 );
 
--- Table: deals
-DROP TABLE IF EXISTS deals;
-CREATE TABLE deals (
+-- Table for closed deals storage
+DROP TABLE IF EXISTS trades_closed;
+CREATE TABLE trades_closed (
     id              INTEGER PRIMARY KEY UNIQUE NOT NULL,
     account_id      INTEGER NOT NULL,
     asset_id        INTEGER NOT NULL,
     open_op_type    INTEGER NOT NULL,
     open_op_id      INTEGER NOT NULL,
     open_timestamp  INTEGER NOT NULL,
-    open_price      REAL    NOT NULL,
+    open_price      TEXT    NOT NULL,
     close_op_type   INTEGER NOT NULL,
     close_op_id     INTEGER NOT NULL,
     close_timestamp INTEGER NOT NULL,
-    close_price     REAL    NOT NULL,
-    qty             REAL    NOT NULL
+    close_price     TEXT    NOT NULL,
+    qty             TEXT    NOT NULL
 );
 
-
-CREATE TRIGGER on_deal_delete
-         AFTER DELETE
-            ON deals
+DROP TRIGGER IF EXISTS on_closed_trade_delete;
+CREATE TRIGGER on_closed_trade_delete
+    AFTER DELETE ON trades_closed
     FOR EACH ROW
     WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
-    UPDATE open_trades
-       SET remaining_qty = remaining_qty + OLD.qty
-     WHERE op_type=OLD.open_op_type AND operation_id=OLD.open_op_id AND account_id=OLD.account_id AND asset_id = OLD.asset_id;
+    UPDATE trades_opened
+    SET remaining_qty = remaining_qty + OLD.qty
+    WHERE op_type=OLD.open_op_type AND operation_id=OLD.open_op_id AND account_id=OLD.account_id AND asset_id = OLD.asset_id;
 END;
 
 -- Table: transfers
@@ -431,7 +430,7 @@ CREATE VIEW deals_ext AS
            d.qty * (close_price - open_price ) - (coalesce(ot.fee * abs(d.qty / ot.qty), 0) + coalesce(ct.fee * abs(d.qty / ct.qty), 0) ) AS profit,
            coalesce(100 * (d.qty * (close_price - open_price ) - (coalesce(ot.fee * abs(d.qty / ot.qty), 0) + coalesce(ct.fee * abs(d.qty / ct.qty), 0) ) ) / abs(d.qty * open_price ), 0) AS rel_profit,
            coalesce(oca.type, -cca.type) AS corp_action
-    FROM deals AS d
+    FROM trades_closed AS d
           -- Get more information about trade/corp.action that opened the deal
            LEFT JOIN trades AS ot ON ot.id=d.open_op_id AND ot.op_type=d.open_op_type
            LEFT JOIN asset_actions AS oca ON oca.id=d.open_op_id AND oca.op_type=d.open_op_type
@@ -636,7 +635,7 @@ CREATE TRIGGER trades_after_delete
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS trades_after_insert;
@@ -646,7 +645,7 @@ CREATE TRIGGER trades_after_insert
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS trades_after_update;
@@ -656,7 +655,7 @@ CREATE TRIGGER trades_after_update
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS asset_action_after_delete;
@@ -666,7 +665,7 @@ CREATE TRIGGER asset_action_after_delete
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS asset_action_after_insert;
@@ -676,7 +675,7 @@ CREATE TRIGGER asset_action_after_insert
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS asset_action_after_update;
@@ -686,7 +685,7 @@ CREATE TRIGGER asset_action_after_update
       WHEN (SELECT value FROM settings WHERE id = 1)
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
-    DELETE FROM open_trades WHERE timestamp >= OLD.timestamp  OR timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp  OR timestamp >= NEW.timestamp;
 END;
 
 DROP TRIGGER IF EXISTS asset_result_after_delete;
