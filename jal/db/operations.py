@@ -91,7 +91,7 @@ class LedgerTransaction:
         # Get a list of all previous not matched trades or corporate actions
         query = executeSQL("SELECT timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty "
                            "FROM trades_opened "
-                           "WHERE account_id=:account_id AND asset_id=:asset_id AND remaining_qty!=0 "
+                           "WHERE account_id=:account_id AND asset_id=:asset_id AND remaining_qty != '0.0' "
                            "ORDER BY timestamp, op_type DESC",
                            [(":account_id", self._account), (":asset_id", self._asset)])
         while query.next():
