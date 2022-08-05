@@ -84,10 +84,10 @@ def test_ledger_rounding(prepare_db_fifo):
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
-    assert readSQL("SELECT amount_acc FROM ledger WHERE asset_id=5 ORDER BY id DESC LIMIT 1") == '0.00'
-    assert readSQL("SELECT value_acc FROM ledger WHERE asset_id=5 ORDER BY id DESC LIMIT 1") == '0.00'
-    assert readSQL("SELECT amount_acc FROM ledger WHERE asset_id=2 AND book_account=2 ORDER BY id DESC LIMIT 1") == '-10400.0'
-    assert readSQL("SELECT amount FROM ledger WHERE asset_id=2 AND book_account=2 ORDER BY id DESC LIMIT 1") == '-133.333'
+    assert Decimal(readSQL("SELECT amount_acc FROM ledger WHERE asset_id=5 ORDER BY id DESC LIMIT 1")) == Decimal('0.0')
+    assert Decimal(readSQL("SELECT value_acc FROM ledger WHERE asset_id=5 ORDER BY id DESC LIMIT 1")) == Decimal('0.0')
+    assert Decimal(readSQL("SELECT amount_acc FROM ledger WHERE asset_id=2 AND book_account=2 ORDER BY id DESC LIMIT 1")) == Decimal('-10400.0')
+    assert Decimal(readSQL("SELECT amount FROM ledger WHERE asset_id=2 AND book_account=2 ORDER BY id DESC LIMIT 1")) == Decimal('-133.33333334')
 
 def test_buy_sell_change(prepare_db_fifo):
     # Prepare single stock

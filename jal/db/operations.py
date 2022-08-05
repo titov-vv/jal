@@ -118,7 +118,7 @@ class LedgerTransaction:
                  (":close_timestamp", self._timestamp), (":close_price", str(close_price)),
                  (":qty", str((-deal_sign) * next_deal_qty))])
             processed_qty += next_deal_qty
-            processed_value += (next_deal_qty * open_price)
+            processed_value += round((next_deal_qty * open_price), 8)
             if processed_qty == qty:
                 break
         return processed_qty, processed_value
@@ -454,9 +454,10 @@ class Trade(LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Money, (-deal_sign) * (trade_value - credit_value))
         if processed_qty > 0:  # Add result of closed deals
             # decrease (sell operation) or increase (buy operation) amount of assets in ledger
-            ledger.appendTransaction(self, BookAccount.Assets, deal_sign * processed_qty,
-                                     asset_id=self._asset, value=deal_sign * processed_value)
-            ledger.appendTransaction(self, BookAccount.Incomes, deal_sign * ((self._price * processed_qty) - processed_value),
+            rounding_error = ledger.appendTransaction(self, BookAccount.Assets, deal_sign * processed_qty,
+                                                      asset_id=self._asset, value=deal_sign * processed_value)
+            ledger.appendTransaction(self, BookAccount.Incomes,
+                                     deal_sign * ((self._price * processed_qty) - processed_value + rounding_error),
                                      category=PredefinedCategory.Profit, peer=self._broker)
         if processed_qty < qty:  # We have a reminder that opens a new position
             _ = executeSQL(

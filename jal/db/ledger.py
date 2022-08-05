@@ -96,7 +96,9 @@ class Ledger(QObject):
     # Add one more transaction to 'book' of ledger.
     # If book is Assets and value is not None then amount contains Asset Quantity and Value contains amount
     #    of money in current account currency. Otherwise, Amount contains only money value.
-    def appendTransaction(self, operation, book, amount, asset_id=None, value=None, category=None, peer=None, tag=None):
+    # Returns non-zero value if accumulated_value differs from 0.0 when accumulated account is 0.0
+    def appendTransaction(self, operation, book, amount, asset_id=None, value=None, category=None, peer=None, tag=None) -> Decimal:
+        rounding_error = Decimal('0.0')
         if book == BookAccount.Assets and asset_id is None:
             raise ValueError(self.tr("No asset defined for: ") + f"{operation.dump()}")
         if asset_id is None:
@@ -110,8 +112,12 @@ class Ledger(QObject):
         self.amounts[(book, operation.account_id(), asset_id)] += amount
         self.values[(book, operation.account_id(), asset_id)] += value
         if (abs(amount) + abs(value)) == Decimal('0.0'):
-            return  # we have zero amount - no reason to put it into ledger
-
+            return rounding_error  # we have zero amount - no reason to put it into ledger (return 0.0)
+        if (book == BookAccount.Assets) and \
+                (self.amounts[(book, operation.account_id(), asset_id)] == Decimal('0.0')) and \
+                (self.values[(book, operation.account_id(), asset_id)] != Decimal('0.0')):
+            rounding_error = Decimal('0.0') - self.values[(book, operation.account_id(), asset_id)]
+            self.values[(book, operation.account_id(), asset_id)] += rounding_error
         _ = executeSQL("INSERT INTO ledger (timestamp, op_type, operation_id, book_account, asset_id, account_id, "
                        "amount, value, amount_acc, value_acc, peer_id, category_id, tag_id) "
                        "VALUES(:timestamp, :op_type, :operation_id, :book, :asset_id, :account_id, "
@@ -122,6 +128,7 @@ class Ledger(QObject):
                         (":amount_acc", str(self.amounts[(book, operation.account_id(), asset_id)])),
                         (":value_acc", str(self.values[(book, operation.account_id(), asset_id)])),
                         (":peer_id", peer), (":category_id", category), (":tag_id", tag)])
+        return rounding_error
 
     # Returns Amount measured in current account currency or asset that 'book' has at current ledger frontier
     def getAmount(self, book, account_id, asset_id=None):
