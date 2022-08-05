@@ -5,7 +5,7 @@ from decimal import Decimal
 from PySide6.QtCore import Signal, QObject, QDate
 from PySide6.QtWidgets import QDialog, QMessageBox
 from jal.constants import BookAccount
-from jal.db.helpers import executeSQL, readSQL, readSQLrecord, db_triggers_disable, db_triggers_enable
+from jal.db.helpers import executeSQL, readSQL, readSQLrecord
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
 from jal.db.operations import LedgerTransaction
@@ -195,9 +195,9 @@ class Ledger(QObject):
         _ = executeSQL("DELETE FROM ledger_totals WHERE timestamp >= :frontier", [(":frontier", frontier)])
         _ = executeSQL("DELETE FROM trades_opened WHERE timestamp >= :frontier", [(":frontier", frontier)])
 
-        db_triggers_disable()
+        JalDB().enable_triggers(False)
         if fast_and_dirty:  # For 30k operations difference of execution time is - with 0:02:41 / without 0:11:44
-            _ = executeSQL("PRAGMA synchronous = OFF")
+            JalDB().set_synchronous(False)
         try:
             query = executeSQL("SELECT op_type, id, timestamp, account_id, subtype FROM operation_sequence "
                                "WHERE timestamp >= :frontier", [(":frontier", frontier)])
@@ -213,8 +213,8 @@ class Ledger(QObject):
             logging.error(f"{traceback.format_exc()}")
         finally:
             if fast_and_dirty:
-                _ = executeSQL("PRAGMA synchronous = ON")
-            db_triggers_enable()
+                JalDB().set_synchronous(True)
+            JalDB().enable_triggers(True)
             if self.progress_bar is not None:
                 self.main_window.showProgressBar(False)
         # Fill ledger totals values

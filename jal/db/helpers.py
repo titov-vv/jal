@@ -35,15 +35,6 @@ def db_connection():
         logging.fatal(f"DB connection '{Setup.DB_CONNECTION}' is not open")
     return db
 
-
-# -------------------------------------------------------------------------------------------------------------------
-def db_triggers_disable():
-    _ = executeSQL("UPDATE settings SET value=0 WHERE name='TriggersEnabled'", commit=True)
-
-# -------------------------------------------------------------------------------------------------------------------
-def db_triggers_enable():
-    _ = executeSQL("UPDATE settings SET value=1 WHERE name='TriggersEnabled'", commit=True)
-
 # -------------------------------------------------------------------------------------------------------------------
 # prepares SQL query from given sql_text
 # params_list is a list of tuples (":param", value) which are used to prepare SQL query

@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtSql import QSql, QSqlDatabase
 
 from jal.constants import Setup, BookAccount, PredefindedAccountType, AssetData, MarketDataFeed, PredefinedAsset
-from jal.db.helpers import db_connection, executeSQL, readSQL, get_country_by_code, get_dbfilename, db_triggers_enable
+from jal.db.helpers import db_connection, executeSQL, readSQL, get_country_by_code, get_dbfilename
 from jal.db.settings import JalSettings
 
 
@@ -62,7 +62,7 @@ class JalDB:
         db.setDatabaseName(get_dbfilename(db_path))
         db.setConnectOptions("QSQLITE_ENABLE_REGEXP=1")
         db.open()
-        sqlite_version = readSQL("SELECT sqlite_version()")
+        sqlite_version = self.get_engine_version()
         if parse_version(sqlite_version) < parse_version(Setup.SQLITE_MIN_VERSION):
             db.close()
             return JalDBError(JalDBError.OutdatedSqlite)
@@ -79,11 +79,37 @@ class JalDB:
         elif schema_version > Setup.TARGET_SCHEMA:
             db.close()
             return JalDBError(JalDBError.NewerDbSchema)
-
-        _ = executeSQL("PRAGMA foreign_keys = ON")
-        db_triggers_enable()
+        self.enable_fk(True)
+        self.enable_triggers(True)
 
         return JalDBError(JalDBError.NoError)
+
+    def get_engine_version(self):
+        return readSQL("SELECT sqlite_version()")
+
+    # -------------------------------------------------------------------------------------------------------------------
+    # Enables DB triggers if enable == True and disables it otherwise
+    def enable_triggers(self, enable):
+        if enable:
+            _ = executeSQL("UPDATE settings SET value=1 WHERE name='TriggersEnabled'", commit=True)
+        else:
+            _ = executeSQL("UPDATE settings SET value=0 WHERE name='TriggersEnabled'", commit=True)
+
+    # -------------------------------------------------------------------------------------------------------------------
+    # Set synchronous mode ON if synchronous == True and OFF it otherwise
+    def set_synchronous(self, synchronous):
+        if synchronous:
+            _ = executeSQL("PRAGMA synchronous = ON")
+        else:
+            _ = executeSQL("PRAGMA synchronous = OFF")
+
+    # -------------------------------------------------------------------------------------------------------------------
+    # Enables DB foreign keys if enable == True and disables it otherwise
+    def enable_fk(self, enable):
+        if enable:
+            _ = executeSQL("PRAGMA foreign_keys = ON")
+        else:
+            _ = executeSQL("PRAGMA foreign_keys = OFF")
 
     # Method loads sql script into database
     def run_sql_script(self, script_file) -> JalDBError:
