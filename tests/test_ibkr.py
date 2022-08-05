@@ -57,10 +57,10 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
 
     # validate trades
     test_trades = [
-        [1, 3, 1604926434, 1604966400, '3210359211', 1, 5, -300.0, 5.5, 0.953865, ''],
-        [2, 3, 1606471692, 1606780800, '3256333343', 1, 4, 70.0, 6.898, 0.36425725, ''],
-        [3, 3, 1606821387, 1606953600, '3264444280', 1, 4, 70.0, 6.08, 0.32925725, ''],
-        [4, 3, 1607095765, 1607299200, '3276656996', 1, 7, -100.0, 5.2, 0.667292, '']
+        [1, 3, 1604926434, 1604966400, '3210359211', 1, 5, '-300.0', '5.5', '0.953865', ''],
+        [2, 3, 1606471692, 1606780800, '3256333343', 1, 4, '70.0', '6.898', '0.36425725', ''],
+        [3, 3, 1606821387, 1606953600, '3264444280', 1, 4, '70.0', '6.08', '0.32925725', ''],
+        [4, 3, 1607095765, 1607299200, '3276656996', 1, 7, '-100.0', '5.2', '0.667292', '']
     ]
     assert readSQL("SELECT COUNT(*) FROM trades") == len(test_trades)
     for i, trade in enumerate(test_trades):
@@ -123,15 +123,15 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
 
     # validate trades
     test_trades = [
-        [1, 3, 1604926434, 1604966400, '3210359211', 1, 5, -300.0, 5.5, 0.953865, ''],
-        [2, 3, 1606471692, 1606780800, '3256333343', 1, 4, 70.0, 6.898, 0.36425725, ''],
-        [3, 3, 1606821387, 1606953600, '3264444280', 1, 4, 70.0, 6.08, 0.32925725, ''],
-        [4, 3, 1607095765, 1607299200, '3276656996', 1, 7, -100.0, 5.2, 0.667292, ''],
-        [5, 3, 1610625615, 1611014400, '3381623127', 1, 8, -70.0, 7.42, 0.23706599, ''],
-        [6, 3, 1612871230, 1613001600, '3480222427', 1, 8, -70.0, 7.71, 0.23751462, ''],
-        [7, 3, 1620750000, 1620864000, '3764387743', 1, 6, -100.0, 42.5, 0.033575, 'Option assignment/exercise'],
-        [8, 3, 1620750000, 1620777600, '3764387737', 1, 7, 100.0, 0.0, 0.0, 'Option assignment'],
-        [9, 3, 1623247000, 1623283200, '3836250920', 1, 5, 300.0, 50.8, -0.1266, '']
+        [1, 3, 1604926434, 1604966400, '3210359211', 1, 5, '-300.0', '5.5', '0.953865', ''],
+        [2, 3, 1606471692, 1606780800, '3256333343', 1, 4, '70.0', '6.898', '0.36425725', ''],
+        [3, 3, 1606821387, 1606953600, '3264444280', 1, 4, '70.0', '6.08', '0.32925725', ''],
+        [4, 3, 1607095765, 1607299200, '3276656996', 1, 7, '-100.0', '5.2', '0.667292', ''],
+        [5, 3, 1610625615, 1611014400, '3381623127', 1, 8, '-70.0', '7.42', '0.23706599', ''],
+        [6, 3, 1612871230, 1613001600, '3480222427', 1, 8, '-70.0', '7.71', '0.23751462', ''],
+        [7, 3, 1620750000, 1620864000, '3764387743', 1, 6, '-100.0', '42.5', '0.033575', 'Option assignment/exercise'],
+        [8, 3, 1620750000, 1620777600, '3764387737', 1, 7, '100.0', '0.0', '0.0', 'Option assignment'],
+        [9, 3, 1623247000, 1623283200, '3836250920', 1, 5, '300.0', '50.8', '-0.1266', '']
     ]
     assert readSQL("SELECT COUNT(*) FROM trades") == len(test_trades)
     for i, trade in enumerate(test_trades):
@@ -139,24 +139,24 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
 
     # validate corp actions
     test_asset_actions = [
-        [1, 5, 1610569500, '14909999818', 1, 3, 4, 140.0, 'PEIX(US69423U3059) CUSIP/ISIN CHANGE TO (US0215131063) (PEIX, ALTO INGREDIENTS INC, US0215131063)']
+        [1, 5, 1610569500, '14909999818', 1, 3, 4, '140.0', 'PEIX(US69423U3059) CUSIP/ISIN CHANGE TO (US0215131063) (PEIX, ALTO INGREDIENTS INC, US0215131063)']
     ]
     assert readSQL("SELECT COUNT(*) FROM asset_actions") == len(test_asset_actions)
     for i, action in enumerate(test_asset_actions):
         assert readSQL("SELECT * FROM asset_actions WHERE id=:id", [(":id", i + 1)]) == action
 
     test_action_results = [
-        [1, 1, 8, 140.0, 1.0]
+        [1, 1, 8, '140.0', '1.0']
     ]
     assert readSQL("SELECT COUNT(*) FROM action_results") == len(test_action_results)
     for i, result in enumerate(test_action_results):
         assert readSQL("SELECT * FROM action_results WHERE id=:id", [(":id", i + 1)]) == result
 
     # Check that there are no remainders
-    assert readSQL("SELECT amount_acc, value_acc FROM ledger_totals WHERE asset_id=4 ORDER BY id DESC LIMIT 1") == [0.0, 0.0]
-    assert readSQL("SELECT amount_acc, value_acc FROM ledger_totals WHERE asset_id=7 ORDER BY id DESC LIMIT 1") == [0.0, 0.0]
-    assert readSQL("SELECT amount_acc, value_acc FROM ledger WHERE asset_id=4 ORDER BY id DESC LIMIT 1") == [0.0, 0.0]
-    assert readSQL("SELECT amount_acc, value_acc FROM ledger WHERE asset_id=7 ORDER BY id DESC LIMIT 1") == [0.0, 0.0]
+    assert readSQL("SELECT amount_acc, value_acc FROM ledger_totals WHERE asset_id=4 ORDER BY id DESC LIMIT 1") == ['0.00', '0E-8']
+    assert readSQL("SELECT amount_acc, value_acc FROM ledger_totals WHERE asset_id=7 ORDER BY id DESC LIMIT 1") == ['0.00', '0E-9']
+    assert readSQL("SELECT amount_acc, value_acc FROM ledger WHERE asset_id=4 ORDER BY id DESC LIMIT 1") == ['0.00', '0E-8']
+    assert readSQL("SELECT amount_acc, value_acc FROM ledger WHERE asset_id=7 ORDER BY id DESC LIMIT 1") == ['0.00', '0E-9']
 
     # Check correct number of deals
     assert readSQL("SELECT COUNT(*) FROM deals_ext") == 6
