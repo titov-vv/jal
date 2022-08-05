@@ -2,6 +2,7 @@ import logging
 import re
 from datetime import datetime
 from itertools import groupby
+from decimal import Decimal
 
 from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedCategory
@@ -816,7 +817,7 @@ class StatementIBKR(StatementXML):
         parts = parts.groupdict()
         self.set_asset_counry(tax['asset'], parts['country'].lower())
         description = parts['description']
-        previous_tax = tax['amount'] if tax['amount'] >= 0 else 0
+        previous_tax = Decimal(tax['amount']) if Decimal(tax['amount']) >= Decimal('0.0') else Decimal('0.0')
         new_tax = -tax['amount'] if tax['amount'] < 0 else 0
 
         dividend = self.find_dividend4tax(tax['timestamp'], tax['account'], tax['asset'], previous_tax, new_tax, description)
@@ -870,7 +871,7 @@ class StatementIBKR(StatementXML):
         else:
             # For any other day - use exact time match
             dividends = [x for x in dividends if x['timestamp'] == timestamp]
-        dividends = [x for x in dividends if 'tax' not in x or (abs(x['tax'] - prev_tax) < 0.0001)]
+        dividends = [x for x in dividends if 'tax' not in x or (abs(Decimal(x['tax']) - prev_tax) < 0.0001)]
         dividends = sorted(dividends, key=lambda x: x['timestamp'])
 
         # Choose either Dividends or Payments in liue with regards to note of the matching tax
