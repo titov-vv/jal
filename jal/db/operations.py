@@ -797,7 +797,7 @@ class CorporateAction(LedgerTransaction):
         query = executeSQL("SELECT value_share FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
         while query.next():
             allocation += Decimal(readSQLrecord(query))
-        if allocation != Decimal('1.0'):
+        if self._subtype != CorporateAction.Delisting and allocation != Decimal('1.0'):
             raise ValueError(self.tr("Results value of corporate action doesn't match 100% of initial asset value. ")
                                      + f"Date: {datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
                                      + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
