@@ -144,7 +144,7 @@ class HoldingsModel(QAbstractItemModel):
             else:
                 return ''
         elif column == 4:
-            return f"{data['quote']:,.4f}" if data['quote'] and data['qty'] != 0 else ''
+            return f"{float(data['quote']):,.4f}" if data['quote'] and float(data['qty']) != 0 else ''
         elif column == 5:
             return f"{data['share']:,.2f}" if data['share'] else '-.--'
         elif column == 6:
@@ -279,14 +279,14 @@ class HoldingsModel(QAbstractItemModel):
                 if values['asset_is_currency']:
                     profit = 0
                 else:
-                    profit = values['quote'] * values['qty'] - values['value_i']
+                    profit = float(values['quote']) * values['qty'] - values['value_i']
                 if values['value_i'] != 0:
-                    profit_relative = values['quote'] * values['qty'] / values['value_i'] - 1
+                    profit_relative = float(values['quote']) * values['qty'] / values['value_i'] - 1
                 else:
                     profit_relative = 0
-                value = values['quote'] * values['qty']
+                value = float(values['quote']) * values['qty']
                 share = 100.0 * value / values['total']
-                value_adjusted = values['quote_a'] * values['qty'] if values['quote_a'] else 0
+                value_adjusted = float(values['quote_a']) * values['qty'] if values['quote_a'] else 0
                 values.update(dict(zip(self.calculated_names, [share, profit, profit_relative, value, value_adjusted])))
             else:
                 values.update(dict(zip(self.calculated_names, [0, 0, 0, 0, 0])))
