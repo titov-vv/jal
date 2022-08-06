@@ -1,5 +1,5 @@
 from datetime import datetime
-import decimal
+from decimal import Decimal
 from PySide6.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTimeEdit, QTreeView
 from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QTime
 from PySide6.QtGui import QDoubleValidator, QBrush, QKeyEvent
@@ -17,7 +17,7 @@ class WidgetMapperDelegateBase(QStyledItemDelegate):
         QStyledItemDelegate.__init__(self, parent)
 
         self.timestamp_delegate = TimestampDelegate()
-        self.float_delegate = FloatDelegate(2)
+        self.decimal_delegate = FloatDelegate(2)
         self.symbol_delegate = SymbolDelegate()
         self.default = QStyledItemDelegate()
 
@@ -122,7 +122,7 @@ class FloatDelegate(QStyledItemDelegate):
         precision = self._tolerance
         if self._percent:
             value *= 100.0
-        decimal_places = -decimal.Decimal(str(value).rstrip('0')).as_tuple().exponent
+        decimal_places = -Decimal(str(value).rstrip('0')).as_tuple().exponent
         if self._allow_tail and (decimal_places > self._tolerance):
             precision = decimal_places
         return QLocale().toString(value, 'f', precision)
@@ -153,14 +153,14 @@ class FloatDelegate(QStyledItemDelegate):
             amount *= 100.0
         # QLocale().toString works in a bit weird way with float formatting - garbage appears after 5-6 decimal digits
         # if too long precision is specified for short number. So we need to be more precise setting precision.
-        decimal_places = -decimal.Decimal(str(amount).rstrip('0')).as_tuple().exponent
+        decimal_places = -Decimal(str(amount).rstrip('0')).as_tuple().exponent
         editor.setText(QLocale().toString(amount, 'f', decimal_places))
 
     def setModelData(self, editor, model, index):
-        value = QLocale().toDouble(editor.text())[0]
+        value = Decimal(editor.text().replace(' ', '').replace(QLocale().groupSeparator(), '').replace(QLocale().decimalPoint(), '.'))
         if self._percent:
-            value /= 100.0
-        model.setData(index, value)
+            value /= Decimal(100.0)
+        model.setData(index, str(value))
 
     def initStyleOption(self, option, index):
         super().initStyleOption(option, index)

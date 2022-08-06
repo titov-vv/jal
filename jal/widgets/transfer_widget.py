@@ -15,10 +15,10 @@ class TransferWidgetDelegate(WidgetMapperDelegateBase):
     def __init__(self, parent=None):
         WidgetMapperDelegateBase.__init__(self, parent)
         self.delegates = {'withdrawal_timestamp': self.timestamp_delegate,
-                          'withdrawal': self.float_delegate,
+                          'withdrawal': self.decimal_delegate,
                           'deposit_timestamp': self.timestamp_delegate,
-                          'deposit': self.float_delegate,
-                          'fee': self.float_delegate}
+                          'deposit': self.decimal_delegate,
+                          'fee': self.decimal_delegate}
 
 
 # ----------------------------------------------------------------------------------------------------------------------

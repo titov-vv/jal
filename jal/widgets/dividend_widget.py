@@ -17,8 +17,8 @@ class DividendWidgetDelegate(WidgetMapperDelegateBase):
         self.delegates = {'timestamp': self.timestamp_delegate,
                           'ex_date': self.timestamp_delegate,
                           'asset_id': self.symbol_delegate,
-                          'amount': self.float_delegate,
-                          'tax': self.float_delegate}
+                          'amount': self.decimal_delegate,
+                          'tax': self.decimal_delegate}
 
 
 # ----------------------------------------------------------------------------------------------------------------------

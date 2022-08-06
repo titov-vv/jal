@@ -19,7 +19,7 @@ class CorporateActionWidgetDelegate(WidgetMapperDelegateBase):
         WidgetMapperDelegateBase.__init__(self, parent)
         self.delegates = {'timestamp': self.timestamp_delegate,
                           'asset_id': self.symbol_delegate,
-                          'qty': self.float_delegate}
+                          'qty': self.decimal_delegate}
 
 
 # ----------------------------------------------------------------------------------------------------------------------
