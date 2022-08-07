@@ -1,5 +1,5 @@
 from datetime import datetime
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from PySide6.QtWidgets import QWidget, QStyledItemDelegate, QLineEdit, QDateTimeEdit, QTreeView
 from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QTime
 from PySide6.QtGui import QDoubleValidator, QBrush, QKeyEvent
@@ -142,7 +142,7 @@ class FloatDelegate(QStyledItemDelegate):
     def setEditorData(self, editor, index):
         try:
             amount = Decimal(index.model().data(index, Qt.EditRole))
-        except (ValueError, TypeError):
+        except (InvalidOperation):
             amount = Decimal('0')
         if self._percent:
             amount *= Decimal('100')
