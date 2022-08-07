@@ -1,9 +1,9 @@
-from jal.db.helpers import db_connection, readSQL, executeSQL
+from jal.db.helpers import readSQL, executeSQL
 
 
 class JalSettings:
     def __init__(self):
-        self.db = db_connection()
+        pass
 
     def getValue(self, key, default=None):
         value = readSQL("SELECT value FROM settings WHERE name=:key", [(":key", key)])
