@@ -118,25 +118,20 @@ class FloatDelegate(QStyledItemDelegate):
         self._validator = QDoubleValidator()
         self._validator.setLocale(QLocale().system())
 
-    def formatFloatLong(self, value):
-        precision = self._tolerance
-        if self._percent:
-            value *= 100.0
-        decimal_places = -Decimal(str(value).rstrip('0')).as_tuple().exponent
-        if self._allow_tail and (decimal_places > self._tolerance):
-            precision = decimal_places
-        return QLocale().toString(value, 'f', precision)
-
     def displayText(self, value, locale):
         try:
-            amount = float(value)
+            amount = Decimal(value)
         except ValueError:
-            amount = 0.0
-        if amount > 0:
+            amount = Decimal('0.0')
+        if self._percent:
+            amount *= Decimal('100.0')
+        if amount > Decimal('0.0'):
             self._color = CustomColor.LightGreen
-        elif amount < 0:
+        elif amount < Decimal('0.0'):
             self._color = CustomColor.LightRed
-        return self.formatFloatLong(amount)
+        decimal_places = -amount.normalize().as_tuple().exponent
+        decimal_places = decimal_places if self._allow_tail and (decimal_places > self._tolerance) else self._tolerance
+        return QLocale().toString(float(amount), 'f', decimal_places)
 
     # this is required when edit operation is called from QTableView
     def createEditor(self, aParent, option, index):
