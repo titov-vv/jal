@@ -25,7 +25,7 @@ CREATE TABLE action_details (
     category_id INTEGER    REFERENCES categories (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     tag_id      INTEGER    REFERENCES tags (id) ON DELETE SET NULL ON UPDATE CASCADE,
     amount      TEXT       NOT NULL,
-    amount_alt  TEXT       DEFAULT ('0.0') NOT NULL,
+    amount_alt  TEXT       DEFAULT ('0') NOT NULL,
     note        TEXT
 );
 
@@ -124,8 +124,8 @@ CREATE TABLE dividends (
     type       INTEGER     NOT NULL,
     account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
-    amount     TEXT        NOT NULL DEFAULT ('0.0'),
-    tax        TEXT        DEFAULT ('0.0'),
+    amount     TEXT        NOT NULL DEFAULT ('0'),
+    tax        TEXT        DEFAULT ('0'),
     note       TEXT
 );
 
@@ -213,7 +213,7 @@ CREATE TABLE quotes (
     timestamp   INTEGER NOT NULL,
     asset_id    INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     currency_id INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
-    quote       TEXT    NOT NULL DEFAULT ('0.0')
+    quote       TEXT    NOT NULL DEFAULT ('0')
 );
 CREATE UNIQUE INDEX unique_quotations ON quotes (asset_id, currency_id, timestamp);
 
@@ -289,9 +289,9 @@ CREATE TABLE trades (
     number     TEXT        DEFAULT (''),
     account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     asset_id   INTEGER     REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,
-    qty        TEXT        NOT NULL DEFAULT ('0.0'),
-    price      TEXT        NOT NULL DEFAULT ('0.0'),
-    fee        TEXT        DEFAULT ('0.0'),
+    qty        TEXT        NOT NULL DEFAULT ('0'),
+    price      TEXT        NOT NULL DEFAULT ('0'),
+    fee        TEXT        DEFAULT ('0'),
     note       TEXT
 );
 

@@ -817,7 +817,7 @@ class StatementIBKR(StatementXML):
         parts = parts.groupdict()
         self.set_asset_counry(tax['asset'], parts['country'].lower())
         description = parts['description']
-        previous_tax = Decimal(tax['amount']) if Decimal(tax['amount']) >= Decimal('0.0') else Decimal('0.0')
+        previous_tax = Decimal(tax['amount']) if Decimal(tax['amount']) >= Decimal('0') else Decimal('0')
         new_tax = -tax['amount'] if tax['amount'] < 0 else 0
 
         dividend = self.find_dividend4tax(tax['timestamp'], tax['account'], tax['asset'], previous_tax, new_tax, description)

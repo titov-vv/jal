@@ -5,7 +5,7 @@ from decimal import Decimal
 from PySide6.QtCore import Signal, QObject, QDate
 from PySide6.QtWidgets import QDialog, QMessageBox
 from jal.constants import BookAccount
-from jal.db.helpers import executeSQL, readSQL, readSQLrecord
+from jal.db.helpers import executeSQL, readSQL, readSQLrecord, format_decimal
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
 from jal.db.operations import LedgerTransaction
@@ -65,7 +65,7 @@ class LedgerAmounts(dict):
                              "WHERE book_account = :book AND account_id = :account_id AND asset_id = :asset_id "
                              "ORDER BY id DESC LIMIT 1",
                              [(":book", key[BOOK]), (":account_id", key[ACCOUNT]), (":asset_id", key[ASSET])])
-            amount = Decimal(amount) if amount is not None else Decimal('0.0')
+            amount = Decimal(amount) if amount is not None else Decimal('0')
             super().__setitem__(key, amount)
             return amount
 
@@ -98,7 +98,7 @@ class Ledger(QObject):
     #    of money in current account currency. Otherwise, Amount contains only money value.
     # Returns non-zero value if accumulated_value differs from 0.0 when accumulated account is 0.0
     def appendTransaction(self, operation, book, amount, asset_id=None, value=None, category=None, peer=None, tag=None) -> Decimal:
-        rounding_error = Decimal('0.0')
+        rounding_error = Decimal('0')
         if book == BookAccount.Assets and asset_id is None:
             raise ValueError(self.tr("No asset defined for: ") + f"{operation.dump()}")
         if asset_id is None:
@@ -108,15 +108,15 @@ class Ledger(QObject):
         if (book == BookAccount.Costs or book == BookAccount.Incomes) and peer is None:
             raise ValueError(self.tr("No peer set for: ") + f"{operation.dump()}")
         tag = tag if tag else None  # Get rid of possible empty values
-        value = Decimal('0.0') if value is None else value
+        value = Decimal('0') if value is None else value
         self.amounts[(book, operation.account_id(), asset_id)] += amount
         self.values[(book, operation.account_id(), asset_id)] += value
-        if (abs(amount) + abs(value)) == Decimal('0.0'):
+        if (abs(amount) + abs(value)) == Decimal('0'):
             return rounding_error  # we have zero amount - no reason to put it into ledger (return 0.0)
         if (book == BookAccount.Assets) and \
-                (self.amounts[(book, operation.account_id(), asset_id)] == Decimal('0.0')) and \
-                (self.values[(book, operation.account_id(), asset_id)] != Decimal('0.0')):
-            rounding_error = Decimal('0.0') - self.values[(book, operation.account_id(), asset_id)]
+                (self.amounts[(book, operation.account_id(), asset_id)] == Decimal('0')) and \
+                (self.values[(book, operation.account_id(), asset_id)] != Decimal('0')):
+            rounding_error = Decimal('0') - self.values[(book, operation.account_id(), asset_id)]
             self.values[(book, operation.account_id(), asset_id)] += rounding_error
         _ = executeSQL("INSERT INTO ledger (timestamp, op_type, operation_id, book_account, asset_id, account_id, "
                        "amount, value, amount_acc, value_acc, peer_id, category_id, tag_id) "
@@ -124,9 +124,10 @@ class Ledger(QObject):
                        ":amount, :value, :amount_acc, :value_acc, :peer_id, :category_id, :tag_id)",
                        [(":timestamp", operation.timestamp()), (":op_type", operation.type()),
                         (":operation_id", operation.oid()), (":book", book), (":asset_id", asset_id),
-                        (":account_id", operation.account_id()), (":amount", str(amount)), (":value", str(value)),
-                        (":amount_acc", str(self.amounts[(book, operation.account_id(), asset_id)])),
-                        (":value_acc", str(self.values[(book, operation.account_id(), asset_id)])),
+                        (":account_id", operation.account_id()),
+                        (":amount", format_decimal(amount)), (":value", format_decimal(value)),
+                        (":amount_acc", format_decimal(self.amounts[(book, operation.account_id(), asset_id)])),
+                        (":value_acc", format_decimal(self.values[(book, operation.account_id(), asset_id)])),
                         (":peer_id", peer), (":category_id", category), (":tag_id", tag)])
         return rounding_error
 
@@ -138,7 +139,7 @@ class Ledger(QObject):
 
     def takeCredit(self, operation, account_id, operation_amount):
         money_available = self.getAmount(BookAccount.Money, account_id)
-        credit = Decimal('0.0')
+        credit = Decimal('0')
         if money_available < operation_amount:
             credit = operation_amount - money_available
             self.appendTransaction(operation, BookAccount.Liabilities, -credit)
@@ -146,13 +147,13 @@ class Ledger(QObject):
 
     def returnCredit(self, operation, account_id, operation_amount):
         current_credit_value = -self.getAmount(BookAccount.Liabilities, account_id)
-        debit = Decimal('0.0')
-        if current_credit_value > Decimal('0.0'):
+        debit = Decimal('0')
+        if current_credit_value > Decimal('0'):
             if current_credit_value >= operation_amount:
                 debit = operation_amount
             else:
                 debit = current_credit_value
-        if debit > Decimal('0.0'):
+        if debit > Decimal('0'):
             self.appendTransaction(operation, BookAccount.Liabilities, debit)
         return debit
 

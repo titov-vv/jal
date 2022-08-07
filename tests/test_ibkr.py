@@ -153,10 +153,10 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
         assert readSQL("SELECT * FROM action_results WHERE id=:id", [(":id", i + 1)]) == result
 
     # Check that there are no remainders
-    assert readSQL("SELECT amount_acc, value_acc FROM ledger_totals WHERE asset_id=4 ORDER BY id DESC LIMIT 1") == ['0.00', '0E-8']
-    assert readSQL("SELECT amount_acc, value_acc FROM ledger_totals WHERE asset_id=7 ORDER BY id DESC LIMIT 1") == ['0.00', '0E-9']
-    assert readSQL("SELECT amount_acc, value_acc FROM ledger WHERE asset_id=4 ORDER BY id DESC LIMIT 1") == ['0.00', '0E-8']
-    assert readSQL("SELECT amount_acc, value_acc FROM ledger WHERE asset_id=7 ORDER BY id DESC LIMIT 1") == ['0.00', '0E-9']
+    assert readSQL("SELECT amount_acc, value_acc FROM ledger_totals WHERE asset_id=4 ORDER BY id DESC LIMIT 1") == ['0', '0']
+    assert readSQL("SELECT amount_acc, value_acc FROM ledger_totals WHERE asset_id=7 ORDER BY id DESC LIMIT 1") == ['0', '0']
+    assert readSQL("SELECT amount_acc, value_acc FROM ledger WHERE asset_id=4 ORDER BY id DESC LIMIT 1") == ['0', '0']
+    assert readSQL("SELECT amount_acc, value_acc FROM ledger WHERE asset_id=7 ORDER BY id DESC LIMIT 1") == ['0', '0']
 
     # Check correct number of deals
     assert readSQL("SELECT COUNT(*) FROM deals_ext") == 6

@@ -30,7 +30,7 @@ def test_ledger(prepare_db_ledger):
     ledger.rebuild(from_timestamp=0)
 
     # validate book amounts
-    expected_book_values = [None, '130.0', '-139.0', '9.0', None, '0.0']
+    expected_book_values = [None, '130', '-139', '9', None, '0']
     query = executeSQL("SELECT MAX(id) AS mid, book_account, amount_acc, value_acc "
                        "FROM ledger GROUP BY book_account")
     while query.next():
@@ -48,8 +48,8 @@ def test_ledger(prepare_db_ledger):
     ledger.rebuild()
 
     # validate book amounts and values
-    expected_book_amounts = [None, '164.0', '-150.0', '0.0', None, '-14.0']
-    expected_book_values = ['0.0', '0.0', '0.0', '0.0', '0.0', '0.0']
+    expected_book_amounts = [None, '164', '-150', '0', None, '-14']
+    expected_book_values = ['0', '0', '0', '0', '0', '0']
     query = executeSQL("SELECT MAX(id) AS mid, book_account, amount_acc, value_acc "
                        "FROM ledger GROUP BY book_account")
     while query.next():
@@ -84,9 +84,9 @@ def test_ledger_rounding(prepare_db_fifo):
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
-    assert Decimal(readSQL("SELECT amount_acc FROM ledger WHERE asset_id=5 ORDER BY id DESC LIMIT 1")) == Decimal('0.0')
-    assert Decimal(readSQL("SELECT value_acc FROM ledger WHERE asset_id=5 ORDER BY id DESC LIMIT 1")) == Decimal('0.0')
-    assert Decimal(readSQL("SELECT amount_acc FROM ledger WHERE asset_id=2 AND book_account=2 ORDER BY id DESC LIMIT 1")) == Decimal('-10400.0')
+    assert Decimal(readSQL("SELECT amount_acc FROM ledger WHERE asset_id=5 ORDER BY id DESC LIMIT 1")) == Decimal('0')
+    assert Decimal(readSQL("SELECT value_acc FROM ledger WHERE asset_id=5 ORDER BY id DESC LIMIT 1")) == Decimal('0')
+    assert Decimal(readSQL("SELECT amount_acc FROM ledger WHERE asset_id=2 AND book_account=2 ORDER BY id DESC LIMIT 1")) == Decimal('-10400')
     assert Decimal(readSQL("SELECT amount FROM ledger WHERE asset_id=2 AND book_account=2 ORDER BY id DESC LIMIT 1")) == Decimal('-133.33333334')
 
 def test_buy_sell_change(prepare_db_fifo):
@@ -108,7 +108,7 @@ def test_buy_sell_change(prepare_db_fifo):
 
     # Validate initial deal quantity
     assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
-    assert readSQL("SELECT qty FROM trades_closed WHERE asset_id=4") == '7.00'
+    assert readSQL("SELECT qty FROM trades_closed WHERE asset_id=4") == '7'
 
     # Modify closing deal quantity
     _ = executeSQL("UPDATE trades SET qty=-5 WHERE id=2")
@@ -119,7 +119,7 @@ def test_buy_sell_change(prepare_db_fifo):
     # Check that deal quantity remains correct
     assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
     assert readSQL("SELECT COUNT(*) FROM trades_opened WHERE asset_id=4") == 1
-    assert readSQL("SELECT qty FROM trades_closed WHERE asset_id=4") == '5.00'
+    assert readSQL("SELECT qty FROM trades_closed WHERE asset_id=4") == '5'
 
     # Add one more trade
     assert executeSQL("INSERT INTO trades (id, timestamp, settlement, account_id, asset_id, qty, price, fee) "
@@ -142,7 +142,7 @@ def test_buy_sell_change(prepare_db_fifo):
 
     # Check that deal quantity remains correct
     assert readSQL("SELECT COUNT(*) FROM deals_ext WHERE asset_id=4") == 1
-    assert readSQL("SELECT qty FROM trades_closed WHERE asset_id=4") == '8.00'
+    assert readSQL("SELECT qty FROM trades_closed WHERE asset_id=4") == '8'
 
 
 def test_stock_dividend_change(prepare_db_fifo):
@@ -362,10 +362,10 @@ def test_fifo(prepare_db_fifo):
     while query.next():
         row = readSQLrecord(query, named=True)
         if row['asset_id'] == 2:  # Checking money amount
-            assert Decimal(row['amount_acc']) == Decimal('16700.0')
+            assert Decimal(row['amount_acc']) == Decimal('16700')
         else:
-            assert Decimal(row['amount_acc']) == Decimal('0.0')
-        assert Decimal(row['value_acc']) == Decimal('0.0')
+            assert Decimal(row['amount_acc']) == Decimal('0')
+        assert Decimal(row['value_acc']) == Decimal('0')
 
 
 def test_asset_transfer(prepare_db):

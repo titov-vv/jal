@@ -122,12 +122,12 @@ class FloatDelegate(QStyledItemDelegate):
         try:
             amount = Decimal(value)
         except ValueError:
-            amount = Decimal('0.0')
+            amount = Decimal('0')
         if self._percent:
-            amount *= Decimal('100.0')
-        if amount > Decimal('0.0'):
+            amount *= Decimal('100')
+        if amount > Decimal('0'):
             self._color = CustomColor.LightGreen
-        elif amount < Decimal('0.0'):
+        elif amount < Decimal('0'):
             self._color = CustomColor.LightRed
         decimal_places = -amount.normalize().as_tuple().exponent
         decimal_places = decimal_places if self._allow_tail and (decimal_places > self._tolerance) else self._tolerance
@@ -143,9 +143,9 @@ class FloatDelegate(QStyledItemDelegate):
         try:
             amount = Decimal(index.model().data(index, Qt.EditRole))
         except (ValueError, TypeError):
-            amount = Decimal('0.0')
+            amount = Decimal('0')
         if self._percent:
-            amount *= Decimal('100.0')
+            amount *= Decimal('100')
         decimal_places = -amount.normalize().as_tuple().exponent
         decimal_places = self._tolerance if decimal_places < self._tolerance else decimal_places
         # QLocale().toString works in a bit weird way with float formatting - garbage appears after 5-6 decimal digits
@@ -153,7 +153,11 @@ class FloatDelegate(QStyledItemDelegate):
         editor.setText(QLocale().toString(float(amount), 'f', decimal_places))
 
     def setModelData(self, editor, model, index):
-        value = Decimal(editor.text().replace(' ', '').replace(QLocale().groupSeparator(), '').replace(QLocale().decimalPoint(), '.'))
+        number_text = editor.text()
+        number_text = number_text.replace(' ', '')
+        number_text = number_text.replace(QLocale().groupSeparator(), '')
+        number_text = number_text.replace(QLocale().decimalPoint(), '.')
+        value = Decimal(number_text)
         if self._percent:
             value /= Decimal(100.0)
         model.setData(index, str(value))

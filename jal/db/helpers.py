@@ -1,5 +1,6 @@
 import os
 import logging
+from decimal import Decimal
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
@@ -7,6 +8,12 @@ from jal.constants import Setup
 
 
 # FIXME all database calls should be via JalDB (or mate) class. Get rid of SQL calls from other code
+
+# -------------------------------------------------------------------------------------------------------------------
+# Removes exponent and trailing zeros from Decimal number
+def format_decimal(d) -> str:
+    normalized = d.quantize(Decimal(1)) if d == d.to_integral() else d.normalize()
+    return str(normalized)
 
 # -------------------------------------------------------------------------------------------------------------------
 # Returns absolute path to a folder from where application was started

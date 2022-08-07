@@ -188,10 +188,10 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
 
     # validate income/spending
     test_actions = [
-        [1, 1, 5, '', '-7.96', '0.0', 'BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019'],
-        [2, 2, 5, '', '0.6905565', '0.0', 'COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)'],
-        [3, 3, 8, '', '0.5', '0.0', 'RUB CREDIT INT FOR MAY-2020'],
-        [4, 4, 6, '', '-0.249018', '0.0', 'BABA (ALIBABA GROUP HOLDING-SP ADR) - French Transaction Tax']
+        [1, 1, 5, '', '-7.96', '0', 'BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019'],
+        [2, 2, 5, '', '0.6905565', '0', 'COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)'],
+        [3, 3, 8, '', '0.5', '0', 'RUB CREDIT INT FOR MAY-2020'],
+        [4, 4, 6, '', '-0.249018', '0', 'BABA (ALIBABA GROUP HOLDING-SP ADR) - French Transaction Tax']
     ]
     assert readSQL("SELECT COUNT(amount) FROM action_details") == len(test_actions)
     for i, action in enumerate(test_actions):
