@@ -82,7 +82,7 @@ class JalDB:
             error = self.run_sql_script(db_path + Setup.INIT_SCRIPT_PATH)
             if error.code != JalDBError.NoError:
                 return error
-        schema_version = self.readSQL("SELECT value FROM settings WHERE name='SchemaVersion'")
+        schema_version = self._readSQL("SELECT value FROM settings WHERE name='SchemaVersion'")
         if schema_version < Setup.TARGET_SCHEMA:
             db.close()
             return JalDBError(JalDBError.OutdatedDbSchema)
