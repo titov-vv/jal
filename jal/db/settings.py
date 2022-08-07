@@ -1,19 +1,11 @@
 import logging
-from PySide6.QtSql import QSqlDatabase, QSqlQuery
-from jal.constants import Setup
+from PySide6.QtSql import QSqlQuery
+from jal.db.helpers import db_connection
 
 
 class JalSettings:
     def __init__(self):
-        self.db = QSqlDatabase.database(Setup.DB_CONNECTION)
-        if not self.db.isValid():
-            self.db = None
-            logging.fatal("DB connection is invalid")
-            return
-        if not self.db.isOpen():
-            self.db = None
-            logging.fatal("DB connection is not open")
-            return
+        self.db = db_connection()
 
     def getValue(self, key, default=None):
         get_query = QSqlQuery(self.db)
