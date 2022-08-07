@@ -8,8 +8,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtSql import QSql, QSqlDatabase
 
 from jal.constants import Setup, BookAccount, PredefindedAccountType, AssetData, MarketDataFeed, PredefinedAsset
-from jal.db.helpers import db_connection, executeSQL, readSQL, get_country_by_code, get_dbfilename
-from jal.db.settings import JalSettings
+from jal.db.helpers import db_connection, executeSQL, readSQL, readSQLrecord, get_country_by_code, get_dbfilename
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -49,6 +48,17 @@ class JalDB:
         return QApplication.translate("JalDB", text)
 
     # -------------------------------------------------------------------------------------------------------------------
+    # dummy calls for future replacement
+    def _executeSQL(self, sql_text, params=[], forward_only=True, commit=False):
+        return executeSQL(sql_text, params, forward_only, commit)
+
+    def _readSQL(self, sql_text, params=None, named=False, check_unique=False):
+        return readSQL(sql_text, params, named, check_unique)
+
+    def _readSQLrecord(self, query, named=False):
+        return readSQLrecord(query, named)
+
+    # -------------------------------------------------------------------------------------------------------------------
     # This function:
     # 1) checks that DB file is present and contains some data
     #    if not - it will initialize DB with help of SQL-script
@@ -72,7 +82,7 @@ class JalDB:
             error = self.run_sql_script(db_path + Setup.INIT_SCRIPT_PATH)
             if error.code != JalDBError.NoError:
                 return error
-        schema_version = JalSettings().getValue('SchemaVersion')
+        schema_version = self.readSQL("SELECT value FROM settings WHERE name='SchemaVersion'")
         if schema_version < Setup.TARGET_SCHEMA:
             db.close()
             return JalDBError(JalDBError.OutdatedDbSchema)
