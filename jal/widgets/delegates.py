@@ -146,15 +146,16 @@ class FloatDelegate(QStyledItemDelegate):
 
     def setEditorData(self, editor, index):
         try:
-            amount = float(index.model().data(index, Qt.EditRole))
+            amount = Decimal(index.model().data(index, Qt.EditRole))
         except (ValueError, TypeError):
-            amount = 0.0
+            amount = Decimal('0.0')
         if self._percent:
-            amount *= 100.0
+            amount *= Decimal('100.0')
+        decimal_places = -amount.normalize().as_tuple().exponent
+        decimal_places = self._tolerance if decimal_places < self._tolerance else decimal_places
         # QLocale().toString works in a bit weird way with float formatting - garbage appears after 5-6 decimal digits
         # if too long precision is specified for short number. So we need to be more precise setting precision.
-        decimal_places = -Decimal(str(amount).rstrip('0')).as_tuple().exponent
-        editor.setText(QLocale().toString(amount, 'f', decimal_places))
+        editor.setText(QLocale().toString(float(amount), 'f', decimal_places))
 
     def setModelData(self, editor, model, index):
         value = Decimal(editor.text().replace(' ', '').replace(QLocale().groupSeparator(), '').replace(QLocale().decimalPoint(), '.'))
