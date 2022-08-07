@@ -135,7 +135,7 @@ class HoldingsModel(QAbstractItemModel):
                 else:
                     decimal_places = -decimal.Decimal(str(data['qty']).rstrip('0')).as_tuple().exponent
                     decimal_places = 6 if decimal_places > 6 else decimal_places
-                return QLocale().toString(data['qty'], 'f', decimal_places)
+                return QLocale().toString(float(data['qty']), 'f', decimal_places)
             else:
                 return ''
         elif column == 3:

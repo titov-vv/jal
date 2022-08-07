@@ -13,7 +13,8 @@ CREATE TABLE accounts (
     number          TEXT (32),
     reconciled_on   INTEGER   DEFAULT (0) NOT NULL ON CONFLICT REPLACE,
     organization_id INTEGER   REFERENCES agents (id) ON DELETE SET NULL ON UPDATE CASCADE,
-    country_id      INTEGER   REFERENCES countries (id) ON DELETE CASCADE ON UPDATE CASCADE DEFAULT (0) NOT NULL
+    country_id      INTEGER   REFERENCES countries (id) ON DELETE CASCADE ON UPDATE CASCADE DEFAULT (0) NOT NULL,
+    precision       INTEGER   NOT NULL DEFAULT (2)
 );
 
 

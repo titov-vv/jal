@@ -119,7 +119,7 @@ class LedgerTransaction:
                  (":close_timestamp", self._timestamp), (":close_price", format_decimal(close_price)),
                  (":qty", format_decimal((-deal_sign) * next_deal_qty))])
             processed_qty += next_deal_qty
-            processed_value += round((next_deal_qty * open_price), 8)
+            processed_value += (next_deal_qty * open_price)
             if processed_qty == qty:
                 break
         return processed_qty, processed_value
@@ -440,7 +440,7 @@ class Trade(LedgerTransaction):
 
         deal_sign = Decimal('1.0').copy_sign(self._qty)  # 1 is buy and -1 is sell operation
         qty = abs(self._qty)
-        trade_value = round(self._price * qty, 2) + deal_sign * self._fee
+        trade_value = self._price * qty + deal_sign * self._fee
         processed_qty = Decimal('0')
         processed_value = Decimal('0')
         # Get asset amount accumulated before current operation
@@ -467,9 +467,8 @@ class Trade(LedgerTransaction):
                 [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
                  (":account_id", self._account), (":asset_id", self._asset), (":price", format_decimal(self._price)),
                  (":remaining_qty", format_decimal(qty - processed_qty))])
-            remaining_trade_value = deal_sign * round((qty - processed_qty) * self._price, 2)
             ledger.appendTransaction(self, BookAccount.Assets, deal_sign * (qty - processed_qty), asset_id=self._asset,
-                                     value=remaining_trade_value)
+                                     value=deal_sign * (qty - processed_qty) * self._price)
         if self._fee:
             ledger.appendTransaction(self, BookAccount.Costs, self._fee,
                                      category=PredefinedCategory.Fees, peer=self._broker)

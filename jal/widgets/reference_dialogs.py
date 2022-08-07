@@ -24,7 +24,8 @@ class AccountListModel(AbstractReferenceListModel):
                          ("number", self.tr("Account #")),
                          ("reconciled_on", self.tr("Reconciled @")),
                          ("organization_id", self.tr("Bank/Broker")),
-                         ("country_id", self.tr("CC"))]
+                         ("country_id", self.tr("CC")),
+                         ("precision", self.tr("Precision"))]
         self._sort_by = "name"
         self._group_by = "type_id"
         self._hidden = ["id", "type_id"]

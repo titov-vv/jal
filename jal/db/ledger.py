@@ -108,7 +108,10 @@ class Ledger(QObject):
         if (book == BookAccount.Costs or book == BookAccount.Incomes) and peer is None:
             raise ValueError(self.tr("No peer set for: ") + f"{operation.dump()}")
         tag = tag if tag else None  # Get rid of possible empty values
-        value = Decimal('0') if value is None else value
+        # Round values according to account decimal precision
+        precision = readSQL("SELECT precision FROM accounts WHERE id=:id", [(":id", operation.account_id())])
+        amount = round(amount, int(precision))
+        value = Decimal('0') if value is None else round(value, int(precision))
         self.amounts[(book, operation.account_id(), asset_id)] += amount
         self.values[(book, operation.account_id(), asset_id)] += value
         if (abs(amount) + abs(value)) == Decimal('0'):
