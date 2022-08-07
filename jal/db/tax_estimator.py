@@ -5,6 +5,7 @@ from PySide6.QtCore import Qt, QAbstractTableModel, QDate
 from PySide6.QtGui import QFont
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord
 from jal.db.db import JalDB
+from jal.db.account import JalAccount
 from jal.db.settings import JalSettings
 from jal.ui.reports.ui_tax_estimation import Ui_TaxEstimationDialog
 from jal.widgets.mdi import MdiWidget
@@ -106,7 +107,7 @@ class TaxEstimator(MdiWidget, Ui_TaxEstimationDialog):
                        [(":account_id", self.account_id), (":asset_id", self.asset_id),
                         (":base_currency", JalSettings().getValue('BaseCurrency'))])
         JalDB().set_view_param("last_quotes", "timestamp", int, QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch())
-        account_currency = JalDB().get_account_currency(self.account_id)
+        account_currency = JalAccount(self.account_id).currency
         self.currency_name = JalDB().get_asset_name(account_currency)
         self.quote = readSQL("SELECT quote FROM last_quotes WHERE asset_id=:asset_id AND currency_id=:base_currency",
                              [(":asset_id", self.asset_id), (":base_currency", account_currency)])

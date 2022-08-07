@@ -4,6 +4,7 @@ from PySide6.QtCore import Qt, QMargins, QDateTime
 from PySide6.QtWidgets import QWidget, QHBoxLayout
 from PySide6.QtCharts import QChartView, QLineSeries, QScatterSeries, QDateTimeAxis, QValueAxis
 from jal.db.db import JalDB
+from jal.db.account import JalAccount
 from jal.constants import BookAccount, CustomColor
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord
 from jal.widgets.mdi import MdiWidget
@@ -86,7 +87,7 @@ class ChartWindow(MdiWidget):
         self.ready = True
 
     def prepare_chart_data(self):
-        self.currency_name = JalDB().get_asset_name(JalDB().get_account_currency(self.account_id))
+        self.currency_name = JalDB().get_asset_name(JalAccount(self.account_id).currency())
         start_time = readSQL("SELECT MAX(ts) FROM "  # Take either last "empty" timestamp
                              "(SELECT coalesce(MAX(timestamp), 0) AS ts "
                              "FROM ledger WHERE account_id=:account_id AND asset_id=:asset_id "

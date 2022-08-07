@@ -188,9 +188,6 @@ class JalDB:
         return readSQL("SELECT c.name FROM assets AS a LEFT JOIN countries AS c ON c.id=a.country_id "
                        "WHERE a.id=:asset_id", [(":asset_id", asset_id)])
 
-    def get_account_name(self, account_id):
-        return readSQL("SELECT name FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
-
     # Searches for account_id by account number and optional currency
     # Returns: account_id or None if no account was found
     def get_account_id(self, accountNumber, accountCurrency=''):
@@ -244,11 +241,9 @@ class JalDB:
                             (":number", account_number), (":currency", currency_id), (":bank", bank_id)])
         return query.lastInsertId()
 
-    def get_account_currency(self, account_id):
+    # FIXME - this method should be deleted
+    def __get_account_currency(self, account_id):
         return readSQL("SELECT currency_id FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
-
-    def get_account_bank(self, account_id):
-        return readSQL("SELECT organization_id FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
 
     # Searches for asset_id in database based on keys available in search data:
     # first by 'isin', then by 'reg_number', next by 'symbol' and other
@@ -412,7 +407,7 @@ class JalDB:
                         (":tax", tax), (":note", note)],
                        commit=True)
         if price is not None:
-            self.update_quotes(asset_id, self.get_account_currency(account_id),
+            self.update_quotes(asset_id, self.__get_account_currency(account_id),
                                [{'timestamp': timestamp, 'quote': price}])
 
     def update_dividend_tax(self, dividend_id, new_tax):
@@ -513,13 +508,6 @@ class JalDB:
     def reconcile_account(self, account_id, timestamp):
         _ = executeSQL("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
                        [(":timestamp", timestamp), (":account_id", account_id)])
-
-    def account_reconciliation_timestamp(self, account_id):
-        timestamp = readSQL("SELECT reconciled_on FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
-        if timestamp is None:
-            return 0
-        else:
-            return timestamp
 
     def get_asset_amount(self, timestamp, account_id, asset_id):
         return readSQL("SELECT amount_acc FROM ledger "

@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QApplication
 from jal.constants import BookAccount, CustomColor, PredefinedPeer, PredefinedCategory, PredefinedAsset
 from jal.db.helpers import readSQL, executeSQL, readSQLrecord, format_decimal
 from jal.db.db import JalDB
+from jal.db.account import JalAccount
 from jal.db.settings import JalSettings
 
 
@@ -25,7 +26,7 @@ class LedgerTransaction:
         self._label = '?'
         self._label_color = CustomColor.LightRed
         self._timestamp = 0
-        self._account = 0
+        self._account = None
         self._account_name = ''
         self._account_currency = ''
         self._asset = 0
@@ -93,7 +94,7 @@ class LedgerTransaction:
                            "FROM trades_opened "
                            "WHERE account_id=:account_id AND asset_id=:asset_id AND remaining_qty!=:zero "
                            "ORDER BY timestamp, op_type DESC",
-                           [(":account_id", self._account), (":asset_id", self._asset),
+                           [(":account_id", self._account.id()), (":asset_id", self._asset),
                             (":zero", format_decimal(Decimal('0')))])
         while query.next():
             opening_trade = readSQLrecord(query, named=True)
@@ -112,7 +113,7 @@ class LedgerTransaction:
                 "close_op_type, close_op_id, close_timestamp, close_price, qty) "
                 "VALUES(:account_id, :asset_id, :open_op_type, :open_op_id, :open_timestamp, :open_price, "
                 ":close_op_type, :close_op_id, :close_timestamp, :close_price, :qty)",
-                [(":account_id", self._account), (":asset_id", self._asset),
+                [(":account_id", self._account.id()), (":asset_id", self._asset),
                  (":open_op_type", opening_trade['op_type']), (":open_op_id", opening_trade['operation_id']),
                  (":open_timestamp", opening_trade['timestamp']), (":open_price", format_decimal(open_price)),
                  (":close_op_type", self._otype), (":close_op_id", self._oid),
@@ -143,7 +144,7 @@ class LedgerTransaction:
         return self._account_name
 
     def account_id(self):
-        return self._account
+        return self._account.id()
 
     def asset(self):
         return self._asset_name
@@ -181,10 +182,10 @@ class IncomeSpending(LedgerTransaction):
                              "LEFT JOIN agents AS p ON a.peer_id = p.id WHERE a.id=:oid",
                              [(":oid", self._oid)], named=True)
         self._timestamp = self._data['timestamp']
-        self._account = self._data['account_id']
-        self._account_name = JalDB().get_account_name(self._account)
-        self._account_currency = JalDB().get_asset_name(JalDB().get_account_currency(self._account))
-        self._reconciled = JalDB().account_reconciliation_timestamp(self._account) >= self._timestamp
+        self._account = JalAccount(self._data['account_id'])
+        self._account_name = self._account.name()
+        self._account_currency = JalDB().get_asset_name(self._account.currency())
+        self._reconciled = self._account.reconciled_at() >= self._timestamp
         self._peer_id = self._data['peer_id']
         self._peer = self._data['peer']
         self._currency = self._data['currency']
@@ -232,7 +233,7 @@ class IncomeSpending(LedgerTransaction):
             return f" {self._account_currency}"
 
     def value_total(self) -> str:
-        amount = self._money_total(self._account)
+        amount = self._money_total(self._account.id())
         if amount is not None:
             return f"{amount:,.2f}"
         else:
@@ -243,10 +244,10 @@ class IncomeSpending(LedgerTransaction):
             self.dump()
             raise ValueError(self.tr("Can't process operation without details"))
         if self._amount < Decimal('0'):
-            credit_taken = ledger.takeCredit(self, self._account, -self._amount)
+            credit_taken = ledger.takeCredit(self, self._account.id(), -self._amount)
             ledger.appendTransaction(self, BookAccount.Money, -(-self._amount - credit_taken))
         else:
-            credit_returned = ledger.returnCredit(self, self._account, self._amount)
+            credit_returned = ledger.returnCredit(self, self._account.id(), self._amount)
             if credit_returned < self._amount:
                 ledger.appendTransaction(self, BookAccount.Money, self._amount - credit_returned)
         for detail in self._details:
@@ -284,10 +285,10 @@ class Dividend(LedgerTransaction):
         self._subtype = self._data['type']
         self._label, self._label_color = labels[self._subtype]
         self._timestamp = self._data['timestamp']
-        self._account = self._data['account_id']
-        self._account_name = JalDB().get_account_name(self._account)
-        self._account_currency = JalDB().get_asset_name(JalDB().get_account_currency(self._account))
-        self._reconciled = JalDB().account_reconciliation_timestamp(self._account) >= self._timestamp
+        self._account = JalAccount(self._data['account_id'])
+        self._account_name = self._account.name()
+        self._account_currency = JalDB().get_asset_name(self._account.currency())
+        self._reconciled = self._account.reconciled_at() >= self._timestamp
         self._asset = self._data['asset_id']
         self._asset_symbol = JalDB().get_asset_name(self._asset)
         self._asset_name = JalDB().get_asset_name(self._asset, full=True)
@@ -295,7 +296,7 @@ class Dividend(LedgerTransaction):
         self._amount = Decimal(self._data['amount'])
         self._tax = Decimal(self._data['tax'])
         self._note = self._data['note']
-        self._broker = JalDB().get_account_bank(self._account)
+        self._broker = self._account.organization()
 
     def description(self) -> str:
         return self._note + "\n" + self.tr("Tax: ") + JalDB().get_asset_country(self._asset)
@@ -316,9 +317,9 @@ class Dividend(LedgerTransaction):
             return f" {self._account_currency}\n {self._asset_symbol}"
 
     def value_total(self) -> str:
-        amount = self._money_total(self._account)
+        amount = self._money_total(self._account.id())
         if self._subtype == Dividend.StockDividend or self._subtype == Dividend.StockVesting:
-            qty = self._asset_total(self._account, self._asset)
+            qty = self._asset_total(self._account.id(), self._asset)
             if qty is None:
                 return super().value_total()
             if amount is None:
@@ -345,11 +346,11 @@ class Dividend(LedgerTransaction):
             raise ValueError(self.tr("Unsupported dividend type.") + f" Operation: {self.dump()}")
         operation_value = (self._amount - self._tax)
         if operation_value > Decimal('0'):
-            credit_returned = ledger.returnCredit(self, self._account, operation_value)
+            credit_returned = ledger.returnCredit(self, self._account.id(), operation_value)
             if credit_returned < operation_value:
                 ledger.appendTransaction(self, BookAccount.Money, operation_value - credit_returned)
         else:   # This branch is valid for accrued bond interest payments for bond buying trades
-            credit_taken = ledger.takeCredit(self, self._account, -operation_value)
+            credit_taken = ledger.takeCredit(self, self._account.id(), -operation_value)
             if credit_taken < -operation_value:
                 ledger.appendTransaction(self, BookAccount.Money, operation_value + credit_taken)
         if self._amount > Decimal('0'):
@@ -361,18 +362,18 @@ class Dividend(LedgerTransaction):
                                      category=PredefinedCategory.Taxes, peer=self._broker)
 
     def processStockDividendOrVesting(self, ledger):
-        asset_amount = ledger.getAmount(BookAccount.Assets, self._account, self._asset)
+        asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset)
         if asset_amount < Decimal('0'):
             raise NotImplemented(self.tr("Not supported action: stock dividend or vesting closes short trade.") +
                                  f" Operation: {self.dump()}")
-        quote = JalDB().get_quote(self._asset, JalDB().get_account_currency(self._account), self._timestamp)
+        quote = JalDB().get_quote(self._asset, self._account.currency(), self._timestamp)
         if quote is None:
             raise ValueError(self.tr("No stock quote for stock dividend or vesting.") + f" Operation: {self.dump()}")
         _ = executeSQL(
             "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
             "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
             [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
-             (":account_id", self._account), (":asset_id", self._asset), (":price", format_decimal(quote)),
+             (":account_id", self._account.id()), (":asset_id", self._asset), (":price", format_decimal(quote)),
              (":remaining_qty", format_decimal(self._amount))])
         ledger.appendTransaction(self, BookAccount.Assets, self._amount,
                                  asset_id=self._asset, value=self._amount * quote)
@@ -392,11 +393,10 @@ class Trade(LedgerTransaction):
         self._data = readSQL("SELECT t.timestamp, t.number, t.account_id, t.asset_id, t.qty, t.price AS price, "
                              "t.fee, t.note FROM trades AS t WHERE t.id=:oid", [(":oid", self._oid)], named=True)
         self._timestamp = self._data['timestamp']
-        self._account = JalDB().get_account_name(self._data['account_id'])
-        self._account = self._data['account_id']
-        self._account_name = JalDB().get_account_name(self._account)
-        self._account_currency = JalDB().get_asset_name(JalDB().get_account_currency(self._account))
-        self._reconciled = JalDB().account_reconciliation_timestamp(self._account) >= self._timestamp
+        self._account = JalAccount(self._data['account_id'])
+        self._account_name = self._account.name()
+        self._account_currency = JalDB().get_asset_name(self._account.currency())
+        self._reconciled = self._account.reconciled_at() >= self._timestamp
         self._asset = self._data['asset_id']
         self._asset_symbol = JalDB().get_asset_name(self._asset)
         self._asset_name = JalDB().get_asset_name(self._asset, full=True)
@@ -405,7 +405,7 @@ class Trade(LedgerTransaction):
         self._price = Decimal(self._data['price'])
         self._fee = Decimal(self._data['fee'])
         self._note = self._data['note']
-        self._broker = JalDB().get_account_bank(self._account)
+        self._broker = self._account.organization()
         if self._qty < Decimal('0'):
             self._label, self._label_color = ('S', CustomColor.DarkRed)
         else:
@@ -426,8 +426,8 @@ class Trade(LedgerTransaction):
         return f" {self._account_currency}\n {self._asset_symbol}"
 
     def value_total(self) -> str:
-        amount = self._money_total(self._account)
-        qty = self._asset_total(self._account, self._asset)
+        amount = self._money_total(self._account.id())
+        qty = self._asset_total(self._account.id(), self._asset)
         if amount is None or qty is None:
             return super().value_total()
         else:
@@ -444,13 +444,13 @@ class Trade(LedgerTransaction):
         processed_qty = Decimal('0')
         processed_value = Decimal('0')
         # Get asset amount accumulated before current operation
-        asset_amount = ledger.getAmount(BookAccount.Assets, self._account, self._asset)
+        asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset)
         if ((-deal_sign) * asset_amount) > Decimal('0'):  # Match trade if we have asset that is opposite to operation
             processed_qty, processed_value = self._close_deals_fifo(deal_sign, qty, self._price)
         if deal_sign > 0:
-            credit_value = ledger.takeCredit(self, self._account, trade_value)
+            credit_value = ledger.takeCredit(self, self._account.id(), trade_value)
         else:
-            credit_value = ledger.returnCredit(self, self._account, trade_value)
+            credit_value = ledger.returnCredit(self, self._account.id(), trade_value)
         if credit_value < trade_value:
             ledger.appendTransaction(self, BookAccount.Money, (-deal_sign) * (trade_value - credit_value))
         if processed_qty > 0:  # Add result of closed deals
@@ -465,7 +465,7 @@ class Trade(LedgerTransaction):
                 "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
                 "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
                 [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
-                 (":account_id", self._account), (":asset_id", self._asset), (":price", format_decimal(self._price)),
+                 (":account_id", self._account.id()), (":asset_id", self._asset), (":price", format_decimal(self._price)),
                  (":remaining_qty", format_decimal(qty - processed_qty))])
             ledger.appendTransaction(self, BookAccount.Assets, deal_sign * (qty - processed_qty), asset_id=self._asset,
                                      value=deal_sign * (qty - processed_qty) * self._price)
@@ -493,19 +493,19 @@ class Transfer(LedgerTransaction):
         self._data = readSQL("SELECT t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, t.deposit_timestamp, "
                              "t.deposit_account, t.deposit, t.fee_account, t.fee, t.asset, t.note "
                              "FROM transfers AS t WHERE t.id=:oid", [(":oid", self._oid)], named=True)
-        self._withdrawal_account = self._data['withdrawal_account']
-        self._withdrawal_account_name = JalDB().get_account_name(self._withdrawal_account)
+        self._withdrawal_account = JalAccount(self._data['withdrawal_account'])
+        self._withdrawal_account_name = self._withdrawal_account.name()
         self._withdrawal_timestamp = self._data['withdrawal_timestamp']
         self._withdrawal = Decimal(self._data['withdrawal'])
-        self._withdrawal_currency = JalDB().get_asset_name(JalDB().get_account_currency(self._withdrawal_account))
-        self._deposit_account = self._data['deposit_account']
-        self._deposit_account_name = JalDB().get_account_name(self._deposit_account)
+        self._withdrawal_currency = JalDB().get_asset_name(self._withdrawal_account.currency())
+        self._deposit_account = JalAccount(self._data['deposit_account'])
+        self._deposit_account_name = self._deposit_account.name()
         self._deposit = Decimal(self._data['deposit'])
-        self._deposit_currency = JalDB().get_asset_name(JalDB().get_account_currency(self._deposit_account))
+        self._deposit_currency = JalDB().get_asset_name(self._deposit_account.currency())
         self._deposit_timestamp = self._data['deposit_timestamp']
-        self._fee_account = self._data['fee_account']
-        self._fee_currency = JalDB().get_asset_name(JalDB().get_account_currency(self._fee_account))
-        self._fee_account_name = JalDB().get_account_name(self._fee_account)
+        self._fee_account = JalAccount(self._data['fee_account'])
+        self._fee_currency = JalDB().get_asset_name(self._fee_account.currency())
+        self._fee_account_name = self._fee_account.name()
         self._fee = Decimal(self._data['fee']) if self._data['fee'] else Decimal('0')
         self._label, self._label_color = labels[display_type]
         if self._data['asset']:
@@ -515,11 +515,11 @@ class Transfer(LedgerTransaction):
             self._asset = None
         self._note = self._data['note']
         if self._display_type == Transfer.Outgoing:
-            self._reconciled = JalDB().account_reconciliation_timestamp(self._withdrawal_account) >= self._withdrawal_timestamp
+            self._reconciled = self._withdrawal_account.reconciled_at() >= self._withdrawal_timestamp
         elif self._display_type == Transfer.Incoming:
-            self._reconciled = JalDB().account_reconciliation_timestamp(self._deposit_account) >= self._deposit_timestamp
+            self._reconciled = self._deposit_account.reconciled_at() >= self._deposit_timestamp
         elif self._display_type == Transfer.Fee:
-            self._reconciled = JalDB().account_reconciliation_timestamp(self._fee_account) >= self._withdrawal_timestamp
+            self._reconciled = self._fee_account.reconciled_at() >= self._withdrawal_timestamp
         else:
             assert False, "Unknown transfer type"
 
@@ -542,11 +542,11 @@ class Transfer(LedgerTransaction):
 
     def account_id(self):
         if self._display_type == Transfer.Fee:
-            return self._fee_account
+            return self._fee_account.id()
         elif self._display_type == Transfer.Outgoing:
-            return self._withdrawal_account
+            return self._withdrawal_account.id()
         elif self._display_type == Transfer.Incoming:
-            return self._deposit_account
+            return self._deposit_account.id()
         else:
             assert False, "Unknown transfer type"
 
@@ -598,16 +598,16 @@ class Transfer(LedgerTransaction):
     def value_total(self) -> str:
         if self._display_type == Transfer.Outgoing:
             if self._asset:
-                amount = self._asset_total(self._withdrawal_account, self._asset)
+                amount = self._asset_total(self._withdrawal_account.id(), self._asset)
             else:
-                amount = self._money_total(self._withdrawal_account)
+                amount = self._money_total(self._withdrawal_account.id())
         elif self._display_type == Transfer.Incoming:
             if self._asset:
-                amount = self._asset_total(self._deposit_account, self._asset)
+                amount = self._asset_total(self._deposit_account.id(), self._asset)
             else:
-                amount = self._money_total(self._deposit_account)
+                amount = self._money_total(self._deposit_account.id())
         elif self._display_type == Transfer.Fee:
-            amount = self._money_total(self._fee_account)
+            amount = self._money_total(self._fee_account.id())
         else:
             assert False, "Unknown transfer type"
         if amount is None:
@@ -620,11 +620,11 @@ class Transfer(LedgerTransaction):
             if self._asset is not None:
                 self.processAssetTransfer(ledger)
             else:
-                credit_taken = ledger.takeCredit(self, self._withdrawal_account, self._withdrawal)
+                credit_taken = ledger.takeCredit(self, self._withdrawal_account.id(), self._withdrawal)
                 ledger.appendTransaction(self, BookAccount.Money, -(self._withdrawal - credit_taken))
                 ledger.appendTransaction(self, BookAccount.Transfers, self._withdrawal)
         elif self._display_type == Transfer.Fee:
-            credit_taken = ledger.takeCredit(self, self._fee_account, self._fee)
+            credit_taken = ledger.takeCredit(self, self._fee_account.id(), self._fee)
             ledger.appendTransaction(self, BookAccount.Money, -(self._fee - credit_taken))
             ledger.appendTransaction(self, BookAccount.Costs, self._fee,
                                     category=PredefinedCategory.Fees, peer=PredefinedPeer.Financial)
@@ -632,7 +632,7 @@ class Transfer(LedgerTransaction):
             if self._asset is not None:
                 self.processAssetTransfer(ledger)
             else:
-                credit_returned = ledger.returnCredit(self, self._deposit_account, self._deposit)
+                credit_returned = ledger.returnCredit(self, self._deposit_account.id(), self._deposit)
                 if credit_returned < self._deposit:
                     ledger.appendTransaction(self, BookAccount.Money, self._deposit - credit_returned)
                 ledger.appendTransaction(self, BookAccount.Transfers, -self._deposit)
@@ -641,7 +641,7 @@ class Transfer(LedgerTransaction):
 
     def processAssetTransfer(self, ledger):
         if self._display_type == Transfer.Outgoing:   # Withdraw asset from source account
-            asset_amount = ledger.getAmount(BookAccount.Assets, self._withdrawal_account, self._asset)
+            asset_amount = ledger.getAmount(BookAccount.Assets, self._withdrawal_account.id(), self._asset)
             if asset_amount < self._withdrawal:
                 raise ValueError(self.tr("Asset amount is not enough for asset transfer processing. Date: ")
                                  + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
@@ -654,7 +654,7 @@ class Transfer(LedgerTransaction):
             if self._withdrawal_currency == JalSettings().getValue('BaseCurrency'):
                 currency_rate = Decimal('1.0')
             else:
-                currency_rate = JalDB().get_quote(JalDB().get_account_currency(self._withdrawal_account),
+                currency_rate = JalDB().get_quote(self._withdrawal_account.currency(),
                                                   JalSettings().getValue('BaseCurrency'),
                                                   self._withdrawal_timestamp, exact=False)
             ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
@@ -674,7 +674,7 @@ class Transfer(LedgerTransaction):
             if self._deposit_currency == JalSettings().getValue('BaseCurrency'):
                 currency_rate = Decimal('1.0')
             else:
-                currency_rate = JalDB().get_quote(JalDB().get_account_currency(self._deposit_account),
+                currency_rate = JalDB().get_quote(self._deposit_account.currency(),
                                                   JalSettings().getValue('BaseCurrency'),
                                                   self._deposit_timestamp, exact=False)
             price = value * currency_rate / self._deposit
@@ -682,7 +682,7 @@ class Transfer(LedgerTransaction):
                 "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
                 "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
                 [(":timestamp", self._deposit_timestamp), (":type", self._otype), (":operation_id", self._oid),
-                 (":account_id", self._deposit_account), (":asset_id", self._asset), (":price", format_decimal(price)),
+                 (":account_id", self._deposit_account.id()), (":asset_id", self._asset), (":price", format_decimal(price)),
                  (":remaining_qty", format_decimal(self._deposit))])
             ledger.appendTransaction(self, BookAccount.Transfers, -self._deposit, asset_id=self._asset, value=-value)
             ledger.appendTransaction(self, BookAccount.Assets, self._deposit,
@@ -725,16 +725,16 @@ class CorporateAction(LedgerTransaction):
             self._view_rows = 2
         self._label, self._label_color = labels[self._subtype]
         self._timestamp = self._data['timestamp']
-        self._account = self._data['account_id']
-        self._account_name = JalDB().get_account_name(self._account)
-        self._account_currency = JalDB().get_asset_name(JalDB().get_account_currency(self._account))
-        self._reconciled = JalDB().account_reconciliation_timestamp(self._account) >= self._timestamp
+        self._account = JalAccount(self._data['account_id'])
+        self._account_id_name = self._account.name()
+        self._account_id_currency = JalDB().get_asset_name(self._account.currency())
+        self._reconciled = self._account.reconciled_at() >= self._timestamp
         self._asset = self._data['asset_id']
         self._asset_symbol = JalDB().get_asset_name(self._asset)
         self._asset_name = JalDB().get_asset_name(self._asset, full=True)
         self._qty = Decimal(self._data['qty'])
         self._number = self._data['number']
-        self._broker = JalDB().get_account_bank(self._account)
+        self._broker = self._account.organization()
 
     def description(self) -> str:
         description = self.names[self._subtype]
@@ -784,7 +784,7 @@ class CorporateAction(LedgerTransaction):
 
     def processLedger(self, ledger):
         # Get asset amount accumulated before current operation
-        asset_amount = ledger.getAmount(BookAccount.Assets, self._account, self._asset)
+        asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset)
         if asset_amount < self._qty:
             raise ValueError(self.tr("Asset amount is not enough for corporate action processing. Date: ")
                              + f"{datetime.utcfromtimestamp(self._timestamp).strftime('%d/%m/%Y %H:%M:%S')}, "
@@ -829,6 +829,6 @@ class CorporateAction(LedgerTransaction):
                     "account_id, asset_id, price, remaining_qty) "
                     "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
                     [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
-                     (":account_id", self._account), (":asset_id", asset), (":price", format_decimal(price)),
+                     (":account_id", self._account.id()), (":asset_id", asset), (":price", format_decimal(price)),
                      (":remaining_qty", format_decimal(qty))])
                 ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset, value=value)

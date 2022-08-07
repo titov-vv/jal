@@ -7,6 +7,7 @@ from jal.constants import CustomColor
 from jal.widgets.reference_selector import AssetSelector, PeerSelector, CategorySelector, TagSelector
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.db import JalDB
+from jal.db.account import JalAccount
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -185,8 +186,9 @@ class FloatDelegate(QStyledItemDelegate):
 # Delegate to apply currency filter for AssetSelector widgets based on current account
 class SymbolDelegate(QStyledItemDelegate):
     def setEditorData(self, editor, index):
-        account_currency = JalDB().get_account_currency(
-            index.model().data(index.sibling(index.row(), index.model().fieldIndex('account_id')), Qt.EditRole))
+        account_currency = JalAccount(index.model().data(index.sibling(index.row(),
+                                                                       index.model().fieldIndex('account_id')),
+                                                         Qt.EditRole)).currency()
         editor.setFilterValue(account_currency)
         QStyledItemDelegate.setEditorData(self, editor, index)
 

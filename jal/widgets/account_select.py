@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QApplication, QDialog, QWidget, QPushButton, QComb
 from PySide6.QtSql import QSqlQuery, QSqlTableModel
 from jal.constants import Setup
 from jal.db.db import JalDB
+from jal.db.account import JalAccount
 from jal.db.settings import JalSettings
 from jal.db.helpers import db_connection, readSQL
 from jal.widgets.reference_dialogs import AccountListDialog
@@ -34,7 +35,7 @@ class AccountButton(QPushButton):
     def setId(self, account_id):
         self.p_account_id = account_id
         if self.p_account_id:
-            self.setText(JalDB().get_account_name(account_id))
+            self.setText(JalAccount(account_id).name())
         else:
             self.setText(self.tr("ANY"))
         self.changed.emit(self.p_account_id)

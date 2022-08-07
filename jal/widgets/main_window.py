@@ -18,6 +18,7 @@ from jal.constants import Setup
 from jal.db.backup_restore import JalBackup
 from jal.db.helpers import get_app_path, get_dbfilename, load_icon
 from jal.db.db import JalDB
+from jal.db.account import JalAccount
 from jal.db.settings import JalSettings
 from jal.net.downloader import QuoteDownloader
 from jal.db.ledger import Ledger
@@ -244,7 +245,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
                         JalDB().reconcile_account(account_id, timestamp)
                         self.updateWidgets()
                     else:
-                        account = JalDB().get_account_name(account_id)
+                        account = JalAccount(account_id).name()
                         asset = JalDB().get_asset_name(asset_id)
                         logging.warning(self.tr("Statement ending balance doesn't match: ") +
                                         f"{account} / {asset} / {amount} (act) <> {totals[account_id][asset_id]} (exp)")

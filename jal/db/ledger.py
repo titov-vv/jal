@@ -7,6 +7,7 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 from jal.constants import BookAccount
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord, format_decimal
 from jal.db.db import JalDB
+from jal.db.account import JalAccount
 from jal.db.settings import JalSettings
 from jal.db.operations import LedgerTransaction
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
@@ -102,16 +103,16 @@ class Ledger(QObject):
         if book == BookAccount.Assets and asset_id is None:
             raise ValueError(self.tr("No asset defined for: ") + f"{operation.dump()}")
         if asset_id is None:
-            asset_id = JalDB().get_account_currency(operation.account_id())
+            asset_id = JalAccount(operation.account_id()).currency()
         if (book == BookAccount.Costs or book == BookAccount.Incomes) and category is None:
             raise ValueError(self.tr("No category set for: ") + f"{operation.dump()}")
         if (book == BookAccount.Costs or book == BookAccount.Incomes) and peer is None:
             raise ValueError(self.tr("No peer set for: ") + f"{operation.dump()}")
         tag = tag if tag else None  # Get rid of possible empty values
         # Round values according to account decimal precision
-        precision = readSQL("SELECT precision FROM accounts WHERE id=:id", [(":id", operation.account_id())])
-        amount = round(amount, int(precision))
-        value = Decimal('0') if value is None else round(value, int(precision))
+        precision = JalAccount(operation.account_id()).precision()
+        amount = round(amount, precision)
+        value = Decimal('0') if value is None else round(value, precision)
         self.amounts[(book, operation.account_id(), asset_id)] += amount
         self.values[(book, operation.account_id(), asset_id)] += value
         if (abs(amount) + abs(value)) == Decimal('0'):
@@ -137,7 +138,7 @@ class Ledger(QObject):
     # Returns Amount measured in current account currency or asset that 'book' has at current ledger frontier
     def getAmount(self, book, account_id, asset_id=None):
         if asset_id is None:
-            asset_id = JalDB().get_account_currency(account_id)
+            asset_id = JalAccount(account_id).currency()
         return self.amounts[(book, account_id, asset_id)]
 
     def takeCredit(self, operation, account_id, operation_amount):

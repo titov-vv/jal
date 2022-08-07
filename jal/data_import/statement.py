@@ -13,6 +13,7 @@ from jal.constants import Setup, MarketDataFeed, PredefinedAsset
 from jal.db.settings import JalSettings
 from jal.db.helpers import account_last_date, get_app_path
 from jal.db.db import JalDB
+from jal.db.account import JalAccount
 from jal.db.operations import Dividend, CorporateAction
 from jal.widgets.account_select import SelectAccountDialog
 from jal.net.downloader import QuoteDownloader
@@ -356,7 +357,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 raise Statement_ImportError(self.tr("Unmatched account for income/spending: ") + f"{action}")
             if action['peer'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched peer for income/spending: ") + f"{action}")
-            peer = JalDB().get_account_bank(-action['account']) if action['peer'] == 0 else -action['peer']
+            peer = JalAccount(-action['account']).organization() if action['peer'] == 0 else -action['peer']
             lines = []
             for line in action['lines']:
                 if line['category'] >= 0:
@@ -392,7 +393,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                            self.tr("Select account to deposit to:")
                     pair_account = -transfer['account'][0]
                 try:
-                    chosen_account = self._previous_accounts[JalDB().get_account_currency(pair_account)]
+                    chosen_account = self._previous_accounts[JalAccount(pair_account).currency()]
                 except KeyError:
                     chosen_account = self.select_account(text, pair_account, self._last_selected_account)
                 if chosen_account == 0:
@@ -480,7 +481,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             return 0
         else:
             if dialog.store_account:
-                self._previous_accounts[JalDB().get_account_currency(dialog.account_id)] = dialog.account_id
+                self._previous_accounts[JalAccount(dialog.account_id).currency()] = dialog.account_id
             return dialog.account_id
 
     # Returns asset dictionary by asset id
