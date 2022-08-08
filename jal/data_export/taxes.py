@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from PySide6.QtWidgets import QApplication
 from jal.constants import Setup, PredefinedAsset, PredefinedCategory
@@ -84,11 +85,11 @@ class TaxesRus:
                        "UNION "
                        "SELECT a.timestamp AS ref_id FROM actions AS a WHERE a.account_id = :account_id "
                        "UNION "
-                       "SELECT d.open_timestamp AS ref_id FROM deals AS d WHERE d.account_id=:account_id "
+                       "SELECT d.open_timestamp AS ref_id FROM trades_closed AS d WHERE d.account_id=:account_id "
                        "UNION "
-                       "SELECT d.close_timestamp AS ref_id FROM deals AS d WHERE d.account_id=:account_id "
+                       "SELECT d.close_timestamp AS ref_id FROM trades_closed AS d WHERE d.account_id=:account_id "
                        "UNION "
-                       "SELECT c.settlement AS ref_id FROM deals AS d LEFT JOIN trades AS c ON "
+                       "SELECT c.settlement AS ref_id FROM trades_closed AS d LEFT JOIN trades AS c ON "
                        "(c.id=d.open_op_id AND c.op_type=d.open_op_type) OR (c.id=d.close_op_id AND c.op_type=d.close_op_type) "
                        "WHERE d.account_id = :account_id) "
                        "LEFT JOIN accounts AS a ON a.id = :account_id "
@@ -130,6 +131,11 @@ class TaxesRus:
                             (":type_vesting", Dividend.StockVesting)])
         while query.next():
             dividend = readSQLrecord(query, named=True)
+            # FIXME - below is a temporary code while SQL isn't moved from this module
+            dividend['amount'] = float(dividend['amount'])
+            dividend['tax'] = float(dividend['tax'])
+            dividend['rate'] = float(dividend['rate'])
+            dividend['price'] = float(dividend['price']) if dividend['price'] else dividend['price']
             dividend["note"] = ''
             if dividend["type"] == Dividend.StockDividend:
                 if not dividend["price"]:
@@ -169,7 +175,7 @@ class TaxesRus:
                            "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, c.number AS c_number, "
                            "qcs.quote AS cs_rate, c.price AS c_price, c.qty AS c_qty, c.fee AS c_fee, "
                            "SUM(coalesce(-sd.amount*qsd.quote, 0)) AS s_dividend "  # Dividend paid for short position
-                           "FROM deals AS d "
+                           "FROM trades_closed AS d "
                            "JOIN ("
                            " SELECT id, op_type, timestamp, settlement, number, account_id, asset_id, qty, price, fee FROM trades "
                            " UNION ALL "
@@ -204,6 +210,17 @@ class TaxesRus:
                             (":stock_dividend", Dividend.StockDividend), (":stock_vesting", Dividend.StockVesting)])
         while query.next():
             deal = readSQLrecord(query, named=True)
+            deal['qty'] = float(deal['qty'])
+            deal['o_rate'] = float(deal['o_rate'])
+            deal['os_rate'] = float(deal['os_rate'])
+            deal['o_price'] = float(deal['o_price'])
+            deal['c_rate'] = float(deal['c_rate'])
+            deal['cs_rate'] = float(deal['cs_rate'])
+            deal['c_price'] = float(deal['c_price'])
+            deal['o_qty'] = float(deal['o_qty'])
+            deal['o_fee'] = float(deal['o_fee'])
+            deal['c_qty'] = float(deal['c_qty'])
+            deal['c_fee'] = float(deal['c_fee'])
             if not deal['symbol']:   # there will be row of NULLs if no deals are present (due to SUM aggregation)
                 continue
             if not self.use_settlement:
@@ -245,7 +262,7 @@ class TaxesRus:
                            "qos.quote AS os_rate, o.price AS o_price, o.qty AS o_qty, o.fee AS o_fee, -oi.amount AS o_int, "
                            "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, c.number AS c_number, "
                            "qcs.quote AS cs_rate, c.price AS c_price, c.qty AS c_qty, c.fee AS c_fee, ci.amount AS c_int "
-                           "FROM deals AS d "
+                           "FROM trades_closed AS d "
                            "JOIN trades AS o ON o.id=d.open_op_id AND o.op_type=d.open_op_type "
                            "LEFT JOIN dividends AS oi ON oi.account_id=:account_id AND oi.number=o.number AND oi.timestamp=o.timestamp AND oi.asset_id=o.asset_id "
                            "JOIN trades AS c ON c.id=d.close_op_id AND c.op_type=d.close_op_type "
@@ -269,6 +286,18 @@ class TaxesRus:
                             (":bond", PredefinedAsset.Bond)])
         while query.next():
             deal = readSQLrecord(query, named=True)
+            deal['qty'] = float(deal['qty'])
+            deal['o_rate'] = float(deal['o_rate'])
+            deal['os_rate'] = float(deal['os_rate'])
+            deal['o_price'] = float(deal['o_price'])
+            deal['c_rate'] = float(deal['c_rate'])
+            deal['cs_rate'] = float(deal['cs_rate'])
+            deal['c_price'] = float(deal['c_price'])
+            deal['o_qty'] = float(deal['o_qty'])
+            deal['o_fee'] = float(deal['o_fee'])
+            deal['c_qty'] = float(deal['c_qty'])
+            deal['c_fee'] = float(deal['c_fee'])
+            deal['c_int'] = float(deal['c_int'])
             deal['principal'] = self.BOND_PRINCIPAL
             if not self.use_settlement:
                 deal['os_rate'] = deal['o_rate']
@@ -319,6 +348,8 @@ class TaxesRus:
                             (":type_interest", Dividend.BondInterest)])
         while query.next():
             interest = readSQLrecord(query, named=True)
+            interest['interest'] = float(interest['interest'])
+            interest['rate'] = float(interest['rate'])
             interest['type'] = "Купон"
             interest['empty'] = ''  # to keep cell borders drawn
             interest['interest_rub'] = round(interest['interest'] * interest['rate'], 2) if interest['rate'] else 0
@@ -339,7 +370,7 @@ class TaxesRus:
                            "qos.quote AS os_rate, o.price AS o_price, o.qty AS o_qty, o.fee AS o_fee, "
                            "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, c.number AS c_number, "
                            "qcs.quote AS cs_rate, c.price AS c_price, c.qty AS c_qty, c.fee AS c_fee "
-                           "FROM deals AS d "
+                           "FROM trades_closed AS d "
                            "JOIN trades AS o ON o.id=d.open_op_id AND o.op_type=d.open_op_type "
                            "JOIN trades AS c ON c.id=d.close_op_id AND c.op_type=d.close_op_type "
                            "LEFT JOIN accounts AS a ON a.id = :account_id "
@@ -361,6 +392,17 @@ class TaxesRus:
                             (":derivative", PredefinedAsset.Derivative)])
         while query.next():
             deal = readSQLrecord(query, named=True)
+            deal['qty'] = float(deal['qty'])
+            deal['o_rate'] = float(deal['o_rate'])
+            deal['os_rate'] = float(deal['os_rate'])
+            deal['o_price'] = float(deal['o_price'])
+            deal['c_rate'] = float(deal['c_rate'])
+            deal['cs_rate'] = float(deal['cs_rate'])
+            deal['c_price'] = float(deal['c_price'])
+            deal['o_qty'] = float(deal['o_qty'])
+            deal['o_fee'] = float(deal['o_fee'])
+            deal['c_qty'] = float(deal['c_qty'])
+            deal['c_fee'] = float(deal['c_fee'])
             if not self.use_settlement:
                 deal['os_rate'] = deal['o_rate']
                 deal['cs_rate'] = deal['c_rate']
@@ -396,7 +438,7 @@ class TaxesRus:
                            "qos.quote AS os_rate, o.price AS o_price, o.qty AS o_qty, o.fee AS o_fee, "
                            "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, c.number AS c_number, "
                            "qcs.quote AS cs_rate, c.price AS c_price, c.qty AS c_qty, c.fee AS c_fee "
-                           "FROM deals AS d "
+                           "FROM trades_closed AS d "
                            "JOIN trades AS o ON o.id=d.open_op_id AND o.op_type=d.open_op_type "
                            "JOIN trades AS c ON c.id=d.close_op_id AND c.op_type=d.close_op_type "
                            "LEFT JOIN accounts AS a ON a.id = :account_id "
@@ -418,6 +460,17 @@ class TaxesRus:
                             (":derivative", PredefinedAsset.Crypto)])
         while query.next():
             deal = readSQLrecord(query, named=True)
+            deal['qty'] = float(deal['qty'])
+            deal['o_rate'] = float(deal['o_rate'])
+            deal['os_rate'] = float(deal['os_rate'])
+            deal['o_price'] = float(deal['o_price'])
+            deal['c_rate'] = float(deal['c_rate'])
+            deal['cs_rate'] = float(deal['cs_rate'])
+            deal['c_price'] = float(deal['c_price'])
+            deal['o_qty'] = float(deal['o_qty'])
+            deal['o_fee'] = float(deal['o_fee'])
+            deal['c_qty'] = float(deal['c_qty'])
+            deal['c_fee'] = float(deal['c_fee'])
             if not self.use_settlement:
                 deal['os_rate'] = deal['o_rate']
                 deal['cs_rate'] = deal['c_rate']
@@ -460,6 +513,8 @@ class TaxesRus:
                             (":base_currency", JalSettings().getValue('BaseCurrency'))])
         while query.next():
             fee = readSQLrecord(query, named=True)
+            fee['amount'] = float(fee['amount'])
+            fee['rate'] = float(fee['rate'])
             fee['amount'] = -fee['amount']
             fee['amount_rub'] = round(fee['amount'] * fee['rate'], 2) if fee['rate'] else 0
             fee['report_template'] = "fee"
@@ -492,7 +547,8 @@ class TaxesRus:
                             (":base_currency", JalSettings().getValue('BaseCurrency'))])
         while query.next():
             interest = readSQLrecord(query, named=True)
-            interest['amount'] = interest['amount']
+            interest['amount'] = float(interest['amount'])
+            interest['rate'] = float(interest['rate'])
             interest['amount_rub'] = round(interest['amount'] * interest['rate'], 2) if interest['rate'] else 0
             interest['tax_rub'] = round(0.13 * interest['amount_rub'], 2)
             interest['report_template'] = "interest"
@@ -508,7 +564,7 @@ class TaxesRus:
                            "t.number AS trade_number, t.timestamp AS t_date, qt.quote AS t_rate, "
                            "t.settlement AS s_date, qts.quote AS s_rate, t.price AS price, t.fee AS fee, "
                            "s.full_name AS full_name, s.isin AS isin, s.type_id AS type_id "
-                           "FROM deals AS d "
+                           "FROM trades_closed AS d "
                            "JOIN trades AS t ON t.id=d.close_op_id AND t.op_type=d.close_op_type "
                            "LEFT JOIN accounts AS a ON a.id = :account_id "
                            "LEFT JOIN assets_ext AS s ON s.id = t.asset_id AND s.currency_id=a.currency_id "
@@ -527,6 +583,12 @@ class TaxesRus:
         while query.next():
             actions = []
             sale = readSQLrecord(query, named=True)
+            sale['qty'] = float(sale['qty'])
+            sale['t_rate'] = float(sale['t_rate'])
+            sale['s_rate'] = float(sale['s_rate'])
+            sale['price'] = float(sale['price'])
+            sale['fee'] = float(sale['fee'])
+            sale['qty'] = float(sale['qty'])
             if previous_symbol != sale['symbol']:
                 # Clean processed qty records if symbol have changed
                 _ = executeSQL("DELETE FROM t_last_assets")
@@ -577,7 +639,7 @@ class TaxesRus:
     def next_corporate_action(self, actions, oid, asset_id, qty, share, level, group):
         # get list of deals that were closed as result of current corporate action
         open_query = executeSQL("SELECT open_op_id AS open_op_id, open_op_type AS op_type "
-                                "FROM deals "
+                                "FROM trades_closed "
                                 "WHERE close_op_id=:close_op_id AND close_op_type=:corp_action "
                                 "ORDER BY id",
                                 [(":close_op_id", oid), (":corp_action", LedgerTransaction.CorporateAction)])
@@ -599,7 +661,7 @@ class TaxesRus:
                            "t.timestamp AS t_date, qt.quote AS t_rate, t.number AS trade_number, "
                            "t.settlement AS s_date, qts.quote AS s_rate, t.price AS price, t.fee AS fee "
                            "FROM trades AS t "
-                           "JOIN deals AS d ON t.id=d.open_op_id AND t.op_type=d.open_op_type "
+                           "JOIN trades_closed AS d ON t.id=d.open_op_id AND t.op_type=d.open_op_type "
                            "LEFT JOIN accounts AS a ON a.id = t.account_id "
                            "LEFT JOIN assets_ext AS s ON s.id = t.asset_id AND s.currency_id=a.currency_id "
                            "LEFT JOIN t_last_dates AS ldt ON t.timestamp=ldt.ref_id "
@@ -610,6 +672,11 @@ class TaxesRus:
                            "WHERE t.id = :oid", [(":oid", oid),
                                                  (":base_currency", JalSettings().getValue('BaseCurrency'))],
                            named=True)
+        purchase['qty'] = float(purchase['qty'])
+        purchase['t_rate'] = float(purchase['t_rate'])
+        purchase['s_rate'] = float(purchase['s_rate'])
+        purchase['price'] = float(purchase['price'])
+        purchase['fee'] = float(purchase['fee'])
         if purchase['qty'] <= (2 * Setup.CALC_TOLERANCE):
             return proceed_qty  # This trade was fully mached before
         purchase['operation'] = ' ' * level * 3 + "Покупка"
@@ -647,6 +714,9 @@ class TaxesRus:
                          "LEFT JOIN assets_ext s2 ON r.asset_id=s2.id AND s2.currency_id=a.currency_id "
                          "WHERE c.id = :oid AND r.asset_id = :new_asset", [(":oid", oid), (":new_asset", asset_id)],
                          named=True)
+        action['qty'] = float(action['qty'])
+        action['qty2'] = float(action['qty2'])
+        action['value_share'] = float(action['value_share'])
         action['operation'] = ' ' * level * 3 + "Корп. действие"
         share = share * action['value_share']
         qty_before = action['qty'] * proceed_qty / action['qty2']
@@ -659,6 +729,7 @@ class TaxesRus:
                               "LEFT JOIN assets_ext s1 ON c.asset_id=s1.id AND s1.currency_id=a.currency_id "
                               "LEFT JOIN assets_ext s2 ON r.asset_id=s2.id AND s2.currency_id=a.currency_id "
                               "WHERE c.id = :oid", [(":oid", oid)], named=True)
+            spinoff['value_share'] = float(spinoff['value_share'])
             old_asset_name = f"{spinoff['symbol']} ({spinoff['isin']})"
             new_asset_name = f"{spinoff['symbol2']} ({spinoff['isin2']})"
             display_share = 100.0 * spinoff['value_share']
@@ -691,6 +762,8 @@ class TaxesRus:
                             (":base_currency", JalSettings().getValue('BaseCurrency'))], named=True)
         if interest is None:
             return
+        interest['interest'] = float(interest['interest'])
+        interest['rate'] = float(interest['rate'])
         interest['empty'] = ''
         interest['interest'] = interest['interest'] if share == 1 else share * interest['interest']
         interest['interest_rub'] = abs(round(interest['interest'] * interest['rate'], 2)) if interest['rate'] else 0

@@ -100,6 +100,6 @@ def prepare_db_moex(prepare_db):   # Create assets in database to be updated fro
 @pytest.fixture
 def prepare_db_taxes(prepare_db):
     assert executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'IB')") is not None
-    assert executeSQL("INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id, country_id) "
-                      "VALUES (4, 'Inv. Account', 2, 1, 'U7654321', 1, 2)") is not None
+    assert executeSQL("INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id, country_id, precision) "
+                      "VALUES (4, 'Inv. Account', 2, 1, 'U7654321', 1, 2, 3)") is not None
     yield
