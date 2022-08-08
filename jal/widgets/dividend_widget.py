@@ -172,8 +172,8 @@ class DividendWidget(AbstractOperationDetails):
         new_record.setValue("number", '')
         new_record.setValue("account_id", account_id)
         new_record.setValue("asset_id", 0)
-        new_record.setValue("amount", 0)
-        new_record.setValue("tax", 0)
+        new_record.setValue("amount", '0')
+        new_record.setValue("tax", '0')
         new_record.setValue("note", None)
         return new_record
 

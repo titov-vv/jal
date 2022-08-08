@@ -158,9 +158,9 @@ class FloatDelegate(QStyledItemDelegate):
         number_text = number_text.replace(' ', '')
         number_text = number_text.replace(QLocale().groupSeparator(), '')
         number_text = number_text.replace(QLocale().decimalPoint(), '.')
-        value = Decimal(number_text)
+        value = Decimal(number_text) if number_text else Decimal('0')
         if self._percent:
-            value /= Decimal(100.0)
+            value /= Decimal('100')
         model.setData(index, str(value))
 
     def initStyleOption(self, option, index):

@@ -129,8 +129,8 @@ class IncomeSpendingWidget(AbstractOperationDetails):
     def addChild(self):
         new_record = self.details_model.record()
         new_record.setNull("tag_id")
-        new_record.setValue("amount", 0)
-        new_record.setValue("amount_alt", 0)
+        new_record.setValue("amount", '0')
+        new_record.setValue("amount_alt", '0')
         if not self.details_model.insertRecord(-1, new_record):
             logging.fatal(self.tr("Failed to add new record: ") + self.details_model.lastError().text())
             return
