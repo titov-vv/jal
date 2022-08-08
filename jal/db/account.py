@@ -28,6 +28,10 @@ class JalAccount(JalDB):
     def reconciled_at(self):
         return self._reconciled
 
+    def reconcile(self, timestamp):
+        _ = self._executeSQL("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
+                             [(":timestamp", timestamp), (":account_id", self._id)])
+
     def precision(self):
         return self._precision
 

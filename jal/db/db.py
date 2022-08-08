@@ -499,10 +499,6 @@ class JalDB:
                            [(":pid", pid), (":category_id", line['category']), (":amount", line['amount']),
                             (":note", line['note'])], commit=True)
 
-    def reconcile_account(self, account_id, timestamp):
-        _ = executeSQL("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
-                       [(":timestamp", timestamp), (":account_id", account_id)])
-
     def get_asset_amount(self, timestamp, account_id, asset_id):
         return readSQL("SELECT amount_acc FROM ledger "
                        "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp<=:timestamp "
