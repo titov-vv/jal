@@ -452,7 +452,7 @@ class JalDB:
             if transfer_id:
                 logging.info(self.tr("Transfer/Exchange already exists: ") + f"{f_amount}->{t_amount}")
                 return
-        if abs(fee) > Setup.CALC_TOLERANCE:
+        if abs(fee) > 1e-10:   # FIXME  Need to refactor this module for decimal usage
             _ = executeSQL("INSERT INTO transfers (withdrawal_timestamp, withdrawal_account, withdrawal, "
                            "deposit_timestamp, deposit_account, deposit, fee_account, fee, note, asset) "
                            "VALUES (:timestamp, :f_acc_id, :f_amount, :timestamp, :t_acc_id, :t_amount, "
