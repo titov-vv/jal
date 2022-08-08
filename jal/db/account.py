@@ -1,4 +1,5 @@
 from jal.db.db import JalDB
+from jal.constants import Setup
 
 
 class JalAccount(JalDB):
@@ -11,7 +12,7 @@ class JalAccount(JalDB):
         self._currency_id = self._data['currency_id'] if self._data is not None else None
         self._organization_id = self._data['organization_id'] if self._data is not None else None
         self._reconciled = int(self._data['reconciled_on']) if self._data is not None else 0
-        self._precision = int(self._data['precision']) if self._data is not None else 2
+        self._precision = int(self._data['precision']) if self._data is not None else Setup.DEFAULT_ACCOUNT_PRECISION
 
     def id(self):
         return self._id
