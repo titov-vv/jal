@@ -12,8 +12,7 @@ from jal.constants import Setup
 # -------------------------------------------------------------------------------------------------------------------
 # Removes exponent and trailing zeros from Decimal number
 def format_decimal(d) -> str:
-    normalized = d.quantize(Decimal(1)) if d == d.to_integral() else d.normalize()
-    return str(normalized)
+    return str(d.normalize())
 
 
 # -------------------------------------------------------------------------------------------------------------------
