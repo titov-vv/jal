@@ -10,10 +10,10 @@ from collections import defaultdict
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QDialog, QMessageBox
 from jal.constants import Setup, MarketDataFeed, PredefinedAsset
-from jal.db.settings import JalSettings
-from jal.db.helpers import account_last_date, get_app_path
+from jal.db.helpers import get_app_path
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
+from jal.db.settings import JalSettings
 from jal.db.operations import Dividend, CorporateAction
 from jal.widgets.account_select import SelectAccountDialog
 from jal.net.downloader import QuoteDownloader
@@ -292,7 +292,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         accounts = self._data[FOF.ACCOUNTS]
         for account in accounts:
             if account['id'] < 0:  # Checks if report is after last transaction recorded for account.
-                if period[0] < account_last_date(-account['id']):
+                if period[0] < JalAccount(-account['id']).last_operation_date():
                     if QMessageBox().warning(None, self.tr("Confirmation"),
                                              self.tr("Statement period starts before last recorded operation for the account. Continue import?"),
                                              QMessageBox.Yes, QMessageBox.No) == QMessageBox.No:

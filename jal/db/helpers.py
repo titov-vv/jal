@@ -120,11 +120,6 @@ def get_category_name(category_id):
 
 
 # -------------------------------------------------------------------------------------------------------------------
-def get_account_name(account_id):
-    return readSQL("SELECT name FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
-
-
-# -------------------------------------------------------------------------------------------------------------------
 def get_country_by_code(country_code):
     if not country_code:
         return 0
@@ -133,12 +128,3 @@ def get_country_by_code(country_code):
         country_id = 0
         logging.warning(QApplication.translate('DB', "Unknown country code: ") + f"'{country_code}'")
     return country_id
-
-
-# -------------------------------------------------------------------------------------------------------------------
-def account_last_date(account_id):
-    last_timestamp = readSQL("SELECT MAX(o.timestamp) FROM operation_sequence AS o "
-                             "LEFT JOIN accounts AS a ON o.account_id=a.id WHERE a.id=:account_id",
-                             [(":account_id", account_id)])
-    last_timestamp = 0 if last_timestamp == '' else last_timestamp
-    return last_timestamp

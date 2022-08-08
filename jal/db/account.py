@@ -30,3 +30,10 @@ class JalAccount(JalDB):
 
     def precision(self):
         return self._precision
+
+    def last_operation_date(self):
+        last_timestamp = self._readSQL("SELECT MAX(o.timestamp) FROM operation_sequence AS o "
+                                       "LEFT JOIN accounts AS a ON o.account_id=a.id WHERE a.id=:account_id",
+                                       [(":account_id", self._id)])
+        last_timestamp = 0 if last_timestamp == '' else last_timestamp
+        return last_timestamp
