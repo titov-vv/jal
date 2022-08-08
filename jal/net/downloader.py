@@ -73,7 +73,7 @@ class QuoteDownloader(QObject):
                            "SELECT l.asset_id AS asset, l.account_id FROM ledger AS l "
                            "WHERE l.book_account = :assets_book AND l.timestamp <= :end_timestamp "
                            "GROUP BY l.asset_id "
-                           "HAVING SUM(l.amount) > :tolerance "
+                           "HAVING SUM(l.amount) > 0 "
                            "UNION "
                            "SELECT DISTINCT l.asset_id AS asset, l.account_id FROM ledger AS l "
                            "WHERE l.book_account = :assets_book AND l.timestamp >= :start_timestamp "
@@ -92,7 +92,7 @@ class QuoteDownloader(QObject):
                            "ORDER BY feed_id",
                            [(":start_timestamp", start_timestamp), (":end_timestamp", end_timestamp),
                             (":assets_book", BookAccount.Assets), (":money_book", BookAccount.Money),
-                            (":liabilities_book", BookAccount.Liabilities), (":tolerance", Setup.CALC_TOLERANCE)])
+                            (":liabilities_book", BookAccount.Liabilities)])
         while query.next():
             asset = readSQLrecord(query, named=True)
             if asset['asset_id'] == int(JalSettings().getValue('BaseCurrency')):
