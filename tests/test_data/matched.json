@@ -1,12 +1,12 @@
 {
   "period": [1577836800, 1607903999],
   "accounts": [
-    {"id": 1, "number": "U7654321", "currency": -1, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
-    {"id": -1, "number": "U7654321", "currency": -2, "cash_begin": 12.345, "cash_end": 1234567.249966388, "cash_end_settled": 1234567.89},
-    {"id": 3, "number": "TEST_ACC", "currency": -2, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
-    {"id": 4, "number": "U7654321", "currency": 3, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
-    {"id": 5, "number": "TEST_ACC", "currency": 3, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
-    {"id": 6, "number": "U7654321", "currency": -3}
+    {"id": 1, "number": "U7654321", "currency": -1, "precision": 10, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
+    {"id": -1, "number": "U7654321", "currency": -2, "precision": 10, "cash_begin": 12.345, "cash_end": 1234567.249966388, "cash_end_settled": 1234567.89},
+    {"id": 3, "number": "TEST_ACC", "currency": -2, "precision": 10, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
+    {"id": 4, "number": "U7654321", "currency": 3, "precision": 10, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
+    {"id": 5, "number": "TEST_ACC", "currency": 3, "precision": 10, "cash_begin": 0.0, "cash_end": 0.0, "cash_end_settled": 0.0},
+    {"id": 6, "number": "U7654321", "currency": -3, "precision": 10}
   ],
   "assets": [
     {"id": -1, "type": "money", "name":  ""},

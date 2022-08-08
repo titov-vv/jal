@@ -52,8 +52,8 @@ def prepare_db_ledger(prepare_db):
 @pytest.fixture
 def prepare_db_ibkr(prepare_db):
     assert executeSQL("INSERT INTO agents (pid, name) VALUES (0, 'IB')") is not None
-    assert executeSQL("INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id) "
-                      "VALUES (4, 'Inv. Account', 2, 1, 'U7654321', 1)") is not None
+    assert executeSQL("INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id, precision) "
+                      "VALUES (4, 'Inv. Account', 2, 1, 'U7654321', 1, 10)") is not None
     test_assets = [
         (4, 'VUG', 'Growth ETF', '', 2, PredefinedAsset.ETF, 0),
         (5, 'EDV', 'VANGUARD EXTENDED DUR TREAS', '', 2, PredefinedAsset.ETF, 0),

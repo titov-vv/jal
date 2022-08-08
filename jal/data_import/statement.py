@@ -344,7 +344,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 continue
             if account['currency'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched currency for account: ") + f"{account}")
-            account_id = JalDB().add_account(account['number'], -account['currency'])
+            precision = account['precision'] if "precision" in account else Setup.DEFAULT_ACCOUNT_PRECISION
+            account_id = JalDB().add_account(account['number'], -account['currency'], precision=precision)
             if account_id:
                 old_id, account['id'] = account['id'], -account_id
                 self._update_id("account", old_id, account_id)

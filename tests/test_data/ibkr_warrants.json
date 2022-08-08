@@ -1,7 +1,7 @@
 {
   "period": [1577836800, 1609459199],
   "accounts": [
-    {"id": 1, "number": "U7654321", "currency": 1, "cash_begin": 12.345, "cash_end": 1234567.249966388, "cash_end_settled": 1234567.89}
+    {"id": 1, "number": "U7654321", "currency": 1, "precision": 10, "cash_begin": 12.345, "cash_end": 1234567.249966388, "cash_end_settled": 1234567.89}
   ],
   "assets": [
     {"id": 1, "name": "", "type": "money"},

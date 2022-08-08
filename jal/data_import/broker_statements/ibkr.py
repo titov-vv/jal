@@ -14,7 +14,7 @@ from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xml import StatementXML
 
 JAL_STATEMENT_CLASS = "StatementIBKR"
-
+IBKR_CALCULATION_PRECISION = 10
 
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKRCashOp:
@@ -104,7 +104,8 @@ class IBKR_Account:
             else:
                 new_id = max([0] + [x['id'] for x in accounts_list]) + 1
                 account_ids.append(new_id)
-                account = {"id": new_id, "number": number, "currency": currency}
+                account = {"id": new_id, "number": number,
+                           "currency": currency, "precision": IBKR_CALCULATION_PRECISION}
                 accounts_list.append(account)
         if account_ids:
             if len(account_ids) == 1:
@@ -358,6 +359,7 @@ class StatementIBKR(StatementXML):
     def load_accounts(self, balances):
         for i, balance in enumerate(sorted(balances, key=lambda x: x['currency'])):
             balance['id'] = i + 1
+            balance['precision'] = IBKR_CALCULATION_PRECISION
             self._data[FOF.ACCOUNTS].append(balance)
 
     def load_assets(self, assets):

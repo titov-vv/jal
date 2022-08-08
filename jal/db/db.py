@@ -201,7 +201,8 @@ class JalDB:
         return readSQL("SELECT id FROM accounts WHERE number=:account_number AND currency_id=:currency",
                        [(":account_number", account_number), (":currency", currency_code)], check_unique=True)
 
-    def add_account(self, account_number, currency_id, account_type=PredefindedAccountType.Investment):
+    def add_account(self, account_number, currency_id,
+                    account_type=PredefindedAccountType.Investment, precision=Setup.DEFAULT_ACCOUNT_PRECISION):
         account_id = self.find_account(account_number, currency_id)
         if account_id:  # Account already exists
             logging.warning(self.tr("Account already exists: ") +
@@ -217,8 +218,8 @@ class JalDB:
             else:
                 new_name = account['name'] + '.' + currency
             query = executeSQL(
-                "INSERT INTO accounts (type_id, name, active, number, currency_id, organization_id, country_id) "
-                "SELECT a.type_id, :new_name, a.active, a.number, :currency_id, a.organization_id, a.country_id "
+                "INSERT INTO accounts (type_id, name, active, number, currency_id, organization_id, country_id, precision) "
+                "SELECT a.type_id, :new_name, a.active, a.number, :currency_id, a.organization_id, a.country_id, a.precision "
                 "FROM accounts AS a LEFT JOIN assets AS c ON c.id=:currency_id "
                 "WHERE number=:account_number LIMIT 1",
                 [(":account_number", account_number), (":currency_id", currency_id), (":new_name", new_name)])
@@ -229,10 +230,11 @@ class JalDB:
         if bank_id is None:
             query = executeSQL("INSERT INTO agents (pid, name) VALUES (0, :bank_name)", [(":bank_name", bank_name)])
             bank_id = query.lastInsertId()
-        query = executeSQL("INSERT INTO accounts (type_id, name, active, number, currency_id, organization_id) "
-                           "VALUES(:type, :name, 1, :number, :currency, :bank)",
+        query = executeSQL("INSERT INTO accounts (type_id, name, active, number, currency_id, organization_id, precision) "
+                           "VALUES(:type, :name, 1, :number, :currency, :bank, :precision)",
                            [(":type", account_type), (":name", account_number+'.'+currency),
-                            (":number", account_number), (":currency", currency_id), (":bank", bank_id)])
+                            (":number", account_number), (":currency", currency_id), (":bank", bank_id),
+                            (":precision", precision)])
         return query.lastInsertId()
 
     # FIXME - this method should be deleted
