@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QDate
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QStyledItemDelegate, QHeaderView
@@ -204,7 +205,7 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
                     pen.setColor(CustomColor.DarkRed)
             painter.setPen(pen)
             painter.drawText(rect, Qt.AlignRight | Qt.AlignVCenter, f"{value:+,.2f}")
-            if abs(value - round(value, 2)) > Setup.CALC_TOLERANCE:  # Underline decimal part
+            if abs(value - round(value, 2)) > Decimal('0'):  # Underline decimal part
                 shift = painter.fontMetrics().horizontalAdvance(f"{value:+,.2f}"[-2:])
                 painter.drawLine(rect.right() - shift, rect.bottom(), rect.right(), rect.bottom())
         except TypeError:
