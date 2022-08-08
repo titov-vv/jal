@@ -168,12 +168,6 @@ class JalDB:
         sql = f"UPDATE view_params SET {field_name}=:value WHERE view_name=:view AND param_name=:param"
         _ = executeSQL(sql, [(":value", value), (":view", view_name), (":param", param_name)])
 
-    def get_language_id(self, language_code):
-        return readSQL("SELECT id FROM languages WHERE language = :language_code", [(':language_code', language_code)])
-
-    def get_language_code(self, language_id):
-        return readSQL("SELECT language FROM languages WHERE id = :language_id", [(':language_id', language_id)])
-
     def get_asset_name(self, asset_id, full=False):
         if full:
             return readSQL("SELECT full_name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])

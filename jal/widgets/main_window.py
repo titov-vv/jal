@@ -145,7 +145,7 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
     def onLanguageChanged(self, action):
         language_code = action.data()
         if language_code != self.currentLanguage:
-            JalSettings().setValue('Language', JalDB().get_language_id(language_code))
+            JalSettings().setLanguage(language_code)
             QMessageBox().information(self, self.tr("Restart required"),
                                       self.tr("Language was changed to ") +
                                       QLocale.languageToString(QLocale(language_code).language()) + "\n" +

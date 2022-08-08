@@ -5,6 +5,7 @@ from PySide6.QtSql import QSqlDatabase
 
 from constants import Setup, PredefinedCategory, PredefinedAsset, AssetData
 from jal.db.db import JalDB, JalDBError
+from jal.db.settings import JalSettings
 from jal.db.helpers import executeSQL, get_dbfilename
 from tests.helpers import create_assets, create_dividends
 
@@ -31,8 +32,8 @@ def prepare_db(project_root, tmp_path, data_path):
     assert error.code == JalDBError.NoError
     db = QSqlDatabase.database(Setup.DB_CONNECTION)
     assert db.isValid()
-    lang_id = JalDB().get_language_id('en')
-    assert lang_id == 1
+    language = JalSettings().getLanguage()
+    assert language == "en"
 
     yield
 
