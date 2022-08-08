@@ -677,7 +677,7 @@ class TaxesRus:
         purchase['s_rate'] = float(purchase['s_rate'])
         purchase['price'] = float(purchase['price'])
         purchase['fee'] = float(purchase['fee'])
-        if purchase['qty'] <= (2 * Setup.CALC_TOLERANCE):
+        if purchase['qty'] <= 1e-9:   # FIXME All taxes module should be refactored to decimal usage also
             return proceed_qty  # This trade was fully mached before
         purchase['operation'] = ' ' * level * 3 + "Покупка"
         purchase['basis_ratio'] = 100.0 * share
