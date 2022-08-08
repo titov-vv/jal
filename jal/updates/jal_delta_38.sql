@@ -429,6 +429,8 @@ PRAGMA foreign_keys = 1;
 -- Set new DB schema version
 UPDATE settings SET value=38 WHERE name='SchemaVersion';
 INSERT OR REPLACE INTO settings(id, name, value) VALUES (7, 'RebuildDB', 1);
+INSERT OR REPLACE INTO settings(id, name, value) VALUES (10, 'MessageOnce',
+'{"en": "Database version was updated.\nNow you may set calculation precesion per account (default value is 2)\nPlease set higher value via menu Data->Accounts if you have finer values than 0.01.", "ru": "Версия базы данных обновлена.\nТеперь вы можете устанавливать значение точности для счёта (значение по умолчанию 2)\nПожалуйста установить большую точность через меню Данные->Счета, если у вас есть значения меньше 0.01."}');
 COMMIT;
 --------------------------------------------------------------------------------
 -- Reduce file size

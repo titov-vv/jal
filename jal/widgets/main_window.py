@@ -1,3 +1,4 @@
+import json
 import os
 import base64
 import logging
@@ -114,6 +115,16 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
 
     @Slot()
     def afterShowEvent(self):
+        # Display information message once if database contains any
+        if JalSettings().getValue('MessageOnce'):
+            messages = json.loads(JalSettings().getValue('MessageOnce'))
+            try:
+                message = messages[JalSettings().getLanguage()]   # Try to load language-specific message
+            except KeyError:
+                message = messages['en']                          # Fallback to English message if failure
+            QMessageBox().information(self, self.tr("Info"), message, QMessageBox.Ok)
+            JalSettings().setValue('MessageOnce', '')   # Delete message if it was shown
+        # Ask for database rebuild if flag is set
         if JalSettings().getValue('RebuildDB', 0) == 1:
             if QMessageBox().warning(self, self.tr("Confirmation"), self.tr("Ledger isn't complete. Rebuild it now?"),
                                      QMessageBox.Yes, QMessageBox.No) == QMessageBox.Yes:
