@@ -16,7 +16,7 @@ class LedgerTransaction:
     Trade = 3
     Transfer = 4
     CorporateAction = 5
-    _db_table = ''
+    _db_table = ''   # Table where operation is stored in DB
     _db_fields = {}
 
     def __init__(self, operation_data=None):
@@ -27,7 +27,6 @@ class LedgerTransaction:
         self._oid = operation_id
         self._otype = 0
         self._data = None
-        self._table = ''       # Table where operation is stored in DB
         self._view_rows = 1    # How many rows it will require operation in QTableView
         self._label = '?'
         self._label_color = CustomColor.LightRed
@@ -194,10 +193,11 @@ class LedgerTransaction:
 
 # ----------------------------------------------------------------------------------------------------------------------
 class IncomeSpending(LedgerTransaction):
+    _db_table = "actions"
+
     def __init__(self, operation_id=None):
         super().__init__(operation_id)
         self._otype = LedgerTransaction.IncomeSpending
-        self._table = "actions"
         self._data = readSQL("SELECT a.timestamp, a.account_id, a.peer_id, p.name AS peer, "
                              "a.alt_currency_id AS currency FROM actions AS a "
                              "LEFT JOIN agents AS p ON a.peer_id = p.id WHERE a.id=:oid",
@@ -283,6 +283,7 @@ class Dividend(LedgerTransaction):
     BondInterest = 2
     StockDividend = 3
     StockVesting = 4
+    _db_table = "dividends"
 
     def __init__(self, operation_id=None):
         labels = {
@@ -292,7 +293,6 @@ class Dividend(LedgerTransaction):
             Dividend.StockVesting: ('Δ\n+', CustomColor.DarkBlue)
         }
         super().__init__(operation_id)
-        self._table = "dividends"
         self._otype = LedgerTransaction.Dividend
         self._view_rows = 2
         self._data = readSQL("SELECT d.type, d.timestamp, d.number, d.account_id, d.amount, d.asset_id, d.tax, "
@@ -423,7 +423,6 @@ class Trade(LedgerTransaction):
     # to create a new operation in database and then select it
     def __init__(self, operation_data=None):
         super().__init__(operation_data)
-        self._table = "trades"
         self._otype = LedgerTransaction.Trade
         self._view_rows = 2
         self._data = readSQL("SELECT t.timestamp, t.number, t.account_id, t.asset_id, t.qty, t.price AS price, "
@@ -733,6 +732,7 @@ class CorporateAction(LedgerTransaction):
     SymbolChange = 3
     Split = 4
     Delisting = 5
+    _db_table = "asset_actions"
 
     def __init__(self, operation_id=None):
         labels = {
@@ -750,7 +750,6 @@ class CorporateAction(LedgerTransaction):
             CorporateAction.Delisting: self.tr("Delisting")
         }
         super().__init__(operation_id)
-        self._table = "corp_actions"
         self._otype = LedgerTransaction.CorporateAction
         self._view_rows = int(readSQL("SELECT COUNT(id) FROM action_results WHERE action_id=:oid",
                                       [(":oid", self._oid)]))

@@ -14,7 +14,7 @@ class OperationsModel(QAbstractTableModel):
         LedgerTransaction.Dividend: "dividends",
         LedgerTransaction.Trade: "trades",
         LedgerTransaction.Transfer: "transfers",
-        LedgerTransaction.CorporateAction: "corp_actions"
+        LedgerTransaction.CorporateAction: "asset_actions"
     }
 
     def __init__(self, parent_view):
