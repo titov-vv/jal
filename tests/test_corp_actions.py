@@ -65,8 +65,8 @@ def test_symbol_change(prepare_db_fifo):
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
-    assert readSQL("SELECT * FROM deals_ext WHERE asset_id=4") == [1, 'Inv. Account', 4, 'A', 1619870400, 1622548800, '10', '10', '100', 0.0, 0.0, 0.0, -3]
-    assert readSQL("SELECT * FROM deals_ext WHERE asset_id=5") == [1, 'Inv. Account', 5, 'B', 1622548800, 1625140800, '10', '20', '100', 0.0, 1000.0, 100.0, 3]
+    assert readSQL("SELECT * FROM deals_ext WHERE asset_id=4") == [1, 'Inv. Account', 4, 'A', 1619870400, 1622548800, '1E+1', '1E+1', '1E+2', 0.0, 0.0, 0.0, -3]
+    assert readSQL("SELECT * FROM deals_ext WHERE asset_id=5") == [1, 'Inv. Account', 5, 'B', 1622548800, 1625140800, '1E+1', '2E+1', '1E+2', 0.0, 1000.0, 100.0, 3]
 
 
 def test_delisting(prepare_db_fifo):
@@ -86,6 +86,6 @@ def test_delisting(prepare_db_fifo):
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
-    assert readSQL("SELECT * FROM deals_ext WHERE asset_id=4") == [1, 'Inv. Account', 4, 'A', 1619870400, 1622548800, '10', '10', '100', 0.0, 0.0, 0.0, -5]
+    assert readSQL("SELECT * FROM deals_ext WHERE asset_id=4") == [1, 'Inv. Account', 4, 'A', 1619870400, 1622548800, '1E+1', '1E+1', '1E+2', 0.0, 0.0, 0.0, -5]
     assert readSQL("SELECT * FROM ledger_totals WHERE asset_id=4 ORDER BY id DESC LIMIT 1") == [5, 5, 1, 1622548800, 4, 4, 1, '0', '0']
-    assert readSQL("SELECT * FROM ledger WHERE book_account=1") == [6, 1622548800, 5, 1, 1, 2, 1, '1000', '0', '1000', '0', 1, 9, '']
+    assert readSQL("SELECT * FROM ledger WHERE book_account=1") == [6, 1622548800, 5, 1, 1, 2, 1, '1E+3', '0', '1E+3', '0', 1, 9, '']
