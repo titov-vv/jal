@@ -704,7 +704,7 @@ class CorporateAction(LedgerTransaction):
             CorporateAction.Delisting: self.tr("Delisting")
         }
         super().__init__(operation_id)
-        self._table = "corp_actions"
+        self._table = "asset_actions"
         self._otype = LedgerTransaction.CorporateAction
         self._view_rows = int(readSQL("SELECT COUNT(id) FROM action_results WHERE action_id=:oid",
                                       [(":oid", self._oid)]))
