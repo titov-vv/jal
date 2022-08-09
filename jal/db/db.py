@@ -387,25 +387,6 @@ class JalDB:
             except ValueError:
                 pass
 
-    def add_dividend(self, subtype, timestamp, account_id, asset_id, amount, note, trade_number='',
-                     tax=0.0, price=None):
-        id = readSQL("SELECT id FROM dividends WHERE timestamp=:timestamp AND type=:subtype AND account_id=:account_id "
-                     "AND asset_id=:asset_id AND amount=:amount AND note=:note",
-                     [(":timestamp", timestamp), (":subtype", subtype), (":account_id", account_id),
-                      (":asset_id", asset_id), (":amount", amount), (":note", note)])
-        if id:
-            logging.info(self.tr("Dividend already exists: ") + f"{note}")
-            return
-        _ = executeSQL("INSERT INTO dividends (timestamp, number, type, account_id, asset_id, amount, tax, note) "
-                       "VALUES (:timestamp, :number, :subtype, :account_id, :asset_id, :amount, :tax, :note)",
-                       [(":timestamp", timestamp), (":number", trade_number), (":subtype", subtype),
-                        (":account_id", account_id), (":asset_id", asset_id), (":amount", amount),
-                        (":tax", tax), (":note", note)],
-                       commit=True)
-        if price is not None:
-            self.update_quotes(asset_id, self.__get_account_currency(account_id),
-                               [{'timestamp': timestamp, 'quote': price}])
-
     def update_dividend_tax(self, dividend_id, new_tax):
         _ = executeSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
                        [(":dividend_id", dividend_id), (":tax", new_tax)], commit=True)
@@ -495,16 +476,29 @@ class JalDB:
                         (":liabilities", BookAccount.Liabilities)])
 
     def create_operation(self, table_name, fields, data):
+        self.validate_operation_data(table_name, fields, data)
         if self.operation_exists(table_name, fields, data):
             return 0
         else:
             return self.insert_operation(table_name, fields, data)
+
+    def validate_operation_data(self, table_name, fields, data):
+        if 'id' in data:
+            data.pop('id')
+        delta = set(data.keys()) - set(fields.keys())
+        if len(delta):
+            raise ValueError(f"Extra field(s) {delta} in {data} for table {table_name}")
 
     def operation_exists(self, table_name, fields, data) -> bool:
         query_text = f"SELECT id FROM {table_name} WHERE "
         params = []
         for field in fields:
             if fields[field]['validation']:
+                if field not in data:
+                    if fields[field]['mandatory']:
+                        raise KeyError(f"Mandatory field '{field}' for table '{table_name}' is missing in {data}")
+                    else:
+                        data[field] = fields[field]['default']   # set to default value
                 query_text += f"{field} = :{field} AND "
                 params.append((f":{field}", data[field]))
         query_text = query_text[:-len(" AND ")]   # cut extra tail

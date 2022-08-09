@@ -428,32 +428,32 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         for payment in payments:
             if payment['account'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched account for payment: ") + f"{payment}")
+            payment['account_id'] = -payment.pop('account')
             if payment['asset'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched asset for payment: ") + f"{payment}")
-            tax = payment['tax'] if 'tax' in payment else 0
+            payment['asset_id'] = -payment.pop('asset')
+            payment['note'] = payment.pop('description')
+            if 'price' in payment:
+                JalDB().update_quotes(payment['asset_id'], JalAccount(payment['account_id']).currency(),
+                                      [{'timestamp': payment['timestamp'], 'quote': payment.pop('price')}])
             if payment['type'] == FOF.PAYMENT_DIVIDEND:
                 if payment['id'] > 0:  # New dividend
-                    JalDB().add_dividend(Dividend.Dividend, payment['timestamp'], -payment['account'],
-                                         -payment['asset'], payment['amount'], payment['description'], tax=tax)
+                    payment['type'] = Dividend.Dividend
+                    LedgerTransaction().create_new(LedgerTransaction.Dividend, payment)
                 else:  # Dividend exists, only tax to be updated
                     JalDB().update_dividend_tax(-payment['id'], payment['tax'])
             elif payment['type'] == FOF.PAYMENT_INTEREST:
-                if 'number' not in payment:
-                    payment['number'] = ''
-                JalDB().add_dividend(Dividend.BondInterest, payment['timestamp'], -payment['account'],
-                                     -payment['asset'], payment['amount'], payment['description'], payment['number'],
-                                     tax=tax)
+                payment['type'] = Dividend.BondInterest
+                LedgerTransaction().create_new(LedgerTransaction.Dividend, payment)
             elif payment['type'] == FOF.PAYMENT_STOCK_DIVIDEND:
                 if payment['id'] > 0:  # New dividend
-                    JalDB().add_dividend(Dividend.StockDividend, payment['timestamp'], -payment['account'],
-                                         -payment['asset'], payment['amount'], payment['description'],
-                                         payment['number'], tax=tax, price=payment['price'])
+                    payment['type'] = Dividend.StockDividend
+                    LedgerTransaction().create_new(LedgerTransaction.Dividend, payment)
                 else:  # Dividend exists, only tax to be updated
                     JalDB().update_dividend_tax(-payment['id'], payment['tax'])
             elif payment['type'] == FOF.PAYMENT_STOCK_VESTING:
-                JalDB().add_dividend(Dividend.StockVesting, payment['timestamp'], -payment['account'],
-                                     -payment['asset'], payment['amount'], payment['description'],
-                                     price=payment['price'])
+                payment['type'] = Dividend.StockVesting
+                LedgerTransaction().create_new(LedgerTransaction.Dividend, payment)
             else:
                 raise Statement_ImportError(self.tr("Unsupported payment type: ") + f"{payment}")
 

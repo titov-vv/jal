@@ -3,7 +3,7 @@ from decimal import Decimal
 from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QDate
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QStyledItemDelegate, QHeaderView
-from jal.constants import CustomColor, Setup
+from jal.constants import CustomColor
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.operations import LedgerTransaction
 

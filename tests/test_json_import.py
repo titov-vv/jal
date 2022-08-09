@@ -239,7 +239,7 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
         [7, 2, 1633033200, '', '', 1, 1, 4, '158.6', '15.86', 'VUG (US9229087369) CASH DIVIDEND USD 0.52 (Ordinary Dividend)'],
         [8, 2, 1590595065, '', '2882737839', 2, 1, 12, '-25.69', '0', 'PURCHASE ACCRUED INT X 6 1/4 03/15/26'],
         [9, 2, 1600128000, '', '', 2, 1, 12, '62.5', '0', 'BOND COUPON PAYMENT (X 6 1/4 03/15/26)'],
-        [10, 2, 1620345600, '', '', 4, 1, 8, '2.0', '0.0', 'Stock Award Grant for Cash Deposit']
+        [10, 2, 1620345600, '', '', 4, 1, 8, '2.0', '0', 'Stock Award Grant for Cash Deposit']
     ]
     assert readSQL("SELECT COUNT(*) FROM dividends") == len(test_payments)
     for i, payment in enumerate(test_payments):

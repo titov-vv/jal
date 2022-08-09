@@ -284,6 +284,17 @@ class Dividend(LedgerTransaction):
     StockDividend = 3
     StockVesting = 4
     _db_table = "dividends"
+    _db_fields = {
+        "timestamp": {"mandatory": True, "validation": True},
+        "ex_date": {"mandatory": False, "validation": False},
+        "number": {"mandatory": False, "validation": True, "default": ''},
+        "type": {"mandatory": True, "validation": True},
+        "account_id": {"mandatory": True, "validation": True},
+        "asset_id": {"mandatory": True, "validation": True},
+        "amount": {"mandatory": True, "validation": True},
+        "tax": {"mandatory": False, "validation": False},
+        "note": {"mandatory": False, "validation": True}
+    }
 
     def __init__(self, operation_id=None):
         labels = {
