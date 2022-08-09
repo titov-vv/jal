@@ -194,6 +194,24 @@ class LedgerTransaction:
 # ----------------------------------------------------------------------------------------------------------------------
 class IncomeSpending(LedgerTransaction):
     _db_table = "actions"
+    _db_fields = {
+        "timestamp": {"mandatory": True, "validation": False},
+        "account_id": {"mandatory": True, "validation": False},
+        "peer_id": {"mandatory": True, "validation": False},
+        "alt_currency_id": {"mandatory": False, "validation": False},
+        "lines": {
+            "mandatory": True, "validation": False, "children": True,
+            "child_table": "action_details", "child_pid": "pid",
+            "child_fields": {
+                "pid": {"mandatory": True, "validation": False},
+                "category_id": {"mandatory": True, "validation": False},
+                "tag_id": {"mandatory": False, "validation": False},
+                "amount": {"mandatory": True, "validation": False},
+                "amount_alt": {"mandatory": False, "validation": False},
+                "note": {"mandatory": False, "validation": False}
+            }
+        }
+    }
 
     def __init__(self, operation_id=None):
         super().__init__(operation_id)

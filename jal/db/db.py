@@ -433,19 +433,6 @@ class JalDB:
                             (":f_amount", f_amount), (":t_amount", t_amount), (":note", note), (":asset", asset)],
                            commit=True)
 
-    def add_cash_transaction(self, account_id, broker_id, timestamp, lines):
-        if not lines:
-            return   # No transaction details
-        query = executeSQL("INSERT INTO actions (timestamp, account_id, peer_id) "
-                           "VALUES (:timestamp, :account_id, :bank_id)",
-                           [(":timestamp", timestamp), (":account_id", account_id), (":bank_id", broker_id)])
-        pid = query.lastInsertId()
-        for line in lines:
-            _ = executeSQL("INSERT INTO action_details (pid, category_id, amount, note) "
-                           "VALUES (:pid, :category_id, :amount, :note)",
-                           [(":pid", pid), (":category_id", line['category']), (":amount", line['amount']),
-                            (":note", line['note'])], commit=True)
-
     def get_asset_amount(self, timestamp, account_id, asset_id):
         return readSQL("SELECT amount_acc FROM ledger "
                        "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp<=:timestamp "

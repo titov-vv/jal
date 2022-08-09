@@ -356,15 +356,18 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         for action in actions:
             if action['account'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched account for income/spending: ") + f"{action}")
+            action['account_id'] = -action.pop('account')
             if action['peer'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched peer for income/spending: ") + f"{action}")
-            peer = JalAccount(-action['account']).organization() if action['peer'] == 0 else -action['peer']
-            lines = []
+            action['peer_id'] = -action.pop('peer')
+            if action['peer_id'] == 0:
+                action['peer_id'] = JalAccount(action['account_id']).organization()
             for line in action['lines']:
                 if line['category'] >= 0:
                     raise Statement_ImportError(self.tr("Unmatched category for income/spending: ") + f"{action}")
-                lines.append({'amount': line['amount'], 'category': -line['category'], 'note': line['description']})
-            JalDB().add_cash_transaction(-action['account'], peer, action['timestamp'], lines)
+                line['category_id'] = -line.pop('category')
+                line['note'] = line.pop('description')
+            LedgerTransaction().create_new(LedgerTransaction.IncomeSpending, action)
     
     def _import_transfers(self, transfers):
         for transfer in transfers:
