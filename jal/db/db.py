@@ -410,22 +410,6 @@ class JalDB:
         _ = executeSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
                        [(":dividend_id", dividend_id), (":tax", new_tax)], commit=True)
 
-    def add_trade(self, account_id, asset_id, timestamp, settlement, number, qty, price, fee, note=''):
-        trade_id = readSQL("SELECT id FROM trades "
-                           "WHERE timestamp=:timestamp AND asset_id = :asset "
-                           "AND account_id = :account AND number = :number AND qty = :qty AND price = :price",
-                           [(":timestamp", timestamp), (":asset", asset_id), (":account", account_id),
-                            (":number", number), (":qty", qty), (":price", price)])
-        if trade_id:
-            logging.info(self.tr("Trade already exists: #") + f"{number}")
-            return
-
-        _ = executeSQL("INSERT INTO trades (timestamp, settlement, number, account_id, asset_id, qty, price, fee, note)"
-                       " VALUES (:timestamp, :settlement, :number, :account, :asset, :qty, :price, :fee, :note)",
-                       [(":timestamp", timestamp), (":settlement", settlement), (":number", number),
-                        (":account", account_id), (":asset", asset_id), (":qty", float(qty)),
-                        (":price", float(price)), (":fee", float(fee)), (":note", note)], commit=True)
-
     def del_trade(self, account_id, asset_id, timestamp, _settlement, number, qty, price, _fee):
         _ = executeSQL("DELETE FROM trades "
                        "WHERE timestamp=:timestamp AND asset_id=:asset "
@@ -509,3 +493,37 @@ class JalDB:
                        [(":account_id", account_id), (":asset_id", asset_id), (":timestamp", timestamp),
                         (":money", BookAccount.Money), (":assets", BookAccount.Assets),
                         (":liabilities", BookAccount.Liabilities)])
+
+    def create_operation(self, table_name, fields, data):
+        if self.operation_exists(table_name, fields, data):
+            return 0
+        else:
+            return self.insert_operation(table_name, fields, data)
+
+    def operation_exists(self, table_name, fields, data) -> bool:
+        query_text = f"SELECT id FROM {table_name} WHERE "
+        params = []
+        for field in fields:
+            if fields[field]['validation']:
+                query_text += f"{field} = :{field} AND "
+                params.append((f":{field}", data[field]))
+        query_text = query_text[:-len(" AND ")]   # cut extra tail
+        if self._readSQL(query_text, params):
+            logging.info(self.tr("Record already exists"))
+            return True
+        return False
+
+    def insert_operation(self, table_name, fields, data) -> int:
+        query_text = f"INSERT INTO {table_name} ("
+        params = []
+        values_text = "VALUES ("
+        for field in fields:
+            if fields[field]['mandatory'] and field not in data:
+                raise KeyError(f"Mandatory field '{field}' for table '{table_name}' is missing in {data}")
+            if field in data:
+                query_text += f"{field}, "
+                values_text += f":{field}, "
+                params.append((f":{field}", data[field]))
+        query_text = query_text[:-2] + ") " + values_text[:-2] + ")"
+        query = self._executeSQL(query_text, params, commit=True)
+        return query.lastInsertId()

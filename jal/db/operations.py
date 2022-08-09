@@ -16,8 +16,14 @@ class LedgerTransaction:
     Trade = 3
     Transfer = 4
     CorporateAction = 5
+    _db_table = ''
+    _db_fields = {}
 
-    def __init__(self, operation_id=None):
+    def __init__(self, operation_data=None):
+        if type(operation_data) == dict:
+            operation_id = JalDB().create_operation(self._db_table, self._db_fields, operation_data)
+        else:
+            operation_id = operation_data
         self._oid = operation_id
         self._otype = 0
         self._data = None
@@ -52,6 +58,21 @@ class LedgerTransaction:
             return Transfer(operation_id, display_type)
         elif operation_type == LedgerTransaction.CorporateAction:
             return CorporateAction(operation_id)
+        else:
+            raise ValueError(f"An attempt to select unknown operation type: {operation_type}")
+
+    @staticmethod
+    def create_new(operation_type, operation_data):
+        if operation_type == LedgerTransaction.IncomeSpending:
+            return IncomeSpending(operation_data)
+        elif operation_type == LedgerTransaction.Dividend:
+            return Dividend(operation_data)
+        elif operation_type == LedgerTransaction.Trade:
+            return Trade(operation_data)
+        elif operation_type == LedgerTransaction.Transfer:
+            return Transfer(operation_data)
+        elif operation_type == LedgerTransaction.CorporateAction:
+            return CorporateAction(operation_data)
         else:
             raise ValueError(f"An attempt to create unknown operation type: {operation_type}")
 
@@ -385,8 +406,23 @@ class Dividend(LedgerTransaction):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class Trade(LedgerTransaction):
-    def __init__(self, operation_id=None):
-        super().__init__(operation_id)
+    _db_table = "trades"
+    _db_fields = {
+        "timestamp": {"mandatory": True, "validation": True},
+        "settlement": {"mandatory": False, "validation": False},
+        "number": {"mandatory": False, "validation": True},
+        "account_id": {"mandatory": True, "validation": True},
+        "asset_id": {"mandatory": True, "validation": True},
+        "qty": {"mandatory": True, "validation": True},
+        "price": {"mandatory": True, "validation": True},
+        "fee": {"mandatory": True, "validation": False},
+        "note": {"mandatory": False, "validation": False}
+    }
+
+    # operation_data is either an integer to select operation from database or a dict with operation data that is used
+    # to create a new operation in database and then select it
+    def __init__(self, operation_data=None):
+        super().__init__(operation_data)
         self._table = "trades"
         self._otype = LedgerTransaction.Trade
         self._view_rows = 2

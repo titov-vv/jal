@@ -14,7 +14,7 @@ from jal.db.helpers import get_app_path
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
 from jal.db.settings import JalSettings
-from jal.db.operations import Dividend, CorporateAction
+from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
 from jal.widgets.account_select import SelectAccountDialog
 from jal.net.downloader import QuoteDownloader
 
@@ -413,15 +413,16 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         for trade in trades:
             if trade['account'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched account for trade: ") + f"{trade}")
+            trade['account_id'] = -trade.pop('account')
             if trade['asset'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched asset for trade: ") + f"{trade}")
-            note = trade['note'] if 'note' in trade else ''
+            trade['asset_id'] = -trade.pop('asset')
+            trade['qty'] = trade.pop('quantity')
             if 'cancelled' in trade and trade['cancelled']:
-                JalDB().del_trade(-trade['account'], -trade['asset'], trade['timestamp'], trade['settlement'],
-                                  trade['number'], trade['quantity'], trade['price'], trade['fee'])
+                JalDB().del_trade(trade['account_id'], trade['asset_id'], trade['timestamp'], trade['settlement'],
+                                  trade['number'], trade['qty'], trade['price'], trade['fee'])
                 continue
-            JalDB().add_trade(-trade['account'], -trade['asset'], trade['timestamp'], trade['settlement'],
-                              trade['number'], trade['quantity'], trade['price'], trade['fee'], note)
+            LedgerTransaction().create_new(LedgerTransaction.Trade, trade)
 
     def _import_asset_payments(self, payments):
         for payment in payments:
