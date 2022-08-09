@@ -459,21 +459,25 @@ class Statement(QObject):   # derived from QObject to have proper string transla
 
     def _import_corporate_actions(self, actions):
         for action in actions:
-            outcome = []
             if action['account'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched account for corporate action: ") + f"{action}")
+            action['account_id'] = -action.pop('account')
             if action['asset'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched asset for corporate action: ") + f"{action}")
+            action['asset_id'] = -action.pop('asset')
+            action['qty'] = action.pop('quantity')
+            action['note'] = action.pop('description')
             for item in action['outcome']:
                 if item['asset'] > 0:
                     raise Statement_ImportError(self.tr("Unmatched asset for corporate action: ") + f"{action}")
-                outcome.append(item)
+                item['asset_id'] = -item.pop('asset')
+                item['qty'] = item.pop('quantity')
+                item['value_share'] = item.pop('share')
             try:
-                action_type = self._corp_actions[action['type']]
+                action['type'] = self._corp_actions[action.pop('type')]
             except KeyError:
                 raise Statement_ImportError(self.tr("Unsupported corporate action: ") + f"{action}")
-            JalDB().add_corporate_action(-action['account'], action_type, action['timestamp'], action['number'],
-                                         -action['asset'], action['quantity'], outcome, action['description'])
+            LedgerTransaction().create_new(LedgerTransaction.CorporateAction, action)
 
     def select_account(self, text, account_id, recent_account_id=0):
         if "pytest" in sys.modules:

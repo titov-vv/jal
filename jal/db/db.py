@@ -433,26 +433,6 @@ class JalDB:
                             (":f_amount", f_amount), (":t_amount", t_amount), (":note", note), (":asset", asset)],
                            commit=True)
 
-    def add_corporate_action(self, account_id, type, timestamp, number, asset, qty, outcome, note):
-        action_id = readSQL("SELECT id FROM asset_actions "
-                            "WHERE timestamp=:timestamp AND type = :type AND account_id = :account "
-                            "AND number = :number AND asset_id = :asset",
-                            [(":timestamp", timestamp), (":type", type), (":account", account_id),
-                             (":number", number), (":asset", asset)])
-        if action_id:
-            logging.info(self.tr("Corporate action already exists: #") + f"{number}")
-            return
-        query = executeSQL("INSERT INTO asset_actions (timestamp, number, account_id, type, asset_id, qty, note) "
-                           "VALUES (:timestamp, :number, :account, :type, :asset, :qty, :note)",
-                           [(":timestamp", timestamp), (":number", number), (":account", account_id), (":type", type),
-                            (":asset", asset), (":qty", float(qty)), (":note", note)], commit=True)
-        action_id = query.lastInsertId()
-        for item in outcome:
-            _ = executeSQL("INSERT INTO action_results (action_id, asset_id, qty, value_share) "
-                           "VALUES (:action_id, :asset_id, :qty, :value_share)",
-                           [(":action_id", action_id), (":asset_id", -item['asset']), (":qty", item['quantity']),
-                            (":value_share", item['share'])], commit=True)
-
     def add_cash_transaction(self, account_id, broker_id, timestamp, lines):
         if not lines:
             return   # No transaction details
@@ -480,7 +460,13 @@ class JalDB:
         if self.operation_exists(table_name, fields, data):
             return 0
         else:
-            return self.insert_operation(table_name, fields, data)
+            oid = self.insert_operation(table_name, fields, data)
+        children = [x for x in fields if 'children' in fields[x] and fields[x]['children']]
+        for child in children:
+            for item in data[child]:
+                item[fields[child]['child_pid']] = oid
+                self.create_operation(fields[child]['child_table'], fields[child]['child_fields'], item)
+        return oid
 
     def validate_operation_data(self, table_name, fields, data):
         if 'id' in data:
@@ -492,15 +478,17 @@ class JalDB:
     def operation_exists(self, table_name, fields, data) -> bool:
         query_text = f"SELECT id FROM {table_name} WHERE "
         params = []
-        for field in fields:
-            if fields[field]['validation']:
-                if field not in data:
-                    if fields[field]['mandatory']:
-                        raise KeyError(f"Mandatory field '{field}' for table '{table_name}' is missing in {data}")
-                    else:
-                        data[field] = fields[field]['default']   # set to default value
-                query_text += f"{field} = :{field} AND "
-                params.append((f":{field}", data[field]))
+        validation_fields = [x for x in fields if 'validation' in fields[x] and fields[x]['validation']]
+        if not validation_fields:
+            return False
+        for field in validation_fields:
+            if field not in data:
+                if fields[field]['mandatory']:
+                    raise KeyError(f"Mandatory field '{field}' for table '{table_name}' is missing in {data}")
+                else:
+                    data[field] = fields[field]['default']   # set to default value
+            query_text += f"{field} = :{field} AND "
+            params.append((f":{field}", data[field]))
         query_text = query_text[:-len(" AND ")]   # cut extra tail
         if self._readSQL(query_text, params):
             logging.info(self.tr("Record already exists"))
@@ -514,6 +502,8 @@ class JalDB:
         for field in fields:
             if fields[field]['mandatory'] and field not in data:
                 raise KeyError(f"Mandatory field '{field}' for table '{table_name}' is missing in {data}")
+            if 'children' in fields[field] and fields[field]['children']:
+                continue   # Skip children for separate processing
             if field in data:
                 query_text += f"{field}, "
                 values_text += f":{field}, "

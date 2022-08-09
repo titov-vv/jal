@@ -744,6 +744,25 @@ class CorporateAction(LedgerTransaction):
     Split = 4
     Delisting = 5
     _db_table = "asset_actions"
+    _db_fields = {
+        "timestamp": {"mandatory": True, "validation": True},
+        "number": {"mandatory": False, "validation": True, "default": ''},
+        "account_id": {"mandatory": True, "validation": True},
+        "type": {"mandatory": True, "validation": True},
+        "asset_id": {"mandatory": True, "validation": True},
+        "qty": {"mandatory": True, "validation": True},
+        "note": {"mandatory": False, "validation": False},
+        "outcome": {
+            "mandatory": True, "validation": False, "children": True,
+            "child_table": "action_results", "child_pid": "action_id",
+            "child_fields": {
+                "action_id": {"mandatory": True, "validation": False},
+                "asset_id": {"mandatory": True, "validation": False},
+                "qty": {"mandatory": True, "validation": False},
+                "value_share": {"mandatory": True, "validation": False}
+            }
+        }
+    }
 
     def __init__(self, operation_id=None):
         labels = {
