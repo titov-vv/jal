@@ -69,7 +69,7 @@ class LedgerTransaction:
         elif operation_type == LedgerTransaction.Trade:
             return Trade(operation_data)
         elif operation_type == LedgerTransaction.Transfer:
-            return Transfer(operation_data)
+            return Transfer(operation_data, Transfer.Outgoing)
         elif operation_type == LedgerTransaction.CorporateAction:
             return CorporateAction(operation_data)
         else:
@@ -543,6 +543,19 @@ class Transfer(LedgerTransaction):
     Fee = 0
     Outgoing = -1
     Incoming = 1
+    _db_table = "transfers"
+    _db_fields = {
+        "withdrawal_timestamp": {"mandatory": True, "validation": True},
+        "withdrawal_account": {"mandatory": True, "validation": True},
+        "withdrawal": {"mandatory": True, "validation": True,},
+        "deposit_timestamp": {"mandatory": True, "validation": True},
+        "deposit_account": {"mandatory": True, "validation": True},
+        "deposit": {"mandatory": True, "validation": True},
+        "fee_account": {"mandatory": False, "validation": True, "default": None},
+        "fee": {"mandatory": False, "validation": True, "default": None},
+        "asset": {"mandatory": False, "validation": True, "default": None},
+        "note": {"mandatory": False, "validation": False}
+    }
 
     def __init__(self, operation_id=None, display_type=None):
         labels = {
@@ -551,7 +564,6 @@ class Transfer(LedgerTransaction):
             Transfer.Fee: ('=', CustomColor.DarkRed)
         }
         super().__init__(operation_id)
-        self.table = "transfers"
         self._otype = LedgerTransaction.Transfer
         self._display_type = display_type
         self._data = readSQL("SELECT t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, t.deposit_timestamp, "
@@ -571,7 +583,10 @@ class Transfer(LedgerTransaction):
         self._fee_currency = JalDB().get_asset_name(self._fee_account.currency())
         self._fee_account_name = self._fee_account.name()
         self._fee = Decimal(self._data['fee']) if self._data['fee'] else Decimal('0')
-        self._label, self._label_color = labels[display_type]
+        try:
+            self._label, self._label_color = labels[display_type]
+        except KeyError:
+            assert False, "Unknown transfer type"
         if self._data['asset']:
             self._asset = self._data['asset']
             self._account = self._withdrawal_account

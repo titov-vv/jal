@@ -380,7 +380,6 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             asset_types = [JalDB().get_asset_type(-x) for x in transfer['asset']]
             if asset_types[0] != asset_types[1]:
                 raise Statement_ImportError(self.tr("Impossible to convert asset type in transfer: ") + f"{transfer}")
-            asset = -transfer['asset'][0] if asset_types[0] != PredefinedAsset.Money else None
             if transfer['account'][0] == 0 or transfer['account'][1] == 0:
                 text = ''
                 pair_account = 1
@@ -407,10 +406,23 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     transfer['account'][0] = -chosen_account
                 if transfer['account'][1] == 0:
                     transfer['account'][1] = -chosen_account
-            description = transfer['description'] if 'description' in transfer else ''
-            JalDB().add_transfer(transfer['timestamp'], -transfer['account'][0], transfer['withdrawal'],
-                                 -transfer['account'][1], transfer['deposit'],
-                                 -transfer['account'][2], transfer['fee'], description, asset)
+            if asset_types[0] != PredefinedAsset.Money:
+                transfer['asset'] = -transfer['asset'][0]
+            else:
+                transfer.pop('asset')
+            if 'description' in transfer:
+                transfer['note'] = transfer.pop('description')
+            if 'number' in transfer:
+                transfer.pop('number')   # it isn't stored in Jal
+            transfer['withdrawal_timestamp'] = transfer['deposit_timestamp'] = transfer.pop('timestamp')
+            transfer['withdrawal_account'] = -transfer['account'][0]
+            transfer['deposit_account'] = -transfer['account'][1]
+            transfer['fee_account'] = -transfer['account'][2]
+            transfer.pop('account')
+            if abs(transfer['fee']) < 1e-10:  # FIXME  Need to refactor this module for decimal usage
+                transfer.pop('fee_account')
+                transfer.pop('fee')
+            LedgerTransaction().create_new(LedgerTransaction.Transfer, transfer)
 
     def _import_trades(self, trades):
         for trade in trades:
