@@ -92,10 +92,12 @@ class JalDB:
 
         return JalDBError(JalDBError.NoError)
 
+    # ------------------------------------------------------------------------------------------------------------------
+    # Returns current version of sqlite library
     def get_engine_version(self):
         return readSQL("SELECT sqlite_version()")
 
-    # -------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     # Enables DB triggers if enable == True and disables it otherwise
     def enable_triggers(self, enable):
         if enable:
@@ -103,7 +105,7 @@ class JalDB:
         else:
             _ = executeSQL("UPDATE settings SET value=0 WHERE name='TriggersEnabled'", commit=True)
 
-    # -------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     # Set synchronous mode ON if synchronous == True and OFF it otherwise
     def set_synchronous(self, synchronous):
         if synchronous:
@@ -111,7 +113,7 @@ class JalDB:
         else:
             _ = executeSQL("PRAGMA synchronous = OFF")
 
-    # -------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     # Enables DB foreign keys if enable == True and disables it otherwise
     def enable_fk(self, enable):
         if enable:

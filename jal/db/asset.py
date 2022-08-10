@@ -6,7 +6,7 @@ from jal.db.db import JalDB
 
 
 class JalAsset(JalDB):
-    def __init__(self, id : int = 0):
+    def __init__(self, id : int = 0) -> None:
         super().__init__()
         self._id = id
         self._data = self._readSQL("SELECT type_id, full_name, country_id FROM assets WHERE id=:id",
@@ -18,10 +18,10 @@ class JalAsset(JalDB):
     def id(self) -> int:
         return self._id
 
-    def type(self):
+    def type(self) -> int:
         return self._type
 
-    def name(self):
+    def name(self) -> str:
         return self._name
 
     # Returns asset symbol for given currency or all symbols if no currency is given
@@ -38,7 +38,7 @@ class JalAsset(JalDB):
                                  "WHERE asset_id=:asset_id AND active=1 AND currency_id=:currency_id",
                                  [(":asset_id", self._id), (":currency_id", currency)])
 
-    def add_symbol(self, symbol, currency_id, note, data_source=MarketDataFeed.NA):
+    def add_symbol(self, symbol: str, currency_id: int, note: str, data_source: int = MarketDataFeed.NA) -> None:
         existing = self._readSQL("SELECT id, symbol, description, quote_source FROM asset_tickers "
                                  "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id=:currency",
                                  [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id)], named=True)

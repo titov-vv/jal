@@ -7,7 +7,7 @@ from urllib.parse import parse_qs
 from PySide6.QtWidgets import QStyledItemDelegate
 from jal.widgets.reference_selector import CategorySelector, TagSelector
 from jal.constants import CustomColor
-from jal.db.helpers import get_category_name
+from jal.db.category import JalCategory
 try:
     from pyzbar import pyzbar
     from PIL import Image, UnidentifiedImageError
@@ -81,7 +81,7 @@ class SlipLinesDelegate(QStyledItemDelegate):
             text = model.data(index, Qt.DisplayRole)
             painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
         if index.column() == 1:
-            text = get_category_name(int(model.data(index, Qt.DisplayRole)))
+            text = JalCategory(int(model.data(index, Qt.DisplayRole))).name()
             confidence = model.data(index.siblingAtColumn(2), Qt.DisplayRole)
             if confidence > 0.75:
                 painter.fillRect(option.rect, CustomColor.LightGreen)

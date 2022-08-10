@@ -1,6 +1,5 @@
 import os
 import logging
-from decimal import Decimal
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
@@ -111,11 +110,6 @@ def readSQLrecord(query, named=False):
             return values
     else:
         return None
-
-
-# -------------------------------------------------------------------------------------------------------------------
-def get_category_name(category_id):
-    return readSQL("SELECT c.name FROM categories AS c WHERE c.id=:category_id", [(":category_id", category_id)])
 
 
 # -------------------------------------------------------------------------------------------------------------------

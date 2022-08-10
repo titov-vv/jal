@@ -4,7 +4,7 @@ from jal.constants import Setup, BookAccount
 
 
 class JalAccount(JalDB):
-    def __init__(self, id=0):
+    def __init__(self, id=0) -> None:
         super().__init__()
         self._id = id
         self._data = self._readSQL("SELECT name, currency_id, organization_id, reconciled_on, precision "
@@ -15,29 +15,29 @@ class JalAccount(JalDB):
         self._reconciled = int(self._data['reconciled_on']) if self._data is not None else 0
         self._precision = int(self._data['precision']) if self._data is not None else Setup.DEFAULT_ACCOUNT_PRECISION
 
-    def id(self):
+    def id(self) -> int:
         return self._id
 
-    def name(self):
+    def name(self) -> str:
         return self._name
 
-    def currency(self):
+    def currency(self) -> int:
         return self._currency_id
 
-    def organization(self):
+    def organization(self) -> int:
         return self._organization_id
 
-    def reconciled_at(self):
+    def reconciled_at(self) -> int:
         return self._reconciled
 
-    def reconcile(self, timestamp):
+    def reconcile(self, timestamp: int):
         _ = self._executeSQL("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
                              [(":timestamp", timestamp), (":account_id", self._id)])
 
-    def precision(self):
+    def precision(self) -> int:
         return self._precision
 
-    def last_operation_date(self):
+    def last_operation_date(self) -> int:
         last_timestamp = self._readSQL("SELECT MAX(o.timestamp) FROM operation_sequence AS o "
                                        "LEFT JOIN accounts AS a ON o.account_id=a.id WHERE a.id=:account_id",
                                        [(":account_id", self._id)])
