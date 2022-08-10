@@ -46,7 +46,7 @@ class JalAsset(JalDB):
             _ = self._executeSQL("UPDATE asset_tickers SET active=0 WHERE asset_id=:asset_id AND currency_id=:currency",
                                  [(":asset_id", self._id), (":currency", currency_id)])
             _ = self._executeSQL(
-                "INSERT INTO asset_tickers (asset_id, symbol, currency_id_id, description, quote_source) "
+                "INSERT INTO asset_tickers (asset_id, symbol, currency_id, description, quote_source) "
                 "VALUES (:asset_id, :symbol, :currency, :note, :data_source)",
                 [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id),
                  (":note", note), (":data_source", data_source)])
