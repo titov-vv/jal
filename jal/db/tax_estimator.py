@@ -1,4 +1,5 @@
 import logging
+from decimal import Decimal
 
 import pandas as pd
 from PySide6.QtCore import Qt, QAbstractTableModel, QDate
@@ -140,6 +141,7 @@ class TaxEstimator(MdiWidget, Ui_TaxEstimationDialog):
         value_rub = 0
         while query.next():
             record = readSQLrecord(query, named=True)
+            # FIXME Change calculation from float to Decimal
             record['qty'] = record['qty'] if record['qty'] <= remainder else remainder
             record['profit'] = record['qty'] * (self.quote - record['o_price'])
             record['o_rate'] = 1 if record['o_rate'] == '' else record['o_rate']
