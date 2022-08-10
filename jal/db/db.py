@@ -344,10 +344,6 @@ class JalDB:
             except ValueError:
                 pass
 
-    def update_dividend_tax(self, dividend_id, new_tax):
-        _ = executeSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
-                       [(":dividend_id", dividend_id), (":tax", new_tax)], commit=True)
-
     # This method creates a db record in 'table' name that describes relevant operation.
     # 'data' is a dict that contains operation data and dict 'fields' describes it having
     # 'mandatory'=True if this piece must be present, 'validation'=True if it is used to check if operation is

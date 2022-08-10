@@ -461,7 +461,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     payment['type'] = Dividend.Dividend
                     LedgerTransaction().create_new(LedgerTransaction.Dividend, payment)
                 else:  # Dividend exists, only tax to be updated
-                    JalDB().update_dividend_tax(-payment['id'], payment['tax'])
+                    dividend = LedgerTransaction.get_operation(LedgerTransaction.Dividend, -payment['id'])
+                    dividend.update_tax(payment['tax'])
             elif payment['type'] == FOF.PAYMENT_INTEREST:
                 payment['type'] = Dividend.BondInterest
                 LedgerTransaction().create_new(LedgerTransaction.Dividend, payment)
@@ -470,7 +471,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     payment['type'] = Dividend.StockDividend
                     LedgerTransaction().create_new(LedgerTransaction.Dividend, payment)
                 else:  # Dividend exists, only tax to be updated
-                    JalDB().update_dividend_tax(-payment['id'], payment['tax'])
+                    dividend = LedgerTransaction.get_operation(LedgerTransaction.Dividend, -payment['id'])
+                    dividend.update_tax(payment['tax'])
             elif payment['type'] == FOF.PAYMENT_STOCK_VESTING:
                 payment['type'] = Dividend.StockVesting
                 LedgerTransaction().create_new(LedgerTransaction.Dividend, payment)

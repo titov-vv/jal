@@ -412,6 +412,10 @@ class Dividend(LedgerTransaction):
         else:
             return super().value_total()
 
+    def update_tax(self, new_tax) -> None:   # FIXME method should take Decimal value, not float
+        _ = executeSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
+                       [(":dividend_id", self._oid), (":tax", new_tax)], commit=True)
+
     def processLedger(self, ledger):
         if self._broker is None:
             raise ValueError(
