@@ -911,10 +911,11 @@ class CorporateAction(LedgerTransaction):
         query = executeSQL("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
                            [(":oid", self._oid)])
         while query.next():
-            asset, qty, share = readSQLrecord(query)
+            asset_id, qty, share = readSQLrecord(query)
+            asset = JalAsset(asset_id)
             qty = Decimal(qty)
             share = Decimal(share)
-            if JalDB().get_asset_type(asset) == PredefinedAsset.Money:
+            if asset.type() == PredefinedAsset.Money:
                 ledger.appendTransaction(self, BookAccount.Money, qty)
                 ledger.appendTransaction(self, BookAccount.Incomes, -qty,
                                          category=PredefinedCategory.Interest, peer=self._broker)
@@ -926,6 +927,6 @@ class CorporateAction(LedgerTransaction):
                     "account_id, asset_id, price, remaining_qty) "
                     "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
                     [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
-                     (":account_id", self._account.id()), (":asset_id", asset), (":price", format_decimal(price)),
+                     (":account_id", self._account.id()), (":asset_id", asset.id()), (":price", format_decimal(price)),
                      (":remaining_qty", format_decimal(qty))])
-                ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset, value=value)
+                ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset.id(), value=value)

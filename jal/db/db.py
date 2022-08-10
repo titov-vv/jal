@@ -175,9 +175,6 @@ class JalDB:
             return readSQL("SELECT symbol FROM assets AS a LEFT JOIN asset_tickers AS s "   
                            "ON s.asset_id=a.id AND s.active=1 WHERE a.id=:asset_id", [(":asset_id", asset_id)])
 
-    def get_asset_type(self, asset_id):
-        return readSQL("SELECT type_id FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
-
     # Searches for account_id by account number and optional currency
     # Returns: account_id or None if no account was found
     def get_account_id(self, accountNumber, accountCurrency=''):

@@ -13,6 +13,7 @@ from jal.constants import Setup, MarketDataFeed, PredefinedAsset
 from jal.db.helpers import get_app_path
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
 from jal.widgets.account_select import SelectAccountDialog
@@ -377,7 +378,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             for asset in transfer['asset']:
                 if asset > 0:
                     raise Statement_ImportError(self.tr("Unmatched asset for transfer: ") + f"{transfer}")
-            asset_types = [JalDB().get_asset_type(-x) for x in transfer['asset']]
+            asset_types = [JalAsset(-x).type() for x in transfer['asset']]
             if asset_types[0] != asset_types[1]:
                 raise Statement_ImportError(self.tr("Impossible to convert asset type in transfer: ") + f"{transfer}")
             if transfer['account'][0] == 0 or transfer['account'][1] == 0:
