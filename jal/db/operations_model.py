@@ -9,14 +9,6 @@ from jal.db.operations import LedgerTransaction
 
 
 class OperationsModel(QAbstractTableModel):
-    _tables = {
-        LedgerTransaction.IncomeSpending: "actions",
-        LedgerTransaction.Dividend: "dividends",
-        LedgerTransaction.Trade: "trades",
-        LedgerTransaction.Transfer: "transfers",
-        LedgerTransaction.CorporateAction: "asset_actions"
-    }
-
     def __init__(self, parent_view):
         super().__init__(parent_view)
         self._columns = [" ", self.tr("Timestamp"), self.tr("Account"), self.tr("Notes"),
@@ -169,9 +161,7 @@ class OperationsModel(QAbstractTableModel):
     def deleteRows(self, rows):
         for row in rows:
             if (row >= 0) and (row < len(self._data)):
-                table_name = self._tables[self._data[row]['op_type']]
-                query = f"DELETE FROM {table_name} WHERE id={self._data[row]['id']}"
-                _ = executeSQL(query)
+                LedgerTransaction.get_operation(self._data[row]['op_type'], self._data[row]['id']).delete()
         self.prepareData()
 
 

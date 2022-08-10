@@ -76,6 +76,13 @@ class LedgerTransaction:
         else:
             raise ValueError(f"An attempt to create unknown operation type: {operation_type}")
 
+    # Deletes operation from database
+    def delete(self):
+        _ = executeSQL(f"DELETE FROM {self._db_table} WHERE id={self._oid}")
+        self._oid = 0
+        self._otype = 0
+        self._data = None
+
     # Returns how many rows is required to display operation in QTableView
     def view_rows(self) -> int:
         return self._view_rows
