@@ -407,6 +407,10 @@ class JalDB:
                         (":money", BookAccount.Money), (":assets", BookAccount.Assets),
                         (":liabilities", BookAccount.Liabilities)])
 
+    # This method creates a db record in 'table' name that describes relevant operation.
+    # 'data' is a dict that contains operation data and dict 'fields' describes it having
+    # 'mandatory'=True if this piece must be present, 'validation'=True if it is used to check if operation is
+    # present in database already (and 'default' is used for this check if no value provided in 'data')
     def create_operation(self, table_name, fields, data):
         self.validate_operation_data(table_name, fields, data)
         if self.operation_exists(table_name, fields, data):
@@ -420,13 +424,21 @@ class JalDB:
                 self.create_operation(fields[child]['child_table'], fields[child]['child_fields'], item)
         return oid
 
+    # Verify that 'data' contains no more fields than described in 'fields'
+    # Next it checks that 'data' has all fields described with 'mandatory'=True in 'fields'
+    # TODO Add datatype validation
     def validate_operation_data(self, table_name, fields, data):
         if 'id' in data:
             data.pop('id')
         delta = set(data.keys()) - set(fields.keys())
         if len(delta):
             raise ValueError(f"Extra field(s) {delta} in {data} for table {table_name}")
+        for field in fields:
+            if fields[field]['mandatory'] and field not in data:
+                raise KeyError(f"Mandatory field '{field}' for table '{table_name}' is missing in {data}")
 
+    # Returns True if given operation is present in 'table_name' already. False if not.
+    # Check happens based on field values that marked with 'validation'=True in 'fields' dict
     def operation_exists(self, table_name, fields, data) -> bool:
         query_text = f"SELECT id FROM {table_name} WHERE "
         params = []
@@ -435,10 +447,7 @@ class JalDB:
             return False
         for field in validation_fields:
             if field not in data:
-                if fields[field]['mandatory']:
-                    raise KeyError(f"Mandatory field '{field}' for table '{table_name}' is missing in {data}")
-                else:
-                    data[field] = fields[field]['default']   # set to default value
+                data[field] = fields[field]['default']   # set to default value
             if data[field] is None:
                 query_text += f"{field} IS NULL AND "
             else:
@@ -450,15 +459,15 @@ class JalDB:
             return True
         return False
 
+    # Method stores given operation in the database 'table_name'.
+    # Returns 'id' of inserted operation.
     def insert_operation(self, table_name, fields, data) -> int:
         query_text = f"INSERT INTO {table_name} ("
         params = []
         values_text = "VALUES ("
         for field in fields:
-            if fields[field]['mandatory'] and field not in data:
-                raise KeyError(f"Mandatory field '{field}' for table '{table_name}' is missing in {data}")
             if 'children' in fields[field] and fields[field]['children']:
-                continue   # Skip children for separate processing
+                continue   # Skip children for separate processing by create_operation()
             if field in data:
                 query_text += f"{field}, "
                 values_text += f":{field}, "
