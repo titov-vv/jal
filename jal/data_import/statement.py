@@ -435,8 +435,11 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             trade['asset_id'] = -trade.pop('asset')
             trade['qty'] = trade.pop('quantity')
             if 'cancelled' in trade and trade['cancelled']:
-                JalDB().del_trade(trade['account_id'], trade['asset_id'], trade['timestamp'], trade['settlement'],
-                                  trade['number'], trade['qty'], trade['price'], trade['fee'])
+                del trade['cancelled']          # Remove extra data
+                trade['qty'] = -trade['qty']    # Change side as cancellation is an opposite operation
+                oid = LedgerTransaction.locate_operation(LedgerTransaction.Trade, trade)
+                if oid:
+                    LedgerTransaction.get_operation(LedgerTransaction.Trade, oid).delete()
                 continue
             LedgerTransaction().create_new(LedgerTransaction.Trade, trade)
 

@@ -77,11 +77,34 @@ class LedgerTransaction:
             raise ValueError(f"An attempt to create unknown operation type: {operation_type}")
 
     # Deletes operation from database
-    def delete(self):
+    def delete(self) -> None:
         _ = executeSQL(f"DELETE FROM {self._db_table} WHERE id={self._oid}")
         self._oid = 0
         self._otype = 0
         self._data = None
+
+    # Returns operation id if operation found by operation data, else 0
+    @staticmethod
+    def locate_operation(operation_type: int, operation_data: dict) -> int:
+        if operation_type == LedgerTransaction.IncomeSpending:
+            table = IncomeSpending._db_table
+            fields = IncomeSpending._db_fields
+        elif operation_type == LedgerTransaction.Dividend:
+            table = Dividend._db_table
+            fields = Dividend._db_fields
+        elif operation_type == LedgerTransaction.Trade:
+            table = Trade._db_table
+            fields = Trade._db_fields
+        elif operation_type == LedgerTransaction.Transfer:
+            table = Transfer._db_table
+            fields = Transfer._db_fields
+        elif operation_type == LedgerTransaction.CorporateAction:
+            table = CorporateAction._db_table
+            fields = CorporateAction._db_fields
+        else:
+            raise ValueError(f"An attempt to create unknown operation type: {operation_type}")
+        JalDB().validate_operation_data(table, fields, operation_data)
+        return JalDB().locate_operation(table, fields, operation_data)
 
     # Returns how many rows is required to display operation in QTableView
     def view_rows(self) -> int:

@@ -348,20 +348,14 @@ class JalDB:
         _ = executeSQL("UPDATE dividends SET tax=:tax WHERE id=:dividend_id",
                        [(":dividend_id", dividend_id), (":tax", new_tax)], commit=True)
 
-    def del_trade(self, account_id, asset_id, timestamp, _settlement, number, qty, price, _fee):
-        _ = executeSQL("DELETE FROM trades "
-                       "WHERE timestamp=:timestamp AND asset_id=:asset "
-                       "AND account_id=:account AND number=:number AND qty=:qty AND price=:price",
-                       [(":timestamp", timestamp), (":asset", asset_id), (":account", account_id),
-                        (":number", number), (":qty", -qty), (":price", price)], commit=True)
-
     # This method creates a db record in 'table' name that describes relevant operation.
     # 'data' is a dict that contains operation data and dict 'fields' describes it having
     # 'mandatory'=True if this piece must be present, 'validation'=True if it is used to check if operation is
     # present in database already (and 'default' is used for this check if no value provided in 'data')
     def create_operation(self, table_name, fields, data):
         self.validate_operation_data(table_name, fields, data)
-        if self.operation_exists(table_name, fields, data):
+        if self.locate_operation(table_name, fields, data):
+            logging.info(self.tr("Operation already present in db: ") + f"{table_name}, {data}")
             return 0
         else:
             oid = self.insert_operation(table_name, fields, data)
@@ -385,14 +379,14 @@ class JalDB:
             if fields[field]['mandatory'] and field not in data:
                 raise KeyError(f"Mandatory field '{field}' for table '{table_name}' is missing in {data}")
 
-    # Returns True if given operation is present in 'table_name' already. False if not.
+    # Returns operation_id if given operation is present in 'table_name' already and 0 if not
     # Check happens based on field values that marked with 'validation'=True in 'fields' dict
-    def operation_exists(self, table_name, fields, data) -> bool:
+    def locate_operation(self, table_name, fields, data) -> int:
         query_text = f"SELECT id FROM {table_name} WHERE "
         params = []
         validation_fields = [x for x in fields if 'validation' in fields[x] and fields[x]['validation']]
         if not validation_fields:
-            return False
+            return 0
         for field in validation_fields:
             if field not in data:
                 data[field] = fields[field]['default']   # set to default value
@@ -402,10 +396,10 @@ class JalDB:
                 query_text += f"{field} = :{field} AND "
                 params.append((f":{field}", data[field]))
         query_text = query_text[:-len(" AND ")]   # cut extra tail
-        if self._readSQL(query_text, params):
-            logging.info(self.tr("Record already exists"))
-            return True
-        return False
+        oid = self._readSQL(query_text, params)
+        if oid:
+            return int(oid)
+        return 0
 
     # Method stores given operation in the database 'table_name'.
     # Returns 'id' of inserted operation.
