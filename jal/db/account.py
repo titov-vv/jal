@@ -1,5 +1,6 @@
+from decimal import Decimal
 from jal.db.db import JalDB
-from jal.constants import Setup
+from jal.constants import Setup, BookAccount
 
 
 class JalAccount(JalDB):
@@ -42,3 +43,16 @@ class JalAccount(JalDB):
                                        [(":account_id", self._id)])
         last_timestamp = 0 if last_timestamp == '' else last_timestamp
         return last_timestamp
+
+    # Return amount of asset accumulated on account at given timestamp
+    def get_asset_amount(self, timestamp: int, asset_id: int) -> Decimal:
+        value = self._readSQL("SELECT amount_acc FROM ledger "
+                              "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp<=:timestamp "
+                              "AND (book_account=:money OR book_account=:assets OR book_account=:liabilities) "
+                              "ORDER BY id DESC LIMIT 1",
+                              [(":account_id", self._id), (":asset_id", asset_id), (":timestamp", timestamp),
+                               (":money", BookAccount.Money), (":assets", BookAccount.Assets),
+                               (":liabilities", BookAccount.Liabilities)])
+        amount = Decimal(value) if value is not None else Decimal('0')
+        return amount
+

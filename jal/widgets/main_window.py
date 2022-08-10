@@ -249,14 +249,14 @@ class MainWindow(QMainWindow, Ui_JAL_MainWindow):
     def onStatementImport(self, timestamp, totals):
         self.ledger.rebuild()
         for account_id in totals:
+            account = JalAccount(account_id)
             for asset_id in totals[account_id]:
-                amount = JalDB().get_asset_amount(timestamp, account_id, asset_id)
+                amount = account.get_asset_amount(timestamp, asset_id)
                 if amount is not None:
                     if abs(totals[account_id][asset_id] - amount) <= Setup.DISP_TOLERANCE:
-                        JalAccount(account_id).reconcile(timestamp)
+                        account.reconcile(timestamp)
                         self.updateWidgets()
                     else:
-                        account = JalAccount(account_id).name()
                         asset = JalDB().get_asset_name(asset_id)
                         logging.warning(self.tr("Statement ending balance doesn't match: ") +
-                                        f"{account} / {asset} / {amount} (act) <> {totals[account_id][asset_id]} (exp)")
+                                        f"{account.name()} / {asset} / {amount} (act) <> {totals[account_id][asset_id]} (exp)")

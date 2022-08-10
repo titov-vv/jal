@@ -24,7 +24,7 @@ class JalAsset(JalDB):
 
     # Returns tuple in form of (timestamp:int, quote:Decimal) that contains last found quotation in given currency.
     # Returned timestamp might be less than given. Returns (0, 0) if no quotation information present in db.
-    def quote(self, timestamp, currency_id) -> tuple:
+    def quote(self, timestamp: int, currency_id: int) -> tuple:
         quote = self._readSQL("SELECT timestamp, quote FROM quotes WHERE asset_id=:asset_id "
                               "AND currency_id=:currency_id AND timestamp<=:timestamp ORDER BY timestamp DESC LIMIT 1",
                               [(":asset_id", self._id), (":currency_id", currency_id), (":timestamp", timestamp)])

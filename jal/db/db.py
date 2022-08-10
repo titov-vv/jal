@@ -5,7 +5,7 @@ from pkg_resources import parse_version
 from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtSql import QSql, QSqlDatabase
 
-from jal.constants import Setup, BookAccount, PredefindedAccountType, AssetData, MarketDataFeed, PredefinedAsset
+from jal.constants import Setup, PredefindedAccountType, AssetData, MarketDataFeed, PredefinedAsset
 from jal.db.helpers import db_connection, executeSQL, readSQL, readSQLrecord, get_country_by_code, get_dbfilename
 
 
@@ -354,15 +354,6 @@ class JalDB:
                        "AND account_id=:account AND number=:number AND qty=:qty AND price=:price",
                        [(":timestamp", timestamp), (":asset", asset_id), (":account", account_id),
                         (":number", number), (":qty", -qty), (":price", price)], commit=True)
-
-    def get_asset_amount(self, timestamp, account_id, asset_id):
-        return readSQL("SELECT amount_acc FROM ledger "
-                       "WHERE account_id=:account_id AND asset_id=:asset_id AND timestamp<=:timestamp "
-                       "AND (book_account=:money OR book_account=:assets OR book_account=:liabilities) "
-                       "ORDER BY id DESC LIMIT 1",
-                       [(":account_id", account_id), (":asset_id", asset_id), (":timestamp", timestamp),
-                        (":money", BookAccount.Money), (":assets", BookAccount.Assets),
-                        (":liabilities", BookAccount.Liabilities)])
 
     # This method creates a db record in 'table' name that describes relevant operation.
     # 'data' is a dict that contains operation data and dict 'fields' describes it having
