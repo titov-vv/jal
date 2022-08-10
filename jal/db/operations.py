@@ -417,17 +417,17 @@ class Dividend(LedgerTransaction):
         if asset_amount < Decimal('0'):
             raise NotImplemented(self.tr("Not supported action: stock dividend or vesting closes short trade.") +
                                  f" Operation: {self.dump()}")
-        quote = JalDB().get_quote(self._asset.id(), self._account.currency(), self._timestamp)
-        if quote is None:
+        quote_timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
+        if quote_timestamp != self._timestamp:
             raise ValueError(self.tr("No stock quote for stock dividend or vesting.") + f" Operation: {self.dump()}")
         _ = executeSQL(
             "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
             "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
             [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
-             (":account_id", self._account.id()), (":asset_id", self._asset.id()), (":price", format_decimal(quote)),
+             (":account_id", self._account.id()), (":asset_id", self._asset.id()), (":price", format_decimal(price)),
              (":remaining_qty", format_decimal(self._amount))])
         ledger.appendTransaction(self, BookAccount.Assets, self._amount,
-                                 asset_id=self._asset.id(), value=self._amount * quote)
+                                 asset_id=self._asset.id(), value=self._amount * price)
         if self._tax:
             ledger.appendTransaction(self, BookAccount.Money, -self._tax)
             ledger.appendTransaction(self, BookAccount.Costs, self._tax,
@@ -731,9 +731,8 @@ class Transfer(LedgerTransaction):
             if self._withdrawal_currency == JalSettings().getValue('BaseCurrency'):
                 currency_rate = Decimal('1.0')
             else:
-                currency_rate = JalDB().get_quote(self._withdrawal_account.currency(),
-                                                  JalSettings().getValue('BaseCurrency'),
-                                                  self._withdrawal_timestamp, exact=False)
+                _, currency_rate = JalAsset(self._withdrawal_account.currency()).quote(self._withdrawal_timestamp,
+                                                                                       JalSettings().getValue('BaseCurrency'))
             ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
                                      asset_id=self._asset.id(), value=-processed_value)
             ledger.appendTransaction(self, BookAccount.Transfers, self._withdrawal,
@@ -751,9 +750,8 @@ class Transfer(LedgerTransaction):
             if self._deposit_currency == JalSettings().getValue('BaseCurrency'):
                 currency_rate = Decimal('1.0')
             else:
-                currency_rate = JalDB().get_quote(self._deposit_account.currency(),
-                                                  JalSettings().getValue('BaseCurrency'),
-                                                  self._deposit_timestamp, exact=False)
+                _, currency_rate = JalAsset(self._deposit_account.currency()).quote(self._deposit_timestamp,
+                                                                                    JalSettings().getValue('BaseCurrency'))
             price = value * currency_rate / self._deposit
             _ = executeSQL(
                 "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "

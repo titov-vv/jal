@@ -264,19 +264,6 @@ class JalDB:
                                [(":name", search_data['name'])])
         return asset_id
 
-    # get asset quotation for given currency and timestamp
-    # if exact is False get's last available quotation before timestamp
-    def get_quote(self, asset_id, currency_id, timestamp, exact=True) -> Decimal:
-        if exact:
-            quote = readSQL("SELECT quote FROM quotes WHERE asset_id=:asset_id "
-                            "AND currency_id=:currency_id AND timestamp=:timestamp",
-                            [(":asset_id", asset_id), (":currency_id", currency_id), (":timestamp", timestamp)])
-        else:
-            quote = readSQL("SELECT quote FROM quotes WHERE asset_id=:asset_id AND currency_id=:currency_id "
-                            "AND timestamp<=:timestamp ORDER BY timestamp DESC LIMIT 1",
-                            [(":asset_id", asset_id), (":currency_id", currency_id), (":timestamp", timestamp)])
-        return Decimal(quote)
-
     # Set quotations for given asset_id and currency_id
     # quotations is a list of {'timestamp', 'quote'} values
     def update_quotes(self, asset_id, currency_id, quotations):

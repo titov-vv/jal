@@ -8,6 +8,7 @@ from jal.widgets.reference_selector import AccountSelector, AssetSelector
 from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, Dividend
 
 
@@ -151,10 +152,10 @@ class DividendWidget(AbstractOperationDetails):
 
     def refreshAssetPrice(self):
         if self.type.currentIndex() == Dividend.StockDividend or self.type.currentIndex() == Dividend.StockVesting:
-            price = JalDB().get_quote(self.asset_widget.selected_id,
-                                      JalAccount(self.account_widget.selected_id).currency(),
-                                      self.timestamp_editor.dateTime().toSecsSinceEpoch())
-            if price is not None:
+            dividend_timestamp = self.timestamp_editor.dateTime().toSecsSinceEpoch()
+            timestamp, price = JalAsset(self.asset_widget.selected_id).quote(dividend_timestamp,
+                                                                             JalAccount(self.account_widget.selected_id).currency())
+            if timestamp == dividend_timestamp:
                 self.price_edit.setText(str(price))
                 self.price_edit.setStyleSheet('')
                 self.price_edit.setToolTip("")
