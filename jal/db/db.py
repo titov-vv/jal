@@ -178,10 +178,6 @@ class JalDB:
     def get_asset_type(self, asset_id):
         return readSQL("SELECT type_id FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
 
-    def get_asset_country(self, asset_id):
-        return readSQL("SELECT c.name FROM assets AS a LEFT JOIN countries AS c ON c.id=a.country_id "
-                       "WHERE a.id=:asset_id", [(":asset_id", asset_id)])
-
     # Searches for account_id by account number and optional currency
     # Returns: account_id or None if no account was found
     def get_account_id(self, accountNumber, accountCurrency=''):

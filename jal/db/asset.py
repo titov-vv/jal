@@ -16,5 +16,5 @@ class JalAsset(JalDB):
     def type(self):
         return self._type
 
-    def country(self):
+    def country_name(self):
         return self._readSQL("SELECT name FROM countries WHERE id=:id", [(":id", self._country_id)])

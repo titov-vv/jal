@@ -350,7 +350,7 @@ class Dividend(LedgerTransaction):
         self._broker = self._account.organization()
 
     def description(self) -> str:
-        return self._note + "\n" + self.tr("Tax: ") + JalDB().get_asset_country(self._asset.id())
+        return self._note + "\n" + self.tr("Tax: ") + self._asset.country_name()
 
     def value_change(self) -> list:
         if self._tax:
