@@ -855,8 +855,8 @@ class CorporateAction(LedgerTransaction):
         self._label, self._label_color = labels[self._subtype]
         self._timestamp = self._data['timestamp']
         self._account = JalAccount(self._data['account_id'])
-        self._account_id_name = self._account.name()
-        self._account_id_currency = JalDB().get_asset_name(self._account.currency())
+        self._account_name = self._account.name()
+        self._account_currency = JalDB().get_asset_name(self._account.currency())
         self._reconciled = self._account.reconciled_at() >= self._timestamp
         self._asset = JalAsset(self._data['asset_id'])
         self._asset_symbol = JalDB().get_asset_name(self._asset.id())
