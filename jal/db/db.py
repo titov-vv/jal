@@ -5,7 +5,7 @@ from pkg_resources import parse_version
 from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtSql import QSql, QSqlDatabase
 
-from jal.constants import Setup, PredefindedAccountType, AssetData, MarketDataFeed, PredefinedAsset
+from jal.constants import Setup, PredefindedAccountType, AssetData, PredefinedAsset
 from jal.db.helpers import db_connection, executeSQL, readSQL, readSQLrecord, get_country_by_code, get_dbfilename
 
 
@@ -252,25 +252,6 @@ class JalDB:
                            [(":type", asset_type), (":full_name", name),
                             (":isin", isin), (":country_id", country_id)], commit=True)
         return query.lastInsertId()
-
-    def add_symbol(self, asset_id, symbol, currency, note, data_source=MarketDataFeed.NA):
-        existing = readSQL("SELECT id, symbol, description, quote_source FROM asset_tickers "
-                           "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id=:currency",
-                           [(":asset_id", asset_id), (":symbol", symbol), (":currency", currency)], named=True)
-        if existing is None:   # Deactivate old symbols and create a new one
-            _ = executeSQL("UPDATE asset_tickers SET active=0 WHERE asset_id=:asset_id AND currency_id=:currency",
-                           [(":asset_id", asset_id), (":currency", currency)])
-            _ = executeSQL("INSERT INTO asset_tickers (asset_id, symbol, currency_id, description, quote_source) "
-                           "VALUES (:asset_id, :symbol, :currency, :note, :data_source)",
-                           [(":asset_id", asset_id), (":symbol", symbol), (":currency", currency),
-                            (":note", note), (":data_source", data_source)])
-        else:   # Update data for existing symbol
-            if not existing['description']:
-                _ = executeSQL("UPDATE asset_tickers SET description=:note WHERE id=:id",
-                               [(":note", note), (":id", existing['id'])])
-            if existing['quote_source'] == MarketDataFeed.NA:
-                _ = executeSQL("UPDATE asset_tickers SET quote_source=:data_source WHERE id=:id",
-                               [(":data_source", data_source), (":id", existing['id'])])
 
     def update_asset_data(self, asset_id, data):
         asset = readSQL("SELECT type_id, isin, full_name FROM assets WHERE id=:asset_id",

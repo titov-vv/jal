@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from decimal import Decimal
+from jal.constants import MarketDataFeed
 from jal.db.db import JalDB
 
 
@@ -36,6 +37,26 @@ class JalAsset(JalDB):
             return self._readSQL("SELECT symbol FROM asset_tickers "
                                  "WHERE asset_id=:asset_id AND active=1 AND currency_id=:currency_id",
                                  [(":asset_id", self._id), (":currency_id", currency)])
+
+    def add_symbol(self, symbol, currency_id, note, data_source=MarketDataFeed.NA):
+        existing = self._readSQL("SELECT id, symbol, description, quote_source FROM asset_tickers "
+                                 "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id=:currency",
+                                 [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id)], named=True)
+        if existing is None:  # Deactivate old symbols and create a new one
+            _ = self._executeSQL("UPDATE asset_tickers SET active=0 WHERE asset_id=:asset_id AND currency_id=:currency",
+                                 [(":asset_id", self._id), (":currency", currency_id)])
+            _ = self._executeSQL(
+                "INSERT INTO asset_tickers (asset_id, symbol, currency_id_id, description, quote_source) "
+                "VALUES (:asset_id, :symbol, :currency, :note, :data_source)",
+                [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id),
+                 (":note", note), (":data_source", data_source)])
+        else:  # Update data for existing symbol
+            if not existing['description']:
+                _ = self._executeSQL("UPDATE asset_tickers SET description=:note WHERE id=:id",
+                                     [(":note", note), (":id", existing['id'])])
+            if existing['quote_source'] == MarketDataFeed.NA:
+                _ = self._executeSQL("UPDATE asset_tickers SET quote_source=:data_source WHERE id=:id",
+                                     [(":data_source", data_source), (":id", existing['id'])])
 
     def country_name(self) -> str:
         return self._readSQL("SELECT name FROM countries WHERE id=:id", [(":id", self._country_id)])
