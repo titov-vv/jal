@@ -292,7 +292,7 @@ class QuoteDownloader(QObject):
 
     # noinspection PyMethodMayBeStatic
     def MOEX_DataReader(self, asset_id, asset_code, currency, isin, start_timestamp, end_timestamp, update_symbol=True):
-        currency = JalDB().get_asset_name(currency)
+        currency = JalAsset(currency).symbol()
         asset = self.MOEX_info(symbol=asset_code, isin=isin, currency=currency, special=True)
         if (asset['engine'] is None) or (asset['market'] is None) or (asset['board'] is None):
             logging.warning(f"Failed to find {asset_code} on moex.com")
@@ -426,6 +426,6 @@ class QuoteDownloader(QObject):
                 if data:
                     if asset['full_name'] != data['name']:
                         logging.info(self.tr("New full name found for: ")
-                                     + f"{JalDB().get_asset_name(asset['id'])}: {asset['full_name']} -> {data['name']}")
+                                     + f"{JalAsset(asset['id']).symbol()}: {asset['full_name']} -> {data['name']}")
                     isin = data['isin'] if not asset['isin'] and 'isin' in data and data['isin'] else ''
                     JalDB().update_asset_data(asset['id'], {'isin': isin})

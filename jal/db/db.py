@@ -166,8 +166,8 @@ class JalDB:
         sql = f"UPDATE view_params SET {field_name}=:value WHERE view_name=:view AND param_name=:param"
         _ = executeSQL(sql, [(":value", value), (":view", view_name), (":param", param_name)])
 
-    def get_asset_name(self, asset_id):
-        # FIXME Below query may return several symbols
+    def __get_asset_name(self, asset_id):
+        # FIXME Get rid of this internal methods after refactoring add_account() and update_asset_data()
         return readSQL("SELECT symbol FROM assets AS a LEFT JOIN asset_tickers AS s "   
                        "ON s.asset_id=a.id AND s.active=1 WHERE a.id=:asset_id", [(":asset_id", asset_id)])
 
@@ -180,9 +180,9 @@ class JalDB:
         account_id = self.find_account(account_number, currency_id)
         if account_id:  # Account already exists
             logging.warning(self.tr("Account already exists: ") +
-                            f"{account_number} ({self.get_asset_name(currency_id)})")
+                            f"{account_number} ({self.__get_asset_name(currency_id)})")
             return account_id
-        currency = self.get_asset_name(currency_id)
+        currency = self.__get_asset_name(currency_id)
         account = readSQL("SELECT a.name, a.organization_id, a.country_id, c.symbol AS currency FROM accounts a "
                           "LEFT JOIN assets_ext c ON c.id=a.currency_id WHERE a.number=:number LIMIT 1",
                           [(":number", account_number)], named=True)
@@ -282,7 +282,7 @@ class JalDB:
             if asset['isin']:
                 if asset['isin'] != data['isin']:
                     logging.error(self.tr("Unexpected attempt to update ISIN for ")
-                                  + f"{self.get_asset_name(asset_id)}: {asset['isin']} -> {data['isin']}")
+                                  + f"{self.__get_asset_name(asset_id)}: {asset['isin']} -> {data['isin']}")
             else:
                 _ = executeSQL("UPDATE assets SET isin=:new_isin WHERE id=:asset_id",
                                [(":new_isin", data['isin']), (":asset_id", asset_id)])
@@ -299,7 +299,7 @@ class JalDB:
                                [(":new_country_id", new_country_id), (":asset_id", asset_id)])
                 if country_id != 0:
                     logging.info(self.tr("Country updated for ")
-                                 + f"{self.get_asset_name(asset_id)}: {country_code} -> {data['country']}")
+                                 + f"{self.__get_asset_name(asset_id)}: {country_code} -> {data['country']}")
         if 'reg_number' in data and data['reg_number']:
             reg_number = readSQL("SELECT value FROM asset_data WHERE datatype=:datatype AND asset_id=:asset_id",
                                  [(":datatype", AssetData.RegistrationCode), (":asset_id", asset_id)])
@@ -310,7 +310,7 @@ class JalDB:
                                 (":reg_number", data['reg_number'])])
                 if reg_number:
                     logging.info(self.tr("Reg.number updated for ")
-                                 + f"{self.get_asset_name(asset_id)}: {reg_number} -> {data['reg_number']}")
+                                 + f"{self.__get_asset_name(asset_id)}: {reg_number} -> {data['reg_number']}")
         if 'expiry' in data and data['expiry']:
             _ = executeSQL("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
                            "VALUES(:asset_id, :datatype, :expiry)",

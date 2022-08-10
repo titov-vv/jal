@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QWidget, QHBoxLayout
 from PySide6.QtCharts import QChartView, QLineSeries, QScatterSeries, QDateTimeAxis, QValueAxis
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
 from jal.constants import BookAccount, CustomColor
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord
 from jal.widgets.mdi import MdiWidget
@@ -67,7 +68,7 @@ class ChartWindow(MdiWidget):
         self.account_id = account_id
         self.asset_id = asset_id
         self.currency_id = currency_id if asset_id != currency_id else 1  # Check whether we have currency or asset
-        self.asset_name = JalDB().get_asset_name(self.asset_id)
+        self.asset_name = JalAsset(self.asset_id).symbol(JalAccount(self.account_id).currency())
         self.quotes = []
         self.trades = []
         self.currency_name = ''
@@ -87,7 +88,7 @@ class ChartWindow(MdiWidget):
         self.ready = True
 
     def prepare_chart_data(self):
-        self.currency_name = JalDB().get_asset_name(JalAccount(self.account_id).currency())
+        self.currency_name = JalAsset(JalAccount(self.account_id).currency()).symbol()
         start_time = readSQL("SELECT MAX(ts) FROM "  # Take either last "empty" timestamp
                              "(SELECT coalesce(MAX(timestamp), 0) AS ts "
                              "FROM ledger WHERE account_id=:account_id AND asset_id=:asset_id "

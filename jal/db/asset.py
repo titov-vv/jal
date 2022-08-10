@@ -23,6 +23,20 @@ class JalAsset(JalDB):
     def name(self):
         return self._name
 
+    # Returns asset symbol for given currency or all symbols if no currency is given
+    def symbol(self, currency: int = None) -> str:
+        if currency is None:
+            query = self._executeSQL("SELECT symbol FROM asset_tickers WHERE asset_id=:asset_id AND active=1",
+                                     [(":asset_id", self._id)])
+            symbols = []
+            while query.next():
+                symbols.append(self._readSQLrecord(query))
+            return ','.join([x for x in symbols])  # concatenate all symbols via comma
+        else:
+            return self._readSQL("SELECT symbol FROM asset_tickers "
+                                 "WHERE asset_id=:asset_id AND active=1 AND currency_id=:currency_id",
+                                 [(":asset_id", self._id), (":currency_id", currency)])
+
     def country_name(self) -> str:
         return self._readSQL("SELECT name FROM countries WHERE id=:id", [(":id", self._country_id)])
 
@@ -48,7 +62,6 @@ class JalAsset(JalDB):
             begin = min(data, key=lambda x: x['timestamp'])['timestamp']
             end = max(data, key=lambda x: x['timestamp'])['timestamp']
             logging.info(self.tr("Quotations were updated: ") +
-                         # FIXME Replace get_asset_name() base class call with current class method
-                         f"{self.get_asset_name(self._id)} ({self.get_asset_name(currency_id)}) "  
+                         f"{self.symbol(currency_id)} ({JalAsset(currency_id).symbol()}) "  
                          f"{datetime.utcfromtimestamp(begin).strftime('%d/%m/%Y')} - "
                          f"{datetime.utcfromtimestamp(end).strftime('%d/%m/%Y')}")

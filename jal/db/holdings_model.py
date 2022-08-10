@@ -4,9 +4,10 @@ from datetime import datetime
 from PySide6.QtCore import Qt, Slot, QAbstractItemModel, QDate, QModelIndex, QLocale
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
-from jal.constants import Setup, CustomColor, BookAccount, PredefindedAccountType, AssetData
+from jal.constants import Setup, CustomColor, AssetData
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.db import JalDB
+from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 from jal.widgets.delegates import GridLinesDelegate
 
@@ -208,7 +209,7 @@ class HoldingsModel(QAbstractItemModel):
     def setCurrency(self, currency_id):
         if self._currency != currency_id:
             self._currency = currency_id
-            self._currency_name = JalDB().get_asset_name(currency_id)
+            self._currency_name = JalAsset(currency_id).symbol()
             self.calculateHoldings()
 
     @Slot()

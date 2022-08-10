@@ -6,6 +6,7 @@ from PySide6.QtGui import QFont
 from jal.db.helpers import executeSQL, readSQL, readSQLrecord
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 from jal.ui.reports.ui_tax_estimation import Ui_TaxEstimationDialog
 from jal.widgets.mdi import MdiWidget
@@ -63,7 +64,7 @@ class TaxEstimator(MdiWidget, Ui_TaxEstimationDialog):
 
         self.account_id = account_id
         self.asset_id = asset_id
-        self.asset_name = JalDB().get_asset_name(self.asset_id)
+        self.asset_name = JalAsset(self.asset_id).symbol(JalAccount(account_id).currency())
         self.asset_qty = asset_qty
         self.dataframe = None
         self.ready = False
@@ -108,7 +109,7 @@ class TaxEstimator(MdiWidget, Ui_TaxEstimationDialog):
                         (":base_currency", JalSettings().getValue('BaseCurrency'))])
         JalDB().set_view_param("last_quotes", "timestamp", int, QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch())
         account_currency = JalAccount(self.account_id).currency()
-        self.currency_name = JalDB().get_asset_name(account_currency)
+        self.currency_name = JalAsset(account_currency).symbol()
         self.quote = readSQL("SELECT quote FROM last_quotes WHERE asset_id=:asset_id AND currency_id=:base_currency",
                              [(":asset_id", self.asset_id), (":base_currency", account_currency)])
         if self.quote is None:

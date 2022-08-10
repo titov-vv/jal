@@ -256,7 +256,7 @@ class IncomeSpending(LedgerTransaction):
         self._timestamp = self._data['timestamp']
         self._account = JalAccount(self._data['account_id'])
         self._account_name = self._account.name()
-        self._account_currency = JalDB().get_asset_name(self._account.currency())
+        self._account_currency = JalAsset(self._account.currency()).symbol()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
         self._peer_id = self._data['peer_id']
         self._peer = self._data['peer']
@@ -273,7 +273,7 @@ class IncomeSpending(LedgerTransaction):
         self._label, self._label_color = ('—', CustomColor.DarkRed) if self._amount < 0 else ('+', CustomColor.DarkGreen)
         if self._currency:
             self._view_rows = 2
-            self._currency_name = JalDB().get_asset_name(self._currency)
+            self._currency_name = JalAsset(self._currency).symbol()
         self._amount_alt = sum(Decimal(line['amount_alt']) for line in self._details)
 
     def description(self) -> str:
@@ -370,10 +370,9 @@ class Dividend(LedgerTransaction):
         self._timestamp = self._data['timestamp']
         self._account = JalAccount(self._data['account_id'])
         self._account_name = self._account.name()
-        self._account_currency = JalDB().get_asset_name(self._account.currency())
+        self._account_currency = JalAsset(self._account.currency()).symbol()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
         self._asset = JalAsset(self._data['asset_id'])
-        self._asset_symbol = JalDB().get_asset_name(self._asset.id())
         self._number = self._data['number']
         self._amount = Decimal(self._data['amount'])
         self._tax = Decimal(self._data['tax'])
@@ -392,11 +391,11 @@ class Dividend(LedgerTransaction):
     def value_currency(self) -> str:
         if self._subtype == Dividend.StockDividend or self._subtype == Dividend.StockVesting:
             if self._tax:
-                return f" {self._asset_symbol}\n {self._account_currency}"
+                return f" {self._asset.symbol(self._account.currency())}\n {self._account_currency}"
             else:
-                return f" {self._asset_symbol}"
+                return f" {self._asset.symbol(self._account.currency())}"
         else:
-            return f" {self._account_currency}\n {self._asset_symbol}"
+            return f" {self._account_currency}\n {self._asset.symbol(self._account.currency())}"
 
     def value_total(self) -> str:
         amount = self._money_total(self._account.id())
@@ -495,10 +494,9 @@ class Trade(LedgerTransaction):
         self._timestamp = self._data['timestamp']
         self._account = JalAccount(self._data['account_id'])
         self._account_name = self._account.name()
-        self._account_currency = JalDB().get_asset_name(self._account.currency())
+        self._account_currency = JalAsset(self._account.currency()).symbol()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
         self._asset = JalAsset(self._data['asset_id'])
-        self._asset_symbol = JalDB().get_asset_name(self._asset.id())
         self._number = self._data['number']
         self._qty = Decimal(self._data['qty'])
         self._price = Decimal(self._data['price'])
@@ -522,7 +520,7 @@ class Trade(LedgerTransaction):
         return [-(self._price * self._qty), self._qty]
 
     def value_currency(self) -> str:
-        return f" {self._account_currency}\n {self._asset_symbol}"
+        return f" {self._account_currency}\n {self._asset.symbol(self._account.currency())}"
 
     def value_total(self) -> str:
         amount = self._money_total(self._account.id())
@@ -608,14 +606,14 @@ class Transfer(LedgerTransaction):
         self._withdrawal_account_name = self._withdrawal_account.name()
         self._withdrawal_timestamp = self._data['withdrawal_timestamp']
         self._withdrawal = Decimal(self._data['withdrawal'])
-        self._withdrawal_currency = JalDB().get_asset_name(self._withdrawal_account.currency())
+        self._withdrawal_currency = JalAsset(self._withdrawal_account.currency()).symbol()
         self._deposit_account = JalAccount(self._data['deposit_account'])
         self._deposit_account_name = self._deposit_account.name()
         self._deposit = Decimal(self._data['deposit'])
-        self._deposit_currency = JalDB().get_asset_name(self._deposit_account.currency())
+        self._deposit_currency = JalAsset(self._deposit_account.currency()).symbol()
         self._deposit_timestamp = self._data['deposit_timestamp']
         self._fee_account = JalAccount(self._data['fee_account'])
-        self._fee_currency = JalDB().get_asset_name(self._fee_account.currency())
+        self._fee_currency = JalAsset(self._fee_account.currency()).symbol()
         self._fee_account_name = self._fee_account.name()
         self._fee = Decimal(self._data['fee']) if self._data['fee'] else Decimal('0')
         try:
@@ -693,12 +691,12 @@ class Transfer(LedgerTransaction):
     def value_currency(self) -> str:
         if self._display_type == Transfer.Outgoing:
             if self._asset.id():
-                return JalDB().get_asset_name(self._asset.id())
+                return JalAsset(self._asset.id()).symbol(self._withdrawal_account.currency())
             else:
                 return self._withdrawal_currency
         elif self._display_type == Transfer.Incoming:
             if self._asset.id():
-                return JalDB().get_asset_name(self._asset.id())
+                return JalAsset(self._asset.id()).symbol(self._deposit_account.currency())
             else:
                 return self._deposit_currency
         elif self._display_type == Transfer.Fee:
@@ -856,10 +854,9 @@ class CorporateAction(LedgerTransaction):
         self._timestamp = self._data['timestamp']
         self._account = JalAccount(self._data['account_id'])
         self._account_name = self._account.name()
-        self._account_currency = JalDB().get_asset_name(self._account.currency())
+        self._account_currency = JalAsset(self._account.currency()).symbol()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
         self._asset = JalAsset(self._data['asset_id'])
-        self._asset_symbol = JalDB().get_asset_name(self._asset.id())
         self._qty = Decimal(self._data['qty'])
         self._number = self._data['number']
         self._broker = self._account.organization()
@@ -890,12 +887,12 @@ class CorporateAction(LedgerTransaction):
 
     def value_currency(self) -> str:
         if self._subtype != CorporateAction.SpinOff:
-            symbol = f" {self._asset_symbol}\n"
+            symbol = f" {self._asset.symbol(self._account.currency())}\n"
         else:
             symbol = ""
         query = executeSQL("SELECT asset_id FROM action_results WHERE action_id=:oid", [(":oid", self._oid)])
         while query.next():
-            symbol += f" {JalDB().get_asset_name(readSQLrecord(query))}\n"
+            symbol += f" {JalAsset(readSQLrecord(query)).symbol()}\n"
         return symbol[:-1]  # Crop ending line break
 
     def value_total(self) -> str:    # FIXME - Method may give incorrect result if 'outgoing' asset was present before operation

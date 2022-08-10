@@ -3,8 +3,8 @@ from PySide6.QtWidgets import QApplication, QDialog, QWidget, QPushButton, QComb
     QMessageBox
 from PySide6.QtSql import QSqlQuery, QSqlTableModel
 from jal.constants import Setup
-from jal.db.db import JalDB
 from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 from jal.db.helpers import db_connection, readSQL
 from jal.widgets.reference_dialogs import AccountListDialog
@@ -180,7 +180,7 @@ class OptionalCurrencyComboBox(QWidget):
             return
         self._id = new_value
         self.updateView()
-        name = JalDB().get_asset_name(self._id)
+        name = JalAsset(self._id).symbol()
         self.name_updated.emit('' if name is None else name)
 
     currency_id = Property(int, getId, setId, notify=changed, user=True)

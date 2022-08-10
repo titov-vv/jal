@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QHeaderView
 from jal.constants import Setup, CustomColor, BookAccount, PredefindedAccountType
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.db import JalDB
+from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 
 
@@ -92,7 +93,7 @@ class BalancesModel(QAbstractTableModel):
     def setCurrency(self, currency_id):
         if self._currency != currency_id:
             self._currency = currency_id
-            self._currency_name = JalDB().get_asset_name(currency_id)
+            self._currency_name = JalAsset(currency_id).symbol()
             self.calculateBalances()
 
     @Slot()

@@ -386,13 +386,13 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 pair_account = 1
                 if transfer['account'][0] == 0:  # Deposit
                     text = self.tr("Deposit of ") + f"{transfer['deposit']:.2f} " + \
-                           f"{JalDB().get_asset_name(-transfer['asset'][1])} " + \
+                           f"{JalAsset(-transfer['asset'][1]).symbol()} " + \
                            f"@{datetime.utcfromtimestamp(transfer['timestamp']).strftime('%d.%m.%Y')}\n" + \
                            self.tr("Select account to withdraw from:")
                     pair_account = -transfer['account'][1]
                 if transfer['account'][1] == 0:  # Withdrawal
                     text = self.tr("Withdrawal of ") + f"{transfer['withdrawal']:.2f} " + \
-                           f"{JalDB().get_asset_name(-transfer['asset'][0])} " + \
+                           f"{JalAsset(-transfer['asset'][0]).symbol()} " + \
                            f"@{datetime.utcfromtimestamp(transfer['timestamp']).strftime('%d.%m.%Y')}\n" + \
                            self.tr("Select account to deposit to:")
                     pair_account = -transfer['account'][0]
