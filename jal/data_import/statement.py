@@ -450,8 +450,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             payment['asset_id'] = -payment.pop('asset')
             payment['note'] = payment.pop('description')
             if 'price' in payment:
-                JalDB().update_quotes(payment['asset_id'], JalAccount(payment['account_id']).currency(),
-                                      [{'timestamp': payment['timestamp'], 'quote': payment.pop('price')}])
+                JalAsset(payment['asset_id']).set_quotes(
+                    [{'timestamp': payment['timestamp'], 'quote': payment.pop('price')}],
+                    JalAccount(payment['account_id']).currency())
             if payment['type'] == FOF.PAYMENT_DIVIDEND:
                 if payment['id'] > 0:  # New dividend
                     payment['type'] = Dividend.Dividend

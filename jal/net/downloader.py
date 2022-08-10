@@ -10,9 +10,10 @@ from PySide6.QtCore import QObject, Signal, QDate
 from PySide6.QtWidgets import QApplication, QDialog
 
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
-from jal.constants import Setup, MarketDataFeed, BookAccount, PredefinedAsset
+from jal.constants import MarketDataFeed, BookAccount, PredefinedAsset
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.db import JalDB
+from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 from jal.net.helpers import get_web_data, post_web_data, isEnglish
 
@@ -68,7 +69,6 @@ class QuoteDownloader(QObject):
 
     def UpdateQuotes(self, start_timestamp, end_timestamp):
         self.PrepareRussianCBReader()
-        jal_db = JalDB()
         query = executeSQL("WITH _holdings AS ( "
                            "SELECT l.asset_id AS asset, l.account_id FROM ledger AS l "
                            "WHERE l.book_account = :assets_book AND l.timestamp <= :end_timestamp "
@@ -115,8 +115,8 @@ class QuoteDownloader(QObject):
                 quotations = []
                 for date, quote in data.iterrows():  # Date in pandas dataset is in UTC by default
                     quotations.append({'timestamp': int(date.timestamp()), 'quote': float(quote[0])})
-                jal_db.update_quotes(asset['asset_id'], asset['currency_id'], quotations)
-        jal_db.commit()
+                JalAsset(asset['asset_id']).set_quotes(quotations, asset['currency_id'])
+        JalDB().commit()
         logging.info(self.tr("Download completed"))
 
     def PrepareRussianCBReader(self):

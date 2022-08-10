@@ -1,8 +1,6 @@
 import os
 import logging
 import sqlparse
-from datetime import datetime
-from decimal import Decimal
 from pkg_resources import parse_version
 from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtSql import QSql, QSqlDatabase
@@ -263,23 +261,6 @@ class JalDB:
             asset_id = readSQL("SELECT id FROM assets_ext WHERE full_name=:name COLLATE NOCASE",
                                [(":name", search_data['name'])])
         return asset_id
-
-    # Set quotations for given asset_id and currency_id
-    # quotations is a list of {'timestamp', 'quote'} values
-    def update_quotes(self, asset_id, currency_id, quotations):
-        data = [x for x in quotations if x['timestamp'] is not None and x['quote'] is not None]  # Drop Nones
-        if data:
-            for quote in quotations:
-                _ = executeSQL("INSERT OR REPLACE INTO quotes (asset_id, currency_id, timestamp, quote) "
-                               "VALUES(:asset_id, :currency_id, :timestamp, :quote)",
-                               [(":asset_id", asset_id), (":currency_id", currency_id),
-                                (":timestamp", quote['timestamp']), (":quote", quote['quote'])])
-            begin = min(data, key=lambda x: x['timestamp'])['timestamp']
-            end = max(data, key=lambda x: x['timestamp'])['timestamp']
-            logging.info(self.tr("Quotations were updated: ") +
-                         f"{self.get_asset_name(asset_id)} ({self.get_asset_name(currency_id)}) " 
-                         f"{datetime.utcfromtimestamp(begin).strftime('%d/%m/%Y')} - "
-                         f"{datetime.utcfromtimestamp(end).strftime('%d/%m/%Y')}")
 
     def add_asset(self, asset_type, name, isin, country_code=''):
         country_id = get_country_by_code(country_code)
