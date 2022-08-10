@@ -849,7 +849,7 @@ class StatementIBKR(StatementXML):
         account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
         currency = [x for x in self._data[FOF.ASSETS] if x["id"] == account['currency']][0]
         currency_symbol = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == currency['id']][0]
-        db_account = JalDB().get_account_id(account['number'], currency_symbol['symbol'])
+        db_account = JalDB().find_account(account['number'], JalDB().get_asset_id({'symbol': currency_symbol['symbol']}))
         asset = [x for x in self._data[FOF.ASSETS] if x["id"] == asset_id][0]
         isin = asset['isin'] if 'isin' in asset else ''
         symbols = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == asset_id]

@@ -173,21 +173,6 @@ class JalDB:
             return readSQL("SELECT symbol FROM assets AS a LEFT JOIN asset_tickers AS s "   
                            "ON s.asset_id=a.id AND s.active=1 WHERE a.id=:asset_id", [(":asset_id", asset_id)])
 
-    # Searches for account_id by account number and optional currency
-    # Returns: account_id or None if no account was found
-    def get_account_id(self, accountNumber, accountCurrency=''):
-        if accountCurrency:
-            account_id = readSQL("SELECT a.id FROM accounts AS a "
-                                 "LEFT JOIN currencies AS c ON c.id=a.currency_id "
-                                 "WHERE a.number=:account_number AND c.symbol=:currency_name",
-                                 [(":account_number", accountNumber), (":currency_name", accountCurrency)],
-                                 check_unique=True)
-        else:
-            account_id = readSQL("SELECT a.id FROM accounts AS a WHERE a.number=:account_number",
-                                 [(":account_number", accountNumber)],
-                                 check_unique=True)
-        return account_id
-
     def find_account(self, account_number, currency_code):
         return readSQL("SELECT id FROM accounts WHERE number=:account_number AND currency_id=:currency",
                        [(":account_number", account_number), (":currency", currency_code)], check_unique=True)
