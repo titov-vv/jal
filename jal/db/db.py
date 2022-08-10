@@ -166,12 +166,10 @@ class JalDB:
         sql = f"UPDATE view_params SET {field_name}=:value WHERE view_name=:view AND param_name=:param"
         _ = executeSQL(sql, [(":value", value), (":view", view_name), (":param", param_name)])
 
-    def get_asset_name(self, asset_id, full=False):
-        if full:
-            return readSQL("SELECT full_name FROM assets WHERE id=:asset_id", [(":asset_id", asset_id)])
-        else:   # FIXME Below query may return several symbols
-            return readSQL("SELECT symbol FROM assets AS a LEFT JOIN asset_tickers AS s "   
-                           "ON s.asset_id=a.id AND s.active=1 WHERE a.id=:asset_id", [(":asset_id", asset_id)])
+    def get_asset_name(self, asset_id):
+        # FIXME Below query may return several symbols
+        return readSQL("SELECT symbol FROM assets AS a LEFT JOIN asset_tickers AS s "   
+                       "ON s.asset_id=a.id AND s.active=1 WHERE a.id=:asset_id", [(":asset_id", asset_id)])
 
     def find_account(self, account_number, currency_code):
         return readSQL("SELECT id FROM accounts WHERE number=:account_number AND currency_id=:currency",

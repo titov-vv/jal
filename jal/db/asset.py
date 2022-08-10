@@ -8,9 +8,10 @@ class JalAsset(JalDB):
     def __init__(self, id : int = 0):
         super().__init__()
         self._id = id
-        self._data = self._readSQL("SELECT type_id, country_id FROM assets WHERE id=:id",
+        self._data = self._readSQL("SELECT type_id, full_name, country_id FROM assets WHERE id=:id",
                                    [(":id", self._id)], named=True)
         self._type = self._data['type_id'] if self._data is not None else None
+        self._name = self._data['full_name'] if self._data is not None else ''
         self._country_id = self._data['country_id'] if self._data is not None else None
 
     def id(self) -> int:
@@ -18,6 +19,9 @@ class JalAsset(JalDB):
 
     def type(self):
         return self._type
+
+    def name(self):
+        return self._name
 
     def country_name(self) -> str:
         return self._readSQL("SELECT name FROM countries WHERE id=:id", [(":id", self._country_id)])

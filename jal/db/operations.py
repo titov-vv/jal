@@ -36,7 +36,6 @@ class LedgerTransaction:
         self._account_name = ''
         self._account_currency = ''
         self._asset = None
-        self._asset_name = ''
         self._number = ''
         self._reconciled = False
 
@@ -198,7 +197,10 @@ class LedgerTransaction:
         return self._account.id()
 
     def asset(self):
-        return self._asset_name
+        if self._asset is None:
+            return ''
+        else:
+            return self._asset.name()
 
     def number(self):
         return self._number
@@ -372,7 +374,6 @@ class Dividend(LedgerTransaction):
         self._reconciled = self._account.reconciled_at() >= self._timestamp
         self._asset = JalAsset(self._data['asset_id'])
         self._asset_symbol = JalDB().get_asset_name(self._asset.id())
-        self._asset_name = JalDB().get_asset_name(self._asset.id(), full=True)
         self._number = self._data['number']
         self._amount = Decimal(self._data['amount'])
         self._tax = Decimal(self._data['tax'])
@@ -498,7 +499,6 @@ class Trade(LedgerTransaction):
         self._reconciled = self._account.reconciled_at() >= self._timestamp
         self._asset = JalAsset(self._data['asset_id'])
         self._asset_symbol = JalDB().get_asset_name(self._asset.id())
-        self._asset_name = JalDB().get_asset_name(self._asset.id(), full=True)
         self._number = self._data['number']
         self._qty = Decimal(self._data['qty'])
         self._price = Decimal(self._data['price'])
@@ -860,7 +860,6 @@ class CorporateAction(LedgerTransaction):
         self._reconciled = self._account.reconciled_at() >= self._timestamp
         self._asset = JalAsset(self._data['asset_id'])
         self._asset_symbol = JalDB().get_asset_name(self._asset.id())
-        self._asset_name = JalDB().get_asset_name(self._asset.id(), full=True)
         self._qty = Decimal(self._data['qty'])
         self._number = self._data['number']
         self._broker = self._account.organization()
@@ -873,7 +872,7 @@ class CorporateAction(LedgerTransaction):
             result = readSQLrecord(query, named=True)
             if self._subtype == CorporateAction.SpinOff and result['asset_id'] == self._asset.id():
                 continue   # Don't display initial asset in list
-            description += "\n" + JalDB().get_asset_name(result['asset_id'], full=True)
+            description += "\n" + self._asset.name()
             if Decimal(result['value_share']) < Decimal('1.0'):
                 description += f" ({Decimal(result['value_share']) * Decimal('100')} %)"
         return description
