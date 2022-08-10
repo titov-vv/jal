@@ -911,6 +911,13 @@ class CorporateAction(LedgerTransaction):
         query = executeSQL("SELECT asset_id, qty, value_share FROM action_results WHERE action_id=:oid",
                            [(":oid", self._oid)])
         while query.next():
+            # TODO implement type casting of result values inside readSQLrecord()
+            # Like in this function as example:
+            #   def x(cast=[float, str, Decimal]):
+            #     res = []
+            #     for i, dtype in enumerate(cast):
+            #       res.append(dtype(float(i)))
+            #     return res
             asset_id, qty, share = readSQLrecord(query)
             asset = JalAsset(asset_id)
             qty = Decimal(qty)

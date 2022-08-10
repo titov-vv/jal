@@ -230,10 +230,6 @@ class JalDB:
                             (":precision", precision)])
         return query.lastInsertId()
 
-    # FIXME - this method should be deleted
-    def __get_account_currency(self, account_id):
-        return readSQL("SELECT currency_id FROM accounts WHERE id=:account_id", [(":account_id", account_id)])
-
     # Searches for asset_id in database based on keys available in search data:
     # first by 'isin', then by 'reg_number', next by 'symbol' and other
     # Returns: asset_id or None if not found
