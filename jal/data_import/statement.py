@@ -213,7 +213,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     # Check and replace IDs for Accounts
     def _match_account_ids(self):
         for account in self._data[FOF.ACCOUNTS]:
-            account_id = JalDB().find_account(account['number'], -account['currency'])
+            account_data = account.copy()
+            account_data['currency'] = -account['currency']
+            account_id = JalAccount(data=account_data, search=True, create=False).id()
             if account_id:
                 old_id, account['id'] = account['id'], -account_id
                 self._update_id("account", old_id, account_id)

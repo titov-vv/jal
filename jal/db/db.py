@@ -173,10 +173,6 @@ class JalDB:
         return readSQL("SELECT symbol FROM assets AS a LEFT JOIN asset_tickers AS s "   
                        "ON s.asset_id=a.id AND s.active=1 WHERE a.id=:asset_id", [(":asset_id", asset_id)])
 
-    def find_account(self, account_number, currency_code):
-        return readSQL("SELECT id FROM accounts WHERE number=:account_number AND currency_id=:currency",
-                       [(":account_number", account_number), (":currency", currency_code)], check_unique=True)
-
     # Searches for asset_id in database based on keys available in search data:
     # first by 'isin', then by 'reg_number', next by 'symbol' and other
     # Returns: asset_id or None if not found

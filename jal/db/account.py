@@ -6,10 +6,10 @@ from jal.constants import Setup, BookAccount, PredefindedAccountType
 
 
 class JalAccount(JalDB):
-    def __init__(self, id: int = 0, data: dict = None, search=False, create=False) -> None:
+    def __init__(self, id: int = 0, data: dict = None, search: bool = False, create: bool = False) -> None:
         super().__init__()
         self._id = id
-        if self._valid_data(data):
+        if self._valid_data(data, search, create):
             if search:
                 self._id = self._find_account(data)
             if create and not self._id:   # If we haven't found peer before and requested to create new record
@@ -85,9 +85,14 @@ class JalAccount(JalDB):
         amount = Decimal(value) if value is not None else Decimal('0')
         return amount
 
-    def _valid_data(self, data: dict) -> bool:
+    def _valid_data(self, data: dict, search: bool = False, create: bool = False) -> bool:
         if data is None:
             return False
+        if search and not create:
+            if 'number' in data and 'currency' in data:
+                return True
+            else:
+                return False
         if 'type' not in data or 'currency' not in data:
             return False
         if 'name' not in data and "number" not in data:

@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedCategory
 from jal.widgets.helpers import ManipulateDate
 from jal.db.db import JalDB
+from jal.db.account import JalAccount
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.operations import Dividend
 from jal.data_import.statement import FOF, Statement_ImportError
@@ -847,9 +848,7 @@ class StatementIBKR(StatementXML):
                      (x['type'] == FOF.PAYMENT_DIVIDEND or x['type'] == FOF.PAYMENT_STOCK_DIVIDEND)
                      and x['asset'] == asset_id and x['account'] == account_id]
         account = [x for x in self._data[FOF.ACCOUNTS] if x["id"] == account_id][0]
-        currency = [x for x in self._data[FOF.ASSETS] if x["id"] == account['currency']][0]
-        currency_symbol = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == currency['id']][0]
-        db_account = JalDB().find_account(account['number'], JalDB().get_asset_id({'symbol': currency_symbol['symbol']}))
+        db_account = JalAccount(data=account, search=True, create=False).id()
         asset = [x for x in self._data[FOF.ASSETS] if x["id"] == asset_id][0]
         isin = asset['isin'] if 'isin' in asset else ''
         symbols = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == asset_id]
