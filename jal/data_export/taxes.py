@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 
 from PySide6.QtWidgets import QApplication
-from jal.constants import Setup, PredefinedAsset, PredefinedCategory
+from jal.constants import PredefinedAsset, PredefinedCategory
 from jal.db.helpers import executeSQL, readSQLrecord, readSQL
 from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
 from jal.db.settings import JalSettings
