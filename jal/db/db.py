@@ -247,14 +247,6 @@ class JalDB:
                                [(":name", search_data['name'])])
         return asset_id
 
-    def add_asset(self, asset_type, name, isin, country_code=''):
-        country_id = get_country_by_code(country_code)
-        query = executeSQL("INSERT INTO assets (type_id, full_name, isin, country_id) "
-                           "VALUES (:type, :full_name, :isin, :country_id)",
-                           [(":type", asset_type), (":full_name", name),
-                            (":isin", isin), (":country_id", country_id)], commit=True)
-        return query.lastInsertId()
-
     def update_asset_data(self, asset_id, data):
         asset = readSQL("SELECT type_id, isin, full_name FROM assets WHERE id=:asset_id",
                         [(":asset_id", asset_id)], named=True)

@@ -6,9 +6,20 @@ from jal.db.db import JalDB
 
 
 class JalAsset(JalDB):
-    def __init__(self, id : int = 0) -> None:
+    def __init__(self, id: int = 0, new_asset: dict = None) -> None:
         super().__init__()
-        self._id = id
+        if new_asset is not None:
+            isin = new_asset['isin'] if 'isin' in new_asset else ''
+            name = new_asset['name'] if 'name' in new_asset else ''
+            country = new_asset['country'] if 'country' in new_asset else ''
+            query = self._executeSQL(
+                "INSERT INTO assets (type_id, full_name, isin, country_id) "
+                "VALUES (:type, :full_name, :isin, coalesce((SELECT id FROM countries WHERE code=''), 0))",
+                [(":type", new_asset['type']), (":full_name", name),
+                 (":isin", isin), (":country_id", country)], commit=True)
+            self._id = query.lastInsertId()
+        else:
+            self._id = id
         self._data = self._readSQL("SELECT type_id, full_name, country_id FROM assets WHERE id=:id",
                                    [(":id", self._id)], named=True)
         self._type = self._data['type_id'] if self._data is not None else None

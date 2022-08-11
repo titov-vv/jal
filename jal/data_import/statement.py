@@ -301,13 +301,15 @@ class Statement(QObject):   # derived from QObject to have proper string transla
 
     def _import_assets(self, assets):
         for asset in assets:
-            isin = asset['isin'] if 'isin' in asset else ''
-            name = asset['name'] if 'name' in asset else ''
-            country_code = asset['country'] if 'country' in asset else ''
             if asset['id'] < 0:
-                JalDB().update_asset_data(-asset['id'], {'isin': isin, 'name': name, 'country': country_code})
+                JalDB().update_asset_data(-asset['id'], asset)
                 continue
-            asset_id = JalDB().add_asset(self._asset_types[asset['type']], name, isin, country_code=country_code)
+            asset_data = asset.copy()
+            asset_data['type'] = self._asset_types[asset_data['type']]
+            asset_data['isin'] = asset_data['isin'] if 'isin' in asset_data else ''
+            asset_data['name'] = asset_data['name'] if 'name' in asset_data else ''
+            asset_data['country'] = asset_data['country'] if 'country' in asset_data else ''
+            asset_id = JalAsset(new_asset=asset_data).id()
             if asset_id:
                 old_id, asset['id'] = asset['id'], -asset_id
                 self._update_id("asset", old_id, asset_id)
