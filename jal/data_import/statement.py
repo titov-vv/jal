@@ -9,7 +9,7 @@ from collections import defaultdict
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QDialog, QMessageBox
-from jal.constants import Setup, MarketDataFeed, PredefinedAsset
+from jal.constants import Setup, MarketDataFeed, PredefinedAsset, PredefindedAccountType
 from jal.db.helpers import get_app_path
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
@@ -306,15 +306,12 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 continue
             asset_data = asset.copy()
             asset_data['type'] = self._asset_types[asset_data['type']]
-            asset_data['isin'] = asset_data['isin'] if 'isin' in asset_data else ''
-            asset_data['name'] = asset_data['name'] if 'name' in asset_data else ''
-            asset_data['country'] = asset_data['country'] if 'country' in asset_data else ''
-            asset_id = JalAsset(new_asset=asset_data).id()
-            if asset_id:
-                old_id, asset['id'] = asset['id'], -asset_id
-                self._update_id("asset", old_id, asset_id)
+            new_asset = JalAsset(new_asset=asset_data)
+            if new_asset.id():
+                old_id, asset['id'] = asset['id'], -new_asset.id()
+                self._update_id("asset", old_id, new_asset.id())
                 if asset['type'] == FOF.ASSET_MONEY:
-                    self._update_id("currency", old_id, asset_id)
+                    self._update_id("currency", old_id, new_asset.id())
             else:
                 raise Statement_ImportError(self.tr("Can't create asset: ") + f"{asset}")
 
@@ -347,11 +344,13 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 continue
             if account['currency'] > 0:
                 raise Statement_ImportError(self.tr("Unmatched currency for account: ") + f"{account}")
-            precision = account['precision'] if "precision" in account else Setup.DEFAULT_ACCOUNT_PRECISION
-            account_id = JalDB().add_account(account['number'], -account['currency'], precision=precision)
-            if account_id:
-                old_id, account['id'] = account['id'], -account_id
-                self._update_id("account", old_id, account_id)
+            account_data = account.copy()
+            account_data['type'] = PredefindedAccountType.Investment if 'type' not in account_data else account_data['type']
+            account_data['currency'] = -account_data['currency']  # all currencies are already in db
+            new_account = JalAccount(data=account_data, search=True, create=True)
+            if new_account.id():
+                old_id, account['id'] = account['id'], -new_account.id()
+                self._update_id("account", old_id, new_account.id())
             else:
                 raise Statement_ImportError(self.tr("Can't create account: ") + f"{account}")
     

@@ -2,7 +2,7 @@ from jal.db.db import JalDB
 
 
 class JalCategory(JalDB):
-    def __init__(self, id=0):
+    def __init__(self, id: int = 0):
         super().__init__()
         self._id = id
         self._data = self._readSQL("SELECT name FROM categories WHERE id=:category_id",

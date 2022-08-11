@@ -104,7 +104,7 @@ def readSQLrecord(query, named=False):
         else:
             values.append(query.value(i))
     if values:
-        if len(values) == 1:
+        if len(values) == 1 and not named:
             return values[0]
         else:
             return values

@@ -1,12 +1,34 @@
 from decimal import Decimal
 from jal.db.db import JalDB
-from jal.constants import Setup, BookAccount
+from jal.db.asset import JalAsset
+from jal.db.peer import JalPeer
+from jal.constants import Setup, BookAccount, PredefindedAccountType
 
 
 class JalAccount(JalDB):
-    def __init__(self, id=0) -> None:
+    def __init__(self, id: int = 0, data: dict = None, search=False, create=False) -> None:
         super().__init__()
         self._id = id
+        if self._valid_data(data):
+            if search:
+                self._id = self._find_account(data)
+            if create and not self._id:   # If we haven't found peer before and requested to create new record
+                similar_id = self._readSQL("SELECT id FROM accounts WHERE :number=number",
+                                           [(":number", data['number'])])
+                if similar_id:
+                    self._id = self._copy_similar_account(similar_id, data)
+                else:   # Create new account record
+                    if data['type'] == PredefindedAccountType.Investment and data['organization'] is None:
+                        data['organization'] = JalPeer(
+                            data={'name': self.tr("Bank for account #" + str(data['number']))},
+                            search=True, create=True).id()
+                    query = self._executeSQL(
+                        "INSERT INTO accounts (type_id, name, active, number, currency_id, organization_id, precision) "
+                        "VALUES(:type, :name, 1, :number, :currency, :organization, :precision)",
+                        [(":type", data['type']), (":name", data['name']), (":number", data['number']),
+                         (":currency", data['currency']), (":organization", data['organization']),
+                         (":precision", data['precision'])], commit=True)
+                    self._id = query.lastInsertId()
         self._data = self._readSQL("SELECT name, currency_id, organization_id, reconciled_on, precision "
                                    "FROM accounts WHERE id=:id", [(":id", self._id)], named=True)
         self._name = self._data['name'] if self._data is not None else None
@@ -26,6 +48,13 @@ class JalAccount(JalDB):
 
     def organization(self) -> int:
         return self._organization_id
+
+    def set_organization(self, peer_id: int) -> None:
+        if not peer_id:
+            peer_id = None
+        _ = self._executeSQL("UPDATE accounts SET organization_id=:peer_id WHERE id=:id",
+                             [(":id", self._id), (":peer_id", peer_id)])
+        self._organization_id = peer_id
 
     def reconciled_at(self) -> int:
         return self._reconciled
@@ -56,3 +85,39 @@ class JalAccount(JalDB):
         amount = Decimal(value) if value is not None else Decimal('0')
         return amount
 
+    def _valid_data(self, data: dict) -> bool:
+        if data is None:
+            return False
+        if 'type' not in data or 'currency' not in data:
+            return False
+        if 'name' not in data and "number" not in data:
+            return False
+        if "name" not in data:
+            data['name'] = data['number'] + '.' + JalAsset(data['currency']).symbol()
+        data['organization'] = data['organization'] if 'organization' in data else None
+        data['precision'] = data['precision'] if "precision" in data else Setup.DEFAULT_ACCOUNT_PRECISION
+        return True
+
+    def _find_account(self, data: dict) -> int:
+        id = self._readSQL("SELECT id FROM accounts WHERE number=:account_number AND currency_id=:currency",
+                           [(":account_number", data['number']), (":currency", data['currency'])], check_unique=True)
+        if id is None:
+            return 0
+        else:
+            return id
+
+    # Creates new account with different based on existing one.
+    # Currency is taken from data['currency']. Name is auto-generated in form of AccountNumber.CurrencyName
+    def _copy_similar_account(self, similar_id: int, data: dict) -> int:
+        similar = JalAccount(similar_id)
+        currency = JalAsset(similar.currency())
+        new_currency = JalAsset(data['currency'])
+        if similar.name()[-len(currency.symbol()):] == currency.symbol():
+            name = similar.name()[:-len(currency.symbol())] + new_currency.symbol()
+        else:
+            name = similar.name() + '.' + new_currency.symbol()
+        query = self._executeSQL(
+            "INSERT INTO accounts (type_id, name, currency_id, active, number, organization_id, country_id, precision) "
+            "SELECT type_id, :name, :currency, active, number, organization_id, country_id, precision "
+            "FROM accounts WHERE id=:id", [(":id", similar.id()), (":name", name), (":currency", new_currency.id())])
+        return query.lastInsertId()

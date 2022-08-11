@@ -180,7 +180,7 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
     # validate peers
     test_peers = [
         [1, 0, 'IB', ''],
-        [2, 0, 'Bank for #TEST_ACC', '']
+        [2, 0, 'Bank for account #TEST_ACC', '']
     ]
     assert readSQL("SELECT COUNT(*) FROM agents") == len(test_peers)
     for i, peer in enumerate(test_peers):

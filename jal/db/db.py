@@ -177,42 +177,6 @@ class JalDB:
         return readSQL("SELECT id FROM accounts WHERE number=:account_number AND currency_id=:currency",
                        [(":account_number", account_number), (":currency", currency_code)], check_unique=True)
 
-    def add_account(self, account_number, currency_id,
-                    account_type=PredefindedAccountType.Investment, precision=Setup.DEFAULT_ACCOUNT_PRECISION):
-        account_id = self.find_account(account_number, currency_id)
-        if account_id:  # Account already exists
-            logging.warning(self.tr("Account already exists: ") +
-                            f"{account_number} ({self.__get_asset_name(currency_id)})")
-            return account_id
-        currency = self.__get_asset_name(currency_id)
-        account = readSQL("SELECT a.name, a.organization_id, a.country_id, c.symbol AS currency FROM accounts a "
-                          "LEFT JOIN assets_ext c ON c.id=a.currency_id WHERE a.number=:number LIMIT 1",
-                          [(":number", account_number)], named=True)
-        if account:  # Account with the same number but different currency exists
-            if account['name'][-len(account['currency']):] == account['currency']:
-                new_name = account['name'][:-len(account['currency'])] + currency
-            else:
-                new_name = account['name'] + '.' + currency
-            query = executeSQL(
-                "INSERT INTO accounts (type_id, name, active, number, currency_id, organization_id, country_id, precision) "
-                "SELECT a.type_id, :new_name, a.active, a.number, :currency_id, a.organization_id, a.country_id, a.precision "
-                "FROM accounts AS a LEFT JOIN assets AS c ON c.id=:currency_id "
-                "WHERE number=:account_number LIMIT 1",
-                [(":account_number", account_number), (":currency_id", currency_id), (":new_name", new_name)])
-            return query.lastInsertId()
-
-        bank_name = self.tr("Bank for #" + account_number)
-        bank_id = readSQL("SELECT id FROM agents WHERE name=:bank_name", [(":bank_name", bank_name)])
-        if bank_id is None:
-            query = executeSQL("INSERT INTO agents (pid, name) VALUES (0, :bank_name)", [(":bank_name", bank_name)])
-            bank_id = query.lastInsertId()
-        query = executeSQL("INSERT INTO accounts (type_id, name, active, number, currency_id, organization_id, precision) "
-                           "VALUES(:type, :name, 1, :number, :currency, :bank, :precision)",
-                           [(":type", account_type), (":name", account_number+'.'+currency),
-                            (":number", account_number), (":currency", currency_id), (":bank", bank_id),
-                            (":precision", precision)])
-        return query.lastInsertId()
-
     # Searches for asset_id in database based on keys available in search data:
     # first by 'isin', then by 'reg_number', next by 'symbol' and other
     # Returns: asset_id or None if not found
