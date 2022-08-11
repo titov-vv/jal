@@ -5,8 +5,8 @@ from pkg_resources import parse_version
 from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtSql import QSql, QSqlDatabase
 
-from jal.constants import Setup, PredefindedAccountType, AssetData, PredefinedAsset
-from jal.db.helpers import db_connection, executeSQL, readSQL, readSQLrecord, get_country_by_code, get_dbfilename
+from jal.constants import Setup, AssetData
+from jal.db.helpers import db_connection, executeSQL, readSQL, readSQLrecord, get_dbfilename
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -168,11 +168,6 @@ class JalDB:
         sql = f"UPDATE view_params SET {field_name}=:value WHERE view_name=:view AND param_name=:param"
         _ = executeSQL(sql, [(":value", value), (":view", view_name), (":param", param_name)])
 
-    def __get_asset_name(self, asset_id):
-        # FIXME Get rid of this internal methods after refactoring add_account() and update_asset_data()
-        return readSQL("SELECT symbol FROM assets AS a LEFT JOIN asset_tickers AS s "   
-                       "ON s.asset_id=a.id AND s.active=1 WHERE a.id=:asset_id", [(":asset_id", asset_id)])
-
     # Searches for asset_id in database based on keys available in search data:
     # first by 'isin', then by 'reg_number', next by 'symbol' and other
     # Returns: asset_id or None if not found
@@ -206,61 +201,6 @@ class JalDB:
             asset_id = readSQL("SELECT id FROM assets_ext WHERE full_name=:name COLLATE NOCASE",
                                [(":name", search_data['name'])])
         return asset_id
-
-    def update_asset_data(self, asset_id, data):
-        asset = readSQL("SELECT type_id, isin, full_name FROM assets WHERE id=:asset_id",
-                        [(":asset_id", asset_id)], named=True)
-        if asset is None:
-            logging.warning(self.tr("Asset not found for update: ") + f"{data}")
-            return
-        if 'isin' in data and data['isin']:
-            if asset['isin']:
-                if asset['isin'] != data['isin']:
-                    logging.error(self.tr("Unexpected attempt to update ISIN for ")
-                                  + f"{self.__get_asset_name(asset_id)}: {asset['isin']} -> {data['isin']}")
-            else:
-                _ = executeSQL("UPDATE assets SET isin=:new_isin WHERE id=:asset_id",
-                               [(":new_isin", data['isin']), (":asset_id", asset_id)])
-        if 'name' in data and data['name']:
-            if not asset['full_name']:
-                _ = executeSQL("UPDATE assets SET full_name=:new_name WHERE id=:asset_id",
-                               [(":new_name", data['name']), (":asset_id", asset_id)])
-        if 'country' in data and data['country']:
-            country_id, country_code = readSQL("SELECT a.country_id, c.code FROM assets AS a LEFT JOIN countries AS c "
-                                               "ON a.country_id=c.id WHERE a.id=:asset_id", [(":asset_id", asset_id)])
-            if (country_id == 0) or (country_code.lower() != data['country'].lower()):
-                new_country_id = get_country_by_code(data['country'])
-                _ = executeSQL("UPDATE assets SET country_id=:new_country_id WHERE id=:asset_id",
-                               [(":new_country_id", new_country_id), (":asset_id", asset_id)])
-                if country_id != 0:
-                    logging.info(self.tr("Country updated for ")
-                                 + f"{self.__get_asset_name(asset_id)}: {country_code} -> {data['country']}")
-        if 'reg_number' in data and data['reg_number']:
-            reg_number = readSQL("SELECT value FROM asset_data WHERE datatype=:datatype AND asset_id=:asset_id",
-                                 [(":datatype", AssetData.RegistrationCode), (":asset_id", asset_id)])
-            if reg_number != data['reg_number']:
-                _ = executeSQL("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
-                               "VALUES(:asset_id, :datatype, :reg_number)",
-                               [(":asset_id", asset_id), (":datatype", AssetData.RegistrationCode),
-                                (":reg_number", data['reg_number'])])
-                if reg_number:
-                    logging.info(self.tr("Reg.number updated for ")
-                                 + f"{self.__get_asset_name(asset_id)}: {reg_number} -> {data['reg_number']}")
-        if 'expiry' in data and data['expiry']:
-            _ = executeSQL("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
-                           "VALUES(:asset_id, :datatype, :expiry)",
-                           [(":asset_id", asset_id), (":datatype", AssetData.ExpiryDate),
-                            (":expiry", data['expiry'])])
-        if 'principal' in data and asset['type_id'] == PredefinedAsset.Bond:
-            try:
-                principal = float(data['principal'])
-                if principal > 0:
-                    _ = executeSQL("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
-                                   "VALUES(:asset_id, :datatype, :principal)",
-                                   [(":asset_id", asset_id), (":datatype", AssetData.PrincipalValue),
-                                    (":principal", principal)])
-            except ValueError:
-                pass
 
     # This method creates a db record in 'table' name that describes relevant operation.
     # 'data' is a dict that contains operation data and dict 'fields' describes it having

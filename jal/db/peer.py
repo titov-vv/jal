@@ -12,9 +12,9 @@ class JalPeer(JalDB):
                 query = self._executeSQL("INSERT INTO agents (pid, name) VALUES (:pid, :name)",
                                          [(":pid", data['parent']), (":name", data['name'])])
                 self._id = query.lastInsertId()
-            self._data = self._readSQL("SELECT name FROM agents WHERE id=:peer_id",
-                                       [(":peer_id", self._id)], named=True)
-            self._name = self._data['name'] if self._data is not None else None
+        self._data = self._readSQL("SELECT name FROM agents WHERE id=:peer_id",
+                                   [(":peer_id", self._id)], named=True)
+        self._name = self._data['name'] if self._data is not None else None
 
     def id(self) -> int:
         return self._id

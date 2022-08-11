@@ -307,7 +307,7 @@ class QuoteDownloader(QObject):
             expiry = asset['expiry'] if 'expiry' in asset else 0
             principal = asset['principal'] if 'principal' in asset else 0
             details = {'isin': isin, 'reg_number': reg_number, 'expiry': expiry, 'principal': principal}
-            JalDB().update_asset_data(asset_id, details)
+            JalAsset(asset_id).update_data(details)
 
         # Get price history
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d')
@@ -428,4 +428,4 @@ class QuoteDownloader(QObject):
                         logging.info(self.tr("New full name found for: ")
                                      + f"{JalAsset(asset['id']).symbol()}: {asset['full_name']} -> {data['name']}")
                     isin = data['isin'] if not asset['isin'] and 'isin' in data and data['isin'] else ''
-                    JalDB().update_asset_data(asset['id'], {'isin': isin})
+                    JalAsset(asset['id']).update_data({'isin': isin})

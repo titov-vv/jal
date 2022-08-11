@@ -304,7 +304,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     def _import_assets(self, assets):
         for asset in assets:
             if asset['id'] < 0:
-                JalDB().update_asset_data(-asset['id'], asset)
+                JalAsset(-asset['id']).update_data(asset)
                 continue
             asset_data = asset.copy()
             asset_data['type'] = self._asset_types[asset_data['type']]
@@ -338,7 +338,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         for detail in data:
             if detail['asset'] > 0:
                 raise Statement_ImportError(self.tr("Asset data aren't linked to asset: ") + f"{detail}")
-            JalDB().update_asset_data(-detail['asset'], detail)
+            JalAsset(-detail['asset']).update_data(detail)
     
     def _import_accounts(self, accounts):
         for account in accounts:

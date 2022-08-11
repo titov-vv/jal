@@ -1,8 +1,9 @@
 import logging
 from datetime import datetime
-from decimal import Decimal
-from jal.constants import MarketDataFeed
+from decimal import Decimal, InvalidOperation
+from jal.constants import MarketDataFeed, AssetData, PredefinedAsset
 from jal.db.db import JalDB
+from jal.db.country import JalCountry
 
 
 class JalAsset(JalDB):
@@ -20,11 +21,14 @@ class JalAsset(JalDB):
             self._id = query.lastInsertId()
         else:
             self._id = id
-        self._data = self._readSQL("SELECT type_id, full_name, country_id FROM assets WHERE id=:id",
+        self._data = self._readSQL("SELECT type_id, full_name, isin, country_id FROM assets WHERE id=:id",
                                    [(":id", self._id)], named=True)
         self._type = self._data['type_id'] if self._data is not None else None
         self._name = self._data['full_name'] if self._data is not None else ''
+        self._isin = self._data['isin'] if self._data is not None else None
         self._country_id = self._data['country_id'] if self._data is not None else None
+        self._reg_number = self._readSQL("SELECT value FROM asset_data WHERE datatype=:datatype AND asset_id=:id",
+                                         [(":datatype", AssetData.RegistrationCode), (":id", self._id)])
 
     def id(self) -> int:
         return self._id
@@ -97,3 +101,78 @@ class JalAsset(JalDB):
                          f"{self.symbol(currency_id)} ({JalAsset(currency_id).symbol()}) "  
                          f"{datetime.utcfromtimestamp(begin).strftime('%d/%m/%Y')} - "
                          f"{datetime.utcfromtimestamp(end).strftime('%d/%m/%Y')}")
+
+    # Updates relevant asset data fields with information provided in data dictionary
+    def update_data(self, data: dict) -> None:
+        updaters = {
+            'isin': self._update_isin,
+            'name': self._update_name,
+            'country': self._update_country,
+            'reg_number': self._update_reg_number,
+            'expiry': self._update_expiration,
+            'principal': self._update_principal
+        }
+        if not self._id:
+            return
+        for key in data:
+            if data[key]:
+                try:
+                    updaters[key](data[key])
+                except KeyError:  # No updater for this key is present
+                    continue
+
+    def _update_isin(self, new_isin: str) -> None:
+        if self._isin:
+            if new_isin != self._isin:
+                logging.error(self.tr("Unexpected attempt to update ISIN for ")
+                              + f"{self.symbol()}: {self._isin} -> {new_isin}")
+        else:
+            _ = self._executeSQL("UPDATE assets SET isin=:new_isin WHERE id=:id",
+                                 [(":new_isin", new_isin), (":id", self._id)])
+            self._isin = new_isin
+
+    def _update_name(self, new_name: str) -> None:
+        if not self._name:
+            _ = self._executeSQL("UPDATE assets SET full_name=:new_name WHERE id=:id",
+                                 [(":new_name", new_name), (":id", self._id)])
+            self._name = new_name
+
+    def _update_country(self, new_code: str) -> None:
+        country = JalCountry(self._country_id)
+        if new_code.lower() != country.code().lower():
+            new_country = JalCountry(data={'code': new_code.lower()}, search=True)
+            if new_country.id():
+                _ = self._executeSQL("UPDATE assets SET country_id=:new_country_id WHERE id=:asset_id",
+                                     [(":new_country_id", new_country.id()), (":asset_id", self._id)])
+                self._country_id = new_country.id()
+                logging.info(self.tr("Country updated for ")
+                             + f"{self.symbol()}: {country.name()} -> {new_country.name()}")
+
+    def _update_reg_number(self, new_number: str) -> None:
+        if new_number != self._reg_number:
+            _ = self._executeSQL("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
+                                 "VALUES(:asset_id, :datatype, :reg_number)",
+                                 [(":asset_id", self._id), (":datatype", AssetData.RegistrationCode),
+                                  (":reg_number", new_number)])
+            self._reg_number = new_number
+            logging.info(self.tr("Reg.number updated for ")
+                         + f"{self.symbol()}: {self._reg_number} -> {new_number}")
+
+    def _update_expiration(self, new_expiration: int) -> None:
+        _ = self._executeSQL("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
+                             "VALUES(:asset_id, :datatype, :expiry)",
+                             [(":asset_id", self._id), (":datatype", AssetData.ExpiryDate),
+                              (":expiry", str(new_expiration))])
+
+    def _update_principal(self, principal: str) -> None:
+        if self._type != PredefinedAsset.Bond:
+            return
+        try:
+            principal = Decimal(principal)
+        except InvalidOperation:
+            return
+        if principal > Decimal('0'):
+            _ = self._executeSQL("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
+                                 "VALUES(:asset_id, :datatype, :principal)",
+                                 [(":asset_id", self._id), (":datatype", AssetData.PrincipalValue),
+                                  (":principal", str(principal))])

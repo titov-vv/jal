@@ -1,7 +1,6 @@
 import os
 import logging
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
-from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
 from jal.constants import Setup
 
@@ -110,14 +109,3 @@ def readSQLrecord(query, named=False):
             return values
     else:
         return None
-
-
-# -------------------------------------------------------------------------------------------------------------------
-def get_country_by_code(country_code):
-    if not country_code:
-        return 0
-    country_id = readSQL("SELECT id FROM countries WHERE code=:code", [(":code", country_code)], check_unique=True)
-    if country_id is None:
-        country_id = 0
-        logging.warning(QApplication.translate('DB', "Unknown country code: ") + f"'{country_code}'")
-    return country_id
