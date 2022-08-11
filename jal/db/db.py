@@ -5,7 +5,7 @@ from pkg_resources import parse_version
 from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtSql import QSql, QSqlDatabase
 
-from jal.constants import Setup, AssetData
+from jal.constants import Setup
 from jal.db.helpers import db_connection, executeSQL, readSQL, readSQLrecord, get_dbfilename
 
 
@@ -167,40 +167,6 @@ class JalDB:
         field_name = fields[param_type]
         sql = f"UPDATE view_params SET {field_name}=:value WHERE view_name=:view AND param_name=:param"
         _ = executeSQL(sql, [(":value", value), (":view", view_name), (":param", param_name)])
-
-    # Searches for asset_id in database based on keys available in search data:
-    # first by 'isin', then by 'reg_number', next by 'symbol' and other
-    # Returns: asset_id or None if not found
-    def get_asset_id(self, search_data):
-        asset_id = None
-        if 'isin' in search_data and search_data['isin']:
-            if 'symbol' in search_data and search_data['symbol']:
-                return readSQL("SELECT id FROM assets_ext WHERE (isin=:isin OR isin='') AND symbol=:symbol",
-                               [(":isin", search_data['isin']), (":symbol", search_data['symbol'])])
-            else:
-                return readSQL("SELECT id FROM assets WHERE isin=:isin", [(":isin", search_data['isin'])])
-        if asset_id is None and 'reg_number' in search_data and search_data['reg_number']:
-            asset_id = readSQL("SELECT asset_id FROM asset_data WHERE datatype=:datatype AND value=:reg_number",
-                               [(":datatype", AssetData.RegistrationCode), (":reg_number", search_data['reg_number'])])
-        if asset_id is None and 'symbol' in search_data and search_data['symbol']:
-            if 'type' in search_data:
-                if 'expiry' in search_data:
-                    asset_id = readSQL("SELECT a.id FROM assets_ext a "
-                                       "LEFT JOIN asset_data d ON a.id=d.asset_id AND d.datatype=:datatype "
-                                       "WHERE symbol=:symbol COLLATE NOCASE AND type_id=:type AND value=:value",
-                                       [(":datatype", AssetData.ExpiryDate), (":symbol", search_data['symbol']),
-                                        (":type", search_data['type']), (":value", search_data['expiry'])])
-                else:
-                    asset_id = readSQL("SELECT id FROM assets_ext "
-                                       "WHERE symbol=:symbol COLLATE NOCASE and type_id=:type",
-                                       [(":symbol", search_data['symbol']), (":type", search_data['type'])])
-            else:
-                asset_id = readSQL("SELECT id FROM assets_ext WHERE symbol=:symbol COLLATE NOCASE",
-                                   [(":symbol", search_data['symbol'])])
-        if asset_id is None and 'name' in search_data and search_data['name']:
-            asset_id = readSQL("SELECT id FROM assets_ext WHERE full_name=:name COLLATE NOCASE",
-                               [(":name", search_data['name'])])
-        return asset_id
 
     # This method creates a db record in 'table' name that describes relevant operation.
     # 'data' is a dict that contains operation data and dict 'fields' describes it having

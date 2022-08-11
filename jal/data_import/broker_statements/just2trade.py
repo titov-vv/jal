@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from jal.constants import PredefinedCategory
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xls import StatementXLS
-from jal.db.db import JalDB
+from jal.db.asset import JalAsset
 
 JAL_STATEMENT_CLASS = "StatementJ2T"
 
@@ -271,11 +271,8 @@ class StatementJ2T(StatementXLS):
         candidates = [x for x in self._data[FOF.ASSETS] if 'name' in x and x['name'] == asset_name]
         if len(candidates) == 1:
             return candidates[0]["id"]
-        asset_id = JalDB().get_asset_id({'name': asset_name})
-        if asset_id is None:
-            return 0
-        else:
-            return -asset_id  # Negative value to indicate that asset was found in db
+        asset_id = JalAsset(data={'name': asset_name}, search=True, create=False).id()
+        return -asset_id  # Negative value to indicate that asset was found in db
 
     # This methods finds dividend with given parameters in already loaded JSON data
     def _locate_dividend(self, asset_id, timestamp, ex_date):

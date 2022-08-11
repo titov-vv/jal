@@ -7,8 +7,8 @@ from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedCategory
 from jal.widgets.helpers import ManipulateDate
-from jal.db.db import JalDB
 from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.operations import Dividend
 from jal.data_import.statement import FOF, Statement_ImportError
@@ -852,8 +852,8 @@ class StatementIBKR(StatementXML):
         asset = [x for x in self._data[FOF.ASSETS] if x["id"] == asset_id][0]
         isin = asset['isin'] if 'isin' in asset else ''
         symbols = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == asset_id]
-        db_asset = JalDB().get_asset_id({'isin': isin, 'symbol': symbols[0]['symbol']})
-        if db_account is not None and db_asset is not None:
+        db_asset = JalAsset(data={'isin': isin, 'symbol': symbols[0]['symbol']}, search=True, create=False).id()
+        if db_account and db_asset:
             query = executeSQL(
                 "SELECT -id AS id, -account_id AS account, timestamp, number, "
                 "-asset_id AS asset, amount, tax, note as description FROM dividends "

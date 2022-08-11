@@ -7,20 +7,19 @@ from jal.db.country import JalCountry
 
 
 class JalAsset(JalDB):
-    def __init__(self, id: int = 0, new_asset: dict = None) -> None:
+    def __init__(self, id: int = 0, data: dict = None, search: bool = False, create: bool = False) -> None:
         super().__init__()
-        if new_asset is not None:
-            isin = new_asset['isin'] if 'isin' in new_asset else ''
-            name = new_asset['name'] if 'name' in new_asset else ''
-            country = new_asset['country'] if 'country' in new_asset else ''
-            query = self._executeSQL(
-                "INSERT INTO assets (type_id, full_name, isin, country_id) "
-                "VALUES (:type, :full_name, :isin, coalesce((SELECT id FROM countries WHERE code=''), 0))",
-                [(":type", new_asset['type']), (":full_name", name),
-                 (":isin", isin), (":country_id", country)], commit=True)
-            self._id = query.lastInsertId()
-        else:
-            self._id = id
+        self._id = id
+        if self._valid_data(data, search, create):
+            if search:
+                self._id = self._find_asset(data)
+            if create and not self._id:   # If we haven't found peer before and requested to create new record
+                query = self._executeSQL(
+                    "INSERT INTO assets (type_id, full_name, isin, country_id) "
+                    "VALUES (:type, :full_name, :isin, coalesce((SELECT id FROM countries WHERE code=''), 0))",
+                    [(":type", data['type']), (":full_name", data['name']),
+                     (":isin", data['isin']), (":country_id", data['country'])], commit=True)
+                self._id = query.lastInsertId()
         self._data = self._readSQL("SELECT type_id, full_name, isin, country_id FROM assets WHERE id=:id",
                                    [(":id", self._id)], named=True)
         self._type = self._data['type_id'] if self._data is not None else None
@@ -176,3 +175,54 @@ class JalAsset(JalDB):
                                  "VALUES(:asset_id, :datatype, :principal)",
                                  [(":asset_id", self._id), (":datatype", AssetData.PrincipalValue),
                                   (":principal", str(principal))])
+
+    def _valid_data(self, data: dict, search: bool = False, create: bool = False) -> bool:
+        if data is None:
+            return False
+        data['isin'] = data['isin'] if 'isin' in data else ''
+        data['name'] = data['name'] if 'name' in data else ''
+        data['country'] = data['country'] if 'country' in data else ''
+        data['symbol'] = data['symbol'] if 'symbol' in data else ''
+        data['reg_number'] = data['reg_number'] if 'reg_number' in data else ''
+        return True
+
+    def _find_asset(self, data: dict) -> int:
+        id = None
+        if data['isin']:
+            # Select either by ISIN if no symbol given OR by both ISIN & symbol
+            id = self._readSQL("SELECT id FROM assets_ext "
+                               "WHERE ((isin=:isin OR isin='') AND symbol=:symbol) OR (isin=:isin AND :symbol='')",
+                               [(":isin", data['isin']), (":symbol", data['symbol'])])
+            if id is None:
+                return 0
+            else:
+                return id
+        if data['reg_number']:
+            id = self._readSQL("SELECT asset_id FROM asset_data WHERE datatype=:datatype AND value=:reg_number",
+                               [(":datatype", AssetData.RegistrationCode), (":reg_number", data['reg_number'])])
+            if id is not None:
+                return id
+        if data['symbol']:
+            if 'type' in data:
+                if 'expiry' in data:
+                    id = self._readSQL("SELECT a.id FROM assets_ext a "
+                                       "LEFT JOIN asset_data d ON a.id=d.asset_id AND d.datatype=:datatype "
+                                       "WHERE symbol=:symbol COLLATE NOCASE AND type_id=:type AND value=:value",
+                                       [(":datatype", AssetData.ExpiryDate), (":symbol", data['symbol']),
+                                        (":type", data['type']), (":value", data['expiry'])])
+                else:
+                    id = self._readSQL("SELECT id FROM assets_ext "
+                                       "WHERE symbol=:symbol COLLATE NOCASE and type_id=:type",
+                                       [(":symbol", data['symbol']), (":type", data['type'])])
+            else:
+                id = self._readSQL("SELECT id FROM assets_ext WHERE symbol=:symbol COLLATE NOCASE",
+                                   [(":symbol", data['symbol'])])
+            if id is not None:
+                return id
+        if data['name']:
+            id = self._readSQL("SELECT id FROM assets_ext WHERE full_name=:name COLLATE NOCASE",
+                               [(":name", data['name'])])
+        if id is None:
+            return 0
+        else:
+            return id

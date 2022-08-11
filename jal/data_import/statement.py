@@ -11,7 +11,6 @@ from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QDialog, QMessageBox
 from jal.constants import Setup, MarketDataFeed, PredefinedAsset, PredefindedAccountType
 from jal.db.helpers import get_app_path
-from jal.db.db import JalDB
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
@@ -165,8 +164,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if asset['type'] != FOF.ASSET_MONEY:
                 continue
             symbol = self._find_in_list(self._data[FOF.SYMBOLS], "asset", asset['id'])
-            asset_id = JalDB().get_asset_id({'symbol': symbol['symbol'], 'type': self._asset_types[asset['type']]})
-            if asset_id is not None:
+            asset_id = JalAsset(data={'symbol': symbol['symbol'], 'type': self._asset_types[asset['type']]},
+                                search=True, create=False).id()
+            if asset_id:
                 symbol['asset'] = -asset_id
                 old_id, asset['id'] = asset['id'], -asset_id
                 self._update_id("currency", old_id, asset_id)
@@ -178,8 +178,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if asset['id'] < 0:  # already matched
                 continue
             if 'isin' in asset:
-                asset_id = JalDB().get_asset_id({'isin': asset['isin']})
-                if asset_id is not None:
+                asset_id = JalAsset(data={'isin': asset['isin']}, search=True, create=False).id()
+                if asset_id:
                     old_id, asset['id'] = asset['id'], -asset_id
                     self._update_id("asset", old_id, asset_id)
 
@@ -189,8 +189,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if asset['asset'] < 0:  # already matched
                 continue
             if 'reg_number' in asset:
-                asset_id = JalDB().get_asset_id({'reg_number': asset['reg_number']})
-                if asset_id is not None:
+                asset_id = JalAsset(data={'reg_number': asset['reg_number']}, search=True, create=False).id()
+                if asset_id:
                     asset = self._find_in_list(self._data[FOF.ASSETS], "id", asset['asset'])
                     old_id, asset['id'] = asset['id'], -asset_id
                     self._update_id("asset", old_id, asset_id)
@@ -205,8 +205,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             data = self._find_in_list(self._data[FOF.ASSETS_DATA], "asset", symbol['asset'])
             if data is not None:
                 self._uppend_keys_from(search_data, data, ['expiry'])
-            asset_id = JalDB().get_asset_id(search_data)
-            if asset_id is not None:
+            asset_id = JalAsset(data=search_data, search=True, create=False).id()
+            if asset_id:
                 old_id, asset['id'] = asset['id'], -asset_id
                 self._update_id("asset", old_id, asset_id)
 
@@ -308,7 +308,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 continue
             asset_data = asset.copy()
             asset_data['type'] = self._asset_types[asset_data['type']]
-            new_asset = JalAsset(new_asset=asset_data)
+            new_asset = JalAsset(data=asset_data, search=False, create=True)
             if new_asset.id():
                 old_id, asset['id'] = asset['id'], -new_asset.id()
                 self._update_id("asset", old_id, new_asset.id())
