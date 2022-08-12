@@ -73,6 +73,22 @@ class JalAccount(JalDB):
         last_timestamp = 0 if last_timestamp == '' else last_timestamp
         return last_timestamp
 
+    # Returns a list of JalAsset objects corresponding to asssets present on account at given timestamp
+    def assets_list(self, timestamp: int) -> list:
+        assets = []
+        query = self._executeSQL(
+            "WITH _last_ids AS ("
+            "SELECT MAX(id) AS id, asset_id FROM ledger "
+            "WHERE account_id=:account_id AND timestamp<=:timestamp GROUP BY asset_id"
+            ") "
+            "SELECT l.asset_id "
+            "FROM ledger l JOIN _last_ids d ON l.asset_id=d.asset_id AND l.id=d.id "
+            "WHERE amount_acc!='0' AND book_account=:assets",
+            [(":account_id", self._id), (":timestamp", timestamp), (":assets", BookAccount.Assets)])
+        while query.next():
+            assets.append(JalAsset(int(self._readSQLrecord(query))))
+        return assets
+
     # Return amount of asset accumulated on account at given timestamp
     def get_asset_amount(self, timestamp: int, asset_id: int) -> Decimal:
         value = self._readSQL("SELECT amount_acc FROM ledger "
