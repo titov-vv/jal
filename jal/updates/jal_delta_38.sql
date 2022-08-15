@@ -5,6 +5,9 @@ PRAGMA foreign_keys = 0;
 -- Extend accounts table
 ALTER TABLE accounts ADD COLUMN precision INTEGER NOT NULL DEFAULT (2);
 --------------------------------------------------------------------------------
+DELETE FROM view_params WHERE view_name='last_account_value'
+DROP VIEW IF EXISTS last_account_value;
+--------------------------------------------------------------------------------
 -- Drop table books and modify ledger table to use TEXT instead of REAL for decimal storage
 DROP TABLE IF EXISTS ledger;
 CREATE TABLE ledger (

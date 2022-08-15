@@ -476,7 +476,6 @@ CREATE TABLE view_params (
     param_type TEXT    NOT NULL
 );
 INSERT OR REPLACE INTO view_params(id, value_i, view_name, param_name, param_type) VALUES(1, 0, "last_quotes", "timestamp", "int");
-INSERT OR REPLACE INTO view_params(id, value_i, view_name, param_name, param_type) VALUES(2, 0, "last_account_value", "timestamp", "int");
 INSERT OR REPLACE INTO view_params(id, value_i, view_name, param_name, param_type) VALUES(3, 0, "last_assets", "timestamp", "int");
 
 -- Below view uses parameter 1/timestamp/int
@@ -486,26 +485,6 @@ SELECT MAX(timestamp) AS timestamp, asset_id, currency_id, quote
 FROM quotes
 WHERE timestamp <= (SELECT value_i FROM view_params WHERE id=1)
 GROUP BY asset_id, currency_id;
-
--- Below view uses parameter 2/timestamp/int
-DROP VIEW IF EXISTS last_account_value;
-CREATE VIEW last_account_value AS
-SELECT id AS account_id, SUM(t_value) AS total_value
-FROM (
-   SELECT a.id, SUM(l.amount) AS t_value
-   FROM ledger AS l
-   LEFT JOIN accounts AS a ON l.account_id = a.id
-   WHERE (l.book_account = 3 OR l.book_account = 5) AND  l.timestamp <= (SELECT value_i FROM view_params WHERE id = 2)
-   GROUP BY a.id
-UNION ALL
-   SELECT a.id, SUM(l.amount * q.quote) AS t_value
-    FROM ledger AS l
-    LEFT JOIN accounts AS a ON l.account_id = a.id
-    LEFT JOIN last_quotes AS q ON l.asset_id = q.asset_id AND q.currency_id = a.currency_id
-    WHERE l.book_account = 4 AND l.timestamp <= (SELECT value_i FROM view_params WHERE id = 2)
-    GROUP BY a.id
-)
-GROUP BY account_id;
 
 -- Below view uses parameter 3/timestamp/int
 DROP VIEW IF EXISTS last_assets;
