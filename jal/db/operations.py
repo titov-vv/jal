@@ -379,6 +379,26 @@ class Dividend(LedgerTransaction):
         self._note = self._data['note']
         self._broker = self._account.organization()
 
+    # Returns a list of Dividend objects for given asset, account and subtype
+    @staticmethod
+    def get_list(account_id: int, asset_id: int, subtype: int) -> list:
+        dividends = []
+        query = JalDB._executeSQL("SELECT id FROM dividends "
+                                  "WHERE account_id=:account AND asset_id=:asset AND type=:type",
+                                  [(":account", account_id), (":asset", asset_id), (":type", subtype)])
+        while query.next():
+            dividends.append(Dividend(int(JalDB._readSQLrecord(query))))
+        return dividends
+
+    def amount(self) -> Decimal:
+        return self._amount
+
+    def tax(self) -> Decimal:
+        return self._tax
+
+    def note(self) -> str:
+        return self._note
+
     def description(self) -> str:
         return self._note + "\n" + self.tr("Tax: ") + self._asset.country_name()
 

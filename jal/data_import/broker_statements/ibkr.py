@@ -9,7 +9,6 @@ from jal.constants import PredefinedCategory
 from jal.widgets.helpers import ManipulateDate
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.operations import Dividend
 from jal.data_import.statement import FOF, Statement_ImportError
 from jal.data_import.statement_xml import StatementXML
@@ -854,17 +853,17 @@ class StatementIBKR(StatementXML):
         symbols = [x for x in self._data[FOF.SYMBOLS] if x["asset"] == asset_id]
         db_asset = JalAsset(data={'isin': isin, 'symbol': symbols[0]['symbol']}, search=True, create=False).id()
         if db_account and db_asset:
-            query = executeSQL(
-                "SELECT -id AS id, -account_id AS account, timestamp, number, "
-                "-asset_id AS asset, amount, tax, note as description FROM dividends "
-                "WHERE type=:div AND account_id=:account_id AND asset_id=:asset_id",
-                [(":div", Dividend.Dividend), (":account_id", db_account), (":asset_id", db_asset)],
-                forward_only=True)
-            while query.next():
-                db_dividend = readSQLrecord(query, named=True)
-                db_dividend['asset'] = asset_id
-                db_dividend['account'] = account_id
-                dividends.append(db_dividend)
+            for db_dividend in Dividend.get_list(db_account, db_asset, Dividend.Dividend):
+                dividends.append({
+                    "id": -db_dividend.oid(),
+                    "account": account_id,
+                    "asset": asset_id,
+                    "timestamp": db_dividend.timestamp(),
+                    "number": db_dividend.number(),
+                    "amount": float(db_dividend.amount()),
+                    "tax": float(db_dividend.tax()),
+                    "description": db_dividend.note()
+                })
         if datetime.utcfromtimestamp(timestamp).timetuple().tm_yday < 75:
             # We may have wrong date in taxes before March, 15 due to tax correction
             range_start, _range_end = ManipulateDate.PreviousYear(day=datetime.utcfromtimestamp(timestamp))
