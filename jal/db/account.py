@@ -37,6 +37,20 @@ class JalAccount(JalDB):
         self._reconciled = int(self._data['reconciled_on']) if self._data is not None else 0
         self._precision = int(self._data['precision']) if self._data is not None else Setup.DEFAULT_ACCOUNT_PRECISION
 
+    # Method returns a list of JalAccount objects for accounts of given type (or all if None given)
+    # Flag "active_only" allows only active accounts output by default
+    @staticmethod
+    def get_all_accounts(account_type: int = None, active_only: bool = True) -> list:
+        accounts = []
+        query = JalDB._executeSQL("SELECT id, active FROM accounts WHERE type_id=:type OR :type IS NULL",
+                                  [(":type", account_type)])
+        while query.next():
+            account_id, active = JalDB._readSQLrecord(query)
+            if active_only and not active:
+                continue
+            accounts.append(JalAccount(int(account_id)))
+        return accounts
+
     def id(self) -> int:
         return self._id
 
@@ -73,7 +87,8 @@ class JalAccount(JalDB):
         last_timestamp = 0 if last_timestamp == '' else last_timestamp
         return last_timestamp
 
-    # Returns a list of JalAsset objects corresponding to asssets present on account at given timestamp
+    # Returns a list of dictionaries {"asset" JalAsset object, "amount": qty of asset, "value" initial asset value}
+    # corresponding to assets present on account at given timestamp
     def assets_list(self, timestamp: int) -> list:
         assets = []
         query = self._executeSQL(
@@ -81,12 +96,16 @@ class JalAccount(JalDB):
             "SELECT MAX(id) AS id, asset_id FROM ledger "
             "WHERE account_id=:account_id AND timestamp<=:timestamp GROUP BY asset_id"
             ") "
-            "SELECT l.asset_id "
+            "SELECT l.asset_id, amount_acc, value_acc "
             "FROM ledger l JOIN _last_ids d ON l.asset_id=d.asset_id AND l.id=d.id "
             "WHERE amount_acc!='0' AND book_account=:assets",
             [(":account_id", self._id), (":timestamp", timestamp), (":assets", BookAccount.Assets)])
         while query.next():
-            assets.append(JalAsset(int(self._readSQLrecord(query))))
+            try:
+                asset_id, amount, value = self._readSQLrecord(query)
+            except TypeError:  # Skip if None is returned (i.e. there are no assets)
+                continue
+            assets.append({"asset": JalAsset(int(asset_id)), "amount": Decimal(amount), "value": Decimal(value)})
         return assets
 
     # Return amount of asset accumulated on account at given timestamp

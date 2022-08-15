@@ -47,13 +47,16 @@ class JalDB:
 
     # -------------------------------------------------------------------------------------------------------------------
     # dummy calls for future replacement
-    def _executeSQL(self, sql_text, params=[], forward_only=True, commit=False):
+    @staticmethod
+    def _executeSQL(sql_text, params=[], forward_only=True, commit=False):
         return executeSQL(sql_text, params, forward_only, commit)
 
-    def _readSQL(self, sql_text, params=None, named=False, check_unique=False):
+    @staticmethod
+    def _readSQL(sql_text, params=None, named=False, check_unique=False):
         return readSQL(sql_text, params, named, check_unique)
 
-    def _readSQLrecord(self, query, named=False):
+    @staticmethod
+    def _readSQLrecord(query, named=False):
         return readSQLrecord(query, named)
 
     # -------------------------------------------------------------------------------------------------------------------

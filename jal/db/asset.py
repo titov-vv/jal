@@ -28,6 +28,8 @@ class JalAsset(JalDB):
         self._country_id = self._data['country_id'] if self._data is not None else None
         self._reg_number = self._readSQL("SELECT value FROM asset_data WHERE datatype=:datatype AND asset_id=:id",
                                          [(":datatype", AssetData.RegistrationCode), (":id", self._id)])
+        self._expiry = self._readSQL("SELECT value FROM asset_data WHERE datatype=:datatype AND asset_id=:id",
+                                         [(":datatype", AssetData.ExpiryDate), (":id", self._id)])
 
     def id(self) -> int:
         return self._id
@@ -101,6 +103,9 @@ class JalAsset(JalDB):
                          f"{datetime.utcfromtimestamp(begin).strftime('%d/%m/%Y')} - "
                          f"{datetime.utcfromtimestamp(end).strftime('%d/%m/%Y')}")
 
+    def expiry(self):
+        return self._expiry
+
     # Updates relevant asset data fields with information provided in data dictionary
     def update_data(self, data: dict) -> None:
         updaters = {
@@ -162,6 +167,7 @@ class JalAsset(JalDB):
                              "VALUES(:asset_id, :datatype, :expiry)",
                              [(":asset_id", self._id), (":datatype", AssetData.ExpiryDate),
                               (":expiry", str(new_expiration))])
+        self._expiry = new_expiration
 
     def _update_principal(self, principal: str) -> None:
         if self._type != PredefinedAsset.Bond:
