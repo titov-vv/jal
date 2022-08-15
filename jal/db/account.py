@@ -29,10 +29,12 @@ class JalAccount(JalDB):
                          (":currency", data['currency']), (":organization", data['organization']),
                          (":precision", data['precision'])], commit=True)
                     self._id = query.lastInsertId()
-        self._data = self._readSQL("SELECT name, currency_id, organization_id, reconciled_on, precision "
-                                   "FROM accounts WHERE id=:id", [(":id", self._id)], named=True)
+        self._data = self._readSQL("SELECT type_id, name, currency_id, active, organization_id, reconciled_on, "
+                                   "precision FROM accounts WHERE id=:id", [(":id", self._id)], named=True)
+        self._type = self._data['type_id'] if self._data is not None else None
         self._name = self._data['name'] if self._data is not None else None
         self._currency_id = self._data['currency_id'] if self._data is not None else None
+        self._active = self._data['active'] if self._data is not None else None
         self._organization_id = self._data['organization_id'] if self._data is not None else None
         self._reconciled = int(self._data['reconciled_on']) if self._data is not None else 0
         self._precision = int(self._data['precision']) if self._data is not None else Setup.DEFAULT_ACCOUNT_PRECISION
@@ -51,14 +53,28 @@ class JalAccount(JalDB):
             accounts.append(JalAccount(int(account_id)))
         return accounts
 
+    # Returns database id of the account
     def id(self) -> int:
         return self._id
 
+    # Returns type of the account
+    def type(self) -> int:
+        return self._type
+
+    # Returns name of the account
     def name(self) -> str:
         return self._name
 
+    # Returns currency id of the account
     def currency(self) -> int:
         return self._currency_id
+
+    # Returns True if account is active and False otherwise
+    def is_active(self) -> bool:
+        if self._active:
+            return True
+        else:
+            return False
 
     def organization(self) -> int:
         return self._organization_id
