@@ -4,7 +4,6 @@ from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QDate
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
 from jal.constants import CustomColor, PredefindedAccountType
-from jal.db.db import JalDB
 from jal.db.asset import JalAsset
 from jal.db.account import JalAccount
 from jal.db.settings import JalSettings
@@ -122,8 +121,6 @@ class BalancesModel(QAbstractTableModel):
     def calculateBalances(self):
         balances = []
         accounts = JalAccount.get_all_accounts(active_only=self._active_only)
-
-        JalDB().set_view_param("last_quotes", "timestamp", int, self._date)
         for account in accounts:
             value = value_adjusted = Decimal('0')
             assets = account.assets_list(self._date)
