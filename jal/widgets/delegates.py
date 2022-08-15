@@ -5,7 +5,6 @@ from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, Q
 from PySide6.QtGui import QDoubleValidator, QBrush, QKeyEvent
 from jal.constants import CustomColor
 from jal.widgets.reference_selector import AssetSelector, PeerSelector, CategorySelector, TagSelector
-from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
 
@@ -261,14 +260,16 @@ class LookupSelectorDelegate(QStyledItemDelegate):
 
     def __init__(self, parent=None):
         QStyledItemDelegate.__init__(self, parent)
+        self._type = 0
+        self._table = ''
+        self._field = ''
 
     def displayText(self, value, locale):
-        item_name = ''
-        query = executeSQL(f"SELECT {self._field} FROM {self._table} WHERE id=:id", [(":id", value)])
-        while query.next():
-            readSQLrecord(query)
-            item_name = item_name + '/' + readSQLrecord(query) if item_name else readSQLrecord(query)
-        return item_name
+        item_name = JalDB.get_db_value(self._table, self._field, "id", value)
+        if item_name is None:
+            return ''
+        else:
+            return item_name
 
     def createEditor(self, aParent, option, index):
         if self._type == self.Category:
@@ -320,4 +321,3 @@ class AssetSelectorDelegate(LookupSelectorDelegate):
         self._type = LookupSelectorDelegate.Asset
         self._table = "assets_ext"
         self._field = "symbol"
-# -----------------------------------------------------------------------------------------------------------------------
