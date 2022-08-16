@@ -12,7 +12,6 @@ from PySide6.QtWidgets import QApplication, QDialog
 
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
 from jal.constants import MarketDataFeed, PredefinedAsset
-from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.db import JalDB
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
@@ -399,20 +398,3 @@ class QuoteDownloader(QObject):
         close = data.set_index("Date")
         close.sort_index(inplace=True)
         return close
-
-    def updataData(self):
-        query = executeSQL("SELECT * FROM assets_ext WHERE quote_source!=:NA",
-                           [(":NA", MarketDataFeed.NA)])
-        while query.next():
-            asset = readSQLrecord(query, named=True)
-            if asset['type_id'] in [PredefinedAsset.Money, PredefinedAsset.Commodity, PredefinedAsset.Forex]:
-                continue
-            if asset['quote_source'] == MarketDataFeed.RU:
-                logging.info(self.tr("Checking MOEX data for: ") + asset['symbol'])
-                data = self.MOEX_info(symbol=asset['symbol'], isin=asset['isin'])
-                if data:
-                    if asset['full_name'] != data['name']:
-                        logging.info(self.tr("New full name found for: ")
-                                     + f"{JalAsset(asset['id']).symbol()}: {asset['full_name']} -> {data['name']}")
-                    isin = data['isin'] if not asset['isin'] and 'isin' in data and data['isin'] else ''
-                    JalAsset(asset['id']).update_data({'isin': isin})

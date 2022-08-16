@@ -176,11 +176,12 @@ class AssetListDialog(ReferenceDataDialog):
         PredefinedAsset().load2combo(self.GroupCombo)
         self.group_id = 1
 
-        self.toolbar = QToolBar(self)
-        self.search_layout.addWidget(self.toolbar)
-        action = self.toolbar.addAction(self.tr("Update data"))
-        action.setToolTip(self.tr("Update assets data from their exchanges"))
-        action.triggered.connect(self.updateExchangeData)
+        # TODO Probably we need to re-create a button to allow update of asset name/info from exchanges
+        # self.toolbar = QToolBar(self)
+        # self.search_layout.addWidget(self.toolbar)
+        # action = self.toolbar.addAction(self.tr("Update data"))
+        # action.setToolTip(self.tr("Update assets data from their exchanges"))
+        # action.triggered.connect(self.updateExchangeData)
 
     def locateItem(self, item_id):
         type_id = self.model.getAssetType(item_id)
@@ -189,9 +190,6 @@ class AssetListDialog(ReferenceDataDialog):
         self.GroupCombo.setCurrentIndex(type_id-1)
         item_idx = self.model.locateItem(item_id, use_filter=self._filter_text)
         self.DataView.setCurrentIndex(item_idx)
-
-    def updateExchangeData(self):
-        QuoteDownloader().updataData()
 
     def customEditor(self):
         return AssetDialog()
