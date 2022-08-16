@@ -1,6 +1,6 @@
 import re
 import pandas as pd
-from jal.db.helpers import executeSQL, readSQLrecord
+from jal.db.category import JalCategory
 
 #----------------------------------------------------------------------------------------------------------------------
 
@@ -27,29 +27,18 @@ def recognize_categories(purchases):
     import tensorflow.keras as keras
     tf.get_logger().setLevel('WARNING')
 
-    # Load only categories that were used for import
-    query = executeSQL("SELECT DISTINCT mapped_to AS category FROM map_category")
-    table = []
     classes_number = 0
-    while query.next():
-        category = readSQLrecord(query)
-        table.append({
+    classes = []
+    mapped_values = JalCategory.get_mapped_names()
+    for category in set([x['mapped_to'] for x in mapped_values]):  # set() is used to get unique list from full list
+        classes.append({
             'idx': classes_number,
             'category': category
         })
         classes_number += 1
-    categories = pd.DataFrame(table)
+    categories = pd.DataFrame(classes)
 
-    # Load data from DB into pandas dataframe
-    query = executeSQL("SELECT value, mapped_to FROM map_category")
-    table = []
-    while query.next():
-        value, mapped_to = readSQLrecord(query)
-        table.append({
-            'value': value,
-            'mapped_to': mapped_to
-        })
-    data = pd.DataFrame(table)
+    data = pd.DataFrame(mapped_values)
     data = data.merge(categories, left_on="mapped_to", right_on='category')
     data = data.drop(columns=['mapped_to', 'category'])     # we don't need this column as we will use custom 'idx'
 
