@@ -54,18 +54,11 @@ class TaxesRus:
         self.account = JalAccount(account_id)
         self.year_begin = int(datetime.strptime(f"{year}", "%Y").replace(tzinfo=timezone.utc).timestamp())
         self.year_end = int(datetime.strptime(f"{year + 1}", "%Y").replace(tzinfo=timezone.utc).timestamp())
-        self.broker_name, self.broker_iso_cc = readSQL("SELECT b.name AS broker_name, c.iso_code AS country_iso_code "
-                                                       "FROM accounts AS a "
-                                                       "LEFT JOIN agents AS b ON a.organization_id = b.id "
-                                                       "LEFT JOIN countries AS c ON a.country_id = c.id "
-                                                       "WHERE a.id=:account", [(":account", account_id)])
         if 'use_settlement' in kwargs:
             self.use_settlement = kwargs['use_settlement']
-
         self.prepare_exchange_rate_dates()
         for report in self.reports:
             tax_report[report] = self.reports[report]()
-
         return tax_report
 
     # Exchange rates are present in database not for every date (and not every possible timestamp)

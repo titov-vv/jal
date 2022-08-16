@@ -29,13 +29,16 @@ class JalAccount(JalDB):
                          (":currency", data['currency']), (":organization", data['organization']),
                          (":precision", data['precision'])], commit=True)
                     self._id = query.lastInsertId()
-        self._data = self._readSQL("SELECT type_id, name, currency_id, active, organization_id, reconciled_on, "
-                                   "precision FROM accounts WHERE id=:id", [(":id", self._id)], named=True)
+        self._data = self._readSQL("SELECT type_id, name, number, currency_id, active, organization_id, country_id, "
+                                   "reconciled_on, precision FROM accounts WHERE id=:id",
+                                   [(":id", self._id)], named=True)
         self._type = self._data['type_id'] if self._data is not None else None
         self._name = self._data['name'] if self._data is not None else None
+        self._number = self._data['number'] if self._data is not None else None
         self._currency_id = self._data['currency_id'] if self._data is not None else None
         self._active = self._data['active'] if self._data is not None else None
         self._organization_id = self._data['organization_id'] if self._data is not None else None
+        self._country_id = self._data['country_id'] if self._data is not None else None
         self._reconciled = int(self._data['reconciled_on']) if self._data is not None else 0
         self._precision = int(self._data['precision']) if self._data is not None else Setup.DEFAULT_ACCOUNT_PRECISION
 
@@ -65,6 +68,10 @@ class JalAccount(JalDB):
     def name(self) -> str:
         return self._name
 
+    # Returns number of the account
+    def number(self) -> str:
+        return self._number
+
     # Returns currency id of the account
     def currency(self) -> int:
         return self._currency_id
@@ -78,6 +85,10 @@ class JalAccount(JalDB):
 
     def organization(self) -> int:
         return self._organization_id
+
+    # Returns country id of the account
+    def country(self) -> int:
+        return self._country_id
 
     def set_organization(self, peer_id: int) -> None:
         if not peer_id:

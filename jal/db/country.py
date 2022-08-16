@@ -8,10 +8,11 @@ class JalCountry(JalDB):
         if self._valid_data(data):
             if search:
                 self._id = self._find_country(data)
-        self._data = self._readSQL("SELECT name, code FROM countries WHERE id=:country_id",
+        self._data = self._readSQL("SELECT name, code, iso_code FROM countries WHERE id=:country_id",
                                    [(":country_id", self._id)], named=True)
         self._name = self._data['name'] if self._data is not None else None
         self._code = self._data['code'] if self._data is not None else None
+        self._iso_code = self._data['iso_code'] if self._data is not None else None
 
     def id(self) -> int:
         return self._id
@@ -21,6 +22,9 @@ class JalCountry(JalDB):
 
     def code(self) -> str:
         return self._code
+
+    def iso_code(self) -> str:
+        return self._iso_code
 
     def _valid_data(self, data: dict) -> bool:
         if data is None:
