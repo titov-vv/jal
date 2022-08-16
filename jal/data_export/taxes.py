@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedAsset, PredefinedCategory
 from jal.db.helpers import executeSQL, readSQLrecord, readSQL
 from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
+from jal.db.account import JalAccount
 from jal.db.settings import JalSettings
 
 
@@ -22,11 +23,9 @@ class TaxesRus:
     }
 
     def __init__(self):
-        self.account_id = 0
+        self.account = None
         self.year_begin = 0
         self.year_end = 0
-        self.account_currency = ''
-        self.account_number = ''
         self.broker_name = ''
         self.broker_iso_cc = "000"
         self.use_settlement = True
@@ -52,11 +51,7 @@ class TaxesRus:
 
     def prepare_tax_report(self, year, account_id, **kwargs):
         tax_report = {}
-        self.account_id = account_id
-        self.account_number, self.account_currency = \
-            readSQL("SELECT a.number, c.symbol FROM accounts AS a "
-                    "LEFT JOIN currencies c ON a.currency_id = c.id WHERE a.id=:account",
-                    [(":account", account_id)])
+        self.account = JalAccount(account_id)
         self.year_begin = int(datetime.strptime(f"{year}", "%Y").replace(tzinfo=timezone.utc).timestamp())
         self.year_end = int(datetime.strptime(f"{year + 1}", "%Y").replace(tzinfo=timezone.utc).timestamp())
         self.broker_name, self.broker_iso_cc = readSQL("SELECT b.name AS broker_name, c.iso_code AS country_iso_code "
@@ -96,7 +91,7 @@ class TaxesRus:
                        "LEFT JOIN quotes AS q ON ref_id >= q.timestamp "
                        "AND a.currency_id=q.asset_id AND q.currency_id=:base_currency "
                        "WHERE ref_id IS NOT NULL "    
-                       "GROUP BY ref_id", [(":account_id", self.account_id),
+                       "GROUP BY ref_id", [(":account_id", self.account.id()),
                                            (":base_currency", JalSettings().getValue('BaseCurrency'))], commit=True)
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -125,7 +120,7 @@ class TaxesRus:
                            "WHERE d.timestamp>=:begin AND d.timestamp<:end AND d.account_id=:account_id "
                            " AND d.amount>0 AND (d.type=:type_dividend OR d.type=:type_stock_dividend OR d.type=:type_vesting) "
                            "ORDER BY d.timestamp",
-                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
+                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account.id()),
                             (":base_currency", JalSettings().getValue('BaseCurrency')),
                             (":type_dividend", Dividend.Dividend), (":type_stock_dividend", Dividend.StockDividend),
                             (":type_vesting", Dividend.StockVesting)])
@@ -204,7 +199,7 @@ class TaxesRus:
                            "AND (s.type_id = :stock OR s.type_id = :fund) "
                            "GROUP BY d.rowid "  # to prevent collapse to 1 line if 'sd' values are NULL
                            "ORDER BY s.symbol, o.timestamp, c.timestamp",
-                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
+                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account.id()),
                             (":base_currency", JalSettings().getValue('BaseCurrency')),
                             (":stock", PredefinedAsset.Stock), (":fund", PredefinedAsset.ETF),
                             (":stock_dividend", Dividend.StockDividend), (":stock_vesting", Dividend.StockVesting)])
@@ -281,7 +276,7 @@ class TaxesRus:
                            "WHERE c.settlement>=:begin AND c.settlement<:end AND d.account_id=:account_id "
                            "AND s.type_id = :bond "
                            "ORDER BY s.symbol, o.timestamp, c.timestamp",
-                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
+                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account.id()),
                             (":base_currency", JalSettings().getValue('BaseCurrency')),
                             (":bond", PredefinedAsset.Bond)])
         while query.next():
@@ -343,7 +338,7 @@ class TaxesRus:
                            "LEFT JOIN quotes AS r ON ld.timestamp=r.timestamp AND a.currency_id=r.asset_id AND r.currency_id=:base_currency "
                            "WHERE i.timestamp>=:begin AND i.timestamp<:end AND i.account_id=:account_id "
                            "AND i.type = :type_interest AND t.id IS NULL",
-                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
+                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account.id()),
                             (":base_currency", JalSettings().getValue('BaseCurrency')),
                             (":type_interest", Dividend.BondInterest)])
         while query.next():
@@ -387,7 +382,7 @@ class TaxesRus:
                            "WHERE c.settlement>=:begin AND c.settlement<:end AND d.account_id=:account_id "
                            "AND s.type_id = :derivative "
                            "ORDER BY s.symbol, o.timestamp, c.timestamp",
-                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
+                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account.id()),
                             (":base_currency", JalSettings().getValue('BaseCurrency')),
                             (":derivative", PredefinedAsset.Derivative)])
         while query.next():
@@ -455,7 +450,7 @@ class TaxesRus:
                            "WHERE c.settlement>=:begin AND c.settlement<:end AND d.account_id=:account_id "
                            "AND s.type_id = :derivative "
                            "ORDER BY s.symbol, o.timestamp, c.timestamp",
-                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
+                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account.id()),
                             (":base_currency", JalSettings().getValue('BaseCurrency')),
                             (":derivative", PredefinedAsset.Crypto)])
         while query.next():
@@ -509,7 +504,7 @@ class TaxesRus:
                            "WHERE a.timestamp>=:begin AND a.timestamp<:end "
                            "AND a.account_id=:account_id AND d.category_id=:fee",
                            [(":begin", self.year_begin), (":end", self.year_end),
-                            (":account_id", self.account_id), (":fee", PredefinedCategory.Fees),
+                            (":account_id", self.account.id()), (":fee", PredefinedCategory.Fees),
                             (":base_currency", JalSettings().getValue('BaseCurrency'))])
         while query.next():
             fee = readSQLrecord(query, named=True)
@@ -542,7 +537,7 @@ class TaxesRus:
                            "LEFT JOIN t_last_dates AS ld ON s.timestamp=ld.ref_id "
                            "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp "
                            "AND c.currency_id=q.asset_id AND q.currency_id=:base_currency",
-                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account_id),
+                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account.id()),
                             (":interest", PredefinedCategory.Interest), (":currency", PredefinedAsset.Money),
                             (":base_currency", JalSettings().getValue('BaseCurrency'))])
         while query.next():
@@ -574,7 +569,7 @@ class TaxesRus:
                            "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id AND qts.currency_id=:base_currency "
                            "WHERE t.settlement<:end AND d.account_id=:account_id AND d.open_op_type=:corp_action "
                            "ORDER BY s.symbol, t.timestamp",
-                           [(":end", self.year_end), (":account_id", self.account_id),
+                           [(":end", self.year_end), (":account_id", self.account.id()),
                             (":corp_action", LedgerTransaction.CorporateAction),
                             (":base_currency", JalSettings().getValue('BaseCurrency'))])
         group = 1
@@ -757,7 +752,7 @@ class TaxesRus:
                            "LEFT JOIN t_last_dates AS ld ON i.timestamp=ld.ref_id "
                            "LEFT JOIN quotes AS r ON ld.timestamp=r.timestamp AND a.currency_id=r.asset_id AND r.currency_id=:base_currency "
                            "WHERE i.account_id=:account_id AND i.type=:interest AND i.number=:trade_number",
-                           [(":account_id", self.account_id), (":interest", Dividend.BondInterest),
+                           [(":account_id", self.account.id()), (":interest", Dividend.BondInterest),
                             (":trade_number", trade_number),
                             (":base_currency", JalSettings().getValue('BaseCurrency'))], named=True)
         if interest is None:

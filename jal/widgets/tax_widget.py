@@ -96,8 +96,8 @@ class TaxWidget(MdiWidget, Ui_TaxWidget):
         parameters = {
             "period": f"{datetime.utcfromtimestamp(taxes.year_begin).strftime('%d.%m.%Y')}"
                       f" - {datetime.utcfromtimestamp(taxes.year_end - 1).strftime('%d.%m.%Y')}",
-            "account": f"{taxes.account_number} ({taxes.account_currency})",
-            "currency": taxes.account_currency,
+            "account": f"{taxes.account.number()} ({taxes.account.currency()})",
+            "currency": taxes.account.currency(),
             "broker_name": taxes.broker_name,
             "broker_iso_country": taxes.broker_iso_cc
         }
