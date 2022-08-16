@@ -236,7 +236,7 @@ class IncomeSpending(LedgerTransaction):
             "mandatory": True, "validation": False, "children": True,
             "child_table": "action_details", "child_pid": "pid",
             "child_fields": {
-                "pid": {"mandatory": True, "validation": False},
+                "pid": {"mandatory": True, "validation": False},    # TODO Check if mandatory requirement is true here and works as expected
                 "category_id": {"mandatory": True, "validation": False},
                 "tag_id": {"mandatory": False, "validation": False},
                 "amount": {"mandatory": True, "validation": False},
@@ -838,7 +838,7 @@ class CorporateAction(LedgerTransaction):
             "mandatory": True, "validation": False, "children": True,
             "child_table": "action_results", "child_pid": "action_id",
             "child_fields": {
-                "action_id": {"mandatory": True, "validation": False},
+                "action_id": {"mandatory": True, "validation": False},    # TODO Check if mandatory requirement is true here and works as expected
                 "asset_id": {"mandatory": True, "validation": False},
                 "qty": {"mandatory": True, "validation": False},
                 "value_share": {"mandatory": True, "validation": False}

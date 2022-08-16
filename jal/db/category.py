@@ -14,3 +14,9 @@ class JalCategory(JalDB):
 
     def name(self) -> str:
         return self._name
+
+    @staticmethod
+    def add_or_update_mapped_name(name: str, category_id: int) -> None:  # TODO Review, should it be not static or not
+        _ = JalDB._executeSQL("INSERT OR REPLACE INTO map_category (value, mapped_to) "
+                              "VALUES (:item_name, :category_id)",
+                              [(":item_name", name), (":category_id", category_id)], commit=True)

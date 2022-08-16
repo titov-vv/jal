@@ -7,7 +7,6 @@ from urllib.parse import parse_qs
 from PySide6.QtWidgets import QStyledItemDelegate
 from jal.widgets.reference_selector import CategorySelector, TagSelector
 from jal.constants import CustomColor
-from jal.db.category import JalCategory
 try:
     from pyzbar import pyzbar
     from PIL import Image, UnidentifiedImageError
@@ -15,10 +14,12 @@ except ImportError:
     pass   # We should not be in this module as dependencies have been checked in main_window.py and calls are disabled
 
 
-from PySide6.QtCore import Qt, Slot, Signal, QDateTime, QBuffer, QThread, QAbstractTableModel
+from PySide6.QtCore import Qt, Slot, Signal, QDateTime, QBuffer, QAbstractTableModel
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QHeaderView
 from jal.widgets.helpers import dependency_present
-from jal.db.helpers import executeSQL, readSQL
+from jal.db.peer import JalPeer
+from jal.db.category import JalCategory
+from jal.db.operations import LedgerTransaction
 from jal.data_import.slips_tax import SlipsTaxAPI
 from jal.ui.ui_slip_import_dlg import Ui_ImportSlipDlg
 from jal.data_import.category_recognizer import recognize_categories
@@ -317,7 +318,7 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             shop_name = self.slipsAPI.get_shop_name_by_inn(slip['userInn'])
         self.SlipShopName.setText(shop_name)
 
-        peer_id = self.match_shop_name(self.SlipShopName.text())
+        peer_id = JalPeer.get_id_by_mapped_name(self.SlipShopName.text())
         if peer_id is not None:
             self.PeerEdit.selected_id = peer_id
 
@@ -382,24 +383,23 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
             logging.warning(self.tr("Not possible to import slip: some categories are not set"))
             return
 
-        query = executeSQL("INSERT INTO actions (timestamp, account_id, peer_id) "
-                           "VALUES (:timestamp, :account_id, :peer_id)",
-                           [(":timestamp", self.SlipDateTime.dateTime().toSecsSinceEpoch()),
-                            (":account_id", self.AccountEdit.selected_id),
-                            (":peer_id", self.PeerEdit.selected_id)])
-        pid = query.lastInsertId()
-        # update mappings
-        _ = executeSQL("INSERT INTO map_peer (value, mapped_to) VALUES (:peer_name, :peer_id)",
-                       [(":peer_name", self.SlipShopName.text()), (":peer_id", self.PeerEdit.selected_id)])
-
+        details = []
         for index, row in self.slip_lines.iterrows():
-            _ = executeSQL("INSERT INTO action_details (pid, category_id, tag_id, amount, note) "
-                           "VALUES (:pid, :category_id, :tag_id, :amount, :note)",
-                           [(":pid", pid), (":category_id", row['category']), (":tag_id", row['tag']),
-                            (":amount", row['sum']), (":note", row['name'])])
-            # update mappings
-            _ = executeSQL("INSERT INTO map_category (value, mapped_to) VALUES (:item_name, :category_id)",
-                           [(":item_name", row['name']), (":category_id", row['category'])], commit=True)
+            details.append({
+                "category_id": row['category'],
+                "tag_id": row['tag'],
+                "amount": row['sum'],
+                "note": row['name']
+            })
+            JalCategory.add_or_update_mapped_name(row['name'], row['category'])
+        operation = {
+            "timestamp": self.SlipDateTime.dateTime().toSecsSinceEpoch(),
+            "account_id": self.AccountEdit.selected_id,
+            "peer_id": self.PeerEdit.selected_id,
+            "lines": details
+        }
+        LedgerTransaction().create_new(LedgerTransaction.IncomeSpending, operation)
+        JalPeer.add_or_update_mapped_name(self.SlipShopName.text(), self.PeerEdit.selected_id)
         self.clearSlipData()
 
     def clearSlipData(self):
@@ -409,10 +409,6 @@ class ImportSlipDialog(QDialog, Ui_ImportSlipDlg):
         self.LinesTableView.setModel(None)
 
         self.initUi()
-
-    def match_shop_name(self, shop_name):
-        return readSQL("SELECT mapped_to FROM map_peer WHERE value=:shop_name",
-                       [(":shop_name", shop_name)])
 
     @Slot()
     def recognizeCategories(self):

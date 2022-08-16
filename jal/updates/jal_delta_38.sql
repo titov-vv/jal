@@ -427,6 +427,27 @@ BEGIN
                 timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
 END;
 --------------------------------------------------------------------------------
+-- Enforce unique names in shop mapping 
+CREATE TABLE temp_map_peer AS SELECT * FROM map_peer;
+DROP TABLE map_peer;
+CREATE TABLE map_peer (
+    id        INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    value     TEXT    NOT NULL UNIQUE,
+    mapped_to INTEGER REFERENCES agents (id) ON DELETE SET DEFAULT ON UPDATE CASCADE NOT NULL DEFAULT (0) 
+);
+INSERT INTO map_peer (value, mapped_to) SELECT value, mapped_to FROM temp_map_peer GROUP BY value;
+DROP TABLE temp_map_peer;
+-- Enforce unique names in category mapping
+CREATE TABLE temp_map_category AS SELECT * FROM map_category;
+DROP TABLE map_category;
+CREATE TABLE map_category (
+    id        INTEGER        PRIMARY KEY UNIQUE NOT NULL,
+    value     TEXT           NOT NULL UNIQUE,
+    mapped_to INTEGER        NOT NULL REFERENCES categories (id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+INSERT INTO map_category (value, mapped_to) SELECT value, mapped_to FROM temp_map_category GROUP BY value;
+DROP TABLE temp_map_category;
+--------------------------------------------------------------------------------
 PRAGMA foreign_keys = 1;
 --------------------------------------------------------------------------------
 -- Set new DB schema version

@@ -22,6 +22,16 @@ class JalPeer(JalDB):
     def name(self) -> str:
         return self._name
 
+    # Returns possible peer_id by a given name
+    @staticmethod
+    def get_id_by_mapped_name(name: str) -> int:
+        return JalDB._readSQL("SELECT mapped_to FROM map_peer WHERE value=:name", [(":name", name)])
+
+    @staticmethod
+    def add_or_update_mapped_name(name: str, peer_id: int) -> None:  # TODO Review, should it be not static or not
+        _ = JalDB._executeSQL("INSERT OR REPLACE INTO map_peer (value, mapped_to) VALUES (:peer_name, :peer_id)",
+                              [(":peer_name", name), (":peer_id", peer_id)])
+
     def _valid_data(self, data: dict) -> bool:
         if data is None:
             return False
