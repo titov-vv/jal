@@ -5,6 +5,7 @@ import sys
 import os
 import logging
 from datetime import datetime, timezone
+from decimal import Decimal
 from collections import defaultdict
 
 from PySide6.QtCore import QObject
@@ -457,7 +458,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             payment['note'] = payment.pop('description')
             if 'price' in payment:
                 JalAsset(payment['asset_id']).set_quotes(
-                    [{'timestamp': payment['timestamp'], 'quote': payment.pop('price')}],
+                    [{'timestamp': payment['timestamp'], 'quote': Decimal(str(payment.pop('price')))}],  # FIXME Here should be no conversion to str
                     JalAccount(payment['account_id']).currency())
             if payment['type'] == FOF.PAYMENT_DIVIDEND:
                 if payment['id'] > 0:  # New dividend

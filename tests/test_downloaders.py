@@ -1,9 +1,12 @@
 import pandas as pd
 from datetime import datetime
+from decimal import Decimal
 from pandas._testing import assert_frame_equal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_moex
+from tests.helpers import create_stocks, create_assets
 from jal.db.helpers import readSQL
+from jal.db.asset import JalAsset
 from jal.constants import PredefinedAsset
 from jal.net.helpers import isEnglish
 from jal.net.downloader import QuoteDownloader
@@ -94,117 +97,125 @@ def test_MOEX_details():
                                                                    'principal': 1.0,
                                                                    'type': PredefinedAsset.Stock}
 
-def test_CBR_downloader():
+def test_CBR_downloader(prepare_db):
+    create_stocks([(4, 'TRY', '')], currency_id=1)
     codes = pd.DataFrame({'ISO_name': ['AUD', 'ATS'], 'CBR_code': ['R01010', 'R01015']})
 
     downloader = QuoteDownloader()
     downloader.PrepareRussianCBReader()
     assert_frame_equal(codes, downloader.CBR_codes.head(2))
 
-    rates_usd = pd.DataFrame({'Rate': [77.5104, 77.2535, 75.6826],
+    rates_usd = pd.DataFrame({'Rate': [Decimal('77.5104'), Decimal('77.2535'), Decimal('75.6826')],
                           'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14), datetime(2021, 4, 15)]})
     rates_usd = rates_usd.set_index('Date')
-    rates_downloaded = downloader.CBR_DataReader(0, 'USD', 1, '', 1618272000, 1618358400)
+    rates_downloaded = downloader.CBR_DataReader(JalAsset(2), 1, 1618272000, 1618358400)
     assert_frame_equal(rates_usd, rates_downloaded)
 
-    rates_try = pd.DataFrame({'Rate': [9.45087, 9.49270, 9.37234],
+    rates_try = pd.DataFrame({'Rate': [Decimal('9.45087'), Decimal('9.49270'), Decimal('9.37234')],
                               'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14), datetime(2021, 4, 15)]})
     rates_try = rates_try.set_index('Date')
-    rates_downloaded = downloader.CBR_DataReader(0, 'TRY', 1, '', 1618272000, 1618358400)
+    rates_downloaded = downloader.CBR_DataReader(JalAsset(4), 1, 1618272000, 1618358400)
     assert_frame_equal(rates_try, rates_downloaded)
 
 def test_MOEX_downloader(prepare_db_moex):
-    stock_quotes = pd.DataFrame({'Close': [287.95, 287.18],
+    create_assets([(8, 'ЗПИФ ПНК', 'ЗПИФ ПНК Рентал', 'RU000A1013V9', 1, PredefinedAsset.ETF, 0)])
+    stock_quotes = pd.DataFrame({'Close': [Decimal('287.95'), Decimal('287.18')],
                                  'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14)]})
     stock_quotes = stock_quotes.set_index('Date')
-    bond_quotes = pd.DataFrame({'Close': [1001.00, 999.31],
+    bond_quotes = pd.DataFrame({'Close': [Decimal('1001.00'), Decimal('999.31')],
                                 'Date': [datetime(2021, 7, 22), datetime(2021, 7, 23)]})
     bond_quotes = bond_quotes.set_index('Date')
-    corp_quotes = pd.DataFrame({'Close': [1002.90, 1003.70],
+    corp_quotes = pd.DataFrame({'Close': [Decimal('1002.90'), Decimal('1003.70')],
                                 'Date': [datetime(2021, 7, 22), datetime(2021, 7, 23)]})
     corp_quotes = corp_quotes.set_index('Date')
-    etf_quotes = pd.DataFrame({'Close': [1736.8, 1735.0],
+    etf_quotes = pd.DataFrame({'Close': [Decimal('1736.8'), Decimal('1735.0')],
                                'Date': [datetime(2021, 12, 13), datetime(2021, 12, 14)]})
     etf_quotes = etf_quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.MOEX_DataReader(4, 'SBER', 1, 'RU0009029540', 1618272000, 1618358400)
+    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(4), 1, 1618272000, 1618358400)
     assert_frame_equal(stock_quotes, quotes_downloaded)
     assert readSQL("SELECT * FROM assets_ext WHERE id=4") == [4, PredefinedAsset.Stock, 'SBER', '', 'RU0009029540', 1, 0, -1]
     assert readSQL("SELECT value FROM asset_data WHERE asset_id=4 AND datatype=1") == '10301481B'
 
-    quotes_downloaded = downloader.MOEX_DataReader(6, 'SU26238RMFS4', 1, 'RU000A1038V6', 1626912000, 1626998400)
+    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(6), 1, 1626912000, 1626998400)
     assert_frame_equal(bond_quotes, quotes_downloaded)
     assert readSQL("SELECT * FROM assets_ext WHERE id=6") == [6, PredefinedAsset.Bond, 'SU26238RMFS4', '', 'RU000A1038V6', 1, 0, -1]
     assert readSQL("SELECT value FROM asset_data WHERE asset_id=6 AND datatype=1") == '26238RMFS'
     assert readSQL("SELECT value FROM asset_data WHERE asset_id=6 AND datatype=2") == '2252188800'
     assert readSQL("SELECT value FROM asset_data WHERE asset_id=6 AND datatype=3") == '1000'
 
-    quotes_downloaded = downloader.MOEX_DataReader(7, 'МКБ 1P2', 1, 'RU000A1014H6', 1626912000, 1626998400)
+    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(7), 1, 1626912000, 1626998400)
     assert_frame_equal(corp_quotes, quotes_downloaded)
     assert readSQL("SELECT * FROM assets_ext WHERE id=7") == [7, PredefinedAsset.Bond, 'МКБ 1P2', '', 'RU000A1014H6', 1, 0, -1]
     assert readSQL("SELECT value FROM asset_data WHERE asset_id=7 AND datatype=1") == '4B020901978B001P'
     assert readSQL("SELECT value FROM asset_data WHERE asset_id=7 AND datatype=2") == '1638230400'
     assert readSQL("SELECT value FROM asset_data WHERE asset_id=7 AND datatype=3") == '1000'
 
-    quotes_downloaded = downloader.MOEX_DataReader(8, 'ЗПИФ ПНК', 1, 'RU000A1013V9', 1639353600, 1639440000, update_symbol=False)
+    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(8), 1, 1639353600, 1639440000, update_symbol=False)
     assert_frame_equal(etf_quotes, quotes_downloaded)
 
 
 def test_MOEX_downloader_USD(prepare_db_moex):
-    usd_quotes = pd.DataFrame({'Close': [12.02, 11.90],
+    create_assets([(8, 'FXGD', 'FinEx Gold ETF', 'IE00B8XB7377', 2, PredefinedAsset.ETF, 0)])
+    usd_quotes = pd.DataFrame({'Close': [Decimal('12.02'), Decimal('11.90')],
                                'Date': [datetime(2021, 12, 13), datetime(2021, 12, 14)]})
     usd_quotes = usd_quotes.set_index('Date')
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.MOEX_DataReader(8, 'FXGD', 2, 'IE00B8XB7377', 1639353600, 1639440000, update_symbol=False)
+    quotes_downloaded = downloader.MOEX_DataReader(JalAsset(8), 2, 1639353600, 1639440000, update_symbol=False)
     assert_frame_equal(usd_quotes, quotes_downloaded)
 
 
-def test_NYSE_downloader():
-    quotes = pd.DataFrame({'Close': [134.429993, 132.029999],
+def test_NYSE_downloader(prepare_db):
+    create_stocks([(4, 'AAPL', '')], currency_id=2)
+    quotes = pd.DataFrame({'Close': [Decimal('134.429993'), Decimal('132.029999')],
                            'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14)]})
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.Yahoo_Downloader(0, 'AAPL', 2, '', 1618272000, 1618444800)
+    quotes_downloaded = downloader.Yahoo_Downloader(JalAsset(4), 2, 1618272000, 1618444800)
     assert_frame_equal(quotes, quotes_downloaded)
 
 
-def test_LSE_downloader():
-    quotes = pd.DataFrame({'Close': [73.5, 75.5],
+def test_LSE_downloader(prepare_db):
+    create_stocks([(4, 'TSL', '')], currency_id=3)
+    quotes = pd.DataFrame({'Close': [Decimal('73.5'), Decimal('75.5')],
                            'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14)]})
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.YahooLSE_Downloader(0, 'TSL', 3, '', 1618272000, 1618444800)
+    quotes_downloaded = downloader.YahooLSE_Downloader(JalAsset(4), 3, 1618272000, 1618444800)
     assert_frame_equal(quotes, quotes_downloaded)
 
 
-def test_Euronext_downloader():
-    quotes = pd.DataFrame({'Close': [3.4945, 3.5000, 3.4995],
+def test_Euronext_downloader(prepare_db):
+    create_assets([(4, 'NOK', 'Nokia', 'FI0009000681', 3, PredefinedAsset.Stock, 0)])
+    quotes = pd.DataFrame({'Close': [Decimal('3.4945'), Decimal('3.50'), Decimal('3.4995')],
                            'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14), datetime(2021, 4, 15)]})
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.Euronext_DataReader(0, '', 3, 'FI0009000681', 1618272000, 1618444800)
+    quotes_downloaded = downloader.Euronext_DataReader(JalAsset(4), 3, 1618272000, 1618444800)
     assert_frame_equal(quotes, quotes_downloaded)
 
 
-def test_TMX_downloader():
-    quotes = pd.DataFrame({'Close': [117.18, 117.34, 118.02],
+def test_TMX_downloader(prepare_db):
+    create_stocks([(4, 'RY', '')], currency_id=3)
+    quotes = pd.DataFrame({'Close': [Decimal('117.18'), Decimal('117.34'), Decimal('118.02')],
                            'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14), datetime(2021, 4, 15)]})
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.TMX_Downloader(0, 'RY', 3, '', 1618272000, 1618444800)
+    quotes_downloaded = downloader.TMX_Downloader(JalAsset(4), 3, 1618272000, 1618444800)
     assert_frame_equal(quotes, quotes_downloaded)
 
 
-def test_Frankfurt_downloader():
-    quotes = pd.DataFrame({'Close': [233.40, 234.25],
+def test_Frankfurt_downloader(prepare_db):
+    create_stocks([(4, 'VOW3', '')], currency_id=3)
+    quotes = pd.DataFrame({'Close': [Decimal('233.399994'), Decimal('234.250000')],
                            'Date': [datetime(2021, 4, 13), datetime(2021, 4, 14)]})
     quotes = quotes.set_index('Date')
 
     downloader = QuoteDownloader()
-    quotes_downloaded = downloader.YahooFRA_Downloader(0, 'VOW3', 3, '', 1618272000, 1618444800)
+    quotes_downloaded = downloader.YahooFRA_Downloader(JalAsset(4), 3, 1618272000, 1618444800)
     assert_frame_equal(quotes, quotes_downloaded)

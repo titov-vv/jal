@@ -1,6 +1,7 @@
 import logging
 import xml.etree.ElementTree as xml_tree
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal
 from io import StringIO
 
 import pandas as pd
@@ -10,7 +11,7 @@ from PySide6.QtCore import QObject, Signal, QDate
 from PySide6.QtWidgets import QApplication, QDialog
 
 from jal.ui.ui_update_quotes_window import Ui_UpdateQuotesDlg
-from jal.constants import MarketDataFeed, BookAccount, PredefinedAsset
+from jal.constants import MarketDataFeed, PredefinedAsset
 from jal.db.helpers import executeSQL, readSQLrecord
 from jal.db.db import JalDB
 from jal.db.asset import JalAsset
@@ -69,53 +70,32 @@ class QuoteDownloader(QObject):
 
     def UpdateQuotes(self, start_timestamp, end_timestamp):
         self.PrepareRussianCBReader()
-        query = executeSQL("WITH _holdings AS ( "
-                           "SELECT l.asset_id AS asset, l.account_id FROM ledger AS l "
-                           "WHERE l.book_account = :assets_book AND l.timestamp <= :end_timestamp "
-                           "GROUP BY l.asset_id "
-                           "HAVING SUM(l.amount) > 0 "
-                           "UNION "
-                           "SELECT DISTINCT l.asset_id AS asset, l.account_id FROM ledger AS l "
-                           "WHERE l.book_account = :assets_book AND l.timestamp >= :start_timestamp "
-                           "AND l.timestamp <= :end_timestamp "
-                           "UNION "
-                           "SELECT c.id, NULL FROM currencies c "
-                           ") "
-                           "SELECT h.asset AS asset_id, coalesce(ac.currency_id, 1) AS currency_id, "
-                           "a.symbol AS name, a.quote_source AS feed_id, a.isin AS isin, "
-                           "MIN(q.timestamp) AS first_timestamp, MAX(q.timestamp) AS last_timestamp "
-                           "FROM _holdings AS h "
-                           "LEFT JOIN accounts AS ac ON ac.id=h.account_id "
-                           "LEFT JOIN assets_ext AS a ON a.id=h.asset AND a.currency_id=coalesce(ac.currency_id, 1) "
-                           "LEFT JOIN quotes AS q ON q.asset_id=h.asset "
-                           "GROUP BY h.asset, ac.currency_id "
-                           "ORDER BY feed_id",
-                           [(":start_timestamp", start_timestamp), (":end_timestamp", end_timestamp),
-                            (":assets_book", BookAccount.Assets), (":money_book", BookAccount.Money),
-                            (":liabilities_book", BookAccount.Liabilities)])
-        while query.next():
-            asset = readSQLrecord(query, named=True)
-            if asset['asset_id'] == int(JalSettings().getValue('BaseCurrency')):
+        assets = JalAsset.get_currencies()
+        # Append base currency id to each currency as currency rate is relative to base currency
+        assets = [{"asset": x, "currency": int(JalSettings().getValue('BaseCurrency'))} for x in assets]
+        assets += JalAsset.get_active_assets(start_timestamp, end_timestamp)  # append assets list
+        for asset_data in assets:
+            asset = asset_data['asset']
+            if asset.id() == int(JalSettings().getValue('BaseCurrency')):
                 continue
-            first_timestamp = asset['first_timestamp'] if asset['first_timestamp'] != '' else 0
-            last_timestamp = asset['last_timestamp'] if asset['last_timestamp'] != '' else 0
-            if start_timestamp < first_timestamp:
+            currency = asset_data['currency']
+            quotes_begin, quotes_end = asset.quotes_range(currency)
+            if start_timestamp < quotes_begin:
                 from_timestamp = start_timestamp
             else:
-                from_timestamp = last_timestamp if last_timestamp > start_timestamp else start_timestamp
+                from_timestamp = quotes_end if quotes_end > start_timestamp else start_timestamp
             if end_timestamp < from_timestamp:
                 continue
             try:
-                data = self.data_loaders[asset['feed_id']](asset['asset_id'], asset['name'], asset['currency_id'],
-                                                           asset['isin'], from_timestamp, end_timestamp)
+                data = self.data_loaders[asset.quote_source(currency)](asset, currency, from_timestamp, end_timestamp)
             except (xml_tree.ParseError, pd.errors.EmptyDataError, KeyError):
                 logging.warning(self.tr("No data were downloaded for ") + f"{asset}")
                 continue
             if data is not None:
                 quotations = []
                 for date, quote in data.iterrows():  # Date in pandas dataset is in UTC by default
-                    quotations.append({'timestamp': int(date.timestamp()), 'quote': float(quote[0])})
-                JalAsset(asset['asset_id']).set_quotes(quotations, asset['currency_id'])
+                    quotations.append({'timestamp': int(date.timestamp()), 'quote': quote[0]})
+                asset.set_quotes(quotations, currency)
         JalDB().commit()
         logging.info(self.tr("Download completed"))
 
@@ -132,17 +112,17 @@ class QuoteDownloader(QObject):
         self.CBR_codes = pd.DataFrame(rows, columns=["ISO_name", "CBR_code"])
 
     # Empty method to make a unified call for any asset
-    def Dummy_DataReader(self, _asset_id, _symbol, _currency, _isin, _start_timestamp, _end_timestamp):
+    def Dummy_DataReader(self, _asset, _currency_id, _start_timestamp, _end_timestamp):
         return None
 
-    def CBR_DataReader(self, _asset_id, currency_code, _currency, _isin, start_timestamp, end_timestamp):
+    def CBR_DataReader(self, asset, _currency_id, start_timestamp, end_timestamp):
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%d/%m/%Y')
         # add 1 day to end_timestamp as CBR sets rate are a day ahead
         date2 = (datetime.utcfromtimestamp(end_timestamp) + timedelta(days=1)).strftime('%d/%m/%Y')
         try:
-            code = str(self.CBR_codes.loc[self.CBR_codes["ISO_name"] == currency_code, "CBR_code"].values[0]).strip()
+            code = str(self.CBR_codes.loc[self.CBR_codes["ISO_name"] == asset.symbol(), "CBR_code"].values[0]).strip()
         except IndexError:
-            logging.error(self.tr("Failed to get CBR data for: " + f"{currency_code}"))
+            logging.error(self.tr("Failed to get CBR data for: " + f"{asset.symbol()}"))
             return None
         url = f"http://www.cbr.ru/scripts/XML_dynamic.asp?date_req1={date1}&date_req2={date2}&VAL_NM_RQ={code}"
         xml_root = xml_tree.fromstring(get_web_data(url))
@@ -155,8 +135,8 @@ class QuoteDownloader(QObject):
         data = pd.DataFrame(rows, columns=["Date", "Rate", "Multiplier"])
         data['Date'] = pd.to_datetime(data['Date'], format="%d.%m.%Y")
         data['Rate'] = [x.replace(',', '.') for x in data['Rate']]
-        data['Rate'] = data['Rate'].astype(float)
-        data['Multiplier'] = data['Multiplier'].astype(float)
+        data['Rate'] = data['Rate'].apply(Decimal)
+        data['Multiplier'] = data['Multiplier'].apply(Decimal)
         data['Rate'] = data['Rate'] / data['Multiplier']
         data.drop('Multiplier', axis=1, inplace=True)
         rates = data.set_index("Date")
@@ -291,73 +271,77 @@ class QuoteDownloader(QObject):
         return secid
 
     # noinspection PyMethodMayBeStatic
-    def MOEX_DataReader(self, asset_id, asset_code, currency, isin, start_timestamp, end_timestamp, update_symbol=True):
-        currency = JalAsset(currency).symbol()
-        asset = self.MOEX_info(symbol=asset_code, isin=isin, currency=currency, special=True)
-        if (asset['engine'] is None) or (asset['market'] is None) or (asset['board'] is None):
-            logging.warning(f"Failed to find {asset_code} on moex.com")
+    def MOEX_DataReader(self, asset, currency_id, start_timestamp, end_timestamp, update_symbol=True):
+        currency = JalAsset(currency_id).symbol()
+        moex_info = self.MOEX_info(symbol=asset.symbol(), isin=asset.isin(), currency=currency, special=True)
+        if (moex_info['engine'] is None) or (moex_info['market'] is None) or (moex_info['board'] is None):
+            logging.warning(f"Failed to find {asset.symbol()} on moex.com")
             return None
-        if (asset['market'] == 'bonds') and (asset['board'] == 'TQCB'):
-            asset_code = isin   # Corporate bonds are quoted by ISIN
-        if (asset['market'] == 'shares') and (asset['board'] == 'TQIF'):
-            asset_code = isin   # ETFs are quoted by ISIN
+
+        if (moex_info['market'] == 'bonds') and (moex_info['board'] == 'TQCB'):
+            asset_code = asset.isin()   # Corporate bonds are quoted by ISIN
+        elif (moex_info['market'] == 'shares') and (moex_info['board'] == 'TQIF'):
+            asset_code = asset.isin()   # ETFs are quoted by ISIN
+        else:
+            asset_code = asset.symbol()
         if update_symbol:
-            isin = asset['isin'] if 'isin' in asset else ''
-            reg_number = asset['reg_number'] if 'reg_number' in asset else ''
-            expiry = asset['expiry'] if 'expiry' in asset else 0
-            principal = asset['principal'] if 'principal' in asset else 0
+            isin = moex_info['isin'] if 'isin' in moex_info else ''
+            reg_number = moex_info['reg_number'] if 'reg_number' in moex_info else ''
+            expiry = moex_info['expiry'] if 'expiry' in moex_info else 0
+            principal = moex_info['principal'] if 'principal' in moex_info else 0
             details = {'isin': isin, 'reg_number': reg_number, 'expiry': expiry, 'principal': principal}
-            JalAsset(asset_id).update_data(details)
+            asset.update_data(details)
 
         # Get price history
         date1 = datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d')
         date2 = datetime.utcfromtimestamp(end_timestamp).strftime('%Y-%m-%d')
-        url = f"http://iss.moex.com/iss/history/engines/{asset['engine']}/markets/{asset['market']}/" \
-              f"boards/{asset['board']}/securities/{asset_code}.xml?from={date1}&till={date2}"
+        url = f"http://iss.moex.com/iss/history/engines/{moex_info['engine']}/markets/{moex_info['market']}/" \
+              f"boards/{moex_info['board']}/securities/{asset_code}.xml?from={date1}&till={date2}"
         xml_root = xml_tree.fromstring(get_web_data(url))
         history_rows = xml_root.findall("data[@id='history']/rows/*")
         quotes = []
         for row in history_rows:
             if row.attrib['CLOSE']:
                 if 'FACEVALUE' in row.attrib:  # Correction for bonds
-                    price = float(row.attrib['CLOSE']) * float(row.attrib['FACEVALUE']) / 100.0
-                    quotes.append({"Date": row.attrib['TRADEDATE'], "Close": price})
+                    price = Decimal(row.attrib['CLOSE']) * Decimal(row.attrib['FACEVALUE']) / Decimal('100')
+                    quotes.append({"Date": row.attrib['TRADEDATE'], "Close": str(price)})
                 else:
                     quotes.append({"Date": row.attrib['TRADEDATE'], "Close": row.attrib['CLOSE']})
         data = pd.DataFrame(quotes, columns=["Date", "Close"])
         data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
-        data['Close'] = pd.to_numeric(data['Close'])
+        data['Close'] = data['Close'].apply(Decimal)
         close = data.set_index("Date")
         return close
 
     # noinspection PyMethodMayBeStatic
-    def Yahoo_Downloader(self, _asset_id, asset_code, _currency, _isin, start_timestamp, end_timestamp):
-        url = f"https://query1.finance.yahoo.com/v7/finance/download/{asset_code}?" \
+    def Yahoo_Downloader(self, asset, _currency_id, start_timestamp, end_timestamp, suffix=''):
+        url = f"https://query1.finance.yahoo.com/v7/finance/download/{asset.symbol()+suffix}?" \
               f"period1={start_timestamp}&period2={end_timestamp}&interval=1d&events=history"
         file = StringIO(get_web_data(url))
         try:
-            data = pd.read_csv(file)
+            data = pd.read_csv(file, dtype={'Date': str, 'Close': str})
         except ParserError:
             return None
         data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
+        data['Close'] = data['Close'].apply(Decimal)
         data = data.drop(columns=['Open', 'High', 'Low', 'Adj Close', 'Volume'])
         close = data.set_index("Date")
         return close
 
     # The same as Yahoo_Downloader but it adds ".L" suffix to asset_code and returns prices in GBP
-    def YahooLSE_Downloader(self, asset_id, asset_code, currency, _isin, start_timestamp, end_timestamp):
-        return self.Yahoo_Downloader(asset_id, asset_code + '.L', currency, _isin, start_timestamp, end_timestamp)
+    def YahooLSE_Downloader(self, asset, currency_id, start_timestamp, end_timestamp):
+        return self.Yahoo_Downloader(asset, currency_id, start_timestamp, end_timestamp, suffix='.L')
 
     # The same as Yahoo_Downloader but it adds ".F" suffix to asset_code and returns prices in EUR
-    def YahooFRA_Downloader(self, asset_id, asset_code, currency, _isin, start_timestamp, end_timestamp):
-        return self.Yahoo_Downloader(asset_id, asset_code + '.F', currency, _isin, start_timestamp, end_timestamp)
+    def YahooFRA_Downloader(self, asset, currency_id, start_timestamp, end_timestamp):
+        return self.Yahoo_Downloader(asset, currency_id, start_timestamp, end_timestamp, suffix='.F')
 
     # noinspection PyMethodMayBeStatic
-    def Euronext_DataReader(self, _asset_id, _asset_code, _currency, isin, start_timestamp, end_timestamp):
+    def Euronext_DataReader(self, asset, currency_id, start_timestamp, end_timestamp):
         params = {'format': 'csv', 'decimal_separator': '.', 'date_form': 'd/m/Y', 'op': '', 'adjusted': '',
                   'base100': '', 'startdate': datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d'),
                   'enddate': datetime.utcfromtimestamp(end_timestamp).strftime('%Y-%m-%d')}
-        url = f"https://live.euronext.com/en/ajax/AwlHistoricalPrice/getFullDownloadAjax/{isin}-XPAR"
+        url = f"https://live.euronext.com/en/ajax/AwlHistoricalPrice/getFullDownloadAjax/{asset.isin()}-XPAR"
         quotes = post_web_data(url, params=params)
         quotes_text = quotes.splitlines()
         if len(quotes_text) < 4:
@@ -366,15 +350,16 @@ class QuoteDownloader(QObject):
         if quotes_text[0] != '"Historical Data"':
             logging.warning(self.tr("Euronext quotes header not found in: ") + quotes)
             return None
-        if quotes_text[2] != isin:
+        if quotes_text[2] != asset.isin():
             logging.warning(self.tr("Euronext quotes ISIN mismatch in: ") + quotes)
             return None
         file = StringIO(quotes)
         try:
-            data = pd.read_csv(file, header=3, sep=';')
+            data = pd.read_csv(file, header=3, sep=';', dtype={'Date': str, 'Close': str})
         except ParserError:
             return None
         data['Date'] = pd.to_datetime(data['Date'], format="%d/%m/%Y")
+        data['Close'] = data['Close'].apply(Decimal)
         data = data.drop(columns=['Open', 'High', 'Low', 'Number of Shares', 'Number of Trades',
                                   'Turnover', 'Number of Trades', 'vwap'])
         close = data.set_index("Date")
@@ -382,13 +367,13 @@ class QuoteDownloader(QObject):
         return close
 
     # noinspection PyMethodMayBeStatic
-    def TMX_Downloader(self, _asset_id, asset_code, _currency, _isin, start_timestamp, end_timestamp):
+    def TMX_Downloader(self, asset, _currency_id, start_timestamp, end_timestamp):
         url = 'https://app-money.tmx.com/graphql'
         params = {
             "operationName": "getCompanyPriceHistoryForDownload",
             "variables":
                 {
-                    "symbol": asset_code,
+                    "symbol": asset.symbol(),
                     "start": datetime.utcfromtimestamp(start_timestamp).strftime('%Y-%m-%d'),
                     "end": datetime.utcfromtimestamp(end_timestamp).strftime('%Y-%m-%d'),
                     "adjusted": False,
@@ -409,6 +394,8 @@ class QuoteDownloader(QObject):
         data = pd.DataFrame(price_array)
         data.rename(columns={'datetime': 'Date', 'closePrice': 'Close'}, inplace=True)
         data['Date'] = pd.to_datetime(data['Date'], format="%Y-%m-%d")
+        data['Close'] = data['Close'].apply(str)   # Convert from float to str
+        data['Close'] = data['Close'].apply(Decimal)   # Convert from str to Decimal
         close = data.set_index("Date")
         close.sort_index(inplace=True)
         return close

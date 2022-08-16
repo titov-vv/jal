@@ -729,7 +729,6 @@ class StatementIBKR(StatementXML):
         for i, vesting in enumerate(vestings):
             vesting['id'] = asset_payments_base + i
             vesting['type'] = FOF.PAYMENT_STOCK_VESTING
-            # self.drop_extra_fields(action, ["quantity", "value", "proceeds", "code", "asset_type", "jal_processed"])
             self._data[FOF.ASSET_PAYMENTS].append(vesting)
             cnt += 1
         logging.info(self.tr("Stock vestings loaded: ") + f"{cnt} ({len(vestings)})")

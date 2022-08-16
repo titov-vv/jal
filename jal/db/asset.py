@@ -1,8 +1,9 @@
 import logging
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
-from jal.constants import MarketDataFeed, AssetData, PredefinedAsset
+from jal.constants import BookAccount, MarketDataFeed, AssetData, PredefinedAsset
 from jal.db.db import JalDB
+from jal.db.helpers import format_decimal
 from jal.db.country import JalCountry
 
 
@@ -39,6 +40,9 @@ class JalAsset(JalDB):
 
     def name(self) -> str:
         return self._name
+
+    def isin(self) -> str:
+        return self._isin
 
     # Returns asset symbol for given currency or all symbols if no currency is given
     def symbol(self, currency: int = None) -> str:
@@ -87,6 +91,27 @@ class JalAsset(JalDB):
             return 0, Decimal('0')
         return int(quote[0]), Decimal(quote[1])
 
+    # Returns tuple (begin_timestamp: int, end_timestamp: int) that defines timestamp range for which quotest are
+    # available in database for given currency
+    def quotes_range(self, currency_id: int) -> tuple:
+        try:
+            begin, end = self._readSQL("SELECT MIN(timestamp), MAX(timestamp) FROM quotes "
+                                       "WHERE asset_id=:asset_id AND currency_id=:currency_id",
+                                       [(":asset_id", self._id), (":currency_id", currency_id)])
+        except TypeError:
+            begin = end = 0
+        return begin, end
+
+    # Returns a quote source id defined for given currency
+    def quote_source(self, currency_id: int) -> int:
+        source_id = self._readSQL("SELECT quote_source FROM asset_tickers "
+                                  "WHERE asset_id=:asset AND currency_id=:currency",
+                                  [(":asset", self._id), (":currency", currency_id)])
+        if source_id is None:
+            return MarketDataFeed.NA
+        else:
+            return source_id
+
     # Set quotations for given currency_id. Quotations is a list of {'timestamp':int, 'quote':Decimal} values
     def set_quotes(self, quotations: list, currency_id: int) -> None:
         data = [x for x in quotations if x['timestamp'] is not None and x['quote'] is not None]  # Drop Nones
@@ -95,7 +120,7 @@ class JalAsset(JalDB):
                 _ = self._executeSQL("INSERT OR REPLACE INTO quotes (asset_id, currency_id, timestamp, quote) "
                                      "VALUES(:asset_id, :currency_id, :timestamp, :quote)",
                                      [(":asset_id", self._id), (":currency_id", currency_id),
-                                      (":timestamp", quote['timestamp']), (":quote", quote['quote'])])  # FIXME quote['quote'] should be casted from Decimal to str, but tests are failing as something calls method with float values
+                                      (":timestamp", quote['timestamp']), (":quote", format_decimal(quote['quote']))])
             begin = min(data, key=lambda x: x['timestamp'])['timestamp']
             end = max(data, key=lambda x: x['timestamp'])['timestamp']
             logging.info(self.tr("Quotations were updated: ") +
@@ -232,3 +257,31 @@ class JalAsset(JalDB):
             return 0
         else:
             return id
+
+    # Method returns a list of {"asset": JalAsset, "currency" currency_id} that describes assets involved into ledger
+    # operations between begin and end timestamps or that have non-zero value in ledger
+    @staticmethod
+    def get_active_assets(begin: int, end: int) -> list:
+        assets = []
+        query = JalDB._executeSQL("SELECT MAX(l.id) AS id, l.asset_id, a.currency_id "
+                                  "FROM ledger l LEFT JOIN accounts a ON a.id=l.account_id "
+                                  "WHERE l.book_account=:assets "
+                                  "GROUP BY l.asset_id, a.currency_id "
+                                  "HAVING l.amount_acc!='0' OR (l.timestamp>=:begin AND l.timestamp<=:end)",
+                                  [(":assets", BookAccount.Assets), (":begin", begin), (":end", end)])
+        while query.next():
+            try:
+                _id, asset_id, currency_id = JalDB._readSQLrecord(query)
+            except TypeError:  # Skip if None is returned (i.e. there are no assets)
+                continue
+            assets.append({"asset": JalAsset(int(asset_id)), "currency": int(currency_id)})
+        return assets
+
+    # Method returns a list of JalAsset objects that describe currencies defined in ledger
+    @staticmethod
+    def get_currencies() -> list:
+        currencies = []
+        query = JalDB._executeSQL("SELECT id FROM currencies")
+        while query.next():
+            currencies.append(JalAsset(int(JalDB._readSQLrecord(query))))
+        return currencies
