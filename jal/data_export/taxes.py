@@ -7,6 +7,8 @@ from jal.constants import PredefinedAsset, PredefinedCategory
 from jal.db.helpers import executeSQL, readSQLrecord, readSQL
 from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
 from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
+from jal.db.country import JalCountry
 from jal.db.settings import JalSettings
 
 
@@ -99,59 +101,60 @@ class TaxesRus:
         list_of_values.append(totals)
 
     def prepare_dividends(self):
-        dividends = []
-        query = executeSQL("SELECT d.type, d.timestamp AS payment_date, s.symbol, s.full_name AS full_name, "
-                           "s.isin AS isin, d.amount AS amount, d.tax AS tax, q.quote AS rate, p.quote AS price, "
-                           "c.name AS country, c.iso_code AS country_iso, c.tax_treaty AS tax_treaty "
-                           "FROM dividends AS d "
-                           "LEFT JOIN accounts AS a ON d.account_id = a.id "
-                           "LEFT JOIN assets_ext AS s ON s.id = d.asset_id AND s.currency_id=a.currency_id "
-                           "LEFT JOIN countries AS c ON s.country_id = c.id "
-                           "LEFT JOIN t_last_dates AS ld ON d.timestamp=ld.ref_id "
-                           "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp AND a.currency_id=q.asset_id AND q.currency_id=:base_currency "
-                           "LEFT JOIN quotes AS p ON d.timestamp=p.timestamp AND d.asset_id=p.asset_id AND p.currency_id=a.currency_id "                           
-                           "WHERE d.timestamp>=:begin AND d.timestamp<:end AND d.account_id=:account_id "
-                           " AND d.amount>0 AND (d.type=:type_dividend OR d.type=:type_stock_dividend OR d.type=:type_vesting) "
-                           "ORDER BY d.timestamp",
-                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account.id()),
-                            (":base_currency", JalSettings().getValue('BaseCurrency')),
-                            (":type_dividend", Dividend.Dividend), (":type_stock_dividend", Dividend.StockDividend),
-                            (":type_vesting", Dividend.StockVesting)])
-        while query.next():
-            dividend = readSQLrecord(query, named=True)
-            # FIXME - below is a temporary code while SQL isn't moved from this module
-            dividend['amount'] = float(dividend['amount'])
-            dividend['tax'] = float(dividend['tax'])
-            dividend['rate'] = float(dividend['rate'])
-            dividend['price'] = float(dividend['price']) if dividend['price'] else dividend['price']
-            dividend["note"] = ''
-            if dividend["type"] == Dividend.StockDividend:
-                if not dividend["price"]:
+        dividends_report = []
+        dividends = Dividend.get_list(self.account.id(), subtype=Dividend.Dividend)
+        dividends += Dividend.get_list(self.account.id(), subtype=Dividend.StockDividend)
+        dividends += Dividend.get_list(self.account.id(), subtype=Dividend.StockVesting)
+        dividends = [x for x in dividends if self.year_begin <= x.timestamp() <= self.year_end]  # Only in given range
+        for dividend in dividends:
+            amount = dividend.amount()
+            tax = dividend.tax() if dividend.tax() else Decimal('0.0')  # Cast to Decimal('0.0') is used to pass tests as json library converts 0 to int
+            currency = JalAsset(dividend.account().currency())
+            rate = currency.quote(dividend.timestamp(), JalSettings().getValue('BaseCurrency'))[1]
+            price = dividend.asset().quote(dividend.timestamp(), currency.id())[1]
+            country = JalCountry(dividend.asset().country())
+            tax_treaty = "Да" if country.has_tax_treaty() else "Нет"
+            note = ''
+            if dividend.subtype() == Dividend.StockDividend:
+                if not price:
                     logging.error(self.tr("No price data for stock dividend: ") + f"{dividend}")
                     continue
-                dividend["amount"] = dividend["amount"] * dividend["price"]
-                dividend["note"] = "Дивиденд выплачен в натуральной форме (ценными бумагами)"
-            if dividend["type"] == Dividend.StockVesting:
-                if not dividend["price"]:
+                amount = amount * price
+                note = "Дивиденд выплачен в натуральной форме (ценными бумагами)"
+            if dividend.subtype() == Dividend.StockVesting:
+                if not price:
                     logging.error(self.tr("No price data for stock vesting: ") + f"{dividend}")
                     continue
-                dividend["amount"] = dividend["amount"] * dividend["price"]
-                dividend["note"] = "Доход получен в натуральной форме (ценными бумагами)"
-            dividend["amount_rub"] = round(dividend["amount"] * dividend["rate"], 2) if dividend["rate"] else 0
-            dividend["tax_rub"] = round(dividend["tax"] * dividend["rate"], 2) if dividend["rate"] else 0
-            dividend["tax2pay"] = round(0.13 * dividend["amount_rub"], 2)
-            if dividend["tax_treaty"]:
-                if dividend["tax2pay"] > dividend["tax_rub"]:
-                    dividend["tax2pay"] = dividend["tax2pay"] - dividend["tax_rub"]
+                amount = amount * price
+                note = "Доход получен в натуральной форме (ценными бумагами)"
+            amount_rub = amount * rate
+            tax_rub = dividend.tax() * rate
+            tax2pay = Decimal('0.13') * amount_rub
+            if tax_treaty:
+                if tax2pay > tax_rub:
+                    tax2pay = tax2pay - tax_rub
                 else:
-                    dividend["tax2pay"] = 0
-            dividend['tax_treaty'] = "Да" if dividend['tax_treaty'] else "Нет"
-            dividend['report_template'] = "dividend"
-            del dividend['type']
-            del dividend['price']
-            dividends.append(dividend)
-        self.insert_totals(dividends, ["amount", "amount_rub", "tax", "tax_rub", "tax2pay"])
-        return dividends
+                    tax2pay = Decimal('0.0')
+            line = {
+                'report_template': "dividend",
+                'payment_date': dividend.timestamp(),
+                'symbol': dividend.asset().symbol(currency.id()),
+                'full_name': dividend.asset().name(),
+                'isin': dividend.asset().isin(),
+                'amount': amount,
+                'tax': tax,
+                'rate': rate,
+                'country': country.name(),
+                'country_iso': country.iso_code(),
+                'tax_treaty': tax_treaty,
+                'amount_rub': round(amount_rub, 2),
+                'tax_rub': round(tax_rub, 2),
+                'tax2pay': round(tax2pay, 2),
+                'note': note
+            }
+            dividends_report.append(line)
+        self.insert_totals(dividends_report, ["amount", "amount_rub", "tax", "tax_rub", "tax2pay"])
+        return dividends_report
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_stocks_and_etf(self):

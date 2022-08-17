@@ -1,6 +1,7 @@
 import json
 import os
 from pytest import approx
+from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from data_import.broker_statements.ibkr import StatementIBKR
@@ -17,7 +18,7 @@ from jal.data_export.xlsx import XLSX
 # ----------------------------------------------------------------------------------------------------------------------
 def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
     with open(data_path + 'taxes_rus.json', 'r', encoding='utf-8') as json_file:
-        report = json.load(json_file)
+        report = json.load(json_file, parse_float=Decimal)
 
     assets = [
         (4, "GE", "General Electric Company", "US3696043013", 2, PredefinedAsset.Stock, 2),
