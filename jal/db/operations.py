@@ -176,6 +176,9 @@ class LedgerTransaction:
                 break
         return processed_qty, processed_value
 
+    def id(self):
+        return self._oid
+
     def type(self):
         return self._otype
 
@@ -599,6 +602,18 @@ class Trade(LedgerTransaction):
             return super().value_total()
         else:
             return f"{amount:,.2f}\n{qty:,.2f}"
+
+    # Searches for dividend with type BondInterest that matches trade by timestamp, account, asset and number
+    # Returns None if accrued interest not found
+    def get_accrued_interest(self) -> [Dividend, None]:
+        id = readSQL("SELECT id FROM dividends WHERE timestamp=:timestamp AND account_id=:account AND asset_id=:asset "
+                     "AND number=:number AND type=:interest",
+                     [(":timestamp", self._timestamp), (":account", self._account.id()), (":asset", self._asset.id()),
+                      (":number", self._number), (":interest", Dividend.BondInterest)])
+        if id:
+            return Dividend(id)
+        else:
+            return None
 
     def processLedger(self, ledger):
         if self._broker is None:
