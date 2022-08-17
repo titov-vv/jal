@@ -196,7 +196,11 @@ class LedgerTransaction:
     def account_id(self):
         return self._account.id()
 
-    def asset(self):
+    # Returns asset object related to the operation
+    def asset(self) -> JalAsset:
+        return self._asset
+
+    def asset_name(self):   # TODO think about replacement by call to asset.name() but self._asset may be None
         if self._asset is None:
             return ''
         else:
@@ -380,12 +384,19 @@ class Dividend(LedgerTransaction):
         self._broker = self._account.organization()
 
     # Returns a list of Dividend objects for given asset, account and subtype
+    # if asset_id is 0 - return for all assets, if subtype is 0 - return all types
     @staticmethod
-    def get_list(account_id: int, asset_id: int, subtype: int) -> list:
+    def get_list(account_id: int, asset_id: int = 0, subtype: int = 0) -> list:
         dividends = []
-        query = JalDB._executeSQL("SELECT id FROM dividends "
-                                  "WHERE account_id=:account AND asset_id=:asset AND type=:type",
-                                  [(":account", account_id), (":asset", asset_id), (":type", subtype)])
+        query = "SELECT id FROM dividends WHERE account_id=:account"
+        params = [(":account", account_id)]
+        if asset_id:
+            query += " AND asset_id=:asset"
+            params += [(":asset", asset_id)]
+        if subtype:
+            query += " AND type=:type"
+            params += [(":type", subtype)]
+        query = JalDB._executeSQL(query, params)
         while query.next():
             dividends.append(Dividend(int(JalDB._readSQLrecord(query))))
         return dividends
