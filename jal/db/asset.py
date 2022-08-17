@@ -26,7 +26,7 @@ class JalAsset(JalDB):
         self._type = self._data['type_id'] if self._data is not None else None
         self._name = self._data['full_name'] if self._data is not None else ''
         self._isin = self._data['isin'] if self._data is not None else None
-        self._country_id = self._data['country_id'] if self._data is not None else None
+        self._country_id = self._data['country_id'] if self._data is not None else 0
         self._reg_number = self._readSQL("SELECT value FROM asset_data WHERE datatype=:datatype AND asset_id=:id",
                                          [(":datatype", AssetData.RegistrationCode), (":id", self._id)])
         self._expiry = self._readSQL("SELECT value FROM asset_data WHERE datatype=:datatype AND asset_id=:id",
@@ -77,6 +77,10 @@ class JalAsset(JalDB):
             if existing['quote_source'] == MarketDataFeed.NA:
                 _ = self._executeSQL("UPDATE asset_tickers SET quote_source=:data_source WHERE id=:id",
                                      [(":data_source", data_source), (":id", existing['id'])])
+
+    # Returns country_id for the asset
+    def country(self) -> int:
+        return self._country_id
 
     def country_name(self) -> str:
         return self._readSQL("SELECT name FROM countries WHERE id=:id", [(":id", self._country_id)])
