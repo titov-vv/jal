@@ -2,6 +2,7 @@ from decimal import Decimal
 from jal.db.db import JalDB
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
+import jal.db.closed_trade
 from jal.constants import Setup, BookAccount, PredefindedAccountType
 
 
@@ -146,6 +147,14 @@ class JalAccount(JalDB):
                                (":liabilities", BookAccount.Liabilities)])
         amount = Decimal(value) if value is not None else Decimal('0')
         return amount
+
+    # Returns a list of JalClosedTrade objects recorded for the account
+    def closed_trades_list(self) -> list:
+        trades = []
+        query = self._executeSQL("SELECT id FROM trades_closed WHERE account_id=:account", [(":account", self._id)])
+        while query.next():
+            trades.append(jal.db.closed_trade.JalClosedTrade(self._readSQLrecord(query)))
+        return trades
 
     def _valid_data(self, data: dict, search: bool = False, create: bool = False) -> bool:
         if data is None:
