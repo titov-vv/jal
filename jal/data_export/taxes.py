@@ -101,6 +101,7 @@ class TaxesRus:
         list_of_values.append(totals)
 
     def prepare_dividends(self):
+        currency = JalAsset(self.account.currency())
         dividends_report = []
         dividends = Dividend.get_list(self.account.id(), subtype=Dividend.Dividend)
         dividends += Dividend.get_list(self.account.id(), subtype=Dividend.StockDividend)
@@ -108,8 +109,6 @@ class TaxesRus:
         dividends = [x for x in dividends if self.year_begin <= x.timestamp() <= self.year_end]  # Only in given range
         for dividend in dividends:
             amount = dividend.amount()
-            tax = dividend.tax() if dividend.tax() else Decimal('0.0')  # Cast to Decimal('0.0') is used to pass tests as json library converts 0 to int
-            currency = JalAsset(dividend.account().currency())
             rate = currency.quote(dividend.timestamp(), JalSettings().getValue('BaseCurrency'))[1]
             price = dividend.asset().quote(dividend.timestamp(), currency.id())[1]
             country = JalCountry(dividend.asset().country())
@@ -142,7 +141,7 @@ class TaxesRus:
                 'full_name': dividend.asset().name(),
                 'isin': dividend.asset().isin(),
                 'amount': amount,
-                'tax': tax,
+                'tax': dividend.tax(),
                 'rate': rate,
                 'country': country.name(),
                 'country_iso': country.iso_code(),
@@ -158,91 +157,83 @@ class TaxesRus:
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_stocks_and_etf(self):
-        deals = []
-        # Take all actions without conversion
-        query = executeSQL("SELECT s.symbol AS symbol, s.isin AS isin, d.qty AS qty, cc.iso_code AS country_iso, "
-                           "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, o.number AS o_number, "
-                           "qos.quote AS os_rate, o.price AS o_price, o.qty AS o_qty, o.fee AS o_fee, "
-                           "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, c.number AS c_number, "
-                           "qcs.quote AS cs_rate, c.price AS c_price, c.qty AS c_qty, c.fee AS c_fee, "
-                           "SUM(coalesce(-sd.amount*qsd.quote, 0)) AS s_dividend "  # Dividend paid for short position
-                           "FROM trades_closed AS d "
-                           "JOIN ("
-                           " SELECT id, op_type, timestamp, settlement, number, account_id, asset_id, qty, price, fee FROM trades "
-                           " UNION ALL "
-                           " SELECT d.id, op_type, d.timestamp, d.timestamp, d.number, account_id, d.asset_id, amount, q.quote, 0 FROM dividends d "
-                           " LEFT JOIN accounts a ON a.id=d.account_id "
-                           " LEFT JOIN quotes q ON d.timestamp=q.timestamp AND d.asset_id=q.asset_id AND a.currency_id=q.currency_id "
-                           " WHERE type=:stock_dividend OR type=:stock_vesting "
-                           ") AS o ON o.id=d.open_op_id AND o.op_type=d.open_op_type "
-                           "JOIN trades AS c ON c.id=d.close_op_id AND c.op_type=d.close_op_type "
-                           "LEFT JOIN accounts AS a ON a.id = :account_id "
-                           "LEFT JOIN assets_ext AS s ON s.id = o.asset_id AND s.currency_id=a.currency_id "
-                           "LEFT JOIN countries AS cc ON cc.id = a.country_id "
-                           "LEFT JOIN t_last_dates AS ldo ON o.timestamp=ldo.ref_id "
-                           "LEFT JOIN quotes AS qo ON ldo.timestamp=qo.timestamp AND a.currency_id=qo.asset_id AND qo.currency_id=:base_currency "
-                           "LEFT JOIN t_last_dates AS ldos ON o.settlement=ldos.ref_id "
-                           "LEFT JOIN quotes AS qos ON ldos.timestamp=qos.timestamp AND a.currency_id=qos.asset_id AND qos.currency_id=:base_currency "
-                           "LEFT JOIN t_last_dates AS ldc ON c.timestamp=ldc.ref_id "
-                           "LEFT JOIN quotes AS qc ON ldc.timestamp=qc.timestamp AND a.currency_id=qc.asset_id AND qc.currency_id=:base_currency "
-                           "LEFT JOIN t_last_dates AS ldcs ON c.settlement=ldcs.ref_id "
-                           "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id AND qcs.currency_id=:base_currency "
-                           "LEFT JOIN dividends AS sd ON d.asset_id=sd.asset_id AND sd.amount<0 "  # Include dividends paid from short positions
-                           "AND sd.ex_date>=o_date AND sd.ex_date<=c_date "
-                           "LEFT JOIN t_last_dates AS ldsd ON sd.timestamp=ldsd.ref_id "
-                           "LEFT JOIN quotes AS qsd ON ldsd.timestamp=qsd.timestamp AND a.currency_id=qsd.asset_id AND qsd.currency_id=:base_currency "
-                           "WHERE c.settlement>=:begin AND c.settlement<:end AND d.account_id=:account_id "
-                           "AND (s.type_id = :stock OR s.type_id = :fund) "
-                           "GROUP BY d.rowid "  # to prevent collapse to 1 line if 'sd' values are NULL
-                           "ORDER BY s.symbol, o.timestamp, c.timestamp",
-                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account.id()),
-                            (":base_currency", JalSettings().getValue('BaseCurrency')),
-                            (":stock", PredefinedAsset.Stock), (":fund", PredefinedAsset.ETF),
-                            (":stock_dividend", Dividend.StockDividend), (":stock_vesting", Dividend.StockVesting)])
-        while query.next():
-            deal = readSQLrecord(query, named=True)
-            deal['qty'] = float(deal['qty'])
-            deal['o_rate'] = float(deal['o_rate'])
-            deal['os_rate'] = float(deal['os_rate'])
-            deal['o_price'] = float(deal['o_price'])
-            deal['c_rate'] = float(deal['c_rate'])
-            deal['cs_rate'] = float(deal['cs_rate'])
-            deal['c_price'] = float(deal['c_price'])
-            deal['o_qty'] = float(deal['o_qty'])
-            deal['o_fee'] = float(deal['o_fee'])
-            deal['c_qty'] = float(deal['c_qty'])
-            deal['c_fee'] = float(deal['c_fee'])
-            if not deal['symbol']:   # there will be row of NULLs if no deals are present (due to SUM aggregation)
-                continue
-            if not self.use_settlement:
-                deal['os_rate'] = deal['o_rate']
-                deal['cs_rate'] = deal['c_rate']
-            deal['o_type'] = "Покупка" if deal['qty'] >= 0 else "Продажа"
-            deal['c_type'] = "Продажа" if deal['qty'] >= 0 else "Покупка"
-            deal['o_amount'] = round(deal['o_price'] * abs(deal['qty']), 2)
-            deal['o_amount_rub'] = round(deal['o_amount'] * deal['os_rate'], 2) if deal['os_rate'] else 0
-            deal['c_amount'] = round(deal['c_price'] * abs(deal['qty']), 2)
-            deal['c_amount_rub'] = round(deal['c_amount'] * deal['cs_rate'], 2) if deal['cs_rate'] else 0
-            deal['o_fee'] = deal['o_fee'] * abs(deal['qty'] / deal['o_qty'])
-            deal['c_fee'] = deal['c_fee'] * abs(deal['qty'] / deal['c_qty'])
-            deal['o_fee_rub'] = round(deal['o_fee'] * deal['o_rate'], 2) if deal['o_rate'] else 0
-            deal['c_fee_rub'] = round(deal['c_fee'] * deal['c_rate'], 2) if deal['c_rate'] else 0
-            deal['income_rub'] = deal['c_amount_rub'] if deal['qty'] >= 0 else deal['o_amount_rub']
-            deal['income'] = deal['c_amount'] if deal['qty'] >= 0 else deal['o_amount']
-            deal['spending_rub'] = deal['o_amount_rub'] if deal['qty'] >= 0 else deal['c_amount_rub']
-            deal['spending_rub'] = deal['spending_rub'] + deal['o_fee_rub'] + deal['c_fee_rub'] + deal['s_dividend']
-            deal['spending'] = deal['o_amount'] if deal['qty'] >= 0 else deal['c_amount']
-            deal['spending'] = deal['spending'] + deal['o_fee'] + deal['c_fee']
-            deal['profit_rub'] = deal['income_rub'] - deal['spending_rub']
-            deal['profit'] = deal['income'] - deal['spending']
-            if deal['s_dividend'] > 0:  # Dividend was paid during short position
-                deal['s_dividend_note'] = f"Удержанный дивиденд: {deal['s_dividend']:.2f} RUB"
+        currency = JalAsset(self.account.currency())
+        country = JalCountry(self.account.country())
+        deals_report = []
+        trades = self.account.closed_trades_list()
+        trades = [x for x in trades if x.asset().type() in [PredefinedAsset.Stock, PredefinedAsset.ETF]]
+        trades = [x for x in trades if x.close_operation().type() == LedgerTransaction.Trade]
+        trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.Trade or (
+                    x.open_operation().type() == LedgerTransaction.Dividend and (
+                        x.open_operation().subtype() == Dividend.StockDividend or
+                        x.open_operation().subtype() == Dividend.StockDividend))]
+        trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
+        for trade in trades:
+            o_rate = currency.quote(trade.open_operation().timestamp(), JalSettings().getValue('BaseCurrency'))[1]
+            c_rate = currency.quote(trade.close_operation().timestamp(), JalSettings().getValue('BaseCurrency'))[1]
+            if self.use_settlement:
+                os_rate = currency.quote(trade.open_operation().settlement(), JalSettings().getValue('BaseCurrency'))[1]
+                cs_rate = currency.quote(trade.close_operation().settlement(), JalSettings().getValue('BaseCurrency'))[1]
             else:
-                deal['s_dividend_note'] = ''
-            deal['report_template'] = "trade"
-            deals.append(deal)
-        self.insert_totals(deals, ["income_rub", "spending_rub", "profit_rub", "profit"])
-        return deals
+                os_rate = o_rate
+                cs_rate = c_rate
+            short_dividend = Decimal('0')
+            if trade.qty() < Decimal('0'):  # Check were there any dividends during short position holding
+                dividends = Dividend.get_list(self.account.id(), subtype=Dividend.Dividend)
+                dividends = [x for x in dividends if
+                             trade.open_operation().settlement() <= x.ex_date() <= trade.close_operation().settlement()]
+                for dividend in dividends:
+                    short_dividend += dividend.amount()
+            note = f"Удержанный дивиденд: {float(short_dividend):.2f} RUB" if short_dividend > Decimal('0') else ''
+            o_amount = round(trade.open_operation().price() * abs(trade.qty()), 2)
+            o_amount_rub = round(o_amount * os_rate, 2)
+            c_amount = round(trade.close_operation().price() * abs(trade.qty()), 2)
+            c_amount_rub = round(c_amount * cs_rate, 2)
+            o_fee = trade.open_operation().fee() * abs(trade.qty() / trade.open_operation().qty())
+            c_fee = trade.close_operation().fee() * abs(trade.qty() / trade.close_operation().qty())
+            income = c_amount if trade.qty() >=Decimal('0') else o_amount
+            income_rub = c_amount_rub if trade.qty() >= Decimal('0') else o_amount_rub
+            spending = o_amount if trade.qty() >=Decimal('0') else c_amount
+            spending += o_fee + c_fee
+            spending_rub = o_amount_rub if trade.qty() >= Decimal('0') else c_amount_rub
+            spending_rub += round(o_fee * o_rate, 2) + round(c_fee * c_rate, 2) + short_dividend
+            line = {
+                'report_template': "trade",
+                'symbol': trade.asset().symbol(currency.id()),
+                'isin': trade.asset().isin(),
+                'qty': trade.qty(),
+                'country_iso': country.iso_code(),
+                'o_type': "Покупка" if trade.qty() >= Decimal('0') else "Продажа",
+                'o_number': trade.open_operation().number(),
+                'o_date': trade.open_operation().timestamp(),
+                'o_rate': o_rate,
+                'os_date': trade.open_operation().settlement(),
+                'os_rate': os_rate,
+                'o_price': trade.open_operation().price(),
+                'o_amount':  o_amount,
+                'o_amount_rub': o_amount_rub,
+                'o_fee': o_fee,
+                'o_fee_rub': round(o_fee * o_rate, 2),
+                'c_type': "Продажа" if trade.qty() >= Decimal('0') else "Покупка",
+                'c_number': trade.close_operation().number(),
+                'c_date': trade.close_operation().timestamp(),
+                'c_rate': c_rate,
+                'cs_date': trade.close_operation().settlement(),
+                'cs_rate': cs_rate,
+                'c_price': trade.close_operation().price(),
+                'c_amount': c_amount,
+                'c_amount_rub': c_amount_rub,
+                'c_fee': c_fee,
+                'c_fee_rub': round(c_fee * c_rate, 2),
+                'income_rub': income_rub,
+                'spending_rub': spending_rub,
+                'profit': income - spending,
+                'profit_rub': income_rub - spending_rub,
+                's_dividend_note': note
+            }
+            deals_report.append(line)
+        self.insert_totals(deals_report, ["income_rub", "spending_rub", "profit_rub", "profit"])
+        return deals_report
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_bonds(self):
