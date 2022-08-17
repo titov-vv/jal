@@ -8,11 +8,12 @@ class JalCountry(JalDB):
         if self._valid_data(data):
             if search:
                 self._id = self._find_country(data)
-        self._data = self._readSQL("SELECT name, code, iso_code FROM countries WHERE id=:country_id",
+        self._data = self._readSQL("SELECT name, code, iso_code, tax_treaty FROM countries WHERE id=:country_id",
                                    [(":country_id", self._id)], named=True)
         self._name = self._data['name'] if self._data is not None else None
         self._code = self._data['code'] if self._data is not None else None
         self._iso_code = self._data['iso_code'] if self._data is not None else None
+        self._tax_treaty = self._data['tax_treaty'] == 1 if self._data is not None else False
 
     def id(self) -> int:
         return self._id
@@ -25,6 +26,10 @@ class JalCountry(JalDB):
 
     def iso_code(self) -> str:
         return self._iso_code
+
+    # Returns True/False status of Tax Treaty for this country
+    def has_tax_treaty(self) -> bool:
+        return self._tax_treaty
 
     def _valid_data(self, data: dict) -> bool:
         if data is None:
