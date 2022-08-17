@@ -191,7 +191,7 @@ class LedgerTransaction:
         return self._timestamp
 
     def account(self):
-        return self._account_name
+        return self._account
 
     def account_id(self):
         return self._account.id()

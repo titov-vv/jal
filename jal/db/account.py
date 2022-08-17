@@ -33,7 +33,7 @@ class JalAccount(JalDB):
                                    "reconciled_on, precision FROM accounts WHERE id=:id",
                                    [(":id", self._id)], named=True)
         self._type = self._data['type_id'] if self._data is not None else None
-        self._name = self._data['name'] if self._data is not None else None
+        self._name = self._data['name'] if self._data is not None else ''
         self._number = self._data['number'] if self._data is not None else None
         self._currency_id = self._data['currency_id'] if self._data is not None else None
         self._active = self._data['active'] if self._data is not None else None

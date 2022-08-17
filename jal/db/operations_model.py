@@ -81,9 +81,9 @@ class OperationsModel(QAbstractTableModel):
             return date_time
         elif column == 2:
             if operation.asset_name():
-                return operation.account() + "\n" + operation.asset_name()
+                return operation.account().name() + "\n" + operation.asset_name()
             else:
-                return operation.account()
+                return operation.account().name()
         elif column == 3:
             return operation.description()
         elif column == 4:
