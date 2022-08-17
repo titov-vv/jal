@@ -14,7 +14,7 @@ from jal.db.settings import JalSettings
 
 # -----------------------------------------------------------------------------------------------------------------------
 class TaxesRus:
-    BOND_PRINCIPAL = 1000  # TODO Principal should be used from 'asset_data' table
+    BOND_PRINCIPAL = Decimal('1000')  # TODO Principal should be used from 'asset_data' table
 
     CorpActionText = {
         CorporateAction.SymbolChange: "Смена символа {before} {old} -> {after} {new}",
@@ -237,111 +237,121 @@ class TaxesRus:
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_bonds(self):
-        bonds = []
-        # First put all closed deals with bonds
-        query = executeSQL("SELECT s.symbol AS symbol, s.isin AS isin, d.qty AS qty, cc.iso_code AS country_iso, "
-                           "o.timestamp AS o_date, qo.quote AS o_rate, o.settlement AS os_date, o.number AS o_number, "
-                           "qos.quote AS os_rate, o.price AS o_price, o.qty AS o_qty, o.fee AS o_fee, -oi.amount AS o_int, "
-                           "c.timestamp AS c_date, qc.quote AS c_rate, c.settlement AS cs_date, c.number AS c_number, "
-                           "qcs.quote AS cs_rate, c.price AS c_price, c.qty AS c_qty, c.fee AS c_fee, ci.amount AS c_int "
-                           "FROM trades_closed AS d "
-                           "JOIN trades AS o ON o.id=d.open_op_id AND o.op_type=d.open_op_type "
-                           "LEFT JOIN dividends AS oi ON oi.account_id=:account_id AND oi.number=o.number AND oi.timestamp=o.timestamp AND oi.asset_id=o.asset_id "
-                           "JOIN trades AS c ON c.id=d.close_op_id AND c.op_type=d.close_op_type "
-                           "LEFT JOIN dividends AS ci ON ci.account_id=:account_id AND ci.number=c.number AND ci.timestamp=c.timestamp AND ci.asset_id=c.asset_id "
-                           "LEFT JOIN accounts AS a ON a.id = :account_id "
-                           "LEFT JOIN assets_ext AS s ON s.id = o.asset_id AND s.currency_id=a.currency_id "
-                           "LEFT JOIN countries AS cc ON cc.id = a.country_id "
-                           "LEFT JOIN t_last_dates AS ldo ON o.timestamp=ldo.ref_id "
-                           "LEFT JOIN quotes AS qo ON ldo.timestamp=qo.timestamp AND a.currency_id=qo.asset_id AND qo.currency_id=:base_currency "
-                           "LEFT JOIN t_last_dates AS ldos ON o.settlement=ldos.ref_id "
-                           "LEFT JOIN quotes AS qos ON ldos.timestamp=qos.timestamp AND a.currency_id=qos.asset_id AND qos.currency_id=:base_currency "
-                           "LEFT JOIN t_last_dates AS ldc ON c.timestamp=ldc.ref_id "
-                           "LEFT JOIN quotes AS qc ON ldc.timestamp=qc.timestamp AND a.currency_id=qc.asset_id AND qc.currency_id=:base_currency "
-                           "LEFT JOIN t_last_dates AS ldcs ON c.settlement=ldcs.ref_id "
-                           "LEFT JOIN quotes AS qcs ON ldcs.timestamp=qcs.timestamp AND a.currency_id=qcs.asset_id AND qcs.currency_id=:base_currency "
-                           "WHERE c.settlement>=:begin AND c.settlement<:end AND d.account_id=:account_id "
-                           "AND s.type_id = :bond "
-                           "ORDER BY s.symbol, o.timestamp, c.timestamp",
-                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account.id()),
-                            (":base_currency", JalSettings().getValue('BaseCurrency')),
-                            (":bond", PredefinedAsset.Bond)])
-        while query.next():
-            deal = readSQLrecord(query, named=True)
-            deal['qty'] = float(deal['qty'])
-            deal['o_rate'] = float(deal['o_rate'])
-            deal['os_rate'] = float(deal['os_rate'])
-            deal['o_price'] = float(deal['o_price'])
-            deal['c_rate'] = float(deal['c_rate'])
-            deal['cs_rate'] = float(deal['cs_rate'])
-            deal['c_price'] = float(deal['c_price'])
-            deal['o_qty'] = float(deal['o_qty'])
-            deal['o_fee'] = float(deal['o_fee'])
-            deal['c_qty'] = float(deal['c_qty'])
-            deal['c_fee'] = float(deal['c_fee'])
-            deal['c_int'] = float(deal['c_int'])
-            deal['principal'] = self.BOND_PRINCIPAL
-            if not self.use_settlement:
-                deal['os_rate'] = deal['o_rate']
-                deal['cs_rate'] = deal['c_rate']
-            deal['o_type'] = "Покупка" if deal['qty'] >= 0 else "Продажа"
-            deal['c_type'] = "Продажа" if deal['qty'] >= 0 else "Покупка"
-            deal['o_amount'] = round(deal['o_price'] * abs(deal['qty']), 2)
-            deal['o_amount_rub'] = round(deal['o_amount'] * deal['os_rate'], 2) if deal['os_rate'] else 0
-            deal['c_amount'] = round(deal['c_price'] * abs(deal['qty']), 2)
-            deal['c_amount_rub'] = round(deal['c_amount'] * deal['cs_rate'], 2) if deal['cs_rate'] else 0
-            # Convert price from currency to % of principal
-            deal['o_price'] = 100.0 * deal['o_price'] / deal['principal']
-            deal['c_price'] = 100.0 * deal['c_price'] / deal['principal']
-
-            deal['o_fee'] = deal['o_fee'] * abs(deal['qty'] / deal['o_qty'])
-            deal['c_fee'] = deal['c_fee'] * abs(deal['qty'] / deal['c_qty'])
-            deal['o_fee_rub'] = round(deal['o_fee'] * deal['o_rate'], 2) if deal['o_rate'] else 0
-            deal['c_fee_rub'] = round(deal['c_fee'] * deal['c_rate'], 2) if deal['c_rate'] else 0
-            deal['o_int_rub'] = round(deal['o_int'] * deal['o_rate'], 2) if deal['o_rate'] and deal['o_int'] else 0
-            deal['c_int_rub'] = round(deal['c_int'] * deal['o_rate'], 2) if deal['o_rate'] and deal['c_int'] else 0
-            # TODO accrued interest calculations for short deals is not clear - to be corrected
-            deal['income_rub'] = deal['c_amount_rub'] + deal['c_int_rub'] if deal['qty'] >= 0 else deal['o_amount_rub']
-            deal['income'] = deal['c_amount'] if deal['qty'] >= 0 else deal['o_amount']
-            deal['spending_rub'] = deal['o_amount_rub'] if deal['qty'] >= 0 else deal['c_amount_rub']
-            deal['spending_rub'] = deal['spending_rub'] + deal['o_fee_rub'] + deal['c_fee_rub'] + deal['o_int_rub']
-            deal['spending'] = deal['o_amount'] if deal['qty'] >= 0 else deal['c_amount']
-            deal['spending'] = deal['spending'] + deal['o_fee'] + deal['c_fee']
-            deal['profit_rub'] = deal['income_rub'] - deal['spending_rub']
-            deal['profit'] = deal['income'] - deal['spending']
-            deal['report_template'] = "bond_trade"
-            bonds.append(deal)
-
+        currency = JalAsset(self.account.currency())
+        country = JalCountry(self.account.country())
+        bonds_report = []
+        accrued_interests_id = []
+        trades = self.account.closed_trades_list()
+        trades = [x for x in trades if x.asset().type() == PredefinedAsset.Bond]
+        trades = [x for x in trades if x.close_operation().type() == LedgerTransaction.Trade]
+        trades = [x for x in trades if x.open_operation().type() == LedgerTransaction.Trade]
+        trades = [x for x in trades if self.year_begin <= x.close_operation().settlement() <= self.year_end]
+        for trade in trades:
+            o_rate = currency.quote(trade.open_operation().timestamp(), JalSettings().getValue('BaseCurrency'))[1]
+            c_rate = currency.quote(trade.close_operation().timestamp(), JalSettings().getValue('BaseCurrency'))[1]
+            if self.use_settlement:
+                os_rate = currency.quote(trade.open_operation().settlement(), JalSettings().getValue('BaseCurrency'))[1]
+                cs_rate = currency.quote(trade.close_operation().settlement(), JalSettings().getValue('BaseCurrency'))[
+                    1]
+            else:
+                os_rate = o_rate
+                cs_rate = c_rate
+            o_accrued_interest = trade.open_operation().get_accrued_interest()
+            if o_accrued_interest:
+                accrued_interests_id.append(o_accrued_interest.id())
+                o_interest = -o_accrued_interest.amount()
+            else:
+                o_interest = Decimal('0')
+            o_interest_rub = round(o_interest * o_rate, 2)
+            c_accrued_interest = trade.close_operation().get_accrued_interest()
+            if c_accrued_interest:
+                accrued_interests_id.append(c_accrued_interest.id())
+                c_interest = c_accrued_interest.amount()
+            else:
+                c_interest = Decimal('0')
+            c_interest_rub = round(c_interest * c_rate, 2)
+            o_amount = round(trade.open_operation().price() * abs(trade.qty()), 2)
+            o_amount_rub = round(o_amount * os_rate, 2)
+            c_amount = round(trade.close_operation().price() * abs(trade.qty()), 2)
+            c_amount_rub = round(c_amount * cs_rate, 2)
+            o_fee = trade.open_operation().fee() * abs(trade.qty() / trade.open_operation().qty())
+            c_fee = trade.close_operation().fee() * abs(trade.qty() / trade.close_operation().qty())
+            # FIXME accrued interest calculations for short deals is not clear - to be corrected
+            income = c_amount + c_interest if trade.qty() >= Decimal('0') else o_amount
+            income_rub = c_amount_rub + c_interest_rub if trade.qty() >= Decimal('0') else o_amount_rub
+            spending = o_amount + o_interest if trade.qty() >= Decimal('0') else c_amount
+            spending += o_fee + c_fee
+            spending_rub = o_amount_rub + o_interest_rub if trade.qty() >= Decimal('0') else c_amount_rub
+            spending_rub += round(o_fee * o_rate, 2) + round(c_fee * c_rate, 2)
+            line = {
+                'report_template': "bond_trade",
+                'symbol': trade.asset().symbol(currency.id()),
+                'isin': trade.asset().isin(),
+                'qty': trade.qty(),
+                'principal': self.BOND_PRINCIPAL,
+                'country_iso': country.iso_code(),
+                'o_type': "Покупка" if trade.qty() >= Decimal('0') else "Продажа",
+                'o_number': trade.open_operation().number(),
+                'o_date': trade.open_operation().timestamp(),
+                'o_rate': o_rate,
+                'os_date': trade.open_operation().settlement(),
+                'os_rate': os_rate,
+                'o_price': Decimal('100') * trade.open_operation().price() / self.BOND_PRINCIPAL,
+                'o_int': o_interest,
+                'o_int_rub': o_interest_rub,
+                'o_amount': o_amount,
+                'o_amount_rub': o_amount_rub,
+                'o_fee': o_fee,
+                'o_fee_rub': round(o_fee * o_rate, 2),
+                'c_type': "Продажа" if trade.qty() >= Decimal('0') else "Покупка",
+                'c_number': trade.close_operation().number(),
+                'c_date': trade.close_operation().timestamp(),
+                'c_rate': c_rate,
+                'cs_date': trade.close_operation().settlement(),
+                'cs_rate': cs_rate,
+                'c_price': Decimal('100') * trade.close_operation().price() / self.BOND_PRINCIPAL,
+                'c_int': c_interest,
+                'c_int_rub': c_interest_rub,
+                'c_amount': c_amount,
+                'c_amount_rub': c_amount_rub,
+                'c_fee': c_fee,
+                'c_fee_rub': round(c_fee * c_rate, 2),
+                'income_rub': income_rub,
+                'spending_rub': spending_rub,
+                'profit': income - spending,
+                'profit_rub': income_rub - spending_rub
+            }
+            bonds_report.append(line)
         # Second - take all bond interest payments not linked with buy/sell transactions
-        query = executeSQL("SELECT b.symbol AS symbol, b.isin AS isin, i.timestamp AS o_date, i.number AS number, "
-                           "i.amount AS interest, r.quote AS rate, cc.iso_code AS country_iso "
-                           "FROM dividends AS i "
-                           "LEFT JOIN trades AS t ON i.account_id=t.account_id AND i.number=t.number "
-                           "AND i.timestamp=t.timestamp AND i.asset_id=t.asset_id "
-                           "LEFT JOIN accounts AS a ON a.id = i.account_id "
-                           "LEFT JOIN assets_ext AS b ON b.id = i.asset_id AND b.currency_id=a.currency_id "
-                           "LEFT JOIN countries AS cc ON cc.id = a.country_id "
-                           "LEFT JOIN t_last_dates AS ld ON i.timestamp=ld.ref_id "
-                           "LEFT JOIN quotes AS r ON ld.timestamp=r.timestamp AND a.currency_id=r.asset_id AND r.currency_id=:base_currency "
-                           "WHERE i.timestamp>=:begin AND i.timestamp<:end AND i.account_id=:account_id "
-                           "AND i.type = :type_interest AND t.id IS NULL",
-                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account.id()),
-                            (":base_currency", JalSettings().getValue('BaseCurrency')),
-                            (":type_interest", Dividend.BondInterest)])
-        while query.next():
-            interest = readSQLrecord(query, named=True)
-            interest['interest'] = float(interest['interest'])
-            interest['rate'] = float(interest['rate'])
-            interest['type'] = "Купон"
-            interest['empty'] = ''  # to keep cell borders drawn
-            interest['interest_rub'] = round(interest['interest'] * interest['rate'], 2) if interest['rate'] else 0
-            interest['income_rub'] = interest['profit_rub'] = interest['interest_rub']
-            interest['spending_rub'] = 0.0
-            interest['profit'] = interest['interest']
-            interest['report_template'] = "bond_interest"
-            bonds.append(interest)
-        self.insert_totals(bonds, ["income_rub", "spending_rub", "profit_rub", "profit"])
-        return bonds
+        currency = JalAsset(self.account.currency())
+        interests = Dividend.get_list(self.account.id(), subtype=Dividend.BondInterest)
+        interests = [x for x in interests if self.year_begin <= x.timestamp() <= self.year_end]  # Only in given range
+        interests = [x for x in interests if x.id() not in accrued_interests_id]  # Skip already processed
+        for interest in interests:
+            amount = interest.amount()
+            rate = currency.quote(interest.timestamp(), JalSettings().getValue('BaseCurrency'))[1]
+            amount_rub = round(amount * rate, 2)
+            country = JalCountry(interest.asset().country())
+            line = {
+                'report_template': "bond_interest",
+                'type': "Купон",
+                'empty': '',  # to keep cell borders drawn
+                'o_date': interest.timestamp(),
+                'symbol': interest.asset().symbol(currency.id()),
+                'isin': interest.asset().isin(),
+                'number': interest.number(),
+                'interest': amount,
+                'rate': rate,
+                'interest_rub': amount_rub,
+                'income_rub': amount_rub,
+                'spending_rub': Decimal('0.0'),
+                'profit': amount,
+                'profit_rub': amount_rub,
+                'country_iso': country.iso_code(),
+            }
+            bonds_report.append(line)
+        self.insert_totals(bonds_report, ["income_rub", "spending_rub", "profit_rub", "profit"])
+        return bonds_report
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_derivatives(self):
