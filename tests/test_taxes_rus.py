@@ -6,7 +6,7 @@ from decimal import Decimal
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from data_import.broker_statements.ibkr import StatementIBKR
 from tests.helpers import create_assets, create_quotes, create_dividends, create_coupons, create_trades, \
-    create_actions, create_corporate_actions, create_stock_dividends
+    create_actions, create_corporate_actions, create_stock_dividends, json_decimal2float
 from constants import PredefinedAsset
 from jal.db.ledger import Ledger
 from jal.db.helpers import readSQL, executeSQL
@@ -18,7 +18,7 @@ from jal.data_export.xlsx import XLSX
 # ----------------------------------------------------------------------------------------------------------------------
 def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
     with open(data_path + 'taxes_rus.json', 'r', encoding='utf-8') as json_file:
-        report = json.load(json_file, parse_float=Decimal)
+        report = json.load(json_file)
 
     assets = [
         (4, "GE", "General Electric Company", "US3696043013", 2, PredefinedAsset.Stock, 2),
@@ -111,6 +111,7 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
 
     taxes = TaxesRus()
     tax_report = taxes.prepare_tax_report(2020, 1)
+    json_decimal2float(tax_report)
     assert tax_report == report
 
 
