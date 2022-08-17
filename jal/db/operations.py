@@ -365,8 +365,8 @@ class Dividend(LedgerTransaction):
         super().__init__(operation_id)
         self._otype = LedgerTransaction.Dividend
         self._view_rows = 2
-        self._data = readSQL("SELECT d.type, d.timestamp, d.number, d.account_id, d.amount, d.asset_id, d.tax, "
-                             "l.amount_acc AS t_qty, d.note AS note, c.name AS country "
+        self._data = readSQL("SELECT d.type, d.timestamp, d.ex_date, d.number, d.account_id, d.asset_id, "
+                             "d.amount, d.tax, l.amount_acc AS t_qty, d.note AS note, c.name AS country "
                              "FROM dividends AS d "
                              "LEFT JOIN assets AS a ON d.asset_id = a.id "
                              "LEFT JOIN countries AS c ON a.country_id = c.id "
@@ -376,6 +376,7 @@ class Dividend(LedgerTransaction):
         self._subtype = self._data['type']
         self._label, self._label_color = labels[self._subtype]
         self._timestamp = self._data['timestamp']
+        self._ex_date = self._data['ex_date'] if self._data['ex_date'] else 0
         self._account = JalAccount(self._data['account_id'])
         self._account_name = self._account.name()
         self._account_currency = JalAsset(self._account.currency()).symbol()
@@ -404,6 +405,30 @@ class Dividend(LedgerTransaction):
         while query.next():
             dividends.append(Dividend(int(JalDB._readSQLrecord(query))))
         return dividends
+
+    # Settlement returns timestamp - it is required for stock dividend/vesting
+    def settlement(self) -> int:
+        return self._timestamp
+
+    # Returns ex-dividend date if it is present for this dividend
+    def ex_date(self) -> int:
+        return self._ex_date
+
+    # Return price of asset for stock dividend and vesting
+    def price(self) -> Decimal:
+        if self._subtype != Dividend.StockDividend and self._subtype != Dividend.StockVesting:
+            return Decimal('0')
+        quote_timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
+        if quote_timestamp != self._timestamp:
+            raise ValueError(self.tr("No stock quote for stock dividend or vesting.") + f" Operation: {self.dump()}")
+        return price
+
+    # There are no any fee possible for Dividend
+    def fee(self) -> Decimal:
+        return Decimal('0')
+
+    def qty(self) -> Decimal:
+        return self.amount()
 
     def amount(self) -> Decimal:
         return self._amount
@@ -486,17 +511,14 @@ class Dividend(LedgerTransaction):
         if asset_amount < Decimal('0'):
             raise NotImplemented(self.tr("Not supported action: stock dividend or vesting closes short trade.") +
                                  f" Operation: {self.dump()}")
-        quote_timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
-        if quote_timestamp != self._timestamp:
-            raise ValueError(self.tr("No stock quote for stock dividend or vesting.") + f" Operation: {self.dump()}")
         _ = executeSQL(
             "INSERT INTO trades_opened(timestamp, op_type, operation_id, account_id, asset_id, price, remaining_qty) "
             "VALUES(:timestamp, :type, :operation_id, :account_id, :asset_id, :price, :remaining_qty)",
             [(":timestamp", self._timestamp), (":type", self._otype), (":operation_id", self._oid),
-             (":account_id", self._account.id()), (":asset_id", self._asset.id()), (":price", format_decimal(price)),
-             (":remaining_qty", format_decimal(self._amount))])
+             (":account_id", self._account.id()), (":asset_id", self._asset.id()),
+             (":price", format_decimal(self.price())),(":remaining_qty", format_decimal(self._amount))])
         ledger.appendTransaction(self, BookAccount.Assets, self._amount,
-                                 asset_id=self._asset.id(), value=self._amount * price)
+                                 asset_id=self._asset.id(), value=self._amount * self.price())
         if self._tax:
             ledger.appendTransaction(self, BookAccount.Money, -self._tax)
             ledger.appendTransaction(self, BookAccount.Costs, self._tax,
@@ -524,9 +546,10 @@ class Trade(LedgerTransaction):
         super().__init__(operation_data)
         self._otype = LedgerTransaction.Trade
         self._view_rows = 2
-        self._data = readSQL("SELECT t.timestamp, t.number, t.account_id, t.asset_id, t.qty, t.price AS price, "
+        self._data = readSQL("SELECT t.timestamp, t.settlement, t.number, t.account_id, t.asset_id, t.qty, t.price, "
                              "t.fee, t.note FROM trades AS t WHERE t.id=:oid", [(":oid", self._oid)], named=True)
         self._timestamp = self._data['timestamp']
+        self._settlement = self._data['settlement']
         self._account = JalAccount(self._data['account_id'])
         self._account_name = self._account.name()
         self._account_currency = JalAsset(self._account.currency()).symbol()
@@ -542,6 +565,18 @@ class Trade(LedgerTransaction):
             self._label, self._label_color = ('S', CustomColor.DarkRed)
         else:
             self._label, self._label_color = ('B', CustomColor.DarkGreen)
+
+    def settlement(self) -> int:
+        return self._settlement
+
+    def price(self) -> Decimal:
+        return self._price
+
+    def qty(self) -> Decimal:
+        return self._qty
+
+    def fee(self) -> Decimal:
+        return self._fee
 
     def description(self) -> str:
         if self._fee != Decimal('0'):
@@ -895,6 +930,10 @@ class CorporateAction(LedgerTransaction):
         self._qty = Decimal(self._data['qty'])
         self._number = self._data['number']
         self._broker = self._account.organization()
+
+    # Settlement returns timestamp as corporate action happens immediately in Jal
+    def settlement(self) -> int:
+        return self._timestamp
 
     def description(self) -> str:
         description = self.names[self._subtype]
