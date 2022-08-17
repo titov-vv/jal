@@ -27,6 +27,7 @@ class LedgerTransaction:
             operation_id = operation_data
         self._oid = operation_id
         self._otype = 0
+        self._subtype = 0
         self._data = None
         self._view_rows = 1    # How many rows it will require operation in QTableView
         self._label = '?'
@@ -177,6 +178,9 @@ class LedgerTransaction:
 
     def type(self):
         return self._otype
+
+    def subtype(self):
+        return self._subtype
 
     def oid(self):
         return self._oid
