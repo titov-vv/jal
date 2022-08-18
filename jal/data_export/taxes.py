@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedAsset, PredefinedCategory
-from jal.db.helpers import executeSQL, readSQLrecord, readSQL
+from jal.db.helpers import executeSQL, readSQL
 from jal.db.operations import LedgerTransaction, Dividend, CorporateAction
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -98,7 +98,7 @@ class TaxesRus:
             return
         totals = {"report_template": "totals"}
         for field in fields:
-            totals[field] = sum([x[field] for x in list_of_values if field in x])
+            totals[field] = sum([float(x[field]) for x in list_of_values if field in x])   ######
         list_of_values.append(totals)
 
     def prepare_dividends(self):
@@ -656,15 +656,15 @@ class TaxesRus:
         if purchase['qty'] <= 1e-9:   # FIXME All taxes module should be refactored to decimal usage also
             return proceed_qty  # This trade was fully mached before
         purchase['operation'] = ' ' * level * 3 + "Покупка"
-        purchase['basis_ratio'] = 100.0 * share
+        purchase['basis_ratio'] = 100.0 * float(share)    ######
         deal_qty = purchase['qty']
-        purchase['qty'] = proceed_qty if proceed_qty < deal_qty else deal_qty
+        purchase['qty'] = float(proceed_qty) if proceed_qty < deal_qty else deal_qty   ######
         purchase['amount'] = round(purchase['price'] * purchase['qty'], 2)
         purchase['amount_rub'] = round(purchase['amount'] * purchase['s_rate'], 2) if purchase['s_rate'] else 0
         purchase['fee'] = purchase['fee'] * purchase['qty'] / deal_qty
         purchase['fee_rub'] = round(purchase['fee'] * purchase['t_rate'], 2) if purchase['t_rate'] else 0
         purchase['income_rub'] = 0
-        purchase['spending_rub'] = round(share*(purchase['amount_rub'] + purchase['fee_rub']), 2)
+        purchase['spending_rub'] = round(float(share)*(purchase['amount_rub'] + purchase['fee_rub']), 2)   ######
 
         _ = executeSQL("INSERT INTO t_last_assets (id, total_value) VALUES (:trade_id, :qty)",
                        [(":trade_id", purchase['trade_id']), (":qty", purchase['qty'])])
@@ -675,7 +675,7 @@ class TaxesRus:
         if purchase['type_id'] == PredefinedAsset.Bond:
             share = purchase['qty'] / deal_qty if purchase['qty'] < deal_qty else 1
             self.output_accrued_interest(actions, purchase['trade_number'], share, level)
-        return proceed_qty - purchase['qty']
+        return float(proceed_qty) - purchase['qty']    #########
 
     def output_corp_action(self, actions, oid, asset_id, proceed_qty, share, level, group):
         if proceed_qty <= 0:
@@ -694,8 +694,8 @@ class TaxesRus:
         action['qty2'] = float(action['qty2'])
         action['value_share'] = float(action['value_share'])
         action['operation'] = ' ' * level * 3 + "Корп. действие"
-        share = share * action['value_share']
-        qty_before = action['qty'] * proceed_qty / action['qty2']
+        share = float(share) * action['value_share']    #######
+        qty_before = action['qty'] * float(proceed_qty) / action['qty2']    #######
         if action['type'] == CorporateAction.SpinOff:
             spinoff = readSQL("SELECT s1.symbol AS symbol, s1.isin AS isin, "
                               "r.value_share, s2.symbol AS symbol2, s2.isin AS isin2 "
@@ -721,7 +721,7 @@ class TaxesRus:
             action['report_group'] = group
             self.drop_extra_fields(action, ['oid', 'isin2', 'qty2', 'symbol2', 'value_share'])
             actions.append(action)
-        return action['asset_id'], qty_before, share
+        return action['asset_id'], Decimal(str(qty_before)), Decimal(str(share))   ####
 
     def output_accrued_interest(self, actions, trade_number, share, level):
         interest = readSQL("SELECT b.symbol AS symbol, b.isin AS isin, i.timestamp AS o_date, i.number AS number, "
