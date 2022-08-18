@@ -32,6 +32,7 @@ class TaxesRus:
         self.broker_name = ''
         self.broker_iso_cc = "000"
         self.use_settlement = True
+        self._processed_trade_qty = {}  # It will handle {trade_id: qty} records to keep track of already processed qty
         self.reports = {
             "Дивиденды": self.prepare_dividends,
             "Акции": self.prepare_stocks_and_etf,
@@ -561,7 +562,7 @@ class TaxesRus:
                 s_rate = t_rate
             if previous_symbol != sale.asset().symbol(currency.id()):
                 # Clean processed qty records if symbol have changed
-                _ = executeSQL("DELETE FROM t_last_assets")
+                self._processed_trade_qty = {}
                 if sale.settlement() >= self.year_begin:  # Don't put sub-header of operation is out of scope
                     corporate_actions_report.append({
                         'report_template': "symbol_header",
@@ -633,8 +634,7 @@ class TaxesRus:
         if proceed_qty <= 0:
             return proceed_qty
         purchase = readSQL("SELECT t.id AS trade_id, s.symbol, s.isin AS isin, s.type_id AS type_id, "
-                           "coalesce(d.qty-SUM(lq.total_value), d.qty) AS qty, "
-                           "t.timestamp AS t_date, qt.quote AS t_rate, t.number AS trade_number, "
+                           "d.qty AS qty, t.timestamp AS t_date, qt.quote AS t_rate, t.number AS trade_number, "
                            "t.settlement AS s_date, qts.quote AS s_rate, t.price AS price, t.fee AS fee "
                            "FROM trades AS t "
                            "JOIN trades_closed AS d ON t.id=d.open_op_id AND t.op_type=d.open_op_type "
@@ -644,11 +644,13 @@ class TaxesRus:
                            "LEFT JOIN quotes AS qt ON ldt.timestamp=qt.timestamp AND a.currency_id=qt.asset_id AND qt.currency_id=:base_currency "
                            "LEFT JOIN t_last_dates AS ldts ON t.settlement=ldts.ref_id "
                            "LEFT JOIN quotes AS qts ON ldts.timestamp=qts.timestamp AND a.currency_id=qts.asset_id AND qts.currency_id=:base_currency "
-                           "LEFT JOIN t_last_assets AS lq ON lq.id = t.id "
                            "WHERE t.id = :oid", [(":oid", oid),
                                                  (":base_currency", JalSettings().getValue('BaseCurrency'))],
                            named=True)
-        purchase['qty'] = float(purchase['qty'])
+        if purchase['trade_id'] in self._processed_trade_qty:   # we have some qty processed already
+            purchase['qty'] = float(purchase['qty']) - self._processed_trade_qty[purchase['trade_id']]
+        else:
+            purchase['qty'] = float(purchase['qty'])
         purchase['t_rate'] = float(purchase['t_rate'])
         purchase['s_rate'] = float(purchase['s_rate'])
         purchase['price'] = float(purchase['price'])
@@ -665,9 +667,8 @@ class TaxesRus:
         purchase['fee_rub'] = round(purchase['fee'] * purchase['t_rate'], 2) if purchase['t_rate'] else 0
         purchase['income_rub'] = 0
         purchase['spending_rub'] = round(float(share)*(purchase['amount_rub'] + purchase['fee_rub']), 2)   ######
-
-        _ = executeSQL("INSERT INTO t_last_assets (id, total_value) VALUES (:trade_id, :qty)",
-                       [(":trade_id", purchase['trade_id']), (":qty", purchase['qty'])])
+        # Update processed quantity for current purchase operation
+        self._processed_trade_qty[purchase['trade_id']] = self._processed_trade_qty.get(purchase['trade_id'], 0) + purchase['qty']
         if level >= 0:  # Don't output if level==-1, i.e. corp action is out of report scope
             purchase['report_template'] = "trade"
             purchase['report_group'] = group
