@@ -102,6 +102,12 @@ class TaxesRus:
         list_of_values.append(totals)
 
     def prepare_dividends(self):
+        # TODO Include cash payments from corporate actions
+        #    SELECT a.timestamp, r.qty, a.note
+        #    FROM asset_actions AS a
+        #    LEFT JOIN action_results AS r ON r.action_id=a.id
+        #    LEFT JOIN assets AS c ON c.id=r.asset_id
+        #    WHERE a.account_id=:account_id AND c.type_id=:currency
         currency = JalAsset(self.account.currency())
         dividends_report = []
         dividends = Dividend.get_list(self.account.id(), subtype=Dividend.Dividend)
@@ -513,37 +519,26 @@ class TaxesRus:
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_interest(self):
-        interests = []
-        query = executeSQL("SELECT s.timestamp AS payment_date, s.amount AS amount, s.note AS note, q.quote AS rate "
-                           "FROM ("
-                           "  SELECT a.timestamp, d.amount, d.note "
-                           "  FROM actions AS a "
-                           "  LEFT JOIN action_details AS d ON d.pid=a.id "
-                           "  WHERE a.account_id=:account_id AND d.category_id=:interest "
-                           " UNION ALL"
-                           "  SELECT a.timestamp, r.qty, a.note "
-                           "  FROM asset_actions AS a "
-                           "  LEFT JOIN action_results AS r ON r.action_id=a.id "
-                           "  LEFT JOIN assets AS c ON c.id=r.asset_id "
-                           "  WHERE a.account_id=:account_id AND c.type_id=:currency"
-                           ") AS s "
-                           "LEFT JOIN accounts AS c ON c.id = :account_id "
-                           "LEFT JOIN t_last_dates AS ld ON s.timestamp=ld.ref_id "
-                           "LEFT JOIN quotes AS q ON ld.timestamp=q.timestamp "
-                           "AND c.currency_id=q.asset_id AND q.currency_id=:base_currency",
-                           [(":begin", self.year_begin), (":end", self.year_end), (":account_id", self.account.id()),
-                            (":interest", PredefinedCategory.Interest), (":currency", PredefinedAsset.Money),
-                            (":base_currency", JalSettings().getValue('BaseCurrency'))])
-        while query.next():
-            interest = readSQLrecord(query, named=True)
-            interest['amount'] = float(interest['amount'])
-            interest['rate'] = float(interest['rate'])
-            interest['amount_rub'] = round(interest['amount'] * interest['rate'], 2) if interest['rate'] else 0
-            interest['tax_rub'] = round(0.13 * interest['amount_rub'], 2)
-            interest['report_template'] = "interest"
-            interests.append (interest)
-        self.insert_totals(interests, ["amount", "amount_rub", "tax_rub"])
-        return interests
+        currency = JalAsset(self.account.currency())
+        interests_report = []
+        interest_operations = JalCategory(PredefinedCategory.Interest).get_operations(self.year_begin, self.year_end)
+        for operation in interest_operations:
+            rate = currency.quote(operation.timestamp(), JalSettings().getValue('BaseCurrency'))[1]
+            interests = [x for x in operation.lines() if x['category_id'] == PredefinedCategory.Interest]
+            for interest in interests:
+                amount = Decimal(interest['amount'])
+                line = {
+                    'report_template': "interest",
+                    'payment_date': operation.timestamp(),
+                    'rate': rate,
+                    'amount': amount,
+                    'amount_rub': round(amount * rate, 2),
+                    'tax_rub': round(Decimal('0.13') * amount * rate, 2),
+                    'note': interest['note']
+                }
+                interests_report.append(line)
+        self.insert_totals(interests_report, ["amount", "amount_rub", "tax_rub"])
+        return interests_report
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_corporate_actions(self):
