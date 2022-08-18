@@ -1,7 +1,6 @@
 import json
 import os
 from pytest import approx
-from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from data_import.broker_statements.ibkr import StatementIBKR
@@ -144,6 +143,7 @@ def test_taxes_rus_bonds(tmp_path, project_root, data_path, prepare_db_taxes):
 
     taxes = TaxesRus()
     tax_report = taxes.prepare_tax_report(2021, 1)
+    json_decimal2float(tax_report)
     assert tax_report == report
 
     # reports_xls = XLSX(str(tmp_path) + os.sep + "taxes.xls")
@@ -193,6 +193,7 @@ def test_taxes_stock_vesting(data_path, prepare_db_taxes):
 
     taxes = TaxesRus()
     tax_report = taxes.prepare_tax_report(2021, 1)
+    json_decimal2float(tax_report)
     assert tax_report == report
 
 
@@ -323,6 +324,7 @@ def test_taxes_over_years(tmp_path, project_root, data_path, prepare_db_taxes):
     taxes = TaxesRus()
     tax_report = taxes.prepare_tax_report(2021, 1)
 
+    json_decimal2float(tax_report)
     with open(data_path + 'taxes_over_years_rus.json', 'r', encoding='utf-8') as json_file:
         report = json.load(json_file)
     assert tax_report == report
