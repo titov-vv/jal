@@ -1,4 +1,5 @@
 from jal.db.db import JalDB
+from jal.db.operations import IncomeSpending
 
 
 class JalCategory(JalDB):
@@ -29,3 +30,13 @@ class JalCategory(JalDB):
         while query.next():
             mapped_list.append(JalDB._readSQLrecord(query, named=True))
         return mapped_list
+
+    # Returns a list of operations that include this category
+    def get_operations(self, begin: int, end: int) -> list:
+        operations = []
+        query = self._executeSQL("SELECT DISTINCT a.id FROM actions a LEFT JOIN action_details d ON a.id=d.pid "
+                                 "WHERE d.category_id=:category AND a.timestamp>=:begin AND a.timestamp<:end",
+                                 [(":category", self._id), (":begin", begin), (":end", end)])
+        while query.next():
+            operations.append(IncomeSpending(int(JalDB._readSQLrecord(query))))
+        return operations
