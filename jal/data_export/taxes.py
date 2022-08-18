@@ -573,7 +573,7 @@ class TaxesRus:
             amount_rub = round(amount * s_rate, 2)
             fee_rub = round(sale.fee() * t_rate, 2)
             if sale.timestamp() < self.year_begin:    # Don't show deal that is before report year (level = -1)
-                self.proceed_corporate_action(lines, trade.open_operation().id(), trade.asset().id(), trade.qty(), share, -1, group)
+                self.proceed_corporate_action(lines, trade, trade.qty(), share, -1, group)
             else:
                 lines.append({
                     'report_template': "trade",
@@ -598,38 +598,35 @@ class TaxesRus:
                 })
                 if sale.asset().type() == PredefinedAsset.Bond:
                     self.output_accrued_interest(lines, sale.number(), 1, 0)
-                self.proceed_corporate_action(lines, trade.open_operation().id(), trade.asset().id(), trade.qty(), share, 1, group)
+                self.proceed_corporate_action(lines, trade, trade.qty(), share, 1, group)
             self.insert_totals(lines, ["income_rub", "spending_rub"])
             corporate_actions_report += lines
             group += 1
         return corporate_actions_report
 
     # actions - mutable list of tax records to output into json-report
-    # oid - id of corporate action to process next
+    # trade - JalClosedTrade object, for which we need to proceed with opening corporate action
     # qty - amount of asset to process
     # share - value share that is being processed currently
     # level - how deep we are in a chain of events (is used for correct indents)
     # group - use for odd/even lines grouping in the report
-    def proceed_corporate_action(self, actions, oid, asset_id, qty, share, level, group):
-        asset_id, qty, share = self.output_corp_action(actions, oid, asset_id, qty, share, level, group)
+    def proceed_corporate_action(self, actions, trade, qty, share, level, group):
+        asset_id, qty, share = self.output_corp_action(actions, trade.open_operation().id(), trade.asset().id(), qty, share, level, group)
         next_level = -1 if level == -1 else (level + 1)
-        self.next_corporate_action(actions, oid, asset_id, qty, share, next_level, group)
+        self.next_corporate_action(actions, trade, qty, share, next_level, group)
 
-    def next_corporate_action(self, actions, oid, asset_id, qty, share, level, group):
+    def next_corporate_action(self, actions, trade, qty, share, level, group):
         # get list of deals that were closed as result of current corporate action
-        open_query = executeSQL("SELECT open_op_id AS open_op_id, open_op_type AS op_type "
-                                "FROM trades_closed "
-                                "WHERE close_op_id=:close_op_id AND close_op_type=:corp_action "
-                                "ORDER BY id",
-                                [(":close_op_id", oid), (":corp_action", LedgerTransaction.CorporateAction)])
-        while open_query.next():
-            open_id, open_type = readSQLrecord(open_query)
-            if open_type == LedgerTransaction.Trade:
-                qty = self.output_purchase(actions, open_id, qty, share, level, group)
-            elif open_type == LedgerTransaction.CorporateAction:
-                self.proceed_corporate_action(actions, open_id, asset_id, qty, share, level, group)
+        trades = self.account.closed_trades_list()
+        trades = [x for x in trades if x.close_operation().type() == LedgerTransaction.CorporateAction]
+        trades = [x for x in trades if x.close_operation().id() == trade.open_operation().id()]
+        for item in trades:
+            if item.open_operation().type() == LedgerTransaction.Trade:
+                qty = self.output_purchase(actions, item.open_operation().id(), qty, share, level, group)
+            elif item.open_operation().type() == LedgerTransaction.CorporateAction:
+                self.proceed_corporate_action(actions, trade, qty, share, level, group)
             else:
-                assert False
+                assert False, "Unexpected opening transaction"
 
     # oid - id of buy operation
     def output_purchase(self, actions, oid, proceed_qty, share, level, group):
